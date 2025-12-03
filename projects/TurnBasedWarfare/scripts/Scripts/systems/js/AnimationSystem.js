@@ -193,6 +193,11 @@ class AnimationSystem extends GUTS.BaseSystem {
             return;
         }
 
+        // Don't update animation logic for dying or dead units
+        if (animState.isDying || animState.isCorpse) {
+            return;
+        }
+
         // Don't update walk state while attack animation is playing
         const isAttacking = this.game.gameManager.call('isBillboardAttacking', entityId);
         if (isAttacking) {
@@ -475,10 +480,22 @@ class AnimationSystem extends GUTS.BaseSystem {
         animState.lastRequestedClip = null;
         animState.lastResolvedClip = null;
         animState.fallbackCooldown = 0;
-        
-        // Apply death animation immediately
+
+        // Handle billboard entities with sprite animations
+        if (animState.isBillboard) {
+            // Use current sprite direction and flip state for death animation
+            this.game.gameManager.call(
+                'setBillboardDying',
+                entityId,
+                animState.spriteDirection,
+                animState.spriteFlipped
+            );
+            return;
+        }
+
+        // Apply death animation immediately for VAT/model entities
         this.changeAnimation(entityId, 'death', 1.0, 0);
-        
+
     }
 
     setCorpseAnimation(entityId) {

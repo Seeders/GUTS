@@ -122,6 +122,9 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             // Complete construction
             this.completeConstruction(entityId, buildingId, buildingPlacement, game);
 
+            // Remove player order so unit can return to normal behavior
+            game.removeComponent(entityId, 'playerOrder');
+
             // Return null to end this action (building is complete)
             return null;
         }

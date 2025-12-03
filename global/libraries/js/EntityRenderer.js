@@ -337,6 +337,7 @@ class EntityRenderer {
         // Check if entity has sprite animations via spriteAnimationSet reference
         let walkAnimationNames = null;
         let attackAnimationNames = null;
+        let deathAnimationNames = null;
         if (entityDef.spriteAnimationSet) {
             // Look up the sprite animation set from the collection
             const animSet = this.collections?.spriteAnimationSets?.[entityDef.spriteAnimationSet];
@@ -346,18 +347,26 @@ class EntityRenderer {
             if (animSet?.attackSpriteAnimations) {
                 attackAnimationNames = animSet.attackSpriteAnimations;
             }
+            if (animSet?.deathSpriteAnimations) {
+                deathAnimationNames = animSet.deathSpriteAnimations;
+            }
         }
 
         const hasSpriteAnimations = (walkAnimationNames && walkAnimationNames.length > 0) ||
-                                    (attackAnimationNames && attackAnimationNames.length > 0);
+                                    (attackAnimationNames && attackAnimationNames.length > 0) ||
+                                    (deathAnimationNames && deathAnimationNames.length > 0);
         let walkAnimationData = null;
         let attackAnimationData = null;
+        let deathAnimationData = null;
 
         if (walkAnimationNames && walkAnimationNames.length > 0) {
             walkAnimationData = await this.loadSpriteAnimations(walkAnimationNames);
         }
         if (attackAnimationNames && attackAnimationNames.length > 0) {
             attackAnimationData = await this.loadSpriteAnimations(attackAnimationNames);
+        }
+        if (deathAnimationNames && deathAnimationNames.length > 0) {
+            deathAnimationData = await this.loadSpriteAnimations(deathAnimationNames);
         }
 
         const textureDef = this.collections?.textures?.[textureId];
@@ -431,16 +440,18 @@ class EntityRenderer {
         this.entities.set(entityId, entityData);
 
         // Set up sprite animation tracking if animations are available
-        if (hasSpriteAnimations && (walkAnimationData || attackAnimationData)) {
+        if (hasSpriteAnimations && (walkAnimationData || attackAnimationData || deathAnimationData)) {
             this.billboardAnimations.set(entityId, {
                 walkAnimations: walkAnimationData,   // { left: [...textures], up: [...], down: [...] }
                 attackAnimations: attackAnimationData, // { left: [...textures], up: [...], down: [...] }
-                currentAnimationType: 'walk',        // 'walk' or 'attack'
+                deathAnimations: deathAnimationData, // { left: [...textures], up: [...], down: [...] }
+                currentAnimationType: 'walk',        // 'walk', 'attack', or 'death'
                 currentDirection: 'down',            // Default facing direction
                 frameIndex: 0,
                 frameTime: 0,
                 isMoving: false,
                 isAttacking: false,
+                isDying: false,
                 flipped: false
             });
         }
@@ -797,9 +808,14 @@ class EntityRenderer {
      */
     applyBillboardAnimationFrame(entity, animData) {
         // Select animation set based on current animation type
-        const animations = animData.currentAnimationType === 'attack'
-            ? animData.attackAnimations
-            : animData.walkAnimations;
+        let animations;
+        if (animData.currentAnimationType === 'attack') {
+            animations = animData.attackAnimations;
+        } else if (animData.currentAnimationType === 'death') {
+            animations = animData.deathAnimations;
+        } else {
+            animations = animData.walkAnimations;
+        }
 
         if (!animations) return;
 
@@ -904,8 +920,24 @@ class EntityRenderer {
                 if (speed > 0) {
                     const clip = batch.meta.clips[clipIndex];
                     const duration = clip?.duration || 1.0;
+                    const clipName = clip?.name || '';
 
-                    const newTime = (currentTime + deltaTime * speed) % duration;
+                    // For death animations, clamp to end instead of looping
+                    const isDeath = clipName.toLowerCase().includes('death');
+
+                    let newTime;
+                    if (isDeath) {
+                        // Clamp death animations to last frame
+                        newTime = Math.min(currentTime + deltaTime * speed, duration * 0.99);
+                        // Freeze when animation completes
+                        if (newTime >= duration * 0.99) {
+                            batch.attributes.animSpeed.array[instanceIndex] = 0;
+                        }
+                    } else {
+                        // Loop normal animations
+                        newTime = (currentTime + deltaTime * speed) % duration;
+                    }
+
                     batch.attributes.animTime.array[instanceIndex] = newTime;
                     hasUpdates = true;
                 }
@@ -926,6 +958,41 @@ class EntityRenderer {
      */
     updateBillboardAnimations(deltaTime) {
         for (const [entityId, animData] of this.billboardAnimations) {
+            // Handle death animations (single-play, highest priority)
+            if (animData.isDying) {
+                const deathAnims = animData.deathAnimations;
+                if (!deathAnims) continue;
+
+                const frames = deathAnims[animData.currentDirection];
+                if (!frames || frames.length === 0) continue;
+
+                // Check if animation already finished - if so, stay on last frame and don't update
+                if (animData.frameIndex >= frames.length - 1) {
+                    continue;
+                }
+
+                // Update frame time
+                animData.frameTime += deltaTime;
+
+                // Check if it's time to advance frame
+                if (animData.frameTime >= this.spriteFrameDuration) {
+                    animData.frameTime = 0;
+                    animData.frameIndex++;
+
+                    // Clamp to last frame
+                    if (animData.frameIndex >= frames.length) {
+                        animData.frameIndex = frames.length - 1;
+                    }
+
+                    // Apply new frame texture
+                    const entity = this.entities.get(entityId);
+                    if (entity && entity.sprite) {
+                        this.applyBillboardAnimationFrame(entity, animData);
+                    }
+                }
+                continue;
+            }
+
             // Handle attack animations (single-play)
             if (animData.isAttacking) {
                 const attackAnims = animData.attackAnimations;
@@ -1100,6 +1167,43 @@ class EntityRenderer {
     isBillboardAttacking(entityId) {
         const animData = this.billboardAnimations.get(entityId);
         return animData?.isAttacking || false;
+    }
+
+    /**
+     * Start death animation for a billboard entity
+     */
+    setBillboardDying(entityId, direction, flipped = false) {
+        const animData = this.billboardAnimations.get(entityId);
+        if (!animData) {
+            console.warn(`[EntityRenderer] setBillboardDying: No animData for entity ${entityId}`);
+            return false;
+        }
+
+        // Check if death animations are available
+        if (!animData.deathAnimations) {
+            console.warn(`[EntityRenderer] setBillboardDying: No death animations for entity ${entityId}`);
+            return false;
+        }
+
+        console.log(`[EntityRenderer] Starting death animation for entity ${entityId}, direction: ${direction}, flipped: ${flipped}`);
+
+        // Set up death animation
+        animData.isDying = true;
+        animData.isMoving = false; // Stop walk animation
+        animData.isAttacking = false; // Stop attack animation
+        animData.currentAnimationType = 'death';
+        animData.currentDirection = direction;
+        animData.flipped = flipped;
+        animData.frameIndex = 0;
+        animData.frameTime = 0;
+
+        // Apply the first frame immediately
+        const entity = this.entities.get(entityId);
+        if (entity) {
+            this.applyBillboardAnimationFrame(entity, animData);
+        }
+
+        return true;
     }
 
     /**

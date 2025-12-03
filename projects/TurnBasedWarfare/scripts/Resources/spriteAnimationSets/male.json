@@ -13,5 +13,12 @@
     "maleAttackLeft",
     "maleAttackUpLeft",
     "maleAttackUp"
+  ],
+  "deathSpriteAnimations": [
+    "maleDeathDown",
+    "maleDeathDownLeft",
+    "maleDeathLeft",
+    "maleDeathUpLeft",
+    "maleDeathUp"
   ]
 }

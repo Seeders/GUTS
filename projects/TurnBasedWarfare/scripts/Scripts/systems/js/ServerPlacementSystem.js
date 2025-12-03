@@ -246,12 +246,15 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 // Fallback if UnitOrderSystem not available
                 placement.targetPosition = targetPosition;
                 placement.squadUnits.forEach((unitId) => {
-                    const playerOrder = this.game.getComponent(unitId, "playerOrder");
-                    if (playerOrder) {
-                        playerOrder.targetPosition = targetPosition;
-                        playerOrder.meta = meta;
-                        playerOrder.issuedTime = commandCreatedTime || this.game.state.now;
+                    // Remove existing player order if present, then add new one
+                    if (this.game.hasComponent(unitId, "playerOrder")) {
+                        this.game.removeComponent(unitId, "playerOrder");
                     }
+                    this.game.addComponent(unitId, "playerOrder", {
+                        targetPosition: targetPosition,
+                        meta: meta,
+                        issuedTime: commandCreatedTime || this.game.state.now
+                    });
                 });
             }
                     
@@ -337,15 +340,18 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                     // Fallback if UnitOrderSystem not available
                     placement.targetPosition = targetPosition;
                     placement.squadUnits.forEach((unitId) => {
-                        const playerOrder = this.game.getComponent(unitId, "playerOrder");
-                        if (playerOrder) {
-                            playerOrder.targetPosition = targetPosition;
-                            playerOrder.meta = meta;
-                            playerOrder.issuedTime = commandCreatedTime || this.game.state.now;
-                            this.game.triggerEvent('onIssuedPlayerOrders', unitId);
-                
-                console.log(`Player ${playerId} set target for squad ${unitId}:`, targetPosition);
+                        // Remove existing player order if present, then add new one
+                        if (this.game.hasComponent(unitId, "playerOrder")) {
+                            this.game.removeComponent(unitId, "playerOrder");
                         }
+                        this.game.addComponent(unitId, "playerOrder", {
+                            targetPosition: targetPosition,
+                            meta: meta,
+                            issuedTime: commandCreatedTime || this.game.state.now
+                        });
+                        this.game.triggerEvent('onIssuedPlayerOrders', unitId);
+
+                        console.log(`Player ${playerId} set target for squad ${unitId}:`, targetPosition);
                     });
                 }
                         

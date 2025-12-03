@@ -372,13 +372,6 @@ class UnitCreationManager {
             meta: {}
         });
 
-        // Player order component (for player commands)
-        this.game.addComponent(entity, "playerOrder", {
-            targetPosition: null,
-            meta: {},
-            issuedTime: 0
-        });
-
         // Pathfinding component (for movement paths)
         this.game.addComponent(entity, "pathfinding", {
             path: null,

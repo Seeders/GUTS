@@ -38,17 +38,47 @@ class BuildAbility extends GUTS.BaseAbility {
         }
 
         // Set playerOrder for building - behavior tree will handle the rest via BuildBehaviorAction
-        const playerOrder = this.game.getComponent(peasantEntityId, "playerOrder");
-        if (playerOrder) {
-            playerOrder.meta = {
+        // If peasant already has a build order, clean up the old building first
+        const existingPlayerOrder = this.game.getComponent(peasantEntityId, "playerOrder");
+        if (existingPlayerOrder && existingPlayerOrder.meta && existingPlayerOrder.meta.buildingId) {
+            const oldBuildingId = existingPlayerOrder.meta.buildingId;
+            const oldBuildingPlacement = this.game.getComponent(oldBuildingId, "placement");
+
+            // Cancel old building if it was under construction and assigned to this peasant
+            if (oldBuildingPlacement &&
+                oldBuildingPlacement.isUnderConstruction &&
+                oldBuildingPlacement.assignedBuilder === peasantEntityId) {
+                // Use network manager to cancel with proper refund
+                if (this.game.networkManager && this.game.networkManager.cancelBuilding) {
+                    this.game.networkManager.cancelBuilding({
+                        placementId: oldBuildingPlacement.placementId,
+                        buildingEntityId: oldBuildingId
+                    }, (success) => {
+                        if (!success) {
+                            console.warn('Failed to cancel old building during reassignment');
+                        }
+                    });
+                } else {
+                    // Fallback: destroy directly (no refund in this case)
+                    this.game.destroyEntity(oldBuildingId);
+                }
+            }
+        }
+
+        // Remove existing player order if present, then add new one
+        if (this.game.hasComponent(peasantEntityId, "playerOrder")) {
+            this.game.removeComponent(peasantEntityId, "playerOrder");
+        }
+        this.game.addComponent(peasantEntityId, "playerOrder", {
+            targetPosition: buildingPos,
+            meta: {
                 buildingId: buildingEntityId,
                 buildingPosition: buildingPos,
                 preventCombat: true  // Builder should not be interrupted by combat
-            };
-            playerOrder.targetPosition = buildingPos;
-            playerOrder.issuedTime = this.game.state.now;
-            this.game.triggerEvent('onIssuedPlayerOrders', peasantEntityId);
-        }
+            },
+            issuedTime: this.game.state.now
+        });
+        this.game.triggerEvent('onIssuedPlayerOrders', peasantEntityId);
 
         const aiState = this.game.getComponent(peasantEntityId, "aiState");
         

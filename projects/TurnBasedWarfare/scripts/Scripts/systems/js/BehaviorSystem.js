@@ -89,6 +89,10 @@ class BehaviorSystem extends GUTS.BaseSystem {
     updateUnit(entityId, dt) {
         const aiState = this.game.getComponent(entityId, "aiState");
         const unitType = this.game.getComponent(entityId, "unitType");
+        const deathState = this.game.getComponent(entityId, "deathState");
+
+        // Skip dead/dying units - they shouldn't run behavior trees
+        if (deathState && deathState.isDying) return;
 
         if (!aiState || !unitType) return;
 

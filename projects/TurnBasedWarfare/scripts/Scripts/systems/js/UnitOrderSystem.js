@@ -499,15 +499,18 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                                 this.game.gameManager.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
                             }
                             if(targetPosition){
-                                // Set player order - behavior tree will handle execution
-                                const playerOrder = this.game.getComponent(unitId, "playerOrder");
-                                const aiState = this.game.getComponent(unitId, "aiState");
-                                if (playerOrder) {
-                                    playerOrder.targetPosition = targetPosition;
-                                    playerOrder.meta = meta;
-                                    playerOrder.issuedTime = createdTime;
-                                    this.game.triggerEvent('onIssuedPlayerOrders', unitId);
+                                // Remove existing player order if present, then add new one
+                                if (this.game.hasComponent(unitId, "playerOrder")) {
+                                    this.game.removeComponent(unitId, "playerOrder");
                                 }
+                                this.game.addComponent(unitId, "playerOrder", {
+                                    targetPosition: targetPosition,
+                                    meta: meta,
+                                    issuedTime: createdTime
+                                });
+                                this.game.triggerEvent('onIssuedPlayerOrders', unitId);
+
+                                const aiState = this.game.getComponent(unitId, "aiState");
                                 if(aiState){
                                     aiState.currentAction = "";
                                     aiState.meta = {};
@@ -552,13 +555,15 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         placement.targetPosition = targetPosition;
         placement.squadUnits.forEach((unitId) => {
             if(targetPosition){
-                // Set player order - behavior tree will handle execution and interruption
-                const playerOrder = this.game.getComponent(unitId, "playerOrder");
-                if (playerOrder) {
-                    playerOrder.targetPosition = targetPosition;
-                    playerOrder.meta = meta;
-                    playerOrder.issuedTime = createdTime;
+                // Remove existing player order if present, then add new one
+                if (this.game.hasComponent(unitId, "playerOrder")) {
+                    this.game.removeComponent(unitId, "playerOrder");
                 }
+                this.game.addComponent(unitId, "playerOrder", {
+                    targetPosition: targetPosition,
+                    meta: meta,
+                    issuedTime: createdTime
+                });
             }
         });
     }

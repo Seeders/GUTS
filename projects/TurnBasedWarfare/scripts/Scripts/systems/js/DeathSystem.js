@@ -35,11 +35,17 @@ class DeathSystem extends GUTS.BaseSystem {
 
     startDeathProcess(entityId){
         console.log(entityId, "DIED");
+
         this.game.addComponent(entityId, 'deathState', {
             isDying: true,
             deathStartTime: this.game.state.now
         });
-        
+
+        // Trigger death animation
+        if(this.game.gameManager.has('playDeathAnimation')){
+            this.game.gameManager.call('playDeathAnimation', entityId);
+        }
+
         // Remove health (corpses can't be damaged)
         if (this.game.hasComponent(entityId, "health")) {
             this.game.removeComponent(entityId, "health");
@@ -49,7 +55,7 @@ class DeathSystem extends GUTS.BaseSystem {
         if (this.game.hasComponent(entityId, "velocity")) {
             this.game.removeComponent(entityId, "velocity");
         }
-        
+
     }
 
     destroyBuilding(entityId) {
