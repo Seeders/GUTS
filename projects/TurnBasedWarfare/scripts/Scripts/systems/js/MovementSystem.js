@@ -894,7 +894,15 @@ class MovementSystem extends GUTS.BaseSystem {
         const dz = targetPos.z - pos.z;
         const distance = Math.sqrt(dx * dx + dz * dz);
 
-        return distance <= (combat.range || combat.attackRange || 50);
+        // Get effective range accounting for unit collision radii
+        const baseRange = combat.range || combat.attackRange || 50;
+        const attackerCollision = this.game.getComponent(entityId, 'collision');
+        const targetCollision = this.game.getComponent(targetEntityId, 'collision');
+        const attackerRadius = attackerCollision?.radius || 0;
+        const targetRadius = targetCollision?.radius || 0;
+        const effectiveRange = baseRange + attackerRadius + targetRadius;
+
+        return distance <= effectiveRange;
     }
 
     ping() {

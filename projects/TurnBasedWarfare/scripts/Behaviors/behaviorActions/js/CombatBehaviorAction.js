@@ -56,10 +56,9 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
         const pos = transform?.position;
         const targetTransform = game.getComponent(target, 'transform');
         const targetPos = targetTransform?.position;
-        const combat = game.getComponent(entityId, 'combat');
 
         const distance = this.distance(pos, targetPos);
-        const attackRange = combat.range || 50;
+        const attackRange = this.getEffectiveAttackRange(entityId, target, game);
 
         if (distance <= attackRange) {
             // Already in range, start attacking
@@ -90,10 +89,9 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
         const pos = transform?.position;
         const targetTransform = game.getComponent(target, 'transform');
         const targetPos = targetTransform?.position;
-        const combat = game.getComponent(entityId, 'combat');
 
         const distance = this.distance(pos, targetPos);
-        const attackRange = combat.range || 50;
+        const attackRange = this.getEffectiveAttackRange(entityId, target, game);
 
         if (distance <= attackRange) {
             // In range, start attacking
@@ -126,10 +124,9 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
         const pos = transform?.position;
         const targetTransform = game.getComponent(target, 'transform');
         const targetPos = targetTransform?.position;
-        const combat = game.getComponent(entityId, 'combat');
 
         const distance = this.distance(pos, targetPos);
-        const attackRange = combat.range || 50;
+        const attackRange = this.getEffectiveAttackRange(entityId, target, game);
 
         if (distance > attackRange) {
             // Target moved out of range, unanchor and chase
@@ -358,5 +355,22 @@ class CombatBehaviorAction extends GUTS.BaseBehaviorAction {
         const dx = target.x - pos.x;
         const dz = target.z - pos.z;
         return Math.sqrt(dx * dx + dz * dz);
+    }
+
+    /**
+     * Get effective attack range accounting for unit collision radii
+     * Effective range = base range + attacker radius + target radius
+     */
+    getEffectiveAttackRange(attackerId, targetId, game) {
+        const combat = game.getComponent(attackerId, 'combat');
+        const baseRange = combat?.range || 50;
+
+        const attackerCollision = game.getComponent(attackerId, 'collision');
+        const targetCollision = game.getComponent(targetId, 'collision');
+
+        const attackerRadius = attackerCollision?.radius || 0;
+        const targetRadius = targetCollision?.radius || 0;
+
+        return baseRange + attackerRadius + targetRadius;
     }
 }

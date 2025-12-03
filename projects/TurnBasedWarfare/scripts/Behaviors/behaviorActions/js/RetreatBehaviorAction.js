@@ -58,9 +58,9 @@ class RetreatBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.success({ status: 'safe', distanceToThreat, healthPercent });
         }
 
-        // Counter-attack if in range and able
+        // Counter-attack if in range and able (accounting for unit sizes)
         if (counterAttack && combat && combat.damage > 0) {
-            const attackRange = combat.range || 50;
+            const attackRange = this.getEffectiveAttackRange(entityId, threat.id, game);
             if (distanceToThreat <= attackRange) {
                 this.performCounterAttack(entityId, threat.id, game, combat);
             }
@@ -153,5 +153,22 @@ class RetreatBehaviorAction extends GUTS.BaseBehaviorAction {
         const dx = pos2.x - pos1.x;
         const dz = pos2.z - pos1.z;
         return Math.sqrt(dx * dx + dz * dz);
+    }
+
+    /**
+     * Get effective attack range accounting for unit collision radii
+     * Effective range = base range + attacker radius + target radius
+     */
+    getEffectiveAttackRange(attackerId, targetId, game) {
+        const combat = game.getComponent(attackerId, 'combat');
+        const baseRange = combat?.range || 50;
+
+        const attackerCollision = game.getComponent(attackerId, 'collision');
+        const targetCollision = game.getComponent(targetId, 'collision');
+
+        const attackerRadius = attackerCollision?.radius || 0;
+        const targetRadius = targetCollision?.radius || 0;
+
+        return baseRange + attackerRadius + targetRadius;
     }
 }

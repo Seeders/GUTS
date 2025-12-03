@@ -96,8 +96,9 @@ class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
             });
         }
 
-        // Too far - move closer
-        if (distance > combat.range) {
+        // Too far - move closer (account for unit sizes)
+        const effectiveRange = this.getEffectiveAttackRange(entityId, targetId, game);
+        if (distance > effectiveRange) {
             memory.kiteState = 'approaching';
 
             // Move towards target but stop at optimal range
@@ -218,5 +219,22 @@ class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
         const dx = pos2.x - pos1.x;
         const dz = pos2.z - pos1.z;
         return Math.sqrt(dx * dx + dz * dz);
+    }
+
+    /**
+     * Get effective attack range accounting for unit collision radii
+     * Effective range = base range + attacker radius + target radius
+     */
+    getEffectiveAttackRange(attackerId, targetId, game) {
+        const combat = game.getComponent(attackerId, 'combat');
+        const baseRange = combat?.range || 50;
+
+        const attackerCollision = game.getComponent(attackerId, 'collision');
+        const targetCollision = game.getComponent(targetId, 'collision');
+
+        const attackerRadius = attackerCollision?.radius || 0;
+        const targetRadius = targetCollision?.radius || 0;
+
+        return baseRange + attackerRadius + targetRadius;
     }
 }
