@@ -20,10 +20,15 @@ class CameraControlSystem extends GUTS.BaseSystem {
     this.right = new THREE.Vector3();
     this.fwd   = new THREE.Vector3();
     this.delta = new THREE.Vector3();
+
+    // Camera follow mode
+    this.followingEntityId = null;
   }
 
   init() {
     this.game.gameManager.register('cameraLookAt', this.lookAt.bind(this));
+    this.game.gameManager.register('toggleCameraFollow', this.toggleFollow.bind(this));
+    this.game.gameManager.register('getCameraFollowTarget', () => this.followingEntityId);
 
     this.onMove  = (e)=>this.onMouseMove(e);
     this.onEnter = ()=>{ this.inside = true; this.holdDirX = 0; this.holdDirZ = 0; };
@@ -76,7 +81,42 @@ class CameraControlSystem extends GUTS.BaseSystem {
   }
 
   update() {
-    // Edge scrolling disabled - camera movement is handled via minimap clicks only
+    // Follow unit if in follow mode
+    if (this.followingEntityId) {
+      const transform = this.game.getComponent(this.followingEntityId, 'transform');
+      const pos = transform?.position;
+      if (pos) {
+        this.lookAt(pos.x, pos.z);
+      } else {
+        // Entity no longer exists, stop following
+        this.followingEntityId = null;
+      }
+    }
+  }
+
+  /**
+   * Toggle camera follow mode for an entity
+   * @param {string} entityId - The entity to follow, or null to stop following
+   * @returns {boolean} - Whether camera is now following
+   */
+  toggleFollow(entityId) {
+    if (this.followingEntityId === entityId) {
+      // Already following this entity, stop following
+      this.followingEntityId = null;
+      return false;
+    } else {
+      // Start following this entity
+      this.followingEntityId = entityId;
+      // Immediately look at the entity
+      if (entityId) {
+        const transform = this.game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+        if (pos) {
+          this.lookAt(pos.x, pos.z);
+        }
+      }
+      return true;
+    }
   }
 
   handleWheel(e) {

@@ -49,13 +49,13 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         
         const unitPortrait = document.getElementById('unitPortrait');
         unitPortrait.addEventListener('click', () => {
-            if(this.game.cameraControlSystem) {
-                if(this.game.state.selectedEntity.entityId){
-                    const transform = this.game.getComponent(this.game.state.selectedEntity.entityId, "transform");
-                    const pos = transform?.position;
-                    if(pos){
-                        this.game.gameManager.call('cameraLookAt', pos.x, pos.z);
-                    }
+            if(this.game.state.selectedEntity.entityId){
+                const isFollowing = this.game.gameManager.call('toggleCameraFollow', this.game.state.selectedEntity.entityId);
+                // Update visual indicator
+                if (isFollowing) {
+                    unitPortrait.classList.add('following');
+                } else {
+                    unitPortrait.classList.remove('following');
                 }
             }
         });
@@ -348,11 +348,15 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             selectedUnits.innerHTML = "";
         }
 
-        const unitPortrait = document.getElementById('unitPortrait');        
+        const unitPortrait = document.getElementById('unitPortrait');
         if(unitPortrait){
             unitPortrait.innerHTML = "";
+            unitPortrait.classList.remove('following');
         }
-        
+
+        // Stop camera following
+        this.game.gameManager.call('toggleCameraFollow', null);
+
         this.game.triggerEvent('onDeSelectAll');
     }
 
@@ -476,6 +480,13 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             const portrait = this.createPortrait(unitIds[this.currentSelectedIndex]);
             if(portrait){
                 container.append(portrait);
+            }
+            // Update follow indicator
+            const followTarget = this.game.gameManager.call('getCameraFollowTarget');
+            if (followTarget === unitIds[this.currentSelectedIndex]) {
+                container.classList.add('following');
+            } else {
+                container.classList.remove('following');
             }
             const selectedUnitsContainer = document.getElementById('selectedUnits');
             selectedUnitsContainer.innerHTML = ``;

@@ -364,6 +364,13 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     width: 100%;
     display: block;
 }
+#unitPortrait.following {
+    border-color: rgba(0, 255, 100, 0.8);
+    box-shadow: 0 0 10px rgba(0, 255, 100, 0.5);
+}
+#unitPortrait:hover {
+    cursor: pointer;
+}
 #gameControls {
     position: absolute;
     bottom: calc(200px + 2em);
