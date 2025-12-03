@@ -39,6 +39,16 @@ class MineGoldBehaviorTree extends GUTS.BaseBehaviorTree {
      * Default BaseBehaviorTree behavior is selector, so we can just call super
      */
     evaluate(entityId, game) {
+        // Check for nearby enemies first - if enemies are nearby, skip mining and let combat take over
+        const isEnemyNearby = game.gameManager.call('getNodeByType', 'IsEnemyNearbyBehaviorAction');
+        if (isEnemyNearby) {
+            const enemyCheckResult = isEnemyNearby.execute(entityId, game);
+            if (enemyCheckResult && enemyCheckResult.status === 'success') {
+                // Enemy nearby - return null to let combat behavior take over
+                return null;
+            }
+        }
+
         return super.evaluate(entityId, game);
     }
 
