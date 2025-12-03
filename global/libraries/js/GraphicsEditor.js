@@ -341,6 +341,76 @@ class GraphicsEditor {
     }
 
     /**
+     * Switches to a different animation without rebuilding the scene
+     * Used for GLTF models where we only need to change the animation, not reload the model
+     * @param {string} animationName - Name of animation to switch to
+     * @returns {Promise<boolean>} Whether the animation was successfully switched
+     */
+    async switchAnimation(animationName) {
+        // Find the base model with skeleton in the scene
+        let baseModel = null;
+        this.rootGroup.traverse(child => {
+            if (child.userData && child.userData.isGLTFRoot && child.userData.skeleton && !baseModel) {
+                baseModel = child;
+            }
+        });
+
+        if (!baseModel) {
+            console.warn('No base model found, falling back to full refresh');
+            return false;
+        }
+
+        // Get the animation frame data
+        const currentAnimation = this.state.renderData.animations[animationName];
+        if (!currentAnimation || !currentAnimation[0]) {
+            console.warn(`Animation ${animationName} not found`);
+            return false;
+        }
+
+        const frame = currentAnimation[0];
+        const animationShape = frame?.main?.shapes?.find(s =>
+            s.url && s.url.includes('animations/') && (s.url.endsWith('.glb') || s.url.endsWith('.gltf'))
+        );
+
+        if (!animationShape) {
+            console.warn('No animation GLB found in frame');
+            return false;
+        }
+
+        // Load the animation GLB
+        const gltfPath = this.shapeFactory.getResourcesPath(animationShape.url);
+        return new Promise((resolve) => {
+            this.shapeFactory.gltfLoader.load(
+                gltfPath,
+                (gltf) => {
+                    if (gltf.animations && gltf.animations.length > 0) {
+                        // Apply animation to base model
+                        if (!baseModel.userData.mixer) {
+                            baseModel.userData.mixer = new THREE.AnimationMixer(baseModel);
+                        }
+                        const mixer = baseModel.userData.mixer;
+                        mixer.stopAllAction();
+
+                        const action = mixer.clipAction(gltf.animations[0]);
+                        action.play();
+
+                        console.log(`Switched to animation: ${animationName}`);
+                        resolve(true);
+                    } else {
+                        console.warn('No animations found in GLB');
+                        resolve(false);
+                    }
+                },
+                undefined,
+                (error) => {
+                    console.error('Failed to load animation GLB:', error);
+                    resolve(false);
+                }
+            );
+        });
+    }
+
+    /**
      * Creates an inspector panel for the given shape
      * @param {Object} shape - Shape to create inspector for
      */

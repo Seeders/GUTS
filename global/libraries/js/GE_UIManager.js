@@ -85,46 +85,131 @@ class GE_UIManager {
     
 
     showIsometricModal() {
-        document.getElementById('modal-generateIsoSprites').classList.add('show');
+        const modal = document.getElementById('modal-generateIsoSprites');
+        modal.classList.add('show');
+
+        // Populate palette dropdown
+        const paletteSelect = document.getElementById('iso-palette');
+        // Clear existing options except "None"
+        while (paletteSelect.options.length > 1) {
+            paletteSelect.remove(1);
+        }
+
+        // Add palettes from collections
+        const palettes = this.graphicsEditor.gameEditor.getCollections()?.palettes || {};
+        Object.keys(palettes).forEach(paletteName => {
+            const option = document.createElement('option');
+            option.value = paletteName;
+            option.textContent = palettes[paletteName].title || paletteName;
+            paletteSelect.appendChild(option);
+        });
+
+        // Setup brightness slider value display
+        const brightnessSlider = document.getElementById('iso-brightness');
+        const brightnessValue = document.getElementById('iso-brightness-value');
+        brightnessSlider.addEventListener('input', (e) => {
+            brightnessValue.textContent = e.target.value;
+        });
     }
+    async saveIsometricSprites() {
+        if (!this.generatedSprites) {
+            alert('No sprites to save');
+            return;
+        }
+
+        // Get the model name from renderData (e.g., "acolyte" from the model file)
+        const modelTitle = this.graphicsEditor.state.renderData.title || 'character';
+        const baseName = modelTitle.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const collectionName = baseName + 'Sprites';
+
+        // Prompt user for confirmation
+        const confirmed = confirm(`This will create:\n- Sprite collection: ${collectionName}\n- Sprite images in resources/Sprites/${collectionName}/\n- Sprite animation data files\n- Sprite animation set: ${baseName}\n\nContinue?`);
+        if (!confirmed) return;
+
+        const projectName = this.graphicsEditor.gameEditor.getProjectName();
+        const directionNames = ['Down', 'DownLeft', 'Left', 'UpLeft', 'Up'];
+
+        try {
+            // Send all sprite data to server
+            const response = await fetch('/api/save-isometric-sprites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    projectName,
+                    baseName,
+                    collectionName,
+                    sprites: this.generatedSprites,
+                    directionNames
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert(`Successfully saved ${result.spriteCount} sprites and created all data files!`);
+                // Reload collections to show new sprites
+                await this.graphicsEditor.gameEditor.loadCollections();
+            } else {
+                alert('Error saving sprites: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Error saving sprites:', error);
+            alert('Failed to save sprites: ' + error.message);
+        }
+    }
+
     displayIsometricSprites(sprites) {
-        const modal = document.createElement('div');
-        modal.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background-color: rgba(0, 0, 0, 0.7); z-index: 1000; 
-            display: flex; align-items: center; justify-content: center;
-        `;
-        const content = document.createElement('div');
-        content.style.cssText = `
-            background: #333; padding: 20px; border-radius: 8px; 
-            max-width: 80%; max-height: 80%; overflow: auto;
-        `;
-    
-        const angleLabels = ['NE', 'N', 'NW', 'W', 'SW', 'S', 'SE', 'E']; // Labels for 8 angles
-    
+        // Store sprites for saving later
+        this.generatedSprites = sprites;
+
+        // Find or create results container in the modal
+        const modal = document.getElementById('modal-generateIsoSprites');
+        let resultsContainer = document.getElementById('iso-results-container');
+
+        if (!resultsContainer) {
+            resultsContainer = document.createElement('div');
+            resultsContainer.id = 'iso-results-container';
+            resultsContainer.style.cssText = 'margin-top: 20px; padding-top: 20px; border-top: 2px solid #555;';
+            modal.querySelector('.modal-content').appendChild(resultsContainer);
+        }
+
+        // Clear previous results
+        resultsContainer.innerHTML = '';
+
+        // Add results header
+        const header = document.createElement('h3');
+        header.textContent = 'Generated Sprites';
+        header.style.cssText = 'color: #e0e0e0; margin-bottom: 15px;';
+        resultsContainer.appendChild(header);
+
+        const angleLabels = ['Down', 'DownLeft', 'Left', 'UpLeft', 'Up']; // 5 directions
+
         for (const animType in sprites) {
             const animSection = document.createElement('div');
             const title = document.createElement('h3');
             title.textContent = `${animType} Animation`;
             title.style.color = '#e0e0e0';
             animSection.appendChild(title);
-    
+
             // Create a container for all angles
             const anglesContainer = document.createElement('div');
             anglesContainer.style.cssText = `margin: 10px 0;`;
-    
-            // For each angle (0-7)
-            for (let angle = 0; angle < 8; angle++) {
+
+            // For each angle (0-4: Down, DownLeft, Left, UpLeft, Up)
+            for (let angle = 0; angle < 5; angle++) {
                 const angleSection = document.createElement('div');
-    
+                const angleLabel = document.createElement('h4');
+                angleLabel.textContent = angleLabels[angle];
+                angleLabel.style.cssText = 'color: #ccc; margin: 10px 0 5px 0;';
+                angleSection.appendChild(angleLabel);
+
                 const grid = document.createElement('div');
                 grid.style.cssText = `
-                    display: grid; 
-                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 4)}, 1fr); 
-                    gap: 5px; 
+                    display: grid;
+                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 8)}, 1fr);
+                    gap: 5px;
                     margin-bottom: 15px;
                 `;
-    
+
                 // Add all frames for this specific angle
                 sprites[animType].forEach(frame => {
                     const img = document.createElement('img');
@@ -132,25 +217,28 @@ class GE_UIManager {
                     img.style.maxWidth = '100%';
                     grid.appendChild(img);
                 });
-    
+
                 angleSection.appendChild(grid);
                 anglesContainer.appendChild(angleSection);
             }
-    
+
             animSection.appendChild(anglesContainer);
-            content.appendChild(animSection);
+            resultsContainer.appendChild(animSection);
         }
-    
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'Close';
-        closeButton.style.cssText = `
-            margin-top: 20px; padding: 8px 16px; background-color: #4CAF50; 
+
+        // Save button
+        const saveButton = document.createElement('button');
+        saveButton.textContent = 'Save Sprites';
+        saveButton.style.cssText = `
+            padding: 8px 16px; background-color: #2196F3;
             color: #fff; border: none; border-radius: 6px; cursor: pointer;
+            margin-top: 15px;
         `;
-        closeButton.addEventListener('click', () => document.body.removeChild(modal));
-        content.appendChild(closeButton);
-        modal.appendChild(content);
-        document.body.appendChild(modal);
+        saveButton.addEventListener('click', () => this.saveIsometricSprites());
+        resultsContainer.appendChild(saveButton);
+
+        // Scroll results into view
+        resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     
     createGroupInspector(group) {
@@ -456,17 +544,32 @@ class GE_UIManager {
             if (anim === this.graphicsEditor.state.currentAnimation) option.selected = true;
             animSelector.appendChild(option);
         });
-        animSelector.addEventListener('change', (e) => {
+        animSelector.addEventListener('change', async (e) => {
             this.graphicsEditor.setPreviewAnimationState(false);
             if(e.target.value == '__model__'){
                 this.graphicsEditor.state.editingModel = true;
-                this.graphicsEditor.state.currentAnimation = "";                
+                this.graphicsEditor.state.currentAnimation = "";
+                this.graphicsEditor.state.currentFrame = 0;
+                this.graphicsEditor.refreshShapes(false);
             } else {
                 this.graphicsEditor.state.editingModel = false;
-                this.graphicsEditor.state.currentAnimation = animSelector.value;                
+                const newAnimation = animSelector.value;
+
+                // Try to switch animation without rebuilding scene (for GLTF models)
+                const switched = await this.graphicsEditor.switchAnimation(newAnimation);
+
+                if (switched) {
+                    // Successfully switched animation, just update state
+                    this.graphicsEditor.state.currentAnimation = newAnimation;
+                    this.graphicsEditor.state.currentFrame = 0;
+                    this.updateList(); // Update UI only
+                } else {
+                    // Fall back to full refresh (for non-GLTF or if switch failed)
+                    this.graphicsEditor.state.currentAnimation = newAnimation;
+                    this.graphicsEditor.state.currentFrame = 0;
+                    this.graphicsEditor.refreshShapes(false);
+                }
             }
-            this.graphicsEditor.state.currentFrame = 0;
-            this.graphicsEditor.refreshShapes(false);
             requestAnimationFrame(() => {
                 this.graphicsEditor.state.selectedShapeIndex = -1;
                 this.graphicsEditor.shapeManager.selectShape(0);

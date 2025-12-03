@@ -512,6 +512,124 @@ app.post('/api/save-texture', async (req, res) => {
     }
 });
 
+// Save isometric sprites with all data files
+app.post('/api/save-isometric-sprites', async (req, res) => {
+    try {
+        const { projectName, baseName, collectionName, sprites, directionNames } = req.body;
+
+        // Create directories
+        const spritesFolder = path.join(PROJS_DIR, projectName, 'resources', 'Sprites', collectionName);
+        const scriptsSpritesFolder = path.join(PROJS_DIR, projectName, 'scripts', 'Sprites', collectionName);
+        const scriptsSpriteAnimationsFolder = path.join(PROJS_DIR, projectName, 'scripts', 'Sprites', collectionName + 'Animations');
+        const scriptsSpriteAnimationSetsFolder = path.join(PROJS_DIR, projectName, 'scripts', 'Sprites', 'spriteAnimationSets');
+        const settingsFolder = path.join(PROJS_DIR, projectName, 'scripts', 'Settings', 'objectTypeDefinitions');
+
+        await fs.mkdir(spritesFolder, { recursive: true });
+        await fs.mkdir(scriptsSpritesFolder, { recursive: true });
+        await fs.mkdir(scriptsSpriteAnimationsFolder, { recursive: true });
+        await fs.mkdir(scriptsSpriteAnimationSetsFolder, { recursive: true });
+        await fs.mkdir(settingsFolder, { recursive: true });
+
+        let spriteCount = 0;
+        const animationNames = {};
+
+        // Process each animation type
+        for (const animType in sprites) {
+            const frames = sprites[animType];
+            animationNames[animType] = [];
+
+            // For each direction
+            for (let dirIndex = 0; dirIndex < directionNames.length; dirIndex++) {
+                const dirName = directionNames[dirIndex];
+                const spriteNames = [];
+
+                // For each frame in this animation+direction
+                for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+                    const frameData = frames[frameIndex][dirIndex];
+                    const spriteName = `${baseName}${animType.charAt(0).toUpperCase() + animType.slice(1)}${dirName}_${frameIndex}`;
+
+                    // Save sprite image
+                    const base64Data = frameData.replace(/^data:image\/\w+;base64,/, '');
+                    const buffer = Buffer.from(base64Data, 'base64');
+                    await fs.writeFile(path.join(spritesFolder, `${spriteName}.png`), buffer);
+
+                    // Create sprite JSON
+                    const spriteJson = {
+                        title: `${baseName} ${animType} ${dirName} ${frameIndex}`,
+                        imagePath: `Sprites/${collectionName}/${spriteName}.png`
+                    };
+                    await fs.writeFile(
+                        path.join(scriptsSpritesFolder, `${spriteName}.json`),
+                        JSON.stringify(spriteJson, null, 2)
+                    );
+
+                    spriteNames.push(spriteName);
+                    spriteCount++;
+                }
+
+                // Create sprite animation JSON
+                const animationName = `${baseName}${animType.charAt(0).toUpperCase() + animType.slice(1)}${dirName}`;
+                animationNames[animType].push(animationName);
+
+                const spriteAnimationJson = {
+                    title: `${baseName} ${animType} ${dirName}`,
+                    collection: collectionName,
+                    sprites: spriteNames
+                };
+                await fs.writeFile(
+                    path.join(scriptsSpriteAnimationsFolder, `${animationName}.json`),
+                    JSON.stringify(spriteAnimationJson, null, 2)
+                );
+            }
+        }
+
+        // Create sprite animation set JSON
+        const animationSetJson = {
+            title: baseName.charAt(0).toUpperCase() + baseName.slice(1),
+            collection: collectionName + 'Animations'
+        };
+
+        // Add animation types (walk, attack, etc.)
+        for (const animType in animationNames) {
+            const propertyName = `${animType}SpriteAnimations`;
+            animationSetJson[propertyName] = animationNames[animType];
+        }
+
+        await fs.writeFile(
+            path.join(scriptsSpriteAnimationSetsFolder, `${baseName}.json`),
+            JSON.stringify(animationSetJson, null, 2)
+        );
+
+        // Create collection definitions
+        const spriteCollectionDef = {
+            id: collectionName,
+            name: collectionName.charAt(0).toUpperCase() + collectionName.slice(1),
+            singular: collectionName.slice(0, -1),
+            category: 'Sprites'
+        };
+        await fs.writeFile(
+            path.join(settingsFolder, `${collectionName}.json`),
+            JSON.stringify(spriteCollectionDef, null, 2)
+        );
+
+        const spriteAnimationCollectionDef = {
+            id: collectionName + 'Animations',
+            name: collectionName.charAt(0).toUpperCase() + collectionName.slice(1) + ' Animations',
+            singular: collectionName.charAt(0).toUpperCase() + collectionName.slice(1).slice(0, -1) + 'Animation',
+            category: 'Sprites'
+        };
+        await fs.writeFile(
+            path.join(settingsFolder, `${collectionName}Animations.json`),
+            JSON.stringify(spriteAnimationCollectionDef, null, 2)
+        );
+
+        res.json({ success: true, spriteCount });
+    } catch (error) {
+        console.error('Error saving isometric sprites:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Setup Webpack Build Integration
 const WebpackEditorIntegration = require('./build/editor-integration');
 const webpackIntegration = new WebpackEditorIntegration();

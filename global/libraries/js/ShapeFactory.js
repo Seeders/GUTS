@@ -35,15 +35,21 @@ class ShapeFactory {
         const group = new THREE.Group();
         group.name = groupName;
         group.userData = { isGroup: true };
-        // Use Promise.all with map instead of forEach to properly await all shapes
-  
-        await Promise.all(groupData.shapes.map(async (shape, index) => {
-            if (shape.type === 'gltf') {
+
+        // Process shapes sequentially to ensure base model loads before animations
+        // This prevents race conditions where animation GLBs try to find the base model
+        for (let index = 0; index < groupData.shapes.length; index++) {
+            const shape = groupData.shapes[index];
+            // Check if shape is GLTF by type or by URL extension
+            const isGLTF = shape.type === 'gltf' ||
+                          (shape.url && (shape.url.endsWith('.glb') || shape.url.endsWith('.gltf')));
+
+            if (isGLTF) {
                 await this.handleGLTFShape(shape, index, group);
             } else {
                 await this.handlePrimitiveShape(shape, index, group);
             }
-        }));
+        }
         
         if(groupData.position){            
             group.position.x = groupData.position.x || 0;
@@ -69,25 +75,64 @@ class ShapeFactory {
         const applyTransformations = async (model, gltf) => {
             // Extract animations
             const animations = gltf.animations;
-            
+
+            // Check if this is an animation-only GLB (from animations folder, no mesh)
+            const isAnimationOnly = shape.url && shape.url.includes('animations/');
+            let hasMesh = false;
+
+            model.traverse(child => {
+                if (child.isMesh) {
+                    hasMesh = true;
+                }
+            });
+
+            // If animation-only, find existing base model and apply animation to it
+            if (isAnimationOnly && !hasMesh && animations && animations.length > 0) {
+                // Find any existing model with a skeleton (the character mesh)
+                let baseModel = null;
+                group.children.forEach(child => {
+                    if (child.userData && child.userData.isGLTFRoot && child.userData.skeleton && !baseModel) {
+                        baseModel = child;
+                    }
+                });
+
+                if (baseModel && baseModel.userData.skeleton) {
+                    // Apply animation to existing model
+                    if (!baseModel.userData.mixer) {
+                        baseModel.userData.mixer = new THREE.AnimationMixer(baseModel);
+                    }
+                    const mixer = baseModel.userData.mixer;
+
+                    // Stop any existing actions
+                    mixer.stopAllAction();
+
+                    // Play the new animation
+                    const action = mixer.clipAction(animations[0]);
+                    action.play();
+                }
+                // Don't add the animation-only model to the scene
+                // Silently skip if no base model found - it may be loading in parallel
+                return;
+            }
+
             // Apply individual shape transformations first
             model.position.set(
-                (shape.position ? shape.position.x : shape.x) || 0, 
-                (shape.position ? shape.position.y : shape.y) || 0, 
+                (shape.position ? shape.position.x : shape.x) || 0,
+                (shape.position ? shape.position.y : shape.y) || 0,
                 (shape.position ? shape.position.z : shape.z) || 0
             );
-            
+
             // Apply shape-specific scale first, then multiply by global GLTF scale
             const shapeScaleX = (shape.scale ? shape.scale.x : shape.scaleX) || 1;
             const shapeScaleY = (shape.scale ? shape.scale.y : shape.scaleY) || 1;
             const shapeScaleZ = (shape.scale ? shape.scale.z : shape.scaleZ) || 1;
-            
+
             model.scale.set(
                 shapeScaleX * this.gltfModelScale,
                 shapeScaleY * this.gltfModelScale,
                 shapeScaleZ * this.gltfModelScale
             );
-            
+
             model.rotation.set(
                 ((shape.rotation ? shape.rotation.x : shape.rotationX) || 0) * Math.PI / 180,
                 ((shape.rotation ? shape.rotation.y : shape.rotationY) || 0) * Math.PI / 180,
