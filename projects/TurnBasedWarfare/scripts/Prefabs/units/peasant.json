@@ -9,7 +9,7 @@
   "attackSpeed": 1,
   "element": "physical",
   "armor": 8,
-  "spriteScale": 32,
+  "spriteScale": 64,
   "renderTexture": "male",
   "buyable": true,
   "specUnits": [],
@@ -25,5 +25,6 @@
   "actionSet": "peasant_actions",
   "visionRange": 400,
   "supplyCost": 1,
-  "spriteAnimationSet": "male"
+  "spriteAnimationSet": "male",
+  "range": 1
 }

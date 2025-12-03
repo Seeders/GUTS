@@ -16,6 +16,6 @@
   "hp": 2500,
   "visionRange": 200,
   "supplyProvided": 10,
-  "spriteScale": 91,
+  "spriteScale": 136,
   "renderTexture": "townhall"
 }

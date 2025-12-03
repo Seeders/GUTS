@@ -12,7 +12,7 @@
   "footprintHeight": 2,
   "height": 100,
   "size": 64,
-  "spriteScale": 64,
+  "spriteScale": 96,
   "icon": "building_fletchersHall",
   "hp": 1500
 }

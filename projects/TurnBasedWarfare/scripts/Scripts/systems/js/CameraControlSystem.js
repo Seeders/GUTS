@@ -26,7 +26,7 @@ class CameraControlSystem extends GUTS.BaseSystem {
   }
 
   init() {
-    this.game.gameManager.register('cameraLookAt', this.lookAt.bind(this));
+    this.game.gameManager.register('cameraLookAt', this.lookAtRequest.bind(this));
     this.game.gameManager.register('toggleCameraFollow', this.toggleFollow.bind(this));
     this.game.gameManager.register('getCameraFollowTarget', () => this.followingEntityId);
 
@@ -41,6 +41,12 @@ class CameraControlSystem extends GUTS.BaseSystem {
     window.addEventListener('mouseleave', this.onLeave);
     window.addEventListener('blur',      this.onBlur);
     window.addEventListener('wheel', this.onWheel);
+  }
+
+  lookAtRequest(worldX, worldZ){
+      this.followingEntityId = null;
+      this.game.triggerEvent('onUnFollowEntity');
+      this.lookAt(worldX, worldZ);
   }
 
   onSceneLoad(sceneData) {

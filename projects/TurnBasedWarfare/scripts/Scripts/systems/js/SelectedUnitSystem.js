@@ -61,6 +61,11 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         });
     }
     
+    onUnFollowEntity(){
+        const unitPortrait = document.getElementById('unitPortrait');
+        unitPortrait.classList.remove('following');
+    }
+
     createBoxSelectionElement() {
         // Create the visual selection box element
         const boxElement = document.createElement('div');
