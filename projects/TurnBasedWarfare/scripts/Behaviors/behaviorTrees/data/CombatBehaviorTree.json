@@ -2,8 +2,8 @@
   "title": "Combat Behavior Tree",
   "description": "Orchestrates combat: attack if target in range, chase if out of range, or find new target",
   "behaviorNodeType": "selector",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/NewCombatBehaviorTree.js",
-  "fileName": "NewCombatBehaviorTree",
+  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/CombatBehaviorTree.js",
+  "fileName": "CombatBehaviorTree",
   "behaviorActions": [
     "AttackSequence",
     "ChaseSequence",

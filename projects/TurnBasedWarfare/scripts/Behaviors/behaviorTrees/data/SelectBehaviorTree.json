@@ -44,7 +44,7 @@
   "behaviorActions": [
     "AbilitiesBehaviorTree",
     "PlayerOrderBehaviorTree",
-    "NewCombatBehaviorTree",
+    "CombatBehaviorTree",
     "IdleBehaviorAction"
   ]
 }

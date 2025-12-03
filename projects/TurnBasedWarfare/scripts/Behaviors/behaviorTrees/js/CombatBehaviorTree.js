@@ -1,4 +1,4 @@
-class NewCombatBehaviorTree extends GUTS.BaseBehaviorTree {
+class CombatBehaviorTree extends GUTS.BaseBehaviorTree {
     evaluate(entityId, game) {
         // Check if player order prevents combat
         const playerOrder = game.getComponent(entityId, 'playerOrder');

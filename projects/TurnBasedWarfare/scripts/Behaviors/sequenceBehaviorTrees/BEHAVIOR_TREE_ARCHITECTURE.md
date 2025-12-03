@@ -17,7 +17,7 @@ SelectBehaviorTree (Root)
 │   ├── HoldPositionBehaviorAction (Hold position command)
 │   └── MoveBehaviorAction (Move to target position)
 │
-├── NewCombatBehaviorTree (Priority 3: Autobattle AI)
+├── CombatBehaviorTree (Priority 3: Autobattle AI)
 │   ├── AttackSequence (if target exists and in range)
 │   │   ├── HasTargetBehaviorAction
 │   │   ├── IsInAttackRangeBehaviorAction
@@ -123,7 +123,7 @@ Note: Enemy checking is handled by PlayerOrderBehaviorTree, not this action.
 - **Success**: Holding position (anchored)
 - **Failure**: No hold order present
 
-### NewCombatBehaviorTree
+### CombatBehaviorTree
 Modular combat tree using composition of focused actions:
 
 **Sequences:**
