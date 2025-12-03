@@ -21,13 +21,17 @@ class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
             return null;
         }
 
-        // For normal move orders (not force moves), check for nearby enemies first
-        if (playerOrder.meta?.isMoveOrder && !playerOrder.meta?.preventEnemiesInRangeCheck) {
+        // Check for nearby enemies unless this is a force move or build order
+        // If enemies are nearby, yield to combat behavior
+        const isForceMove = playerOrder.meta?.preventCombat || playerOrder.meta?.preventEnemiesInRangeCheck;
+        const isBuildOrder = playerOrder.meta?.isBuildOrder;
+
+        if (!isForceMove && !isBuildOrder) {
             const isEnemyNearby = game.gameManager.call('getNodeByType', 'IsEnemyNearbyBehaviorAction');
             if (isEnemyNearby) {
                 const enemyCheckResult = isEnemyNearby.execute(entityId, game);
-                if (enemyCheckResult) {
-                    // Enemy nearby for normal move - fail to allow combat to take over
+                if (enemyCheckResult && enemyCheckResult.status === 'success') {
+                    // Enemy nearby - return null to let combat behavior take over
                     return null;
                 }
             }
