@@ -110,8 +110,15 @@ class ShapeFactory {
                     const action = mixer.clipAction(animations[0]);
                     action.play();
                 }
+
+                // Store animation clips on the group for ModelManager to retrieve
+                // This is needed when loading animations separately from the base model
+                if (!group.userData.animations) {
+                    group.userData.animations = [];
+                }
+                group.userData.animations.push(...animations);
+
                 // Don't add the animation-only model to the scene
-                // Silently skip if no base model found - it may be loading in parallel
                 return;
             }
 

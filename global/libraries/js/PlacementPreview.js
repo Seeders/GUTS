@@ -201,12 +201,12 @@ class PlacementPreview {
 
         if (this.game && this.game.gameManager) {
             if (!isBuilding) {
-                // Use GridSystem coordinate transformation for placement grid (units)
+                // Use placement grid coordinates (2x terrain tiles, for unit placement)
                 worldPositions = gridPositions.map(gridPos =>
-                    this.game.gameManager.call('convertGridToWorldPosition', gridPos.x, gridPos.z)
+                    this.game.gameManager.call('placementGridToWorld', gridPos.x, gridPos.z)
                 );
             } else {
-                // Use GridSystem coordinate transformation for terrain grid (buildings)
+                // Use tile map coordinates (terrain tiles, for building placement)
                 worldPositions = gridPositions.map(gridPos =>
                     this.game.gameManager.call('tileToWorld', gridPos.x, gridPos.z)
                 );

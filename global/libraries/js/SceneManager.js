@@ -20,11 +20,8 @@ class SceneManager {
         const sceneData = collections.scenes?.[sceneName];
 
         if (!sceneData) {
-            console.error(`[SceneManager] Scene '${sceneName}' not found in collections`);
             return;
         }
-
-        console.log(`[SceneManager] Loading scene: ${sceneName}`);
 
         // Unload current scene if one is loaded
         if (this.currentScene) {
@@ -46,7 +43,6 @@ class SceneManager {
         // Notify all systems for post-load processing (after all systems have done initial setup)
         this.notifyPostSceneLoad(sceneData);
 
-        console.log(`[SceneManager] Scene '${sceneName}' loaded successfully`);
     }
 
     /**
@@ -64,8 +60,6 @@ class SceneManager {
      */
     async unloadCurrentScene() {
         if (!this.currentScene) return;
-
-        console.log(`[SceneManager] Unloading scene: ${this.currentSceneName}`);
 
         // Notify all systems that scene is unloading
         this.notifySceneUnloading();
@@ -100,10 +94,7 @@ class SceneManager {
 
             // Enable or disable system based on scene requirements
             system.enabled = isRequired;
-
-            if (isRequired) {
-                console.log(`[SceneManager] Enabled system: ${systemName}`);
-            }
+    
         }
     }
 
@@ -117,7 +108,6 @@ class SceneManager {
         const collections = this.game.getCollections();
         const prefabs = collections.prefabs || {};
 
-        console.log('[SceneManager] Available prefabs:', Object.keys(prefabs));
 
         for (const entityDef of entities) {
             const entityId = entityDef.id || this.game.getEntityId();
@@ -125,11 +115,9 @@ class SceneManager {
             // Get prefab data if specified
             let components = {};
             if (entityDef.prefab) {
-                console.log(`[SceneManager] Looking for prefab '${entityDef.prefab}'`);
                 if (prefabs[entityDef.prefab]) {
                     const prefabData = prefabs[entityDef.prefab];
                     components = this.deepClone(prefabData.components || {});
-                    console.log(`[SceneManager] Found prefab '${entityDef.prefab}' with components:`, Object.keys(components));
                 } else {
                     console.warn(`[SceneManager] Prefab '${entityDef.prefab}' NOT FOUND in collections.prefabs`);
                 }
@@ -149,7 +137,6 @@ class SceneManager {
                 this.game.addComponent(entityId, componentType, componentData);
             }
 
-            console.log(`[SceneManager] Spawned entity: ${entityId} with components: ${Object.keys(components).join(', ')}`);
         }
     }
 
