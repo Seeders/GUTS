@@ -1,0 +1,15 @@
+{
+  "title": "Magetower",
+  "collection": "magetowerSpritesAnimations",
+  "spriteSheet": "Sprites/magetowerSprites/magetowerSheet.png",
+  "idleSpriteAnimations": [
+    "magetowerIdleDown",
+    "magetowerIdleDownLeft",
+    "magetowerIdleLeft",
+    "magetowerIdleUpLeft",
+    "magetowerIdleUp",
+    "magetowerIdleUpRight",
+    "magetowerIdleRight",
+    "magetowerIdleDownRight"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "title": "Townhall",
+  "collection": "townhallSpritesAnimations",
+  "spriteSheet": "Sprites/townhallSprites/townhallSheet.png",
+  "idleSpriteAnimations": [
+    "townhallIdleDown",
+    "townhallIdleDownLeft",
+    "townhallIdleLeft",
+    "townhallIdleUpLeft",
+    "townhallIdleUp",
+    "townhallIdleUpRight",
+    "townhallIdleRight",
+    "townhallIdleDownRight"
+  ]
+}

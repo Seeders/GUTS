@@ -16,6 +16,47 @@
   "hp": 2500,
   "visionRange": 200,
   "supplyProvided": 10,
-  "spriteScale": 136,
-  "renderTexture": "townhall"
+  "spriteScale": 128,
+  "renderTexture": "townhall",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "blueDColor"
+            },
+            "metalness": 0,
+            "roughness": 1,
+            "x": 0,
+            "z": 0,
+            "scaleX": 1,
+            "name": "foundation",
+            "url": "models/townHall.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 2,
+          "y": 2,
+          "z": 2
+        }
+      }
+    }
+  },
+  "spriteAnimationSet": "townhall"
 }

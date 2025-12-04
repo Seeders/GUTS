@@ -1,0 +1,15 @@
+{
+  "title": "Barracks",
+  "collection": "barracksSpritesAnimations",
+  "spriteSheet": "Sprites/barracksSprites/barracksSheet.png",
+  "idleSpriteAnimations": [
+    "barracksIdleDown",
+    "barracksIdleDownLeft",
+    "barracksIdleLeft",
+    "barracksIdleUpLeft",
+    "barracksIdleUp",
+    "barracksIdleUpRight",
+    "barracksIdleRight",
+    "barracksIdleDownRight"
+  ]
+}

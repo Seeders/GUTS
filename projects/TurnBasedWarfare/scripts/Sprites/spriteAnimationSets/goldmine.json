@@ -1,0 +1,15 @@
+{
+  "title": "Goldmine",
+  "collection": "goldmineSpritesAnimations",
+  "spriteSheet": "Sprites/goldmineSprites/goldmineSheet.png",
+  "idleSpriteAnimations": [
+    "goldmineIdleDown",
+    "goldmineIdleDownLeft",
+    "goldmineIdleLeft",
+    "goldmineIdleUpLeft",
+    "goldmineIdleUp",
+    "goldmineIdleUpRight",
+    "goldmineIdleRight",
+    "goldmineIdleDownRight"
+  ]
+}

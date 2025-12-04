@@ -620,7 +620,6 @@ class EntityRenderer {
             batchKey,
             instanceIndex,
             batch,
-            heightOffset: (entityDef.spriteScale || 64) / 4
         });
 
         // Store only GPU rendering data (no animation data - that's in AnimationSystem)
@@ -703,7 +702,6 @@ class EntityRenderer {
             batchKey,
             instanceIndex,
             batch,
-            heightOffset: (entityDef.spriteScale || 64) / 4
         });
 
         // Update transform
@@ -1084,14 +1082,14 @@ class EntityRenderer {
         }
 
         const width = spriteScale * aspectRatio;
-        const heightOffset = entity.heightOffset || spriteScale / 4;
-
+        const heightOffset = (spriteScale / 2);
         // Create transform matrix
         const matrix = new THREE.Matrix4();
+        // Offset by half the sprite height so bottom sits at ground level
         const position = new THREE.Vector3(
-            data.position.x,
+            data.position.x - heightOffset / 4,
             data.position.y + heightOffset,
-            data.position.z
+            data.position.z + heightOffset / 4
         );
 
         // Billboards don't rotate - they face the camera via shader

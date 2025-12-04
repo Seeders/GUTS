@@ -12,7 +12,7 @@
       ]
     },
     "model": {
-      "shapes": {
+      "main": {
         "shapes": [
           {
             "type": "sphere",

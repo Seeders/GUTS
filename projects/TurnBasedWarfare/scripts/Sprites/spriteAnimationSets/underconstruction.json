@@ -1,0 +1,15 @@
+{
+  "title": "Underconstruction",
+  "collection": "underconstructionSpritesAnimations",
+  "spriteSheet": "Sprites/underconstructionSprites/underconstructionSheet.png",
+  "idleSpriteAnimations": [
+    "underconstructionIdleDown",
+    "underconstructionIdleDownLeft",
+    "underconstructionIdleLeft",
+    "underconstructionIdleUpLeft",
+    "underconstructionIdleUp",
+    "underconstructionIdleUpRight",
+    "underconstructionIdleRight",
+    "underconstructionIdleDownRight"
+  ]
+}

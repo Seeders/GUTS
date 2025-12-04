@@ -49,6 +49,15 @@ class HealthBarSystem extends GUTS.BaseSystem {
             const team   = this.game.getComponent(entityId, "team");
             if (!pos || !health) return;
 
+            // === Selection filter: only show health bars for selected units ===
+            const isSelected = this.game.selectedUnitSystem?.selectedUnitIds?.has(entityId);
+
+            if (!isSelected) {
+                const hb = this.healthBars.get(entityId);
+                if (hb) hb.group.visible = false;
+                return;
+            }
+
             // === Fog-of-war visibility filter (enemies only) ===
             const isEnemy = this.isEnemy(team);
             const isVisible = !isEnemy || this.isVisibleAt(pos);

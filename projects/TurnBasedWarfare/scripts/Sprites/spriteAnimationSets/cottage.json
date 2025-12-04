@@ -1,0 +1,15 @@
+{
+  "title": "Cottage",
+  "collection": "cottageSpritesAnimations",
+  "spriteSheet": "Sprites/cottageSprites/cottageSheet.png",
+  "idleSpriteAnimations": [
+    "cottageIdleDown",
+    "cottageIdleDownLeft",
+    "cottageIdleLeft",
+    "cottageIdleUpLeft",
+    "cottageIdleUp",
+    "cottageIdleUpRight",
+    "cottageIdleRight",
+    "cottageIdleDownRight"
+  ]
+}

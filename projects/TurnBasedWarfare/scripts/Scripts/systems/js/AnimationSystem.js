@@ -852,12 +852,28 @@ class AnimationSystem extends GUTS.BaseSystem {
             }
         }
 
+        // Determine initial direction based on entity type and team
+        const unitType = this.game.getComponent(entityId, 'unitType');
+        const team = this.game.getComponent(entityId, 'team');
+        const isBuilding = unitType?.collection === 'buildings';
+
+        let initialDirection;
+        if (isBuilding) {
+            // Buildings face downleft for better isometric view
+            initialDirection = 'downleft';
+        } else {
+            // Units face based on their team
+            // Team 'left' faces upright (toward opponent on right)
+            // Team 'right' faces downleft (toward opponent on left)
+            initialDirection = team?.id === 'left' ? 'upright' : 'downleft';
+        }
+
         // Create animation state
         const animState = {
             spriteAnimationSet,
             animations,
             currentAnimationType: null,
-            currentDirection: 'down',
+            currentDirection: initialDirection,
             frameIndex: 0,
             frameTime: 0,
             loopAnimation: true

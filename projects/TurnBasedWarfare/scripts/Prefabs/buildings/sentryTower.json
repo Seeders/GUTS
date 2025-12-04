@@ -10,7 +10,7 @@
       ],
       "underConstruction": [
         {
-          "shapes": {
+          "main": {
             "shapes": [
               {
                 "color": {
@@ -25,7 +25,7 @@
       ]
     },
     "model": {
-      "shapes": {
+      "main": {
         "shapes": [
           {
             "type": "gltf",

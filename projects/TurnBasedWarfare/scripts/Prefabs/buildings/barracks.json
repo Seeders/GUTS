@@ -10,7 +10,7 @@
       ],
       "underConstruction": [
         {
-          "shapes": {
+          "main": {
             "shapes": [
               {
                 "type": "gltf",
@@ -32,7 +32,7 @@
       ]
     },
     "model": {
-      "shapes": {
+      "main": {
         "shapes": [
           {
             "type": "gltf",
@@ -75,5 +75,7 @@
   "size": 75,
   "icon": "building_barracks",
   "hp": 1500,
-  "supplies": 7
+  "supplies": 7,
+  "spriteAnimationSet": "barracks",
+  "spriteScale": 128
 }

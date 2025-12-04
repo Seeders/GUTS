@@ -10,7 +10,7 @@
       ]
     },
     "model": {
-      "shapes": {
+      "main": {
         "shapes": [
           {
             "type": "gltf",
@@ -48,5 +48,7 @@
   "footprintHeight": 2,
   "height": 100,
   "size": 75,
-  "hp": 1000
+  "hp": 1000,
+  "spriteAnimationSet": "underconstruction",
+  "spriteScale": 128
 }

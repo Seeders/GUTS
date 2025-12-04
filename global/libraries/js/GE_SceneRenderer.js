@@ -417,15 +417,19 @@ class GE_SceneRenderer {
         }
 
         // Position cameras for all 8 directions
+        // Camera height multiplier for steeper angle (matches in-game perspective)
+        const cameraHeightMultiplier = parseFloat(document.getElementById('iso-camera-height').value) || 1.5;
+        const cameraHeight = cameraDistance * cameraHeightMultiplier;
+
         // Down, DownLeft, Left, UpLeft, Up, UpRight, Right, DownRight
-        cameras[0].position.set(0, cameraDistance, cameraDistance);                       // Down (S)
-        cameras[1].position.set(cameraDistance, cameraDistance, cameraDistance);          // DownLeft (SW)
-        cameras[2].position.set(cameraDistance, cameraDistance, 0);                       // Left (W)
-        cameras[3].position.set(cameraDistance, cameraDistance, -cameraDistance);         // UpLeft (NW)
-        cameras[4].position.set(0, cameraDistance, -cameraDistance);                      // Up (N)
-        cameras[5].position.set(-cameraDistance, cameraDistance, -cameraDistance);        // UpRight (NE)
-        cameras[6].position.set(-cameraDistance, cameraDistance, 0);                      // Right (E)
-        cameras[7].position.set(-cameraDistance, cameraDistance, cameraDistance);         // DownRight (SE)
+        cameras[0].position.set(0, cameraHeight, cameraDistance);                       // Down (S)
+        cameras[1].position.set(cameraDistance, cameraHeight, cameraDistance);          // DownLeft (SW)
+        cameras[2].position.set(cameraDistance, cameraHeight, 0);                       // Left (W)
+        cameras[3].position.set(cameraDistance, cameraHeight, -cameraDistance);         // UpLeft (NW)
+        cameras[4].position.set(0, cameraHeight, -cameraDistance);                      // Up (N)
+        cameras[5].position.set(-cameraDistance, cameraHeight, -cameraDistance);        // UpRight (NE)
+        cameras[6].position.set(-cameraDistance, cameraHeight, 0);                      // Right (E)
+        cameras[7].position.set(-cameraDistance, cameraHeight, cameraDistance);         // DownRight (SE)
 
         // Point cameras at center of model (half the model height)
         const lookAtY = modelHeight / 2;
@@ -435,22 +439,38 @@ class GE_SceneRenderer {
         const scene = this.scene;
 
         // Find the character model already in the scene
+        // For animated models, look for skeleton; for static buildings, just look for GLTF root
         let characterModel = null;
         let characterMixer = null;
+
+        console.log('[SpriteGen] Searching for models in scene...');
         scene.traverse(child => {
-            if (child.userData?.isGLTFRoot && child.userData?.skeleton) {
-                characterModel = child;
-                if (!child.userData.mixer) {
-                    child.userData.mixer = new THREE.AnimationMixer(child);
+            console.log('[SpriteGen] Child:', child.name, 'isGLTFRoot:', child.userData?.isGLTFRoot, 'hasSkeleton:', !!child.userData?.skeleton);
+            if (child.userData?.isGLTFRoot) {
+                // Prefer models with skeleton (animated characters) over static models
+                if (!characterModel || child.userData?.skeleton) {
+                    characterModel = child;
+                    console.log('[SpriteGen] Selected model:', child.name);
+                    // Only create mixer if there's a skeleton
+                    if (child.userData?.skeleton) {
+                        if (!child.userData.mixer) {
+                            child.userData.mixer = new THREE.AnimationMixer(child);
+                        }
+                        characterMixer = child.userData.mixer;
+                    }
                 }
-                characterMixer = child.userData.mixer;
             }
         });
 
         if (!characterModel) {
-            console.error('No character model found in scene');
+            console.error('[SpriteGen] No character model found in scene');
             return;
         }
+
+        console.log('[SpriteGen] Final model selected:', characterModel.name, 'hasMixer:', !!characterMixer);
+
+        // Flag to check if this is a static building (no animations)
+        const isStaticBuilding = !characterMixer;
 
         // Hide editor helpers (grid, axes, etc.) and gizmos during sprite generation
         const hiddenHelpers = [];
@@ -479,7 +499,74 @@ class GE_SceneRenderer {
 
         const sprites = {};
 
-        for (const animType in this.graphicsEditor.state.renderData.animations) {
+        // For static buildings with no animations, generate a single sprite
+        const animations = this.graphicsEditor.state.renderData.animations || {};
+
+        // Check if this is effectively a static model (no skeleton OR no meaningful animation data)
+        const hasAnimationData = Object.values(animations).some(frames =>
+            frames && frames.length > 0 && frames.some(frame => {
+                // Check for animation GLB in main.shapes structure
+                const shapes = frame?.main?.shapes || [];
+                return shapes.some(s => s?.url && s.url.includes('animations/'));
+            })
+        );
+
+        console.log('[SpriteGen] isStaticBuilding:', isStaticBuilding, 'hasAnimationData:', hasAnimationData, 'animations:', Object.keys(animations));
+
+        if (isStaticBuilding && (!hasAnimationData || Object.keys(animations).length === 0)) {
+            console.log('[SpriteGen] Generating static building sprites...');
+            // Generate a single static sprite from all camera angles
+            // Structure: sprites['idle'][0] = [8 directional sprites]
+            sprites['idle'] = [[]];
+
+            for (const camera of cameras) {
+                const composer = this.setupPixelatedComposer(tempRenderer, scene, camera, pixelSize, size);
+
+                const buffer = new Uint8Array(size * size * 4);
+                if (composer) {
+                    tempRenderer.setSize(size, size);
+                    composer.setSize(size, size);
+                    tempRenderer.setRenderTarget(null);
+                    composer.render();
+
+                    const gl = tempRenderer.getContext();
+                    gl.readPixels(0, 0, size, size, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
+                } else {
+                    tempRenderer.setRenderTarget(renderTarget);
+                    tempRenderer.render(scene, camera);
+                    tempRenderer.setRenderTarget(null);
+                    tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
+                }
+
+                const flippedBuffer = new Uint8Array(size * size * 4);
+                for (let y = 0; y < size; y++) {
+                    const srcRowStart = y * size * 4;
+                    const destRowStart = (size - 1 - y) * size * 4;
+                    flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);
+                ctx.putImageData(imageData, 0, 0);
+
+                // Apply palette if selected
+                if (finalPaletteColors && finalPaletteColors.length > 0) {
+                    this.applyPaletteToCanvas(canvas, finalPaletteColors);
+                }
+
+                // Apply outline if selected
+                if (outlineColor && outlineColor !== '') {
+                    this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, pixelSize);
+                }
+
+                sprites['idle'][0].push(canvas.toDataURL('image/png'));
+            }
+        } else {
+            // Only process animation loop if we didn't generate static building sprites
+            for (const animType in animations) {
             sprites[animType] = [];
             const animationFrames = this.graphicsEditor.state.renderData.animations[animType];
             console.log(`Processing animation: ${animType}, sprite size: ${size}`);
@@ -593,6 +680,7 @@ class GE_SceneRenderer {
                 }
             }
         }
+        } // End else block for animation processing
         tempRenderer.setRenderTarget(null);
         tempRenderer.dispose();
         renderTarget.dispose();
