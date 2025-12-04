@@ -1,0 +1,12 @@
+{
+  "title": "barbarian Walk Up",
+  "collection": "barbarianSprites",
+  "sprites": [
+    "barbarianWalkUp_0",
+    "barbarianWalkUp_1",
+    "barbarianWalkUp_2",
+    "barbarianWalkUp_3",
+    "barbarianWalkUp_4",
+    "barbarianWalkUp_5"
+  ]
+}

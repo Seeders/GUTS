@@ -1,0 +1,12 @@
+{
+  "title": "peasant Death Up",
+  "collection": "peasantSprites",
+  "sprites": [
+    "peasantDeathUp_0",
+    "peasantDeathUp_1",
+    "peasantDeathUp_2",
+    "peasantDeathUp_3",
+    "peasantDeathUp_4",
+    "peasantDeathUp_5"
+  ]
+}

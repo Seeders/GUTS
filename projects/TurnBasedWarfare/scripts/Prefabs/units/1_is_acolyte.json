@@ -9,6 +9,23 @@
   "attackSpeed": 0.9,
   "element": "divine",
   "armor": 6,
+  "buyable": true,
+  "specUnits": [
+    "2_is_paladin",
+    "2_is_crusader",
+    "2_is_oathBreaker"
+  ],
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "abilities": [
+    "HealAbility"
+  ],
+  "icon": "unit_acolyte",
+  "visionRange": 500,
+  "supplyCost": 2,
+  "spriteAnimationSet": "acolyte",
   "render": {
     "animations": {
       "idle": [
@@ -40,6 +57,7 @@
           "main": {
             "shapes": [
               {
+                "type": "gltf",
                 "url": "animations/sword_slash.glb",
                 "id": 0
               }
@@ -114,7 +132,12 @@
             "rotationZ": 0,
             "color": "#FFFFFF",
             "metalness": "0",
-            "roughness": "1"
+            "roughness": "1",
+            "scale": {
+              "z": 1,
+              "y": 1,
+              "x": 1
+            }
           }
         ]
       }
@@ -126,33 +149,17 @@
         "attachmentData": {
           "bone": "LeftHand",
           "offset": {
-            "x": 5,
+            "x": 0,
             "y": 0,
-            "z": -2
+            "z": 0
           },
           "rotation": {
-            "x": 15,
+            "x": 20,
             "y": 0,
             "z": 0
           }
         }
       }
     ]
-  },
-  "buyable": true,
-  "specUnits": [
-    "2_is_paladin",
-    "2_is_crusader",
-    "2_is_oathBreaker"
-  ],
-  "squadWidth": 1,
-  "squadHeight": 1,
-  "placementGridWidth": 1,
-  "placementGridHeight": 1,
-  "abilities": [
-    "HealAbility"
-  ],
-  "icon": "unit_acolyte",
-  "visionRange": 500,
-  "supplyCost": 2
+  }
 }

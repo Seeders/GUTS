@@ -1,0 +1,12 @@
+{
+  "title": "soldier Idle Down Right",
+  "collection": "soldierSprites",
+  "sprites": [
+    "soldierIdleDownRight_0",
+    "soldierIdleDownRight_1",
+    "soldierIdleDownRight_2",
+    "soldierIdleDownRight_3",
+    "soldierIdleDownRight_4",
+    "soldierIdleDownRight_5"
+  ]
+}

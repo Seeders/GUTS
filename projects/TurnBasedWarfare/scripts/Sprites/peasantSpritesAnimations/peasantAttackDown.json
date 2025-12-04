@@ -1,0 +1,12 @@
+{
+  "title": "peasant Attack Down",
+  "collection": "peasantSprites",
+  "sprites": [
+    "peasantAttackDown_0",
+    "peasantAttackDown_1",
+    "peasantAttackDown_2",
+    "peasantAttackDown_3",
+    "peasantAttackDown_4",
+    "peasantAttackDown_5"
+  ]
+}

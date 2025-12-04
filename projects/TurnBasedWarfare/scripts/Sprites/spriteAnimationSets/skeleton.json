@@ -1,0 +1,55 @@
+{
+  "title": "Skeleton",
+  "collection": "skeletonSpritesAnimations",
+  "spriteSheet": "Sprites/skeletonSprites/skeletonSheet.png",
+  "idleSpriteAnimations": [
+    "skeletonIdleDown",
+    "skeletonIdleDownLeft",
+    "skeletonIdleLeft",
+    "skeletonIdleUpLeft",
+    "skeletonIdleUp",
+    "skeletonIdleUpRight",
+    "skeletonIdleRight",
+    "skeletonIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "skeletonWalkDown",
+    "skeletonWalkDownLeft",
+    "skeletonWalkLeft",
+    "skeletonWalkUpLeft",
+    "skeletonWalkUp",
+    "skeletonWalkUpRight",
+    "skeletonWalkRight",
+    "skeletonWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "skeletonAttackDown",
+    "skeletonAttackDownLeft",
+    "skeletonAttackLeft",
+    "skeletonAttackUpLeft",
+    "skeletonAttackUp",
+    "skeletonAttackUpRight",
+    "skeletonAttackRight",
+    "skeletonAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "skeletonDeathDown",
+    "skeletonDeathDownLeft",
+    "skeletonDeathLeft",
+    "skeletonDeathUpLeft",
+    "skeletonDeathUp",
+    "skeletonDeathUpRight",
+    "skeletonDeathRight",
+    "skeletonDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "skeletonCelebrateDown",
+    "skeletonCelebrateDownLeft",
+    "skeletonCelebrateLeft",
+    "skeletonCelebrateUpLeft",
+    "skeletonCelebrateUp",
+    "skeletonCelebrateUpRight",
+    "skeletonCelebrateRight",
+    "skeletonCelebrateDownRight"
+  ]
+}

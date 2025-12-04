@@ -1,0 +1,12 @@
+{
+  "title": "acolyte Walk Down Left",
+  "collection": "acolyteSprites",
+  "sprites": [
+    "acolyteWalkDownLeft_0",
+    "acolyteWalkDownLeft_1",
+    "acolyteWalkDownLeft_2",
+    "acolyteWalkDownLeft_3",
+    "acolyteWalkDownLeft_4",
+    "acolyteWalkDownLeft_5"
+  ]
+}

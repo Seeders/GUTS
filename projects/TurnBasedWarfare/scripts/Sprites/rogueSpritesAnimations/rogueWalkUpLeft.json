@@ -1,0 +1,12 @@
+{
+  "title": "rogue Walk Up Left",
+  "collection": "rogueSprites",
+  "sprites": [
+    "rogueWalkUpLeft_0",
+    "rogueWalkUpLeft_1",
+    "rogueWalkUpLeft_2",
+    "rogueWalkUpLeft_3",
+    "rogueWalkUpLeft_4",
+    "rogueWalkUpLeft_5"
+  ]
+}

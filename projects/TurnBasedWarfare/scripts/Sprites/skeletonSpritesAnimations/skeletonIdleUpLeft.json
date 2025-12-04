@@ -1,0 +1,12 @@
+{
+  "title": "skeleton Idle Up Left",
+  "collection": "skeletonSprites",
+  "sprites": [
+    "skeletonIdleUpLeft_0",
+    "skeletonIdleUpLeft_1",
+    "skeletonIdleUpLeft_2",
+    "skeletonIdleUpLeft_3",
+    "skeletonIdleUpLeft_4",
+    "skeletonIdleUpLeft_5"
+  ]
+}

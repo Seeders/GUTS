@@ -1,0 +1,12 @@
+{
+  "title": "archer Idle Right",
+  "collection": "archerSprites",
+  "sprites": [
+    "archerIdleRight_0",
+    "archerIdleRight_1",
+    "archerIdleRight_2",
+    "archerIdleRight_3",
+    "archerIdleRight_4",
+    "archerIdleRight_5"
+  ]
+}

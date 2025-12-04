@@ -1,0 +1,12 @@
+{
+  "title": "rogue Idle Down Left",
+  "collection": "rogueSprites",
+  "sprites": [
+    "rogueIdleDownLeft_0",
+    "rogueIdleDownLeft_1",
+    "rogueIdleDownLeft_2",
+    "rogueIdleDownLeft_3",
+    "rogueIdleDownLeft_4",
+    "rogueIdleDownLeft_5"
+  ]
+}

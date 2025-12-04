@@ -190,5 +190,6 @@
   "abilities": [],
   "icon": "unit_archer",
   "visionRange": 650,
-  "supplyCost": 2
+  "supplyCost": 2,
+  "spriteAnimationSet": "archer"
 }

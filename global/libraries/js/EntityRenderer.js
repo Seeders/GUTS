@@ -33,8 +33,16 @@ class EntityRenderer {
 
         // Sprite animation tracking for billboards
         this.billboardAnimations = new Map(); // entityId -> { animations, currentDirection, frameTime, frameIndex }
-        this.spriteAnimationFrameRate = 10; // frames per second
-        this.spriteFrameDuration = 1 / this.spriteAnimationFrameRate;
+
+        // Frame rates per animation type (frames per second)
+        this.spriteAnimationFrameRates = {
+            idle: 6,       // Slower for idle
+            walk: 10,      // Normal walking speed
+            attack: 12,    // Faster for combat
+            death: 8,      // Medium speed for death
+            celebrate: 10  // Normal for celebration
+        };
+        this.defaultFrameRate = 10;
 
         // Static GLTF model cache
         this.modelCache = new Map(); // collectionType -> { entityType: modelData }
@@ -76,8 +84,8 @@ class EntityRenderer {
             return false;
         }
 
-        // Check for billboard rendering (renderTexture property)
-        if (entityDef.renderTexture) {
+        // Check for billboard rendering (renderTexture or spriteAnimationSet property)
+        if (entityDef.renderTexture || entityDef.spriteAnimationSet) {
             return await this.spawnBillboardEntity(entityId, data, entityDef);
         }
 
@@ -329,136 +337,352 @@ class EntityRenderer {
     }
 
     /**
-     * Spawn entity using billboard (THREE.Sprite for perfect screen-aligned display)
+     * Create an instanced billboard batch for sprite sheet entities
+     */
+    async createBillboardBatch(batchKey, entityDef, spriteSheetPath) {
+        // Load the sprite sheet texture
+        const cacheKey = `spritesheet_${spriteSheetPath}`;
+        let spriteSheetTexture = this.loadedTextures.get(cacheKey);
+
+        if (!spriteSheetTexture) {
+            try {
+                spriteSheetTexture = await this.loadTexture(cacheKey, spriteSheetPath);
+                spriteSheetTexture.flipY = false;  // Sprite sheets use top-left origin
+                spriteSheetTexture.colorSpace = THREE.SRGBColorSpace;
+                spriteSheetTexture.minFilter = THREE.NearestFilter;
+                spriteSheetTexture.magFilter = THREE.NearestFilter;
+                spriteSheetTexture.wrapS = THREE.ClampToEdgeWrapping;
+                spriteSheetTexture.wrapT = THREE.ClampToEdgeWrapping;
+            } catch (error) {
+                console.error(`[EntityRenderer] Failed to load sprite sheet ${spriteSheetPath}:`, error);
+                return null;
+            }
+        }
+
+        // Create billboard geometry (quad)
+        const geometry = new THREE.PlaneGeometry(1, 1);
+
+        // Add instance attributes for UV coordinates
+        const capacity = this.capacitiesByType[batchKey] || this.defaultCapacity;
+        const uvOffsets = new Float32Array(capacity * 2);  // x, y offset per instance
+        const uvScales = new Float32Array(capacity * 2);   // width, height scale per instance
+
+        geometry.setAttribute('uvOffset', new THREE.InstancedBufferAttribute(uvOffsets, 2));
+        geometry.setAttribute('uvScale', new THREE.InstancedBufferAttribute(uvScales, 2));
+
+        // Custom shader material for billboarding with UV manipulation
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                map: { value: spriteSheetTexture },
+                cameraPosition: { value: new THREE.Vector3() }
+            },
+            vertexShader: `
+                attribute vec2 uvOffset;
+                attribute vec2 uvScale;
+                varying vec2 vUv;
+
+                void main() {
+                    // Pass UV with instance-specific offset and scale
+                    // Flip V coordinate since we disabled texture.flipY
+                    vUv = vec2(uv.x * uvScale.x + uvOffset.x, (1.0 - uv.y) * uvScale.y + uvOffset.y);
+
+                    // Get instance transform
+                    mat4 instanceMat = instanceMatrix;
+
+                    // Extract position from instance matrix
+                    vec3 instancePos = vec3(instanceMat[3][0], instanceMat[3][1], instanceMat[3][2]);
+
+                    // Extract scale from instance matrix
+                    vec3 instanceScale = vec3(
+                        length(vec3(instanceMat[0][0], instanceMat[0][1], instanceMat[0][2])),
+                        length(vec3(instanceMat[1][0], instanceMat[1][1], instanceMat[1][2])),
+                        length(vec3(instanceMat[2][0], instanceMat[2][1], instanceMat[2][2]))
+                    );
+
+                    // Billboard: Create camera-facing quad
+                    // Transform instance position to view space
+                    vec4 mvPosition = modelViewMatrix * vec4(instancePos, 1.0);
+
+                    // Add the billboard quad offset in view space (always faces camera)
+                    // The quad vertices are in xy plane, scaled by instance scale
+                    mvPosition.xyz += vec3(position.x * instanceScale.x, position.y * instanceScale.y, 0.0);
+
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D map;
+                varying vec2 vUv;
+
+                void main() {
+                    vec4 texColor = texture2D(map, vUv);
+                    if (texColor.a < 0.5) discard;
+                    gl_FragColor = texColor;
+                }
+            `,
+            transparent: true,
+            side: THREE.DoubleSide,
+            depthWrite: true
+        });
+
+        const instancedMesh = new THREE.InstancedMesh(geometry, material, capacity);
+        instancedMesh.frustumCulled = false;
+        instancedMesh.count = 0;
+
+        this.scene.add(instancedMesh);
+
+        // Force matrix world update so billboards render correctly from the start
+        instancedMesh.updateMatrixWorld(true);
+
+        const batch = {
+            instancedMesh,
+            spriteSheetTexture,
+            entityMap: new Map(),
+            count: 0,
+            capacity,
+            freeList: [],
+            nextFreeIndex: 0,
+            maxUsedIndex: -1,
+            attributes: {
+                uvOffset: geometry.attributes.uvOffset,
+                uvScale: geometry.attributes.uvScale
+            },
+            animationCache: null  // Will be populated on first entity spawn
+        };
+
+        this.billboardBatches.set(batchKey, batch);
+        this.stats.batches++;
+
+        return batch;
+    }
+
+    /**
+     * Load sprite animation metadata (UV coordinates and duration)
+     * Returns: { down: { frames: [...], duration: number }, downleft: {...}, etc }
+     * Each frame contains: { x, y, width, height }
+     * Note: Coordinates are stored in pixels and will be normalized later using sprite sheet dimensions
+     */
+    async loadSpriteAnimationMetadata(spriteAnimationNames, collectionName = 'spriteAnimations') {
+        const animations = {
+            down: { frames: [], duration: null },
+            downleft: { frames: [], duration: null },
+            left: { frames: [], duration: null },
+            upleft: { frames: [], duration: null },
+            up: { frames: [], duration: null },
+            downright: { frames: [], duration: null },
+            upright: { frames: [], duration: null },
+            right: { frames: [], duration: null }
+        };
+
+        for (const animName of spriteAnimationNames) {
+            // Get the sprite animation definition
+            const animDef = this.collections?.[collectionName]?.[animName];
+            if (!animDef || !animDef.sprites) {
+                console.warn(`[EntityRenderer] Sprite animation '${animName}' not found in collection '${collectionName}'`);
+                continue;
+            }
+
+            // Determine direction from animation name
+            const direction = this.parseDirectionFromAnimName(animName);
+            if (!direction) {
+                console.warn(`[EntityRenderer] Could not determine direction from animation name: ${animName}`);
+                continue;
+            }
+
+            // Load sprite metadata (coordinates only)
+            const frames = [];
+            const spriteCollection = animDef.collection || 'sprites';
+
+            for (const spriteName of animDef.sprites) {
+                const spriteDef = this.collections?.[spriteCollection]?.[spriteName];
+                if (!spriteDef) {
+                    console.warn(`[EntityRenderer] Sprite '${spriteName}' not found in collection '${spriteCollection}'`);
+                    continue;
+                }
+
+                // Store pixel coordinates - will be normalized when applied
+                if (spriteDef.x !== undefined && spriteDef.y !== undefined) {
+                    frames.push({
+                        x: spriteDef.x,
+                        y: spriteDef.y,
+                        width: spriteDef.width,
+                        height: spriteDef.height
+                    });
+                }
+            }
+
+            if (frames.length > 0) {
+                animations[direction].frames = frames;
+                // Capture duration from animation definition if available
+                if (animDef.duration !== undefined) {
+                    animations[direction].duration = animDef.duration;
+                }
+                // Debug: log first frame of each direction
+                if (frames[0] && Math.random() < 0.1) {
+                    console.log(`[EntityRenderer] ${animName} -> direction '${direction}': first frame at y=${frames[0].y}`);
+                }
+            }
+        }
+
+        return animations;
+    }
+
+    /**
+     * Spawn entity using billboard rendering
+     * Supports both animated sprite sheets (spriteAnimationSet) and static textures (renderTexture)
      */
     async spawnBillboardEntity(entityId, data, entityDef) {
-        const textureId = entityDef.renderTexture;
-
-        // Check if entity has sprite animations via spriteAnimationSet reference
-        let walkAnimationNames = null;
-        let attackAnimationNames = null;
-        let deathAnimationNames = null;
-        let animSet = null;
+        // Check for sprite animation set (animated sprites)
         if (entityDef.spriteAnimationSet) {
-            // Look up the sprite animation set from the collection
-            animSet = this.collections?.spriteAnimationSets?.[entityDef.spriteAnimationSet];
-            if (animSet?.walkSpriteAnimations) {
-                walkAnimationNames = animSet.walkSpriteAnimations;
-            }
-            if (animSet?.attackSpriteAnimations) {
-                attackAnimationNames = animSet.attackSpriteAnimations;
-            }
-            if (animSet?.deathSpriteAnimations) {
-                deathAnimationNames = animSet.deathSpriteAnimations;
-            }
+            return await this.spawnAnimatedBillboard(entityId, data, entityDef);
         }
 
-        const hasSpriteAnimations = (walkAnimationNames && walkAnimationNames.length > 0) ||
-                                    (attackAnimationNames && attackAnimationNames.length > 0) ||
-                                    (deathAnimationNames && deathAnimationNames.length > 0);
-        let walkAnimationData = null;
-        let attackAnimationData = null;
-        let deathAnimationData = null;
-
-        // Get the collection name from the animation set (defaults to 'spriteAnimations')
-        const spriteAnimationCollection = animSet?.collection || 'spriteAnimations';
-
-        if (walkAnimationNames && walkAnimationNames.length > 0) {
-            walkAnimationData = await this.loadSpriteAnimations(walkAnimationNames, spriteAnimationCollection);
-        }
-        if (attackAnimationNames && attackAnimationNames.length > 0) {
-            attackAnimationData = await this.loadSpriteAnimations(attackAnimationNames, spriteAnimationCollection);
-        }
-        if (deathAnimationNames && deathAnimationNames.length > 0) {
-            deathAnimationData = await this.loadSpriteAnimations(deathAnimationNames, spriteAnimationCollection);
+        // Check for render texture (static image)
+        if (entityDef.renderTexture) {
+            return await this.spawnStaticBillboard(entityId, data, entityDef);
         }
 
-        const textureDef = this.collections?.textures?.[textureId];
-        if (!textureDef) {
-            console.warn(`[EntityRenderer] Texture '${textureId}' not found in textures collection`);
+        console.error(`[EntityRenderer] Entity has neither spriteAnimationSet nor renderTexture`);
+        return false;
+    }
+
+    /**
+     * Spawn animated billboard with sprite sheet
+     */
+    async spawnAnimatedBillboard(entityId, data, entityDef) {
+        // Look up the sprite animation set from the collection
+        const animSet = this.collections?.spriteAnimationSets?.[entityDef.spriteAnimationSet];
+        if (!animSet) {
+            console.error(`[EntityRenderer] Sprite animation set '${entityDef.spriteAnimationSet}' not found`);
             return false;
         }
 
-        let texture = this.loadedTextures.get(textureId);
-        if (!texture && textureDef.imagePath) {
-            try {
-                texture = await this.loadTexture(textureId, textureDef.imagePath);
-            } catch (error) {
-                console.error(`[EntityRenderer] Failed to load texture ${textureId}:`, error);
+        // Dynamically load all animation types from the animation set
+        const animations = {};
+        for (const key in animSet) {
+            if (key.endsWith('SpriteAnimations') && Array.isArray(animSet[key])) {
+                // Extract animation type name (e.g., 'idleSpriteAnimations' -> 'idle')
+                const animType = key.replace('SpriteAnimations', '');
+                animations[animType] = animSet[key];
+            }
+        }
+
+        // Get sprite sheet path for batching
+        const spriteSheetPath = animSet?.spriteSheet;
+
+        if (!spriteSheetPath) {
+            console.error(`[EntityRenderer] No sprite sheet path found for ${entityDef.spriteAnimationSet}`);
+            return false;
+        }
+
+        if (Object.keys(animations).length === 0) {
+            console.error(`[EntityRenderer] No animations found for ${entityDef.spriteAnimationSet}`);
+            return false;
+        }
+        const batchKey = `billboard_${entityDef.spriteAnimationSet}`;
+
+        // Get or create instanced batch
+        let batch = this.billboardBatches.get(batchKey);
+        if (!batch) {
+            batch = await this.createBillboardBatch(batchKey, entityDef, spriteSheetPath);
+            if (!batch) {
+                console.error(`[EntityRenderer] Failed to create billboard batch for ${batchKey}`);
                 return false;
             }
         }
 
-        if (!texture) {
-            console.error(`[EntityRenderer] No texture available for ${textureId}`);
+        // Get animation data from batch cache
+        const spriteAnimationCollection = animSet.collection || 'spriteAnimations';
+        let animationData = batch.animationCache;
+        if (!animationData) {
+            // Load all animation data dynamically
+            animationData = {};
+            for (const animType in animations) {
+                const animNames = animations[animType];
+                if (animNames && animNames.length > 0) {
+                    animationData[animType] = await this.loadSpriteAnimationMetadata(animNames, spriteAnimationCollection);
+                    console.log(`[EntityRenderer] Loaded ${animType} animations:`, Object.keys(animationData[animType]), `(${Object.values(animationData[animType]).filter(arr => arr.length > 0).length} directions with frames)`);
+                }
+            }
+            batch.animationCache = animationData;
+            console.log(`[EntityRenderer] Animation cache for ${entityDef.spriteAnimationSet}:`, Object.keys(animationData));
+        }
+
+        // Get free instance slot
+        let instanceIndex = -1;
+        if (batch.freeList.length > 0) {
+            instanceIndex = batch.freeList.pop();
+        } else if (batch.nextFreeIndex < batch.capacity) {
+            instanceIndex = batch.nextFreeIndex++;
+        }
+
+        if (instanceIndex === -1) {
+         //   console.warn(`[EntityRenderer] Billboard batch ${batchKey} is full (${batch.capacity} instances)`);
             return false;
         }
 
-        // Clone texture so each sprite can flip independently
-        const clonedTexture = texture.clone();
-        clonedTexture.colorSpace = THREE.SRGBColorSpace;
-        clonedTexture.minFilter = THREE.NearestFilter;
-        clonedTexture.magFilter = THREE.NearestFilter;
-        clonedTexture.needsUpdate = true;
+        // Map entity to instance
+        batch.entityMap.set(instanceIndex, entityId);
+        if (instanceIndex >= batch.maxUsedIndex) {
+            batch.maxUsedIndex = instanceIndex;
+        }
+        batch.count = batch.maxUsedIndex + 1;
+        batch.instancedMesh.count = batch.count;
 
-        const material = new THREE.SpriteMaterial({
-            map: clonedTexture,
-            transparent: true,
-            alphaTest: 0.5,
-            sizeAttenuation: false
-        });
+        // Get initial sprite frame for UV coordinates
+        const initialAnim = animationData.idle || animationData.walk || Object.values(animationData)[0];
+        const initialFrame = initialAnim?.down?.frames?.[0] || initialAnim?.[Object.keys(initialAnim)[0]]?.frames?.[0];
 
-        // Create sprite
-        // In spawnBillboardEntity, after creating the sprite:
-        const sprite = new THREE.Sprite(material);
+        if (initialFrame && batch.spriteSheetTexture) {
+            // Normalize pixel coordinates to UV space (0-1)
+            const sheetWidth = batch.spriteSheetTexture.image.width;
+            const sheetHeight = batch.spriteSheetTexture.image.height;
 
-        // Anchor at bottom center instead of middle
-        sprite.center.set(0.5, 0);
-        // Calculate dimensions - use texture aspect ratio and spriteScale
-        const spriteScale = entityDef.spriteScale || 64;
-        const textureAspect = texture.image ? (texture.image.width / texture.image.height) : 1;
-        const width = spriteScale * textureAspect;
+            const offsetX = initialFrame.x / sheetWidth;
+            const offsetY = initialFrame.y / sheetHeight;
+            const scaleX = initialFrame.width / sheetWidth;
+            const scaleY = initialFrame.height / sheetHeight;
 
-        const heightOffset = spriteScale / 4;
-        // Scale the sprite
-        sprite.scale.set(width, spriteScale, 1);
-        // Now position directly at ground level, no offset needed
-        sprite.position.set(
-            data.position.x - heightOffset,
-            data.position.y,
-            data.position.z + heightOffset
-        );
+            // Set instance UV attributes
+            batch.attributes.uvOffset.setXY(instanceIndex, offsetX, offsetY);
+            batch.attributes.uvScale.setXY(instanceIndex, scaleX, scaleY);
+            batch.attributes.uvOffset.needsUpdate = true;
+            batch.attributes.uvScale.needsUpdate = true;
+        }
 
-        this.scene.add(sprite);
-
-        const entityData = {
-            type: 'billboard',
+        // Store entity data
+        this.entities.set(entityId, {
+            type: 'billboardInstanced',
             collection: data.collection,
             entityType: data.type,
-            sprite: sprite,
-            textureId,
-            heightOffset: heightOffset,
-            hasSpriteAnimations: hasSpriteAnimations
+            batchKey,
+            instanceIndex,
+            batch,
+            heightOffset: (entityDef.spriteScale || 64) / 4
+        });
+
+        // Set up sprite animation tracking BEFORE updating transform
+        const animState = {
+            animations: animationData,
+            currentAnimationType: 'idle',
+            currentDirection: 'down',
+            frameIndex: 0,
+            frameTime: 0,
+            isMoving: false,
+            isAttacking: false,
+            isDying: false,
+            flipped: false,
+            instanceIndex,
+            batch
         };
 
-        this.entities.set(entityId, entityData);
+        this.billboardAnimations.set(entityId, animState);
 
-        // Set up sprite animation tracking if animations are available
-        if (hasSpriteAnimations && (walkAnimationData || attackAnimationData || deathAnimationData)) {
-            this.billboardAnimations.set(entityId, {
-                walkAnimations: walkAnimationData,   // { left: [...textures], up: [...], down: [...] }
-                attackAnimations: attackAnimationData, // { left: [...textures], up: [...], down: [...] }
-                deathAnimations: deathAnimationData, // { left: [...textures], up: [...], down: [...] }
-                currentAnimationType: 'walk',        // 'walk', 'attack', or 'death'
-                currentDirection: 'down',            // Default facing direction
-                frameIndex: 0,
-                frameTime: 0,
-                isMoving: false,
-                isAttacking: false,
-                isDying: false,
-                flipped: false
-            });
-        }
+        // Apply initial frame BEFORE updating transform (like static billboards do)
+        this.applyBillboardAnimationFrame(entityId, animState);
+
+        // Update transform (this should come AFTER UV setup, matching static billboards)
+        this.updateEntityTransform(entityId, data);
 
         this.stats.entitiesRendered++;
         this.stats.billboardEntities++;
@@ -467,72 +691,198 @@ class EntityRenderer {
     }
 
     /**
-     * Load sprite animations and organize by direction
-     * Returns: { down: [...], downleft: [...], left: [...], upleft: [...], up: [...] }
+     * Spawn static billboard with single texture (renderTexture)
      */
-    async loadSpriteAnimations(spriteAnimationNames, collectionName = 'spriteAnimations') {
-        const animations = {
-            down: [],
-            downleft: [],
-            left: [],
-            upleft: [],
-            up: []
-        };
+    async spawnStaticBillboard(entityId, data, entityDef) {
+        const textureId = entityDef.renderTexture;
+        const batchKey = `billboard_static_${textureId}`;
 
-        for (const animName of spriteAnimationNames) {
-            // Get the sprite animation definition from the specified collection
-            const animDef = this.collections?.[collectionName]?.[animName];
-            if (!animDef || !animDef.sprites) {
-                console.warn(`[EntityRenderer] Sprite animation '${animName}' not found in collection '${collectionName}'`);
-                continue;
-            }
+        // Look up texture definition
+        const textureDef = this.collections?.textures?.[textureId];
+        if (!textureDef) {
+            console.error(`[EntityRenderer] Texture '${textureId}' not found in textures collection`);
+            return false;
+        }
 
-            // Determine direction from animation name (e.g., "maleWalkLeft" -> "left")
-            const direction = this.parseDirectionFromAnimName(animName);
-            if (!direction) {
-                console.warn(`[EntityRenderer] Could not determine direction from animation name: ${animName}`);
-                continue;
-            }
+        if (!textureDef.imagePath) {
+            console.error(`[EntityRenderer] Texture '${textureId}' has no imagePath`);
+            return false;
+        }
 
-            // Load all sprite textures for this animation
-            const textures = [];
-            // Determine which collection to use for sprites
-            const spriteCollection = animDef.collection || 'sprites';
-            for (const spriteName of animDef.sprites) {
-                const spriteDef = this.collections?.[spriteCollection]?.[spriteName];
-                if (!spriteDef || !spriteDef.imagePath) {
-                    console.warn(`[EntityRenderer] Sprite '${spriteName}' not found in collection '${spriteCollection}'`);
-                    continue;
-                }
-
-                // Load or get cached texture
-                let texture = this.loadedTextures.get(spriteName);
-                if (!texture) {
-                    try {
-                        texture = await this.loadTexture(spriteName, spriteDef.imagePath);
-                    } catch (error) {
-                        console.error(`[EntityRenderer] Failed to load sprite texture ${spriteName}:`, error);
-                        continue;
-                    }
-                }
-
-                if (texture) {
-                    // Clone and configure texture for sprite use
-                    const clonedTexture = texture.clone();
-                    clonedTexture.colorSpace = THREE.SRGBColorSpace;
-                    clonedTexture.minFilter = THREE.NearestFilter;
-                    clonedTexture.magFilter = THREE.NearestFilter;
-                    clonedTexture.needsUpdate = true;
-                    textures.push(clonedTexture);
-                }
-            }
-
-            if (textures.length > 0) {
-                animations[direction] = textures;
+        // Get or create instanced batch
+        let batch = this.billboardBatches.get(batchKey);
+        if (!batch) {
+            batch = await this.createStaticBillboardBatch(batchKey, textureId, textureDef.imagePath);
+            if (!batch) {
+                console.error(`[EntityRenderer] Failed to create static billboard batch for ${batchKey}`);
+                return false;
             }
         }
 
-        return animations;
+        // Get free instance slot
+        let instanceIndex = -1;
+        if (batch.freeList.length > 0) {
+            instanceIndex = batch.freeList.pop();
+        } else if (batch.nextFreeIndex < batch.capacity) {
+            instanceIndex = batch.nextFreeIndex++;
+        }
+
+        if (instanceIndex === -1) {
+        //    console.warn(`[EntityRenderer] Billboard batch ${batchKey} is full (${batch.capacity} instances)`);
+            return false;
+        }
+
+        // Map entity to instance
+        batch.entityMap.set(instanceIndex, entityId);
+        if (instanceIndex >= batch.maxUsedIndex) {
+            batch.maxUsedIndex = instanceIndex;
+        }
+        batch.count = batch.maxUsedIndex + 1;
+        batch.instancedMesh.count = batch.count;
+
+        // Static billboards always use full texture (UV offset 0,0 and scale 1,1)
+        batch.attributes.uvOffset.setXY(instanceIndex, 0, 0);
+        batch.attributes.uvScale.setXY(instanceIndex, 1, 1);
+        batch.attributes.uvOffset.needsUpdate = true;
+        batch.attributes.uvScale.needsUpdate = true;
+
+        // Store entity data
+        this.entities.set(entityId, {
+            type: 'billboardInstanced',
+            collection: data.collection,
+            entityType: data.type,
+            batchKey,
+            instanceIndex,
+            batch,
+            heightOffset: (entityDef.spriteScale || 64) / 4
+        });
+
+        // Update transform
+        this.updateEntityTransform(entityId, data);
+
+        this.stats.entitiesRendered++;
+        this.stats.billboardEntities++;
+
+        return true;
+    }
+
+    /**
+     * Create an instanced billboard batch for static textures
+     */
+    async createStaticBillboardBatch(batchKey, textureId, imagePath) {
+        // Load the texture
+        const cacheKey = `texture_${textureId}`;
+        let texture = this.loadedTextures.get(cacheKey);
+
+        if (!texture) {
+            try {
+                texture = await this.loadTexture(cacheKey, imagePath);
+                texture.flipY = false;  // Sprite sheets use top-left origin
+                texture.colorSpace = THREE.SRGBColorSpace;
+                texture.minFilter = THREE.NearestFilter;
+                texture.magFilter = THREE.NearestFilter;
+                texture.wrapS = THREE.ClampToEdgeWrapping;
+                texture.wrapT = THREE.ClampToEdgeWrapping;
+            } catch (error) {
+                console.error(`[EntityRenderer] Failed to load texture ${imagePath}:`, error);
+                return null;
+            }
+        }
+
+        // Create billboard geometry (quad)
+        const geometry = new THREE.PlaneGeometry(1, 1);
+
+        // Add instance attributes for UV coordinates (even though static, keeps interface consistent)
+        const capacity = this.capacitiesByType[batchKey] || this.defaultCapacity;
+        const uvOffsets = new Float32Array(capacity * 2);
+        const uvScales = new Float32Array(capacity * 2);
+
+        geometry.setAttribute('uvOffset', new THREE.InstancedBufferAttribute(uvOffsets, 2));
+        geometry.setAttribute('uvScale', new THREE.InstancedBufferAttribute(uvScales, 2));
+
+        // Custom shader material for billboarding
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                map: { value: texture },
+                cameraPosition: { value: new THREE.Vector3() }
+            },
+            vertexShader: `
+                attribute vec2 uvOffset;
+                attribute vec2 uvScale;
+                varying vec2 vUv;
+
+                void main() {
+                    // Pass UV with instance-specific offset and scale
+                    // Flip V coordinate since we disabled texture.flipY
+                    vUv = vec2(uv.x * uvScale.x + uvOffset.x, (1.0 - uv.y) * uvScale.y + uvOffset.y);
+
+                    // Get instance transform
+                    mat4 instanceMat = instanceMatrix;
+
+                    // Extract position from instance matrix
+                    vec3 instancePos = vec3(instanceMat[3][0], instanceMat[3][1], instanceMat[3][2]);
+
+                    // Extract scale from instance matrix
+                    vec3 instanceScale = vec3(
+                        length(vec3(instanceMat[0][0], instanceMat[0][1], instanceMat[0][2])),
+                        length(vec3(instanceMat[1][0], instanceMat[1][1], instanceMat[1][2])),
+                        length(vec3(instanceMat[2][0], instanceMat[2][1], instanceMat[2][2]))
+                    );
+
+                    // Billboard: Create camera-facing quad
+                    // Transform instance position to view space
+                    vec4 mvPosition = modelViewMatrix * vec4(instancePos, 1.0);
+
+                    // Add the billboard quad offset in view space (always faces camera)
+                    // The quad vertices are in xy plane, scaled by instance scale
+                    mvPosition.xyz += vec3(position.x * instanceScale.x, position.y * instanceScale.y, 0.0);
+
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D map;
+                varying vec2 vUv;
+
+                void main() {
+                    vec4 texColor = texture2D(map, vUv);
+                    if (texColor.a < 0.5) discard;
+                    gl_FragColor = texColor;
+                }
+            `,
+            transparent: true,
+            side: THREE.DoubleSide,
+            depthWrite: true
+        });
+
+        const instancedMesh = new THREE.InstancedMesh(geometry, material, capacity);
+        instancedMesh.frustumCulled = false;
+        instancedMesh.count = 0;
+
+        this.scene.add(instancedMesh);
+
+        // Force matrix world update so billboards render correctly from the start
+        instancedMesh.updateMatrixWorld(true);
+
+        const batch = {
+            instancedMesh,
+            spriteSheetTexture: texture,  // Keep naming consistent even for static textures
+            entityMap: new Map(),
+            count: 0,
+            capacity,
+            freeList: [],
+            nextFreeIndex: 0,
+            maxUsedIndex: -1,
+            attributes: {
+                uvOffset: geometry.attributes.uvOffset,
+                uvScale: geometry.attributes.uvScale
+            }
+        };
+
+        this.billboardBatches.set(batchKey, batch);
+        this.stats.batches++;
+
+        return batch;
     }
 
     /**
@@ -689,8 +1039,8 @@ class EntityRenderer {
 
         if (entity.type === 'vat') {
             return this.updateVATTransform(entity, data);
-        } else if (entity.type === 'billboard') {
-            return this.updateBillboardTransform(entity, data, entityId);
+        } else if (entity.type === 'billboardInstanced') {
+            return this.updateInstancedBillboardTransform(entity, data, entityId);
         } else {
             return this.updateStaticTransform(entity, data);
         }
@@ -755,6 +1105,56 @@ class EntityRenderer {
     }
 
     /**
+     * Update instanced billboard transform
+     */
+    updateInstancedBillboardTransform(entity, data, entityId) {
+        const batch = entity.batch;
+        if (!batch || !batch.instancedMesh) return false;
+
+        // Get sprite scale from the entity definition (default 64)
+        const collections = this.collections;
+        const entityDef = collections?.[entity.collection]?.[entity.entityType];
+        const spriteScale = entityDef?.spriteScale || 64;
+
+        // Calculate dimensions based on texture aspect ratio
+        let aspectRatio = 1;
+
+        // Try to get aspect ratio from animation data first
+        const animData = this.billboardAnimations.get(entityId);
+        if (animData) {
+            const initialAnim = animData.animations.idle || animData.animations.walk || Object.values(animData.animations)[0];
+            const initialFrame = initialAnim?.down?.frames?.[0] || initialAnim?.[Object.keys(initialAnim)[0]]?.frames?.[0];
+            if (initialFrame) {
+                aspectRatio = initialFrame.width / initialFrame.height;
+            }
+        } else if (batch.spriteSheetTexture?.image) {
+            // For static billboards, use texture dimensions
+            aspectRatio = batch.spriteSheetTexture.image.width / batch.spriteSheetTexture.image.height;
+        }
+
+        const width = spriteScale * aspectRatio;
+        const heightOffset = entity.heightOffset || spriteScale / 4;
+
+        // Create transform matrix
+        const matrix = new THREE.Matrix4();
+        const position = new THREE.Vector3(
+            data.position.x,
+            data.position.y + heightOffset,
+            data.position.z
+        );
+
+        // Billboards don't rotate - they face the camera via shader
+        const quaternion = new THREE.Quaternion();
+        const scale = new THREE.Vector3(width, spriteScale, 1);
+
+        matrix.compose(position, quaternion, scale);
+        batch.instancedMesh.setMatrixAt(entity.instanceIndex, matrix);
+        batch.instancedMesh.instanceMatrix.needsUpdate = true;
+
+        return true;
+    }
+
+    /**
      * Update static entity transform (if needed)
      */
     updateStaticTransform(entity, data) {
@@ -810,39 +1210,53 @@ class EntityRenderer {
     }
 
     /**
-     * Apply the current animation frame texture to a billboard sprite
+     * Apply the current animation frame to an instanced billboard
      */
-    applyBillboardAnimationFrame(entity, animData) {
-        // Select animation set based on current animation type
-        let animations;
-        if (animData.currentAnimationType === 'attack') {
-            animations = animData.attackAnimations;
-        } else if (animData.currentAnimationType === 'death') {
-            animations = animData.deathAnimations;
-        } else {
-            animations = animData.walkAnimations;
+    applyBillboardAnimationFrame(entityId, animData) {
+        // Get animations for current animation type
+        const animations = animData.animations?.[animData.currentAnimationType];
+
+        if (!animations) {
+            console.warn(`[EntityRenderer] No animations found for type '${animData.currentAnimationType}' on entity ${entityId}. Available types:`, Object.keys(animData.animations || {}));
+            return;
         }
 
-        if (!animations) return;
+        const directionData = animations[animData.currentDirection];
+        if (!directionData || !directionData.frames || directionData.frames.length === 0) {
+            console.warn(`[EntityRenderer] No frames for direction '${animData.currentDirection}' in animation type '${animData.currentAnimationType}' on entity ${entityId}. Available directions:`, Object.keys(animations));
+            return;
+        }
 
-        const frames = animations[animData.currentDirection];
-        if (!frames || frames.length === 0) return;
-
+        const frames = directionData.frames;
         const frameIndex = animData.frameIndex % frames.length;
-        const newTexture = frames[frameIndex];
+        const frame = frames[frameIndex];
 
-        if (newTexture && entity.sprite && entity.sprite.material) {
-            entity.sprite.material.map = newTexture;
-            entity.sprite.material.needsUpdate = true;
+        if (!frame) return;
 
-            // Apply flip state to the new texture
-            if (animData.flipped) {
-                newTexture.repeat.x = -1;
-                newTexture.offset.x = 1;
-            } else {
-                newTexture.repeat.x = 1;
-                newTexture.offset.x = 0;
+        // Update UV attributes for instanced billboard
+        const batch = animData.batch;
+        const instanceIndex = animData.instanceIndex;
+
+        if (batch && batch.spriteSheetTexture && frame.x !== undefined) {
+            // Normalize pixel coordinates to UV space
+            const sheetWidth = batch.spriteSheetTexture.image.width;
+            const sheetHeight = batch.spriteSheetTexture.image.height;
+
+            const offsetX = frame.x / sheetWidth;
+            const offsetY = frame.y / sheetHeight;
+            const scaleX = frame.width / sheetWidth;
+            const scaleY = frame.height / sheetHeight;
+
+            // Debug logging
+            if (animData.currentAnimationType === 'walk' && Math.random() < 0.05) {
+                console.log(`[EntityRenderer] WALK frame for entity ${entityId}: dir=${animData.currentDirection}, frame=${frameIndex}/${frames.length}, frameData:`, frame, `UV: offset=(${offsetX.toFixed(3)}, ${offsetY.toFixed(3)}), scale=(${scaleX.toFixed(3)}, ${scaleY.toFixed(3)})`);
             }
+
+            // Update instance attributes
+            batch.attributes.uvOffset.setXY(instanceIndex, offsetX, offsetY);
+            batch.attributes.uvScale.setXY(instanceIndex, scaleX, scaleY);
+            batch.attributes.uvOffset.needsUpdate = true;
+            batch.attributes.uvScale.needsUpdate = true;
         }
     }
 
@@ -964,101 +1378,71 @@ class EntityRenderer {
      */
     updateBillboardAnimations(deltaTime) {
         for (const [entityId, animData] of this.billboardAnimations) {
-            // Handle death animations (single-play, highest priority)
-            if (animData.isDying) {
-                const deathAnims = animData.deathAnimations;
-                if (!deathAnims) continue;
+            // Get animations for current type
+            const animations = animData.animations?.[animData.currentAnimationType];
+            if (!animations) continue;
 
-                const frames = deathAnims[animData.currentDirection];
-                if (!frames || frames.length === 0) continue;
+            const directionData = animations[animData.currentDirection];
+            if (!directionData || !directionData.frames || directionData.frames.length === 0) continue;
 
-                // Check if animation already finished - if so, stay on last frame and don't update
-                if (animData.frameIndex >= frames.length - 1) {
-                    continue;
-                }
+            const frames = directionData.frames;
 
-                // Update frame time
-                animData.frameTime += deltaTime;
+            // Determine animation behavior based on type
+            const isSinglePlay = animData.isDying || animData.isAttacking;
+            const shouldAnimate = isSinglePlay || animData.isMoving || animData.currentAnimationType === 'idle';
 
-                // Check if it's time to advance frame
-                if (animData.frameTime >= this.spriteFrameDuration) {
-                    animData.frameTime = 0;
-                    animData.frameIndex++;
+            if (!shouldAnimate) continue;
 
-                    // Clamp to last frame
-                    if (animData.frameIndex >= frames.length) {
-                        animData.frameIndex = frames.length - 1;
-                    }
-
-                    // Apply new frame texture
-                    const entity = this.entities.get(entityId);
-                    if (entity && entity.sprite) {
-                        this.applyBillboardAnimationFrame(entity, animData);
-                    }
-                }
+            // For single-play animations, check if already finished
+            if (isSinglePlay && animData.frameIndex >= frames.length - 1) {
                 continue;
             }
-
-            // Handle attack animations (single-play)
-            if (animData.isAttacking) {
-                const attackAnims = animData.attackAnimations;
-                if (!attackAnims) continue;
-
-                const frames = attackAnims[animData.currentDirection];
-                if (!frames || frames.length === 0) continue;
-
-                // Update frame time
-                animData.frameTime += deltaTime;
-
-                // Check if it's time to advance frame
-                if (animData.frameTime >= this.spriteFrameDuration) {
-                    animData.frameTime = 0;
-                    animData.frameIndex++;
-
-                    // Check if attack animation finished
-                    if (animData.frameIndex >= frames.length) {
-                        // Attack animation complete - return to idle/walk
-                        animData.isAttacking = false;
-                        animData.currentAnimationType = 'walk';
-                        animData.frameIndex = 0;
-
-                        // Trigger callback if set
-                        if (animData.onAttackComplete) {
-                            animData.onAttackComplete(entityId);
-                        }
-                    }
-
-                    // Apply new frame texture
-                    const entity = this.entities.get(entityId);
-                    if (entity && entity.sprite) {
-                        this.applyBillboardAnimationFrame(entity, animData);
-                    }
-                }
-                continue;
-            }
-
-            // Handle walk animations (looping)
-            if (!animData.isMoving) continue;
-
-            const walkAnims = animData.walkAnimations;
-            if (!walkAnims) continue;
-
-            const frames = walkAnims[animData.currentDirection];
-            if (!frames || frames.length === 0) continue;
 
             // Update frame time
             animData.frameTime += deltaTime;
 
-            // Check if it's time to advance frame
-            if (animData.frameTime >= this.spriteFrameDuration) {
-                animData.frameTime = 0;
-                animData.frameIndex = (animData.frameIndex + 1) % frames.length;
+            // Calculate frame duration
+            // Priority: 1) direction-specific duration, 2) fallback frame rate
+            let frameDuration;
+            if (directionData.duration !== null && directionData.duration > 0) {
+                // Use metadata duration: frameRate = frames / duration
+                frameDuration = directionData.duration / frames.length;
+            } else {
+                // Fall back to configured frame rates
+                const frameRate = this.spriteAnimationFrameRates[animData.currentAnimationType] || this.defaultFrameRate;
+                frameDuration = 1 / frameRate;
+            }
 
-                // Apply new frame texture
-                const entity = this.entities.get(entityId);
-                if (entity && entity.sprite) {
-                    this.applyBillboardAnimationFrame(entity, animData);
+            // Check if it's time to advance frame
+            if (animData.frameTime >= frameDuration) {
+                animData.frameTime = 0;
+                animData.frameIndex++;
+
+                // Handle animation completion
+                if (animData.frameIndex >= frames.length) {
+                    if (isSinglePlay) {
+                        // Single-play animations: clamp to last frame or transition
+                        if (animData.isDying) {
+                            animData.frameIndex = frames.length - 1;
+                        } else if (animData.isAttacking) {
+                            // Attack complete - return to idle or walk based on movement
+                            animData.isAttacking = false;
+                            animData.currentAnimationType = animData.isMoving ? 'walk' : 'idle';
+                            animData.frameIndex = 0;
+
+                            // Trigger callback if set
+                            if (animData.onAttackComplete) {
+                                animData.onAttackComplete(entityId);
+                            }
+                        }
+                    } else {
+                        // Looping animations (walk, idle, etc): loop back to start
+                        animData.frameIndex = 0;
+                    }
                 }
+
+                // Apply new frame
+                this.applyBillboardAnimationFrame(entityId, animData);
             }
         }
     }
@@ -1108,25 +1492,36 @@ class EntityRenderer {
 
     /**
      * Set whether billboard entity is currently moving (for animation playback)
-     * When stopping, shows the first frame of the last movement direction
+     * Switches between walk and idle animations based on movement state
      */
     setBillboardMoving(entityId, isMoving) {
         const animData = this.billboardAnimations.get(entityId);
         if (!animData) return false;
 
-        // Check if transitioning from moving to stopped
+        // Check if transitioning states
         const wasPreviouslyMoving = animData.isMoving;
         animData.isMoving = isMoving;
 
-        // When stopping, show the first frame of the last direction
-        if (wasPreviouslyMoving && !isMoving) {
-            animData.frameIndex = 0;
-            animData.frameTime = 0;
+        // Don't override attack or death animations
+        if (animData.isAttacking || animData.isDying) {
+            return true;
+        }
 
-            // Apply the first frame of the last direction
-            const entity = this.entities.get(entityId);
-            if (entity) {
-                this.applyBillboardAnimationFrame(entity, animData);
+        // Switch animation type based on movement
+        const newAnimationType = isMoving ? 'walk' : 'idle';
+
+        if (newAnimationType !== animData.currentAnimationType) {
+            // Check if the new animation type exists
+            if (animData.animations?.[newAnimationType]) {
+                console.log(`[EntityRenderer] Switching entity ${entityId} from ${animData.currentAnimationType} to ${newAnimationType}`);
+                animData.currentAnimationType = newAnimationType;
+                animData.frameIndex = 0;
+                animData.frameTime = 0;
+
+                // Apply the first frame of the new animation
+                this.applyBillboardAnimationFrame(entityId, animData);
+            } else {
+                console.warn(`[EntityRenderer] Animation type '${newAnimationType}' not available for entity ${entityId}`);
             }
         }
 
@@ -1146,7 +1541,7 @@ class EntityRenderer {
         if (!animData) return false;
 
         // Check if attack animations are available
-        if (!animData.attackAnimations) return false;
+        if (!animData.animations?.attack) return false;
 
         // Set up attack animation
         animData.isAttacking = true;
@@ -1186,7 +1581,7 @@ class EntityRenderer {
         }
 
         // Check if death animations are available
-        if (!animData.deathAnimations) {
+        if (!animData.animations?.death) {
             console.warn(`[EntityRenderer] setBillboardDying: No death animations for entity ${entityId}`);
             return false;
         }
@@ -1308,12 +1703,25 @@ class EntityRenderer {
             batch.instancedMesh.count = batch.count;
 
             this.stats.staticEntities--;
-        } else if (entity.type === 'billboard') {
-            // Remove sprite from scene
-            if (entity.sprite) {
-                this.scene.remove(entity.sprite);
-                entity.sprite.material.dispose();
+        } else if (entity.type === 'billboardInstanced') {
+            // Free billboard instance slot
+            const batch = entity.batch;
+            const removedIndex = entity.instanceIndex;
+            batch.entityMap.delete(removedIndex);
+
+            // Add to free list for O(1) reuse
+            batch.freeList.push(removedIndex);
+
+            // Only recalculate maxUsedIndex if we removed the max
+            if (removedIndex === batch.maxUsedIndex) {
+                let newMax = -1;
+                for (const index of batch.entityMap.keys()) {
+                    if (index > newMax) newMax = index;
+                }
+                batch.maxUsedIndex = newMax;
             }
+            batch.count = batch.maxUsedIndex + 1;
+            batch.instancedMesh.count = batch.count;
 
             // Clean up billboard animation data
             this.billboardAnimations.delete(entityId);

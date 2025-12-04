@@ -1,0 +1,12 @@
+{
+  "title": "peasant Death Right",
+  "collection": "peasantSprites",
+  "sprites": [
+    "peasantDeathRight_0",
+    "peasantDeathRight_1",
+    "peasantDeathRight_2",
+    "peasantDeathRight_3",
+    "peasantDeathRight_4",
+    "peasantDeathRight_5"
+  ]
+}

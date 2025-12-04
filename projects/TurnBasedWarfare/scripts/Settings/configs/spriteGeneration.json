@@ -1,0 +1,13 @@
+{
+  "title": "Sprite Generation Config",
+  "frustumSize": 48,
+  "distance": 100,
+  "spriteSize": 96,
+  "framesToGenerate": 6,
+  "brightness": 5,
+  "palette": "nature",
+  "pixelSize": 2,
+  "outlineColor": "#25131a",
+  "outlineConnectivity": 4,
+  "path": "/"
+}

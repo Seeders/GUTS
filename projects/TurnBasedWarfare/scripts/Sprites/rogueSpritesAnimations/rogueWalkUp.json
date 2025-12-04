@@ -1,0 +1,12 @@
+{
+  "title": "rogue Walk Up",
+  "collection": "rogueSprites",
+  "sprites": [
+    "rogueWalkUp_0",
+    "rogueWalkUp_1",
+    "rogueWalkUp_2",
+    "rogueWalkUp_3",
+    "rogueWalkUp_4",
+    "rogueWalkUp_5"
+  ]
+}

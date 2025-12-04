@@ -1,0 +1,12 @@
+{
+  "title": "rogue Death Down",
+  "collection": "rogueSprites",
+  "sprites": [
+    "rogueDeathDown_0",
+    "rogueDeathDown_1",
+    "rogueDeathDown_2",
+    "rogueDeathDown_3",
+    "rogueDeathDown_4",
+    "rogueDeathDown_5"
+  ]
+}

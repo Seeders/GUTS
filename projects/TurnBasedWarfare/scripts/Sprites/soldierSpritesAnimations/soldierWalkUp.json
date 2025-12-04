@@ -1,0 +1,12 @@
+{
+  "title": "soldier Walk Up",
+  "collection": "soldierSprites",
+  "sprites": [
+    "soldierWalkUp_0",
+    "soldierWalkUp_1",
+    "soldierWalkUp_2",
+    "soldierWalkUp_3",
+    "soldierWalkUp_4",
+    "soldierWalkUp_5"
+  ]
+}

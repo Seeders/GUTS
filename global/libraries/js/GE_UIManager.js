@@ -88,6 +88,9 @@ class GE_UIManager {
         const modal = document.getElementById('modal-generateIsoSprites');
         modal.classList.add('show');
 
+        // Load saved config settings
+        const config = this.graphicsEditor.gameEditor.getCollections()?.configs?.spriteGeneration || {};
+
         // Populate palette dropdown
         const paletteSelect = document.getElementById('iso-palette');
         // Clear existing options except "None"
@@ -104,12 +107,74 @@ class GE_UIManager {
             paletteSelect.appendChild(option);
         });
 
+        // Populate outline color dropdown with all palette colors
+        const outlineSelect = document.getElementById('iso-outline');
+        // Clear existing options except "None" and "Black"
+        while (outlineSelect.options.length > 2) {
+            outlineSelect.remove(2);
+        }
+
+        // Add all colors from all palettes
+        Object.entries(palettes).forEach(([paletteName, palette]) => {
+            Object.entries(palette).forEach(([colorName, colorValue]) => {
+                if (colorName !== 'title' && typeof colorValue === 'string' && colorValue.startsWith('#')) {
+                    const option = document.createElement('option');
+                    option.value = colorValue;
+                    option.textContent = `${palette.title || paletteName} - ${colorName.replace(/Color$/, '')}`;
+                    outlineSelect.appendChild(option);
+                }
+            });
+        });
+
         // Setup brightness slider value display
         const brightnessSlider = document.getElementById('iso-brightness');
         const brightnessValue = document.getElementById('iso-brightness-value');
         brightnessSlider.addEventListener('input', (e) => {
             brightnessValue.textContent = e.target.value;
         });
+
+        // Apply saved config values to form fields
+        if (config.frustumSize !== undefined) {
+            document.getElementById('iso-frustum').value = config.frustumSize;
+        }
+        if (config.distance !== undefined) {
+            document.getElementById('iso-distance').value = config.distance;
+        }
+        if (config.spriteSize !== undefined) {
+            document.getElementById('iso-size').value = config.spriteSize;
+        }
+        if (config.framesToGenerate !== undefined) {
+            document.getElementById('iso-frames').value = config.framesToGenerate;
+        }
+        if (config.brightness !== undefined) {
+            brightnessSlider.value = config.brightness;
+            brightnessValue.textContent = config.brightness;
+        }
+        if (config.palette !== undefined) {
+            paletteSelect.value = config.palette;
+        }
+        if (config.pixelSize !== undefined) {
+            document.getElementById('iso-pixel-size').value = config.pixelSize;
+        }
+        if (config.outlineColor !== undefined) {
+            outlineSelect.value = config.outlineColor;
+        }
+        if (config.outlineConnectivity !== undefined) {
+            document.getElementById('iso-outline-connectivity').value = config.outlineConnectivity;
+        }
+
+        // Setup save button (disabled initially, enabled after generation)
+        const saveButton = document.getElementById('iso-save');
+        saveButton.disabled = true;
+        saveButton.style.opacity = '0.5';
+        saveButton.style.cursor = 'not-allowed';
+
+        // Remove old event listener if exists by cloning and replacing
+        const newSaveButton = saveButton.cloneNode(true);
+        saveButton.parentNode.replaceChild(newSaveButton, saveButton);
+
+        // Add new event listener
+        newSaveButton.addEventListener('click', () => this.saveIsometricSprites());
     }
     async saveIsometricSprites() {
         if (!this.generatedSprites) {
@@ -117,20 +182,83 @@ class GE_UIManager {
             return;
         }
 
-        // Get the model name from renderData (e.g., "acolyte" from the model file)
-        const modelTitle = this.graphicsEditor.state.renderData.title || 'character';
+        // Get the model name from the currently selected object
+        const currentObject = this.graphicsEditor.gameEditor.getCurrentObject();
+        const modelTitle = currentObject?.title || 'character';
         const baseName = modelTitle.toLowerCase().replace(/[^a-z0-9]/g, '');
         const collectionName = baseName + 'Sprites';
 
-        // Prompt user for confirmation
-        const confirmed = confirm(`This will create:\n- Sprite collection: ${collectionName}\n- Sprite images in resources/Sprites/${collectionName}/\n- Sprite animation data files\n- Sprite animation set: ${baseName}\n\nContinue?`);
-        if (!confirmed) return;
-
+        const directionNames = ['Down', 'DownLeft', 'Left', 'UpLeft', 'Up', 'UpRight', 'Right', 'DownRight'];
         const projectName = this.graphicsEditor.gameEditor.getProjectName();
-        const directionNames = ['Down', 'DownLeft', 'Left', 'UpLeft', 'Up'];
+
+        // Create a single sprite sheet for all animations
+        // First, calculate total dimensions needed
+        const animTypes = Object.keys(this.generatedSprites);
+        const firstAnimFrames = this.generatedSprites[animTypes[0]];
+        const firstSprite = await this.loadImage(firstAnimFrames[0][0]);
+        const spriteWidth = firstSprite.width;
+        const spriteHeight = firstSprite.height;
+
+        const numDirections = directionNames.length;
+
+        // Calculate max frames across all animations
+        let maxFrames = 0;
+        for (const animType in this.generatedSprites) {
+            maxFrames = Math.max(maxFrames, this.generatedSprites[animType].length);
+        }
+
+        // Layout: Each animation type gets a row of (8 directions x N frames)
+        // Total height = spriteHeight * numDirections * numAnimTypes
+        // Total width = spriteWidth * maxFrames
+        const sheetWidth = spriteWidth * maxFrames;
+        const sheetHeight = spriteHeight * numDirections * animTypes.length;
+
+        // Create single canvas for all sprites
+        const canvas = document.createElement('canvas');
+        canvas.width = sheetWidth;
+        canvas.height = sheetHeight;
+        const ctx = canvas.getContext('2d');
+
+        // Pack all sprites and create metadata
+        const spriteMetadata = {};
+        let animTypeIndex = 0;
+
+        for (const animType in this.generatedSprites) {
+            const frames = this.generatedSprites[animType];
+            const numFrames = frames.length;
+
+            spriteMetadata[animType] = { animations: {} };
+
+            for (let dirIndex = 0; dirIndex < numDirections; dirIndex++) {
+                const dirName = directionNames[dirIndex];
+                const animationName = `${baseName}${animType.charAt(0).toUpperCase() + animType.slice(1)}${dirName}`;
+                spriteMetadata[animType].animations[animationName] = [];
+
+                for (let frameIndex = 0; frameIndex < numFrames; frameIndex++) {
+                    const spriteData = frames[frameIndex][dirIndex];
+                    const img = await this.loadImage(spriteData);
+
+                    // Calculate position in the single sprite sheet
+                    const x = frameIndex * spriteWidth;
+                    const y = (animTypeIndex * numDirections + dirIndex) * spriteHeight;
+                    ctx.drawImage(img, x, y);
+
+                    // Store sprite location metadata
+                    spriteMetadata[animType].animations[animationName].push({
+                        x,
+                        y,
+                        width: spriteWidth,
+                        height: spriteHeight,
+                        frameIndex
+                    });
+                }
+            }
+
+            animTypeIndex++;
+        }
 
         try {
-            // Send all sprite data to server
+            // Send single sprite sheet and metadata to server
             const response = await fetch('/api/save-isometric-sprites', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -138,7 +266,8 @@ class GE_UIManager {
                     projectName,
                     baseName,
                     collectionName,
-                    sprites: this.generatedSprites,
+                    spriteSheet: canvas.toDataURL(),
+                    spriteMetadata,
                     directionNames
                 })
             });
@@ -147,7 +276,7 @@ class GE_UIManager {
             if (result.success) {
                 alert(`Successfully saved ${result.spriteCount} sprites and created all data files!`);
                 // Reload collections to show new sprites
-                await this.graphicsEditor.gameEditor.loadCollections();
+                await this.graphicsEditor.gameEditor.fs.syncFromFilesystem();
             } else {
                 alert('Error saving sprites: ' + result.error);
             }
@@ -155,6 +284,15 @@ class GE_UIManager {
             console.error('Error saving sprites:', error);
             alert('Failed to save sprites: ' + error.message);
         }
+    }
+
+    loadImage(dataUrl) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = dataUrl;
+        });
     }
 
     displayIsometricSprites(sprites) {
@@ -181,7 +319,7 @@ class GE_UIManager {
         header.style.cssText = 'color: #e0e0e0; margin-bottom: 15px;';
         resultsContainer.appendChild(header);
 
-        const angleLabels = ['Down', 'DownLeft', 'Left', 'UpLeft', 'Up']; // 5 directions
+        const angleLabels = ['Down', 'DownLeft', 'Left', 'UpLeft', 'Up', 'UpRight', 'Right', 'DownRight']; // 8 directions
 
         for (const animType in sprites) {
             const animSection = document.createElement('div');
@@ -194,8 +332,8 @@ class GE_UIManager {
             const anglesContainer = document.createElement('div');
             anglesContainer.style.cssText = `margin: 10px 0;`;
 
-            // For each angle (0-4: Down, DownLeft, Left, UpLeft, Up)
-            for (let angle = 0; angle < 5; angle++) {
+            // For each angle (0-7: Down, DownLeft, Left, UpLeft, Up, UpRight, Right, DownRight)
+            for (let angle = 0; angle < 8; angle++) {
                 const angleSection = document.createElement('div');
                 const angleLabel = document.createElement('h4');
                 angleLabel.textContent = angleLabels[angle];
@@ -226,16 +364,13 @@ class GE_UIManager {
             resultsContainer.appendChild(animSection);
         }
 
-        // Save button
-        const saveButton = document.createElement('button');
-        saveButton.textContent = 'Save Sprites';
-        saveButton.style.cssText = `
-            padding: 8px 16px; background-color: #2196F3;
-            color: #fff; border: none; border-radius: 6px; cursor: pointer;
-            margin-top: 15px;
-        `;
-        saveButton.addEventListener('click', () => this.saveIsometricSprites());
-        resultsContainer.appendChild(saveButton);
+        // Enable the save button in the modal
+        const saveButton = document.getElementById('iso-save');
+        if (saveButton) {
+            saveButton.disabled = false;
+            saveButton.style.opacity = '1';
+            saveButton.style.cursor = 'pointer';
+        }
 
         // Scroll results into view
         resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

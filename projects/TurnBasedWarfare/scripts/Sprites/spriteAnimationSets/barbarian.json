@@ -1,0 +1,55 @@
+{
+  "title": "Barbarian",
+  "collection": "barbarianSpritesAnimations",
+  "spriteSheet": "Sprites/barbarianSprites/barbarianSheet.png",
+  "idleSpriteAnimations": [
+    "barbarianIdleDown",
+    "barbarianIdleDownLeft",
+    "barbarianIdleLeft",
+    "barbarianIdleUpLeft",
+    "barbarianIdleUp",
+    "barbarianIdleUpRight",
+    "barbarianIdleRight",
+    "barbarianIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "barbarianWalkDown",
+    "barbarianWalkDownLeft",
+    "barbarianWalkLeft",
+    "barbarianWalkUpLeft",
+    "barbarianWalkUp",
+    "barbarianWalkUpRight",
+    "barbarianWalkRight",
+    "barbarianWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "barbarianAttackDown",
+    "barbarianAttackDownLeft",
+    "barbarianAttackLeft",
+    "barbarianAttackUpLeft",
+    "barbarianAttackUp",
+    "barbarianAttackUpRight",
+    "barbarianAttackRight",
+    "barbarianAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "barbarianDeathDown",
+    "barbarianDeathDownLeft",
+    "barbarianDeathLeft",
+    "barbarianDeathUpLeft",
+    "barbarianDeathUp",
+    "barbarianDeathUpRight",
+    "barbarianDeathRight",
+    "barbarianDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "barbarianCelebrateDown",
+    "barbarianCelebrateDownLeft",
+    "barbarianCelebrateLeft",
+    "barbarianCelebrateUpLeft",
+    "barbarianCelebrateUp",
+    "barbarianCelebrateUpRight",
+    "barbarianCelebrateRight",
+    "barbarianCelebrateDownRight"
+  ]
+}

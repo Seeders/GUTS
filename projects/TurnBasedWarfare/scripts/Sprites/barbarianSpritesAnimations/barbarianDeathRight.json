@@ -1,0 +1,12 @@
+{
+  "title": "barbarian Death Right",
+  "collection": "barbarianSprites",
+  "sprites": [
+    "barbarianDeathRight_0",
+    "barbarianDeathRight_1",
+    "barbarianDeathRight_2",
+    "barbarianDeathRight_3",
+    "barbarianDeathRight_4",
+    "barbarianDeathRight_5"
+  ]
+}

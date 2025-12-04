@@ -154,5 +154,6 @@
   "projectile": "arrow",
   "icon": "unit_barbarian",
   "visionRange": 500,
-  "supplyCost": 2
+  "supplyCost": 2,
+  "spriteAnimationSet": "barbarian"
 }

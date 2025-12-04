@@ -1,0 +1,55 @@
+{
+  "title": "Acolyte",
+  "collection": "acolyteSpritesAnimations",
+  "spriteSheet": "Sprites/acolyteSprites/acolyteSheet.png",
+  "idleSpriteAnimations": [
+    "acolyteIdleDown",
+    "acolyteIdleDownLeft",
+    "acolyteIdleLeft",
+    "acolyteIdleUpLeft",
+    "acolyteIdleUp",
+    "acolyteIdleUpRight",
+    "acolyteIdleRight",
+    "acolyteIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "acolyteWalkDown",
+    "acolyteWalkDownLeft",
+    "acolyteWalkLeft",
+    "acolyteWalkUpLeft",
+    "acolyteWalkUp",
+    "acolyteWalkUpRight",
+    "acolyteWalkRight",
+    "acolyteWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "acolyteAttackDown",
+    "acolyteAttackDownLeft",
+    "acolyteAttackLeft",
+    "acolyteAttackUpLeft",
+    "acolyteAttackUp",
+    "acolyteAttackUpRight",
+    "acolyteAttackRight",
+    "acolyteAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "acolyteDeathDown",
+    "acolyteDeathDownLeft",
+    "acolyteDeathLeft",
+    "acolyteDeathUpLeft",
+    "acolyteDeathUp",
+    "acolyteDeathUpRight",
+    "acolyteDeathRight",
+    "acolyteDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "acolyteCelebrateDown",
+    "acolyteCelebrateDownLeft",
+    "acolyteCelebrateLeft",
+    "acolyteCelebrateUpLeft",
+    "acolyteCelebrateUp",
+    "acolyteCelebrateUpRight",
+    "acolyteCelebrateRight",
+    "acolyteCelebrateDownRight"
+  ]
+}

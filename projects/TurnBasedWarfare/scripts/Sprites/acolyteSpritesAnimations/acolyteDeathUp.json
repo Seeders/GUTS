@@ -1,0 +1,12 @@
+{
+  "title": "acolyte Death Up",
+  "collection": "acolyteSprites",
+  "sprites": [
+    "acolyteDeathUp_0",
+    "acolyteDeathUp_1",
+    "acolyteDeathUp_2",
+    "acolyteDeathUp_3",
+    "acolyteDeathUp_4",
+    "acolyteDeathUp_5"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "title": "peasant Idle Up",
+  "collection": "peasantSprites",
+  "sprites": [
+    "peasantIdleUp_0",
+    "peasantIdleUp_1",
+    "peasantIdleUp_2",
+    "peasantIdleUp_3",
+    "peasantIdleUp_4",
+    "peasantIdleUp_5"
+  ]
+}

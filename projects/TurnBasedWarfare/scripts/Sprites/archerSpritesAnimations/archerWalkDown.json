@@ -1,0 +1,12 @@
+{
+  "title": "archer Walk Down",
+  "collection": "archerSprites",
+  "sprites": [
+    "archerWalkDown_0",
+    "archerWalkDown_1",
+    "archerWalkDown_2",
+    "archerWalkDown_3",
+    "archerWalkDown_4",
+    "archerWalkDown_5"
+  ]
+}

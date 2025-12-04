@@ -1,0 +1,12 @@
+{
+  "title": "barbarian Idle Up Right",
+  "collection": "barbarianSprites",
+  "sprites": [
+    "barbarianIdleUpRight_0",
+    "barbarianIdleUpRight_1",
+    "barbarianIdleUpRight_2",
+    "barbarianIdleUpRight_3",
+    "barbarianIdleUpRight_4",
+    "barbarianIdleUpRight_5"
+  ]
+}

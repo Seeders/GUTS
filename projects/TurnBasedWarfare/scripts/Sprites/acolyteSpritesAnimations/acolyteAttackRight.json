@@ -1,0 +1,12 @@
+{
+  "title": "acolyte Attack Right",
+  "collection": "acolyteSprites",
+  "sprites": [
+    "acolyteAttackRight_0",
+    "acolyteAttackRight_1",
+    "acolyteAttackRight_2",
+    "acolyteAttackRight_3",
+    "acolyteAttackRight_4",
+    "acolyteAttackRight_5"
+  ]
+}

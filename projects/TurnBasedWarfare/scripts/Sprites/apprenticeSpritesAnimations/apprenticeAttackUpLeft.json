@@ -1,0 +1,12 @@
+{
+  "title": "apprentice Attack Up Left",
+  "collection": "apprenticeSprites",
+  "sprites": [
+    "apprenticeAttackUpLeft_0",
+    "apprenticeAttackUpLeft_1",
+    "apprenticeAttackUpLeft_2",
+    "apprenticeAttackUpLeft_3",
+    "apprenticeAttackUpLeft_4",
+    "apprenticeAttackUpLeft_5"
+  ]
+}

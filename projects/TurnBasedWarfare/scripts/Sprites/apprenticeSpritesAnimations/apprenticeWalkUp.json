@@ -1,0 +1,12 @@
+{
+  "title": "apprentice Walk Up",
+  "collection": "apprenticeSprites",
+  "sprites": [
+    "apprenticeWalkUp_0",
+    "apprenticeWalkUp_1",
+    "apprenticeWalkUp_2",
+    "apprenticeWalkUp_3",
+    "apprenticeWalkUp_4",
+    "apprenticeWalkUp_5"
+  ]
+}

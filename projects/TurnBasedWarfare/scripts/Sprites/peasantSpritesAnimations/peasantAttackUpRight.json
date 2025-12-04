@@ -1,0 +1,12 @@
+{
+  "title": "peasant Attack Up Right",
+  "collection": "peasantSprites",
+  "sprites": [
+    "peasantAttackUpRight_0",
+    "peasantAttackUpRight_1",
+    "peasantAttackUpRight_2",
+    "peasantAttackUpRight_3",
+    "peasantAttackUpRight_4",
+    "peasantAttackUpRight_5"
+  ]
+}

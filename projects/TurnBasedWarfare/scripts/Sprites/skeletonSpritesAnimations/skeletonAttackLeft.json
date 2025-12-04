@@ -1,0 +1,12 @@
+{
+  "title": "skeleton Attack Left",
+  "collection": "skeletonSprites",
+  "sprites": [
+    "skeletonAttackLeft_0",
+    "skeletonAttackLeft_1",
+    "skeletonAttackLeft_2",
+    "skeletonAttackLeft_3",
+    "skeletonAttackLeft_4",
+    "skeletonAttackLeft_5"
+  ]
+}

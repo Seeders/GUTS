@@ -1,0 +1,12 @@
+{
+  "title": "archer Death Down Left",
+  "collection": "archerSprites",
+  "sprites": [
+    "archerDeathDownLeft_0",
+    "archerDeathDownLeft_1",
+    "archerDeathDownLeft_2",
+    "archerDeathDownLeft_3",
+    "archerDeathDownLeft_4",
+    "archerDeathDownLeft_5"
+  ]
+}

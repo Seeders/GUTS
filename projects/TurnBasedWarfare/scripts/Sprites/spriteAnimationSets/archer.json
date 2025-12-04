@@ -1,0 +1,55 @@
+{
+  "title": "Archer",
+  "collection": "archerSpritesAnimations",
+  "spriteSheet": "Sprites/archerSprites/archerSheet.png",
+  "idleSpriteAnimations": [
+    "archerIdleDown",
+    "archerIdleDownLeft",
+    "archerIdleLeft",
+    "archerIdleUpLeft",
+    "archerIdleUp",
+    "archerIdleUpRight",
+    "archerIdleRight",
+    "archerIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "archerWalkDown",
+    "archerWalkDownLeft",
+    "archerWalkLeft",
+    "archerWalkUpLeft",
+    "archerWalkUp",
+    "archerWalkUpRight",
+    "archerWalkRight",
+    "archerWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "archerAttackDown",
+    "archerAttackDownLeft",
+    "archerAttackLeft",
+    "archerAttackUpLeft",
+    "archerAttackUp",
+    "archerAttackUpRight",
+    "archerAttackRight",
+    "archerAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "archerDeathDown",
+    "archerDeathDownLeft",
+    "archerDeathLeft",
+    "archerDeathUpLeft",
+    "archerDeathUp",
+    "archerDeathUpRight",
+    "archerDeathRight",
+    "archerDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "archerCelebrateDown",
+    "archerCelebrateDownLeft",
+    "archerCelebrateLeft",
+    "archerCelebrateUpLeft",
+    "archerCelebrateUp",
+    "archerCelebrateUpRight",
+    "archerCelebrateRight",
+    "archerCelebrateDownRight"
+  ]
+}

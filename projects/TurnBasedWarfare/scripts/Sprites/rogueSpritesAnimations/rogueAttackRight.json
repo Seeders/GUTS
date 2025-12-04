@@ -1,0 +1,12 @@
+{
+  "title": "rogue Attack Right",
+  "collection": "rogueSprites",
+  "sprites": [
+    "rogueAttackRight_0",
+    "rogueAttackRight_1",
+    "rogueAttackRight_2",
+    "rogueAttackRight_3",
+    "rogueAttackRight_4",
+    "rogueAttackRight_5"
+  ]
+}

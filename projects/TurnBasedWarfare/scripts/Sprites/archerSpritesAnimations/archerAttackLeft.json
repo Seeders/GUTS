@@ -1,0 +1,12 @@
+{
+  "title": "archer Attack Left",
+  "collection": "archerSprites",
+  "sprites": [
+    "archerAttackLeft_0",
+    "archerAttackLeft_1",
+    "archerAttackLeft_2",
+    "archerAttackLeft_3",
+    "archerAttackLeft_4",
+    "archerAttackLeft_5"
+  ]
+}

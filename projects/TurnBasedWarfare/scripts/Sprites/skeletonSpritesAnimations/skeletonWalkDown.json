@@ -1,0 +1,12 @@
+{
+  "title": "skeleton Walk Down",
+  "collection": "skeletonSprites",
+  "sprites": [
+    "skeletonWalkDown_0",
+    "skeletonWalkDown_1",
+    "skeletonWalkDown_2",
+    "skeletonWalkDown_3",
+    "skeletonWalkDown_4",
+    "skeletonWalkDown_5"
+  ]
+}

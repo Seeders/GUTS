@@ -1,0 +1,55 @@
+{
+  "title": "Rogue",
+  "collection": "rogueSpritesAnimations",
+  "spriteSheet": "Sprites/rogueSprites/rogueSheet.png",
+  "idleSpriteAnimations": [
+    "rogueIdleDown",
+    "rogueIdleDownLeft",
+    "rogueIdleLeft",
+    "rogueIdleUpLeft",
+    "rogueIdleUp",
+    "rogueIdleUpRight",
+    "rogueIdleRight",
+    "rogueIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "rogueWalkDown",
+    "rogueWalkDownLeft",
+    "rogueWalkLeft",
+    "rogueWalkUpLeft",
+    "rogueWalkUp",
+    "rogueWalkUpRight",
+    "rogueWalkRight",
+    "rogueWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "rogueAttackDown",
+    "rogueAttackDownLeft",
+    "rogueAttackLeft",
+    "rogueAttackUpLeft",
+    "rogueAttackUp",
+    "rogueAttackUpRight",
+    "rogueAttackRight",
+    "rogueAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "rogueDeathDown",
+    "rogueDeathDownLeft",
+    "rogueDeathLeft",
+    "rogueDeathUpLeft",
+    "rogueDeathUp",
+    "rogueDeathUpRight",
+    "rogueDeathRight",
+    "rogueDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "rogueCelebrateDown",
+    "rogueCelebrateDownLeft",
+    "rogueCelebrateLeft",
+    "rogueCelebrateUpLeft",
+    "rogueCelebrateUp",
+    "rogueCelebrateUpRight",
+    "rogueCelebrateRight",
+    "rogueCelebrateDownRight"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "title": "archer Walk Up Right",
+  "collection": "archerSprites",
+  "sprites": [
+    "archerWalkUpRight_0",
+    "archerWalkUpRight_1",
+    "archerWalkUpRight_2",
+    "archerWalkUpRight_3",
+    "archerWalkUpRight_4",
+    "archerWalkUpRight_5"
+  ]
+}

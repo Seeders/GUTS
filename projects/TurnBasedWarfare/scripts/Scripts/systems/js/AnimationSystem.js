@@ -245,13 +245,13 @@ class AnimationSystem extends GUTS.BaseSystem {
         let shouldFlip = false;
 
         if (angle >= -22.5 && angle < 22.5) {
-            // Right (0°) - use left flipped
-            newDirection = 'left';
-            shouldFlip = true;
+            // Right (0°)
+            newDirection = 'right';
+            shouldFlip = false;
         } else if (angle >= 22.5 && angle < 67.5) {
-            // Up-right (45°) - use upleft flipped
-            newDirection = 'upleft';
-            shouldFlip = true;
+            // Up-right (45°)
+            newDirection = 'upright';
+            shouldFlip = false;
         } else if (angle >= 67.5 && angle < 112.5) {
             // Up (90°)
             newDirection = 'up';
@@ -273,9 +273,9 @@ class AnimationSystem extends GUTS.BaseSystem {
             newDirection = 'down';
             shouldFlip = false;
         } else if (angle >= -67.5 && angle < -22.5) {
-            // Down-right (-45° / 315°) - use downleft flipped
-            newDirection = 'downleft';
-            shouldFlip = true;
+            // Down-right (-45° / 315°)
+            newDirection = 'downright';
+            shouldFlip = false;
         }
 
         // Check if direction changed
@@ -393,7 +393,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             
             return true;
         } else {
-            console.warn(`[AnimationSystem] ❌ Failed to change animation for entity ${entityId}: ${clipName} -> ${resolvedClip}`);
+          //  console.warn(`[AnimationSystem] ❌ Failed to change animation for entity ${entityId}: ${clipName} -> ${resolvedClip}`);
         }
 
         return false;

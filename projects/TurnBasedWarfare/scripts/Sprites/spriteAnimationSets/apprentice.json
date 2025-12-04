@@ -1,0 +1,55 @@
+{
+  "title": "Apprentice",
+  "collection": "apprenticeSpritesAnimations",
+  "spriteSheet": "Sprites/apprenticeSprites/apprenticeSheet.png",
+  "idleSpriteAnimations": [
+    "apprenticeIdleDown",
+    "apprenticeIdleDownLeft",
+    "apprenticeIdleLeft",
+    "apprenticeIdleUpLeft",
+    "apprenticeIdleUp",
+    "apprenticeIdleUpRight",
+    "apprenticeIdleRight",
+    "apprenticeIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "apprenticeWalkDown",
+    "apprenticeWalkDownLeft",
+    "apprenticeWalkLeft",
+    "apprenticeWalkUpLeft",
+    "apprenticeWalkUp",
+    "apprenticeWalkUpRight",
+    "apprenticeWalkRight",
+    "apprenticeWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "apprenticeAttackDown",
+    "apprenticeAttackDownLeft",
+    "apprenticeAttackLeft",
+    "apprenticeAttackUpLeft",
+    "apprenticeAttackUp",
+    "apprenticeAttackUpRight",
+    "apprenticeAttackRight",
+    "apprenticeAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "apprenticeDeathDown",
+    "apprenticeDeathDownLeft",
+    "apprenticeDeathLeft",
+    "apprenticeDeathUpLeft",
+    "apprenticeDeathUp",
+    "apprenticeDeathUpRight",
+    "apprenticeDeathRight",
+    "apprenticeDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "apprenticeCelebrateDown",
+    "apprenticeCelebrateDownLeft",
+    "apprenticeCelebrateLeft",
+    "apprenticeCelebrateUpLeft",
+    "apprenticeCelebrateUp",
+    "apprenticeCelebrateUpRight",
+    "apprenticeCelebrateRight",
+    "apprenticeCelebrateDownRight"
+  ]
+}
