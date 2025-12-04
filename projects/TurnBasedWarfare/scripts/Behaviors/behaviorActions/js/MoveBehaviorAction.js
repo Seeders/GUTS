@@ -16,8 +16,10 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
             // Check if we've reached the target
             if (distanceToTarget <= this.parameters.arrivalThreshold) {
-                // Movement complete - remove the player order so unit can return to normal behavior
-                game.removeComponent(entityId, 'playerOrder');
+                // Movement complete - mark order as complete but keep the component
+                // The order will be cleared at the start of the next placement phase
+                // This allows the unit to hold position until the battle ends
+                playerOrder.meta.completed = true;
 
                 return this.success({
                     targetPosition: targetPosition,

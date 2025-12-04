@@ -16,14 +16,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const targetId = shared[targetKey];
 
-        if (entityId.includes('archer') && game.state?.phase === 'battle') {
-            console.log(`[AttackEnemyBehaviorAction] execute: targetId=${targetId}`);
-        }
-
         if (!targetId) {
-            if (entityId.includes('archer') && game.state?.phase === 'battle') {
-                console.log(`[AttackEnemyBehaviorAction] No target, returning failure`);
-            }
             return this.failure();
         }
 
@@ -51,10 +44,6 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     onEnd(entityId, game) {
-        if (entityId.includes('archer') && game.state?.phase === 'battle') {
-            console.log(`[AttackEnemyBehaviorAction] onEnd called for entity ${entityId}`);
-        }
-
         // Unanchor when combat action ends
         const vel = game.getComponent(entityId, 'velocity');
         if (vel) {
@@ -63,9 +52,6 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Reset animation to idle when combat ends
         if (game.gameManager && game.gameManager.has('setBillboardAnimation')) {
-            if (entityId.includes('archer') && game.state?.phase === 'battle') {
-                console.log(`[AttackEnemyBehaviorAction] Setting animation to idle for entity ${entityId}`);
-            }
             game.gameManager.call('setBillboardAnimation', entityId, 'idle', true);
         }
     }

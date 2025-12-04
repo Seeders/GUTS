@@ -6,16 +6,16 @@ class RoundSystem extends GUTS.BaseSystem {
     }
     //cant place this in UnitOrderSystem because UnitOrderSystem doesn't run on the server.
     onPlacementPhaseStart() {
-        const entities = this.game.getEntitiesWith('playerOrder', 'aiState');
+        // Only clear completed player orders at the start of placement phase
+        // Orders that weren't completed (unit didn't reach target) should persist
+        // so the unit continues following the order in the next battle
+        const entities = this.game.getEntitiesWith('playerOrder');
         entities.forEach((entityId) => {
-            const aiState = this.game.getComponent(entityId, 'aiState');
-            if(aiState.meta.reachedTarget){
-                const playerOrder = this.game.getComponent(entityId, 'playerOrder');
-                 if(playerOrder){
-                    playerOrder.targetPosition = null;
-                    playerOrder.meta = {};
-                    playerOrder.issuedTime = 0;
-                }
+            const playerOrder = this.game.getComponent(entityId, 'playerOrder');
+            if (playerOrder && playerOrder.meta?.completed) {
+                playerOrder.targetPosition = null;
+                playerOrder.meta = {};
+                playerOrder.issuedTime = 0;
             }
         });
     }

@@ -26,7 +26,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         // Debug visualization
         this.debugVisualization = null;
-        this.debugEnabled = false;
+        this.debugEnabled = true;
 
         this.initialized = false;
     }
@@ -220,13 +220,14 @@ class PathfindingSystem extends GUTS.BaseSystem {
         
         // Second pass: mark cells occupied by impassable worldObjects as impassable
         const collections = this.game.getCollections();
-        const level = collections.levels?.[this.game.state.level];
+        const levelId = this.game.gameManager.call('getLevel');
+        const level = collections.levels?.[levelId];
         const tileMap = level?.tileMap;
 
         if (tileMap?.worldObjects) {
+            console.log(`[PathfindingSystem] Baking ${tileMap.worldObjects.length} worldObjects into navmesh`);
             let markedCells = 0;
-            const gridSize = this.game.gameManager.call('getGridSize'); // Terrain grid size (48)
-            const centeringOffset = gridSize / 2; // Objects are centered in tiles
+            let skippedObjects = 0;
 
             for (const worldObj of tileMap.worldObjects) {
                 // Get unit type definition to check if object blocks movement
@@ -234,37 +235,48 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
                 // Skip if object doesn't block movement (impassable === false) or has no size
                 if (!unitType || unitType.impassable === false || !unitType.size) {
+                    skippedObjects++;
                     continue;
                 }
 
-                // Convert grid coordinates to world position
-                const worldPosCentered = this.game.gameManager.call('convertGridToWorldPosition', worldObj.gridX, worldObj.gridZ);
-
-                // Subtract centering offset to get upper-left corner position
-                // This ensures consistent placement regardless of rounding
-                const worldPos = {
-                    x: worldPosCentered.x - centeringOffset,
-                    z: worldPosCentered.z - centeringOffset
-                };
+                // worldObj.gridX/gridZ are TILE grid coordinates (terrain grid)
+                // Use tileToWorld to convert tile coordinates to world position
+                const worldPosCentered = this.game.gameManager.call('tileToWorld', worldObj.gridX, worldObj.gridZ);
 
                 // Convert world position to nav grid coordinates
-                const navGrid = this.worldToNavGrid(worldPos.x, worldPos.z);
+                // The nav grid is 2x the resolution of the terrain grid (same as placement grid)
+                const navGrid = this.worldToNavGrid(worldPosCentered.x, worldPosCentered.z);
+
+                // Get the object's size in tiles (default to 1x1)
+                const sizeX = unitType.size?.x || 1;
+                const sizeZ = unitType.size?.z || 1;
 
                 // Each terrain tile covers a 2x2 area of nav grid cells
-                // Mark all 4 nav grid cells as impassable
-                for (let dz = 0; dz < 2; dz++) {
-                    for (let dx = 0; dx < 2; dx++) {
-                        const nx = navGrid.x + dx;
-                        const nz = navGrid.z + dz;
+                // Mark all nav grid cells covered by this object as impassable
+                for (let tz = 0; tz < sizeZ; tz++) {
+                    for (let tx = 0; tx < sizeX; tx++) {
+                        // For each terrain tile the object occupies, mark the corresponding 2x2 nav grid cells
+                        for (let dz = 0; dz < 2; dz++) {
+                            for (let dx = 0; dx < 2; dx++) {
+                                // Calculate nav grid position:
+                                // navGrid is at tile center, so offset by -1 to get top-left of the 2x2 cell block
+                                // Then offset by tile position * 2 (since each tile = 2 nav cells)
+                                const nx = navGrid.x - 1 + (tx * 2) + dx;
+                                const nz = navGrid.z - 1 + (tz * 2) + dz;
 
-                        if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
-                            const idx = nz * this.navGridWidth + nx;
-                            this.navMesh[idx] = 255;
-                            markedCells++;
+                                if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
+                                    const idx = nz * this.navGridWidth + nx;
+                                    this.navMesh[idx] = 255;
+                                    markedCells++;
+                                }
+                            }
                         }
                     }
                 }
             }
+            console.log(`[PathfindingSystem] Marked ${markedCells} cells as impassable from worldObjects (skipped ${skippedObjects} passable objects)`);
+        } else {
+            console.warn(`[PathfindingSystem] No worldObjects found in tileMap. Level: ${levelId}, tileMap exists: ${!!tileMap}`);
         }
 
     }

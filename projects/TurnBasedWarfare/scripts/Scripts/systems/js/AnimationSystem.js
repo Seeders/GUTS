@@ -210,10 +210,6 @@ class AnimationSystem extends GUTS.BaseSystem {
         // These animations have their own completion callbacks that return to idle
         const billboardAnim = this.game.getComponent(entityId, 'billboardAnimation');
 
-        if (entityId.includes('archer') && this.game.state?.phase === 'battle') {
-            console.log(`[AnimationSystem] updateBillboardAnimationLogic: billboardAnim.currentAnimationType=${billboardAnim?.currentAnimationType}, isSinglePlay=${this.SINGLE_PLAY_ANIMATIONS.has(billboardAnim?.currentAnimationType)}`);
-        }
-
         if (billboardAnim && this.SINGLE_PLAY_ANIMATIONS.has(billboardAnim.currentAnimationType)) {
             // Just update direction for single-play animations (so entity faces target during attack)
             this.updateSpriteDirectionFromRotation(entityId, animState);
@@ -454,14 +450,7 @@ class AnimationSystem extends GUTS.BaseSystem {
                 // Check if already playing attack animation - don't restart it
                 const billboardAnim = this.game.getComponent(entityId, 'billboardAnimation');
                 if (billboardAnim && billboardAnim.currentAnimationType === 'attack') {
-                    if (entityId.includes('archer') && this.game.state?.phase === 'battle') {
-                        console.log(`[AnimationSystem] triggerSinglePlayAnimation: already in attack, skipping`);
-                    }
                     return true;  // Already attacking, don't restart
-                }
-
-                if (entityId.includes('archer') && this.game.state?.phase === 'battle') {
-                    console.log(`[AnimationSystem] triggerSinglePlayAnimation: starting attack animation`);
                 }
 
                 // Set attack animation (single-play, not looping)
@@ -472,9 +461,6 @@ class AnimationSystem extends GUTS.BaseSystem {
                     'attack',
                     false,  // don't loop - play once
                     (completedEntityId) => {
-                        if (completedEntityId.includes('archer') && this.game.state?.phase === 'battle') {
-                            console.log(`[AnimationSystem] Attack animation COMPLETED for ${completedEntityId}`);
-                        }
                         // Return to idle animation after attack finishes
                         this.game.gameManager.call('setBillboardAnimation', completedEntityId, 'idle', true);
                     }
@@ -716,20 +702,10 @@ class AnimationSystem extends GUTS.BaseSystem {
      * @param {function} onComplete - Optional callback when animation finishes (for non-looping animations)
      */
     setBillboardAnimation(entityId, animationType, loop = true, onComplete = null) {
-        const isArcher = entityId.includes('archer') && this.game.state?.phase === 'battle';
-        if (isArcher) {
-            const stack = new Error().stack.split('\n').slice(1, 4).join(' <- ');
-            console.log(`[AnimationSystem] setBillboardAnimation: type=${animationType}, loop=${loop}, from: ${stack}`);
-        }
-
         const animData = this.game.getComponent(entityId, "billboardAnimation");
         if (!animData) {
             console.warn(`[AnimationSystem] No animation state for billboard entity ${entityId}`);
             return false;
-        }
-
-        if (isArcher) {
-            console.log(`[AnimationSystem] Current animation type: ${animData.currentAnimationType}`);
         }
 
         // Check death state from component (single source of truth)
@@ -854,10 +830,6 @@ class AnimationSystem extends GUTS.BaseSystem {
             if (animState.frameTime >= frameDuration) {
                 animState.frameTime = 0;
                 animState.frameIndex++;
-
-                if (entityId.includes('archer') && this.game.state?.phase === 'battle' && animState.currentAnimationType === 'attack') {
-                    console.log(`[AnimationSystem] Attack frame advance: ${animState.frameIndex}/${frames.length}, frameDuration=${frameDuration.toFixed(3)}, deltaTime=${game.state.deltaTime.toFixed(3)}`);
-                }
 
                 // Handle animation completion
                 if (animState.frameIndex >= frames.length) {
