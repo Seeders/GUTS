@@ -10,7 +10,7 @@ class FireBallAbility extends GUTS.BaseAbility {
             targetType: 'enemy',
             animation: 'cast',
             priority: 7,
-            castTime: 0,
+            castTime: 0.5,
             ...params
         });
 
@@ -417,7 +417,7 @@ class FireBallAbility extends GUTS.BaseAbility {
     handleSplashDamage(casterEntity, impactPos) {
         // Get all entities in splash radius
         const allEntities = this.game.getEntitiesWith(
-            "position",
+            "transform",
             "health",
             "team"
         );

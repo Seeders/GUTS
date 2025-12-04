@@ -18,7 +18,10 @@ class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const targetId = shared[targetKey];
 
+        const isArcher = entityId.includes('archer') && game.state?.phase === 'battle';
+
         if (!targetId) {
+            if (isArcher) console.log(`[HasTargetBehaviorAction] No target in shared state`);
             return this.failure();
         }
 
@@ -26,6 +29,7 @@ class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
         if (validateHealth) {
             const targetHealth = game.getComponent(targetId, 'health');
             if (!targetHealth || targetHealth.current <= 0) {
+                if (isArcher) console.log(`[HasTargetBehaviorAction] Target ${targetId} is dead (health=${targetHealth?.current}), clearing`);
                 // Clear invalid target
                 shared[targetKey] = null;
                 return this.failure();
@@ -33,11 +37,13 @@ class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
 
             const targetDeathState = game.getComponent(targetId, 'deathState');
             if (targetDeathState && targetDeathState.isDying) {
+                if (isArcher) console.log(`[HasTargetBehaviorAction] Target ${targetId} is dying, clearing`);
                 shared[targetKey] = null;
                 return this.failure();
             }
         }
 
+        if (isArcher) console.log(`[HasTargetBehaviorAction] Target ${targetId} is valid`);
         return this.success({ target: targetId });
     }
 }

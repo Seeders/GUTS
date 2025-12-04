@@ -419,6 +419,7 @@ class EntityRenderer {
                     vec4 texColor = texture2D(map, vUv);
                     if (texColor.a < 0.5) discard;
                     gl_FragColor = texColor;
+                    #include <colorspace_fragment>
                 }
             `,
             transparent: true,
@@ -795,6 +796,7 @@ class EntityRenderer {
                     vec4 texColor = texture2D(map, vUv);
                     if (texColor.a < 0.5) discard;
                     gl_FragColor = texColor;
+                    #include <colorspace_fragment>
                 }
             `,
             transparent: true,

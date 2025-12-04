@@ -3,10 +3,6 @@ class AnimationSystem extends GUTS.BaseSystem {
         super(game);
         this.game.animationSystem = this;
 
-        // Animation state tracking
-        this.entityAnimationStates = new Map(); // entityId -> { currentClip, lastStateChange, flags, etc. } for VAT entities
-        this.billboardAnimationStates = new Map(); // entityId -> { currentAnimationType, loopAnimation, frameIndex, frameTime } for billboard entities
-
         // Animation configuration
         this.MIN_MOVEMENT_THRESHOLD = 0.1;
         this.MIN_ATTACK_ANIMATION_TIME = 0.4;
@@ -16,9 +12,6 @@ class AnimationSystem extends GUTS.BaseSystem {
         this.SINGLE_PLAY_ANIMATIONS = new Set([
             'attack', 'cast', 'death'
         ]);
-
-        // Reusable set for cleanup to avoid per-frame allocation
-        this._currentEntitiesSet = new Set();
 
         // Cache for availableClips as Sets (batchKey -> Set)
         this._clipSetCache = new Map();
@@ -33,7 +26,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('stopCelebration', this.stopCelebration.bind(this));
         this.game.gameManager.register('playDeathAnimation', this.playDeathAnimation.bind(this));
         this.game.gameManager.register('calculateAnimationSpeed', this.calculateAnimationSpeed.bind(this));
-        this.game.gameManager.register('getEntityAnimations', () => this.entityAnimationStates);
+        this.game.gameManager.register('getEntityAnimations', this.getEntityAnimations.bind(this));
 
         // Billboard animation management (AnimationSystem owns animation decisions)
         this.game.gameManager.register('setBillboardAnimation', this.setBillboardAnimation.bind(this));
@@ -71,8 +64,8 @@ class AnimationSystem extends GUTS.BaseSystem {
             const combat = this.game.getComponent(entityId, "combat");
             const aiState = this.game.getComponent(entityId, "aiState");
 
-            // Ensure entity has animation state
-            if (!this.entityAnimationStates.has(entityId)) {
+            // Ensure entity has animation state component
+            if (!this.game.hasComponent(entityId, "animationState")) {
                 this.initializeEntityAnimationState(entityId);
             }
 
@@ -82,20 +75,14 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Update billboard animations (frame advancement)
         this.updateBillboardAnimations();
-
-        // Clean up removed entities - reuse set to avoid per-frame allocation
-        this._currentEntitiesSet.clear();
-        for (const entityId of entities) {
-            this._currentEntitiesSet.add(entityId);
-        }
-        this.cleanupRemovedEntities(this._currentEntitiesSet);
     }
 
     initializeEntityAnimationState(entityId) {
         // Check if this is a billboard entity with sprite animations
         const isBillboard = this.game.gameManager.call('isBillboardWithAnimations', entityId);
 
-        const state = {
+        // Add animationState component to entity
+        this.game.addComponent(entityId, 'animationState', {
             currentClip: 'idle',
             lastStateChange: this.game.state?.now || 0,
             animationTime: 0,
@@ -104,8 +91,6 @@ class AnimationSystem extends GUTS.BaseSystem {
             pendingSpeed: null,
             pendingMinTime: null,
             isTriggered: false,
-            isDying: false,
-            isCorpse: false,
             isCelebrating: false,
             // Billboard/sprite animation state
             isBillboard: isBillboard,
@@ -115,9 +100,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             lastRequestedClip: null,
             lastResolvedClip: null,
             fallbackCooldown: 0
-        };
-
-        this.entityAnimationStates.set(entityId, state);
+        });
 
         // Set initial animation based on entity type
         if (isBillboard) {
@@ -130,9 +113,26 @@ class AnimationSystem extends GUTS.BaseSystem {
         }
     }
 
+    /**
+     * Check if an entity is dead (dying or corpse) by reading deathState component
+     * This is the single source of truth for death state
+     */
+    isEntityDead(entityId) {
+        const deathState = this.game.getComponent(entityId, "deathState");
+        return deathState && deathState.isDying;
+    }
+
+    /**
+     * Check if an entity is specifically a corpse (death animation complete)
+     */
+    isEntityCorpse(entityId) {
+        const deathState = this.game.getComponent(entityId, "deathState");
+        return deathState && deathState.state === 'corpse';
+    }
+
     updateEntityAnimationLogic(entityId, velocity, health, combat, aiState) {
 
-        const animState = this.entityAnimationStates.get(entityId);
+        const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) return;
 
         const currentTime = this.game.state?.now || 0;
@@ -145,8 +145,11 @@ class AnimationSystem extends GUTS.BaseSystem {
             return;
         }
 
+        // Check death state from component (single source of truth)
+        const isDead = this.isEntityDead(entityId);
+
         // Handle animation completion for locked states
-        if (animState.isDying || animState.isCorpse || animState.isCelebrating) {
+        if (isDead || animState.isCelebrating) {
             // Handle celebration completion ONLY
             if (animState.isCelebrating && this.SINGLE_PLAY_ANIMATIONS.has(animState.currentClip)) {
                 const isFinished = this.isAnimationFinished(entityId, animState.currentClip);
@@ -191,21 +194,28 @@ class AnimationSystem extends GUTS.BaseSystem {
      * - When attacking, rotation is set by attack behavior to face target
      */
     updateBillboardAnimationLogic(entityId, animState, velocity) {
+        // Check death state from component (single source of truth)
+        if (this.isEntityDead(entityId)) {
+            return;
+        }
+
         // Only animate during battle phase - show idle during placement
+        // But only for living entities (dead entities checked above)
         if (this.game.state?.phase !== 'battle') {
             this.game.gameManager.call('setBillboardAnimation', entityId, 'idle', true);
             return;
         }
 
-        // Don't update animation logic for dying or dead units
-        if (animState.isDying || animState.isCorpse) {
-            return;
+        // Don't override single-play animations (attack, cast, death) - let them complete naturally
+        // These animations have their own completion callbacks that return to idle
+        const billboardAnim = this.game.getComponent(entityId, 'billboardAnimation');
+
+        if (entityId.includes('archer') && this.game.state?.phase === 'battle') {
+            console.log(`[AnimationSystem] updateBillboardAnimationLogic: billboardAnim.currentAnimationType=${billboardAnim?.currentAnimationType}, isSinglePlay=${this.SINGLE_PLAY_ANIMATIONS.has(billboardAnim?.currentAnimationType)}`);
         }
 
-        // Don't update walk state while attack animation is playing
-        const currentAnim = this.game.gameManager.call('getBillboardCurrentAnimation', entityId);
-        if (currentAnim === 'attack') {
-            // Still update sprite direction from rotation (which was set by attack behavior)
+        if (billboardAnim && this.SINGLE_PLAY_ANIMATIONS.has(billboardAnim.currentAnimationType)) {
+            // Just update direction for single-play animations (so entity faces target during attack)
             this.updateSpriteDirectionFromRotation(entityId, animState);
             return;
         }
@@ -379,7 +389,7 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     changeAnimation(entityId, clipName, speed = 1.0, minTime = 0) {
-        const animState = this.entityAnimationStates.get(entityId);
+        const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) return false;
 
         // Try to resolve clip name to available clip
@@ -405,7 +415,7 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     updateAnimationSpeed(entityId, targetSpeed) {
-        const animState = this.entityAnimationStates.get(entityId);
+        const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) return;
 
         // Only update speed for continuous animations
@@ -432,7 +442,7 @@ class AnimationSystem extends GUTS.BaseSystem {
     // Public API methods
 
     triggerSinglePlayAnimation(entityId, clipName, speed = 1.0, minTime = 0) {
-        const animState = this.entityAnimationStates.get(entityId);
+        const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) {
             console.warn(`[AnimationSystem] No animation state for entity ${entityId}`);
             return false;
@@ -441,6 +451,19 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Handle billboard entities with sprite animations
         if (animState.isBillboard) {
             if (clipName === 'attack') {
+                // Check if already playing attack animation - don't restart it
+                const billboardAnim = this.game.getComponent(entityId, 'billboardAnimation');
+                if (billboardAnim && billboardAnim.currentAnimationType === 'attack') {
+                    if (entityId.includes('archer') && this.game.state?.phase === 'battle') {
+                        console.log(`[AnimationSystem] triggerSinglePlayAnimation: already in attack, skipping`);
+                    }
+                    return true;  // Already attacking, don't restart
+                }
+
+                if (entityId.includes('archer') && this.game.state?.phase === 'battle') {
+                    console.log(`[AnimationSystem] triggerSinglePlayAnimation: starting attack animation`);
+                }
+
                 // Set attack animation (single-play, not looping)
                 // When animation completes, return to idle
                 this.game.gameManager.call(
@@ -449,6 +472,9 @@ class AnimationSystem extends GUTS.BaseSystem {
                     'attack',
                     false,  // don't loop - play once
                     (completedEntityId) => {
+                        if (completedEntityId.includes('archer') && this.game.state?.phase === 'battle') {
+                            console.log(`[AnimationSystem] Attack animation COMPLETED for ${completedEntityId}`);
+                        }
                         // Return to idle animation after attack finishes
                         this.game.gameManager.call('setBillboardAnimation', completedEntityId, 'idle', true);
                     }
@@ -469,23 +495,24 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     playDeathAnimation(entityId) {
-        const animState = this.entityAnimationStates.get(entityId);
+        const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) {
             console.warn(`[AnimationSystem] ❌ No animation state found for entity ${entityId} during death`);
             return;
         }
 
-        // Set death state
-        animState.isDying = true;
-        animState.isCorpse = false;
+        // Death state is managed by deathState component (set by DeathSystem)
+        // We just need to clear animation system's local state and play the animation
+
+        // Clear celebration state
         animState.isCelebrating = false;
-        
+
         // Clear any pending animations
         animState.isTriggered = false;
         animState.pendingClip = null;
         animState.pendingSpeed = null;
         animState.pendingMinTime = null;
-        
+
         // Reset fallback tracking for death animation
         animState.lastRequestedClip = null;
         animState.lastResolvedClip = null;
@@ -505,32 +532,32 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Apply death animation immediately for VAT/model entities
         this.changeAnimation(entityId, 'death', 1.0, 0);
-
     }
 
     setCorpseAnimation(entityId) {
-        const animState = this.entityAnimationStates.get(entityId);
-        if (!animState) return;
+        // Corpse state is managed by deathState component (set by DeathSystem)
+        // For billboard entities, death animation already stays on last frame
+        const animState = this.game.getComponent(entityId, "animationState");
+        if (animState?.isBillboard) {
+            // Billboard death animations are non-looping and stay on last frame
+            return;
+        }
 
-        // Update animation state flags
-        animState.isDying = false;
-        animState.isCorpse = true;
-        
-        // Get the current clip's duration and set to last frame
+        // For VAT/model entities: freeze at current frame
         const animationStateData = this.game.gameManager.call('getEntityAnimationState', entityId);
-        
+
         if (animationStateData && animationStateData.clipDuration > 0) {
             // Set to 99% through the animation (last frame before loop)
             const lastFrameTime = animationStateData.clipDuration * 0.99;
             this.game.gameManager.call('setInstanceAnimationTime', entityId, lastFrameTime);
         }
-        
+
         // Now freeze it at that frame
         this.game.gameManager.call('setInstanceSpeed', entityId, 0);
     }
 
     startCelebration(entityId, teamType = null) {
-        const animState = this.entityAnimationStates.get(entityId);
+        const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) return;
 
         animState.isCelebrating = true;
@@ -550,7 +577,7 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     stopCelebration(entityId) {
-        const animState = this.entityAnimationStates.get(entityId);
+        const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) return;
 
         animState.isCelebrating = false;
@@ -663,33 +690,22 @@ class AnimationSystem extends GUTS.BaseSystem {
         return firstClip || 'idle';
     }
 
-    // Cleanup methods
-
-    cleanupRemovedEntities(currentEntities) {
-        const toRemove = [];
-        
-        for (const entityId of this.entityAnimationStates.keys()) {
-            if (!currentEntities.has(entityId)) {
-                toRemove.push(entityId);
-            }
-        }
-
-        toRemove.forEach(entityId => {
-            this.removeEntityAnimations(entityId);
-        });
-    }
-
-    entityDestroyed(entityId){
-        this.removeEntityAnimations(entityId);
-    }
-    removeEntityAnimations(entityId) {
-        this.entityAnimationStates.delete(entityId);
-        this.billboardAnimationStates.delete(entityId);
-    }
+    // Cleanup is handled automatically by ECS when entities are destroyed
 
     destroy() {
-        this.entityAnimationStates.clear();
-        this.billboardAnimationStates.clear();
+        // Components are managed by the ECS, no cleanup needed here
+    }
+
+    /**
+     * Get all entity animation states (for debugging/inspection)
+     */
+    getEntityAnimations() {
+        const result = new Map();
+        const entities = this.game.getEntitiesWith("animationState");
+        for (const entityId of entities) {
+            result.set(entityId, this.game.getComponent(entityId, "animationState"));
+        }
+        return result;
     }
 
     /**
@@ -700,9 +716,25 @@ class AnimationSystem extends GUTS.BaseSystem {
      * @param {function} onComplete - Optional callback when animation finishes (for non-looping animations)
      */
     setBillboardAnimation(entityId, animationType, loop = true, onComplete = null) {
-        const animData = this.billboardAnimationStates.get(entityId);
+        const isArcher = entityId.includes('archer') && this.game.state?.phase === 'battle';
+        if (isArcher) {
+            const stack = new Error().stack.split('\n').slice(1, 4).join(' <- ');
+            console.log(`[AnimationSystem] setBillboardAnimation: type=${animationType}, loop=${loop}, from: ${stack}`);
+        }
+
+        const animData = this.game.getComponent(entityId, "billboardAnimation");
         if (!animData) {
             console.warn(`[AnimationSystem] No animation state for billboard entity ${entityId}`);
+            return false;
+        }
+
+        if (isArcher) {
+            console.log(`[AnimationSystem] Current animation type: ${animData.currentAnimationType}`);
+        }
+
+        // Check death state from component (single source of truth)
+        // Don't allow animation changes for dead entities (except death animation itself)
+        if (this.isEntityDead(entityId) && animationType !== 'death') {
             return false;
         }
 
@@ -712,8 +744,8 @@ class AnimationSystem extends GUTS.BaseSystem {
             return false;
         }
 
-        // If already in this animation type, don't restart (unless it's a single-play animation like attack)
-        if (animData.currentAnimationType === animationType && !this.SINGLE_PLAY_ANIMATIONS.has(animationType)) {
+        // If already in this animation type, don't restart
+        if (animData.currentAnimationType === animationType) {
             return true;
         }
 
@@ -737,7 +769,7 @@ class AnimationSystem extends GUTS.BaseSystem {
      * Get the current animation type for a billboard entity
      */
     getBillboardCurrentAnimation(entityId) {
-        const animData = this.billboardAnimationStates.get(entityId);
+        const animData = this.game.getComponent(entityId, "billboardAnimation");
         return animData?.currentAnimationType || null;
     }
 
@@ -745,20 +777,25 @@ class AnimationSystem extends GUTS.BaseSystem {
      * Get billboard animation state (for direct manipulation by behaviors)
      */
     getBillboardAnimationState(entityId) {
-        return this.billboardAnimationStates.get(entityId) || null;
+        return this.game.getComponent(entityId, "billboardAnimation") || null;
     }
 
     /**
      * Set sprite animation direction for a billboard entity
      */
     setBillboardAnimationDirection(entityId, direction) {
-        const animState = this.billboardAnimationStates.get(entityId);
+        const animState = this.game.getComponent(entityId, "billboardAnimation");
         if (!animState) return false;
 
         if (direction !== animState.currentDirection) {
+            // Don't reset frame for single-play animations - just change direction
+            const shouldResetFrame = !this.SINGLE_PLAY_ANIMATIONS.has(animState.currentAnimationType);
+
             animState.currentDirection = direction;
-            animState.frameIndex = 0;
-            animState.frameTime = 0;
+            if (shouldResetFrame) {
+                animState.frameIndex = 0;
+                animState.frameTime = 0;
+            }
 
             // Tell EntityRenderer to apply the new frame immediately
             const entityRenderer = this.game.gameManager.call('getEntityRenderer');
@@ -781,7 +818,12 @@ class AnimationSystem extends GUTS.BaseSystem {
         const frameRates = entityRenderer.spriteAnimationFrameRates || {};
         const defaultFrameRate = entityRenderer.defaultFrameRate || 10;
 
-        for (const [entityId, animState] of this.billboardAnimationStates) {
+        // Get all entities with billboardAnimation component
+        const billboardEntities = this.game.getEntitiesWith("billboardAnimation");
+
+        for (const entityId of billboardEntities) {
+            const animState = this.game.getComponent(entityId, "billboardAnimation");
+            if (!animState) continue;
             // Get animations for current type (stored in AnimationSystem state)
             const animations = animState.animations?.[animState.currentAnimationType];
             if (!animations) continue;
@@ -812,6 +854,10 @@ class AnimationSystem extends GUTS.BaseSystem {
             if (animState.frameTime >= frameDuration) {
                 animState.frameTime = 0;
                 animState.frameIndex++;
+
+                if (entityId.includes('archer') && this.game.state?.phase === 'battle' && animState.currentAnimationType === 'attack') {
+                    console.log(`[AnimationSystem] Attack frame advance: ${animState.frameIndex}/${frames.length}, frameDuration=${frameDuration.toFixed(3)}, deltaTime=${game.state.deltaTime.toFixed(3)}`);
+                }
 
                 // Handle animation completion
                 if (animState.frameIndex >= frames.length) {
@@ -884,8 +930,8 @@ class AnimationSystem extends GUTS.BaseSystem {
             initialDirection = team?.id === 'left' ? 'upright' : 'downleft';
         }
 
-        // Create animation state
-        const animState = {
+        // Add billboardAnimation component to entity
+        this.game.addComponent(entityId, 'billboardAnimation', {
             spriteAnimationSet,
             animations,
             currentAnimationType: null,
@@ -893,9 +939,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             frameIndex: 0,
             frameTime: 0,
             loopAnimation: true
-        };
-
-        this.billboardAnimationStates.set(entityId, animState);
+        });
 
         // Apply initial idle animation (sets UV coordinates)
         this.setBillboardAnimation(entityId, 'idle', true);

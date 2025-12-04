@@ -103,7 +103,7 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
     playBuildAnimation(entityId, game) {
         if (!game.animationSystem) return;
 
-        const animState = game.animationSystem.entityAnimationStates.get(entityId);
+        const animState = game.getComponent(entityId, "animationState");
         if (animState) {
             const finished = game.animationSystem.isAnimationFinished(entityId, animState.currentClip);
             if (finished || animState.currentClip !== 'attack') {

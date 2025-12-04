@@ -143,27 +143,27 @@ class BaseBehaviorNode {
 
     /**
      * Sequence: Run all children in order until one fails (AND logic)
+     *
+     * Important: Always re-evaluate from the beginning to check conditions.
+     * If a previous child was running, we still need to verify conditions are still valid.
+     * Only skip ahead if the running child succeeds, then continue from there.
      */
     evaluateSequence(entityId, game) {
         const debugger_ = game.gameManager?.call('getDebugger');
         const treeId = this.config.id || this.constructor.name;
         const trace = debugger_?.beginEvaluation(entityId, treeId);
 
-        // Check for running state
+        // Check for running state - but we'll still evaluate from the beginning
         const runningInfo = this.runningState.get(entityId);
-        let startIndex = 0;
-
-        if (runningInfo) {
-            startIndex = runningInfo.childIndex || 0;
-        }
 
         let lastResult = null;
 
-        for (let i = startIndex; i < this.children.length; i++) {
+        // Always evaluate from the beginning to re-check conditions
+        for (let i = 0; i < this.children.length; i++) {
             const result = this.evaluateChildWithTrace(entityId, game, this.children[i], i, trace, debugger_);
 
             if (result === null) {
-                // Child failed, sequence fails
+                // Child failed, sequence fails - clear running state
                 this.runningState.delete(entityId);
                 this.endTrace(debugger_, trace, null, entityId, game);
                 return null;

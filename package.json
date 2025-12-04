@@ -12,7 +12,7 @@
     "dev": "webpack serve --config webpack.dev.config.js",
     "dev:server": "node server_editor.js",
     "game:server": "node projects/TurnBasedWarfare/server_game.js",
-    "game:server:dev": "nodemon --watch projects/TurnBasedWarfare/dist/server projects/TurnBasedWarfare/server_game.js",
+    "game:server:dev": "nodemon --watch projects/TurnBasedWarfare/dist/server/game.js --delay 1 projects/TurnBasedWarfare/server_game.js",
     "game:dev": "concurrently -n \"BUILD,SERVER,RESOURCES\" -c \"blue,green,magenta\" \"npm run build:watch\" \"npm run game:server:dev\" \"npm run resources:watch\"",
     "game:build-and-start": "npm run build && npm run game:server",
     "start:editor": "node server_editor.js 5000",

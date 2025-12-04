@@ -16,7 +16,14 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const targetId = shared[targetKey];
 
+        if (entityId.includes('archer') && game.state?.phase === 'battle') {
+            console.log(`[AttackEnemyBehaviorAction] execute: targetId=${targetId}`);
+        }
+
         if (!targetId) {
+            if (entityId.includes('archer') && game.state?.phase === 'battle') {
+                console.log(`[AttackEnemyBehaviorAction] No target, returning failure`);
+            }
             return this.failure();
         }
 
@@ -44,10 +51,22 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     onEnd(entityId, game) {
+        if (entityId.includes('archer') && game.state?.phase === 'battle') {
+            console.log(`[AttackEnemyBehaviorAction] onEnd called for entity ${entityId}`);
+        }
+
         // Unanchor when combat action ends
         const vel = game.getComponent(entityId, 'velocity');
         if (vel) {
             vel.anchored = false;
+        }
+
+        // Reset animation to idle when combat ends
+        if (game.gameManager && game.gameManager.has('setBillboardAnimation')) {
+            if (entityId.includes('archer') && game.state?.phase === 'battle') {
+                console.log(`[AttackEnemyBehaviorAction] Setting animation to idle for entity ${entityId}`);
+            }
+            game.gameManager.call('setBillboardAnimation', entityId, 'idle', true);
         }
     }
 
@@ -86,7 +105,11 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Handle projectile or melee damage
         if (combat.projectile) {
-            this.fireProjectile(attackerId, targetId, game, combat);
+            // Schedule projectile to fire at 50% through the attack animation (release point)
+            const projectileDelay = (1 / combat.attackSpeed) * 0.5;
+            game.schedulingSystem.scheduleAction(() => {
+                this.fireProjectile(attackerId, targetId, game, combat);
+            }, projectileDelay, attackerId);
         } else if (combat.damage > 0) {
             // Melee attack - schedule damage
             const damageDelay = (1 / combat.attackSpeed) * 0.5;

@@ -1,0 +1,14 @@
+{
+  "title": "animationState",
+  "schema": {
+    "currentClip": "idle",
+    "lastStateChange": 0,
+    "animationTime": 0,
+    "minAnimationTime": 0,
+    "pendingClip": null,
+    "pendingSpeed": null,
+    "pendingMinTime": null,
+    "isTriggered": false,
+    "isCelebrating": false
+  }
+}

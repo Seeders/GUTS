@@ -7,7 +7,7 @@
   "behaviorActions": [
     "PlayerOrderBehaviorTree",
     "AbilitiesBehaviorTree",
-    "CombatBehaviorAction",
+    "CombatBehaviorTree",
     "IdleBehaviorAction"
   ],
   "parameters": {},
