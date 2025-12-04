@@ -237,10 +237,8 @@ class PathfindingSystem extends GUTS.BaseSystem {
                     continue;
                 }
 
-                // Convert worldObject position to world position
-                // worldObj.x and worldObj.y are in pixel/absolute coordinates (centered in tile)
-                // Use centralized coordinate conversion from CoordinateTranslator
-                const worldPosCentered = this.game.gameManager.call('pixelToWorld', worldObj.x, worldObj.y);
+                // Convert grid coordinates to world position
+                const worldPosCentered = this.game.gameManager.call('convertGridToWorldPosition', worldObj.gridX, worldObj.gridZ);
 
                 // Subtract centering offset to get upper-left corner position
                 // This ensures consistent placement regardless of rounding

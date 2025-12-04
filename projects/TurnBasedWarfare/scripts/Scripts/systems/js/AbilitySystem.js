@@ -42,9 +42,16 @@ class AbilitySystem extends GUTS.BaseSystem {
         this.processAbilityActions();
         this.updateAIAbilityUsage();
     }
-    processAbilityQueue() {        
+    processAbilityQueue() {
         for (const [entityId, queuedAbility] of this.abilityQueue.entries()) {
             if (this.game.state.now >= queuedAbility.executeTime) {
+                // Cancel queued ability if caster died
+                const deathState = this.game.getComponent(entityId, "deathState");
+                if (deathState && deathState.isDying) {
+                    this.abilityQueue.delete(entityId);
+                    continue;
+                }
+
                 const abilities = this.entityAbilities.get(entityId);
                 if (abilities) {
                     const ability = abilities.find(a => a.id === queuedAbility.abilityId);
@@ -97,7 +104,11 @@ class AbilitySystem extends GUTS.BaseSystem {
         if (this.abilityQueue.has(entityId)) {
             return; // Entity is already casting an ability, wait for it to finish
         }
-        
+
+        // Don't allow dead/dying entities to consider abilities
+        const deathState = this.game.getComponent(entityId, "deathState");
+        if (deathState && deathState.isDying) return;
+
         const availableAbilities = abilities
             .filter(ability => this.isAbilityOffCooldown(entityId, ability.id))
             .filter(ability => ability.canExecute(entityId))
@@ -114,12 +125,14 @@ class AbilitySystem extends GUTS.BaseSystem {
     useAbility(entityId, abilityId, targetData = null) {
         const abilities = this.entityAbilities.get(entityId);
         if (!abilities) return false;
-        
+
         const ability = abilities.find(a => a.id === abilityId);
         if (!ability) return false;
-        
 
-        
+        // Don't allow dead/dying entities to use abilities
+        const deathState = this.game.getComponent(entityId, "deathState");
+        if (deathState && deathState.isDying) return false;
+
         if (!this.isAbilityOffCooldown(entityId, abilityId)) {
             return false;
         }

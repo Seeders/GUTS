@@ -1,5 +1,12 @@
 {
   "title": "barbarian Attack Down Left",
   "collection": "barbarianSprites",
-  "sprites": []
+  "sprites": [
+    "barbarianAttackDownLeft_0",
+    "barbarianAttackDownLeft_1",
+    "barbarianAttackDownLeft_2",
+    "barbarianAttackDownLeft_3",
+    "barbarianAttackDownLeft_4",
+    "barbarianAttackDownLeft_5"
+  ]
 }

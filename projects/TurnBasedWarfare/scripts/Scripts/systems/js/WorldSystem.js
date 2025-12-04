@@ -340,8 +340,8 @@ class WorldSystem extends GUTS.BaseSystem {
     addWorldEntityVisuals(worldObj) {
         const Components = this.game.gameManager.call('getComponents');
 
-        // Find the existing entity created by TerrainSystem
-        const entityId = `env_${worldObj.type}_${worldObj.x}_${worldObj.y}`;
+        // Find the existing entity created by TerrainSystem using grid coordinates
+        const entityId = `env_${worldObj.type}_${worldObj.gridX}_${worldObj.gridZ}`;
 
         // Check if entity exists
         if (!this.game.entities.has(entityId)) {
@@ -353,8 +353,8 @@ class WorldSystem extends GUTS.BaseSystem {
         if (!this.game.hasComponent(entityId, "renderable")) {
             this.game.addComponent(entityId, "renderable",
                 {
-                    objectType:'worldObjects', 
-                    spawnType: worldObj.type, 
+                    objectType:'worldObjects',
+                    spawnType: worldObj.type,
                     capacity: 1024
                 });
         }

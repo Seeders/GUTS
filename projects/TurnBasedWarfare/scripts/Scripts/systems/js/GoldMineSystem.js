@@ -38,9 +38,9 @@ class GoldMineSystem extends GUTS.BaseSystem {
         this.goldVeinLocations = tileMap.worldObjects
             .filter(obj => obj.type === 'goldVein')
             .map(obj => {
-                const worldX = (obj.x + extensionSize) - extendedSize / 2;
-                const worldZ = (obj.y + extensionSize) - extendedSize / 2;
-                const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldX, worldZ);
+                // Convert tile grid coordinates to world position, then to placement grid
+                const worldPos = this.game.gameManager.call('tileToWorld', obj.gridX, obj.gridZ, true);
+                const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPos.x, worldPos.z);
                 // Gold veins use placementGridWidth which is already in placement grid units
                 // But we need to match how buildings calculate their cells (footprintWidth * 2)
                 // Since gold veins have placementGridWidth=2, and buildings have footprintWidth=2,
@@ -54,10 +54,10 @@ class GoldMineSystem extends GUTS.BaseSystem {
                 const cells = this.calculateGoldVeinCells(gridPos, gridWidth, gridHeight);
 
                 return {
-                    x: obj.x,
-                    y: obj.y,
-                    worldX: worldX,
-                    worldZ: worldZ,
+                    gridX: obj.gridX,
+                    gridZ: obj.gridZ,
+                    worldX: worldPos.x,
+                    worldZ: worldPos.z,
                     gridPos: gridPos,
                     gridWidth: gridWidth,  // 4 (placement grid cells)
                     gridHeight: gridHeight,  // 4 (placement grid cells)

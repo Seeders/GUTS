@@ -12,7 +12,63 @@
   "footprintHeight": 2,
   "height": 100,
   "size": 64,
-  "spriteScale": 96,
+  "spriteScale": 128,
   "icon": "building_fletchersHall",
-  "hp": 1500
+  "hp": 1500,
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "underConstruction": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": ""
+                },
+                "url": "models/underConstruction.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": ""
+            },
+            "metalness": 0,
+            "roughness": 1,
+            "x": 0,
+            "z": 0,
+            "scaleX": 1,
+            "name": "foundation",
+            "url": "models/fletchers_hall.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 2,
+          "y": 2,
+          "z": 2
+        }
+      }
+    }
+  },
+  "spriteAnimationSet": "fletchershall"
 }

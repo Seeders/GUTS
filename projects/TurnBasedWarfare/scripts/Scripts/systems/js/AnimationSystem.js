@@ -441,12 +441,17 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Handle billboard entities with sprite animations
         if (animState.isBillboard) {
             if (clipName === 'attack') {
-                // Set attack animation (looping for building)
+                // Set attack animation (single-play, not looping)
+                // When animation completes, return to idle
                 this.game.gameManager.call(
                     'setBillboardAnimation',
                     entityId,
                     'attack',
-                    true  // loop
+                    false,  // don't loop - play once
+                    (completedEntityId) => {
+                        // Return to idle animation after attack finishes
+                        this.game.gameManager.call('setBillboardAnimation', completedEntityId, 'idle', true);
+                    }
                 );
                 return true;
             }
@@ -678,11 +683,13 @@ class AnimationSystem extends GUTS.BaseSystem {
         this.removeEntityAnimations(entityId);
     }
     removeEntityAnimations(entityId) {
-        this.entityAnimationStates.delete(entityId);        
+        this.entityAnimationStates.delete(entityId);
+        this.billboardAnimationStates.delete(entityId);
     }
 
     destroy() {
         this.entityAnimationStates.clear();
+        this.billboardAnimationStates.clear();
     }
 
     /**
@@ -705,8 +712,8 @@ class AnimationSystem extends GUTS.BaseSystem {
             return false;
         }
 
-        // If already in this animation type, don't restart
-        if (animData.currentAnimationType === animationType) {
+        // If already in this animation type, don't restart (unless it's a single-play animation like attack)
+        if (animData.currentAnimationType === animationType && !this.SINGLE_PLAY_ANIMATIONS.has(animationType)) {
             return true;
         }
 
@@ -784,8 +791,8 @@ class AnimationSystem extends GUTS.BaseSystem {
 
             const frames = directionData.frames;
 
-            // For non-looping animations, check if already finished
-            if (!animState.loopAnimation && animState.frameIndex >= frames.length - 1) {
+            // For non-looping animations, check if already finished (past the last frame)
+            if (!animState.loopAnimation && animState.frameIndex >= frames.length) {
                 continue;
             }
 
@@ -812,9 +819,18 @@ class AnimationSystem extends GUTS.BaseSystem {
                         animState.frameIndex = 0;
                     } else {
                         animState.frameIndex = frames.length - 1;
+
+                        // Call completion callback if set
                         if (animState.onAnimationComplete) {
                             animState.onAnimationComplete(entityId);
                             animState.onAnimationComplete = null;
+                        } else {
+                            // Default behavior: return to idle for single-play animations (except death)
+                            // Death animations should stay frozen on the last frame
+                            if (this.SINGLE_PLAY_ANIMATIONS.has(animState.currentAnimationType) &&
+                                animState.currentAnimationType !== 'death') {
+                                this.game.gameManager.call('setBillboardAnimation', entityId, 'idle', true);
+                            }
                         }
                     }
                 }

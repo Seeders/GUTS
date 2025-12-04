@@ -6,5 +6,6 @@
   "placementGridHeight": 1,
   "impassable": true,
   "spriteScale": 89,
-  "renderTexture": "tree_jungle"
+  "renderTexture": "tree_jungle",
+  "spriteOffset": 8
 }

@@ -21,7 +21,7 @@
           "main": {
             "shapes": [
               {
-                "url": "models/idle.glb",
+                "url": "animations/idle.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
@@ -106,7 +106,7 @@
           "main": {
             "shapes": [
               {
-                "url": "models/2h_spell_summon.glb",
+                "url": "animations/2h_spell_summon.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,

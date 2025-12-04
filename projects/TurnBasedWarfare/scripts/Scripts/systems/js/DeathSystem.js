@@ -38,6 +38,7 @@ class DeathSystem extends GUTS.BaseSystem {
 
         this.game.addComponent(entityId, 'deathState', {
             isDying: true,
+            state: 'dying',
             deathStartTime: this.game.state.now
         });
 
@@ -79,79 +80,105 @@ class DeathSystem extends GUTS.BaseSystem {
             this.game.gameManager.call('setCorpseAnimation', entityId);
         }
 
-        // Remove death state
-        this.game.removeComponent(entityId, "deathState");
-
+        // Update death state to corpse - keep the component to prevent revival
+        const deathState = this.game.getComponent(entityId, "deathState");
+        if (deathState) {
+            deathState.state = 'corpse';
+            deathState.corpseTime = this.game.state.now || 0;
+            deathState.teamAtDeath = team.team;
+        }
 
         this.game.triggerEvent('onUnitKilled', entityId);
-        // Add corpse component
-        this.game.addComponent(entityId, "corpse", {
-            originalUnitType: { ...unitType },
-            deathTime: (this.game.state.now || 0),
-            teamAtDeath: team.team,
-            isCorpse: true
-        });
         
     }
 
     // Rest of your existing methods remain the same...
     getCorpsesInRange(position, range, teamFilter = null) {
-        const corpses = this.game.getEntitiesWith("corpse");
+        const corpses = this.game.getEntitiesWith("deathState");
         // Sort for deterministic processing order (prevents desync)
         corpses.sort((a, b) => String(a).localeCompare(String(b)));
         const nearbyCorpses = [];
 
         corpses.forEach(corpseId => {
+            const deathState = this.game.getComponent(corpseId, "deathState");
+
+            // Only include actual corpses, not dying entities
+            if (!deathState || deathState.state !== 'corpse') return;
+
             const transform = this.game.getComponent(corpseId, "transform");
             const corpsePos = transform?.position;
-            const corpse = this.game.getComponent(corpseId, "corpse");
+            const unitType = this.game.getComponent(corpseId, "unitType");
 
-            if (!corpsePos || !corpse) return;
-            
+            if (!corpsePos || !unitType) return;
+
             // Check team filter if specified
-            if (teamFilter && corpse.teamAtDeath !== teamFilter) return;
-            
+            if (teamFilter && deathState.teamAtDeath !== teamFilter) return;
+
             // Check distance
             const dx = corpsePos.x - position.x;
             const dz = corpsePos.z - position.z;
             const distance = Math.sqrt(dx * dx + dz * dz);
-            
+
             if (distance <= range) {
                 nearbyCorpses.push({
                     entityId: corpseId,
                     position: corpsePos,
-                    corpse: corpse,
+                    corpse: {
+                        originalUnitType: unitType,
+                        deathTime: deathState.corpseTime,
+                        teamAtDeath: deathState.teamAtDeath
+                    },
                     distance: distance
                 });
             }
         });
-        
+
         return nearbyCorpses;
     }
 
     consumeCorpse(corpseId) {
         // Remove corpse from battlefield (for abilities that consume corpses)
-        const corpse = this.game.getComponent(corpseId, "corpse");
-        if (!corpse) return null;
-        
+        const deathState = this.game.getComponent(corpseId, "deathState");
+        if (!deathState || deathState.state !== 'corpse') return null;
+
+        const unitType = this.game.getComponent(corpseId, "unitType");
+        if (!unitType) return null;
+
         // Return corpse data for the ability to use
-        const corpseData = { ...corpse };
-        
+        const corpseData = {
+            originalUnitType: unitType,
+            deathTime: deathState.corpseTime,
+            teamAtDeath: deathState.teamAtDeath
+        };
+
         // Destroy the corpse entity
         this.game.destroyEntity(corpseId);
-        
+
         return corpseData;
     }
 
     getAllCorpses() {
-        return this.game.getEntitiesWith("corpse");
+        const allDeathStates = this.game.getEntitiesWith("deathState");
+        return allDeathStates.filter(entityId => {
+            const deathState = this.game.getComponent(entityId, "deathState");
+            return deathState && deathState.state === 'corpse';
+        });
     }
 
     getCorpsesByTeam(team) {
-        const corpses = this.game.getEntitiesWith("corpse");
-        return corpses.filter(corpseId => {
-            const corpse = this.game.getComponent(corpseId, "corpse");
-            return corpse && corpse.teamAtDeath === team;
+        const allCorpses = this.getAllCorpses();
+        return allCorpses.filter(corpseId => {
+            const deathState = this.game.getComponent(corpseId, "deathState");
+            return deathState && deathState.teamAtDeath === team;
         });
+    }
+
+    onBattleEnd() {
+        // Clean up all corpses at the end of battle
+        const allCorpses = this.getAllCorpses();
+        allCorpses.forEach(corpseId => {
+            this.game.destroyEntity(corpseId);
+        });
+        console.log(`Cleaned up ${allCorpses.length} corpses at end of battle`);
     }
 }

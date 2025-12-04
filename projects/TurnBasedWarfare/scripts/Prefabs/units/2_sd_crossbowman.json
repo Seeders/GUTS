@@ -43,7 +43,7 @@
           "main": {
             "shapes": [
               {
-                "url": "models/shooting_arrow.glb",
+                "url": "animations/shooting_arrow.glb",
                 "id": 0
               }
             ]

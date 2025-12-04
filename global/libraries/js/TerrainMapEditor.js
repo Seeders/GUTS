@@ -893,8 +893,37 @@ class TerrainMapEditor {
 
                     itemsContainer.appendChild(item);
                 }
-                
+
                 typeContainer.appendChild(itemsContainer);
+
+                // Add delete all button for this type
+                const deleteAllBtn = document.createElement('button');
+                deleteAllBtn.className = 'editor-module__btn editor-module__btn--danger editor-module__btn--small';
+                deleteAllBtn.textContent = `Delete All ${type}`;
+                deleteAllBtn.style.marginTop = '8px';
+                deleteAllBtn.style.width = '100%';
+                deleteAllBtn.addEventListener('click', () => {
+                    if (confirm(`Are you sure you want to delete all ${type} objects?`)) {
+                        // Remove all objects of this type
+                        if (this.tileMap.worldObjects) {
+                            this.tileMap.worldObjects = this.tileMap.worldObjects.filter(obj => obj.type !== type);
+                            this.updateWorldObjects();
+                            this.exportMap();
+
+                            // Update count badge
+                            countBadge.textContent = '0';
+
+                            // Show feedback
+                            this.placementModeIndicator.textContent = `Deleted all ${type} objects`;
+                            this.placementModeIndicator.style.opacity = '1';
+                            setTimeout(() => {
+                                this.placementModeIndicator.style.opacity = '0';
+                            }, 2000);
+                        }
+                    }
+                });
+                typeContainer.appendChild(deleteAllBtn);
+
                 container.appendChild(typeContainer);
             }
             
@@ -1163,9 +1192,6 @@ class TerrainMapEditor {
 
         const gridX = this.cachedGridPosition.x;
         const gridZ = this.cachedGridPosition.z;
-        const gridSize = this.terrainDataManager.gridSize;
-        const terrainSize = this.terrainDataManager.terrainSize;
-        const halfGrid = gridSize / 2;
         const radius = Math.floor(this.brushSize / 2);
 
         // Calculate brush area in grid coordinates
@@ -1183,18 +1209,12 @@ class TerrainMapEditor {
                     // Check if within brush radius (circular brush)
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance <= radius + 0.5) {
-                        // Convert grid position to world position to match environment object format
-                        const worldX = (targetGridX * gridSize) + halfGrid;
-                        const worldZ = (targetGridZ * gridSize) + halfGrid;
-
-                        // Find any environment objects at this position
+                        // Find any environment objects at this grid position
                         for (let i = this.tileMap.worldObjects.length - 1; i >= 0; i--) {
                             const obj = this.tileMap.worldObjects[i];
 
-                            // Check if object is at this grid position (with small tolerance)
-                            const tolerance = gridSize * 0.1;
-                            if (Math.abs(obj.x - worldX) < tolerance &&
-                                Math.abs(obj.y - worldZ) < tolerance) {
+                            // Check if object is at this grid position
+                            if (obj.gridX === targetGridX && obj.gridZ === targetGridZ) {
                                 objectsToDelete.push(i);
                             }
                         }
@@ -2401,9 +2421,6 @@ class TerrainMapEditor {
                     this.tileMap.worldObjects = [];
                 }
 
-                const gridSize = this.terrainDataManager.gridSize;
-                const terrainSize = this.terrainDataManager.terrainSize;
-                const halfGrid = gridSize / 2;
                 const radius = Math.floor(this.brushSize / 2);
                 let objectsPlaced = 0;
 
@@ -2420,22 +2437,17 @@ class TerrainMapEditor {
                             // Check if within brush radius (circular brush)
                             const distance = Math.sqrt(dx * dx + dy * dy);
                             if (distance <= radius + 0.5) {
-                                // Convert grid position to uncentered coordinate format
-                                // (spawner will apply centering offset when reading)
-                                const x = (targetGridX * gridSize) + halfGrid;
-                                const y = (targetGridZ * gridSize) + halfGrid;
-
-                                // Check if object already exists at this position
+                                // Check if object already exists at this grid position
                                 const existingIndex = this.tileMap.worldObjects.findIndex(
-                                    obj => obj.x === x && obj.y === y
+                                    obj => obj.gridX === targetGridX && obj.gridZ === targetGridZ
                                 );
 
                                 if (existingIndex === -1) {
-                                    // Add new environment object
+                                    // Add new environment object with grid coordinates
                                     this.tileMap.worldObjects.push({
                                         type: this.selectedObjectType,
-                                        x: x,
-                                        y: y
+                                        gridX: targetGridX,
+                                        gridZ: targetGridZ
                                     });
                                     objectsPlaced++;
                                 }

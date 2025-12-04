@@ -1,0 +1,15 @@
+{
+  "title": "Fletchershall",
+  "collection": "fletchershallSpritesAnimations",
+  "spriteSheet": "Sprites/fletchershallSprites/fletchershallSheet.png",
+  "idleSpriteAnimations": [
+    "fletchershallIdleDown",
+    "fletchershallIdleDownLeft",
+    "fletchershallIdleLeft",
+    "fletchershallIdleUpLeft",
+    "fletchershallIdleUp",
+    "fletchershallIdleUpRight",
+    "fletchershallIdleRight",
+    "fletchershallIdleDownRight"
+  ]
+}
