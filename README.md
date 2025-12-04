@@ -1,216 +1,788 @@
 
 <p align="center">
    <img src="https://raw.githubusercontent.com/Seeders/GUTS/main/logo.png">
-
 </p>
 
 # GUTS - Gamedev Ultimate Toolkit System
 
-GUTS is a comprehensive data-driven toolkit for game development, providing a flexible framework to create and edit games with ease. It comes with a pre-packaged tower defense game and sample assets to help you get started.
+A comprehensive data-driven game development framework providing a flexible ECS architecture, visual editor, and modular system for creating 2D and 3D games. Build everything from platformers to strategy games with pure data-driven design.
 
-More samples will be on the way.  It's easy!
+---
 
-## Local Installation
+## Table of Contents
+- [Installation & Setup](#installation--setup)
+- [Example Projects](#example-projects)
+- [Editor Basics](#editor-basics)
+- [Configuration](#configuration)
+- [Runtime Architecture](#runtime-architecture)
+- [Deep Dive: GUTS Architecture](#deep-dive-guts-architecture)
+- [Try it Online](#try-it-online)
+- [License](#license)
 
-1. Install dependencies:
+---
+
+## Installation & Setup
+
+### Prerequisites
+- Node.js (v14 or higher)
+- npm
+
+### Quick Start
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Seeders/GUTS.git
+   cd GUTS
+   ```
+
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-2. Start the server:
+3. **Start the editor:**
    ```bash
-   node server.js
+   npm run start:editor
    ```
+   Open http://localhost:5000/index.html to access the visual editor.
 
-3. Open in your browser:
-   - Editor: `http://localhost:5000/index.html`
-   - Game: `http://localhost:5000/game.html`
+4. **Build and run a game project:**
+   ```bash
+   # Build the example game (TurnBasedWarfare)
+   npm run build
 
-## License
+   # Start game server
+   npm run game:server
+   ```
+   Open http://localhost:3000/index.html to play the game.
 
-GUTS is available under the MIT license as open source software.
+### Available Commands
 
-## Try it yourself:
-https://seeders.github.io/GUTS/index.html
+| Command | Description |
+|---------|-------------|
+| `npm run build` | Build game project (default: TurnBasedWarfare) |
+| `npm run build:prod` | Production build with optimizations |
+| `npm run build:watch` | Auto-rebuild on file changes |
+| `npm run start:editor` | Start editor server (port 5000) |
+| `npm run game:server` | Start game server (port 3000) |
+| `npm run game:dev` | Full dev environment (build + server + watch) |
+| `npm run dev` | Editor development with hot reload |
 
-https://seeders.github.io/GUTS/game.html
+---
+
+## Example Projects
+
+### Turn-Based Warfare
+
+A tactical strategy game demonstrating GUTS capabilities:
+- Turn-based combat system with initiative
+- Multiple unit types with unique abilities
+- AI behavior trees for enemy units
+- Necromancy system with corpse mechanics
+- Multiplayer support with server authority
+
+**[View Project Documentation](projects/TurnBasedWarfare/README.md)**
+
+**Quick Start:**
+```bash
+npm run game:dev
+# Visit http://localhost:3000/index.html
+```
+
+---
+
+## Editor Basics
+
+### Overview
+
+At its core, **the GUTS Editor is a JSON editor** designed to manage all the data files in your game project. Every game object - units, buildings, abilities, levels, sprites - is defined in JSON files that the editor helps you create and modify.
+
+**Key Concept:** The editor provides a structured interface for editing JSON data across your project's collections. When you edit a unit's properties or paint terrain tiles, you're directly modifying the underlying JSON files that define your game.
+
+The editor is web-based, follows an MVC architecture, and supports:
+- Real-time JSON editing with validation
+- Manual save to filesystem via FileSystemSyncService (writes directly to project files)
+- Specialized modules for visual editing (terrain, sprites, models)
+- Hierarchical organization of game objects by collection type
+
+### Project Structure
+```
+GUTS/
+├── engine/              # Core engine runtime
+├── global/              # Shared engine libraries
+│   ├── libraries/      # Core engine classes (ECS, managers, systems)
+│   ├── modals/         # Reusable UI modals
+│   └── modules/        # Editor modules (terrain, sprite, model editors)
+├── projects/           # Individual game projects
+│   └── {ProjectName}/
+│       ├── scripts/    # Game-specific code & data
+│       │   ├── Prefabs/      # Game object definitions (JSON)
+│       │   ├── Scripts/      # Game systems & logic (JS)
+│       │   ├── Settings/     # Configuration files
+│       │   ├── Sprites/      # Sprite definitions
+│       │   └── Terrain/      # Level data
+│       ├── resources/  # Assets (images, models, audio)
+│       └── dist/       # Build output (client & server)
+├── build/              # Custom build system
+└── editor/             # Visual editor application
+```
+
+### Editor Interface
+
+#### Sidebar
+- **Project Selector**: Switch between projects
+- **Object List**: Hierarchical view of all game objects organized by type
+- **Actions**: Create objects, manage projects
+
+#### Main Content Area
+- **Module Content**: Context-specific views (terrain editor, sprite editor, etc.)
+- **Split View**: Resizable panels for simultaneous editing
+
+#### Editor Panel
+- **Property Editor**: JSON-based property editing for selected objects
+- **Save Button**: Save changes to filesystem via FileSystemSyncService
+
+### How the Editor Works
+
+1. **Browse Collections**: The sidebar shows all JSON files organized by collection type (units, buildings, abilities, etc.)
+
+2. **Select an Object**: Click any object to load its JSON data into the editor panel
+
+3. **Edit JSON Properties**:
+   - Modify properties directly in the JSON editor
+   - Changes validate against expected structure
+   - Syncs changes to disk via FileSystemSyncService
+
+4. **Create New Objects**:
+   - Click "Add Object" in sidebar
+   - Choose collection type (e.g., `units`)
+   - Enter object ID (becomes the filename: `myUnit.json`)
+   - Edit the new JSON object
+
+5. **Visual Modules** (Optional):
+   - Some collection types have specialized visual editors
+   - These provide alternative UIs but still edit the same JSON data
+   - Example: Terrain editor paints tiles, which updates terrain JSON
+
+### Editor Modules
+
+Modules provide specialized visual interfaces for editing certain JSON file types:
+
+| Module | Purpose | Edits |
+|--------|---------|-------|
+| **Terrain Editor** | Visual level design with tile painting | Terrain JSON files (tile maps, object placement) |
+| **Sprite Editor** | Define frame sequences and animations | Sprite JSON files (animation definitions) |
+| **Model Viewer** | Preview and configure 3D models | Unit/building render properties in JSON |
+| **Audio Manager** | Organize sound effects and music | Audio reference properties in JSON |
+
+**Remember:** Modules are just alternative interfaces for editing JSON - you can always edit the raw JSON directly.
+
+---
+
+## Configuration
+
+### Game Configuration File
+
+#### game.json
+
+**Location:** `projects/{ProjectName}/scripts/Settings/configs/game.json`
+
+This is the central configuration file that defines your game's architecture:
+
+```json
+{
+  "title": "My Game",
+  "gridSize": 48,
+  "imageSize": 128,
+  "is3D": true,
+  "isIsometric": false,
+  "libraries": [
+    "GameServices",
+    "BaseECSGame",
+    "ComponentManager",
+    "..."
+  ],
+  "managers": [
+    "GameManager",
+    "ComponentManager"
+  ],
+  "systems": [
+    "GridSystem",
+    "MyCustomSystem",
+    "RenderSystem"
+  ],
+  "classes": [
+    {
+      "collection": "abilities",
+      "baseClass": "BaseAbility"
+    },
+    {
+      "collection": "units",
+      "baseClass": "BaseUnit"
+    }
+  ],
+  "appLibrary": "MultiplayerECSGame",
+  "appLoaderLibrary": "GameLoader",
+  "initialScene": "client"
+}
+```
+
+**Key Properties:**
+
+| Property | Description |
+|----------|-------------|
+| `libraries` | Engine libraries loaded in dependency order |
+| `managers` | Manager classes for coordinating game systems |
+| `systems` | ECS systems executed each frame (in order) |
+| `classes` | Collection definitions with their base classes |
+| `appLibrary` | Main game application class |
+| `initialScene` | Starting scene/mode (client, server, editor) |
+| `gridSize` | World grid size in units |
+| `is3D` | Enable 3D rendering with Three.js |
+| `isIsometric` | Use isometric projection |
+
+### Build Configuration
+
+#### Webpack (webpack.config.js)
+
+Controls the editor and library bundling:
+- **Entry points**: Editor and library bundles
+- **Dev server**: Hot reloading for editor development
+- **Output**: Bundled editor files
+
+#### Custom Build System (build/build.js)
+
+Game-specific build process:
+- Concatenates game libraries in dependency order
+- Processes collections and generates runtime data
+- Creates client and server bundles
+- Copies resources to distribution folder
+- Supports production minification and source maps
+
+---
+
+## Runtime Architecture
+
+### Editor Runtime Flow
+
+```
+1. Load index.html
+   ↓
+2. Initialize EditorController.js
+   ↓
+3. Create EditorModel & EditorView
+   ↓
+4. Load project from localStorage
+   ↓
+5. Load project modules (terrain editor, sprite editor, etc.)
+   ↓
+6. Apply theme from project config
+   ↓
+7. Render UI (sidebar, editor panel)
+   ↓
+8. Setup event listeners
+   ↓
+9. Ready for user interaction
+```
+
+**Key Components:**
+- **EditorModel**: Manages data storage, project loading/saving, object CRUD
+- **EditorView**: Renders UI, handles user interactions, updates DOM
+- **EditorController**: Coordinates model and view, dispatches hooks
+
+**Data Persistence:**
+- FileSystemSyncService writes edits to project files on disk when you save
+- Click the save button in the editor to persist changes to the filesystem
+- After saving, refresh your game to see the updated content
+
+### Game Runtime Flow
+
+```
+1. Load game.html
+   ↓
+2. Fetch game config (game.json)
+   ↓
+3. Load GameLoader (appLoaderLibrary)
+   ↓
+4. GameLoader initializes Engine
+   ↓
+5. Load libraries in order (from config)
+   ↓
+6. Load managers (ComponentManager, etc.)
+   ↓
+7. Initialize systems (in config order)
+   ↓
+8. Load collections (prefabs, sprites, etc.)
+   ↓
+9. Initialize game class (appLibrary)
+   ↓
+10. Load initial scene (client/server/editor mode)
+   ↓
+11. Start game loop
+    ├─ System updates (fixed timestep)
+    ├─ Render frame
+    └─ Loop
+```
+
+**Engine Initialization:**
+```javascript
+Engine.js
+  ├─ Loads game.json config
+  ├─ Creates library registry (GUTS namespace)
+  ├─ Loads each library script
+  ├─ Instantiates managers
+  ├─ Initializes systems
+  └─ Starts game instance
+```
+
+**Game Loop:**
+```javascript
+Game.update(dt)
+  ├─ Update systems in order (as defined in game.json)
+  │   ├─ InputSystem (process player input)
+  │   ├─ PhysicsSystem (update positions)
+  │   ├─ CollisionSystem (detect collisions)
+  │   ├─ AnimationSystem (update animations)
+  │   ├─ RenderSystem (draw frame)
+  │   └─ ... (your custom systems)
+  └─ Request next frame
+```
+
+---
+
+## Deep Dive: GUTS Architecture
+
+### Data-Driven Design Philosophy
+
+GUTS follows a **pure data-driven approach** where game content is defined in JSON files rather than code.
+
+**The core principle:** Everything that can be data, should be data. Units, buildings, abilities, levels, AI behaviors - all defined in JSON files that the GUTS Editor helps you create and manage.
+
+This approach enables:
+- **Non-programmer friendly**: Designers create content by editing JSON through the editor
+- **No recompilation needed**: Edit JSON, refresh browser, see changes immediately
+- **Version control friendly**: JSON diffs are readable and mergeable
+- **Modularity**: Easy to add/remove/modify content without touching code
+- **Separation of data and logic**: Game systems (code) process game content (JSON)
+
+**Workflow:** The GUTS Editor is your primary tool for authoring game content - it's essentially a project-wide JSON file manager with specialized visual editors for complex data types (terrain, sprites, etc.).
+
+### Collections System
+
+Collections are typed groups of game objects stored as JSON files.
+
+#### Collection Structure
+```
+projects/{ProjectName}/scripts/Prefabs/{collection}/
+└── {objectId}.json
+```
+
+Example unit prefab:
+```json
+{
+  "title": "Warrior",
+  "size": 25,
+  "hp": 100,
+  "damage": 15,
+  "speed": 40,
+  "abilities": ["MeleeAttack"],
+  "render": {
+    "sprites": {
+      "collection": "warriorSprites",
+      "scale": 2.0
+    }
+  }
+}
+```
+
+#### Common Collections
+
+Collections are flexible and game-specific, but common patterns include:
+- **units**: Character/entity types with stats and behaviors
+- **buildings**: Structures in the game world
+- **abilities**: Special skills or powers (class-based)
+- **items/equipment**: Objects that modify entity properties
+- **projectiles**: Ranged attack definitions
+- **effects**: Visual effects and particles
+- **behaviorTrees**: AI behavior logic
+- **terrainTypes**: Tile/terrain definitions for levels
+
+You can create any collection type your game needs.
+
+#### Accessing Collections at Runtime
+```javascript
+const collections = game.getCollections();
+const warriorData = collections.units['warrior'];
+const fireballData = collections.abilities['fireball'];
+```
+
+### Entity Component System (ECS)
+
+GUTS uses a pure ECS architecture for game objects.
+
+#### What is ECS?
+
+**Entities**: Simple IDs (strings or numbers)
+```javascript
+const entityId = game.createEntity();  // "entity_1234567890"
+```
+
+**Components**: Data containers (no logic)
+```javascript
+game.addComponent(entityId, "transform", {
+  position: { x: 0, y: 0, z: 0 },
+  rotation: { x: 0, y: 0, z: 0 },
+  scale: { x: 1, y: 1, z: 1 }
+});
+
+game.addComponent(entityId, "health", {
+  current: 100,
+  max: 100
+});
+```
+
+**Systems**: Logic that operates on components
+```javascript
+class HealthBarSystem extends BaseSystem {
+  update() {
+    // Get all entities with both transform and health
+    const entities = this.game.getEntitiesWith("transform", "health");
+
+    entities.forEach(entityId => {
+      const transform = this.game.getComponent(entityId, "transform");
+      const health = this.game.getComponent(entityId, "health");
+
+      // Update health bar position and display
+      this.updateHealthBar(entityId, transform.position, health);
+    });
+  }
+}
+```
+
+#### Common Components
+
+| Component | Purpose | Example Data |
+|-----------|---------|--------------|
+| `transform` | Position, rotation, scale | `{ position: {x,y,z}, rotation: {x,y,z} }` |
+| `health` | HP tracking | `{ current: 80, max: 100 }` |
+| `entityType` | Links to collection data | `{ collection: "units", id: "warrior" }` |
+| `team` | Team/faction | `{ team: "player" }` |
+| `velocity` | Movement physics | `{ vx: 0, vy: 0, vz: 0 }` |
+| `combat` | Attack stats | `{ damage: 10, range: 50, attackSpeed: 1.0 }` |
+| `aiState` | AI state/behavior | `{ state: "idle", target: null }` |
+| `inventory` | Items held | `{ items: [], maxSlots: 10 }` |
+
+#### System Architecture
+
+Systems run in the order defined in `game.json`:
+
+```javascript
+// Example system
+class MovementSystem extends BaseSystem {
+  update(dt) {
+    // Only process entities with required components
+    const entities = this.game.getEntitiesWith("transform", "velocity");
+
+    entities.forEach(entityId => {
+      const transform = this.game.getComponent(entityId, "transform");
+      const velocity = this.game.getComponent(entityId, "velocity");
+
+      // Update position based on velocity
+      transform.position.x += velocity.vx * dt;
+      transform.position.y += velocity.vy * dt;
+      transform.position.z += velocity.vz * dt;
+    });
+  }
+}
+```
+
+**System Lifecycle Hooks:**
+- `constructor(game)`: Initialize system
+- `init()`: Setup after all systems loaded
+- `update(dt)`: Called every frame
+- `onBattleStart()`: Battle phase begins
+- `onBattleEnd()`: Battle phase ends
+- `destroy()`: Cleanup when system removed
+
+#### System Interaction Example
+
+How multiple systems coordinate to handle game logic:
+
+```javascript
+// Example: Entity takes damage
+
+// 1. Combat System applies damage
+CombatSystem.dealDamage(entityId, 50)
+  └─ Reduces health.current by 50
+
+// 2. Health System detects low health
+HealthSystem.update()
+  ├─ Checks if health.current <= 0
+  └─ Triggers 'onEntityDied' event
+
+// 3. Animation System responds
+AnimationSystem.onEntityDied(entityId)
+  └─ Plays death animation
+
+// 4. AI System adjusts behavior
+BehaviorSystem.update()
+  └─ Skips dead entities (no deathState check)
+
+// 5. Cleanup System removes entity
+CleanupSystem.onEntityDied(entityId)
+  └─ Schedules entity removal after animation
+```
+
+This demonstrates the **separation of concerns** principle - each system handles one responsibility.
+
+### Editor Modules
+
+Modules extend the editor with specialized functionality for specific content types.
+
+#### Module Structure
+
+**Location:** `global/modules/{moduleName}/`
+
+```
+modules/terrainEditor/
+├── js/
+│   └── TerrainEditor.js      # Module logic
+├── html/
+│   └── terrainEditor.html    # UI template
+└── css/
+    └── terrainEditor.css     # Styles
+```
+
+#### Creating a Module
+
+```javascript
+// TerrainEditor.js
+class TerrainEditor {
+  constructor(controller) {
+    this.controller = controller;
+    this.selectedTile = null;
+  }
+
+  // Called when module initializes
+  async init() {
+    this.canvas = document.getElementById('terrain-canvas');
+    this.setupEventListeners();
+  }
+
+  // Called when an object of this type is selected
+  async render(object) {
+    this.currentLevel = object;
+    this.drawTerrain(object.tileMap);
+  }
+
+  // Called when object data changes
+  async onObjectUpdated(object) {
+    if (object === this.currentLevel) {
+      this.drawTerrain(object.tileMap);
+    }
+  }
+
+  // Cleanup when module unloads
+  destroy() {
+    this.canvas.removeEventListener('click', this.handleClick);
+  }
+}
+
+// Register module
+window.TerrainEditor = TerrainEditor;
+```
+
+#### Built-in Modules
+
+**Terrain Editor**
+- Visual level editing with tile painting
+- Multi-layer support (terrain, decoration, collision)
+- Object placement (trees, rocks, buildings)
+- Export to game-ready format
+
+**Sprite Editor**
+- Import sprite sheets
+- Define frame sequences
+- Configure animations (idle, walk, attack, death)
+- Preview animations in real-time
+
+**Model Viewer**
+- Preview 3D models (GLTF/GLB)
+- Configure materials and textures
+- Set up animations
+- Adjust lighting and camera
+
+**Behavior Tree Editor** (Future)
+- Visual AI behavior design
+- Node-based editing
+- Live preview with debug visualization
+
+#### Module Hooks
+
+Modules can respond to editor events:
+
+```javascript
+// Called when object saved
+controller.dispatchHook('onObjectSaved', { object, collection });
+
+// Called when project loaded
+controller.dispatchHook('onProjectLoaded', { projectName });
+
+// Called before object deleted
+controller.dispatchHook('beforeObjectDeleted', { objectId, collection });
+```
+
+### Extending GUTS
+
+#### Adding a New System
+
+1. **Create system class:**
+```javascript
+// projects/{YourProject}/scripts/Scripts/systems/js/MySystem.js
+class MySystem extends GUTS.BaseSystem {
+  constructor(game) {
+    super(game);
+    // Register system reference on game object
+    this.game.mySystem = this;
+  }
+
+  init() {
+    // Called after all systems are loaded
+    // Register public API functions
+    this.game.gameManager.register('myPublicFunction',
+      this.myPublicFunction.bind(this));
+  }
+
+  update(dt) {
+    // Called every frame with delta time
+    const entities = this.game.getEntitiesWith("myComponent");
+
+    entities.forEach(entityId => {
+      const component = this.game.getComponent(entityId, "myComponent");
+      // Process component data...
+    });
+  }
+
+  myPublicFunction(entityId, data) {
+    // Public API that other systems can call
+  }
+
+  onBattleStart() {
+    // Optional: Called when battle phase starts
+  }
+
+  onBattleEnd() {
+    // Optional: Called when battle phase ends
+  }
+
+  destroy() {
+    // Optional: Cleanup when system is removed
+  }
+}
+```
+
+2. **Register in game.json:**
+```json
+{
+  "systems": [
+    "InputSystem",
+    "MySystem",
+    "RenderSystem"
+  ]
+}
+```
+
+System order matters - systems execute in the order listed.
+
+#### Adding a New Collection
+
+1. **Create collection folder:**
+```
+projects/{ProjectName}/scripts/Prefabs/myCollection/
+```
+
+2. **Add objects:**
+```json
+// myCollection/myObject.json
+{
+  "title": "My Object",
+  "customProperty": "value"
+}
+```
+
+3. **Define base class (if needed):**
+```javascript
+// scripts/Scripts/myCollection/js/BaseMyObject.js
+class BaseMyObject {
+  constructor(game, params) {
+    this.game = game;
+    Object.assign(this, params);
+  }
+
+  // Shared methods
+}
+```
+
+4. **Register in game.json:**
+```json
+{
+  "classes": [
+    {
+      "collection": "myCollection",
+      "baseClass": "BaseMyObject"
+    }
+  ]
+}
+```
+
+---
+
+## Try it Online
+
+Live demos hosted on GitHub Pages:
+- **Editor:** https://seeders.github.io/GUTS/index.html
+- **Game:** https://seeders.github.io/GUTS/game.html
+
+---
 
 ## Screenshots
 
-![image](https://github.com/user-attachments/assets/efcaa562-b040-4789-a5a4-14e14ddbe2a0)
+![Editor Overview](https://github.com/user-attachments/assets/efcaa562-b040-4789-a5a4-14e14ddbe2a0)
 
+*GUTS Editor with terrain editor module*
 
-Customize your theme, your tools, ALL the guts:
-![Editor Screenshot](https://github.com/user-attachments/assets/77f5a78d-bbfe-4d62-b26e-9479ca03dd84)
-![Game Screenshot](https://github.com/user-attachments/assets/3f63d70f-cdd1-43f6-97fc-65805144735d)
+![Gameplay](https://github.com/user-attachments/assets/77f5a78d-bbfe-4d62-b26e-9479ca03dd84)
 
-## Features
+*Turn-based warfare game in action*
 
-GUTS has any feature you have the GUTS to implement.  haha this never gets old. No but seriously, GUTS is extremely versatile and is built to be customized.
+![Theme Customization](https://github.com/user-attachments/assets/3f63d70f-cdd1-43f6-97fc-65805144735d)
 
-Does it support volumetric fog?  Absolutely.  Quantum AGI?  Look, the moment someone figures that out, GUTS will have it available.
-
-GUTS includes a simple tower defense game and various assets to demonstrate its capabilities. The toolkit is built around the following core object types:
-
-# GUTS Editor Project Documentation
-
-## Project Overview
-
-The GUTS Editor is a web-based editor application built using a data driven architecture. It enables users to create, edit, and manage game projects, including object types, objects, and their properties. The application supports dynamic module loading, project persistence, and a customizable UI with themes.
-
-**Purpose:** Provide a flexible, extensible editor for game development.
-
-### Editor Components:
-- **Model:** `EditorModel.js` - Manages data storage and manipulation.
-- **View:** `EditorView.js` - Handles UI rendering and user interactions.
-- **Controller:** `EditorController.js` - Coordinates between model and view.
-- **HTML:** `index.html` - Defines the initial DOM structure.
-
-### Engine Components:
-- **Class:** `Engine.js` - Loads the configured project and runs it.
----
-
-## HTML: index.html
-
-### Overview
-The HTML file defines the initial structure of the GUTS Editor UI, including the sidebar, main content area, editor panel, and modals. It loads necessary scripts and stylesheets and serves as the entry point for the application.
-
-### Structure
-
-#### Head:
-- **Meta Tags:** UTF-8 encoding and responsive viewport.
-- **Title:** "GUTS Editor".
-- **Scripts:**
-  - CodeMirror core (`codemirror.core.min.js`)
-  - CodeMirror JavaScript mode (`codemirror.js.min.js`)
-  - CodeMirror hint features (`codemirror.showhint.min.js`, `codemirror.hint.min.js`)
-- **Stylesheets:**
-  - `editor.css` (custom styles)
-  - `codemirror.css` (CodeMirror styles)
-  - Inline `<style id="theme_style">` (for dynamic theme injection)
-
-#### Body:
-- **Class:** `loading` (initial state, removed after setup).
-- **Main Container:** `<div id="container">`
-  - **Sidebar:** `<div class="sidebar">`
-    - **Logo:** `<img src="./logo.png">`
-    - **Project Selector:** `<select id="project-selector">` with a "Create New Project" option.
-    - **Launch Button:** `<button id="launch-game-btn">`
-    - **Object List:** `<div id="object-list">` (dynamically populated)
-    - **Sidebar Actions:** Buttons for adding objects and deleting projects.
-  - **Main Content:** `<div class="main-content">`
-    - **Content Container:** `<div id="main-content-container">` (for module content)
-    - **Resize Handle:** `<button id="toggleEditorButton">` (initially hidden)
-    - **Editor Panel:** `<div id="editor" class="full-height">` with initial instructions.
-  - **Modals Container:** `<div id="modals">`
-    - **New Project Modal:** `<div id="new-project-modal">`
-    - **New Object Modal:** `<div id="new-object-modal">`
-    - **Duplicate Object Modal:** `<div id="duplicate-object-modal">`
-- **Script:** Loads `EditorController.js` as a module.
-
-### Key Elements
-
-| ID/Class | Purpose |
-|----------|---------|
-| `#container` | Main application wrapper |
-| `.sidebar` | Sidebar for project and object navigation |
-| `#object-list` | Dynamic list of object types and objects |
-| `#editor` | Editor panel for object properties |
-| `#main-content-container` | Container for module-specific content |
-| `#toggleEditorButton` | Handle for resizing editor/content areas |
-| `#modals` | Container for all modal dialogs |
+*Customizable editor themes*
 
 ---
-
-## Model: EditorModel.js
-
-### Overview
-The EditorModel class manages the application's data, including project configurations, object collections, and state. It uses localStorage for persistence and supports operations like creating, updating, and deleting projects and objects.
-
-### Key Properties
-- **CONFIG:** Default settings (e.g., `GRID_SIZE`, `DEFAULT_RENDER`).
-- **state:** Tracks current project, selected type/object, and expanded categories.
-- **defaultProjects:** Predefined projects (e.g., "default_project").
-
-### Key Methods
-- **initializeDefaultProjects():** Sets up default projects in localStorage.
-- **loadProject(name):** Loads a project into state.project.
-- **saveProject():** Saves the current project to localStorage or server (localhost).
-- **createObject(typeId, objId, properties):** Adds a new object to a collection.
-- **updateObject(updates):** Updates the selected object's properties.
-- **deleteObject():** Removes the selected object.
-- **getCollections():** Returns all object collections.
-- **getCollectionDefs():** Returns type definitions.
-
----
-
-## Controller: EditorController.js
-
-### Overview
-The EditorController class coordinates between the model and view, handling initialization, project loading, and object management. It also manages dynamic modules and theme application.
-
-### Key Properties
-- **model:** Instance of EditorModel.
-- **view:** Instance of EditorView.
-- **elements:** Cached DOM references (e.g., `#object-list`, `#editor`).
-
-### Key Methods
-- **init():** Initializes the application and loads the initial project.
-- **loadProject(name):** Loads a project, including modules and UI updates.
-- **saveObject(data):** Saves changes to the current object.
-- **selectObject(obj):** Updates the selected object and UI.
-- **applyTheme(themeConfig):** Applies a CSS theme to the UI.
-- **dispatchHook(hookName, params):** Dispatches custom events for extensibility.
-
----
-
-## View: EditorView.js
-
-### Overview
-The EditorView class renders the UI and handles user interactions, updating the DOM based on the model state via the controller. It supports dynamic property editors, modals, and drag-resize functionality.
-
-### Key Properties
-- **controller:** Reference to EditorController.
-- **elements:** Cached DOM elements.
-- **isDragging:** Tracks drag state for resizing.
-
-### Key Methods
-- **renderObjectList():** Renders the sidebar with categorized object types and objects.
-- **renderEditor():** Displays the editor panel for the selected object.
-- **renderCustomProperties(container, object):** Renders object properties with type-specific inputs.
-- **setupEventListeners():** Sets up listeners for UI interactions (e.g., clicks, drags).
-- **showSuccessMessage(message):** Displays temporary success messages.
-- **renderObject():** Renders module-specific content for the selected object.
-
----
-
-## Project Workflow
-
-### Initialization:
-1. HTML loads, triggering `EditorController.js`.
-2. Controller creates `EditorModel` and `EditorView`, then calls `init()`.
-
-### Project Loading:
-1. Model loads the initial project from localStorage.
-2. Controller initializes modules and updates the view.
-
-### UI Interaction:
-1. View renders the sidebar and editor based on model data.
-2. User actions (e.g., selecting objects, saving) trigger controller methods.
-
-### Persistence:
-- Changes are saved to localStorage (or server on localhost).
-
-### Extensibility:
-- Modules enhance functionality via hooks and dynamic loading.
-
----
-
-## Notes
-- **Theming:** Themes are applied via inline CSS in `#theme_style`.
-- **Local Development:** On localhost, data is synced to a server via FileSystemSyncService.
-- **UI Flexibility:** Drag-resize and modal dialogs enhance usability.
 
 ## Contributing
 
-Feel free to submit issues or pull requests to improve GUTS. Contributions are welcome under the MIT Open Source license.
+Contributions are welcome! Feel free to:
+- Submit bug reports and feature requests via [GitHub Issues](https://github.com/Seeders/GUTS/issues)
+- Fork the repository and submit pull requests
+- Improve documentation
+- Share your games made with GUTS
+
+---
+
+## License
+
+GUTS is available under the **MIT License** as open source software.
+
+Copyright (c) 2024 GUTS Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
+**Built with GUTS? Share your creations!**
