@@ -26,9 +26,10 @@ class GridSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getGridSize', () => this.terrainGridSize);
         this.game.gameManager.register('getPlacementGridSize', () => this.cellSize);
 
-        // Placement Grid ↔ World coordinate transformations (legacy names for backward compatibility)
-        this.game.gameManager.register('convertGridToWorldPosition', this.gridToWorld.bind(this));
-        this.game.gameManager.register('convertWorldToGridPosition', this.worldToGrid.bind(this));
+        // Placement Grid ↔ World coordinate transformations
+        // Use these for placement grid coordinates (2x terrain tile grid, used for unit/building placement)
+        this.game.gameManager.register('placementGridToWorld', this.gridToWorld.bind(this));
+        this.game.gameManager.register('worldToPlacementGrid', this.worldToGrid.bind(this));
 
         // Tile ↔ World coordinate transformations (3D terrain grid)
         this.game.gameManager.register('tileToWorld', (tileX, tileZ, useExtension = false) => {

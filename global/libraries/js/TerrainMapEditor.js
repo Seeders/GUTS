@@ -1169,7 +1169,7 @@ class TerrainMapEditor {
             const item = document.createElement('div');
             item.className = 'terrain-editor__placement-item';
             item.innerHTML = `
-                <span>${loc.side} team at (${loc.gridPosition.x}, ${loc.gridPosition.z})</span>
+                <span>${loc.side} team at (${loc.gridX}, ${loc.gridZ})</span>
                 <button class="editor-module__btn editor-module__btn--small editor-module__btn--danger" data-index="${index}">Remove</button>
             `;
 
@@ -2487,13 +2487,6 @@ class TerrainMapEditor {
         } else if (this.placementMode === 'placements') {
             // Place entities (starting locations, units, buildings)
             if (this.selectedPlacementType && this.lastPaintedTile === null) {
-                const gridSize = this.terrainDataManager.gridSize;
-                const terrainSize = this.terrainDataManager.terrainSize;
-
-                // Convert to world position (centered in tile)
-                const worldX = (gridX * gridSize) - (terrainSize / 2) + (gridSize / 2);
-                const worldZ = (gridZ * gridSize) - (terrainSize / 2) + (gridSize / 2);
-
                 if (this.selectedPlacementType === 'startingLocation') {
                     // Check if starting location already exists for this side
                     const existingIndex = this.startingLocations.findIndex(
@@ -2504,15 +2497,15 @@ class TerrainMapEditor {
                         // Update existing starting location
                         this.startingLocations[existingIndex] = {
                             side: this.selectedEntityType,
-                            gridPosition: { x: gridX, z: gridZ },
-                            worldPosition: { x: worldX, z: worldZ }
+                            gridX: gridX,
+                            gridZ: gridZ
                         };
                     } else {
                         // Add new starting location
                         this.startingLocations.push({
                             side: this.selectedEntityType,
-                            gridPosition: { x: gridX, z: gridZ },
-                            worldPosition: { x: worldX, z: worldZ }
+                            gridX: gridX,
+                            gridZ: gridZ
                         });
                     }
 
@@ -2527,8 +2520,7 @@ class TerrainMapEditor {
                     this.entityPlacements.push({
                         type: this.selectedPlacementType,
                         entityType: this.selectedEntityType,
-                        gridPosition: { x: gridX, z: gridZ },
-                        worldPosition: { x: worldX, z: worldZ }
+                        gridPosition: { x: gridX, z: gridZ }
                     });
                 }
 
@@ -2558,7 +2550,7 @@ class TerrainMapEditor {
 
                 // Check if ramp already exists at this tile
                 const existingRampIndex = this.tileMap.ramps.findIndex(
-                    r => r.x === gridX && r.z === gridZ
+                    r => r.gridX === gridX && r.gridZ === gridZ
                 );
 
                 if (existingRampIndex !== -1) {
@@ -2574,7 +2566,7 @@ class TerrainMapEditor {
                     }
 
                     // Add new ramp (applies to all edges with height differences)
-                    this.tileMap.ramps.push({ x: gridX, z: gridZ });
+                    this.tileMap.ramps.push({ gridX: gridX, gridZ: gridZ });
                 }
 
                 // Update ramp count display

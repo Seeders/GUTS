@@ -1,0 +1,12 @@
+{
+  "title": "stonegolem Walk Up Left",
+  "collection": "stonegolemSprites",
+  "sprites": [
+    "stonegolemWalkUpLeft_0",
+    "stonegolemWalkUpLeft_1",
+    "stonegolemWalkUpLeft_2",
+    "stonegolemWalkUpLeft_3",
+    "stonegolemWalkUpLeft_4",
+    "stonegolemWalkUpLeft_5"
+  ]
+}

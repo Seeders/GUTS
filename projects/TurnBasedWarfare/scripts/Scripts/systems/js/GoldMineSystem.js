@@ -40,7 +40,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
             .map(obj => {
                 // Convert tile grid coordinates to world position, then to placement grid
                 const worldPos = this.game.gameManager.call('tileToWorld', obj.gridX, obj.gridZ, true);
-                const gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPos.x, worldPos.z);
+                const gridPos = this.game.gameManager.call('worldToPlacementGrid', worldPos.x, worldPos.z);
                 // Gold veins use placementGridWidth which is already in placement grid units
                 // But we need to match how buildings calculate their cells (footprintWidth * 2)
                 // Since gold veins have placementGridWidth=2, and buildings have footprintWidth=2,

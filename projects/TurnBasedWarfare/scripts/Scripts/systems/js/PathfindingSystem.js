@@ -106,7 +106,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         const ramps = tileMap.ramps || [];
         for (const ramp of ramps) {
-            const key = `${ramp.x},${ramp.z}`;
+            const key = `${ramp.gridX},${ramp.gridZ}`;
             this.ramps.add(key);
         }
 
@@ -757,7 +757,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     isGridPositionWalkable(gridPos) {
-        const worldPos = this.game.gameManager.call('convertGridToWorldPosition', gridPos.x, gridPos.z);
+        const worldPos = this.game.gameManager.call('placementGridToWorld', gridPos.x, gridPos.z);
         return this.isPositionWalkable(worldPos);
     }
 

@@ -1,0 +1,55 @@
+{
+  "title": "Stonegolem",
+  "collection": "stonegolemSpritesAnimations",
+  "spriteSheet": "Sprites/stonegolemSprites/stonegolemSheet.png",
+  "idleSpriteAnimations": [
+    "stonegolemIdleDown",
+    "stonegolemIdleDownLeft",
+    "stonegolemIdleLeft",
+    "stonegolemIdleUpLeft",
+    "stonegolemIdleUp",
+    "stonegolemIdleUpRight",
+    "stonegolemIdleRight",
+    "stonegolemIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "stonegolemWalkDown",
+    "stonegolemWalkDownLeft",
+    "stonegolemWalkLeft",
+    "stonegolemWalkUpLeft",
+    "stonegolemWalkUp",
+    "stonegolemWalkUpRight",
+    "stonegolemWalkRight",
+    "stonegolemWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "stonegolemAttackDown",
+    "stonegolemAttackDownLeft",
+    "stonegolemAttackLeft",
+    "stonegolemAttackUpLeft",
+    "stonegolemAttackUp",
+    "stonegolemAttackUpRight",
+    "stonegolemAttackRight",
+    "stonegolemAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "stonegolemDeathDown",
+    "stonegolemDeathDownLeft",
+    "stonegolemDeathLeft",
+    "stonegolemDeathUpLeft",
+    "stonegolemDeathUp",
+    "stonegolemDeathUpRight",
+    "stonegolemDeathRight",
+    "stonegolemDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "stonegolemCelebrateDown",
+    "stonegolemCelebrateDownLeft",
+    "stonegolemCelebrateLeft",
+    "stonegolemCelebrateUpLeft",
+    "stonegolemCelebrateUp",
+    "stonegolemCelebrateUpRight",
+    "stonegolemCelebrateRight",
+    "stonegolemCelebrateDownRight"
+  ]
+}

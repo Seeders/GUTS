@@ -1,0 +1,12 @@
+{
+  "title": "stonegolem Idle Down",
+  "collection": "stonegolemSprites",
+  "sprites": [
+    "stonegolemIdleDown_0",
+    "stonegolemIdleDown_1",
+    "stonegolemIdleDown_2",
+    "stonegolemIdleDown_3",
+    "stonegolemIdleDown_4",
+    "stonegolemIdleDown_5"
+  ]
+}

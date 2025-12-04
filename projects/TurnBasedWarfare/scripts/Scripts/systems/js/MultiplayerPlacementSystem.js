@@ -523,7 +523,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
             return;
         }
 
-        let gridPos = this.game.gameManager.call('convertWorldToGridPosition', this.mouseWorldPos.x, this.mouseWorldPos.z);
+        let gridPos = this.game.gameManager.call('worldToPlacementGrid', this.mouseWorldPos.x, this.mouseWorldPos.z);
 
         let isValidPlacement = this.isValidGridPlacement(this.mouseWorldPos);
        
@@ -788,7 +788,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
 
         for (let i = 0; i < maxEffects; i++) {
             const cell = undoInfo.cells[i];
-            const worldPos = this.game.gameManager.call('convertGridToWorldPosition', cell.x, cell.z);
+            const worldPos = this.game.gameManager.call('placementGridToWorld', cell.x, cell.z);
             this.game.gameManager.call('createParticleEffect',
                 worldPos.x,
                 0,
@@ -830,7 +830,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
         // Adjust world position to account for camera angle and cell centering
         // Add half cell size to snap to nearest cell center
 
-        const gridPos = this.game.gameManager.call('convertWorldToGridPosition', this.mouseWorldPos.x, this.mouseWorldPos.z);
+        const gridPos = this.game.gameManager.call('worldToPlacementGrid', this.mouseWorldPos.x, this.mouseWorldPos.z);
         const state = this.game.state;
         
         let isValid = this.isValidGridPlacement(this.mouseWorldPos);
@@ -845,7 +845,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
         
         // For buildings, show footprint-sized preview. For units, show placement grid cells.
         const worldPositions = cells.map(cell =>
-            this.game.gameManager.call('convertGridToWorldPosition', cell.x, cell.z)
+            this.game.gameManager.call('placementGridToWorld', cell.x, cell.z)
         );
 
         if (unitPositions && unitPositions.length > 0) {
@@ -892,7 +892,7 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     isValidGridPlacement(worldPos, unitDef) {
         const selectedUnitType = unitDef || this.game.state.selectedUnitType;
 
-        let gridPos = this.game.gameManager.call('convertWorldToGridPosition', worldPos.x, worldPos.z);
+        let gridPos = this.game.gameManager.call('worldToPlacementGrid', worldPos.x, worldPos.z);
         let cells = [];
         let isValid = false;
         let gridValid = false;

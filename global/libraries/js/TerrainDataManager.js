@@ -495,7 +495,7 @@ class TerrainDataManager {
         if (!this.tileMap?.ramps || this.tileMap.ramps.length === 0) {
             return false;
         }
-        return this.tileMap.ramps.some(r => r.x === gridX && r.z === gridZ);
+        return this.tileMap.ramps.some(r => r.gridX === gridX && r.gridZ === gridZ);
     }
 
     /**

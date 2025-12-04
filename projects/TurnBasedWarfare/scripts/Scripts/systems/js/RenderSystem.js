@@ -73,7 +73,7 @@ class RenderSystem extends GUTS.BaseSystem {
             game: this.game,
             getPalette: () => collections?.palette || {},
             modelScale: 32,
-            defaultCapacity: 1024,
+            defaultCapacity: 2056,
             capacitiesByType: capacitiesByType,
             minMovementThreshold: 0.1
         });

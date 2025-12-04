@@ -65,7 +65,8 @@ class ModelManager {
                             }
                         }
 
-                        this.animationModels.set(animKey, await this.createModel(mergedModel));
+                        const animModel = await this.createModel(mergedModel);
+                        this.animationModels.set(animKey, animModel);
                     }
                 }
             }
@@ -293,17 +294,23 @@ class ModelManager {
                 if (animModel) {
                     // Extract clip from animation model
                     let clip = null;
+
                     animModel.traverse(obj => {
-                        if (obj.userData?.animations?.[0]) {
+                        // Check userData.animations (for base models with embedded animations,
+                        // or for animation-only GLBs where ShapeFactory stores clips on the group)
+                        if (obj.userData?.animations?.[0] && !clip) {
                             clip = obj.userData.animations[0];
                         }
                     });
 
+                    // Also check model.animations directly (GLTF loader stores clips here)
+                    if (!clip && animModel.animations?.length > 0) {
+                        clip = animModel.animations[0];
+                    }
+
                     if (clip) {
                         clips.push({ name: animName, clip });
                     }
-                } else {
-                    console.warn(`[ModelManager] Animation model not found: ${animKey}`);
                 }
             } catch (error) {
                 console.warn(`[ModelManager] Failed to load animation '${animName}' for ${key}:`, error);

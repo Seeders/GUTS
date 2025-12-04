@@ -1,0 +1,12 @@
+{
+  "title": "stonegolem Attack Down",
+  "collection": "stonegolemSprites",
+  "sprites": [
+    "stonegolemAttackDown_0",
+    "stonegolemAttackDown_1",
+    "stonegolemAttackDown_2",
+    "stonegolemAttackDown_3",
+    "stonegolemAttackDown_4",
+    "stonegolemAttackDown_5"
+  ]
+}

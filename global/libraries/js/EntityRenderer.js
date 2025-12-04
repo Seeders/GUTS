@@ -170,6 +170,8 @@ class EntityRenderer {
             batch.attributes.animTime.array[instanceIndex] = 0;
             batch.attributes.animSpeed.array[instanceIndex] = 1;
             batch.dirty.animation = true;
+        } else {
+         
         }
 
         // Store entity data
@@ -1550,6 +1552,11 @@ class EntityRenderer {
         this.scene.add(mesh);
 
         // Create batch data
+        const clipIndexAttr = geometry.getAttribute('aClipIndex');
+        const animTimeAttr = geometry.getAttribute('aAnimTime');
+        const animSpeedAttr = geometry.getAttribute('aAnimSpeed');
+
+
         const batch = {
             mesh,
             geometry,
@@ -1561,9 +1568,9 @@ class EntityRenderer {
             nextFreeIndex: 0,    // Next never-used index
             maxUsedIndex: -1,    // Highest currently-used index for efficient count
             attributes: {
-                clipIndex: geometry.getAttribute('aClipIndex'),
-                animTime: geometry.getAttribute('aAnimTime'),
-                animSpeed: geometry.getAttribute('aAnimSpeed')
+                clipIndex: clipIndexAttr,
+                animTime: animTimeAttr,
+                animSpeed: animSpeedAttr
             },
             dirty: {
                 matrices: false,

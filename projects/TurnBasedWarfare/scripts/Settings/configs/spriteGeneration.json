@@ -1,10 +1,10 @@
 {
   "title": "Sprite Generation Config",
-  "frustumSize": 96,
+  "frustumSize": 48,
   "distance": 100,
-  "spriteSize": 128,
+  "spriteSize": 64,
   "framesToGenerate": 6,
-  "brightness": 5,
+  "brightness": 8.9,
   "palette": "main",
   "pixelSize": 1,
   "outlineColor": "#25131a",

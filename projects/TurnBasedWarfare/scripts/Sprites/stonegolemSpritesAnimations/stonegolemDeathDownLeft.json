@@ -1,0 +1,12 @@
+{
+  "title": "stonegolem Death Down Left",
+  "collection": "stonegolemSprites",
+  "sprites": [
+    "stonegolemDeathDownLeft_0",
+    "stonegolemDeathDownLeft_1",
+    "stonegolemDeathDownLeft_2",
+    "stonegolemDeathDownLeft_3",
+    "stonegolemDeathDownLeft_4",
+    "stonegolemDeathDownLeft_5"
+  ]
+}

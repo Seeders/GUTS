@@ -921,20 +921,19 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
 
         // Find starting location for this side
         const startingLoc = level.tileMap.startingLocations.find(loc => loc.side === side);
-        if (startingLoc && startingLoc.gridPosition) {
-            return { x: startingLoc.gridPosition.x, z: startingLoc.gridPosition.z };
+        if (startingLoc && startingLoc.gridX !== undefined) {
+            return { x: startingLoc.gridX, z: startingLoc.gridZ };
         }
 
         return null;
     }
 
     getStartingState(player){
-        // Get starting position from level data if available
-        let startPosition = this.getStartingPositionFromLevel(player.stats.side);
-        console.log('startPosition', startPosition);
+        // Get starting position from level data (in tile coordinates)
+        let tilePosition = this.getStartingPositionFromLevel(player.stats.side);
 
         // If no starting position found, return error state
-        if (!startPosition) {
+        if (!tilePosition) {
             console.error('[ServerPlacementSystem] No starting position found for side:', player.stats.side);
             return {
                 error: 'No starting position configured for this level',
@@ -942,15 +941,21 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
             };
         }
 
+        // Convert tile coordinates to placement grid coordinates
+        // Placement grid = tile * 2 (placement cells are half the size of terrain tiles)
+        const startPosition = {
+            x: tilePosition.x * 2,
+            z: tilePosition.z * 2
+        };
+
         // Find nearest gold vein
         let nearestGoldVeinLocation = null;
         let minDistance = Infinity;
 
         const goldVeinLocations = this.game.gameManager.call('getGoldVeinLocations') || [];
-        console.log("goldVeinLocations", goldVeinLocations);
         if (goldVeinLocations.length > 0) {
             goldVeinLocations.forEach(vein => {
-                // Calculate distance from start position to vein
+                // Calculate distance from start position to vein (both in placement grid coordinates)
                 const dx = vein.gridPos.x - startPosition.x;
                 const dz = vein.gridPos.z - startPosition.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
@@ -958,7 +963,6 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 if (distance < minDistance) {
                     minDistance = distance;
                     nearestGoldVeinLocation = vein.gridPos;
-                    console.log("nearestGoldVeinLocation", vein.gridPos);
                 }
             });
         }
@@ -1063,7 +1067,8 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
 
 
 
-        const worldPos = this.game.gameManager.call('convertGridToWorldPosition', startPosition.x, startPosition.z);
+        // Use tile coordinates for camera position (tilePosition is in tile map coordinates)
+        const worldPos = this.game.gameManager.call('tileToWorld', tilePosition.x, tilePosition.z);
 
         const cameraPosition = {
             x: worldPos.x - cdx * distance,

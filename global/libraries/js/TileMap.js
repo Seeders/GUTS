@@ -165,7 +165,7 @@ class TileMap {
 		if (!this.ramps || this.ramps.length === 0) {
 			return false;
 		}
-		return this.ramps.some(r => r.x === x && r.z === y);
+		return this.ramps.some(r => r.gridX === x && r.gridZ === y);
 	}
 
     draw(map, heightMap = null){
