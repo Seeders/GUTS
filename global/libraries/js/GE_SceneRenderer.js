@@ -75,6 +75,94 @@ class GE_SceneRenderer {
         ctx.putImageData(imageData, 0, 0);
     }
 
+    // Apply outline to sprite
+    applyOutlineToCanvas(canvas, outlineColorHex, position = 'outset', connectivity = 8, pixelSize = 1) {
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const data = imageData.data;
+
+        // Convert outline color from hex to RGB
+        const outlineColor = this.hexToRgb(outlineColorHex);
+        if (!outlineColor) return;
+
+        // Create a copy of the alpha channel to detect edges
+        const alphaMap = new Uint8Array(width * height);
+        for (let i = 0; i < data.length; i += 4) {
+            alphaMap[i / 4] = data[i + 3];
+        }
+
+        // Create outline data
+        const outlineData = new Uint8ClampedArray(data.length);
+        outlineData.set(data);
+
+        // Define base neighbor offsets based on connectivity
+        // 4-connectivity: only adjacent (no diagonals)
+        // 8-connectivity: adjacent + diagonals
+        const baseOffsets = connectivity === 4
+            ? [[-1, 0], [1, 0], [0, -1], [0, 1]]
+            : [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+
+        // Expand neighbor offsets based on pixel size to create thicker outlines
+        const neighborOffsets = [];
+        for (const [baseX, baseY] of baseOffsets) {
+            for (let i = 0; i < pixelSize; i++) {
+                // Scale the offset by pixel size
+                const scale = i + 1;
+                neighborOffsets.push([baseX * scale, baseY * scale]);
+            }
+        }
+
+        // Check each pixel for edges
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const idx = y * width + x;
+                const pixelIdx = idx * 4;
+
+                const isOpaque = alphaMap[idx] > 0;
+
+                // For outset: check transparent pixels next to opaque ones
+                // For inset: check opaque pixels next to transparent ones
+                if ((position === 'outset' && isOpaque) || (position === 'inset' && !isOpaque)) {
+                    continue;
+                }
+
+                // Check neighbors for edge condition
+                let hasEdgeNeighbor = false;
+                for (const [dx, dy] of neighborOffsets) {
+                    const nx = x + dx;
+                    const ny = y + dy;
+
+                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                        const neighborIdx = ny * width + nx;
+                        const neighborIsOpaque = alphaMap[neighborIdx] > 0;
+
+                        // For outset: looking for opaque neighbors from transparent pixel
+                        // For inset: looking for transparent neighbors from opaque pixel
+                        if ((position === 'outset' && neighborIsOpaque) ||
+                            (position === 'inset' && !neighborIsOpaque)) {
+                            hasEdgeNeighbor = true;
+                            break;
+                        }
+                    }
+                }
+
+                // Apply outline color if this is an edge pixel
+                if (hasEdgeNeighbor) {
+                    outlineData[pixelIdx] = outlineColor.r;
+                    outlineData[pixelIdx + 1] = outlineColor.g;
+                    outlineData[pixelIdx + 2] = outlineColor.b;
+                    outlineData[pixelIdx + 3] = 255;
+                }
+            }
+        }
+
+        // Put the modified data back
+        imageData.data.set(outlineData);
+        ctx.putImageData(imageData, 0, 0);
+    }
+
     // Setup THREE.RenderPixelatedPass for sprite rendering (uses same library as game)
     setupPixelatedComposer(renderer, scene, camera, pixelSize, size) {
         if (pixelSize <= 1) return null;
@@ -129,11 +217,13 @@ class GE_SceneRenderer {
         });
         this.renderer.setSize(this.graphicsEditor.canvas.clientWidth, this.graphicsEditor.canvas.clientHeight);
 
-        // Add helpers
+        // Add helpers (mark them so we can hide during sprite generation)
         const gridHelper = new THREE.GridHelper(100, 10);
+        gridHelper.userData.isEditorHelper = true;
         this.scene.add(gridHelper);
 
         const axesHelper = new THREE.AxesHelper(10);
+        axesHelper.userData.isEditorHelper = true;
         this.scene.add(axesHelper);
 
         // Orbit controls
@@ -210,6 +300,52 @@ class GE_SceneRenderer {
             scene.add(group);
         }
     }
+
+    copyEquipmentToScene(targetScene) {
+        // Copy equipment from main editor scene to target scene
+        // Find equipment in main scene (marked with userData.isEquipment)
+        const equipmentModels = [];
+        this.scene.traverse(child => {
+            if (child.userData?.isEquipment) {
+                equipmentModels.push({
+                    model: child,
+                    boneName: child.parent?.isBone ? child.parent.name : null
+                });
+            }
+        });
+
+        if (equipmentModels.length === 0) {
+            return;
+        }
+
+        console.log('[Equipment] Copying', equipmentModels.length, 'equipment items from main scene');
+
+        // Find bones in target scene
+        const targetBonesMap = new Map();
+        targetScene.traverse(child => {
+            if (child.isBone) {
+                targetBonesMap.set(child.name, child);
+            }
+        });
+
+        // Clone and attach equipment to target scene
+        for (const {model, boneName} of equipmentModels) {
+            const clonedEquipment = model.clone();
+
+            if (boneName) {
+                const targetBone = targetBonesMap.get(boneName);
+                if (targetBone) {
+                    targetBone.add(clonedEquipment);
+                    console.log('[Equipment] Copied equipment to bone:', boneName);
+                } else {
+                    console.warn(`Bone "${boneName}" not found in target scene`);
+                    targetScene.add(clonedEquipment);
+                }
+            } else {
+                targetScene.add(clonedEquipment);
+            }
+        }
+    }
     
     async generateIsometricSprites(brightness = null, paletteColors = null) {
         const frustumSize = parseFloat(document.getElementById('iso-frustum').value) || 48;
@@ -247,6 +383,11 @@ class GE_SceneRenderer {
         // Get pixel size for pixelation effect
         const pixelSize = parseInt(document.getElementById('iso-pixel-size').value) || 1;
 
+        // Get outline options
+        const outlineColor = document.getElementById('iso-outline').value || '';
+        const outlinePosition = 'outset'; // Always use outside outline
+        const outlineConnectivity = parseInt(document.getElementById('iso-outline-connectivity').value) || 8;
+
         const aspect = 1;
         const tempRenderer = new window.THREE.WebGLRenderer({ antialias: false, alpha: true });
         tempRenderer.setSize(size, size);
@@ -256,8 +397,11 @@ class GE_SceneRenderer {
         // document.getElementById('modal-generateIsoSprites').classList.remove('show');
     
         const renderTarget = new window.THREE.WebGLRenderTarget(size, size);
-        // Only 5 directions: Down, DownLeft, Left, UpLeft, Up
+        // All 8 directions: Down, DownLeft, Left, UpLeft, Up, UpRight, Right, DownRight
         const cameras = [
+            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
             new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
             new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
             new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
@@ -272,22 +416,69 @@ class GE_SceneRenderer {
             modelHeight = currentObject.height;
         }
 
-        // Position cameras: Down, DownLeft, Left, UpLeft, Up
-        // Down = character faces towards viewer (camera from positive Z)
-        // Up = character faces away from viewer (camera from negative Z)
-        // Left = character faces left (camera from positive X)
-        cameras[0].position.set(0, cameraDistance, cameraDistance);                       // Down (camera from back)
-        cameras[1].position.set(cameraDistance, cameraDistance, cameraDistance);          // DownLeft
-        cameras[2].position.set(cameraDistance, cameraDistance, 0);                       // Left
-        cameras[3].position.set(cameraDistance, cameraDistance, -cameraDistance);         // UpLeft
-        cameras[4].position.set(0, cameraDistance, -cameraDistance);                      // Up (camera from front)
+        // Position cameras for all 8 directions
+        // Down, DownLeft, Left, UpLeft, Up, UpRight, Right, DownRight
+        cameras[0].position.set(0, cameraDistance, cameraDistance);                       // Down (S)
+        cameras[1].position.set(cameraDistance, cameraDistance, cameraDistance);          // DownLeft (SW)
+        cameras[2].position.set(cameraDistance, cameraDistance, 0);                       // Left (W)
+        cameras[3].position.set(cameraDistance, cameraDistance, -cameraDistance);         // UpLeft (NW)
+        cameras[4].position.set(0, cameraDistance, -cameraDistance);                      // Up (N)
+        cameras[5].position.set(-cameraDistance, cameraDistance, -cameraDistance);        // UpRight (NE)
+        cameras[6].position.set(-cameraDistance, cameraDistance, 0);                      // Right (E)
+        cameras[7].position.set(-cameraDistance, cameraDistance, cameraDistance);         // DownRight (SE)
 
         // Point cameras at center of model (half the model height)
         const lookAtY = modelHeight / 2;
         cameras.forEach(camera => camera.lookAt(0, lookAtY, 0));
     
-        const sprites = {};     
-       
+        // Use the main editor scene which already has everything loaded properly
+        const scene = this.scene;
+
+        // Find the character model already in the scene
+        let characterModel = null;
+        let characterMixer = null;
+        scene.traverse(child => {
+            if (child.userData?.isGLTFRoot && child.userData?.skeleton) {
+                characterModel = child;
+                if (!child.userData.mixer) {
+                    child.userData.mixer = new THREE.AnimationMixer(child);
+                }
+                characterMixer = child.userData.mixer;
+            }
+        });
+
+        if (!characterModel) {
+            console.error('No character model found in scene');
+            return;
+        }
+
+        // Hide editor helpers (grid, axes, etc.) and gizmos during sprite generation
+        const hiddenHelpers = [];
+        scene.traverse(child => {
+            if (child.userData?.isEditorHelper && child.visible) {
+                child.visible = false;
+                hiddenHelpers.push(child);
+            }
+        });
+
+        // Hide gizmo if it exists
+        const gizmoGroup = this.graphicsEditor.gizmoManager?.gizmoGroup;
+        const gizmoWasVisible = gizmoGroup?.visible;
+        if (gizmoGroup) {
+            gizmoGroup.visible = false;
+        }
+
+        // Update ambient light brightness
+        const originalAmbientIntensity = [];
+        scene.traverse(child => {
+            if (child.isAmbientLight) {
+                originalAmbientIntensity.push({ light: child, intensity: child.intensity });
+                child.intensity = ambientBrightness;
+            }
+        });
+
+        const sprites = {};
+
         for (const animType in this.graphicsEditor.state.renderData.animations) {
             sprites[animType] = [];
             const animationFrames = this.graphicsEditor.state.renderData.animations[animType];
@@ -296,11 +487,6 @@ class GE_SceneRenderer {
             // Process each frame definition in the animation
             for (let frameIndex = 0; frameIndex < animationFrames.length; frameIndex++) {
                 const frame = animationFrames[frameIndex];
-                const scene = new window.THREE.Scene();
-
-                // Add neutral white ambient lighting with configurable brightness
-                const ambientLight = new window.THREE.AmbientLight(0xffffff, ambientBrightness);
-                scene.add(ambientLight);
 
                 // For GLTF models with animations, we need to load base model + apply animation
                 // Check if this frame has animation GLB
@@ -308,58 +494,29 @@ class GE_SceneRenderer {
                     s.url && s.url.includes('animations/') && (s.url.endsWith('.glb') || s.url.endsWith('.gltf'))
                 );
 
-                if (hasAnimationGLB && this.graphicsEditor.state.renderData.model) {
-                    // Load base model first
-                    await this.createObjectsFromJSON(this.graphicsEditor.state.renderData.model, scene);
-
+                if (hasAnimationGLB) {
                     // Find the animation shape
                     const animShape = frame?.main?.shapes?.find(s =>
                         s.url && s.url.includes('animations/') && (s.url.endsWith('.glb') || s.url.endsWith('.gltf'))
                     );
 
                     if (animShape) {
-                        // Load and apply animation to base model manually (bypassing ShapeFactory warnings)
+                        // Load and apply animation to the existing character model
                         const gltfPath = this.graphicsEditor.shapeFactory.getResourcesPath(animShape.url);
                         const animationClip = await new Promise((resolve) => {
                             this.graphicsEditor.shapeFactory.gltfLoader.load(gltfPath, (gltf) => {
                                 if (gltf.animations && gltf.animations.length > 0) {
                                     const clip = gltf.animations[0];
-                                    // Find base model in scene
-                                    scene.traverse(child => {
-                                        if (child.userData?.isGLTFRoot && child.userData?.skeleton) {
-                                            if (!child.userData.mixer) {
-                                                child.userData.mixer = new THREE.AnimationMixer(child);
-                                            }
-                                            const mixer = child.userData.mixer;
-                                            mixer.stopAllAction();
-                                            const action = mixer.clipAction(clip);
-                                            action.play();
-                                        }
-                                    });
+                                    // Apply animation to the existing character
+                                    characterMixer.stopAllAction();
+                                    const action = characterMixer.clipAction(clip);
+                                    action.play();
                                     resolve(clip);
                                 } else {
                                     resolve(null);
                                 }
                             }, undefined, () => resolve(null));
                         });
-
-                        // Load any non-animation shapes from the frame (equipment, etc)
-                        const frameWithoutAnimation = JSON.parse(JSON.stringify(frame));
-                        for (const groupName in frameWithoutAnimation) {
-                            const shapes = frameWithoutAnimation[groupName].shapes;
-                            if (shapes) {
-                                frameWithoutAnimation[groupName].shapes = shapes.filter(s =>
-                                    !(s.url && s.url.includes('animations/') && (s.url.endsWith('.glb') || s.url.endsWith('.gltf')))
-                                );
-                            }
-                        }
-                        // Only load if there are non-animation shapes
-                        const hasNonAnimShapes = Object.values(frameWithoutAnimation).some(group =>
-                            group.shapes && group.shapes.length > 0
-                        );
-                        if (hasNonAnimShapes) {
-                            await this.createObjectsFromJSON(frameWithoutAnimation, scene);
-                        }
 
                         // Generate multiple sprite frames by advancing through the animation
                         if (animationClip) {
@@ -371,11 +528,7 @@ class GE_SceneRenderer {
                                 const currentTime = snapIndex * timeStep;
 
                                 // Update mixer to specific time in animation
-                                scene.traverse(child => {
-                                    if (child.userData?.mixer) {
-                                        child.userData.mixer.setTime(currentTime);
-                                    }
-                                });
+                                characterMixer.setTime(currentTime);
 
                                 // Render from all camera angles
                                 const frameSprites = [];
@@ -426,56 +579,39 @@ class GE_SceneRenderer {
                                         this.applyPaletteToCanvas(canvas, finalPaletteColors);
                                     }
 
+                                    // Apply outline if selected
+                                    if (outlineColor && outlineColor !== '') {
+                                        this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, pixelSize);
+                                    }
+
                                     frameSprites.push(canvas.toDataURL());
                                 }
                                 sprites[animType].push(frameSprites);
                             }
                         }
                     }
-                } else {
-                    // Regular frame without animation GLB
-                    await this.createObjectsFromJSON(frame, scene);
-
-                    // Render single frame for non-GLTF animations
-                    const frameSprites = [];
-                    for (const camera of cameras) {
-                        // Normal rendering without pixelation
-                        tempRenderer.setRenderTarget(renderTarget);
-                        tempRenderer.render(scene, camera);
-                        tempRenderer.setRenderTarget(null);
-
-                        // Read pixels from render target
-                        const buffer = new Uint8Array(size * size * 4);
-                        tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
-
-                        const flippedBuffer = new Uint8Array(size * size * 4);
-                        for (let y = 0; y < size; y++) {
-                            const srcRowStart = y * size * 4;
-                            const destRowStart = (size - 1 - y) * size * 4;
-                            flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);
-                        }
-                        const canvas = document.createElement('canvas');
-                        canvas.width = size;
-                        canvas.height = size;
-                        const ctx = canvas.getContext('2d');
-                        const imageData = ctx.createImageData(size, size);
-                        imageData.data.set(flippedBuffer);
-                        ctx.putImageData(imageData, 0, 0);
-
-                        // Apply palette if selected
-                        if (finalPaletteColors && finalPaletteColors.length > 0) {
-                            this.applyPaletteToCanvas(canvas, finalPaletteColors);
-                        }
-
-                        frameSprites.push(canvas.toDataURL());
-                    }
-                    sprites[animType].push(frameSprites);
                 }
             }
         }
         tempRenderer.setRenderTarget(null);
         tempRenderer.dispose();
         renderTarget.dispose();
+
+        // Restore ambient light brightness
+        originalAmbientIntensity.forEach(({ light, intensity }) => {
+            light.intensity = intensity;
+        });
+
+        // Restore editor helpers visibility
+        hiddenHelpers.forEach(helper => {
+            helper.visible = true;
+        });
+
+        // Restore gizmo visibility if it was visible
+        if (gizmoGroup && gizmoWasVisible) {
+            gizmoGroup.visible = true;
+        }
+
         this.graphicsEditor.displayIsometricSprites(sprites);
     }
 }

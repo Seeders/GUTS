@@ -367,6 +367,10 @@ class EditorController {
         return this.model.state.selectedObject;
     }
 
+    getProjectName() {
+        return this.model.getCurrentProject();
+    }
+
     getSelectedCollection() {
         return this.model.getSelectedType();
     }
