@@ -92,6 +92,12 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         if (vel) {
             vel.anchored = false;
         }
+
+        // Clear attack animation - let normal behavior systems take over
+        const animState = game.gameManager.call('getBillboardAnimationState', entityId);
+        if (animState && animState.currentAnimationType === 'attack') {
+            animState.currentAnimationType = null;
+        }
     }
 
     playBuildAnimation(entityId, game) {

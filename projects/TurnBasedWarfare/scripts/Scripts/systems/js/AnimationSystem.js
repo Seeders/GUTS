@@ -3,9 +3,10 @@ class AnimationSystem extends GUTS.BaseSystem {
         super(game);
         this.game.animationSystem = this;
 
-        // Animation state tracking (VAT-only, no mixers)
-        this.entityAnimationStates = new Map(); // entityId -> { currentClip, lastStateChange, flags, etc. }
-        
+        // Animation state tracking
+        this.entityAnimationStates = new Map(); // entityId -> { currentClip, lastStateChange, flags, etc. } for VAT entities
+        this.billboardAnimationStates = new Map(); // entityId -> { currentAnimationType, loopAnimation, frameIndex, frameTime } for billboard entities
+
         // Animation configuration
         this.MIN_MOVEMENT_THRESHOLD = 0.1;
         this.MIN_ATTACK_ANIMATION_TIME = 0.4;
@@ -33,6 +34,13 @@ class AnimationSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('playDeathAnimation', this.playDeathAnimation.bind(this));
         this.game.gameManager.register('calculateAnimationSpeed', this.calculateAnimationSpeed.bind(this));
         this.game.gameManager.register('getEntityAnimations', () => this.entityAnimationStates);
+
+        // Billboard animation management (AnimationSystem owns animation decisions)
+        this.game.gameManager.register('setBillboardAnimation', this.setBillboardAnimation.bind(this));
+        this.game.gameManager.register('setBillboardAnimationDirection', this.setBillboardAnimationDirection.bind(this));
+        this.game.gameManager.register('getBillboardCurrentAnimation', this.getBillboardCurrentAnimation.bind(this));
+        this.game.gameManager.register('getBillboardAnimationState', this.getBillboardAnimationState.bind(this));
+
     }
 
     calculateAnimationSpeed(attackerId, baseAttackSpeed) {
@@ -72,6 +80,9 @@ class AnimationSystem extends GUTS.BaseSystem {
             this.updateEntityAnimationLogic(entityId, velocity, health, combat, aiState);
         });
 
+        // Update billboard animations (frame advancement)
+        this.updateBillboardAnimations();
+
         // Clean up removed entities - reuse set to avoid per-frame allocation
         this._currentEntitiesSet.clear();
         for (const entityId of entities) {
@@ -110,15 +121,8 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Set initial animation based on entity type
         if (isBillboard) {
-            // Billboard entities use sprite animations
-            // Don't apply animation direction on init - keep base renderTexture for idle/placement
-            this.game.gameManager.call('setBillboardMoving', entityId, false);
-
-            // Flip idle texture for 'left' team so they face toward opponents (right)
-            const team = this.game.getComponent(entityId, "team");
-            if (team?.team === 'left') {
-                this.game.gameManager.call('setBillboardIdleFlip', entityId, true);
-            }
+            // Billboard animation state will be initialized by onBillboardSpawned callback from EntityRenderer
+            // (this happens when EntityRenderer finishes spawning the billboard)
         } else {
             // VAT entities use clip-based animations
             this.game.renderSystem?.setInstanceClip(entityId, 'idle', true);
@@ -187,9 +191,9 @@ class AnimationSystem extends GUTS.BaseSystem {
      * - When attacking, rotation is set by attack behavior to face target
      */
     updateBillboardAnimationLogic(entityId, animState, velocity) {
-        // Only animate during battle phase - show idle (base renderTexture) during placement
+        // Only animate during battle phase - show idle during placement
         if (this.game.state?.phase !== 'battle') {
-            this.game.gameManager.call('setBillboardMoving', entityId, false);
+            this.game.gameManager.call('setBillboardAnimation', entityId, 'idle', true);
             return;
         }
 
@@ -199,8 +203,8 @@ class AnimationSystem extends GUTS.BaseSystem {
         }
 
         // Don't update walk state while attack animation is playing
-        const isAttacking = this.game.gameManager.call('isBillboardAttacking', entityId);
-        if (isAttacking) {
+        const currentAnim = this.game.gameManager.call('getBillboardCurrentAnimation', entityId);
+        if (currentAnim === 'attack') {
             // Still update sprite direction from rotation (which was set by attack behavior)
             this.updateSpriteDirectionFromRotation(entityId, animState);
             return;
@@ -212,8 +216,9 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Determine if moving
         const isMoving = Math.abs(vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(vz) > this.MIN_MOVEMENT_THRESHOLD;
 
-        // Update moving state
-        this.game.gameManager.call('setBillboardMoving', entityId, isMoving);
+        // Set walk or idle animation based on movement
+        const animationType = isMoving ? 'walk' : 'idle';
+        this.game.gameManager.call('setBillboardAnimation', entityId, animationType, true);
 
         // Update sprite direction from rotation (set by MovementSystem when moving, or by attack behavior when attacking)
         this.updateSpriteDirectionFromRotation(entityId, animState);
@@ -436,12 +441,12 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Handle billboard entities with sprite animations
         if (animState.isBillboard) {
             if (clipName === 'attack') {
-                // Use current sprite direction and flip state for attack animation
+                // Set attack animation (looping for building)
                 this.game.gameManager.call(
-                    'setBillboardAttacking',
+                    'setBillboardAnimation',
                     entityId,
-                    animState.spriteDirection,
-                    animState.spriteFlipped
+                    'attack',
+                    true  // loop
                 );
                 return true;
             }
@@ -483,12 +488,12 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Handle billboard entities with sprite animations
         if (animState.isBillboard) {
-            // Use current sprite direction and flip state for death animation
+            // Set death animation (non-looping, stays on last frame)
             this.game.gameManager.call(
-                'setBillboardDying',
+                'setBillboardAnimation',
                 entityId,
-                animState.spriteDirection,
-                animState.spriteFlipped
+                'death',
+                false  // don't loop
             );
             return;
         }
@@ -678,6 +683,266 @@ class AnimationSystem extends GUTS.BaseSystem {
 
     destroy() {
         this.entityAnimationStates.clear();
+    }
+
+    /**
+     * Set animation for a billboard entity
+     * @param {string} entityId - The entity to animate
+     * @param {string} animationType - Animation type (idle, walk, attack, death, celebrate)
+     * @param {boolean} loop - Whether the animation should loop (default: true)
+     * @param {function} onComplete - Optional callback when animation finishes (for non-looping animations)
+     */
+    setBillboardAnimation(entityId, animationType, loop = true, onComplete = null) {
+        const animData = this.billboardAnimationStates.get(entityId);
+        if (!animData) {
+            console.warn(`[AnimationSystem] No animation state for billboard entity ${entityId}`);
+            return false;
+        }
+
+        // Check if animation type is available
+        if (!animData.animations?.[animationType]) {
+            console.warn(`[AnimationSystem] Animation type '${animationType}' not available for entity ${entityId}`);
+            return false;
+        }
+
+        // If already in this animation type, don't restart
+        if (animData.currentAnimationType === animationType) {
+            return true;
+        }
+
+        // Set up new animation
+        animData.currentAnimationType = animationType;
+        animData.frameIndex = 0;
+        animData.frameTime = 0;
+        animData.loopAnimation = loop;
+        animData.onAnimationComplete = onComplete;
+
+        // Tell EntityRenderer to apply the first frame
+        const entityRenderer = this.game.gameManager.call('getEntityRenderer');
+        if (entityRenderer) {
+            entityRenderer.applyBillboardAnimationFrame(entityId, animData);
+        }
+
+        return true;
+    }
+
+    /**
+     * Get the current animation type for a billboard entity
+     */
+    getBillboardCurrentAnimation(entityId) {
+        const animData = this.billboardAnimationStates.get(entityId);
+        return animData?.currentAnimationType || null;
+    }
+
+    /**
+     * Get billboard animation state (for direct manipulation by behaviors)
+     */
+    getBillboardAnimationState(entityId) {
+        return this.billboardAnimationStates.get(entityId) || null;
+    }
+
+    /**
+     * Set sprite animation direction for a billboard entity
+     */
+    setBillboardAnimationDirection(entityId, direction) {
+        const animState = this.billboardAnimationStates.get(entityId);
+        if (!animState) return false;
+
+        if (direction !== animState.currentDirection) {
+            animState.currentDirection = direction;
+            animState.frameIndex = 0;
+            animState.frameTime = 0;
+
+            // Tell EntityRenderer to apply the new frame immediately
+            const entityRenderer = this.game.gameManager.call('getEntityRenderer');
+            if (entityRenderer) {
+                entityRenderer.applyBillboardAnimationFrame(entityId, animState);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Update billboard sprite animation frames (called every frame)
+     */
+    updateBillboardAnimations(deltaTime) {
+        const entityRenderer = this.game.gameManager.call('getEntityRenderer');
+        if (!entityRenderer) return;
+
+        // Get rendering data to access sprite animation frame rates
+        const frameRates = entityRenderer.spriteAnimationFrameRates || {};
+        const defaultFrameRate = entityRenderer.defaultFrameRate || 10;
+
+        for (const [entityId, animState] of this.billboardAnimationStates) {
+            // Get animations for current type (stored in AnimationSystem state)
+            const animations = animState.animations?.[animState.currentAnimationType];
+            if (!animations) continue;
+
+            const directionData = animations[animState.currentDirection];
+            if (!directionData || !directionData.frames || directionData.frames.length === 0) continue;
+
+            const frames = directionData.frames;
+
+            // For non-looping animations, check if already finished
+            if (!animState.loopAnimation && animState.frameIndex >= frames.length - 1) {
+                continue;
+            }
+
+            // Update frame time
+            animState.frameTime += game.state.deltaTime;
+
+            // Calculate frame duration
+            let frameDuration;
+            if (directionData.duration !== null && directionData.duration > 0) {
+                frameDuration = directionData.duration / frames.length;
+            } else {
+                const frameRate = frameRates[animState.currentAnimationType] || defaultFrameRate;
+                frameDuration = 1 / frameRate;
+            }
+
+            // Check if it's time to advance frame
+            if (animState.frameTime >= frameDuration) {
+                animState.frameTime = 0;
+                animState.frameIndex++;
+
+                // Handle animation completion
+                if (animState.frameIndex >= frames.length) {
+                    if (animState.loopAnimation) {
+                        animState.frameIndex = 0;
+                    } else {
+                        animState.frameIndex = frames.length - 1;
+                        if (animState.onAnimationComplete) {
+                            animState.onAnimationComplete(entityId);
+                            animState.onAnimationComplete = null;
+                        }
+                    }
+                }
+
+                // Tell EntityRenderer to apply new frame
+                entityRenderer.applyBillboardAnimationFrame(entityId, animState);
+            }
+        }
+    }
+
+    /**
+     * Event handler for when a billboard entity is spawned (called by game.triggerEvent)
+     * @param {object} eventData - Event data with entityId, spriteAnimationSet, spriteAnimationCollection
+     */
+    billboardSpawned(eventData) {
+        const { entityId, spriteAnimationSet, spriteAnimationCollection } = eventData;
+
+        // Get animation data from collections
+        const animSetData = this.game.getCollections()?.spriteAnimationSets?.[spriteAnimationSet];
+        if (!animSetData) {
+            console.warn(`[AnimationSystem] No animation set found for ${spriteAnimationSet}`);
+            return;
+        }
+
+        // Build animation data structure from collections
+        const animations = {};
+        const animTypes = ['idle', 'walk', 'attack', 'death', 'celebrate'];
+
+        for (const animType of animTypes) {
+            const animKey = `${animType}SpriteAnimations`;
+            const animNames = animSetData[animKey];
+
+            if (animNames && animNames.length > 0) {
+                animations[animType] = this.loadAnimationsFromCollections(animNames, spriteAnimationCollection);
+            }
+        }
+
+        // Create animation state
+        const animState = {
+            spriteAnimationSet,
+            animations,
+            currentAnimationType: null,
+            currentDirection: 'down',
+            frameIndex: 0,
+            frameTime: 0,
+            loopAnimation: true
+        };
+
+        this.billboardAnimationStates.set(entityId, animState);
+
+        // Apply initial idle animation (sets UV coordinates)
+        this.setBillboardAnimation(entityId, 'idle', true);
+
+        // Update entity transform now that UV coordinates are set
+        // This ensures aspect ratio calculation works correctly
+        const entityRenderer = this.game.gameManager.call('getEntityRenderer');
+        if (entityRenderer) {
+            const transform = this.game.getComponent(entityId, 'transform');
+            const velocity = this.game.getComponent(entityId, 'velocity');
+            if (transform) {
+                entityRenderer.updateEntityTransform(entityId, {
+                    position: transform.position,
+                    rotation: transform.rotation?.y || 0,
+                    transform: transform,
+                    velocity: velocity
+                });
+            }
+        }
+    }
+
+    /**
+     * Load animation data from collections
+     */
+    loadAnimationsFromCollections(animNames, collectionName) {
+        const collections = this.game.getCollections();
+        const result = {};
+
+        // Sprite coordinates are in a parallel collection without "Animations" suffix
+        // e.g., animations in "peasantSpritesAnimations", sprites in "peasantSprites"
+        const spriteCollectionName = collectionName.replace('Animations', '');
+
+        for (const animName of animNames) {
+            const animData = collections?.[collectionName]?.[animName];
+            if (animData && animData.sprites) {
+                // Extract direction from animation name (e.g., "peasantIdleDown" -> "down")
+                const direction = this.extractDirectionFromName(animName);
+
+                if (direction) {
+                    const frames = animData.sprites.map(spriteName => {
+                        // Sprite coordinates are in the sprite collection (not animation collection)
+                        const sprite = collections?.[spriteCollectionName]?.[spriteName];
+                        if (!sprite) {
+                            console.warn(`[AnimationSystem] Sprite '${spriteName}' not found in collection '${spriteCollectionName}'`);
+                        }
+                        return sprite ? {
+                            x: sprite.x,
+                            y: sprite.y,
+                            width: sprite.width,
+                            height: sprite.height
+                        } : null;
+                    }).filter(f => f !== null);
+
+                    result[direction] = {
+                        frames,
+                        duration: animData.duration || null
+                    };
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Extract direction from animation name (e.g., "peasantIdleDown" -> "down")
+     */
+    extractDirectionFromName(animName) {
+        const lowerName = animName.toLowerCase();
+        // Check compound directions first (longest to shortest) to avoid false matches
+        const directions = ['downleft', 'downright', 'upleft', 'upright', 'down', 'up', 'left', 'right'];
+
+        for (const dir of directions) {
+            if (lowerName.includes(dir)) {
+                return dir;
+            }
+        }
+
+        return null;
     }
 
 }

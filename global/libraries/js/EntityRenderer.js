@@ -14,6 +14,7 @@ class EntityRenderer {
         this.projectName = options.projectName;
         this.getPalette = options.getPalette;
         this.modelManager = options.modelManager; // For VAT bundles
+        this.game = options.game; // For accessing AnimationSystem
 
         // Entity tracking - maps entityId to rendering data
         // Format: { entityId: { type: 'static'|'vat'|'instanced', mesh: ..., batchKey: ..., instanceIndex: ... } }
@@ -517,10 +518,6 @@ class EntityRenderer {
                 if (animDef.duration !== undefined) {
                     animations[direction].duration = animDef.duration;
                 }
-                // Debug: log first frame of each direction
-                if (frames[0] && Math.random() < 0.1) {
-                    console.log(`[EntityRenderer] ${animName} -> direction '${direction}': first frame at y=${frames[0].y}`);
-                }
             }
         }
 
@@ -591,22 +588,8 @@ class EntityRenderer {
             }
         }
 
-        // Get animation data from batch cache
+        // Get spriteAnimationCollection for AnimationSystem callback
         const spriteAnimationCollection = animSet.collection || 'spriteAnimations';
-        let animationData = batch.animationCache;
-        if (!animationData) {
-            // Load all animation data dynamically
-            animationData = {};
-            for (const animType in animations) {
-                const animNames = animations[animType];
-                if (animNames && animNames.length > 0) {
-                    animationData[animType] = await this.loadSpriteAnimationMetadata(animNames, spriteAnimationCollection);
-                    console.log(`[EntityRenderer] Loaded ${animType} animations:`, Object.keys(animationData[animType]), `(${Object.values(animationData[animType]).filter(arr => arr.length > 0).length} directions with frames)`);
-                }
-            }
-            batch.animationCache = animationData;
-            console.log(`[EntityRenderer] Animation cache for ${entityDef.spriteAnimationSet}:`, Object.keys(animationData));
-        }
 
         // Get free instance slot
         let instanceIndex = -1;
@@ -629,27 +612,6 @@ class EntityRenderer {
         batch.count = batch.maxUsedIndex + 1;
         batch.instancedMesh.count = batch.count;
 
-        // Get initial sprite frame for UV coordinates
-        const initialAnim = animationData.idle || animationData.walk || Object.values(animationData)[0];
-        const initialFrame = initialAnim?.down?.frames?.[0] || initialAnim?.[Object.keys(initialAnim)[0]]?.frames?.[0];
-
-        if (initialFrame && batch.spriteSheetTexture) {
-            // Normalize pixel coordinates to UV space (0-1)
-            const sheetWidth = batch.spriteSheetTexture.image.width;
-            const sheetHeight = batch.spriteSheetTexture.image.height;
-
-            const offsetX = initialFrame.x / sheetWidth;
-            const offsetY = initialFrame.y / sheetHeight;
-            const scaleX = initialFrame.width / sheetWidth;
-            const scaleY = initialFrame.height / sheetHeight;
-
-            // Set instance UV attributes
-            batch.attributes.uvOffset.setXY(instanceIndex, offsetX, offsetY);
-            batch.attributes.uvScale.setXY(instanceIndex, scaleX, scaleY);
-            batch.attributes.uvOffset.needsUpdate = true;
-            batch.attributes.uvScale.needsUpdate = true;
-        }
-
         // Store entity data
         this.entities.set(entityId, {
             type: 'billboardInstanced',
@@ -661,28 +623,15 @@ class EntityRenderer {
             heightOffset: (entityDef.spriteScale || 64) / 4
         });
 
-        // Set up sprite animation tracking BEFORE updating transform
-        const animState = {
-            animations: animationData,
-            currentAnimationType: 'idle',
-            currentDirection: 'down',
-            frameIndex: 0,
-            frameTime: 0,
-            isMoving: false,
-            isAttacking: false,
-            isDying: false,
-            flipped: false,
+        // Store only GPU rendering data (no animation data - that's in AnimationSystem)
+        const renderData = {
             instanceIndex,
             batch
         };
+        this.billboardAnimations.set(entityId, renderData);
 
-        this.billboardAnimations.set(entityId, animState);
-
-        // Apply initial frame BEFORE updating transform (like static billboards do)
-        this.applyBillboardAnimationFrame(entityId, animState);
-
-        // Update transform (this should come AFTER UV setup, matching static billboards)
-        this.updateEntityTransform(entityId, data);
+        // Don't update transform here - AnimationSystem will do it after setting UV coordinates
+        // This ensures aspect ratio calculation works correctly
 
         this.stats.entitiesRendered++;
         this.stats.billboardEntities++;
@@ -1119,17 +1068,19 @@ class EntityRenderer {
         // Calculate dimensions based on texture aspect ratio
         let aspectRatio = 1;
 
-        // Try to get aspect ratio from animation data first
-        const animData = this.billboardAnimations.get(entityId);
-        if (animData) {
-            const initialAnim = animData.animations.idle || animData.animations.walk || Object.values(animData.animations)[0];
+        // Try to get aspect ratio from AnimationSystem first
+        const animState = this.game?.gameManager?.call('getBillboardAnimationState', entityId);
+        if (animState?.animations) {
+            const initialAnim = animState.animations.idle || animState.animations.walk || Object.values(animState.animations)[0];
             const initialFrame = initialAnim?.down?.frames?.[0] || initialAnim?.[Object.keys(initialAnim)[0]]?.frames?.[0];
             if (initialFrame) {
                 aspectRatio = initialFrame.width / initialFrame.height;
             }
-        } else if (batch.spriteSheetTexture?.image) {
-            // For static billboards, use texture dimensions
-            aspectRatio = batch.spriteSheetTexture.image.width / batch.spriteSheetTexture.image.height;
+        } else {
+            if (batch.spriteSheetTexture?.image) {
+                // For static billboards, use texture dimensions
+                aspectRatio = batch.spriteSheetTexture.image.width / batch.spriteSheetTexture.image.height;
+            }
         }
 
         const width = spriteScale * aspectRatio;
@@ -1174,7 +1125,7 @@ class EntityRenderer {
      * Update billboard (sprite) entity transform
      * Note: Animation direction is controlled by AnimationSystem via setBillboardAnimationDirection
      */
-    updateBillboardTransform(entity, data, entityId) {
+    updateBillboardTransform(entity, data) {
         if (!entity.sprite) return false;
 
         const heightOffset = entity.heightOffset || 0;
@@ -1184,58 +1135,45 @@ class EntityRenderer {
             data.position.z + heightOffset
         );
 
-        const vx = data.velocity?.vx ?? 0;
-
-        // Check if entity has sprite animations (controlled by AnimationSystem)
-        const animData = this.billboardAnimations.get(entityId);
-
-        if (!animData) {
-            // Fallback to original flip behavior for entities without sprite animations
-            if (Math.abs(vx) > this.minMovementThreshold) {
-                const facingRight = vx > 0;
-                const texture = entity.sprite.material.map;
-
-                if (facingRight) {
-                    texture.repeat.x = -1;
-                    texture.offset.x = 1;
-                } else {
-                    texture.repeat.x = 1;
-                    texture.offset.x = 0;
-                }
-            }
-        }
-        // For entities with sprite animations, AnimationSystem controls direction via setBillboardAnimationDirection
-
         return true;
     }
 
     /**
      * Apply the current animation frame to an instanced billboard
+     * @param {string} entityId - Entity ID
+     * @param {object} animState - Animation state from AnimationSystem (currentAnimationType, frameIndex, currentDirection)
      */
-    applyBillboardAnimationFrame(entityId, animData) {
-        // Get animations for current animation type
-        const animations = animData.animations?.[animData.currentAnimationType];
-
-        if (!animations) {
-            console.warn(`[EntityRenderer] No animations found for type '${animData.currentAnimationType}' on entity ${entityId}. Available types:`, Object.keys(animData.animations || {}));
+    applyBillboardAnimationFrame(entityId, animState) {
+        // Get GPU rendering data (batch, instanceIndex)
+        const renderData = this.billboardAnimations.get(entityId);
+        if (!renderData) {
+            console.warn(`[EntityRenderer] No render data for entity ${entityId}`);
             return;
         }
 
-        const directionData = animations[animData.currentDirection];
+        // Get animations for current animation type (from AnimationSystem's state)
+        const animations = animState.animations?.[animState.currentAnimationType];
+
+        if (!animations) {
+            console.warn(`[EntityRenderer] No animations found for type '${animState.currentAnimationType}' on entity ${entityId}. Available types:`, Object.keys(animState.animations || {}));
+            return;
+        }
+
+        const directionData = animations[animState.currentDirection];
         if (!directionData || !directionData.frames || directionData.frames.length === 0) {
-            console.warn(`[EntityRenderer] No frames for direction '${animData.currentDirection}' in animation type '${animData.currentAnimationType}' on entity ${entityId}. Available directions:`, Object.keys(animations));
+            console.warn(`[EntityRenderer] No frames for direction '${animState.currentDirection}' in animation type '${animState.currentAnimationType}' on entity ${entityId}. Available directions:`, Object.keys(animations));
             return;
         }
 
         const frames = directionData.frames;
-        const frameIndex = animData.frameIndex % frames.length;
+        const frameIndex = animState.frameIndex % frames.length;
         const frame = frames[frameIndex];
 
         if (!frame) return;
 
         // Update UV attributes for instanced billboard
-        const batch = animData.batch;
-        const instanceIndex = animData.instanceIndex;
+        const batch = renderData.batch;
+        const instanceIndex = renderData.instanceIndex;
 
         if (batch && batch.spriteSheetTexture && frame.x !== undefined) {
             // Normalize pixel coordinates to UV space
@@ -1246,11 +1184,6 @@ class EntityRenderer {
             const offsetY = frame.y / sheetHeight;
             const scaleX = frame.width / sheetWidth;
             const scaleY = frame.height / sheetHeight;
-
-            // Debug logging
-            if (animData.currentAnimationType === 'walk' && Math.random() < 0.05) {
-                console.log(`[EntityRenderer] WALK frame for entity ${entityId}: dir=${animData.currentDirection}, frame=${frameIndex}/${frames.length}, frameData:`, frame, `UV: offset=(${offsetX.toFixed(3)}, ${offsetY.toFixed(3)}), scale=(${scaleX.toFixed(3)}, ${scaleY.toFixed(3)})`);
-            }
 
             // Update instance attributes
             batch.attributes.uvOffset.setXY(instanceIndex, offsetX, offsetY);
@@ -1369,82 +1302,7 @@ class EntityRenderer {
             }
         }
 
-        // Update billboard sprite animations
-        this.updateBillboardAnimations(deltaTime);
-    }
-
-    /**
-     * Update billboard sprite animation frames
-     */
-    updateBillboardAnimations(deltaTime) {
-        for (const [entityId, animData] of this.billboardAnimations) {
-            // Get animations for current type
-            const animations = animData.animations?.[animData.currentAnimationType];
-            if (!animations) continue;
-
-            const directionData = animations[animData.currentDirection];
-            if (!directionData || !directionData.frames || directionData.frames.length === 0) continue;
-
-            const frames = directionData.frames;
-
-            // Determine animation behavior based on type
-            const isSinglePlay = animData.isDying || animData.isAttacking;
-            const shouldAnimate = isSinglePlay || animData.isMoving || animData.currentAnimationType === 'idle';
-
-            if (!shouldAnimate) continue;
-
-            // For single-play animations, check if already finished
-            if (isSinglePlay && animData.frameIndex >= frames.length - 1) {
-                continue;
-            }
-
-            // Update frame time
-            animData.frameTime += deltaTime;
-
-            // Calculate frame duration
-            // Priority: 1) direction-specific duration, 2) fallback frame rate
-            let frameDuration;
-            if (directionData.duration !== null && directionData.duration > 0) {
-                // Use metadata duration: frameRate = frames / duration
-                frameDuration = directionData.duration / frames.length;
-            } else {
-                // Fall back to configured frame rates
-                const frameRate = this.spriteAnimationFrameRates[animData.currentAnimationType] || this.defaultFrameRate;
-                frameDuration = 1 / frameRate;
-            }
-
-            // Check if it's time to advance frame
-            if (animData.frameTime >= frameDuration) {
-                animData.frameTime = 0;
-                animData.frameIndex++;
-
-                // Handle animation completion
-                if (animData.frameIndex >= frames.length) {
-                    if (isSinglePlay) {
-                        // Single-play animations: clamp to last frame or transition
-                        if (animData.isDying) {
-                            animData.frameIndex = frames.length - 1;
-                        } else if (animData.isAttacking) {
-                            // Attack complete - return to idle or walk based on movement
-                            animData.isAttacking = false;
-                            animData.currentAnimationType = animData.isMoving ? 'walk' : 'idle';
-                            animData.frameIndex = 0;
-
-                            // Trigger callback if set
-                            if (animData.onAttackComplete) {
-                                animData.onAttackComplete(entityId);
-                            }
-                        }
-                    } else {
-                        // Looping animations (walk, idle, etc): loop back to start
-                        animData.frameIndex = 0;
-                    }
-                }
-
-                // Apply new frame
-                this.applyBillboardAnimationFrame(entityId, animData);
-            }
-        }
+        // Billboard animation frame updates are handled by AnimationSystem
     }
 
     /**
@@ -1452,187 +1310,6 @@ class EntityRenderer {
      */
     isBillboardWithAnimations(entityId) {
         return this.billboardAnimations.has(entityId);
-    }
-
-    /**
-     * Set sprite animation direction for a billboard entity
-     * Called by AnimationSystem to control sprite animation
-     */
-    setBillboardAnimationDirection(entityId, direction, flipped = false) {
-        const animData = this.billboardAnimations.get(entityId);
-        if (!animData) return false;
-
-        if (direction !== animData.currentDirection || flipped !== animData.flipped) {
-            animData.currentDirection = direction;
-            animData.flipped = flipped;
-            animData.frameIndex = 0;
-            animData.frameTime = 0;
-
-            // Apply the new texture immediately
-            const entity = this.entities.get(entityId);
-            if (entity) {
-                this.applyBillboardAnimationFrame(entity, animData);
-
-                // Apply flip state to texture
-                const texture = entity.sprite?.material?.map;
-                if (texture) {
-                    if (flipped) {
-                        texture.repeat.x = -1;
-                        texture.offset.x = 1;
-                    } else {
-                        texture.repeat.x = 1;
-                        texture.offset.x = 0;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Set whether billboard entity is currently moving (for animation playback)
-     * Switches between walk and idle animations based on movement state
-     */
-    setBillboardMoving(entityId, isMoving) {
-        const animData = this.billboardAnimations.get(entityId);
-        if (!animData) return false;
-
-        // Check if transitioning states
-        const wasPreviouslyMoving = animData.isMoving;
-        animData.isMoving = isMoving;
-
-        // Don't override attack or death animations
-        if (animData.isAttacking || animData.isDying) {
-            return true;
-        }
-
-        // Switch animation type based on movement
-        const newAnimationType = isMoving ? 'walk' : 'idle';
-
-        if (newAnimationType !== animData.currentAnimationType) {
-            // Check if the new animation type exists
-            if (animData.animations?.[newAnimationType]) {
-                console.log(`[EntityRenderer] Switching entity ${entityId} from ${animData.currentAnimationType} to ${newAnimationType}`);
-                animData.currentAnimationType = newAnimationType;
-                animData.frameIndex = 0;
-                animData.frameTime = 0;
-
-                // Apply the first frame of the new animation
-                this.applyBillboardAnimationFrame(entityId, animData);
-            } else {
-                console.warn(`[EntityRenderer] Animation type '${newAnimationType}' not available for entity ${entityId}`);
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Trigger attack animation for a billboard entity
-     * Plays through the attack animation once in the specified direction, then returns to idle
-     * @param {string} entityId - The entity to animate
-     * @param {string} direction - The direction to face (down, downleft, left, upleft, up)
-     * @param {boolean} flipped - Whether to flip the sprite horizontally
-     * @param {function} onComplete - Optional callback when attack animation finishes
-     */
-    setBillboardAttacking(entityId, direction, flipped = false, onComplete = null) {
-        const animData = this.billboardAnimations.get(entityId);
-        if (!animData) return false;
-
-        // Check if attack animations are available
-        if (!animData.animations?.attack) return false;
-
-        // Set up attack animation
-        animData.isAttacking = true;
-        animData.isMoving = false; // Stop walk animation
-        animData.currentAnimationType = 'attack';
-        animData.currentDirection = direction;
-        animData.flipped = flipped;
-        animData.frameIndex = 0;
-        animData.frameTime = 0;
-        animData.onAttackComplete = onComplete;
-
-        // Apply the first frame immediately
-        const entity = this.entities.get(entityId);
-        if (entity) {
-            this.applyBillboardAnimationFrame(entity, animData);
-        }
-
-        return true;
-    }
-
-    /**
-     * Check if a billboard entity is currently playing an attack animation
-     */
-    isBillboardAttacking(entityId) {
-        const animData = this.billboardAnimations.get(entityId);
-        return animData?.isAttacking || false;
-    }
-
-    /**
-     * Start death animation for a billboard entity
-     */
-    setBillboardDying(entityId, direction, flipped = false) {
-        const animData = this.billboardAnimations.get(entityId);
-        if (!animData) {
-            console.warn(`[EntityRenderer] setBillboardDying: No animData for entity ${entityId}`);
-            return false;
-        }
-
-        // Check if death animations are available
-        if (!animData.animations?.death) {
-            console.warn(`[EntityRenderer] setBillboardDying: No death animations for entity ${entityId}`);
-            return false;
-        }
-
-        console.log(`[EntityRenderer] Starting death animation for entity ${entityId}, direction: ${direction}, flipped: ${flipped}`);
-
-        // Set up death animation
-        animData.isDying = true;
-        animData.isMoving = false; // Stop walk animation
-        animData.isAttacking = false; // Stop attack animation
-        animData.currentAnimationType = 'death';
-        animData.currentDirection = direction;
-        animData.flipped = flipped;
-        animData.frameIndex = 0;
-        animData.frameTime = 0;
-
-        // Apply the first frame immediately
-        const entity = this.entities.get(entityId);
-        if (entity) {
-            this.applyBillboardAnimationFrame(entity, animData);
-        }
-
-        return true;
-    }
-
-    /**
-     * Set the idle flip state for a billboard entity (used for team-based facing)
-     * This flips the base renderTexture when not animating
-     */
-    setBillboardIdleFlip(entityId, flipped) {
-        const entity = this.entities.get(entityId);
-        if (!entity || entity.type !== 'billboard' || !entity.sprite) return false;
-
-        const texture = entity.sprite.material.map;
-        if (texture) {
-            if (flipped) {
-                texture.repeat.x = -1;
-                texture.offset.x = 1;
-            } else {
-                texture.repeat.x = 1;
-                texture.offset.x = 0;
-            }
-        }
-
-        // Also store the idle flip state in animation data if it exists
-        const animData = this.billboardAnimations.get(entityId);
-        if (animData) {
-            animData.idleFlipped = flipped;
-        }
-
-        return true;
     }
 
     /**

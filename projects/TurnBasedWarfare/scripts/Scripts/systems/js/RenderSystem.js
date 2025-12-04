@@ -37,14 +37,8 @@ class RenderSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('getBatchInfo', this.getBatchInfo.bind(this));
         this.game.gameManager.register('removeInstance', this.removeInstance.bind(this));
 
-        // Billboard/sprite animation methods
+        // Billboard/sprite low-level rendering methods (EntityRenderer)
         this.game.gameManager.register('isBillboardWithAnimations', this.isBillboardWithAnimations.bind(this));
-        this.game.gameManager.register('setBillboardAnimationDirection', this.setBillboardAnimationDirection.bind(this));
-        this.game.gameManager.register('setBillboardMoving', this.setBillboardMoving.bind(this));
-        this.game.gameManager.register('setBillboardIdleFlip', this.setBillboardIdleFlip.bind(this));
-        this.game.gameManager.register('setBillboardAttacking', this.setBillboardAttacking.bind(this));
-        this.game.gameManager.register('isBillboardAttacking', this.isBillboardAttacking.bind(this));
-        this.game.gameManager.register('setBillboardDying', this.setBillboardDying.bind(this));
 
         // EntityRenderer will be created in onSceneLoad when scene is available
         // Register getter that returns current entityRenderer (may be null initially)
@@ -76,6 +70,7 @@ class RenderSystem extends GUTS.BaseSystem {
             collections: collections,
             projectName: projectName,
             modelManager: this.game.modelManager,
+            game: this.game,
             getPalette: () => collections?.palette || {},
             modelScale: 32,
             defaultCapacity: 1024,
@@ -297,6 +292,19 @@ class RenderSystem extends GUTS.BaseSystem {
         if (spawned) {
             this.spawnedEntities.add(entityId);
             this._stats.entitiesSpawned++;
+
+            // Trigger billboard spawn event for AnimationSystem
+            const collections = this.game.getCollections();
+            const entityDef = collections?.[data.collection]?.[data.type];
+            if (entityDef?.spriteAnimationSet) {
+                const animSetData = collections?.spriteAnimationSets?.[entityDef.spriteAnimationSet];
+                const spriteAnimationCollection = animSetData?.collection || 'peasantSpritesAnimations';
+                this.game.triggerEvent('billboardSpawned', {
+                    entityId,
+                    spriteAnimationSet: entityDef.spriteAnimationSet,
+                    spriteAnimationCollection
+                });
+            }
         }
         return spawned;
     }
@@ -379,36 +387,6 @@ class RenderSystem extends GUTS.BaseSystem {
     isBillboardWithAnimations(entityId) {
         if (!this.entityRenderer) return false;
         return this.entityRenderer.isBillboardWithAnimations(entityId);
-    }
-
-    setBillboardAnimationDirection(entityId, direction, flipped = false) {
-        if (!this.entityRenderer) return false;
-        return this.entityRenderer.setBillboardAnimationDirection(entityId, direction, flipped);
-    }
-
-    setBillboardMoving(entityId, isMoving) {
-        if (!this.entityRenderer) return false;
-        return this.entityRenderer.setBillboardMoving(entityId, isMoving);
-    }
-
-    setBillboardIdleFlip(entityId, flipped) {
-        if (!this.entityRenderer) return false;
-        return this.entityRenderer.setBillboardIdleFlip(entityId, flipped);
-    }
-
-    setBillboardAttacking(entityId, direction, flipped = false, onComplete = null) {
-        if (!this.entityRenderer) return false;
-        return this.entityRenderer.setBillboardAttacking(entityId, direction, flipped, onComplete);
-    }
-
-    isBillboardAttacking(entityId) {
-        if (!this.entityRenderer) return false;
-        return this.entityRenderer.isBillboardAttacking(entityId);
-    }
-
-    setBillboardDying(entityId, direction, flipped = false) {
-        if (!this.entityRenderer) return false;
-        return this.entityRenderer.setBillboardDying(entityId, direction, flipped);
     }
 
     getEntityAnimationState(entityId) {
