@@ -51,7 +51,7 @@ class EntityRenderer {
 
         // Configuration
         this.modelScale = options.modelScale || 32;
-        this.defaultCapacity = options.defaultCapacity || 1024;
+        this.defaultCapacity = options.defaultCapacity || 2056;
         this.capacitiesByType = options.capacitiesByType || {}; // Per-type capacity overrides
         this.minMovementThreshold = options.minMovementThreshold || 0.1;
 
@@ -1062,6 +1062,8 @@ class EntityRenderer {
         const collections = this.collections;
         const entityDef = collections?.[entity.collection]?.[entity.entityType];
         const spriteScale = entityDef?.spriteScale || 64;
+        const heightOffset = (spriteScale / 2);
+        const spriteOffset = entityDef.spriteOffset || (-heightOffset / 4);
 
         // Calculate dimensions based on texture aspect ratio
         let aspectRatio = 1;
@@ -1082,14 +1084,13 @@ class EntityRenderer {
         }
 
         const width = spriteScale * aspectRatio;
-        const heightOffset = (spriteScale / 2);
         // Create transform matrix
         const matrix = new THREE.Matrix4();
         // Offset by half the sprite height so bottom sits at ground level
         const position = new THREE.Vector3(
-            data.position.x - heightOffset / 4,
+            data.position.x + spriteOffset,
             data.position.y + heightOffset,
-            data.position.z + heightOffset / 4
+            data.position.z - spriteOffset
         );
 
         // Billboards don't rotate - they face the camera via shader

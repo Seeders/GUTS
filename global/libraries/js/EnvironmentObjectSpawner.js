@@ -28,12 +28,13 @@ class EnvironmentObjectSpawner {
      * Get world position from world object
      */
     calculateWorldPosition(worldObj, terrainDataManager) {
-        // World objects use x for worldX and y for worldZ
-        // (y in the data maps to Z axis in 3D world)
+        // World objects use gridX/gridZ for tile grid coordinates
+        // Convert to world coordinates using tile grid (96) not placement grid (48)
 
         // Use centralized coordinate conversion from CoordinateTranslator if available
         if (this.mode === 'runtime' && this.game?.gameManager) {
-            const worldPos = this.game.gameManager.call('pixelToWorld', worldObj.x, worldObj.y);
+            // Use tileToWorld with centering to place objects in the center of their tile
+            const worldPos = this.game.gameManager.call('tileToWorld', worldObj.gridX, worldObj.gridZ, true);
             return {
                 worldX: worldPos.x,
                 worldZ: worldPos.z
@@ -41,10 +42,14 @@ class EnvironmentObjectSpawner {
         }
 
         // Fallback for editor mode or if gameManager not available
+        const GRID_SIZE = 48; // Tile grid size
         const terrainSize = terrainDataManager.terrainSize;
+        // Center the object in the tile
+        const pixelX = worldObj.gridX * GRID_SIZE;
+        const pixelZ = worldObj.gridZ * GRID_SIZE;
         return {
-            worldX: worldObj.x - (terrainSize / 2),
-            worldZ: worldObj.y - (terrainSize / 2)
+            worldX: pixelX - (terrainSize / 2) + (GRID_SIZE / 2),
+            worldZ: pixelZ - (terrainSize / 2) + (GRID_SIZE / 2)
         };
     }
 
@@ -126,7 +131,7 @@ class EnvironmentObjectSpawner {
         const Components = this.game.gameManager.call('getComponents');
 
         // Create entity with unique ID
-        const entityId = this.game.createEntity(`env_${worldObj.type}_${worldObj.x}_${worldObj.y}`);
+        const entityId = this.game.createEntity(`env_${worldObj.type}_${worldObj.gridX}_${worldObj.gridZ}`);
 
         // Add Transform component
         this.game.addComponent(entityId, "transform", {
@@ -166,7 +171,7 @@ class EnvironmentObjectSpawner {
         }
 
         // Create unique entity ID for editor
-        const entityId = `env_${worldObj.type}_${worldObj.x}_${worldObj.y}`;
+        const entityId = `env_${worldObj.type}_${worldObj.gridX}_${worldObj.gridZ}`;
 
         // Spawn using EntityRenderer
         const spawned = await this.entityRenderer.spawnEntity(entityId, {
