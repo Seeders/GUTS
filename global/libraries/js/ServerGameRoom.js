@@ -116,7 +116,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
     handlePlayerDisconnect(eventData) {
         const { playerId } = eventData;
         console.log(`Player ${playerId} disconnected`);
-        
+
         // Get the room the player was in
         const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
         if (roomId) {
@@ -125,21 +125,29 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 // Get player data before removing
                 const player = room.players.get(playerId);
                 const playerName = player?.name || 'Unknown';
-                
+
+                // If game is active and has remaining players, trigger victory for remaining player
+                if (room.isActive && room.players.size === 2) {
+                    // Find remaining player and end game with them as winner
+                    if (room.game && room.game.serverBattlePhaseSystem) {
+                        room.game.serverBattlePhaseSystem.handlePlayerDisconnect(playerId);
+                    }
+                }
+
                 // Notify other players
                 this.serverNetworkManager.broadcastToRoom(roomId, 'PLAYER_LEFT', {
                     playerId: playerId,
                     playerName: playerName
                 });
-                
+
                 // Clean up player state completely
                 this.cleanupPlayerState(room, playerId);
-                
+
                 // Remove from room
                 room.removePlayer(playerId);
                 this.serverNetworkManager.leaveRoom(playerId, roomId);
 
-                
+
                 // Clean up empty rooms
                 if (room.players.size === 0) {
                     this.cleanupRoom(room);
@@ -151,7 +159,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 }
             }
         }
-        
+
         // Clean up network manager state
         this.serverNetworkManager.playerSockets.delete(playerId);
     }
@@ -169,6 +177,14 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 const player = room.players.get(playerId);
                 const playerName = player?.name || 'Unknown';
 
+                // If game is active and has remaining players, trigger victory for remaining player
+                if (room.isActive && room.players.size === 2) {
+                    // Find remaining player and end game with them as winner
+                    if (room.game && room.game.serverBattlePhaseSystem) {
+                        room.game.serverBattlePhaseSystem.handlePlayerDisconnect(playerId);
+                    }
+                }
+
                 // Notify other players
                 this.serverNetworkManager.broadcastToRoom(roomId, 'PLAYER_LEFT', {
                     playerId: playerId,
@@ -181,15 +197,6 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 // Remove from room
                 room.removePlayer(playerId);
                 this.serverNetworkManager.leaveRoom(playerId, roomId);
-
-                // Check if only one player remains and game was active
-                if (room.players.size === 1 && room.isActive) {
-                    // Notify the remaining player that the game is over
-                    this.serverNetworkManager.broadcastToRoom(roomId, 'GAME_ENDED_ALL_PLAYERS_LEFT', {
-                        message: 'All other players have left the game.'
-                    });
-                    console.log(`Game in room ${roomId} ended - only one player remains`);
-                }
 
                 // Clean up empty rooms
                 if (room.players.size === 0) {
