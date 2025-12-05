@@ -47,14 +47,16 @@ class FindAllyNeedingHelpBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findAllyNeedingHelp(entityId, game, pos, team, range, healthThreshold, prioritizeLowestHealth, excludeSelf) {
-        const potentialAllies = game.getEntitiesWith('transform', 'team', 'health');
+        // Use spatial grid for efficient lookup - returns array of entityIds
+        const excludeId = excludeSelf ? entityId : null;
+        const nearbyEntityIds = game.gameManager.call('getNearbyUnits', pos, range, excludeId);
+        if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
+
         const alliesNeedingHelp = [];
 
-        for (const allyId of potentialAllies) {
-            if (excludeSelf && allyId === entityId) continue;
-
+        for (const allyId of nearbyEntityIds) {
             const allyTeam = game.getComponent(allyId, 'team');
-            if (allyTeam.team !== team.team) continue;
+            if (!allyTeam || allyTeam.team !== team.team) continue;
 
             const allyHealth = game.getComponent(allyId, 'health');
             if (!allyHealth || allyHealth.current <= 0) continue;
@@ -64,9 +66,11 @@ class FindAllyNeedingHelpBehaviorAction extends GUTS.BaseBehaviorAction {
 
             const allyTransform = game.getComponent(allyId, 'transform');
             const allyPos = allyTransform?.position;
-            const distance = this.distance(pos, allyPos);
+            if (!allyPos) continue;
 
-            if (distance > range) continue;
+            const dx = allyPos.x - pos.x;
+            const dz = allyPos.z - pos.z;
+            const distance = Math.sqrt(dx * dx + dz * dz);
 
             const healthPercent = allyHealth.current / allyHealth.max;
 

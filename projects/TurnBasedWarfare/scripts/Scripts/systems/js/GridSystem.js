@@ -12,6 +12,11 @@ class GridSystem extends GUTS.BaseSystem {
 
         // CoordinateTranslator for all coordinate space transformations
         this.coordinateTranslator = null;
+
+        // Debug visualization
+        this.debugVisualization = null;
+        this.debugEnabled = false;
+        this.debugMeshes = new Map(); // cell key -> mesh
     }
 
     init() {
@@ -21,6 +26,7 @@ class GridSystem extends GUTS.BaseSystem {
         this.game.gameManager.register('reserveGridCells', this.occupyCells.bind(this));
         this.game.gameManager.register('releaseGridCells', this.freeCells.bind(this));
         this.game.gameManager.register('getUnitGridCells', this.getUnitCells.bind(this));
+        this.game.gameManager.register('toggleSpatialGridDebug', this.toggleDebugVisualization.bind(this));
 
         // Grid configuration
         this.game.gameManager.register('getGridSize', () => this.terrainGridSize);
@@ -306,15 +312,15 @@ class GridSystem extends GUTS.BaseSystem {
     getNearbyUnits(pos, radius, excludeEntityId = null, collection = null) {
         const gridPos = this.worldToGrid(pos.x, pos.z);
         const cellRadius = Math.ceil(radius / this.cellSize);
-        
-        const nearbyUnits = [];
+
+        const nearbyEntityIds = [];
         const radiusSq = radius * radius;
         const seen = new Set(); // Prevent duplicates
 
         for (let gz = gridPos.z - cellRadius; gz <= gridPos.z + cellRadius; gz++) {
             for (let gx = gridPos.x - cellRadius; gx <= gridPos.x + cellRadius; gx++) {
                 if (!this.isValidPosition({ x: gx, z: gz })) continue;
-                
+
                 const cellState = this.getCellState(gx, gz);
                 if (!cellState?.entities?.length) continue;
 
@@ -323,39 +329,59 @@ class GridSystem extends GUTS.BaseSystem {
 
                     const transform = this.game.getComponent(entityId, "transform");
                     const entityPos = transform?.position;
-                    const unitType = this.game.getComponent(entityId, "unitType");
 
-                    if (!entityPos || !unitType) continue;
+                    if (!entityPos) continue;
 
                     const dx = entityPos.x - pos.x;
                     const dz = entityPos.z - pos.z;
                     const distSq = dx * dx + dz * dz;
-                    
-                    if(collection && unitType.collection != collection) continue;
+
+                    if (collection) {
+                        const unitType = this.game.getComponent(entityId, "unitType");
+                        if (!unitType || unitType.collection !== collection) continue;
+                    }
 
                     if (distSq <= radiusSq) {
                         seen.add(entityId);
-                        nearbyUnits.push({
-                            x: entityPos.x,
-                            z: entityPos.z,
-                            y: entityPos.y,
-                            id: entityId,
-                            ...unitType
-                        });
+                        nearbyEntityIds.push(entityId);
                     }
                 }
             }
         }
-        return nearbyUnits.sort((a, b) => a.id.localeCompare(b.id));
+        return nearbyEntityIds.sort((a, b) => String(a).localeCompare(String(b)));
     }
 
-    onEntityPositionUpdated(entityId) {
-        const cells = this.getUnitCells(entityId);
-        this.freeCells(entityId);
-        this.occupyCells(cells, entityId);
+    update(deltaTime) {
+        // Rebuild spatial grid fresh each frame from current entity positions
+        this.state.clear();
+
+        const entities = this.game.getEntitiesWith('unitType', 'transform');
+
+        for (const entityId of entities) {
+            const transform = this.game.getComponent(entityId, 'transform');
+            const pos = transform?.position;
+            if (!pos) continue;
+
+            // Check if entity is alive (skip dead/dying units)
+            const health = this.game.getComponent(entityId, 'health');
+            const deathState = this.game.getComponent(entityId, 'deathState');
+            if (health && health.current <= 0) continue;
+            if (deathState && deathState.isDying) continue;
+
+            const cells = this.getUnitCells(entityId);
+            if (!cells) continue;
+
+            this.occupyCells(cells, entityId);
+        }
+
+        // Update debug visualization if enabled
+        if (this.debugEnabled) {
+            this.updateDebugVisualization();
+        }
     }
 
-    occupyCells(cells, entityId) {       
+    occupyCells(cells, entityId) {
+        if (!cells || cells.length === 0) return;
         for (const cell of cells) {
             const key = `${cell.x},${cell.z}`;
             let cellState = this.state.get(key);
@@ -369,20 +395,17 @@ class GridSystem extends GUTS.BaseSystem {
             if (!cellState.entities.includes(entityId)) {
                 cellState.entities.push(entityId);
             }
-            cellState.entities.sort((a, b) => a.localeCompare(b));     
-        }           
+        }
     }
-        
+
     freeCells(entityId) {
+        // Remove entity from all cells it occupies
         for (const [key, cellState] of this.state.entries()) {
-            if (cellState.entities.includes(entityId)) {
-                cellState.entities = cellState.entities.filter(id => id !== entityId);
-                
-                // Clean up empty cell
+            const idx = cellState.entities.indexOf(entityId);
+            if (idx !== -1) {
+                cellState.entities.splice(idx, 1);
                 if (cellState.entities.length === 0) {
                     this.state.delete(key);
-                } else {                    
-                    cellState.entities.sort((a, b) => a.localeCompare(b));
                 }
             }
         }
@@ -391,7 +414,7 @@ class GridSystem extends GUTS.BaseSystem {
     clear() {
         this.state.clear();
     }
-    
+
     toggleVisibility(scene) {
         this.showGrid = !this.showGrid;
         
@@ -440,14 +463,6 @@ class GridSystem extends GUTS.BaseSystem {
             }
         }
         return false;
-    }
-
-    onDestroyBuilding(entityId){
-        this.freeCells(entityId);
-    }
-
-    onUnitKilled(entityId){
-        this.freeCells(entityId);
     }
 
     /**
@@ -522,5 +537,145 @@ class GridSystem extends GUTS.BaseSystem {
     isInWorldBounds(worldX, worldZ) {
         return worldX >= this.worldBounds.minX && worldX <= this.worldBounds.maxX &&
                worldZ >= this.worldBounds.minZ && worldZ <= this.worldBounds.maxZ;
+    }
+
+    /**
+     * Initialize debug visualization for spatial grid
+     */
+    initDebugVisualization() {
+        if (this.game.isServer) return;
+
+        if (!this.game.uiScene) {
+            console.warn('[GridSystem] No uiScene available for debug visualization');
+            return;
+        }
+
+        // Create debug group
+        this.debugVisualization = new THREE.Group();
+        this.debugVisualization.name = 'SpatialGridDebug';
+        this.debugVisualization.visible = true;
+        this.game.uiScene.add(this.debugVisualization);
+
+        // Create shared geometry and materials
+        const cellSize = this.cellSize * 0.9;
+        this.debugGeometry = new THREE.PlaneGeometry(cellSize, cellSize);
+        this.debugGeometry.rotateX(-Math.PI / 2);
+
+        this.debugMaterials = {
+            player: new THREE.MeshBasicMaterial({
+                color: 0x00ff00, // Green for player units
+                transparent: true,
+                opacity: 0.5,
+                side: THREE.DoubleSide
+            }),
+            enemy: new THREE.MeshBasicMaterial({
+                color: 0xff0000, // Red for enemy units
+                transparent: true,
+                opacity: 0.5,
+                side: THREE.DoubleSide
+            }),
+            mixed: new THREE.MeshBasicMaterial({
+                color: 0xffff00, // Yellow for mixed
+                transparent: true,
+                opacity: 0.5,
+                side: THREE.DoubleSide
+            }),
+            neutral: new THREE.MeshBasicMaterial({
+                color: 0x0088ff, // Blue for neutral/buildings
+                transparent: true,
+                opacity: 0.5,
+                side: THREE.DoubleSide
+            })
+        };
+
+        console.log('[GridSystem] Debug visualization initialized');
+    }
+
+    /**
+     * Update debug visualization to show current spatial grid state
+     */
+    updateDebugVisualization() {
+        if (!this.debugVisualization) return;
+
+        // Clear old meshes
+        while (this.debugVisualization.children.length > 0) {
+            const mesh = this.debugVisualization.children[0];
+            this.debugVisualization.remove(mesh);
+            mesh.geometry?.dispose();
+        }
+
+        // Create meshes for occupied cells
+        for (const [key, cellState] of this.state.entries()) {
+            if (!cellState.entities || cellState.entities.length === 0) continue;
+
+            const [gx, gz] = key.split(',').map(Number);
+            const worldPos = this.gridToWorld(gx, gz);
+
+            // Determine cell color based on team composition
+            let material = this.debugMaterials.neutral;
+            let hasPlayer = false;
+            let hasEnemy = false;
+
+            for (const entityId of cellState.entities) {
+                const team = this.game.getComponent(entityId, 'team');
+                if (team) {
+                    // Team values are 'left' and 'right'
+                    if (team.team === 'left') hasPlayer = true;
+                    else if (team.team === 'right') hasEnemy = true;
+                }
+            }
+
+            if (hasPlayer && hasEnemy) {
+                material = this.debugMaterials.mixed;
+            } else if (hasPlayer) {
+                material = this.debugMaterials.player;
+            } else if (hasEnemy) {
+                material = this.debugMaterials.enemy;
+            }
+
+            const mesh = new THREE.Mesh(this.debugGeometry, material);
+            const terrainHeight = this.game.gameManager?.call('getTerrainHeightAtPosition', worldPos.x, worldPos.z) || 0;
+            mesh.position.set(worldPos.x, terrainHeight + 1, worldPos.z);
+            this.debugVisualization.add(mesh);
+        }
+    }
+
+    /**
+     * Toggle debug visualization on/off
+     */
+    toggleDebugVisualization() {
+        console.log('[GridSystem] toggleSpatialGridDebug called');
+
+        if (!this.debugVisualization) {
+            if (!this.game.isServer && this.game.uiScene) {
+                this.initDebugVisualization();
+            } else {
+                console.error('[GridSystem] Cannot initialize - isServer:', this.game.isServer, 'uiScene:', !!this.game.uiScene);
+                return;
+            }
+        }
+
+        this.debugEnabled = !this.debugEnabled;
+        this.debugVisualization.visible = this.debugEnabled;
+
+        if (this.debugEnabled) {
+            this.updateDebugVisualization();
+        }
+
+        // Log current grid state for debugging
+        console.log(`[GridSystem] Debug visualization ${this.debugEnabled ? 'ENABLED' : 'DISABLED'}`);
+        console.log(`[GridSystem] Current state: ${this.state.size} occupied cells`);
+
+        if (this.debugEnabled) {
+            for (const [key, cellState] of this.state.entries()) {
+                const entityNames = cellState.entities.map(id => {
+                    const unitType = this.game.getComponent(id, 'unitType');
+                    const team = this.game.getComponent(id, 'team');
+                    const teamValue = team ? JSON.stringify(team.team) : 'NO_TEAM';
+                    return `${unitType?.name || 'unknown'}(team=${teamValue})`;
+                });
+                console.log(`  Cell ${key}: ${entityNames.join(', ')}`);
+            }
+        }
     }
 }

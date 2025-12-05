@@ -81,39 +81,44 @@ class VisionSystem extends GUTS.BaseSystem {
             return false;
         }
         
-        let nearbyTrees = [];
-
         const midX = (from.x + to.x) / 2;
         const midZ = (from.z + to.z) / 2;
         const unitSize = (unitType && unitType.size) ? unitType.size : gridSize;
-        nearbyTrees = this.game.gameManager.call('getNearbyUnits', { x: midX, y: 0, z: midZ} , distance / 2 + unitSize, viewerEntityId, 'worldObjects');
+        const nearbyTreeIds = this.game.gameManager.call('getNearbyUnits', { x: midX, y: 0, z: midZ}, distance / 2 + unitSize, viewerEntityId, 'worldObjects');
 
-
-        if (nearbyTrees.length > 0) {
+        if (nearbyTreeIds && nearbyTreeIds.length > 0) {
             const numSamples = Math.max(2, Math.ceil(distance / (gridSize * 0.5)));
             const stepX = dx / numSamples;
             const stepZ = dz / numSamples;
-            
+
             for (let i = 1; i < numSamples; i++) {
                 const t = i / numSamples;
                 const sampleX = from.x + stepX * i;
                 const sampleZ = from.z + stepZ * i;
                 const rayHeight = fromEyeHeight + (toEyeHeight - fromEyeHeight) * t;
-                
-                for (const unit of nearbyTrees) {                    
-                    const dx = sampleX - unit.x;
-                    const dz = sampleZ - unit.z;
-                    const distSq = dx * dx + dz * dz;
-                    if(!unit.size) unit.size = gridSize;
-                    if (distSq < unit.size * unit.size) {            
-                        if (rayHeight < unit.y+unit.height) {
+
+                for (const treeId of nearbyTreeIds) {
+                    const treeTransform = this.game.getComponent(treeId, 'transform');
+                    const treePos = treeTransform?.position;
+                    if (!treePos) continue;
+
+                    const treeUnitType = this.game.getComponent(treeId, 'unitType');
+                    const treeSize = treeUnitType?.size || gridSize;
+                    const treeHeight = treeUnitType?.height || 0;
+
+                    const treeDx = sampleX - treePos.x;
+                    const treeDz = sampleZ - treePos.z;
+                    const distSq = treeDx * treeDx + treeDz * treeDz;
+
+                    if (distSq < treeSize * treeSize) {
+                        if (rayHeight < treePos.y + treeHeight) {
                             return false;
                         }
                     }
                 }
             }
         }
-        
+
         return true;
     }
 

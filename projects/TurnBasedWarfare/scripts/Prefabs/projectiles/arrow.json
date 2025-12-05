@@ -43,11 +43,14 @@
       }
     }
   },
-  "speed": 1000,
+  "speed": 600,
   "title": "Arrow",
-  "attackSound": "plasma",
-  "hitSound": "plasma",
+  "attackSound": "bow",
+  "hitSound": "arrow_hit",
   "homing": false,
   "homingStrength": 0,
+  "ballistic": true,
+  "sticksInGround": true,
+  "stickDuration": 3,
   "spriteAnimationSet": "arrow"
 }

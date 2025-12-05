@@ -48,9 +48,12 @@ class ProjectileSystem extends GUTS.BaseSystem {
         const targetPos = targetTransform?.position;
 
         if (!sourcePos || !sourceCombat || !targetPos) return null;
-        
-        // Create projectile entity
-        const projectileId = this.game.createEntity();
+
+        // Generate deterministic projectile ID using source entity and game time
+        const projectileId = `projectile_${sourceId}_${Math.floor(this.game.state.now * 1000)}`;
+
+        // Create projectile entity with explicit ID
+        this.game.createEntity(projectileId);
         const components = this.game.gameManager.call('getComponents');
         
         // Determine projectile element (from weapon, combat component, or projectile data)
@@ -65,11 +68,14 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Determine spawn height - ballistic projectiles start above ground to avoid immediate impact
         const spawnHeight = Math.max(sourcePos.y + 20, 20);
 
+        // Calculate rotation from velocity direction (for sprite direction)
+        const rotationY = Math.atan2(trajectory.vz, trajectory.vx);
+
         // Add components with full 3D support
         this.game.addComponent(projectileId, "transform",
             {
                 position: { x: sourcePos.x, y: spawnHeight, z: sourcePos.z },
-                rotation: { x: 0, y: 0, z: 0 },
+                rotation: { x: 0, y: rotationY, z: 0 },
                 scale: { x: 1, y: 1, z: 1 }
             });
 
@@ -280,7 +286,12 @@ class ProjectileSystem extends GUTS.BaseSystem {
             const vel = this.game.getComponent(projectileId, "velocity");
             const projectile = this.game.getComponent(projectileId, "projectile");
             const homing = this.game.getComponent(projectileId, "homingTarget");
-                        
+
+            // Skip stuck projectiles (arrows in ground, etc.) - they just wait to expire
+            if (projectile.isStuck) {
+                return;
+            }
+
             // Update homing behavior
             if (homing && homing.targetId && projectile.isBallistic) {
                 this.updateBallisticHoming(projectileId, pos, vel, projectile, homing);
@@ -299,10 +310,10 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
             // Handle different collision types based on projectile type
             if (projectile.isBallistic) {
-                // Ballistic projectiles ONLY check for ground impact
+                // Ballistic projectiles check for ground impact (collision check happens on landing)
                 this.handleProjectileGroundImpact(projectileId, pos, projectile);
             } else {
-                // Non-ballistic projectiles check for direct unit hits
+                // Non-ballistic projectiles check for direct unit hits during flight
                 this.checkProjectileCollisions(projectileId, pos, projectile);
             }
 
@@ -338,6 +349,12 @@ class ProjectileSystem extends GUTS.BaseSystem {
             const homingStrength = homing.homingStrength * this.game.state.deltaTime * 2; // Reduced for ballistic
             vel.vx = this.roundForDeterminism(vel.vx * (1 - homingStrength) + requiredHorizontalVelX * homingStrength);
             vel.vz = this.roundForDeterminism(vel.vz * (1 - homingStrength) + requiredHorizontalVelZ * homingStrength);
+
+            // Update rotation for sprite direction
+            const transform = this.game.getComponent(projectileId, "transform");
+            if (transform?.rotation) {
+                transform.rotation.y = Math.atan2(vel.vz, vel.vx);
+            }
             
             // For vertical homing, we need to be more careful to maintain ballistic arc
             // Only adjust if we're in the descending phase
@@ -395,6 +412,12 @@ class ProjectileSystem extends GUTS.BaseSystem {
                     vel.vy = this.roundForDeterminism(vel.vy * speedRatio);
                     vel.vz = this.roundForDeterminism(vel.vz * speedRatio);
                 }
+
+                // Update rotation for sprite direction
+                const transform = this.game.getComponent(projectileId, "transform");
+                if (transform?.rotation) {
+                    transform.rotation.y = Math.atan2(vel.vz, vel.vx);
+                }
             }
         } else {
             homing.targetId = null;
@@ -402,8 +425,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
     
     checkProjectileCollisions(projectileId, pos, projectile) {
-        // Only for NON-ballistic projectiles
-        if (projectile.isBallistic) return; // Skip collision check for ballistic
+        // Skip if already destroyed by another check
+        if (!this.game.hasEntity(projectileId)) return;
 
         // Get all potential targets
         const allEntities = this.game.getEntitiesWith(
@@ -502,35 +525,121 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Call custom onHit callback if provided
         if (projectile.onHit && typeof projectile.onHit === 'function') {
             projectile.onHit(pos);
-        } else {
-            // Default explosion behavior
-            this.createGroundExplosion(entityId, pos, projectile, groundLevel);
+            this.destroyProjectile(entityId);
+            return;
+        }
 
-            if (this.game.gameManager) {
-                const splashRadius = projectile.splashRadius || 80;
-                const splashDamage = Math.floor(projectile.damage);
-                const elementTypes = this.game.gameManager.call('getDamageElementTypes');
-                const element = projectile.element || elementTypes.PHYSICAL;
+        // Handle arrows and other projectiles that stick in the ground
+        if (projectile.sticksInGround) {
+            this.stickProjectileInGround(entityId, pos, projectile, groundLevel);
+            return;
+        }
 
-                const results = this.game.gameManager.call('applySplashDamage',
-                    projectile.source,
-                    pos,
-                    splashDamage,
-                    element,
-                    splashRadius,
-                    {
-                        isBallistic: true,
-                        projectileId: entityId,
-                        allowFriendlyFire: false
-                    }
-                );
+        // Default explosion behavior for splash damage projectiles
+        this.createGroundExplosion(entityId, pos, projectile, groundLevel);
 
-                // With behavior tree system, units naturally respond to threats through
-                // enemy detection in their behavior tree evaluation - no need for manual retaliation
-            }
+        if (this.game.gameManager) {
+            const splashRadius = projectile.splashRadius || 80;
+            const splashDamage = Math.floor(projectile.damage);
+            const elementTypes = this.game.gameManager.call('getDamageElementTypes');
+            const element = projectile.element || elementTypes.PHYSICAL;
+
+            const results = this.game.gameManager.call('applySplashDamage',
+                projectile.source,
+                pos,
+                splashDamage,
+                element,
+                splashRadius,
+                {
+                    isBallistic: true,
+                    projectileId: entityId,
+                    allowFriendlyFire: false
+                }
+            );
+
+            // With behavior tree system, units naturally respond to threats through
+            // enemy detection in their behavior tree evaluation - no need for manual retaliation
         }
 
         this.destroyProjectile(entityId);
+    }
+
+    stickProjectileInGround(entityId, pos, projectile, groundLevel) {
+        // Check if there's a unit at the landing position
+        const hitTarget = this.checkLandingCollision(pos, projectile);
+        if (hitTarget) {
+            // Hit a unit at landing position - deal damage and destroy arrow
+            const targetTransform = this.game.getComponent(hitTarget, 'transform');
+            const targetPos = targetTransform?.position || pos;
+            this.handleProjectileHit(entityId, hitTarget, targetPos, projectile);
+            return;
+        }
+
+        // No unit at landing - stick arrow in ground
+        const vel = this.game.getComponent(entityId, 'velocity');
+        if (vel) {
+            vel.vx = 0;
+            vel.vy = 0;
+            vel.vz = 0;
+            vel.affectedByGravity = false;
+        }
+
+        // Position the arrow at ground level, partially embedded
+        const transform = this.game.getComponent(entityId, 'transform');
+        if (transform) {
+            transform.position.y = groundLevel + 2; // Stick up slightly from ground
+        }
+
+        // Mark as stuck so it's not processed as a flying projectile
+        projectile.isStuck = true;
+
+        // Update lifetime to expire after stick duration
+        const stickDuration = projectile.stickDuration || 3;
+        const lifetime = this.game.getComponent(entityId, 'lifetime');
+        if (lifetime) {
+            lifetime.startTime = this.game.state.now;
+            lifetime.duration = stickDuration;
+        }
+    }
+
+    checkLandingCollision(pos, projectile) {
+        // Use spatial grid lookup instead of iterating all entities
+        const sourceTeam = this.game.getComponent(projectile.source, 'team');
+        if (!sourceTeam) return null;
+
+        // Get nearby units using grid system - returns array of entityIds
+        const searchRadius = this.HIT_DETECTION_RADIUS + 30; // Include unit radius
+        const nearbyEntityIds = this.game.gameManager.call('getNearbyUnits', pos, searchRadius, projectile.source);
+
+        if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
+
+        for (const entityId of nearbyEntityIds) {
+            const entityTeam = this.game.getComponent(entityId, 'team');
+            const entityHealth = this.game.getComponent(entityId, 'health');
+
+            if (!entityTeam || !entityHealth) continue;
+            if (entityTeam.team === sourceTeam.team) continue;
+
+            const entityTransform = this.game.getComponent(entityId, 'transform');
+            const entityPos = entityTransform?.position;
+            if (!entityPos) continue;
+
+            // Calculate horizontal distance
+            const dx = entityPos.x - pos.x;
+            const dz = entityPos.z - pos.z;
+            const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
+
+            // Get entity radius for collision detection
+            const entityUnitType = this.game.getComponent(entityId, 'unitType');
+            const entityRadius = this.getUnitRadius(entityUnitType);
+
+            // Check if arrow landed within unit's radius
+            if (horizontalDistance <= entityRadius + this.HIT_DETECTION_RADIUS) {
+                return entityId;
+            }
+        }
+
+        return null;
     }
     
  

@@ -86,15 +86,16 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findNearestEnemyInRadius(entityId, game, centerPos, team, radius) {
-        const potentialTargets = game.getEntitiesWith('transform', 'team', 'health');
+        // Use spatial grid for efficient lookup - returns array of entityIds
+        const nearbyEntityIds = game.gameManager.call('getNearbyUnits', centerPos, radius, entityId);
+        if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
+
         let nearest = null;
         let nearestDistance = Infinity;
 
-        for (const targetId of potentialTargets) {
-            if (targetId === entityId) continue;
-
+        for (const targetId of nearbyEntityIds) {
             const targetTeam = game.getComponent(targetId, 'team');
-            if (targetTeam.team === team.team) continue;
+            if (!targetTeam || targetTeam.team === team.team) continue;
 
             const targetHealth = game.getComponent(targetId, 'health');
             if (!targetHealth || targetHealth.current <= 0) continue;
@@ -104,9 +105,13 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
 
             const targetTransform = game.getComponent(targetId, 'transform');
             const targetPos = targetTransform?.position;
-            const distance = this.distance(centerPos, targetPos);
+            if (!targetPos) continue;
 
-            if (distance <= radius && distance < nearestDistance) {
+            const dx = targetPos.x - centerPos.x;
+            const dz = targetPos.z - centerPos.z;
+            const distance = Math.sqrt(dx * dx + dz * dz);
+
+            if (distance < nearestDistance) {
                 nearestDistance = distance;
                 nearest = { id: targetId, distance };
             }

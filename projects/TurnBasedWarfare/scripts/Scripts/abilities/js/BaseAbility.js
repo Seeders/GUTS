@@ -66,7 +66,7 @@ class BaseAbility {
         return null;
     }
     
-    // FIXED: Entities already sorted from getEntitiesWith()
+    // Use spatial grid for efficient lookup - returns array of entityIds
     getEnemiesInRange(casterEntity, range = null) {
         const effectiveRange = range || this.range;
         const transform = this.game.getComponent(casterEntity, "transform");
@@ -75,24 +75,21 @@ class BaseAbility {
 
         if (!casterPos || !casterTeam) return [];
 
-        return this.game.getEntitiesWith("transform", "team", "health")
-            .filter(entityId => {
-                if (entityId === casterEntity) return false;
+        const nearbyEntityIds = this.game.gameManager.call('getNearbyUnits', casterPos, effectiveRange, casterEntity);
+        if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
 
-                const transform = this.game.getComponent(entityId, "transform");
-                const pos = transform?.position;
-                const team = this.game.getComponent(entityId, "team");
-                const health = this.game.getComponent(entityId, "health");
+        return nearbyEntityIds.filter(entityId => {
+            const team = this.game.getComponent(entityId, "team");
+            const health = this.game.getComponent(entityId, "health");
 
-                if (!pos || !team || !health || health.current <= 0) return false;
-                if (team.team === casterTeam.team) return false;
+            if (!team || !health || health.current <= 0) return false;
+            if (team.team === casterTeam.team) return false;
 
-                const distance = Math.sqrt(Math.pow(pos.x - casterPos.x, 2) + Math.pow(pos.z - casterPos.z, 2));
-                return distance <= effectiveRange;
-            });
+            return true;
+        });
     }
-    
-    // FIXED: Entities already sorted from getEntitiesWith()
+
+    // Use spatial grid for efficient lookup - returns array of entityIds
     getAlliesInRange(casterEntity, range = null) {
         const effectiveRange = range || this.range;
         const transform = this.game.getComponent(casterEntity, "transform");
@@ -101,19 +98,18 @@ class BaseAbility {
 
         if (!casterPos || !casterTeam) return [];
 
-        return this.game.getEntitiesWith("transform", "team", "health")
-            .filter(entityId => {
-                const transform = this.game.getComponent(entityId, "transform");
-                const pos = transform?.position;
-                const team = this.game.getComponent(entityId, "team");
-                const health = this.game.getComponent(entityId, "health");
+        const nearbyEntityIds = this.game.gameManager.call('getNearbyUnits', casterPos, effectiveRange, null);
+        if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
 
-                if (!pos || !team || !health || health.current <= 0) return false;
-                if (team.team !== casterTeam.team) return false;
+        return nearbyEntityIds.filter(entityId => {
+            const team = this.game.getComponent(entityId, "team");
+            const health = this.game.getComponent(entityId, "health");
 
-                const distance = Math.sqrt(Math.pow(pos.x - casterPos.x, 2) + Math.pow(pos.z - casterPos.z, 2));
-                return distance <= effectiveRange;
-            });
+            if (!team || !health || health.current <= 0) return false;
+            if (team.team !== casterTeam.team) return false;
+
+            return true;
+        });
     }
     
     // FIXED: Entities already sorted, remove redundant sorting

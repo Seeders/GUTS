@@ -42,17 +42,16 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findNearestEnemy(entityId, game, pos, team, range) {
-        const potentialTargets = game.getEntitiesWith('transform', 'team', 'health');
-        const sortedTargets = potentialTargets.sort((a, b) => String(a).localeCompare(String(b)));
+        // Use spatial grid for efficient lookup - returns array of entityIds
+        const nearbyEntityIds = game.gameManager.call('getNearbyUnits', pos, range, entityId);
+        if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
         let nearest = null;
         let nearestDistance = Infinity;
 
-        for (const targetId of sortedTargets) {
-            if (targetId === entityId) continue;
-
+        for (const targetId of nearbyEntityIds) {
             const targetTeam = game.getComponent(targetId, 'team');
-            if (targetTeam.team === team.team) continue;
+            if (!targetTeam || targetTeam.team === team.team) continue;
 
             const targetHealth = game.getComponent(targetId, 'health');
             if (!targetHealth || targetHealth.current <= 0) continue;
@@ -62,20 +61,18 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
             const targetTransform = game.getComponent(targetId, 'transform');
             const targetPos = targetTransform?.position;
-            const distance = this.distance(pos, targetPos);
+            if (!targetPos) continue;
 
-            if (distance <= range && distance < nearestDistance) {
+            const dx = targetPos.x - pos.x;
+            const dz = targetPos.z - pos.z;
+            const distance = Math.sqrt(dx * dx + dz * dz);
+
+            if (distance < nearestDistance) {
                 nearestDistance = distance;
                 nearest = { id: targetId, distance };
             }
         }
 
         return nearest;
-    }
-
-    distance(pos1, pos2) {
-        const dx = pos2.x - pos1.x;
-        const dz = pos2.z - pos1.z;
-        return Math.sqrt(dx * dx + dz * dz);
     }
 }
