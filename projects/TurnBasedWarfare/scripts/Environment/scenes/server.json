@@ -19,7 +19,8 @@
     "GoldMineSystem",
     "PathfindingSystem",
     "VisionSystem",
-    "SupplySystem"
+    "SupplySystem",
+    "SaveManager"
   ],
   "entities": [
     {

@@ -31,6 +31,7 @@
   ],
   "managers": [
     "GameManager",
+    "SaveManager",
     "ComponentManager",
     "UnitCreationManager",
     "SquadManager"

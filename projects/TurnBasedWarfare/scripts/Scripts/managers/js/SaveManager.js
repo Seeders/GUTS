@@ -290,6 +290,10 @@ class SaveManager {
                 }
             }
             console.log(`[SaveManager] Created ${loadedCount} entities with ${componentsAdded} components`);
+
+            // Initialize abilities for loaded entities
+            // AbilitySystem.entityAbilities Map is not saved, so we need to re-register abilities
+            this.initializeAbilitiesForLoadedEntities();
         }
 
         // Note: Placement data is now derived from entities with 'placement' component
@@ -465,6 +469,30 @@ class SaveManager {
             reader.onerror = () => reject(new Error('Error reading file'));
             reader.readAsText(file);
         });
+    }
+
+    /**
+     * Initialize abilities for all loaded entities that have them defined
+     * This is needed because AbilitySystem.entityAbilities Map is not saved
+     */
+    initializeAbilitiesForLoadedEntities() {
+        if (!this.game.abilitySystem) {
+            console.warn('[SaveManager] AbilitySystem not available, skipping ability initialization');
+            return;
+        }
+
+        const entitiesWithUnitType = this.game.getEntitiesWith('unitType');
+        let abilitiesInitialized = 0;
+
+        for (const entityId of entitiesWithUnitType) {
+            const unitType = this.game.getComponent(entityId, 'unitType');
+            if (unitType && unitType.abilities && unitType.abilities.length > 0) {
+                this.game.abilitySystem.addAbilitiesToUnit(entityId, unitType.abilities);
+                abilitiesInitialized++;
+            }
+        }
+
+        console.log(`[SaveManager] Initialized abilities for ${abilitiesInitialized} entities`);
     }
 
     onSceneUnload() {
