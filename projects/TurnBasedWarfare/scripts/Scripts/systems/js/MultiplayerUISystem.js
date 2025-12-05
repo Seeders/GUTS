@@ -146,8 +146,8 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
 
     async leaveGame() {
         // Send leave room event to server
-        if (this.game.networkManager && this.game.networkManager.socket) {
-            this.game.networkManager.socket.emit('LEAVE_ROOM', {});
+        if (this.game.networkManager) {
+            this.game.networkManager.leaveRoom();
         }
 
         // Hide game menu button
