@@ -103,13 +103,71 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     checkForBattleEnd() {
         if (!this.game.componentManager) return;
 
+        // Check if any team has lost all buildings
+        const buildingVictory = this.checkBuildingVictoryCondition();
+        if (buildingVictory) {
+            this.endBattle(this.game.room, buildingVictory.winner, buildingVictory.reason);
+            return;
+        }
+
         // Calculate battle duration same way as client
         const battleDuration = (this.game.state.now || 0) - this.battleStartTime;
 
         // Battle always lasts exactly battleDuration seconds
-        if( battleDuration >= this.battleDuration){
-            this.endBattle(this.game.room, null);
+        if (battleDuration >= this.battleDuration) {
+            this.endBattle(this.game.room, null, 'timeout');
         }
+    }
+
+    /**
+     * Check if any team has lost all their buildings
+     * Returns { winner: playerId, reason: string } or null
+     */
+    checkBuildingVictoryCondition() {
+        const room = this.game.room;
+        if (!room) return null;
+
+        // Get all alive buildings grouped by team
+        const buildingsByTeam = { left: [], right: [] };
+
+        const buildingEntities = this.game.getEntitiesWith('unitType', 'team', 'health');
+        for (const entityId of buildingEntities) {
+            const unitType = this.game.getComponent(entityId, 'unitType');
+            if (!unitType || unitType.collection !== 'buildings') continue;
+
+            const health = this.game.getComponent(entityId, 'health');
+            if (!health || health.current <= 0) continue;
+
+            const deathState = this.game.getComponent(entityId, 'deathState');
+            if (deathState && deathState.isDying) continue;
+
+            const team = this.game.getComponent(entityId, 'team');
+            if (team && buildingsByTeam[team.team] !== undefined) {
+                buildingsByTeam[team.team].push(entityId);
+            }
+        }
+
+        // Check if any team has no buildings left
+        let losingTeam = null;
+        if (buildingsByTeam.left.length === 0 && buildingsByTeam.right.length > 0) {
+            losingTeam = 'left';
+        } else if (buildingsByTeam.right.length === 0 && buildingsByTeam.left.length > 0) {
+            losingTeam = 'right';
+        }
+
+        if (losingTeam) {
+            // Find the winner (player on the opposite team)
+            for (const [playerId, player] of room.players) {
+                if (player.stats.side !== losingTeam) {
+                    return {
+                        winner: playerId,
+                        reason: 'buildings_destroyed'
+                    };
+                }
+            }
+        }
+
+        return null;
     }
 
     checkNoCombatActive(aliveEntities) {
@@ -258,13 +316,13 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         }
     }
 
-    endGame(room) {
+    endGame(room, reason = 'health_depleted') {
         this.game.state.phase = 'ended';
-        
+
         // Determine final winner
         let finalWinner = null;
         let maxHealth = -1;
-        
+
         for (const [playerId, player] of room.players) {
             const health = player.stats.health;
             if (health > maxHealth) {
@@ -272,22 +330,47 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
                 finalWinner = playerId;
             }
         }
-        
+
         const gameResult = {
             winner: finalWinner,
+            reason: reason,
             finalStats: this.getPlayerStats(room),
             totalRounds: this.game.state.round
         };
-        
+
         this.serverNetworkManager.broadcastToRoom(room.id, 'GAME_END', {
             result: gameResult,
             gameState: room.getGameState()
         });
-        
+
         // Mark room as inactive after delay
         setTimeout(() => {
             room.isActive = false;
         }, 10000);
+    }
+
+    /**
+     * Called when a player disconnects/leaves during an active game
+     */
+    handlePlayerDisconnect(playerId) {
+        const room = this.game.room;
+        if (!room) return;
+
+        // If game is in battle or placement phase, the remaining player wins
+        if (this.game.state.phase === 'battle' || this.game.state.phase === 'placement') {
+            // Find the remaining player
+            let remainingPlayer = null;
+            for (const [id, player] of room.players) {
+                if (id !== playerId) {
+                    remainingPlayer = id;
+                    break;
+                }
+            }
+
+            if (remainingPlayer) {
+                this.endGame(room, 'opponent_disconnected');
+            }
+        }
     }
 
     onBattleEnd() {

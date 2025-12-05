@@ -30,7 +30,6 @@
           {
             "type": "gltf",
             "color": {
-              "paletteColor": "blueDColor"
             },
             "metalness": 0,
             "roughness": 1,
@@ -38,7 +37,7 @@
             "z": 0,
             "scaleX": 1,
             "name": "foundation",
-            "url": "models/townHall.glb"
+            "url": "models/townhall.glb"
           }
         ],
         "position": {

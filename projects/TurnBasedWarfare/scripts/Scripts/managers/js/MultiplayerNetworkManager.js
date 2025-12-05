@@ -643,11 +643,67 @@ class MultiplayerNetworkManager {
 
     handleGameEnd(data) {
         const myPlayerId = this.game.clientNetworkManager.playerId;
-        if (data.result.winner === myPlayerId) {
-            this.game.uiSystem.showNotification('GAME WON! Congratulations!', 'success');
-        } else {
-            this.game.uiSystem.showNotification('Game lost. Better luck next time!', 'warning');
+        const isWinner = data.result.winner === myPlayerId;
+        const reason = data.result.reason || 'unknown';
+
+        // Pause the game
+        this.game.state.phase = 'ended';
+        this.game.state.isPaused = true;
+
+        // Determine the result message based on reason
+        let reasonText = '';
+        switch (reason) {
+            case 'buildings_destroyed':
+                reasonText = isWinner ? 'You destroyed all enemy buildings!' : 'All your buildings were destroyed.';
+                break;
+            case 'opponent_disconnected':
+                reasonText = isWinner ? 'Your opponent left the game.' : 'You disconnected from the game.';
+                break;
+            case 'health_depleted':
+                reasonText = isWinner ? 'Your opponent ran out of health!' : 'You ran out of health.';
+                break;
+            default:
+                reasonText = isWinner ? 'Victory!' : 'Defeat!';
         }
+
+        // Populate stats and show appropriate screen
+        if (isWinner) {
+            this.populateGameEndStats('victoryStats', data.result, reasonText);
+            this.game.screenManager.showVictoryScreen();
+        } else {
+            this.populateGameEndStats('defeatStats', data.result, reasonText);
+            this.game.screenManager.showDefeatScreen();
+        }
+    }
+
+    populateGameEndStats(containerId, result, reasonText) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const myPlayerId = this.game.clientNetworkManager.playerId;
+        const myStats = result.finalStats?.[myPlayerId];
+        const totalRounds = result.totalRounds || this.game.state.round || 1;
+
+        container.innerHTML = `
+            <div class="stat-item">
+                <span class="stat-label">Result</span>
+                <span class="stat-value">${reasonText}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Rounds Played</span>
+                <span class="stat-value">${totalRounds}</span>
+            </div>
+            ${myStats ? `
+            <div class="stat-item">
+                <span class="stat-label">Final Health</span>
+                <span class="stat-value">${myStats.stats?.health || 0}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Final Gold</span>
+                <span class="stat-value">${myStats.stats?.gold || 0}</span>
+            </div>
+            ` : ''}
+        `;
     }
 
     handleAllPlayersLeft(data) {

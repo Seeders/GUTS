@@ -42,13 +42,7 @@ class InputManager {
         const gameExitBtn = document.getElementById('game_ExitBtn');
         
         
-        const victoryNextRoundBtn = document.getElementById('victory_NextRoundBtn');
-        const victoryRestartBtn = document.getElementById('victory_RestartBtn');
         const victoryMainMenuBtn = document.getElementById('victory_MainMenuBtn');
-
-        
-        const defeatRetryBtn = document.getElementById('defeat_RetryBtn');
-        const defeatChangeModeBtn = document.getElementById('defeat_ChangeModeBtn');
         const defeatMainMenuBtn = document.getElementById('defeat_MainMenuBtn');
 
         
@@ -80,24 +74,22 @@ class InputManager {
             this.game.gameManager.exitToMenu();
         });
 
-        victoryNextRoundBtn?.addEventListener('click', () => {
-            this.game.gameManager.continueGame();
-        });
-        victoryRestartBtn?.addEventListener('click', () => {
-            this.game.gameManager.restartGame();
-        });
         victoryMainMenuBtn?.addEventListener('click', () => {
-            this.game.screenManager.showMainMenu();
+            // Use leaveGame to properly clean up multiplayer connection
+            if (this.game.uiSystem?.leaveGame) {
+                this.game.uiSystem.leaveGame();
+            } else {
+                this.game.screenManager.showMainMenu();
+            }
         });
 
-        defeatRetryBtn?.addEventListener('click', () => {
-            this.game.gameManager.restartGame();
-        });
-        defeatChangeModeBtn?.addEventListener('click', () => {
-            this.game.screenManager.showGameModeSelect();
-        });
         defeatMainMenuBtn?.addEventListener('click', () => {
-            this.game.screenManager.showMainMenu();
+            // Use leaveGame to properly clean up multiplayer connection
+            if (this.game.uiSystem?.leaveGame) {
+                this.game.uiSystem.leaveGame();
+            } else {
+                this.game.screenManager.showMainMenu();
+            }
         });
 
         pausedResumeBtn?.addEventListener('click', () => {
