@@ -1,6 +1,6 @@
 {
   "title": "barbarian Death Up Left",
-  "collection": "barbarianSprites",
+  "spriteCollection": "barbarianSprites",
   "sprites": [
     "barbarianDeathUpLeft_0",
     "barbarianDeathUpLeft_1",

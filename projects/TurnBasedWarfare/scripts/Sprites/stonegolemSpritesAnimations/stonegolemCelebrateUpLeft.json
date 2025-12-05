@@ -1,6 +1,6 @@
 {
   "title": "stonegolem Celebrate Up Left",
-  "collection": "stonegolemSprites",
+  "spriteCollection": "stonegolemSprites",
   "sprites": [
     "stonegolemCelebrateUpLeft_0",
     "stonegolemCelebrateUpLeft_1",

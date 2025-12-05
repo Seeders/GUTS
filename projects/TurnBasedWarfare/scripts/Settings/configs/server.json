@@ -9,6 +9,7 @@
   "libraries": [
     "GameServices",
     "BaseSystem",
+    "BasePlacementSystem",
     "GameRoom",
     "ServerGameRoom",
     "GameState",

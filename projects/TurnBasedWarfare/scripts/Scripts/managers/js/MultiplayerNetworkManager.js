@@ -101,6 +101,10 @@ class MultiplayerNetworkManager {
             nm.listen('GAME_ENDED_ALL_PLAYERS_LEFT', (data) => {
                 this.handleAllPlayersLeft(data);
             }),
+
+            nm.listen('SAVE_DATA_LOADED', (data) => {
+                this.handleSaveDataLoaded(data);
+            }),
             
 
             nm.listen('OPPONENT_BUILDING_CANCELLED', (data) => {
@@ -187,15 +191,48 @@ class MultiplayerNetworkManager {
         );
     }
 
+    uploadSaveData(saveData, callback) {
+        // Use longer timeout for large save files (60 seconds)
+        this.game.clientNetworkManager.call(
+            'UPLOAD_SAVE_DATA',
+            { saveData },
+            'SAVE_DATA_UPLOADED',
+            (data, error) => {
+                if (error || !data || data.error) {
+                    callback(false, { error: error || data?.error || 'Failed to upload save' });
+                } else {
+                    callback(true, data);
+                }
+            },
+            60000
+        );
+    }
+
     submitPlacement(placement, callback){
         if(this.game.state.phase != "placement") {
             callback(false, 'Not in placement phase.');
         };
+
+        // Send only minimal placement data - server looks up unitType from collections
+        // No targetPosition - that's handled by aiState/behaviors via SET_SQUAD_TARGET
+        const minimalPlacement = {
+            placementId: placement.placementId,
+            gridPosition: placement.gridPosition,
+            unitTypeId: placement.unitTypeId || placement.unitType?.id,
+            collection: placement.collection,
+            team: placement.team,
+            playerId: placement.playerId,
+            roundPlaced: placement.roundPlaced,
+            timestamp: placement.timestamp,
+            peasantInfo: placement.peasantInfo,
+            isStartingState: placement.isStartingState
+        };
+
         this.game.clientNetworkManager.call(
             'SUBMIT_PLACEMENT',
-            { placement },
+            { placement: minimalPlacement },
             'SUBMITTED_PLACEMENT',
-            (data, error) => {           
+            (data, error) => {
                 if (data.error) {
                     callback(false, error);
                 } else {
@@ -359,9 +396,22 @@ class MultiplayerNetworkManager {
                 data.ready ? 'success' : 'info'
             );
         }
-        
+
         if (data.allReady) {
             this.game.uiSystem.showNotification('All players ready! Game starting...', 'success');
+        }
+    }
+
+    handleSaveDataLoaded(data) {
+        // Show notification that host loaded a save file
+        this.game.uiSystem.showNotification(`Save loaded: ${data.saveName}. Level: ${data.level}`, 'info', 5000);
+
+        // Update level selector to match save
+        if (data.level) {
+            const levelSelect = document.getElementById('levelSelect');
+            if (levelSelect) {
+                levelSelect.value = data.level;
+            }
         }
     }
 
@@ -369,6 +419,19 @@ class MultiplayerNetworkManager {
         // Store the level from server
         const level = data.level || 'level1';
         this.game.state.level = level;
+
+        console.log('[MultiplayerNetworkManager] handleGameStarted:', {
+            level,
+            isLoadingSave: data.isLoadingSave,
+            hasSaveData: !!data.saveData,
+            entityCount: data.saveData?.entities?.length || 0
+        });
+
+        // Check if server is sending save data (host uploaded a save file)
+        if (data.isLoadingSave && data.saveData) {
+            this.game.pendingSaveData = data.saveData;
+            console.log('[MultiplayerNetworkManager] Set pendingSaveData with', data.saveData.entities?.length, 'entities');
+        }
 
         // Show loading screen
         this.game.screenManager.showLoadingScreen();
@@ -801,13 +864,12 @@ class MultiplayerNetworkManager {
         console.log('sync with server', gameState);
         const myPlayerId = this.game.clientNetworkManager.playerId;
         const myPlayer = gameState.players.find(p => p.id === myPlayerId);
-        
+
         if (myPlayer) {
             // Sync squad count and side
             if (this.game.state) {
                 this.game.state.mySide = myPlayer.stats.side;
                 this.game.state.playerGold = myPlayer.stats.gold;
-                this.game.state.playerHealth = myPlayer.stats.health;
                 this.game.state.round = gameState.round;
                 this.game.state.serverGameState = gameState;
             }

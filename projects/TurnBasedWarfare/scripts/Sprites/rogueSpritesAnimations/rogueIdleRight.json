@@ -1,6 +1,6 @@
 {
   "title": "rogue Idle Right",
-  "collection": "rogueSprites",
+  "spriteCollection": "rogueSprites",
   "sprites": [
     "rogueIdleRight_0",
     "rogueIdleRight_1",

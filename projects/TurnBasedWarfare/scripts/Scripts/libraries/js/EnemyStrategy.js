@@ -328,9 +328,14 @@ class EnemyStrategy {
         let totalDamage = 0;
         
         playerPlacements.forEach(placement => {
-            const unit = placement.unitType;
+            // Get unitType from entity using squadUnits
+            const unit = placement.squadUnits?.length > 0
+                ? this.game.getComponent(placement.squadUnits[0], 'unitType')
+                : null;
+            if (!unit) return;
+
             const squadSize = placement.isSquad ? placement.squadUnits.length : 1;
-            
+
             const category = this.categorizeUnit(unit);
             switch (category) {
                 case 'tank': tankCount += squadSize; break;
@@ -338,11 +343,11 @@ class EnemyStrategy {
                 case 'mage': mageCount += squadSize; break;
                 case 'fast': fastCount += squadSize; break;
             }
-            
+
             if (this.isElementalUnit(unit)) {
                 elementalCount += squadSize;
             }
-            
+
             totalValue += (unit.value || 0) * squadSize;
             totalHP += (unit.hp || 0) * squadSize;
             totalDamage += (unit.damage || 0) * squadSize;

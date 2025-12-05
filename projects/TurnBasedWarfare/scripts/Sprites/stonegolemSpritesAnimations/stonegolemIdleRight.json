@@ -1,6 +1,6 @@
 {
   "title": "stonegolem Idle Right",
-  "collection": "stonegolemSprites",
+  "spriteCollection": "stonegolemSprites",
   "sprites": [
     "stonegolemIdleRight_0",
     "stonegolemIdleRight_1",

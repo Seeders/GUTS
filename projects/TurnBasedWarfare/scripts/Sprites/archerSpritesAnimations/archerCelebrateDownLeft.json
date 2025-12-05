@@ -1,6 +1,6 @@
 {
   "title": "archer Celebrate Down Left",
-  "collection": "archerSprites",
+  "spriteCollection": "archerSprites",
   "sprites": [
     "archerCelebrateDownLeft_0",
     "archerCelebrateDownLeft_1",

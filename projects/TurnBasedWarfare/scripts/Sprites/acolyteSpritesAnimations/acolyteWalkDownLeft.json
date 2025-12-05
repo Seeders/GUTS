@@ -1,6 +1,6 @@
 {
   "title": "acolyte Walk Down Left",
-  "collection": "acolyteSprites",
+  "spriteCollection": "acolyteSprites",
   "sprites": [
     "acolyteWalkDownLeft_0",
     "acolyteWalkDownLeft_1",

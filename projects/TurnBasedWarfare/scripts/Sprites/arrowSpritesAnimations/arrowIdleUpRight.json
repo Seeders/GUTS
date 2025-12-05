@@ -1,6 +1,6 @@
 {
   "title": "arrow Idle Up Right",
-  "collection": "arrowSprites",
+  "spriteCollection": "arrowSprites",
   "sprites": [
     "arrowIdleUpRight_0"
   ]

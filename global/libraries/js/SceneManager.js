@@ -37,8 +37,34 @@ class SceneManager {
         // Enable/disable systems based on scene configuration
         this.configureSystems(sceneData);
 
-        // Spawn entities from scene definition
-        await this.spawnSceneEntities(sceneData);
+        // Check if we're loading from a save file
+        const isLoadingSave = !!this.game.pendingSaveData;
+
+        console.log(`[SceneManager] Loading scene: ${sceneName}, isLoadingSave: ${isLoadingSave}, hasSaveData: ${!!this.game.pendingSaveData}, hasSaveManager: ${!!this.game.saveManager}, isServer: ${!!this.game.isServer}`);
+        if (this.game.pendingSaveData) {
+            console.log(`[SceneManager] pendingSaveData has ${this.game.pendingSaveData.entities?.length || 0} entities`);
+        }
+
+        // Set flag so systems know not to spawn starting entities
+        if (isLoadingSave) {
+            this.game.state.isLoadingSave = true;
+        }
+
+        // Spawn entities from scene definition (skip if loading save - save has all entities)
+        if (!isLoadingSave) {
+            await this.spawnSceneEntities(sceneData);
+        } else {
+            console.log(`[SceneManager] Skipping scene entities - loading from save`);
+        }
+
+        // Inject saved entities if there's pending save data
+        if (isLoadingSave && this.game.saveManager) {
+            this.game.saveManager.loadSavedEntities();
+        } else if (isLoadingSave) {
+            // SaveManager not available yet, load entities directly
+            console.log(`[SceneManager] Loading saved entities directly (SaveManager not available)`);
+            this.loadSavedEntitiesDirect(this.game.pendingSaveData);
+        }
 
         // Notify all systems that scene has loaded (initial setup)
         this.notifySceneLoaded(sceneData);
@@ -64,6 +90,10 @@ class SceneManager {
      */
     async unloadCurrentScene(keepSystems = new Set()) {
         if (!this.currentScene) return;
+
+        // Clear isLoadingSave flag but preserve pendingSaveData for the next scene
+        this.game.state.isLoadingSave = false;
+        // Note: Don't clear pendingSaveData here - it may be needed for the incoming scene
 
         // Notify systems that are being unloaded (not kept)
         this.notifySceneUnloading(keepSystems);
@@ -218,6 +248,46 @@ class SceneManager {
                 system.postSceneLoad(sceneData);
             }
         }
+    }
+
+    /**
+     * Load saved entities directly when SaveManager is not available
+     * @param {Object} saveData - The save data containing entities
+     */
+    loadSavedEntitiesDirect(saveData) {
+        if (!saveData || !saveData.entities) {
+            console.warn('[SceneManager] No entities in save data');
+            return;
+        }
+
+        console.log(`[SceneManager] Loading ${saveData.entities.length} saved entities directly (isServer: ${!!this.game.isServer})`);
+
+        // Create entities from save data
+        let createdCount = 0;
+        for (const entityDef of saveData.entities) {
+            const entityId = entityDef.id;
+
+            // Create the entity
+            this.game.createEntity(entityId);
+            createdCount++;
+
+            // Add all saved components
+            for (const [componentType, componentData] of Object.entries(entityDef.components)) {
+                this.game.addComponent(entityId, componentType, componentData);
+            }
+        }
+
+        console.log(`[SceneManager] Created ${createdCount} entities on ${this.game.isServer ? 'server' : 'client'}. Total entities now: ${this.game.entities?.size || 0}`);
+
+        // Clear pending save data
+        this.game.pendingSaveData = null;
+
+        // Clear the isLoadingSave flag after a short delay
+        setTimeout(() => {
+            this.game.state.isLoadingSave = false;
+        }, 100);
+
+        console.log('[SceneManager] Saved entities loaded successfully');
     }
 
     /**

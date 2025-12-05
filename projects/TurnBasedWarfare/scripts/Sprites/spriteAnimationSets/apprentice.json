@@ -1,6 +1,6 @@
 {
   "title": "Apprentice",
-  "collection": "apprenticeSpritesAnimations",
+  "animationCollection": "apprenticeSpritesAnimations",
   "spriteSheet": "Sprites/apprenticeSprites/apprenticeSheet.png",
   "idleSpriteAnimations": [
     "apprenticeIdleDown",

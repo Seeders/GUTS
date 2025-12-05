@@ -1,6 +1,6 @@
 {
   "title": "fletchershall Idle Up Left",
-  "collection": "fletchershallSprites",
+  "spriteCollection": "fletchershallSprites",
   "sprites": [
     "fletchershallIdleUpLeft_0"
   ]

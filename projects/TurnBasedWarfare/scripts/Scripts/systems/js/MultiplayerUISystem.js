@@ -58,6 +58,12 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
                     <h2 style="text-align: center; margin-bottom: 2rem; color: #fff;">Game Menu</h2>
 
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <button id="gameMenuSaveBtn" style="padding: 1rem; background: #2d6a4f; border: none; color: white; cursor: pointer; border-radius: 5px; font-size: 1.1rem; font-weight: bold; transition: background 0.2s;"
+                            onmouseover="this.style.background='#40916c';"
+                            onmouseout="this.style.background='#2d6a4f';">
+                            Save Game
+                        </button>
+
                         <button id="gameMenuOptionsBtn" style="padding: 1rem; background: #444; border: none; color: white; cursor: pointer; border-radius: 5px; font-size: 1.1rem; font-weight: bold; transition: background 0.2s;"
                             onmouseover="this.style.background='#555';"
                             onmouseout="this.style.background='#444';">
@@ -93,6 +99,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
 
         const menuBtn = document.getElementById('gameMenuBtn');
         const menuModal = document.getElementById('gameMenuModal');
+        const saveBtn = document.getElementById('gameMenuSaveBtn');
         const optionsBtn = document.getElementById('gameMenuOptionsBtn');
         const leaveBtn = document.getElementById('gameMenuLeaveBtn');
         const cancelBtn = document.getElementById('gameMenuCancelBtn');
@@ -103,6 +110,10 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
                 menuModal.style.display = 'flex';
             },
             closeMenu: () => {
+                menuModal.style.display = 'none';
+            },
+            saveGame: () => {
+                this.saveGame();
                 menuModal.style.display = 'none';
             },
             showOptions: () => {
@@ -127,6 +138,10 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
             menuBtn.addEventListener('click', this.gameMenuHandlers.openMenu);
         }
 
+        if (saveBtn) {
+            saveBtn.addEventListener('click', this.gameMenuHandlers.saveGame);
+        }
+
         if (cancelBtn) {
             cancelBtn.addEventListener('click', this.gameMenuHandlers.closeMenu);
         }
@@ -141,6 +156,23 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
 
         if (menuModal) {
             menuModal.addEventListener('click', this.gameMenuHandlers.closeOnBackground);
+        }
+    }
+
+    saveGame() {
+        if (!this.game.saveManager) {
+            this.showNotification('Save system not available', 'error');
+            return;
+        }
+
+        try {
+            // Get save data and export as file
+            const saveData = this.game.saveManager.getSaveData();
+            this.game.saveManager.exportSaveFile(saveData);
+            this.showNotification('Game saved! File downloaded.', 'success');
+        } catch (error) {
+            console.error('[MultiplayerUISystem] Error saving game:', error);
+            this.showNotification('Failed to save game', 'error');
         }
     }
 
@@ -445,25 +477,85 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         if (!this.boundHandlers) {
             this.boundHandlers = {
                 readyClick: this.toggleReady.bind(this),
-                leaveClick: this.leaveRoom.bind(this)
+                leaveClick: this.leaveRoom.bind(this),
+                loadGameClick: this.openLoadGameDialog.bind(this),
+                loadGameFileChange: this.handleLoadGameFile.bind(this)
             };
         }
 
         // Clean up any existing listeners
         const readyBtn = document.getElementById('player1ReadyBtn');
         const leaveBtn = document.getElementById('leaveLobbyBtn');
+        const loadGameBtn = document.getElementById('loadGameBtn');
+        const loadGameFileInput = document.getElementById('loadGameFileInput');
 
         if (readyBtn) {
             // Remove old listener if it exists
             readyBtn.removeEventListener('click', this.boundHandlers.readyClick);
             // Add new listener
             readyBtn.addEventListener('click', this.boundHandlers.readyClick);
-        } 
+        }
 
         if (leaveBtn) {
             leaveBtn.removeEventListener('click', this.boundHandlers.leaveClick);
             leaveBtn.addEventListener('click', this.boundHandlers.leaveClick);
         }
+
+        if (loadGameBtn) {
+            loadGameBtn.removeEventListener('click', this.boundHandlers.loadGameClick);
+            loadGameBtn.addEventListener('click', this.boundHandlers.loadGameClick);
+        }
+
+        if (loadGameFileInput) {
+            loadGameFileInput.removeEventListener('change', this.boundHandlers.loadGameFileChange);
+            loadGameFileInput.addEventListener('change', this.boundHandlers.loadGameFileChange);
+        }
+    }
+
+    openLoadGameDialog() {
+        const fileInput = document.getElementById('loadGameFileInput');
+        if (fileInput) {
+            fileInput.click();
+        }
+    }
+
+    async handleLoadGameFile(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const saveData = await this.game.saveManager.importSaveFile(file);
+
+            if (!saveData) {
+                this.showNotification('Invalid save file', 'error');
+                return;
+            }
+
+            // Send save data to server (host only)
+            this.game.networkManager.uploadSaveData(saveData, (success, response) => {
+                if (success) {
+                    this.showNotification(`Save uploaded: ${saveData.saveName || 'Unknown'}. Game will load this save.`, 'success', 5000);
+
+                    // Update level selector to match save
+                    if (saveData.level) {
+                        const levelSelect = document.getElementById('levelSelect');
+                        if (levelSelect) {
+                            levelSelect.value = saveData.level;
+                            this.selectedLevel = saveData.level;
+                        }
+                    }
+                } else {
+                    this.showNotification('Failed to upload save: ' + (response?.error || 'Unknown error'), 'error');
+                }
+            });
+
+        } catch (error) {
+            console.error('[MultiplayerUISystem] Error loading save file:', error);
+            this.showNotification('Failed to load save file: ' + error.message, 'error');
+        }
+
+        // Reset file input so same file can be selected again
+        event.target.value = '';
     }
 
     showLobby(gameState, roomId) {
@@ -591,10 +683,16 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
             if (startBtn && myPlayer?.isHost) {
                 const allReady = gameState.players.every(p => p.ready);
                 const canStart = gameState.players.length === 2 && allReady;
-                
+
                 startBtn.style.display = gameState.players.length === 2 ? 'block' : 'none';
                 startBtn.disabled = !canStart;
                 startBtn.textContent = allReady ? '⚡ COMMENCE WAR' : 'Waiting for Ready';
+            }
+
+            // Show/hide load game button (only for host)
+            const loadGameBtn = document.getElementById('loadGameBtn');
+            if (loadGameBtn) {
+                loadGameBtn.style.display = myPlayer?.isHost ? 'inline-block' : 'none';
             }
 
             // Update lobby status message

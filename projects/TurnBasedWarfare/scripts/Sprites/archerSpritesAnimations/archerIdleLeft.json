@@ -1,6 +1,6 @@
 {
   "title": "archer Idle Left",
-  "collection": "archerSprites",
+  "spriteCollection": "archerSprites",
   "sprites": [
     "archerIdleLeft_0",
     "archerIdleLeft_1",

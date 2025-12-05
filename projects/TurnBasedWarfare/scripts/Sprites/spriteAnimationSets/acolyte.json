@@ -1,6 +1,6 @@
 {
   "title": "Acolyte",
-  "collection": "acolyteSpritesAnimations",
+  "animationCollection": "acolyteSpritesAnimations",
   "spriteSheet": "Sprites/acolyteSprites/acolyteSheet.png",
   "idleSpriteAnimations": [
     "acolyteIdleDown",

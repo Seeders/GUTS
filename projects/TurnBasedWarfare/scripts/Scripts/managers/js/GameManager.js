@@ -26,13 +26,11 @@ class GameManager extends GUTS.GameServices {
             }
         }
 
-        setTimeout(() => {
-            this.game.state.isPaused = false;
-            this.game.screenManager.showGameScreen();
-            // Trigger onGameStarted AFTER screen is visible so UI elements are accessible
-            this.game.triggerEvent('onGameStarted');
-            this.game.uiSystem.start();
-        }, 2000);
+        this.game.state.isPaused = false;
+        this.game.screenManager.showGameScreen();
+        // Trigger onGameStarted AFTER screen is visible so UI elements are accessible
+        this.game.triggerEvent('onGameStarted');
+        this.game.uiSystem.start();
 
     }
 

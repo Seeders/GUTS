@@ -187,9 +187,11 @@ class TeamHealthSystem extends GUTS.BaseSystem {
             if (placement.squadUnits) {
                 const unitMatch = placement.squadUnits.find(entityId => entityId === unitId);
                 if (unitMatch) {
+                    // Get unitType from the entity's unitType component
+                    const unitType = this.game.getComponent(unitMatch, 'unitType');
                     return {
                         placementId: placement.placementId,
-                        unitType: placement.unitType
+                        unitType: unitType
                     };
                 }
             }
@@ -222,12 +224,15 @@ class TeamHealthSystem extends GUTS.BaseSystem {
             return unitType;
         }
 
-        // Fallback to placement system
+        // Fallback to placement system - get unitType from entity
         const playerPlacements = this.game.gameManager.call('getPlacementsForSide', 'left') || [];
         const opponentPlacements = this.game.gameManager.call('getPlacementsForSide', 'right') || [];
         const placement = playerPlacements.find(p => p.placementId === placementId) ||
                          opponentPlacements.find(p => p.placementId === placementId);
-        return placement ? placement.unitType : null;
+        if (placement && placement.squadUnits && placement.squadUnits.length > 0) {
+            return this.game.getComponent(placement.squadUnits[0], 'unitType');
+        }
+        return null;
     }
     
     /**

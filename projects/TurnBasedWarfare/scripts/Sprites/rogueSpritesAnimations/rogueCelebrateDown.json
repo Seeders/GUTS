@@ -1,6 +1,6 @@
 {
   "title": "rogue Celebrate Down",
-  "collection": "rogueSprites",
+  "spriteCollection": "rogueSprites",
   "sprites": [
     "rogueCelebrateDown_0",
     "rogueCelebrateDown_1",

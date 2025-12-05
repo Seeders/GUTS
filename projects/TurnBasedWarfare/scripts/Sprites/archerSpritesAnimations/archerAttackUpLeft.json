@@ -1,6 +1,6 @@
 {
   "title": "archer Attack Up Left",
-  "collection": "archerSprites",
+  "spriteCollection": "archerSprites",
   "sprites": [
     "archerAttackUpLeft_0",
     "archerAttackUpLeft_1",

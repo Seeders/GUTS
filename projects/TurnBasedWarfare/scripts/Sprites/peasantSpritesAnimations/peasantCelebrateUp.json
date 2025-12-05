@@ -1,6 +1,6 @@
 {
   "title": "peasant Celebrate Up",
-  "collection": "peasantSprites",
+  "spriteCollection": "peasantSprites",
   "sprites": [
     "peasantCelebrateUp_0",
     "peasantCelebrateUp_1",

@@ -1,6 +1,6 @@
 {
   "title": "Archer",
-  "collection": "archerSpritesAnimations",
+  "animationCollection": "archerSpritesAnimations",
   "spriteSheet": "Sprites/archerSprites/archerSheet.png",
   "idleSpriteAnimations": [
     "archerIdleDown",

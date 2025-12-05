@@ -1,6 +1,6 @@
 {
   "title": "rogue Walk Up",
-  "collection": "rogueSprites",
+  "spriteCollection": "rogueSprites",
   "sprites": [
     "rogueWalkUp_0",
     "rogueWalkUp_1",

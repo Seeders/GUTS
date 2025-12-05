@@ -38,6 +38,7 @@
     "ClientNetworkManager",
     "socket.io.min.js",
     "BaseSystem",
+    "BasePlacementSystem",
     "SeededRandom",
     "DesyncDebugger",
     "FantasyUIEnhancements",

@@ -1,6 +1,6 @@
 {
   "title": "barbarian Celebrate Up",
-  "collection": "barbarianSprites",
+  "spriteCollection": "barbarianSprites",
   "sprites": [
     "barbarianCelebrateUp_0",
     "barbarianCelebrateUp_1",

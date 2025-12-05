@@ -1,6 +1,6 @@
 {
   "title": "soldier Death Up",
-  "collection": "soldierSprites",
+  "spriteCollection": "soldierSprites",
   "sprites": [
     "soldierDeathUp_0",
     "soldierDeathUp_1",

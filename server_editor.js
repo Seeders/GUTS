@@ -575,7 +575,7 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
                 // Create sprite animation JSON (no sprite sheet path)
                 const spriteAnimationJson = {
                     title: animationName.replace(/([A-Z])/g, ' $1').trim(),
-                    collection: collectionName,
+                    spriteCollection: collectionName,
                     sprites: spriteNames
                 };
                 await fs.writeFile(
@@ -588,7 +588,7 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
         // Create sprite animation set JSON with sprite sheet path
         const animationSetJson = {
             title: baseName.charAt(0).toUpperCase() + baseName.slice(1),
-            collection: collectionName + 'Animations',
+            animationCollection: collectionName + 'Animations',
             spriteSheet: spriteSheetPath
         };
 

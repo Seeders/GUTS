@@ -1,6 +1,6 @@
 {
   "title": "Peasant",
-  "collection": "peasantSpritesAnimations",
+  "animationCollection": "peasantSpritesAnimations",
   "spriteSheet": "Sprites/peasantSprites/peasantSheet.png",
   "idleSpriteAnimations": [
     "peasantIdleDown",

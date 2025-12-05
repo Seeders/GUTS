@@ -270,6 +270,7 @@ class EntryGenerator {
                 });
 
                 // Build the data collection object, merging JSON with HTML/CSS by fileName
+                // Each entry gets an 'id' property set to its key (filename without extension)
                 sections.push(`const ${dataVarName} = {`);
 
                 // Use dataFiles as the primary list, merging in html/css
@@ -284,19 +285,21 @@ class EntryGenerator {
 
                     const comma = index < dataFiles.length - 1 ? ',' : '';
 
-                    if (hasHtml || hasCss) {
-                        sections.push(`  "${file.fileName}": {`);
-                        sections.push(`    ...${jsonVar},`);
-                        if (hasHtml) {
-                            sections.push(`    html: ${htmlVar},`);
-                        }
-                        if (hasCss) {
-                            sections.push(`    css: ${cssVar}`);
-                        }
-                        sections.push(`  }${comma}`);
-                    } else {
-                        sections.push(`  "${file.fileName}": ${jsonVar}${comma}`);
+                    // Spread JSON first, then add id and collection from filename/folder
+                    sections.push(`  "${file.fileName}": {`);
+                    sections.push(`    ...${jsonVar},`);
+                    sections.push(`    id: "${file.fileName}",`);
+                    sections.push(`    collection: "${collectionName}",`);
+                    if (hasHtml) {
+                        sections.push(`    html: ${htmlVar},`);
                     }
+                    if (hasCss) {
+                        sections.push(`    css: ${cssVar},`);
+                    }
+                    // Remove trailing comma from last property
+                    const lastLine = sections[sections.length - 1];
+                    sections[sections.length - 1] = lastLine.replace(/,$/, '');
+                    sections.push(`  }${comma}`);
                 });
 
                 sections.push('};');
@@ -615,12 +618,12 @@ class EntryGenerator {
                     sections.push(`const ${varName} = require('${requirePath}');`);
                 });
 
-                // Build the data collection object
+                // Build the data collection object - add id and collection from filename/folder
                 sections.push(`const ${dataVarName} = {`);
                 dataFiles.forEach((file, index) => {
                     const varName = `${collectionName}_json_${this.sanitizeVarName(file.fileName)}`;
                     const comma = index < dataFiles.length - 1 ? ',' : '';
-                    sections.push(`  "${file.fileName}": ${varName}${comma}`);
+                    sections.push(`  "${file.fileName}": { ...${varName}, id: "${file.fileName}", collection: "${collectionName}" }${comma}`);
                 });
                 sections.push('};');
                 sections.push('');

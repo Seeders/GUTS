@@ -1,6 +1,6 @@
 {
   "title": "stonegolem Walk Left",
-  "collection": "stonegolemSprites",
+  "spriteCollection": "stonegolemSprites",
   "sprites": [
     "stonegolemWalkLeft_0",
     "stonegolemWalkLeft_1",

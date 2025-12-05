@@ -1,6 +1,6 @@
 {
   "title": "skeleton Idle Right",
-  "collection": "skeletonSprites",
+  "spriteCollection": "skeletonSprites",
   "sprites": [
     "skeletonIdleRight_0",
     "skeletonIdleRight_1",

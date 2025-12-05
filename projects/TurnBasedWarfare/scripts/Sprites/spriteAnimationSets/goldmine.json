@@ -1,6 +1,6 @@
 {
   "title": "Goldmine",
-  "collection": "goldmineSpritesAnimations",
+  "animationCollection": "goldmineSpritesAnimations",
   "spriteSheet": "Sprites/goldmineSprites/goldmineSheet.png",
   "idleSpriteAnimations": [
     "goldmineIdleDown",

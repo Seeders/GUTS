@@ -1,6 +1,6 @@
 {
   "title": "peasant Idle Down Right",
-  "collection": "peasantSprites",
+  "spriteCollection": "peasantSprites",
   "sprites": [
     "peasantIdleDownRight_0",
     "peasantIdleDownRight_1",

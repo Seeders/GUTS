@@ -1,6 +1,6 @@
 {
   "title": "soldier Celebrate Left",
-  "collection": "soldierSprites",
+  "spriteCollection": "soldierSprites",
   "sprites": [
     "soldierCelebrateLeft_0",
     "soldierCelebrateLeft_1",

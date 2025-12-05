@@ -1,6 +1,6 @@
 {
   "title": "stonegolem Celebrate Down",
-  "collection": "stonegolemSprites",
+  "spriteCollection": "stonegolemSprites",
   "sprites": [
     "stonegolemCelebrateDown_0",
     "stonegolemCelebrateDown_1",

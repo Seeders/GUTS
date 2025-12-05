@@ -1,6 +1,6 @@
 {
   "title": "Stonegolem",
-  "collection": "stonegolemSpritesAnimations",
+  "animationCollection": "stonegolemSpritesAnimations",
   "spriteSheet": "Sprites/stonegolemSprites/stonegolemSheet.png",
   "idleSpriteAnimations": [
     "stonegolemIdleDown",

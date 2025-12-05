@@ -1,6 +1,6 @@
 {
   "title": "Fletchershall",
-  "collection": "fletchershallSpritesAnimations",
+  "animationCollection": "fletchershallSpritesAnimations",
   "spriteSheet": "Sprites/fletchershallSprites/fletchershallSheet.png",
   "idleSpriteAnimations": [
     "fletchershallIdleDown",

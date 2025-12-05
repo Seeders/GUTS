@@ -1,6 +1,6 @@
 {
   "title": "underconstruction Idle Down Right",
-  "collection": "underconstructionSprites",
+  "spriteCollection": "underconstructionSprites",
   "sprites": [
     "underconstructionIdleDownRight_0"
   ]

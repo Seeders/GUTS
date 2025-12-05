@@ -1,6 +1,6 @@
 {
   "title": "skeleton Attack Up Right",
-  "collection": "skeletonSprites",
+  "spriteCollection": "skeletonSprites",
   "sprites": [
     "skeletonAttackUpRight_0",
     "skeletonAttackUpRight_1",

@@ -1,6 +1,6 @@
 {
   "title": "magetower Idle Down",
-  "collection": "magetowerSprites",
+  "spriteCollection": "magetowerSprites",
   "sprites": [
     "magetowerIdleDown_0"
   ]

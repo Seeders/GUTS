@@ -1,6 +1,6 @@
 {
   "title": "Arrow",
-  "collection": "arrowSpritesAnimations",
+  "animationCollection": "arrowSpritesAnimations",
   "spriteSheet": "Sprites/arrowSprites/arrowSheet.png",
   "idleSpriteAnimations": [
     "arrowIdleDown",

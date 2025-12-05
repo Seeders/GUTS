@@ -1,6 +1,6 @@
 {
   "title": "apprentice Idle Down Right",
-  "collection": "apprenticeSprites",
+  "spriteCollection": "apprenticeSprites",
   "sprites": [
     "apprenticeIdleDownRight_0",
     "apprenticeIdleDownRight_1",

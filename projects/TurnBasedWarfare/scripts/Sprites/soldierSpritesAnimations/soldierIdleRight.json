@@ -1,6 +1,6 @@
 {
   "title": "soldier Idle Right",
-  "collection": "soldierSprites",
+  "spriteCollection": "soldierSprites",
   "sprites": [
     "soldierIdleRight_0",
     "soldierIdleRight_1",

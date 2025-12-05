@@ -1,6 +1,6 @@
 {
   "title": "Skeleton",
-  "collection": "skeletonSpritesAnimations",
+  "animationCollection": "skeletonSpritesAnimations",
   "spriteSheet": "Sprites/skeletonSprites/skeletonSheet.png",
   "idleSpriteAnimations": [
     "skeletonIdleDown",

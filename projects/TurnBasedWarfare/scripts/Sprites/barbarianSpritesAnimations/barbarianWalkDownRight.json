@@ -1,6 +1,6 @@
 {
   "title": "barbarian Walk Down Right",
-  "collection": "barbarianSprites",
+  "spriteCollection": "barbarianSprites",
   "sprites": [
     "barbarianWalkDownRight_0",
     "barbarianWalkDownRight_1",

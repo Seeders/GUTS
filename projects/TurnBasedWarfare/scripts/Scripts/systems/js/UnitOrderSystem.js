@@ -34,14 +34,15 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const actionPanel = document.getElementById('actionPanel');
         if (!actionPanel) return;
 
-
         const placement = this.game.gameManager.call('getPlacementById', placementId);
-        
+        if (!placement) {
+            console.warn(`[UnitOrderSystem] No placement found for ${placementId}`);
+            return;
+        }
+
         actionPanel.innerHTML = "";
-          
 
-
-        const firstUnit = placement.squadUnits[0];
+        const firstUnit = placement.squadUnits?.[0];
         const unitType = firstUnit ? this.game.getComponent(firstUnit, "unitType") : null;
         
         let squadPanel = document.createElement('div');

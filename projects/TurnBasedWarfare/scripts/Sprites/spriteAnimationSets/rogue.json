@@ -1,6 +1,6 @@
 {
   "title": "Rogue",
-  "collection": "rogueSpritesAnimations",
+  "animationCollection": "rogueSpritesAnimations",
   "spriteSheet": "Sprites/rogueSprites/rogueSheet.png",
   "idleSpriteAnimations": [
     "rogueIdleDown",

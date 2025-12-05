@@ -1,6 +1,6 @@
 {
   "title": "Barbarian",
-  "collection": "barbarianSpritesAnimations",
+  "animationCollection": "barbarianSpritesAnimations",
   "spriteSheet": "Sprites/barbarianSprites/barbarianSheet.png",
   "idleSpriteAnimations": [
     "barbarianIdleDown",

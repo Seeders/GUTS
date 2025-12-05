@@ -1,6 +1,6 @@
 {
   "title": "Male",
-  "collection": "maleSpriteAnimations",
+  "animationCollection": "maleSpriteAnimations",
   "walkSpriteAnimations": [
     "maleWalkDown",
     "maleWalkDownLeft",

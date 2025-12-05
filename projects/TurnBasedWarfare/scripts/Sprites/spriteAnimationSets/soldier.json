@@ -1,6 +1,6 @@
 {
   "title": "Soldier",
-  "collection": "soldierSpritesAnimations",
+  "animationCollection": "soldierSpritesAnimations",
   "spriteSheet": "Sprites/soldierSprites/soldierSheet.png",
   "idleSpriteAnimations": [
     "soldierIdleDown",

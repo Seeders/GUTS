@@ -1,6 +1,6 @@
 {
   "title": "magetower Idle Up Right",
-  "collection": "magetowerSprites",
+  "spriteCollection": "magetowerSprites",
   "sprites": [
     "magetowerIdleUpRight_0"
   ]

@@ -1,6 +1,6 @@
 {
   "title": "rogue Death Down Left",
-  "collection": "rogueSprites",
+  "spriteCollection": "rogueSprites",
   "sprites": [
     "rogueDeathDownLeft_0",
     "rogueDeathDownLeft_1",

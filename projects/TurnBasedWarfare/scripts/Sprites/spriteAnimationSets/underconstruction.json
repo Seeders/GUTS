@@ -1,6 +1,6 @@
 {
   "title": "Underconstruction",
-  "collection": "underconstructionSpritesAnimations",
+  "animationCollection": "underconstructionSpritesAnimations",
   "spriteSheet": "Sprites/underconstructionSprites/underconstructionSheet.png",
   "idleSpriteAnimations": [
     "underconstructionIdleDown",

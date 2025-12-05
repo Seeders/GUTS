@@ -1,6 +1,6 @@
 {
   "title": "barracks Idle Down Left",
-  "collection": "barracksSprites",
+  "spriteCollection": "barracksSprites",
   "sprites": [
     "barracksIdleDownLeft_0"
   ]

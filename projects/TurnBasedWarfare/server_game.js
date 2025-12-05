@@ -65,6 +65,7 @@ const server = createServer(app);
 if (!global._io) {
     global._io = new IOServer(server, {
         cors: { origin: '*', methods: ['GET', 'POST'] },
+        maxHttpBufferSize: 10e6 // 10MB max message size for save files
     });
 }
 global.io = global._io; // also expose as global.io for convenience

@@ -1,6 +1,6 @@
 {
   "title": "goldmine Idle Down Right",
-  "collection": "goldmineSprites",
+  "spriteCollection": "goldmineSprites",
   "sprites": [
     "goldmineIdleDownRight_0"
   ]

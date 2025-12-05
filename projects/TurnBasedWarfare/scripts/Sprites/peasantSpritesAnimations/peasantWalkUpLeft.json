@@ -1,6 +1,6 @@
 {
   "title": "peasant Walk Up Left",
-  "collection": "peasantSprites",
+  "spriteCollection": "peasantSprites",
   "sprites": [
     "peasantWalkUpLeft_0",
     "peasantWalkUpLeft_1",

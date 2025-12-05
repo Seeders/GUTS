@@ -1,6 +1,6 @@
 {
   "title": "soldier Attack Down Left",
-  "collection": "soldierSprites",
+  "spriteCollection": "soldierSprites",
   "sprites": [
     "soldierAttackDownLeft_0",
     "soldierAttackDownLeft_1",

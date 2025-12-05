@@ -1,6 +1,6 @@
 {
   "title": "Cottage",
-  "collection": "cottageSpritesAnimations",
+  "animationCollection": "cottageSpritesAnimations",
   "spriteSheet": "Sprites/cottageSprites/cottageSheet.png",
   "idleSpriteAnimations": [
     "cottageIdleDown",

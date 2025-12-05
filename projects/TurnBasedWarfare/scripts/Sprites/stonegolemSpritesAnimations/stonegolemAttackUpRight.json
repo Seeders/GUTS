@@ -1,6 +1,6 @@
 {
   "title": "stonegolem Attack Up Right",
-  "collection": "stonegolemSprites",
+  "spriteCollection": "stonegolemSprites",
   "sprites": [
     "stonegolemAttackUpRight_0",
     "stonegolemAttackUpRight_1",

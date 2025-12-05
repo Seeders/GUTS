@@ -2,24 +2,75 @@ class ShopSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.shopSystem = this;
-        
-        this.ownedBuildings = new Map();
+
+        // Upgrades are tracked per-entity (could also move to entity component if needed)
         this.buildingUpgrades = new Map();
-        this.buildingProductionProgress = new Map();
         this.game.state.selectedEntity = {
             "collection": null,
             "entityId": null
         };
         this.townHallLevel = 0;
-        
+
         this.lastExperienceUpdate = 0;
         this.uiEnhancements = new GUTS.FantasyUIEnhancements(game);
     }
 
     init() {
-        this.game.gameManager.register('addBuilding', this.addBuilding.bind(this));
         this.game.gameManager.register('resetShop', this.reset.bind(this));
         this.game.gameManager.register('updateSquadExperience', this.updateSquadExperience.bind(this));
+    }
+
+    /**
+     * Get all completed buildings for a specific side
+     * Queries entity data directly instead of maintaining a separate map
+     */
+    getOwnedBuildings(side) {
+        const buildings = new Map(); // buildingType -> [entityIds]
+        const entitiesWithPlacement = this.game.getEntitiesWith('placement');
+
+        for (const entityId of entitiesWithPlacement) {
+            const placement = this.game.getComponent(entityId, 'placement');
+            const unitType = this.game.getComponent(entityId, 'unitType');
+
+            if (!placement || !unitType) continue;
+            if (unitType.collection !== 'buildings') continue;
+            if (placement.team !== side) continue;
+            if (placement.isUnderConstruction) continue;
+
+            const buildingType = unitType.id;
+            if (!buildings.has(buildingType)) {
+                buildings.set(buildingType, []);
+            }
+            buildings.get(buildingType).push(entityId);
+        }
+
+        return buildings;
+    }
+
+    /**
+     * Check if a building entity is completed (not under construction)
+     */
+    isBuildingCompleted(entityId) {
+        const placement = this.game.getComponent(entityId, 'placement');
+        return placement && !placement.isUnderConstruction;
+    }
+
+    /**
+     * Get production progress for a building from its placement component
+     */
+    getBuildingProductionProgress(entityId) {
+        const placement = this.game.getComponent(entityId, 'placement');
+        return placement?.productionProgress || 0;
+    }
+
+    /**
+     * Set production progress for a building on its placement component
+     */
+    setBuildingProductionProgress(entityId, progress) {
+        const placement = this.game.getComponent(entityId, 'placement');
+        if (placement) {
+            placement.productionProgress = progress;
+        }
     }
 
     updateSquadExperience() {
@@ -40,29 +91,23 @@ class ShopSystem extends GUTS.BaseSystem {
         const unitType = this.game.getComponent(entityId, "unitType");
         if(unitType.collection == "buildings") {
             const placement = this.game.getComponent(entityId, "placement");
-
-            // Ensure completed buildings are registered with ShopSystem
-            // This handles cases where construction completed but addBuilding wasn't called
-            // (e.g., client syncing state from server where ShopSystem doesn't exist)
-            if (placement && !placement.isUnderConstruction && !this.buildingProductionProgress.has(entityId)) {
-                this.addBuilding(unitType.id, entityId);
-            }
-
             this.renderBuildingActions(placement);
         }
     }
     renderBuildingActions(placement) {
-        const building = placement.unitType;
-        const container = document.getElementById('actionPanel');  
+        // Get unitType from the entity, not from placement
+        const buildingId = this.game.state.selectedEntity.entityId;
+        const building = this.game.getComponent(buildingId, 'unitType');
+        const container = document.getElementById('actionPanel');
         if (!container) return;
         container.innerHTML = '';
         if (!building) {
             this.clearSelectedEntity();
             return;
         }
-       
-        const buildingId = this.game.state.selectedEntity.entityId;
-        if(this.buildingProductionProgress.has(buildingId)){
+
+        // Check if building is completed (not under construction)
+        if (this.isBuildingCompleted(buildingId)) {
             const hasUnits = building.units && building.units.length > 0;
             const hasUpgrades = building.upgrades && building.upgrades.length > 0;
             if (hasUnits) {
@@ -81,43 +126,41 @@ class ShopSystem extends GUTS.BaseSystem {
                 empty.textContent = 'No actions available';
                 container.appendChild(empty);
             }
-        } else {
+        } else if (placement.isUnderConstruction) {
             // Building is under construction - show cancel button
             const buildingEntityId = this.game.state.selectedEntity.entityId;
 
-            if (placement.isUnderConstruction) {
-                const constructionSection = document.createElement('div');
-                constructionSection.className = 'action-section';
+            const constructionSection = document.createElement('div');
+            constructionSection.className = 'action-section';
 
-                const statusText = document.createElement('div');
-                statusText.className = 'action-empty';
-                statusText.textContent = 'Under Construction';
-                constructionSection.appendChild(statusText);
+            const statusText = document.createElement('div');
+            statusText.className = 'action-empty';
+            statusText.textContent = 'Under Construction';
+            constructionSection.appendChild(statusText);
 
-                const grid = document.createElement('div');
-                grid.className = 'action-grid';
+            const grid = document.createElement('div');
+            grid.className = 'action-grid';
 
-                const cancelBtn = this.createActionButton({
-                    iconId: null,
-                    title: 'Cancel Construction',
-                    cost: null,
-                    locked: false,
-                    onClick: () => this.cancelConstruction(buildingEntityId, placement)
-                });
-                cancelBtn.style.backgroundColor = '#8B0000';
-                cancelBtn.title = `Cancel and refund ${placement.unitType.value || 0} gold`;
-                grid.appendChild(cancelBtn);
+            const cancelBtn = this.createActionButton({
+                iconId: null,
+                title: 'Cancel Construction',
+                cost: null,
+                locked: false,
+                onClick: () => this.cancelConstruction(buildingEntityId, placement)
+            });
+            cancelBtn.style.backgroundColor = '#8B0000';
+            cancelBtn.title = `Cancel and refund ${building.value || 0} gold`;
+            grid.appendChild(cancelBtn);
 
-                constructionSection.appendChild(grid);
-                container.appendChild(constructionSection);
-            } else {
-                const empty = document.createElement('div');
-                empty.className = 'action-empty';
-                empty.textContent = 'No actions available';
-                container.appendChild(empty);
-            }
+            constructionSection.appendChild(grid);
+            container.appendChild(constructionSection);
+        } else {
+            const empty = document.createElement('div');
+            empty.className = 'action-empty';
+            empty.textContent = 'No actions available';
+            container.appendChild(empty);
         }
-        
+
         container.removeAttribute('style');
     }
 
@@ -128,9 +171,9 @@ class ShopSystem extends GUTS.BaseSystem {
         const grid = document.createElement('div');
         grid.className = 'action-grid';
         const UnitTypes = this.game.getCollections().units;
-        
+
         const buildingId = this.game.state.selectedEntity.entityId;
-        const productionProgress = this.buildingProductionProgress.get(buildingId);
+        const productionProgress = this.getBuildingProductionProgress(buildingId);
         const remainingCapacity = 1 - productionProgress;
         
         building.units.forEach(unitId => {
@@ -269,28 +312,18 @@ class ShopSystem extends GUTS.BaseSystem {
             if (this.townHallLevel < requirements.townHallLevel) return false;
         }
         if (requirements.buildings) {
+            const ownedBuildings = this.getOwnedBuildings(this.game.state.mySide);
             for (const reqBuilding of requirements.buildings) {
-                if (!this.ownedBuildings.has(reqBuilding)) return false;
+                if (!ownedBuildings.has(reqBuilding)) return false;
             }
         }
         return true;
     }
 
-    addBuilding(buildingId, entityId){
-        if(!this.ownedBuildings.has(buildingId)){
-            this.ownedBuildings.set(buildingId, [entityId]);
-        } else {
-            this.ownedBuildings.get(buildingId).push(entityId)            
-        }
-
-        this.buildingProductionProgress.set(entityId, 0);
-        this.buildingUpgrades.set(buildingId, new Set());        
-    }
-
     purchaseUnit(unitId, unit) {
         const buildingId = this.game.state.selectedEntity.entityId;
         const placementId = this.getBuildingPlacementId(buildingId);
-        
+
         if (!placementId) {
             console.log('no building selected');
             this.showNotification('No building selected!', 'error');
@@ -298,9 +331,9 @@ class ShopSystem extends GUTS.BaseSystem {
         }
 
         const buildTime = unit.buildTime || 1;
-        const productionProgress = this.buildingProductionProgress.get(buildingId);
+        const productionProgress = this.getBuildingProductionProgress(buildingId);
         const remainingCapacity = 1 - productionProgress;
-        
+
         if (buildTime > remainingCapacity + 0.001) {
             this.showNotification(`Not enough production capacity! Need ${buildTime.toFixed(1)} rounds`, 'error');
             return;
@@ -319,10 +352,10 @@ class ShopSystem extends GUTS.BaseSystem {
         this.game.networkManager.submitPlacement(placement, (success, response) => {
             if(success){
                 const newProgress = productionProgress + buildTime;
-                this.buildingProductionProgress.set(buildingId, newProgress);
+                this.setBuildingProductionProgress(buildingId, newProgress);
                 this.game.gameManager.call('placeSquadOnBattlefield', placement);
             }
-        });       
+        });
     }
 
     findBuildingPlacementPosition(placementId, unitDef) {
@@ -459,11 +492,13 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     onPlacementPhaseStart() {
-        this.ownedBuildings.keys().forEach(buildingType => {
-            this.ownedBuildings.get(buildingType).forEach((buildingEntityId) => {
-                this.buildingProductionProgress.set(buildingEntityId, 0);
-            });
-        });
+        // Reset production progress for all completed buildings on my side
+        const ownedBuildings = this.getOwnedBuildings(this.game.state.mySide);
+        for (const [buildingType, entityIds] of ownedBuildings) {
+            for (const entityId of entityIds) {
+                this.setBuildingProductionProgress(entityId, 0);
+            }
+        }
     }
 
     createExperiencePanel() {
@@ -578,12 +613,12 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     getCurrentUnitType(placementId, team) {
-        const state = this.game.state;
-        const placement = state.placements?.[team]?.[placementId];
-        if (!placement) return null;
-        
-        const UnitTypes = this.game.getCollections().units;
-        return placement.unitType ? UnitTypes[placement.unitType] : null;
+        // Get placement and unitType from entity via placement system
+        const placement = this.game.gameManager.call('getPlacementById', placementId);
+        if (!placement || !placement.squadUnits || placement.squadUnits.length === 0) {
+            return null;
+        }
+        return this.game.getComponent(placement.squadUnits[0], 'unitType');
     }
 
     getSquadDisplayName(placementId) {
@@ -650,8 +685,9 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     performLocalCancelConstruction(buildingEntityId, placement) {
-        // Refund the gold
-        const refundAmount = placement.unitType.value || 0;
+        // Refund the gold - get unitType from entity
+        const unitType = this.game.getComponent(buildingEntityId, 'unitType');
+        const refundAmount = unitType?.value || 0;
         if (refundAmount > 0) {
             this.game.state.playerGold += refundAmount;
             this.game.uiSystem?.showNotification(`Refunded ${refundAmount} gold`, 'success', 1500);

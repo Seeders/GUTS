@@ -1,6 +1,6 @@
 {
   "title": "archer Death Up",
-  "collection": "archerSprites",
+  "spriteCollection": "archerSprites",
   "sprites": [
     "archerDeathUp_0",
     "archerDeathUp_1",

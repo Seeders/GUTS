@@ -209,7 +209,15 @@ class RenderSystem extends GUTS.BaseSystem {
             const velocity = this.game.getComponent(entityId, "velocity");
             const unitType = this.game.getComponent(entityId, "unitType");
 
-            if (!unitType || !transform?.position) continue;
+            if (!unitType || !transform?.position) {
+                // Debug: log why entity is skipped
+                if (!this.spawnedEntities.has(entityId) && !this._skippedWarnings?.has(entityId)) {
+                    console.warn(`[RenderSystem] Skipping entity ${entityId}: unitType=${!!unitType}, position=${!!transform?.position}`);
+                    if (!this._skippedWarnings) this._skippedWarnings = new Set();
+                    this._skippedWarnings.add(entityId);
+                }
+                continue;
+            }
 
             const pos = transform.position;
             const angle = transform.rotation?.y || 0;
@@ -220,8 +228,12 @@ class RenderSystem extends GUTS.BaseSystem {
             const isAlwaysVisible = unitType.collection === "worldObjects" || unitType.collection === "cliffs";
 
             if (!isAlwaysVisible && !isVisible) {
-                // Entity not visible, skip rendering
-                continue;
+                // Entity not visible in fog of war - but still need to spawn it (hidden)
+                // so it's ready when it becomes visible. Only skip UPDATE, not spawn.
+                if (this.spawnedEntities.has(entityId)) {
+                    continue; // Already spawned, just not visible - skip update
+                }
+                // Fall through to spawn the entity even if not visible
             }
 
             // Validate renderable data
@@ -298,7 +310,7 @@ class RenderSystem extends GUTS.BaseSystem {
             const entityDef = collections?.[data.collection]?.[data.type];
             if (entityDef?.spriteAnimationSet) {
                 const animSetData = collections?.spriteAnimationSets?.[entityDef.spriteAnimationSet];
-                const spriteAnimationCollection = animSetData?.collection || 'peasantSpritesAnimations';
+                const spriteAnimationCollection = animSetData?.animationCollection || 'peasantSpritesAnimations';
                 this.game.triggerEvent('billboardSpawned', {
                     entityId,
                     spriteAnimationSet: entityDef.spriteAnimationSet,

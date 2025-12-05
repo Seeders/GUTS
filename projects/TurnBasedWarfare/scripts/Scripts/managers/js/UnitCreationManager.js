@@ -175,7 +175,7 @@ class UnitCreationManager {
 
             // Initialize squad in experience system if available
             if (this.game.squadExperienceSystem) {
-                this.game.squadExperienceSystem.initializeSquad(placementId, unitType, squadUnits, team);
+                this.game.squadExperienceSystem.initializeSquad(placementId, unitType, squadUnits);
             }
 
             // const squadInfo = this.game.squadManager.getSquadInfo(unitType);
@@ -314,15 +314,21 @@ class UnitCreationManager {
             team: team
         });
 
-        this.game.addComponent(entity, "placement",
-            placement);
-
-        // Unit type information - include collection and id for rendering
-        this.game.addComponent(entity, "unitType", {
-            ...unitType,
-            collection: unitType.collection,
-            id: unitType.id
+        // Placement component - squad membership marker (ties units in a placement together)
+        // No unitType data (entity has unitType component), no targetPosition (handled by aiState/behaviors)
+        this.game.addComponent(entity, "placement", {
+            placementId: placement.placementId,
+            gridPosition: placement.gridPosition,
+            unitTypeId: placement.unitTypeId || unitType.id,
+            collection: placement.collection || unitType.collection,
+            team: placement.team,
+            playerId: placement.playerId,
+            roundPlaced: placement.roundPlaced
         });
+
+        // Unit type information - full unit data for rendering and gameplay
+        // id and collection are added by the compiler at build time
+        this.game.addComponent(entity, "unitType", unitType);
     }
     
     /**

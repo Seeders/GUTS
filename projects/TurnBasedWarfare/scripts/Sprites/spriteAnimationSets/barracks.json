@@ -1,6 +1,6 @@
 {
   "title": "Barracks",
-  "collection": "barracksSpritesAnimations",
+  "animationCollection": "barracksSpritesAnimations",
   "spriteSheet": "Sprites/barracksSprites/barracksSheet.png",
   "idleSpriteAnimations": [
     "barracksIdleDown",

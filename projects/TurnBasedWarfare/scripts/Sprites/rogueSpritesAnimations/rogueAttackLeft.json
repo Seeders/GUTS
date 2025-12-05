@@ -1,6 +1,6 @@
 {
   "title": "rogue Attack Left",
-  "collection": "rogueSprites",
+  "spriteCollection": "rogueSprites",
   "sprites": [
     "rogueAttackLeft_0",
     "rogueAttackLeft_1",

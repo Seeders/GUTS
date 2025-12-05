@@ -1,6 +1,6 @@
 {
   "title": "skeleton Walk Down",
-  "collection": "skeletonSprites",
+  "spriteCollection": "skeletonSprites",
   "sprites": [
     "skeletonWalkDown_0",
     "skeletonWalkDown_1",

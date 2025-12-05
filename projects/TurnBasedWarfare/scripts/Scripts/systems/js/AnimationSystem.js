@@ -944,19 +944,21 @@ class AnimationSystem extends GUTS.BaseSystem {
         const collections = this.game.getCollections();
         const result = {};
 
-        // Sprite coordinates are in a parallel collection without "Animations" suffix
-        // e.g., animations in "peasantSpritesAnimations", sprites in "peasantSprites"
-        const spriteCollectionName = collectionName.replace('Animations', '');
-
         for (const animName of animNames) {
             const animData = collections?.[collectionName]?.[animName];
             if (animData && animData.sprites) {
+                // Get sprite collection from animation data's spriteCollection property
+                const spriteCollectionName = animData.spriteCollection;
+                if (!spriteCollectionName) {
+                    console.warn(`[AnimationSystem] Animation '${animName}' missing spriteCollection property`);
+                    continue;
+                }
+
                 // Extract direction from animation name (e.g., "peasantIdleDown" -> "down")
                 const direction = this.extractDirectionFromName(animName);
 
                 if (direction) {
                     const frames = animData.sprites.map(spriteName => {
-                        // Sprite coordinates are in the sprite collection (not animation collection)
                         const sprite = collections?.[spriteCollectionName]?.[spriteName];
                         if (!sprite) {
                             console.warn(`[AnimationSystem] Sprite '${spriteName}' not found in collection '${spriteCollectionName}'`);

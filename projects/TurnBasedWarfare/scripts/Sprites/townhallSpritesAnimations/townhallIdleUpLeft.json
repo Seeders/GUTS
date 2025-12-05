@@ -1,6 +1,6 @@
 {
   "title": "townhall Idle Up Left",
-  "collection": "townhallSprites",
+  "spriteCollection": "townhallSprites",
   "sprites": [
     "townhallIdleUpLeft_0"
   ]

@@ -1,21 +1,19 @@
-class ServerPlacementSystem extends GUTS.BaseSystem {
+class ServerPlacementSystem extends GUTS.BasePlacementSystem {
     constructor(game) {
-        super(game);  
-        this.game.placementSystem = this;
-        this.serverNetworkManager = this.engine.serverNetworkManager;  
-        this.playerPlacements = new Map();
-        this.leftPlacements = [];
-        this.rightPlacements = [];
+        super(game);
+        this.serverNetworkManager = this.engine.serverNetworkManager;
         this.placementReadyStates = new Map();
         this.numPlayers = 2;
-     }
+    }
 
     init(params) {
         this.params = params || {};
+        // Register base class methods with gameManager
         this.game.gameManager.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
         this.game.gameManager.register('getPlacementById', this.getPlacementById.bind(this));
         this.subscribeToEvents();
     }
+
     subscribeToEvents() {
         if (!this.game.serverEventManager) {
             console.error('No event manager found on engine');
@@ -31,44 +29,6 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
         this.game.serverEventManager.subscribe('SET_SQUAD_TARGET', this.handleSetSquadTarget.bind(this));
         this.game.serverEventManager.subscribe('SET_SQUAD_TARGETS', this.handleSetSquadTargets.bind(this));
         this.game.serverEventManager.subscribe('CANCEL_BUILDING', this.handleCancelBuilding.bind(this));
-    
-    }
-
-    getPlacementById(placementId) {
-        // Search in player placements first
-        const leftPlacements = this.leftPlacements.find(placement => placement.placementId === placementId);
-        if (leftPlacements) {
-            return leftPlacements;
-        }
-        
-        // Search in opponent placements
-        const rightPlacements = this.rightPlacements.find(placement => placement.placementId === placementId);
-        if (rightPlacements) {
-            return rightPlacements;
-        }
-        
-        // Return null if no matching placement is found
-        return null;
-    }
-    getPlayerIdByPlacementId(placementId) {
-        // Iterate through all players and their placements
-        for (const [playerId, placements] of this.playerPlacements) {
-            // Check if any placement in this player's placements matches the placementId
-            const foundPlacement = placements.find(placement => placement.placementId === placementId);
-            if (foundPlacement) {
-                return playerId;
-            }
-        }
-        
-        // Return null if no matching placement is found
-        return null;
-    }
-    getPlacementsForSide(side){
-        if(side == 'left'){
-            return this.leftPlacements;
-        } else {
-            return this.rightPlacements;
-        }
     }
 
     handleGetStartingState(eventData) {
@@ -447,43 +407,52 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
     }
 
     applyTargetPositions() {
-        for (const [playerId, placements] of this.playerPlacements) {
-            placements.forEach((placement) => {
-                const targetPosition = placement.targetPosition;
-                placement.squadUnits.forEach(entityId => {
-                    const aiState = this.game.getComponent(entityId, "aiState");
-                    const transform = this.game.getComponent(entityId, "transform");
-                    const position = transform?.position;
-                    if (aiState && position) {
+        // Query all entities with placement component
+        const entitiesWithPlacement = this.game.getEntitiesWith('placement');
+        const processedPlacements = new Set();
 
-                        if(targetPosition){
-                            // With behavior tree system, check distance and update aiState
-                            const dx = position.x - targetPosition.x;
-                            const dz = position.z - targetPosition.z;
-                            const distSq = dx * dx + dz * dz;
-                            const placementGridSize = this.game.gameManager.call('getPlacementGridSize');
-                            const threshold = placementGridSize * 0.5;
+        for (const entityId of entitiesWithPlacement) {
+            const placementComp = this.game.getComponent(entityId, 'placement');
+            if (!placementComp?.placementId || processedPlacements.has(placementComp.placementId)) {
+                continue;
+            }
+            processedPlacements.add(placementComp.placementId);
 
-                            if (distSq <= threshold * threshold) {
-                                // Reached target - stop movement
-                                const vel = this.game.getComponent(entityId, "velocity");
-                                if (vel) {
-                                    vel.vx = 0;
-                                    vel.vz = 0;
-                                }
-                                const aiState = this.game.getComponent(entityId, "aiState");
-                                if (aiState) {
-                                    aiState.meta = {};
-                                }
-                                placement.targetPosition = null;
-                            } else {
-                                // Movement is handled by behavior actions now
-                                // Behavior tree reads from playerOrder component
-                            }
+            const targetPosition = placementComp.targetPosition;
+            if (!targetPosition) continue;
+
+            // Get all squad units for this placement
+            for (const eid of entitiesWithPlacement) {
+                const pc = this.game.getComponent(eid, 'placement');
+                if (pc?.placementId !== placementComp.placementId) continue;
+
+                const aiState = this.game.getComponent(eid, "aiState");
+                const transform = this.game.getComponent(eid, "transform");
+                const position = transform?.position;
+                if (aiState && position) {
+                    // With behavior tree system, check distance and update aiState
+                    const dx = position.x - targetPosition.x;
+                    const dz = position.z - targetPosition.z;
+                    const distSq = dx * dx + dz * dz;
+                    const placementGridSize = this.game.gameManager.call('getPlacementGridSize');
+                    const threshold = placementGridSize * 0.5;
+
+                    if (distSq <= threshold * threshold) {
+                        // Reached target - stop movement
+                        const vel = this.game.getComponent(eid, "velocity");
+                        if (vel) {
+                            vel.vx = 0;
+                            vel.vz = 0;
                         }
+                        if (aiState) {
+                            aiState.meta = {};
+                        }
+                        placementComp.targetPosition = null;
                     }
-                });
-            });
+                    // Movement is handled by behavior actions now
+                    // Behavior tree reads from playerOrder component
+                }
+            }
         }
     }
 
@@ -494,81 +463,72 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
 
 
     submitPlayerPlacement(playerId, player, placement) {
-        // console.log(`=== SUBMIT PLACEMENT DEBUG ===`);
-        // console.log(`Player ID: ${playerId}`);
-        // console.log(`Room ID: ${this.game.room?.id || 'NO ROOM'}`);
-        // console.log(`Game phase: ${this.game.state.phase}`);
-        // console.log(`================================`);
-    
         if (this.game.state.phase !== 'placement') {
             return { success: false, error: `Not in placement phase (${this.game.state.phase})` };
         }
-        
-        // Validate placements if provided
-        if ( !this.validatePlacement(placement, player)) {
+
+        // Look up full unitType from collections using unitTypeId and collection
+        const unitTypeId = placement.unitTypeId || placement.unitType?.id;
+        const collection = placement.collection;
+
+        if (!unitTypeId || !collection) {
+            return { success: false, error: 'Missing unitTypeId or collection' };
+        }
+
+        const collections = this.game.getCollections();
+        const unitType = collections[collection]?.[unitTypeId];
+
+        if (!unitType) {
+            return { success: false, error: `Unit type not found: ${collection}/${unitTypeId}` };
+        }
+
+        // Build full placement with unitType from server collections
+        // unitType already has id and collection from compiler
+        const fullPlacement = {
+            ...placement,
+            unitType: unitType
+        };
+
+        // Validate placement
+        if (!this.validatePlacement(fullPlacement, player)) {
             return { success: false, error: 'Invalid placement' };
         }
 
-
         // Deduct gold only for new units
-        if (placement.unitType?.value > 0 && !placement.isStartingState) {
-            player.stats.gold -= placement.unitType?.value;
-        }            
-        
-        
-        // Store placements
-        let playerPlacements = this.playerPlacements.get(playerId);
-        if(playerPlacements){
-            playerPlacements.push(placement);
-        } else {
-            playerPlacements = [placement];
-        }
-        this.playerPlacements.set(playerId, playerPlacements);
-
-        if(player.stats.side == 'left'){
-            this.leftPlacements = this.playerPlacements.get(playerId);
-        } else {
-            this.rightPlacements = this.playerPlacements.get(playerId);
+        if (unitType.value > 0 && !fullPlacement.isStartingState) {
+            player.stats.gold -= unitType.value;
         }
 
-        const result = this.game.gameManager.call('spawnSquadFromPlacement', playerId, placement);
+        // Spawn entities - placement component stores minimal data, unitType component has full data
+        const result = this.game.gameManager.call('spawnSquadFromPlacement', playerId, fullPlacement);
 
-        if(result.success && result.squad){
-            let squadUnits = [];
-            result.squad.squadUnits.forEach((entityId) => {
-                squadUnits.push(entityId);
-            })
-            placement.squadUnits = squadUnits;
-            if (placement.placementId) {
+        if (result.success && result.squad) {
+            const squadUnits = [...result.squad.squadUnits];
+
+            if (fullPlacement.placementId) {
                 this.game.gameManager.call('initializeSquad',
-                    placement.placementId,
-                    placement.unitType,
-                    placement.squadUnits,
-                    placement.team
+                    fullPlacement.placementId,
+                    unitType,
+                    squadUnits
                 );
             }
-            if (placement.peasantInfo && placement.collection === 'buildings') {
-                const peasantInfo = placement.peasantInfo;
-                const peasantId = peasantInfo.peasantId;
-                const entityId = placement.squadUnits[0];
 
-                // Get the build ability from the peasant's abilities
+            if (fullPlacement.peasantInfo && collection === 'buildings') {
+                const peasantInfo = fullPlacement.peasantInfo;
+                const peasantId = peasantInfo.peasantId;
+                const entityId = squadUnits[0];
 
                 const peasantAbilities = this.game.gameManager.call('getEntityAbilities', peasantId);
                 if (peasantAbilities) {
-                    //console.log("peasantAbilities", peasantAbilities);
                     const buildAbility = peasantAbilities.find(a => a.id === 'build');
                     if (buildAbility) {
                         buildAbility.assignToBuild(peasantId, entityId, peasantInfo);
                     }
                 }
-                
-                
-                // Clear the flag (only once for first building entity)
+
                 this.game.state.peasantBuildingPlacement = null;
             }
         }
-
 
         return { success: result.success };
     }
@@ -584,43 +544,51 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
     removeDeadSquadsAfterRound() {
         if (!this.game.componentManager) return;
 
-        this.playerPlacements.forEach((placements, playerId) => {
-            const survivingPlacements = placements.filter(placement => {
-                if (!placement.experience?.unitIds || placement.experience.unitIds.length === 0) {
-                    this.cleanupDeadSquad(placement);
-                    return false;
+        // Query all entities with placement component
+        const entitiesWithPlacement = this.game.getEntitiesWith('placement');
+        const processedPlacements = new Set();
+        const placementsToCleanup = [];
+
+        for (const entityId of entitiesWithPlacement) {
+            const placementComp = this.game.getComponent(entityId, 'placement');
+            if (!placementComp?.placementId || processedPlacements.has(placementComp.placementId)) {
+                continue;
+            }
+            processedPlacements.add(placementComp.placementId);
+
+            // Get all squad units for this placement
+            const squadUnits = [];
+            for (const eid of entitiesWithPlacement) {
+                const pc = this.game.getComponent(eid, 'placement');
+                if (pc?.placementId === placementComp.placementId) {
+                    squadUnits.push(eid);
                 }
+            }
 
-                const aliveUnits = placement.experience.unitIds.filter(entityId => {
-                    const health = this.game.getComponent(entityId, "health");
-                    const deathState = this.game.getComponent(entityId, "deathState");
-                    const buildingState = this.game.getComponent(entityId, "buildingState");
-                    if(buildingState) return true;
-                    return health && health.current > 0 && (!deathState || !deathState.isDying);
-                });
-
-                if (aliveUnits.length === 0) {
-                    this.cleanupDeadSquad(placement);
-                    return false;
-                }
-
-                placement.experience.unitIds = aliveUnits;
-                return true;
+            // Check if squad has alive units
+            const aliveUnits = squadUnits.filter(eid => {
+                const health = this.game.getComponent(eid, "health");
+                const deathState = this.game.getComponent(eid, "deathState");
+                const buildingState = this.game.getComponent(eid, "buildingState");
+                if (buildingState) return true;
+                return health && health.current > 0 && (!deathState || !deathState.isDying);
             });
 
-            this.playerPlacements.set(playerId, survivingPlacements);
-        });
-    }
-
-    cleanupDeadSquad(placement) {
-        if (placement.placementId) {
-            this.game.gameManager.call('releaseGridCells', placement.placementId);
-            this.game.gameManager.call('removeSquad', placement.placementId);
+            if (aliveUnits.length === 0) {
+                placementsToCleanup.push({ ...placementComp, squadUnits });
+            } else if (placementComp.experience) {
+                // Update experience unitIds with alive units
+                placementComp.experience.unitIds = aliveUnits;
+            }
         }
 
-       // console.log(`Squad eliminated: ${placement.unitType?.title || placement.placementId}`);
+        // Cleanup dead squads
+        for (const placement of placementsToCleanup) {
+            this.cleanupDeadSquad(placement);
+        }
     }
 
+    // cleanupDeadSquad is inherited from BasePlacementSystem
 
     validatePlacement(placement, player) {
        
@@ -666,86 +634,63 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
         try {
             const { playerId, data } = eventData;
             const { placementId, buildingEntityId } = data;
-            
+
             const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
             if (!roomId) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { 
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', {
                     error: 'Room not found'
                 });
                 return;
             }
-            
+
             const room = this.engine.getRoom(roomId);
             const player = room.getPlayer(playerId);
-            
+
             if (!player) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { 
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', {
                     error: 'Player not found'
                 });
                 return;
             }
 
-            // Find the placement
-            const playerPlacements = this.playerPlacements.get(playerId);
-            if (!playerPlacements) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { 
-                    error: 'No placements found for player'
+            // Get placement and unitType directly from the building entity
+            const placement = this.game.getComponent(buildingEntityId, 'placement');
+            if (!placement) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', {
+                    error: 'Building not found'
                 });
                 return;
             }
 
-            const placementIndex = playerPlacements.findIndex(p => p.placementId === placementId);
-            if (placementIndex === -1) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { 
-                    error: 'Placement not found'
+            // Validate it belongs to this player
+            if (placement.playerId !== playerId) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', {
+                    error: 'Building does not belong to this player'
                 });
                 return;
             }
 
-            const placement = playerPlacements[placementIndex];
-
-            // Validate it's a building under construction
+            // Validate it's under construction
             if (!placement.isUnderConstruction) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { 
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', {
                     error: 'Building is not under construction'
                 });
                 return;
             }
 
-            // Refund gold to the player
-            const refundAmount = placement.unitType?.value || 0;
+            // Get unitType directly from entity for refund
+            const unitType = this.game.getComponent(buildingEntityId, 'unitType');
+            const refundAmount = unitType?.value || 0;
             if (refundAmount > 0) {
                 player.gold = (player.gold || 0) + refundAmount;
-            }
-
-            // Remove the placement from arrays
-            playerPlacements.splice(placementIndex, 1);
-
-            const side = player.side;
-            if (side === 'left') {
-                const leftIndex = this.leftPlacements.findIndex(p => p.placementId === placementId);
-                if (leftIndex !== -1) {
-                    this.leftPlacements.splice(leftIndex, 1);
-                }
-            } else if (side === 'right') {
-                const rightIndex = this.rightPlacements.findIndex(p => p.placementId === placementId);
-                if (rightIndex !== -1) {
-                    this.rightPlacements.splice(rightIndex, 1);
-                }
             }
 
             // Clean up the builder if assigned
             const assignedBuilder = placement.assignedBuilder;
             if (assignedBuilder) {
-                // With behavior tree system, just clear the building state
-                // The behavior tree will naturally switch to other behaviors
-
-                // Remove the builder's BUILDING_STATE component
                 if (this.game.hasComponent(assignedBuilder, "buildingState")) {
                     this.game.removeComponent(assignedBuilder, "buildingState");
                 }
-
-                // Stop movement
                 const builderVel = this.game.getComponent(assignedBuilder, "velocity");
                 if (builderVel) {
                     builderVel.vx = 0;
@@ -753,23 +698,18 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                 }
             }
 
-            // Destroy the building entity on the server
-            const buildingEntity = placement.squadUnits?.[0];
-            if (buildingEntity) {
-                if (this.game.renderSystem) {
-                    this.game.gameManager.call('removeInstance', buildingEntity);
-                }
-                this.game.destroyEntity(buildingEntity);
-            }
+            // Destroy the building entity
+            this.game.gameManager.call('removeInstance', buildingEntityId);
+            this.game.destroyEntity(buildingEntityId);
 
             // Send success response to requesting player
-            this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { 
+            this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', {
                 success: true,
                 placementId,
                 refundAmount,
                 gold: player.gold
             });
-            
+
             // Broadcast to other players in the room
             for (const [otherPlayerId, otherPlayer] of room.players) {
                 if (otherPlayerId !== playerId) {
@@ -779,63 +719,61 @@ class ServerPlacementSystem extends GUTS.BaseSystem {
                     });
                 }
             }
-            
+
             console.log(`Player ${playerId} cancelled building construction: ${placementId}`);
-            
+
         } catch (error) {
             console.error('Error cancelling building:', error);
-            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'BUILDING_CANCELLED', { 
+            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'BUILDING_CANCELLED', {
                 error: 'Server error while cancelling building'
             });
         }
     }
 
-    clearAllPlacements(){
-
-        this.playerPlacements.keys().forEach((playerId) => {
-            this.clearPlayerPlacements(playerId);
-        });
-
-        this.playerPlacements = new Map();
-        this.leftPlacements = new Map();
-        this.rightPlacements = new Map();
-        this.placementReadyStates = new Map();  
+    clearAllPlacements() {
+        // Destroy all entities with placement component
+        const entitiesWithPlacement = this.game.getEntitiesWith('placement');
+        for (const entityId of entitiesWithPlacement) {
+            const placementComp = this.game.getComponent(entityId, 'placement');
+            if (placementComp?.placementId) {
+                this.game.gameManager.call('releaseGridCells', placementComp.placementId);
+            }
+            this.game.destroyEntity(entityId);
+        }
+        this.placementReadyStates = new Map();
     }
     clearPlayerPlacements(playerId) {
         try {
-            // Get player's placements
-            const placements = this.playerPlacements.get(playerId) || [];
-            
-            // Remove entities created by this player's placements
-            placements.forEach(placement => {
-                if (placement.squadUnits) {
-                    placement.squadUnits.forEach(entityId => {
-                        try {
-                            if (this.game.destroyEntity) {
-                                this.game.destroyEntity(entityId);
-                            }
-                        } catch (error) {
-                            console.warn(`Error destroying entity ${entityId}:`, error);
-                        }
-                    });
-                }
+            // Query entities with placement component for this player
+            const entitiesWithPlacement = this.game.getEntitiesWith('placement');
+            const entitiesToDestroy = [];
 
-                // Free grid cells
-                if (placement.placementId) {
-                    this.game.gameManager.call('releaseGridCells', placement.placementId);
+            for (const entityId of entitiesWithPlacement) {
+                const placementComp = this.game.getComponent(entityId, 'placement');
+                if (placementComp?.playerId === playerId) {
+                    entitiesToDestroy.push({ entityId, placementId: placementComp.placementId });
                 }
-            });
-            
-            // Clear from maps
-            this.playerPlacements.delete(playerId);
-            
+            }
+
+            // Destroy entities
+            for (const { entityId, placementId } of entitiesToDestroy) {
+                try {
+                    if (placementId) {
+                        this.game.gameManager.call('releaseGridCells', placementId);
+                    }
+                    this.game.destroyEntity(entityId);
+                } catch (error) {
+                    console.warn(`Error destroying entity ${entityId}:`, error);
+                }
+            }
+
             // Clear from undo stack if it's this player
             if (this.undoStack) {
                 this.undoStack = this.undoStack.filter(undo => undo.playerId !== playerId);
             }
-            
+
             console.log(`Cleared placements for player ${playerId}`);
-            
+
         } catch (error) {
             console.error(`Error clearing placements for player ${playerId}:`, error);
         }

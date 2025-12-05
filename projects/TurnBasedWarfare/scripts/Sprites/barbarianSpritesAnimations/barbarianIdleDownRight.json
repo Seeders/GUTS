@@ -1,6 +1,6 @@
 {
   "title": "barbarian Idle Down Right",
-  "collection": "barbarianSprites",
+  "spriteCollection": "barbarianSprites",
   "sprites": [
     "barbarianIdleDownRight_0",
     "barbarianIdleDownRight_1",

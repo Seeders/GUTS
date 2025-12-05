@@ -158,19 +158,19 @@ class HealthBarSystem extends GUTS.BaseSystem {
         
         // Calculate health percentage
         const currentHealthPercent = Math.max(0, Math.min(100, (health.current / health.max) * 100));
-        
+
         // Only update if health changed
         if (healthBarData.lastHealthPercent !== currentHealthPercent) {
             // Update fill width by scaling
             const healthRatio = currentHealthPercent / 100;
             fill.scale.x = healthRatio;
-            
+
             // Adjust position to keep fill left-aligned
             fill.position.x = -(this.HEALTH_BAR_WIDTH * (1 - healthRatio)) / 2;
-            
+
             // Update color based on health percentage
             fillMaterial.color.setHex(this.getHealthColorByPercent(currentHealthPercent, team));
-            
+
             healthBarData.lastHealthPercent = currentHealthPercent;
         }
         
@@ -212,10 +212,10 @@ class HealthBarSystem extends GUTS.BaseSystem {
     updateHealthBarNotches(entityId, maxHealth) {
         const healthBarData = this.healthBars.get(entityId);
         if (!healthBarData) return;
-        
+
         // Only update notches if max health changed
         if (healthBarData.lastMaxHealth === maxHealth) return;
-        
+
         // Remove existing notches
         healthBarData.notches.forEach(notch => {
             healthBarData.group.remove(notch);
@@ -223,41 +223,41 @@ class HealthBarSystem extends GUTS.BaseSystem {
             notch.material.dispose();
         });
         healthBarData.notches = [];
-        
+
         // Calculate how many 100 HP marks we need
         const numNotches = Math.floor(maxHealth / 100);
 
         if (numNotches >= 1) { // Create notches for any unit with 100+ HP
             const notchWidth = 1; // Make notches wider so they're more visible
             const notchHeight = this.HEALTH_BAR_HEIGHT; // Make them shorter
-            
+
             for (let i = 1; i <= numNotches; i++) { // i represents the HP value (100, 200, 300, etc.)
                 const hpValue = i * 100; // 100, 200, 300, etc.
-                
+
                 // Calculate position as percentage of max health
                 const positionPercent = hpValue / maxHealth; // 100/140 = 0.714 for your archer
-                
+
                 // Convert to X offset (-50% to +50% of bar width)
                 const xOffset = (positionPercent - 0.5) * this.HEALTH_BAR_WIDTH;
-                
-                
+
+
                 // Create notch geometry
                 const notchGeometry = new THREE.PlaneGeometry(notchWidth, notchHeight);
                 const notchMaterial = new THREE.MeshBasicMaterial({
                     color: 0x000000, // White notch lines for better visibility
                     transparent: false
                 });
-                
+
                 const notch = new THREE.Mesh(notchGeometry, notchMaterial);
                 notch.position.set(xOffset, -this.HEALTH_BAR_HEIGHT * 0.5 + notchHeight * 0.5, 0.2); // Further in front
                 notch.renderOrder = 10001; // Above fill
-                
+
                 healthBarData.group.add(notch);
                 healthBarData.notches.push(notch);
-                
+
             }
         }
-        
+
         healthBarData.lastMaxHealth = maxHealth;
     }
     
@@ -306,16 +306,16 @@ class HealthBarSystem extends GUTS.BaseSystem {
         this.healthBars.forEach(healthBarData => {
             const newWidth = this.HEALTH_BAR_WIDTH * scale;
             const newHeight = this.HEALTH_BAR_HEIGHT * scale;
-            
+
             // Update background geometry
             healthBarData.background.geometry.dispose();
             healthBarData.background.geometry = new THREE.PlaneGeometry(newWidth, newHeight);
-            
-            // Update fill geometry 
+
+            // Update fill geometry
             healthBarData.fillGeometry.dispose();
             healthBarData.fillGeometry = new THREE.PlaneGeometry(newWidth, newHeight);
             healthBarData.fill.geometry = healthBarData.fillGeometry;
-            
+
             // Force position update
             healthBarData.lastHealthPercent = -1;
         });

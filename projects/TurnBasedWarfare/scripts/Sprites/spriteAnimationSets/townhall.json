@@ -1,6 +1,6 @@
 {
   "title": "Townhall",
-  "collection": "townhallSpritesAnimations",
+  "animationCollection": "townhallSpritesAnimations",
   "spriteSheet": "Sprites/townhallSprites/townhallSheet.png",
   "idleSpriteAnimations": [
     "townhallIdleDown",

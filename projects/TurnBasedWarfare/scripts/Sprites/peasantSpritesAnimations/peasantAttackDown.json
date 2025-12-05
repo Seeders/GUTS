@@ -1,6 +1,6 @@
 {
   "title": "peasant Attack Down",
-  "collection": "peasantSprites",
+  "spriteCollection": "peasantSprites",
   "sprites": [
     "peasantAttackDown_0",
     "peasantAttackDown_1",

@@ -1,6 +1,6 @@
 {
   "title": "Magetower",
-  "collection": "magetowerSpritesAnimations",
+  "animationCollection": "magetowerSpritesAnimations",
   "spriteSheet": "Sprites/magetowerSprites/magetowerSheet.png",
   "idleSpriteAnimations": [
     "magetowerIdleDown",

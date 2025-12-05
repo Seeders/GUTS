@@ -1,6 +1,6 @@
 {
   "title": "cottage Idle Up Right",
-  "collection": "cottageSprites",
+  "spriteCollection": "cottageSprites",
   "sprites": [
     "cottageIdleUpRight_0"
   ]

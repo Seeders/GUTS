@@ -111,12 +111,14 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     completeConstruction(entityId, buildingId, buildingPlacement, game) {
-        if (!buildingPlacement || !buildingPlacement.unitType) {
-            console.error('[ConstructBuildingBehaviorAction] Cannot complete construction - missing placement or unitType');
+        // Get unitType from the entity's unitType component (not from placement)
+        const unitTypeComponent = game.getComponent(buildingId, 'unitType');
+        if (!buildingPlacement || !unitTypeComponent) {
+            console.error('[ConstructBuildingBehaviorAction] Cannot complete construction - missing placement or unitType', buildingId);
             return;
         }
 
-        const actualBuildingType = buildingPlacement.unitType;
+        const actualBuildingType = unitTypeComponent;
 
         // 1. Update renderable - change from underConstruction to actual building
         const renderComponent = game.getComponent(buildingId, 'renderable');
@@ -133,22 +135,13 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
             health.current = maxHP;
         }
 
-        // 3. Update unitType component
-        const unitTypeComponent = game.getComponent(buildingId, 'unitType');
-        if (unitTypeComponent) {
-            Object.assign(unitTypeComponent, actualBuildingType);
-        }
+        // 3. unitType component already has correct data (actualBuildingType is unitTypeComponent)
 
         // 4. Mark construction complete
         buildingPlacement.isUnderConstruction = false;
         buildingPlacement.assignedBuilder = null;
 
-        // 5. Register with shop system
-        if (game.shopSystem) {
-            game.shopSystem.addBuilding(actualBuildingType.id, buildingId);
-        }
-
-        // 6. Change building to idle animation
+        // 5. Change building to idle animation
         if (game.animationSystem) {
             game.animationSystem.changeAnimation(buildingId, 'idle', 1.0, 0);
         }

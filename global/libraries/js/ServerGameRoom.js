@@ -27,6 +27,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         this.game.serverEventManager.subscribe('LEAVE_ROOM', this.handleLeaveRoom.bind(this));
         this.game.serverEventManager.subscribe('PLAYER_DISCONNECT', this.handlePlayerDisconnect.bind(this));
         this.game.serverEventManager.subscribe('TOGGLE_READY', this.handleToggleReady.bind(this));
+        this.game.serverEventManager.subscribe('UPLOAD_SAVE_DATA', this.handleUploadSaveData.bind(this));
     }
 
 
@@ -116,6 +117,59 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             console.error('Error toggling ready:', error);
             this.serverNetworkManager.sendToPlayer(playerId, 'ERROR', {
                 error: 'Server error'
+            });
+        }
+    }
+
+    handleUploadSaveData(eventData) {
+        const { playerId, data } = eventData;
+        try {
+            // Only host can upload save data
+            const player = this.players.get(playerId);
+            if (!player?.isHost) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'SAVE_DATA_UPLOADED', {
+                    success: false,
+                    error: 'Only the host can upload save data'
+                });
+                return;
+            }
+
+            // Only allow in lobby phase
+            if (this.game.state.phase !== 'lobby' && this.game.state.phase !== 'waiting') {
+                this.serverNetworkManager.sendToPlayer(playerId, 'SAVE_DATA_UPLOADED', {
+                    success: false,
+                    error: 'Can only upload save data in lobby'
+                });
+                return;
+            }
+
+            // Store save data for this room
+            this.pendingSaveData = data.saveData;
+
+            // Update level to match save
+            if (data.saveData?.level) {
+                this.selectedLevel = data.saveData.level;
+            }
+
+            console.log(`[ServerGameRoom] Save data uploaded by host. Level: ${this.selectedLevel}`);
+
+            // Notify host of success
+            this.serverNetworkManager.sendToPlayer(playerId, 'SAVE_DATA_UPLOADED', {
+                success: true,
+                saveName: data.saveData?.saveName || 'Unknown'
+            });
+
+            // Notify all players that a save was loaded
+            this.serverNetworkManager.broadcastToRoom(this.id, 'SAVE_DATA_LOADED', {
+                saveName: data.saveData?.saveName || 'Unknown',
+                level: this.selectedLevel
+            });
+
+        } catch (error) {
+            console.error('Error uploading save data:', error);
+            this.serverNetworkManager.sendToPlayer(playerId, 'SAVE_DATA_UPLOADED', {
+                success: false,
+                error: 'Server error uploading save data'
             });
         }
     }
@@ -357,47 +411,80 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
         this.game.state.phase = 'placement';
 
+        // If we have pending save data, restore player stats and set up for entity loading
+        const isLoadingSave = !!this.pendingSaveData;
+        if (isLoadingSave && this.pendingSaveData.state) {
+            const savedState = this.pendingSaveData.state;
+
+            // Restore game state values
+            if (savedState.round !== undefined) {
+                this.game.state.round = savedState.round;
+            }
+
+            // Restore player stats from saved state
+            for (const [playerId, player] of this.players) {
+                const side = player.stats.side;
+                // Look for saved stats matching this side
+                if (savedState.playerGold !== undefined) {
+                    player.stats.gold = savedState.playerGold;
+                }
+                if (savedState.playerHealth !== undefined) {
+                    player.stats.health = savedState.playerHealth;
+                }
+            }
+
+            // Set pendingSaveData on game object so SceneManager loads saved entities
+            this.game.pendingSaveData = this.pendingSaveData;
+
+            console.log(`[ServerGameRoom] Set pendingSaveData on game object. Entities count: ${this.pendingSaveData.entities?.length || 0}`);
+        }
+
+        // Log before calling parent startGame
+        console.log(`[ServerGameRoom] About to call super.startGame(). pendingSaveData set: ${!!this.game.pendingSaveData}, isLoadingSave: ${isLoadingSave}`);
+
         // Call parent's startGame (loads scene, spawns entities, etc.)
+        // If pendingSaveData is set, SceneManager will load saved entities instead of scene entities
         super.startGame();
 
-        // Broadcast game started with level info
+        // Log after scene load to verify entities were created
+        const entityCount = this.game.entities?.size || 0;
+        console.log(`[ServerGameRoom] After startGame. Total entities on server: ${entityCount}`);
+
+        // Broadcast game started with level info and save data flag
         if (this.serverNetworkManager) {
             let gameState = this.getGameState();
             this.serverNetworkManager.broadcastToRoom(this.id, 'GAME_STARTED', {
                 gameState: gameState,
-                level: level
+                level: level,
+                isLoadingSave: isLoadingSave,
+                saveData: isLoadingSave ? this.pendingSaveData : null
             });
         }
 
-        console.log(`Game started in room ${this.id} with level: ${level}`);
+        console.log(`Game started in room ${this.id} with level: ${level}${isLoadingSave ? ' (from save)' : ''}`);
         return true;
     }
 
     // Enhanced game state for multiplayer
+    // Placements included for spawning opponent entities on client
+    // entitySync is authoritative for component data
     getGameState() {
         let players = Array.from(this.players.values());
         let playerData = [];
         players.forEach((p) => {
-            let placements = null;
-            if(this.game.placementSystem){
-                placements = this.game.placementSystem.playerPlacements.get(p.id);
-            }
+            // Get minimal placement data for spawning entities
+            const placements = this.getPlacementsForPlayer(p.id);
 
-            if(this.game.squadExperienceSystem && placements){                
-                placements.forEach((placement) => {
-                    placement.experience = this.game.squadExperienceSystem.getSquadInfo(placement.placementId)
-                });
-            }
             playerData.push({
                 id: p.id,
                 name: p.name,
                 ready: p.ready || false,
                 isHost: p.isHost || false,
-                stats: p.stats,
-                placements: placements || [],
-                entityId: p.entityId,
-                lastInputSequence: p.lastInputSequence || 0,
-                latency: p.latency || 0
+                stats: {
+                    gold: p.stats?.gold,
+                    side: p.stats?.side
+                },
+                placements: placements
             });
         });
         return {
@@ -411,6 +498,50 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             // Let the game instance provide additional state if needed
             gameData: this.game.getGameState ? this.game.getGameState() : null
         };
+    }
+
+    // Get placement data for client (spawning entities and syncing experience)
+    // Client looks up unitType from collections using unitTypeId + collection
+    getPlacementsForPlayer(playerId) {
+        if (!this.game.componentManager) return [];
+
+        const placements = [];
+        const seenPlacementIds = new Set();
+        const entitiesWithPlacement = this.game.getEntitiesWith('placement');
+
+        for (const entityId of entitiesWithPlacement) {
+            const placementComp = this.game.getComponent(entityId, 'placement');
+            if (!placementComp?.placementId) continue;
+            if (placementComp.playerId !== playerId) continue;
+            if (seenPlacementIds.has(placementComp.placementId)) continue;
+
+            seenPlacementIds.add(placementComp.placementId);
+
+            // Calculate cells for grid reservation on client
+            const collections = this.game.getCollections();
+            const unitType = collections[placementComp.collection]?.[placementComp.unitTypeId];
+            let cells = [];
+            if (unitType && this.game.squadManager) {
+                const squadData = this.game.squadManager.getSquadData(unitType);
+                cells = this.game.squadManager.getSquadCells(placementComp.gridPosition, squadData);
+            }
+
+            // Get experience data from SquadExperienceSystem
+            const experience = this.game.squadExperienceSystem?.getSquadInfo(placementComp.placementId);
+
+            placements.push({
+                placementId: placementComp.placementId,
+                gridPosition: placementComp.gridPosition,
+                unitTypeId: placementComp.unitTypeId,
+                collection: placementComp.collection,
+                team: placementComp.team,
+                playerId: placementComp.playerId,
+                cells: cells,
+                experience: experience || null
+            });
+        }
+
+        return placements;
     }
 
     generateRoomId() {

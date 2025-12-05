@@ -1,6 +1,6 @@
 {
   "title": "peasant Idle Up",
-  "collection": "peasantSprites",
+  "spriteCollection": "peasantSprites",
   "sprites": [
     "peasantIdleUp_0",
     "peasantIdleUp_1",

@@ -1,6 +1,6 @@
 {
   "title": "peasant Death Left",
-  "collection": "peasantSprites",
+  "spriteCollection": "peasantSprites",
   "sprites": [
     "peasantDeathLeft_0",
     "peasantDeathLeft_1",
