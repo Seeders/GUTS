@@ -273,6 +273,11 @@ class WorldSystem extends GUTS.BaseSystem {
         } else {
             console.warn('[WorldSystem] EntityRenderer not available for cliff spawning');
         }
+
+        // Spawn terrain detail objects (grass, rocks, etc.)
+        if (this.game.gameManager.has('spawnTerrainDetails')) {
+            await this.game.gameManager.call('spawnTerrainDetails');
+        }
     }
 
     postAllInit() {

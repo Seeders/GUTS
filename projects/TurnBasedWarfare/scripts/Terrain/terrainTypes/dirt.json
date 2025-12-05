@@ -4,5 +4,11 @@
   "texture": "dirt",
   "color": "#d9b38c",
   "buildable": true,
-  "walkable": true
+  "walkable": true,
+  "detailWorldObjects": [
+    "stone_2_sprite",
+    "stone_sprite",
+    "grass_tuft_small_sprite"
+  ],
+  "detailDensity": 0.1
 }

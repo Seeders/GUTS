@@ -11,8 +11,7 @@
     "grass_tuft_sprite",
     "grass_tuft_small_sprite",
     "bush_sprite",
-    "stone_sprite",
-    "stone_2_sprite"
+    "stone_sprite"
   ],
-  "detailDensity": 0.5
+  "detailDensity": 0.1
 }

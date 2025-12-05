@@ -5,6 +5,7 @@
     "TerrainSystem",
     "RenderSystem",
     "WorldSystem",
+    "TerrainDetailSystem",
     "PostProcessingSystem",
     "RoundSystem",
     "BehaviorSystem",
