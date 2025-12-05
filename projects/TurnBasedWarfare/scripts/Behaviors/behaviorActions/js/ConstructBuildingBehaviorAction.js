@@ -25,8 +25,8 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        // Anchor the builder and face the building
-        this.anchorBuilder(entityId, buildingId, game);
+        // Stop builder movement and face the building
+        this.stopBuilderMovement(entityId, buildingId, game);
 
         // Initialize construction start time
         if (!memory.constructionStartTime) {
@@ -52,8 +52,8 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
             // Clear memory for next construction
             memory.constructionStartTime = null;
 
-            // Unanchor builder
-            this.unanchorBuilder(entityId, game);
+            // Clean up after build complete
+            this.onBuildComplete(entityId, game);
 
             return this.success();
         }
@@ -62,15 +62,15 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         return this.running({ progress: elapsed / buildTime });
     }
 
-    anchorBuilder(entityId, buildingId, game) {
+    stopBuilderMovement(entityId, buildingId, game) {
         const transform = game.getComponent(entityId, 'transform');
         const pos = transform?.position;
         const buildingTransform = game.getComponent(buildingId, 'transform');
         const buildingPos = buildingTransform?.position;
         const vel = game.getComponent(entityId, 'velocity');
 
-        if (vel && !vel.anchored) {
-            vel.anchored = true;
+        // Stop movement
+        if (vel) {
             vel.vx = 0;
             vel.vz = 0;
         }
@@ -90,12 +90,7 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         }
     }
 
-    unanchorBuilder(entityId, game) {
-        const vel = game.getComponent(entityId, 'velocity');
-        if (vel) {
-            vel.anchored = false;
-        }
-
+    onBuildComplete(entityId, game) {
         // Clear attack animation - let normal behavior systems take over
         const animState = game.gameManager.call('getBillboardAnimationState', entityId);
         if (animState && animState.currentAnimationType === 'attack') {
@@ -183,13 +178,13 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
             // Clear memory for next construction
             memory.constructionStartTime = null;
 
-            this.unanchorBuilder(entityId, game);
+            this.onBuildComplete(entityId, game);
         }
 
     }
     onEnd(entityId, game) {
-        // Unanchor builder if action is interrupted
-        this.unanchorBuilder(entityId, game);
+        // Clean up animation if action is interrupted
+        this.onBuildComplete(entityId, game);
 
         // Clean up assigned builder reference
         const shared = this.getShared(entityId, game);

@@ -68,10 +68,9 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
                 playerOrder.targetPosition = null;
             }
 
-            // Anchor the unit so it doesn't move while building
+            // Stop the unit so it doesn't move while building
             const vel = game.getComponent(entityId, 'velocity');
             if (vel) {
-                vel.anchored = true;
                 vel.vx = 0;
                 vel.vz = 0;
             }
@@ -200,11 +199,6 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             }
         }
 
-        // Unanchor the unit
-        const vel = game.getComponent(entityId, 'velocity');
-        if (vel) {
-            vel.anchored = false;
-        }
 
         // Clear all meta data (like MineGoldBehaviorAction)
         aiState.meta = {};

@@ -25,10 +25,9 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        // Anchor unit while attacking - stand still
+        // Stop movement while attacking
         const vel = game.getComponent(entityId, 'velocity');
         if (vel) {
-            vel.anchored = true;
             vel.vx = 0;
             vel.vz = 0;
         }
@@ -44,12 +43,6 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     onEnd(entityId, game) {
-        // Unanchor when combat action ends
-        const vel = game.getComponent(entityId, 'velocity');
-        if (vel) {
-            vel.anchored = false;
-        }
-
         // Reset animation to idle when combat ends
         if (game.gameManager && game.gameManager.has('setBillboardAnimation')) {
             game.gameManager.call('setBillboardAnimation', entityId, 'idle', true);

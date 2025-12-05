@@ -523,6 +523,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                                     aiState.meta = {};
                                     aiState.shared = {};
                                 }
+
                             }
                         });
 

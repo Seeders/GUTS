@@ -27,11 +27,13 @@ class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
         const isBuildOrder = playerOrder.meta?.isBuildOrder;
 
         if (!isForceMove && !isBuildOrder) {
-            const isEnemyNearby = game.gameManager.call('getNodeByType', 'IsEnemyNearbyBehaviorAction');
-            if (isEnemyNearby) {
-                const enemyCheckResult = isEnemyNearby.execute(entityId, game);
-                if (enemyCheckResult && enemyCheckResult.status === 'success') {
-                    // Enemy nearby - return null to let combat behavior take over
+            // Use FindNearestEnemyBehaviorAction which both checks for enemies AND sets shared.target
+            // This ensures CombatBehaviorTree has a target to use
+            const findEnemy = game.gameManager.call('getNodeByType', 'FindNearestEnemyBehaviorAction');
+            if (findEnemy) {
+                const findResult = findEnemy.execute(entityId, game);
+                if (findResult && findResult.status === 'success') {
+                    // Enemy found and shared.target is now set - let combat take over
                     return null;
                 }
             }

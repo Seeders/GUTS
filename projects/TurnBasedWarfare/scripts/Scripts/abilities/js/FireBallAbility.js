@@ -14,7 +14,7 @@ class FireBallAbility extends GUTS.BaseAbility {
             ...params
         });
 
-        this.damage = 60;
+        this.damage = 30;
         this.splashRadius = 80;
         this.element = 'fire';
 

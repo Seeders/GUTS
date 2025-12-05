@@ -14,7 +14,6 @@ class HoldPositionBehaviorAction extends GUTS.BaseBehaviorAction {
         // Stop movement
         const vel = game.getComponent(entityId, 'velocity');
         if (vel) {
-            vel.anchored = true;
             vel.vx = 0;
             vel.vz = 0;
         }

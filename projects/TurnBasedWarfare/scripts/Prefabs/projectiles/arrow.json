@@ -1,5 +1,6 @@
 {
   "damageType": "physical",
+  "spriteScale": 16,
   "render": {
     "animations": {
       "idle": [

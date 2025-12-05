@@ -75,12 +75,12 @@ class MovementSystem extends GUTS.BaseSystem {
             if (!projectile) {
                 const unitRadius = this.getUnitRadius(collision);
 
-                // Unit is anchored if explicitly set, or if attacking and in range of target
-                const isAnchored = vel.anchored ||
-                    (!!aiState &&
+                // Unit should stay still if: anchored (buildings only), or attacking and in range
+                const isAttacking = !!aiState &&
                     (aiState.currentAction === 'AttackEnemyBehaviorAction' || aiState.currentAction === 'CombatBehaviorAction') &&
                     !!aiState.meta.target &&
-                    this.isInAttackRange(pos, aiState.meta.target, entityId));
+                    this.isInAttackRange(pos, aiState.meta.target, entityId);
+                const isAnchored = vel.anchored || isAttacking;
 
                 unitData.set(entityId, {
                     pos, vel, unitType, collision, aiState, projectile,
