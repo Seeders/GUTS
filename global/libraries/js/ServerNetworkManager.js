@@ -24,7 +24,8 @@ class ServerNetworkManager {
                 cors: {
                     origin: "*",
                     methods: ["GET", "POST"]
-                }
+                },
+                maxHttpBufferSize: 10e6 // 10MB max message size for save files
             });
             this.io.listen(3001);
             console.log('Socket.IO fallback listening on port 3001');
