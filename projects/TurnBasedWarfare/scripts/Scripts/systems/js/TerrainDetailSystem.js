@@ -321,4 +321,12 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
     destroy() {
         this.clearDetails();
     }
+
+    /**
+     * Called when scene is unloaded - cleanup all detail objects
+     */
+    onSceneUnload() {
+        this.clearDetails();
+        console.log('[TerrainDetailSystem] Scene unloaded - resources cleaned up');
+    }
 }

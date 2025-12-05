@@ -193,4 +193,12 @@ class VisionSystem extends GUTS.BaseSystem {
 
         return count;
     }
+
+    onSceneUnload() {
+        // Clear cached values
+        this._gridSize = null;
+        this._terrainSize = null;
+
+        console.log('[VisionSystem] Scene unloaded - resources cleaned up');
+    }
 }

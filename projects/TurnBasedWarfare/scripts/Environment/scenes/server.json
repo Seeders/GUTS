@@ -7,15 +7,19 @@
     "BehaviorSystem",
     "MovementSystem",
     "ProjectileSystem",
-    "EquipmentSystem",
+    "TeamHealthSystem",
     "DeathSystem",
     "DamageSystem",
     "AbilitySystem",
+    "SquadExperienceSystem",
+    "ServerBattlePhaseSystem",
+    "ServerPlacementSystem",
     "LifetimeSystem",
     "SchedulingSystem",
     "GoldMineSystem",
     "PathfindingSystem",
-    "ServerBattlePhaseSystem"
+    "VisionSystem",
+    "SupplySystem"
   ],
   "entities": [
     {

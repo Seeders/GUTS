@@ -42,7 +42,11 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     update() {
-        if (!this.game.scene || !this.game.camera || !this.game.renderer) return;
+        if (!this.game.scene || !this.game.camera || !this.game.renderer) {
+            console.warn('[AnimationSystem] update() skipped - missing scene/camera/renderer',
+                { scene: !!this.game.scene, camera: !!this.game.camera, renderer: !!this.game.renderer });
+            return;
+        }
         this.updateEntityAnimations();
     }
 
@@ -797,6 +801,39 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Get all entities with billboardAnimation component
         const billboardEntities = this.game.getEntitiesWith("billboardAnimation");
 
+        // Debug: check deltaTime and animationType - log every 500ms to catch changes
+        if (!this._lastDeltaLog || Date.now() - this._lastDeltaLog > 500) {
+            const firstEntity = billboardEntities[0];
+            const firstAnimState = firstEntity ? this.game.getComponent(firstEntity, "billboardAnimation") : null;
+            // Also check total entities and component map
+            const totalEntities = this.game.entities?.size || 0;
+            const billboardComponentMap = this.game.components?.get("billboardAnimation");
+            const billboardMapSize = billboardComponentMap?.size || 0;
+            // Only log if there's a change or it's been a while
+            const logKey = `${billboardEntities.length}-${billboardMapSize}-${firstAnimState?.frameIndex}`;
+            if (logKey !== this._lastLogKey) {
+                // Check if billboardAnimation entities actually exist
+                let orphanedCount = 0;
+                let missingInSet = 0;
+                if (billboardComponentMap) {
+                    for (const entityId of billboardComponentMap.keys()) {
+                        if (!this.game.entities.has(entityId)) {
+                            orphanedCount++;
+                        } else {
+                            // Entity exists, check if it has billboardAnimation in its Set
+                            const entityComponents = this.game.entities.get(entityId);
+                            if (!entityComponents.has("billboardAnimation")) {
+                                missingInSet++;
+                            }
+                        }
+                    }
+                }
+                console.log(`[AnimationSystem] billboardEntities: ${billboardEntities.length}, totalEntities: ${totalEntities}, billboardMapSize: ${billboardMapSize}, orphaned: ${orphanedCount}, missingInSet: ${missingInSet}, firstAnimType: ${firstAnimState?.currentAnimationType}, frameIndex: ${firstAnimState?.frameIndex}`);
+                this._lastLogKey = logKey;
+            }
+            this._lastDeltaLog = Date.now();
+        }
+
         for (const entityId of billboardEntities) {
             const animState = this.game.getComponent(entityId, "billboardAnimation");
             if (!animState) continue;
@@ -815,7 +852,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             }
 
             // Update frame time
-            animState.frameTime += game.state.deltaTime;
+            animState.frameTime += this.game.state.deltaTime;
 
             // Calculate frame duration
             let frameDuration;
@@ -993,4 +1030,13 @@ class AnimationSystem extends GUTS.BaseSystem {
         return null;
     }
 
+    onSceneUnload() {
+        console.log('[AnimationSystem] Scene unloaded');
+    }
+
+    dispose() {
+        // Clear cached clip sets to avoid stale data on next game
+        this._clipSetCache.clear();
+        console.log('[AnimationSystem] Disposed - cleared clip cache');
+    }
 }

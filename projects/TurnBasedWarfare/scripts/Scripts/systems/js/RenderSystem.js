@@ -419,4 +419,29 @@ class RenderSystem extends GUTS.BaseSystem {
         }
     }
 
+    /**
+     * Called when scene is unloaded - cleanup all Three.js resources
+     */
+    onSceneUnload() {
+        // Cleanup EntityRenderer and all its batches/meshes
+        if (this.entityRenderer) {
+            this.entityRenderer.dispose();
+            this.entityRenderer = null;
+        }
+
+        // Clear tracking data
+        this.spawnedEntities.clear();
+        this._currentEntitiesSet.clear();
+        this._entityPositionCache.clear();
+
+        // Reset stats
+        this._stats = {
+            entitiesProcessed: 0,
+            entitiesSpawned: 0,
+            entitiesUpdated: 0
+        };
+
+        console.log('[RenderSystem] Scene unloaded - resources cleaned up');
+    }
+
 }

@@ -575,4 +575,22 @@ class ParticleSystem extends GUTS.BaseSystem {
     if (this.game?.state?.simTime != null) return this.game.state.simTime;
     return performance.now() / 1000;
   }
+
+  /**
+   * Called when scene is unloaded - cleanup all particle resources
+   */
+  onSceneUnload() {
+    this.destroy();
+
+    // Reset arrays
+    this.freeList = [];
+    this.activeCount = 0;
+    this._cursor = 0;
+
+    for (let i = 0; i < this.CAPACITY; i++) {
+      this.freeList.push(i);
+    }
+
+    console.log('[ParticleSystem] Scene unloaded - resources cleaned up');
+  }
 }

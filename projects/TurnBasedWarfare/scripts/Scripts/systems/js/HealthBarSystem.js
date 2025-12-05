@@ -364,10 +364,15 @@ class HealthBarSystem extends GUTS.BaseSystem {
         for (const [entityId] of this.healthBars.entries()) {
             this.removeHealthBarMesh(entityId);
         }
-        
+
         this.healthBars.clear();
         this.initialized = false;
-        
+
         console.log('Simple Quad HealthBarSystem destroyed');
+    }
+
+    onSceneUnload() {
+        this.destroy();
+        console.log('[HealthBarSystem] Scene unloaded - resources cleaned up');
     }
 }

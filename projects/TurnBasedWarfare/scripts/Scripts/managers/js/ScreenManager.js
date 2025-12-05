@@ -89,4 +89,9 @@ class ScreenManager {
     resume() {
         this.isPaused = false;
     }
+
+    onSceneUnload() {
+        this.reset();
+        console.log('[ScreenManager] Scene unloaded - resources cleaned up');
+    }
 }

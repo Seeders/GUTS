@@ -22,4 +22,13 @@ class SaveManager {
         // return saved ? JSON.parse(saved) : null;
         return null;
     }
+
+    onSceneUnload() {
+        // Clear any pending auto-save interval
+        if (this.autoSaveInterval) {
+            clearInterval(this.autoSaveInterval);
+            this.autoSaveInterval = null;
+        }
+        console.log('[SaveManager] Scene unloaded - resources cleaned up');
+    }
 }

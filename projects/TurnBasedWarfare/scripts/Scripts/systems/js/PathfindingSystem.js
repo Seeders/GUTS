@@ -944,4 +944,37 @@ class PathfindingSystem extends GUTS.BaseSystem {
     ping() {
         console.log('pong');
     }
+
+    onSceneUnload() {
+        // Clean up debug visualization
+        if (this.debugVisualization) {
+            // Dispose of materials
+            if (this.debugVisualization.children) {
+                for (const child of this.debugVisualization.children) {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) child.material.dispose();
+                }
+            }
+            if (this.game.uiScene) {
+                this.game.uiScene.remove(this.debugVisualization);
+            }
+            this.debugVisualization = null;
+        }
+
+        // Clear caches and state
+        this.navMesh = null;
+        this.walkabilityCache.clear();
+        this.pathCache.clear();
+        this.pathRequests = [];
+        this.ramps.clear();
+        this.terrainTypes = null;
+        this.terrainTypeIds = null;
+        this.terrainTypesCollection = null;
+        this.navGridWidth = 0;
+        this.navGridHeight = 0;
+        this.initialized = false;
+        this.debugEnabled = false;
+
+        console.log('[PathfindingSystem] Scene unloaded - resources cleaned up');
+    }
 }

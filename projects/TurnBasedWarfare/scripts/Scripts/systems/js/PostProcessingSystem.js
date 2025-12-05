@@ -30,14 +30,17 @@ class PostProcessingSystem extends GUTS.BaseSystem {
             return;
         }
 
+        // Get size first so we can properly initialize depth textures
+        const size = this.game.renderer.getSize(new THREE.Vector2());
+
         this.composer = new GUTS.EffectComposer(this.game.renderer);
 
-        // Create depth textures for both render targets
-        const depthTexture1 = new THREE.DepthTexture();
+        // Create depth textures for both render targets with explicit size
+        const depthTexture1 = new THREE.DepthTexture(size.x, size.y);
         depthTexture1.format = THREE.DepthFormat;
         depthTexture1.type   = THREE.UnsignedIntType; // 24/32-bit depth
 
-        const depthTexture2 = new THREE.DepthTexture();
+        const depthTexture2 = new THREE.DepthTexture(size.x, size.y);
         depthTexture2.format = THREE.DepthFormat;
         depthTexture2.type   = THREE.UnsignedIntType;
 
@@ -47,7 +50,6 @@ class PostProcessingSystem extends GUTS.BaseSystem {
         this.composer.renderTarget2.depthBuffer  = true;
 
         // Make sure sizes are synced after attaching:
-        const size = this.game.renderer.getSize(new THREE.Vector2());
         this.composer.setSize(size.x, size.y);
 
         if (this.passes.size > 0) {
@@ -144,5 +146,41 @@ class PostProcessingSystem extends GUTS.BaseSystem {
             });
         }
         this.passes.clear();
+    }
+
+    /**
+     * Called when scene is unloaded - cleanup all post-processing resources
+     */
+    onSceneUnload() {
+        // Dispose all passes
+        for (const [name, passConfig] of this.passes) {
+            if (passConfig.dispose) {
+                passConfig.dispose();
+            }
+        }
+        this.passes.clear();
+
+        // Dispose composer and its render targets
+        if (this.composer) {
+            // Dispose depth textures
+            if (this.composer.renderTarget1?.depthTexture) {
+                this.composer.renderTarget1.depthTexture.dispose();
+            }
+            if (this.composer.renderTarget2?.depthTexture) {
+                this.composer.renderTarget2.depthTexture.dispose();
+            }
+
+            // Dispose render targets
+            if (this.composer.renderTarget1) {
+                this.composer.renderTarget1.dispose();
+            }
+            if (this.composer.renderTarget2) {
+                this.composer.renderTarget2.dispose();
+            }
+
+            this.composer = null;
+        }
+
+        console.log('[PostProcessingSystem] Scene unloaded - resources cleaned up');
     }
 }

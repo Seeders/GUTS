@@ -135,5 +135,5 @@
   "is3D": true,
   "palette": "nature",
   "appLoaderLibrary": "GameLoader",
-  "initialScene": "client"
+  "initialScene": "lobby"
 }

@@ -1035,10 +1035,39 @@ class EffectsSystem extends GUTS.BaseSystem {
             }
             aurasToRemove.forEach(auraId => this.activeAuras.delete(auraId));
         }
-        
+
         // Clean up any particle effects tracking
         if (this.entityEffects) {
             this.entityEffects.delete(entityId);
         }
+    }
+
+    /**
+     * Called when scene is unloaded - cleanup all effect resources
+     */
+    onSceneUnload() {
+        this.forceCleanup();
+
+        // Clear notifications
+        this.notifications.forEach(notification => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        });
+        this.notifications = [];
+
+        // Reset screen effects
+        this.shakeActive = false;
+        this.flashActive = false;
+        this.shakeData = null;
+        this.flashData = null;
+
+        // Remove CSS styles
+        const styleElement = document.querySelector('#effects-styles');
+        if (styleElement) {
+            styleElement.remove();
+        }
+
+        console.log('[EffectsSystem] Scene unloaded - resources cleaned up');
     }
 }

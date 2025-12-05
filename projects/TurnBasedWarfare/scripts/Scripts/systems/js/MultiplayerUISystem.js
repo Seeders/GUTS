@@ -2,7 +2,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.uiSystem = this;
-        
+
         // State tracking
         this.currentScreen = null;
         this.gameState = null;
@@ -10,6 +10,9 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
             maxSquadsPerRound: 2,
             numBackgrounds: 5
         };
+
+        // Network event cleanup tracking
+        this.networkUnsubscribers = [];
     }
 
     // GUTS Manager Interface
@@ -141,7 +144,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         }
     }
 
-    leaveGame() {
+    async leaveGame() {
         // Send leave room event to server
         if (this.game.networkManager && this.game.networkManager.socket) {
             this.game.networkManager.socket.emit('LEAVE_ROOM', {});
@@ -160,10 +163,10 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         }
 
         // Hide all game screens
-        const lobby = document.getElementById('multiplayerLobby');
+        const lobbyEl = document.getElementById('multiplayerLobby');
         const gameScreen = document.getElementById('gameScreen');
-        if (lobby) {
-            lobby.classList.remove('active');
+        if (lobbyEl) {
+            lobbyEl.classList.remove('active');
         }
         if (gameScreen) {
             gameScreen.classList.remove('active');
@@ -172,6 +175,9 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         // Reset current screen state
         this.currentScreen = null;
         this.roomId = null;
+
+        // Switch back to lobby scene - this cleans up game systems
+        await this.game.switchScene('lobby');
 
         // Return to main menu (stay connected to server)
         if (this.game.screenManager?.showMainMenu) {
@@ -473,7 +479,40 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         // Show game menu button in lobby
         this.showGameMenu();
 
+        // Populate level selector
+        this.populateLevelSelector();
+
         this.updateLobby(gameState);
+    }
+
+    populateLevelSelector() {
+        const levelSelect = document.getElementById('levelSelect');
+        if (!levelSelect) return;
+
+        // Get levels from collections
+        const collections = this.game.getCollections();
+        const levels = collections?.levels || {};
+
+        // Clear existing options
+        levelSelect.innerHTML = '';
+
+        // Add options for each level
+        for (const [levelId, levelData] of Object.entries(levels)) {
+            const option = document.createElement('option');
+            option.value = levelId;
+            option.textContent = levelData.title || levelId;
+            levelSelect.appendChild(option);
+        }
+
+        // Store selected level
+        this.selectedLevel = levelSelect.value;
+        levelSelect.addEventListener('change', (e) => {
+            this.selectedLevel = e.target.value;
+        });
+    }
+
+    getSelectedLevel() {
+        return this.selectedLevel || 'level1';
     }
 
     updateLobby(gameState) {
@@ -623,7 +662,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         this.game.gameManager.call('initializeEffectsSystem');
     }
 
-    exitToMainMenu() {
+    async exitToMainMenu() {
         this.currentScreen = null;
         this.roomId = null;
         this.isHost = false;
@@ -631,6 +670,9 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
 
         // Hide game menu button
         this.hideGameMenu();
+
+        // Switch back to lobby scene - this cleans up game systems
+        await this.game.switchScene('lobby');
 
         if (this.game.screenManager?.showMainMenu) {
             this.game.screenManager.showMainMenu();
@@ -641,13 +683,14 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
 
  
     dispose() {
-        this.networkUnsubscribers.forEach(unsubscribe => {
-            if (typeof unsubscribe === 'function') {
-                unsubscribe();
-            }
-        });
-        this.networkUnsubscribers = [];
-        
+        if (this.networkUnsubscribers) {
+            this.networkUnsubscribers.forEach(unsubscribe => {
+                if (typeof unsubscribe === 'function') {
+                    unsubscribe();
+                }
+            });
+            this.networkUnsubscribers = [];
+        }
     }
     onPlacementPhaseStart() {
         const state = this.game.state;

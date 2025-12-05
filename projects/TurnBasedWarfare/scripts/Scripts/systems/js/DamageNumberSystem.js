@@ -528,4 +528,21 @@ class DamageNumberSystem extends GUTS.BaseSystem {
 
     }
 
+    onSceneUnload() {
+        this.destroy();
+
+        // Reset state
+        this.damageNumbers = [];
+        this.damageNumberPool = [];
+        this.damageNumberMesh = null;
+        this.damageTextMaterial = null;
+        this.damageTextGeometry = null;
+        this.damageTexture = null;
+        this.damageTextCanvas = null;
+        this.damageTextContext = null;
+        this.activeCharInstances = 0;
+        this.stats.activeDamageNumbers = 0;
+
+        console.log('[DamageNumberSystem] Scene unloaded - resources cleaned up');
+    }
 }

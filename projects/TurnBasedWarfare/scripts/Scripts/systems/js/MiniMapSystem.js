@@ -38,6 +38,10 @@ class MiniMapSystem extends GUTS.BaseSystem {
     onGameStarted() {
         // Get the container and its actual width
         this.container = document.getElementById('miniMapContainer');
+        if (!this.container) {
+            console.warn('[MiniMapSystem] miniMapContainer not found, skipping initialization');
+            return;
+        }
         const rect = this.container.getBoundingClientRect();
        // this.MINIMAP_SIZE = rect.width; // use actual displayed size
 
@@ -506,6 +510,11 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
 
     renderMinimap() {
+        // Guard against rendering before initialization or after cleanup
+        if (!this.minimapRenderTarget || !this.minimapScene || !this.minimapCamera) {
+            return;
+        }
+
         this.game.renderer.setRenderTarget(this.minimapRenderTarget);
         this.game.renderer.render(this.minimapScene, this.minimapCamera);
         
@@ -598,10 +607,21 @@ class MiniMapSystem extends GUTS.BaseSystem {
         return { x: cx, y: cy };
     }
     
+    onSceneUnload() {
+        // Note: dispose() is called by SceneManager after onSceneUnload
+        // So we just reset state here, actual cleanup happens in dispose()
+        console.log('[MiniMapSystem] Scene unloaded - resources cleaned up');
+    }
+
     dispose() {
-        if (this.container && this.container.parentNode) {
-            this.container.parentNode.removeChild(this.container);
+        // Remove the canvas we created, but NOT the container (it's part of the HTML structure)
+        if (this.canvas && this.canvas.parentNode) {
+            this.canvas.parentNode.removeChild(this.canvas);
         }
+        this.canvas = null;
+        this.ctx = null;
+        this.container = null;
+        this.initialized = false;
         
         if (this.minimapRenderTarget) {
             this.minimapRenderTarget.dispose();

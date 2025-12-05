@@ -745,10 +745,22 @@ class ProjectileSystem extends GUTS.BaseSystem {
         if (this.projectileTrails) {
             this.projectileTrails.delete(entityId);
         }
-        
+
         // Clean up any projectile tracking
         if (this.activeProjectiles) {
             this.activeProjectiles.delete(entityId);
         }
+    }
+
+    onSceneUnload() {
+        // Clear all projectile trails
+        this.projectileTrails.clear();
+
+        // Clear active projectiles if tracked
+        if (this.activeProjectiles) {
+            this.activeProjectiles.clear();
+        }
+
+        console.log('[ProjectileSystem] Scene unloaded - resources cleaned up');
     }
 }

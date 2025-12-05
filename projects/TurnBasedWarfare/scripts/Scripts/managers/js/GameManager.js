@@ -5,31 +5,35 @@ class GameManager extends GUTS.GameServices {
         this.game.gameManager = this;
     }
 
-    initializeGame(){
-        if (!this.game.screenManager.selectedGameMode) {
+    initializeGame(multiplayerData = null){
+        // For single-player, require game mode selection
+        if (!multiplayerData && !this.game.screenManager.selectedGameMode) {
             alert('Please select a game mode first!');
             return;
         }
 
-        this.game.screenManager.showLoadingScreen();
-        
-        // Update loading content based on selected mode
-        const mode = this.game.gameModeManager.getSelectedMode();
-        if (mode) {
-            const loadingTip = document.querySelector('.loading-tip');
-            if (loadingTip) {
-                loadingTip.textContent = `Mode: ${mode.title} - ${mode.description}`;
+        // Only show loading screen for single-player (multiplayer already showed it)
+        if (!multiplayerData) {
+            this.game.screenManager.showLoadingScreen();
+
+            // Update loading content based on selected mode
+            const mode = this.game.gameModeManager.getSelectedMode();
+            if (mode) {
+                const loadingTip = document.querySelector('.loading-tip');
+                if (loadingTip) {
+                    loadingTip.textContent = `Mode: ${mode.title} - ${mode.description}`;
+                }
             }
         }
 
-        this.game.triggerEvent('onGameStarted');
-
-        setTimeout(() => {   
+        setTimeout(() => {
             this.game.state.isPaused = false;
+            this.game.screenManager.showGameScreen();
+            // Trigger onGameStarted AFTER screen is visible so UI elements are accessible
+            this.game.triggerEvent('onGameStarted');
             this.game.uiSystem.start();
-            this.game.screenManager.showGameScreen();  
         }, 2000);
-        
+
     }
 
     pauseGame() {

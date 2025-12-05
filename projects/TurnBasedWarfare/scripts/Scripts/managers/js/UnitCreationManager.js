@@ -674,4 +674,9 @@ class UnitCreationManager {
         this.componentCache.clear();
         this.resetStats();
     }
+
+    onSceneUnload() {
+        this.dispose();
+        console.log('[UnitCreationManager] Scene unloaded - resources cleaned up');
+    }
 }

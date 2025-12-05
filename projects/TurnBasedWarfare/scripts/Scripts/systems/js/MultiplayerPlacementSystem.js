@@ -1062,6 +1062,12 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
     }
 
     dispose() {
+        // Clear the raycasting interval
+        if (this.mouseRayCastInterval) {
+            clearInterval(this.mouseRayCastInterval);
+            this.mouseRayCastInterval = null;
+        }
+
         // Clean up RaycastHelper
         if (this.raycastHelper) {
             this.raycastHelper.dispose();
@@ -1070,11 +1076,11 @@ class MultiplayerPlacementSystem extends GUTS.BaseSystem {
 
         this.cachedValidation = null;
         this.cachedGridPos = null;
-        
+
         if (this.placementPreview) {
             this.placementPreview.dispose();
         }
-                
+
         this.resetAllPlacements();
     }
 

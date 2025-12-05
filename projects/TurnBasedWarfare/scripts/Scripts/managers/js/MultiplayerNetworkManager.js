@@ -177,9 +177,9 @@ class MultiplayerNetworkManager {
             'GET_STARTING_STATE',
             {},
             'GOT_STARTING_STATE',
-            (data, error) => {           
-                if (data.error) {
-                    callback(false, error);
+            (data, error) => {
+                if (error || !data || data.error) {
+                    callback(false, error || data?.error || 'No response from server');
                 } else {
                     callback(true, data);
                 }
@@ -317,12 +317,15 @@ class MultiplayerNetworkManager {
     }
 
     toggleReady() {
-        this.game.clientNetworkManager.call('TOGGLE_READY');
+        // Include selected level from UI (host's selection will be used)
+        const selectedLevel = this.game.uiSystem?.getSelectedLevel() || 'level1';
+        this.game.clientNetworkManager.call('TOGGLE_READY', { level: selectedLevel });
     }
 
     startGame() {
         if (!this.isHost) return;
-        this.game.clientNetworkManager.call('START_GAME');
+        const selectedLevel = this.game.uiSystem?.getSelectedLevel() || 'level1';
+        this.game.clientNetworkManager.call('START_GAME', { level: selectedLevel });
     }
 
     leaveRoom() {
@@ -362,7 +365,31 @@ class MultiplayerNetworkManager {
         }
     }
 
-    handleGameStarted(data){
+    async handleGameStarted(data) {
+        // Store the level from server
+        const level = data.level || 'level1';
+        this.game.state.level = level;
+
+        // Show loading screen
+        this.game.screenManager.showLoadingScreen();
+
+        // Load the client_game scene with the selected level
+        // First, we need to modify the scene's terrain entity to use the selected level
+        const collections = this.game.getCollections();
+        const clientGameScene = collections?.scenes?.client_game;
+
+        if (clientGameScene && clientGameScene.entities) {
+            // Update terrain entity with selected level
+            const terrainEntity = clientGameScene.entities.find(e => e.id === 'terrain_main');
+            if (terrainEntity?.components?.terrain) {
+                terrainEntity.components.terrain.level = level;
+            }
+        }
+
+        // Switch to the game scene
+        await this.game.switchScene('client_game');
+
+        // Now initialize the game
         this.game.gameManager.initializeGame(data);
     }
 
@@ -827,8 +854,22 @@ class MultiplayerNetworkManager {
             }
         });
         this.networkUnsubscribers = [];
-        
     }
 
-         
+    onSceneUnload() {
+        // Note: Don't call dispose() here as we want to keep network listeners
+        // active across scene transitions. Only reset game-specific state.
+
+        // Reset game state tracking
+        this.gameState = null;
+        this.pendingBattleEnd = null;
+
+        // Remove any game ended modals
+        const gameEndedModal = document.getElementById('gameEndedModal');
+        if (gameEndedModal) {
+            gameEndedModal.remove();
+        }
+
+        console.log('[MultiplayerNetworkManager] Scene unloaded - game state reset');
+    }
 }

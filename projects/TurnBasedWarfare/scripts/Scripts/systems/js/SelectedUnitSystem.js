@@ -119,11 +119,11 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         // Mouse up - complete box selection
         this.canvas.addEventListener('mouseup', (event) => {
             if (!this.boxSelection.active) return;
-            
+
             const dx = this.boxSelection.currentX - this.boxSelection.startX;
             const dy = this.boxSelection.currentY - this.boxSelection.startY;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            
+
             // If dragged significantly, do box selection
             if (distance > 5) {
                 requestAnimationFrame(() => {
@@ -131,15 +131,17 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                 });
             } else {
                 // Single click selection
-                
+
                 requestAnimationFrame(() => {
                     this.checkUnitSelectionClick(event);
                 });
             }
-            
+
             // Reset box selection state
             this.boxSelection.active = false;
-            this.boxSelection.element.style.display = 'none';
+            if (this.boxSelection.element) {
+                this.boxSelection.element.style.display = 'none';
+            }
         });
         
         // Cancel box selection on context menu or escape
@@ -160,13 +162,14 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     updateBoxSelectionVisual() {
         const box = this.boxSelection;
         const element = box.element;
-        
+        if (!element) return;
+
         // Calculate box dimensions
         const left = Math.min(box.startX, box.currentX);
         const top = Math.min(box.startY, box.currentY);
         const width = Math.abs(box.currentX - box.startX);
         const height = Math.abs(box.currentY - box.startY);
-        
+
         // Update element
         element.style.left = left + 'px';
         element.style.top = top + 'px';
@@ -298,7 +301,9 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     
     cancelBoxSelection() {
         this.boxSelection.active = false;
-        this.boxSelection.element.style.display = 'none';
+        if (this.boxSelection.element) {
+            this.boxSelection.element.style.display = 'none';
+        }
     }
 
     checkUnitSelectionClick(event) {
@@ -732,17 +737,33 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         if (this.boxSelection.element && this.boxSelection.element.parentElement) {
             this.boxSelection.element.parentElement.removeChild(this.boxSelection.element);
         }
-        
+
         // Clean up all selection circles
         for (const [entityId] of this.selectionCircles) {
             this.removeSelectionCircle(entityId);
         }
-        
+
         this.selectionCircles.clear();
         this.highlightedUnits.clear();
         this.selectedUnitIds.clear();
         this.initialized = false;
-        
+
         console.log('[SelectedUnitSystem] Destroyed');
+    }
+
+    onSceneUnload() {
+        this.destroy();
+
+        // Reset box selection state
+        this.boxSelection.active = false;
+        this.boxSelection.startX = 0;
+        this.boxSelection.startY = 0;
+        this.boxSelection.currentX = 0;
+        this.boxSelection.currentY = 0;
+        this.boxSelection.element = null;
+
+        this.currentSelectedIndex = 0;
+
+        console.log('[SelectedUnitSystem] Scene unloaded - resources cleaned up');
     }
 }

@@ -97,18 +97,25 @@ class ServerGameRoom extends global.GUTS.GameRoom {
     }
 
     handleToggleReady(eventData) {
-        const { playerId } = eventData;
+        const { playerId, data } = eventData;
         try {
+            // Store the selected level from host
+            const player = this.players.get(playerId);
+            if (player?.isHost && data?.level) {
+                this.selectedLevel = data.level;
+                console.log(`Host selected level: ${this.selectedLevel}`);
+            }
+
             const success = this.togglePlayerReady(playerId);
             if (!success) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'ERROR', { 
-                    error: 'Cannot toggle ready in current phase' 
+                this.serverNetworkManager.sendToPlayer(playerId, 'ERROR', {
+                    error: 'Cannot toggle ready in current phase'
                 });
             }
         } catch (error) {
             console.error('Error toggling ready:', error);
-            this.serverNetworkManager.sendToPlayer(playerId, 'ERROR', { 
-                error: 'Server error' 
+            this.serverNetworkManager.sendToPlayer(playerId, 'ERROR', {
+                error: 'Server error'
             });
         }
     }
@@ -327,27 +334,42 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             console.log(`Cannot start game, not in lobby phase. Current phase: ${this.game.state.phase}`);
             return false;
         }
-        
+
         // Check if all players are ready
         const allReady = Array.from(this.players.values()).every(p => p.ready);
         if (!allReady) {
             return false;
         }
-        
+
+        // Store level for server scene loading
+        const level = this.selectedLevel || 'level1';
+        this.game.state.level = level;
+
+        // Update server scene's terrain entity to use the selected level
+        const collections = this.game.getCollections();
+        const serverScene = collections?.scenes?.server;
+        if (serverScene && serverScene.entities) {
+            const terrainEntity = serverScene.entities.find(e => e.id === 'terrain_main');
+            if (terrainEntity?.components?.terrain) {
+                terrainEntity.components.terrain.level = level;
+            }
+        }
+
         this.game.state.phase = 'placement';
-        
+
         // Call parent's startGame (loads scene, spawns entities, etc.)
         super.startGame();
-        
-        // Broadcast game started
+
+        // Broadcast game started with level info
         if (this.serverNetworkManager) {
             let gameState = this.getGameState();
             this.serverNetworkManager.broadcastToRoom(this.id, 'GAME_STARTED', {
-                gameState: gameState
-            });            
+                gameState: gameState,
+                level: level
+            });
         }
-        
-        console.log(`Game started in room ${this.id}`);
+
+        console.log(`Game started in room ${this.id} with level: ${level}`);
         return true;
     }
 

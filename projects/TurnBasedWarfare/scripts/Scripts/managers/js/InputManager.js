@@ -517,4 +517,22 @@ class InputManager {
     removeShortcut(keyCombo) {
         this.shortcuts.delete(keyCombo);
     }
+
+    onSceneUnload() {
+        // Clear key states
+        this.keyStates = {};
+        this.mouseState = { x: 0, y: 0, pressed: false };
+
+        // Remove modal styles if they exist
+        const modalStyles = document.querySelector('#modal-styles');
+        if (modalStyles) {
+            modalStyles.remove();
+        }
+
+        // Close any open modals
+        const openModals = document.querySelectorAll('.game-modal');
+        openModals.forEach(modal => modal.remove());
+
+        console.log('[InputManager] Scene unloaded - resources cleaned up');
+    }
 }

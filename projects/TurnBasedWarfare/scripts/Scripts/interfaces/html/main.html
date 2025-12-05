@@ -68,18 +68,20 @@
             </div>
 
             <div class="game-info">
-                <h3>🏰 Battle Configuration</h3>
+                <h3>Battle Configuration</h3>
                 <div class="game-settings">
                     <div class="setting">
-                        <span class="setting-label">🎯 Game Mode</span>
-                        <span class="setting-value" id="lobbyGameMode">Arena Combat</span>
+                        <span class="setting-label">Map</span>
+                        <select id="levelSelect" class="setting-select">
+                            <!-- Populated dynamically from levels collection -->
+                        </select>
                     </div>
                     <div class="setting">
-                        <span class="setting-label">⏱️ Turn Timer</span>
+                        <span class="setting-label">Turn Timer</span>
                         <span class="setting-value" id="lobbyTurnTimer">30 seconds</span>
                     </div>
                     <div class="setting">
-                        <span class="setting-label">💰 Starting Gold</span>
+                        <span class="setting-label">Starting Gold</span>
                         <span class="setting-value" id="lobbyStartGold">100 coins</span>
                     </div>
                 </div>

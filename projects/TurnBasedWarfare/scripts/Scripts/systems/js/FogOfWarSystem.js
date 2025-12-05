@@ -632,6 +632,11 @@ class FogOfWarSystem extends GUTS.BaseSystem {
     }
 
     renderFogTexture() {
+        // Guard against rendering before initialization or after cleanup
+        if (!this.fogRenderTarget || !this.explorationRenderTarget || !this.fogScene) {
+            return;
+        }
+
         const myTeam = this.game.state.mySide;
         if (!myTeam) return;
 
@@ -794,5 +799,13 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         this.losGeometryPool.forEach(geom => geom.dispose());
         this.losMeshPool = [];
         this.losGeometryPool = [];
+    }
+
+    /**
+     * Called when scene is unloaded - cleanup all fog of war resources
+     * Note: dispose() is called by SceneManager after onSceneUnload
+     */
+    onSceneUnload() {
+        console.log('[FogOfWarSystem] Scene unloaded - resources cleaned up');
     }
 }

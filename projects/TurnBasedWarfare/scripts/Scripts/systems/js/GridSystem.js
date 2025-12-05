@@ -539,6 +539,49 @@ class GridSystem extends GUTS.BaseSystem {
                worldZ >= this.worldBounds.minZ && worldZ <= this.worldBounds.maxZ;
     }
 
+    onSceneUnload() {
+        // Clean up debug visualization
+        if (this.debugVisualization) {
+            while (this.debugVisualization.children.length > 0) {
+                const mesh = this.debugVisualization.children[0];
+                this.debugVisualization.remove(mesh);
+            }
+            if (this.game.uiScene) {
+                this.game.uiScene.remove(this.debugVisualization);
+            }
+            this.debugVisualization = null;
+        }
+
+        // Dispose debug materials
+        if (this.debugMaterials) {
+            Object.values(this.debugMaterials).forEach(material => material.dispose());
+            this.debugMaterials = null;
+        }
+        if (this.debugGeometry) {
+            this.debugGeometry.dispose();
+            this.debugGeometry = null;
+        }
+
+        // Clean up grid visualization
+        if (this.gridVisualization) {
+            if (this.game.scene) {
+                this.game.scene.remove(this.gridVisualization);
+            }
+            this.gridVisualization.traverse(child => {
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) child.material.dispose();
+            });
+            this.gridVisualization = null;
+        }
+
+        // Clear state
+        this.state.clear();
+        this.debugMeshes.clear();
+        this.debugEnabled = false;
+
+        console.log('[GridSystem] Scene unloaded - resources cleaned up');
+    }
+
     /**
      * Initialize debug visualization for spatial grid
      */

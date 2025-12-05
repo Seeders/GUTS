@@ -144,6 +144,12 @@ class CameraControlSystem extends GUTS.BaseSystem {
     window.removeEventListener('mouseenter', this.onEnter);
     window.removeEventListener('mouseleave', this.onLeave);
     window.removeEventListener('blur',       this.onBlur);
+    window.removeEventListener('wheel', this.onWheel);
+  }
+
+  onSceneUnload() {
+    // Note: dispose() is called by SceneManager after onSceneUnload
+    console.log('[CameraControlSystem] Scene unloaded - resources cleaned up');
   }
 
   onMouseMove(e) {
