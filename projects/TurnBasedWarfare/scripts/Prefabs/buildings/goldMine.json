@@ -58,9 +58,7 @@
       }
     }
   },
-  "upgrades": [
-    "peasantEfficiency"
-  ],
+  "upgrades": [],
   "units": [],
   "footprintWidth": 2,
   "footprintHeight": 2,

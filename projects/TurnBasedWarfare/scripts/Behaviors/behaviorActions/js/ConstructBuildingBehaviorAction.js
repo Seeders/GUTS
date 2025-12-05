@@ -49,6 +49,9 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
             shared.targetPosition = null;
             shared.buildTime = null;
 
+            // Clear memory for next construction
+            memory.constructionStartTime = null;
+
             // Unanchor builder
             this.unanchorBuilder(entityId, game);
 
@@ -177,6 +180,9 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
             shared.targetPosition = null;
             shared.buildTime = null;
 
+            // Clear memory for next construction
+            memory.constructionStartTime = null;
+
             this.unanchorBuilder(entityId, game);
         }
 
@@ -193,6 +199,10 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
                 buildingPlacement.assignedBuilder = null;
             }
         }
+
+        // Clear memory for next construction
+        const memory = this.getMemory(entityId);
+        memory.constructionStartTime = null;
 
         super.onEnd(entityId, game);
     }
