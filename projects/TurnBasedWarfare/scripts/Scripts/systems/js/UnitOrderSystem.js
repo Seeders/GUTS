@@ -13,15 +13,20 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
         this.cursorWhenTargeting = 'crosshair';
         this.pingEffect = { count: 12, color: 0x00ff00 };
+        this.targetingPreview = null;
+    }
+
+    init() {
+        // Preview created in onGameStarted when scene is available
+    }
+
+    onGameStarted() {
+        // Create targeting preview after scene is available
         this.targetingPreview = new GUTS.PlacementPreview(this.game);
         this.targetingPreview.updateConfig({
             cellOpacity: 0.3,
             borderOpacity: 0.6
         });
-    }
-
-    init() {
-        // No longer needed - entity sync at battle start handles opponent orders
     }
 
 
@@ -279,6 +284,8 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         this.showMoveTargets();
     }
     showMoveTargets() {
+        if (!this.targetingPreview) return;
+
         this.targetingPreview.clear();
         const placementIds = this.game.gameManager.call('getSelectedSquads') || [];
         const targetPositions = [];
