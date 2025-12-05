@@ -3,16 +3,87 @@ class SupplySystem extends GUTS.BaseSystem {
         super(game);
         this.game.supplySystem = this;
         this.supplyElement = null;
+
+        // Cached supply values - recalculated on demand
+        this.cachedSupply = new Map(); // team -> { supply, population }
+        this.isDirty = true; // Flag to trigger recalculation
     }
 
     init() {
         this.game.gameManager.register('getCurrentSupply', this.getCurrentSupply.bind(this));
         this.game.gameManager.register('getCurrentPopulation', this.getCurrentPopulation.bind(this));
         this.game.gameManager.register('canAffordSupply', this.canAffordSupply.bind(this));
-        if(!this.game.isServer){
+        this.game.gameManager.register('invalidateSupplyCache', this.invalidateSupplyCache.bind(this));
+
+        if (!this.game.isServer) {
             this.supplyElement = document.getElementById('playerSupplies');
         }
-        
+    }
+
+    /**
+     * Mark supply cache as dirty - call this when units/buildings are created or destroyed
+     */
+    invalidateSupplyCache() {
+        this.isDirty = true;
+    }
+
+    /**
+     * Called when a unit dies - invalidate cache
+     */
+    onUnitKilled(entityId) {
+        this.invalidateSupplyCache();
+    }
+
+    /**
+     * Called when a building is destroyed - invalidate cache
+     */
+    onDestroyBuilding(entityId) {
+        this.invalidateSupplyCache();
+    }
+
+    /**
+     * Recalculate supply values from actual living entities
+     */
+    recalculateSupply() {
+        if (!this.isDirty) return;
+
+        this.cachedSupply.clear();
+
+        // Get all entities with unitType component (both units and buildings)
+        const entities = this.game.getEntitiesWith('unitType');
+
+        for (const entityId of entities) {
+            const unitType = this.game.getComponent(entityId, 'unitType');
+            const team = this.game.getComponent(entityId, 'team');
+            const health = this.game.getComponent(entityId, 'health');
+            const deathState = this.game.getComponent(entityId, 'deathState');
+
+            // Skip if no team or dead/dying
+            if (!team?.team) continue;
+            if (health && health.current <= 0) continue;
+            if (deathState && deathState.isDying) continue;
+
+            const teamId = team.team;
+
+            // Initialize team cache if needed
+            if (!this.cachedSupply.has(teamId)) {
+                this.cachedSupply.set(teamId, { supply: 0, population: 0 });
+            }
+
+            const teamCache = this.cachedSupply.get(teamId);
+
+            // Add supply provided by buildings (e.g., townHall, cottage)
+            if (unitType.supplyProvided) {
+                teamCache.supply += unitType.supplyProvided;
+            }
+
+            // Add population cost of units
+            if (unitType.supplyCost) {
+                teamCache.population += unitType.supplyCost;
+            }
+        }
+
+        this.isDirty = false;
     }
 
     updateSupplyDisplay() {
@@ -24,47 +95,37 @@ class SupplySystem extends GUTS.BaseSystem {
         const currentPop = this.getCurrentPopulation(team);
         const currentSupply = this.getCurrentSupply(team);
 
-        const isAtLimit = currentPop >= currentSupply;
-
         this.supplyElement.innerHTML = `${currentPop}/${currentSupply}`;
     }
 
     update() {
-        if(this.game.isServer) return;
+        if (this.game.isServer) return;
         if (this.game.state.phase === 'placement') {
             this.updateSupplyDisplay();
         }
     }
 
+    /**
+     * Get total supply capacity for a team (from buildings like townHall, cottage)
+     */
     getCurrentSupply(team) {
-        const placements = this.game.gameManager.call('getPlacementsForSide', team);
-        if (!placements) return 0;
-
-        let totalSupply = 0;
-
-        placements.forEach(placement => {     
-            if(placement.unitType.supplyProvided){      
-                totalSupply += placement.unitType.supplyProvided;            
-            }
-        });
-        return totalSupply;
+        this.recalculateSupply();
+        const teamCache = this.cachedSupply.get(team);
+        return teamCache ? teamCache.supply : 0;
     }
 
-
+    /**
+     * Get current population (supply used) for a team
+     */
     getCurrentPopulation(team) {
-        const placements = this.game.gameManager.call('getPlacementsForSide', team);
-        if (!placements) return 0;
-
-        let totalPopulation = 0;
-
-        placements.forEach(placement => {     
-            if(placement.unitType.supplyCost){      
-                totalPopulation += placement.unitType.supplyCost;            
-            }
-        });
-        return totalPopulation;
+        this.recalculateSupply();
+        const teamCache = this.cachedSupply.get(team);
+        return teamCache ? teamCache.population : 0;
     }
 
+    /**
+     * Check if team can afford the supply cost of a unit
+     */
     canAffordSupply(team, unitType) {
         const currentPop = this.getCurrentPopulation(team);
         const currentSupply = this.getCurrentSupply(team);
@@ -72,6 +133,4 @@ class SupplySystem extends GUTS.BaseSystem {
 
         return (currentPop + supplyCost) <= currentSupply;
     }
-
-
 }

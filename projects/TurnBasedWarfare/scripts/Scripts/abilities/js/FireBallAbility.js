@@ -239,11 +239,11 @@ class FireBallAbility extends GUTS.BaseAbility {
             id: 'fireball',
             title: 'Fireball',
             damage: this.damage,
-            speed: 120, // Faster for more dramatic arc
+            speed: 120,
             element: this.element,
             ballistic: true,
             splashRadius: this.splashRadius,
-            homing: false, // No homing - fires at captured position
+            homing: false,
             homingStrength: 0,
             // Store the captured target position
             targetPosition: this.targetPosition,

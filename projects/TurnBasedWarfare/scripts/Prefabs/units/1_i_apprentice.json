@@ -174,7 +174,6 @@
     ]
   },
   "buyable": true,
-  "projectile": "",
   "specUnits": [
     "2_i_elementalist",
     "2_i_enchanter",

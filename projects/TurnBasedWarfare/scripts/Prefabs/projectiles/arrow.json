@@ -47,5 +47,6 @@
   "attackSound": "plasma",
   "hitSound": "plasma",
   "homing": false,
-  "homingStrength": 0
+  "homingStrength": 0,
+  "spriteAnimationSet": "arrow"
 }

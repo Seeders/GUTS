@@ -570,15 +570,18 @@ class UnitCreationManager {
      */
     updateCreationStats(unitType, team) {
         this.stats.totalCreated++;
-        
+
         // Track by team
         const teamCount = this.stats.createdByTeam.get(team) || 0;
         this.stats.createdByTeam.set(team, teamCount + 1);
-        
+
         // Track by unit type
         const unitTypeId = unitType.id || 'unknown';
         const typeCount = this.stats.createdByType.get(unitTypeId) || 0;
         this.stats.createdByType.set(unitTypeId, typeCount + 1);
+
+        // Invalidate supply cache when units are created
+        this.game.gameManager.call('invalidateSupplyCache');
     }
     
     /**

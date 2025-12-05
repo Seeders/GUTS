@@ -6,5 +6,13 @@
   "buildable": true,
   "walkable": true,
   "spriteWidth": 24,
-  "spriteHeight": 24
+  "spriteHeight": 24,
+  "detailWorldObjects": [
+    "grass_tuft_sprite",
+    "grass_tuft_small_sprite",
+    "bush_sprite",
+    "stone_sprite",
+    "stone_2_sprite"
+  ],
+  "detailDensity": 0.5
 }

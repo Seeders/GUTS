@@ -1,0 +1,15 @@
+{
+  "title": "Arrow",
+  "collection": "arrowSpritesAnimations",
+  "spriteSheet": "Sprites/arrowSprites/arrowSheet.png",
+  "idleSpriteAnimations": [
+    "arrowIdleDown",
+    "arrowIdleDownLeft",
+    "arrowIdleLeft",
+    "arrowIdleUpLeft",
+    "arrowIdleUp",
+    "arrowIdleUpRight",
+    "arrowIdleRight",
+    "arrowIdleDownRight"
+  ]
+}

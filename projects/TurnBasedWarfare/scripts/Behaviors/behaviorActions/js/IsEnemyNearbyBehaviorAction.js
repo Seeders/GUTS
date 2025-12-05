@@ -27,7 +27,7 @@ class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const range = params.range !== undefined ? params.range : (combat?.visionRange || 300);
+        const range = combat.visionRange;
 
         const enemies = this.findEnemiesInRange(entityId, game, pos, team, range);
 

@@ -202,94 +202,56 @@ class ProjectileSystem extends GUTS.BaseSystem {
     
     calculateBallisticTrajectory(sourcePos, targetPos, speed, projectileData) {
         const dx = targetPos.x - sourcePos.x;
-        const dy = targetPos.y - sourcePos.y; // Height difference
-        const dz = targetPos.z - sourcePos.z; // Forward/backward distance
-        
+        const dy = targetPos.y - sourcePos.y;
+        const dz = targetPos.z - sourcePos.z;
+
         const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
-        
+
         if (horizontalDistance === 0) {
             return { vx: 0, vy: 0, vz: 0, launchAngle: 0, timeToTarget: 0 };
         }
-        
-        // Get the firing unit's combat range to determine proper ballistic trajectory
+
+        const g = this.GRAVITY;
+
+        // Choose launch angle based on distance - steeper for close, flatter for far
+        // Close targets: use higher angle (60°) so arc lands on target, not behind
+        // Far targets: use lower angle (30-45°) for range
         const sourceId = projectileData.sourceId;
         const sourceCombat = sourceId ? this.game.getComponent(sourceId, "combat") : null;
-        const weaponRange = sourceCombat ? sourceCombat.range : horizontalDistance;
-        
-        // Use 45-degree angle for optimal range (gives maximum distance for given initial velocity)
-        const launchAngle = Math.PI / 4; // 45 degrees
-        const g = this.GRAVITY;
-        
-        // Calculate the initial velocity needed to reach the weapon's maximum range at 45 degrees
-        const optimalInitialVelocity = Math.sqrt(weaponRange * g);
-        
-        // Calculate what range this velocity would achieve at our target distance
-        const actualRange = Math.min(horizontalDistance, weaponRange);
-        
-        // If target is within range, calculate trajectory to hit it exactly
-        let initialVelocity;
-        let actualLaunchAngle = launchAngle;
-        
-        if (horizontalDistance <= weaponRange) {
-            // Target is within range - calculate exact trajectory
-            const maxRangeAtOptimalVelocity = (optimalInitialVelocity * optimalInitialVelocity) / g;
-            
-            if (horizontalDistance <= maxRangeAtOptimalVelocity) {
-                // We can reach this distance with our optimal velocity
-                initialVelocity = optimalInitialVelocity;
-                // Calculate the required angle: sin(2θ) = (range * g) / v₀²
-                const sin2Theta = (horizontalDistance * g) / (initialVelocity * initialVelocity);
-                
-                // We want the lower trajectory angle (there are two solutions)
-                const angle2Theta = Math.asin(Math.min(1, sin2Theta));
-                actualLaunchAngle = angle2Theta / 2;
-                
-                // Prefer angles between 15° and 75° for realistic artillery
-                if (actualLaunchAngle < Math.PI / 12) { // Less than 15°
-                    actualLaunchAngle = Math.PI / 12;
-                } else if (actualLaunchAngle > 5 * Math.PI / 12) { // More than 75°
-                    actualLaunchAngle = 5 * Math.PI / 12;
-                }
-            } else {
-                // Use 45° and calculate required velocity for this specific distance
-                actualLaunchAngle = Math.PI / 4;
-                initialVelocity = Math.sqrt(horizontalDistance * g);
-            }
-        } else {
-            // Target is beyond weapon range - fire at maximum range in target direction
-            initialVelocity = optimalInitialVelocity;
-            actualLaunchAngle = Math.PI / 4; // 45° for maximum range
-        }
-        
+        const weaponRange = sourceCombat ? sourceCombat.range : 300;
+
+        // Normalize distance ratio (0 = point blank, 1 = max range)
+        const distanceRatio = Math.min(1, horizontalDistance / weaponRange);
+
+        // Interpolate angle: 60° at close range, 30° at max range
+        const closeAngle = Math.PI / 3;  // 60 degrees
+        const farAngle = Math.PI / 6;    // 30 degrees
+        const actualLaunchAngle = closeAngle - (closeAngle - farAngle) * distanceRatio;
+
+        // Calculate velocity needed to hit target at this angle
+        // Range formula: R = v² * sin(2θ) / g
+        // Solving for v: v = sqrt(R * g / sin(2θ))
+        const sin2Theta = Math.sin(2 * actualLaunchAngle);
+        const initialVelocity = Math.sqrt((horizontalDistance * g) / sin2Theta);
+
         // Calculate time of flight
         const timeToTarget = (2 * initialVelocity * Math.sin(actualLaunchAngle)) / g;
-        
+
         // Calculate horizontal direction unit vector
         const horizontalDirectionX = dx / horizontalDistance;
         const horizontalDirectionZ = dz / horizontalDistance;
-        
+
         // Calculate initial velocity components
         const horizontalVelocity = initialVelocity * Math.cos(actualLaunchAngle);
         const vx = horizontalDirectionX * horizontalVelocity;
         const vz = horizontalDirectionZ * horizontalVelocity;
-        const vy = initialVelocity * Math.sin(actualLaunchAngle); // Initial upward velocity
-        
-        // Adjust for height difference if target is at different elevation
-        if (Math.abs(dy) > 5) { // Only adjust for significant height differences
-            const heightAdjustment = dy / timeToTarget;
-            const adjustedVy = vy + heightAdjustment;
-            
-            return {
-                vx: this.roundForDeterminism(vx),
-                vy: this.roundForDeterminism(adjustedVy),
-                vz: this.roundForDeterminism(vz),
-                launchAngle: this.roundForDeterminism(actualLaunchAngle),
-                timeToTarget: this.roundForDeterminism(timeToTarget),
-                weaponRange: this.roundForDeterminism(weaponRange),
-                calculatedRange: this.roundForDeterminism((initialVelocity * initialVelocity * Math.sin(2 * actualLaunchAngle)) / g)
-            };
+        let vy = initialVelocity * Math.sin(actualLaunchAngle);
+
+        // Adjust for height difference
+        if (Math.abs(dy) > 5) {
+            vy += dy / timeToTarget;
         }
-        
+
         return {
             vx: this.roundForDeterminism(vx),
             vy: this.roundForDeterminism(vy),
@@ -297,7 +259,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
             launchAngle: this.roundForDeterminism(actualLaunchAngle),
             timeToTarget: this.roundForDeterminism(timeToTarget),
             weaponRange: this.roundForDeterminism(weaponRange),
-            calculatedRange: this.roundForDeterminism((initialVelocity * initialVelocity * Math.sin(2 * actualLaunchAngle)) / g)
+            calculatedRange: this.roundForDeterminism(horizontalDistance)
         };
     }
     
