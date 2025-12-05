@@ -302,8 +302,10 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     shouldEndGame(room) {
-        const alivePlayers = Array.from(room.players.values()).filter(p => (p.stats.health) > 0);
-        return alivePlayers.length <= 1;
+        // RTS-style: game ends when a team loses all buildings (checked in checkBuildingVictoryCondition)
+        // This is called after battle ends - check if any team has no buildings
+        const buildingVictory = this.checkBuildingVictoryCondition();
+        return buildingVictory !== null;
     }
 
   
@@ -316,18 +318,18 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         }
     }
 
-    endGame(room, reason = 'health_depleted') {
+    endGame(room, reason = 'buildings_destroyed') {
         this.game.state.phase = 'ended';
 
-        // Determine final winner
-        let finalWinner = null;
-        let maxHealth = -1;
+        // Determine final winner based on building victory condition
+        const buildingVictory = this.checkBuildingVictoryCondition();
+        let finalWinner = buildingVictory?.winner || null;
 
-        for (const [playerId, player] of room.players) {
-            const health = player.stats.health;
-            if (health > maxHealth) {
-                maxHealth = health;
+        // If no building victory (e.g., disconnect), find remaining player
+        if (!finalWinner && reason === 'opponent_disconnected') {
+            for (const [playerId] of room.players) {
                 finalWinner = playerId;
+                break;
             }
         }
 

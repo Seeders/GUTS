@@ -659,9 +659,6 @@ class MultiplayerNetworkManager {
             case 'opponent_disconnected':
                 reasonText = isWinner ? 'Your opponent left the game.' : 'You disconnected from the game.';
                 break;
-            case 'health_depleted':
-                reasonText = isWinner ? 'Your opponent ran out of health!' : 'You ran out of health.';
-                break;
             default:
                 reasonText = isWinner ? 'Victory!' : 'Defeat!';
         }
@@ -694,10 +691,6 @@ class MultiplayerNetworkManager {
                 <span class="stat-value">${totalRounds}</span>
             </div>
             ${myStats ? `
-            <div class="stat-item">
-                <span class="stat-label">Final Health</span>
-                <span class="stat-value">${myStats.stats?.health || 0}</span>
-            </div>
             <div class="stat-item">
                 <span class="stat-label">Final Gold</span>
                 <span class="stat-value">${myStats.stats?.gold || 0}</span>
