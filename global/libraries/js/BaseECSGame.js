@@ -58,29 +58,18 @@ class BaseECSGame {
             this.managers.push(managerInst);
         });
 
-        // Initialize SceneManager
+        // Initialize SceneManager (handles lazy system instantiation)
         this.sceneManager = new GUTS.SceneManager(this);
 
-        // Initialize all systems (they start disabled until scene loads)
-        this.gameConfig.systems?.forEach((systemType) => {
-            let params = { canvas: this.canvas };
-            const systemInst = new GUTS[systemType](this);
-            systemInst.enabled = false; // Systems disabled until scene loads
-            if(systemInst.init){
-                systemInst.init(params);
-            }
-            this.systems.push(systemInst);
-        });
+        // Store available system types for lazy instantiation
+        this.availableSystemTypes = this.gameConfig.systems || [];
+        // Map to track instantiated systems by name
+        this.systemsByName = new Map();
 
-        // Call postAllInit on managers and systems
+        // Call postAllInit on managers
         this.managers.forEach((manager) => {
             if(manager.postAllInit){
                 manager.postAllInit();
-            }
-        });
-        this.systems.forEach((system) => {
-            if(system.postAllInit){
-                system.postAllInit();
             }
         });
 
@@ -100,6 +89,54 @@ class BaseECSGame {
         } else {
             console.warn('[BaseECSGame] No initialScene configured in game config');
         }
+    }
+
+    /**
+     * Get or create a system by name (lazy instantiation)
+     * @param {string} systemName - The system class name
+     * @returns {Object|null} The system instance or null if not available
+     */
+    getOrCreateSystem(systemName) {
+        // Check if already instantiated
+        if (this.systemsByName.has(systemName)) {
+            return this.systemsByName.get(systemName);
+        }
+
+        // Check if this system type is available
+        if (!this.availableSystemTypes.includes(systemName)) {
+            console.warn(`[BaseECSGame] System '${systemName}' not in available systems list`);
+            return null;
+        }
+
+        // Check if the class exists
+        if (!GUTS[systemName]) {
+            console.error(`[BaseECSGame] System class '${systemName}' not found in GUTS`);
+            return null;
+        }
+
+        // Create the system
+        const params = { canvas: this.canvas };
+        const systemInst = new GUTS[systemName](this);
+        systemInst.enabled = false;
+
+        if (systemInst.init) {
+            systemInst.init(params);
+        }
+
+        // Add to tracking
+        this.systems.push(systemInst);
+        this.systemsByName.set(systemName, systemInst);
+
+        return systemInst;
+    }
+
+    /**
+     * Check if a system is available (defined in config)
+     * @param {string} systemName - The system class name
+     * @returns {boolean}
+     */
+    isSystemAvailable(systemName) {
+        return this.availableSystemTypes.includes(systemName);
     }
 
     /**
@@ -208,6 +245,12 @@ class BaseECSGame {
 
     createEntity(setId) {
         const id = setId || this.getEntityId();
+        // Log if overwriting existing entity - this is a bug!
+        if (this.entities.has(id)) {
+            const existingComponents = Array.from(this.entities.get(id));
+            console.error(`[BaseECSGame] createEntity called for existing entity ${id}! Existing components: ${existingComponents.join(', ')}`);
+            console.trace('createEntity called from:');
+        }
         this.entities.set(id, new Set());
         this._invalidateQueryCache();
         return id;

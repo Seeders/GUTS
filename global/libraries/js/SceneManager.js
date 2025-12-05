@@ -23,9 +23,12 @@ class SceneManager {
             return;
         }
 
+        // Get systems needed by new scene for smart cleanup
+        const newSceneSystems = new Set(sceneData.systems || []);
+
         // Unload current scene if one is loaded
         if (this.currentScene) {
-            await this.unloadCurrentScene();
+            await this.unloadCurrentScene(newSceneSystems);
         }
 
         this.currentScene = sceneData;
@@ -56,45 +59,97 @@ class SceneManager {
 
     /**
      * Unload the current scene
+     * @param {Set<string>} [keepSystems] - System names to keep (needed by next scene)
      * @returns {Promise<void>}
      */
-    async unloadCurrentScene() {
+    async unloadCurrentScene(keepSystems = new Set()) {
         if (!this.currentScene) return;
 
-        // Notify all systems that scene is unloading
-        this.notifySceneUnloading();
+        // Notify systems that are being unloaded (not kept)
+        this.notifySceneUnloading(keepSystems);
 
-        // Destroy all entities spawned by this scene
-        for (const entityId of this.spawnedEntityIds) {
-            if (this.game.entities.has(entityId)) {
-                this.game.destroyEntity(entityId);
-            }
+        // Destroy ALL entities - not just scene-spawned ones
+        // This includes dynamically created entities (units, projectiles, etc.)
+        const allEntityIds = Array.from(this.game.entities.keys());
+        for (const entityId of allEntityIds) {
+            this.game.destroyEntity(entityId);
         }
         this.spawnedEntityIds.clear();
 
-        // Disable all systems
-        for (const system of this.game.systems) {
-            system.enabled = false;
-        }
+        // Destroy systems that are NOT needed by the new scene
+        this.destroyUnneededSystems(keepSystems);
 
         this.currentScene = null;
         this.currentSceneName = null;
     }
 
     /**
+     * Destroy enabled systems that are not needed by the next scene
+     * @param {Set<string>} keepSystems - System names to keep
+     */
+    destroyUnneededSystems(keepSystems) {
+        const systemsToRemove = [];
+
+        for (const system of this.game.systems) {
+            if (system.enabled) {
+                const systemName = system.constructor.name;
+
+                // Skip systems that are needed in the next scene
+                if (keepSystems.has(systemName)) {
+                    continue;
+                }
+
+                // Call dispose if available
+                if (system.dispose) {
+                    system.dispose();
+                }
+
+                systemsToRemove.push({ system, systemName });
+            }
+        }
+
+        // Remove destroyed systems from arrays and maps
+        for (const { system, systemName } of systemsToRemove) {
+            const index = this.game.systems.indexOf(system);
+            if (index > -1) {
+                this.game.systems.splice(index, 1);
+            }
+            this.game.systemsByName.delete(systemName);
+
+            // Reset the postAllInit flag so it can be called again when reinstantiated
+            system._postAllInitCalled = false;
+        }
+    }
+
+    /**
      * Configure which systems are enabled based on scene configuration
+     * Uses lazy instantiation - only creates systems when a scene needs them
      * @param {Object} sceneData - The scene configuration
      */
     configureSystems(sceneData) {
-        const sceneSystems = new Set(sceneData.systems || []);
+        const sceneSystems = sceneData.systems || [];
 
+        // Disable all currently active systems first
         for (const system of this.game.systems) {
-            const systemName = system.constructor.name;
-            const isRequired = sceneSystems.has(systemName);
+            system.enabled = false;
+        }
 
-            // Enable or disable system based on scene requirements
-            system.enabled = isRequired;
-    
+        // Lazily instantiate and enable systems required by this scene
+        for (const systemName of sceneSystems) {
+            const system = this.game.getOrCreateSystem(systemName);
+            if (system) {
+                system.enabled = true;
+            }
+        }
+
+        // Call postAllInit on any newly created systems
+        // (systems that were just instantiated need this called)
+        for (const systemName of sceneSystems) {
+            const system = this.game.systemsByName.get(systemName);
+            if (system && system.postAllInit && !system._postAllInitCalled) {
+                system.postAllInit();
+                system._postAllInitCalled = true;
+            }
         }
     }
 
@@ -166,12 +221,18 @@ class SceneManager {
     }
 
     /**
-     * Notify all systems that the scene is being unloaded
+     * Notify systems that the scene is being unloaded
+     * Only notifies systems that are being destroyed (not kept for next scene)
+     * @param {Set<string>} [keepSystems] - System names that will be kept
      */
-    notifySceneUnloading() {
+    notifySceneUnloading(keepSystems = new Set()) {
         for (const system of this.game.systems) {
-            if (system.onSceneUnload) {
-                system.onSceneUnload();
+            if (system.enabled && system.onSceneUnload) {
+                const systemName = system.constructor.name;
+                // Only call onSceneUnload for systems being destroyed
+                if (!keepSystems.has(systemName)) {
+                    system.onSceneUnload();
+                }
             }
         }
     }
