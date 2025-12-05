@@ -143,10 +143,6 @@ class InputManager {
     setupDefaultShortcuts() {
         // Define keyboard shortcuts
         this.shortcuts.set('Escape', () => this.handleEscapeKey());
-        this.shortcuts.set('KeyH', () => this.showHelpModal());
-        this.shortcuts.set('KeyP', () => this.game.phaseSystem.pauseGame());
-        this.shortcuts.set('Space', () => this.handleSpaceKey());
-        this.shortcuts.set('F1', () => this.showHelpModal());
     }
     
     handleKeyDown(event) {
@@ -176,33 +172,7 @@ class InputManager {
     }
     
     handleEscapeKey() {
-        const pauseMenu = document.getElementById('pauseMenu');
-        
-        if (this.game.state.currentScreen === 'gameScreen') {
-            this.game.phaseSystem.pauseGame();
-        } else if (pauseMenu && pauseMenu.style.display === 'flex') {
-            this.game.phaseSystem.resumeGame();
-        }
         this.cancelSelectedUnit();
-    }
-    
-    handleSpaceKey() {
-        const state = this.game.state;
-        if (state.phase === 'placement') {
-            this.game.phaseSystem.toggleReady();
-        }
-    }
-    
-    handleSaveGame() {
-        // Trigger save game functionality
-        GUTS.NotificationSystem.show('Game saved!', 'success', 2000);
-    }
-    
-    selectUnitShortcut(index) {
-        const unitCards = document.querySelectorAll('.unit-card');
-        if (unitCards[index] && !unitCards[index].classList.contains('disabled')) {
-            unitCards[index].click();
-        }
     }
     
     handleContinuousKeys(event) {
@@ -226,9 +196,6 @@ class InputManager {
     }
     
     shouldPreventDefault(event) {
-        // Prevent certain browser shortcuts
-        if (event.ctrlKey && event.code === 'KeyS') return true;
-        if (event.code === 'F1') return true;
         return false;
     }
     
@@ -300,11 +267,7 @@ class InputManager {
             </div>
             <div class="settings-section">
                 <h4>Controls</h4>
-                <p><strong>ESC</strong> - Pause/Resume</p>
-                <p><strong>H</strong> - Help</p>
-                <p><strong>Space</strong> - Ready</p>
-                <p><strong>1-4</strong> - Select Units</p>
-                <p><strong>Ctrl+R</strong> - Restart</p>
+                <p><strong>ESC</strong> - Cancel/Close</p>
             </div>
         `;
         
@@ -331,44 +294,6 @@ class InputManager {
         }));
         
         GUTS.NotificationSystem.show('Settings saved!', 'success');
-    }
-    
-    showHelpModal() {
-        const helpContent = `
-            <h3>🎮 CONTROLS</h3>
-            <div class="help-section">
-                <p><strong>ESC</strong> - Pause/Resume game</p>
-                <p><strong>H or F1</strong> - Show this help</p>
-                <p><strong>P</strong> - Pause game</p>
-                <p><strong>Space</strong> - Ready for battle</p>
-                <p><strong>Ctrl+R</strong> - Restart game</p>
-                <p><strong>Ctrl+S</strong> - Save game</p>
-                <p><strong>1-4</strong> - Quick select units</p>
-                <p><strong>Tab</strong> - Cycle through units</p>
-                <p><strong>Right Click</strong> - Cancel selection</p>
-            </div>
-            
-            <h3>📋 HOW TO PLAY</h3>
-            <div class="help-section">
-                <p>1. <strong>Select units</strong> from the shop by clicking or using number keys</p>
-                <p>2. <strong>Place units</strong> on your side of the battlefield (left half)</p>
-                <p>3. <strong>Ready up</strong> when your army is prepared</p>
-                <p>4. <strong>Watch the battle</strong> unfold automatically</p>
-                <p>5. <strong>Earn gold</strong> from victories to build stronger armies</p>
-            </div>
-            
-            <h3>💡 STRATEGY TIPS</h3>
-            <div class="help-section">
-                <p>• Balance offense and defense in your army</p>
-                <p>• Position tanks in front to absorb damage</p>
-                <p>• Place ranged units behind melee fighters</p>
-                <p>• Spread units to avoid area damage</p>
-                <p>• Save some gold for emergency purchases</p>
-                <p>• Adapt your strategy based on enemy composition</p>
-            </div>
-        `;
-        
-        this.showModal('Game Help', helpContent);
     }
     
     showModal(title, content, onClose = null) {
