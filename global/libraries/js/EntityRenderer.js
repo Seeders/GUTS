@@ -449,6 +449,8 @@ class EntityRenderer {
         const batch = {
             instancedMesh,
             spriteSheetTexture,
+            textureWidth: spriteSheetTexture.image?.width || 0,
+            textureHeight: spriteSheetTexture.image?.height || 0,
             entityMap: new Map(),
             count: 0,
             capacity,

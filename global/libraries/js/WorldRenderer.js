@@ -185,7 +185,9 @@ class WorldRenderer {
         this.controls.target.set(lookAtPos.x, lookAtPos.y, lookAtPos.z);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
-        this.controls.screenSpacePanning = false;
+        this.controls.screenSpacePanning = true; // Pan relative to screen/camera orientation
+        this.controls.enableZoom = false; // Disable default zoom, we'll handle it manually
+        this.controls.panSpeed = 3; // Increase pan speed for right-click drag
 
         // Custom rotation variables
         this.ctrlPressed = false;
@@ -202,8 +204,14 @@ class WorldRenderer {
         this.cameraRotationY = Math.atan2(direction.x, direction.z);
         this.cameraRotationX = Math.asin(-direction.y);
 
-        // Constrain target Y position to prevent near-plane clipping through terrain
+        // Minimum height above terrain
+        this.minCameraY = 10;
+
+        // Constrain camera and target Y position to prevent going under terrain
         this.controls.addEventListener('change', () => {
+            if (this.camera.position.y < this.minCameraY) {
+                this.camera.position.y = this.minCameraY;
+            }
             if (this.controls.target.y < -100) {
                 this.controls.target.y = -100;
             }
@@ -265,15 +273,37 @@ class WorldRenderer {
             }
         };
 
+        const handleWheel = (event) => {
+            event.preventDefault();
+
+            // Get camera's forward direction
+            const direction = new THREE.Vector3();
+            this.camera.getWorldDirection(direction);
+
+            // Move camera forward/backward based on wheel delta
+            const moveSpeed = 50;
+            const delta = event.deltaY > 0 ? -moveSpeed : moveSpeed;
+
+            // Check if movement would put camera under terrain
+            const newY = this.camera.position.y + direction.y * delta;
+            if (newY < this.minCameraY) {
+                return; // Don't move if it would go under terrain
+            }
+
+            this.camera.position.addScaledVector(direction, delta);
+            this.controls.target.addScaledVector(direction, delta);
+        };
+
         // Store event handlers for cleanup
         this.controlsKeyHandlers = { handleKeyDown, handleKeyUp };
-        this.controlsMouseHandlers = { handleMouseDown, handleMouseMove, handleMouseUp };
+        this.controlsMouseHandlers = { handleMouseDown, handleMouseMove, handleMouseUp, handleWheel };
 
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
         this.renderer.domElement.addEventListener('mousedown', handleMouseDown);
         this.renderer.domElement.addEventListener('mousemove', handleMouseMove);
         this.renderer.domElement.addEventListener('mouseup', handleMouseUp);
+        this.renderer.domElement.addEventListener('wheel', handleWheel, { passive: false });
 
         this.controls.update();
     }
@@ -284,6 +314,9 @@ class WorldRenderer {
     updateCameraRotation() {
         if (!this.camera) return;
 
+        // Preserve the current distance to target
+        const currentDistance = this.camera.position.distanceTo(this.controls.target);
+
         // Calculate look direction based on rotation angles
         const direction = new THREE.Vector3(
             Math.sin(this.cameraRotationY) * Math.cos(this.cameraRotationX),
@@ -291,9 +324,8 @@ class WorldRenderer {
             Math.cos(this.cameraRotationY) * Math.cos(this.cameraRotationX)
         );
 
-        // Update controls target to be in front of camera
-        const lookDistance = 100;
-        this.controls.target.copy(this.camera.position).add(direction.multiplyScalar(lookDistance));
+        // Update controls target to be in front of camera at the same distance
+        this.controls.target.copy(this.camera.position).add(direction.multiplyScalar(currentDistance));
 
         // Make camera look at the target
         this.camera.lookAt(this.controls.target);
@@ -1234,7 +1266,8 @@ class WorldRenderer {
 
             // Cliffs sit 2 levels below tile height
             const mapHeight = this.terrainDataManager.tileMap.heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
-            const cliffBottomHeight = (mapHeight - 2) * heightStep;
+            const cliffOffset = 1.85;
+            const cliffBottomHeight = (mapHeight - 2) * heightStep - cliffOffset;
 
             const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
 

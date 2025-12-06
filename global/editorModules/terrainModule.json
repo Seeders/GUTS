@@ -3,6 +3,8 @@
   "container": "level-editor-container",
   "libraries": [
     "threejs",
+    "BaseECSGame",
+    "TerrainEditorContext",
     "ShapeFactory",
     "ModelManager",
     "CoordinateTranslator",
@@ -12,14 +14,22 @@
     "TileMap",
     "GE_GroupManager",
     "GLTFLoader",
-    "TerrainMapEditor",
     "TerrainDataManager",
     "WorldRenderer",
     "RaycastHelper",
     "PlacementPreview",
     "three_MeshBVH",
     "EntityRenderer",
-    "EnvironmentObjectSpawner"
+    "EnvironmentObjectSpawner",
+    "GameServices",
+    "ComponentGenerator",
+    "TerrainMapEditor"
+  ],
+  "systems": [
+    "TerrainSystem",
+    "WorldSystem",
+    "RenderSystem",
+    "AnimationSystem"
   ],
   "propertyName": "tileMap",
   "interface": "terrainEditor",

@@ -3,17 +3,17 @@
  *
  * Provides consistent environment object spawning for:
  * - TerrainSystem: Creates ECS entities with gameplay components
- * - TerrainMapEditor: Renders objects visually using EntityRenderer
+ * - TerrainMapEditor: Creates ECS entities with systems running (via TerrainEditorContext)
  */
 class EnvironmentObjectSpawner {
     constructor(options = {}) {
-        this.mode = options.mode; // 'runtime' or 'editor'
+        this.mode = options.mode; // 'runtime' or 'editorContext'
 
         // Runtime mode dependencies (TerrainSystem)
         this.game = options.game;
 
-        // Editor mode dependencies (TerrainMapEditor)
-        this.entityRenderer = options.entityRenderer;
+        // EditorContext mode dependencies (TerrainEditorContext with ECS systems)
+        this.editorContext = options.editorContext;
         this.terrainDataManager = options.terrainDataManager;
 
         // Common dependencies
@@ -21,7 +21,6 @@ class EnvironmentObjectSpawner {
 
         // Track spawned entities for cleanup
         this.spawnedEntities = new Set();
-
     }
 
     /**
@@ -73,8 +72,6 @@ class EnvironmentObjectSpawner {
             return;
         }
 
-        
-
         // Clear existing spawned objects
         this.clearWorldObjects();
 
@@ -86,7 +83,6 @@ class EnvironmentObjectSpawner {
         }
 
         await Promise.all(spawnPromises);
-
     }
 
     /**
@@ -113,9 +109,9 @@ class EnvironmentObjectSpawner {
         if (this.mode === 'runtime') {
             // Runtime mode: Create ECS entity with components
             this.spawnRuntimeEntity(worldObj, unitType, worldX, height, worldZ, rotation, scale);
-        } else if (this.mode === 'editor') {
-            // Editor mode: Render using EntityRenderer
-            await this.spawnEditorEntity(worldObj, unitType, worldX, height, worldZ, rotation, scale);
+        } else if (this.mode === 'editorContext') {
+            // EditorContext mode: Create ECS entities with systems running
+            await this.spawnEditorContextEntity(worldObj, terrainDataManager);
         }
     }
 
@@ -127,8 +123,6 @@ class EnvironmentObjectSpawner {
             console.error('[EnvironmentObjectSpawner] Game instance required for runtime mode');
             return;
         }
-
-        const Components = this.game.gameManager.call('getComponents');
 
         // Create entity with unique ID
         const entityId = this.game.createEntity(`env_${worldObj.type}_${worldObj.gridX}_${worldObj.gridZ}`);
@@ -162,28 +156,19 @@ class EnvironmentObjectSpawner {
     }
 
     /**
-     * Spawn world object in editor mode (visual rendering)
+     * Spawn world object in editorContext mode (ECS with systems)
+     * Creates proper ECS entities so AnimationSystem can manage animations
      */
-    async spawnEditorEntity(worldObj, unitType, worldX, height, worldZ, rotation, scale) {
-        if (!this.entityRenderer) {
-            console.error('[EnvironmentObjectSpawner] EntityRenderer required for editor mode');
+    async spawnEditorContextEntity(worldObj, terrainDataManager) {
+        if (!this.editorContext) {
+            console.error('[EnvironmentObjectSpawner] EditorContext required for editorContext mode');
             return;
         }
 
-        // Create unique entity ID for editor
-        const entityId = `env_${worldObj.type}_${worldObj.gridX}_${worldObj.gridZ}`;
+        // Use the editorContext's spawnWorldObject method which creates ECS entities
+        const entityId = await this.editorContext.spawnWorldObject(worldObj, terrainDataManager);
 
-        // Spawn using EntityRenderer
-        const spawned = await this.entityRenderer.spawnEntity(entityId, {
-            collection: 'worldObjects',
-            type: worldObj.type,
-            position: { x: worldX, y: height, z: worldZ },
-            rotation: rotation,
-            scale: scale,
-            facing: rotation
-        });
-
-        if (spawned) {
+        if (entityId) {
             this.spawnedEntities.add(entityId);
         }
     }
@@ -196,12 +181,11 @@ class EnvironmentObjectSpawner {
             // Runtime mode: Destroy ECS entities
             for (const entityId of this.spawnedEntities) {
                 this.game.destroyEntity(entityId);
-            
             }
-        } else if (this.mode === 'editor' && this.entityRenderer) {
-            // Editor mode: Remove from EntityRenderer
+        } else if (this.mode === 'editorContext' && this.editorContext) {
+            // EditorContext mode: Remove ECS entities via context
             for (const entityId of this.spawnedEntities) {
-                this.entityRenderer.removeEntity(entityId);
+                this.editorContext.removeWorldObject(entityId);
             }
         }
 
@@ -221,8 +205,17 @@ class EnvironmentObjectSpawner {
     destroy() {
         this.clearWorldObjects();
         this.game = null;
-        this.entityRenderer = null;
+        this.editorContext = null;
         this.terrainDataManager = null;
         this.collections = null;
     }
+}
+
+// Export for use in both browser and Node.js environments
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = EnvironmentObjectSpawner;
+}
+
+if (typeof GUTS !== 'undefined') {
+    GUTS.EnvironmentObjectSpawner = EnvironmentObjectSpawner;
 }
