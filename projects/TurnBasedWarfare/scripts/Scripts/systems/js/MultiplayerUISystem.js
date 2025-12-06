@@ -37,15 +37,13 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
                 </div>
             </div>
 
-            <div id="multiplayerNotifications" style="position: fixed; top: 50px; left: 50%; transform: translateX(-50%); z-index: 2000;">
+            <div id="multiplayerNotifications">
                 <!-- Notifications appear here -->
             </div>
 
             <!-- Game Menu Button -->
-            <button id="gameMenuBtn" style="display: none; position: fixed; top: 15px; right: 15px; z-index: 1500; background: rgba(50, 50, 50, 0.8); border: 2px solid #666; border-radius: 8px; width: 48px; height: 48px; cursor: pointer; transition: all 0.2s;"
-                onmouseover="this.style.background='rgba(70, 70, 70, 0.9)'; this.style.borderColor='#888';"
-                onmouseout="this.style.background='rgba(50, 50, 50, 0.8)'; this.style.borderColor='#666';">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; margin: auto;">
+            <button id="gameMenuBtn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="1"></circle>
                     <circle cx="12" cy="5" r="1"></circle>
                     <circle cx="12" cy="19" r="1"></circle>
@@ -53,32 +51,24 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
             </button>
 
             <!-- Game Menu Modal -->
-            <div id="gameMenuModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 3000; justify-content: center; align-items: center;">
-                <div style="background: #1a1a1a; padding: 2rem; border: 2px solid #444; border-radius: 10px; color: white; min-width: 400px; max-width: 500px;">
-                    <h2 style="text-align: center; margin-bottom: 2rem; color: #fff;">Game Menu</h2>
+            <div id="gameMenuModal" class="modal">
+                <div class="game-menu-content">
+                    <h2>Game Menu</h2>
 
-                    <div style="display: flex; flex-direction: column; gap: 1rem;">
-                        <button id="gameMenuSaveBtn" style="padding: 1rem; background: #2d6a4f; border: none; color: white; cursor: pointer; border-radius: 5px; font-size: 1.1rem; font-weight: bold; transition: background 0.2s;"
-                            onmouseover="this.style.background='#40916c';"
-                            onmouseout="this.style.background='#2d6a4f';">
+                    <div class="game-menu-buttons">
+                        <button id="gameMenuSaveBtn" class="game-menu-btn save">
                             Save Game
                         </button>
 
-                        <button id="gameMenuOptionsBtn" style="padding: 1rem; background: #444; border: none; color: white; cursor: pointer; border-radius: 5px; font-size: 1.1rem; font-weight: bold; transition: background 0.2s;"
-                            onmouseover="this.style.background='#555';"
-                            onmouseout="this.style.background='#444';">
+                        <button id="gameMenuOptionsBtn" class="game-menu-btn options">
                             Options
                         </button>
 
-                        <button id="gameMenuLeaveBtn" style="padding: 1rem; background: #cc3333; border: none; color: white; cursor: pointer; border-radius: 5px; font-size: 1.1rem; font-weight: bold; transition: background 0.2s;"
-                            onmouseover="this.style.background='#dd4444';"
-                            onmouseout="this.style.background='#cc3333';">
+                        <button id="gameMenuLeaveBtn" class="game-menu-btn leave">
                             Leave Game
                         </button>
 
-                        <button id="gameMenuCancelBtn" style="padding: 1rem; background: #666; border: none; color: white; cursor: pointer; border-radius: 5px; font-size: 1.1rem; transition: background 0.2s;"
-                            onmouseover="this.style.background='#777';"
-                            onmouseout="this.style.background='#666';">
+                        <button id="gameMenuCancelBtn" class="game-menu-btn cancel">
                             Cancel
                         </button>
                     </div>
