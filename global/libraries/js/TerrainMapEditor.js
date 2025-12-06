@@ -1666,73 +1666,72 @@ class TerrainMapEditor {
     }
 
     /**
-     * Initialize 3D rendering system
+     * Initialize 3D rendering system using TerrainEditorContext
      */
     async init3DRendering() {
         const collections = this.gameEditor.getCollections();
         const gameConfig = collections.configs.game;
 
-        // Initialize TerrainDataManager
-        if (!this.terrainDataManager) {
-            this.terrainDataManager = new GUTS.TerrainDataManager();
-        }
+        // Find the level name by looking up this.objectData in collections
+        const levelName = Object.keys(collections.levels || {}).find(
+            key => collections.levels[key] === this.objectData
+        );
 
-        // Create a level structure for the editor
-        const editorLevel = {
+        // Create and initialize the editor context with ECS systems
+        this.editorContext = new GUTS.TerrainEditorContext(this.gameEditor, this.canvasEl);
+
+        // Set terrainTileMapper on context so WorldSystem can use it
+        this.editorContext.terrainTileMapper = this.terrainTileMapper;
+
+        await this.editorContext.initialize(this.config.systems || []);
+
+        // Create terrain entity - systems will find it and initialize
+        const terrainEntityId = this.editorContext.createEntity('terrain_entity');
+        this.editorContext.addComponent(terrainEntityId, 'terrain', {
+            level: levelName,
             world: this.objectData.world,
-            tileMap: this.tileMap
-        };
+            shadowsEnabled: true,
+            fogEnabled: false,
+            grassEnabled: false,
+            cliffsEnabled: true
+        });
 
-        // Initialize terrain data with direct level data (no need to add to collections)
-        this.terrainDataManager.init(collections, gameConfig, editorLevel);
+        // Trigger systems to process the terrain entity
+        await this.editorContext.loadScene({});
 
-        // Initialize WorldRenderer
-        if (!this.worldRenderer) {
-            this.worldRenderer = new GUTS.WorldRenderer({
-                shadowsEnabled: true,
-                fogEnabled: false,
-                enablePostProcessing: false,
-                grassEnabled: false,
-                liquidsEnabledurfaces: true,
-                cliffsEnabled: true
-            });
+        // Get references from systems for editor functionality
+        this.worldRenderer = this.editorContext.worldSystem?.worldRenderer;
+        this.entityRenderer = this.editorContext.renderSystem?.entityRenderer;
+        this.terrainDataManager = this.editorContext.terrainSystem?.terrainDataManager;
+        this.environmentObjectSpawner = this.editorContext.terrainSystem?.environmentObjectSpawner;
+
+        // Replace camera with perspective camera for editor
+        if (this.worldRenderer) {
+            const terrainSize = this.terrainDataManager?.terrainSize || 1536;
+            const canvas = this.canvasEl;
+            const width = canvas.clientWidth || window.innerWidth;
+            const height = canvas.clientHeight || window.innerHeight;
+
+            // Map is centered at 0,0 - so corners are at +/- terrainSize/2
+            const halfSize = terrainSize / 2;
+            const targetPos = { x: 0, y: 0, z: 0 };
+
+            // Position camera in SW corner (-X, +Z) looking NE toward center
+            const cameraHeight = halfSize;
+
+            const camera = new THREE.PerspectiveCamera(60, width / height, 1, 30000);
+            camera.position.set(-halfSize, cameraHeight, halfSize);
+            camera.lookAt(0, 0, 0);
+
+            // Replace the camera in WorldRenderer
+            this.worldRenderer.camera = camera;
+
+            // Setup orbit controls
+            this.worldRenderer.setupOrbitControls(targetPos);
+
+            // Force initial camera rotation sync
+            this.worldRenderer.updateCameraRotation();
         }
-
-        // Get world and camera settings
-        const world = collections.worlds?.[this.objectData.world];
-        const cameraSettings = {
-            position: { x: 0, y: 1600, z: 600 },
-            lookAt: { x: 0, y: 0, z: 0 },
-            zoom: 1,
-            near: -1,  // Position near plane far enough to never intersect terrain mesh
-            far: 30000
-        };
-
-        // Initialize Three.js scene
-        this.worldRenderer.initializeThreeJS(this.canvasEl, cameraSettings, true);
-
-        // Set background
-        this.worldRenderer.setBackgroundColor(world?.backgroundColor || '#87CEEB');
-
-        // Setup lighting
-        this.worldRenderer.setupLighting(
-            world?.lighting,
-            world?.shadows,
-            this.terrainDataManager.extendedSize
-        );
-
-        // Setup ground with terrain data
-        this.worldRenderer.setupGround(
-            this.terrainDataManager,
-            this.terrainTileMapper,
-            this.terrainDataManager.heightMapSettings
-        );
-
-        // Render terrain
-        this.worldRenderer.renderTerrain();
-
-        // Create extension planes
-        this.worldRenderer.createExtensionPlanes();
 
         // Recreate RaycastHelper to ensure fresh camera/scene references
         this.raycastHelper = new GUTS.RaycastHelper(
@@ -1758,70 +1757,30 @@ class TerrainMapEditor {
             elevationOffset: 5.0 // Higher above terrain for visibility
         });
 
-        // Load models if not already loaded
-        if (!this.gameEditor.modelManager.assetsLoaded) {
-            console.log('[TerrainMapEditor] Loading models for EntityRenderer...');
-            for (let objectType in collections) {
-                await this.gameEditor.modelManager.loadModels(objectType, collections[objectType]);
-            }
-        }
-
-        // Initialize EntityRenderer for spawning cliffs and other entities
-        this.entityRenderer = new GUTS.EntityRenderer({
-            scene: this.worldRenderer.getScene(),
-            collections: collections,
-            projectName: this.gameEditor.getCurrentProject(),
-            modelManager: this.gameEditor.modelManager,
-            getPalette: () => this.gameEditor.getPalette()
-        });
-
-        // Initialize EnvironmentObjectSpawner in editor mode
-        this.environmentObjectSpawner = new GUTS.EnvironmentObjectSpawner({
-            mode: 'editor',
-            entityRenderer: this.entityRenderer,
-            terrainDataManager: this.terrainDataManager,
-            collections: collections
-        });
-
-        // Spawn cliff entities based on height map
-        await this.spawnCliffEntities();
-
-        // Spawn environment objects (trees, rocks, etc.)
-        await this.spawnWorldObjects();
-
-        // Start render loop
-        this.start3DRenderLoop();
+        // Start render loop with ECS system updates
+        this.editorContext.startRenderLoop();
 
         // Start raycast interval for mouse position updates
         this.startRaycastInterval();
 
-        console.log('3D terrain editor initialized');
+        console.log('3D terrain editor initialized with ECS systems');
     }
 
     /**
-     * Start the 3D render loop
+     * Start the 3D render loop with ECS system updates
      */
     start3DRenderLoop() {
-        const render = () => {
-            if (!this.worldRenderer) return;
-
-            const deltaTime = this.worldRenderer.clock.getDelta();
-            this.worldRenderer.update(deltaTime);
-            this.worldRenderer.render();
-
-            this.animationFrameId = requestAnimationFrame(render);
-        };
-
-        render();
+        if (this.editorContext) {
+            this.editorContext.startRenderLoop();
+        }
     }
 
     /**
      * Stop the 3D render loop
      */
     stop3DRenderLoop() {
-        if (this.animationFrameId) {
-            cancelAnimationFrame(this.animationFrameId);
-            this.animationFrameId = null;
+        if (this.editorContext) {
+            this.editorContext.stopRenderLoop();
         }
         // Also stop raycast interval
         this.stopRaycastInterval();

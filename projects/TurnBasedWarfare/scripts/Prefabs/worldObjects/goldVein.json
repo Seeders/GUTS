@@ -64,5 +64,7 @@
   "placementGridHeight": 2,
   "snapToGrid": true,
   "height": 100,
-  "impassable": false
+  "impassable": false,
+  "spriteScale": 96,
+  "spriteAnimationSet": "goldvein"
 }

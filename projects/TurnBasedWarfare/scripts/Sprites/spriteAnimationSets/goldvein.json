@@ -1,0 +1,15 @@
+{
+  "title": "Goldvein",
+  "animationCollection": "goldveinSpritesAnimations",
+  "spriteSheet": "Sprites/goldveinSprites/goldveinSheet.png",
+  "idleSpriteAnimations": [
+    "goldveinIdleDown",
+    "goldveinIdleDownLeft",
+    "goldveinIdleLeft",
+    "goldveinIdleUpLeft",
+    "goldveinIdleUp",
+    "goldveinIdleUpRight",
+    "goldveinIdleRight",
+    "goldveinIdleDownRight"
+  ]
+}
