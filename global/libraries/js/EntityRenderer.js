@@ -297,6 +297,14 @@ class EntityRenderer {
                 geometry = child.geometry;
                 material = child.material.clone();
 
+                // For cliffs, compute smooth vertex normals to remove hard edge lines
+                if (collection === 'cliffs') {
+                    geometry = geometry.clone();
+                    geometry.computeVertexNormals();
+                    material.flatShading = false;
+                    material.needsUpdate = true;
+                }
+
                 // Set SRGB color space for textures
                 if (material.map) {
                     material.map.colorSpace = THREE.SRGBColorSpace;
