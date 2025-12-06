@@ -20,6 +20,33 @@ class VisionSystem extends GUTS.BaseSystem {
 
     init() {
         this.game.gameManager.register('hasLineOfSight', this.hasLineOfSight.bind(this));
+        this.game.gameManager.register('canSeePosition', this.canSeePosition.bind(this));
+    }
+
+    /**
+     * Fast visibility check - only checks height levels, not obstacles
+     * Use this for targeting checks where full LOS is too expensive
+     * Returns false if target is on a higher elevation (e.g., up a cliff)
+     * @param {Object} from - Source position {x, z}
+     * @param {Object} to - Target position {x, z}
+     * @returns {boolean} - Can the source see the target based on elevation
+     */
+    canSeePosition(from, to) {
+        const gridSize = this._getGridSize();
+        const terrainSize = this._getTerrainSize();
+
+        // Convert world positions to grid coordinates
+        const fromGridX = Math.floor((from.x + terrainSize / 2) / gridSize);
+        const fromGridZ = Math.floor((from.z + terrainSize / 2) / gridSize);
+        const toGridX = Math.floor((to.x + terrainSize / 2) / gridSize);
+        const toGridZ = Math.floor((to.z + terrainSize / 2) / gridSize);
+
+        // Get height levels for both positions
+        const fromHeightLevel = this.game.gameManager.call("getHeightLevelAtGridPosition", fromGridX, fromGridZ);
+        const toHeightLevel = this.game.gameManager.call("getHeightLevelAtGridPosition", toGridX, toGridZ);
+
+        // Cannot see up to tiles with higher heightmap values (e.g., up a cliff)
+        return toHeightLevel <= fromHeightLevel;
     }
 
     /**

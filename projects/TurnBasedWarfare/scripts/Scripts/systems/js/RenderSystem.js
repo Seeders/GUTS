@@ -152,6 +152,19 @@ class RenderSystem extends GUTS.BaseSystem {
         // Mark as not spawned so it will be re-spawned with new model on next update
         this.spawnedEntities.delete(entityId);
 
+        // Clear position cache
+        if (this._entityPositionCache) {
+            this._entityPositionCache.delete(entityId);
+        }
+    }
+
+    /**
+     * Called when an entity is destroyed - clean up visual representation
+     */
+    entityDestroyed(entityId) {
+        if (this.spawnedEntities.has(entityId)) {
+            this.removeInstance(entityId);
+        }
     }
     /**
      * Get batch information for animation system
@@ -228,12 +241,8 @@ class RenderSystem extends GUTS.BaseSystem {
             const isAlwaysVisible = unitType.collection === "worldObjects" || unitType.collection === "cliffs";
 
             if (!isAlwaysVisible && !isVisible) {
-                // Entity not visible in fog of war - but still need to spawn it (hidden)
-                // so it's ready when it becomes visible. Only skip UPDATE, not spawn.
-                if (this.spawnedEntities.has(entityId)) {
-                    continue; // Already spawned, just not visible - skip update
-                }
-                // Fall through to spawn the entity even if not visible
+                // Entity not currently visible - skip entirely (don't spawn or update)
+                continue;
             }
 
             // Validate renderable data
@@ -242,8 +251,11 @@ class RenderSystem extends GUTS.BaseSystem {
                 continue;
             }
 
-            // Check if entity already spawned
+            // Check if entity already spawned or currently spawning
             if (!this.spawnedEntities.has(entityId)) {
+                // Mark as spawned immediately to prevent race condition with async spawn
+                this.spawnedEntities.add(entityId);
+
                 // Spawn new entity
                 await this.spawnEntity(entityId, {
                     collection: renderable.objectType,
@@ -302,7 +314,7 @@ class RenderSystem extends GUTS.BaseSystem {
     async spawnEntity(entityId, data) {
         const spawned = await this.entityRenderer.spawnEntity(entityId, data);
         if (spawned) {
-            this.spawnedEntities.add(entityId);
+            // Note: spawnedEntities is already updated by caller to prevent race conditions
             this._stats.entitiesSpawned++;
 
             // Trigger billboard spawn event for AnimationSystem

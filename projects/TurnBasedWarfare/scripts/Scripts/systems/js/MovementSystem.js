@@ -71,7 +71,7 @@ class MovementSystem extends GUTS.BaseSystem {
             const collision = this.game.getComponent(entityId, "collision");
             const aiState = this.game.getComponent(entityId, "aiState");
             const projectile = this.game.getComponent(entityId, "projectile");
-            
+
             if (!projectile) {
                 const unitRadius = this.getUnitRadius(collision);
 
@@ -135,11 +135,15 @@ class MovementSystem extends GUTS.BaseSystem {
             pos.z += vel.vz * this.game.state.deltaTime * this.POSITION_UPDATE_MULTIPLIER;
       
             if(!projectile){
-                this.handleGroundInteraction(pos, vel);
+                // Skip ground clamping for leaping units - they need to arc through the air
+                const leaping = this.game.getComponent(entityId, "leaping");
+                if (!(leaping && leaping.isLeaping)) {
+                    this.handleGroundInteraction(pos, vel);
+                }
                 if(!vel.anchored){
                     this.enforceBoundaries(pos, collision);
                 }
-                 
+
                 this.game.triggerEvent("onEntityPositionUpdated", entityId);
             }
         });
@@ -705,6 +709,10 @@ class MovementSystem extends GUTS.BaseSystem {
     }
     
     applyUnitMovementWithSmoothing(entityId, data) {
+        // Skip leaping units - their velocity is controlled by the ability
+        const leaping = this.game.getComponent(entityId, "leaping");
+        if (leaping && leaping.isLeaping) return;
+
         const { vel, desiredVelocity, separationForce, avoidanceForce, isAnchored } = data;
 
         if (isAnchored) {

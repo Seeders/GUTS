@@ -94,6 +94,10 @@ class BehaviorSystem extends GUTS.BaseSystem {
         // Skip dead/dying units - they shouldn't run behavior trees
         if (deathState && deathState.isDying) return;
 
+        // Skip units that are leaping - their movement is controlled by the ability
+        const leaping = this.game.getComponent(entityId, "leaping");
+        if (leaping && leaping.isLeaping) return;
+
         if (!aiState || !unitType) return;
 
         const rootTree = this.processor.getNodeByType(aiState.rootBehaviorTree);

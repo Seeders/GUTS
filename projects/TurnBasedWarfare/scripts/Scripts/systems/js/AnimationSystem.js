@@ -459,6 +459,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
                 // Set attack animation (single-play, not looping)
                 // When animation completes, return to idle
+                // Use minTime as customDuration to pace the animation (e.g., for leap slam)
                 this.game.gameManager.call(
                     'setBillboardAnimation',
                     entityId,
@@ -467,7 +468,8 @@ class AnimationSystem extends GUTS.BaseSystem {
                     (completedEntityId) => {
                         // Return to idle animation after attack finishes
                         this.game.gameManager.call('setBillboardAnimation', completedEntityId, 'idle', true);
-                    }
+                    },
+                    minTime > 0 ? minTime : null  // Pass minTime as custom duration if provided
                 );
                 return true;
             }
@@ -704,8 +706,9 @@ class AnimationSystem extends GUTS.BaseSystem {
      * @param {string} animationType - Animation type (idle, walk, attack, death, celebrate)
      * @param {boolean} loop - Whether the animation should loop (default: true)
      * @param {function} onComplete - Optional callback when animation finishes (for non-looping animations)
+     * @param {number} customDuration - Optional custom duration to pace the animation (in seconds)
      */
-    setBillboardAnimation(entityId, animationType, loop = true, onComplete = null) {
+    setBillboardAnimation(entityId, animationType, loop = true, onComplete = null, customDuration = null) {
         const animData = this.game.getComponent(entityId, "billboardAnimation");
         if (!animData) {
             console.warn(`[AnimationSystem] No animation state for billboard entity ${entityId}`);
@@ -735,6 +738,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         animData.frameTime = 0;
         animData.loopAnimation = loop;
         animData.onAnimationComplete = onComplete;
+        animData.customDuration = customDuration; // Custom duration override for pacing
 
         // Tell EntityRenderer to apply the first frame
         const entityRenderer = this.game.gameManager.call('getEntityRenderer');
@@ -823,7 +827,10 @@ class AnimationSystem extends GUTS.BaseSystem {
 
             // Calculate frame duration
             let frameDuration;
-            if (directionData.duration !== null && directionData.duration > 0) {
+            if (animState.customDuration !== null && animState.customDuration > 0) {
+                // Use custom duration override (e.g., for leap slam to pace animation to ability duration)
+                frameDuration = animState.customDuration / frames.length;
+            } else if (directionData.duration !== null && directionData.duration > 0) {
                 frameDuration = directionData.duration / frames.length;
             } else {
                 const frameRate = frameRates[animState.currentAnimationType] || defaultFrameRate;

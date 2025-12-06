@@ -129,6 +129,7 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
 
                     const textureId = worldObjDef.renderTexture;
                     const spriteScale = worldObjDef.spriteScale || 32;
+                    const offsetY = spriteScale / 4;
 
                     // Add to placements
                     if (!detailPlacements.has(textureId)) {
@@ -137,7 +138,7 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
 
                     detailPlacements.get(textureId).push({
                         x: tileWorldX + offsetX,
-                        y: worldY,
+                        y: worldY + offsetY,
                         z: tileWorldZ + offsetZ,
                         scale: spriteScale
                     });

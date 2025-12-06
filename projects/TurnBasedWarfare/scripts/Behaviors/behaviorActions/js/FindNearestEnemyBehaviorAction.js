@@ -46,9 +46,11 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const nearbyEntityIds = game.gameManager.call('getNearbyUnits', pos, range, entityId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
-        let nearest = null;
-        let nearestDistance = Infinity;
+        const unitType = game.getComponent(entityId, 'unitType');
+        const hasLOSCheck = game.gameManager.has('hasLineOfSight');
 
+        // First pass: collect valid enemies with their positions and directions
+        const enemies = [];
         for (const targetId of nearbyEntityIds) {
             const targetTeam = game.getComponent(targetId, 'team');
             if (!targetTeam || targetTeam.team === team.team) continue;
@@ -67,9 +69,99 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             const dz = targetPos.z - pos.z;
             const distance = Math.sqrt(dx * dx + dz * dz);
 
-            if (distance < nearestDistance) {
-                nearestDistance = distance;
-                nearest = { id: targetId, distance };
+            enemies.push({ id: targetId, pos: targetPos, distance, dx, dz });
+        }
+
+        if (enemies.length === 0) return null;
+
+        // If no LOS check available, just return nearest
+        if (!hasLOSCheck) {
+            enemies.sort((a, b) => a.distance - b.distance);
+            return { id: enemies[0].id, distance: enemies[0].distance };
+        }
+
+        // Second pass: group enemies by direction sector, raycast once per direction
+        const NUM_SECTORS = 16;
+        const sectorAngle = (Math.PI * 2) / NUM_SECTORS;
+
+        // Group enemies by sector
+        const sectors = new Array(NUM_SECTORS);
+        for (let i = 0; i < NUM_SECTORS; i++) {
+            sectors[i] = { enemies: [], maxDistance: 0, raycastDone: false, visibleDistance: 0 };
+        }
+
+        for (const enemy of enemies) {
+            const angle = Math.atan2(enemy.dz, enemy.dx);
+            const normalizedAngle = angle < 0 ? angle + Math.PI * 2 : angle;
+            const sectorIndex = Math.floor(normalizedAngle / sectorAngle) % NUM_SECTORS;
+
+            sectors[sectorIndex].enemies.push(enemy);
+            if (enemy.distance > sectors[sectorIndex].maxDistance) {
+                sectors[sectorIndex].maxDistance = enemy.distance;
+            }
+        }
+
+        // Raycast only for sectors that have enemies
+        for (let i = 0; i < NUM_SECTORS; i++) {
+            const sector = sectors[i];
+            if (sector.enemies.length === 0) continue;
+
+            // Raycast in this sector's direction to the max enemy distance
+            const sectorCenterAngle = (i + 0.5) * sectorAngle;
+            const dirX = Math.cos(sectorCenterAngle);
+            const dirZ = Math.sin(sectorCenterAngle);
+            const rayDist = sector.maxDistance;
+
+            const targetX = pos.x + dirX * rayDist;
+            const targetZ = pos.z + dirZ * rayDist;
+
+            const hasLOS = game.gameManager.call('hasLineOfSight',
+                { x: pos.x, z: pos.z },
+                { x: targetX, z: targetZ },
+                unitType,
+                entityId
+            );
+
+            if (hasLOS) {
+                // Full visibility to max distance
+                sector.visibleDistance = rayDist;
+            } else {
+                // Binary search to find visible distance (4 iterations)
+                let minDist = 0;
+                let maxDist = rayDist;
+                for (let iter = 0; iter < 4; iter++) {
+                    const midDist = (minDist + maxDist) / 2;
+                    const midX = pos.x + dirX * midDist;
+                    const midZ = pos.z + dirZ * midDist;
+                    if (game.gameManager.call('hasLineOfSight',
+                        { x: pos.x, z: pos.z },
+                        { x: midX, z: midZ },
+                        unitType,
+                        entityId
+                    )) {
+                        minDist = midDist;
+                    } else {
+                        maxDist = midDist;
+                    }
+                }
+                sector.visibleDistance = minDist;
+            }
+            sector.raycastDone = true;
+        }
+
+        // Third pass: find nearest visible enemy
+        let nearest = null;
+        let nearestDistance = Infinity;
+
+        for (let i = 0; i < NUM_SECTORS; i++) {
+            const sector = sectors[i];
+            if (!sector.raycastDone) continue;
+
+            for (const enemy of sector.enemies) {
+                if (enemy.distance <= sector.visibleDistance && enemy.distance < nearestDistance) {
+                    nearestDistance = enemy.distance;
+                    nearest = { id: enemy.id, distance: enemy.distance };
+                }
             }
         }
 
