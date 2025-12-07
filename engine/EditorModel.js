@@ -32,8 +32,8 @@ class EditorModel {
         };
         let projects = localStorage.getItem("projects");
         if(!projects){
-            localStorage.setItem("currentProject", "TurnBasedWarfare");
-            localStorage.setItem("projects", JSON.stringify(["TurnBasedWarfare"]));
+            // Initialize empty projects list - will be populated by syncProjectsFromFilesystem
+            localStorage.setItem("projects", JSON.stringify([]));
         }
     }
 
@@ -50,14 +50,19 @@ class EditorModel {
     /**
      * Determines which project to load initially
      * Checks localStorage for last used project
-     * Falls back to default if needed
+     * Falls back to first available project
      * @returns {string} Project ID to load
      */
     getInitialProject() {
         const savedProject = localStorage.getItem("currentProject");
-        return savedProject && this.listProjects().includes(savedProject) 
-            ? savedProject 
-            : "TurnBasedWarfare";
+        const projects = this.listProjects();
+
+        if (savedProject && projects.includes(savedProject)) {
+            return savedProject;
+        }
+
+        // Return first available project, or null if none
+        return projects.length > 0 ? projects[0] : null;
     }
 
     /**
@@ -311,13 +316,45 @@ class EditorModel {
     }
 
     /**
-     * Lists all available projects
-     * Combines built-in defaults with user-created projects
+     * Lists all available projects from localStorage
      * @returns {Array} List of project identifiers
      */
     listProjects() {
-        const projects = JSON.parse(localStorage.getItem('projects') || '["Hello World"]');
+        const projects = JSON.parse(localStorage.getItem('projects') || '[]');
         return Array.isArray(projects) ? projects : [];
+    }
+
+    /**
+     * Syncs the project list with the filesystem
+     * Fetches available projects from the server and merges with localStorage
+     * @returns {Promise<Array>} Updated list of project identifiers
+     */
+    async syncProjectsFromFilesystem() {
+        try {
+            const response = await fetch('/list-projects');
+            if (!response.ok) {
+                console.warn('Could not fetch projects from filesystem');
+                return this.listProjects();
+            }
+
+            const data = await response.json();
+            const filesystemProjects = data.projects || [];
+
+            // Get current localStorage projects
+            const localProjects = this.listProjects();
+
+            // Merge: add any filesystem projects not in localStorage
+            const mergedProjects = [...new Set([...localProjects, ...filesystemProjects])];
+
+            // Update localStorage with merged list
+            localStorage.setItem('projects', JSON.stringify(mergedProjects));
+
+            console.log('Synced projects from filesystem:', mergedProjects);
+            return mergedProjects;
+        } catch (error) {
+            console.warn('Error syncing projects from filesystem:', error);
+            return this.listProjects();
+        }
     }
 
     /**

@@ -35,7 +35,8 @@ class EntityRenderer {
         // Sprite animation tracking for billboards
         this.billboardAnimations = new Map(); // entityId -> { animations, currentDirection, frameTime, frameIndex }
 
-        // Frame rates per animation type (frames per second)
+        // Default frame rates per animation type (frames per second)
+        // These are fallbacks if animation data doesn't specify fps
         this.spriteAnimationFrameRates = {
             idle: 6,       // Slower for idle
             walk: 10,      // Normal walking speed
@@ -43,7 +44,7 @@ class EntityRenderer {
             death: 8,      // Medium speed for death
             celebrate: 10  // Normal for celebration
         };
-        this.defaultFrameRate = 10;
+        this.defaultFrameRate = 10; // Used when no fps specified in animation data
 
         // Static GLTF model cache
         this.modelCache = new Map(); // collectionType -> { entityType: modelData }
@@ -481,14 +482,14 @@ class EntityRenderer {
      */
     async loadSpriteAnimationMetadata(spriteAnimationNames, collectionName = 'spriteAnimations') {
         const animations = {
-            down: { frames: [], duration: null },
-            downleft: { frames: [], duration: null },
-            left: { frames: [], duration: null },
-            upleft: { frames: [], duration: null },
-            up: { frames: [], duration: null },
-            downright: { frames: [], duration: null },
-            upright: { frames: [], duration: null },
-            right: { frames: [], duration: null }
+            down: { frames: [], duration: null, fps: null },
+            downleft: { frames: [], duration: null, fps: null },
+            left: { frames: [], duration: null, fps: null },
+            upleft: { frames: [], duration: null, fps: null },
+            up: { frames: [], duration: null, fps: null },
+            downright: { frames: [], duration: null, fps: null },
+            upright: { frames: [], duration: null, fps: null },
+            right: { frames: [], duration: null, fps: null }
         };
 
         for (const animName of spriteAnimationNames) {
@@ -533,6 +534,10 @@ class EntityRenderer {
                 // Capture duration from animation definition if available
                 if (animDef.duration !== undefined) {
                     animations[direction].duration = animDef.duration;
+                }
+                // Capture fps from animation definition if available
+                if (animDef.fps !== undefined) {
+                    animations[direction].fps = animDef.fps;
                 }
             }
         }
@@ -1081,6 +1086,8 @@ class EntityRenderer {
         const spriteScale = entityDef?.spriteScale || 64;
         const heightOffset = (spriteScale / 2);
         const spriteOffset = entityDef.spriteOffset || (-heightOffset / 4);
+        // spriteYOffset allows adjusting vertical position when sprite feet aren't at bottom of frame
+        const spriteYOffset = entityDef?.spriteYOffset || 0;
 
         // Calculate dimensions based on texture aspect ratio
         let aspectRatio = 1;
@@ -1104,9 +1111,10 @@ class EntityRenderer {
         // Create transform matrix
         const matrix = new THREE.Matrix4();
         // Offset by half the sprite height so bottom sits at ground level
+        // spriteYOffset adjusts for sprites where feet aren't at the bottom of the frame
         const position = new THREE.Vector3(
             data.position.x + spriteOffset,
-            data.position.y + heightOffset,
+            data.position.y + heightOffset + spriteYOffset,
             data.position.z - spriteOffset
         );
 

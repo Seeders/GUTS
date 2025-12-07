@@ -7,10 +7,29 @@ const chokidar = require('chokidar');
 const fs = require('fs');
 const path = require('path');
 
-// Get project name from command line or environment
-const projectName = process.argv[2] || process.env.PROJECT_NAME || 'TurnBasedWarfare';
+// Get project name from command line
+const projectName = process.argv[2];
+
+// Show usage if no project specified
+if (!projectName) {
+    console.log(`
+Usage: node build/watch-resources.js <project-name>
+
+Examples:
+  node build/watch-resources.js TurnBasedWarfare
+  npm run resources:watch -- TurnBasedWarfare
+`);
+    process.exit(1);
+}
 
 const projectRoot = path.resolve(__dirname, '..', 'projects', projectName);
+
+// Verify project exists
+if (!fs.existsSync(projectRoot)) {
+    console.error(`Error: Project "${projectName}" not found at ${projectRoot}`);
+    process.exit(1);
+}
+
 const resourcesSource = path.join(projectRoot, 'resources');
 const resourcesDest = path.join(projectRoot, 'dist', 'client', 'resources');
 
