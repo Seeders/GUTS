@@ -501,7 +501,7 @@ class TerrainDataManager {
     /**
      * Analyze height map to identify cliff positions and orientations
      * Returns array of cliff data for entity spawning
-     * @returns {Array} Array of cliff definitions {gridX, gridZ, direction, type, rotation}
+     * @returns {Array} Array of cliff definitions {gridX, gridZ, direction, type, rotation, heightDiff}
      */
     analyzeCliffs() {
         if (!this.tileMap?.heightMap || this.tileMap.heightMap.length === 0) {
@@ -512,11 +512,15 @@ class TerrainDataManager {
         const heightMap = this.tileMap.heightMap;
         const mapSize = this.tileMap.size || heightMap.length;
 
+        // Helper to get height difference (positive if neighbor is lower)
+        const getHeightDiff = (z, x, nz, nx) => {
+            if (nz < 0 || nz >= mapSize || nx < 0 || nx >= mapSize) return 0;
+            return heightMap[z][x] - heightMap[nz][nx];
+        };
+
         // For each tile, analyze height differences with all 8 neighbors (NSEW + diagonals)
         for (let z = 0; z < mapSize; z++) {
             for (let x = 0; x < mapSize; x++) {
-                const currentHeight = heightMap[z][x];
-
                 // Check if this tile or neighboring tiles have ramps
                 const hasRamp = this.hasRampAt(x, z);
                 const topNeighborHasRamp = z > 0 && this.hasRampAt(x, z - 1);
@@ -524,17 +528,27 @@ class TerrainDataManager {
                 const leftNeighborHasRamp = x > 0 && this.hasRampAt(x - 1, z);
                 const rightNeighborHasRamp = x < mapSize - 1 && this.hasRampAt(x + 1, z);
 
+                // Get actual height differences
+                const topDiff = getHeightDiff(z, x, z - 1, x);
+                const botDiff = getHeightDiff(z, x, z + 1, x);
+                const leftDiff = getHeightDiff(z, x, z, x - 1);
+                const rightDiff = getHeightDiff(z, x, z, x + 1);
+                const cornerTopLeftDiff = getHeightDiff(z, x, z - 1, x - 1);
+                const cornerTopRightDiff = getHeightDiff(z, x, z - 1, x + 1);
+                const cornerBottomLeftDiff = getHeightDiff(z, x, z + 1, x - 1);
+                const cornerBottomRightDiff = getHeightDiff(z, x, z + 1, x + 1);
+
                 // Analyze all neighbors - suppress cliffs if either this tile or the neighbor has a ramp
-                const topLess = z > 0 && heightMap[z - 1][x] < currentHeight && !hasRamp && !topNeighborHasRamp;
-                const botLess = z < mapSize - 1 && heightMap[z + 1][x] < currentHeight && !hasRamp && !botNeighborHasRamp;
-                const leftLess = x > 0 && heightMap[z][x - 1] < currentHeight && !hasRamp && !leftNeighborHasRamp;
-                const rightLess = x < mapSize - 1 && heightMap[z][x + 1] < currentHeight && !hasRamp && !rightNeighborHasRamp;
+                const topLess = topDiff > 0 && !hasRamp && !topNeighborHasRamp;
+                const botLess = botDiff > 0 && !hasRamp && !botNeighborHasRamp;
+                const leftLess = leftDiff > 0 && !hasRamp && !leftNeighborHasRamp;
+                const rightLess = rightDiff > 0 && !hasRamp && !rightNeighborHasRamp;
 
                 // Suppress corner pieces if this tile has a ramp
-                const cornerTopLeftLess = z > 0 && x > 0 && heightMap[z - 1][x - 1] < currentHeight && !hasRamp;
-                const cornerTopRightLess = z > 0 && x < mapSize - 1 && heightMap[z - 1][x + 1] < currentHeight && !hasRamp;
-                const cornerBottomLeftLess = z < mapSize - 1 && x > 0 && heightMap[z + 1][x - 1] < currentHeight && !hasRamp;
-                const cornerBottomRightLess = z < mapSize - 1 && x < mapSize - 1 && heightMap[z + 1][x + 1] < currentHeight && !hasRamp;
+                const cornerTopLeftLess = cornerTopLeftDiff > 0 && !hasRamp;
+                const cornerTopRightLess = cornerTopRightDiff > 0 && !hasRamp;
+                const cornerBottomLeftLess = cornerBottomLeftDiff > 0 && !hasRamp;
+                const cornerBottomRightLess = cornerBottomRightDiff > 0 && !hasRamp;
 
                 // Track which quadrants are occupied by corners
                 const topLeftOccupied = (topLess && leftLess) || (cornerTopLeftLess && !topLess && !leftLess);
@@ -543,67 +557,70 @@ class TerrainDataManager {
                 const botRightOccupied = (botLess && rightLess) || (cornerBottomRightLess && !botLess && !rightLess);
 
                 // Place outer corners first (atom_one)
+                // Use the maximum of the two adjacent edge differences to cover the full height
                 if (topLess && leftLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_one', rotation: Math.PI / 2 });
+                    const heightDiff = Math.max(topDiff, leftDiff);
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_one', rotation: Math.PI / 2, heightDiff });
                 }
                 if (topLess && rightLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_one', rotation: 0 });
+                    const heightDiff = Math.max(topDiff, rightDiff);
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_one', rotation: 0, heightDiff });
                 }
                 if (botLess && leftLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_one', rotation: Math.PI });
+                    const heightDiff = Math.max(botDiff, leftDiff);
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_one', rotation: Math.PI, heightDiff });
                 }
                 if (botLess && rightLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_one', rotation: -Math.PI/2 });
+                    const heightDiff = Math.max(botDiff, rightDiff);
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_one', rotation: -Math.PI/2, heightDiff });
                 }
 
                 // Place inner corners (atom_three)
                 if (cornerTopLeftLess && !topLess && !leftLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_three', rotation: Math.PI / 2 });
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_three', rotation: Math.PI / 2, heightDiff: cornerTopLeftDiff });
                 }
                 if (cornerTopRightLess && !topLess && !rightLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_three', rotation: 0 });
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_three', rotation: 0, heightDiff: cornerTopRightDiff });
                 }
                 if (cornerBottomLeftLess && !botLess && !leftLess) {
-                    // Rotate 90 deg clockwise: -Math.PI/2 + Math.PI/2 = 0
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_three', rotation: Math.PI });
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_three', rotation: Math.PI, heightDiff: cornerBottomLeftDiff });
                 }
                 if (cornerBottomRightLess && !botLess && !rightLess) {
-                    // Rotate 90 deg counter clockwise: Math.PI - Math.PI/2 = Math.PI/2
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_three', rotation: -Math.PI / 2 });
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_three', rotation: -Math.PI / 2, heightDiff: cornerBottomRightDiff });
                 }
 
                 // Place edges in empty quadrants (atom_two)
                 // Left/right rotated 90° clockwise, top/bottom rotated 90° counter clockwise
                 if (topLess) {
                     if (!topLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: 0 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: 0, heightDiff: topDiff });
                     }
                     if (!topRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: 0 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: 0, heightDiff: topDiff });
                     }
                 }
                 if (botLess) {
                     if (!botLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: -Math.PI });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: -Math.PI, heightDiff: botDiff });
                     }
                     if (!botRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: -Math.PI });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: -Math.PI, heightDiff: botDiff });
                     }
                 }
                 if (leftLess) {
                     if (!topLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: Math.PI / 2 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: Math.PI / 2, heightDiff: leftDiff });
                     }
                     if (!botLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: Math.PI / 2 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: Math.PI / 2, heightDiff: leftDiff });
                     }
                 }
                 if (rightLess) {
                     if (!topRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: 3 * Math.PI / 2 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: 3 * Math.PI / 2, heightDiff: rightDiff });
                     }
                     if (!botRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: 3 * Math.PI / 2 });
+                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: 3 * Math.PI / 2, heightDiff: rightDiff });
                     }
                 }
             }

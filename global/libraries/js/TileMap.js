@@ -26,6 +26,8 @@ class TileMap {
 			  this.heightIndex = 0;
 			  this.neighborLowerCount = 0;
 			  this.cornerLowerCount = 0;
+			  this.neighborHigherCount = 0;
+			  this.cornerHigherCount = 0;
 			  this.topHeight = 0;
 			  this.leftHeight = 0;
 			  this.rightHeight = 0;
@@ -42,6 +44,14 @@ class TileMap {
 			  this.cornerTopRightLess = false;
 			  this.cornerBottomLeftLess = false;
 			  this.cornerBottomRightLess = false;
+			  this.topHigher = false;
+			  this.leftHigher = false;
+			  this.rightHigher = false;
+			  this.botHigher = false;
+			  this.cornerTopLeftHigher = false;
+			  this.cornerTopRightHigher = false;
+			  this.cornerBottomLeftHigher = false;
+			  this.cornerBottomRightHigher = false;
 			}
 		};
 
@@ -839,6 +849,9 @@ class TileMap {
 		// Paint cliff-supporting textures if this tile is at the upper edge of a cliff
 		this.paintCliffSupportingTexturesForTile(ctx, analyzedMap, tile, row, col);
 
+		// Paint cliff-base textures if this tile is at the lower edge of a cliff
+		this.paintCliffBaseTexturesForTile(ctx, analyzedMap, tile, row, col);
+
 		// Apply coloring and corner graphics
 		let imageData = ctx.getImageData(0, 0, this.tileSize, this.tileSize);
 		imageData = this.colorImageData(imageData, tile.terrainAnalysis, tile.terrainIndex);
@@ -905,7 +918,7 @@ class TileMap {
 		const heightData = this.heightMap || this.tileMap;
 		result.heightAnalysis.heightIndex = heightData[row][col];
 
-		var analyzeHeight = ((r, c, n, direction, propertyLess) => {
+		var analyzeHeight = ((r, c, n, direction, propertyLess, propertyHigher) => {
 			if (isWithinBounds(r, c, n)) {
 				result.heightAnalysis[direction] = heightData[r][c];
 				if (heightData[r][c] < result.heightAnalysis.heightIndex) {
@@ -916,17 +929,25 @@ class TileMap {
 						result.heightAnalysis.cornerLowerCount++;
 					}
 				}
+				if (heightData[r][c] > result.heightAnalysis.heightIndex) {
+					result.heightAnalysis[propertyHigher] = true;
+					if(['topHigher', 'leftHigher', 'rightHigher', 'botHigher'].indexOf(propertyHigher) >= 0) {
+						result.heightAnalysis.neighborHigherCount++;
+					} else if(['cornerTopLeftHigher', 'cornerTopRightHigher', 'cornerBottomLeftHigher', 'cornerBottomRightHigher'].indexOf(propertyHigher) >= 0) {
+						result.heightAnalysis.cornerHigherCount++;
+					}
+				}
 			}
 		});
 
-		analyzeHeight(row - 1, col, this.numColumns, 'topHeight', 'topLess');
-		analyzeHeight(row, col - 1, this.numColumns, 'leftHeight', 'leftLess');
-		analyzeHeight(row, col + 1, this.numColumns, 'rightHeight', 'rightLess');
-		analyzeHeight(row + 1, col, this.numColumns, 'botHeight', 'botLess');
-		analyzeHeight(row - 1, col - 1, this.numColumns, 'topLeftHeight', 'cornerTopLeftLess');
-		analyzeHeight(row - 1, col + 1, this.numColumns, 'topRightHeight', 'cornerTopRightLess');
-		analyzeHeight(row + 1, col - 1, this.numColumns, 'botLeftHeight', 'cornerBottomLeftLess');
-		analyzeHeight(row + 1, col + 1, this.numColumns, 'botRightHeight', 'cornerBottomRightLess');
+		analyzeHeight(row - 1, col, this.numColumns, 'topHeight', 'topLess', 'topHigher');
+		analyzeHeight(row, col - 1, this.numColumns, 'leftHeight', 'leftLess', 'leftHigher');
+		analyzeHeight(row, col + 1, this.numColumns, 'rightHeight', 'rightLess', 'rightHigher');
+		analyzeHeight(row + 1, col, this.numColumns, 'botHeight', 'botLess', 'botHigher');
+		analyzeHeight(row - 1, col - 1, this.numColumns, 'topLeftHeight', 'cornerTopLeftLess', 'cornerTopLeftHigher');
+		analyzeHeight(row - 1, col + 1, this.numColumns, 'topRightHeight', 'cornerTopRightLess', 'cornerTopRightHigher');
+		analyzeHeight(row + 1, col - 1, this.numColumns, 'botLeftHeight', 'cornerBottomLeftLess', 'cornerBottomLeftHigher');
+		analyzeHeight(row + 1, col + 1, this.numColumns, 'botRightHeight', 'cornerBottomRightLess', 'cornerBottomRightHigher');
 
 		// Analyze terrain types for texture tiling
 		result.terrainAnalysis.heightIndex = this.tileMap[row][col];
@@ -1349,6 +1370,109 @@ class TileMap {
 
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTR), 0);
 			ctx.drawImage(cornerGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+		}
+	}
+
+	/**
+	 * Paint cliff-base texture atoms on a tile if it's at the lower edge of a cliff
+	 * This creates grass growing outward from the base of the cliff
+	 */
+	paintCliffBaseTexturesForTile(ctx, analyzedMap, tile, row, col) {
+		// Skip cliff base textures if in editor mode (2D without 3D cliff meshes)
+		if (this.skipCliffTextures) {
+			return;
+		}
+
+		// Skip cliff base textures if there's a ramp at this tile
+		if (this.hasRampAt(col, row)) {
+			return;
+		}
+
+		const heightAnalysis = tile.heightAnalysis;
+		const atomSize = this.tileSize / 2;
+
+		// For now, assume grass is the top terrain layer
+		const grassIndex = this.layerTextures.length - 1;
+
+		// Get grass atoms
+		const grassAtoms = this.baseAtoms[grassIndex];
+		if (!grassAtoms || !grassAtoms.full) return;
+
+		// Paint grass on quadrants ADJACENT to where cliff meshes would be on the higher neighbor
+		// This creates a transition on the lower terrain level at the base of the cliff
+
+		// Top neighbor is higher: cliff base would be at top of this tile
+		// Paint grass on TOP quadrants (TL, TR) facing the cliff
+		if (heightAnalysis.topHigher) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerBottom), 0);
+			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
+			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+		}
+
+		// Bottom neighbor is higher: cliff base would be at bottom of this tile
+		// Paint grass on BOTTOM quadrants (BL, BR) facing the cliff
+		if (heightAnalysis.botHigher) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerTop), 0);
+			ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+		}
+
+		// Left neighbor is higher: cliff base would be at left of this tile
+		// Paint grass on LEFT quadrants (TL, BL) facing the cliff
+		if (heightAnalysis.leftHigher) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerRight), 0);
+			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
+			ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+		}
+
+		// Right neighbor is higher: cliff base would be at right of this tile
+		// Paint grass on RIGHT quadrants (TR, BR) facing the cliff
+		if (heightAnalysis.rightHigher) {
+			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerLeft), 0);
+			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+		}
+
+		// Handle inner corners (diagonal neighbor is higher, but cardinal neighbors are not)
+		if (!heightAnalysis.topHigher && !heightAnalysis.leftHigher && heightAnalysis.cornerTopLeftHigher) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerBR), 0);
+			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TL quadrant
+		}
+
+		if (!heightAnalysis.topHigher && !heightAnalysis.rightHigher && heightAnalysis.cornerTopRightHigher) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerBL), 0);
+			ctx.drawImage(cornerGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+		}
+
+		if (!heightAnalysis.botHigher && !heightAnalysis.leftHigher && heightAnalysis.cornerBottomLeftHigher) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerTR), 0);
+			ctx.drawImage(cornerGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+		}
+
+		if (!heightAnalysis.botHigher && !heightAnalysis.rightHigher && heightAnalysis.cornerBottomRightHigher) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerTL), 0);
+			ctx.drawImage(cornerGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+		}
+
+		// Handle outer corners (both adjacent cardinal neighbors are higher)
+		if (heightAnalysis.topHigher && heightAnalysis.leftHigher && !heightAnalysis.botHigher && !heightAnalysis.rightHigher) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerBR), 0);
+			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TL quadrant
+		}
+
+		if (heightAnalysis.topHigher && heightAnalysis.rightHigher && !heightAnalysis.botHigher && !heightAnalysis.leftHigher) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerBL), 0);
+			ctx.drawImage(cornerGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+		}
+
+		if (heightAnalysis.botHigher && heightAnalysis.leftHigher && !heightAnalysis.topHigher && !heightAnalysis.rightHigher) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTR), 0);
+			ctx.drawImage(cornerGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+		}
+
+		if (heightAnalysis.botHigher && heightAnalysis.rightHigher && !heightAnalysis.topHigher && !heightAnalysis.leftHigher) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTL), 0);
+			ctx.drawImage(cornerGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
 		}
 	}
 
