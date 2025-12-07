@@ -590,37 +590,78 @@ class TerrainDataManager {
                 }
 
                 // Place edges in empty quadrants (atom_two)
-                // Left/right rotated 90° clockwise, top/bottom rotated 90° counter clockwise
+                // If side neighbor has ramp, convert to atom_one with one face toward ramp
+                // atom_one rotations: TL=PI/2, TR=0, BL=PI, BR=-PI/2
                 if (topLess) {
                     if (!topLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: 0, heightDiff: topDiff });
+                        if (leftNeighborHasRamp) {
+                            // Convert to atom_one facing top and left (toward ramp)
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_one', rotation: Math.PI / 2, heightDiff: topDiff });
+                        } else {
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: 0, heightDiff: topDiff });
+                        }
                     }
                     if (!topRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: 0, heightDiff: topDiff });
+                        if (rightNeighborHasRamp) {
+                            // Convert to atom_one facing top and right (toward ramp)
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_one', rotation: 0, heightDiff: topDiff });
+                        } else {
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: 0, heightDiff: topDiff });
+                        }
                     }
                 }
                 if (botLess) {
                     if (!botLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: -Math.PI, heightDiff: botDiff });
+                        if (leftNeighborHasRamp) {
+                            // Convert to atom_one facing bottom and left (toward ramp)
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_one', rotation: Math.PI, heightDiff: botDiff });
+                        } else {
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: -Math.PI, heightDiff: botDiff });
+                        }
                     }
                     if (!botRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: -Math.PI, heightDiff: botDiff });
+                        if (rightNeighborHasRamp) {
+                            // Convert to atom_one facing bottom and right (toward ramp)
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_one', rotation: -Math.PI / 2, heightDiff: botDiff });
+                        } else {
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: -Math.PI, heightDiff: botDiff });
+                        }
                     }
                 }
                 if (leftLess) {
                     if (!topLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: Math.PI / 2, heightDiff: leftDiff });
+                        if (topNeighborHasRamp) {
+                            // Convert to atom_one facing left and top (toward ramp)
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_one', rotation: Math.PI / 2, heightDiff: leftDiff });
+                        } else {
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: Math.PI / 2, heightDiff: leftDiff });
+                        }
                     }
                     if (!botLeftOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: Math.PI / 2, heightDiff: leftDiff });
+                        if (botNeighborHasRamp) {
+                            // Convert to atom_one facing left and bottom (toward ramp)
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_one', rotation: Math.PI, heightDiff: leftDiff });
+                        } else {
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: Math.PI / 2, heightDiff: leftDiff });
+                        }
                     }
                 }
                 if (rightLess) {
                     if (!topRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: 3 * Math.PI / 2, heightDiff: rightDiff });
+                        if (topNeighborHasRamp) {
+                            // Convert to atom_one facing right and top (toward ramp)
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_one', rotation: 0, heightDiff: rightDiff });
+                        } else {
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: 3 * Math.PI / 2, heightDiff: rightDiff });
+                        }
                     }
                     if (!botRightOccupied) {
-                        cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: 3 * Math.PI / 2, heightDiff: rightDiff });
+                        if (botNeighborHasRamp) {
+                            // Convert to atom_one facing right and bottom (toward ramp)
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_one', rotation: -Math.PI / 2, heightDiff: rightDiff });
+                        } else {
+                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: 3 * Math.PI / 2, heightDiff: rightDiff });
+                        }
                     }
                 }
             }
