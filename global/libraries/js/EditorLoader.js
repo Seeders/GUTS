@@ -93,6 +93,9 @@ class EditorLoader {
             terrainCanvasBuffer.height = 4096;
         }
 
+        // Get terrain type names for dynamic index lookup
+        const terrainTypeNames = level?.tileMap?.terrainTypes || [];
+
         // Initialize tile mapper (same as GameLoader)
         this.game.terrainTileMapper = new GUTS.TileMap({});
         this.game.terrainTileMapper.init(
@@ -100,7 +103,7 @@ class EditorLoader {
             gameConfig.gridSize,
             terrainImages,
             gameConfig.isIsometric,
-            { skipCliffTextures: false }
+            { skipCliffTextures: false, terrainTypeNames }
         );
 
         console.log(`[EditorLoader] Initialized tile mapper for level: ${levelName}`);

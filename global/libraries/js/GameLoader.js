@@ -18,10 +18,11 @@ class GameLoader {
         this.setupCanvas(this.collections.configs.game.canvasWidth, this.collections.configs.game.canvasHeight);
         await this.loadAssets();  
         const terrainImages = this.game.imageManager.getImages("levels", this.game.state.level);
+        const terrainTypeNames = this.collections.levels[this.game.state.level].tileMap.terrainTypes || [];
 
         this.game.terrainTileMapper = new GUTS.TileMap({});
 
-        this.game.terrainTileMapper.init(this.game.terrainCanvasBuffer, this.collections.configs.game.gridSize, terrainImages, this.isometric);
+        this.game.terrainTileMapper.init(this.game.terrainCanvasBuffer, this.collections.configs.game.gridSize, terrainImages, this.isometric, { terrainTypeNames });
         this.game.init(false);
     }
 
