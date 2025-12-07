@@ -323,11 +323,14 @@ class EntityRenderer {
         const capacity = this.capacitiesByType[batchKey] || this.defaultCapacity;
         const instancedMesh = new THREE.InstancedMesh(geometry, material, capacity);
 
-
         // Note: scale is applied per-instance in the matrix, not on the InstancedMesh itself
         instancedMesh.castShadow = true;
         instancedMesh.receiveShadow = true;
         instancedMesh.count = 0; // Start with 0 visible instances
+
+        // Disable frustum culling - instances are spread across the terrain
+        // and the base geometry's bounding sphere doesn't account for instance positions
+        instancedMesh.frustumCulled = false;
 
         this.scene.add(instancedMesh);
 

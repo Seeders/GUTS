@@ -1,6 +1,6 @@
 /**
  * SceneEditor - Unity-like scene editor for GUTS
- * Delegates all rendering to SceneEditorContext which uses actual game systems
+ * Delegates all rendering to EditorECSGame which uses actual game systems
  * Entities with components drive everything - no hardcoded rendering
  */
 class SceneEditor {
@@ -52,11 +52,14 @@ class SceneEditor {
     async initializeContext(systems) {
         if (this.state.initialized) return;
 
-        // Create editor context
-        this.editorContext = new GUTS.SceneEditorContext(this.gameEditor, this.canvas);
+        // Create editor context (like ECSGame)
+        this.editorContext = new GUTS.EditorECSGame(this.gameEditor, this.canvas);
 
-        // Initialize with systems from scene data
-        await this.editorContext.initialize(systems);
+        // Use EditorLoader to load assets and initialize (like GameLoader)
+        this.editorLoader = new GUTS.EditorLoader(this.editorContext);
+        await this.editorLoader.load({
+            systems: systems
+        });
 
         // Initialize gizmo manager with the editor context's scene/camera
         if (this.gizmoManager && this.editorContext.worldSystem?.worldRenderer) {
