@@ -9,7 +9,7 @@ class PlacementPreview {
             const configs = options.getCollections().configs.game;
             this.scene = options.uiScene;
             this.gridSize = configs.gridSize;
-            this.getTerrainHeight = (x, z) => options.gameManager.call('getTerrainHeightAtPosition', x, z);
+            this.getTerrainHeight = (x, z) => options.call('getTerrainHeightAtPosition', x, z);
         } else {
             // Modern options mode
             this.scene = options.scene;
@@ -199,16 +199,16 @@ class PlacementPreview {
         // Use GridSystem coordinate transformations via gameManager if available
         let worldPositions;
 
-        if (this.game && this.game.gameManager) {
+        if (this.game && this.game.gameSystem) {
             if (!isBuilding) {
                 // Use placement grid coordinates (2x terrain tiles, for unit placement)
                 worldPositions = gridPositions.map(gridPos =>
-                    this.game.gameManager.call('placementGridToWorld', gridPos.x, gridPos.z)
+                    this.game.call('placementGridToWorld', gridPos.x, gridPos.z)
                 );
             } else {
                 // Use tile map coordinates (terrain tiles, for building placement)
                 worldPositions = gridPositions.map(gridPos =>
-                    this.game.gameManager.call('tileToWorld', gridPos.x, gridPos.z)
+                    this.game.call('tileToWorld', gridPos.x, gridPos.z)
                 );
             }
         } else {
@@ -256,7 +256,7 @@ class PlacementPreview {
             // Get terrain height at the center of the cell
             const centerX = pos.x + halfSize;
             const centerZ = pos.z + halfSize;
-            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', centerX, centerZ);
+            const terrainHeight = this.game.call('getTerrainHeightAtPosition', centerX, centerZ);
             const yPosition = (terrainHeight || 0) + this.config.elevationOffset;
 
             const cellMesh = cellMeshPool[index];

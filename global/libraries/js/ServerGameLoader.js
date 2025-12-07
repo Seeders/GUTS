@@ -1,4 +1,4 @@
-class ServerGameLoader {
+class ServerGameLoader extends GUTS.BaseLoader {
     constructor(game) {
         this.game = game;
     }

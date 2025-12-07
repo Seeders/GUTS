@@ -91,7 +91,7 @@ class BaseBehaviorNode {
      * Selector: Try each child until one succeeds (OR logic)
      */
     evaluateSelector(entityId, game) {
-        const debugger_ = game.gameManager?.call('getDebugger');
+        const debugger_ = game.gameSystem?.call('getDebugger');
         const treeId = this.config.id || this.constructor.name;
         const trace = debugger_?.beginEvaluation(entityId, treeId);
 
@@ -149,7 +149,7 @@ class BaseBehaviorNode {
      * Only skip ahead if the running child succeeds, then continue from there.
      */
     evaluateSequence(entityId, game) {
-        const debugger_ = game.gameManager?.call('getDebugger');
+        const debugger_ = game.gameSystem?.call('getDebugger');
         const treeId = this.config.id || this.constructor.name;
         const trace = debugger_?.beginEvaluation(entityId, treeId);
 
@@ -191,7 +191,7 @@ class BaseBehaviorNode {
      * Evaluate a single child by name
      */
     evaluateChild(entityId, game, childName) {
-        const node = game.gameManager?.call('getNodeByType', childName);
+        const node = game.gameSystem?.call('getNodeByType', childName);
         if (node) {
             return node.evaluate(entityId, game);
         }
@@ -208,7 +208,7 @@ class BaseBehaviorNode {
         const result = this.evaluateChild(entityId, game, childName);
 
         if (debugger_ && trace) {
-            const node = game.gameManager?.call('getNodeByType', childName);
+            const node = game.gameSystem?.call('getNodeByType', childName);
             debugger_.recordNode(trace, {
                 name: childName,
                 type: this.getNodeType(node),
@@ -304,7 +304,7 @@ class BaseBehaviorNode {
 
     onBattleStart(entityId, game) {        
         this.children.forEach((childName) => {
-            const node = game.gameManager?.call('getNodeByType', childName);
+            const node = game.gameSystem?.call('getNodeByType', childName);
             if(!node.onBattleStart){
                 console.warn('missing onBattleStart', childName);
                 return;
@@ -315,7 +315,7 @@ class BaseBehaviorNode {
 
     onBattleEnd(entityId, game) {
         this.children.forEach((childName) => {
-            const node = game.gameManager?.call('getNodeByType', childName);
+            const node = game.gameSystem?.call('getNodeByType', childName);
             if(!node.onBattleEnd){
                 console.warn('missing onBattleEnd', childName);
                 return;                
@@ -329,7 +329,7 @@ class BaseBehaviorNode {
     onPlacementPhaseStart(entityId, game) {
 
         this.children.forEach((childName) => {
-            const node = game.gameManager?.call('getNodeByType', childName);
+            const node = game.gameSystem?.call('getNodeByType', childName);
             if(!node.onPlacementPhaseStart){
                 console.warn('missing onPlacementPhaseStart', childName);
                 return;                

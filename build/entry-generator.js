@@ -150,31 +150,20 @@ class EntryGenerator {
             globalExports.Libraries = 'Libraries';
         }
 
-        // Import managers
-        if (client.managers.length > 0) {
-            sections.push('// ========== MANAGERS ==========');
-            const { imports, exports } = this.generateImports(client.managers, 'mgr');
-            sections.push(...imports);
-            sections.push('');
-            sections.push('const Managers = {');
-            sections.push(exports.join(',\n'));
-            sections.push('};');
-            sections.push('');
-            globalExports.Managers = 'Managers';
-        }
-
-        // Import systems
+        // Import systems (always define Systems object, even if empty)
+        sections.push('// ========== SYSTEMS ==========');
         if (client.systems.length > 0) {
-            sections.push('// ========== SYSTEMS ==========');
             const { imports, exports } = this.generateImports(client.systems, 'sys');
             sections.push(...imports);
             sections.push('');
             sections.push('const Systems = {');
             sections.push(exports.join(',\n'));
             sections.push('};');
-            sections.push('');
-            globalExports.Systems = 'Systems';
+        } else {
+            sections.push('const Systems = {};');
         }
+        sections.push('');
+        globalExports.Systems = 'Systems';
 
         // Import class collections dynamically (abilities, items, etc.)
         const classCollectionObjects = {};
@@ -357,9 +346,8 @@ class EntryGenerator {
         sections.push('  });');
         sections.push('}');
         sections.push('');
-        // Also expose managers, systems, and dynamic collections in GUTS namespace
+        // Also expose systems and dynamic collections in GUTS namespace
         sections.push('Object.assign(window.GUTS, {');
-        sections.push('  managers: Managers,');
         sections.push('  systems: Systems,');
 
         // Add dynamic collections
@@ -375,7 +363,6 @@ class EntryGenerator {
 
         // Also assign individual classes directly to window.GUTS (not just in organized collections)
         sections.push('// Assign all individual classes directly to window.GUTS for direct access');
-        sections.push('Object.assign(window.GUTS, Managers);');
         sections.push('Object.assign(window.GUTS, Systems);');
 
         // Assign individual classes from dynamic collections
@@ -389,7 +376,6 @@ class EntryGenerator {
         sections.push('  ready: Promise.resolve(),');
         sections.push('  initialized: false,');
         sections.push('  libraryClasses: Libraries,');
-        sections.push('  managers: Managers,');
         sections.push('  systems: Systems,');
         sections.push('  collections: DataCollections,');
 
@@ -505,29 +491,19 @@ class EntryGenerator {
             sections.push('');
         }
 
-        // Require managers
-        if (server.managers.length > 0) {
-            sections.push('// ========== MANAGERS ==========');
-            const { requires, exports } = this.generateCommonJSImports(server.managers, 'mgr');
-            sections.push(...requires);
-            sections.push('');
-            sections.push('const Managers = {');
-            sections.push(exports.join(',\n'));
-            sections.push('};');
-            sections.push('');
-        }
-
-        // Require systems
+        // Require systems (always define Systems object, even if empty)
+        sections.push('// ========== SYSTEMS ==========');
         if (server.systems.length > 0) {
-            sections.push('// ========== SYSTEMS ==========');
             const { requires, exports } = this.generateCommonJSImports(server.systems, 'sys');
             sections.push(...requires);
             sections.push('');
             sections.push('const Systems = {');
             sections.push(exports.join(',\n'));
             sections.push('};');
-            sections.push('');
+        } else {
+            sections.push('const Systems = {};');
         }
+        sections.push('');
 
         // Require class collections dynamically (abilities, items, etc.)
         // Use classMetadata to load base classes FIRST
@@ -650,7 +626,6 @@ class EntryGenerator {
         sections.push('  ready: Promise.resolve(),');
         sections.push('  initialized: false,');
         sections.push('  libraryClasses: Libraries,');
-        sections.push('  managers: Managers,');
         sections.push('  systems: Systems,');
         sections.push('  collections: DataCollections,');
 
@@ -668,7 +643,6 @@ class EntryGenerator {
         sections.push('};');
         sections.push('');
         sections.push('// Also expose in global.GUTS for compatibility');
-        sections.push('global.GUTS.managers = Managers;');
         sections.push('global.GUTS.systems = Systems;');
 
         // Add dynamic collections to global.GUTS

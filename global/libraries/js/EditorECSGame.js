@@ -23,12 +23,12 @@ class EditorECSGame extends GUTS.BaseECSGame {
         };
 
         // Game services
-        this.gameManager = new GUTS.GameServices();
+        this.gameSystem = new GUTS.GameServices();
 
         // Component generator
         this.componentGenerator = new GUTS.ComponentGenerator(this.getCollections().components);
-        this.gameManager.register("getComponents", this.componentGenerator.getComponents.bind(this.componentGenerator));
-        this.gameManager.register("getCollections", () => this.getCollections());
+        this.register("getComponents", this.componentGenerator.getComponents.bind(this.componentGenerator));
+        this.register("getCollections", () => this.getCollections());
 
         // Animation loop
         this.animationFrameId = null;
@@ -55,28 +55,12 @@ class EditorECSGame extends GUTS.BaseECSGame {
         // Use ONLY the passed config - don't fall back to game config
         this.gameConfig = config;
 
-        // Initialize managers from config (editors typically pass empty array)
-        this.gameConfig.managers?.forEach((managerType) => {
-            const managerInst = new GUTS[managerType](this);
-            if (managerInst.init) {
-                managerInst.init({ canvas: this.canvas });
-            }
-            this.managers.push(managerInst);
-        });
-
         // Initialize SceneManager
         this.sceneManager = new GUTS.SceneManager(this);
 
         // Store available system types for lazy instantiation
         this.availableSystemTypes = this.gameConfig.systems || [];
         this.systemsByName = new Map();
-
-        // Call postAllInit on managers
-        this.managers.forEach((manager) => {
-            if (manager.postAllInit) {
-                manager.postAllInit();
-            }
-        });
 
         // NOTE: Don't call loadInitialScene() - editors handle scene loading explicitly
     }
