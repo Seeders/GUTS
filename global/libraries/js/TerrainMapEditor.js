@@ -575,7 +575,8 @@ class TerrainMapEditor {
                 await this.gameEditor.modelManager.loadModels(objectType, collections[objectType]);
             }  
         } 
-        this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric);
+        const terrainTypeNames = this.tileMap.terrainTypes || [];
+        this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric, { terrainTypeNames });
         
         // Ensure translator is up to date before creating game object
         this.translator = new GUTS.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
@@ -1650,12 +1651,13 @@ class TerrainMapEditor {
             this.terrainCanvasBuffer.height = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
 
             // Init TileMap (for both 2D and 3D - 3D uses it for texture generation)
+            const terrainTypeNames = this.tileMap.terrainTypes || [];
             this.terrainTileMapper.init(
                 this.terrainCanvasBuffer,
                 this.gameEditor.getCollections().configs.game.gridSize,
                 terrainImages,
                 this.gameEditor.getCollections().configs.game.isIsometric,
-                { skipCliffTextures: false } // Enable cliffs for 3D
+                { skipCliffTextures: false, terrainTypeNames } // Enable cliffs for 3D
             );
 
             // Initialize 3D rendering

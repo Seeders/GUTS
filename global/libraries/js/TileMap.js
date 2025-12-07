@@ -17,6 +17,9 @@ class TileMap {
 		// Options for editor mode: skip cliff supporting textures (for 2D editing without 3D cliff meshes)
 		this.skipCliffTextures = options.skipCliffTextures || false;
 
+		// Store terrain type names for dynamic index lookup (e.g., ["water", "lava", "dirt", "grass"])
+		this.terrainTypeNames = options.terrainTypeNames || [];
+
 		// Initialize height map canvas
 		this.heightMapCanvas = null;
 		this.heightMapCtx = null;
@@ -176,6 +179,52 @@ class TileMap {
 			return false;
 		}
 		return this.ramps.some(r => r.gridX === x && r.gridZ === y);
+	}
+
+	/**
+	 * Get the ramp data at a specific grid position
+	 * @param {number} x - Grid X coordinate
+	 * @param {number} y - Grid Y coordinate (Z in 3D)
+	 * @returns {Object|null} Ramp object or null if no ramp
+	 */
+	getRampAt(x, y) {
+		if (!this.ramps || this.ramps.length === 0) {
+			return null;
+		}
+		return this.ramps.find(r => r.gridX === x && r.gridZ === y) || null;
+	}
+
+	/**
+	 * Get terrain type index by name (e.g., "grass", "dirt")
+	 * @param {string} name - Terrain type name
+	 * @returns {number} Index in layerTextures array, or -1 if not found
+	 */
+	getTerrainIndexByName(name) {
+		if (!this.terrainTypeNames || this.terrainTypeNames.length === 0) {
+			return -1;
+		}
+		return this.terrainTypeNames.indexOf(name);
+	}
+
+	/**
+	 * Get the grass terrain index (looks up "grass" in terrain type names, falls back to last index)
+	 * @returns {number} Grass terrain index
+	 */
+	getGrassIndex() {
+		const idx = this.getTerrainIndexByName('grass');
+		return idx >= 0 ? idx : this.layerTextures.length - 1;
+	}
+
+	/**
+	 * Get the dirt terrain index (looks up "dirt" in terrain type names, falls back to grass-1)
+	 * @returns {number} Dirt terrain index
+	 */
+	getDirtIndex() {
+		const idx = this.getTerrainIndexByName('dirt');
+		if (idx >= 0) return idx;
+		// Fallback: assume dirt is one before grass in the texture list
+		const grassIdx = this.getGrassIndex();
+		return grassIdx > 0 ? grassIdx - 1 : 0;
 	}
 
     draw(map, heightMap = null){
@@ -852,6 +901,9 @@ class TileMap {
 		// Paint cliff-base textures if this tile is at the lower edge of a cliff
 		this.paintCliffBaseTexturesForTile(ctx, analyzedMap, tile, row, col);
 
+		// Paint ramp textures with dirt on ramp tiles and adjacent lower tiles
+		this.paintRampTexturesForTile(ctx, analyzedMap, tile, row, col);
+
 		// Apply coloring and corner graphics
 		let imageData = ctx.getImageData(0, 0, this.tileSize, this.tileSize);
 		imageData = this.colorImageData(imageData, tile.terrainAnalysis, tile.terrainIndex);
@@ -1267,107 +1319,182 @@ class TileMap {
 		const heightAnalysis = tile.heightAnalysis;
 		const atomSize = this.tileSize / 2;
 
+		// Check if neighboring tiles have ramps - don't paint supporting textures toward ramps
+		const topNeighborHasRamp = this.hasRampAt(col, row - 1);
+		const botNeighborHasRamp = this.hasRampAt(col, row + 1);
+		const leftNeighborHasRamp = this.hasRampAt(col - 1, row);
+		const rightNeighborHasRamp = this.hasRampAt(col + 1, row);
 
-		// For now, assume grass is terrain index 0 (we'll need to make this configurable)
-		const grassIndex = this.layerTextures.length - 1;
+		// Check diagonal neighbors for ramps too
+		const cornerTopLeftHasRamp = this.hasRampAt(col - 1, row - 1);
+		const cornerTopRightHasRamp = this.hasRampAt(col + 1, row - 1);
+		const cornerBottomLeftHasRamp = this.hasRampAt(col - 1, row + 1);
+		const cornerBottomRightHasRamp = this.hasRampAt(col + 1, row + 1);
+
+		// Get grass index dynamically (from terrain type names or fall back to last index)
+		const grassIndex = this.getGrassIndex();
 
 		// Get grass atoms
 		const grassAtoms = this.baseAtoms[grassIndex];
 		if (!grassAtoms || !grassAtoms.full) return;
 
+		// Suppress supporting textures if the lower neighbor has a ramp
+		const effectiveTopLess = heightAnalysis.topLess && !topNeighborHasRamp;
+		const effectiveBotLess = heightAnalysis.botLess && !botNeighborHasRamp;
+		const effectiveLeftLess = heightAnalysis.leftLess && !leftNeighborHasRamp;
+		const effectiveRightLess = heightAnalysis.rightLess && !rightNeighborHasRamp;
+
+		// Suppress corner supporting textures if the diagonal neighbor has a ramp
+		const effectiveCornerTopLeftLess = heightAnalysis.cornerTopLeftLess && !cornerTopLeftHasRamp;
+		const effectiveCornerTopRightLess = heightAnalysis.cornerTopRightLess && !cornerTopRightHasRamp;
+		const effectiveCornerBottomLeftLess = heightAnalysis.cornerBottomLeftLess && !cornerBottomLeftHasRamp;
+		const effectiveCornerBottomRightLess = heightAnalysis.cornerBottomRightLess && !cornerBottomRightHasRamp;
+
 		// Paint grass on quadrants OPPOSITE to where cliff meshes are placed
 		// This creates a transition on the higher terrain level next to the cliff edge
+		//
+		// IMPORTANT: When two adjacent edges both have lower neighbors (e.g., botLess AND rightLess),
+		// the shared corner quadrant needs a corner atom, not overlapping edge atoms.
+		// We track which quadrants need corner treatment to avoid double-painting.
+
+		// Determine which quadrants need corner atom treatment instead of overlapping edge atoms
+		// When bot+right are lower: both want to paint TL, so TL gets corner atom (oneCornerBR)
+		// When bot+left are lower: both want to paint TR, so TR gets corner atom (oneCornerBL)
+		// When top+right are lower: both want to paint BL, so BL gets corner atom (oneCornerTR)
+		// When top+left are lower: both want to paint BR, so BR gets corner atom (oneCornerTL)
+		const tlNeedsCorner = effectiveBotLess && effectiveRightLess;
+		const trNeedsCorner = effectiveBotLess && effectiveLeftLess;
+		const blNeedsCorner = effectiveTopLess && effectiveRightLess;
+		const brNeedsCorner = effectiveTopLess && effectiveLeftLess;
 
 		// Bottom neighbor is lower: cliff meshes in BL, BR quadrants
 		// Paint grass on TOP quadrants (TL, TR) facing north (away from cliff)
-		if (heightAnalysis.botLess) {
+		if (effectiveBotLess) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerTop), 0);
-			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
-			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+			// Skip TL if it needs corner treatment (will be handled by corner atom)
+			if (!tlNeedsCorner) {
+				ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
+			}
+			// Skip TR if it needs corner treatment
+			if (!trNeedsCorner) {
+				ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+			}
 		}
 
 		// Top neighbor is lower: cliff meshes in TL, TR quadrants
 		// Paint grass on BOTTOM quadrants (BL, BR) facing south (away from cliff)
-		if (heightAnalysis.topLess) {
+		if (effectiveTopLess) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerBottom), 0);
-			ctx.drawImage(rotatedGrass, 0, atomSize-2, atomSize, atomSize); // BL quadrant
-			ctx.drawImage(rotatedGrass, atomSize, atomSize-2, atomSize, atomSize); // BR quadrant
+			// Skip BL if it needs corner treatment
+			if (!blNeedsCorner) {
+				ctx.drawImage(rotatedGrass, 0, atomSize-2, atomSize, atomSize); // BL quadrant
+			}
+			// Skip BR if it needs corner treatment
+			if (!brNeedsCorner) {
+				ctx.drawImage(rotatedGrass, atomSize, atomSize-2, atomSize, atomSize); // BR quadrant
+			}
 		}
 
 		// Right neighbor is lower: cliff meshes in TR, BR quadrants
 		// Paint grass on LEFT quadrants (TL, BL) facing west (away from cliff)
-		if (heightAnalysis.rightLess) {
+		if (effectiveRightLess) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerLeft), 0);
-			ctx.drawImage(rotatedGrass, 2, 0, atomSize, atomSize); // TL quadrant
-			ctx.drawImage(rotatedGrass, 2, atomSize, atomSize, atomSize); // BL quadrant
+			// Skip TL if it needs corner treatment
+			if (!tlNeedsCorner) {
+				ctx.drawImage(rotatedGrass, 2, 0, atomSize, atomSize); // TL quadrant
+			}
+			// Skip BL if it needs corner treatment
+			if (!blNeedsCorner) {
+				ctx.drawImage(rotatedGrass, 2, atomSize, atomSize, atomSize); // BL quadrant
+			}
 		}
 
 		// Left neighbor is lower: cliff meshes in TL, BL quadrants
 		// Paint grass on RIGHT quadrants (TR, BR) facing east (away from cliff)
-		if (heightAnalysis.leftLess) {
+		if (effectiveLeftLess) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerRight), 0);
-			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
-			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+			// Skip TR if it needs corner treatment
+			if (!trNeedsCorner) {
+				ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+			}
+			// Skip BR if it needs corner treatment
+			if (!brNeedsCorner) {
+				ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+			}
 		}
 
-		if (!heightAnalysis.topLess && !heightAnalysis.leftLess && heightAnalysis.cornerTopLeftLess) {
+		// Paint corner atoms where two adjacent edges meet (avoiding overlapping edge atoms)
+		if (tlNeedsCorner) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerBR), 0);
+			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TL quadrant
+		}
+		if (trNeedsCorner) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerBL), 0);
+			ctx.drawImage(cornerGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+		}
+		if (blNeedsCorner) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTR), 0);
+			ctx.drawImage(cornerGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+		}
+		if (brNeedsCorner) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTL), 0);
+			ctx.drawImage(cornerGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+		}
+
+		// Inner corners (only diagonal neighbor is lower)
+		if (!effectiveTopLess && !effectiveLeftLess && effectiveCornerTopLeftLess) {
 			const bottomGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerBottom), 0);
 			ctx.drawImage(bottomGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
 			const rightGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerRight), 0);
 			ctx.drawImage(rightGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerBR), 0);
-			ctx.drawImage(cornerGrass, atomSize, atomSize, atomSize, atomSize); // TR quadrant		
+			ctx.drawImage(cornerGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
 		}
 
-		if (!heightAnalysis.topLess && !heightAnalysis.rightLess && heightAnalysis.cornerTopRightLess) {
+		if (!effectiveTopLess && !effectiveRightLess && effectiveCornerTopRightLess) {
 			const bottomGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerBottom), 0);
-			ctx.drawImage(bottomGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant			
+			ctx.drawImage(bottomGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
 			const leftGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerLeft), 0);
 			ctx.drawImage(leftGrass, 0, 0, atomSize, atomSize); // TL quadrant
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerBL), 0);
-			ctx.drawImage(cornerGrass, 0, atomSize, atomSize, atomSize); // TR quadrant
+			ctx.drawImage(cornerGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
 		}
 
-		if (!heightAnalysis.botLess && !heightAnalysis.leftLess && heightAnalysis.cornerBottomLeftLess) {
+		if (!effectiveBotLess && !effectiveLeftLess && effectiveCornerBottomLeftLess) {
 			const topGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerTop), 0);
-			ctx.drawImage(topGrass, 0, 0, atomSize, atomSize); // BR quadrant			
+			ctx.drawImage(topGrass, 0, 0, atomSize, atomSize); // TL quadrant
 			const rightGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerRight), 0);
-			ctx.drawImage(rightGrass, atomSize, atomSize, atomSize, atomSize); // TL quadrant
+			ctx.drawImage(rightGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerTR), 0);
 			ctx.drawImage(cornerGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
 		}
 
-		if (!heightAnalysis.botLess && !heightAnalysis.rightLess && heightAnalysis.cornerBottomRightLess) {
+		if (!effectiveBotLess && !effectiveRightLess && effectiveCornerBottomRightLess) {
 			const topGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerTop), 0);
-			ctx.drawImage(topGrass, atomSize, 0, atomSize, atomSize); // BR quadrant			
+			ctx.drawImage(topGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
 			const leftGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerLeft), 0);
-			ctx.drawImage(leftGrass, 0, atomSize, atomSize, atomSize); // TL quadrant
+			ctx.drawImage(leftGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerTL), 0);
-			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TR quadrant
+			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TL quadrant
 		}
 
-
-
-		if (heightAnalysis.topLess && heightAnalysis.leftLess && !heightAnalysis.botLess && !heightAnalysis.rightLess && !heightAnalysis.cornerBottomRightLess) {
-
+		// Outer corners on the opposite side (two adjacent lower neighbors, paint on the remaining corner)
+		if (effectiveTopLess && effectiveLeftLess && !effectiveBotLess && !effectiveRightLess && !effectiveCornerBottomRightLess) {
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerBR), 0);
-			ctx.drawImage(cornerGrass, atomSize, atomSize, atomSize, atomSize); // TR quadrant		
+			ctx.drawImage(cornerGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
 		}
 
-		if (heightAnalysis.topLess && heightAnalysis.rightLess && !heightAnalysis.botLess && !heightAnalysis.leftLess && !heightAnalysis.cornerBottomLeftLess) {
-
+		if (effectiveTopLess && effectiveRightLess && !effectiveBotLess && !effectiveLeftLess && !effectiveCornerBottomLeftLess) {
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerBL), 0);
-			ctx.drawImage(cornerGrass, 0, atomSize, atomSize, atomSize); // TR quadrant
+			ctx.drawImage(cornerGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
 		}
 
-		if (heightAnalysis.botLess && heightAnalysis.rightLess && !heightAnalysis.topLess && !heightAnalysis.leftLess && !heightAnalysis.cornerTopLeftLess) {
-
+		if (effectiveBotLess && effectiveRightLess && !effectiveTopLess && !effectiveLeftLess && !effectiveCornerTopLeftLess) {
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTL), 0);
-			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TR quadrant
+			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TL quadrant
 		}
 
-		if (heightAnalysis.botLess && heightAnalysis.leftLess && !heightAnalysis.topLess && !heightAnalysis.rightLess && !heightAnalysis.cornerTopRightLess) {
-
+		if (effectiveBotLess && effectiveLeftLess && !effectiveTopLess && !effectiveRightLess && !effectiveCornerTopRightLess) {
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTR), 0);
 			ctx.drawImage(cornerGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
 		}
@@ -1376,6 +1503,9 @@ class TileMap {
 	/**
 	 * Paint cliff-base texture atoms on a tile if it's at the lower edge of a cliff
 	 * This creates grass growing outward from the base of the cliff
+	 *
+	 * IMPORTANT: If this tile also has its own cliffs (lower neighbors), we skip painting
+	 * base textures in quadrants where supporting textures would be painted to avoid overlap
 	 */
 	paintCliffBaseTexturesForTile(ctx, analyzedMap, tile, row, col) {
 		// Skip cliff base textures if in editor mode (2D without 3D cliff meshes)
@@ -1391,88 +1521,514 @@ class TileMap {
 		const heightAnalysis = tile.heightAnalysis;
 		const atomSize = this.tileSize / 2;
 
-		// For now, assume grass is the top terrain layer
-		const grassIndex = this.layerTextures.length - 1;
+		// Check if neighboring tiles have ramps - don't paint base textures toward ramps
+		const topNeighborHasRamp = this.hasRampAt(col, row - 1);
+		const botNeighborHasRamp = this.hasRampAt(col, row + 1);
+		const leftNeighborHasRamp = this.hasRampAt(col - 1, row);
+		const rightNeighborHasRamp = this.hasRampAt(col + 1, row);
+
+		// If any HIGHER neighbor has a ramp, the ramp extends into this tile, so skip all base textures
+		// The ramp mesh will cover the area where base textures would be painted
+		const higherNeighborHasRamp =
+			(heightAnalysis.topHigher && topNeighborHasRamp) ||
+			(heightAnalysis.botHigher && botNeighborHasRamp) ||
+			(heightAnalysis.leftHigher && leftNeighborHasRamp) ||
+			(heightAnalysis.rightHigher && rightNeighborHasRamp);
+
+		if (higherNeighborHasRamp) {
+			return;
+		}
+
+		// Get grass index dynamically (from terrain type names or fall back to last index)
+		const grassIndex = this.getGrassIndex();
 
 		// Get grass atoms
 		const grassAtoms = this.baseAtoms[grassIndex];
 		if (!grassAtoms || !grassAtoms.full) return;
 
+		// Suppress base textures if the higher neighbor has a ramp (redundant now but kept for clarity)
+		const effectiveTopHigher = heightAnalysis.topHigher && !topNeighborHasRamp;
+		const effectiveBotHigher = heightAnalysis.botHigher && !botNeighborHasRamp;
+		const effectiveLeftHigher = heightAnalysis.leftHigher && !leftNeighborHasRamp;
+		const effectiveRightHigher = heightAnalysis.rightHigher && !rightNeighborHasRamp;
+
+		// Track which quadrants are "claimed" by supporting textures (from this tile's own cliffs)
+		// If this tile has lower neighbors, those quadrants get supporting textures, not base textures
+		const tlClaimedBySupporting = heightAnalysis.topLess || heightAnalysis.leftLess || heightAnalysis.cornerTopLeftLess;
+		const trClaimedBySupporting = heightAnalysis.topLess || heightAnalysis.rightLess || heightAnalysis.cornerTopRightLess;
+		const blClaimedBySupporting = heightAnalysis.botLess || heightAnalysis.leftLess || heightAnalysis.cornerBottomLeftLess;
+		const brClaimedBySupporting = heightAnalysis.botLess || heightAnalysis.rightLess || heightAnalysis.cornerBottomRightLess;
+
+		// Determine which quadrants need corner atom treatment instead of overlapping edge atoms
+		// When top+left are higher: both want to paint TL, so TL gets corner atom (oneCornerBR)
+		// When top+right are higher: both want to paint TR, so TR gets corner atom (oneCornerBL)
+		// When bot+left are higher: both want to paint BL, so BL gets corner atom (oneCornerTR)
+		// When bot+right are higher: both want to paint BR, so BR gets corner atom (oneCornerTL)
+		const tlNeedsCorner = effectiveTopHigher && effectiveLeftHigher;
+		const trNeedsCorner = effectiveTopHigher && effectiveRightHigher;
+		const blNeedsCorner = effectiveBotHigher && effectiveLeftHigher;
+		const brNeedsCorner = effectiveBotHigher && effectiveRightHigher;
+
 		// Paint grass on quadrants ADJACENT to where cliff meshes would be on the higher neighbor
 		// This creates a transition on the lower terrain level at the base of the cliff
+		// BUT skip quadrants that are already claimed by supporting textures OR need corner treatment
 
 		// Top neighbor is higher: cliff base would be at top of this tile
 		// Paint grass on TOP quadrants (TL, TR) facing the cliff
-		if (heightAnalysis.topHigher) {
+		if (effectiveTopHigher) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerBottom), 0);
-			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
-			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+			if (!tlClaimedBySupporting && !tlNeedsCorner) {
+				ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
+			}
+			if (!trClaimedBySupporting && !trNeedsCorner) {
+				ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+			}
 		}
 
 		// Bottom neighbor is higher: cliff base would be at bottom of this tile
 		// Paint grass on BOTTOM quadrants (BL, BR) facing the cliff
-		if (heightAnalysis.botHigher) {
+		if (effectiveBotHigher) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerTop), 0);
-			ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
-			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+			if (!blClaimedBySupporting && !blNeedsCorner) {
+				ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+			}
+			if (!brClaimedBySupporting && !brNeedsCorner) {
+				ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+			}
 		}
 
 		// Left neighbor is higher: cliff base would be at left of this tile
 		// Paint grass on LEFT quadrants (TL, BL) facing the cliff
-		if (heightAnalysis.leftHigher) {
+		if (effectiveLeftHigher) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerRight), 0);
-			ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
-			ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+			if (!tlClaimedBySupporting && !tlNeedsCorner) {
+				ctx.drawImage(rotatedGrass, 0, 0, atomSize, atomSize); // TL quadrant
+			}
+			if (!blClaimedBySupporting && !blNeedsCorner) {
+				ctx.drawImage(rotatedGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+			}
 		}
 
 		// Right neighbor is higher: cliff base would be at right of this tile
 		// Paint grass on RIGHT quadrants (TR, BR) facing the cliff
-		if (heightAnalysis.rightHigher) {
+		if (effectiveRightHigher) {
 			const rotatedGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.twoCornerLeft), 0);
-			ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
-			ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+			if (!trClaimedBySupporting && !trNeedsCorner) {
+				ctx.drawImage(rotatedGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+			}
+			if (!brClaimedBySupporting && !brNeedsCorner) {
+				ctx.drawImage(rotatedGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+			}
+		}
+
+		// Paint corner atoms where two adjacent higher neighbors meet (avoiding overlapping edge atoms)
+		if (tlNeedsCorner && !tlClaimedBySupporting) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerBR), 0);
+			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TL quadrant
+		}
+		if (trNeedsCorner && !trClaimedBySupporting) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerBL), 0);
+			ctx.drawImage(cornerGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
+		}
+		if (blNeedsCorner && !blClaimedBySupporting) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTR), 0);
+			ctx.drawImage(cornerGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
+		}
+		if (brNeedsCorner && !brClaimedBySupporting) {
+			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTL), 0);
+			ctx.drawImage(cornerGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
 		}
 
 		// Handle inner corners (diagonal neighbor is higher, but cardinal neighbors are not)
-		if (!heightAnalysis.topHigher && !heightAnalysis.leftHigher && heightAnalysis.cornerTopLeftHigher) {
+		if (!effectiveTopHigher && !effectiveLeftHigher && heightAnalysis.cornerTopLeftHigher && !tlClaimedBySupporting) {
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerBR), 0);
 			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TL quadrant
 		}
 
-		if (!heightAnalysis.topHigher && !heightAnalysis.rightHigher && heightAnalysis.cornerTopRightHigher) {
+		if (!effectiveTopHigher && !effectiveRightHigher && heightAnalysis.cornerTopRightHigher && !trClaimedBySupporting) {
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerBL), 0);
 			ctx.drawImage(cornerGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
 		}
 
-		if (!heightAnalysis.botHigher && !heightAnalysis.leftHigher && heightAnalysis.cornerBottomLeftHigher) {
+		if (!effectiveBotHigher && !effectiveLeftHigher && heightAnalysis.cornerBottomLeftHigher && !blClaimedBySupporting) {
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerTR), 0);
 			ctx.drawImage(cornerGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
 		}
 
-		if (!heightAnalysis.botHigher && !heightAnalysis.rightHigher && heightAnalysis.cornerBottomRightHigher) {
+		if (!effectiveBotHigher && !effectiveRightHigher && heightAnalysis.cornerBottomRightHigher && !brClaimedBySupporting) {
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.threeCornerTL), 0);
 			ctx.drawImage(cornerGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
 		}
 
 		// Handle outer corners (both adjacent cardinal neighbors are higher)
-		if (heightAnalysis.topHigher && heightAnalysis.leftHigher && !heightAnalysis.botHigher && !heightAnalysis.rightHigher) {
+		// These only paint if the tile has no lower neighbors in those directions
+		if (effectiveTopHigher && effectiveLeftHigher && !effectiveBotHigher && !effectiveRightHigher && !tlClaimedBySupporting) {
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerBR), 0);
 			ctx.drawImage(cornerGrass, 0, 0, atomSize, atomSize); // TL quadrant
 		}
 
-		if (heightAnalysis.topHigher && heightAnalysis.rightHigher && !heightAnalysis.botHigher && !heightAnalysis.leftHigher) {
+		if (effectiveTopHigher && effectiveRightHigher && !effectiveBotHigher && !effectiveLeftHigher && !trClaimedBySupporting) {
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerBL), 0);
 			ctx.drawImage(cornerGrass, atomSize, 0, atomSize, atomSize); // TR quadrant
 		}
 
-		if (heightAnalysis.botHigher && heightAnalysis.leftHigher && !heightAnalysis.topHigher && !heightAnalysis.rightHigher) {
+		if (effectiveBotHigher && effectiveLeftHigher && !effectiveTopHigher && !effectiveRightHigher && !blClaimedBySupporting) {
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTR), 0);
 			ctx.drawImage(cornerGrass, 0, atomSize, atomSize, atomSize); // BL quadrant
 		}
 
-		if (heightAnalysis.botHigher && heightAnalysis.rightHigher && !heightAnalysis.topHigher && !heightAnalysis.leftHigher) {
+		if (effectiveBotHigher && effectiveRightHigher && !effectiveTopHigher && !effectiveLeftHigher && !brClaimedBySupporting) {
 			const cornerGrass = this.rotateCanvas(this.imageDataToCanvas(grassAtoms.oneCornerTL), 0);
 			ctx.drawImage(cornerGrass, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+		}
+	}
+
+	/**
+	 * Paint ramp textures using dirt atoms on ramp tiles and adjacent lower tiles
+	 * Ramps connect two height levels, so both the ramp tile and lower neighbor get dirt textures
+	 */
+	paintRampTexturesForTile(ctx, analyzedMap, tile, row, col) {
+		// Skip if cliff textures are disabled
+		if (this.skipCliffTextures) {
+			return;
+		}
+
+		const atomSize = this.tileSize / 2;
+
+		// Get dirt atoms for ramp textures
+		const dirtIndex = this.getDirtIndex();
+		const dirtAtoms = this.baseAtoms[dirtIndex];
+		if (!dirtAtoms || !dirtAtoms.full) return;
+
+		// Check if THIS tile has a ramp
+		const hasRamp = this.hasRampAt(col, row);
+
+		// Helper to check if a tile is a "lower ramp tile" (has a higher neighbor with a ramp pointing to it)
+		const isLowerRampTileCheck = (checkCol, checkRow) => {
+			if (!this.heightMap || checkRow < 0 || checkRow >= this.heightMap.length) return false;
+			if (!this.heightMap[checkRow] || checkCol < 0 || checkCol >= this.heightMap[checkRow].length) return false;
+
+			const tileHeight = this.heightMap[checkRow][checkCol];
+
+			// Check each cardinal neighbor - if it's higher AND has a ramp, this tile is a lower ramp tile
+			if (checkRow > 0 && this.heightMap[checkRow - 1] &&
+				this.heightMap[checkRow - 1][checkCol] > tileHeight &&
+				this.hasRampAt(checkCol, checkRow - 1)) {
+				return true;
+			}
+			if (checkRow < this.heightMap.length - 1 && this.heightMap[checkRow + 1] &&
+				this.heightMap[checkRow + 1][checkCol] > tileHeight &&
+				this.hasRampAt(checkCol, checkRow + 1)) {
+				return true;
+			}
+			if (checkCol > 0 && this.heightMap[checkRow][checkCol - 1] > tileHeight &&
+				this.hasRampAt(checkCol - 1, checkRow)) {
+				return true;
+			}
+			if (checkCol < this.heightMap[checkRow].length - 1 &&
+				this.heightMap[checkRow][checkCol + 1] > tileHeight &&
+				this.hasRampAt(checkCol + 1, checkRow)) {
+				return true;
+			}
+			return false;
+		};
+
+		// Check if THIS tile is the lower ramp tile
+		const thisIsLowerRampTile = isLowerRampTileCheck(col, row);
+
+		// Paint full dirt base for both ramp tiles (top ramp tile has the ramp, lower ramp tile is where it extends)
+		if (hasRamp || thisIsLowerRampTile) {
+			const fullDirt = this.imageDataToCanvas(dirtAtoms.full);
+			ctx.drawImage(fullDirt, 0, 0, atomSize, atomSize); // TL
+			ctx.drawImage(fullDirt, atomSize, 0, atomSize, atomSize); // TR
+			ctx.drawImage(fullDirt, 0, atomSize, atomSize, atomSize); // BL
+			ctx.drawImage(fullDirt, atomSize, atomSize, atomSize, atomSize); // BR
+		}
+
+		// Helper to check if a tile is a "lower ramp tile" (reuse the check function)
+		const isLowerRampTile = isLowerRampTileCheck;
+
+		// Helper to check if a tile is a "top ramp tile" (has the ramp AND has a lower neighbor)
+		const isTopRampTile = (checkCol, checkRow) => {
+			if (!this.hasRampAt(checkCol, checkRow)) return false;
+			if (!this.heightMap || checkRow < 0 || checkRow >= this.heightMap.length) return false;
+			if (!this.heightMap[checkRow] || checkCol < 0 || checkCol >= this.heightMap[checkRow].length) return false;
+
+			const tileHeight = this.heightMap[checkRow][checkCol];
+
+			// Check each cardinal neighbor - if it's lower, this is the top ramp tile
+			if (checkRow > 0 && this.heightMap[checkRow - 1] &&
+				this.heightMap[checkRow - 1][checkCol] < tileHeight) {
+				return true;
+			}
+			if (checkRow < this.heightMap.length - 1 && this.heightMap[checkRow + 1] &&
+				this.heightMap[checkRow + 1][checkCol] < tileHeight) {
+				return true;
+			}
+			if (checkCol > 0 && this.heightMap[checkRow][checkCol - 1] < tileHeight) {
+				return true;
+			}
+			if (checkCol < this.heightMap[checkRow].length - 1 &&
+				this.heightMap[checkRow][checkCol + 1] < tileHeight) {
+				return true;
+			}
+			return false;
+		};
+
+		// Helper to get the direction a top ramp tile faces (toward lower neighbor)
+		// Returns 'top', 'bot', 'left', 'right' or null
+		const getTopRampDirection = (checkCol, checkRow) => {
+			if (!this.hasRampAt(checkCol, checkRow)) return null;
+			if (!this.heightMap || checkRow < 0 || checkRow >= this.heightMap.length) return null;
+			if (!this.heightMap[checkRow] || checkCol < 0 || checkCol >= this.heightMap[checkRow].length) return null;
+
+			const tileHeight = this.heightMap[checkRow][checkCol];
+
+			if (checkRow > 0 && this.heightMap[checkRow - 1] &&
+				this.heightMap[checkRow - 1][checkCol] < tileHeight) {
+				return 'top';
+			}
+			if (checkRow < this.heightMap.length - 1 && this.heightMap[checkRow + 1] &&
+				this.heightMap[checkRow + 1][checkCol] < tileHeight) {
+				return 'bot';
+			}
+			if (checkCol > 0 && this.heightMap[checkRow][checkCol - 1] < tileHeight) {
+				return 'left';
+			}
+			if (checkCol < this.heightMap[checkRow].length - 1 &&
+				this.heightMap[checkRow][checkCol + 1] < tileHeight) {
+				return 'right';
+			}
+			return null;
+		};
+
+		// Helper to check if tile is any kind of ramp tile (top or lower)
+		const isRampTile = (checkCol, checkRow) => {
+			return isTopRampTile(checkCol, checkRow) || isLowerRampTile(checkCol, checkRow);
+		};
+
+		// Get this tile's height for comparison
+		const thisHeight = this.heightMap && this.heightMap[row] ? this.heightMap[row][col] : 0;
+
+		// Helper to get neighbor height
+		const getNeighborHeight = (c, r) => {
+			if (!this.heightMap || r < 0 || r >= this.heightMap.length) return 0;
+			if (!this.heightMap[r] || c < 0 || c >= this.heightMap[r].length) return 0;
+			return this.heightMap[r][c];
+		};
+
+		// Check if this tile is a ramp tile (either top or lower) - skip support texture painting
+		const thisIsRampTile = hasRamp || isLowerRampTile(col, row);
+
+		// Check each of our neighbors - if they're a ramp tile (top or lower), paint dirt toward them
+		// But skip if THIS tile is also a ramp tile
+		// Also check height constraints
+		const topNeighborHeight = getNeighborHeight(col, row - 1);
+		const botNeighborHeight = getNeighborHeight(col, row + 1);
+		const leftNeighborHeight = getNeighborHeight(col - 1, row);
+		const rightNeighborHeight = getNeighborHeight(col + 1, row);
+
+		// For top ramp tiles, neighbors should be at same height or higher
+		// For lower ramp tiles, neighbors should be at same height or lower
+		const topIsTopRampTile = !thisIsRampTile && isTopRampTile(col, row - 1) && thisHeight >= topNeighborHeight;
+		const botIsTopRampTile = !thisIsRampTile && isTopRampTile(col, row + 1) && thisHeight >= botNeighborHeight;
+		const leftIsTopRampTile = !thisIsRampTile && isTopRampTile(col - 1, row) && thisHeight >= leftNeighborHeight;
+		const rightIsTopRampTile = !thisIsRampTile && isTopRampTile(col + 1, row) && thisHeight >= rightNeighborHeight;
+
+		const topIsLowerRampTile = !thisIsRampTile && isLowerRampTile(col, row - 1) && thisHeight <= topNeighborHeight;
+		const botIsLowerRampTile = !thisIsRampTile && isLowerRampTile(col, row + 1) && thisHeight <= botNeighborHeight;
+		const leftIsLowerRampTile = !thisIsRampTile && isLowerRampTile(col - 1, row) && thisHeight <= leftNeighborHeight;
+		const rightIsLowerRampTile = !thisIsRampTile && isLowerRampTile(col + 1, row) && thisHeight <= rightNeighborHeight;
+
+		// Combine: neighbor is any kind of ramp tile
+		const topIsRampTile = topIsTopRampTile || topIsLowerRampTile;
+		const botIsRampTile = botIsTopRampTile || botIsLowerRampTile;
+		const leftIsRampTile = leftIsTopRampTile || leftIsLowerRampTile;
+		const rightIsRampTile = rightIsTopRampTile || rightIsLowerRampTile;
+
+		// Check diagonal neighbors for ramp tiles (also with height check)
+		const cornerTLHeight = getNeighborHeight(col - 1, row - 1);
+		const cornerTRHeight = getNeighborHeight(col + 1, row - 1);
+		const cornerBLHeight = getNeighborHeight(col - 1, row + 1);
+		const cornerBRHeight = getNeighborHeight(col + 1, row + 1);
+
+		const cornerTLIsRampTile = !thisIsRampTile && isRampTile(col - 1, row - 1) &&
+			(isLowerRampTile(col - 1, row - 1) ? thisHeight <= cornerTLHeight : thisHeight >= cornerTLHeight);
+		const cornerTRIsRampTile = !thisIsRampTile && isRampTile(col + 1, row - 1) &&
+			(isLowerRampTile(col + 1, row - 1) ? thisHeight <= cornerTRHeight : thisHeight >= cornerTRHeight);
+		const cornerBLIsRampTile = !thisIsRampTile && isRampTile(col - 1, row + 1) &&
+			(isLowerRampTile(col - 1, row + 1) ? thisHeight <= cornerBLHeight : thisHeight >= cornerBLHeight);
+		const cornerBRIsRampTile = !thisIsRampTile && isRampTile(col + 1, row + 1) &&
+			(isLowerRampTile(col + 1, row + 1) ? thisHeight <= cornerBRHeight : thisHeight >= cornerBRHeight);
+
+		// Determine which quadrants need corner treatment (when two adjacent cardinal ramp tiles meet)
+		const tlNeedsCorner = topIsRampTile && leftIsRampTile;
+		const trNeedsCorner = topIsRampTile && rightIsRampTile;
+		const blNeedsCorner = botIsRampTile && leftIsRampTile;
+		const brNeedsCorner = botIsRampTile && rightIsRampTile;
+
+		// Check if we're a SIDE neighbor of a top ramp tile (we're perpendicular to ramp direction)
+		// If so, we need a corner texture instead of an edge texture
+		// Get directions for each cardinal neighbor that is a top ramp
+		const topRampDir = topIsTopRampTile ? getTopRampDirection(col, row - 1) : null;
+		const botRampDir = botIsTopRampTile ? getTopRampDirection(col, row + 1) : null;
+		const leftRampDir = leftIsTopRampTile ? getTopRampDirection(col - 1, row) : null;
+		const rightRampDir = rightIsTopRampTile ? getTopRampDirection(col + 1, row) : null;
+
+		// We're a side neighbor if the ramp direction is perpendicular to us
+		// Top neighbor: we're its side neighbor if ramp goes left or right
+		// Left neighbor: we're its side neighbor if ramp goes top or bot
+		const topIsSideOfRamp = topRampDir === 'left' || topRampDir === 'right';
+		const botIsSideOfRamp = botRampDir === 'left' || botRampDir === 'right';
+		const leftIsSideOfRamp = leftRampDir === 'top' || leftRampDir === 'bot';
+		const rightIsSideOfRamp = rightRampDir === 'top' || rightRampDir === 'bot';
+
+		// Paint dirt on edges TOWARD ramp tiles (for smooth transition)
+		// Keep original texture orientations, just move to the quadrant touching the ramp tile
+		// BUT: skip edge painting if we're a side neighbor of a top ramp (will paint corner instead)
+		if (topIsRampTile && !topIsSideOfRamp) {
+			// Top neighbor is ramp tile, paint dirt on TOP edge (toward it)
+			const rotatedDirt = this.rotateCanvas(this.imageDataToCanvas(dirtAtoms.twoCornerBottom), 0);
+			if (!tlNeedsCorner) {
+				ctx.drawImage(rotatedDirt, 0, 0, atomSize, atomSize); // TL quadrant
+			}
+			if (!trNeedsCorner) {
+				ctx.drawImage(rotatedDirt, atomSize, 0, atomSize, atomSize); // TR quadrant
+			}
+		}
+
+		if (botIsRampTile && !botIsSideOfRamp) {
+			// Bottom neighbor is ramp tile, paint dirt on BOTTOM edge (toward it)
+			const rotatedDirt = this.rotateCanvas(this.imageDataToCanvas(dirtAtoms.twoCornerTop), 0);
+			if (!blNeedsCorner) {
+				ctx.drawImage(rotatedDirt, 0, atomSize, atomSize, atomSize); // BL quadrant
+			}
+			if (!brNeedsCorner) {
+				ctx.drawImage(rotatedDirt, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+			}
+		}
+
+		if (leftIsRampTile && !leftIsSideOfRamp) {
+			// Left neighbor is ramp tile, paint dirt on LEFT edge (toward it)
+			const rotatedDirt = this.rotateCanvas(this.imageDataToCanvas(dirtAtoms.twoCornerRight), 0);
+			if (!tlNeedsCorner) {
+				ctx.drawImage(rotatedDirt, 0, 0, atomSize, atomSize); // TL quadrant
+			}
+			if (!blNeedsCorner) {
+				ctx.drawImage(rotatedDirt, 0, atomSize, atomSize, atomSize); // BL quadrant
+			}
+		}
+
+		if (rightIsRampTile && !rightIsSideOfRamp) {
+			// Right neighbor is ramp tile, paint dirt on RIGHT edge (toward it)
+			const rotatedDirt = this.rotateCanvas(this.imageDataToCanvas(dirtAtoms.twoCornerLeft), 0);
+			if (!trNeedsCorner) {
+				ctx.drawImage(rotatedDirt, atomSize, 0, atomSize, atomSize); // TR quadrant
+			}
+			if (!brNeedsCorner) {
+				ctx.drawImage(rotatedDirt, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+			}
+		}
+
+		// Paint corner atoms for side neighbors of top ramp tiles
+		// These use oneCorner atoms (mostly dirt with one corner cut) pointing toward the ramp
+		// Check each cardinal direction - if there's a top ramp tile there, paint corner based on ramp direction
+		// Left neighbor check (this tile is to the RIGHT of a ramp)
+		if (this.hasRampAt(col - 1, row) && !thisIsRampTile) {
+			const dir = getTopRampDirection(col - 1, row);
+			if (dir === 'top') {
+				// Ramp is going up (top), we're on its right side - paint TL with corner cut at TL
+				const cornerDirt = this.imageDataToCanvas(dirtAtoms.oneCornerTL);
+				ctx.drawImage(cornerDirt, 0, 0, atomSize, atomSize); // TL quadrant
+			} else if (dir === 'bot') {
+				// Ramp is going down (bot), we're on its right side - paint BL with corner cut at BL
+				const cornerDirt = this.imageDataToCanvas(dirtAtoms.oneCornerBL);
+				ctx.drawImage(cornerDirt, 0, atomSize, atomSize, atomSize); // BL quadrant
+			}
+		}
+
+		// Right neighbor check (this tile is to the LEFT of a ramp)
+		if (this.hasRampAt(col + 1, row) && !thisIsRampTile) {
+			const dir = getTopRampDirection(col + 1, row);
+			if (dir === 'top') {
+				// Ramp is going up (top), we're on its left side - paint TR with corner cut at TR
+				const cornerDirt = this.imageDataToCanvas(dirtAtoms.oneCornerTR);
+				ctx.drawImage(cornerDirt, atomSize, 0, atomSize, atomSize); // TR quadrant
+			} else if (dir === 'bot') {
+				// Ramp is going down (bot), we're on its left side - paint BR with corner cut at BR
+				const cornerDirt = this.imageDataToCanvas(dirtAtoms.oneCornerBR);
+				ctx.drawImage(cornerDirt, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+			}
+		}
+
+		// Top neighbor check (this tile is BELOW a ramp)
+		if (this.hasRampAt(col, row - 1) && !thisIsRampTile) {
+			const dir = getTopRampDirection(col, row - 1);
+			if (dir === 'left') {
+				// Ramp is going left, we're below it - paint TL with corner cut at TL
+				const cornerDirt = this.imageDataToCanvas(dirtAtoms.oneCornerTL);
+				ctx.drawImage(cornerDirt, 0, 0, atomSize, atomSize); // TL quadrant
+			} else if (dir === 'right') {
+				// Ramp is going right, we're below it - paint TR with corner cut at TR
+				const cornerDirt = this.imageDataToCanvas(dirtAtoms.oneCornerTR);
+				ctx.drawImage(cornerDirt, atomSize, 0, atomSize, atomSize); // TR quadrant
+			}
+		}
+
+		// Bottom neighbor check (this tile is ABOVE a ramp)
+		if (this.hasRampAt(col, row + 1) && !thisIsRampTile) {
+			const dir = getTopRampDirection(col, row + 1);
+			if (dir === 'left') {
+				// Ramp is going left, we're above it - paint BL with corner cut at BL
+				const cornerDirt = this.imageDataToCanvas(dirtAtoms.oneCornerBL);
+				ctx.drawImage(cornerDirt, 0, atomSize, atomSize, atomSize); // BL quadrant
+			} else if (dir === 'right') {
+				// Ramp is going right, we're above it - paint BR with corner cut at BR
+				const cornerDirt = this.imageDataToCanvas(dirtAtoms.oneCornerBR);
+				ctx.drawImage(cornerDirt, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+			}
+		}
+
+		// Paint corner atoms where two adjacent cardinal ramp tiles meet
+		if (tlNeedsCorner) {
+			const cornerDirt = this.rotateCanvas(this.imageDataToCanvas(dirtAtoms.oneCornerTL), 0);
+			ctx.drawImage(cornerDirt, 0, 0, atomSize, atomSize); // TL quadrant
+		}
+		if (trNeedsCorner) {
+			const cornerDirt = this.rotateCanvas(this.imageDataToCanvas(dirtAtoms.oneCornerTR), 0);
+			ctx.drawImage(cornerDirt, atomSize, 0, atomSize, atomSize); // TR quadrant
+		}
+		if (blNeedsCorner) {
+			const cornerDirt = this.rotateCanvas(this.imageDataToCanvas(dirtAtoms.oneCornerBL), 0);
+			ctx.drawImage(cornerDirt, 0, atomSize, atomSize, atomSize); // BL quadrant
+		}
+		if (brNeedsCorner) {
+			const cornerDirt = this.rotateCanvas(this.imageDataToCanvas(dirtAtoms.oneCornerBR), 0);
+			ctx.drawImage(cornerDirt, atomSize, atomSize, atomSize, atomSize); // BR quadrant
+		}
+
+		// Paint inner corner atoms when only the diagonal neighbor is a ramp tile
+		// (similar to cliff inner corners - atom_three style)
+		// Keep original texture orientations, just move to the quadrant touching the diagonal ramp tile
+		if (cornerTLIsRampTile && !topIsRampTile && !leftIsRampTile) {
+			// Diagonal TL is ramp tile, paint inner corner on TL quadrant (toward it)
+			const cornerDirt = this.rotateCanvas(this.imageDataToCanvas(dirtAtoms.threeCornerBR), 0);
+			ctx.drawImage(cornerDirt, 0, 0, atomSize, atomSize); // TL quadrant
+		}
+		if (cornerTRIsRampTile && !topIsRampTile && !rightIsRampTile) {
+			// Diagonal TR is ramp tile, paint inner corner on TR quadrant (toward it)
+			const cornerDirt = this.rotateCanvas(this.imageDataToCanvas(dirtAtoms.threeCornerBL), 0);
+			ctx.drawImage(cornerDirt, atomSize, 0, atomSize, atomSize); // TR quadrant
+		}
+		if (cornerBLIsRampTile && !botIsRampTile && !leftIsRampTile) {
+			// Diagonal BL is ramp tile, paint inner corner on BL quadrant (toward it)
+			const cornerDirt = this.rotateCanvas(this.imageDataToCanvas(dirtAtoms.threeCornerTR), 0);
+			ctx.drawImage(cornerDirt, 0, atomSize, atomSize, atomSize); // BL quadrant
+		}
+		if (cornerBRIsRampTile && !botIsRampTile && !rightIsRampTile) {
+			// Diagonal BR is ramp tile, paint inner corner on BR quadrant (toward it)
+			const cornerDirt = this.rotateCanvas(this.imageDataToCanvas(dirtAtoms.threeCornerTL), 0);
+			ctx.drawImage(cornerDirt, atomSize, atomSize, atomSize, atomSize); // BR quadrant
 		}
 	}
 
@@ -1512,6 +2068,121 @@ class TileMap {
 
 		// Store terrain data for height mapping
 		this.terrainData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height).data;
+
+		// Second pass: paint top ramp support textures
+		this.paintTopRampSupportTextures(ctx);
+	}
+
+	/**
+	 * Paint support textures around top ramp tiles (second pass after main drawing)
+	 */
+	paintTopRampSupportTextures(ctx) {
+		if (!this.ramps || this.ramps.length === 0) return;
+		if (!this.heightMap) return;
+
+		const atomSize = this.tileSize / 2;
+		const dirtIndex = this.getDirtIndex();
+		const dirtAtoms = this.baseAtoms[dirtIndex];
+		if (!dirtAtoms) return;
+
+		// Process each ramp
+		this.ramps.forEach(ramp => {
+			const col = ramp.gridX;
+			const row = ramp.gridZ;
+
+			// Find ramp direction (toward lower neighbor)
+			const thisHeight = this.heightMap[row] ? this.heightMap[row][col] : 0;
+			let rampDir = null;
+
+			if (row > 0 && this.heightMap[row - 1] && this.heightMap[row - 1][col] < thisHeight) {
+				rampDir = 'top';
+			} else if (row < this.heightMap.length - 1 && this.heightMap[row + 1] && this.heightMap[row + 1][col] < thisHeight) {
+				rampDir = 'bot';
+			} else if (col > 0 && this.heightMap[row][col - 1] < thisHeight) {
+				rampDir = 'left';
+			} else if (this.heightMap[row] && col < this.heightMap[row].length - 1 && this.heightMap[row][col + 1] < thisHeight) {
+				rampDir = 'right';
+			}
+
+			if (!rampDir) return;
+
+			// Paint support textures based on ramp direction
+			// Sequence: back neighbor edges, side neighbor corners (oneCorner), diagonal corners (threeCorner)
+			if (rampDir === 'bot') {
+				// Ramp goes DOWN - back is row-1, sides are col-1 and col+1
+				// Back neighbor: edge on bottom quadrants
+				this.paintAtomAt(ctx, col, row - 1, 'BL', dirtAtoms.twoCornerTop, atomSize);
+				this.paintAtomAt(ctx, col, row - 1, 'BR', dirtAtoms.twoCornerTop, atomSize);
+				// Left side (tile at col-1): corner in BR with one corner cut at BR
+				this.paintAtomAt(ctx, col - 1, row, 'TR', dirtAtoms.threeCornerBL, atomSize);
+				// Right side (tile at col+1): corner in BL with one corner cut at BL
+				this.paintAtomAt(ctx, col + 1, row, 'TL', dirtAtoms.threeCornerBR, atomSize);
+				// Diagonal back-left: inner corner in BR (threeCorner - mostly background with BR dirt)
+				this.paintAtomAt(ctx, col - 1, row - 1, 'BR', dirtAtoms.threeCornerTL, atomSize);
+				// Diagonal back-right: inner corner in BL (threeCorner - mostly background with BL dirt)
+				this.paintAtomAt(ctx, col + 1, row - 1, 'BL', dirtAtoms.threeCornerTR, atomSize);
+
+			} else if (rampDir === 'top') {
+				// Ramp goes UP - back is row+1, sides are col-1 and col+1
+				this.paintAtomAt(ctx, col, row + 1, 'TL', dirtAtoms.twoCornerBottom, atomSize);
+				this.paintAtomAt(ctx, col, row + 1, 'TR', dirtAtoms.twoCornerBottom, atomSize);
+				// Left side (tile at col-1): corner in BR (opposite quadrant from ramp direction)
+				this.paintAtomAt(ctx, col - 1, row, 'BR', dirtAtoms.threeCornerTL, atomSize);
+				// Right side (tile at col+1): corner in BL (opposite quadrant from ramp direction)
+				this.paintAtomAt(ctx, col + 1, row, 'BL', dirtAtoms.threeCornerTR, atomSize);
+				// Diagonal back-left: inner corner in TR
+				this.paintAtomAt(ctx, col - 1, row + 1, 'TR', dirtAtoms.threeCornerBL, atomSize);
+				// Diagonal back-right: inner corner in TL
+				this.paintAtomAt(ctx, col + 1, row + 1, 'TL', dirtAtoms.threeCornerBR, atomSize);
+
+			} else if (rampDir === 'left') {
+				// Ramp goes LEFT - back is col+1, sides are row-1 and row+1
+				this.paintAtomAt(ctx, col + 1, row, 'TL', dirtAtoms.twoCornerRight, atomSize);
+				this.paintAtomAt(ctx, col + 1, row, 'BL', dirtAtoms.twoCornerRight, atomSize);
+				// Top side (tile at row-1): corner in BR (opposite quadrant from ramp direction)
+				this.paintAtomAt(ctx, col, row - 1, 'BR', dirtAtoms.threeCornerTL, atomSize);
+				// Bottom side (tile at row+1): corner in TR (opposite quadrant from ramp direction)
+				this.paintAtomAt(ctx, col, row + 1, 'TR', dirtAtoms.threeCornerBL, atomSize);
+				// Diagonal back-top: inner corner in BL
+				this.paintAtomAt(ctx, col + 1, row - 1, 'BL', dirtAtoms.threeCornerTR, atomSize);
+				// Diagonal back-bottom: inner corner in TL
+				this.paintAtomAt(ctx, col + 1, row + 1, 'TL', dirtAtoms.threeCornerBR, atomSize);
+
+			} else if (rampDir === 'right') {
+				// Ramp goes RIGHT - back is col-1, sides are row-1 and row+1
+				this.paintAtomAt(ctx, col - 1, row, 'TR', dirtAtoms.twoCornerLeft, atomSize);
+				this.paintAtomAt(ctx, col - 1, row, 'BR', dirtAtoms.twoCornerLeft, atomSize);
+				// Top side (tile at row-1): corner in BL (opposite quadrant from ramp direction)
+				this.paintAtomAt(ctx, col, row - 1, 'BL', dirtAtoms.threeCornerTR, atomSize);
+				// Bottom side (tile at row+1): corner in TL (opposite quadrant from ramp direction)
+				this.paintAtomAt(ctx, col, row + 1, 'TL', dirtAtoms.threeCornerBR, atomSize);
+				// Diagonal back-top: inner corner in BR
+				this.paintAtomAt(ctx, col - 1, row - 1, 'BR', dirtAtoms.threeCornerTL, atomSize);
+				// Diagonal back-bottom: inner corner in TR
+				this.paintAtomAt(ctx, col - 1, row + 1, 'TR', dirtAtoms.threeCornerBL, atomSize);
+			}
+		});
+	}
+
+	/**
+	 * Paint a single atom at a specific tile position and quadrant
+	 */
+	paintAtomAt(ctx, col, row, quadrant, atom, atomSize) {
+		// Bounds check
+		if (row < 0 || col < 0) return;
+		if (!this.heightMap || row >= this.heightMap.length) return;
+		if (!this.heightMap[row] || col >= this.heightMap[row].length) return;
+
+		const x = col * this.tileSize;
+		const y = row * this.tileSize;
+
+		const atomCanvas = this.imageDataToCanvas(atom);
+
+		let offsetX = 0, offsetY = 0;
+		if (quadrant === 'TR' || quadrant === 'BR') offsetX = atomSize;
+		if (quadrant === 'BL' || quadrant === 'BR') offsetY = atomSize;
+
+		ctx.drawImage(atomCanvas, x + offsetX, y + offsetY, atomSize, atomSize);
 	}
 
 	/**
