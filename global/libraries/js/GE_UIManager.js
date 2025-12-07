@@ -143,8 +143,8 @@ class GE_UIManager {
         if (config.spriteSize !== undefined) {
             document.getElementById('iso-size').value = config.spriteSize;
         }
-        if (config.framesToGenerate !== undefined) {
-            document.getElementById('iso-frames').value = config.framesToGenerate;
+        if (config.animationFPS !== undefined) {
+            document.getElementById('iso-fps').value = config.animationFPS;
         }
         if (config.brightness !== undefined) {
             brightnessSlider.value = config.brightness;
@@ -257,6 +257,9 @@ class GE_UIManager {
             animTypeIndex++;
         }
 
+        // Get the FPS setting used for generation
+        const animationFPS = parseInt(document.getElementById('iso-fps').value) || 4;
+
         try {
             // Send single sprite sheet and metadata to server
             const response = await fetch('/api/save-isometric-sprites', {
@@ -268,7 +271,8 @@ class GE_UIManager {
                     collectionName,
                     spriteSheet: canvas.toDataURL(),
                     spriteMetadata,
-                    directionNames
+                    directionNames,
+                    animationFPS
                 })
             });
 

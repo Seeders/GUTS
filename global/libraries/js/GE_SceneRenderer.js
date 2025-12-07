@@ -351,7 +351,7 @@ class GE_SceneRenderer {
         const frustumSize = parseFloat(document.getElementById('iso-frustum').value) || 48;
         const cameraDistance = parseFloat(document.getElementById('iso-distance').value) || 100;
         const size = parseFloat(document.getElementById('iso-size').value) || 64;
-        const framesPerAnimation = parseInt(document.getElementById('iso-frames').value) || 5;
+        const animationFPS = parseInt(document.getElementById('iso-fps').value) || 4;
 
         // Get brightness from slider if not provided
         const ambientBrightness = brightness !== null ? brightness : parseFloat(document.getElementById('iso-brightness').value) || 2.5;
@@ -608,11 +608,17 @@ class GE_SceneRenderer {
                         // Generate multiple sprite frames by advancing through the animation
                         if (animationClip) {
                             const animDuration = animationClip.duration;
-                            // Divide by framesPerAnimation (not -1) to avoid including the loop point
-                            const timeStep = animDuration / framesPerAnimation;
+                            // Calculate frame count based on FPS and animation duration
+                            // Add 1 to include both first and last frame of animation
+                            const framesForThisAnim = Math.max(2, Math.ceil(animDuration * animationFPS) + 1);
+                            // Distribute frames evenly so first frame is at t=0 and last frame is at t=duration
+                            const timeStep = animDuration / (framesForThisAnim - 1);
 
-                            for (let snapIndex = 0; snapIndex < framesPerAnimation; snapIndex++) {
-                                const currentTime = snapIndex * timeStep;
+                            console.log(`[SpriteGen] Animation "${animType}": duration=${animDuration.toFixed(2)}s, fps=${animationFPS}, frames=${framesForThisAnim}`);
+
+                            for (let snapIndex = 0; snapIndex < framesForThisAnim; snapIndex++) {
+                                // Clamp to ensure last frame is exactly at animation end
+                                const currentTime = Math.min(snapIndex * timeStep, animDuration);
 
                                 // Update mixer to specific time in animation
                                 characterMixer.setTime(currentTime);

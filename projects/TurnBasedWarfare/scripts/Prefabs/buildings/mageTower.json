@@ -13,9 +13,6 @@
           "main": {
             "shapes": [
               {
-                "color": {
-                  "paletteColor": "blueDColor"
-                },
                 "url": "models/underConstruction.glb",
                 "id": 0
               }
@@ -29,9 +26,6 @@
         "shapes": [
           {
             "type": "gltf",
-            "color": {
-              "paletteColor": "blueDColor"
-            },
             "metalness": 0,
             "roughness": 1,
             "x": 0,
@@ -63,7 +57,8 @@
   ],
   "units": [
     "1_is_acolyte",
-    "1_i_apprentice"
+    "1_i_apprentice",
+    "dragon_red"
   ],
   "footprintWidth": 2,
   "footprintHeight": 2,

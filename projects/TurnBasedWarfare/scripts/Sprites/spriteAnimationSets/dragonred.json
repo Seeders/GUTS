@@ -1,0 +1,125 @@
+{
+  "title": "Dragonred",
+  "animationCollection": "dragonredSpritesAnimations",
+  "spriteSheet": "Sprites/dragonredSprites/dragonredSheet.png",
+  "idleSpriteAnimations": [
+    "dragonredIdleDown",
+    "dragonredIdleDownLeft",
+    "dragonredIdleLeft",
+    "dragonredIdleUpLeft",
+    "dragonredIdleUp",
+    "dragonredIdleUpRight",
+    "dragonredIdleRight",
+    "dragonredIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "dragonredWalkDown",
+    "dragonredWalkDownLeft",
+    "dragonredWalkLeft",
+    "dragonredWalkUpLeft",
+    "dragonredWalkUp",
+    "dragonredWalkUpRight",
+    "dragonredWalkRight",
+    "dragonredWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "dragonredAttackDown",
+    "dragonredAttackDownLeft",
+    "dragonredAttackLeft",
+    "dragonredAttackUpLeft",
+    "dragonredAttackUp",
+    "dragonredAttackUpRight",
+    "dragonredAttackRight",
+    "dragonredAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "dragonredDeathDown",
+    "dragonredDeathDownLeft",
+    "dragonredDeathLeft",
+    "dragonredDeathUpLeft",
+    "dragonredDeathUp",
+    "dragonredDeathUpRight",
+    "dragonredDeathRight",
+    "dragonredDeathDownRight"
+  ],
+  "glideSpriteAnimations": [
+    "dragonredGlideDown",
+    "dragonredGlideDownLeft",
+    "dragonredGlideLeft",
+    "dragonredGlideUpLeft",
+    "dragonredGlideUp",
+    "dragonredGlideUpRight",
+    "dragonredGlideRight",
+    "dragonredGlideDownRight"
+  ],
+  "landSpriteAnimations": [
+    "dragonredLandDown",
+    "dragonredLandDownLeft",
+    "dragonredLandLeft",
+    "dragonredLandUpLeft",
+    "dragonredLandUp",
+    "dragonredLandUpRight",
+    "dragonredLandRight",
+    "dragonredLandDownRight"
+  ],
+  "takeoffSpriteAnimations": [
+    "dragonredTakeoffDown",
+    "dragonredTakeoffDownLeft",
+    "dragonredTakeoffLeft",
+    "dragonredTakeoffUpLeft",
+    "dragonredTakeoffUp",
+    "dragonredTakeoffUpRight",
+    "dragonredTakeoffRight",
+    "dragonredTakeoffDownRight"
+  ],
+  "idle_flyingSpriteAnimations": [
+    "dragonredIdle_flyingDown",
+    "dragonredIdle_flyingDownLeft",
+    "dragonredIdle_flyingLeft",
+    "dragonredIdle_flyingUpLeft",
+    "dragonredIdle_flyingUp",
+    "dragonredIdle_flyingUpRight",
+    "dragonredIdle_flyingRight",
+    "dragonredIdle_flyingDownRight"
+  ],
+  "attack_flyingSpriteAnimations": [
+    "dragonredAttack_flyingDown",
+    "dragonredAttack_flyingDownLeft",
+    "dragonredAttack_flyingLeft",
+    "dragonredAttack_flyingUpLeft",
+    "dragonredAttack_flyingUp",
+    "dragonredAttack_flyingUpRight",
+    "dragonredAttack_flyingRight",
+    "dragonredAttack_flyingDownRight"
+  ],
+  "flyingSpriteAnimations": [
+    "dragonredFlyingDown",
+    "dragonredFlyingDownLeft",
+    "dragonredFlyingLeft",
+    "dragonredFlyingUpLeft",
+    "dragonredFlyingUp",
+    "dragonredFlyingUpRight",
+    "dragonredFlyingRight",
+    "dragonredFlyingDownRight"
+  ],
+  "castSpriteAnimations": [
+    "dragonredCastDown",
+    "dragonredCastDownLeft",
+    "dragonredCastLeft",
+    "dragonredCastUpLeft",
+    "dragonredCastUp",
+    "dragonredCastUpRight",
+    "dragonredCastRight",
+    "dragonredCastDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "dragonredCelebrateDown",
+    "dragonredCelebrateDownLeft",
+    "dragonredCelebrateLeft",
+    "dragonredCelebrateUpLeft",
+    "dragonredCelebrateUp",
+    "dragonredCelebrateUpRight",
+    "dragonredCelebrateRight",
+    "dragonredCelebrateDownRight"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "title": "dragonred Flying Right",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredFlyingRight_0",
+    "dragonredFlyingRight_1",
+    "dragonredFlyingRight_2",
+    "dragonredFlyingRight_3",
+    "dragonredFlyingRight_4"
+  ],
+  "fps": 4
+}

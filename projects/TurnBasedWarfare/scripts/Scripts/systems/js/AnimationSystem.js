@@ -832,6 +832,9 @@ class AnimationSystem extends GUTS.BaseSystem {
                 frameDuration = animState.customDuration / frames.length;
             } else if (directionData.duration !== null && directionData.duration > 0) {
                 frameDuration = directionData.duration / frames.length;
+            } else if (directionData.fps !== null && directionData.fps > 0) {
+                // Use fps from animation definition (set during sprite generation)
+                frameDuration = 1 / directionData.fps;
             } else {
                 const frameRate = frameRates[animState.currentAnimationType] || defaultFrameRate;
                 frameDuration = 1 / frameRate;

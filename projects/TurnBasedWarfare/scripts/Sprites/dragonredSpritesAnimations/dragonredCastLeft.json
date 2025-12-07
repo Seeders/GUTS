@@ -1,0 +1,18 @@
+{
+  "title": "dragonred Cast Left",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredCastLeft_0",
+    "dragonredCastLeft_1",
+    "dragonredCastLeft_2",
+    "dragonredCastLeft_3",
+    "dragonredCastLeft_4",
+    "dragonredCastLeft_5",
+    "dragonredCastLeft_6",
+    "dragonredCastLeft_7",
+    "dragonredCastLeft_8",
+    "dragonredCastLeft_9",
+    "dragonredCastLeft_10"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,12 @@
+{
+  "title": "dragonred Attack Up Right",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredAttackUpRight_0",
+    "dragonredAttackUpRight_1",
+    "dragonredAttackUpRight_2",
+    "dragonredAttackUpRight_3",
+    "dragonredAttackUpRight_4"
+  ],
+  "fps": 4
+}

@@ -9,7 +9,8 @@ const path = require('path');
 class EntryGenerator {
     constructor(buildConfig) {
         this.buildConfig = buildConfig;
-        this.tempDir = path.join(__dirname, '.temp');
+        // Use project-specific temp directory to prevent pollution between builds
+        this.tempDir = path.join(__dirname, '.temp', buildConfig.projectName);
     }
 
     ensureTempDir() {

@@ -1,0 +1,16 @@
+{
+  "title": "dragonred Death Up Right",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredDeathUpRight_0",
+    "dragonredDeathUpRight_1",
+    "dragonredDeathUpRight_2",
+    "dragonredDeathUpRight_3",
+    "dragonredDeathUpRight_4",
+    "dragonredDeathUpRight_5",
+    "dragonredDeathUpRight_6",
+    "dragonredDeathUpRight_7",
+    "dragonredDeathUpRight_8"
+  ],
+  "fps": 4
+}

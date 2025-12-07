@@ -9,10 +9,16 @@ const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const ConfigParser = require('./build/config-parser');
 const EntryGenerator = require('./build/entry-generator');
 
-// Get project name from command line or environment
-const projectName = process.env.PROJECT_NAME || 'TurnBasedWarfare';
+// Get project name from environment (required - set by build.js)
+const projectName = process.env.PROJECT_NAME;
 const mode = process.env.NODE_ENV || 'development';
 const isProduction = mode === 'production';
+
+if (!projectName) {
+    console.error('Error: PROJECT_NAME environment variable is required');
+    console.error('Use: npm run build -- <project-name>');
+    process.exit(1);
+}
 
 console.log(`\n🔧 Building project: ${projectName} (${mode} mode)\n`);
 

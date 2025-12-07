@@ -45,9 +45,21 @@ class EditorController {
      * Called when application starts
      */
     async init() {
-     
-        // Determine which project to load (saved or default)
+
+        // Sync projects from filesystem (discovers new project folders)
+        if (window.location.hostname === "localhost") {
+            await this.model.syncProjectsFromFilesystem();
+        }
+
+        // Determine which project to load (saved or first available)
         const initialProject = this.model.getInitialProject();
+
+        if (!initialProject) {
+            console.warn('No projects found. Create a project folder in projects/ directory.');
+            document.body.classList.remove('loading');
+            return;
+        }
+
         await this.loadProject(initialProject);
 
         // Complete setup after project is loaded

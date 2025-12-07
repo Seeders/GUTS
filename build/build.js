@@ -11,9 +11,48 @@ const fs = require('fs');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
-const projectName = args[0] || process.env.PROJECT_NAME || 'TurnBasedWarfare';
+
+// Filter out flags to find project name
+const nonFlagArgs = args.filter(arg => !arg.startsWith('-'));
+const projectName = nonFlagArgs[0];
+
 const watch = args.includes('--watch') || args.includes('-w');
 const production = args.includes('--production') || args.includes('-p');
+
+// Show usage if no project specified
+if (!projectName) {
+    console.log(`
+Usage: node build/build.js <project-name> [options]
+
+Options:
+  --watch, -w       Watch for changes and rebuild
+  --production, -p  Build in production mode
+
+Examples:
+  node build/build.js TurnBasedWarfare
+  node build/build.js HelloWorld --watch
+  node build/build.js TurnBasedWarfare --production
+
+Or use npm scripts:
+  npm run build -- TurnBasedWarfare
+  npm run build:watch -- HelloWorld
+  npm run build:all              (builds all projects)
+`);
+    process.exit(1);
+}
+
+// Verify project exists
+const projectPath = path.join(__dirname, '..', 'projects', projectName);
+if (!fs.existsSync(projectPath)) {
+    console.error(`Error: Project "${projectName}" not found at ${projectPath}`);
+    process.exit(1);
+}
+
+const configPath = path.join(projectPath, 'scripts', 'Settings', 'configs', 'game.json');
+if (!fs.existsSync(configPath)) {
+    console.error(`Error: Project "${projectName}" is missing game.json config at ${configPath}`);
+    process.exit(1);
+}
 
 // Set environment
 process.env.PROJECT_NAME = projectName;

@@ -9,8 +9,14 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ConfigParser = require('./build/config-parser');
 const EntryGenerator = require('./build/entry-generator');
 
-// Get project name from command line or environment
-const projectName = process.env.PROJECT_NAME || 'TurnBasedWarfare';
+// Get project name from environment (required)
+const projectName = process.env.PROJECT_NAME;
+
+if (!projectName) {
+    console.error('Error: PROJECT_NAME environment variable is required');
+    console.error('Use: PROJECT_NAME=<project-name> npm run dev');
+    process.exit(1);
+}
 
 console.log(`\n🔧 Dev Server for project: ${projectName}\n`);
 

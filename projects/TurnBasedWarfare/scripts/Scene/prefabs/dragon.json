@@ -1,0 +1,43 @@
+{
+  "title": "Dragon",
+  "description": "A barbarian warrior unit",
+  "components": {    
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "renderable": {
+        "objectType": "units",
+        "spawnType": "dragon_red"
+      },
+      "health": {
+        "max": 3000,
+        "current": 3000
+      },
+      "unitType": {
+        "collection": "units",
+        "type": "dragon_red"
+      },
+      "combat": {
+        "damage": 10,
+        "attackSpeed": 1,
+        "range": 5
+      },
+      "team": {
+        "team": "right"
+      }
+  }  
+}

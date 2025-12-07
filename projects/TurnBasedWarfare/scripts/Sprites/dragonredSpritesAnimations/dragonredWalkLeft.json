@@ -1,0 +1,13 @@
+{
+  "title": "dragonred Walk Left",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredWalkLeft_0",
+    "dragonredWalkLeft_1",
+    "dragonredWalkLeft_2",
+    "dragonredWalkLeft_3",
+    "dragonredWalkLeft_4",
+    "dragonredWalkLeft_5"
+  ],
+  "fps": 4
+}

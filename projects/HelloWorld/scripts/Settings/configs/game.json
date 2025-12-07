@@ -1,0 +1,25 @@
+{
+    "title": "Hello World",
+    "gridSize": 48,
+    "imageSize": 128,
+    "is3D": true,
+    "isIsometric": false,
+    "libraries": [
+        "BaseECSGame",
+        "threejs",
+        "ECSGame",
+        "SceneManager",
+        "BaseSystem"
+    ],
+    "managers": [],
+    "systems": [
+        "HelloSystem"
+    ],
+    "classes": [],
+    "interface": null,
+    "appLibrary": "ECSGame",
+    "appLoaderLibrary": "GameLoader",
+    "canvasWidth": 800,
+    "canvasHeight": 600,
+    "initialScene": "hello"
+}

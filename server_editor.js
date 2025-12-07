@@ -423,11 +423,27 @@ app.get('/browse-directory', (req, res) => {
         'scripts',
         'data'
     ].map(dir => path.join(PROJS_DIR, dir).replace(/\\/g, '/'));
-    
-    res.json({ 
+
+    res.json({
         path: directories[0],
-        options: directories 
+        options: directories
     });
+});
+
+// List all available projects from the filesystem
+app.get('/list-projects', async (req, res) => {
+    try {
+        const entries = await fs.readdir(PROJS_DIR, { withFileTypes: true });
+        const projects = entries
+            .filter(entry => entry.isDirectory())
+            .map(entry => entry.name);
+
+        console.log('Available projects:', projects);
+        res.json({ projects });
+    } catch (error) {
+        console.error('Error listing projects:', error);
+        res.status(500).json({ error: error.message, projects: [] });
+    }
 });
 
 async function ensureCacheDir() {
@@ -515,7 +531,7 @@ app.post('/api/save-texture', async (req, res) => {
 // Save isometric sprites with all data files
 app.post('/api/save-isometric-sprites', async (req, res) => {
     try {
-        const { projectName, baseName, collectionName, spriteSheet, spriteMetadata, directionNames } = req.body;
+        const { projectName, baseName, collectionName, spriteSheet, spriteMetadata, directionNames, animationFPS = 4 } = req.body;
 
         // Create directories
         const spritesFolder = path.join(PROJS_DIR, projectName, 'resources', 'Sprites', collectionName);
@@ -572,11 +588,12 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
                     spriteNames.push(spriteName);
                 }
 
-                // Create sprite animation JSON (no sprite sheet path)
+                // Create sprite animation JSON with FPS for consistent playback
                 const spriteAnimationJson = {
                     title: animationName.replace(/([A-Z])/g, ' $1').trim(),
                     spriteCollection: collectionName,
-                    sprites: spriteNames
+                    sprites: spriteNames,
+                    fps: animationFPS
                 };
                 await fs.writeFile(
                     path.join(scriptsSpriteAnimationsFolder, `${animationName}.json`),

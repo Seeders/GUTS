@@ -1,0 +1,24 @@
+{
+  "title": "dragonred Land Up Right",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredLandUpRight_0",
+    "dragonredLandUpRight_1",
+    "dragonredLandUpRight_2",
+    "dragonredLandUpRight_3",
+    "dragonredLandUpRight_4",
+    "dragonredLandUpRight_5",
+    "dragonredLandUpRight_6",
+    "dragonredLandUpRight_7",
+    "dragonredLandUpRight_8",
+    "dragonredLandUpRight_9",
+    "dragonredLandUpRight_10",
+    "dragonredLandUpRight_11",
+    "dragonredLandUpRight_12",
+    "dragonredLandUpRight_13",
+    "dragonredLandUpRight_14",
+    "dragonredLandUpRight_15",
+    "dragonredLandUpRight_16"
+  ],
+  "fps": 4
+}
