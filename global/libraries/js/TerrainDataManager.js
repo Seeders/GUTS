@@ -576,17 +576,26 @@ class TerrainDataManager {
                 }
 
                 // Place inner corners (atom_three)
+                // If corner neighbors a ramp, use atom_three_top instead
                 if (cornerTopLeftLess && !topLess && !leftLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_three', rotation: Math.PI / 2, heightDiff: cornerTopLeftDiff });
+                    const neighborsRamp = topNeighborHasRamp || leftNeighborHasRamp;
+                    const type = neighborsRamp ? 'atom_three_top' : 'atom_three';
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type, rotation: Math.PI / 2, heightDiff: cornerTopLeftDiff });
                 }
                 if (cornerTopRightLess && !topLess && !rightLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_three', rotation: 0, heightDiff: cornerTopRightDiff });
+                    const neighborsRamp = topNeighborHasRamp || rightNeighborHasRamp;
+                    const type = neighborsRamp ? 'atom_three_top' : 'atom_three';
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type, rotation: 0, heightDiff: cornerTopRightDiff });
                 }
                 if (cornerBottomLeftLess && !botLess && !leftLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_three', rotation: Math.PI, heightDiff: cornerBottomLeftDiff });
+                    const neighborsRamp = botNeighborHasRamp || leftNeighborHasRamp;
+                    const type = neighborsRamp ? 'atom_three_top' : 'atom_three';
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type, rotation: Math.PI, heightDiff: cornerBottomLeftDiff });
                 }
                 if (cornerBottomRightLess && !botLess && !rightLess) {
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_three', rotation: -Math.PI / 2, heightDiff: cornerBottomRightDiff });
+                    const neighborsRamp = botNeighborHasRamp || rightNeighborHasRamp;
+                    const type = neighborsRamp ? 'atom_three_top' : 'atom_three';
+                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type, rotation: -Math.PI / 2, heightDiff: cornerBottomRightDiff });
                 }
 
                 // Place edges in empty quadrants (atom_two)
