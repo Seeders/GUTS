@@ -4,7 +4,7 @@
   "size": 24,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "impassable": true,
+  "impassable": false,
   "spriteScale": 32,
   "renderTexture": "bush"
 }

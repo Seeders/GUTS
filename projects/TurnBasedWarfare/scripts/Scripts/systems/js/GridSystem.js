@@ -368,6 +368,10 @@ class GridSystem extends GUTS.BaseSystem {
             if (health && health.current <= 0) continue;
             if (deathState && deathState.isDying) continue;
 
+            // Skip world objects that are not impassable (e.g., gold veins, bushes)
+            const unitType = this.game.getComponent(entityId, 'unitType');
+            if (unitType && unitType.impassable === false) continue;
+
             const cells = this.getUnitCells(entityId);
             if (!cells) continue;
 

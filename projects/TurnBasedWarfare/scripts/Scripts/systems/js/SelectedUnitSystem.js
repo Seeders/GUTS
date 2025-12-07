@@ -724,7 +724,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
     
     onBattleStart() {
-        this.deselectAll();
+        // Do not deselect units on phase transition
+        // Keep the user's selection intact between placement and battle phases
     }
     onKeyDown(key) {
         if (key === 'Escape') {
