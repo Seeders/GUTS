@@ -1386,7 +1386,7 @@ class WorldRenderer {
             if (heightDiff === 1) {
                 // Single level cliff - use original type
                 // Position at the neighbor's height level
-                const cliffBottomHeight = neighborHeight * heightStep + cliffOffset;
+                const cliffBottomHeight = neighborHeight * heightStep;
                 const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
 
                 const spawned = await entityRenderer.spawnEntity(entityId, {

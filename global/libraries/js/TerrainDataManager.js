@@ -132,17 +132,9 @@ class TerrainDataManager {
         this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
 
         // Check if we have a separate heightMap in the tileMap
-        const hasHeightMap = this.tileMap.heightMap && this.tileMap.heightMap.length > 0;
-
+   
         // Set extension area height
-        let extensionHeight;
-        if (hasHeightMap) {
-            extensionHeight = (this.tileMap.extensionHeight || 0) * this.heightStep;
-        } else {
-            // Fall back to old behavior: derive from terrain type
-            const extensionTerrainType = this.tileMap.extensionTerrainType || 0;
-            extensionHeight = extensionTerrainType * this.heightStep;
-        }
+        let extensionHeight = (this.tileMap.extensionHeight || 0) * this.heightStep;
 
         // Initialize all points with extension height
         for (let z = 0; z < this.extendedSize; z++) {
@@ -151,62 +143,34 @@ class TerrainDataManager {
             }
         }
 
-        if (hasHeightMap) {
-            // Use separate heightMap data from tileMap
-            const heightData = this.tileMap.heightMap;
+        // Use separate heightMap data from tileMap
+        const heightData = this.tileMap.heightMap;
 
-            for (let z = 0; z < heightData.length; z++) {
-                for (let x = 0; x < heightData[z].length; x++) {
-                    const heightLevel = heightData[z][x];
-                    const height = heightLevel * this.heightStep;
+        for (let z = 0; z < heightData.length; z++) {
+            for (let x = 0; x < heightData[z].length; x++) {
+                const heightLevel = heightData[z][x];
+                const height = heightLevel * this.heightStep;
 
-                    // Map terrain coordinates to extended coordinates
-                    const extX = x * this.gridSize + this.extensionSize;
-                    const extZ = z * this.gridSize + this.extensionSize;
+                // Map terrain coordinates to extended coordinates
+                const extX = x * this.gridSize + this.extensionSize;
+                const extZ = z * this.gridSize + this.extensionSize;
 
-                    // Apply height to the entire tile
-                    for (let dz = 0; dz < this.gridSize; dz++) {
-                        for (let dx = 0; dx < this.gridSize; dx++) {
-                            const finalX = extX + dx;
-                            const finalZ = extZ + dz;
+                // Apply height to the entire tile
+                for (let dz = 0; dz < this.gridSize; dz++) {
+                    for (let dx = 0; dx < this.gridSize; dx++) {
+                        const finalX = extX + dx;
+                        const finalZ = extZ + dz;
 
-                            if (finalX >= 0 && finalX < this.extendedSize &&
-                                finalZ >= 0 && finalZ < this.extendedSize) {
-                                const heightIndex = finalZ * this.extendedSize + finalX;
-                                this.heightMapData[heightIndex] = height;
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            // OLD: Derive heights from terrain types (backwards compatibility)
-            const terrainMap = this.tileMap.terrainMap;
-
-            for (let z = 0; z < terrainMap.length; z++) {
-                for (let x = 0; x < terrainMap[z].length; x++) {
-                    const terrainType = terrainMap[z][x];
-                    const height = terrainType * this.heightStep;
-
-                    const extX = x * this.gridSize + this.extensionSize;
-                    const extZ = z * this.gridSize + this.extensionSize;
-
-                    // Apply height to the entire tile
-                    for (let dz = 0; dz < this.gridSize; dz++) {
-                        for (let dx = 0; dx < this.gridSize; dx++) {
-                            const finalX = extX + dx;
-                            const finalZ = extZ + dz;
-
-                            if (finalX >= 0 && finalX < this.extendedSize &&
-                                finalZ >= 0 && finalZ < this.extendedSize) {
-                                const heightIndex = finalZ * this.extendedSize + finalX;
-                                this.heightMapData[heightIndex] = height;
-                            }
+                        if (finalX >= 0 && finalX < this.extendedSize &&
+                            finalZ >= 0 && finalZ < this.extendedSize) {
+                            const heightIndex = finalZ * this.extendedSize + finalX;
+                            this.heightMapData[heightIndex] = height;
                         }
                     }
                 }
             }
         }
+
     }
 
     /**
