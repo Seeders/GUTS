@@ -1666,7 +1666,7 @@ class TerrainMapEditor {
     }
 
     /**
-     * Initialize 3D rendering system using TerrainEditorContext
+     * Initialize 3D rendering system using EditorLoader + EditorECSGame
      */
     async init3DRendering() {
         const collections = this.gameEditor.getCollections();
@@ -1677,27 +1677,45 @@ class TerrainMapEditor {
             key => collections.levels[key] === this.objectData
         );
 
-        // Create and initialize the editor context with ECS systems
-        this.editorContext = new GUTS.TerrainEditorContext(this.gameEditor, this.canvasEl);
+        // Create editor context (like ECSGame)
+        this.editorContext = new GUTS.EditorECSGame(this.gameEditor, this.canvasEl);
 
-        // Set terrainTileMapper on context so WorldSystem can use it
-        this.editorContext.terrainTileMapper = this.terrainTileMapper;
+        // Get editor-specific systems from module config
+        // Use editorSystems if defined, otherwise use config.systems filtered to only editor systems
+        // NOTE: RenderSystem must come before WorldSystem so EntityRenderer is initialized
+        // before WorldSystem tries to spawn cliffs in postSceneLoad
+        const editorSystems = this.config.editorSystems || [
+            'GridSystem',
+            'TerrainSystem',
+            'RenderSystem',
+            'WorldSystem',
+            'AnimationSystem'
+        ];
 
-        await this.editorContext.initialize(this.config.systems || []);
-
-        // Create terrain entity - systems will find it and initialize
-        const terrainEntityId = this.editorContext.createEntity('terrain_entity');
-        this.editorContext.addComponent(terrainEntityId, 'terrain', {
-            level: levelName,
-            world: this.objectData.world,
-            shadowsEnabled: true,
-            fogEnabled: false,
-            grassEnabled: false,
-            cliffsEnabled: true
+        // Use EditorLoader to load assets and initialize (like GameLoader)
+        this.editorLoader = new GUTS.EditorLoader(this.editorContext);
+        await this.editorLoader.load({
+            systems: editorSystems,
+            levelName: levelName
         });
 
-        // Trigger systems to process the terrain entity
-        await this.editorContext.loadScene({});
+        // Load scene with terrain entity
+        await this.editorContext.loadScene({
+            systems: editorSystems,
+            entities: [{
+                id: 'terrain_entity',
+                components: {
+                    terrain: {
+                        level: levelName,
+                        world: this.objectData.world,
+                        shadowsEnabled: true,
+                        fogEnabled: false,
+                        grassEnabled: false,
+                        cliffsEnabled: true
+                    }
+                }
+            }]
+        });
 
         // Get references from systems for editor functionality
         this.worldRenderer = this.editorContext.worldSystem?.worldRenderer;

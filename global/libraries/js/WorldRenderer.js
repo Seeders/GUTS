@@ -1264,10 +1264,10 @@ class WorldRenderer {
                 worldPos = { x: worldX, z: worldZ };
             }
 
-            // Cliffs sit 2 levels below tile height
+            // Cliffs sit 1 level below tile height
             const mapHeight = this.terrainDataManager.tileMap.heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
-            const cliffOffset = 1.85;
-            const cliffBottomHeight = (mapHeight - 2) * heightStep - cliffOffset;
+            const cliffOffset = .025;
+            const cliffBottomHeight = (mapHeight - 1) * heightStep + cliffOffset;
 
             const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
 
