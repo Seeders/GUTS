@@ -1400,15 +1400,17 @@ class WorldRenderer {
             } else {
                 // Multi-level cliff - spawn top, mid(s), and base
                 const baseType = cliff.type;
-                const needsMids = baseType !== 'atom_three'; // atom_three doesn't need mid pieces
+                const needsMids = baseType !== 'atom_three' && baseType !== 'atom_three_top'; // atom_three variants don't need mid pieces
 
                 // Spawn top piece (at the top of the cliff, one level below tile height)
+                // If baseType already ends with _top, don't add it again
+                const topType = baseType.endsWith('_top') ? baseType : `${baseType}_top`;
                 const topHeight = (mapHeight - 1) * heightStep + cliffOffset;
-                const topEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseType}_top`;
+                const topEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${topType}`;
 
                 const topSpawned = await entityRenderer.spawnEntity(topEntityId, {
                     collection: 'cliffs',
-                    type: `${baseType}_top`,
+                    type: topType,
                     position: { x: worldPos.x, y: topHeight, z: worldPos.z },
                     rotation: cliff.rotation
                 });
@@ -1431,16 +1433,19 @@ class WorldRenderer {
                 }
 
                 // Spawn base piece at the neighbor's height level
-                const baseHeight = neighborHeight * heightStep + cliffOffset;
-                const baseEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseType}_base`;
+                // Skip base for atom_three_top - it's a top-only cliff type used near ramps
+                if (!baseType.endsWith('_top')) {
+                    const baseHeight = neighborHeight * heightStep + cliffOffset;
+                    const baseEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseType}_base`;
 
-                const baseSpawned = await entityRenderer.spawnEntity(baseEntityId, {
-                    collection: 'cliffs',
-                    type: `${baseType}_base`,
-                    position: { x: worldPos.x, y: baseHeight, z: worldPos.z },
-                    rotation: cliff.rotation
-                });
-                if (baseSpawned) spawnedCount++;
+                    const baseSpawned = await entityRenderer.spawnEntity(baseEntityId, {
+                        collection: 'cliffs',
+                        type: `${baseType}_base`,
+                        position: { x: worldPos.x, y: baseHeight, z: worldPos.z },
+                        rotation: cliff.rotation
+                    });
+                    if (baseSpawned) spawnedCount++;
+                }
             }
         }
 
