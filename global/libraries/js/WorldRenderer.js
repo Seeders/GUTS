@@ -1372,7 +1372,7 @@ class WorldRenderer {
             // Get height difference (defaults to 1 for backwards compatibility)
             const heightDiff = cliff.heightDiff || 1;
             const mapHeight = this.terrainDataManager.tileMap.heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
-            const cliffOffset = 0.001;
+            const cliffOffset = 0.0001;
 
             // Calculate the neighbor's height (where the cliff base should sit)
             const neighborHeight = mapHeight - heightDiff;
