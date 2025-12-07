@@ -1264,21 +1264,79 @@ class WorldRenderer {
                 worldPos = { x: worldX, z: worldZ };
             }
 
-            // Cliffs sit 1 level below tile height
+            // Get height difference (defaults to 1 for backwards compatibility)
+            const heightDiff = cliff.heightDiff || 1;
             const mapHeight = this.terrainDataManager.tileMap.heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
-            const cliffOffset = .025;
-            const cliffBottomHeight = (mapHeight - 1) * heightStep + cliffOffset;
+            const cliffOffset = 0.025;
 
-            const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
+            // Calculate the neighbor's height (where the cliff base should sit)
+            const neighborHeight = mapHeight - heightDiff;
 
-            const spawned = await entityRenderer.spawnEntity(entityId, {
-                collection: 'cliffs',
-                type: cliff.type,
-                position: { x: worldPos.x, y: cliffBottomHeight, z: worldPos.z },
-                rotation: cliff.rotation
-            });
+            // Spawn cliff pieces based on height difference
+            // heightDiff 1: single original cliff (current behavior)
+            // heightDiff 2: top + base
+            // heightDiff 3+: top + (n-2) mids + base
+            // Exception: atom_three doesn't use mid pieces
 
-            if (spawned) spawnedCount++;
+            if (heightDiff === 1) {
+                // Single level cliff - use original type
+                // Position at the neighbor's height level
+                const cliffBottomHeight = neighborHeight * heightStep + cliffOffset;
+                const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
+
+                const spawned = await entityRenderer.spawnEntity(entityId, {
+                    collection: 'cliffs',
+                    type: cliff.type,
+                    position: { x: worldPos.x, y: cliffBottomHeight, z: worldPos.z },
+                    rotation: cliff.rotation
+                });
+
+                if (spawned) spawnedCount++;
+            } else {
+                // Multi-level cliff - spawn top, mid(s), and base
+                const baseType = cliff.type;
+                const needsMids = baseType !== 'atom_three'; // atom_three doesn't need mid pieces
+
+                // Spawn top piece (at the top of the cliff, one level below tile height)
+                const topHeight = (mapHeight - 1) * heightStep + cliffOffset;
+                const topEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseType}_top`;
+
+                const topSpawned = await entityRenderer.spawnEntity(topEntityId, {
+                    collection: 'cliffs',
+                    type: `${baseType}_top`,
+                    position: { x: worldPos.x, y: topHeight, z: worldPos.z },
+                    rotation: cliff.rotation
+                });
+                if (topSpawned) spawnedCount++;
+
+                // Spawn mid pieces for each level between top and base (if needed)
+                if (needsMids && heightDiff > 2) {
+                    for (let level = 1; level < heightDiff - 1; level++) {
+                        const midHeight = (mapHeight - 1 - level) * heightStep + cliffOffset;
+                        const midEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseType}_mid_${level}`;
+
+                        const midSpawned = await entityRenderer.spawnEntity(midEntityId, {
+                            collection: 'cliffs',
+                            type: `${baseType}_mid`,
+                            position: { x: worldPos.x, y: midHeight, z: worldPos.z },
+                            rotation: cliff.rotation
+                        });
+                        if (midSpawned) spawnedCount++;
+                    }
+                }
+
+                // Spawn base piece at the neighbor's height level
+                const baseHeight = neighborHeight * heightStep + cliffOffset;
+                const baseEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseType}_base`;
+
+                const baseSpawned = await entityRenderer.spawnEntity(baseEntityId, {
+                    collection: 'cliffs',
+                    type: `${baseType}_base`,
+                    position: { x: worldPos.x, y: baseHeight, z: worldPos.z },
+                    rotation: cliff.rotation
+                });
+                if (baseSpawned) spawnedCount++;
+            }
         }
 
     }
