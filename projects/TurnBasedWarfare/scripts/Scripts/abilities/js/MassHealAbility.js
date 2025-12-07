@@ -89,9 +89,9 @@ class MassHealAbility extends GUTS.BaseAbility {
         const sortedAllies = targetAllies.slice().sort((a, b) => String(a).localeCompare(String(b)));
 
         // Create central divine burst at caster
-        if (this.game.gameManager && casterPos) {
+        if (this.game.gameSystem && casterPos) {
             // Central holy nova explosion
-            this.game.gameManager.call('createLayeredEffect', {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(casterPos.x, casterPos.y + 40, casterPos.z),
                 layers: [
                     // Bright divine core
@@ -160,11 +160,11 @@ class MassHealAbility extends GUTS.BaseAbility {
                     this.createVisualEffect(allyPos, 'heal');
 
                     // Enhanced individual healing effect with delay for cascade
-                    if (this.game.gameManager) {
+                    if (this.game.gameSystem) {
                         const delay = index * 0.1;
                         this.game.schedulingSystem.scheduleAction(() => {
                             // Rising healing light column
-                            this.game.gameManager.call('createLayeredEffect', {
+                            this.game.call('createLayeredEffect', {
                                 position: new THREE.Vector3(allyPos.x, allyPos.y + 20, allyPos.z),
                                 layers: [
                                     // Green healing glow
@@ -197,7 +197,7 @@ class MassHealAbility extends GUTS.BaseAbility {
                             });
 
                             // Healing ring at feet
-                            this.game.gameManager.call('createParticles', {
+                            this.game.call('createParticles', {
                                 position: new THREE.Vector3(allyPos.x, allyPos.y + 5, allyPos.z),
                                 count: 12,
                                 lifetime: 0.4,
@@ -219,8 +219,8 @@ class MassHealAbility extends GUTS.BaseAbility {
                     }
 
                     // Show heal number
-                    if (this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
-                        this.game.gameManager.call('showDamageNumber',
+                    if (this.game.gameSystem && this.game.hasService('showDamageNumber')) {
+                        this.game.call('showDamageNumber',
                             allyPos.x, allyPos.y + 50, allyPos.z,
                             actualHeal, 'heal'
                         );

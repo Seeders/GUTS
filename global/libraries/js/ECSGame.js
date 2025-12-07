@@ -9,7 +9,9 @@ class ECSGame extends GUTS.BaseECSGame {
             }
         );         
         this.state = new GUTS.GameState(this.getCollections());  
-        this.desyncDebugger = new GUTS.DesyncDebugger(this);
+        if(GUTS.DesyncDebugger){
+            this.desyncDebugger = new GUTS.DesyncDebugger(this);
+        }
     }
 
     init() {    

@@ -11,10 +11,10 @@ class PostProcessingSystem extends GUTS.BaseSystem {
     init(params = {}) {
         this.params = params;
 
-        this.game.gameManager.register('registerPostProcessingPass', this.registerPass.bind(this));
-        this.game.gameManager.register('removePostProcessingPass', this.removePass.bind(this));
-        this.game.gameManager.register('renderPostProcessing', this.render.bind(this));
-        this.game.gameManager.register('getPostProcessingComposer', this.getPostProcessingComposer.bind(this));
+        this.game.register('registerPostProcessingPass', this.registerPass.bind(this));
+        this.game.register('removePostProcessingPass', this.removePass.bind(this));
+        this.game.register('renderPostProcessing', this.render.bind(this));
+        this.game.register('getPostProcessingComposer', this.getPostProcessingComposer.bind(this));
     }
 
     postAllInit() {

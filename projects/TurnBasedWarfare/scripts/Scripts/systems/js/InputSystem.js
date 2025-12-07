@@ -1,7 +1,7 @@
-class InputManager {
-    constructor(app) {
-        this.game = app;
-        this.game.inputManager = this;
+class InputSystem extends GUTS.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.inputSystem = this;
         this.keyStates = {};
         this.mouseState = { x: 0, y: 0, pressed: false };
         this.shortcuts = new Map();
@@ -51,7 +51,7 @@ class InputManager {
         const pausedMainMenuBtn = document.getElementById('paused_MainMenuBtn');
 
         mainMenuPlayGameBtn?.addEventListener('click', () => {
-            this.game.screenManager.showGameModeSelect();
+            this.game.screenSystem.showGameModeSelect();
         });
         mainMenuTutorialBtn?.addEventListener('click', () => {
             alert('Tutorial coming soon! Check the battle log for basic instructions when you start playing.');
@@ -64,14 +64,14 @@ class InputManager {
         });
 
         gameModeBackBtn?.addEventListener('click', () => {
-            this.game.screenManager.showMainMenu();
+            this.game.screenSystem.showMainMenu();
         });
 
         gamePauseBtn?.addEventListener('click', () => {
-            this.game.gameManager.pauseGame();
+            this.game.gameSystem.pauseGame();
         });
         gameExitBtn?.addEventListener('click', () => {
-            this.game.gameManager.exitToMenu();
+            this.game.gameSystem.exitToMenu();
         });
 
         victoryMainMenuBtn?.addEventListener('click', () => {
@@ -79,7 +79,7 @@ class InputManager {
             if (this.game.uiSystem?.leaveGame) {
                 this.game.uiSystem.leaveGame();
             } else {
-                this.game.screenManager.showMainMenu();
+                this.game.screenSystem.showMainMenu();
             }
         });
 
@@ -88,18 +88,18 @@ class InputManager {
             if (this.game.uiSystem?.leaveGame) {
                 this.game.uiSystem.leaveGame();
             } else {
-                this.game.screenManager.showMainMenu();
+                this.game.screenSystem.showMainMenu();
             }
         });
 
         pausedResumeBtn?.addEventListener('click', () => {
-            this.game.gameManager.resumeGame();
+            this.game.gameSystem.resumeGame();
         });
         pausedRestartBtn?.addEventListener('click', () => {
-            this.game.gameManager.restartGame();
+            this.game.gameSystem.restartGame();
         });
         pausedMainMenuBtn?.addEventListener('click', () => {
-            this.game.screenManager.showMainMenu();
+            this.game.screenSystem.showMainMenu();
         });
 
 
@@ -245,8 +245,8 @@ class InputManager {
     handleMainMenuAction() {
         if (confirm('Return to main menu? Current progress will be lost.')) {
             // Trigger main menu navigation
-            if (window.screenManager) {
-                window.screenManager.showMainMenu();
+            if (window.screenSystem) {
+                window.screenSystem.showMainMenu();
             }
         }
     }

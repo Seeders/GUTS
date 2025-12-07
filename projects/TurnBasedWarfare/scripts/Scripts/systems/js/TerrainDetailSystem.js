@@ -25,7 +25,7 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
 
     init() {
         // Register for terrain ready event
-        this.game.gameManager.register('spawnTerrainDetails', this.spawnTerrainDetails.bind(this));
+        this.game.register('spawnTerrainDetails', this.spawnTerrainDetails.bind(this));
     }
 
     /**

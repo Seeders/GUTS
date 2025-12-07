@@ -150,7 +150,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         if (renderComponent) {
             renderComponent.spawnType = actualBuildingType.id;
             // Remove instance to trigger re-spawn with correct model
-            game.gameManager.call('removeInstance', buildingId);
+            game.call('removeInstance', buildingId);
         }
 
         // 2. Restore health to full (health component is kept during construction)

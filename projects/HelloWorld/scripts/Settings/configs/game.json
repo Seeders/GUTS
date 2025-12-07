@@ -6,19 +6,17 @@
     "isIsometric": false,
     "libraries": [
         "BaseECSGame",
-        "threejs",
-        "ECSGame",
         "SceneManager",
-        "BaseSystem"
+        "BaseSystem",
+        "BaseLoader"
     ],
-    "managers": [],
     "systems": [
         "HelloSystem"
     ],
     "classes": [],
-    "interface": null,
-    "appLibrary": "ECSGame",
-    "appLoaderLibrary": "GameLoader",
+    "interface": "main",
+    "appLibrary": "BaseECSGame",
+    "appLoaderLibrary": "BaseLoader",
     "canvasWidth": 800,
     "canvasHeight": 600,
     "initialScene": "hello"

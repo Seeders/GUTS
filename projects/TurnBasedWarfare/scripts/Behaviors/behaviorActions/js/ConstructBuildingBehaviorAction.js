@@ -92,7 +92,7 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
 
     onBuildComplete(entityId, game) {
         // Clear attack animation - let normal behavior systems take over
-        const animState = game.gameManager.call('getBillboardAnimationState', entityId);
+        const animState = game.call('getBillboardAnimationState', entityId);
         if (animState && animState.currentAnimationType === 'attack') {
             animState.currentAnimationType = null;
         }
@@ -124,7 +124,7 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         const renderComponent = game.getComponent(buildingId, 'renderable');
         if (renderComponent) {
             renderComponent.spawnType = actualBuildingType.id;
-            game.gameManager.call('removeInstance', buildingId);
+            game.call('removeInstance', buildingId);
         }
 
         // 2. Restore health to full

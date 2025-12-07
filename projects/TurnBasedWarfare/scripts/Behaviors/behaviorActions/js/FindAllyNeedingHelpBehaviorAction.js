@@ -49,7 +49,7 @@ class FindAllyNeedingHelpBehaviorAction extends GUTS.BaseBehaviorAction {
     findAllyNeedingHelp(entityId, game, pos, team, range, healthThreshold, prioritizeLowestHealth, excludeSelf) {
         // Use spatial grid for efficient lookup - returns array of entityIds
         const excludeId = excludeSelf ? entityId : null;
-        const nearbyEntityIds = game.gameManager.call('getNearbyUnits', pos, range, excludeId);
+        const nearbyEntityIds = game.call('getNearbyUnits', pos, range, excludeId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
         const alliesNeedingHelp = [];

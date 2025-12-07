@@ -169,7 +169,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
      */
     findSquadForUnit(unitId) {
         // Check with experience system first (most reliable)
-        const squadData = this.game.gameManager.call('findSquadByUnitId', unitId);
+        const squadData = this.game.call('findSquadByUnitId', unitId);
         if (squadData) {
             const unitType = this.getCurrentUnitTypeForSquad(squadData.placementId);
             return {
@@ -179,8 +179,8 @@ class TeamHealthSystem extends GUTS.BaseSystem {
         }
 
         // Fallback: search placement system
-        const playerPlacements = this.game.gameManager.call('getPlacementsForSide', 'left') || [];
-        const opponentPlacements = this.game.gameManager.call('getPlacementsForSide', 'right') || [];
+        const playerPlacements = this.game.call('getPlacementsForSide', 'left') || [];
+        const opponentPlacements = this.game.call('getPlacementsForSide', 'right') || [];
         const allPlacements = [...playerPlacements, ...opponentPlacements];
 
         for (const placement of allPlacements) {
@@ -219,14 +219,14 @@ class TeamHealthSystem extends GUTS.BaseSystem {
      * @returns {Object|null} Current unit type
      */
     getCurrentUnitTypeForSquad(placementId) {
-        const unitType = this.game.gameManager.call('getCurrentUnitTypeForSquad', placementId);
+        const unitType = this.game.call('getCurrentUnitTypeForSquad', placementId);
         if (unitType) {
             return unitType;
         }
 
         // Fallback to placement system - get unitType from entity
-        const playerPlacements = this.game.gameManager.call('getPlacementsForSide', 'left') || [];
-        const opponentPlacements = this.game.gameManager.call('getPlacementsForSide', 'right') || [];
+        const playerPlacements = this.game.call('getPlacementsForSide', 'left') || [];
+        const opponentPlacements = this.game.call('getPlacementsForSide', 'right') || [];
         const placement = playerPlacements.find(p => p.placementId === placementId) ||
                          opponentPlacements.find(p => p.placementId === placementId);
         if (placement && placement.squadUnits && placement.squadUnits.length > 0) {
@@ -242,14 +242,14 @@ class TeamHealthSystem extends GUTS.BaseSystem {
      */
     getOriginalSquadSize(placementId) {
         // Check experience system first
-        const squadData = this.game.gameManager.call('getSquadExperienceData', placementId);
+        const squadData = this.game.call('getSquadExperienceData', placementId);
         if (squadData) {
             return squadData.totalUnitsInSquad || squadData.squadSize;
         }
 
         // Fallback to placement system
-        const playerPlacements = this.game.gameManager.call('getPlacementsForSide', 'left') || [];
-        const opponentPlacements = this.game.gameManager.call('getPlacementsForSide', 'right') || [];
+        const playerPlacements = this.game.call('getPlacementsForSide', 'left') || [];
+        const opponentPlacements = this.game.call('getPlacementsForSide', 'right') || [];
         const placement = playerPlacements.find(p => p.placementId === placementId) ||
                          opponentPlacements.find(p => p.placementId === placementId);
         if (placement) {

@@ -1,7 +1,7 @@
 class BaseECSGame {
     constructor(app) {
         this.app = app;
-        this.state = null; // Will be set by subclasses
+        this.state = {};
 
         this.entityId = 0;
         this.entitiesToAdd = [];
@@ -9,10 +9,12 @@ class BaseECSGame {
         this.components = new Map();
         this.classes = [];
         this.systems = [];
-        this.managers = [];
 
         // Scene management
         this.sceneManager = null;
+
+        // Service registry (moved from GameServices)
+        this.services = new Map();
 
         // Query cache for getEntitiesWith - invalidated on entity/component changes
         this._queryCache = new Map();  // queryKey -> { result: [], version: number }
@@ -34,6 +36,31 @@ class BaseECSGame {
         }
     }
 
+    // Service registry methods (from GameServices)
+    register(key, method) {
+        if (this.services.has(key)) {
+            console.warn(`[BaseECSGame] Service ${key} already registered! Overwriting.`);
+        }
+        this.services.set(key, method);
+    }
+
+    hasService(key) {
+        return this.services.has(key);
+    }
+
+    call(key, ...args) {
+        const method = this.services.get(key);
+        if (!method) {
+            console.warn('[BaseECSGame] missing service method', key);
+            return undefined;
+        }
+        return method(...args);
+    }
+
+    listServices() {
+        return Array.from(this.services.keys());
+    }
+
     init(isServer = false, config) {
         this.isServer = isServer;
         if(!this.isServer){
@@ -48,16 +75,6 @@ class BaseECSGame {
         this.collections = this.getCollections();
         this.gameConfig = config ? config : (this.isServer ? this.collections.configs.server : this.collections.configs.game);
 
-        // Initialize managers
-        this.gameConfig.managers?.forEach((managerType) => {
-            let params = { canvas: this.canvas };
-            const managerInst = new GUTS[managerType](this);
-            if(managerInst.init){
-                managerInst.init(params);
-            }
-            this.managers.push(managerInst);
-        });
-
         // Initialize SceneManager (handles lazy system instantiation)
         this.sceneManager = new GUTS.SceneManager(this);
 
@@ -65,13 +82,6 @@ class BaseECSGame {
         this.availableSystemTypes = this.gameConfig.systems || [];
         // Map to track instantiated systems by name
         this.systemsByName = new Map();
-
-        // Call postAllInit on managers
-        this.managers.forEach((manager) => {
-            if(manager.postAllInit){
-                manager.postAllInit();
-            }
-        });
 
         // Load initial scene if configured
         // This enables systems and triggers onSceneLoad() callbacks
@@ -278,7 +288,7 @@ class BaseECSGame {
         if (!this.entities.has(entityId)) {
             throw new Error(`Entity ${entityId} does not exist`);
         }
-        const componentMethods = this.gameManager.call('getComponents');
+        const componentMethods = this.call('getComponents');
         if (!componentMethods[componentId]) {
             console.warn(`[BaseECSGame] No component factory for '${componentId}'. Add it to the components collection.`);
         }

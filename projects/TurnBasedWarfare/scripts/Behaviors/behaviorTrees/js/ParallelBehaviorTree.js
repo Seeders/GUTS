@@ -130,7 +130,7 @@ class ParallelBehaviorTree extends GUTS.BaseBehaviorTree {
      * Evaluate a single child (unified node lookup)
      */
     evaluateChild(entityId, game, childName) {
-        const node = game.gameManager.call('getNodeByType', childName);
+        const node = game.call('getNodeByType', childName);
         if (!node) {
             console.warn(`Parallel child not found: ${childName}`);
             return null;

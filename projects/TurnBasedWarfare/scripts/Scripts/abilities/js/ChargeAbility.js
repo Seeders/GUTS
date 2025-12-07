@@ -152,8 +152,8 @@ class ChargeAbility extends GUTS.BaseAbility {
         this.createVisualEffect(pos, 'charge');
 
         // Enhanced charge initiation - dust burst and battle cry
-        if (this.game.gameManager) {
-            this.game.gameManager.call('createLayeredEffect', {
+        if (this.game.gameSystem) {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(pos.x, pos.y + 10, pos.z),
                 layers: [
                     // Ground dust burst
@@ -194,7 +194,7 @@ class ChargeAbility extends GUTS.BaseAbility {
                 const trailZ = pos.z + (targetPos.z - pos.z) * progress;
 
                 this.game.schedulingSystem.scheduleAction(() => {
-                    this.game.gameManager.call('createParticles', {
+                    this.game.call('createParticles', {
                         position: new THREE.Vector3(trailX, pos.y + 5, trailZ),
                         count: 12,
                         lifetime: 0.5,
@@ -258,8 +258,8 @@ class ChargeAbility extends GUTS.BaseAbility {
             this.createVisualEffect(targetPos, 'impact');
 
             // Enhanced massive impact explosion
-            if (this.game.gameManager) {
-                this.game.gameManager.call('createLayeredEffect', {
+            if (this.game.gameSystem) {
+                this.game.call('createLayeredEffect', {
                     position: new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z),
                     layers: [
                         // Shockwave flash
@@ -318,7 +318,7 @@ class ChargeAbility extends GUTS.BaseAbility {
                 });
 
                 // Ground crack ring
-                this.game.gameManager.call('createParticles', {
+                this.game.call('createParticles', {
                     position: new THREE.Vector3(targetPos.x, targetPos.y + 3, targetPos.z),
                     count: 20,
                     lifetime: 0.5,

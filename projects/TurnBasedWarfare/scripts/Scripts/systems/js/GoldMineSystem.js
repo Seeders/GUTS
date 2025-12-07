@@ -9,13 +9,13 @@ class GoldMineSystem extends GUTS.BaseSystem {
     init(params) {
         this.params = params || {};
 
-        this.game.gameManager.register('buildGoldMine', this.buildGoldMine.bind(this));
-        this.game.gameManager.register('isValidGoldMinePlacement', this.isValidGoldMinePlacement.bind(this));
-        this.game.gameManager.register('getGoldVeinLocations', () => this.goldVeinLocations);
-        this.game.gameManager.register('processNextMinerInQueue', this.processNextMinerInQueue.bind(this));
-        this.game.gameManager.register('isMineOccupied', this.isMineOccupied.bind(this));
-        this.game.gameManager.register('isNextInMinerQueue', this.isNextInQueue.bind(this));
-        this.game.gameManager.register('addMinerToQueue', this.addMinerToQueue.bind(this));
+        this.game.register('buildGoldMine', this.buildGoldMine.bind(this));
+        this.game.register('isValidGoldMinePlacement', this.isValidGoldMinePlacement.bind(this));
+        this.game.register('getGoldVeinLocations', () => this.goldVeinLocations);
+        this.game.register('processNextMinerInQueue', this.processNextMinerInQueue.bind(this));
+        this.game.register('isMineOccupied', this.isMineOccupied.bind(this));
+        this.game.register('isNextInMinerQueue', this.isNextInQueue.bind(this));
+        this.game.register('addMinerToQueue', this.addMinerToQueue.bind(this));
 
         // Gold vein locations found in onSceneLoad after terrain is loaded
     }
@@ -26,22 +26,22 @@ class GoldMineSystem extends GUTS.BaseSystem {
     }
 
     findGoldVeinLocations() {
-        const tileMap = this.game.gameManager.call('getTileMap');
+        const tileMap = this.game.call('getTileMap');
         if (!tileMap?.worldObjects) {
             console.warn('[GoldMineSystem] No world objects found');
             return;
         }
 
-        const extensionSize = this.game.gameManager.call('getTerrainExtensionSize');
-        const extendedSize = this.game.gameManager.call('getTerrainExtendedSize');
+        const extensionSize = this.game.call('getTerrainExtensionSize');
+        const extendedSize = this.game.call('getTerrainExtendedSize');
 
         this.goldVeinLocations = tileMap.worldObjects
             .filter(obj => obj.type === 'goldVein')
             .map(obj => {
                 // Convert tile grid coordinates to world position, then to placement grid
                 // Use useExtension=false to match the coordinate system used by mouse raycasting
-                const worldPos = this.game.gameManager.call('tileToWorld', obj.gridX, obj.gridZ, false);
-                const gridPos = this.game.gameManager.call('worldToPlacementGrid', worldPos.x, worldPos.z);
+                const worldPos = this.game.call('tileToWorld', obj.gridX, obj.gridZ, false);
+                const gridPos = this.game.call('worldToPlacementGrid', worldPos.x, worldPos.z);
                 // Gold veins use placementGridWidth which is already in placement grid units
                 // But we need to match how buildings calculate their cells (footprintWidth * 2)
                 // Since gold veins have placementGridWidth=2, and buildings have footprintWidth=2,
@@ -128,13 +128,13 @@ class GoldMineSystem extends GUTS.BaseSystem {
     }
 
     mapGoldVeinInstances() {
-        if (!this.game.gameManager.call('getWorldScene')) {
+        if (!this.game.call('getWorldScene')) {
             console.warn('[GoldMineSystem] No scene available for mapping instances');
             return;
         }
 
         const goldVeinInstancedMeshes = [];
-        this.game.gameManager.call('getWorldScene').traverse(child => {
+        this.game.call('getWorldScene').traverse(child => {
             if (child instanceof THREE.InstancedMesh && child.userData.objectType === 'goldVein') {
                 goldVeinInstancedMeshes.push(child);
             }

@@ -238,8 +238,8 @@ class MindControlAbility extends GUTS.BaseAbility {
         this.createVisualEffect(targetPos, 'charm');
 
         // Enhanced mind control success burst (client only)
-        if (!this.game.isServer && this.game.gameManager) {
-            this.game.gameManager.call('createLayeredEffect', {
+        if (!this.game.isServer && this.game.gameSystem) {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 35, targetPos.z),
                 layers: [
                     // Psychic shockwave
@@ -285,7 +285,7 @@ class MindControlAbility extends GUTS.BaseAbility {
             });
 
             // Mind control ring around target
-            this.game.gameManager.call('createParticles', {
+            this.game.call('createParticles', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
                 count: 20,
                 lifetime: 0.8,

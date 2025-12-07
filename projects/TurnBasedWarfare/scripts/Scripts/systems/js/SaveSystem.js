@@ -1,7 +1,7 @@
-class SaveManager {
-    constructor(app) {
-        this.game = app;
-        this.game.saveManager = this;
+class SaveSystem extends GUTS.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.saveSystem = this;
 
         // Save format version for compatibility checking
         this.SAVE_VERSION = 1;
@@ -18,11 +18,11 @@ class SaveManager {
 
     init() {
         // Register save/load methods with GameManager
-        this.game.gameManager.register('saveGame', this.saveGame.bind(this));
-        this.game.gameManager.register('getSaveData', this.getSaveData.bind(this));
-        this.game.gameManager.register('loadSaveData', this.loadSaveData.bind(this));
-        this.game.gameManager.register('listSavedGames', this.listSavedGames.bind(this));
-        this.game.gameManager.register('deleteSavedGame', this.deleteSavedGame.bind(this));
+        this.game.register('saveGame', this.saveGame.bind(this));
+        this.game.register('getSaveData', this.getSaveData.bind(this));
+        this.game.register('loadSaveData', this.loadSaveData.bind(this));
+        this.game.register('listSavedGames', this.listSavedGames.bind(this));
+        this.game.register('deleteSavedGame', this.deleteSavedGame.bind(this));
     }
 
     /**

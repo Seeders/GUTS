@@ -49,8 +49,8 @@ class BuildAbility extends GUTS.BaseAbility {
                 oldBuildingPlacement.isUnderConstruction &&
                 oldBuildingPlacement.assignedBuilder === peasantEntityId) {
                 // Use network manager to cancel with proper refund
-                if (this.game.networkManager && this.game.networkManager.cancelBuilding) {
-                    this.game.networkManager.cancelBuilding({
+                if (this.game.multiplayerNetworkSystem && this.game.multiplayerNetworkSystem.cancelBuilding) {
+                    this.game.multiplayerNetworkSystem.cancelBuilding({
                         placementId: oldBuildingPlacement.placementId,
                         buildingEntityId: oldBuildingId
                     }, (success) => {

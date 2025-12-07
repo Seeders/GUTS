@@ -127,8 +127,8 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         this.createVisualEffect(casterPos, 'teleport');
 
         // Enhanced shadow dissolution effect at departure (client only)
-        if (!this.game.isServer && this.game.gameManager) {
-            this.game.gameManager.call('createLayeredEffect', {
+        if (!this.game.isServer && this.game.gameSystem) {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(casterPos.x, casterPos.y + 30, casterPos.z),
                 layers: [
                     // Dark smoke burst
@@ -169,8 +169,8 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         this.createVisualEffect(teleportPos, 'teleport');
 
         // Enhanced shadow coalesce effect at arrival (client only)
-        if (!this.game.isServer && this.game.gameManager) {
-            this.game.gameManager.call('createLayeredEffect', {
+        if (!this.game.isServer && this.game.gameSystem) {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(teleportPos.x, teleportPos.y + 30, teleportPos.z),
                 layers: [
                     // Shadow gathering inward
@@ -214,8 +214,8 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         this.createVisualEffect(targetPos, 'backstab');
 
         // Enhanced backstab blood/shadow burst (client only)
-        if (!this.game.isServer && this.game.gameManager) {
-            this.game.gameManager.call('createLayeredEffect', {
+        if (!this.game.isServer && this.game.gameSystem) {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 25, targetPos.z),
                 layers: [
                     // Blood spray

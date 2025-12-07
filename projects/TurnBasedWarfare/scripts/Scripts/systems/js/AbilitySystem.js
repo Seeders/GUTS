@@ -10,8 +10,8 @@ class AbilitySystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('getEntityAbilities', this.getEntityAbilities.bind(this));
-        this.game.gameManager.register('removeEntityAbilities', this.removeEntityAbilities.bind(this));
+        this.game.register('getEntityAbilities', this.getEntityAbilities.bind(this));
+        this.game.register('removeEntityAbilities', this.removeEntityAbilities.bind(this));
     }
 
     addAbilitiesToUnit(entityId, abilityIds) {
@@ -172,11 +172,11 @@ class AbilitySystem extends GUTS.BaseSystem {
             if (ability && ability.castTime > 0) {
                 // Convert cast time to rate (casts per second)
                 const castRate = 1 / ability.castTime;
-                animationSpeed = this.game.gameManager.call('calculateAnimationSpeed', entityId, castRate);
+                animationSpeed = this.game.call('calculateAnimationSpeed', entityId, castRate);
                 minAnimationTime = ability.castTime;
             }
-            if(this.game.gameManager.has('triggerSinglePlayAnimation')){
-                this.game.gameManager.call('triggerSinglePlayAnimation', entityId, anim, animationSpeed, minAnimationTime);
+            if(this.game.hasService('triggerSinglePlayAnimation')){
+                this.game.call('triggerSinglePlayAnimation', entityId, anim, animationSpeed, minAnimationTime);
             }
             break;
 

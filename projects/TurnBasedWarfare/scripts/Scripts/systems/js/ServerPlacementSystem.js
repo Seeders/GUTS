@@ -9,8 +9,8 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
     init(params) {
         this.params = params || {};
         // Register base class methods with gameManager
-        this.game.gameManager.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
-        this.game.gameManager.register('getPlacementById', this.getPlacementById.bind(this));
+        this.game.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
+        this.game.register('getPlacementById', this.getPlacementById.bind(this));
         this.subscribeToEvents();
     }
 
@@ -73,7 +73,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
                     playerGold = player.stats.gold;
                     console.log('got player gold', playerGold);
             
-                    if (!this.game.gameManager.call('canAffordLevelUp', placementId, playerGold)) {
+                    if (!this.game.call('canAffordLevelUp', placementId, playerGold)) {
                         console.log("not enough gold to level up");
                         this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
                             playerId: playerId,
@@ -82,12 +82,12 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
                         });
                         return false;
                     }
-                    const success1 = specializationId ? this.game.gameManager.call('applySpecialization', placementId, specializationId, playerId) : true;
+                    const success1 = specializationId ? this.game.call('applySpecialization', placementId, specializationId, playerId) : true;
 
-                    await this.game.gameManager.call('levelUpSquad', placementId, null, playerId, (success) => {
+                    await this.game.call('levelUpSquad', placementId, null, playerId, (success) => {
                         console.log('success?: ', success1, success);
                         if(success1 && success){
-                            const levelUpCost = this.game.gameManager.call('getLevelUpCost', placementId);        
+                            const levelUpCost = this.game.call('getLevelUpCost', placementId);        
                             
                             player.stats.gold -= levelUpCost;
                             console.log('leveled, new gold amt:', player.stats.gold);
@@ -387,7 +387,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
             });
             this.placementReadyStates.clear();
 
-            this.game.gameManager.call('startBattle', room);
+            this.game.call('startBattle', room);
         } else {
             const gameState = room.getGameState();
             this.serverNetworkManager.broadcastToRoom(roomId, 'READY_FOR_BATTLE_UPDATE', {                       
@@ -434,7 +434,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
                     const dx = position.x - targetPosition.x;
                     const dz = position.z - targetPosition.z;
                     const distSq = dx * dx + dz * dz;
-                    const placementGridSize = this.game.gameManager.call('getPlacementGridSize');
+                    const placementGridSize = this.game.call('getPlacementGridSize');
                     const threshold = placementGridSize * 0.5;
 
                     if (distSq <= threshold * threshold) {
@@ -500,13 +500,13 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
         }
 
         // Spawn entities - placement component stores minimal data, unitType component has full data
-        const result = this.game.gameManager.call('spawnSquadFromPlacement', playerId, fullPlacement);
+        const result = this.game.call('spawnSquadFromPlacement', playerId, fullPlacement);
 
         if (result.success && result.squad) {
             const squadUnits = [...result.squad.squadUnits];
 
             if (fullPlacement.placementId) {
-                this.game.gameManager.call('initializeSquad',
+                this.game.call('initializeSquad',
                     fullPlacement.placementId,
                     unitType,
                     squadUnits
@@ -518,7 +518,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
                 const peasantId = peasantInfo.peasantId;
                 const entityId = squadUnits[0];
 
-                const peasantAbilities = this.game.gameManager.call('getEntityAbilities', peasantId);
+                const peasantAbilities = this.game.call('getEntityAbilities', peasantId);
                 if (peasantAbilities) {
                     const buildAbility = peasantAbilities.find(a => a.id === 'build');
                     if (buildAbility) {
@@ -542,7 +542,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
     }
     
     removeDeadSquadsAfterRound() {
-        if (!this.game.componentManager) return;
+        if (!this.game.componentSystem) return;
 
         // Query all entities with placement component
         const entitiesWithPlacement = this.game.getEntitiesWith('placement');
@@ -601,7 +601,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
             console.log(`Player ${player.id} insufficient gold: ${newUnitCost} > ${player.stats.gold}`);
             return false;
         }
-        if (this.game.gameManager.has('canAffordSupply') && !this.game.gameManager.call('canAffordSupply', player.stats.side, placement.unitType)) {
+        if (this.game.hasService('canAffordSupply') && !this.game.call('canAffordSupply', player.stats.side, placement.unitType)) {
             console.log(`Player ${player.id} insufficient supply for unit: ${placement.unitType.id}`);
             return false;
         }
@@ -611,9 +611,9 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
         }
         
         // Validate side placement - no mirroring, direct side enforcement
-        const squadData = this.game.squadManager.getSquadData(placement.unitType);
-        const cells = this.game.squadManager.getSquadCells(placement.gridPosition, squadData);
-        if(!this.game.gameManager.call('isValidGridPlacement', cells, player.stats.side)){
+        const squadData = this.game.squadSystem.getSquadData(placement.unitType);
+        const cells = this.game.squadSystem.getSquadCells(placement.gridPosition, squadData);
+        if(!this.game.call('isValidGridPlacement', cells, player.stats.side)){
             console.log('Invalid Placement', placement);
             for (const cell of cells) {
                 const key = `${cell.x},${cell.z}`;
@@ -699,7 +699,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
             }
 
             // Destroy the building entity
-            this.game.gameManager.call('removeInstance', buildingEntityId);
+            this.game.call('removeInstance', buildingEntityId);
             this.game.destroyEntity(buildingEntityId);
 
             // Send success response to requesting player
@@ -736,7 +736,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
         for (const entityId of entitiesWithPlacement) {
             const placementComp = this.game.getComponent(entityId, 'placement');
             if (placementComp?.placementId) {
-                this.game.gameManager.call('releaseGridCells', placementComp.placementId);
+                this.game.call('releaseGridCells', placementComp.placementId);
             }
             this.game.destroyEntity(entityId);
         }
@@ -759,7 +759,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
             for (const { entityId, placementId } of entitiesToDestroy) {
                 try {
                     if (placementId) {
-                        this.game.gameManager.call('releaseGridCells', placementId);
+                        this.game.call('releaseGridCells', placementId);
                     }
                     this.game.destroyEntity(entityId);
                 } catch (error) {
@@ -790,7 +790,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
             const gridWidth = footprintWidth * 2;
             const gridHeight = footprintHeight * 2;
 
-            const result = this.game.gameManager.call('buildGoldMine', entityId, team, gridPosition, gridWidth, gridHeight);
+            const result = this.game.call('buildGoldMine', entityId, team, gridPosition, gridWidth, gridHeight);
             if (!result.success) {
                 return result;
             }
@@ -890,7 +890,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
         let nearestGoldVeinLocation = null;
         let minDistance = Infinity;
 
-        const goldVeinLocations = this.game.gameManager.call('getGoldVeinLocations') || [];
+        const goldVeinLocations = this.game.call('getGoldVeinLocations') || [];
         if (goldVeinLocations.length > 0) {
             goldVeinLocations.forEach(vein => {
                 // Calculate distance from start position to vein (both in placement grid coordinates)
@@ -1006,7 +1006,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
 
 
         // Use tile coordinates for camera position (tilePosition is in tile map coordinates)
-        const worldPos = this.game.gameManager.call('tileToWorld', tilePosition.x, tilePosition.z);
+        const worldPos = this.game.call('tileToWorld', tilePosition.x, tilePosition.z);
 
         const cameraPosition = {
             x: worldPos.x - cdx * distance,

@@ -1,7 +1,7 @@
-class LoadingManager {
-    constructor(app) {
-        this.game = app;
-        this.game.loadingManager = this;
+class LoadingSystem extends GUTS.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.loadingSystem = this;
         this.loadingSteps = [
             'Initializing game engine...',
             'Loading unit data...',

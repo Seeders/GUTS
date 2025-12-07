@@ -111,7 +111,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
         });
 
         // Enhanced beam trail particles
-        if (this.game.gameManager) {
+        if (this.game.gameSystem) {
             // Create particles along the beam path
             const beamSteps = 6;
             for (let i = 0; i <= beamSteps; i++) {
@@ -119,7 +119,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
                 const trailX = startPos.x + (endPos.x - startPos.x) * t;
                 const trailZ = startPos.z + (endPos.z - startPos.z) * t;
 
-                this.game.gameManager.call('createParticles', {
+                this.game.call('createParticles', {
                     position: new THREE.Vector3(trailX, startPos.y + 15, trailZ),
                     count: 8,
                     lifetime: 0.4,
@@ -138,7 +138,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
             }
 
             // Muzzle flash at start
-            this.game.gameManager.call('createLayeredEffect', {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(startPos.x, startPos.y + 15, startPos.z),
                 layers: [
                     // Bright flash

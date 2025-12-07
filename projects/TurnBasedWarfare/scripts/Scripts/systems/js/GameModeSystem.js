@@ -1,7 +1,7 @@
-class GameModeManager {
-    constructor(app) {
-        this.game = app;
-        this.game.gameModeManager = this;        
+class GameModeSystem extends GUTS.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.gameModeSystem = this;        
         this.modes = this.initializeGameModes();
         this.setupUI();
     }
@@ -108,14 +108,14 @@ class GameModeManager {
         const selectedCard = document.querySelector(`[data-mode="${modeId}"]`);
         if (selectedCard) {
             selectedCard.classList.add('selected');
-            this.game.screenManager.setGameMode(modeId);
+            this.game.screenSystem.setGameMode(modeId);
             const modeConfig = this.getModeConfig(modeId);
             modeConfig.onStart(modeConfig);
         }
     }
 
     getSelectedMode() {
-        return this.modes[this.game.screenManager.selectedGameMode];
+        return this.modes[this.game.screenSystem.selectedGameMode];
     }
 
     getModeConfig(modeId) {

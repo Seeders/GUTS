@@ -13,8 +13,8 @@ class SchedulingSystem extends GUTS.BaseSystem {
 
     init() {
         // Register methods with GameManager
-        this.game.gameManager.register('scheduleAction', this.scheduleAction.bind(this));
-        this.game.gameManager.register('cancelScheduledAction', this.cancelAction.bind(this));
+        this.game.register('scheduleAction', this.scheduleAction.bind(this));
+        this.game.register('cancelScheduledAction', this.cancelAction.bind(this));
     }
 
     update() {

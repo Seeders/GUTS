@@ -68,18 +68,18 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         this.params = params;
 
         // Register getter methods
-        this.game.gameManager.register('getExplorationTexture', this.getExplorationTexture.bind(this));
-        this.game.gameManager.register('getFogTexture', this.getFogTexture.bind(this));
+        this.game.register('getExplorationTexture', this.getExplorationTexture.bind(this));
+        this.game.register('getFogTexture', this.getFogTexture.bind(this));
 
         // Register cache invalidation for when worldObjects are destroyed
-        this.game.gameManager.register('invalidateLOSCache', this.invalidateLOSCache.bind(this));
+        this.game.register('invalidateLOSCache', this.invalidateLOSCache.bind(this));
 
         // Rendering initialized in onSceneLoad when world size is available
     }
 
     onSceneLoad(sceneData) {
         // Get world size now that terrain is loaded
-        this.WORLD_SIZE = this.game.gameManager.call('getWorldExtendedSize');
+        this.WORLD_SIZE = this.game.call('getWorldExtendedSize');
 
         if (!this.WORLD_SIZE) {
             console.warn('[FogOfWarSystem] World size not available');
@@ -92,7 +92,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         // Create fog pass now that render targets exist
         if (this.game.postProcessingSystem && !this.fogPass) {
             this.createFogPass();
-            this.game.gameManager.call('registerPostProcessingPass', 'fog', {
+            this.game.call('registerPostProcessingPass', 'fog', {
                 enabled: true,
                 pass: this.fogPass
             });
@@ -205,7 +205,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
      */
     _getGridSize() {
         if (this._cachedGridSize === null) {
-            this._cachedGridSize = this.game.gameManager.call('getGridSize');
+            this._cachedGridSize = this.game.call('getGridSize');
         }
         return this._cachedGridSize;
     }
@@ -215,7 +215,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
      */
     _getTerrainSize() {
         if (this._cachedTerrainSize === null) {
-            this._cachedTerrainSize = this.game.gameManager.call('getTerrainSize');
+            this._cachedTerrainSize = this.game.call('getTerrainSize');
         }
         return this._cachedTerrainSize;
     }
@@ -279,7 +279,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             // First check max distance
             const maxX = unitPos.x + dirX * visionRadius;
             const maxZ = unitPos.z + dirZ * visionRadius;
-            if (!this.game.gameManager.call('hasLineOfSight',
+            if (!this.game.call('hasLineOfSight',
                 { x: unitPos.x, z: unitPos.z },
                 { x: maxX, z: maxZ },
                 unitType,
@@ -290,7 +290,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                     const midDist = (minDist + maxDist) / 2;
                     const midX = unitPos.x + dirX * midDist;
                     const midZ = unitPos.z + dirZ * midDist;
-                    if (this.game.gameManager.call('hasLineOfSight',
+                    if (this.game.call('hasLineOfSight',
                         { x: unitPos.x, z: unitPos.z },
                         { x: midX, z: midZ },
                         unitType,
@@ -791,7 +791,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         if (this.fogRenderTarget) this.fogRenderTarget.dispose();
         if (this.explorationRenderTarget) this.explorationRenderTarget.dispose();
         if (this.explorationRenderTargetPingPong) this.explorationRenderTargetPingPong.dispose();
-        if (this.game.postProcessingSystem) this.game.gameManager.call('removePostProcessingPass', 'fog');
+        if (this.game.postProcessingSystem) this.game.call('removePostProcessingPass', 'fog');
         if (this.accumulationMaterial) this.accumulationMaterial.dispose();
         if (this.accumulationQuad) this.accumulationQuad.geometry.dispose();
         if (this.losMaterial) this.losMaterial.dispose();

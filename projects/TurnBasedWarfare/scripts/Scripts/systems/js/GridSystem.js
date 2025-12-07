@@ -21,38 +21,38 @@ class GridSystem extends GUTS.BaseSystem {
 
     init() {
         // Grid state management
-        this.game.gameManager.register('getNearbyUnits', this.getNearbyUnits.bind(this));
-        this.game.gameManager.register('isValidGridPlacement', this.isValidGridPlacement.bind(this));
-        this.game.gameManager.register('reserveGridCells', this.occupyCells.bind(this));
-        this.game.gameManager.register('releaseGridCells', this.freeCells.bind(this));
-        this.game.gameManager.register('getUnitGridCells', this.getUnitCells.bind(this));
-        this.game.gameManager.register('toggleSpatialGridDebug', this.toggleDebugVisualization.bind(this));
+        this.game.register('getNearbyUnits', this.getNearbyUnits.bind(this));
+        this.game.register('isValidGridPlacement', this.isValidGridPlacement.bind(this));
+        this.game.register('reserveGridCells', this.occupyCells.bind(this));
+        this.game.register('releaseGridCells', this.freeCells.bind(this));
+        this.game.register('getUnitGridCells', this.getUnitCells.bind(this));
+        this.game.register('toggleSpatialGridDebug', this.toggleDebugVisualization.bind(this));
 
         // Grid configuration
-        this.game.gameManager.register('getGridSize', () => this.terrainGridSize);
-        this.game.gameManager.register('getPlacementGridSize', () => this.cellSize);
+        this.game.register('getGridSize', () => this.terrainGridSize);
+        this.game.register('getPlacementGridSize', () => this.cellSize);
 
         // Placement Grid ↔ World coordinate transformations
         // Use these for placement grid coordinates (2x terrain tile grid, used for unit/building placement)
-        this.game.gameManager.register('placementGridToWorld', this.gridToWorld.bind(this));
-        this.game.gameManager.register('worldToPlacementGrid', this.worldToGrid.bind(this));
+        this.game.register('placementGridToWorld', this.gridToWorld.bind(this));
+        this.game.register('worldToPlacementGrid', this.worldToGrid.bind(this));
 
         // Tile ↔ World coordinate transformations (3D terrain grid)
-        this.game.gameManager.register('tileToWorld', (tileX, tileZ, useExtension = false) => {
+        this.game.register('tileToWorld', (tileX, tileZ, useExtension = false) => {
             if (!this.coordinateTranslator) {
                 console.error('[GridSystem] tileToWorld called before CoordinateTranslator initialized!');
                 return { x: 0, z: 0 };
             }
             return this.coordinateTranslator.tileToWorld(tileX, tileZ, useExtension);
         });
-        this.game.gameManager.register('worldToTile', (worldX, worldZ, useExtension = false) => {
+        this.game.register('worldToTile', (worldX, worldZ, useExtension = false) => {
             if (!this.coordinateTranslator) {
                 console.error('[GridSystem] worldToTile called before CoordinateTranslator initialized!');
                 return { x: 0, z: 0 };
             }
             return this.coordinateTranslator.worldToTile(worldX, worldZ, useExtension);
         });
-        this.game.gameManager.register('tileToWorldCorner', (tileX, tileZ, useExtension = false) => {
+        this.game.register('tileToWorldCorner', (tileX, tileZ, useExtension = false) => {
             if (!this.coordinateTranslator) {
                 console.error('[GridSystem] tileToWorldCorner called before CoordinateTranslator initialized!');
                 return { x: 0, z: 0 };
@@ -61,24 +61,24 @@ class GridSystem extends GUTS.BaseSystem {
         });
 
         // Quadrant positioning (for sub-tile positioning like cliffs)
-        this.game.gameManager.register('applyQuadrantOffset', (tileWorldX, tileWorldZ, quadrant) =>
+        this.game.register('applyQuadrantOffset', (tileWorldX, tileWorldZ, quadrant) =>
             this.coordinateTranslator.applyQuadrantOffset(tileWorldX, tileWorldZ, quadrant));
 
         // Tile ↔ Pixel coordinate transformations (for heightmap access)
-        this.game.gameManager.register('tileToPixel', (tileX, tileZ) =>
+        this.game.register('tileToPixel', (tileX, tileZ) =>
             this.coordinateTranslator.tileToPixel(tileX, tileZ));
-        this.game.gameManager.register('pixelToTile', (pixelX, pixelZ) =>
+        this.game.register('pixelToTile', (pixelX, pixelZ) =>
             this.coordinateTranslator.pixelToTile(pixelX, pixelZ));
 
         // Pixel ↔ World coordinate transformations (for worldObjects)
-        this.game.gameManager.register('pixelToWorld', (pixelX, pixelZ) => {
+        this.game.register('pixelToWorld', (pixelX, pixelZ) => {
             if (!this.coordinateTranslator) {
                 console.error('[GridSystem] pixelToWorld called before CoordinateTranslator initialized!');
                 return { x: 0, z: 0 };
             }
             return this.coordinateTranslator.pixelToWorld(pixelX, pixelZ);
         });
-        this.game.gameManager.register('worldToPixel', (worldX, worldZ) => {
+        this.game.register('worldToPixel', (worldX, worldZ) => {
             if (!this.coordinateTranslator) {
                 console.error('[GridSystem] worldToPixel called before CoordinateTranslator initialized!');
                 return { x: 0, z: 0 };
@@ -87,13 +87,13 @@ class GridSystem extends GUTS.BaseSystem {
         });
 
         // Coordinate validation
-        this.game.gameManager.register('isValidTile', (tileX, tileZ) =>
+        this.game.register('isValidTile', (tileX, tileZ) =>
             this.coordinateTranslator.isValidTile(tileX, tileZ));
-        this.game.gameManager.register('isValidWorldPosition', (worldX, worldZ) =>
+        this.game.register('isValidWorldPosition', (worldX, worldZ) =>
             this.coordinateTranslator.isValidWorldPosition(worldX, worldZ));
 
         // Configuration updates (for dynamic changes like extension size)
-        this.game.gameManager.register('updateCoordinateConfig', (config) =>
+        this.game.register('updateCoordinateConfig', (config) =>
             this.coordinateTranslator.updateConfig(config));
 
         const collections = this.game.getCollections();
@@ -681,7 +681,7 @@ class GridSystem extends GUTS.BaseSystem {
             }
 
             const mesh = new THREE.Mesh(this.debugGeometry, material);
-            const terrainHeight = this.game.gameManager?.call('getTerrainHeightAtPosition', worldPos.x, worldPos.z) || 0;
+            const terrainHeight = this.game.gameSystem?.call('getTerrainHeightAtPosition', worldPos.x, worldPos.z) || 0;
             mesh.position.set(worldPos.x, terrainHeight + 1, worldPos.z);
             this.debugVisualization.add(mesh);
         }

@@ -87,8 +87,8 @@ class InfernoAbility extends GUTS.BaseAbility {
         this.createVisualEffect(centerPos, 'inferno');
 
         // Enhanced massive inferno explosion
-        if (this.game.gameManager) {
-            this.game.gameManager.call('createLayeredEffect', {
+        if (this.game.gameSystem) {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(centerPos.x, centerPos.y + 30, centerPos.z),
                 layers: [
                     // Massive fire eruption
@@ -147,7 +147,7 @@ class InfernoAbility extends GUTS.BaseAbility {
             });
 
             // Fire ring on ground
-            this.game.gameManager.call('createParticles', {
+            this.game.call('createParticles', {
                 position: new THREE.Vector3(centerPos.x, centerPos.y + 5, centerPos.z),
                 count: 30,
                 lifetime: 0.8,

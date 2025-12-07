@@ -131,7 +131,7 @@ class ConditionDecorator extends GUTS.BaseBehaviorDecorator {
         }
 
         try {
-            return game.gameManager.call(conditionName, entityId, this.parameters);
+            return game.call(conditionName, entityId, this.parameters);
         } catch (e) {
             console.warn(`ConditionDecorator: custom condition '${conditionName}' failed:`, e);
             return false;

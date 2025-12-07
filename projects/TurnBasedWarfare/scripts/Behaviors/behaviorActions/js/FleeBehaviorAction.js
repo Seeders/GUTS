@@ -89,7 +89,7 @@ class FleeBehaviorAction extends GUTS.BaseBehaviorAction {
 
     findNearestEnemy(entityId, game, pos, team, range) {
         // Use spatial grid for efficient lookup - returns array of entityIds
-        const nearbyEntityIds = game.gameManager.call('getNearbyUnits', pos, range, entityId);
+        const nearbyEntityIds = game.call('getNearbyUnits', pos, range, entityId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
         let nearest = null;

@@ -1,7 +1,7 @@
-class SquadManager {
-    constructor(app) {
-        this.game = app;
-        this.game.squadManager = this;
+class SquadSystem extends GUTS.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.squadSystem = this;
         this.ELEMENT_TYPES = {
             PHYSICAL: 'physical',
             FIRE: 'fire',

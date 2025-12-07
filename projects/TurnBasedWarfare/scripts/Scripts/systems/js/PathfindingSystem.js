@@ -33,12 +33,12 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
     init() {
         // Only register gameManager methods in init - actual initialization happens in onSceneLoad
-        this.game.gameManager.register('isPositionWalkable', this.isPositionWalkable.bind(this));
-        this.game.gameManager.register('isGridPositionWalkable', this.isGridPositionWalkable.bind(this));
-        this.game.gameManager.register('requestPath', this.requestPath.bind(this));
-        this.game.gameManager.register('hasRampAt', this.hasRampAt.bind(this));
-        this.game.gameManager.register('hasDirectWalkablePath', this.hasDirectWalkablePath.bind(this));
-        this.game.gameManager.register('togglePathfindingDebug', this.toggleDebugVisualization.bind(this));
+        this.game.register('isPositionWalkable', this.isPositionWalkable.bind(this));
+        this.game.register('isGridPositionWalkable', this.isGridPositionWalkable.bind(this));
+        this.game.register('requestPath', this.requestPath.bind(this));
+        this.game.register('hasRampAt', this.hasRampAt.bind(this));
+        this.game.register('hasDirectWalkablePath', this.hasDirectWalkablePath.bind(this));
+        this.game.register('togglePathfindingDebug', this.toggleDebugVisualization.bind(this));
     }
 
     onSceneLoad(sceneData) {
@@ -51,7 +51,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         }
 
         // Get level from terrain entity instead of game.state.level
-        const levelId = this.game.gameManager.call('getLevel');
+        const levelId = this.game.call('getLevel');
         const level = collections.levels?.[levelId];
         if (!level || !level.tileMap) {
             console.warn('PathfindingSystem: Level or tileMap not available');
@@ -78,7 +78,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         }
 
         // Set navigation grid size to half of terrain grid (matches placement grid)
-        this.navGridSize = this.game.gameManager.call('getPlacementGridSize');
+        this.navGridSize = this.game.call('getPlacementGridSize');
 
         // Load ramps data
         this.loadRamps(level.tileMap);
@@ -119,8 +119,8 @@ class PathfindingSystem extends GUTS.BaseSystem {
     // Convert nav grid coordinates to terrain grid coordinates
     navGridToTerrainGrid(navGridX, navGridZ) {
         const worldPos = this.navGridToWorld(navGridX, navGridZ);
-        const gridSize = this.game.gameManager.call('getGridSize');
-        const terrainSize = this.game.gameManager.call('getTerrainSize');
+        const gridSize = this.game.call('getGridSize');
+        const terrainSize = this.game.call('getTerrainSize');
 
         const terrainX = Math.floor((worldPos.x + terrainSize / 2) / gridSize);
         const terrainZ = Math.floor((worldPos.z + terrainSize / 2) / gridSize);
@@ -147,7 +147,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
     // Check if movement between terrains is allowed (either through height + ramps or walkableNeighbors)
     canWalkBetweenTerrainsWithRamps(fromTerrainIndex, toTerrainIndex, fromNavGridX, fromNavGridZ, toNavGridX, toNavGridZ) {
-        const tileMap = this.game.gameManager.call('getTileMap');
+        const tileMap = this.game.call('getTileMap');
         // NEW: Use height-based walkability if heightMap is available
         if (tileMap.heightMap && tileMap.heightMap.length > 0) {
             const fromHeight = this.getHeightLevelAtNavGrid(fromNavGridX, fromNavGridZ);
@@ -185,7 +185,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
     /**
      * Bake navigation mesh from terrain and worldObjects
      *
-     * Debug visualization available via: game.gameManager.call('togglePathfindingDebug')
+     * Debug visualization available via: game.call('togglePathfindingDebug')
      * Color coding:
      * - Green (0x00ff00): Walkable terrain
      * - Red (0xff0000): Impassable terrain (unwalkable terrain types)
@@ -196,7 +196,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
      * - 255: Impassable (marked for worldObjects or other obstacles)
      */
     bakeNavMesh() {
-        const terrainSize = this.game.gameManager.call('getTerrainSize');
+        const terrainSize = this.game.call('getTerrainSize');
         
         this.navGridWidth = Math.ceil(terrainSize / this.navGridSize);
         this.navGridHeight = Math.ceil(terrainSize / this.navGridSize);
@@ -211,7 +211,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 const worldX = (x * this.navGridSize) - halfTerrain + this.navGridSize / 2;
                 const worldZ = (z * this.navGridSize) - halfTerrain + this.navGridSize / 2;
                 
-                const terrainType = this.game.gameManager.call('getTerrainTypeAtPosition', worldX, worldZ);
+                const terrainType = this.game.call('getTerrainTypeAtPosition', worldX, worldZ);
                 
                 const idx = z * this.navGridWidth + x;
                 this.navMesh[idx] = terrainType !== null ? terrainType : 0;
@@ -220,7 +220,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         
         // Second pass: mark cells occupied by impassable worldObjects as impassable
         const collections = this.game.getCollections();
-        const levelId = this.game.gameManager.call('getLevel');
+        const levelId = this.game.call('getLevel');
         const level = collections.levels?.[levelId];
         const tileMap = level?.tileMap;
 
@@ -241,7 +241,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
                 // worldObj.gridX/gridZ are TILE grid coordinates (terrain grid)
                 // Use tileToWorld to convert tile coordinates to world position
-                const worldPosCentered = this.game.gameManager.call('tileToWorld', worldObj.gridX, worldObj.gridZ);
+                const worldPosCentered = this.game.call('tileToWorld', worldObj.gridX, worldObj.gridZ);
 
                 // Convert world position to nav grid coordinates
                 // The nav grid is 2x the resolution of the terrain grid (same as placement grid)
@@ -297,14 +297,14 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     worldToNavGrid(worldX, worldZ) {
-        const halfTerrain = this.game.gameManager.call('getTerrainSize') / 2;
+        const halfTerrain = this.game.call('getTerrainSize') / 2;
         const gridX = Math.floor((worldX + halfTerrain) / this.navGridSize);
         const gridZ = Math.floor((worldZ + halfTerrain) / this.navGridSize);
         return { x: gridX, z: gridZ };
     }
 
     navGridToWorld(gridX, gridZ) {
-        const halfTerrain = this.game.gameManager.call('getTerrainSize') / 2;
+        const halfTerrain = this.game.call('getTerrainSize') / 2;
         const worldX = (gridX * this.navGridSize) - halfTerrain + this.navGridSize / 2;
         const worldZ = (gridZ * this.navGridSize) - halfTerrain + this.navGridSize / 2;
         return { x: worldX, z: worldZ };
@@ -745,7 +745,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 request.cacheKey
             );
             
-            if (path && this.game.componentManager) {
+            if (path && this.game.componentSystem) {
                 // Store path in pathfinding component (not aiState)
                 const pathfindingComp = this.game.getComponent(request.entityId, "pathfinding");
                 if (pathfindingComp) {
@@ -757,7 +757,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     isGridPositionWalkable(gridPos) {
-        const worldPos = this.game.gameManager.call('placementGridToWorld', gridPos.x, gridPos.z);
+        const worldPos = this.game.call('placementGridToWorld', gridPos.x, gridPos.z);
         return this.isPositionWalkable(worldPos);
     }
 
@@ -862,7 +862,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
             let instanceIndex = 0;
             for (const cell of cellData[cellType]) {
                 const worldPos = this.navGridToWorld(cell.x, cell.z);
-                const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', worldPos.x, worldPos.z);
+                const terrainHeight = this.game.call('getTerrainHeightAtPosition', worldPos.x, worldPos.z);
 
                 position.set(worldPos.x, terrainHeight + 0.5, worldPos.z);
                 matrix.makeTranslation(position.x, position.y, position.z);

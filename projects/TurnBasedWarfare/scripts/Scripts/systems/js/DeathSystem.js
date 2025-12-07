@@ -5,7 +5,7 @@ class DeathSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register("startDeathProcess", this.startDeathProcess.bind(this));
+        this.game.register("startDeathProcess", this.startDeathProcess.bind(this));
     }
 
     update() {
@@ -43,8 +43,8 @@ class DeathSystem extends GUTS.BaseSystem {
         });
 
         // Trigger death animation
-        if(this.game.gameManager.has('playDeathAnimation')){
-            this.game.gameManager.call('playDeathAnimation', entityId);
+        if(this.game.hasService('playDeathAnimation')){
+            this.game.call('playDeathAnimation', entityId);
         }
 
         // Remove health (corpses can't be damaged)
@@ -76,8 +76,8 @@ class DeathSystem extends GUTS.BaseSystem {
         if (!pos || !unitType || !team) return;
 
         // CRITICAL: Notify AnimationSystem FIRST to set corpse state
-        if(this.game.gameManager.has('setCorpseAnimation')){
-            this.game.gameManager.call('setCorpseAnimation', entityId);
+        if(this.game.hasService('setCorpseAnimation')){
+            this.game.call('setCorpseAnimation', entityId);
         }
 
         // Update death state to corpse - keep the component to prevent revival

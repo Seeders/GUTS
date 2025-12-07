@@ -42,13 +42,13 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
         // RaycastHelper initialized in onSceneLoad when scene/camera are available
 
-        this.game.gameManager.register('getPlacementById', this.getPlacementById.bind(this));
-        this.game.gameManager.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
-        this.game.gameManager.register('createPlacementData', this.createPlacementData.bind(this));
-        this.game.gameManager.register('placeSquadOnBattlefield', this.placeSquad.bind(this));
-        this.game.gameManager.register('getOpponentPlacements', () => this.getPlacementsForSide(this.game.state.mySide === 'left' ? 'right' : 'left'));
-        this.game.gameManager.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
-        this.mouseWorldOffset = { x: this.game.gameManager.call('getPlacementGridSize') / 2, z: this.game.gameManager.call('getPlacementGridSize') / 2 };
+        this.game.register('getPlacementById', this.getPlacementById.bind(this));
+        this.game.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
+        this.game.register('createPlacementData', this.createPlacementData.bind(this));
+        this.game.register('placeSquadOnBattlefield', this.placeSquad.bind(this));
+        this.game.register('getOpponentPlacements', () => this.getPlacementsForSide(this.game.state.mySide === 'left' ? 'right' : 'left'));
+        this.game.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
+        this.mouseWorldOffset = { x: this.game.call('getPlacementGridSize') / 2, z: this.game.call('getPlacementGridSize') / 2 };
     }
 
     onSceneLoad(sceneData) {
@@ -76,7 +76,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                 this.elements.undoButton.style.transform = 'scale(1)';
             }, 150);
             
-            this.game.gameManager.call('showNotification', '↶ Last deployment undone', 'info', 2000);
+            this.game.call('showNotification', '↶ Last deployment undone', 'info', 2000);
          
         });
         
@@ -136,8 +136,8 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
     initializeSubsystems() {
        
-        this.squadManager = this.game.squadManager;
-        this.unitCreator = this.game.unitCreationManager;
+        this.squadSystem = this.game.squadSystem;
+        this.unitCreator = this.game.unitCreationSystem;
          
         if (this.config.enablePreview) {
             this.placementPreview = new GUTS.PlacementPreview(this.game);
@@ -157,7 +157,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
     }
 
     getStartingState() {
-         this.game.networkManager.getStartingState((success, response) => {
+         this.game.multiplayerNetworkSystem.getStartingState((success, response) => {
             if(success){
                 const buildingTypes = this.game.getCollections().buildings;
                 const unitTypes = this.game.getCollections().buildings;
@@ -170,7 +170,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                         // unitDef already has id and collection from compiler
                         const placement = this.createPlacementData(unitPos, unitDef, this.game.state.mySide);
                         placement.isStartingState = true;
-                        this.game.networkManager.submitPlacement(placement, (success, response) => {
+                        this.game.multiplayerNetworkSystem.submitPlacement(placement, (success, response) => {
                             if(success){
                                 this.placeSquad(placement);
                             }
@@ -189,9 +189,9 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;
 
-        this.game.gameManager.call('resetShop');
-        this.game.gameManager.call('clearAllDamageEffects');
-        this.game.gameManager.call('clearAllEffects');
+        this.game.call('resetShop');
+        this.game.call('clearAllDamageEffects');
+        this.game.call('clearAllEffects');
 
         this.enablePlacementUI();
         this.elements.readyButton.textContent = 'Ready for Battle';
@@ -206,7 +206,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
     
     createRespawnEffect(position, team) {
         const effectType = team === 'player' ? 'magic' : 'heal';
-        this.game.gameManager.call('createParticleEffect',
+        this.game.call('createParticleEffect',
             position.x,
             position.y,
             position.z,
@@ -237,7 +237,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             this.elements.readyButton.disabled = true;
             this.elements.readyButton.textContent = 'Updating...';
         }
-        this.game.networkManager.toggleReadyForBattle((success, response) => {
+        this.game.multiplayerNetworkSystem.toggleReadyForBattle((success, response) => {
             if(success){
                 this.hasSubmittedPlacements = true;
                 this.elements.readyButton.textContent = 'Waiting for Opponent...';
@@ -287,7 +287,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
             // Resync entities with server state to ensure both clients are in sync
             if (data.entitySync) {
-                this.game.networkManager.resyncEntities(data.entitySync);
+                this.game.multiplayerNetworkSystem.resyncEntities(data.entitySync);
             }
 
             this.game.desyncDebugger.enabled = true;
@@ -299,7 +299,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         } else {
             const opponentReady = data.gameState?.players?.find(p => p.id !== myPlayerId)?.ready;
             if (opponentReady) {
-                this.game.gameManager.call('showNotification', 'Opponent is ready for battle!', 'info');
+                this.game.call('showNotification', 'Opponent is ready for battle!', 'info');
             }
         }
     }
@@ -336,7 +336,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
         // Remove render instances first
         for (const entityId of squadUnits) {
-            this.game.gameManager.call('removeInstance', entityId);
+            this.game.call('removeInstance', entityId);
         }
 
         // Destroy entities using base class method
@@ -375,7 +375,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
     applyOpponentPlacements(opponentData, opponentPlayerId = null) {
         opponentData.forEach(placement => {
-            if(this.game.gameManager.call('getOpponentPlacements').find(p => p.placementId === placement.placementId)) {
+            if(this.game.call('getOpponentPlacements').find(p => p.placementId === placement.placementId)) {
                 return;
             }
             // Store opponent's playerId on placement for unit creation
@@ -391,9 +391,9 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
     }
 
     createEnemyFromOpponentPlacement(opponentPlacement) {
-        this.game.gameManager.call('setSquadInfo', opponentPlacement.placementId, opponentPlacement.experience);
+        this.game.call('setSquadInfo', opponentPlacement.placementId, opponentPlacement.experience);
 
-        if (this.game.squadManager && this.game.unitCreationManager) {
+        if (this.game.squadSystem && this.game.unitCreationSystem) {
             // Look up unitType from collections
             const unitType = this.getUnitTypeFromPlacement(opponentPlacement);
             if (!unitType) {
@@ -401,7 +401,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                 return;
             }
 
-            const unitPositions = this.game.squadManager.calculateUnitPositions(
+            const unitPositions = this.game.squadSystem.calculateUnitPositions(
                 opponentPlacement.gridPosition,
                 unitType
             );
@@ -411,10 +411,10 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
             let squadUnits = [];
             unitPositions.forEach((pos, index) => {
-                const terrainHeight = this.game.unitCreationManager.getTerrainHeight(pos.x, pos.z);
+                const terrainHeight = this.game.unitCreationSystem.getTerrainHeight(pos.x, pos.z);
                 const unitY = terrainHeight !== null ? terrainHeight : 0;
 
-                let entityId = this.game.unitCreationManager.create(
+                let entityId = this.game.unitCreationSystem.create(
                     pos.x,
                     unitY,
                     pos.z,
@@ -431,7 +431,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
                     const opponentSide = this.game.state.mySide === 'right' ? 'left' : 'right';
 
-                    this.game.gameManager.call('buildGoldMine',
+                    this.game.call('buildGoldMine',
                         entityId,
                         opponentSide,
                         opponentPlacement.gridPosition,
@@ -439,7 +439,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                         gridHeight
                     );
                 }
-                this.game.gameManager.call('reserveGridCells', opponentPlacement.cells, entityId);
+                this.game.call('reserveGridCells', opponentPlacement.cells, entityId);
                 squadUnits.push(entityId);
             });
             // squadUnits tracked via placement component on entities, not in arrays
@@ -505,7 +505,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             return;
         }
 
-        let gridPos = this.game.gameManager.call('worldToPlacementGrid', this.mouseWorldPos.x, this.mouseWorldPos.z);
+        let gridPos = this.game.call('worldToPlacementGrid', this.mouseWorldPos.x, this.mouseWorldPos.z);
 
         let isValidPlacement = this.isValidGridPlacement(this.mouseWorldPos);
        
@@ -513,9 +513,9 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             return;
         }
     
-        if (this.game.squadManager) {
-            const squadData = this.game.squadManager.getSquadData(state.selectedUnitType);
-            const validation = this.game.squadManager.validateSquadConfig(squadData);
+        if (this.game.squadSystem) {
+            const squadData = this.game.squadSystem.getSquadData(state.selectedUnitType);
+            const validation = this.game.squadSystem.validateSquadConfig(squadData);
         
             if (!validation.valid) {
                 return;
@@ -524,7 +524,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         
         const placement = this.createPlacementData(gridPos, state.selectedUnitType, this.game.state.mySide);
 
-        this.game.networkManager.submitPlacement(placement, (success, response) => {
+        this.game.multiplayerNetworkSystem.submitPlacement(placement, (success, response) => {
             if(success){
                 this.placeSquad(placement);
             }
@@ -543,7 +543,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             return null;
         }
 
-        const unitPositions = this.game.squadManager.calculateUnitPositions(placement.gridPosition, unitType);
+        const unitPositions = this.game.squadSystem.calculateUnitPositions(placement.gridPosition, unitType);
         const undoInfo = this.createUndoInfo(placement, unitType);
 
         const squadUnits = this.createSquadUnits(placement, unitType, unitPositions, placement.team, undoInfo);
@@ -551,7 +551,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         placement.isSquad = squadUnits.length > 1;
         this.updateGameStateForPlacement(placement, unitType, undoInfo);
 
-        this.game.gameManager.call('initializeSquad', placement.placementId, unitType, squadUnits);
+        this.game.call('initializeSquad', placement.placementId, unitType, squadUnits);
 
         if (squadUnits.length <= 8) {
             this.createPlacementEffects(unitPositions.slice(0, 8), placement.team);
@@ -587,16 +587,16 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         const placementWithUnitType = { ...placement, unitType };
 
         positions.forEach(pos => {
-            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
+            const terrainHeight = this.game.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
             const unitY = terrainHeight !== null ? terrainHeight : 0;
 
             // Use placement.targetPosition to match server behavior
             // Server passes placement.targetPosition, not each unit's pos
-            const entityId = this.game.unitCreationManager.create(pos.x, unitY, pos.z, placement.targetPosition, placementWithUnitType, team, playerId);
+            const entityId = this.game.unitCreationSystem.create(pos.x, unitY, pos.z, placement.targetPosition, placementWithUnitType, team, playerId);
             createdUnits.push(entityId);
             undoInfo.unitIds.push(entityId);
 
-            this.game.gameManager.call('reserveGridCells', placement.cells, entityId);
+            this.game.call('reserveGridCells', placement.cells, entityId);
 
             if(unitType.id == 'goldMine'){
                 // Convert footprint (terrain grid units) to placement grid cells
@@ -604,12 +604,12 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                 const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 2;
                 const gridWidth = footprintWidth * 2;
                 const gridHeight = footprintHeight * 2;
-                this.game.gameManager.call('buildGoldMine', entityId, team, placement.gridPosition, gridWidth, gridHeight);
+                this.game.call('buildGoldMine', entityId, team, placement.gridPosition, gridWidth, gridHeight);
             }
             if (placement.peasantInfo && placement.collection === 'buildings') {
                 const peasantInfo = placement.peasantInfo;
                 const peasantId = peasantInfo.peasantId;
-                const peasantAbilities = this.game.gameManager.call('getEntityAbilities', peasantId);
+                const peasantAbilities = this.game.call('getEntityAbilities', peasantId);
                 if (peasantAbilities) {
                     const buildAbility = peasantAbilities.find(a => a.id === 'build');
                     if (buildAbility) {
@@ -643,8 +643,8 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         const placementId = `squad_${team}_${gridPos.x}_${gridPos.z}_${this.game.state.round}`;
 
         // Calculate cells for grid reservation
-        const squadData = this.game.squadManager.getSquadData(unitType);
-        const cells = this.game.squadManager.getSquadCells(gridPos, squadData);
+        const squadData = this.game.squadSystem.getSquadData(unitType);
+        const cells = this.game.squadSystem.getSquadCells(gridPos, squadData);
 
         // Minimal placement data - unitType looked up from collections when needed
         return {
@@ -692,7 +692,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                     const experienceData = placement.experience;
 
                     // Update SquadExperienceSystem Map data
-                    let squadData = this.game.gameManager.call('getSquadInfo', placement.placementId);
+                    let squadData = this.game.call('getSquadInfo', placement.placementId);
 
                     if (squadData) {
                         squadData.level = experienceData.level;
@@ -725,10 +725,10 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
         for (let i = 0; i < maxEffects; i++) {
             const pos = unitPositions[i];
-            const terrainHeight = this.game.unitCreationManager.getTerrainHeight(pos.x, pos.z);
+            const terrainHeight = this.game.unitCreationSystem.getTerrainHeight(pos.x, pos.z);
             const unitY = terrainHeight !== null ? terrainHeight : 0;
 
-            this.game.gameManager.call('createParticleEffect',
+            this.game.call('createParticleEffect',
                 pos.x,
                 unitY,
                 pos.z,
@@ -767,9 +767,9 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
             state.playerGold += undoInfo.cost;
 
-            this.game.gameManager.call('removeSquad', undoInfo.placementId);
+            this.game.call('removeSquad', undoInfo.placementId);
 
-            this.game.gameManager.call('releaseGridCells', undoInfo.placementId);
+            this.game.call('releaseGridCells', undoInfo.placementId);
             this.createUndoEffects(undoInfo);
 
             this.cachedValidation = null;
@@ -785,8 +785,8 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
         for (let i = 0; i < maxEffects; i++) {
             const cell = undoInfo.cells[i];
-            const worldPos = this.game.gameManager.call('placementGridToWorld', cell.x, cell.z);
-            this.game.gameManager.call('createParticleEffect',
+            const worldPos = this.game.call('placementGridToWorld', cell.x, cell.z);
+            this.game.call('createParticleEffect',
                 worldPos.x,
                 0,
                 worldPos.z,
@@ -813,22 +813,22 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         // Adjust world position to account for camera angle and cell centering
         // Add half cell size to snap to nearest cell center
 
-        const gridPos = this.game.gameManager.call('worldToPlacementGrid', this.mouseWorldPos.x, this.mouseWorldPos.z);
+        const gridPos = this.game.call('worldToPlacementGrid', this.mouseWorldPos.x, this.mouseWorldPos.z);
         const state = this.game.state;
         
         let isValid = this.isValidGridPlacement(this.mouseWorldPos);
         let unitPositions = null;
         let isBuilding = state.selectedUnitType.collection === 'buildings';
 
-        const squadData = this.game.squadManager.getSquadData(state.selectedUnitType);
-        const cells = this.game.squadManager.getSquadCells(gridPos, squadData);
-        if (this.game.squadManager.getSquadSize(squadData) > 1) {
-            unitPositions = this.game.squadManager.calculateUnitPositions(gridPos, state.selectedUnitType);
+        const squadData = this.game.squadSystem.getSquadData(state.selectedUnitType);
+        const cells = this.game.squadSystem.getSquadCells(gridPos, squadData);
+        if (this.game.squadSystem.getSquadSize(squadData) > 1) {
+            unitPositions = this.game.squadSystem.calculateUnitPositions(gridPos, state.selectedUnitType);
         }
         
         // For buildings, show footprint-sized preview. For units, show placement grid cells.
         const worldPositions = cells.map(cell =>
-            this.game.gameManager.call('placementGridToWorld', cell.x, cell.z)
+            this.game.call('placementGridToWorld', cell.x, cell.z)
         );
 
         if (unitPositions && unitPositions.length > 0) {
@@ -847,7 +847,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         }
 
         // Get ground mesh for raycasting
-        const ground = this.game.gameManager.call('getGroundMesh');
+        const ground = this.game.call('getGroundMesh');
 
         // Use RaycastHelper to raycast against ground
         const worldPos = this.raycastHelper.rayCastGround(mouseX, mouseY, ground);
@@ -866,7 +866,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         }
 
         // Get base terrain height
-        const baseHeight = this.game.gameManager.call('getBaseTerrainHeight');
+        const baseHeight = this.game.call('getBaseTerrainHeight');
 
         // Use RaycastHelper to raycast to flat plane
         return this.raycastHelper.rayCastFlatPlane(mouseX, mouseY, baseHeight);
@@ -875,7 +875,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
     isValidGridPlacement(worldPos, unitDef) {
         const selectedUnitType = unitDef || this.game.state.selectedUnitType;
 
-        let gridPos = this.game.gameManager.call('worldToPlacementGrid', worldPos.x, worldPos.z);
+        let gridPos = this.game.call('worldToPlacementGrid', worldPos.x, worldPos.z);
         let cells = [];
         let isValid = false;
         let gridValid = false;
@@ -888,33 +888,33 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                 const footprintHeight = selectedUnitType.footprintHeight || selectedUnitType.placementGridHeight || 2;
                 const gridWidth = footprintWidth * 2;
                 const gridHeight = footprintHeight * 2;
-                const validation = this.game.gameManager.call('isValidGoldMinePlacement', gridPos, gridWidth, gridHeight);
+                const validation = this.game.call('isValidGoldMinePlacement', gridPos, gridWidth, gridHeight);
                 isValid = validation.valid;
             } else {
-                gridValid = this.game.gameManager.call('isValidGridPlacement', cells, this.game.state.mySide);
+                gridValid = this.game.call('isValidGridPlacement', cells, this.game.state.mySide);
 
                 let terrainValid = true;
                 cells.forEach((cell) => {
                     // Convert placement grid coordinates to terrain grid coordinates
                     const terrainGridX = Math.floor(cell.x / 2);
                     const terrainGridZ = Math.floor(cell.z / 2);
-                    const terrainTypeId = this.game.gameManager.call('getTerrainTypeAtGridPosition', terrainGridX, terrainGridZ);
+                    const terrainTypeId = this.game.call('getTerrainTypeAtGridPosition', terrainGridX, terrainGridZ);
                     if(!terrainTypeId) {
                         terrainValid = false;
                         return;
                     }
-                    const terrainType = this.game.gameManager.call('getTileMapTerrainType', terrainTypeId);
+                    const terrainType = this.game.call('getTileMapTerrainType', terrainTypeId);
                     // Check walkability using placement grid cell (already in placement grid coords)
-                    const isPositionWalkable = this.game.gameManager.call('isGridPositionWalkable', cell);
+                    const isPositionWalkable = this.game.call('isGridPositionWalkable', cell);
                     terrainValid = terrainValid && terrainType.buildable && isPositionWalkable;
                 });
 
                 isValid = gridValid && terrainValid;
             }
         } else {
-            const squadData = this.game.squadManager.getSquadData(selectedUnitType);
-            cells = this.game.squadManager.getSquadCells(gridPos, squadData);
-            gridValid = this.game.gameManager.call('isValidGridPlacement', cells, this.game.state.mySide);
+            const squadData = this.game.squadSystem.getSquadData(selectedUnitType);
+            cells = this.game.squadSystem.getSquadCells(gridPos, squadData);
+            gridValid = this.game.call('isValidGridPlacement', cells, this.game.state.mySide);
             isValid = gridValid;
         }
         return isValid;
@@ -991,13 +991,13 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
     cleanupDeadSquad(placementId) {
         if (placementId) {
-            this.game.gameManager.call('releaseGridCells', placementId);
-            this.game.gameManager.call('removeSquad', placementId);
+            this.game.call('releaseGridCells', placementId);
+            this.game.call('removeSquad', placementId);
         }
     }
 
     resetAllPlacements() {
-        this.game.gameManager.call('resetSquadExperience');
+        this.game.call('resetSquadExperience');
 
         // Destroy all entities with placement component
         const entitiesWithPlacement = this.game.getEntitiesWith('placement');

@@ -87,7 +87,7 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
 
     findNearestEnemyInRadius(entityId, game, centerPos, team, radius) {
         // Use spatial grid for efficient lookup - returns array of entityIds
-        const nearbyEntityIds = game.gameManager.call('getNearbyUnits', centerPos, radius, entityId);
+        const nearbyEntityIds = game.call('getNearbyUnits', centerPos, radius, entityId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
         let nearest = null;
@@ -144,21 +144,21 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Trigger attack
-        if (game.gameManager?.has('triggerSinglePlayAnimation')) {
-            game.gameManager.call('triggerSinglePlayAnimation', attackerId, 'attack', combat.attackSpeed);
+        if (game.gameSystem?.has('triggerSinglePlayAnimation')) {
+            game.call('triggerSinglePlayAnimation', attackerId, 'attack', combat.attackSpeed);
         }
 
         if (combat.projectile) {
             const projectileData = game.getCollections().projectiles?.[combat.projectile];
             if (projectileData) {
-                game.gameManager.call('fireProjectile', attackerId, targetId, {
+                game.call('fireProjectile', attackerId, targetId, {
                     id: combat.projectile,
                     ...projectileData
                 });
             }
         } else if (combat.damage > 0) {
             const damageDelay = (1 / combat.attackSpeed) * 0.5;
-            game.gameManager.call('scheduleDamage', attackerId, targetId, combat.damage, 'physical', damageDelay);
+            game.call('scheduleDamage', attackerId, targetId, combat.damage, 'physical', damageDelay);
         }
     }
 

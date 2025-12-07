@@ -10,7 +10,7 @@ class AbilitiesBehaviorTree extends GUTS.BaseBehaviorTree {
             const ability = game.getCollections().abilities[abilityType];
             if (!ability?.behaviorAction) continue;
 
-            const abilityAction = game.gameManager.call('getNodeByType', ability.behaviorAction);
+            const abilityAction = game.call('getNodeByType', ability.behaviorAction);
             if (!abilityAction) continue;
 
             const result = abilityAction.evaluate(entityId, game);

@@ -10,10 +10,10 @@ class SupplySystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('getCurrentSupply', this.getCurrentSupply.bind(this));
-        this.game.gameManager.register('getCurrentPopulation', this.getCurrentPopulation.bind(this));
-        this.game.gameManager.register('canAffordSupply', this.canAffordSupply.bind(this));
-        this.game.gameManager.register('invalidateSupplyCache', this.invalidateSupplyCache.bind(this));
+        this.game.register('getCurrentSupply', this.getCurrentSupply.bind(this));
+        this.game.register('getCurrentPopulation', this.getCurrentPopulation.bind(this));
+        this.game.register('canAffordSupply', this.canAffordSupply.bind(this));
+        this.game.register('invalidateSupplyCache', this.invalidateSupplyCache.bind(this));
 
         if (!this.game.isServer) {
             this.supplyElement = document.getElementById('playerSupplies');

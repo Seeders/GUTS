@@ -22,7 +22,7 @@ class DamageNumberSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('showDamageNumber', this.showDamageNumber.bind(this));
+        this.game.register('showDamageNumber', this.showDamageNumber.bind(this));
         // Scene-dependent initialization deferred to onSceneLoad()
     }
 

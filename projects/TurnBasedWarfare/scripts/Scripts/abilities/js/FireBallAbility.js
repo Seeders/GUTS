@@ -153,14 +153,14 @@ class FireBallAbility extends GUTS.BaseAbility {
         this.createVisualEffect(casterPos, 'cast');
 
         // Additional swirling effect using layered particles
-        if (this.game.gameManager) {
+        if (this.game.gameSystem) {
             const position = new THREE.Vector3(
                 casterPos.x,
                 casterPos.y + 75,
                 casterPos.z
             );
 
-            this.game.gameManager.call('createLayeredEffect', {
+            this.game.call('createLayeredEffect', {
                 position: position,
                 layers: [
                     // Inner bright core
@@ -260,7 +260,7 @@ class FireBallAbility extends GUTS.BaseAbility {
             }
         };
 
-        this.game.gameManager.call('fireProjectile', casterEntity, targetId, projectileData);
+        this.game.call('fireProjectile', casterEntity, targetId, projectileData);
     }
 
     // Create rich trail effect for projectile
@@ -273,10 +273,10 @@ class FireBallAbility extends GUTS.BaseAbility {
         this.createVisualEffect(currentPos, 'trail_sparks', { heightOffset: 0 });
 
         // Additional smoke trail using particle system
-        if (this.game.gameManager) {
+        if (this.game.gameSystem) {
             const position = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
 
-            this.game.gameManager.call('createParticles', {
+            this.game.call('createParticles', {
                 position: position,
                 count: 2,
                 lifetime: 0.8,
@@ -311,7 +311,7 @@ class FireBallAbility extends GUTS.BaseAbility {
         }, 0.1);
 
         // Advanced layered explosion using new particle system
-        if (this.game.gameManager) {
+        if (this.game.gameSystem) {
             const position = new THREE.Vector3(
                 impactPos.x,
                 impactPos.y + 75,
@@ -319,7 +319,7 @@ class FireBallAbility extends GUTS.BaseAbility {
             );
 
             // Create layered explosion effect
-            this.game.gameManager.call('createLayeredEffect', {
+            this.game.call('createLayeredEffect', {
                 position: position,
                 layers: [
                     // Bright flash core - instant expansion

@@ -107,7 +107,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         this.createVisualEffect(targetPos, 'divine_judgment');
 
         // Enhanced divine pillar descending from sky (client only)
-        if (!this.game.isServer && this.game.gameManager) {
+        if (!this.game.isServer && this.game.gameSystem) {
             // Pillar of golden light descending
             const pillarSteps = 8;
             for (let i = 0; i < pillarSteps; i++) {
@@ -115,7 +115,7 @@ class SmiteAbility extends GUTS.BaseAbility {
                 const height = 300 - (i * 35);
 
                 this.game.schedulingSystem.scheduleAction(() => {
-                    this.game.gameManager.call('createParticles', {
+                    this.game.call('createParticles', {
                         position: new THREE.Vector3(targetPos.x, targetPos.y + height, targetPos.z),
                         count: 15,
                         lifetime: 0.4,
@@ -137,7 +137,7 @@ class SmiteAbility extends GUTS.BaseAbility {
             }
 
             // Warning ring on ground
-            this.game.gameManager.call('createParticles', {
+            this.game.call('createParticles', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 5, targetPos.z),
                 count: 24,
                 lifetime: 0.6,
@@ -157,7 +157,7 @@ class SmiteAbility extends GUTS.BaseAbility {
             });
 
             // Holy symbols/sparkles rising
-            this.game.gameManager.call('createLayeredEffect', {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z),
                 layers: [
                     // Golden core glow
@@ -239,8 +239,8 @@ class SmiteAbility extends GUTS.BaseAbility {
         this.createVisualEffect(targetPos, 'smite');
 
         // Enhanced divine explosion on impact (client only)
-        if (!this.game.isServer && this.game.gameManager) {
-            this.game.gameManager.call('createLayeredEffect', {
+        if (!this.game.isServer && this.game.gameSystem) {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z),
                 layers: [
                     // Blinding flash

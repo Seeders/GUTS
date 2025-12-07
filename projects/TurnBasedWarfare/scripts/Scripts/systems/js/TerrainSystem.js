@@ -17,19 +17,19 @@ class TerrainSystem extends GUTS.BaseSystem {
         if (this.initialized) return;
 
         // Register terrain query methods with gameManager (even before terrain is loaded)
-        this.game.gameManager.register('getTerrainHeightAtPosition', this.getTerrainHeightAtPosition.bind(this));
-        this.game.gameManager.register('getTerrainTypeAtPosition', this.getTerrainTypeAtPosition.bind(this));
-        this.game.gameManager.register('getTerrainHeightAtPositionSmooth', this.getTerrainHeightAtPositionSmooth.bind(this));
-        this.game.gameManager.register('getTileMapTerrainType', this.getTileMapTerrainType.bind(this));
-        this.game.gameManager.register('getTerrainTypeAtGridPosition', this.getTerrainTypeAtGridPosition.bind(this));
-        this.game.gameManager.register('getHeightLevelAtGridPosition', this.getHeightLevelAtGridPosition.bind(this));
-        this.game.gameManager.register('getTileMap', () => this.terrainDataManager?.tileMap);
-        this.game.gameManager.register('getTerrainSize', () => this.terrainDataManager?.terrainSize);
-        this.game.gameManager.register('getTerrainExtensionSize', () => this.terrainDataManager?.extensionSize);
-        this.game.gameManager.register('getTerrainExtendedSize', () => this.terrainDataManager?.extendedSize);
-        this.game.gameManager.register('initTerrainFromComponent', this.initTerrainFromComponent.bind(this));
-        this.game.gameManager.register('hasTerrain', () => this.terrainDataManager !== null);
-        this.game.gameManager.register('getLevel', () => this.currentLevel);
+        this.game.register('getTerrainHeightAtPosition', this.getTerrainHeightAtPosition.bind(this));
+        this.game.register('getTerrainTypeAtPosition', this.getTerrainTypeAtPosition.bind(this));
+        this.game.register('getTerrainHeightAtPositionSmooth', this.getTerrainHeightAtPositionSmooth.bind(this));
+        this.game.register('getTileMapTerrainType', this.getTileMapTerrainType.bind(this));
+        this.game.register('getTerrainTypeAtGridPosition', this.getTerrainTypeAtGridPosition.bind(this));
+        this.game.register('getHeightLevelAtGridPosition', this.getHeightLevelAtGridPosition.bind(this));
+        this.game.register('getTileMap', () => this.terrainDataManager?.tileMap);
+        this.game.register('getTerrainSize', () => this.terrainDataManager?.terrainSize);
+        this.game.register('getTerrainExtensionSize', () => this.terrainDataManager?.extensionSize);
+        this.game.register('getTerrainExtendedSize', () => this.terrainDataManager?.extendedSize);
+        this.game.register('initTerrainFromComponent', this.initTerrainFromComponent.bind(this));
+        this.game.register('hasTerrain', () => this.terrainDataManager !== null);
+        this.game.register('getLevel', () => this.currentLevel);
 
         // TerrainSystem waits for scene to load via onSceneLoad()
         // Terrain entity in scene triggers terrain initialization

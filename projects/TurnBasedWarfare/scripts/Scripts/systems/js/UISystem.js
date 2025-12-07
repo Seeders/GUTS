@@ -8,17 +8,17 @@ class UISystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('showNotification', this.showNotification.bind(this));
+        this.game.register('showNotification', this.showNotification.bind(this));
     }
 
     setupEventListeners() {
         // Delegate to input handler
-        this.game.inputManager.setup();
+        this.game.inputSystem.setup();
     }
     
     start() {
-        this.game.gameManager.call('initializeParticleSystem');
-        this.game.gameManager.call('initializeEffectsSystem');
+        this.game.call('initializeParticleSystem');
+        this.game.call('initializeEffectsSystem');
         // Welcome messages
     }
     

@@ -129,7 +129,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
     }
 
     createAmbientSnow(centerPos) {
-        if (!this.game.gameManager) return;
+        if (!this.game.gameSystem) return;
 
         // Create continuous snow effect over the duration
         const snowInterval = 0.15;
@@ -144,7 +144,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
                 );
 
                 // Falling snowflakes
-                this.game.gameManager.call('createParticles', {
+                this.game.call('createParticles', {
                     position: position,
                     count: 15,
                     lifetime: 2.0,
@@ -164,7 +164,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
                 });
 
                 // Swirling frost mist
-                this.game.gameManager.call('createParticles', {
+                this.game.call('createParticles', {
                     position: new THREE.Vector3(centerPos.x, centerPos.y + 30, centerPos.z),
                     count: 8,
                     lifetime: 1.5,
@@ -219,7 +219,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
     }
 
     createFallingIceShard(casterEntity, targetPos) {
-        if (!this.game.gameManager) return;
+        if (!this.game.gameSystem) return;
 
         // Create falling ice shard using particles
         const fallDuration = 0.4;
@@ -239,7 +239,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
                 const position = new THREE.Vector3(shardPos.x, shardPos.y, shardPos.z);
 
                 // Ice shard core - bright cyan
-                this.game.gameManager.call('createParticles', {
+                this.game.call('createParticles', {
                     position: position,
                     count: 6,
                     lifetime: 0.12,
@@ -257,7 +257,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
                 });
 
                 // Outer frost glow
-                this.game.gameManager.call('createParticles', {
+                this.game.call('createParticles', {
                     position: position,
                     count: 4,
                     lifetime: 0.15,
@@ -276,7 +276,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
 
                 // Trail sparkles
                 if (i % 2 === 0) {
-                    this.game.gameManager.call('createParticles', {
+                    this.game.call('createParticles', {
                         position: position,
                         count: 3,
                         lifetime: 0.5,
@@ -306,11 +306,11 @@ class BlizzardAbility extends GUTS.BaseAbility {
         // Impact particles
         this.createVisualEffect(position, 'ice_impact', { heightOffset: 0 });
 
-        if (this.game.gameManager) {
+        if (this.game.gameSystem) {
             const impactPos = new THREE.Vector3(position.x, position.y + 10, position.z);
 
             // Ice shatter burst
-            this.game.gameManager.call('createParticles', {
+            this.game.call('createParticles', {
                 position: impactPos,
                 count: 12,
                 lifetime: 0.6,
@@ -328,7 +328,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
             });
 
             // Frost ring on ground
-            this.game.gameManager.call('createParticles', {
+            this.game.call('createParticles', {
                 position: impactPos,
                 count: 8,
                 lifetime: 0.4,
@@ -411,10 +411,10 @@ class BlizzardAbility extends GUTS.BaseAbility {
         // Big frost explosion at the end
         this.createVisualEffect(centerPos, 'frost_burst');
 
-        if (this.game.gameManager) {
+        if (this.game.gameSystem) {
             const burstPos = new THREE.Vector3(centerPos.x, centerPos.y + 50, centerPos.z);
 
-            this.game.gameManager.call('createLayeredEffect', {
+            this.game.call('createLayeredEffect', {
                 position: burstPos,
                 layers: [
                     // Central ice burst

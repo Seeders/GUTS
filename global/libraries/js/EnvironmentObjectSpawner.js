@@ -31,9 +31,9 @@ class EnvironmentObjectSpawner {
         // Convert to world coordinates using tile grid (96) not placement grid (48)
 
         // Use centralized coordinate conversion from CoordinateTranslator if available
-        if (this.mode === 'runtime' && this.game?.gameManager) {
+        if (this.mode === 'runtime' && this.game?.gameSystem) {
             // Use tileToWorld with centering to place objects in the center of their tile
-            const worldPos = this.game.gameManager.call('tileToWorld', worldObj.gridX, worldObj.gridZ, true);
+            const worldPos = this.game.call('tileToWorld', worldObj.gridX, worldObj.gridZ, true);
             return {
                 worldX: worldPos.x,
                 worldZ: worldPos.z

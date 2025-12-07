@@ -19,8 +19,8 @@ class VisionSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('hasLineOfSight', this.hasLineOfSight.bind(this));
-        this.game.gameManager.register('canSeePosition', this.canSeePosition.bind(this));
+        this.game.register('hasLineOfSight', this.hasLineOfSight.bind(this));
+        this.game.register('canSeePosition', this.canSeePosition.bind(this));
     }
 
     /**
@@ -42,8 +42,8 @@ class VisionSystem extends GUTS.BaseSystem {
         const toGridZ = Math.floor((to.z + terrainSize / 2) / gridSize);
 
         // Get height levels for both positions
-        const fromHeightLevel = this.game.gameManager.call("getHeightLevelAtGridPosition", fromGridX, fromGridZ);
-        const toHeightLevel = this.game.gameManager.call("getHeightLevelAtGridPosition", toGridX, toGridZ);
+        const fromHeightLevel = this.game.call("getHeightLevelAtGridPosition", fromGridX, fromGridZ);
+        const toHeightLevel = this.game.call("getHeightLevelAtGridPosition", toGridX, toGridZ);
 
         // Cannot see up to tiles with higher heightmap values (e.g., up a cliff)
         return toHeightLevel <= fromHeightLevel;
@@ -54,7 +54,7 @@ class VisionSystem extends GUTS.BaseSystem {
      */
     _getGridSize() {
         if (this._gridSize === null) {
-            this._gridSize = this.game.gameManager.call('getGridSize');
+            this._gridSize = this.game.call('getGridSize');
         }
         return this._gridSize;
     }
@@ -64,7 +64,7 @@ class VisionSystem extends GUTS.BaseSystem {
      */
     _getTerrainSize() {
         if (this._terrainSize === null) {
-            this._terrainSize = this.game.gameManager.call('getTerrainSize');
+            this._terrainSize = this.game.call('getTerrainSize');
         }
         return this._terrainSize;
     }
@@ -86,16 +86,16 @@ class VisionSystem extends GUTS.BaseSystem {
         const toGridX = Math.floor((to.x + terrainSize / 2) / gridSize);
         const toGridZ = Math.floor((to.z + terrainSize / 2) / gridSize);
 
-        const fromHeightLevel = this.game.gameManager.call("getHeightLevelAtGridPosition", fromGridX, fromGridZ);
-        const toHeightLevel = this.game.gameManager.call("getHeightLevelAtGridPosition", toGridX, toGridZ);
+        const fromHeightLevel = this.game.call("getHeightLevelAtGridPosition", fromGridX, fromGridZ);
+        const toHeightLevel = this.game.call("getHeightLevelAtGridPosition", toGridX, toGridZ);
 
         // Cannot see up to tiles with higher heightmap values
         if (toHeightLevel > fromHeightLevel) {
             return false;
         }
 
-        const fromTerrainHeight = this.game.gameManager.call("getTerrainHeightAtPositionSmooth", from.x, from.z);
-        const toTerrainHeight = this.game.gameManager.call("getTerrainHeightAtPositionSmooth", to.x, to.z);
+        const fromTerrainHeight = this.game.call("getTerrainHeightAtPositionSmooth", from.x, from.z);
+        const toTerrainHeight = this.game.call("getTerrainHeightAtPositionSmooth", to.x, to.z);
 
         // Use unit height from unitType, or fall back to default if not available
         const unitHeight = (unitType && unitType.height) ? unitType.height : this.DEFAULT_UNIT_HEIGHT;
@@ -111,7 +111,7 @@ class VisionSystem extends GUTS.BaseSystem {
         const midX = (from.x + to.x) / 2;
         const midZ = (from.z + to.z) / 2;
         const unitSize = (unitType && unitType.size) ? unitType.size : gridSize;
-        const nearbyTreeIds = this.game.gameManager.call('getNearbyUnits', { x: midX, y: 0, z: midZ}, distance / 2 + unitSize, viewerEntityId, 'worldObjects');
+        const nearbyTreeIds = this.game.call('getNearbyUnits', { x: midX, y: 0, z: midZ}, distance / 2 + unitSize, viewerEntityId, 'worldObjects');
 
         if (nearbyTreeIds && nearbyTreeIds.length > 0) {
             const numSamples = Math.max(2, Math.ceil(distance / (gridSize * 0.5)));
@@ -165,7 +165,7 @@ class VisionSystem extends GUTS.BaseSystem {
             const tile = this._bresenhamTiles[i];
 
             // Check if this intermediate tile has a higher heightmap level than the viewer
-            const tileHeightLevel = this.game.gameManager.call('getHeightLevelAtGridPosition', tile.x, tile.z);
+            const tileHeightLevel = this.game.call('getHeightLevelAtGridPosition', tile.x, tile.z);
             if (tileHeightLevel > fromHeightLevel) {
                 // Cannot see through a tile with higher elevation
                 return false;
@@ -176,7 +176,7 @@ class VisionSystem extends GUTS.BaseSystem {
             const worldX = tile.x * gridSize - terrainSize / 2;
             const worldZ = tile.z * gridSize - terrainSize / 2;
             const rayHeight = fromEyeHeight + (toTerrainHeight - fromEyeHeight) * t;
-            const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPositionSmooth', worldX, worldZ);
+            const terrainHeight = this.game.call('getTerrainHeightAtPositionSmooth', worldX, worldZ);
 
             if (rayHeight <= terrainHeight) {
                 return false;

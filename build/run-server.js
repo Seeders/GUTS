@@ -24,7 +24,7 @@ Examples:
 }
 
 const projectPath = path.join(__dirname, '..', 'projects', projectName);
-const serverScript = path.join(projectPath, 'server_game.js');
+const serverScript = path.join(projectPath, 'server.js');
 
 // Verify project exists
 if (!fs.existsSync(projectPath)) {

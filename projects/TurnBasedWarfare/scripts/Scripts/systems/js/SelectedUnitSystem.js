@@ -37,7 +37,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('getSelectedSquads', this.getSelectedSquads.bind(this));
+        this.game.register('getSelectedSquads', this.getSelectedSquads.bind(this));
     }
 
     initialize() {
@@ -50,7 +50,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const unitPortrait = document.getElementById('unitPortrait');
         unitPortrait.addEventListener('click', () => {
             if(this.game.state.selectedEntity.entityId){
-                const isFollowing = this.game.gameManager.call('toggleCameraFollow', this.game.state.selectedEntity.entityId);
+                const isFollowing = this.game.call('toggleCameraFollow', this.game.state.selectedEntity.entityId);
                 // Update visual indicator
                 if (isFollowing) {
                     unitPortrait.classList.add('following');
@@ -307,14 +307,14 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
 
     checkUnitSelectionClick(event) {
-        const worldPos = this.game.gameManager.call('getWorldPositionFromMouse');
+        const worldPos = this.game.call('getWorldPositionFromMouse');
     
         if (!worldPos) return;
     
         const placementId = this.getPlacementAtWorldPosition(worldPos);
     
         if (placementId) {
-            const placement = this.game.gameManager.call('getPlacementById', placementId);
+            const placement = this.game.call('getPlacementById', placementId);
             if (placement && placement.team === this.game.state.mySide) {
                 let entityId = placement.squadUnits[0];
                 // Check if shift is held for additive selection
@@ -365,7 +365,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         }
 
         // Stop camera following
-        this.game.gameManager.call('toggleCameraFollow', null);
+        this.game.call('toggleCameraFollow', null);
 
         this.game.triggerEvent('onDeSelectAll');
     }
@@ -408,7 +408,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
         // If we found an entity but no placementId, try to find it from playerPlacements
         if (closestEntityId && !closestPlacementId) {
-            const placements = this.game.gameManager.call('getPlacementsForSide', this.game.state.mySide);
+            const placements = this.game.call('getPlacementsForSide', this.game.state.mySide);
             if (placements) {
                 for (const placement of placements) {
                     if (placement.squadUnits && placement.squadUnits.includes(closestEntityId)) {
@@ -425,10 +425,10 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     selectUnit(entityId, placementId) {
         if (!entityId) return;
         
-        const squadData = this.game.gameManager.call('getSquadInfo', placementId);
+        const squadData = this.game.call('getSquadInfo', placementId);
         
         if (squadData) {
-            const placement = this.game.gameManager.call('getPlacementById', placementId);
+            const placement = this.game.call('getPlacementById', placementId);
             squadData.unitIds = placement.squadUnits;
             this.setSelectedEntity(entityId);
             this.highlightUnits(placement.squadUnits);              
@@ -492,7 +492,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                 container.append(portrait);
             }
             // Update follow indicator
-            const followTarget = this.game.gameManager.call('getCameraFollowTarget');
+            const followTarget = this.game.call('getCameraFollowTarget');
             if (followTarget === unitIds[this.currentSelectedIndex]) {
                 container.classList.add('following');
             } else {

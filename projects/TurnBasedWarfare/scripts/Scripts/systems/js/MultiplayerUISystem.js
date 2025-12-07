@@ -150,15 +150,15 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
     }
 
     saveGame() {
-        if (!this.game.saveManager) {
+        if (!this.game.saveSystem) {
             this.showNotification('Save system not available', 'error');
             return;
         }
 
         try {
             // Get save data and export as file
-            const saveData = this.game.saveManager.getSaveData();
-            this.game.saveManager.exportSaveFile(saveData);
+            const saveData = this.game.saveSystem.getSaveData();
+            this.game.saveSystem.exportSaveFile(saveData);
             this.showNotification('Game saved! File downloaded.', 'success');
         } catch (error) {
             console.error('[MultiplayerUISystem] Error saving game:', error);
@@ -168,8 +168,8 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
 
     async leaveGame() {
         // Send leave room event to server
-        if (this.game.networkManager) {
-            this.game.networkManager.leaveRoom();
+        if (this.game.multiplayerNetworkSystem) {
+            this.game.multiplayerNetworkSystem.leaveRoom();
         }
 
         // Hide game menu button
@@ -202,8 +202,8 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         await this.game.switchScene('lobby');
 
         // Return to main menu (stay connected to server)
-        if (this.game.screenManager?.showMainMenu) {
-            this.game.screenManager.showMainMenu();
+        if (this.game.screenSystem?.showMainMenu) {
+            this.game.screenSystem.showMainMenu();
         } else {
             // Fallback: reload page if screenManager not available
             window.location.reload();
@@ -251,7 +251,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         if (quickMatchBtn) {
             quickMatchBtn.addEventListener('click', () => {
                 this.stopLobbyRefresh();
-                this.game.networkManager.startQuickMatch(getPlayerName());
+                this.game.multiplayerNetworkSystem.startQuickMatch(getPlayerName());
                 dialog.remove();
             });
         }
@@ -259,7 +259,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         if (createRoomBtn) {
             createRoomBtn.addEventListener('click', () => {
                 this.stopLobbyRefresh();
-                this.game.networkManager.createRoom(getPlayerName(), mode.maxPlayers);
+                this.game.multiplayerNetworkSystem.createRoom(getPlayerName(), mode.maxPlayers);
                 dialog.remove();
             });
         }
@@ -414,7 +414,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
                                 const roomId = joinBtn.getAttribute('data-room-id');
                                 const playerName = getPlayerName();
                                 this.stopLobbyRefresh();
-                                this.game.networkManager.joinRoom(roomId, playerName);
+                                this.game.multiplayerNetworkSystem.joinRoom(roomId, playerName);
                                 dialog.remove();
                             });
 
@@ -453,11 +453,11 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
             btn.disabled = true;
             btn.textContent = 'Updating...';
         }
-        this.game.networkManager.toggleReady(() => {
+        this.game.multiplayerNetworkSystem.toggleReady(() => {
         });
     }
     leaveRoom() {
-        this.game.networkManager.leaveRoom();
+        this.game.multiplayerNetworkSystem.leaveRoom();
         this.exitToMainMenu();
     }
 
@@ -514,7 +514,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         if (!file) return;
 
         try {
-            const saveData = await this.game.saveManager.importSaveFile(file);
+            const saveData = await this.game.saveSystem.importSaveFile(file);
 
             if (!saveData) {
                 this.showNotification('Invalid save file', 'error');
@@ -522,7 +522,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
             }
 
             // Send save data to server (host only)
-            this.game.networkManager.uploadSaveData(saveData, (success, response) => {
+            this.game.multiplayerNetworkSystem.uploadSaveData(saveData, (success, response) => {
                 if (success) {
                     this.showNotification(`Save uploaded: ${saveData.saveName || 'Unknown'}. Game will load this save.`, 'success', 5000);
 
@@ -746,8 +746,8 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
     }
     
     start() {
-        this.game.gameManager.call('initializeParticleSystem');
-        this.game.gameManager.call('initializeEffectsSystem');
+        this.game.call('initializeParticleSystem');
+        this.game.call('initializeEffectsSystem');
     }
 
     async exitToMainMenu() {
@@ -762,8 +762,8 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         // Switch back to lobby scene - this cleans up game systems
         await this.game.switchScene('lobby');
 
-        if (this.game.screenManager?.showMainMenu) {
-            this.game.screenManager.showMainMenu();
+        if (this.game.screenSystem?.showMainMenu) {
+            this.game.screenSystem.showMainMenu();
         } else {
             window.location.reload();
         }
@@ -819,7 +819,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         const teamType = team?.team || 'player';
 
         victoriousUnits.forEach(entityId => {
-            this.game.gameManager.call('startCelebration', entityId, teamType);
+            this.game.call('startCelebration', entityId, teamType);
         });
     }
 

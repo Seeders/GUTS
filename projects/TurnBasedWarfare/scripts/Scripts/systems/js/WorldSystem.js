@@ -24,17 +24,17 @@ class WorldSystem extends GUTS.BaseSystem {
         if (this.initialized) return;
 
         // Register gameManager methods - delegate to WorldRenderer and TerrainDataManager
-        this.game.gameManager.register('getWorldScene', () => this.worldRenderer?.getScene());
-        this.game.gameManager.register('getWorldExtendedSize', () => this.game.terrainSystem?.terrainDataManager?.extendedSize);
-        this.game.gameManager.register('getGroundTexture', () => this.worldRenderer?.getGroundTexture());
-        this.game.gameManager.register('getGroundMesh', () => this.worldRenderer?.getGroundMesh());
-        this.game.gameManager.register('getHeightStep', () => this.game.terrainSystem?.terrainDataManager?.heightStep);
-        this.game.gameManager.register('getBaseTerrainHeight', () => {
+        this.game.register('getWorldScene', () => this.worldRenderer?.getScene());
+        this.game.register('getWorldExtendedSize', () => this.game.terrainSystem?.terrainDataManager?.extendedSize);
+        this.game.register('getGroundTexture', () => this.worldRenderer?.getGroundTexture());
+        this.game.register('getGroundMesh', () => this.worldRenderer?.getGroundMesh());
+        this.game.register('getHeightStep', () => this.game.terrainSystem?.terrainDataManager?.heightStep);
+        this.game.register('getBaseTerrainHeight', () => {
             const tdm = this.game.terrainSystem?.terrainDataManager;
             if (!tdm) return 0;
             return tdm.heightStep * (tdm.tileMap?.extensionHeight || 0);
         });
-        this.game.gameManager.register('initWorldFromTerrain', this.initWorldFromTerrain.bind(this));
+        this.game.register('initWorldFromTerrain', this.initWorldFromTerrain.bind(this));
 
         // Add BVH extension functions for Three.js
         // Note: MeshBVH exports are flattened onto THREE namespace
@@ -223,11 +223,11 @@ class WorldSystem extends GUTS.BaseSystem {
         this.worldRenderer.setupGround(terrainDataManager, this.game.terrainTileMapper, terrainDataManager.heightMapSettings);
 
         // Pass GameManager to WorldRenderer
-        this.worldRenderer.gameManager = this.game.gameManager;
+        this.worldRenderer.gameSystem = this.game.gameSystem;
 
         // Update extension configuration in GridSystem's CoordinateTranslator if available
         if (terrainDataManager.extensionSize) {
-            this.game.gameManager.call('updateCoordinateConfig', {
+            this.game.call('updateCoordinateConfig', {
                 extensionSize: terrainDataManager.extensionSize,
                 extendedSize: terrainDataManager.extendedSize
             });
@@ -267,7 +267,7 @@ class WorldSystem extends GUTS.BaseSystem {
 
         // Spawn cliff entities using WorldRenderer
         // Note: useExtension = false because analyzeCliffs() returns coordinates in tile space (not extended space)
-        const entityRenderer = this.game.gameManager.call('getEntityRenderer');
+        const entityRenderer = this.game.call('getEntityRenderer');
         if (entityRenderer) {
             await this.worldRenderer.spawnCliffs(entityRenderer, false);
         } else {
@@ -275,8 +275,8 @@ class WorldSystem extends GUTS.BaseSystem {
         }
 
         // Spawn terrain detail objects (grass, rocks, etc.)
-        if (this.game.gameManager.has('spawnTerrainDetails')) {
-            await this.game.gameManager.call('spawnTerrainDetails');
+        if (this.game.hasService('spawnTerrainDetails')) {
+            await this.game.call('spawnTerrainDetails');
         }
     }
 
@@ -289,12 +289,12 @@ class WorldSystem extends GUTS.BaseSystem {
         if (!gameConfig) return;
 
         // Check if PostProcessingSystem is available
-        if (!this.game.gameManager.has('registerPostProcessingPass')) {
+        if (!this.game.hasService('registerPostProcessingPass')) {
             return; // PostProcessingSystem not loaded (e.g., in editor)
         }
 
         const pixelSize = gameConfig.pixelSize || 1;
-        this.game.gameManager.call('registerPostProcessingPass', 'render', {
+        this.game.call('registerPostProcessingPass', 'render', {
             enabled: true,
             create: () => {
                 return {
@@ -316,7 +316,7 @@ class WorldSystem extends GUTS.BaseSystem {
             }
         });
         // Register pixel pass
-        // this.game.gameManager.call('registerPostProcessingPass', 'pixel', {
+        // this.game.call('registerPostProcessingPass', 'pixel', {
         //     enabled: pixelSize !== 1,
         //     create: () => {
         //         const pixelPass = new THREE.RenderPixelatedPass(pixelSize, this.scene, this.camera);
@@ -327,7 +327,7 @@ class WorldSystem extends GUTS.BaseSystem {
         // });
 
         // Register output pass (always last)
-        this.game.gameManager.call('registerPostProcessingPass', 'output', {
+        this.game.call('registerPostProcessingPass', 'output', {
             enabled: true,
             create: () => {
                 return new GUTS.OutputPass();
@@ -343,7 +343,7 @@ class WorldSystem extends GUTS.BaseSystem {
      * WorldSystem only adds the visual representation on the client
      */
     addWorldEntityVisuals(worldObj) {
-        const Components = this.game.gameManager.call('getComponents');
+        const Components = this.game.call('getComponents');
 
         // Find the existing entity created by TerrainSystem using grid coordinates
         const entityId = `env_${worldObj.type}_${worldObj.gridX}_${worldObj.gridZ}`;
@@ -373,8 +373,8 @@ class WorldSystem extends GUTS.BaseSystem {
         this.worldRenderer.onWindowResize();
 
         // Update composer if exists (PostProcessingSystem may not be loaded)
-        if (this.game.gameManager.has('getPostProcessingComposer')) {
-            const composer = this.game.gameManager.call('getPostProcessingComposer');
+        if (this.game.hasService('getPostProcessingComposer')) {
+            const composer = this.game.call('getPostProcessingComposer');
             if (composer) {
                 composer.setSize(window.innerWidth, window.innerHeight);
             }
@@ -397,10 +397,10 @@ class WorldSystem extends GUTS.BaseSystem {
         if (!this.worldRenderer) return;
 
         // Use post-processing if available, otherwise direct render
-        if (this.game.gameManager.has('getPostProcessingComposer')) {
-            const composer = this.game.gameManager.call('getPostProcessingComposer');
+        if (this.game.hasService('getPostProcessingComposer')) {
+            const composer = this.game.call('getPostProcessingComposer');
             if (composer) {
-                this.game.gameManager.call('renderPostProcessing');
+                this.game.call('renderPostProcessing');
                 return;
             }
         }

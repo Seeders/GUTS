@@ -516,19 +516,16 @@ class ConfigParser {
         console.log('\n  Building client entry...');
 
         const libraries = this.getLibraryPaths(gameConfig.libraries || []);
-        const managers = this.getScriptPaths('managers', gameConfig.managers || []);
         const systems = this.getScriptPaths('systems', gameConfig.systems || []);
         const { classCollections, classMetadata } = this.getClassCollections(gameConfig.classes || []);
         const dataCollections = this.getDataCollections();
 
         console.log(`    Libraries: ${libraries.length}`);
-        console.log(`    Managers: ${managers.length}`);
         console.log(`    Systems: ${systems.length}`);
         console.log(`    Class collections: ${Object.keys(classCollections).length}`);
 
         return {
             libraries,
-            managers,
             systems,
             classCollections,
             classMetadata,
@@ -539,7 +536,7 @@ class ConfigParser {
 
     /**
      * Generate server entry point data
-     * Uses libraries/managers/systems from server.json config
+     * Uses libraries/systems from server.json config
      * Auto-discovers all classes from specified collections
      */
     getServerEntry() {
@@ -552,19 +549,16 @@ class ConfigParser {
         console.log('\n  Building server entry...');
 
         const libraries = this.getLibraryPaths(serverConfig.libraries || []);
-        const managers = this.getScriptPaths('managers', serverConfig.managers || []);
         const systems = this.getScriptPaths('systems', serverConfig.systems || []);
         const { classCollections, classMetadata } = this.getClassCollections(serverConfig.classes || []);
         const dataCollections = this.getDataCollections();
 
         console.log(`    Libraries: ${libraries.length}`);
-        console.log(`    Managers: ${managers.length}`);
         console.log(`    Systems: ${systems.length}`);
         console.log(`    Class collections: ${Object.keys(classCollections).length}`);
 
         return {
             libraries,
-            managers,
             systems,
             classCollections,
             classMetadata,

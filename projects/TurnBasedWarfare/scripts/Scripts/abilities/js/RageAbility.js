@@ -89,8 +89,8 @@ class RageAbility extends GUTS.BaseAbility {
         this.createVisualEffect(casterPos, 'rage');
 
         // Enhanced rage activation with fiery burst
-        if (this.game.gameManager) {
-            this.game.gameManager.call('createLayeredEffect', {
+        if (this.game.gameSystem) {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(casterPos.x, casterPos.y + 30, casterPos.z),
                 layers: [
                     // Red fury burst
@@ -136,7 +136,7 @@ class RageAbility extends GUTS.BaseAbility {
             });
 
             // Anger aura ring
-            this.game.gameManager.call('createParticles', {
+            this.game.call('createParticles', {
                 position: new THREE.Vector3(casterPos.x, casterPos.y + 5, casterPos.z),
                 count: 20,
                 lifetime: 0.6,

@@ -37,15 +37,15 @@ class DamageSystem extends GUTS.BaseSystem {
 
     init() {
         // Register methods with GameManager
-        this.game.gameManager.register('applyDamage', this.applyDamage.bind(this));
-        this.game.gameManager.register('applySplashDamage', this.applySplashDamage.bind(this));
-        this.game.gameManager.register('getDamageElementTypes', () => this.ELEMENT_TYPES);
-        this.game.gameManager.register('scheduleDamage', this.scheduleDamage.bind(this));
-        this.game.gameManager.register('curePoison', this.curePoison.bind(this));
-        this.game.gameManager.register('getPoisonStacks', this.getPoisonStacks.bind(this));
-        this.game.gameManager.register('clearAllDamageEffects', this.clearAllDamageEffects.bind(this));
-        this.game.gameManager.register('clearAllStatusEffects', this.clearAllStatusEffects.bind(this));
-        this.game.gameManager.register('getAttackerModifiers', this.getAttackerModifiers.bind(this));
+        this.game.register('applyDamage', this.applyDamage.bind(this));
+        this.game.register('applySplashDamage', this.applySplashDamage.bind(this));
+        this.game.register('getDamageElementTypes', () => this.ELEMENT_TYPES);
+        this.game.register('scheduleDamage', this.scheduleDamage.bind(this));
+        this.game.register('curePoison', this.curePoison.bind(this));
+        this.game.register('getPoisonStacks', this.getPoisonStacks.bind(this));
+        this.game.register('clearAllDamageEffects', this.clearAllDamageEffects.bind(this));
+        this.game.register('clearAllStatusEffects', this.clearAllStatusEffects.bind(this));
+        this.game.register('getAttackerModifiers', this.getAttackerModifiers.bind(this));
     }
 
     // =============================================
@@ -109,7 +109,7 @@ class DamageSystem extends GUTS.BaseSystem {
             }
         }
         
-        this.game.gameManager.call('showDamageNumber', targetPos.x, targetPos.y + targetUnitType.height, targetPos.z, damageResult.finalDamage, element);
+        this.game.call('showDamageNumber', targetPos.x, targetPos.y + targetUnitType.height, targetPos.z, damageResult.finalDamage, element);
         
         return {
             damage: damageResult.finalDamage,
@@ -544,7 +544,7 @@ class DamageSystem extends GUTS.BaseSystem {
 
     handleEntityDeath(entityId) {
         // Notify other systems about death
-        this.game.gameManager.call('startDeathProcess', entityId);
+        this.game.call('startDeathProcess', entityId);
     }
 
     entityDestroyed(entityId) {

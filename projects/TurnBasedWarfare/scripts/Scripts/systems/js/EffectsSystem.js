@@ -34,15 +34,15 @@ class EffectsSystem extends GUTS.BaseSystem {
 
     init() {
         // Register methods with GameManager
-        this.game.gameManager.register('createParticleEffect', this.createParticleEffect.bind(this));
-        this.game.gameManager.register('clearAllEffects', this.clearAllEffects.bind(this));
-        this.game.gameManager.register('showNotification', this.showNotification.bind(this));
-        this.game.gameManager.register('createLineEffect', this.createLineEffect.bind(this));
-        this.game.gameManager.register('createLightningBolt', this.createLightningBolt.bind(this));
-        this.game.gameManager.register('createEnergyBeam', this.createEnergyBeam.bind(this));
-        this.game.gameManager.register('playScreenShake', this.playScreenShake.bind(this));
-        this.game.gameManager.register('playScreenFlash', this.playScreenFlash.bind(this));
-        this.game.gameManager.register('initializeEffectsSystem', this.initialize.bind(this));
+        this.game.register('createParticleEffect', this.createParticleEffect.bind(this));
+        this.game.register('clearAllEffects', this.clearAllEffects.bind(this));
+        this.game.register('showNotification', this.showNotification.bind(this));
+        this.game.register('createLineEffect', this.createLineEffect.bind(this));
+        this.game.register('createLightningBolt', this.createLightningBolt.bind(this));
+        this.game.register('createEnergyBeam', this.createEnergyBeam.bind(this));
+        this.game.register('playScreenShake', this.playScreenShake.bind(this));
+        this.game.register('playScreenFlash', this.playScreenFlash.bind(this));
+        this.game.register('initializeEffectsSystem', this.initialize.bind(this));
     }
 
     initialize() {
@@ -491,7 +491,7 @@ class EffectsSystem extends GUTS.BaseSystem {
         }
 
         // Clear particle effects
-        this.game.gameManager.call('clearAllParticles');
+        this.game.call('clearAllParticles');
 
         // Clear notifications
         this.notifications.forEach(notification => {
@@ -650,7 +650,7 @@ class EffectsSystem extends GUTS.BaseSystem {
             visual: options.visual || { fadeOut: true, scaleOverTime: true, blending: 'additive' }
         };
 
-        this.game.gameManager.call('createParticles', config);
+        this.game.call('createParticles', config);
     }
     
     showVictoryEffect(x, y, z, options = {}) {
@@ -1003,7 +1003,7 @@ class EffectsSystem extends GUTS.BaseSystem {
             ...auraData.config
         };
 
-        this.game.gameManager.call('createParticles', particleConfig);
+        this.game.call('createParticles', particleConfig);
     }
     
     destroy() {

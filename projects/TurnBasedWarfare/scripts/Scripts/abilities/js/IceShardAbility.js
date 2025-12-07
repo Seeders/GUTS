@@ -126,11 +126,11 @@ class IceShardAbility extends GUTS.BaseAbility {
         this.createVisualEffect(casterPos, 'shard');
 
         // Create frost trail effect
-        if (this.game.gameManager) {
+        if (this.game.gameSystem) {
             // Launch burst
             const launchPos = new THREE.Vector3(casterPos.x, casterPos.y + 50, casterPos.z);
 
-            this.game.gameManager.call('createParticles', {
+            this.game.call('createParticles', {
                 position: launchPos,
                 count: 8,
                 lifetime: 0.4,
@@ -156,7 +156,7 @@ class IceShardAbility extends GUTS.BaseAbility {
                 const trailZ = casterPos.z + (targetPos.z - casterPos.z) * progress;
 
                 this.game.schedulingSystem.scheduleAction(() => {
-                    this.game.gameManager.call('createParticles', {
+                    this.game.call('createParticles', {
                         position: new THREE.Vector3(trailX, trailY, trailZ),
                         count: 4,
                         lifetime: 0.5,
@@ -191,10 +191,10 @@ class IceShardAbility extends GUTS.BaseAbility {
                 this.createVisualEffect(currentTargetPos, 'frost');
 
                 // Enhanced ice shatter effect
-                if (this.game.gameManager) {
+                if (this.game.gameSystem) {
                     const impactPos = new THREE.Vector3(currentTargetPos.x, currentTargetPos.y + 50, currentTargetPos.z);
 
-                    this.game.gameManager.call('createLayeredEffect', {
+                    this.game.call('createLayeredEffect', {
                         position: impactPos,
                         layers: [
                             // Ice shatter burst

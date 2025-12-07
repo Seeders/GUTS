@@ -297,7 +297,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         }
         
         // Clear any entities owned by this player
-        if (room.game && room.game.componentManager) {
+        if (room.game && room.game.componentSystem) {
             const playerEntities = room.game.getEntitiesWith("playerOwned")
                 .filter(entityId => {
                     const ownerComp = room.game.getComponent(entityId, "playerOwned");
@@ -503,7 +503,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
     // Get placement data for client (spawning entities and syncing experience)
     // Client looks up unitType from collections using unitTypeId + collection
     getPlacementsForPlayer(playerId) {
-        if (!this.game.componentManager) return [];
+        if (!this.game.componentSystem) return [];
 
         const placements = [];
         const seenPlacementIds = new Set();
@@ -521,9 +521,9 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             const collections = this.game.getCollections();
             const unitType = collections[placementComp.collection]?.[placementComp.unitTypeId];
             let cells = [];
-            if (unitType && this.game.squadManager) {
-                const squadData = this.game.squadManager.getSquadData(unitType);
-                cells = this.game.squadManager.getSquadCells(placementComp.gridPosition, squadData);
+            if (unitType && this.game.squadSystem) {
+                const squadData = this.game.squadSystem.getSquadData(unitType);
+                cells = this.game.squadSystem.getSquadCells(placementComp.gridPosition, squadData);
             }
 
             // Get experience data from SquadExperienceSystem

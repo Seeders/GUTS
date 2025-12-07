@@ -116,8 +116,8 @@ class BattleCryAbility extends GUTS.BaseAbility {
             this.createVisualEffect(allyPos, 'rally');
 
             // Enhanced individual rally effect
-            if (this.game.gameManager) {
-                this.game.gameManager.call('createLayeredEffect', {
+            if (this.game.gameSystem) {
+                this.game.call('createLayeredEffect', {
                     position: new THREE.Vector3(allyPos.x, allyPos.y + 25, allyPos.z),
                     layers: [
                         // Golden empowerment
@@ -172,8 +172,8 @@ class BattleCryAbility extends GUTS.BaseAbility {
         });
 
         // Enhanced central battle cry burst
-        if (this.game.gameManager) {
-            this.game.gameManager.call('createLayeredEffect', {
+        if (this.game.gameSystem) {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(casterPos.x, casterPos.y + 40, casterPos.z),
                 layers: [
                     // Massive golden shockwave

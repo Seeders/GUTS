@@ -23,9 +23,9 @@ class LifetimeSystem extends GUTS.BaseSystem {
 
     init() {
         // Register methods with GameManager
-        this.game.gameManager.register('addLifetime', this.addLifetime.bind(this));
-        this.game.gameManager.register('destroyEntityImmediately', this.destroyEntityImmediately.bind(this));
-        this.game.gameManager.register('extendLifetime', this.extendLifetime.bind(this));
+        this.game.register('addLifetime', this.addLifetime.bind(this));
+        this.game.register('destroyEntityImmediately', this.destroyEntityImmediately.bind(this));
+        this.game.register('extendLifetime', this.extendLifetime.bind(this));
     }
 
     update() {
@@ -89,7 +89,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         // Handle projectiles
         if (this.game.hasComponent(entityId, "projectile")) {
             // Clean up projectile-specific data
-            this.game.gameManager.call('deleteProjectileTrail', entityId);
+            this.game.call('deleteProjectileTrail', entityId);
 
         }
 
@@ -129,7 +129,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         const summonPos = transform?.position;
         if (summonPos) {
             // Create disappearing effect
-            this.game.gameManager.call('createParticleEffect',
+            this.game.call('createParticleEffect',
                 summonPos.x, summonPos.y, summonPos.z,
                 'magic',
                 { count: 3, color: 0x9370DB, scaleMultiplier: 1.5 }
@@ -143,7 +143,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         const imagePos = transform?.position;
         if (imagePos) {
             // Create shimmering dissolution effect
-            this.game.gameManager.call('createParticleEffect',
+            this.game.call('createParticleEffect',
                 imagePos.x, imagePos.y, imagePos.z,
                 'magic',
                 { count: 3, color: 0x6495ED, scaleMultiplier: 1.2 }
@@ -156,7 +156,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         const trapPos = transform?.position;
         if (trapPos) {
             // Create fizzling effect for expired trap
-            this.game.gameManager.call('createParticleEffect',
+            this.game.call('createParticleEffect',
                 trapPos.x, trapPos.y, trapPos.z,
                 'magic',
                 { count: 3, color: 0x696969, scaleMultiplier: 0.8 }
@@ -171,7 +171,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         const transform = this.game.getComponent(entityId, "transform");
         const effectPos = transform?.position;
         if (effectPos) {
-            this.game.gameManager.call('createParticleEffect',
+            this.game.call('createParticleEffect',
                 effectPos.x, effectPos.y, effectPos.z,
                 'magic',
                 { count: 3, color: 0xFFFFFF, scaleMultiplier: 0.5 }
@@ -200,7 +200,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
             
             // Visual effect
             if (targetPos) {
-                this.game.gameManager.call('createParticleEffect',
+                this.game.call('createParticleEffect',
                     targetPos.x, targetPos.y, targetPos.z,
                     'magic',
                     { count: 3, color: 0xDA70D6, scaleMultiplier: 1.0 }
@@ -229,7 +229,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         const effectConfig = lifetime.destructionEffect;
 
         // Create particle effect
-        this.game.gameManager.call('createParticleEffect',
+        this.game.call('createParticleEffect',
             pos.x, pos.y, pos.z,
             effectConfig.type || 'magic',
             {
@@ -242,14 +242,14 @@ class LifetimeSystem extends GUTS.BaseSystem {
 
         // Screen effects if specified
         if (effectConfig.screenShake) {
-            this.game.gameManager.call('playScreenShake',
+            this.game.call('playScreenShake',
                 effectConfig.screenShake.duration || 0.2,
                 effectConfig.screenShake.intensity || 1
             );
         }
 
         if (effectConfig.screenFlash) {
-            this.game.gameManager.call('playScreenFlash',
+            this.game.call('playScreenFlash',
                 effectConfig.screenFlash.color || '#FFFFFF',
                 effectConfig.screenFlash.duration || 0.2
             );

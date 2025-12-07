@@ -26,9 +26,9 @@ class CameraControlSystem extends GUTS.BaseSystem {
   }
 
   init() {
-    this.game.gameManager.register('cameraLookAt', this.lookAtRequest.bind(this));
-    this.game.gameManager.register('toggleCameraFollow', this.toggleFollow.bind(this));
-    this.game.gameManager.register('getCameraFollowTarget', () => this.followingEntityId);
+    this.game.register('cameraLookAt', this.lookAtRequest.bind(this));
+    this.game.register('toggleCameraFollow', this.toggleFollow.bind(this));
+    this.game.register('getCameraFollowTarget', () => this.followingEntityId);
 
     this.onMove  = (e)=>this.onMouseMove(e);
     this.onEnter = ()=>{ this.inside = true; this.holdDirX = 0; this.holdDirZ = 0; };
@@ -177,7 +177,7 @@ class CameraControlSystem extends GUTS.BaseSystem {
   }
 
   clampCamera(camera, padding = 0) {
-    const extendedSize = this.game.gameManager.call('getWorldExtendedSize');
+    const extendedSize = this.game.call('getWorldExtendedSize');
     const half = extendedSize ? extendedSize * 0.5 : 1000;
     camera.position.x = Math.max(-half + padding, Math.min(half - padding, camera.position.x));
     camera.position.z = Math.max(-half + padding, Math.min(half - padding, camera.position.z));

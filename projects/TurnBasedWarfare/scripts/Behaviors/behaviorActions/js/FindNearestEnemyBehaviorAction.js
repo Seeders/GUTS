@@ -43,11 +43,11 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
     findNearestEnemy(entityId, game, pos, team, range) {
         // Use spatial grid for efficient lookup - returns array of entityIds
-        const nearbyEntityIds = game.gameManager.call('getNearbyUnits', pos, range, entityId);
+        const nearbyEntityIds = game.call('getNearbyUnits', pos, range, entityId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
         const unitType = game.getComponent(entityId, 'unitType');
-        const hasLOSCheck = game.gameManager.has('hasLineOfSight');
+        const hasLOSCheck = game.hasService('hasLineOfSight');
 
         // First pass: collect valid enemies with their positions and directions
         const enemies = [];
@@ -115,7 +115,7 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             const targetX = pos.x + dirX * rayDist;
             const targetZ = pos.z + dirZ * rayDist;
 
-            const hasLOS = game.gameManager.call('hasLineOfSight',
+            const hasLOS = game.call('hasLineOfSight',
                 { x: pos.x, z: pos.z },
                 { x: targetX, z: targetZ },
                 unitType,
@@ -133,7 +133,7 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
                     const midDist = (minDist + maxDist) / 2;
                     const midX = pos.x + dirX * midDist;
                     const midZ = pos.z + dirZ * midDist;
-                    if (game.gameManager.call('hasLineOfSight',
+                    if (game.call('hasLineOfSight',
                         { x: pos.x, z: pos.z },
                         { x: midX, z: midZ },
                         unitType,

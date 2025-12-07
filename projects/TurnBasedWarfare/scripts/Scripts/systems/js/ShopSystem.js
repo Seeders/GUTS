@@ -16,8 +16,8 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('resetShop', this.reset.bind(this));
-        this.game.gameManager.register('updateSquadExperience', this.updateSquadExperience.bind(this));
+        this.game.register('resetShop', this.reset.bind(this));
+        this.game.register('updateSquadExperience', this.updateSquadExperience.bind(this));
     }
 
     /**
@@ -347,20 +347,20 @@ class ShopSystem extends GUTS.BaseSystem {
             this.showNotification('No valid placement near building!', 'error');
             return;
         }
-        const placement = this.game.gameManager.call('createPlacementData', placementPos, unit, this.game.state.mySide);
+        const placement = this.game.call('createPlacementData', placementPos, unit, this.game.state.mySide);
 
-        this.game.networkManager.submitPlacement(placement, (success, response) => {
+        this.game.multiplayerNetworkSystem.submitPlacement(placement, (success, response) => {
             if(success){
                 const newProgress = productionProgress + buildTime;
                 this.setBuildingProductionProgress(buildingId, newProgress);
-                this.game.gameManager.call('placeSquadOnBattlefield', placement);
+                this.game.call('placeSquadOnBattlefield', placement);
             }
         });
     }
 
     findBuildingPlacementPosition(placementId, unitDef) {
         const buildingGridPos = this.getBuildingGridPosition(placementId);
-        const placement = this.game.gameManager.call('getPlacementById', placementId);
+        const placement = this.game.call('getPlacementById', placementId);
         if (!buildingGridPos) return null;
 
         const gridSystem = this.game.gridSystem;
@@ -384,8 +384,8 @@ class ShopSystem extends GUTS.BaseSystem {
                 continue;
             }
             
-            const unitSquadData = this.game.squadManager.getSquadData(unitDef);
-            const unitCells = this.game.squadManager.getSquadCells(testPos, unitSquadData);
+            const unitSquadData = this.game.squadSystem.getSquadData(unitDef);
+            const unitCells = this.game.squadSystem.getSquadCells(testPos, unitSquadData);
             
             const overlapsBuilding = unitCells.some(cell => 
                 buildingCellSet.has(`${cell.x},${cell.z}`)
@@ -430,7 +430,7 @@ class ShopSystem extends GUTS.BaseSystem {
     getBuildingPlacementId(buildingId) {
         const state = this.game.state;
         const mySide = state.mySide;
-        const placements = this.game.gameManager.call('getPlacementsForSide', mySide);
+        const placements = this.game.call('getPlacementsForSide', mySide);
         if (!placements) return null;
 
         for (const [placementIndex, placement] of Object.entries(placements)) {
@@ -444,13 +444,13 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     getBuildingGridPosition(placementId) {
-        const placement = this.game.gameManager.call('getPlacementById', placementId);
+        const placement = this.game.call('getPlacementById', placementId);
         console.log('got placement', placement);
         return placement.gridPosition;
     }
 
     purchaseUpgrade(upgradeId, upgrade) {
-        this.game.networkManager.purchaseUpgrade({ 
+        this.game.multiplayerNetworkSystem.purchaseUpgrade({ 
             upgradeId, 
             buildingId: this.game.state.selectedEntity.entityId 
         }, (success, response) => {
@@ -507,7 +507,7 @@ class ShopSystem extends GUTS.BaseSystem {
 
         container.innerHTML = '';
 
-        const squadsReadyToLevelUp = this.game.gameManager.call('getSquadsReadyToLevelUp');
+        const squadsReadyToLevelUp = this.game.call('getSquadsReadyToLevelUp');
         
         if (squadsReadyToLevelUp.length === 0) return;
 
@@ -591,7 +591,7 @@ class ShopSystem extends GUTS.BaseSystem {
             specBtn.className = 'btn btn-primary experience-btn';
             specBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
             specBtn.onclick = () => {
-                this.game.gameManager.call('showSpecializationSelection',
+                this.game.call('showSpecializationSelection',
                     squad.placementId,
                     squad,
                     squad.levelUpCost
@@ -603,7 +603,7 @@ class ShopSystem extends GUTS.BaseSystem {
             levelUpBtn.className = 'btn btn-primary experience-btn';
             levelUpBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
             levelUpBtn.onclick = () => {
-                this.game.gameManager.call('levelUpSquad', squad.placementId, squad.team);
+                this.game.call('levelUpSquad', squad.placementId, squad.team);
             };
             buttonContainer.appendChild(levelUpBtn);
         }
@@ -614,7 +614,7 @@ class ShopSystem extends GUTS.BaseSystem {
 
     getCurrentUnitType(placementId, team) {
         // Get placement and unitType from entity via placement system
-        const placement = this.game.gameManager.call('getPlacementById', placementId);
+        const placement = this.game.call('getPlacementById', placementId);
         if (!placement || !placement.squadUnits || placement.squadUnits.length === 0) {
             return null;
         }
@@ -644,7 +644,7 @@ class ShopSystem extends GUTS.BaseSystem {
 
         if (inPlacementPhase) {
             if (this.game.state.now - this.lastExperienceUpdate > 2) {
-                const squadsReadyToLevelUp = this.game.gameManager.call('getSquadsReadyToLevelUp');
+                const squadsReadyToLevelUp = this.game.call('getSquadsReadyToLevelUp');
                 const hasReadySquads = squadsReadyToLevelUp && squadsReadyToLevelUp.length > 0;
                 const hasExperiencePanel = document.querySelector('.experience-panel') !== null;
 
@@ -664,8 +664,8 @@ class ShopSystem extends GUTS.BaseSystem {
         }
 
         // Send cancel request to server
-        if (this.game.networkManager && this.game.networkManager.cancelBuilding) {
-            this.game.networkManager.cancelBuilding({ 
+        if (this.game.multiplayerNetworkSystem && this.game.multiplayerNetworkSystem.cancelBuilding) {
+            this.game.multiplayerNetworkSystem.cancelBuilding({ 
                 placementId: placement.placementId,
                 buildingEntityId: buildingEntityId 
             }, (success, response) => {
@@ -718,7 +718,7 @@ class ShopSystem extends GUTS.BaseSystem {
 
         // Destroy the building entity
         if (this.game.renderSystem) {
-            this.game.gameManager.call('removeInstance', buildingEntityId);
+            this.game.call('removeInstance', buildingEntityId);
         }
         this.game.destroyEntity(buildingEntityId);
 

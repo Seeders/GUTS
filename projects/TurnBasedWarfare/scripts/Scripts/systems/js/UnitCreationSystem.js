@@ -1,7 +1,7 @@
-class UnitCreationManager {
+class UnitCreationSystem extends GUTS.BaseSystem {
     constructor(game) {
-        this.game = game;
-        this.game.unitCreationManager = this;
+        super(game);
+        this.game.unitCreationSystem = this;
         this.SPEED_MODIFIER = 20;
         // Default component values for missing unit data
         this.defaults = {
@@ -126,8 +126,8 @@ class UnitCreationManager {
 
         try {
             // Get squad configuration
-            const squadData = this.game.squadManager.getSquadData(unitType);
-            const validation = this.game.squadManager.validateSquadConfig(squadData);
+            const squadData = this.game.squadSystem.getSquadData(unitType);
+            const validation = this.game.squadSystem.validateSquadConfig(squadData);
             
             if (!validation.valid) {
                 console.log("invalid squad config");
@@ -135,13 +135,13 @@ class UnitCreationManager {
             }
 
             // Calculate unit positions within the squad
-            const unitPositions = this.game.squadManager.calculateUnitPositions(
+            const unitPositions = this.game.squadSystem.calculateUnitPositions(
                 gridPosition,
                 unitType
             );
 
             // Calculate cells occupied by the squad
-            const cells = this.game.squadManager.getSquadCells(gridPosition, squadData);
+            const cells = this.game.squadSystem.getSquadCells(gridPosition, squadData);
 
             // Generate unique placement ID
             const placementId = `squad_${team}_${gridPosition.x}_${gridPosition.z}`;
@@ -156,7 +156,7 @@ class UnitCreationManager {
                 const entityId = this.create(pos.x, unitY, pos.z, targetPosition, placement, team);
 
                 // Add playerId to the team component if provided
-                if (playerId && this.game.componentManager) {
+                if (playerId && this.game.componentSystem) {
                     const teamComponent = this.game.getComponent(entityId, "team");
                     if (teamComponent) {
                         teamComponent.playerId = playerId;
@@ -166,7 +166,7 @@ class UnitCreationManager {
                     this.game.placementSystem.saveBuilding(entityId, team, gridPosition, unitType)
                 }
                 squadUnits.push(entityId);
-                this.game.gameManager.call('reserveGridCells', cells, entityId);
+                this.game.call('reserveGridCells', cells, entityId);
             }
 
             // Occupy grid cells
@@ -178,7 +178,7 @@ class UnitCreationManager {
                 this.game.squadExperienceSystem.initializeSquad(placementId, unitType, squadUnits);
             }
 
-            // const squadInfo = this.game.squadManager.getSquadInfo(unitType);
+            // const squadInfo = this.game.squadSystem.getSquadInfo(unitType);
          
             return {
                 placementId: placementId,
@@ -235,8 +235,8 @@ class UnitCreationManager {
      * @returns {Object} Squad information
      */
     getSquadInfo(unitType) {
-        if (this.game.squadManager) {
-            return this.game.squadManager.getSquadInfo(unitType);
+        if (this.game.squadSystem) {
+            return this.game.squadSystem.getSquadInfo(unitType);
         }
         
         // Fallback squad info
@@ -256,20 +256,20 @@ class UnitCreationManager {
      * @returns {boolean} True if placement is valid
      */
     canPlaceSquad(gridPosition, unitType, team) {
-        if (!this.game.squadManager || !this.game.gridSystem) {
+        if (!this.game.squadSystem || !this.game.gridSystem) {
             return this.game.gridSystem ? 
                 this.game.gridSystem.isValidPosition(gridPosition) : true;
         }
 
         try {
-            const squadData = this.game.squadManager.getSquadData(unitType);
-            const validation = this.game.squadManager.validateSquadConfig(squadData);
+            const squadData = this.game.squadSystem.getSquadData(unitType);
+            const validation = this.game.squadSystem.validateSquadConfig(squadData);
             
             if (!validation.valid) {
                 return false;
             }
 
-            const cells = this.game.squadManager.getSquadCells(gridPosition, squadData);
+            const cells = this.game.squadSystem.getSquadCells(gridPosition, squadData);
             return this.game.gridSystem.isValidPlacement(cells, team);
             
         } catch (error) {
@@ -587,7 +587,7 @@ class UnitCreationManager {
         this.stats.createdByType.set(unitTypeId, typeCount + 1);
 
         // Invalidate supply cache when units are created
-        this.game.gameManager.call('invalidateSupplyCache');
+        this.game.call('invalidateSupplyCache');
     }
     
     /**

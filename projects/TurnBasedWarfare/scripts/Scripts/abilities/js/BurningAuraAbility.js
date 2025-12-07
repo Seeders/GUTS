@@ -148,8 +148,8 @@ class BurningAuraAbility extends GUTS.BaseAbility {
             });
 
             // Enhanced burning aura pulse
-            if (this.game.gameManager) {
-                this.game.gameManager.call('createLayeredEffect', {
+            if (this.game.gameSystem) {
+                this.game.call('createLayeredEffect', {
                     position: new THREE.Vector3(casterPos.x, casterPos.y + 20, casterPos.z),
                     layers: [
                         // Fire ring expanding

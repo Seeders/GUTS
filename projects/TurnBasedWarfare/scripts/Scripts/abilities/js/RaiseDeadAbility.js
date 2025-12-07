@@ -122,8 +122,8 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
                 this.logCorpseRaising(consumedCorpse, team);
 
                 // Enhanced necromantic rising effect (client only)
-                if (!this.game.isServer && this.game.gameManager) {
-                    this.game.gameManager.call('createLayeredEffect', {
+                if (!this.game.isServer && this.game.gameSystem) {
+                    this.game.call('createLayeredEffect', {
                         position: new THREE.Vector3(corpseData.position.x, corpseData.position.y + 20, corpseData.position.z),
                         layers: [
                             // Dark mist rising from ground
@@ -169,7 +169,7 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
                     });
 
                     // Ground disturbance ring
-                    this.game.gameManager.call('createParticles', {
+                    this.game.call('createParticles', {
                         position: new THREE.Vector3(corpseData.position.x, corpseData.position.y + 3, corpseData.position.z),
                         count: 16,
                         lifetime: 0.6,

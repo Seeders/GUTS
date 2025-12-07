@@ -18,8 +18,8 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     init(params) {
         this.params = params || {};
 
-        this.game.gameManager.register('startBattle', this.startBattle.bind(this));
-        this.game.gameManager.register('spawnSquadFromPlacement', this.spawnSquadFromPlacement.bind(this));
+        this.game.register('startBattle', this.startBattle.bind(this));
+        this.game.register('spawnSquadFromPlacement', this.spawnSquadFromPlacement.bind(this));
     }
 
     startBattle(room) {
@@ -52,7 +52,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         try {
             const player = this.game.room.getPlayer(playerId);
             
-            if (!this.game.unitCreationManager) {
+            if (!this.game.unitCreationSystem) {
                 throw new Error('Unit creation manager not available');
             }
             
@@ -64,7 +64,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             let createdSquad = null;
       
             // Create squads using unit creation manager
-            createdSquad = this.game.unitCreationManager.createSquadFromPlacement(
+            createdSquad = this.game.unitCreationSystem.createSquadFromPlacement(
                 placement,
                 player.stats.side,
                 playerId
@@ -101,7 +101,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     checkForBattleEnd() {
-        if (!this.game.componentManager) return;
+        if (!this.game.componentSystem) return;
 
         // Check if any team has lost all buildings
         const buildingVictory = this.checkBuildingVictoryCondition();
@@ -271,7 +271,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             let survivingCount = 0;
             let sideSurvivors = [];
             for (const squad of squads) {
-                if (squad.squadUnits && this.game.componentManager) {
+                if (squad.squadUnits && this.game.componentSystem) {
                     for (const entityId of squad.squadUnits) {
                         const health = this.game.getComponent(entityId, "health");
                         const deathState = this.game.getComponent(entityId, "deathState");
@@ -377,7 +377,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
     onBattleEnd() {
 
-        if (!this.game.componentManager) return;
+        if (!this.game.componentSystem) return;
 
         this.battleStartTime = 0;
 

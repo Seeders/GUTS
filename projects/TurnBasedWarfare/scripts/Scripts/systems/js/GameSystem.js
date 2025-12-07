@@ -1,23 +1,22 @@
-class GameManager extends GUTS.GameServices {
+class GameSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
-        this.game = game;
-        this.game.gameManager = this;
+        this.game.gameSystem = this;
     }
 
     initializeGame(multiplayerData = null){
         // For single-player, require game mode selection
-        if (!multiplayerData && !this.game.screenManager.selectedGameMode) {
+        if (!multiplayerData && !this.game.screenSystem.selectedGameMode) {
             alert('Please select a game mode first!');
             return;
         }
 
         // Only show loading screen for single-player (multiplayer already showed it)
         if (!multiplayerData) {
-            this.game.screenManager.showLoadingScreen();
+            this.game.screenSystem.showLoadingScreen();
 
             // Update loading content based on selected mode
-            const mode = this.game.gameModeManager.getSelectedMode();
+            const mode = this.game.gameModeSystem.getSelectedMode();
             if (mode) {
                 const loadingTip = document.querySelector('.loading-tip');
                 if (loadingTip) {
@@ -27,7 +26,7 @@ class GameManager extends GUTS.GameServices {
         }
 
         this.game.state.isPaused = false;
-        this.game.screenManager.showGameScreen();
+        this.game.screenSystem.showGameScreen();
         // Trigger onGameStarted AFTER screen is visible so UI elements are accessible
         this.game.triggerEvent('onGameStarted');
         this.game.uiSystem.start();
@@ -35,7 +34,7 @@ class GameManager extends GUTS.GameServices {
     }
 
     pauseGame() {
-        this.game.screenManager.pause();
+        this.game.screenSystem.pause();
         const pauseMenu = document.getElementById('pauseMenu');
         if (pauseMenu) {
             pauseMenu.style.display = 'flex';
@@ -43,7 +42,7 @@ class GameManager extends GUTS.GameServices {
     }
 
     resumeGame() {
-        this.game.screenManager.resume();
+        this.game.screenSystem.resume();
         const pauseMenu = document.getElementById('pauseMenu');
         if (pauseMenu) {
             pauseMenu.style.display = 'none';
@@ -51,7 +50,7 @@ class GameManager extends GUTS.GameServices {
     }
 
     restartGame() {
-        const confirmRestart = this.game.screenManager.currentScreen === 'gameScreen' 
+        const confirmRestart = this.game.screenSystem.currentScreen === 'gameScreen' 
             ? confirm('Are you sure you want to restart? Your current progress will be lost.')
             : true;
 
@@ -69,13 +68,13 @@ class GameManager extends GUTS.GameServices {
     exitToMenu() {
         if (confirm('Are you sure you want to exit to the main menu? Your progress will be lost.')) {
             this.game.phaseSystem.reset();
-            this.game.screenManager.showMainMenu();
+            this.game.screenSystem.showMainMenu();
         }
     }
 
     continueGame() {
         // Continue to next round/level
-        this.game.screenManager.stats.round++;
+        this.game.screenSystem.stats.round++;
         this.initializeGame();
     }
 }

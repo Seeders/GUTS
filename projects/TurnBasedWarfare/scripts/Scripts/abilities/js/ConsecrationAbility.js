@@ -141,11 +141,11 @@ class ConsecrationAbility extends GUTS.BaseAbility {
         }
 
         // Create initial burst and continuous ground glow
-        if (this.game.gameManager) {
+        if (this.game.gameSystem) {
             const glowPos = new THREE.Vector3(consecrationPos.x, consecrationPos.y + 10, consecrationPos.z);
 
             // Initial holy burst
-            this.game.gameManager.call('createLayeredEffect', {
+            this.game.call('createLayeredEffect', {
                 position: glowPos,
                 layers: [
                     // Expanding golden ring
@@ -188,7 +188,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             for (let i = 0; i < glowCount; i++) {
                 this.game.schedulingSystem.scheduleAction(() => {
                     // Ground particles
-                    this.game.gameManager.call('createParticles', {
+                    this.game.call('createParticles', {
                         position: new THREE.Vector3(consecrationPos.x, consecrationPos.y + 5, consecrationPos.z),
                         count: 10,
                         lifetime: 1.2,
@@ -208,7 +208,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
                     });
 
                     // Edge sparkles
-                    this.game.gameManager.call('createParticles', {
+                    this.game.call('createParticles', {
                         position: new THREE.Vector3(consecrationPos.x, consecrationPos.y + 5, consecrationPos.z),
                         count: 6,
                         lifetime: 0.8,
@@ -296,8 +296,8 @@ class ConsecrationAbility extends GUTS.BaseAbility {
                         
                         this.createVisualEffect(unitPos, 'consecration', { heightOffset: 10 });
                         
-                        if (this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
-                            this.game.gameManager.call('showDamageNumber',
+                        if (this.game.gameSystem && this.game.hasService('showDamageNumber')) {
+                            this.game.call('showDamageNumber',
                                 unitPos.x, unitPos.y + 15, unitPos.z,
                                 healAmount, 'heal'
                             );

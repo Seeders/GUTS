@@ -75,7 +75,7 @@ class BaseAbility {
 
         if (!casterPos || !casterTeam) return [];
 
-        const nearbyEntityIds = this.game.gameManager.call('getNearbyUnits', casterPos, effectiveRange, casterEntity);
+        const nearbyEntityIds = this.game.call('getNearbyUnits', casterPos, effectiveRange, casterEntity);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
 
         return nearbyEntityIds.filter(entityId => {
@@ -98,7 +98,7 @@ class BaseAbility {
 
         if (!casterPos || !casterTeam) return [];
 
-        const nearbyEntityIds = this.game.gameManager.call('getNearbyUnits', casterPos, effectiveRange, null);
+        const nearbyEntityIds = this.game.call('getNearbyUnits', casterPos, effectiveRange, null);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
 
         return nearbyEntityIds.filter(entityId => {

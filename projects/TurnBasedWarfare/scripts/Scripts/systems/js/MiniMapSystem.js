@@ -46,7 +46,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
        // this.MINIMAP_SIZE = rect.width; // use actual displayed size
 
         // Use that size for both the canvas and render target
-        this.minimapWorldSize = this.game.gameManager.call('getWorldExtendedSize');
+        this.minimapWorldSize = this.game.call('getWorldExtendedSize');
         
         this.createMinimapCamera();
         this.addTerrainBackground(); 
@@ -140,7 +140,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
 
     createIconMaterials() {
-        const gridSize = this.game.gameManager.call('getGridSize');
+        const gridSize = this.game.call('getGridSize');
         // Unit icons - slightly bigger
         this.unitIconGeometry = new THREE.CircleGeometry(gridSize, 4);
 
@@ -304,12 +304,12 @@ class MiniMapSystem extends GUTS.BaseSystem {
         const nx = (rotatedX + rect.width / 2) / rect.width;
         const ny = (rotatedY + rect.height / 2) / rect.height;
 
-        let worldSize = this.game.gameManager.call('getTerrainSize') * 2;
+        let worldSize = this.game.call('getTerrainSize') * 2;
         // Map to world coordinates
         const half = worldSize * 0.5;
         const worldX = nx * worldSize - half;
         const worldZ = ny * worldSize - half;
-        this.game.gameManager.call('cameraLookAt', worldX, worldZ);
+        this.game.call('cameraLookAt', worldX, worldZ);
     }
 
     update() {
@@ -324,11 +324,11 @@ class MiniMapSystem extends GUTS.BaseSystem {
         if (!this.game.fogOfWarSystem || !this.fogQuad) return;
 
         this.fogQuad.material.uniforms.explorationTexture.value =
-            this.game.gameManager.call('getExplorationTexture');
+            this.game.call('getExplorationTexture');
         this.fogQuad.material.uniforms.visibilityTexture.value =
-            this.game.gameManager.call('getFogTexture');
+            this.game.call('getFogTexture');
 
-        const groundTexture = this.game.gameManager.call('getGroundTexture');
+        const groundTexture = this.game.call('getGroundTexture');
         if (this.terrainQuad && groundTexture) {
             this.terrainQuad.material.map = groundTexture;
             this.terrainQuad.material.needsUpdate = true;
@@ -411,7 +411,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
 
     updateGoldVeinIcons() {
-        const goldVeins = this.game.gameManager.call('getGoldVeinLocations');
+        const goldVeins = this.game.call('getGoldVeinLocations');
         if (!goldVeins) {
             return;
         }
@@ -487,7 +487,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
 
     addTerrainBackground() {
         // Get the ground texture from the world system
-        const groundTexture = this.game.gameManager.call('getGroundTexture');
+        const groundTexture = this.game.call('getGroundTexture');
         if (!groundTexture) {
             console.warn('MiniMapSystem: Ground texture not available');
             return;

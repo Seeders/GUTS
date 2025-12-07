@@ -1,0 +1,18 @@
+body {
+    background-color: black;
+    color: white;
+}
+
+#appContainer {
+    width: 72%;
+    height: 48px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    font-size: 2em;
+    position: absolute;
+    display: block;
+    text-align: center;
+}

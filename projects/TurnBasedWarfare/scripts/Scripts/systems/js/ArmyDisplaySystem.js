@@ -282,7 +282,7 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
         `;
 
         // Use the input handler to show modal
-        this.game.gameManager.call('showModal', `${armyType === 'player' ? '🛡️' : '⚔️'} Unit Info`, details);
+        this.game.call('showModal', `${armyType === 'player' ? '🛡️' : '⚔️'} Unit Info`, details);
     }
     
     highlightUnit(unitId) {

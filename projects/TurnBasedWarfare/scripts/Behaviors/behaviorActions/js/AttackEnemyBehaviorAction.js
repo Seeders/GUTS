@@ -44,8 +44,8 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
     onEnd(entityId, game) {
         // Reset animation to idle when combat ends
-        if (game.gameManager && game.gameManager.has('setBillboardAnimation')) {
-            game.gameManager.call('setBillboardAnimation', entityId, 'idle', true);
+        if (game.gameSystem && game.hasService('setBillboardAnimation')) {
+            game.call('setBillboardAnimation', entityId, 'idle', true);
         }
     }
 
@@ -76,10 +76,10 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Trigger attack animation (sprite direction is derived from rotation.y set above)
-        if (game.gameManager && game.gameManager.has('triggerSinglePlayAnimation')) {
+        if (game.gameSystem && game.hasService('triggerSinglePlayAnimation')) {
             const animationSpeed = combat.attackSpeed;
             const minAnimationTime = 1 / combat.attackSpeed * 0.8;
-            game.gameManager.call('triggerSinglePlayAnimation', attackerId, 'attack', animationSpeed, minAnimationTime);
+            game.call('triggerSinglePlayAnimation', attackerId, 'attack', animationSpeed, minAnimationTime);
         }
 
         // Handle projectile or melee damage
@@ -94,7 +94,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             const damageDelay = (1 / combat.attackSpeed) * 0.5;
             const element = this.getDamageElement(attackerId, game, combat);
 
-            game.gameManager.call('scheduleDamage',
+            game.call('scheduleDamage',
                 attackerId,
                 targetId,
                 combat.damage,
@@ -112,7 +112,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     useOffensiveAbility(attackerId, targetId, game) {
-        const abilities = game.gameManager.call('getEntityAbilities', attackerId);
+        const abilities = game.call('getEntityAbilities', attackerId);
         if (!abilities || abilities.length === 0) return;
 
         // Find available offensive abilities
@@ -132,7 +132,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         const projectileData = game.getCollections().projectiles[combat.projectile];
         if (projectileData) {
-            game.gameManager.call('fireProjectile', attackerId, targetId, {
+            game.call('fireProjectile', attackerId, targetId, {
                 id: combat.projectile,
                 ...projectileData
             });
@@ -170,7 +170,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         const mainHandItem = equipment.slots?.mainHand;
         if (mainHandItem) {
-            const itemData = game.gameManager.call('getItemData', mainHandItem);
+            const itemData = game.call('getItemData', mainHandItem);
             if (itemData && itemData.stats && itemData.stats.element) {
                 return itemData.stats.element;
             }
@@ -178,7 +178,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         const offHandItem = equipment.slots?.offHand;
         if (offHandItem) {
-            const itemData = game.gameManager.call('getItemData', offHandItem);
+            const itemData = game.call('getItemData', offHandItem);
             if (itemData && itemData.stats && itemData.stats.element) {
                 return itemData.stats.element;
             }

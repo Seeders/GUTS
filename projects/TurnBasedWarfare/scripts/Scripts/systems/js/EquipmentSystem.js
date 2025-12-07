@@ -34,7 +34,7 @@ class EquipmentSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('getItemData', this.getItemData.bind(this));
+        this.game.register('getItemData', this.getItemData.bind(this));
     }
 
     getItemData(itemId) {

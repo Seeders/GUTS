@@ -128,8 +128,8 @@ class BasePlacementSystem extends GUTS.BaseSystem {
      */
     cleanupDeadSquad(placement) {
         if (placement.placementId) {
-            this.game.gameManager.call('releaseGridCells', placement.placementId);
-            this.game.gameManager.call('removeSquad', placement.placementId);
+            this.game.call('releaseGridCells', placement.placementId);
+            this.game.call('removeSquad', placement.placementId);
         }
     }
 

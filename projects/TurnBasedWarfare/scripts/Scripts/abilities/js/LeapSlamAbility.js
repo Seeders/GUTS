@@ -160,13 +160,13 @@ class LeapSlamAbility extends GUTS.BaseAbility {
 
         // Trigger attack animation for the duration of the leap
         // The animation should play once during the entire leap, paced to match the leap duration
-        if (this.game.gameManager.has('triggerSinglePlayAnimation')) {
-            this.game.gameManager.call('triggerSinglePlayAnimation', casterEntity, 'attack', 1.0, leapDuration);
+        if (this.game.hasService('triggerSinglePlayAnimation')) {
+            this.game.call('triggerSinglePlayAnimation', casterEntity, 'attack', 1.0, leapDuration);
         }
 
         // Dust burst at launch (client only)
-        if (!this.game.isServer && this.game.gameManager) {
-            this.game.gameManager.call('createLayeredEffect', {
+        if (!this.game.isServer && this.game.gameSystem) {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(pos.x, pos.y + 10, pos.z),
                 layers: [
                     {
@@ -231,8 +231,8 @@ class LeapSlamAbility extends GUTS.BaseAbility {
         this.createVisualEffect(landingPos, 'shockwave');
 
         // Epic ground slam effect (client only)
-        if (!this.game.isServer && this.game.gameManager) {
-            this.game.gameManager.call('createLayeredEffect', {
+        if (!this.game.isServer && this.game.gameSystem) {
+            this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(landingPos.x, landingPos.y + 10, landingPos.z),
                 layers: [
                     // Central impact flash

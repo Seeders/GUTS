@@ -32,14 +32,14 @@ class WaitForMineBehaviorAction extends GUTS.BaseBehaviorAction {
         const isCurrentMiner = goldMine.currentMiner === entityId;
 
         // Check if we're next in queue and mine is free
-        const isNextInQueue = game.gameManager.call('isNextInMinerQueue', targetMine, entityId);
-        const isMineOccupied = game.gameManager.call('isMineOccupied', targetMine);
+        const isNextInQueue = game.call('isNextInMinerQueue', targetMine, entityId);
+        const isMineOccupied = game.call('isMineOccupied', targetMine);
 
         if (isCurrentMiner || (isNextInQueue && !isMineOccupied)) {
             // It's our turn!
             if (!isCurrentMiner) {
                 // Process queue to become current miner
-                game.gameManager.call('processNextMinerInQueue', targetMine);
+                game.call('processNextMinerInQueue', targetMine);
             }
 
             shared.canMine = true;

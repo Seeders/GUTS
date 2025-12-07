@@ -1,9 +1,9 @@
-class ComponentManager {
+class ComponentSystem extends GUTS.BaseSystem {
     constructor(game) {
-        this.game = game;
-        this.game.componentManager = this;
+        super(game);
+        this.game.componentSystem = this;
         this.componentGenerator = new GUTS.ComponentGenerator(this.game.getCollections().components);
-        this.game.gameManager.register("getComponents", this.getComponents.bind(this));
+        this.game.register("getComponents", this.getComponents.bind(this));
     }
 
     getComponents(){

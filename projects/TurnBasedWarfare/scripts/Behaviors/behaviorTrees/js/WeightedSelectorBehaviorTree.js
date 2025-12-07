@@ -101,7 +101,7 @@ class WeightedSelectorBehaviorTree extends GUTS.BaseBehaviorTree {
         }
 
         // Get debugger if available
-        const debugger_ = game.gameManager.call('getDebugger');
+        const debugger_ = game.call('getDebugger');
         const treeId = this.config.id || this.config.fileName || 'WeightedSelectorBehaviorTree';
         const trace = debugger_?.beginEvaluation(entityId, treeId);
 
@@ -244,7 +244,7 @@ class WeightedSelectorBehaviorTree extends GUTS.BaseBehaviorTree {
      * Evaluate a single child (unified node lookup)
      */
     evaluateChild(entityId, game, childName) {
-        const node = game.gameManager.call('getNodeByType', childName);
+        const node = game.call('getNodeByType', childName);
         if (!node) {
             console.warn(`Weighted selector child not found: ${childName}`);
             return null;

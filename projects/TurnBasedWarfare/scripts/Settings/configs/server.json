@@ -8,7 +8,9 @@
   "initialScene": "server",
   "libraries": [
     "GameServices",
-    "BaseSystem",
+    "BaseSystem",    
+    "BaseLoader",
+    "ServerGameLoader",
     "BasePlacementSystem",
     "GameRoom",
     "ServerGameRoom",
@@ -29,14 +31,12 @@
     "BaseBehaviorNode",
     "SceneManager"
   ],
-  "managers": [
-    "GameManager",
-    "SaveManager",
-    "ComponentManager",
-    "UnitCreationManager",
-    "SquadManager"
-  ],
   "systems": [
+    "GameSystem",
+    "SaveSystem",
+    "ComponentSystem",
+    "UnitCreationSystem",
+    "SquadSystem",
     "GridSystem",
     "TerrainSystem",
     "RoundSystem",

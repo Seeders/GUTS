@@ -1,7 +1,7 @@
-class MultiplayerNetworkManager {
+class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     constructor(game) {
-        this.game = game;
-        this.game.networkManager = this;
+        super(game);
+        this.game.multiplayerNetworkSystem = this;
         
         // State tracking
         this.roomId = null;
@@ -434,7 +434,7 @@ class MultiplayerNetworkManager {
         }
 
         // Show loading screen
-        this.game.screenManager.showLoadingScreen();
+        this.game.screenSystem.showLoadingScreen();
 
         // Load the client_game scene with the selected level
         // First, we need to modify the scene's terrain entity to use the selected level
@@ -453,7 +453,7 @@ class MultiplayerNetworkManager {
         await this.game.switchScene('client_game');
 
         // Now initialize the game
-        this.game.gameManager.initializeGame(data);
+        this.game.gameSystem.initializeGame(data);
     }
 
     handleReadyForBattleUpdate(data) {
@@ -756,10 +756,10 @@ class MultiplayerNetworkManager {
         // Populate stats and show appropriate screen
         if (isWinner) {
             this.populateGameEndStats('victoryStats', data.result, reasonText);
-            this.game.screenManager.showVictoryScreen();
+            this.game.screenSystem.showVictoryScreen();
         } else {
             this.populateGameEndStats('defeatStats', data.result, reasonText);
-            this.game.screenManager.showDefeatScreen();
+            this.game.screenSystem.showDefeatScreen();
         }
     }
 

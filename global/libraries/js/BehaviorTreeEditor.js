@@ -1161,7 +1161,7 @@ class BehaviorTreeEditor {
         if (entityIds.length > 0) {
             const mainEntityId = entityIds[0];
             // Get debug trace from BehaviorSystem's processor via gameManager
-            const debugger_ = this.mockGame.gameManager.call('getDebugger');
+            const debugger_ = this.mockGame.call('getDebugger');
             const trace = debugger_?.getLastTrace(mainEntityId);
 
             results.push({
@@ -1424,7 +1424,7 @@ class BehaviorTreeEditor {
         this.pauseSimulation();
 
         // Clear debug data from BehaviorSystem's processor before resetting
-        if (this.mockGame?.gameManager) {
+        if (this.mockGame?.gameSystem) {
             const processor = this.mockGame.behaviorSystem?.processor;
             if (processor) {
                 processor.clearAllDebugData();

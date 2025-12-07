@@ -30,8 +30,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('deleteProjectileTrail', this.deleteProjectileTrail.bind(this));
-        this.game.gameManager.register('fireProjectile', this.fireProjectile.bind(this));
+        this.game.register('deleteProjectileTrail', this.deleteProjectileTrail.bind(this));
+        this.game.register('fireProjectile', this.fireProjectile.bind(this));
     }
 
     deleteProjectileTrail(entityId) {
@@ -54,7 +54,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Create projectile entity with explicit ID
         this.game.createEntity(projectileId);
-        const components = this.game.gameManager.call('getComponents');
+        const components = this.game.call('getComponents');
         
         // Determine projectile element (from weapon, combat component, or projectile data)
         const projectileElement = this.determineProjectileElement(sourceId, projectileData);
@@ -124,8 +124,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
             { objectType: "projectiles", spawnType: projectileData.id });
         
         // Use LifetimeSystem instead of direct component
-        if (this.game.gameManager) {
-            this.game.gameManager.call('addLifetime', projectileId, this.PROJECTILE_LIFETIME, {
+        if (this.game.gameSystem) {
+            this.game.call('addLifetime', projectileId, this.PROJECTILE_LIFETIME, {
                 fadeOutDuration: 1.0, // Fade out in last second
                 onDestroy: (entityId) => {
                     // Custom cleanup for projectiles
@@ -172,7 +172,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         }
         
         // 3. Default to physical
-        const elementTypes = this.game.gameManager ? this.game.gameManager.call('getDamageElementTypes') : null;
+        const elementTypes = this.game.gameSystem ? this.game.call('getDamageElementTypes') : null;
         return elementTypes?.PHYSICAL || 'physical';
     }
 
@@ -488,7 +488,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         if (!projectile.isBallistic) return;
         
         // Get actual terrain height for projectile impact
-        const terrainHeight = this.game.gameManager ? this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z) : null;
+        const terrainHeight = this.game.gameSystem ? this.game.call('getTerrainHeightAtPosition', pos.x, pos.z) : null;
         const actualGroundLevel = terrainHeight !== null ? terrainHeight : this.game.movementSystem?.GROUND_LEVEL || 0;
         
         // Check if projectile hit the ground
@@ -500,17 +500,17 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
 
     handleProjectileHit(projectileId, targetId, targetPos, projectile) {
-        if (this.game.gameManager) {
+        if (this.game.gameSystem) {
             const damage = projectile.damage;
-            const elementTypes = this.game.gameManager.call('getDamageElementTypes');
+            const elementTypes = this.game.call('getDamageElementTypes');
             const element = projectile.element || elementTypes.PHYSICAL;
 
-            this.game.gameManager.call('applyDamage', projectile.source, targetId, damage, element, {
+            this.game.call('applyDamage', projectile.source, targetId, damage, element, {
                 isProjectile: true,
                 projectileId: projectileId
             });
             if(!this.game.isServer){
-                this.game.gameManager.call('createParticleEffect', targetPos.x, targetPos.y, targetPos.z, 'magic', {
+                this.game.call('createParticleEffect', targetPos.x, targetPos.y, targetPos.z, 'magic', {
                     color: this.getElementalEffectColor(element),
                     count: 3
                 });
@@ -538,13 +538,13 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Default explosion behavior for splash damage projectiles
         this.createGroundExplosion(entityId, pos, projectile, groundLevel);
 
-        if (this.game.gameManager) {
+        if (this.game.gameSystem) {
             const splashRadius = projectile.splashRadius || 80;
             const splashDamage = Math.floor(projectile.damage);
-            const elementTypes = this.game.gameManager.call('getDamageElementTypes');
+            const elementTypes = this.game.call('getDamageElementTypes');
             const element = projectile.element || elementTypes.PHYSICAL;
 
-            const results = this.game.gameManager.call('applySplashDamage',
+            const results = this.game.call('applySplashDamage',
                 projectile.source,
                 pos,
                 splashDamage,
@@ -609,7 +609,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Get nearby units using grid system - returns array of entityIds
         const searchRadius = this.HIT_DETECTION_RADIUS + 30; // Include unit radius
-        const nearbyEntityIds = this.game.gameManager.call('getNearbyUnits', pos, searchRadius, projectile.source);
+        const nearbyEntityIds = this.game.call('getNearbyUnits', pos, searchRadius, projectile.source);
 
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
@@ -650,9 +650,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
     // Get visual effect color based on element
     getElementalEffectColor(element) {
-        if (!this.game.gameManager) return '#ff2200'; // blood-red
+        if (!this.game.gameSystem) return '#ff2200'; // blood-red
 
-        const elementTypes = this.game.gameManager.call('getDamageElementTypes');
+        const elementTypes = this.game.call('getDamageElementTypes');
 
         switch (element) {
             case elementTypes.FIRE:
@@ -673,9 +673,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
     // Get explosion effect type based on element
     getElementalExplosionEffect(element) {
-        if (!this.game.gameManager) return 'explosion';
+        if (!this.game.gameSystem) return 'explosion';
 
-        const elementTypes = this.game.gameManager.call('getDamageElementTypes');
+        const elementTypes = this.game.call('getDamageElementTypes');
 
         switch (element) {
             case elementTypes.FIRE:
@@ -714,7 +714,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
         
     destroyProjectile(projectileId) {
-        this.game.gameManager.call('destroyEntityImmediately', projectileId, true);    
+        this.game.call('destroyEntityImmediately', projectileId, true);    
         this.game.destroyEntity(projectileId);
         this.cleanupProjectileData(projectileId);
     }

@@ -19,20 +19,20 @@ class AnimationSystem extends GUTS.BaseSystem {
 
     init() {
         // Register methods with GameManager
-        this.game.gameManager.register('triggerSinglePlayAnimation', this.triggerSinglePlayAnimation.bind(this));
-        this.game.gameManager.register('isAnimationFinished', this.isAnimationFinished.bind(this));
-        this.game.gameManager.register('setCorpseAnimation', this.setCorpseAnimation.bind(this));
-        this.game.gameManager.register('startCelebration', this.startCelebration.bind(this));
-        this.game.gameManager.register('stopCelebration', this.stopCelebration.bind(this));
-        this.game.gameManager.register('playDeathAnimation', this.playDeathAnimation.bind(this));
-        this.game.gameManager.register('calculateAnimationSpeed', this.calculateAnimationSpeed.bind(this));
-        this.game.gameManager.register('getEntityAnimations', this.getEntityAnimations.bind(this));
+        this.game.register('triggerSinglePlayAnimation', this.triggerSinglePlayAnimation.bind(this));
+        this.game.register('isAnimationFinished', this.isAnimationFinished.bind(this));
+        this.game.register('setCorpseAnimation', this.setCorpseAnimation.bind(this));
+        this.game.register('startCelebration', this.startCelebration.bind(this));
+        this.game.register('stopCelebration', this.stopCelebration.bind(this));
+        this.game.register('playDeathAnimation', this.playDeathAnimation.bind(this));
+        this.game.register('calculateAnimationSpeed', this.calculateAnimationSpeed.bind(this));
+        this.game.register('getEntityAnimations', this.getEntityAnimations.bind(this));
 
         // Billboard animation management (AnimationSystem owns animation decisions)
-        this.game.gameManager.register('setBillboardAnimation', this.setBillboardAnimation.bind(this));
-        this.game.gameManager.register('setBillboardAnimationDirection', this.setBillboardAnimationDirection.bind(this));
-        this.game.gameManager.register('getBillboardCurrentAnimation', this.getBillboardCurrentAnimation.bind(this));
-        this.game.gameManager.register('getBillboardAnimationState', this.getBillboardAnimationState.bind(this));
+        this.game.register('setBillboardAnimation', this.setBillboardAnimation.bind(this));
+        this.game.register('setBillboardAnimationDirection', this.setBillboardAnimationDirection.bind(this));
+        this.game.register('getBillboardCurrentAnimation', this.getBillboardCurrentAnimation.bind(this));
+        this.game.register('getBillboardAnimationState', this.getBillboardAnimationState.bind(this));
 
     }
 
@@ -83,7 +83,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
     initializeEntityAnimationState(entityId) {
         // Check if this is a billboard entity with sprite animations
-        const isBillboard = this.game.gameManager.call('isBillboardWithAnimations', entityId);
+        const isBillboard = this.game.call('isBillboardWithAnimations', entityId);
 
         // Add animationState component to entity
         this.game.addComponent(entityId, 'animationState', {
@@ -206,7 +206,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Only animate during battle phase - show idle during placement
         // But only for living entities (dead entities checked above)
         if (this.game.state?.phase !== 'battle') {
-            this.game.gameManager.call('setBillboardAnimation', entityId, 'idle', true);
+            this.game.call('setBillboardAnimation', entityId, 'idle', true);
             return;
         }
 
@@ -228,7 +228,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Set walk or idle animation based on movement
         const animationType = isMoving ? 'walk' : 'idle';
-        this.game.gameManager.call('setBillboardAnimation', entityId, animationType, true);
+        this.game.call('setBillboardAnimation', entityId, animationType, true);
 
         // Update sprite direction from rotation (set by MovementSystem when moving, or by attack behavior when attacking)
         this.updateSpriteDirectionFromRotation(entityId, animState);
@@ -299,7 +299,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             animState.spriteFlipped = shouldFlip;
 
             // Apply the new direction
-            this.game.gameManager.call('setBillboardAnimationDirection', entityId, newDirection, shouldFlip);
+            this.game.call('setBillboardAnimationDirection', entityId, newDirection, shouldFlip);
         }
     }
 
@@ -460,14 +460,14 @@ class AnimationSystem extends GUTS.BaseSystem {
                 // Set attack animation (single-play, not looping)
                 // When animation completes, return to idle
                 // Use minTime as customDuration to pace the animation (e.g., for leap slam)
-                this.game.gameManager.call(
+                this.game.call(
                     'setBillboardAnimation',
                     entityId,
                     'attack',
                     false,  // don't loop - play once
                     (completedEntityId) => {
                         // Return to idle animation after attack finishes
-                        this.game.gameManager.call('setBillboardAnimation', completedEntityId, 'idle', true);
+                        this.game.call('setBillboardAnimation', completedEntityId, 'idle', true);
                     },
                     minTime > 0 ? minTime : null  // Pass minTime as custom duration if provided
                 );
@@ -513,7 +513,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Handle billboard entities with sprite animations
         if (animState.isBillboard) {
             // Set death animation (non-looping, stays on last frame)
-            this.game.gameManager.call(
+            this.game.call(
                 'setBillboardAnimation',
                 entityId,
                 'death',
@@ -536,16 +536,16 @@ class AnimationSystem extends GUTS.BaseSystem {
         }
 
         // For VAT/model entities: freeze at current frame
-        const animationStateData = this.game.gameManager.call('getEntityAnimationState', entityId);
+        const animationStateData = this.game.call('getEntityAnimationState', entityId);
 
         if (animationStateData && animationStateData.clipDuration > 0) {
             // Set to 99% through the animation (last frame before loop)
             const lastFrameTime = animationStateData.clipDuration * 0.99;
-            this.game.gameManager.call('setInstanceAnimationTime', entityId, lastFrameTime);
+            this.game.call('setInstanceAnimationTime', entityId, lastFrameTime);
         }
 
         // Now freeze it at that frame
-        this.game.gameManager.call('setInstanceSpeed', entityId, 0);
+        this.game.call('setInstanceSpeed', entityId, 0);
     }
 
     startCelebration(entityId, teamType = null) {
@@ -605,7 +605,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             return false; // Continuous animations never finish
         }
 
-        const animationState = this.game.gameManager.call('getEntityAnimationState', entityId);
+        const animationState = this.game.call('getEntityAnimationState', entityId);
         if (!animationState) {
             return true;
         }
@@ -627,7 +627,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             return this._clipSetCache.get(batchKey);
         }
 
-        const batchInfo = this.game.gameManager.call('getBatchInfo', objectType, spawnType);
+        const batchInfo = this.game.call('getBatchInfo', objectType, spawnType);
         if (!batchInfo?.availableClips) {
             return null;
         }
@@ -741,7 +741,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         animData.customDuration = customDuration; // Custom duration override for pacing
 
         // Tell EntityRenderer to apply the first frame
-        const entityRenderer = this.game.gameManager.call('getEntityRenderer');
+        const entityRenderer = this.game.call('getEntityRenderer');
         if (entityRenderer) {
             entityRenderer.applyBillboardAnimationFrame(entityId, animData);
         }
@@ -782,7 +782,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             }
 
             // Tell EntityRenderer to apply the new frame immediately
-            const entityRenderer = this.game.gameManager.call('getEntityRenderer');
+            const entityRenderer = this.game.call('getEntityRenderer');
             if (entityRenderer) {
                 entityRenderer.applyBillboardAnimationFrame(entityId, animState);
             }
@@ -795,7 +795,7 @@ class AnimationSystem extends GUTS.BaseSystem {
      * Update billboard sprite animation frames (called every frame)
      */
     updateBillboardAnimations(deltaTime) {
-        const entityRenderer = this.game.gameManager.call('getEntityRenderer');
+        const entityRenderer = this.game.call('getEntityRenderer');
         if (!entityRenderer) return;
 
         // Get rendering data to access sprite animation frame rates
@@ -861,7 +861,7 @@ class AnimationSystem extends GUTS.BaseSystem {
                             // Death animations should stay frozen on the last frame
                             if (this.SINGLE_PLAY_ANIMATIONS.has(animState.currentAnimationType) &&
                                 animState.currentAnimationType !== 'death') {
-                                this.game.gameManager.call('setBillboardAnimation', entityId, 'idle', true);
+                                this.game.call('setBillboardAnimation', entityId, 'idle', true);
                             }
                         }
                     }
@@ -932,7 +932,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Update entity transform now that UV coordinates are set
         // This ensures aspect ratio calculation works correctly
-        const entityRenderer = this.game.gameManager.call('getEntityRenderer');
+        const entityRenderer = this.game.call('getEntityRenderer');
         if (entityRenderer) {
             const transform = this.game.getComponent(entityId, 'transform');
             const velocity = this.game.getComponent(entityId, 'velocity');

@@ -28,11 +28,11 @@ class ParticleSystem extends GUTS.BaseSystem {
 
   init() {
     // Register methods with GameManager
-    this.game.gameManager.register('createParticles', this.createParticles.bind(this));
-    this.game.gameManager.register('clearAllParticles', this.clearAllParticles.bind(this));
-    this.game.gameManager.register('initializeParticleSystem', this.initialize.bind(this));
-    this.game.gameManager.register('createLayeredEffect', this.createLayeredEffect.bind(this));
-    this.game.gameManager.register('createParticlesWithEmitter', this.createParticlesWithEmitter.bind(this));
+    this.game.register('createParticles', this.createParticles.bind(this));
+    this.game.register('clearAllParticles', this.clearAllParticles.bind(this));
+    this.game.register('initializeParticleSystem', this.initialize.bind(this));
+    this.game.register('createLayeredEffect', this.createLayeredEffect.bind(this));
+    this.game.register('createParticlesWithEmitter', this.createParticlesWithEmitter.bind(this));
   }
 
   initialize() {

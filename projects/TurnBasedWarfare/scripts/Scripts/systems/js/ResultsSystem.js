@@ -1,17 +1,17 @@
-class ResultsManager {
-    constructor(app) {
-        this.game = app;
-        this.game.resultsManager = this;                
+class ResultsSystem extends GUTS.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.resultsSystem = this;                
     }
 
     showVictory(stats) {
         this.populateStats('victoryStats', stats, 'victory');
-        this.game.screenManager.showVictoryScreen();
+        this.game.screenSystem.showVictoryScreen();
     }
 
     showDefeat(stats) {
         this.populateStats('defeatStats', stats, 'defeat');
-        this.game.screenManager.showDefeatScreen();
+        this.game.screenSystem.showDefeatScreen();
     }
 
     populateStats(containerId, stats, type) {

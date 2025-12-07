@@ -34,7 +34,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const actionPanel = document.getElementById('actionPanel');
         if (!actionPanel) return;
 
-        const placement = this.game.gameManager.call('getPlacementById', placementId);
+        const placement = this.game.call('getPlacementById', placementId);
         if (!placement) {
             console.warn(`[UnitOrderSystem] No placement found for ${placementId}`);
             return;
@@ -232,19 +232,19 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     holdPosition() {
         this.stopTargeting();
 
-        let placementIds = this.game.gameManager.call('getSelectedSquads') || [];
+        let placementIds = this.game.call('getSelectedSquads') || [];
 
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
             return;
         }
         placementIds.forEach((placementId) => {
-            const placement = this.game.gameManager.call('getPlacementById', placementId);
+            const placement = this.game.call('getPlacementById', placementId);
             placement.squadUnits.forEach((unitId) => {
                 const transform = this.game.getComponent(unitId, "transform");
                 const position = transform?.position;
                 if (this.game.effectsSystem && position) {
-                    this.game.gameManager.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
+                    this.game.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
                 }
                 // Set player order - behavior tree will read this and handle it
                 const playerOrder = this.game.getComponent(unitId, "playerOrder");
@@ -288,10 +288,10 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         if (!this.targetingPreview) return;
 
         this.targetingPreview.clear();
-        const placementIds = this.game.gameManager.call('getSelectedSquads') || [];
+        const placementIds = this.game.call('getSelectedSquads') || [];
         const targetPositions = [];
         placementIds.forEach((placementId) => {
-            const placement = this.game.gameManager.call('getPlacementById', placementId);
+            const placement = this.game.call('getPlacementById', placementId);
             placement.squadUnits.forEach((entityId) => {
                 const playerOrder = this.game.getComponent(entityId, "playerOrder");
                 if(playerOrder && playerOrder.targetPosition) {
@@ -348,14 +348,14 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const worldPos = this.game.gameManager.call('getWorldPositionFromMouse');
+        const worldPos = this.game.call('getWorldPositionFromMouse');
         if (!worldPos) {
             this.game.uiSystem?.showNotification('Could not find ground under cursor.', 'error', 1000);
             this.stopTargeting();
             return;
         }
 
-        let placementIds = this.game.gameManager.call('getSelectedSquads') || [];
+        let placementIds = this.game.call('getSelectedSquads') || [];
 
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
@@ -378,7 +378,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const targetPosition = { x: worldPos.x, y: 0, z: worldPos.z };
 
         if (this.game.effectsSystem) {
-            this.game.gameManager.call('createParticleEffect', worldPos.x, 0, worldPos.z, 'magic', { ...this.pingEffect });
+            this.game.call('createParticleEffect', worldPos.x, 0, worldPos.z, 'magic', { ...this.pingEffect });
         }
 
         this.issueMoveOrders(placementIds, targetPosition);
@@ -413,7 +413,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
     getBuilderUnitFromSelection(placementIds) {
         for (const placementId of placementIds) {
-            const placement = this.game.gameManager.call('getPlacementById', placementId);
+            const placement = this.game.call('getPlacementById', placementId);
             if (!placement) continue;
 
             for (const unitId of placement.squadUnits) {
@@ -436,7 +436,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
     //this is desynced.
     assignBuilderToConstruction(builderEntityId, buildingEntityId) {
-        const Components = this.game.gameManager.call('getComponents');
+        const Components = this.game.call('getComponents');
 
         const buildingTransform = this.game.getComponent(buildingEntityId, "transform");
         const buildingPos = buildingTransform?.position;
@@ -470,7 +470,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                         ability.peasantId = builderEntityId;
 
                         if (this.game.effectsSystem) {
-                            this.game.gameManager.call('createParticleEffect', buildingPos.x, 0, buildingPos.z, 'magic', { count: 8, color: 0xffaa00 });
+                            this.game.call('createParticleEffect', buildingPos.x, 0, buildingPos.z, 'magic', { count: 8, color: 0xffaa00 });
                         }
 
                         this.game.uiSystem?.showNotification('Peasant assigned to continue construction', 'success', 1000);
@@ -490,7 +490,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
         // Capture client time for deterministic command creation
         const commandCreatedTime = this.game.state.now;
-        this.game.networkManager.setSquadTargets(
+        this.game.multiplayerNetworkSystem.setSquadTargets(
             { placementIds, targetPositions, meta, commandCreatedTime },
             (success, responseData) => {
                 if (success) {
@@ -499,12 +499,12 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                     for(let i = 0; i < placementIds.length; i++){
                         let placementId = placementIds[i];
                         const targetPosition = targetPositions[i];
-                        const placement = this.game.gameManager.call('getPlacementById', placementId);
+                        const placement = this.game.call('getPlacementById', placementId);
                         // Set placement targetPosition to match server
                         placement.targetPosition = targetPosition;
                         placement.squadUnits.forEach((unitId) => {
                             if (this.game.effectsSystem && targetPosition) {
-                                this.game.gameManager.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
+                                this.game.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
                             }
                             if(targetPosition){
                                 // Remove existing player order if present, then add new one
@@ -539,7 +539,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     getFormationTargetPositions(targetPosition, placementIds){
         let targetPositions = [];
         // Use placement grid size (half of terrain grid) for unit formation spacing
-        const placementGridSize = this.game.gameManager.call('getPlacementGridSize');
+        const placementGridSize = this.game.call('getPlacementGridSize');
         const unitPadding = 1;
 
         // Round to 2 decimal places to avoid floating-point precision issues that cause desync
@@ -555,7 +555,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     }
 
     applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime) {
-        const placement = this.game.gameManager.call('getPlacementById', placementId);
+        const placement = this.game.call('getPlacementById', placementId);
         if(!placement){
             // Placement doesn't exist yet on client - entity sync at battle start will handle it
             return;

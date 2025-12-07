@@ -95,10 +95,10 @@ class HealAbility extends GUTS.BaseAbility {
         this.createVisualEffect(targetPos, 'sparkles');
 
         // Enhanced holy light effect (client only)
-        if (!this.game.isServer && this.game.gameManager) {
+        if (!this.game.isServer && this.game.gameSystem) {
             const healPos = new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z);
 
-            this.game.gameManager.call('createLayeredEffect', {
+            this.game.call('createLayeredEffect', {
                 position: healPos,
                 layers: [
                     // Rising golden light
@@ -151,8 +151,8 @@ class HealAbility extends GUTS.BaseAbility {
         targetHealth.current += actualHeal;
 
         // Show heal number (client only)
-        if (!this.game.isServer && this.game.gameManager && this.game.gameManager.has('showDamageNumber')) {
-            this.game.gameManager.call('showDamageNumber',
+        if (!this.game.isServer && this.game.gameSystem && this.game.hasService('showDamageNumber')) {
+            this.game.call('showDamageNumber',
                 targetPos.x, targetPos.y + 50, targetPos.z,
                 actualHeal, 'heal'
             );

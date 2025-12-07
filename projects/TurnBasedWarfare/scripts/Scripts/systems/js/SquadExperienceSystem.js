@@ -34,18 +34,18 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.gameManager.register('canAffordLevelUp', this.canAffordLevelUp.bind(this));
-        this.game.gameManager.register('applySpecialization', this.applySpecialization.bind(this));
-        this.game.gameManager.register('levelUpSquad', this.levelUpSquad.bind(this));
-        this.game.gameManager.register('getLevelUpCost', this.getLevelUpCost.bind(this));
-        this.game.gameManager.register('initializeSquad', this.initializeSquad.bind(this));
-        this.game.gameManager.register('removeSquad', this.removeSquad.bind(this));
-        this.game.gameManager.register('getSquadsReadyToLevelUp', this.getSquadsReadyToLevelUp.bind(this));
-        this.game.gameManager.register('showSpecializationSelection', this.showSpecializationSelection.bind(this));
-        this.game.gameManager.register('findSquadByUnitId', this.findSquadByUnitId.bind(this));
-        this.game.gameManager.register('getCurrentUnitType', this.getCurrentUnitType.bind(this));
-        this.game.gameManager.register('getSquadInfo', this.getSquadInfo.bind(this));
-        this.game.gameManager.register('resetSquadExperience', this.reset.bind(this));
+        this.game.register('canAffordLevelUp', this.canAffordLevelUp.bind(this));
+        this.game.register('applySpecialization', this.applySpecialization.bind(this));
+        this.game.register('levelUpSquad', this.levelUpSquad.bind(this));
+        this.game.register('getLevelUpCost', this.getLevelUpCost.bind(this));
+        this.game.register('initializeSquad', this.initializeSquad.bind(this));
+        this.game.register('removeSquad', this.removeSquad.bind(this));
+        this.game.register('getSquadsReadyToLevelUp', this.getSquadsReadyToLevelUp.bind(this));
+        this.game.register('showSpecializationSelection', this.showSpecializationSelection.bind(this));
+        this.game.register('findSquadByUnitId', this.findSquadByUnitId.bind(this));
+        this.game.register('getCurrentUnitType', this.getCurrentUnitType.bind(this));
+        this.game.register('getSquadInfo', this.getSquadInfo.bind(this));
+        this.game.register('resetSquadExperience', this.reset.bind(this));
     }
 
     /**
@@ -293,7 +293,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             const pos = transform?.position;
             if (pos) {
                 const effectType = specializationId ? 'magic' : 'heal';
-                this.game.gameManager.call('createParticleEffect',
+                this.game.call('createParticleEffect',
                     pos.x, pos.y + 20, pos.z,
                     effectType,
                     { count: 3, speedMultiplier: specializationId ? 1.5 : 1.2 }
@@ -323,7 +323,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         const specializationUnitType = collections.units[specializationId];
         
         // Find the placement in PlacementSystem
-        const placement = this.game.gameManager.call('getPlacementById', placementId);
+        const placement = this.game.call('getPlacementById', placementId);
         if (!placement) {
             console.error(`Placement ${placementId} not found`);
             return false;
@@ -368,10 +368,10 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
 
         // Create new specialized units at the same positions
         positions.forEach(pos => {
-            const terrainHeight = this.game.unitCreationManager.getTerrainHeight(pos.x, pos.z);
+            const terrainHeight = this.game.unitCreationSystem.getTerrainHeight(pos.x, pos.z);
             const unitY = terrainHeight !== null ? terrainHeight : pos.y;
 
-            const entityId = this.game.unitCreationManager.create(
+            const entityId = this.game.unitCreationSystem.create(
                 pos.x, unitY, pos.z,
                 null, // targetPosition handled by aiState
                 specializedPlacement,
@@ -627,7 +627,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      */
     getSquadDisplayName(placementId) {
         // Try to get the name from placement system - get unitType from entity
-        const playerPlacements = this.game.gameManager.call('getPlacementsForSide', this.game.state.mySide);
+        const playerPlacements = this.game.call('getPlacementsForSide', this.game.state.mySide);
         if (playerPlacements) {
             const placement = playerPlacements.find(p => p.placementId === placementId);
             if (placement && placement.squadUnits && placement.squadUnits.length > 0) {
@@ -638,7 +638,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             }
         }
 
-        const enemyPlacements = this.game.gameManager.call('getPlacementsForSide', this.game.state.mySide === 'left' ? 'right' : 'left');
+        const enemyPlacements = this.game.call('getPlacementsForSide', this.game.state.mySide === 'left' ? 'right' : 'left');
         if (enemyPlacements) {
             const enemyPlacement = enemyPlacements.find(p => p.placementId === placementId);
             if (enemyPlacement && enemyPlacement.squadUnits && enemyPlacement.squadUnits.length > 0) {
@@ -667,7 +667,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     updateSquadUI() {
         // This method could update a dedicated squad experience panel
         // For now, we'll just ensure the shop system can access this data
-        this.game.gameManager.call('updateSquadExperience');
+        this.game.call('updateSquadExperience');
     }
     
     /**

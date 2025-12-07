@@ -96,10 +96,10 @@ class LightningBoltAbility extends GUTS.BaseAbility {
         this.createVisualEffect(targetPos, 'lightning');
 
         // Enhanced electric impact effect
-        if (this.game.gameManager) {
+        if (this.game.gameSystem) {
             const impactPos = new THREE.Vector3(targetPos.x, targetPos.y + 30, targetPos.z);
 
-            this.game.gameManager.call('createLayeredEffect', {
+            this.game.call('createLayeredEffect', {
                 position: impactPos,
                 layers: [
                     // Bright flash core
@@ -145,7 +145,7 @@ class LightningBoltAbility extends GUTS.BaseAbility {
             });
 
             // Ground scorch ring
-            this.game.gameManager.call('createParticles', {
+            this.game.call('createParticles', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 5, targetPos.z),
                 count: 16,
                 lifetime: 0.5,

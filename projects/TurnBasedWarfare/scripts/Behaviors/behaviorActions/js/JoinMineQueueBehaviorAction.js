@@ -29,7 +29,7 @@ class JoinMineQueueBehaviorAction extends GUTS.BaseBehaviorAction {
                 targetMine: targetMine
             });
         }    
-        game.gameManager.call('addMinerToQueue', targetMine, entityId);
+        game.call('addMinerToQueue', targetMine, entityId);
         return this.success({
             targetMine: targetMine
         });

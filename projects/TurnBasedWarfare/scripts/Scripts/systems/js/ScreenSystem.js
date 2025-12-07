@@ -1,7 +1,7 @@
-class ScreenManager {
-    constructor(app) {
-        this.game = app;
-        this.game.screenManager = this;
+class ScreenSystem extends GUTS.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.screenSystem = this;
     }
 
     

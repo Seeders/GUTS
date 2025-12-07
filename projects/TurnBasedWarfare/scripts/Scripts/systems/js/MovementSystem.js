@@ -278,7 +278,7 @@ class MovementSystem extends GUTS.BaseSystem {
         }
         
         const separationRadius = unitRadius * this.SEPARATION_RADIUS_MULTIPLIER;
-        const nearbyUnits = this.game.gameManager.call('getNearbyUnits', pos, separationRadius, entityId);
+        const nearbyUnits = this.game.call('getNearbyUnits', pos, separationRadius, entityId);
         
         let separationForceX = 0;
         let separationForceZ = 0;
@@ -423,7 +423,7 @@ class MovementSystem extends GUTS.BaseSystem {
         const lookaheadDistance = this.PATHFINDING_LOOKAHEAD;
         const checkRadius = unitRadius * 1.5;
         
-        const nearbyUnits = this.game.gameManager.call('getNearbyUnits', pos, lookaheadDistance + checkRadius, entityId);
+        const nearbyUnits = this.game.call('getNearbyUnits', pos, lookaheadDistance + checkRadius, entityId);
         
         let closestObstacle = null;
         let closestDistance = Infinity;
@@ -656,7 +656,7 @@ class MovementSystem extends GUTS.BaseSystem {
             }
 
             if ((!pathfinding.path || pathfinding.path.length == 0) && targetX != null && targetZ != null) {
-                pathfinding.path = this.game.gameManager.call('requestPath',
+                pathfinding.path = this.game.call('requestPath',
                     entityId,
                     pos.x,
                     pos.z,
@@ -833,7 +833,7 @@ class MovementSystem extends GUTS.BaseSystem {
     }
     
     handleGroundInteraction(pos, vel) {
-        const terrainHeight = this.game.gameManager.call('getTerrainHeightAtPosition', pos.x, pos.z);
+        const terrainHeight = this.game.call('getTerrainHeightAtPosition', pos.x, pos.z);
         
         if (terrainHeight !== null) {
             const targetHeight = terrainHeight;   
@@ -857,7 +857,7 @@ class MovementSystem extends GUTS.BaseSystem {
         const level = collections.levels[currentLevel];
         const tileMap = level.tileMap;
 
-        const terrainSize = tileMap.size * this.game.gameManager.call('getGridSize');
+        const terrainSize = tileMap.size * this.game.call('getGridSize');
         const halfTerrain = terrainSize / 2;
         const unitRadius = this.getUnitRadius(collision);
         
