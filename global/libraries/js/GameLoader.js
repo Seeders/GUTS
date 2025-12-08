@@ -1,7 +1,5 @@
 class GameLoader extends GUTS.BaseLoader {
-    constructor(game) {
-        this.game = game;
-    }    
+
     async load(){
         this.collections = this.game.getCollections();        
        // this.collections.configs.game.canvasWidth = window.outerWidth;

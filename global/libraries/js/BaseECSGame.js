@@ -13,8 +13,8 @@ class BaseECSGame {
         // Scene management
         this.sceneManager = null;
 
-        // Service registry (moved from GameServices)
-        this.services = new Map();
+        // Service registry
+        this._services = new GUTS.GameServices();
 
         // Query cache for getEntitiesWith - invalidated on entity/component changes
         this._queryCache = new Map();  // queryKey -> { result: [], version: number }
@@ -36,29 +36,21 @@ class BaseECSGame {
         }
     }
 
-    // Service registry methods (from GameServices)
+    // Service registry methods (delegated to GameServices)
     register(key, method) {
-        if (this.services.has(key)) {
-            console.warn(`[BaseECSGame] Service ${key} already registered! Overwriting.`);
-        }
-        this.services.set(key, method);
+        this._services.register(key, method);
     }
 
     hasService(key) {
-        return this.services.has(key);
+        return this._services.has(key);
     }
 
     call(key, ...args) {
-        const method = this.services.get(key);
-        if (!method) {
-            console.warn('[BaseECSGame] missing service method', key);
-            return undefined;
-        }
-        return method(...args);
+        return this._services.call(key, ...args);
     }
 
     listServices() {
-        return Array.from(this.services.keys());
+        return this._services.listServices();
     }
 
     init(isServer = false, config) {

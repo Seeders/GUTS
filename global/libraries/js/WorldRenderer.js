@@ -46,7 +46,7 @@ class WorldRenderer {
         this.terrainDataManager = null;
         this.tileMapper = null;
         this.collections = null;
-        this.gameSystem = null;  // For accessing GridSystem coordinate transformations
+        this.game = null;  // For accessing game services via call()
 
         // Configuration
         this.config = {
@@ -1314,8 +1314,8 @@ class WorldRenderer {
 
         const heightStep = this.terrainDataManager.heightStep;
 
-        // Use GameManager coordinate functions if available, otherwise fallback to manual calculation
-        const useGameManager = this.gameSystem !== null;
+        // Use game services if available, otherwise fallback to manual calculation
+        const useGameManager = this.game !== null;
 
         if (!useGameManager) {
             console.warn('[WorldRenderer] GameManager not set, using fallback coordinate calculations');
@@ -1328,8 +1328,8 @@ class WorldRenderer {
 
             if (useGameManager) {
                 // Use GridSystem coordinate transformations via gameManager
-                tileWorldPos = this.call('tileToWorld', cliff.gridX, cliff.gridZ, useExtension);
-                worldPos = this.call('applyQuadrantOffset', tileWorldPos.x, tileWorldPos.z, cliff.quadrant);
+                tileWorldPos = this.game.call('tileToWorld', cliff.gridX, cliff.gridZ, useExtension);
+                worldPos = this.game.call('applyQuadrantOffset', tileWorldPos.x, tileWorldPos.z, cliff.quadrant);
             } else {
                 // Fallback: manual calculation
                 const gridSize = this.terrainDataManager.gridSize;
