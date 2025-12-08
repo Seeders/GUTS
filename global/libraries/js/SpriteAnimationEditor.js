@@ -224,7 +224,7 @@ class SpriteAnimationEditor {
                     <div>Cam Height: ${settings.cameraHeight || '-'}</div>
                     <div>Brightness: ${settings.brightness || '-'}</div>
                     <div>Palette: ${settings.palette || 'none'}</div>
-                    <div>Pixel Size: ${settings.pixelSize || '-'}</div>
+                    <div>Border Size: ${settings.borderSize || '-'}</div>
                     <div>Outline: ${settings.outlineColor || 'none'}</div>
                 `;
             } else {

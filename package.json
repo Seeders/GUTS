@@ -12,6 +12,8 @@
     "build:all:prod": "node build/build-all.js --production",
     "build:editor": "node build/build-editor.js",
     "build:editor:watch": "node build/build-editor.js --watch",
+    "build:resources": "node build/copy-resources.js",
+    "build:resources:all": "node build/copy-resources-all.js",
     "resources:watch": "node build/watch-resources.js",
     "dev": "webpack serve --config webpack.dev.config.js",
     "dev:server": "node server_editor.js",

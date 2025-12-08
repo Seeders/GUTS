@@ -58,10 +58,10 @@
     "spriteSize": 128,
     "fps": 4,
     "brightness": 2.5,
-    "palette": "",
-    "pixelSize": 1,
-    "outlineColor": "",
+    "palette": "main",
+    "outlineColor": "#170F13",
     "outlineConnectivity": 4,
-    "cameraHeight": 1
+    "cameraHeight": 1,
+    "borderSize": 1
   }
 }

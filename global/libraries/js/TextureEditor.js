@@ -903,8 +903,9 @@ class TextureEditor {
         // Update the underlying palette object in allPalettes
         const palette = this.allPalettes[this.currentPaletteName];
         if (palette) {
+            const textureName = this.gameEditor.getSelectedObject() || 'unknown';
             newColors.forEach((color, index) => {
-                const colorKey = `extractedColor${Date.now()}_${index}`;
+                const colorKey = `extracted_${textureName}_${index}_Color`;
                 palette[colorKey] = color;
             });
         }

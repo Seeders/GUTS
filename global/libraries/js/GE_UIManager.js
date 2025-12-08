@@ -103,7 +103,7 @@ class GE_UIManager {
             animationFPS: savedSettings.fps ?? 4,
             brightness: savedSettings.brightness ?? 2.5,
             palette: savedSettings.palette ?? '',
-            pixelSize: savedSettings.pixelSize ?? 1,
+            borderSize: savedSettings.borderSize ?? 1,
             outlineColor: savedSettings.outlineColor ?? '',
             outlineConnectivity: savedSettings.outlineConnectivity ?? 4,
             cameraHeight: savedSettings.cameraHeight ?? 1.5
@@ -171,8 +171,8 @@ class GE_UIManager {
         if (config.palette !== undefined) {
             paletteSelect.value = config.palette;
         }
-        if (config.pixelSize !== undefined) {
-            document.getElementById('iso-pixel-size').value = config.pixelSize;
+        if (config.borderSize !== undefined) {
+            document.getElementById('iso-pixel-size').value = config.borderSize;
         }
         if (config.outlineColor !== undefined) {
             outlineSelect.value = config.outlineColor;
@@ -286,7 +286,7 @@ class GE_UIManager {
             fps: parseInt(document.getElementById('iso-fps').value) || 4,
             brightness: parseFloat(document.getElementById('iso-brightness').value) || 2.5,
             palette: document.getElementById('iso-palette').value || '',
-            pixelSize: parseInt(document.getElementById('iso-pixel-size').value) || 1,
+            borderSize: parseInt(document.getElementById('iso-pixel-size').value) || 1,
             outlineColor: document.getElementById('iso-outline').value || '',
             outlineConnectivity: parseInt(document.getElementById('iso-outline-connectivity').value) || 8,
             cameraHeight: parseFloat(document.getElementById('iso-camera-height').value) || 1.5

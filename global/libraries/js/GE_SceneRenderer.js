@@ -76,7 +76,7 @@ class GE_SceneRenderer {
     }
 
     // Apply outline to sprite
-    applyOutlineToCanvas(canvas, outlineColorHex, position = 'outset', connectivity = 8, pixelSize = 1) {
+    applyOutlineToCanvas(canvas, outlineColorHex, position = 'outset', connectivity = 8, borderSize = 1) {
         const ctx = canvas.getContext('2d');
         const width = canvas.width;
         const height = canvas.height;
@@ -104,11 +104,11 @@ class GE_SceneRenderer {
             ? [[-1, 0], [1, 0], [0, -1], [0, 1]]
             : [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
 
-        // Expand neighbor offsets based on pixel size to create thicker outlines
+        // Expand neighbor offsets based on border size to create thicker outlines
         const neighborOffsets = [];
         for (const [baseX, baseY] of baseOffsets) {
-            for (let i = 0; i < pixelSize; i++) {
-                // Scale the offset by pixel size
+            for (let i = 0; i < borderSize; i++) {
+                // Scale the offset by border size
                 const scale = i + 1;
                 neighborOffsets.push([baseX * scale, baseY * scale]);
             }
@@ -163,24 +163,6 @@ class GE_SceneRenderer {
         ctx.putImageData(imageData, 0, 0);
     }
 
-    // Setup THREE.RenderPixelatedPass for sprite rendering (uses same library as game)
-    setupPixelatedComposer(renderer, scene, camera, pixelSize, size) {
-        if (pixelSize <= 1) return null;
-
-        // Create EffectComposer - let it create its own render targets
-        const composer = new GUTS.EffectComposer(renderer);
-
-        // Add the pixelated render pass (same as game uses)
-        const pixelPass = new GUTS.RenderPixelatedPass(pixelSize, scene, camera);
-        pixelPass.normalEdgeStrength = 0;
-        composer.addPass(pixelPass);
-
-        // Add output pass
-        const outputPass = new GUTS.OutputPass();
-        composer.addPass(outputPass);
-
-        return composer;
-    }
     initEventListeners() {
         document.body.addEventListener('renderGraphicsObject', this.handleRenderObject.bind(this));
         document.body.addEventListener('resizedEditor', () => {             
@@ -380,8 +362,8 @@ class GE_SceneRenderer {
             }
         }
 
-        // Get pixel size for pixelation effect
-        const pixelSize = parseInt(document.getElementById('iso-pixel-size').value) || 1;
+        // Get border size for outline thickness
+        const borderSize = parseInt(document.getElementById('iso-pixel-size').value) || 1;
 
         // Get outline options
         const outlineColor = document.getElementById('iso-outline').value || '';
@@ -520,23 +502,11 @@ class GE_SceneRenderer {
             sprites['idle'] = [[]];
 
             for (const camera of cameras) {
-                const composer = this.setupPixelatedComposer(tempRenderer, scene, camera, pixelSize, size);
-
                 const buffer = new Uint8Array(size * size * 4);
-                if (composer) {
-                    tempRenderer.setSize(size, size);
-                    composer.setSize(size, size);
-                    tempRenderer.setRenderTarget(null);
-                    composer.render();
-
-                    const gl = tempRenderer.getContext();
-                    gl.readPixels(0, 0, size, size, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
-                } else {
-                    tempRenderer.setRenderTarget(renderTarget);
-                    tempRenderer.render(scene, camera);
-                    tempRenderer.setRenderTarget(null);
-                    tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
-                }
+                tempRenderer.setRenderTarget(renderTarget);
+                tempRenderer.render(scene, camera);
+                tempRenderer.setRenderTarget(null);
+                tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
 
                 const flippedBuffer = new Uint8Array(size * size * 4);
                 for (let y = 0; y < size; y++) {
@@ -559,7 +529,7 @@ class GE_SceneRenderer {
 
                 // Apply outline if selected
                 if (outlineColor && outlineColor !== '') {
-                    this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, pixelSize);
+                    this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
                 }
 
                 sprites['idle'][0].push(canvas.toDataURL('image/png'));
@@ -639,29 +609,11 @@ class GE_SceneRenderer {
                                 // Render from all camera angles
                                 const frameSprites = [];
                                 for (const camera of cameras) {
-                                    // Setup composer with pixelation pass if needed
-                                    const composer = this.setupPixelatedComposer(tempRenderer, scene, camera, pixelSize, size);
-
-                                        const buffer = new Uint8Array(size * size * 4);
-                                    if (composer) {
-                                        // Use composer for pixelated rendering
-                                        // Render to screen (null) then read from canvas
-                                        tempRenderer.setSize(size, size); // Ensure renderer size is correct
-                                        composer.setSize(size, size);
-                                        tempRenderer.setRenderTarget(null);
-                                        composer.render();
-
-                                        // Read directly from the WebGL canvas
-                                        const gl = tempRenderer.getContext();
-                                        gl.readPixels(0, 0, size, size, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
-                                    } else {
-                                        // Normal rendering without pixelation
-                                        tempRenderer.setRenderTarget(renderTarget);
-                                        tempRenderer.render(scene, camera);
-                                        tempRenderer.setRenderTarget(null);
-                                        // Read from render target
-                                        tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
-                                    }
+                                    const buffer = new Uint8Array(size * size * 4);
+                                    tempRenderer.setRenderTarget(renderTarget);
+                                    tempRenderer.render(scene, camera);
+                                    tempRenderer.setRenderTarget(null);
+                                    tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
 
                                     const flippedBuffer = new Uint8Array(size * size * 4);
                                     for (let y = 0; y < size; y++) {
@@ -687,7 +639,7 @@ class GE_SceneRenderer {
 
                                     // Apply outline if selected
                                     if (outlineColor && outlineColor !== '') {
-                                        this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, pixelSize);
+                                        this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
                                     }
 
                                     frameSprites.push(canvas.toDataURL());

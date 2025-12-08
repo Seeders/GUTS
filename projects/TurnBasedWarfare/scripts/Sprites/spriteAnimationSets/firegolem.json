@@ -53,15 +53,15 @@
     "firegolemCelebrateDownRight"
   ],
   "generatorSettings": {
-    "frustumSize": 48,
+    "frustumSize": 96,
     "cameraDistance": 100,
-    "spriteSize": 64,
+    "spriteSize": 128,
     "fps": 4,
     "brightness": 10,
-    "palette": "",
-    "pixelSize": 1,
-    "outlineColor": "",
+    "palette": "main",
+    "outlineColor": "#170F13",
     "outlineConnectivity": 4,
-    "cameraHeight": 1.5
+    "cameraHeight": 1,
+    "borderSize": 1
   }
 }

@@ -59,9 +59,9 @@
     "fps": 4,
     "brightness": 10,
     "palette": "main",
-    "pixelSize": 1,
-    "outlineColor": "#25131a",
+    "outlineColor": "#170F13",
     "outlineConnectivity": 4,
-    "cameraHeight": 1
+    "cameraHeight": 1,
+    "borderSize": 1
   }
 }
