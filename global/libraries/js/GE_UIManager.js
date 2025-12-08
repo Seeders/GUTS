@@ -88,8 +88,26 @@ class GE_UIManager {
         const modal = document.getElementById('modal-generateIsoSprites');
         modal.classList.add('show');
 
-        // Load saved config settings
-        const config = this.graphicsEditor.gameEditor.getCollections()?.configs?.spriteGeneration || {};
+        // Check if current object has an animation set with saved generator settings
+        const currentObject = this.graphicsEditor.gameEditor.getCurrentObject();
+        const animationSetName = currentObject?.spriteAnimationSet;
+        const collections = this.graphicsEditor.gameEditor.getCollections();
+        const animationSet = animationSetName ? collections?.spriteAnimationSets?.[animationSetName] : null;
+
+        // Use saved generator settings from animation set if available, otherwise use defaults
+        const savedSettings = animationSet?.generatorSettings || {};
+        const config = {
+            frustumSize: savedSettings.frustumSize ?? 48,
+            distance: savedSettings.cameraDistance ?? 100,
+            spriteSize: savedSettings.spriteSize ?? 64,
+            animationFPS: savedSettings.fps ?? 4,
+            brightness: savedSettings.brightness ?? 2.5,
+            palette: savedSettings.palette ?? '',
+            pixelSize: savedSettings.pixelSize ?? 1,
+            outlineColor: savedSettings.outlineColor ?? '',
+            outlineConnectivity: savedSettings.outlineConnectivity ?? 4,
+            cameraHeight: savedSettings.cameraHeight ?? 1.5
+        };
 
         // Populate palette dropdown
         const paletteSelect = document.getElementById('iso-palette');
@@ -161,6 +179,9 @@ class GE_UIManager {
         }
         if (config.outlineConnectivity !== undefined) {
             document.getElementById('iso-outline-connectivity').value = config.outlineConnectivity;
+        }
+        if (config.cameraHeight !== undefined) {
+            document.getElementById('iso-camera-height').value = config.cameraHeight;
         }
 
         // Setup save button (disabled initially, enabled after generation)
@@ -257,8 +278,19 @@ class GE_UIManager {
             animTypeIndex++;
         }
 
-        // Get the FPS setting used for generation
-        const animationFPS = parseInt(document.getElementById('iso-fps').value) || 4;
+        // Get the generation settings used
+        const generatorSettings = {
+            frustumSize: parseFloat(document.getElementById('iso-frustum').value) || 48,
+            cameraDistance: parseFloat(document.getElementById('iso-distance').value) || 100,
+            spriteSize: parseFloat(document.getElementById('iso-size').value) || 64,
+            fps: parseInt(document.getElementById('iso-fps').value) || 4,
+            brightness: parseFloat(document.getElementById('iso-brightness').value) || 2.5,
+            palette: document.getElementById('iso-palette').value || '',
+            pixelSize: parseInt(document.getElementById('iso-pixel-size').value) || 1,
+            outlineColor: document.getElementById('iso-outline').value || '',
+            outlineConnectivity: parseInt(document.getElementById('iso-outline-connectivity').value) || 8,
+            cameraHeight: parseFloat(document.getElementById('iso-camera-height').value) || 1.5
+        };
 
         try {
             // Send single sprite sheet and metadata to server
@@ -272,7 +304,8 @@ class GE_UIManager {
                     spriteSheet: canvas.toDataURL(),
                     spriteMetadata,
                     directionNames,
-                    animationFPS
+                    animationFPS: generatorSettings.fps,
+                    generatorSettings
                 })
             });
 
@@ -346,8 +379,8 @@ class GE_UIManager {
 
                 const grid = document.createElement('div');
                 grid.style.cssText = `
-                    display: grid;
-                    grid-template-columns: repeat(${Math.min(sprites[animType].length, 8)}, 1fr);
+                    display: flex;
+                    flex-wrap: wrap;
                     gap: 5px;
                     margin-bottom: 15px;
                 `;
@@ -356,7 +389,7 @@ class GE_UIManager {
                 sprites[animType].forEach(frame => {
                     const img = document.createElement('img');
                     img.src = frame[angle]; // Get the specific angle's sprite
-                    img.style.maxWidth = '100%';
+                    img.style.imageRendering = 'pixelated';
                     grid.appendChild(img);
                 });
 

@@ -8,6 +8,7 @@
 const webpack = require('webpack');
 const path = require('path');
 const fs = require('fs');
+const { copyResources } = require('./copy-resources');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -67,6 +68,9 @@ console.log(`
 ║  Watch:   ${(watch ? 'Enabled' : 'Disabled').padEnd(47)}║
 ╚═══════════════════════════════════════════════════════════╝
 `);
+
+// Copy resources before webpack build
+copyResources(projectName, false);
 
 // Load webpack config
 const webpackConfig = require('../webpack.config.js');

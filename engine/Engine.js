@@ -104,7 +104,11 @@ class Engine extends BaseEngine {
         const deltaTime = (now - this.lastTick) / 1000;
         this.lastTick = now;
 
-        this.accumulator += deltaTime;
+        // Only accumulate time during battle phase to prevent catchup after placement
+        const phase = this.gameInstance?.state?.phase;
+        if (phase === 'battle') {
+            this.accumulator += deltaTime;
+        }
 
         // Process ticks, but limit per frame to catch up gradually
         // This prevents lag spikes while maintaining sync
@@ -117,10 +121,23 @@ class Engine extends BaseEngine {
             ticksProcessed++;
         }
 
+        // During non-battle phases, still tick once per frame for UI updates
+        if (phase !== 'battle' && this.accumulator < this.tickRate) {
+            await this.tick();
+        }
+
         // Schedule next frame using requestAnimationFrame when tab is active
         if (this.useRAF) {
             this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
         }
+    }
+
+    /**
+     * Reset the accumulator to prevent catchup after sync
+     */
+    resetAccumulator() {
+        this.accumulator = 0;
+        this.lastTick = this.getCurrentTime();
     }
 
     handleVisibilityChange() {

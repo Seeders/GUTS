@@ -531,7 +531,7 @@ app.post('/api/save-texture', async (req, res) => {
 // Save isometric sprites with all data files
 app.post('/api/save-isometric-sprites', async (req, res) => {
     try {
-        const { projectName, baseName, collectionName, spriteSheet, spriteMetadata, directionNames, animationFPS = 4 } = req.body;
+        const { projectName, baseName, collectionName, spriteSheet, spriteMetadata, directionNames, animationFPS = 4, generatorSettings } = req.body;
 
         // Create directories
         const spritesFolder = path.join(PROJS_DIR, projectName, 'resources', 'Sprites', collectionName);
@@ -613,6 +613,11 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
         for (const animType in animationNames) {
             const propertyName = `${animType}SpriteAnimations`;
             animationSetJson[propertyName] = animationNames[animType];
+        }
+
+        // Store generator settings for future reference/regeneration
+        if (generatorSettings) {
+            animationSetJson.generatorSettings = generatorSettings;
         }
 
         await fs.writeFile(

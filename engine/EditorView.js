@@ -171,7 +171,7 @@ class EditorView {
       } else if (typeof value === 'boolean') {
           this.appendBooleanSelect(propertyItem, value);
       } else if (matchingModuleType) {
-          this.appendModuleTypeInput(propertyItem, key, value, matchingModuleType);
+          this.appendModuleTypeInput(propertyItem, key, value, matchingModuleType, matchingTypeSingular, matchingTypePlural);
       } else if (matchingTypeSingular) {
           this.appendSingularTypeSelect(propertyItem, value, matchingTypeSingular, matchingTypePlural);
       } else if (matchingTypePlural) {
@@ -306,40 +306,72 @@ class EditorView {
         propertyItem.appendChild(valueContainer);
     }
     
-    appendModuleTypeInput(propertyItem, key, value, matchingModuleType) {
+    appendModuleTypeInput(propertyItem, key, value, matchingModuleType, matchingTypeSingular, matchingTypePlural) {
         const valueContainer = this.createValueContainer();
         const moduleInputElementType = matchingModuleType.inputElement || 'input';
         const moduleDataType = matchingModuleType.inputDataType;
-        
-        const valueInput = document.createElement(moduleInputElementType);
-        valueInput.className = 'property-value';
 
-        let processedValue = value;
-        if (moduleDataType === 'json') {
-          processedValue = JSON.stringify(value);
-        } else if (moduleDataType === 'array') {
-          processedValue = JSON.stringify(value);
-        }
-        
-        if (moduleInputElementType === 'textarea') {
-            valueInput.textContent = processedValue;
+        let valueInput;
+
+        // If there's a matching type, use a dropdown select instead of text input
+        if (matchingTypeSingular || matchingTypePlural) {
+            valueInput = document.createElement('select');
+            valueInput.className = 'ref-select property-value';
+
+            const typeId = matchingTypePlural ? matchingTypePlural.id : matchingTypeSingular.id;
+            const typeSingular = matchingTypePlural ? matchingTypePlural.singular : matchingTypeSingular.singular;
+
+            valueInput.innerHTML = `<option value="">-- Select ${typeSingular} --</option>`;
+            this.populateSelectOptions(valueInput, typeId);
+            valueInput.value = value || '';
         } else {
-            valueInput.value = processedValue;
+            valueInput = document.createElement(moduleInputElementType);
+            valueInput.className = 'property-value';
+
+            let processedValue = value;
+            if (moduleDataType === 'json') {
+              processedValue = JSON.stringify(value);
+            } else if (moduleDataType === 'array') {
+              processedValue = JSON.stringify(value);
+            }
+
+            if (moduleInputElementType === 'textarea') {
+                valueInput.textContent = processedValue;
+            } else {
+                valueInput.value = processedValue;
+            }
         }
-        
+
         valueInput.setAttribute('id', `${key}-value`);
         valueContainer.appendChild(valueInput);
         const editButton = document.createElement('button');
         editButton.innerText = "edit";
         editButton.addEventListener('click', () => {
+            // Hide all module containers first
+            Object.values(this.controller.getCollections().editorModules).forEach(module => {
+                const container = document.getElementById(module.container);
+                if (container) {
+                    container.classList.remove('show');
+                }
+            });
+
+            // Show this module's container
+            const moduleContainer = document.getElementById(matchingModuleType.container);
+            if (moduleContainer) {
+                moduleContainer.classList.add('show');
+            }
+
+            // Get current value from the input/select element
+            const currentValue = valueInput.value;
+
             const customEvent = new CustomEvent(matchingModuleType.loadHook, {
-              detail: { data: this.controller.getCurrentObject()[key], propertyName: key, config: this.controller.getCollections().configs.game },
+              detail: { data: currentValue, propertyName: key, config: this.controller.getCollections().configs.game },
               bubbles: true,
               cancelable: true
             });
             document.body.dispatchEvent(customEvent);
         });
-      
+
         valueContainer.appendChild(editButton);
         
         propertyItem.appendChild(valueContainer);
