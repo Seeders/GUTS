@@ -198,6 +198,11 @@ class AnimationSystem extends GUTS.BaseSystem {
      * - When attacking, rotation is set by attack behavior to face target
      */
     updateBillboardAnimationLogic(entityId, animState, velocity) {
+        // Skip projectiles - they don't have walk/idle animations
+        if (this.game.hasComponent(entityId, 'projectile')) {
+            return;
+        }
+
         // Check death state from component (single source of truth)
         if (this.isEntityDead(entityId)) {
             return;

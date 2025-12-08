@@ -500,23 +500,23 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
 
     handleProjectileHit(projectileId, targetId, targetPos, projectile) {
+        const damage = projectile.damage;
+        const elementTypes = this.game.call('getDamageElementTypes');
+        const element = projectile.element || elementTypes.PHYSICAL;
+
+        // Apply damage on both client and server for sync
+        this.game.call('applyDamage', projectile.source, targetId, damage, element, {
+            isProjectile: true,
+            projectileId: projectileId
+        });
+
+        // Visual effects only on client
         if (!this.game.isServer) {
-            const damage = projectile.damage;
-            const elementTypes = this.game.call('getDamageElementTypes');
-            const element = projectile.element || elementTypes.PHYSICAL;
-
-            this.game.call('applyDamage', projectile.source, targetId, damage, element, {
-                isProjectile: true,
-                projectileId: projectileId
+            this.game.call('createParticleEffect', targetPos.x, targetPos.y, targetPos.z, 'magic', {
+                color: this.getElementalEffectColor(element),
+                count: 3
             });
-            if(!this.game.isServer){
-                this.game.call('createParticleEffect', targetPos.x, targetPos.y, targetPos.z, 'magic', {
-                    color: this.getElementalEffectColor(element),
-                    count: 3
-                });
-            }
         }
-
 
         this.destroyProjectile(projectileId);
     }
@@ -538,28 +538,24 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Default explosion behavior for splash damage projectiles
         this.createGroundExplosion(entityId, pos, projectile, groundLevel);
 
-        if (!this.game.isServer) {
-            const splashRadius = projectile.splashRadius || 80;
-            const splashDamage = Math.floor(projectile.damage);
-            const elementTypes = this.game.call('getDamageElementTypes');
-            const element = projectile.element || elementTypes.PHYSICAL;
+        const splashRadius = projectile.splashRadius || 80;
+        const splashDamage = Math.floor(projectile.damage);
+        const elementTypes = this.game.call('getDamageElementTypes');
+        const element = projectile.element || elementTypes.PHYSICAL;
 
-            const results = this.game.call('applySplashDamage',
-                projectile.source,
-                pos,
-                splashDamage,
-                element,
-                splashRadius,
-                {
-                    isBallistic: true,
-                    projectileId: entityId,
-                    allowFriendlyFire: false
-                }
-            );
-
-            // With behavior tree system, units naturally respond to threats through
-            // enemy detection in their behavior tree evaluation - no need for manual retaliation
-        }
+        // Apply splash damage on both client and server for sync
+        this.game.call('applySplashDamage',
+            projectile.source,
+            pos,
+            splashDamage,
+            element,
+            splashRadius,
+            {
+                isBallistic: true,
+                projectileId: entityId,
+                allowFriendlyFire: false
+            }
+        );
 
         this.destroyProjectile(entityId);
     }
