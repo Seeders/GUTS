@@ -11,5 +11,17 @@
     "goldmineIdleUpRight",
     "goldmineIdleRight",
     "goldmineIdleDownRight"
-  ]
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 5,
+    "palette": "main",
+    "pixelSize": 1,
+    "outlineColor": "#000000",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2
+  }
 }

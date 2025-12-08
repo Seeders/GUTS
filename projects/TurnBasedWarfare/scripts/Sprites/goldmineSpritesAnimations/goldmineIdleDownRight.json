@@ -3,5 +3,6 @@
   "spriteCollection": "goldmineSprites",
   "sprites": [
     "goldmineIdleDownRight_0"
-  ]
+  ],
+  "fps": 4
 }

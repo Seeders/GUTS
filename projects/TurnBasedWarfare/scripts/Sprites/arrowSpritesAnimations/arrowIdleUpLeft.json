@@ -3,5 +3,6 @@
   "spriteCollection": "arrowSprites",
   "sprites": [
     "arrowIdleUpLeft_0"
-  ]
+  ],
+  "fps": 4
 }

@@ -19,20 +19,7 @@
           "main": {
             "shapes": [
               {
-                "type": "gltf",
                 "url": "animations/dragon_idle.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1",
                 "id": 0
               }
             ]
@@ -66,81 +53,10 @@
       "death": [
         {
           "main": {
+            "loops": false,
             "shapes": [
               {
                 "url": "animations/dragon_death.glb",
-                "id": 0
-              }
-            ]
-          }
-        }
-      ],
-      "glide": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "url": "animations/dragon_glide.glb",
-                "id": 0
-              }
-            ]
-          }
-        }
-      ],
-      "land": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "url": "animations/dragon_land.glb",
-                "id": 0
-              }
-            ]
-          }
-        }
-      ],
-      "takeoff": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "url": "animations/dragon_takeoff.glb",
-                "id": 0
-              }
-            ]
-          }
-        }
-      ],
-      "idle_flying": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "url": "animations/dragon_flying_idle.glb",
-                "id": 0
-              }
-            ]
-          }
-        }
-      ],
-      "attack_flying": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "url": "animations/dragon_flying_attack.glb",
-                "id": 0
-              }
-            ]
-          }
-        }
-      ],
-      "flying": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "url": "animations/dragon_flying.glb",
                 "id": 0
               }
             ]
@@ -160,29 +76,6 @@
         }
       ],
       "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "type": "gltf",
-                "url": "animations/dragon_roar.glb",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1",
-                "id": 0
-              }
-            ]
-          }
-        },
         {
           "main": {
             "shapes": [
@@ -254,7 +147,6 @@
     "FireBallAbility"
   ],
   "spriteAnimationSet": "dragonred",
-  "spriteScale": 256,
   "spriteYOffset": -48,
   "range": 10
 }

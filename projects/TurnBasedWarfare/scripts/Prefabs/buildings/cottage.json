@@ -61,6 +61,5 @@
   "icon": "building_cottage",
   "hp": 500,
   "supplyProvided": 8,
-  "spriteAnimationSet": "cottage",
-  "spriteScale": 128
+  "spriteAnimationSet": "cottage"
 }

@@ -1,0 +1,18 @@
+{
+  "title": "firegolem Attack Up Left",
+  "spriteCollection": "firegolemSprites",
+  "sprites": [
+    "firegolemAttackUpLeft_0",
+    "firegolemAttackUpLeft_1",
+    "firegolemAttackUpLeft_2",
+    "firegolemAttackUpLeft_3",
+    "firegolemAttackUpLeft_4",
+    "firegolemAttackUpLeft_5",
+    "firegolemAttackUpLeft_6",
+    "firegolemAttackUpLeft_7",
+    "firegolemAttackUpLeft_8",
+    "firegolemAttackUpLeft_9",
+    "firegolemAttackUpLeft_10"
+  ],
+  "fps": 4
+}

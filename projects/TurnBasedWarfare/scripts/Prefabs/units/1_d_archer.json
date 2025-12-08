@@ -88,21 +88,12 @@
                 "url": "animations/death_fallback.glb",
                 "id": 0
               }
-            ]
+            ],
+            "loops": false
           }
         }
       ],
       "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "url": "animations/dance_gangnamstyle.glb",
-                "id": 0
-              }
-            ]
-          }
-        },
         {
           "main": {
             "shapes": [

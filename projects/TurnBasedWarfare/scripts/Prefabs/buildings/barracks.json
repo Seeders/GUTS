@@ -76,6 +76,5 @@
   "icon": "building_barracks",
   "hp": 1500,
   "supplies": 7,
-  "spriteAnimationSet": "barracks",
-  "spriteScale": 128
+  "spriteAnimationSet": "barracks"
 }

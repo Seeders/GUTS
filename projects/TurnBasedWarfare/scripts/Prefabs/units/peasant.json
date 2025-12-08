@@ -9,7 +9,6 @@
   "attackSpeed": 1,
   "element": "physical",
   "armor": 8,
-  "spriteScale": 64,
   "buyable": true,
   "specUnits": [],
   "squadWidth": 1,
@@ -80,21 +79,12 @@
                 "url": "animations/death_fallback.glb",
                 "id": 0
               }
-            ]
+            ],
+            "loops": false
           }
         }
       ],
       "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "url": "animations/dance_gangnamstyle.glb",
-                "id": 0
-              }
-            ]
-          }
-        },
         {
           "main": {
             "shapes": [

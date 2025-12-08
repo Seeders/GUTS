@@ -3,5 +3,6 @@
   "spriteCollection": "magetowerSprites",
   "sprites": [
     "magetowerIdleDown_0"
-  ]
+  ],
+  "fps": 4
 }

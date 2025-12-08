@@ -450,11 +450,18 @@ class EntityRenderer {
         // Force matrix world update so billboards render correctly from the start
         instancedMesh.updateMatrixWorld(true);
 
+        // Ensure texture dimensions are captured (texture should be loaded by now)
+        const textureWidth = spriteSheetTexture.image?.width || spriteSheetTexture.source?.data?.width || 0;
+        const textureHeight = spriteSheetTexture.image?.height || spriteSheetTexture.source?.data?.height || 0;
+        if (!textureWidth || !textureHeight) {
+            console.warn(`[EntityRenderer] Could not get sprite sheet dimensions for ${batchKey}`);
+        }
+
         const batch = {
             instancedMesh,
             spriteSheetTexture,
-            textureWidth: spriteSheetTexture.image?.width || 0,
-            textureHeight: spriteSheetTexture.image?.height || 0,
+            textureWidth,
+            textureHeight,
             entityMap: new Map(),
             count: 0,
             capacity,
@@ -509,7 +516,7 @@ class EntityRenderer {
 
             // Load sprite metadata (coordinates only)
             const frames = [];
-            const spriteCollection = animDef.collection || 'sprites';
+            const spriteCollection = animDef.spriteCollection || 'sprites';
 
             for (const spriteName of animDef.sprites) {
                 const spriteDef = this.collections?.[spriteCollection]?.[spriteName];
@@ -610,7 +617,7 @@ class EntityRenderer {
         }
 
         // Get spriteAnimationCollection for AnimationSystem callback
-        const spriteAnimationCollection = animSet.collection || 'spriteAnimations';
+        const spriteAnimationCollection = animSet.animationCollection || 'spriteAnimations';
 
         // Get free instance slot
         let instanceIndex = -1;
@@ -1080,10 +1087,17 @@ class EntityRenderer {
         const batch = entity.batch;
         if (!batch || !batch.instancedMesh) return false;
 
-        // Get sprite scale from the entity definition (default 64)
+        // Get sprite scale from animation set's generatorSettings
         const collections = this.collections;
         const entityDef = collections?.[entity.collection]?.[entity.entityType];
-        const spriteScale = entityDef?.spriteScale || 64;
+
+        // Get animation state to access sprite animation set
+        const animState = this.game.call('getBillboardAnimationState', entityId);
+        const animSetName = animState?.spriteAnimationSet;
+        const animSetData = animSetName ? collections?.spriteAnimationSets?.[animSetName] : null;
+
+        // Get spriteSize from animation set's generatorSettings, fallback to entity's spriteScale, then default 64
+        const spriteScale = animSetData?.generatorSettings?.spriteSize || entityDef?.spriteScale || 64;
         const heightOffset = (spriteScale / 2);
         const spriteOffset = entityDef.spriteOffset || (-heightOffset / 4);
         // spriteYOffset allows adjusting vertical position when sprite feet aren't at bottom of frame
@@ -1092,8 +1106,7 @@ class EntityRenderer {
         // Calculate dimensions based on texture aspect ratio
         let aspectRatio = 1;
 
-        // Try to get aspect ratio from AnimationSystem first
-        const animState = this.game.call('getBillboardAnimationState', entityId);
+        // Try to get aspect ratio from animation state
         if (animState?.animations) {
             const initialAnim = animState.animations.idle || animState.animations.walk || Object.values(animState.animations)[0];
             const initialFrame = initialAnim?.down?.frames?.[0] || initialAnim?.[Object.keys(initialAnim)[0]]?.frames?.[0];
@@ -1201,8 +1214,19 @@ class EntityRenderer {
 
         if (batch && batch.spriteSheetTexture && frame.x !== undefined) {
             // Normalize pixel coordinates to UV space
-            const sheetWidth = batch.spriteSheetTexture.image.width;
-            const sheetHeight = batch.spriteSheetTexture.image.height;
+            // Use cached dimensions if available, otherwise read from image
+            const sheetWidth = batch.textureWidth || batch.spriteSheetTexture.image?.width;
+            const sheetHeight = batch.textureHeight || batch.spriteSheetTexture.image?.height;
+
+            if (!sheetWidth || !sheetHeight) {
+                console.warn(`[EntityRenderer] Sprite sheet dimensions not available for entity ${entityId}`);
+                return;
+            }
+
+            // Debug: Log UV calculation once per batch
+            if (!batch._debugLogged) {
+                batch._debugLogged = true;
+            }
 
             const offsetX = frame.x / sheetWidth;
             const offsetY = frame.y / sheetHeight;

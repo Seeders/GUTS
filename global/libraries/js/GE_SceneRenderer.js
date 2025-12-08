@@ -597,6 +597,9 @@ class GE_SceneRenderer {
                                     // Apply animation to the existing character
                                     characterMixer.stopAllAction();
                                     const action = characterMixer.clipAction(clip);
+                                    // Set to clamp mode so it doesn't loop back to start
+                                    action.setLoop(THREE.LoopOnce);
+                                    action.clampWhenFinished = true;
                                     action.play();
                                     resolve(clip);
                                 } else {
@@ -608,13 +611,23 @@ class GE_SceneRenderer {
                         // Generate multiple sprite frames by advancing through the animation
                         if (animationClip) {
                             const animDuration = animationClip.duration;
+                            // Check if this animation should loop (default true, unless loops: false on the first group)
+                            const firstGroupKey = Object.keys(frame || {})[0];
+                            const firstGroup = firstGroupKey ? frame[firstGroupKey] : null;
+                            const animationLoops = firstGroup?.loops !== false;
                             // Calculate frame count based on FPS and animation duration
-                            // Add 1 to include both first and last frame of animation
-                            const framesForThisAnim = Math.max(2, Math.ceil(animDuration * animationFPS) + 1);
-                            // Distribute frames evenly so first frame is at t=0 and last frame is at t=duration
-                            const timeStep = animDuration / (framesForThisAnim - 1);
+                            // For non-looping animations (loops: false), add 1 to ensure the final frame is captured
+                            // For looping animations, don't add extra frame since first and last would be identical
+                            const baseFrameCount = Math.ceil(animDuration * animationFPS);
+                            const framesForThisAnim = animationLoops
+                                ? Math.max(2, baseFrameCount)  // Looping: don't add extra frame
+                                : Math.max(2, baseFrameCount + 1);  // Non-looping: add extra frame for final pose
+                            // Distribute frames evenly
+                            const timeStep = animationLoops
+                                ? animDuration / framesForThisAnim  // Looping: don't include endpoint
+                                : animDuration / (framesForThisAnim - 1);  // Non-looping: include endpoint
 
-                            console.log(`[SpriteGen] Animation "${animType}": duration=${animDuration.toFixed(2)}s, fps=${animationFPS}, frames=${framesForThisAnim}`);
+                            console.log(`[SpriteGen] Animation "${animType}": duration=${animDuration.toFixed(2)}s, fps=${animationFPS}, frames=${framesForThisAnim}, loops=${animationLoops}`);
 
                             for (let snapIndex = 0; snapIndex < framesForThisAnim; snapIndex++) {
                                 // Clamp to ensure last frame is exactly at animation end

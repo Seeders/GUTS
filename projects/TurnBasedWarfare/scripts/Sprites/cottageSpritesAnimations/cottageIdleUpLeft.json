@@ -3,5 +3,6 @@
   "spriteCollection": "cottageSprites",
   "sprites": [
     "cottageIdleUpLeft_0"
-  ]
+  ],
+  "fps": 4
 }

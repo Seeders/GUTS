@@ -549,6 +549,12 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         this.game.state.round += 1;
         // Transition back to placement phase
         this.game.state.phase = 'placement';
+
+        // Reset the engine's accumulator to prevent catchup after sync
+        if (this.game.app?.resetAccumulator) {
+            this.game.app.resetAccumulator();
+        }
+
         this.game.triggerEvent('onPlacementPhaseStart');
     }
 

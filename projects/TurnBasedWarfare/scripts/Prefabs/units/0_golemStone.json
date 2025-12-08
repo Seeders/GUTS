@@ -71,21 +71,12 @@
                 "url": "animations/death_fallback.glb",
                 "id": 0
               }
-            ]
+            ],
+            "loops": false
           }
         }
       ],
       "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "url": "animations/dance_gangnamstyle.glb",
-                "id": 0
-              }
-            ]
-          }
-        },
         {
           "main": {
             "shapes": [
@@ -144,5 +135,6 @@
   ],
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "icon": "unit_stoneGolem"
+  "icon": "unit_stoneGolem",
+  "spriteAnimationSet": "stonegolem"
 }

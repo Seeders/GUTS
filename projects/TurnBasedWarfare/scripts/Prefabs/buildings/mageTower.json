@@ -67,6 +67,5 @@
   "size": 50,
   "icon": "building_mageTower",
   "hp": 1500,
-  "spriteAnimationSet": "magetower",
-  "spriteScale": 128
+  "spriteAnimationSet": "magetower"
 }

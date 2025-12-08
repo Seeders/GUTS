@@ -97,7 +97,8 @@
                 "url": "animations/death_fallback.glb",
                 "id": 0
               }
-            ]
+            ],
+            "loops": false
           }
         }
       ],

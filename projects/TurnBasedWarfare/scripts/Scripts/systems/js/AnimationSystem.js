@@ -816,7 +816,6 @@ class AnimationSystem extends GUTS.BaseSystem {
             if (!directionData || !directionData.frames || directionData.frames.length === 0) continue;
 
             const frames = directionData.frames;
-
             // For non-looping animations, check if already finished (past the last frame)
             if (!animState.loopAnimation && animState.frameIndex >= frames.length) {
                 continue;
@@ -825,25 +824,21 @@ class AnimationSystem extends GUTS.BaseSystem {
             // Update frame time
             animState.frameTime += this.game.state.deltaTime;
 
-            // Calculate frame duration
-            let frameDuration;
-            if (animState.customDuration !== null && animState.customDuration > 0) {
-                // Use custom duration override (e.g., for leap slam to pace animation to ability duration)
-                frameDuration = animState.customDuration / frames.length;
-            } else if (directionData.duration !== null && directionData.duration > 0) {
-                frameDuration = directionData.duration / frames.length;
-            } else if (directionData.fps !== null && directionData.fps > 0) {
-                // Use fps from animation definition (set during sprite generation)
-                frameDuration = 1 / directionData.fps;
-            } else {
-                const frameRate = frameRates[animState.currentAnimationType] || defaultFrameRate;
-                frameDuration = 1 / frameRate;
-            }
+            // Calculate frame duration based on fps from animation set
+            const fps = animState.fps || frameRates[animState.currentAnimationType] || defaultFrameRate;
+            let frameDuration = 1 / fps;
 
-            // Check if it's time to advance frame
-            if (animState.frameTime >= frameDuration) {
-                animState.frameTime = 0;
+            // Override with custom duration if set (e.g., for abilities that need specific timing)
+            if (animState.customDuration !== null && animState.customDuration > 0) {
+                frameDuration = animState.customDuration / frames.length;
+            }
+            // Advance frames based on elapsed time (handles lag/large deltaTime correctly)
+            let frameChanged = false;
+            const oldFrameIndex = animState.frameIndex;
+            while (animState.frameTime >= frameDuration) {
+                animState.frameTime -= frameDuration;
                 animState.frameIndex++;
+                frameChanged = true;
 
                 // Handle animation completion
                 if (animState.frameIndex >= frames.length) {
@@ -851,6 +846,7 @@ class AnimationSystem extends GUTS.BaseSystem {
                         animState.frameIndex = 0;
                     } else {
                         animState.frameIndex = frames.length - 1;
+                        animState.frameTime = 0; // Stop accumulating time
 
                         // Call completion callback if set
                         if (animState.onAnimationComplete) {
@@ -864,10 +860,12 @@ class AnimationSystem extends GUTS.BaseSystem {
                                 this.game.call('setBillboardAnimation', entityId, 'idle', true);
                             }
                         }
+                        break; // Exit loop for non-looping animations
                     }
                 }
-
-                // Tell EntityRenderer to apply new frame
+            }
+            // Tell EntityRenderer to apply new frame if it changed
+            if (frameChanged) {
                 entityRenderer.applyBillboardAnimationFrame(entityId, animState);
             }
         }
@@ -916,10 +914,14 @@ class AnimationSystem extends GUTS.BaseSystem {
             initialDirection = team?.id === 'left' ? 'upright' : 'downleft';
         }
 
+        // Get fps from animation set's generator settings
+        const animationFps = animSetData.generatorSettings?.fps || null;
+
         // Add billboardAnimation component to entity
         this.game.addComponent(entityId, 'billboardAnimation', {
             spriteAnimationSet,
             animations,
+            fps: animationFps,
             currentAnimationType: null,
             currentDirection: initialDirection,
             frameIndex: 0,
@@ -982,8 +984,7 @@ class AnimationSystem extends GUTS.BaseSystem {
                     }).filter(f => f !== null);
 
                     result[direction] = {
-                        frames,
-                        duration: animData.duration || null
+                        frames
                     };
                 }
             }

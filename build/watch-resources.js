@@ -107,34 +107,9 @@ function deleteFile(sourcePath) {
     }
 }
 
-/**
- * Initial copy of all existing files
- */
-function initialCopy() {
-    console.log('\n📦 Performing initial copy of resources...\n');
-
-    function copyRecursive(src) {
-        if (!fs.existsSync(src)) return;
-
-        const entries = fs.readdirSync(src, { withFileTypes: true });
-
-        for (const entry of entries) {
-            const srcPath = path.join(src, entry.name);
-
-            if (entry.isDirectory()) {
-                copyRecursive(srcPath);
-            } else if (entry.isFile()) {
-                copyFile(srcPath);
-            }
-        }
-    }
-
-    copyRecursive(resourcesSource);
-    console.log('\n✅ Initial copy complete\n');
-}
-
-// Perform initial copy
-initialCopy();
+// Use shared copy-resources for initial copy
+const { copyResources } = require('./copy-resources');
+copyResources(projectName, true);
 
 // Watch for changes
 const watcher = chokidar.watch(resourcesSource, {

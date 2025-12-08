@@ -3,5 +3,6 @@
   "spriteCollection": "townhallSprites",
   "sprites": [
     "townhallIdleUpRight_0"
-  ]
+  ],
+  "fps": 4
 }

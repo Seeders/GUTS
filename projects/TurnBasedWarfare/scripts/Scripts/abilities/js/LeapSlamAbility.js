@@ -128,8 +128,8 @@ class LeapSlamAbility extends GUTS.BaseAbility {
 
         if (!pos || !velocity) return;
 
-        // Get gravity from MovementSystem (single source of truth)
-        const gravity = this.game.movementSystem?.GRAVITY || 200;
+        // Get gravity from MovementSystem
+        const gravity = this.game.movementSystem.GRAVITY;
 
         // Calculate leap duration from desired height: t = 2 * sqrt(2h/g)
         const leapDuration = 2 * Math.sqrt((2 * this.leapHeight) / gravity);
@@ -143,9 +143,6 @@ class LeapSlamAbility extends GUTS.BaseAbility {
 
         // Calculate initial upward velocity for parabolic arc: vy0 = sqrt(2 * g * h)
         velocity.vy = Math.sqrt(2 * gravity * this.leapHeight);
-
-        // Store leap duration for scheduling
-        this.currentLeapDuration = leapDuration;
 
         // Store landing info for damage on complete
         this.leapingEntities = this.leapingEntities || new Map();

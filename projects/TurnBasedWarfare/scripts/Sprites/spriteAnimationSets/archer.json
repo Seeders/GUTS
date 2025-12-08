@@ -51,5 +51,17 @@
     "archerCelebrateUpRight",
     "archerCelebrateRight",
     "archerCelebrateDownRight"
-  ]
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "pixelSize": 1,
+    "outlineColor": "#25131a",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1
+  }
 }

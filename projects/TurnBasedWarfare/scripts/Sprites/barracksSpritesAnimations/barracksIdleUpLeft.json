@@ -3,5 +3,6 @@
   "spriteCollection": "barracksSprites",
   "sprites": [
     "barracksIdleUpLeft_0"
-  ]
+  ],
+  "fps": 4
 }

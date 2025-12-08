@@ -42,66 +42,6 @@
     "dragonredDeathRight",
     "dragonredDeathDownRight"
   ],
-  "glideSpriteAnimations": [
-    "dragonredGlideDown",
-    "dragonredGlideDownLeft",
-    "dragonredGlideLeft",
-    "dragonredGlideUpLeft",
-    "dragonredGlideUp",
-    "dragonredGlideUpRight",
-    "dragonredGlideRight",
-    "dragonredGlideDownRight"
-  ],
-  "landSpriteAnimations": [
-    "dragonredLandDown",
-    "dragonredLandDownLeft",
-    "dragonredLandLeft",
-    "dragonredLandUpLeft",
-    "dragonredLandUp",
-    "dragonredLandUpRight",
-    "dragonredLandRight",
-    "dragonredLandDownRight"
-  ],
-  "takeoffSpriteAnimations": [
-    "dragonredTakeoffDown",
-    "dragonredTakeoffDownLeft",
-    "dragonredTakeoffLeft",
-    "dragonredTakeoffUpLeft",
-    "dragonredTakeoffUp",
-    "dragonredTakeoffUpRight",
-    "dragonredTakeoffRight",
-    "dragonredTakeoffDownRight"
-  ],
-  "idle_flyingSpriteAnimations": [
-    "dragonredIdle_flyingDown",
-    "dragonredIdle_flyingDownLeft",
-    "dragonredIdle_flyingLeft",
-    "dragonredIdle_flyingUpLeft",
-    "dragonredIdle_flyingUp",
-    "dragonredIdle_flyingUpRight",
-    "dragonredIdle_flyingRight",
-    "dragonredIdle_flyingDownRight"
-  ],
-  "attack_flyingSpriteAnimations": [
-    "dragonredAttack_flyingDown",
-    "dragonredAttack_flyingDownLeft",
-    "dragonredAttack_flyingLeft",
-    "dragonredAttack_flyingUpLeft",
-    "dragonredAttack_flyingUp",
-    "dragonredAttack_flyingUpRight",
-    "dragonredAttack_flyingRight",
-    "dragonredAttack_flyingDownRight"
-  ],
-  "flyingSpriteAnimations": [
-    "dragonredFlyingDown",
-    "dragonredFlyingDownLeft",
-    "dragonredFlyingLeft",
-    "dragonredFlyingUpLeft",
-    "dragonredFlyingUp",
-    "dragonredFlyingUpRight",
-    "dragonredFlyingRight",
-    "dragonredFlyingDownRight"
-  ],
   "castSpriteAnimations": [
     "dragonredCastDown",
     "dragonredCastDownLeft",
@@ -121,5 +61,17 @@
     "dragonredCelebrateUpRight",
     "dragonredCelebrateRight",
     "dragonredCelebrateDownRight"
-  ]
+  ],
+  "generatorSettings": {
+    "frustumSize": 1024,
+    "cameraDistance": 350,
+    "spriteSize": 256,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "pixelSize": 1,
+    "outlineColor": "#25131a",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1
+  }
 }

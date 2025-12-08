@@ -3,5 +3,6 @@
   "spriteCollection": "fletchershallSprites",
   "sprites": [
     "fletchershallIdleDownLeft_0"
-  ]
+  ],
+  "fps": 4
 }

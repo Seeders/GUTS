@@ -3,5 +3,6 @@
   "spriteCollection": "underconstructionSprites",
   "sprites": [
     "underconstructionIdleUpLeft_0"
-  ]
+  ],
+  "fps": 4
 }

@@ -1,0 +1,16 @@
+{
+  "title": "firegolem Death Down Left",
+  "spriteCollection": "firegolemSprites",
+  "sprites": [
+    "firegolemDeathDownLeft_0",
+    "firegolemDeathDownLeft_1",
+    "firegolemDeathDownLeft_2",
+    "firegolemDeathDownLeft_3",
+    "firegolemDeathDownLeft_4",
+    "firegolemDeathDownLeft_5",
+    "firegolemDeathDownLeft_6",
+    "firegolemDeathDownLeft_7",
+    "firegolemDeathDownLeft_8"
+  ],
+  "fps": 4
+}

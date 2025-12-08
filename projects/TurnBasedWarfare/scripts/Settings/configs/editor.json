@@ -6,6 +6,7 @@
     "terrainModule",
     "sceneModule",
     "graphicsModule",
+    "spriteAnimationModule",
     "scriptModule",
     "aiPromptModule",
     "audioModule",

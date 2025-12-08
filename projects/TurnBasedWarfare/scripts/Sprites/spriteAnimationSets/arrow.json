@@ -11,5 +11,17 @@
     "arrowIdleUpRight",
     "arrowIdleRight",
     "arrowIdleDownRight"
-  ]
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "pixelSize": 1,
+    "outlineColor": "#000000",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1
+  }
 }
