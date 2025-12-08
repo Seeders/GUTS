@@ -20,7 +20,12 @@
 
         <div class="editor-module__section">
             <h3 class="editor-module__section-title">Colors</h3>
+            <div class="editor-module__form-row">
+                <select id="palette-switcher" class="editor-module__select"></select>
+            </div>
             <div id="color-palette" class="texture-editor__color-palette"></div>
+            <button id="palettize-btn" class="editor-module__btn">Palettize</button>
+            <button id="extract-colors-btn" class="editor-module__btn">Extract Colors</button>
             <div class="editor-module__form-row">
                 <input type="color" id="custom-color-picker" class="editor-module__color-picker" value="#000000">
                 <label for="custom-color-picker" class="editor-module__label">Custom Color</label>

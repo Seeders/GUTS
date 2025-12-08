@@ -6,7 +6,7 @@
     "ScreenSystem",
     "GameModeSystem",
     "InputSystem",
-    "MultiplayerUISystem",
+    "LobbyUISystem",
     "MultiplayerNetworkSystem"
   ],
   "entities": []

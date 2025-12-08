@@ -179,7 +179,7 @@ class ShopSystem extends GUTS.BaseSystem {
         building.units.forEach(unitId => {
             const unit = UnitTypes[unitId];
             const buildTime = unit.buildTime || 1;
-            const canAfford = this.game.state.playerGold >= unit.value;
+            const canAfford = this.game.call('canAffordCost', unit.value);
             const hasCapacity = buildTime <= remainingCapacity + 0.001;
             
             const hasSupply = !this.game.supplySystem || this.game.supplySystem.canAffordSupply(this.game.state.mySide, unit);
@@ -230,7 +230,7 @@ class ShopSystem extends GUTS.BaseSystem {
             if (!upgrade) return;
 
             const isOwned = purchasedUpgrades.has(upgradeId);
-            const locked = isOwned || this.game.state.playerGold < upgrade.value;
+            const locked = isOwned || !this.game.call('canAffordCost', upgrade.value);
 
             const btn = this.createActionButton({
                 icon: upgrade.icon || '⭐',
@@ -295,12 +295,12 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     isBuildingLocked(buildingId, building) {
-        return this.game.state.playerGold < building.value ||
+        return !this.game.call('canAffordCost', building.value) ||
                (building.requires && !this.hasRequirements(building.requires));
     }
 
     getLockReason(buildingId, building) {
-        if (this.game.state.playerGold < building.value) return "Can't afford";
+        if (!this.game.call('canAffordCost', building.value)) return "Can't afford";
         if (building.requires && !this.hasRequirements(building.requires)) {
             return 'Missing requirements';
         }
@@ -459,7 +459,7 @@ class ShopSystem extends GUTS.BaseSystem {
                     this.buildingUpgrades.set(this.game.state.selectedEntity.entityId, new Set());
                 }
                 this.buildingUpgrades.get(this.game.state.selectedEntity.entityId).add(upgradeId);
-                this.game.state.playerGold -= upgrade.value;
+                this.game.call('deductPlayerGold', upgrade.value);
                 this.applyUpgradeEffects(this.game.state.mySide, upgrade);
                 this.showNotification(`${upgrade.title} purchased!`, 'success');
             }
@@ -689,7 +689,7 @@ class ShopSystem extends GUTS.BaseSystem {
         const unitType = this.game.getComponent(buildingEntityId, 'unitType');
         const refundAmount = unitType?.value || 0;
         if (refundAmount > 0) {
-            this.game.state.playerGold += refundAmount;
+            this.game.call('addPlayerGold', this.game.state.mySide, refundAmount);
             this.game.uiSystem?.showNotification(`Refunded ${refundAmount} gold`, 'success', 1500);
         }
 

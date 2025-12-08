@@ -92,7 +92,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                     
                     building.id = buildingId;
                     building.collection = "buildings";
-                    const canAfford = this.game.state.playerGold >= (building.value || 0);
+                    const canAfford = this.game.call('canAffordCost', building.value || 0);
                     const isLocked = this.game.shopSystem?.isBuildingLocked(buildingId, building);
                     const lockReason = this.game.shopSystem?.getLockReason(buildingId, building);
                     

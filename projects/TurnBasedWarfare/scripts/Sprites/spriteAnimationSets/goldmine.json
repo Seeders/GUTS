@@ -17,7 +17,7 @@
     "cameraDistance": 100,
     "spriteSize": 128,
     "fps": 4,
-    "brightness": 5,
+    "brightness": 7.6,
     "palette": "main",
     "pixelSize": 1,
     "outlineColor": "#000000",

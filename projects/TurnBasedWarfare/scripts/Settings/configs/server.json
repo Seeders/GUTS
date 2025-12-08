@@ -35,6 +35,7 @@
     "GameSystem",
     "SaveSystem",
     "ComponentSystem",
+    "PlayerStatsSystem",
     "UnitCreationSystem",
     "SquadSystem",
     "GridSystem",

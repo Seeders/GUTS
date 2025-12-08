@@ -279,12 +279,22 @@ class ServerGameRoom extends global.GUTS.GameRoom {
     cleanupPlayerState(room, playerId) {
         const player = room.players.get(playerId);
         if (!player) return;
-        
+
+        // Destroy the player entity
+        const playerEntityId = room.game.call('getPlayerEntityId', playerId);
+        if (room.game && room.game.entities.has(playerEntityId)) {
+            try {
+                room.game.destroyEntity(playerEntityId);
+            } catch (error) {
+                console.warn(`Error destroying player entity ${playerEntityId}:`, error);
+            }
+        }
+
         // Clear any placement data
         if (room.game && room.game.placementSystem) {
             room.game.placementSystem.clearPlayerPlacements(playerId);
         }
-        
+
         // Clear any battle data
         if (room.game && room.game.battlePhaseSystem) {
             const battleSystem = room.game.battlePhaseSystem;
@@ -295,7 +305,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 battleSystem.battleResults.delete(playerId);
             }
         }
-        
+
         // Clear any entities owned by this player
         if (room.game && room.game.componentSystem) {
             const playerEntities = room.game.getEntitiesWith("playerOwned")
@@ -317,26 +327,21 @@ class ServerGameRoom extends global.GUTS.GameRoom {
     // Override parent's auto-start behavior to add lobby phase
     addPlayer(playerId, playerData) {
         const result = super.addPlayer(playerId, playerData);
-        
+
         if (result.success) {
             // Add multiplayer-specific player properties
             const player = this.players.get(playerId);
             player.ready = false;
             player.placementReady = false;
             player.isHost = playerData.isHost || false;
-            
-            player.stats = {
-                health: this.game.state.teamMaxHealth,                
-                gold: this.game.state.startingGold,
-                side: playerData.isHost ? 'left' : 'right',
-                upgrades: []
-            };
+            player.side = playerData.isHost ? 'left' : 'right';
+
             // If room is full, enter lobby phase (don't auto-start like parent does)
             if (this.players.size === this.maxPlayers && this.game.state.phase === 'waiting') {
                 this.enterLobbyPhase();
             }
         }
-        
+
         return result;
     }
 
@@ -421,18 +426,6 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 this.game.state.round = savedState.round;
             }
 
-            // Restore player stats from saved state
-            for (const [playerId, player] of this.players) {
-                const side = player.stats.side;
-                // Look for saved stats matching this side
-                if (savedState.playerGold !== undefined) {
-                    player.stats.gold = savedState.playerGold;
-                }
-                if (savedState.playerHealth !== undefined) {
-                    player.stats.health = savedState.playerHealth;
-                }
-            }
-
             // Set pendingSaveData on game object so SceneManager loads saved entities
             this.game.pendingSaveData = this.pendingSaveData;
 
@@ -446,15 +439,21 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         // If pendingSaveData is set, SceneManager will load saved entities instead of scene entities
         super.startGame();
 
+        // Create player entities now that the game scene is loaded
+        this.createPlayerEntities();
+
         // Log after scene load to verify entities were created
         const entityCount = this.game.entities?.size || 0;
         console.log(`[ServerGameRoom] After startGame. Total entities on server: ${entityCount}`);
 
-        // Broadcast game started with level info and save data flag
+        // Broadcast game started with level info, entity sync, and save data flag
         if (this.serverNetworkManager) {
             let gameState = this.getGameState();
+            // Include entity sync so client can create player entities
+            const entitySync = this.game.serverBattlePhaseSystem?.serializeAllEntities() || {};
             this.serverNetworkManager.broadcastToRoom(this.id, 'GAME_STARTED', {
                 gameState: gameState,
+                entitySync: entitySync,
                 level: level,
                 isLoadingSave: isLoadingSave,
                 saveData: isLoadingSave ? this.pendingSaveData : null
@@ -463,6 +462,23 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
         console.log(`Game started in room ${this.id} with level: ${level}${isLoadingSave ? ' (from save)' : ''}`);
         return true;
+    }
+
+    /**
+     * Create player entities for all players in the room
+     * Called after scene loads so PlayerStatsSystem is available
+     */
+    createPlayerEntities() {
+        for (const [playerId, player] of this.players) {
+            // Create player entity with playerStats component via service
+            this.game.call('createPlayerEntity', playerId, {
+                side: player.side,
+                gold: this.game.state.startingGold,
+                upgrades: []
+            });
+
+            console.log(`[ServerGameRoom] Created player entity for player ${playerId}`);
+        }
     }
 
     // Enhanced game state for multiplayer
@@ -475,14 +491,17 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             // Get minimal placement data for spawning entities
             const placements = this.getPlacementsForPlayer(p.id);
 
+            // Get stats from player entity if it exists (after game starts)
+            const playerStats = this.game.call('getPlayerStats', p.id);
+
             playerData.push({
                 id: p.id,
                 name: p.name,
                 ready: p.ready || false,
                 isHost: p.isHost || false,
                 stats: {
-                    gold: p.stats?.gold,
-                    side: p.stats?.side
+                    gold: playerStats?.gold ?? this.game.state.startingGold,
+                    side: playerStats?.side ?? p.side
                 },
                 placements: placements
             });
@@ -558,23 +577,23 @@ class ServerGameRoom extends global.GUTS.GameRoom {
     }
 
 
-    // NEW METHOD: Reset all remaining players for next game
+    // Reset all remaining players for next game
     resetPlayersForNextGame(room) {
         for (const [playerId, player] of room.players) {
-            // Reset player stats to initial values
-            player.stats = {
-                health: this.game.state.teamMaxHealth,
-                gold: this.game.state.startingGold,
-                side: player.stats.side // Keep their side assignment
-            };
-            
+            // Reset player entity stats
+            const playerStats = room.game.call('getPlayerStats', playerId);
+            if (playerStats) {
+                playerStats.gold = room.game.state.startingGold;
+                playerStats.upgrades = [];
+            }
+
             // Reset ready states
             player.ready = false;
             player.placementReady = false;
-            
-            console.log(`Reset player ${playerId} stats:`, player.stats);
+
+            console.log(`Reset player ${playerId} stats: gold=${playerStats?.gold}`);
         }
-        
+
         // Broadcast updated game state
         this.serverNetworkManager.broadcastToRoom(room.id, 'GAME_STATE_UPDATE', {
             gameState: room.getGameState()

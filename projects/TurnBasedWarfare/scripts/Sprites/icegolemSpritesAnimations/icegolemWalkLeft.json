@@ -1,0 +1,13 @@
+{
+  "title": "icegolem Walk Left",
+  "spriteCollection": "icegolemSprites",
+  "sprites": [
+    "icegolemWalkLeft_0",
+    "icegolemWalkLeft_1",
+    "icegolemWalkLeft_2",
+    "icegolemWalkLeft_3",
+    "icegolemWalkLeft_4",
+    "icegolemWalkLeft_5"
+  ],
+  "fps": 4
+}

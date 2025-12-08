@@ -148,4 +148,144 @@ class BasePlacementSystem extends GUTS.BaseSystem {
         }
         return null;
     }
+
+    /**
+     * Spawn a squad from placement data - shared by both client and server
+     * @param {Object} placement - Placement data with gridPosition, unitType, team, etc.
+     * @param {string} team - Team identifier ('left' or 'right')
+     * @param {string|null} playerId - Optional player ID
+     * @returns {Object} Result with success flag and squad data
+     */
+    spawnSquad(placement, team, playerId = null) {
+        try {
+            const unitType = placement.unitType;
+            if (!unitType) {
+                console.error('[BasePlacementSystem] Missing unitType in placement');
+                return { success: false, error: 'Missing unitType' };
+            }
+
+            const gridPosition = placement.gridPosition;
+            const targetPosition = placement.targetPosition;
+
+            // Get squad configuration
+            const squadData = this.game.squadSystem.getSquadData(unitType);
+            const validation = this.game.squadSystem.validateSquadConfig(squadData);
+
+            if (!validation.valid) {
+                console.log('[BasePlacementSystem] Invalid squad config');
+                return { success: false, error: 'Invalid squad config' };
+            }
+
+            // Calculate unit positions within the squad
+            const unitPositions = this.game.squadSystem.calculateUnitPositions(
+                gridPosition,
+                unitType
+            );
+
+            // Calculate cells occupied by the squad
+            const cells = this.game.squadSystem.getSquadCells(gridPosition, squadData);
+
+            // Generate placement ID if not provided
+            const placementId = placement.placementId || `squad_${team}_${gridPosition.x}_${gridPosition.z}_${this.game.state.round}`;
+
+            // Build placement object with all required data
+            const fullPlacement = {
+                ...placement,
+                placementId,
+                team,
+                playerId
+            };
+
+            const squadUnits = [];
+
+            // Create individual units for the squad
+            for (const pos of unitPositions) {
+                const terrainHeight = this.game.unitCreationSystem.getTerrainHeight(pos.x, pos.z);
+                const unitY = terrainHeight !== null ? terrainHeight : 0;
+
+                const entityId = this.game.unitCreationSystem.create(
+                    pos.x,
+                    unitY,
+                    pos.z,
+                    targetPosition,
+                    fullPlacement,
+                    team,
+                    playerId
+                );
+
+                squadUnits.push(entityId);
+                this.game.call('reserveGridCells', cells, entityId);
+            }
+
+            // Handle gold mine buildings
+            if (unitType.id === 'goldMine') {
+                const footprintWidth = unitType.footprintWidth || unitType.placementGridWidth || 2;
+                const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 2;
+                const gridWidth = footprintWidth * 2;
+                const gridHeight = footprintHeight * 2;
+
+                this.game.call('buildGoldMine',
+                    squadUnits[0],
+                    team,
+                    gridPosition,
+                    gridWidth,
+                    gridHeight
+                );
+            }
+
+            // Initialize squad in experience system
+            this.game.call('initializeSquad', placementId, unitType, squadUnits);
+
+            // Handle peasant/builder assignment for buildings
+            if (placement.peasantInfo && placement.collection === 'buildings') {
+                const peasantInfo = placement.peasantInfo;
+                const peasantId = peasantInfo.peasantId;
+                const buildingEntityId = squadUnits[0];
+
+                const peasantAbilities = this.game.call('getEntityAbilities', peasantId);
+                if (peasantAbilities) {
+                    const buildAbility = peasantAbilities.find(a => a.id === 'build');
+                    if (buildAbility) {
+                        buildAbility.assignToBuild(peasantId, buildingEntityId, peasantInfo);
+                    }
+                }
+
+                this.game.state.peasantBuildingPlacement = null;
+            }
+
+            // Update squad creation statistics
+            if (this.game.unitCreationSystem?.stats) {
+                this.game.unitCreationSystem.stats.squadsCreated++;
+            }
+
+            return {
+                success: true,
+                squad: {
+                    placementId,
+                    gridPosition,
+                    unitType,
+                    squadUnits,
+                    cells,
+                    isSquad: squadUnits.length > 1,
+                    team,
+                    playerId,
+                    timestamp: this.game.state.now
+                }
+            };
+
+        } catch (error) {
+            console.error('[BasePlacementSystem] Squad spawn failed:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Get unitType from collections using placement's unitTypeId and collection
+     * @param {Object} placement - Placement with unitTypeId and collection
+     * @returns {Object|null} The unitType definition or null
+     */
+    getUnitTypeFromPlacement(placement) {
+        const collections = this.game.getCollections();
+        return collections[placement.collection]?.[placement.unitTypeId] || null;
+    }
 }

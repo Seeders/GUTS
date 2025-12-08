@@ -19,7 +19,6 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         this.params = params || {};
 
         this.game.register('startBattle', this.startBattle.bind(this));
-        this.game.register('spawnSquadFromPlacement', this.spawnSquadFromPlacement.bind(this));
     }
 
     startBattle(room) {
@@ -46,48 +45,6 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         } catch (error) {
             console.error('Error in startBattle:', error);
             return { success: false, error: error.message };
-        }
-    }
-    spawnSquadFromPlacement(playerId, placement) {
-        try {
-            const player = this.game.room.getPlayer(playerId);
-            
-            if (!this.game.unitCreationSystem) {
-                throw new Error('Unit creation manager not available');
-            }
-            
-            // Get placements from placement phase manager
-            const placementManager = this.game.placementSystem;
-            if (!placementManager) {
-                throw new Error('Placement phase manager not available');
-            }
-            let createdSquad = null;
-      
-            // Create squads using unit creation manager
-            createdSquad = this.game.unitCreationSystem.createSquadFromPlacement(
-                placement,
-                player.stats.side,
-                playerId
-            );
-
-            if(!createdSquad){
-                console.log("Failed to create squads");
-                return { success: false };
-            } else {
-                // Store created squads for tracking
-                let playerSquads = this.createdSquads.get(playerId);
-                if(playerSquads){
-                    playerSquads.push(createdSquad);
-                } else {
-                    playerSquads = [createdSquad];                    
-                }
-                this.createdSquads.set(playerId, playerSquads);
-                return { success: true, squad: createdSquad };
-            }
-            
-        } catch (error) {
-            console.error('Error spawning units from placements:', error);
-            return { success: false, error: `Failed to spawn units: ${error.message}` };
         }
     }
 
@@ -209,8 +166,8 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
     endBattle(room, winner = null, reason = 'unknown') {
 
-        this.game.triggerEvent('onBattleEnd');        
-        const playerStats = this.getPlayerStats(room);
+        this.game.triggerEvent('onBattleEnd');
+        const playerStats = this.getPlayerStatsForBroadcast(room);
         let battleResult = {
             winner: winner,
             reason: reason,
@@ -290,12 +247,17 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         return survivors;
     }
 
-    getPlayerStats(room) {
+    getPlayerStatsForBroadcast(room) {
         const stats = {};
         for (const [playerId, player] of room.players) {
+            const playerStats = this.game.call('getPlayerStats', playerId);
             stats[playerId] = {
                 name: player.name,
-                stats: player.stats
+                stats: playerStats ? {
+                    side: playerStats.side,
+                    gold: playerStats.gold,
+                    upgrades: playerStats.upgrades
+                } : null
             };
         }
         return stats;
@@ -310,12 +272,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
   
     addGoldForTeam(goldAmt, team){
-        for (const [playerId, player] of room.players) {
-            if(player.side == team){
-                player.stats.gold = player.stats.gold + goldAmt;
-                break;
-            }
-        }
+        this.game.call('addPlayerGold', team, goldAmt);
     }
 
     endGame(room, reason = 'buildings_destroyed') {
@@ -336,7 +293,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         const gameResult = {
             winner: finalWinner,
             reason: reason,
-            finalStats: this.getPlayerStats(room),
+            finalStats: this.getPlayerStatsForBroadcast(room),
             totalRounds: this.game.state.round
         };
 

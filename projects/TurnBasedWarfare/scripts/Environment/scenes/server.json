@@ -2,6 +2,7 @@
   "title": "Server Game Scene",
   "systems": [
     "ComponentSystem",
+    "PlayerStatsSystem",
     "GridSystem",
     "TerrainSystem",
     "RoundSystem",

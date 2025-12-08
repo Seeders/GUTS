@@ -158,8 +158,24 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
     }
 
     getStartingState() {
-         this.game.call('getStartingState', (success, response) => {
+        console.log('[MultiplayerPlacementSystem] getStartingState called, mySide:', this.game.state.mySide);
+
+        this.game.call('getStartingState', (success, response) => {
+            console.log('[MultiplayerPlacementSystem] getStartingState response:', success, response);
+
             if(success){
+                // Create player entities from server data
+                if (response.playerEntities) {
+                    console.log('[MultiplayerPlacementSystem] Creating player entities:', response.playerEntities);
+                    for (const playerEntity of response.playerEntities) {
+                        if (!this.game.entities.has(playerEntity.entityId)) {
+                            this.game.createEntity(playerEntity.entityId);
+                        }
+                        this.game.addComponent(playerEntity.entityId, 'playerStats', playerEntity.playerStats);
+                    }
+                }
+
+                console.log('[MultiplayerPlacementSystem] Creating starting units, mySide:', this.game.state.mySide);
                 const buildingTypes = this.game.getCollections().buildings;
                 const unitTypes = this.game.getCollections().buildings;
                 response.startingUnits.forEach((unitData) => {
@@ -171,19 +187,24 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                         // unitDef already has id and collection from compiler
                         const placement = this.createPlacementData(unitPos, unitDef, this.game.state.mySide);
                         placement.isStartingState = true;
+                        console.log('[MultiplayerPlacementSystem] Submitting placement:', placement.placementId, 'for side:', this.game.state.mySide);
                         this.game.call('submitPlacement', placement, (success, response) => {
                             if(success){
                                 this.placeSquad(placement);
+                            } else {
+                                console.error('[MultiplayerPlacementSystem] Placement failed:', response);
                             }
-                        });            
-                    }          
+                        });
+                    }
                 });
                 const pos = response.camera.position;
                 const look = response.camera.lookAt;
                 this.game.camera.position.set(pos.x, pos.y, pos.z);
                 this.game.camera.lookAt(look.x, look.y, look.z);
+            } else {
+                console.error('[MultiplayerPlacementSystem] getStartingState failed:', response);
             }
-        });   
+        });
     }
 
     onPlacementPhaseStart() {
@@ -498,7 +519,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             return;
         }
         
-        if (state.playerGold < state.selectedUnitType.value) {
+        if (!this.game.call('canAffordCost', state.selectedUnitType.value)) {
             return;
         }
         if (this.game.supplySystem && !this.game.supplySystem.canAffordSupply(this.game.state.mySide, state.selectedUnitType)) {
@@ -544,85 +565,56 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             return null;
         }
 
-        const unitPositions = this.game.squadSystem.calculateUnitPositions(placement.gridPosition, unitType);
+        // Build full placement with unitType
+        const fullPlacement = {
+            ...placement,
+            unitType
+        };
+
+        // Create undo info before spawning
         const undoInfo = this.createUndoInfo(placement, unitType);
 
-        const squadUnits = this.createSquadUnits(placement, unitType, unitPositions, placement.team, undoInfo);
+        // Use playerId from placement if available (for opponent units)
+        // Otherwise use local player's ID for own team units
+        let playerId = placement.playerId || null;
+        if (!playerId && placement.team === this.game.state.mySide) {
+            playerId = this.game.clientNetworkManager?.playerId || null;
+        }
+
+        // Use shared base class method to spawn squad
+        const result = this.spawnSquad(fullPlacement, placement.team, playerId);
+
+        if (!result.success) {
+            console.error('[MultiplayerPlacementSystem] Failed to spawn squad:', result.error);
+            return null;
+        }
+
+        const squadUnits = result.squad.squadUnits;
         placement.squadUnits = squadUnits;
         placement.isSquad = squadUnits.length > 1;
+
+        // Track units for undo
+        undoInfo.unitIds = [...squadUnits];
+
         this.updateGameStateForPlacement(placement, unitType, undoInfo);
 
-        this.game.call('initializeSquad', placement.placementId, unitType, squadUnits);
-
+        // Create placement effects (client-only visual feedback)
+        const unitPositions = this.game.squadSystem.calculateUnitPositions(placement.gridPosition, unitType);
         if (squadUnits.length <= 8) {
             this.createPlacementEffects(unitPositions.slice(0, 8), placement.team);
         }
-        
+
         this.cachedValidation = null;
         this.cachedGridPos = null;
-        
+
         if (this.placementPreview) {
             this.placementPreview.clear();
         }
 
         this.game.state.selectedUnitType = null;
         this.handleUnitSelectionChange();
-        
+
         return placement;
-    }
-
-    createSquadUnits(placement, unitType, unitPositions, team, undoInfo) {
-        const createdUnits = [];
-
-        const maxUnits = Math.min(unitPositions.length, 16);
-        const positions = unitPositions.slice(0, maxUnits);
-
-        // Use playerId from placement if available (for opponent units)
-        // Otherwise use local player's ID for own team units
-        let playerId = placement.playerId || null;
-        if (!playerId && team === this.game.state.mySide) {
-            playerId = this.game.clientNetworkManager?.playerId || null;
-        }
-
-        // Build placement object with unitType for unit creation
-        const placementWithUnitType = { ...placement, unitType };
-
-        positions.forEach(pos => {
-            const terrainHeight = this.game.call('getTerrainHeightAtPosition', pos.x, pos.z) || 0;
-            const unitY = terrainHeight !== null ? terrainHeight : 0;
-
-            // Use placement.targetPosition to match server behavior
-            // Server passes placement.targetPosition, not each unit's pos
-            const entityId = this.game.unitCreationSystem.create(pos.x, unitY, pos.z, placement.targetPosition, placementWithUnitType, team, playerId);
-            createdUnits.push(entityId);
-            undoInfo.unitIds.push(entityId);
-
-            this.game.call('reserveGridCells', placement.cells, entityId);
-
-            if(unitType.id == 'goldMine'){
-                // Convert footprint (terrain grid units) to placement grid cells
-                const footprintWidth = unitType.footprintWidth || unitType.placementGridWidth || 2;
-                const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 2;
-                const gridWidth = footprintWidth * 2;
-                const gridHeight = footprintHeight * 2;
-                this.game.call('buildGoldMine', entityId, team, placement.gridPosition, gridWidth, gridHeight);
-            }
-            if (placement.peasantInfo && placement.collection === 'buildings') {
-                const peasantInfo = placement.peasantInfo;
-                const peasantId = peasantInfo.peasantId;
-                const peasantAbilities = this.game.call('getEntityAbilities', peasantId);
-                if (peasantAbilities) {
-                    const buildAbility = peasantAbilities.find(a => a.id === 'build');
-                    if (buildAbility) {
-                        buildAbility.assignToBuild(peasantId, entityId, peasantInfo);
-                    }
-                }
-
-                this.game.state.peasantBuildingPlacement = null;
-            }
-        });
-
-        return createdUnits;
     }
 
     createUndoInfo(placement, unitType) {
@@ -666,22 +658,14 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         };
     }
 
-    /**
-     * Get unitType from collections using placement's unitTypeId and collection
-     * id and collection are added by the compiler at build time
-     */
-    getUnitTypeFromPlacement(placement) {
-        const collections = this.game.getCollections();
-        return collections[placement.collection]?.[placement.unitTypeId] || null;
-    }
-
     updateGameStateForPlacement(placement, unitType, undoInfo) {
         // Placement data is stored in entity's placement component, not in arrays
         // Just handle undo stack and gold deduction for player placements
         if (this.isMyTeam(placement.team)) {
             this.addToUndoStack(undoInfo);
             if (!placement.isStartingState) {
-                this.game.state.playerGold -= (unitType.value || 0);
+                const cost = unitType.value || 0;
+                this.game.call('deductPlayerGold', cost);
             }
         }
     }
@@ -766,7 +750,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                 }
             });
 
-            state.playerGold += undoInfo.cost;
+            this.game.call('addPlayerGold', this.game.state.mySide, undoInfo.cost);
 
             this.game.call('removeSquad', undoInfo.placementId);
 

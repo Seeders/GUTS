@@ -1,0 +1,16 @@
+{
+  "title": "icegolem Death Up Right",
+  "spriteCollection": "icegolemSprites",
+  "sprites": [
+    "icegolemDeathUpRight_0",
+    "icegolemDeathUpRight_1",
+    "icegolemDeathUpRight_2",
+    "icegolemDeathUpRight_3",
+    "icegolemDeathUpRight_4",
+    "icegolemDeathUpRight_5",
+    "icegolemDeathUpRight_6",
+    "icegolemDeathUpRight_7",
+    "icegolemDeathUpRight_8"
+  ],
+  "fps": 4
+}

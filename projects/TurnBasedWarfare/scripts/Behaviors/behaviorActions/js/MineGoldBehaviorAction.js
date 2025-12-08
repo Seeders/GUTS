@@ -171,20 +171,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         if (elapsed >= this.parameters.depositDuration) {
             const team = game.getComponent(entityId, 'team');
 
-            // Award gold
-            if (game.isServer) {
-                const room = game.room;
-                for (const [playerId, player] of room.players) {
-                    if (player.stats.side === team.team) {
-                        player.stats.gold += aiState.meta.goldAmt;
-                        break;
-                    }
-                }
-            } else {
-                if (team.team === game.state.mySide) {
-                    game.state.playerGold += aiState.meta.goldAmt;
-                }
-            }
+            // Award gold to player entity
+            game.call('addPlayerGold', team.team, aiState.meta.goldAmt);
 
             return { 
                 mineState: 'traveling_to_mine'

@@ -283,8 +283,8 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         // Apply level bonuses to all units in squad
         this.applyLevelBonuses(placementId);
         
-        const levelUpCost = this.getLevelUpCost(placementId);  
-        this.game.state.playerGold -= levelUpCost;
+        const levelUpCost = this.getLevelUpCost(placementId);
+        this.game.call('deductPlayerGold', levelUpCost);
             
         console.log('leveling squad for cost', placementId, levelUpCost);
         // Visual effects

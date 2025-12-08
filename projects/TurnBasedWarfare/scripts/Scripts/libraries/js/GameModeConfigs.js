@@ -56,9 +56,13 @@ class GameModeConfigs {
         if (!config) return;
 
         // Apply gold progression
-        if (gameInstance.state) {
-            gameInstance.state.playerGold = config.goldProgression(round);
-            console.log('set player gold 1', gameInstance.state.playerGold);
+        if (gameInstance.state && gameInstance.hasService('addPlayerGold')) {
+            const gold = config.goldProgression(round);
+            // Set gold via the PlayerStatsSystem (requires local player to exist)
+            const localStats = gameInstance.call('getLocalPlayerStats');
+            if (localStats) {
+                localStats.gold = gold;
+            }
         }
 
         // Apply special rules

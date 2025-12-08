@@ -474,6 +474,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         await this.game.switchScene('client_game');
 
         // Now initialize the game
+        // Player entities will be created via getStartingState call in MultiplayerPlacementSystem
         this.game.gameSystem.initializeGame(data);
     }
 
@@ -540,10 +541,15 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         console.log('battle result', data);
         this.game.desyncDebugger.displaySync(true);
         this.game.desyncDebugger.enabled = false;
+        // Update player entity gold from server state
         const myPlayerId = this.game.clientNetworkManager.playerId;
         data.gameState?.players?.forEach((player) => {
             if(player.id == myPlayerId) {
-                this.game.state.playerGold = player.stats.gold;
+                // Update player entity
+                const playerStats = this.game.call('getPlayerStats', myPlayerId);
+                if (playerStats) {
+                    playerStats.gold = player.stats.gold;
+                }
             }
         })
         this.game.state.round += 1;
@@ -893,15 +899,33 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         const myPlayerId = this.game.clientNetworkManager.playerId;
         const myPlayer = gameState.players.find(p => p.id === myPlayerId);
 
+        console.log('[syncWithServerState] myPlayerId:', myPlayerId, 'myPlayer:', myPlayer, 'myPlayer.stats:', myPlayer?.stats);
+
+        // Only update player entities if PlayerStatsSystem is loaded (in game scene, not lobby)
+        if (this.game.hasService('getPlayerEntityId')) {
+            for (const playerData of gameState.players) {
+                const playerEntityId = this.game.call('getPlayerEntityId', playerData.id);
+
+                if (this.game.entities.has(playerEntityId)) {
+                    // Update existing player entity
+                    const stats = this.game.getComponent(playerEntityId, 'playerStats');
+                    if (stats && playerData.stats) {
+                        stats.gold = playerData.stats.gold;
+                        stats.side = playerData.stats.side;
+                    }
+                }
+            }
+        }
+
         if (myPlayer) {
             // Sync squad count and side
             if (this.game.state) {
                 this.game.state.mySide = myPlayer.stats.side;
-                this.game.state.playerGold = myPlayer.stats.gold;
+                console.log('[syncWithServerState] SET mySide to:', this.game.state.mySide);
                 this.game.state.round = gameState.round;
                 this.game.state.serverGameState = gameState;
             }
-            
+
             // Set team sides in grid system
             const opponent = gameState.players.find(p => p.id !== myPlayerId);
             if (opponent && this.game.gridSystem) {
@@ -910,7 +934,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
                     enemy: opponent.stats.side
                 });
             }
-            
+
             // Also set sides in placement system
             if (this.game.placementSystem ) {
                 if(this.game.placementSystem.setTeamSides) {
@@ -933,7 +957,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
             if (this.game.shopSystem && this.game.shopSystem.updateGoldDisplay) {
                 this.game.shopSystem.updateGoldDisplay();
             }
-            
+
         }
     }
  

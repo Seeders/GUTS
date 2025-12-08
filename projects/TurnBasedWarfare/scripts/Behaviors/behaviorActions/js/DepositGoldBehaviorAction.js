@@ -76,23 +76,8 @@ class DepositGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         const team = game.getComponent(entityId, 'team');
         if (!team) return;
 
-        if (game.isServer) {
-            // Server-side: update player stats
-            const room = game.room;
-            if (room && room.players) {
-                for (const [playerId, player] of room.players) {
-                    if (player.stats && player.stats.side === team.team) {
-                        player.stats.gold = (player.stats.gold || 0) + amount;
-                        break;
-                    }
-                }
-            }
-        } else {
-            // Client-side: update local state
-            if (team.team === game.state.mySide) {
-                game.state.playerGold = (game.state.playerGold || 0) + amount;
-            }
-        }
+        // Award gold to player entity
+        game.call('addPlayerGold', team.team, amount);
     }
 
     onStart(entityId, game) {

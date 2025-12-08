@@ -9,17 +9,9 @@ class TextureEditor {
         this.history = [];
         this.historyIndex = -1;
         this.colorPalette = [];
-        if (this.gameEditor.getCollections().palettes && this.gameEditor.getCollections().configs.game.palette) {
-            const palette = this.gameEditor.getCollections().palettes[this.gameEditor.getCollections().configs.game.palette];
-
-            if (palette) {
-                for(let key in palette) {
-                    if(key.toLowerCase().endsWith('color')){
-                        this.colorPalette.push(palette[key]);
-                    }
-                }
-            }
-        }
+        this.allPalettes = this.gameEditor.getCollections().palettes || {};
+        this.currentPaletteName = Object.keys(this.allPalettes)[0];
+        this.loadPaletteColors(this.currentPaletteName);
         this.activeTool = 'brush'; // Default active tool
         
         // Transparency checker pattern properties
@@ -37,12 +29,62 @@ class TextureEditor {
         this.setupEventListeners();
     }
 
-    setupUI() {
+    loadPaletteColors(paletteName) {
+        this.colorPalette = [];
+        const palette = this.allPalettes[paletteName];
+        if (palette) {
+            for (let key in palette) {
+                if (key.toLowerCase().endsWith('color')) {
+                    this.colorPalette.push(palette[key]);
+                }
+            }
+        }
+    }
+
+    setupPaletteSwitcher(container) {
+        const switcherEl = container.querySelector('#palette-switcher');
+        if (!switcherEl) return;
+
+        switcherEl.innerHTML = '';
+
+        // Create an option for each palette
+        for (const paletteName in this.allPalettes) {
+            const palette = this.allPalettes[paletteName];
+            const option = document.createElement('option');
+            option.value = paletteName;
+            option.textContent = palette.title || paletteName;
+            if (paletteName === this.currentPaletteName) {
+                option.selected = true;
+            }
+            switcherEl.appendChild(option);
+        }
+
+        // Add change handler
+        switcherEl.addEventListener('change', (e) => {
+            this.switchPalette(e.target.value);
+        });
+    }
+
+    switchPalette(paletteName) {
+        if (!this.allPalettes[paletteName]) return;
+
+        this.currentPaletteName = paletteName;
+        this.loadPaletteColors(paletteName);
+
         const container = document.getElementById('texture-editor-container');
-        if (!container) return;
-        
-        // Setup color palette
+
+        // Rebuild color palette
+        this.setupColorPalette(container);
+
+        // Re-setup color palette event listeners
+        this.setupColorPaletteListeners(container);
+    }
+
+    setupColorPalette(container) {
         const paletteEl = container.querySelector('#color-palette');
+        if (!paletteEl) return;
+
+        paletteEl.innerHTML = '';
         this.colorPalette.forEach(color => {
             const colorBtn = document.createElement('div');
             colorBtn.className = 'texture-editor__color-btn';
@@ -50,6 +92,38 @@ class TextureEditor {
             colorBtn.dataset.color = color;
             paletteEl.appendChild(colorBtn);
         });
+    }
+
+    setupColorPaletteListeners(container) {
+        container.querySelectorAll('.texture-editor__color-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                container.querySelectorAll('.texture-editor__color-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.currentColor = e.target.dataset.color;
+                // Update both color and transparency inputs
+                const colorValue = this.currentColor.substring(0, 7);
+                const alphaValue = parseInt(this.currentColor.substring(7, 9), 16) || 255;
+
+                container.querySelector('#custom-color-picker').value = colorValue;
+                const transparencySlider = container.querySelector('#transparency-slider');
+                if (transparencySlider) {
+                    transparencySlider.value = alphaValue;
+                    document.getElementById('transparency-display').textContent =
+                        `${Math.round((alphaValue / 255) * 100)}%`;
+                }
+            });
+        });
+    }
+
+    setupUI() {
+        const container = document.getElementById('texture-editor-container');
+        if (!container) return;
+
+        // Setup palette switcher
+        this.setupPaletteSwitcher(container);
+
+        // Setup color palette
+        this.setupColorPalette(container);
 
         // Initialize canvas
         this.canvas = document.getElementById('texture-canvas');
@@ -274,6 +348,8 @@ class TextureEditor {
         container.querySelector('.export-btn').addEventListener('click', () => {
             this.saveTexture(this.getCurrentTexture());
         });
+        container.querySelector('#palettize-btn').addEventListener('click', () => this.palettize());
+        container.querySelector('#extract-colors-btn').addEventListener('click', () => this.extractColors());
 
         // File upload
         container.querySelector('input[type="file"]').addEventListener('change', (e) => {
@@ -742,10 +818,101 @@ class TextureEditor {
         const a = parseInt(hex.slice(7, 9) || 'FF', 16);
         return { r, g, b, a };
     }
-    
+
     hexToRgbaString(hex) {
         const { r, g, b, a } = this.hexToRgba(hex);
         return `rgba(${r}, ${g}, ${b}, ${a / 255})`;
+    }
+
+    palettize() {
+        if (!this.canvas || this.imageWidth === 0 || this.imageHeight === 0) return;
+        if (this.colorPalette.length === 0) return;
+
+        this.saveToHistory();
+
+        // Get image data
+        const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        const data = imageData.data;
+
+        // Convert palette colors to RGB for comparison
+        const paletteRgb = this.colorPalette.map(hex => this.hexToRgba(hex));
+
+        // Process each pixel
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const a = data[i + 3];
+
+            // Skip fully transparent pixels
+            if (a === 0) continue;
+
+            // Find closest palette color
+            let minDist = Infinity;
+            let closestColor = paletteRgb[0];
+
+            for (const color of paletteRgb) {
+                const dist = (r - color.r) ** 2 + (g - color.g) ** 2 + (b - color.b) ** 2;
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestColor = color;
+                }
+            }
+
+            // Replace pixel with closest palette color
+            data[i] = closestColor.r;
+            data[i + 1] = closestColor.g;
+            data[i + 2] = closestColor.b;
+            // Keep original alpha
+        }
+
+        // Put modified image data back
+        this.ctx.putImageData(imageData, 0, 0);
+        this.renderCanvas();
+    }
+
+    extractColors() {
+        if (!this.canvas || this.imageWidth === 0 || this.imageHeight === 0) return;
+
+        // Get image data
+        const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        const data = imageData.data;
+
+        // Collect unique colors (skip transparent pixels)
+        const uniqueColors = new Set();
+        for (let i = 0; i < data.length; i += 4) {
+            const a = data[i + 3];
+            if (a === 0) continue;
+
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const hex = '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
+            uniqueColors.add(hex.toUpperCase());
+        }
+
+        // Check which colors don't already exist in the palette
+        const existingColors = new Set(this.colorPalette.map(c => c.toUpperCase().substring(0, 7)));
+        const newColors = [...uniqueColors].filter(c => !existingColors.has(c));
+
+        if (newColors.length === 0) return;
+
+        // Add new colors to local palette array
+        this.colorPalette.push(...newColors);
+
+        // Update the underlying palette object in allPalettes
+        const palette = this.allPalettes[this.currentPaletteName];
+        if (palette) {
+            newColors.forEach((color, index) => {
+                const colorKey = `extractedColor${Date.now()}_${index}`;
+                palette[colorKey] = color;
+            });
+        }
+
+        // Rebuild color palette UI
+        const container = document.getElementById('texture-editor-container');
+        this.setupColorPalette(container);
+        this.setupColorPaletteListeners(container);
     }
 
     saveToHistory() {

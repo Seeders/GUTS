@@ -1,7 +1,7 @@
 {
   "title": "firegolemIdleDown 4",
-  "x": 512,
+  "x": 256,
   "y": 0,
-  "width": 128,
-  "height": 128
+  "width": 64,
+  "height": 64
 }

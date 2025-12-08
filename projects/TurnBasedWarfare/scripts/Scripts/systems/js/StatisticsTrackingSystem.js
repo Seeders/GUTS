@@ -26,9 +26,10 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     }
     
     collectStats() {
+        const gold = this.game.hasService('getPlayerGold') ? this.game.call('getPlayerGold') : 0;
         return {
             round: this.game.state?.round || 1,
-            goldEarned: this.game.state?.playerGold || 0,
+            goldEarned: gold,
             unitsDeployed: this.getUnitsDeployed(),
             unitsLost: this.getUnitsLost(),
             unitsRemaining: this.getUnitsRemaining(),

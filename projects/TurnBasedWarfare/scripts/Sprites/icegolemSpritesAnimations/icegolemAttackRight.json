@@ -1,0 +1,18 @@
+{
+  "title": "icegolem Attack Right",
+  "spriteCollection": "icegolemSprites",
+  "sprites": [
+    "icegolemAttackRight_0",
+    "icegolemAttackRight_1",
+    "icegolemAttackRight_2",
+    "icegolemAttackRight_3",
+    "icegolemAttackRight_4",
+    "icegolemAttackRight_5",
+    "icegolemAttackRight_6",
+    "icegolemAttackRight_7",
+    "icegolemAttackRight_8",
+    "icegolemAttackRight_9",
+    "icegolemAttackRight_10"
+  ],
+  "fps": 4
+}

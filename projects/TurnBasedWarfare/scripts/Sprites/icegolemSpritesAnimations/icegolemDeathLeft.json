@@ -1,0 +1,16 @@
+{
+  "title": "icegolem Death Left",
+  "spriteCollection": "icegolemSprites",
+  "sprites": [
+    "icegolemDeathLeft_0",
+    "icegolemDeathLeft_1",
+    "icegolemDeathLeft_2",
+    "icegolemDeathLeft_3",
+    "icegolemDeathLeft_4",
+    "icegolemDeathLeft_5",
+    "icegolemDeathLeft_6",
+    "icegolemDeathLeft_7",
+    "icegolemDeathLeft_8"
+  ],
+  "fps": 4
+}
