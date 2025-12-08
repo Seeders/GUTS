@@ -162,7 +162,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
         }
 
         // Create ground ring effect using layered particles
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             const ringPos = new THREE.Vector3(position.x, position.y + 5, position.z);
 
             this.game.call('createLayeredEffect', {
@@ -206,7 +206,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
                 this.createMeteorTrail(trailPos);
 
                 // Create the meteor "body" as a burst of particles
-                if (this.game.gameSystem) {
+                if (!this.game.isServer) {
                     const position = new THREE.Vector3(trailPos.x, trailPos.y, trailPos.z);
 
                     // Glowing meteor core
@@ -257,7 +257,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
         this.createVisualEffect(currentPos, 'trail_smoke', { heightOffset: 0 });
 
         // Additional layered trail effect
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             const position = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
 
             this.game.call('createParticles', {
@@ -293,7 +293,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
         }
 
         // Advanced layered explosion
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             const explosionPos = new THREE.Vector3(position.x, position.y + 50, position.z);
 
             this.game.call('createLayeredEffect', {

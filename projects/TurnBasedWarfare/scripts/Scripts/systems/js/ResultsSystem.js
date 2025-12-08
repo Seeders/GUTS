@@ -64,4 +64,7 @@ class ResultsSystem extends GUTS.BaseSystem {
         const remainingSeconds = seconds % 60;
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
+
+    onSceneUnload() {
+    }
 }

@@ -122,7 +122,7 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
                 this.logCorpseRaising(consumedCorpse, team);
 
                 // Enhanced necromantic rising effect (client only)
-                if (!this.game.isServer && this.game.gameSystem) {
+                if (!this.game.isServer) {
                     this.game.call('createLayeredEffect', {
                         position: new THREE.Vector3(corpseData.position.x, corpseData.position.y + 20, corpseData.position.z),
                         layers: [

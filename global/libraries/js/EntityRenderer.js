@@ -1093,7 +1093,7 @@ class EntityRenderer {
         let aspectRatio = 1;
 
         // Try to get aspect ratio from AnimationSystem first
-        const animState = this.game?.gameSystem?.call('getBillboardAnimationState', entityId);
+        const animState = this.game.call('getBillboardAnimationState', entityId);
         if (animState?.animations) {
             const initialAnim = animState.animations.idle || animState.animations.walk || Object.values(animState.animations)[0];
             const initialFrame = initialAnim?.down?.frames?.[0] || initialAnim?.[Object.keys(initialAnim)[0]]?.frames?.[0];

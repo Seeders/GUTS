@@ -222,8 +222,8 @@ class WorldSystem extends GUTS.BaseSystem {
         // Setup ground with terrain data
         this.worldRenderer.setupGround(terrainDataManager, this.game.terrainTileMapper, terrainDataManager.heightMapSettings);
 
-        // Pass GameManager to WorldRenderer
-        this.worldRenderer.gameSystem = this.game.gameSystem;
+        // Pass game reference to WorldRenderer for service calls
+        this.worldRenderer.game = this.game;
 
         // Update extension configuration in GridSystem's CoordinateTranslator if available
         if (terrainDataManager.extensionSize) {

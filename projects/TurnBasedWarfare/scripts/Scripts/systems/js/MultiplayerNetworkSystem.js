@@ -14,8 +14,28 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     // GUTS Manager Interface
     init(params) {
         this.params = params || {};
-        this.connectToServer();        
+        console.log('[MultiplayerNetworkSystem] network system init');
+        this.registerServices();
+        this.connectToServer();
         this.setupNetworkListeners();
+    }
+
+    registerServices() {
+        this.game.register('createRoom', this.createRoom.bind(this));
+        this.game.register('joinRoom', this.joinRoom.bind(this));
+        this.game.register('startQuickMatch', this.startQuickMatch.bind(this));
+        this.game.register('leaveRoom', this.leaveRoom.bind(this));
+        this.game.register('toggleReady', this.toggleReady.bind(this));
+        this.game.register('startGame', this.startGame.bind(this));
+        this.game.register('getStartingState', this.getStartingState.bind(this));
+        this.game.register('submitPlacement', this.submitPlacement.bind(this));
+        this.game.register('purchaseUpgrade', this.purchaseUpgrade.bind(this));
+        this.game.register('toggleReadyForBattle', this.toggleReadyForBattle.bind(this));
+        this.game.register('setSquadTarget', this.setSquadTarget.bind(this));
+        this.game.register('setSquadTargets', this.setSquadTargets.bind(this));
+        this.game.register('cancelBuilding', this.cancelBuilding.bind(this));
+        this.game.register('uploadSaveData', this.uploadSaveData.bind(this));
+        this.game.register('resyncEntities', this.resyncEntities.bind(this));
     }
 
     async connectToServer() {
@@ -84,7 +104,8 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
                 this.handleOpponentSquadTargets(data);
             }),
             nm.listen('READY_FOR_BATTLE_UPDATE', (data) => {
-                this.syncWithServerState(data);   
+                console.log('[MultiplayerNetworkSystem] READY_FOR_BATTLE_UPDATE received:', data);
+                this.syncWithServerState(data);
                 this.handleReadyForBattleUpdate(data);
             }),
 
@@ -457,7 +478,8 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     }
 
     handleReadyForBattleUpdate(data) {
-        this.game.placementSystem.handleReadyForBattleUpdate(data);
+        console.log('[MultiplayerNetworkSystem] handleReadyForBattleUpdate called, hasService:', this.game.hasService('handleReadyForBattleUpdate'));
+        this.game.call('handleReadyForBattleUpdate', data);
     }
 
     handleBattleEnd(data) {
@@ -916,6 +938,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
             }
         });
         this.networkUnsubscribers = [];
+        console.log('[MultiplayerNetworkSystem] dispose');
     }
 
     onSceneUnload() {
@@ -931,7 +954,6 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         if (gameEndedModal) {
             gameEndedModal.remove();
         }
-
-        console.log('[MultiplayerNetworkManager] Scene unloaded - game state reset');
+        console.log('[MultiplayerNetworkSystem] unloaded');
     }
 }

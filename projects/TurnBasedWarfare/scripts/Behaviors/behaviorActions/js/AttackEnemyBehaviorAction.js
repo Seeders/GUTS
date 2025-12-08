@@ -44,7 +44,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
     onEnd(entityId, game) {
         // Reset animation to idle when combat ends
-        if (game.gameSystem && game.hasService('setBillboardAnimation')) {
+        if (!game.isServer && game.hasService('setBillboardAnimation')) {
             game.call('setBillboardAnimation', entityId, 'idle', true);
         }
     }
@@ -76,7 +76,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Trigger attack animation (sprite direction is derived from rotation.y set above)
-        if (game.gameSystem && game.hasService('triggerSinglePlayAnimation')) {
+        if (!game.isServer && game.hasService('triggerSinglePlayAnimation')) {
             const animationSpeed = combat.attackSpeed;
             const minAnimationTime = 1 / combat.attackSpeed * 0.8;
             game.call('triggerSinglePlayAnimation', attackerId, 'attack', animationSpeed, minAnimationTime);

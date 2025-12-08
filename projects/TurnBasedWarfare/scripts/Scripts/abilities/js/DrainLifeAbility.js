@@ -141,7 +141,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
             this.createVisualEffect(targetPos, 'dark_energy');
 
             // Create flowing dark energy particles from target to caster (client only)
-            if (!this.game.isServer && this.game.gameSystem) {
+            if (!this.game.isServer) {
                 // Dark energy extraction at target
                 const targetEffectPos = new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z);
 
@@ -212,7 +212,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
                 this.createVisualEffect(casterPos, 'heal');
 
                 // Enhanced heal absorption effect (client only)
-                if (!this.game.isServer && this.game.gameSystem) {
+                if (!this.game.isServer) {
                     const casterEffectPos = new THREE.Vector3(casterPos.x, casterPos.y + 50, casterPos.z);
 
                     this.game.call('createLayeredEffect', {
@@ -237,7 +237,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
                     });
                 }
 
-                if (!this.game.isServer && this.game.gameSystem && this.game.hasService('showDamageNumber')) {
+                if (!this.game.isServer && this.game.hasService('showDamageNumber')) {
                     this.game.call('showDamageNumber',
                         casterPos.x, casterPos.y + 50, casterPos.z,
                         actualHeal, 'heal'

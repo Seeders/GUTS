@@ -238,7 +238,7 @@ class MindControlAbility extends GUTS.BaseAbility {
         this.createVisualEffect(targetPos, 'charm');
 
         // Enhanced mind control success burst (client only)
-        if (!this.game.isServer && this.game.gameSystem) {
+        if (!this.game.isServer) {
             this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 35, targetPos.z),
                 layers: [

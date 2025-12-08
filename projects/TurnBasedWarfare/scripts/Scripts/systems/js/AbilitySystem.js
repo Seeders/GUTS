@@ -184,6 +184,10 @@ class AbilitySystem extends GUTS.BaseSystem {
     }
 
     faceTarget(entityId, ability) {
+        // Skip rotation for anchored units (buildings)
+        const velocity = this.game.getComponent(entityId, "velocity");
+        if (velocity?.anchored) return;
+
         // Get target for facing
         const targetId = ability.getTargetForFacing(entityId);
         if (!targetId || targetId === entityId) return;

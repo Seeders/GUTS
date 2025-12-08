@@ -129,7 +129,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
             this.createVisualEffect(targetPos, 'sparks');
 
             // Enhanced electric burst at impact
-            if (this.game.gameSystem) {
+            if (!this.game.isServer) {
                 const impactPos = new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z);
 
                 this.game.call('createLayeredEffect', {
@@ -377,7 +377,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
     
     createLightningPoints(fromPos, toPos) {
         // Create bright particle effects at connection points
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             // Source point sparks
             this.game.call('createParticles', {
                 position: new THREE.Vector3(fromPos.x, fromPos.y + 50, fromPos.z),

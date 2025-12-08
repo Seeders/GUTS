@@ -144,7 +144,7 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Trigger attack
-        if (game.gameSystem?.has('triggerSinglePlayAnimation')) {
+        if (game.has('triggerSinglePlayAnimation')) {
             game.call('triggerSinglePlayAnimation', attackerId, 'attack', combat.attackSpeed);
         }
 

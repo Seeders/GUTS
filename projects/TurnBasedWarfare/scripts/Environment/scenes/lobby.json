@@ -2,7 +2,12 @@
   "title": "Lobby Scene",
   "description": "Minimal scene for main menu and lobby - no terrain or world loading",
   "systems": [
-    "MultiplayerUISystem"
+    "GameSystem",
+    "ScreenSystem",
+    "GameModeSystem",
+    "InputSystem",
+    "MultiplayerUISystem",
+    "MultiplayerNetworkSystem"
   ],
   "entities": []
 }

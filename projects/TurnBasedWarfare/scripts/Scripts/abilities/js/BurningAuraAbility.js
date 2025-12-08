@@ -148,7 +148,7 @@ class BurningAuraAbility extends GUTS.BaseAbility {
             });
 
             // Enhanced burning aura pulse
-            if (this.game.gameSystem) {
+            if (!this.game.isServer) {
                 this.game.call('createLayeredEffect', {
                     position: new THREE.Vector3(casterPos.x, casterPos.y + 20, casterPos.z),
                     layers: [

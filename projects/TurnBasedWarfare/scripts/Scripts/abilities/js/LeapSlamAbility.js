@@ -165,7 +165,7 @@ class LeapSlamAbility extends GUTS.BaseAbility {
         }
 
         // Dust burst at launch (client only)
-        if (!this.game.isServer && this.game.gameSystem) {
+        if (!this.game.isServer) {
             this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(pos.x, pos.y + 10, pos.z),
                 layers: [
@@ -231,7 +231,7 @@ class LeapSlamAbility extends GUTS.BaseAbility {
         this.createVisualEffect(landingPos, 'shockwave');
 
         // Epic ground slam effect (client only)
-        if (!this.game.isServer && this.game.gameSystem) {
+        if (!this.game.isServer) {
             this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(landingPos.x, landingPos.y + 10, landingPos.z),
                 layers: [

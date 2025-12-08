@@ -48,6 +48,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         this.game.register('placeSquadOnBattlefield', this.placeSquad.bind(this));
         this.game.register('getOpponentPlacements', () => this.getPlacementsForSide(this.game.state.mySide === 'left' ? 'right' : 'left'));
         this.game.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
+        this.game.register('handleReadyForBattleUpdate', this.handleReadyForBattleUpdate.bind(this));
         this.mouseWorldOffset = { x: this.game.call('getPlacementGridSize') / 2, z: this.game.call('getPlacementGridSize') / 2 };
     }
 
@@ -157,7 +158,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
     }
 
     getStartingState() {
-         this.game.multiplayerNetworkSystem.getStartingState((success, response) => {
+         this.game.call('getStartingState', (success, response) => {
             if(success){
                 const buildingTypes = this.game.getCollections().buildings;
                 const unitTypes = this.game.getCollections().buildings;
@@ -170,7 +171,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                         // unitDef already has id and collection from compiler
                         const placement = this.createPlacementData(unitPos, unitDef, this.game.state.mySide);
                         placement.isStartingState = true;
-                        this.game.multiplayerNetworkSystem.submitPlacement(placement, (success, response) => {
+                        this.game.call('submitPlacement', placement, (success, response) => {
                             if(success){
                                 this.placeSquad(placement);
                             }
@@ -237,7 +238,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             this.elements.readyButton.disabled = true;
             this.elements.readyButton.textContent = 'Updating...';
         }
-        this.game.multiplayerNetworkSystem.toggleReadyForBattle((success, response) => {
+        this.game.call('toggleReadyForBattle', (success, response) => {
             if(success){
                 this.hasSubmittedPlacements = true;
                 this.elements.readyButton.textContent = 'Waiting for Opponent...';
@@ -287,7 +288,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
             // Resync entities with server state to ensure both clients are in sync
             if (data.entitySync) {
-                this.game.multiplayerNetworkSystem.resyncEntities(data.entitySync);
+                this.game.call('resyncEntities', data.entitySync);
             }
 
             this.game.desyncDebugger.enabled = true;
@@ -524,11 +525,11 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         
         const placement = this.createPlacementData(gridPos, state.selectedUnitType, this.game.state.mySide);
 
-        this.game.multiplayerNetworkSystem.submitPlacement(placement, (success, response) => {
+        this.game.call('submitPlacement', placement, (success, response) => {
             if(success){
                 this.placeSquad(placement);
             }
-        });        
+        });
     }
 
     canPlayerPlaceSquad() {

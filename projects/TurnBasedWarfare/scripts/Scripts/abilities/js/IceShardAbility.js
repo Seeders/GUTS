@@ -126,7 +126,7 @@ class IceShardAbility extends GUTS.BaseAbility {
         this.createVisualEffect(casterPos, 'shard');
 
         // Create frost trail effect
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             // Launch burst
             const launchPos = new THREE.Vector3(casterPos.x, casterPos.y + 50, casterPos.z);
 
@@ -191,7 +191,7 @@ class IceShardAbility extends GUTS.BaseAbility {
                 this.createVisualEffect(currentTargetPos, 'frost');
 
                 // Enhanced ice shatter effect
-                if (this.game.gameSystem) {
+                if (!this.game.isServer) {
                     const impactPos = new THREE.Vector3(currentTargetPos.x, currentTargetPos.y + 50, currentTargetPos.z);
 
                     this.game.call('createLayeredEffect', {

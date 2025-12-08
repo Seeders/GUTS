@@ -496,6 +496,5 @@ class SaveSystem extends GUTS.BaseSystem {
     }
 
     onSceneUnload() {
-        console.log('[SaveManager] Scene unloaded');
     }
 }

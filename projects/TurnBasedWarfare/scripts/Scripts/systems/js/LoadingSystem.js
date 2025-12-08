@@ -14,17 +14,25 @@ class LoadingSystem extends GUTS.BaseSystem {
     showLoadingWithProgress(onComplete) {
         let currentStep = 0;
         const loadingText = document.querySelector('.loading-text');
-        
-        const progressInterval = setInterval(() => {
+
+        this.progressInterval = setInterval(() => {
             if (currentStep < this.loadingSteps.length) {
                 if (loadingText) {
                     loadingText.textContent = this.loadingSteps[currentStep];
                 }
                 currentStep++;
             } else {
-                clearInterval(progressInterval);
+                clearInterval(this.progressInterval);
+                this.progressInterval = null;
                 onComplete();
             }
         }, 400);
+    }
+
+    onSceneUnload() {
+        if (this.progressInterval) {
+            clearInterval(this.progressInterval);
+            this.progressInterval = null;
+        }
     }
 }

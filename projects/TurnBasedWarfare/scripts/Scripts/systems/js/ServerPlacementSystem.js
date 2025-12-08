@@ -362,7 +362,15 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
         this.placementReadyStates.set(playerId, true);
         
         this.serverNetworkManager.sendToPlayer(playerId, 'READY_FOR_BATTLE_RESPONSE', { success: true });
-            
+
+        console.log('[ServerPlacementSystem] Ready for battle:', {
+            playerId,
+            readyStates: [...this.placementReadyStates.entries()],
+            numPlayers: this.numPlayers,
+            phase: this.game.state.phase,
+            allReady: this.areAllPlayersReady()
+        });
+
         // Check if all players are ready and start battle if so
         if (this.areAllPlayersReady() && this.game.state.phase === 'placement') {
 

@@ -168,8 +168,8 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
 
     async leaveGame() {
         // Send leave room event to server
-        if (this.game.multiplayerNetworkSystem) {
-            this.game.multiplayerNetworkSystem.leaveRoom();
+        if (this.game.hasService('leaveRoom')) {
+            this.game.call('leaveRoom');
         }
 
         // Hide game menu button
@@ -251,7 +251,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         if (quickMatchBtn) {
             quickMatchBtn.addEventListener('click', () => {
                 this.stopLobbyRefresh();
-                this.game.multiplayerNetworkSystem.startQuickMatch(getPlayerName());
+                this.game.call('startQuickMatch', getPlayerName());
                 dialog.remove();
             });
         }
@@ -259,7 +259,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
         if (createRoomBtn) {
             createRoomBtn.addEventListener('click', () => {
                 this.stopLobbyRefresh();
-                this.game.multiplayerNetworkSystem.createRoom(getPlayerName(), mode.maxPlayers);
+                this.game.call('createRoom', getPlayerName(), mode.maxPlayers);
                 dialog.remove();
             });
         }
@@ -414,7 +414,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
                                 const roomId = joinBtn.getAttribute('data-room-id');
                                 const playerName = getPlayerName();
                                 this.stopLobbyRefresh();
-                                this.game.multiplayerNetworkSystem.joinRoom(roomId, playerName);
+                                this.game.call('joinRoom', roomId, playerName);
                                 dialog.remove();
                             });
 
@@ -453,11 +453,10 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
             btn.disabled = true;
             btn.textContent = 'Updating...';
         }
-        this.game.multiplayerNetworkSystem.toggleReady(() => {
-        });
+        this.game.call('toggleReady');
     }
     leaveRoom() {
-        this.game.multiplayerNetworkSystem.leaveRoom();
+        this.game.call('leaveRoom');
         this.exitToMainMenu();
     }
 
@@ -522,7 +521,7 @@ class MultiplayerUISystem extends GUTS.BaseSystem {
             }
 
             // Send save data to server (host only)
-            this.game.multiplayerNetworkSystem.uploadSaveData(saveData, (success, response) => {
+            this.game.call('uploadSaveData', saveData, (success, response) => {
                 if (success) {
                     this.showNotification(`Save uploaded: ${saveData.saveName || 'Unknown'}. Game will load this save.`, 'success', 5000);
 

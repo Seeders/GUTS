@@ -87,7 +87,7 @@ class InfernoAbility extends GUTS.BaseAbility {
         this.createVisualEffect(centerPos, 'inferno');
 
         // Enhanced massive inferno explosion
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(centerPos.x, centerPos.y + 30, centerPos.z),
                 layers: [

@@ -91,7 +91,7 @@ class MultiShotAbility extends GUTS.BaseAbility {
         this.createVisualEffect(casterPos, 'volley');
 
         // Enhanced volley launch burst
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(casterPos.x, casterPos.y + 25, casterPos.z),
                 layers: [

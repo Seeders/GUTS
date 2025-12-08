@@ -107,7 +107,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         this.createVisualEffect(targetPos, 'divine_judgment');
 
         // Enhanced divine pillar descending from sky (client only)
-        if (!this.game.isServer && this.game.gameSystem) {
+        if (!this.game.isServer) {
             // Pillar of golden light descending
             const pillarSteps = 8;
             for (let i = 0; i < pillarSteps; i++) {
@@ -239,7 +239,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         this.createVisualEffect(targetPos, 'smite');
 
         // Enhanced divine explosion on impact (client only)
-        if (!this.game.isServer && this.game.gameSystem) {
+        if (!this.game.isServer) {
             this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z),
                 layers: [

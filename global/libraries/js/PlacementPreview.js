@@ -199,7 +199,7 @@ class PlacementPreview {
         // Use GridSystem coordinate transformations via gameManager if available
         let worldPositions;
 
-        if (this.game && this.game.gameSystem) {
+        if (this.game && !this.game.isServer) {
             if (!isBuilding) {
                 // Use placement grid coordinates (2x terrain tiles, for unit placement)
                 worldPositions = gridPositions.map(gridPos =>

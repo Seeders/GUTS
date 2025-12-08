@@ -129,7 +129,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
     }
 
     createAmbientSnow(centerPos) {
-        if (!this.game.gameSystem) return;
+        if (this.game.isServer) return;
 
         // Create continuous snow effect over the duration
         const snowInterval = 0.15;
@@ -219,7 +219,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
     }
 
     createFallingIceShard(casterEntity, targetPos) {
-        if (!this.game.gameSystem) return;
+        if (this.game.isServer) return;
 
         // Create falling ice shard using particles
         const fallDuration = 0.4;
@@ -306,7 +306,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
         // Impact particles
         this.createVisualEffect(position, 'ice_impact', { heightOffset: 0 });
 
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             const impactPos = new THREE.Vector3(position.x, position.y + 10, position.z);
 
             // Ice shatter burst
@@ -411,7 +411,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
         // Big frost explosion at the end
         this.createVisualEffect(centerPos, 'frost_burst');
 
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             const burstPos = new THREE.Vector3(centerPos.x, centerPos.y + 50, centerPos.z);
 
             this.game.call('createLayeredEffect', {

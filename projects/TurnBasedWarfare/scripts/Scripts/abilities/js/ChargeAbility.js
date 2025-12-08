@@ -152,7 +152,7 @@ class ChargeAbility extends GUTS.BaseAbility {
         this.createVisualEffect(pos, 'charge');
 
         // Enhanced charge initiation - dust burst and battle cry
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(pos.x, pos.y + 10, pos.z),
                 layers: [
@@ -258,7 +258,7 @@ class ChargeAbility extends GUTS.BaseAbility {
             this.createVisualEffect(targetPos, 'impact');
 
             // Enhanced massive impact explosion
-            if (this.game.gameSystem) {
+            if (!this.game.isServer) {
                 this.game.call('createLayeredEffect', {
                     position: new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z),
                     layers: [

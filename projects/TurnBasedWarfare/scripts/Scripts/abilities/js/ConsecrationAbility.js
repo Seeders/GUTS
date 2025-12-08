@@ -141,7 +141,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
         }
 
         // Create initial burst and continuous ground glow
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             const glowPos = new THREE.Vector3(consecrationPos.x, consecrationPos.y + 10, consecrationPos.z);
 
             // Initial holy burst
@@ -296,7 +296,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
                         
                         this.createVisualEffect(unitPos, 'consecration', { heightOffset: 10 });
                         
-                        if (this.game.gameSystem && this.game.hasService('showDamageNumber')) {
+                        if (!this.game.isServer && this.game.hasService('showDamageNumber')) {
                             this.game.call('showDamageNumber',
                                 unitPos.x, unitPos.y + 15, unitPos.z,
                                 healAmount, 'heal'

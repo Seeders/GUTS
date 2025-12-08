@@ -349,7 +349,7 @@ class ShopSystem extends GUTS.BaseSystem {
         }
         const placement = this.game.call('createPlacementData', placementPos, unit, this.game.state.mySide);
 
-        this.game.multiplayerNetworkSystem.submitPlacement(placement, (success, response) => {
+        this.game.call('submitPlacement', placement, (success, response) => {
             if(success){
                 const newProgress = productionProgress + buildTime;
                 this.setBuildingProductionProgress(buildingId, newProgress);
@@ -450,9 +450,9 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     purchaseUpgrade(upgradeId, upgrade) {
-        this.game.multiplayerNetworkSystem.purchaseUpgrade({ 
-            upgradeId, 
-            buildingId: this.game.state.selectedEntity.entityId 
+        this.game.call('purchaseUpgrade', {
+            upgradeId,
+            buildingId: this.game.state.selectedEntity.entityId
         }, (success, response) => {
             if (success) {
                 if (!this.buildingUpgrades.has(this.game.state.selectedEntity.entityId)) {
@@ -664,17 +664,17 @@ class ShopSystem extends GUTS.BaseSystem {
         }
 
         // Send cancel request to server
-        if (this.game.multiplayerNetworkSystem && this.game.multiplayerNetworkSystem.cancelBuilding) {
-            this.game.multiplayerNetworkSystem.cancelBuilding({ 
+        if (this.game.hasService('cancelBuilding')) {
+            this.game.call('cancelBuilding', {
                 placementId: placement.placementId,
-                buildingEntityId: buildingEntityId 
+                buildingEntityId: buildingEntityId
             }, (success, response) => {
                 if (!success) {
                     this.game.uiSystem?.showNotification('Failed to cancel construction', 'error', 1500);
                     console.error('Cancel construction failed:', response);
                     return;
                 }
-                
+
                 // Server confirmed, now do local cleanup
                 this.performLocalCancelConstruction(buildingEntityId, placement);
             });

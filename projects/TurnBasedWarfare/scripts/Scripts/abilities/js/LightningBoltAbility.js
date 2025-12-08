@@ -96,7 +96,7 @@ class LightningBoltAbility extends GUTS.BaseAbility {
         this.createVisualEffect(targetPos, 'lightning');
 
         // Enhanced electric impact effect
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             const impactPos = new THREE.Vector3(targetPos.x, targetPos.y + 30, targetPos.z);
 
             this.game.call('createLayeredEffect', {

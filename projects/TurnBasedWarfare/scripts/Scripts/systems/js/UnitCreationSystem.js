@@ -683,6 +683,5 @@ class UnitCreationSystem extends GUTS.BaseSystem {
 
     onSceneUnload() {
         this.dispose();
-        console.log('[UnitCreationManager] Scene unloaded - resources cleaned up');
     }
 }

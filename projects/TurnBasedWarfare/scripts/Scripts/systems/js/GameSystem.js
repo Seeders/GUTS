@@ -77,4 +77,7 @@ class GameSystem extends GUTS.BaseSystem {
         this.game.screenSystem.stats.round++;
         this.initializeGame();
     }
+
+    onSceneUnload() {
+    }
 }

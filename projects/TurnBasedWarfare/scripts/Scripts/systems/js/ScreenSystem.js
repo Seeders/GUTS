@@ -92,6 +92,5 @@ class ScreenSystem extends GUTS.BaseSystem {
 
     onSceneUnload() {
         this.reset();
-        console.log('[ScreenManager] Scene unloaded - resources cleaned up');
     }
 }

@@ -14,8 +14,6 @@ class ComponentSystem extends GUTS.BaseSystem {
     }
 
     onSceneUnload() {
-        // Clear cached components to allow fresh generation on next scene load
         this.components = null;
-        console.log('[ComponentManager] Scene unloaded - resources cleaned up');
     }
 }

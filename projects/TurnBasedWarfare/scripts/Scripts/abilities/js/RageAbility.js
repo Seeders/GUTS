@@ -89,7 +89,7 @@ class RageAbility extends GUTS.BaseAbility {
         this.createVisualEffect(casterPos, 'rage');
 
         // Enhanced rage activation with fiery burst
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(casterPos.x, casterPos.y + 30, casterPos.z),
                 layers: [

@@ -124,7 +124,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
             { objectType: "projectiles", spawnType: projectileData.id });
         
         // Use LifetimeSystem instead of direct component
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             this.game.call('addLifetime', projectileId, this.PROJECTILE_LIFETIME, {
                 fadeOutDuration: 1.0, // Fade out in last second
                 onDestroy: (entityId) => {
@@ -172,7 +172,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         }
         
         // 3. Default to physical
-        const elementTypes = this.game.gameSystem ? this.game.call('getDamageElementTypes') : null;
+        const elementTypes = this.game.call('getDamageElementTypes');
         return elementTypes?.PHYSICAL || 'physical';
     }
 
@@ -488,7 +488,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         if (!projectile.isBallistic) return;
         
         // Get actual terrain height for projectile impact
-        const terrainHeight = this.game.gameSystem ? this.game.call('getTerrainHeightAtPosition', pos.x, pos.z) : null;
+        const terrainHeight = this.game.call('getTerrainHeightAtPosition', pos.x, pos.z);
         const actualGroundLevel = terrainHeight !== null ? terrainHeight : this.game.movementSystem?.GROUND_LEVEL || 0;
         
         // Check if projectile hit the ground
@@ -500,7 +500,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
 
     handleProjectileHit(projectileId, targetId, targetPos, projectile) {
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             const damage = projectile.damage;
             const elementTypes = this.game.call('getDamageElementTypes');
             const element = projectile.element || elementTypes.PHYSICAL;
@@ -538,7 +538,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Default explosion behavior for splash damage projectiles
         this.createGroundExplosion(entityId, pos, projectile, groundLevel);
 
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             const splashRadius = projectile.splashRadius || 80;
             const splashDamage = Math.floor(projectile.damage);
             const elementTypes = this.game.call('getDamageElementTypes');
@@ -650,7 +650,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
     // Get visual effect color based on element
     getElementalEffectColor(element) {
-        if (!this.game.gameSystem) return '#ff2200'; // blood-red
+        if (this.game.isServer) return '#ff2200'; // blood-red
 
         const elementTypes = this.game.call('getDamageElementTypes');
 
@@ -673,7 +673,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
     // Get explosion effect type based on element
     getElementalExplosionEffect(element) {
-        if (!this.game.gameSystem) return 'explosion';
+        if (this.game.isServer) return 'explosion';
 
         const elementTypes = this.game.call('getDamageElementTypes');
 

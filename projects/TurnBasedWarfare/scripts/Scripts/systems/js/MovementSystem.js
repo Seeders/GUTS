@@ -769,9 +769,12 @@ class MovementSystem extends GUTS.BaseSystem {
                     vel.vx = Math.cos(smoothedDirection) * speed;
                     vel.vz = Math.sin(smoothedDirection) * speed;
 
-                    const transform = this.game.getComponent(entityId, "transform");
-                    if (transform && transform.rotation) {
-                        transform.rotation.y = smoothedDirection;
+                    // Skip rotation for anchored units (buildings)
+                    if (!vel.anchored) {
+                        const transform = this.game.getComponent(entityId, "transform");
+                        if (transform && transform.rotation) {
+                            transform.rotation.y = smoothedDirection;
+                        }
                     }
                 } else {
                     vel.vx = newVx;
@@ -790,8 +793,8 @@ class MovementSystem extends GUTS.BaseSystem {
 
         const speedSqrd = vel.vx * vel.vx + vel.vz * vel.vz;
         if (speedSqrd < this.MIN_MOVEMENT_THRESHOLD * this.MIN_MOVEMENT_THRESHOLD) {
-            // Preserve facing direction before zeroing velocity
-            if (speedSqrd > 0.001) {
+            // Preserve facing direction before zeroing velocity (skip for anchored units)
+            if (speedSqrd > 0.001 && !vel.anchored) {
                 const transform = this.game.getComponent(entityId, "transform");
                 if (transform && transform.rotation) {
                     transform.rotation.y = Math.atan2(vel.vz, vel.vx);

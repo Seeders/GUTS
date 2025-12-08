@@ -1,6 +1,7 @@
 {
   "title": "Client Game Scene",
   "systems": [
+    "ComponentSystem",
     "GridSystem",
     "TerrainSystem",
     "RenderSystem",
@@ -14,6 +15,9 @@
     "AnimationSystem",
     "ArmyDisplaySystem",
     "EffectsSystem",
+    "SquadSystem",
+    "UnitCreationSystem",
+    "MultiplayerNetworkSystem",
     "MultiplayerPlacementSystem",
     "MultiplayerUISystem",
     "ShopSystem",

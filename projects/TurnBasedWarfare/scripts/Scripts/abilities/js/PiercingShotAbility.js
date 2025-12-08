@@ -111,7 +111,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
         });
 
         // Enhanced beam trail particles
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             // Create particles along the beam path
             const beamSteps = 6;
             for (let i = 0; i <= beamSteps; i++) {

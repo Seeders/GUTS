@@ -89,7 +89,7 @@ class Tornado extends GUTS.BaseAbility {
                 this.createVisualEffect(enemyPos, 'curse');
 
                 // Enhanced dark curse visual
-                if (this.game.gameSystem) {
+                if (!this.game.isServer) {
                     // Dark energy swirl around target
                     this.game.call('createLayeredEffect', {
                         position: new THREE.Vector3(enemyPos.x, enemyPos.y + 30, enemyPos.z),

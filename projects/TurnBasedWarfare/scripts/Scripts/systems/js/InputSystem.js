@@ -454,10 +454,7 @@ class InputSystem extends GUTS.BaseSystem {
             modalStyles.remove();
         }
 
-        // Close any open modals
         const openModals = document.querySelectorAll('.game-modal');
         openModals.forEach(modal => modal.remove());
-
-        console.log('[InputManager] Scene unloaded - resources cleaned up');
     }
 }

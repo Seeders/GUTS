@@ -215,7 +215,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         this.createVisualEffect(trapPos, 'trap_explosion');
 
         // Enhanced massive trap explosion (client only)
-        if (!this.game.isServer && this.game.gameSystem) {
+        if (!this.game.isServer) {
             this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(trapPos.x, trapPos.y + 20, trapPos.z),
                 layers: [

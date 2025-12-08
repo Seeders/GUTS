@@ -3,4 +3,7 @@ class KeyboardSystem extends GUTS.BaseSystem {
         super(game);
         this.game.keyboardSystem = this;
     }
+
+    onSceneUnload() {
+    }
 }

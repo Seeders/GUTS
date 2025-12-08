@@ -1,6 +1,7 @@
 {
   "title": "Server Game Scene",
   "systems": [
+    "ComponentSystem",
     "GridSystem",
     "TerrainSystem",
     "RoundSystem",
@@ -12,6 +13,8 @@
     "DamageSystem",
     "AbilitySystem",
     "SquadExperienceSystem",
+    "SquadSystem",
+    "UnitCreationSystem",
     "ServerBattlePhaseSystem",
     "ServerPlacementSystem",
     "LifetimeSystem",
@@ -20,7 +23,7 @@
     "PathfindingSystem",
     "VisionSystem",
     "SupplySystem",
-    "SaveManager"
+    "SaveSystem"
   ],
   "entities": [
     {

@@ -490,7 +490,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
         // Capture client time for deterministic command creation
         const commandCreatedTime = this.game.state.now;
-        this.game.multiplayerNetworkSystem.setSquadTargets(
+        this.game.call('setSquadTargets',
             { placementIds, targetPositions, meta, commandCreatedTime },
             (success, responseData) => {
                 if (success) {

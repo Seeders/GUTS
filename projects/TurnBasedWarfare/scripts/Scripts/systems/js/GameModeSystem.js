@@ -121,4 +121,12 @@ class GameModeSystem extends GUTS.BaseSystem {
     getModeConfig(modeId) {
         return this.modes[modeId];
     }
+
+    onSceneUnload() {
+        const modeGrid = document.getElementById('modeGrid');
+        if (modeGrid) {
+            modeGrid.innerHTML = '';
+        }
+        this.modes = null;
+    }
 }

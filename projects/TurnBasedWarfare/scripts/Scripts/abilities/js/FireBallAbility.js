@@ -153,7 +153,7 @@ class FireBallAbility extends GUTS.BaseAbility {
         this.createVisualEffect(casterPos, 'cast');
 
         // Additional swirling effect using layered particles
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             const position = new THREE.Vector3(
                 casterPos.x,
                 casterPos.y + 75,
@@ -273,7 +273,7 @@ class FireBallAbility extends GUTS.BaseAbility {
         this.createVisualEffect(currentPos, 'trail_sparks', { heightOffset: 0 });
 
         // Additional smoke trail using particle system
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             const position = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
 
             this.game.call('createParticles', {
@@ -311,7 +311,7 @@ class FireBallAbility extends GUTS.BaseAbility {
         }, 0.1);
 
         // Advanced layered explosion using new particle system
-        if (this.game.gameSystem) {
+        if (!this.game.isServer) {
             const position = new THREE.Vector3(
                 impactPos.x,
                 impactPos.y + 75,

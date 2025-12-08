@@ -89,7 +89,7 @@ class MassHealAbility extends GUTS.BaseAbility {
         const sortedAllies = targetAllies.slice().sort((a, b) => String(a).localeCompare(String(b)));
 
         // Create central divine burst at caster
-        if (this.game.gameSystem && casterPos) {
+        if (!this.game.isServer && casterPos) {
             // Central holy nova explosion
             this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(casterPos.x, casterPos.y + 40, casterPos.z),
@@ -160,7 +160,7 @@ class MassHealAbility extends GUTS.BaseAbility {
                     this.createVisualEffect(allyPos, 'heal');
 
                     // Enhanced individual healing effect with delay for cascade
-                    if (this.game.gameSystem) {
+                    if (!this.game.isServer) {
                         const delay = index * 0.1;
                         this.game.schedulingSystem.scheduleAction(() => {
                             // Rising healing light column
@@ -219,7 +219,7 @@ class MassHealAbility extends GUTS.BaseAbility {
                     }
 
                     // Show heal number
-                    if (this.game.gameSystem && this.game.hasService('showDamageNumber')) {
+                    if (!this.game.isServer && this.game.hasService('showDamageNumber')) {
                         this.game.call('showDamageNumber',
                             allyPos.x, allyPos.y + 50, allyPos.z,
                             actualHeal, 'heal'

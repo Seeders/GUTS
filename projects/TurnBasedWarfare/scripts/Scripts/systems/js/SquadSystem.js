@@ -321,30 +321,33 @@ class SquadSystem extends GUTS.BaseSystem {
      */
     findValidPositions(squadData, bounds, occupiedCells = new Set()) {
         const validPositions = [];
-        
+
         // Check each possible center position
         for (let x = bounds.minX; x <= bounds.maxX; x++) {
             for (let z = bounds.minZ; z <= bounds.maxZ; z++) {
                 const gridPos = { x, z };
                 const cells = this.getSquadCells(gridPos, squadData);
-                
+
                 // Check if all cells are within bounds and unoccupied
                 const isValid = cells.every(cell => {
                     if (cell.x < bounds.minX || cell.x > bounds.maxX ||
                         cell.z < bounds.minZ || cell.z > bounds.maxZ) {
                         return false;
                     }
-                    
+
                     const key = `${cell.x},${cell.z}`;
                     return !occupiedCells.has(key);
                 });
-                
+
                 if (isValid) {
                     validPositions.push(gridPos);
                 }
             }
         }
-        
+
         return validPositions;
+    }
+
+    onSceneUnload() {
     }
 }

@@ -98,7 +98,7 @@ class RetreatBehaviorAction extends GUTS.BaseBehaviorAction {
 
         combat.lastAttack = game.state.now;
 
-        if (game.gameSystem?.has('triggerSinglePlayAnimation')) {
+        if (game.has('triggerSinglePlayAnimation')) {
             game.call('triggerSinglePlayAnimation', attackerId, 'attack', combat.attackSpeed);
         }
 
