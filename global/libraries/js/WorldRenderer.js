@@ -177,17 +177,16 @@ class WorldRenderer {
 
         // Use Right Click for pan only
         this.controls.mouseButtons = {
-            LEFT: null,                    // Left click disabled (used for editing)
-            MIDDLE: null,                  // Middle click disabled (conflicts with browser scroll)
-            RIGHT: THREE.MOUSE.PAN         // Right click for panning
+            LEFT: null,
+            MIDDLE: null,
+            RIGHT: THREE.MOUSE.PAN
         };
 
         this.controls.target.set(lookAtPos.x, lookAtPos.y, lookAtPos.z);
-        this.controls.enableDamping = true;
-        this.controls.dampingFactor = 0.05;
-        this.controls.screenSpacePanning = true; // Pan relative to screen/camera orientation
-        this.controls.enableZoom = false; // Disable default zoom, we'll handle it manually
-        this.controls.panSpeed = 3; // Increase pan speed for right-click drag
+        this.controls.enableDamping = false;
+        this.controls.screenSpacePanning = true;
+        this.controls.enableZoom = false;
+        this.controls.panSpeed = 3;
 
         // Custom rotation variables
         this.ctrlPressed = false;
@@ -206,16 +205,6 @@ class WorldRenderer {
 
         // Minimum height above terrain
         this.minCameraY = 10;
-
-        // Constrain camera and target Y position to prevent going under terrain
-        this.controls.addEventListener('change', () => {
-            if (this.camera.position.y < this.minCameraY) {
-                this.camera.position.y = this.minCameraY;
-            }
-            if (this.controls.target.y < -100) {
-                this.controls.target.y = -100;
-            }
-        });
 
         const handleKeyDown = (event) => {
             if (event.shiftKey) {
