@@ -1097,7 +1097,7 @@ class EntityRenderer {
         const animSetData = animSetName ? collections?.spriteAnimationSets?.[animSetName] : null;
 
         // Get spriteSize from animation set's generatorSettings, fallback to entity's spriteScale, then default 64
-        const spriteScale = animSetData?.generatorSettings?.spriteSize || 64;
+        const spriteScale = animSetData?.generatorSettings?.spriteSize || entityDef.spriteScale || 32;
         // spriteYOffset allows adjusting vertical position when sprite feet aren't at bottom of frame
         const spriteOffset = entityDef?.spriteOffset || animSetData.spriteOffset || 0;
 

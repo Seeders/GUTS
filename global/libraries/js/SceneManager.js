@@ -181,9 +181,10 @@ class SceneManager {
 
     /**
      * Spawn all entities defined in the scene
-     * Supports two formats:
+     * Supports three formats:
      * 1. Prefab format: { id, prefab }
-     * 2. Collection format (SceneEditor): { id, collection, spawnType, name?, transform? }
+     * 2. Raw components format: { id, components: { componentType: data, ... } }
+     * 3. Collection format (SceneEditor): { id, collection, spawnType, name?, transform? }
      * @param {Object} sceneData - The scene configuration
      * @returns {Promise<void>}
      */
@@ -209,6 +210,17 @@ class SceneManager {
                 this.spawnedEntityIds.add(entityId);
 
                 for (const [componentType, componentData] of Object.entries(components)) {
+                    this.game.addComponent(entityId, componentType, componentData);
+                }
+                continue;
+            }
+
+            // Raw components format: { id, components: { componentType: data, ... } }
+            if (entityDef.components && typeof entityDef.components === 'object') {
+                this.game.createEntity(entityId);
+                this.spawnedEntityIds.add(entityId);
+
+                for (const [componentType, componentData] of Object.entries(entityDef.components)) {
                     this.game.addComponent(entityId, componentType, componentData);
                 }
                 continue;
