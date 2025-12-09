@@ -388,13 +388,15 @@ class EntityRenderer {
         // Custom shader material for billboarding with UV manipulation
         const material = new THREE.ShaderMaterial({
             uniforms: {
-                map: { value: spriteSheetTexture },
-                cameraPosition: { value: new THREE.Vector3() }
+                map: { value: spriteSheetTexture }
             },
             vertexShader: `
                 attribute vec2 uvOffset;
                 attribute vec2 uvScale;
                 varying vec2 vUv;
+
+                const float PI = 3.14159265359;
+                const float ANGLE_STEP = PI / 4.0; // 45 degrees (8 directions)
 
                 void main() {
                     // Pass UV with instance-specific offset and scale
@@ -414,15 +416,58 @@ class EntityRenderer {
                         length(vec3(instanceMat[2][0], instanceMat[2][1], instanceMat[2][2]))
                     );
 
-                    // Billboard: Create camera-facing quad
-                    // Transform instance position to view space
-                    vec4 mvPosition = modelViewMatrix * vec4(instancePos, 1.0);
+                    // Get world-space instance position
+                    vec4 worldPos = modelMatrix * vec4(instancePos, 1.0);
 
-                    // Add the billboard quad offset in view space (always faces camera)
-                    // The quad vertices are in xy plane, scaled by instance scale
-                    mvPosition.xyz += vec3(position.x * instanceScale.x, position.y * instanceScale.y, 0.0);
+                    // Calculate angle from entity to camera in world XZ plane
+                    // cameraPosition is a built-in uniform provided by THREE.js
+                    float dx = cameraPosition.x - worldPos.x;
+                    float dz = cameraPosition.z - worldPos.z;
+                    // atan2(z, x) gives angle from +X axis, counterclockwise
+                    float angle = atan(dz, dx);
 
-                    gl_Position = projectionMatrix * mvPosition;
+                    // Snap angle to nearest 45-degree increment
+                    float snappedAngle = round(angle / ANGLE_STEP) * ANGLE_STEP;
+
+                    // Billboard quad: PlaneGeometry is in XY plane
+                    // Scale the vertices
+                    vec3 scaledPos = vec3(position.x * instanceScale.x, position.y * instanceScale.y, 0.0);
+
+                    // Rotate quad to face camera at snapped angle (XZ plane)
+                    float cosA = cos(snappedAngle);
+                    float sinA = sin(snappedAngle);
+
+                    // Calculate vertical angle to camera for Y-axis billboarding
+                    float dy = cameraPosition.y - worldPos.y;
+                    float horizontalDist = sqrt(dx * dx + dz * dz);
+                    float verticalAngle = atan(dy, horizontalDist);
+
+                    // Snapped right vector (horizontal, in XZ plane)
+                    vec3 snappedRight = vec3(sinA, 0.0, -cosA);
+
+                    // Forward direction toward camera (snapped in XZ, but we use actual vertical)
+                    vec3 forward = vec3(cosA, 0.0, sinA);
+
+                    // Tilt the up vector based on camera's vertical position
+                    // This makes sprites lean back when camera is above
+                    float cosV = cos(verticalAngle);
+                    float sinV = sin(verticalAngle);
+
+                    // Up vector tilted toward camera (negative sinV to tilt forward)
+                    vec3 up = vec3(
+                        -forward.x * sinV,
+                        cosV,
+                        -forward.z * sinV
+                    );
+
+                    // Build the billboard position
+                    vec3 rotatedPos = snappedRight * scaledPos.x + up * scaledPos.y;
+
+                    // Add to world position
+                    vec4 finalWorldPos = vec4(worldPos.xyz + rotatedPos, 1.0);
+
+                    // Transform to clip space
+                    gl_Position = projectionMatrix * viewMatrix * finalWorldPos;
                 }
             `,
             fragmentShader: `
@@ -775,11 +820,10 @@ class EntityRenderer {
         geometry.setAttribute('uvOffset', new THREE.InstancedBufferAttribute(uvOffsets, 2));
         geometry.setAttribute('uvScale', new THREE.InstancedBufferAttribute(uvScales, 2));
 
-        // Custom shader material for billboarding
+        // Custom shader material for billboarding (always faces camera)
         const material = new THREE.ShaderMaterial({
             uniforms: {
-                map: { value: texture },
-                cameraPosition: { value: new THREE.Vector3() }
+                map: { value: texture }
             },
             vertexShader: `
                 attribute vec2 uvOffset;
