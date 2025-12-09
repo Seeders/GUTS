@@ -42,9 +42,7 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     update() {
-        if (!this.game.scene || !this.game.camera || !this.game.renderer) {
-            console.warn('[AnimationSystem] update() skipped - missing scene/camera/renderer',
-                { scene: !!this.game.scene, camera: !!this.game.camera, renderer: !!this.game.renderer });
+        if (!this.game.scene || !this.game.renderer) {
             return;
         }
         this.updateEntityAnimations();
@@ -212,6 +210,8 @@ class AnimationSystem extends GUTS.BaseSystem {
         // But only for living entities (dead entities checked above)
         if (this.game.state?.phase !== 'battle') {
             this.game.call('setBillboardAnimation', entityId, 'idle', true);
+            // Still update sprite direction based on camera position (important for editor)
+            this.updateSpriteDirectionFromRotation(entityId, animState);
             return;
         }
 
@@ -240,62 +240,75 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Update sprite direction based on entity's rotation.y
-     * Converts world rotation to isometric screen direction
+     * Update sprite direction based on entity's rotation.y and camera position
+     *
+     * The sprite shown depends on which side of the entity the camera can see,
+     * taking into account the entity's facing direction.
+     *
+     * - If entity faces toward camera → show "down" (front)
+     * - If entity faces away from camera → show "up" (back)
+     * - If entity faces perpendicular → show "left" or "right"
+     *
+     * This combines both: if the entity rotates, or if the camera moves,
+     * the visible sprite changes accordingly.
      */
     updateSpriteDirectionFromRotation(entityId, animState) {
         const transform = this.game.getComponent(entityId, 'transform');
-        if (!transform?.rotation) return;
+        if (!transform?.position || !transform?.rotation) return;
+
+        // Get camera via registered function (returns live reference from worldRenderer)
+        const cam = this.game.call('getCamera') || this.game.camera;
+        if (!cam) return;
 
         const rotationY = transform.rotation.y;
+        const entityPos = transform.position;
 
-        // Convert rotation to world direction vector
-        const dx = Math.cos(rotationY);
-        const dz = Math.sin(rotationY);
+        // Calculate angle from entity to camera in world space
+        const dx = cam.position.x - entityPos.x;
+        const dz = cam.position.z - entityPos.z;
+        const angleToCamera = Math.atan2(dz, dx);
 
-        // Transform to screen-space for isometric camera looking toward +x, -z
-        const screenHorizontal = dx + dz; // positive = screen right, negative = screen left
-        const screenVertical = dx - dz;   // positive = screen up, negative = screen down
+        // The relative angle: how the entity's facing compares to where the camera is
+        // relativeAngle = 0 means entity is facing directly toward camera → show front
+        // relativeAngle = PI means entity is facing away from camera → show back
+        let relativeAngle = rotationY - angleToCamera;
 
-        // Calculate angle in degrees (0 = right, 90 = up, 180/-180 = left, -90 = down)
-        let angle = Math.atan2(screenVertical, screenHorizontal) * (180 / Math.PI);
+        // Normalize to -PI to PI
+        while (relativeAngle > Math.PI) relativeAngle -= 2 * Math.PI;
+        while (relativeAngle < -Math.PI) relativeAngle += 2 * Math.PI;
 
-        // Determine direction and flip based on 8 sectors (45° each)
+        // Convert to degrees
+        const angleDeg = relativeAngle * (180 / Math.PI);
+
+        // Map relative angle to sprite direction
         let newDirection = animState.spriteDirection;
         let shouldFlip = false;
 
-        if (angle >= -22.5 && angle < 22.5) {
-            // Right (0°)
-            newDirection = 'right';
-            shouldFlip = false;
-        } else if (angle >= 22.5 && angle < 67.5) {
-            // Up-right (45°)
-            newDirection = 'upright';
-            shouldFlip = false;
-        } else if (angle >= 67.5 && angle < 112.5) {
-            // Up (90°)
-            newDirection = 'up';
-            shouldFlip = false;
-        } else if (angle >= 112.5 && angle < 157.5) {
-            // Up-left (135°)
-            newDirection = 'upleft';
-            shouldFlip = false;
-        } else if (angle >= 157.5 || angle < -157.5) {
-            // Left (180°)
-            newDirection = 'left';
-            shouldFlip = false;
-        } else if (angle >= -157.5 && angle < -112.5) {
-            // Down-left (-135° / 225°)
-            newDirection = 'downleft';
-            shouldFlip = false;
-        } else if (angle >= -112.5 && angle < -67.5) {
-            // Down (-90° / 270°)
+        // 8 sectors of 45 degrees each
+        if (angleDeg >= -22.5 && angleDeg < 22.5) {
+            // Entity facing toward camera → show front (down)
             newDirection = 'down';
-            shouldFlip = false;
-        } else if (angle >= -67.5 && angle < -22.5) {
-            // Down-right (-45° / 315°)
+        } else if (angleDeg >= 22.5 && angleDeg < 67.5) {
+            // Entity facing front-left of camera → show down-left
+            newDirection = 'downleft';
+        } else if (angleDeg >= 67.5 && angleDeg < 112.5) {
+            // Entity facing left of camera → show left
+            newDirection = 'left';
+        } else if (angleDeg >= 112.5 && angleDeg < 157.5) {
+            // Entity facing back-left of camera → show up-left
+            newDirection = 'upleft';
+        } else if (angleDeg >= 157.5 || angleDeg < -157.5) {
+            // Entity facing away from camera → show back (up)
+            newDirection = 'up';
+        } else if (angleDeg >= -157.5 && angleDeg < -112.5) {
+            // Entity facing back-right of camera → show up-right
+            newDirection = 'upright';
+        } else if (angleDeg >= -112.5 && angleDeg < -67.5) {
+            // Entity facing right of camera → show right
+            newDirection = 'right';
+        } else if (angleDeg >= -67.5 && angleDeg < -22.5) {
+            // Entity facing front-right of camera → show down-right
             newDirection = 'downright';
-            shouldFlip = false;
         }
 
         // Check if direction changed

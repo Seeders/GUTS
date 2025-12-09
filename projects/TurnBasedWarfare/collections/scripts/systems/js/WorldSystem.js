@@ -25,6 +25,7 @@ class WorldSystem extends GUTS.BaseSystem {
 
         // Register gameManager methods - delegate to WorldRenderer and TerrainDataManager
         this.game.register('getWorldScene', () => this.worldRenderer?.getScene());
+        this.game.register('getCamera', () => this.worldRenderer?.camera);
         this.game.register('getWorldExtendedSize', () => this.game.terrainSystem?.terrainDataManager?.extendedSize);
         this.game.register('getGroundTexture', () => this.worldRenderer?.getGroundTexture());
         this.game.register('getGroundMesh', () => this.worldRenderer?.getGroundMesh());
