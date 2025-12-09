@@ -12,7 +12,7 @@ projects/**/config/*
 */**/dist/server/vendors-node_modules_socket_io_wrapper_mjs.js
 
 build/.temp/**/*
-editor/
+dist/**/*
 
 # Logs
 logs

@@ -4,5 +4,5 @@
   "windowContext": "THREE",
   "requireName": "BufferGeometryUtils",
   "importName": "BufferGeometryUtils",
-  "filePath": "/global/libraries/js/BufferGeometryUtils.js"
+  "filePath": "/editor/collections/scripts/libraries/js/BufferGeometryUtils.js"
 }

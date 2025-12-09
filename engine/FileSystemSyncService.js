@@ -313,9 +313,12 @@ class FileSystemSyncService {
                 }
             }
 
-            const dataIndex = parts.indexOf('data');
-            if (dataIndex !== -1 && (subdirIndex === -1 || dataIndex < subdirIndex)) {
-                subdirIndex = dataIndex;
+            // Look for 'data' as a collection subdirectory (immediate parent of the file)
+            // Only match if 'data' is at position parts.length - 2 (parent of file)
+            // This prevents confusing a category folder named 'data' with the data subdirectory
+            const fileParentIndex = parts.length - 2;
+            if (parts[fileParentIndex] === 'data' && (subdirIndex === -1 || fileParentIndex < subdirIndex)) {
+                subdirIndex = fileParentIndex;
             }
 
             if (subdirIndex >= 2) {
@@ -417,7 +420,7 @@ class FileSystemSyncService {
                     const response = await fetch('/read-file', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ path: fileInfo.name })
+                        body: JSON.stringify({ path: fileInfo.name, isModule })
                     });
                     if (!response.ok) throw new Error(`Failed to read ${fileExt} file: ${fileInfo.name}`);
                     content = await response.text();
@@ -783,9 +786,12 @@ class FileSystemSyncService {
                 }
             }
 
-            const dataIndex = parts.indexOf('data');
-            if (dataIndex !== -1 && (subdirIndex === -1 || dataIndex < subdirIndex)) {
-                subdirIndex = dataIndex;
+            // Look for 'data' as a collection subdirectory (immediate parent of the file)
+            // Only match if 'data' is at position parts.length - 2 (parent of file)
+            // This prevents confusing a category folder named 'data' with the data subdirectory
+            const fileParentIndex = parts.length - 2;
+            if (parts[fileParentIndex] === 'data' && (subdirIndex === -1 || fileParentIndex < subdirIndex)) {
+                subdirIndex = fileParentIndex;
             }
 
             if (subdirIndex >= 2) {

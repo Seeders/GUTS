@@ -33,7 +33,7 @@ const entries = generator.generateAll();
 // Output directories
 const clientOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'client');
 const serverOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'server');
-const editorOutput = path.resolve(__dirname, 'editor');
+const editorOutput = path.resolve(__dirname, 'dist');
 
 // Base webpack configuration
 const baseConfig = {
@@ -43,7 +43,7 @@ const baseConfig = {
         extensions: ['.js', '.json'],
         alias: {
             '@engine': path.resolve(__dirname, 'engine'),
-            '@global': path.resolve(__dirname, 'global'),
+            '@global': path.resolve(__dirname, 'editor', 'collections'),
             '@project': path.resolve(__dirname, 'projects', projectName),
             '@scripts': path.resolve(__dirname, 'projects', projectName, 'collections', 'scripts'),
             // Ensure 'three' resolves to the npm package

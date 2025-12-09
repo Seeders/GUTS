@@ -60,7 +60,7 @@ if (!entries.editor) {
 }
 
 // Output directory
-const editorOutput = path.resolve(__dirname, '..', 'editor');
+const editorOutput = path.resolve(__dirname, '..', 'dist');
 
 // Base webpack configuration
 const baseConfig = {
@@ -70,7 +70,7 @@ const baseConfig = {
         extensions: ['.js', '.json'],
         alias: {
             '@engine': path.resolve(__dirname, '..', 'engine'),
-            '@global': path.resolve(__dirname, '..', 'global'),
+            '@global': path.resolve(__dirname, '..', 'editor', 'collections'),
             '@project': path.resolve(__dirname, '..', 'projects', projectName),
             '@scripts': path.resolve(__dirname, '..', 'projects', projectName, 'collections', 'scripts'),
             'three': path.resolve(__dirname, '..', 'node_modules', 'three')

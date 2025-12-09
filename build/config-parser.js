@@ -13,7 +13,7 @@ class ConfigParser {
     constructor(projectName) {
         this.projectName = projectName;
         this.projectRoot = path.join(__dirname, '..', 'projects', projectName);
-        this.globalRoot = path.join(__dirname, '..', 'global');
+        this.globalRoot = path.join(__dirname, '..', 'editor', 'collections');
         this.collectionsRoot = path.join(this.projectRoot, 'collections');
 
         // Cache for library metadata loaded from data JSON files
@@ -22,8 +22,11 @@ class ConfigParser {
         // Cache for object type definitions
         this.objectTypeDefinitions = [];
 
-        // Discovered collections
+        // Discovered collections (project)
         this.collections = {};
+
+        // Discovered editor collections
+        this.editorCollections = {};
 
         // Loaded configs from Settings/configs
         this.configs = {};
@@ -70,34 +73,34 @@ class ConfigParser {
     }
 
     /**
-     * Load library metadata from data JSON files in global/libraries/data
-     * and project scripts/Scripts/libraries/data
+     * Load library metadata from data JSON files in discovered 'libraries' collections
+     * Scans both global and project collections dynamically
      */
     loadLibraryMetadata() {
-        // Load global library metadata
-        const globalDataPath = path.join(this.globalRoot, 'libraries', 'data');
-        if (fs.existsSync(globalDataPath)) {
-            const files = fs.readdirSync(globalDataPath).filter(f => f.endsWith('.json'));
-            for (const file of files) {
-                const data = JSON.parse(fs.readFileSync(path.join(globalDataPath, file), 'utf8'));
-                const name = data.fileName || path.basename(file, '.json');
-                this.libraryMetadata[name] = { ...data, source: 'global' };
+        // Load editor library metadata from discovered 'libraries' collection
+        const editorLibraries = this.editorCollections['libraries'];
+        if (editorLibraries && editorLibraries.dataPath) {
+            const dataFiles = this.scanDataFolder(editorLibraries.dataPath);
+            for (const fileInfo of dataFiles) {
+                const data = JSON.parse(fs.readFileSync(fileInfo.path, 'utf8'));
+                const name = data.fileName || fileInfo.name;
+                this.libraryMetadata[name] = { ...data, source: 'editor' };
 
                 // Also register with name variants (e.g., three.EffectComposer -> three_EffectComposer)
                 const underscoreName = name.replace(/\./g, '_');
                 if (underscoreName !== name) {
-                    this.libraryMetadata[underscoreName] = { ...data, source: 'global' };
+                    this.libraryMetadata[underscoreName] = { ...data, source: 'editor' };
                 }
             }
         }
 
-        // Load project library metadata (overrides global)
-        const projectDataPath = path.join(this.collectionsRoot, 'scripts', 'libraries', 'data');
-        if (fs.existsSync(projectDataPath)) {
-            const files = fs.readdirSync(projectDataPath).filter(f => f.endsWith('.json'));
-            for (const file of files) {
-                const data = JSON.parse(fs.readFileSync(path.join(projectDataPath, file), 'utf8'));
-                const name = data.fileName || path.basename(file, '.json');
+        // Load project library metadata (overrides global) from discovered 'libraries' collection
+        const projectLibraries = this.collections['libraries'];
+        if (projectLibraries && projectLibraries.dataPath) {
+            const dataFiles = this.scanDataFolder(projectLibraries.dataPath);
+            for (const fileInfo of dataFiles) {
+                const data = JSON.parse(fs.readFileSync(fileInfo.path, 'utf8'));
+                const name = data.fileName || fileInfo.name;
                 this.libraryMetadata[name] = { ...data, source: 'project' };
 
                 // Also register with name variants
@@ -187,9 +190,6 @@ class ConfigParser {
     discoverCollections() {
         console.log('\n  Discovering collections from folder structure...');
 
-        // Categories that use JS subfolders (have /js, /data, /html, /css subfolders)
-        const jsSubfolderCategories = new Set(['scripts', 'behaviors']);
-
         // Build a map of objectTypeDefinition id -> definition for metadata lookup
         const objTypeDefMap = new Map();
         for (const def of this.objectTypeDefinitions) {
@@ -211,7 +211,6 @@ class ConfigParser {
         // Process each category folder
         for (const category of categoryFolders) {
             const categoryPath = path.join(this.collectionsRoot, category);
-            const hasJsSubfolder = jsSubfolderCategories.has(category);
 
             // Get all subfolders in this category
             const subfolders = fs.readdirSync(categoryPath, { withFileTypes: true })
@@ -222,18 +221,22 @@ class ConfigParser {
                 const collectionId = subfolder;
                 const folderPath = path.join(categoryPath, subfolder);
 
+                // Auto-detect if this collection uses js/data/html/css subfolder structure
+                // by checking if a 'data' or 'js' subfolder exists
+                const potentialJsPath = path.join(folderPath, 'js');
+                const potentialDataPath = path.join(folderPath, 'data');
+                const hasSubfolderStructure = fs.existsSync(potentialJsPath) || fs.existsSync(potentialDataPath);
+
                 // Determine paths for JS, data, HTML, and CSS files
                 let jsPath, dataPath, htmlPath, cssPath;
-                if (hasJsSubfolder) {
-                    jsPath = path.join(folderPath, 'js');
-                    dataPath = path.join(folderPath, 'data');
+                if (hasSubfolderStructure) {
+                    jsPath = potentialJsPath;
+                    dataPath = potentialDataPath;
                     htmlPath = path.join(folderPath, 'html');
                     cssPath = path.join(folderPath, 'css');
                 } else {
                     jsPath = folderPath;
-                    // Check if folder has a 'data' subfolder, otherwise use folder directly
-                    const nestedDataPath = path.join(folderPath, 'data');
-                    dataPath = fs.existsSync(nestedDataPath) ? nestedDataPath : folderPath;
+                    dataPath = folderPath;
                     htmlPath = null;
                     cssPath = null;
                 }
@@ -265,6 +268,101 @@ class ConfigParser {
         }
 
         console.log(`    Found ${Object.keys(this.collections).length} collections`);
+    }
+
+    /**
+     * Discover all editor collections by scanning the editor/collections folder structure.
+     * Same logic as discoverCollections but for the editor collections.
+     */
+    discoverEditorCollections() {
+        console.log('\n  Discovering editor collections from folder structure...');
+
+        if (!fs.existsSync(this.globalRoot)) {
+            console.warn(`    Editor collections root not found: ${this.globalRoot}`);
+            return;
+        }
+
+        const categoryFolders = fs.readdirSync(this.globalRoot, { withFileTypes: true })
+            .filter(d => d.isDirectory())
+            .map(d => d.name);
+
+        console.log(`    Found ${categoryFolders.length} editor category folders`);
+
+        // Process each category folder
+        for (const category of categoryFolders) {
+            const categoryPath = path.join(this.globalRoot, category);
+
+            // Get all subfolders in this category
+            const subfolders = fs.readdirSync(categoryPath, { withFileTypes: true })
+                .filter(d => d.isDirectory())
+                .map(d => d.name);
+
+            for (const subfolder of subfolders) {
+                const collectionId = subfolder;
+                const folderPath = path.join(categoryPath, subfolder);
+
+                // Auto-detect if this collection uses js/data/html/css subfolder structure
+                // by checking if a 'data' or 'js' subfolder exists
+                const potentialJsPath = path.join(folderPath, 'js');
+                const potentialDataPath = path.join(folderPath, 'data');
+                const hasSubfolderStructure = fs.existsSync(potentialJsPath) || fs.existsSync(potentialDataPath);
+
+                // Determine paths for JS, data, HTML, and CSS files
+                let jsPath, dataPath, htmlPath, cssPath;
+                if (hasSubfolderStructure) {
+                    jsPath = potentialJsPath;
+                    dataPath = potentialDataPath;
+                    htmlPath = path.join(folderPath, 'html');
+                    cssPath = path.join(folderPath, 'css');
+                } else {
+                    jsPath = folderPath;
+                    dataPath = folderPath;
+                    htmlPath = null;
+                    cssPath = null;
+                }
+
+                // Scan for JS files and data files
+                const jsFiles = this.scanJsFolder(jsPath);
+                const dataFiles = this.scanDataFolder(dataPath);
+
+                // Scan for HTML and CSS files if applicable
+                const htmlFiles = htmlPath ? this.scanFolderByExtension(htmlPath, '.html') : [];
+                const cssFiles = cssPath ? this.scanFolderByExtension(cssPath, '.css') : [];
+
+                // Include collection if it has JS files OR data files
+                if (jsFiles.length > 0 || dataFiles.length > 0) {
+                    this.editorCollections[collectionId] = {
+                        id: collectionId,
+                        parent: category,
+                        jsPath: jsPath,
+                        dataPath: dataPath,
+                        htmlPath: htmlPath,
+                        cssPath: cssPath,
+                        files: jsFiles,
+                        dataFiles: dataFiles,
+                        htmlFiles: htmlFiles,
+                        cssFiles: cssFiles
+                    };
+                }
+            }
+        }
+
+        console.log(`    Found ${Object.keys(this.editorCollections).length} editor collections`);
+    }
+
+    /**
+     * Find a collection by name, checking both editor and project collections
+     */
+    findCollection(collectionName) {
+        // Check editor collections first
+        if (this.editorCollections[collectionName]) {
+            return { collection: this.editorCollections[collectionName], source: 'editor' };
+        }
+        // Then check project collections
+        if (this.collections[collectionName]) {
+            return { collection: this.collections[collectionName], source: 'project' };
+        }
+        return null;
     }
 
     /**
@@ -356,23 +454,29 @@ class ConfigParser {
                 continue;
             }
 
-            // Try to find the library file by scanning folders
+            // Try to find the library file using discovered collections
             let foundPath = null;
             let source = null;
 
-            // Check project libraries first
-            const projectLibPath = path.join(this.collectionsRoot, 'scripts', 'libraries', 'js', `${libName}.js`);
-            if (fs.existsSync(projectLibPath)) {
-                foundPath = projectLibPath;
-                source = 'project';
+            // Search project libraries first (higher priority for project-specific overrides)
+            const projectLibraries = this.collections['libraries'];
+            if (projectLibraries) {
+                const libFile = projectLibraries.files.find(f => f.name === libName || f.fileName === libName);
+                if (libFile) {
+                    foundPath = libFile.path;
+                    source = 'project';
+                }
             }
 
-            // Check global libraries
+            // Then search editor libraries if not found in project
             if (!foundPath) {
-                const globalLibPath = path.join(this.globalRoot, 'libraries', 'js', `${libName}.js`);
-                if (fs.existsSync(globalLibPath)) {
-                    foundPath = globalLibPath;
-                    source = 'global';
+                const editorLibraries = this.editorCollections['libraries'];
+                if (editorLibraries) {
+                    const libFile = editorLibraries.files.find(f => f.name === libName || f.fileName === libName);
+                    if (libFile) {
+                        foundPath = libFile.path;
+                        source = 'editor';
+                    }
                 }
             }
 
@@ -578,7 +682,9 @@ class ConfigParser {
         }
 
         const editorModules = editorConfig.editorModules || [];
-        const globalModulesPath = path.join(this.globalRoot, 'editorModules');
+
+        // Find editorModules collection dynamically from discovered collections
+        const editorModulesResult = this.findCollection('editorModules');
         const projectModulesPath = path.join(this.collectionsRoot, 'settings', 'editorModules');
 
         const allLibraries = [];
@@ -591,18 +697,25 @@ class ConfigParser {
 
         for (const moduleName of editorModules) {
             const projectConfigPath = path.join(projectModulesPath, `${moduleName}.json`);
-            const globalConfigPath = path.join(globalModulesPath, `${moduleName}.json`);
 
             let moduleConfigPath;
             let configSource;
 
+            // Check project first
             if (fs.existsSync(projectConfigPath)) {
                 moduleConfigPath = projectConfigPath;
                 configSource = 'project';
-            } else if (fs.existsSync(globalConfigPath)) {
-                moduleConfigPath = globalConfigPath;
-                configSource = 'global';
-            } else {
+            }
+            // Then check discovered editorModules collection
+            else if (editorModulesResult) {
+                const moduleFile = editorModulesResult.collection.dataFiles.find(f => f.name === moduleName);
+                if (moduleFile) {
+                    moduleConfigPath = moduleFile.path;
+                    configSource = 'editor';
+                }
+            }
+
+            if (!moduleConfigPath) {
                 console.warn(`    Editor module config not found: ${moduleName}`);
                 continue;
             }
@@ -658,13 +771,14 @@ class ConfigParser {
     generateBuildConfig() {
         console.log(`\nBuilding from source files for ${this.projectName}...`);
 
-        // Load metadata and configs
+        // Discover all collections from folder structures first (needed for metadata loading)
+        this.discoverCollections();
+        this.discoverEditorCollections();
+
+        // Load metadata and configs (uses discovered collections)
         this.loadLibraryMetadata();
         this.loadObjectTypeDefinitions();
         this.loadConfigs();
-
-        // Discover all collections from folder structure
-        this.discoverCollections();
 
         return {
             projectName: this.projectName,
@@ -673,7 +787,8 @@ class ConfigParser {
             editor: this.getEditorEntry(),
             engine: this.getEnginePaths(),
             objectTypeDefinitions: this.objectTypeDefinitions,
-            collections: this.collections
+            collections: this.collections,
+            editorCollections: this.editorCollections
         };
     }
 }
