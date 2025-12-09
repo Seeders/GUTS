@@ -2,6 +2,6 @@
   "id": "components",
   "name": "Components",
   "singular": "Component",
-  "objectTypeCategory": "core",
+  "objectTypeCategory": "data",
   "isCore": true
 }

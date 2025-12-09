@@ -2,6 +2,6 @@
   "id": "libraries",
   "name": "Libraries",
   "singular": "Library",
-  "objectTypeCategory": "core",
+  "objectTypeCategory": "scripts",
   "isCore": true
 }
