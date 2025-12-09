@@ -186,7 +186,19 @@ class WorldRenderer {
         this.controls.enableDamping = false;
         this.controls.screenSpacePanning = true;
         this.controls.enableZoom = false;
-        this.controls.panSpeed = 3;
+
+        // Base pan speed - feels right at about half starting height
+        const basePanSpeed = 0.25;
+        const referenceHeight = 500; // Height where basePanSpeed feels right
+
+        // Dynamically adjust pan speed based on camera height
+        const updatePanSpeed = () => {
+            const height = Math.max(this.camera.position.y, 10);
+            this.controls.panSpeed = basePanSpeed * (height / referenceHeight);
+        };
+
+        updatePanSpeed();
+        this.controls.addEventListener('change', updatePanSpeed);
 
         // Custom rotation variables
         this.ctrlPressed = false;
