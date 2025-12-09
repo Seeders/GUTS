@@ -652,11 +652,11 @@ class EditorView {
         requestAnimationFrame(() => {
             // Create and dispatch the event with the matching property
             const customEvent = new CustomEvent(matchingModule.loadHook, {
-                detail: { 
-                    data: object[matchingProperty], 
+                detail: {
+                    data: object[matchingProperty],
                     propertyName: matchingProperty,
-                    objectData: object, 
-                    config: this.controller.getCollections().configs.game 
+                    objectData: object,
+                    config: this.controller.getCollections().configs.game
                 },
                 bubbles: true,
                 cancelable: true

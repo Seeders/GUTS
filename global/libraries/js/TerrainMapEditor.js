@@ -2,8 +2,8 @@ class TerrainMapEditor {
     constructor(gameEditor, config = {}, { TileMap, TerrainImageProcessor, CoordinateTranslator, ImageManager, ShapeFactory }) {
         this.gameEditor = gameEditor;
         this.engineClasses = { TileMap, TerrainImageProcessor, CoordinateTranslator, ImageManager, ShapeFactory };
-        this.defaultConfig = { gridSize: 48, imageSize: 128, canvasWidth: 1536, canvasHeight: 768 };
-        this.config = { ...this.defaultConfig, ...config };
+        this.defaultEditorSettings = { gridSize: 48, imageSize: 128, canvasWidth: 1536, canvasHeight: 768 };
+        this.editorSettings = { ...this.defaultEditorSettings, ...config };
 
         this.defaultMapSize = 16;
         this.mapSize = this.defaultMapSize;
@@ -63,8 +63,8 @@ class TerrainMapEditor {
 
         // DOM elements
         this.canvasEl = document.getElementById('grid');
-        this.canvasEl.width = this.config.canvasWidth;
-        this.canvasEl.height = this.config.canvasHeight;
+        this.canvasEl.width = this.editorSettings.canvasWidth;
+        this.canvasEl.height = this.editorSettings.canvasHeight;
 
         // Clear any inline styles to ensure CSS controls the display size
         this.canvasEl.style.width = '';
@@ -72,8 +72,8 @@ class TerrainMapEditor {
 
         // Managers and renderers
         let palette = this.gameEditor.getPalette();
-        this.imageManager = new GUTS.ImageManager(this.gameEditor,  { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: ShapeFactory});
-        this.translator = new GUTS.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
+        this.imageManager = new GUTS.ImageManager(this.gameEditor,  { imageSize: this.editorSettings.imageSize, palette: palette}, {ShapeFactory: ShapeFactory});
+        this.translator = new GUTS.CoordinateTranslator(this.editorSettings, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
         this.modalId = 'modal-addTerrainType';
 
         this.modelManager = gameEditor.modelManager;
@@ -156,7 +156,7 @@ class TerrainMapEditor {
             this.tileMap.terrainMap = newTerrainMap;
             this.tileMap.size = newGridSize;
             this.mapSize = newGridSize;
-            this.translator = new GUTS.CoordinateTranslator(this.config, newGridSize, this.gameEditor.getCollections().configs.game.isIsometric);
+            this.translator = new GUTS.CoordinateTranslator(this.editorSettings, newGridSize, this.gameEditor.getCollections().configs.game.isIsometric);
             
             // Resize canvas to fit new map size
             this.updateCanvasSize();
@@ -253,7 +253,6 @@ class TerrainMapEditor {
 
         // Handle editTileMap event
         document.body.addEventListener('editTileMap', async (event) => {
-            this.config = event.detail.config;
             this.tileMap = event.detail.data;
             this.objectData = event.detail.objectData;
             this.savePropertyName = event.detail.propertyName;
@@ -265,8 +264,8 @@ class TerrainMapEditor {
                     this.worldObjects[objectName] = this.gameEditor.getCollections().worldObjects[objectName];
                 });
             }
-            this.canvasEl.width = this.config.canvasWidth;
-            this.canvasEl.height = this.config.canvasHeight;
+            this.canvasEl.width = this.editorSettings.canvasWidth;
+            this.canvasEl.height = this.editorSettings.canvasHeight;
 
             // Clear any inline styles to ensure CSS controls the display size
             this.canvasEl.style.width = '';
@@ -356,7 +355,7 @@ class TerrainMapEditor {
             }
 
             // Always recreate translator with current map size
-            this.translator = new GUTS.CoordinateTranslator(this.config, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);
+            this.translator = new GUTS.CoordinateTranslator(this.editorSettings, this.mapSize, this.gameEditor.getCollections().configs.game.isIsometric);
 
             document.getElementById('terrainMapSize').value = this.mapSize;
             
@@ -556,7 +555,7 @@ class TerrainMapEditor {
 
     async initImageManager() {
         let palette = this.gameEditor.getPalette();
-        this.imageManager = new GUTS.ImageManager(this.gameEditor, { imageSize: this.config.imageSize, palette: palette}, {ShapeFactory: this.engineClasses.ShapeFactory});
+        this.imageManager = new GUTS.ImageManager(this.gameEditor, { imageSize: this.editorSettings.imageSize, palette: palette}, {ShapeFactory: this.engineClasses.ShapeFactory});
         await this.imageManager.loadImages("levels", { level: this.objectData }, false, false);
         if(this.worldObjects){
             await this.imageManager.loadImages("environment", this.worldObjects, false, false);
@@ -579,7 +578,7 @@ class TerrainMapEditor {
         this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric, { terrainTypeNames });
         
         // Ensure translator is up to date before creating game object
-        this.translator = new GUTS.CoordinateTranslator(this.config, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
+        this.translator = new GUTS.CoordinateTranslator(this.editorSettings, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
         
         this.game = { 
             state: {}, 
@@ -807,16 +806,16 @@ class TerrainMapEditor {
                         item.dataset.name = `${type} ${imageIndex + 1}`;
 
                         const preview = document.createElement('canvas');
-                        preview.width = this.config.imageSize;
-                        preview.height = this.config.imageSize;
+                        preview.width = this.editorSettings.imageSize;
+                        preview.height = this.editorSettings.imageSize;
                         const ctx = preview.getContext('2d');
 
                         // Draw scaled down version of the image for preview with proper centering
-                        const scale = Math.min(this.config.imageSize / image.width, this.config.imageSize / image.height);
+                        const scale = Math.min(this.editorSettings.imageSize / image.width, this.editorSettings.imageSize / image.height);
                         ctx.drawImage(
                             image,
-                            (this.config.imageSize - image.width * scale) / 2,
-                            (this.config.imageSize - image.height * scale) / 2,
+                            (this.editorSettings.imageSize - image.width * scale) / 2,
+                            (this.editorSettings.imageSize - image.height * scale) / 2,
                             image.width * scale,
                             image.height * scale
                         );
@@ -1571,8 +1570,9 @@ class TerrainMapEditor {
 
 
     updateCanvasSize() {
-        const isIsometric = this.gameEditor.getCollections().configs.game.isIsometric;
-        const gridSize = this.config.gridSize;
+        const gameConfig = this.gameEditor.getCollections().configs.game;
+        const isIsometric = gameConfig.isIsometric;
+        const gridSize = gameConfig.gridSize;
 
         if (isIsometric) {
             // For isometric: width needs to accommodate the diamond shape
@@ -1581,20 +1581,20 @@ class TerrainMapEditor {
             const requiredHeight = (this.mapSize * gridSize * 0.5) + (gridSize * 0.5);
 
             // Add some padding
-            this.config.canvasWidth = Math.max(1536, requiredWidth + 200);
-            this.config.canvasHeight = Math.max(768, requiredHeight + 200);
+            this.editorSettings.canvasWidth = Math.max(1536, requiredWidth + 200);
+            this.editorSettings.canvasHeight = Math.max(768, requiredHeight + 200);
         } else {
             // For non-isometric: simple square grid
             const requiredSize = this.mapSize * gridSize;
 
             // Add padding for centering
-            this.config.canvasWidth = Math.max(1536, requiredSize + 400);
-            this.config.canvasHeight = Math.max(768, requiredSize + 400);
+            this.editorSettings.canvasWidth = Math.max(1536, requiredSize + 400);
+            this.editorSettings.canvasHeight = Math.max(768, requiredSize + 400);
         }
 
         // Set canvas internal resolution (bitmap size)
-        this.canvasEl.width = this.config.canvasWidth;
-        this.canvasEl.height = this.config.canvasHeight;
+        this.canvasEl.width = this.editorSettings.canvasWidth;
+        this.canvasEl.height = this.editorSettings.canvasHeight;
 
         // Clear any inline styles to ensure CSS controls the display size
         this.canvasEl.style.width = '';
@@ -1629,7 +1629,7 @@ class TerrainMapEditor {
             let palette = this.gameEditor.getPalette();
             this.imageManager = new this.engineClasses.ImageManager(
                 this.gameEditor,
-                { imageSize: this.config.imageSize, palette: palette},
+                { imageSize: this.editorSettings.imageSize, palette: palette},
                 {ShapeFactory: this.engineClasses.ShapeFactory}
             );
 
@@ -1682,17 +1682,8 @@ class TerrainMapEditor {
         // Create editor context (like ECSGame)
         this.editorContext = new GUTS.EditorECSGame(this.gameEditor, this.canvasEl);
 
-        // Get editor-specific systems from module config
-        // Use editorSystems if defined, otherwise use config.systems filtered to only editor systems
-        // NOTE: RenderSystem must come before WorldSystem so EntityRenderer is initialized
-        // before WorldSystem tries to spawn cliffs in postSceneLoad
-        const editorSystems = this.config.editorSystems || [
-            'GridSystem',
-            'TerrainSystem',
-            'RenderSystem',
-            'WorldSystem',
-            'AnimationSystem'
-        ];
+        // Get editor-specific systems from terrainModule.json
+        const editorSystems = this.editorSettings.systems;
 
         // Use EditorLoader to load assets and initialize (like GameLoader)
         this.editorLoader = new GUTS.EditorLoader(this.editorContext);

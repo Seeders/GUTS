@@ -28,6 +28,8 @@
     "TerrainMapEditor"
   ],
   "systems": [
+    "ComponentSystem",
+    "GridSystem",
     "TerrainSystem",
     "WorldSystem",
     "RenderSystem",
