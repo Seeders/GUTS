@@ -53,11 +53,6 @@
           "world": "shire"
         }
       }
-    },
-    {
-      "id": "entity_Dragon",
-      "prefab": "dragon",
-      "name": "Dragon"
     }
   ]
 }

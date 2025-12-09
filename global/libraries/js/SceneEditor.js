@@ -61,7 +61,7 @@ class SceneEditor {
             systems: systems
         });
 
-        // Initialize gizmo manager with the editor context's scene/camera
+        // Initialize gizmo manager (will be configured after scene loads when worldRenderer exists)
         if (this.gizmoManager && this.editorContext.worldSystem?.worldRenderer) {
             this.gizmoManager.init({
                 scene: this.editorContext.scene,
@@ -152,14 +152,28 @@ class SceneEditor {
         this.state.entities = entities;
         this.state.sceneData = fullSceneData;
 
-        // Get systems from scene data
-        const systems = fullSceneData.systems || [];
+        // Use editor module systems (from sceneModule.json config), NOT scene data systems
+        // The scene editor has its own systems designed for editing, not gameplay
+        const systems = this.config.systems || [];
 
-        // Initialize context with systems from scene
+        // Initialize context with editor systems
         await this.initializeContext(systems);
 
-        // Load full scene into context - systems will detect entities and render
-        await this.editorContext.loadScene(fullSceneData);
+        // Clear existing entities before loading new scene
+        if (this.editorContext) {
+            this.editorContext.clearAllEntities();
+        }
+
+        // Load entities into context - editor systems will render them
+        // Pass scene data but our editor systems will handle rendering
+        await this.editorContext.loadScene({ ...fullSceneData, systems });
+
+        // Setup orbit controls AFTER scene loads (worldRenderer is created during scene load)
+        this.worldRenderer = this.editorContext.worldSystem?.worldRenderer;
+        if (this.worldRenderer && !this.worldRenderer.controls) {
+            const targetPos = { x: 0, y: 0, z: 0 };
+            this.worldRenderer.setupOrbitControls(targetPos);
+        }
 
         // Render UI
         this.renderHierarchy();

@@ -63,11 +63,14 @@ class WorldSystem extends GUTS.BaseSystem {
     onSceneLoad(sceneData) {
         // Look for terrain entity in scene
         const terrainEntities = this.game.getEntitiesWith('terrain');
+        console.log('[WorldSystem] onSceneLoad - terrain entities found:', terrainEntities.length);
 
         if (terrainEntities.length > 0) {
             const terrainEntityId = terrainEntities[0];
             const terrainComponent = this.game.getComponent(terrainEntityId, 'terrain');
+            console.log('[WorldSystem] terrain component:', terrainComponent);
             this.initWorldFromTerrain(terrainComponent, terrainEntityId);
+            console.log('[WorldSystem] initWorldFromTerrain completed, game.scene:', this.game.scene ? 'exists' : 'null');
         }
         // If no terrain entity, world system won't initialize (no terrain = no world rendering)
     }
@@ -171,7 +174,7 @@ class WorldSystem extends GUTS.BaseSystem {
         const cameraSettings = collections.cameras?.[world?.camera];
 
         // Initialize Three.js through WorldRenderer
-        // Never enable OrbitControls - game uses CameraControlSystem for camera movement
+        // Never enable OrbitControls here - game uses CameraControlSystem, editors call setupOrbitControls manually
         this.worldRenderer.initializeThreeJS(gameCanvas, cameraSettings, false);
 
         // Add window resize listener
@@ -191,8 +194,8 @@ class WorldSystem extends GUTS.BaseSystem {
         this.game.uiScene = this.uiScene;
         this.game.renderer = this.renderer;
 
-        // Setup world rendering
-        this.setupWorldRendering(levelName, effectiveWorldName);
+        // Setup world rendering - store promise so postSceneLoad can wait for it
+        this.setupWorldRenderingPromise = this.setupWorldRendering(levelName, effectiveWorldName);
     }
 
     /**
@@ -203,6 +206,7 @@ class WorldSystem extends GUTS.BaseSystem {
     async setupWorldRendering(levelName, worldName) {
         const collections = this.game.getCollections();
         const world = collections.worlds?.[worldName];
+        const gameConfig = collections.configs?.game || {};
 
         // Set background color
         this.worldRenderer.setBackgroundColor(world?.backgroundColor || '#87CEEB');
@@ -212,6 +216,11 @@ class WorldSystem extends GUTS.BaseSystem {
         if (!terrainDataManager) {
             console.warn('[WorldSystem] TerrainDataManager not available');
             return;
+        }
+
+        // Initialize terrain tile mapper if not already set up (needed for editor context)
+        if (!this.game.terrainTileMapper && this.game.imageManager) {
+            await this.initTerrainTileMapper(levelName, terrainDataManager, gameConfig);
         }
 
         // Setup lighting
@@ -258,7 +267,15 @@ class WorldSystem extends GUTS.BaseSystem {
      * Used for operations that need other systems to be fully initialized
      */
     async postSceneLoad(sceneData) {
+        console.log('[WorldSystem] postSceneLoad called, worldRenderer:', this.worldRenderer ? 'exists' : 'null');
         if (!this.worldRenderer) return;
+
+        // Wait for async setupWorldRendering to complete if it's still running
+        if (this.setupWorldRenderingPromise) {
+            console.log('[WorldSystem] Waiting for setupWorldRendering to complete...');
+            await this.setupWorldRenderingPromise;
+            console.log('[WorldSystem] setupWorldRendering completed');
+        }
 
         // Update instance capacities now that RenderSystem has initialized EntityRenderer
         if (this.game.renderSystem) {
@@ -268,8 +285,11 @@ class WorldSystem extends GUTS.BaseSystem {
         // Spawn cliff entities using WorldRenderer
         // Note: useExtension = false because analyzeCliffs() returns coordinates in tile space (not extended space)
         const entityRenderer = this.game.call('getEntityRenderer');
+        console.log('[WorldSystem] entityRenderer from service:', entityRenderer ? 'exists' : 'null');
         if (entityRenderer) {
+            console.log('[WorldSystem] Spawning cliffs...');
             await this.worldRenderer.spawnCliffs(entityRenderer, false);
+            console.log('[WorldSystem] Cliffs spawned');
         } else {
             console.warn('[WorldSystem] EntityRenderer not available for cliff spawning');
         }
@@ -438,6 +458,56 @@ class WorldSystem extends GUTS.BaseSystem {
         if (this.worldRenderer) {
             this.worldRenderer.updateTerrain();
         }
+    }
+
+    /**
+     * Initialize terrain tile mapper for editor contexts
+     * Similar to EditorLoader.initTerrainTileMapper but called lazily when terrain is loaded
+     * @param {string} levelName - Level name
+     * @param {Object} terrainDataManager - TerrainDataManager instance
+     * @param {Object} gameConfig - Game configuration
+     */
+    async initTerrainTileMapper(levelName, terrainDataManager, gameConfig) {
+        const collections = this.game.getCollections();
+        const level = collections.levels?.[levelName];
+        if (!level) {
+            console.warn(`[WorldSystem] Level '${levelName}' not found for tile mapper`);
+            return;
+        }
+
+        // Load terrain images if not already loaded
+        await this.game.imageManager.loadImages("levels", { [levelName]: level });
+        const terrainImages = this.game.imageManager.getImages("levels", levelName);
+
+        // Create terrain canvas buffer
+        const terrainCanvasBuffer = document.createElement('canvas');
+        const tileMap = terrainDataManager.tileMap;
+        if (tileMap?.terrainMap && tileMap.terrainMap.length > 0) {
+            terrainCanvasBuffer.width = gameConfig.gridSize * tileMap.terrainMap[0].length;
+            terrainCanvasBuffer.height = gameConfig.gridSize * tileMap.terrainMap.length;
+        } else if (tileMap?.size) {
+            const terrainSize = tileMap.size * gameConfig.gridSize;
+            terrainCanvasBuffer.width = terrainSize;
+            terrainCanvasBuffer.height = terrainSize;
+        } else {
+            terrainCanvasBuffer.width = 4096;
+            terrainCanvasBuffer.height = 4096;
+        }
+
+        // Get terrain type names for dynamic index lookup
+        const terrainTypeNames = tileMap?.terrainTypes || [];
+
+        // Initialize tile mapper
+        this.game.terrainTileMapper = new GUTS.TileMap({});
+        this.game.terrainTileMapper.init(
+            terrainCanvasBuffer,
+            gameConfig.gridSize,
+            terrainImages,
+            gameConfig.isIsometric,
+            { skipCliffTextures: false, terrainTypeNames }
+        );
+
+        console.log(`[WorldSystem] Initialized terrain tile mapper for level: ${levelName}`);
     }
 
     destroy() {

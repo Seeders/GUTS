@@ -37,16 +37,35 @@ class EditorLoader {
     }
 
     /**
-     * Load all model assets
+     * Load all assets (images and models)
      */
     async loadAssets() {
+        const gameConfig = this.collections.configs?.game || {};
+
+        // Create and load images (same as ECSGame/GameLoader)
+        this.game.imageManager = new GUTS.ImageManager(
+            this.game.app,
+            {
+                imageSize: gameConfig.imageSize,
+                palette: this.game.palette,
+                textures: this.collections.textures
+            },
+            { ShapeFactory: GUTS.ShapeFactory }
+        );
+
+        // Load all images
+        for (const objectType in this.collections) {
+            await this.game.imageManager.loadImages(objectType, this.collections[objectType]);
+        }
+
+        // Create and load models
         this.game.modelManager = new GUTS.ModelManager(
             this.game.app,
             {},
             {
                 ShapeFactory: GUTS.ShapeFactory,
                 palette: this.game.palette,
-                textures: this.game.getCollections().textures
+                textures: this.collections.textures
             }
         );
 

@@ -53,6 +53,8 @@ class RenderSystem extends GUTS.BaseSystem {
      * Uses postSceneLoad to ensure WorldSystem has created the Three.js scene first
      */
     postSceneLoad(sceneData) {
+        console.log('[RenderSystem] postSceneLoad called, game.scene:', this.game.scene ? 'exists' : 'null');
+
         // Scene should be available now from WorldSystem
         if (!this.game.scene) {
             console.error('[RenderSystem] Scene not available in postSceneLoad - WorldSystem may have failed');
@@ -78,7 +80,7 @@ class RenderSystem extends GUTS.BaseSystem {
             minMovementThreshold: 0.1
         });
 
-        console.log('[RenderSystem] EntityRenderer initialized with scene');
+        console.log('[RenderSystem] EntityRenderer initialized:', this.entityRenderer ? 'success' : 'failed');
     }
 
     /**
