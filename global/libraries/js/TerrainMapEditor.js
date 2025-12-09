@@ -2299,7 +2299,7 @@ class TerrainMapEditor {
             }
         }
 
-        return true;
+        return tilesToModify;
     }
 
     // Flood fill height map
@@ -2355,7 +2355,7 @@ class TerrainMapEditor {
             });
         }
 
-        return true;
+        return tilesToModify;
     }
 
     /**
@@ -2374,7 +2374,7 @@ class TerrainMapEditor {
                 }
             } else if (this.terrainTool === 'fill') {
                 if (this.lastPaintedTile === null) {
-                    this.floodFillTerrain(gridX, gridZ, this.currentTerrainId);
+                    modifiedTiles = this.floodFillTerrain(gridX, gridZ, this.currentTerrainId);
                     this.lastPaintedTile = `${gridX},${gridZ}`;
                 }
             }
@@ -2445,7 +2445,7 @@ class TerrainMapEditor {
                 }
             } else if (this.terrainTool === 'fill') {
                 if (this.lastPaintedTile === null) {
-                    this.floodFillHeight(gridX, gridZ, this.currentHeightLevel);
+                    modifiedTiles = this.floodFillHeight(gridX, gridZ, this.currentHeightLevel);
                     this.lastPaintedTile = `${gridX},${gridZ}`;
                 }
             }

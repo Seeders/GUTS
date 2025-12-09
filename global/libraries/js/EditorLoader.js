@@ -58,6 +58,11 @@ class EditorLoader {
             await this.game.imageManager.loadImages(objectType, this.collections[objectType]);
         }
 
+        // Load THREE.Texture objects from the textures collection
+        if (this.collections.textures) {
+            await this.game.imageManager.loadTextures(this.collections.textures);
+        }
+
         // Create and load models
         this.game.modelManager = new GUTS.ModelManager(
             this.game.app,

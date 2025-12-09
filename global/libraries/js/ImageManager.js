@@ -4,6 +4,11 @@ class ImageManager {
         this.app = app;
         this.images = {};
         this.imageSize = imageSize || 128;
+
+        // THREE.Texture cache for textures collection
+        this.loadedTextures = new Map();
+        this.textureLoader = new THREE.TextureLoader();
+
         // Create a single reusable renderer
         this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
         this.renderer.setSize(this.imageSize, this.imageSize);
@@ -97,6 +102,11 @@ class ImageManager {
             this.ground.geometry.dispose();
             this.ground.material.dispose();
         }
+        // Dispose loaded textures
+        for (const texture of this.loadedTextures.values()) {
+            texture.dispose();
+        }
+        this.loadedTextures.clear();
         // Dispose of other reusable resources
         this.cameras = [];
         this.scene = null;
@@ -119,7 +129,7 @@ class ImageManager {
         for (const [type, cfg] of Object.entries(config)) {
             //if (cfg.render && cfg.render.animations) {
                // this.images[`${prefix}_${type}`] = await this.createAnimatedPlaceholder(cfg);
-            //} else 
+            //} else
             if (cfg.tileMap && cfg.tileMap.terrainTypes) {
                 this.images[`${prefix}_${type}`] = await this.createTerrainImages(cfg);
             }
@@ -127,6 +137,67 @@ class ImageManager {
        // if(cacheResult) {
          //   await this.cacheImages(prefix);
        // }
+    }
+
+    /**
+     * Load all textures from the textures collection as THREE.Texture objects
+     * @param {Object} texturesCollection - The textures collection object
+     */
+    async loadTextures(texturesCollection) {
+        if (!texturesCollection) return;
+
+        const resourcesPath = this.app.getResourcesPath();
+        const loadPromises = [];
+
+        for (const [textureId, textureDef] of Object.entries(texturesCollection)) {
+            if (!textureDef?.imagePath) continue;
+
+            // Skip if already loaded
+            if (this.loadedTextures.has(textureId)) continue;
+
+            const url = resourcesPath + textureDef.imagePath;
+
+            const loadPromise = new Promise((resolve) => {
+                this.textureLoader.load(
+                    url,
+                    (texture) => {
+                        // Apply pixel art settings
+                        texture.colorSpace = THREE.SRGBColorSpace;
+                        texture.minFilter = THREE.NearestFilter;
+                        texture.magFilter = THREE.NearestFilter;
+                        this.loadedTextures.set(textureId, texture);
+                        resolve();
+                    },
+                    undefined,
+                    (error) => {
+                        console.warn(`[ImageManager] Failed to load texture '${textureId}' from ${url}`);
+                        resolve(); // Don't fail the whole batch for one texture
+                    }
+                );
+            });
+            loadPromises.push(loadPromise);
+        }
+
+        await Promise.all(loadPromises);
+        console.log(`[ImageManager] Loaded ${this.loadedTextures.size} textures`);
+    }
+
+    /**
+     * Get a loaded THREE.Texture by its ID
+     * @param {string} textureId - The texture identifier from the textures collection
+     * @returns {THREE.Texture|null}
+     */
+    getTexture(textureId) {
+        return this.loadedTextures.get(textureId) || null;
+    }
+
+    /**
+     * Check if a texture is loaded
+     * @param {string} textureId - The texture identifier
+     * @returns {boolean}
+     */
+    hasTexture(textureId) {
+        return this.loadedTextures.has(textureId);
     }
     
     async checkCache(prefix) {
