@@ -274,6 +274,9 @@ class WorldRenderer {
         };
 
         const handleWheel = (event) => {
+            // Skip if controls are disposed
+            if (!this.controls) return;
+
             event.preventDefault();
 
             // Get camera's forward direction
@@ -312,7 +315,7 @@ class WorldRenderer {
      * Update camera rotation in place
      */
     updateCameraRotation() {
-        if (!this.camera) return;
+        if (!this.camera || !this.controls) return;
 
         // Preserve the current distance to target
         const currentDistance = this.camera.position.distanceTo(this.controls.target);

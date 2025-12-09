@@ -181,6 +181,9 @@ class SceneManager {
 
     /**
      * Spawn all entities defined in the scene
+     * Supports two formats:
+     * 1. Prefab format: { id, prefab }
+     * 2. Collection format (SceneEditor): { id, collection, spawnType, name?, transform? }
      * @param {Object} sceneData - The scene configuration
      * @returns {Promise<void>}
      */
@@ -189,35 +192,83 @@ class SceneManager {
         const collections = this.game.getCollections();
         const prefabs = collections.prefabs || {};
 
-
         for (const entityDef of entities) {
             const entityId = entityDef.id || this.game.getEntityId();
 
-            // Get prefab data if specified
-            let components = {};
+            // Prefab format: { id, prefab }
             if (entityDef.prefab) {
-                if (prefabs[entityDef.prefab]) {
-                    const prefabData = prefabs[entityDef.prefab];
-                    components = this.deepClone(prefabData.components || {});
-                } else {
-                    console.warn(`[SceneManager] Prefab '${entityDef.prefab}' NOT FOUND in collections.prefabs`);
+                const prefabData = prefabs[entityDef.prefab];
+                if (!prefabData) {
+                    console.warn(`[SceneManager] Prefab '${entityDef.prefab}' not found`);
+                    continue;
                 }
+
+                const components = JSON.parse(JSON.stringify(prefabData.components || {}));
+
+                this.game.createEntity(entityId);
+                this.spawnedEntityIds.add(entityId);
+
+                for (const [componentType, componentData] of Object.entries(components)) {
+                    this.game.addComponent(entityId, componentType, componentData);
+                }
+                continue;
             }
 
-            // Merge with entity-specific component overrides
-            if (entityDef.components) {
-                this.mergeComponents(components, entityDef.components);
+            // Collection format: { id, collection, spawnType, name?, transform? }
+            if (!entityDef.collection || !entityDef.spawnType) {
+                console.warn(`[SceneManager] Entity missing collection/spawnType or prefab:`, entityDef);
+                continue;
             }
 
-            // Create the entity
-            this.game.createEntity(entityId);
-            this.spawnedEntityIds.add(entityId);
+            const { collection, spawnType, transform } = entityDef;
 
-            // Add all components to the entity
-            for (const [componentType, componentData] of Object.entries(components)) {
-                this.game.addComponent(entityId, componentType, componentData);
+            // Use UnitCreationSystem for consistent entity creation
+            const unitCreationSystem = this.game.unitCreationSystem || this.game.systemsByName?.get('UnitCreationSystem');
+
+            if (unitCreationSystem) {
+                // Pass the transform object directly (with defaults for missing properties)
+                const createdId = unitCreationSystem.createUnit(
+                    collection,
+                    spawnType,
+                    transform || {},
+                    transform?.team ?? 'left',
+                    null,  // No player ID
+                    entityId
+                );
+
+                if (createdId) {
+                    this.spawnedEntityIds.add(createdId);
+                }
+            } else {
+                // Fallback: Create entity manually
+                const itemData = collections[collection]?.[spawnType];
+
+                if (!itemData) {
+                    console.warn(`[SceneManager] Item '${spawnType}' not found in collection '${collection}'`);
+                    continue;
+                }
+
+                this.game.createEntity(entityId);
+                this.spawnedEntityIds.add(entityId);
+
+                const position = transform?.position;
+                if (position) {
+                    this.game.addComponent(entityId, 'transform', {
+                        position: {
+                            x: position.x ?? 0,
+                            y: position.y ?? 0,
+                            z: position.z ?? 0
+                        },
+                        rotation: transform?.rotation || { x: 0, y: 0, z: 0 },
+                        scale: transform?.scale || { x: 1, y: 1, z: 1 }
+                    });
+                }
+
+                this.game.addComponent(entityId, 'renderable', {
+                    collection,
+                    type: spawnType
+                });
             }
-
         }
     }
 
@@ -258,64 +309,6 @@ class SceneManager {
                 // Only call onSceneUnload for systems being destroyed
                 if (!keepSystems.has(systemName)) {
                     system.onSceneUnload();
-                }
-            }
-        }
-    }
-
-    /**
-     * Deep clone an object
-     * @param {Object} obj - Object to clone
-     * @returns {Object} Cloned object
-     */
-    deepClone(obj) {
-        if (obj === null || typeof obj !== 'object') {
-            return obj;
-        }
-        if (Array.isArray(obj)) {
-            return obj.map(item => this.deepClone(item));
-        }
-        const cloned = {};
-        for (const key in obj) {
-            if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                cloned[key] = this.deepClone(obj[key]);
-            }
-        }
-        return cloned;
-    }
-
-    /**
-     * Merge component overrides into base components
-     * @param {Object} base - Base components object
-     * @param {Object} overrides - Override components object
-     */
-    mergeComponents(base, overrides) {
-        for (const [componentType, componentData] of Object.entries(overrides)) {
-            if (base[componentType] && typeof base[componentType] === 'object' && typeof componentData === 'object') {
-                // Deep merge for objects
-                this.deepMerge(base[componentType], componentData);
-            } else {
-                // Replace for primitives or new components
-                base[componentType] = this.deepClone(componentData);
-            }
-        }
-    }
-
-    /**
-     * Deep merge source into target
-     * @param {Object} target - Target object
-     * @param {Object} source - Source object
-     */
-    deepMerge(target, source) {
-        for (const key in source) {
-            if (Object.prototype.hasOwnProperty.call(source, key)) {
-                if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-                    if (!target[key] || typeof target[key] !== 'object') {
-                        target[key] = {};
-                    }
-                    this.deepMerge(target[key], source[key]);
-                } else {
-                    target[key] = source[key];
                 }
             }
         }

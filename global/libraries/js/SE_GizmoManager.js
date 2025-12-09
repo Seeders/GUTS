@@ -1,12 +1,13 @@
 class SE_GizmoManager {
     constructor() {}
 
-    init(sceneEditor){        
-        this.sceneEditor = sceneEditor; // Store reference to the scene editor
-        this.scene = sceneEditor.scene;
-        this.camera = sceneEditor.camera;
-        this.renderer = sceneEditor.renderer;
-        this.controls = sceneEditor.controls;
+    init(options){
+        this.options = options; // Store reference to options/callbacks
+        this.scene = options.scene;
+        this.camera = options.camera;
+        this.renderer = options.renderer;
+        this.controls = options.controls;
+        this.onTransformChange = options.onTransformChange || null;
         
         this.gizmoGroup = new THREE.Group();
         this.gizmoGroup.name = "transformGizmo";
@@ -325,7 +326,9 @@ class SE_GizmoManager {
         this.startScale.copy(this.targetObject.scale);
         
         // Disable camera controls during drag
-        this.controls.enabled = false;
+        if (this.controls) {
+            this.controls.enabled = false;
+        }
         
         // Reset drag points for reference
         this.dragStartPoint = this.getPointOnDragPlane();
@@ -337,38 +340,31 @@ class SE_GizmoManager {
     onMouseUp() {
         if (this.isDragging) {
             this.isDragging = false;
-            
+
             // Re-enable camera controls
-            this.controls.enabled = true;
-            
-            // Update entity data in the SceneEditor
-            if (this.targetObject && this.sceneEditor.state.selectedEntity) {
-                const entity = this.sceneEditor.state.selectedEntity;
-                const transformComponent = entity.components.find(c => c.type === 'transform');
-                
-                if (transformComponent) {
-                    const position = this.targetObject.position;
-                    const rotation = this.targetObject.rotation;
-                    const scale = this.targetObject.scale;
-                    
-                    // Update the entity data
-                    transformComponent.parameters.position = { x: position.x, y: position.y, z: position.z };
-                    transformComponent.parameters.rotation = { x: rotation.x, y: rotation.y, z: rotation.z };
-                    transformComponent.parameters.scale = { x: scale.x, y: scale.y, z: scale.z };
-                    
-                    // Trigger save to update the UI
-                    this.sceneEditor.handleSave(false);
-                    this.sceneEditor.renderInspector();
-                    
-                    // Log for debugging
-                    console.log(`Updated entity transform:`, {
-                        position: transformComponent.parameters.position,
-                        rotation: transformComponent.parameters.rotation,
-                        scale: transformComponent.parameters.scale
-                    });
-                }
+            if (this.controls) {
+                this.controls.enabled = true;
             }
-            
+
+            // Notify via callback if provided
+            if (this.targetObject && this.onTransformChange) {
+                const position = this.targetObject.position;
+                const rotation = this.targetObject.rotation;
+                const scale = this.targetObject.scale;
+
+                this.onTransformChange(
+                    { x: position.x, y: position.y, z: position.z },
+                    { x: rotation.x, y: rotation.y, z: rotation.z },
+                    { x: scale.x, y: scale.y, z: scale.z }
+                );
+
+                console.log(`[SE_GizmoManager] Transform updated:`, {
+                    position: { x: position.x, y: position.y, z: position.z },
+                    rotation: { x: rotation.x, y: rotation.y, z: rotation.z },
+                    scale: { x: scale.x, y: scale.y, z: scale.z }
+                });
+            }
+
             this.selectedAxis = null;
         }
     }
@@ -669,12 +665,14 @@ class SE_GizmoManager {
         if (this.isDragging) {
             this.onMouseUp(); // End any active drag operation
         }
-        
+
         this.targetObject = null;
-        this.gizmoGroup.visible = false;
-        this.translateGizmo.visible = false;
-        this.rotateGizmo.visible = false;
-        this.scaleGizmo.visible = false;
+
+        // Only hide gizmos if they've been initialized
+        if (this.gizmoGroup) this.gizmoGroup.visible = false;
+        if (this.translateGizmo) this.translateGizmo.visible = false;
+        if (this.rotateGizmo) this.rotateGizmo.visible = false;
+        if (this.scaleGizmo) this.scaleGizmo.visible = false;
     }
     
     setMode(mode) {
@@ -703,14 +701,39 @@ class SE_GizmoManager {
     
     updateGizmoTransform() {
         if (!this.targetObject) return;
-        
+
         // Update position to match target object
         this.gizmoGroup.position.copy(this.targetObject.position);
-        
+
         // Calculate appropriate scale for the gizmo based on camera distance
         const distance = this.camera.position.distanceTo(this.gizmoGroup.position);
         const scale = distance / 20; // Adjusted for better visibility
-        
+
         this.gizmoGroup.scale.set(scale, scale, scale);
+    }
+
+    /**
+     * Dispose of gizmo manager resources
+     */
+    dispose() {
+        this.detach();
+
+        // Remove event listeners
+        if (this.renderer?.domElement) {
+            const canvas = this.renderer.domElement;
+            canvas.removeEventListener('mousemove', this.onMouseMove);
+            canvas.removeEventListener('mousedown', this.onMouseDown);
+            canvas.removeEventListener('mouseup', this.onMouseUp);
+        }
+
+        // Remove gizmo group from scene
+        if (this.scene && this.gizmoGroup) {
+            this.scene.remove(this.gizmoGroup);
+        }
+
+        this.gizmoGroup = null;
+        this.translateGizmo = null;
+        this.rotateGizmo = null;
+        this.scaleGizmo = null;
     }
 }
