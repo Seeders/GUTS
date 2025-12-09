@@ -27,6 +27,8 @@
     "SceneManager",
     "EditorECSGame",
     "EditorLoader",
+    "RaycastHelper",
+    "PlacementPreview",
     "SceneEditor",
     "BaseSystem"
   ],
@@ -38,7 +40,8 @@
     "WorldSystem",
     "TerrainDetailSystem",
     "PostProcessingSystem",
-    "AnimationSystem"
+    "AnimationSystem",
+    "UnitCreationSystem"
   ],
   "propertyName": "entities",
   "interface": "sceneEditor",

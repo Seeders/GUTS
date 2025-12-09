@@ -24,7 +24,6 @@ class RenderSystem extends GUTS.BaseSystem {
             entitiesUpdated: 0
         };
 
-        this._bindDebugHelpers();
     }
 
     init() {
@@ -194,15 +193,6 @@ class RenderSystem extends GUTS.BaseSystem {
         };
     }
 
-    _bindDebugHelpers() {
-        if (typeof window !== "undefined") {
-            window.RenderSystemDebug = {
-                getStats: () => this._stats,
-                getEntityRenderer: () => this.entityRenderer,
-                getRendererStats: () => this.entityRenderer?.stats
-            };
-        }
-    }
 
     async update() {
         if (!this.game.scene || !this.game.camera || !this.game.renderer) return;

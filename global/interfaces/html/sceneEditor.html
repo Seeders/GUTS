@@ -1,13 +1,15 @@
 <div id="scene-editor-container" class="editor-module">
    <div id="scene-sidebar" class="editor-module__sidebar editor-module__sidebar--left">
-      <h2 class="editor-module__panel-title">Hierarchy</h2>
-      <div id="scene-hierarchy" class="editor-module__list editor-module__scroll-y">
-        <!-- Entities will be populated here -->
+      <h2 class="editor-module__panel-title">Entities</h2>
+      <div id="scene-hierarchy" class="editor-module__list editor-module__scroll-y" style="max-height: 200px;">
+        <!-- Placed entities will be populated here -->
       </div>
-      <div class="editor-module__toolbar editor-module__toolbar--vertical">
-        <select id="scene-addPrefabSelect" class="editor-module__select"></select>
-        <button class="editor-module__btn editor-module__btn--secondary" id="scene-addPrefabBtn">+ Add Prefab</button>
-        <button class="editor-module__btn editor-module__btn--danger" id="scene-removePrefabBtn">Remove Selected Prefab</button>
+      <button class="editor-module__btn editor-module__btn--danger" id="scene-removePrefabBtn" style="margin: 4px;">Remove Selected</button>
+
+      <h2 class="editor-module__panel-title">Add Entity</h2>
+      <select id="scene-collectionSelect" class="editor-module__select" style="margin: 4px;"></select>
+      <div id="scene-spawnTypeList" class="editor-module__list editor-module__scroll-y" style="max-height: 300px;">
+        <!-- Spawn types will be populated here as clickable items -->
       </div>
    </div>
 

@@ -59,6 +59,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         };
     }
     
+    init() {
+        this.game.register('createPlacement', this.createPlacement.bind(this));
+        this.game.register('createUnit', this.createUnit.bind(this));
+    }
     /**
      * Create a new unit entity with all required components
      * @param {number} worldX - World X coordinate
@@ -69,26 +73,52 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @param {string|null} playerId - Optional player ID
      * @returns {number} Entity ID
      */
-    create(worldX, worldY, worldZ, targetPosition, placement, team, playerId = null) {
-        const unitType = placement.unitType;
+    createPlacement(worldX, worldY, worldZ, placement, team, playerId = null) {
+        try {
+            const entity = this.createUnit(worldX, worldY, worldZ, placement.collection, placement.unitTypeId, team, playerId);
+
+            this.game.addComponent(entity, 'placement', {
+                placementId: placement.placementId,
+                gridPosition: placement.gridPosition,
+                unitTypeId: placement.unitTypeId,
+                collection: placement.collection,
+                team: placement.team,
+                playerId: placement.playerId,
+                roundPlaced: placement.roundPlaced
+            });
+            console.log('created placement', placement.unitTypeId, team, entity);
+
+            return entity;
+        } catch (error) {
+            console.error('Failed to create unit:', error);
+            throw new Error(`Unit creation failed: ${error.message}`);
+        }
+    }
+
+    createUnit(worldX, worldY, worldZ, collection, spawnType, team, playerId = null) {
+        const unitType = this.game.getCollections()[collection][spawnType];
         try {
             // Round world coordinates to ensure deterministic entity IDs across client and server
             const roundedX = Math.round(worldX * 100) / 100;
             const roundedZ = Math.round(worldZ * 100) / 100;
-            const entity = this.game.createEntity(`${unitType.id}_${roundedX}_${roundedZ}_${team}_${this.game.state.round}`);
-            console.log('created unit', unitType.id, team, entity);
+            // Use spawnType as fallback if unitType.id is not set (e.g., in editor before build)
+            const unitId = unitType.id || spawnType;
+            const round = this.game.state?.round ?? 0;
+            const entity = this.game.createEntity(`${unitId}_${roundedX}_${roundedZ}_${team}_${round}`);
+            console.log('created unit', unitId, team, entity);
             const teamConfig = this.teamConfigs[team];
+
             // Add core components
-            this.addCoreComponents(entity, worldX, worldY, worldZ, placement, team, teamConfig);
+            this.addCoreComponents(entity, worldX, worldY, worldZ, unitType, team, teamConfig);
 
             // Add combat components
             this.addCombatComponents(entity, unitType);
 
             // Add AI and behavior components
-            this.addBehaviorComponents(entity, targetPosition, unitType);
+            this.addBehaviorComponents(entity);
 
-            // Add visual and interaction components
-            this.addVisualComponents(entity, unitType, teamConfig);
+            // Add visual and interaction components (pass collection and spawnType for renderable)
+            this.addVisualComponents(entity, unitType, teamConfig, collection, spawnType);
 
             // Schedule equipment and abilities (async to avoid blocking)
             this.schedulePostCreationSetup(entity, unitType);
@@ -102,14 +132,13 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             }
 
             // Update statistics
-            this.updateCreationStats(unitType, team);
+            this.game.call('invalidateSupplyCache');
             return entity;
         } catch (error) {
             console.error('Failed to create unit:', error);
             throw new Error(`Unit creation failed: ${error.message}`);
         }
     }
-
 
     /**
      * Clean up squads by destroying their units and freeing grid cells
@@ -200,9 +229,8 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @param {string} team - Team identifier
      * @param {Object} teamConfig - Team configuration
      */
-    addCoreComponents(entity, worldX, worldY, worldZ, placement, team, teamConfig) {
-        const unitType = placement.unitType;
-
+    addCoreComponents(entity, worldX, worldY, worldZ, unitType, team, teamConfig) {
+ 
         // Transform component (combines position, rotation, scale)
         this.game.addComponent(entity, "transform", {
             position: { x: worldX, y: worldY, z: worldZ },
@@ -226,19 +254,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             team: team
         });
 
-        // Placement component - squad membership marker (ties units in a placement together)
-        // No unitType data (entity has unitType component), no targetPosition (handled by aiState/behaviors)
-        this.game.addComponent(entity, "placement", {
-            placementId: placement.placementId,
-            gridPosition: placement.gridPosition,
-            unitTypeId: placement.unitTypeId || unitType.id,
-            collection: placement.collection || unitType.collection,
-            team: placement.team,
-            playerId: placement.playerId,
-            roundPlaced: placement.roundPlaced
-        });
-
-        // Unit type information - full unit data for rendering and gameplay
+          // Unit type information - full unit data for rendering and gameplay
         // id and collection are added by the compiler at build time
         this.game.addComponent(entity, "unitType", unitType);
     }
@@ -283,7 +299,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * Add AI and behavior components
      * @param {number} entity - Entity ID
      */
-    addBehaviorComponents(entity, targetPosition, unitType) {
+    addBehaviorComponents(entity) {
         this.game.addComponent(entity, "aiState", {
             currentAction: null,
             rootBehaviorTree: "UnitBattleBehaviorTree",
@@ -330,12 +346,15 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @param {number} entity - Entity ID
      * @param {Object} unitType - Unit type definition
      * @param {Object} teamConfig - Team configuration
+     * @param {string} collection - Collection name (e.g., 'units', 'buildings')
+     * @param {string} spawnType - Spawn type ID (e.g., '1_d_archer')
      */
-    addVisualComponents(entity, unitType, teamConfig) {
+    addVisualComponents(entity, unitType, teamConfig, collection, spawnType) {
         // Renderable component for visual representation
+        // Use passed collection/spawnType as fallback for unitType.collection/id
         this.game.addComponent(entity, "renderable", {
-            objectType: unitType.collection,
-            spawnType: unitType.id || 'default',
+            objectType: unitType.collection || collection,
+            spawnType: unitType.id || spawnType,
             capacity: 128
         });
     }
@@ -481,45 +500,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
     }
     
     
-    /**
-     * Update creation statistics
-     * @param {Object} unitType - Unit type definition
-     * @param {string} team - Team identifier
-     */
-    updateCreationStats(unitType, team) {
-        this.stats.totalCreated++;
 
-        // Track by team
-        const teamCount = this.stats.createdByTeam.get(team) || 0;
-        this.stats.createdByTeam.set(team, teamCount + 1);
-
-        // Track by unit type
-        const unitTypeId = unitType.id || 'unknown';
-        const typeCount = this.stats.createdByType.get(unitTypeId) || 0;
-        this.stats.createdByType.set(unitTypeId, typeCount + 1);
-
-        // Invalidate supply cache when units are created
-        this.game.call('invalidateSupplyCache');
-    }
-    
-    /**
-     * Get creation statistics
-     * @returns {Object} Statistics summary
-     */
-    getStats() {
-        return {
-            totalCreated: this.stats.totalCreated,
-            createdByTeam: Object.fromEntries(this.stats.createdByTeam),
-            createdByType: Object.fromEntries(this.stats.createdByType),
-            equipmentFailures: this.stats.equipmentFailures,
-            abilityFailures: this.stats.abilityFailures,
-            squadsCreated: this.stats.squadsCreated,
-            successRate: {
-                equipment: 1 - (this.stats.equipmentFailures / Math.max(1, this.stats.totalCreated)),
-                abilities: 1 - (this.stats.abilityFailures / Math.max(1, this.stats.totalCreated))
-            }
-        };
-    }
     
     /**
      * Reset creation statistics

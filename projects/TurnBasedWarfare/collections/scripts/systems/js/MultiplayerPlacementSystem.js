@@ -436,11 +436,10 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                 const terrainHeight = this.game.unitCreationSystem.getTerrainHeight(pos.x, pos.z);
                 const unitY = terrainHeight !== null ? terrainHeight : 0;
 
-                let entityId = this.game.unitCreationSystem.create(
+                let entityId = this.game.call('createPlacement',
                     pos.x,
                     unitY,
                     pos.z,
-                    opponentPlacement.targetPosition,
                     placementWithUnitType,
                     this.game.state.mySide == 'right' ? 'left' : 'right'
                 );

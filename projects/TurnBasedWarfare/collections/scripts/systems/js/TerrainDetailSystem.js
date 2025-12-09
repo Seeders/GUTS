@@ -29,6 +29,15 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
     }
 
     /**
+     * Get a texture from ImageManager
+     * @param {string} textureId - The texture identifier from the textures collection
+     * @returns {THREE.Texture|null}
+     */
+    getTexture(textureId) {
+        return this.game.imageManager?.getTexture(textureId) || null;
+    }
+
+    /**
      * Seeded random number generator for deterministic placement
      */
     seededRandom() {
@@ -159,40 +168,16 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
      * Create an instanced billboard batch for a detail texture
      */
     async createDetailBatch(textureId, placements) {
-        const collections = this.game.getCollections();
-        const textureDef = collections.textures?.[textureId];
-
-        if (!textureDef?.imagePath) {
-            console.warn(`[TerrainDetailSystem] Texture '${textureId}' not found or has no imagePath`);
-            return;
-        }
-
         const scene = this.game.scene;
         if (!scene) {
             console.warn('[TerrainDetailSystem] No scene available');
             return;
         }
 
-        // Load texture - prefix with /resources/ for correct path
-        const textureLoader = new THREE.TextureLoader();
-        const texturePath = `/resources/${textureDef.imagePath}`;
-        let texture;
-
-        try {
-            texture = await new Promise((resolve, reject) => {
-                textureLoader.load(
-                    texturePath,
-                    resolve,
-                    undefined,
-                    reject
-                );
-            });
-
-            texture.colorSpace = THREE.SRGBColorSpace;
-            texture.minFilter = THREE.NearestFilter;
-            texture.magFilter = THREE.NearestFilter;
-        } catch (error) {
-            console.error(`[TerrainDetailSystem] Failed to load texture ${texturePath}:`, error);
+        // Get texture from ImageManager (preloaded during asset loading)
+        const texture = this.getTexture(textureId);
+        if (!texture) {
+            console.warn(`[TerrainDetailSystem] Texture '${textureId}' not found in ImageManager`);
             return;
         }
 

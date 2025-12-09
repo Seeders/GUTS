@@ -1126,9 +1126,9 @@ class EntityRenderer {
         // Offset by half the sprite height so bottom sits at ground level
         // spriteYOffset adjusts for sprites where feet aren't at the bottom of the frame
         const position = new THREE.Vector3(
-            data.position.x + spriteOffset,
-            data.position.y + heightOffset + spriteYOffset,
-            data.position.z - spriteOffset
+            data.position.x,// + spriteOffset,
+            data.position.y + heightOffset,// + spriteYOffset,
+            data.position.z// - spriteOffset
         );
 
         // Billboards don't rotate - they face the camera via shader

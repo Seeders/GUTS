@@ -371,13 +371,11 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             const terrainHeight = this.game.unitCreationSystem.getTerrainHeight(pos.x, pos.z);
             const unitY = terrainHeight !== null ? terrainHeight : pos.y;
 
-            const entityId = this.game.unitCreationSystem.create(
+            const entityId = this.game.call('createPlacement',
                 pos.x, unitY, pos.z,
-                null, // targetPosition handled by aiState
                 specializedPlacement,
                 team
             );
-            console.log('created new unit', newUnitType, entityId);
             newUnitIds.push(entityId);
         });
 

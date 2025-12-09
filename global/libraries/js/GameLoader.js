@@ -53,12 +53,18 @@ class GameLoader extends GUTS.BaseLoader {
          // Load all images
         for(let objectType in this.collections) {
             await this.game.imageManager.loadImages(objectType, this.collections[objectType]);
-        }  
+        }
+
+        // Load THREE.Texture objects from the textures collection
+        if (this.collections.textures) {
+            await this.game.imageManager.loadTextures(this.collections.textures);
+        }
+
         this.game.modelManager = new GUTS.ModelManager(this.game.app, {}, { ShapeFactory: GUTS.ShapeFactory, palette: this.game.palette, textures: this.game.getCollections().textures});
-        
+
         for(let objectType in this.collections) {
             await this.game.modelManager.loadModels(objectType, this.collections[objectType]);
-        }  
- 
+        }
+
     }
 }

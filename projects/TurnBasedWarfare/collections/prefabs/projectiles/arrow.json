@@ -1,6 +1,5 @@
 {
   "damageType": "physical",
-  "spriteScale": 16,
   "render": {
     "animations": {
       "idle": [
@@ -45,8 +44,8 @@
   },
   "speed": 600,
   "title": "Arrow",
-  "attackSound": "bow",
-  "hitSound": "arrow_hit",
+  "attackSound": "",
+  "hitSound": "",
   "homing": false,
   "homingStrength": 0,
   "ballistic": true,

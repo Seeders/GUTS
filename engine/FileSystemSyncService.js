@@ -285,7 +285,7 @@ class FileSystemSyncService {
     }
 
     async loadFiles(files, isModule) {
-        
+
         if (files.length === 0) {
             console.log('No files found, initializing project in filesystem');
             this.saveProjectToFilesystem();
@@ -295,7 +295,6 @@ class FileSystemSyncService {
         const fileGroups = {};
 
         files.forEach(file => {
-         //   console.log('loading file', file.name);
             const parts = file.name.split('/');
             if (parts.length < 3) {
                 console.warn(`Skipping malformed file path: ${file.name}`);
@@ -346,12 +345,102 @@ class FileSystemSyncService {
             }
         });
 
-        const loadPromises = Object.values(fileGroups).map(group =>
-            this.loadFilesForObject(group.collectionId, group.objectId, group.files, isModule)
-        );
+        // Batch load all files in one request
+        const allFilePaths = files.map(f => f.name);
+        const fileContents = await this.batchReadFiles(allFilePaths, isModule);
 
-        await Promise.all(loadPromises);
-      
+        // Process file groups with pre-loaded content
+        for (const group of Object.values(fileGroups)) {
+            await this.processFileGroup(group.collectionId, group.objectId, group.files, fileContents, isModule);
+        }
+    }
+
+    async batchReadFiles(filePaths, isModule) {
+        try {
+            const response = await fetch('/read-files', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ files: filePaths, isModule })
+            });
+
+            if (!response.ok) {
+                console.warn('Batch read failed, falling back to individual reads');
+                return null;
+            }
+
+            const result = await response.json();
+            return result.success ? result.files : null;
+        } catch (error) {
+            console.warn('Batch read error:', error);
+            return null;
+        }
+    }
+
+    async processFileGroup(collectionIdFromPath, objectId, files, fileContents, isModule) {
+        if (!this.currentCollections[collectionIdFromPath]) {
+            this.currentCollections[collectionIdFromPath] = {};
+        }
+
+        const jsonFile = files.find(f => f.name.endsWith('.json'));
+        let objectData = this.currentCollections[collectionIdFromPath][objectId] || {};
+
+        // Process JSON file if it exists
+        if (jsonFile) {
+            let content;
+            if (fileContents && fileContents[jsonFile.name]) {
+                content = fileContents[jsonFile.name];
+            } else {
+                const jsonResponse = await fetch('/read-file', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: jsonFile.name, isModule })
+                });
+                if (!jsonResponse.ok) throw new Error(`Failed to read JSON file: ${jsonFile.name}`);
+                content = await jsonResponse.text();
+            }
+            const newData = JSON.parse(content);
+            objectId = newData.id || objectId;
+            Object.assign(objectData, newData);
+        }
+
+        // Process special property files (e.g., .html, .css)
+        const specialFiles = files.filter(f => !f.name.endsWith('.json'));
+        for (const fileInfo of specialFiles) {
+            const fileExt = fileInfo.name.substring(fileInfo.name.lastIndexOf('.') + 1);
+            const propertyConfig = this.propertyConfig.find(config => config.ext === fileExt);
+
+            if (propertyConfig) {
+                let content;
+                if (fileContents && fileContents[fileInfo.name]) {
+                    content = fileContents[fileInfo.name];
+                } else {
+                    const response = await fetch('/read-file', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ path: fileInfo.name })
+                    });
+                    if (!response.ok) throw new Error(`Failed to read ${fileExt} file: ${fileInfo.name}`);
+                    content = await response.text();
+                }
+                objectData[propertyConfig.propertyName] = content;
+                let filePath = fileInfo.name;
+                if(filePath.startsWith('..')) {
+                    filePath = filePath.substr(2, filePath.length - 2);
+                } else {
+                    filePath = '/projects/' + filePath;
+                }
+                objectData['filePath'] = filePath;
+                this.typeHasSpecialProperties[collectionIdFromPath] = true;
+            }
+        }
+
+        // Set fileName if applicable
+        if (this.hasSpecialPropertiesInType(collectionIdFromPath)) {
+            const fileName = files[0].name.split('/').pop().replace(/\.[^/.]+$/, '');
+            objectData.fileName = fileName;
+        }
+
+        this.currentCollections[collectionIdFromPath][objectId] = objectData;
     }
 
     setCollectionDefs(){

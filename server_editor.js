@@ -296,12 +296,48 @@ app.post('/read-file', async (req, res) => {
         if (!fsSync.existsSync(filePath)) {
             return res.status(404).send({ success: false, error: 'File not found' });
         }
-        
+
         const content = await fs.readFile(filePath, 'utf8');
         res.send(content);
     } catch (error) {
         console.error('Error reading file:', error);
         res.status(500).send({ success: false, error: error.message });
+    }
+});
+
+// Batch read multiple files in one request for faster loading
+// Uses chunked processing to avoid EMFILE (too many open files) errors
+app.post('/read-files', async (req, res) => {
+    const { files, isModule } = req.body;
+
+    if (!Array.isArray(files)) {
+        return res.status(400).json({ success: false, error: 'files must be an array' });
+    }
+
+    try {
+        const results = {};
+        const baseDir = isModule ? MODULES_DIR : PROJS_DIR;
+        const CHUNK_SIZE = 50; // Process 50 files at a time to avoid EMFILE
+
+        // Process files in chunks
+        for (let i = 0; i < files.length; i += CHUNK_SIZE) {
+            const chunk = files.slice(i, i + CHUNK_SIZE);
+            await Promise.all(chunk.map(async (filePath) => {
+                const fullPath = path.join(baseDir, filePath);
+                try {
+                    if (fsSync.existsSync(fullPath)) {
+                        results[filePath] = await fs.readFile(fullPath, 'utf8');
+                    }
+                } catch (err) {
+                    console.warn(`Failed to read ${filePath}:`, err.message);
+                }
+            }));
+        }
+
+        res.json({ success: true, files: results });
+    } catch (error) {
+        console.error('Error reading files:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 

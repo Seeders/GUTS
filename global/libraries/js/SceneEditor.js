@@ -28,10 +28,27 @@ class SceneEditor {
             noSelection: document.getElementById('scene-noSelection'),
             entityInspector: document.getElementById('scene-entityInspector'),
             components: document.getElementById('scene-components'),
-            addPrefabSelect: document.getElementById('scene-addPrefabSelect'),
-            addPrefabBtn: document.getElementById('scene-addPrefabBtn'),
+            collectionSelect: document.getElementById('scene-collectionSelect'),
+            spawnTypeList: document.getElementById('scene-spawnTypeList'),
             removePrefabBtn: document.getElementById('scene-removePrefabBtn'),
         };
+
+        // Get collections that are in the "prefabs" objectTypeCategory
+        this.prefabCollections = this.getPrefabCollections();
+
+        // Placement mode state
+        this.placementMode = {
+            active: false,
+            collection: null,
+            spawnType: null,
+            itemData: null
+        };
+
+        // Mouse tracking for placement
+        this.mouseNDC = { x: 0, y: 0 };
+        this.mouseOverCanvas = false;
+        this.raycastHelper = null;
+        this.placementPreview = null;
 
         // Editor context - handles all rendering via game systems
         this.editorContext = null;
@@ -42,7 +59,27 @@ class SceneEditor {
 
         // Initialize
         this.initEventListeners();
-        this.populatePrefabSelect();
+        this.populateCollectionSelect();
+    }
+
+    /**
+     * Get all collections that have objectTypeCategory: "prefabs"
+     */
+    getPrefabCollections() {
+        const objectTypeDefinitions = this.collections.objectTypeDefinitions || {};
+        const prefabCollections = [];
+
+        for (const [typeId, typeDef] of Object.entries(objectTypeDefinitions)) {
+            if (typeDef.objectTypeCategory === 'prefabs') {
+                prefabCollections.push({
+                    id: typeId,
+                    name: typeDef.name || typeId,
+                    singular: typeDef.singular || typeId
+                });
+            }
+        }
+
+        return prefabCollections;
     }
 
     /**
@@ -90,9 +127,10 @@ class SceneEditor {
             this.handleResize();
         });
 
-        // Add prefab button
-        this.elements.addPrefabBtn?.addEventListener('click', () => {
-            this.addPrefabToScene();
+        // Collection select change - update spawn type list
+        this.elements.collectionSelect?.addEventListener('change', () => {
+            this.populateSpawnTypeList();
+            this.cancelPlacementMode();
         });
 
         // Remove entity button
@@ -118,24 +156,267 @@ class SceneEditor {
 
         // Window resize
         window.addEventListener('resize', this.handleResize.bind(this));
+
+        // Canvas mouse events for placement
+        this.canvas?.addEventListener('mouseenter', () => {
+            this.mouseOverCanvas = true;
+        });
+
+        this.canvas?.addEventListener('mouseleave', () => {
+            this.mouseOverCanvas = false;
+            if (this.placementPreview) {
+                this.placementPreview.hide();
+            }
+        });
+
+        this.canvas?.addEventListener('mousemove', (e) => {
+            this.updateMouseNDC(e);
+            this.updatePlacementPreview();
+        });
+
+        this.canvas?.addEventListener('click', (e) => {
+            if (this.placementMode.active) {
+                this.placeEntityAtMouse();
+            }
+        });
+
+        // Right-click to cancel placement
+        this.canvas?.addEventListener('contextmenu', (e) => {
+            if (this.placementMode.active) {
+                e.preventDefault();
+                this.cancelPlacementMode();
+            }
+        });
+
+        // Escape key to cancel placement
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.placementMode.active) {
+                this.cancelPlacementMode();
+            }
+        });
     }
 
     /**
-     * Populate the prefab select dropdown
+     * Populate the collection select dropdown with prefab collections
      */
-    populatePrefabSelect() {
-        if (!this.elements.addPrefabSelect) return;
+    populateCollectionSelect() {
+        if (!this.elements.collectionSelect) return;
 
-        this.elements.addPrefabSelect.innerHTML = '';
+        this.elements.collectionSelect.innerHTML = '';
 
-        const prefabs = this.collections.prefabs || {};
-
-        for (const [prefabName, prefabData] of Object.entries(prefabs)) {
+        for (const collection of this.prefabCollections) {
             const option = document.createElement('option');
-            option.value = prefabName;
-            option.textContent = prefabData.title || prefabName;
-            this.elements.addPrefabSelect.appendChild(option);
+            option.value = collection.id;
+            option.textContent = collection.name;
+            this.elements.collectionSelect.appendChild(option);
         }
+
+        // Populate spawn types for the first collection
+        this.populateSpawnTypeList();
+    }
+
+    /**
+     * Populate the spawn type list based on selected collection
+     */
+    populateSpawnTypeList() {
+        if (!this.elements.spawnTypeList) return;
+
+        this.elements.spawnTypeList.innerHTML = '';
+
+        const collectionId = this.elements.collectionSelect?.value;
+        if (!collectionId) return;
+
+        const collectionData = this.collections[collectionId] || {};
+
+        for (const [itemId, itemData] of Object.entries(collectionData)) {
+            const item = document.createElement('div');
+            item.className = 'editor-module__list-item';
+            item.dataset.collection = collectionId;
+            item.dataset.spawnType = itemId;
+            item.textContent = itemData.title || itemId;
+            item.addEventListener('click', () => {
+                this.activatePlacementMode(collectionId, itemId, itemData);
+                // Update selection UI
+                this.elements.spawnTypeList.querySelectorAll('.editor-module__list-item').forEach(el => {
+                    el.classList.remove('editor-module__list-item--selected');
+                });
+                item.classList.add('editor-module__list-item--selected');
+            });
+            this.elements.spawnTypeList.appendChild(item);
+        }
+    }
+
+    /**
+     * Activate placement mode for a specific entity type
+     */
+    activatePlacementMode(collection, spawnType, itemData) {
+        this.placementMode = {
+            active: true,
+            collection: collection,
+            spawnType: spawnType,
+            itemData: itemData
+        };
+        console.log(`[SceneEditor] Placement mode activated: ${collection}/${spawnType}`);
+    }
+
+    /**
+     * Cancel placement mode
+     */
+    cancelPlacementMode() {
+        this.placementMode = {
+            active: false,
+            collection: null,
+            spawnType: null,
+            itemData: null
+        };
+
+        // Clear selection UI
+        this.elements.spawnTypeList?.querySelectorAll('.editor-module__list-item').forEach(el => {
+            el.classList.remove('editor-module__list-item--selected');
+        });
+
+        // Hide preview
+        if (this.placementPreview) {
+            this.placementPreview.hide();
+        }
+
+        console.log('[SceneEditor] Placement mode cancelled');
+    }
+
+    /**
+     * Update mouse normalized device coordinates
+     */
+    updateMouseNDC(event) {
+        if (!this.canvas) return;
+
+        const rect = this.canvas.getBoundingClientRect();
+        this.mouseNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        this.mouseNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    }
+
+    /**
+     * Update placement preview based on mouse position
+     */
+    updatePlacementPreview() {
+        if (!this.placementMode.active || !this.mouseOverCanvas) {
+            return;
+        }
+
+        if (!this.raycastHelper || !this.worldRenderer) {
+            return;
+        }
+
+        // Raycast to get world position
+        const groundMesh = this.worldRenderer.getGroundMesh();
+        if (!groundMesh) return;
+
+        const worldPos = this.raycastHelper.rayCastGround(
+            this.mouseNDC.x,
+            this.mouseNDC.y,
+            groundMesh
+        );
+
+        if (!worldPos) {
+            if (this.placementPreview) {
+                this.placementPreview.hide();
+            }
+            return;
+        }
+
+        // Show placement preview at position
+        if (this.placementPreview) {
+            const isBuilding = this.placementMode.collection === 'buildings';
+            this.placementPreview.showAtWorldPositions([worldPos], true, isBuilding);
+        }
+    }
+
+    /**
+     * Place entity at current mouse position
+     */
+    placeEntityAtMouse() {
+        if (!this.placementMode.active) return;
+
+        if (!this.raycastHelper || !this.worldRenderer) {
+            console.error('[SceneEditor] RaycastHelper or WorldRenderer not available');
+            return;
+        }
+
+        // Raycast to get world position
+        const groundMesh = this.worldRenderer.getGroundMesh();
+        if (!groundMesh) return;
+
+        const worldPos = this.raycastHelper.rayCastGround(
+            this.mouseNDC.x,
+            this.mouseNDC.y,
+            groundMesh
+        );
+
+        if (!worldPos) return;
+
+        // Get terrain height at position
+        const terrainSystem = this.editorContext?.terrainSystem;
+        const terrainHeight = terrainSystem?.getTerrainHeightAtPosition?.(worldPos.x, worldPos.z) || worldPos.y;
+
+        // Create entity using UnitCreationSystem
+        this.createEntityAtPosition(worldPos.x, terrainHeight, worldPos.z);
+    }
+
+    /**
+     * Create entity at specific position
+     */
+    createEntityAtPosition(x, y, z) {
+        if (!this.editorContext) return;
+
+        const { collection, spawnType, itemData } = this.placementMode;
+        if (!collection || !spawnType) return;
+
+        // Use UnitCreationSystem to create the entity with proper components
+        const unitCreationSystem = this.editorContext.unitCreationSystem;
+        if (!unitCreationSystem) {
+            console.error('[SceneEditor] UnitCreationSystem not available');
+            return;
+        }
+
+        // Create entity using the same code path as runtime
+        const entityId = unitCreationSystem.createUnit(
+            x, y, z,
+            collection,
+            spawnType,
+            'left', // Default team for editor
+            null    // No player ID
+        );
+
+        if (!entityId) {
+            console.error('[SceneEditor] Failed to create entity');
+            return;
+        }
+
+        // Update entities array with scene-serializable format
+        if (!this.state.entities) {
+            this.state.entities = [];
+        }
+
+        const newEntity = {
+            id: entityId,
+            collection: collection,
+            spawnType: spawnType,
+            name: itemData?.title || spawnType,
+            position: { x, y, z }
+        };
+
+        this.state.entities.push(newEntity);
+
+        // Keep sceneData.entities in sync
+        if (this.state.sceneData) {
+            this.state.sceneData.entities = this.state.entities;
+        }
+
+        // Update UI
+        this.renderHierarchy();
+        this.state.isDirty = true;
+        this.handleSave(false);
+
+        console.log(`[SceneEditor] Created entity ${entityId} at (${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)})`);
     }
 
     /**
@@ -168,65 +449,56 @@ class SceneEditor {
         // Pass scene data but our editor systems will handle rendering
         await this.editorContext.loadScene({ ...fullSceneData, systems });
 
-        // Setup orbit controls AFTER scene loads (worldRenderer is created during scene load)
+        // Setup camera and controls AFTER scene loads (worldRenderer is created during scene load)
         this.worldRenderer = this.editorContext.worldSystem?.worldRenderer;
-        if (this.worldRenderer && !this.worldRenderer.controls) {
+        if (this.worldRenderer) {
+            // Replace camera with perspective camera (same as TerrainMapEditor)
+            const terrainDataManager = this.editorContext.terrainSystem?.terrainDataManager;
+            const terrainSize = terrainDataManager?.terrainSize || 1536;
+            const canvas = this.canvas;
+
+            const width = canvas.clientWidth || canvas.width;
+            const height = canvas.clientHeight || canvas.height;
+
+            const halfSize = terrainSize / 2;
             const targetPos = { x: 0, y: 0, z: 0 };
+
+            // Position camera in SW corner (-X, +Z) looking NE toward center
+            const cameraHeight = halfSize;
+
+            const camera = new THREE.PerspectiveCamera(60, width / height, 1, 30000);
+            camera.position.set(-halfSize, cameraHeight, halfSize);
+            camera.lookAt(0, 0, 0);
+
+            // Replace the camera in WorldRenderer
+            this.worldRenderer.camera = camera;
+
+            // Setup orbit controls
             this.worldRenderer.setupOrbitControls(targetPos);
+
+            // Force initial camera rotation sync
+            this.worldRenderer.updateCameraRotation();
+
+            // Initialize RaycastHelper for placement
+            this.raycastHelper = new GUTS.RaycastHelper(
+                this.worldRenderer.getCamera(),
+                this.worldRenderer.getScene()
+            );
+
+            // Initialize PlacementPreview
+            const gameConfig = this.collections.configs?.game || {};
+            this.placementPreview = new GUTS.PlacementPreview({
+                scene: this.worldRenderer.getScene(),
+                gridSize: gameConfig.gridSize || 48,
+                getTerrainHeight: (x, z) => {
+                    return this.editorContext?.terrainSystem?.getTerrainHeightAtPosition?.(x, z) || 0;
+                }
+            });
         }
 
         // Render UI
         this.renderHierarchy();
         this.handleResize();
-    }
-
-    /**
-     * Add a prefab to the scene
-     */
-    addPrefabToScene() {
-        if (!this.editorContext) return;
-
-        const prefabName = this.elements.addPrefabSelect?.value;
-        if (!prefabName) return;
-
-        const prefab = this.collections.prefabs?.[prefabName];
-        if (!prefab) return;
-
-        // Generate entity ID
-        const entityId = `entity_${Date.now()}`;
-
-        // Add entity via context - systems will render it
-        this.editorContext.addEntityFromPrefab(prefabName, {
-            id: entityId,
-            name: prefab.title || prefabName
-        });
-
-        // Update entities array
-        if (!this.state.entities) {
-            this.state.entities = [];
-        }
-
-        const newEntity = {
-            id: entityId,
-            prefab: prefabName,
-            name: prefab.title || prefabName,
-            components: {}
-        };
-
-        this.state.entities.push(newEntity);
-
-        // Keep sceneData.entities in sync
-        if (this.state.sceneData) {
-            this.state.sceneData.entities = this.state.entities;
-        }
-
-        // Update UI
-        this.renderHierarchy();
-        this.state.isDirty = true;
-        this.handleSave(false);
-
-        // Select the new entity
-        this.selectEntity(entityId);
     }
 
     /**
