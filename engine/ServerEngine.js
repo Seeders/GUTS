@@ -40,7 +40,7 @@ export default class ServerEngine extends BaseEngine {
         const path = await import('path');
 
         try {
-            const scriptsPath = path.join(process.cwd(), 'projects', projectName, 'scripts');
+            const scriptsPath = path.join(process.cwd(), 'projects', projectName, 'collections');
             const configsPath = path.join(scriptsPath, 'Settings', 'configs');
 
             const collections = {

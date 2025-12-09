@@ -20,62 +20,76 @@ class EditorView {
       
       // Group object types by category
       const categories = {};
+      const categoryTitles = this.controller.getCollections().objectTypeCategories || {};
       this.controller.getCollectionDefs().forEach(type => {
-        const category = type.category || 'Uncategorized';
+        const category = type.objectTypeCategory || 'uncategorized';
         if (!categories[category]) {
           categories[category] = [];
         }
         categories[category].push(type);
       });
-  
+
+      // Helper to get category display title
+      const getCategoryTitle = (categoryKey) => {
+        const categoryData = categoryTitles[categoryKey];
+        return categoryData?.title || categoryKey;
+      };
+
       // Initialize expanded categories if needed
       if (!this.controller.getExpandedCategories()) {
         this.controller.setExpandedCategories({});
         for (const category in categories) {
-          this.controller.getExpandedCategories()[category] = category === currentTypeDef.category;
+          this.controller.getExpandedCategories()[category] = category === currentTypeDef.objectTypeCategory;
         }
       }
-  
+
       // Generate HTML
       let html = `<div class="type-selector">`;
-      // Sort categories alphabetically
-      const sortedCategories = Object.entries(categories).sort((a, b) => a[0].localeCompare(b[0]));
+      // Sort categories alphabetically by display title
+      const sortedCategories = Object.entries(categories).sort((a, b) =>
+        getCategoryTitle(a[0]).localeCompare(getCategoryTitle(b[0]))
+      );
       for (const [category, types] of sortedCategories) {
         const isExpanded = this.controller.getExpandedCategories()[category];
-        const isCurrentCategory = category === currentTypeDef.category;
+        const isCurrentCategory = category === currentTypeDef.objectTypeCategory;
+        const categoryTitle = getCategoryTitle(category);
 
         html += `
-          <div class="category ${isExpanded || isCurrentCategory ? 'highlight' : ''}">
-            <div class="category-header">${category}</div>
+          <div class="category ${isExpanded || isCurrentCategory ? 'highlight' : ''}" data-category-key="${category}">
+            <div class="category-header">${categoryTitle}</div>
             <div class="category-types" style="display: ${isExpanded ? 'block' : 'none'};">`;
 
         // Sort types alphabetically by name
         const sortedTypes = types.sort((a, b) => a.name.localeCompare(b.name));
         sortedTypes.forEach(type => {
           const isSelected = this.controller.getSelectedType() === type.id;
+          const collection = this.controller.getCollections()[type.id] || {};
+          const itemCount = Object.keys(collection).length;
+
           html += `
             <div class="object-type-item ${isSelected ? 'selected' : ''}" data-type="${type.id}">
-              ${type.name}
+              ${type.name} <span class="item-count">(${itemCount})</span>
             </div>`;
-  
+
           if (isSelected) {
-            html += `<div class="object-list">`;
-            // Sort objects alphabetically by title
-            const collection = this.controller.getCollections()[type.id] || {};
+            // Sort objects alphabetically by title for dropdown
             const sortedObjectIds = Object.keys(collection).sort((a, b) => {
               const titleA = (collection[a].title || a).toLowerCase();
               const titleB = (collection[b].title || b).toLowerCase();
               return titleA.localeCompare(titleB);
             });
-            sortedObjectIds.forEach(objId => {
-              const obj = collection[objId];
-              html += `
-                <div class="object-item ${this.controller.getSelectedObject() === objId ? 'selected' : ''}"
-                     data-object="${objId}">
-                  ${obj.title || objId}
-                </div>`;
-            });
-            html += `</div>`;
+
+            html += `<div class="object-selector">
+              <select id="object-dropdown" class="object-dropdown">
+                <option value="">-- Select ${this.controller.getSingularType(type.id)} --</option>
+                ${sortedObjectIds.map(objId => {
+                  const obj = collection[objId];
+                  const title = obj.title || objId;
+                  const selected = this.controller.getSelectedObject() === objId ? 'selected' : '';
+                  return `<option value="${objId}" ${selected}>${title}</option>`;
+                }).join('')}
+              </select>
+            </div>`;
           }
         });
         html += `</div></div>`;
@@ -697,37 +711,49 @@ class EditorView {
           this.controller.selectObject(null);
           this.renderObjectList();
           this.updateSidebarButtons();
-  
+
           // Auto-select first object if available
           const objects = this.controller.getCollections()[this.controller.getSelectedType()];
           if (objects && Object.keys(objects).length > 0) {
-            this.controller.selectObject(Object.keys(objects)[0]);
+            // Sort objects alphabetically and select first
+            const sortedIds = Object.keys(objects).sort((a, b) => {
+              const titleA = (objects[a].title || a).toLowerCase();
+              const titleB = (objects[b].title || b).toLowerCase();
+              return titleA.localeCompare(titleB);
+            });
+            this.controller.selectObject(sortedIds[0]);
           }
         });
       });
   
-      // Object selection
-      document.querySelectorAll('.object-item').forEach(item => {
-        item.addEventListener('click', () => {
-          this.controller.selectObject(item.dataset.object);
-        });
+      // Object selection via dropdown
+      document.getElementById('object-dropdown')?.addEventListener('change', (e) => {
+        const selectedId = e.target.value;
+        if (selectedId) {
+          this.controller.selectObject(selectedId);
+        } else {
+          this.controller.selectObject(null);
+          this.renderEditor();
+        }
       });
   
       // Category expand/collapse
       document.querySelectorAll('.category-header').forEach(header => {
         header.addEventListener('click', () => {
-          const category = header.textContent.trim();
+          // Use the category key from data attribute, not the display title
+          const categoryElement = header.closest('.category');
+          const category = categoryElement?.dataset.categoryKey || header.textContent.trim();
           const isOpened = this.controller.getExpandedCategories()[category];
-          
+
           // Collapse all except clicked
           for (const cat in this.controller.getExpandedCategories()) {
             this.controller.getExpandedCategories()[cat] = false;
           }
-          
+
           if (!isOpened) {
             this.controller.selectObject(null);
           }
-          
+
           this.controller.getExpandedCategories()[category] = !isOpened;
           this.renderObjectList();
         });
@@ -960,7 +986,7 @@ class EditorView {
             </div>
             <div class="form-group">
                 <label for="new-type-category">Category:</label>
-                <input type="text" id="new-type-category" placeholder="e.g. Gameplay">
+                <input type="text" id="new-type-category" placeholder="e.g. prefabs">
             </div>
             <div class="actions">
                 <button class="primary" id="create-type-btn">Create Type</button>

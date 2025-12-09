@@ -1,0 +1,27 @@
+{
+  "title": "Townhall",
+  "animationCollection": "townhallSpritesAnimations",
+  "spriteSheet": "sprites/townhallSprites/townhallSheet.png",
+  "idleSpriteAnimations": [
+    "townhallIdleDown",
+    "townhallIdleDownLeft",
+    "townhallIdleLeft",
+    "townhallIdleUpLeft",
+    "townhallIdleUp",
+    "townhallIdleUpRight",
+    "townhallIdleRight",
+    "townhallIdleDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 5,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2
+  }
+}

@@ -25,9 +25,7 @@ class EditorECSGame extends GUTS.BaseECSGame {
         // Game services
         this.gameSystem = new GUTS.GameServices();
 
-        // Component generator
-        this.componentGenerator = new GUTS.ComponentGenerator(this.getCollections().components);
-        this.register("getComponents", this.componentGenerator.getComponents.bind(this.componentGenerator));
+        // Register getCollections (ComponentSystem handles getComponents)
         this.register("getCollections", () => this.getCollections());
 
         // Animation loop

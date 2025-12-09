@@ -23,7 +23,7 @@ function discoverProjects() {
             .filter(entry => entry.isDirectory())
             .filter(entry => {
                 // Check if it has a valid game.json config
-                const configPath = path.join(projectsDir, entry.name, 'scripts', 'Settings', 'configs', 'game.json');
+                const configPath = path.join(projectsDir, entry.name, 'collections', 'settings', 'configs', 'game.json');
                 return fs.existsSync(configPath);
             })
             .map(entry => entry.name);

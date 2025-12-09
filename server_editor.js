@@ -497,10 +497,10 @@ app.post('/api/save-texture', async (req, res) => {
 
         const fileName = `${textureName}.png`;
 
-        if (categoryName && collectionName) {
-            // New organized structure: resources/[category]/[collection]/
-            texturesFolder = path.join(PROJS_DIR, projectName, 'resources', categoryName, collectionName);
-            relativePath = `${categoryName}/${collectionName}/${fileName}`;
+        if (collectionName) {
+            // Save to resources/[collection]/ (e.g., resources/textures/, resources/icons/)
+            texturesFolder = path.join(PROJS_DIR, projectName, 'resources', collectionName);
+            relativePath = `${collectionName}/${fileName}`;
         } else {
             // Fallback to old structure: resources/textures/
             texturesFolder = path.join(PROJS_DIR, projectName, 'resources', 'textures');
@@ -534,11 +534,11 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
         const { projectName, baseName, collectionName, spriteSheet, spriteMetadata, directionNames, animationFPS = 4, generatorSettings } = req.body;
 
         // Create directories
-        const spritesFolder = path.join(PROJS_DIR, projectName, 'resources', 'Sprites', collectionName);
-        const scriptsSpritesFolder = path.join(PROJS_DIR, projectName, 'scripts', 'Sprites', collectionName);
-        const scriptsSpriteAnimationsFolder = path.join(PROJS_DIR, projectName, 'scripts', 'Sprites', collectionName + 'Animations');
-        const scriptsSpriteAnimationSetsFolder = path.join(PROJS_DIR, projectName, 'scripts', 'Sprites', 'spriteAnimationSets');
-        const settingsFolder = path.join(PROJS_DIR, projectName, 'scripts', 'Settings', 'objectTypeDefinitions');
+        const spritesFolder = path.join(PROJS_DIR, projectName, 'resources', 'sprites', collectionName);
+        const scriptsSpritesFolder = path.join(PROJS_DIR, projectName, 'collections', 'sprites', collectionName);
+        const scriptsSpriteAnimationsFolder = path.join(PROJS_DIR, projectName, 'collections', 'sprites', collectionName + 'Animations');
+        const scriptsSpriteAnimationSetsFolder = path.join(PROJS_DIR, projectName, 'collections', 'sprites', 'spriteAnimationSets');
+        const settingsFolder = path.join(PROJS_DIR, projectName, 'collections', 'settings', 'objectTypeDefinitions');
 
         await fs.mkdir(spritesFolder, { recursive: true });
         await fs.mkdir(scriptsSpritesFolder, { recursive: true });
@@ -552,7 +552,7 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
         const buffer = Buffer.from(base64Data, 'base64');
         await fs.writeFile(path.join(spritesFolder, `${sheetName}.png`), buffer);
 
-        const spriteSheetPath = `Sprites/${collectionName}/${sheetName}.png`;
+        const spriteSheetPath = `sprites/${collectionName}/${sheetName}.png`;
         const animationNames = {};
 
         // Process each animation type
@@ -630,7 +630,7 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
             id: collectionName,
             name: collectionName.charAt(0).toUpperCase() + collectionName.slice(1),
             singular: collectionName.slice(0, -1),
-            category: 'Sprites'
+            objectTypeCategory: 'sprites'
         };
         await fs.writeFile(
             path.join(settingsFolder, `${collectionName}.json`),
@@ -641,7 +641,7 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
             id: collectionName + 'Animations',
             name: collectionName.charAt(0).toUpperCase() + collectionName.slice(1) + ' Animations',
             singular: collectionName.charAt(0).toUpperCase() + collectionName.slice(1).slice(0, -1) + 'Animation',
-            category: 'Sprites'
+            objectTypeCategory: 'sprites'
         };
         await fs.writeFile(
             path.join(settingsFolder, `${collectionName}Animations.json`),

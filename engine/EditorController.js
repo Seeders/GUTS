@@ -392,7 +392,7 @@ class EditorController {
         if (!collectionName) return null;
 
         const collectionDef = this.model.getCollectionDefs().find(def => def.id === collectionName);
-        return collectionDef?.category || null;
+        return collectionDef?.objectTypeCategory || null;
     }
 
     getExpandedCategories() {

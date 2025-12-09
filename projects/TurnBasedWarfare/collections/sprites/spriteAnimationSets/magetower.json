@@ -1,0 +1,27 @@
+{
+  "title": "Magetower",
+  "animationCollection": "magetowerSpritesAnimations",
+  "spriteSheet": "sprites/magetowerSprites/magetowerSheet.png",
+  "idleSpriteAnimations": [
+    "magetowerIdleDown",
+    "magetowerIdleDownLeft",
+    "magetowerIdleLeft",
+    "magetowerIdleUpLeft",
+    "magetowerIdleUp",
+    "magetowerIdleUpRight",
+    "magetowerIdleRight",
+    "magetowerIdleDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 9,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2
+  }
+}

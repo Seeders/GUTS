@@ -1,0 +1,8 @@
+{
+  "title": "sentrytower Idle Right",
+  "spriteCollection": "sentrytowerSprites",
+  "sprites": [
+    "sentrytowerIdleRight_0"
+  ],
+  "fps": 4
+}

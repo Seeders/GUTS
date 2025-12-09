@@ -1,0 +1,27 @@
+{
+  "title": "Keep",
+  "animationCollection": "keepSpritesAnimations",
+  "spriteSheet": "sprites/keepSprites/keepSheet.png",
+  "idleSpriteAnimations": [
+    "keepIdleDown",
+    "keepIdleDownLeft",
+    "keepIdleLeft",
+    "keepIdleUpLeft",
+    "keepIdleUp",
+    "keepIdleUpRight",
+    "keepIdleRight",
+    "keepIdleDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 5,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2
+  }
+}

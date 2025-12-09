@@ -1,0 +1,27 @@
+{
+  "title": "Underconstruction",
+  "animationCollection": "underconstructionSpritesAnimations",
+  "spriteSheet": "sprites/underconstructionSprites/underconstructionSheet.png",
+  "idleSpriteAnimations": [
+    "underconstructionIdleDown",
+    "underconstructionIdleDownLeft",
+    "underconstructionIdleLeft",
+    "underconstructionIdleUpLeft",
+    "underconstructionIdleUp",
+    "underconstructionIdleUpRight",
+    "underconstructionIdleRight",
+    "underconstructionIdleDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 5.8,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#000000",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2
+  }
+}

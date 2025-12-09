@@ -342,7 +342,24 @@
     padding: 5px;
     cursor: pointer;
   }
-  
+
+  .object-type-item .item-count {
+    opacity: 0.6;
+    font-size: 0.85em;
+  }
+
+  .object-selector {
+    padding: 5px 0 10px 10px;
+  }
+
+  .object-dropdown {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 0.9em;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
   /* Camera Controls & Canvas */
   .camera-controls {
     position: absolute;

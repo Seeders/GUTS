@@ -110,7 +110,7 @@ class EditorModel {
                     "id": key,
                     "name": key.charAt(0).toUpperCase() + key.slice(1, key.length),
                     "singular": key.slice(0, key.length - 1),
-                    "category": "Uncategorized"
+                    "objectTypeCategory": "uncategorized"
                 });
             }
         }
@@ -138,9 +138,9 @@ class EditorModel {
         // Deep clone the project to avoid modifying the in-memory state
         const stripped = JSON.parse(JSON.stringify(project));
 
-        // Find all collection types in the "Scripts" category
+        // Find all collection types in the "scripts" category
         const scriptCollectionTypes = project.objectTypeDefinitions
-            .filter(def => def.category === 'Scripts')
+            .filter(def => def.objectTypeCategory === 'scripts')
             .map(def => def.id);
 
         // Strip script property from all items in Scripts category collections
@@ -403,9 +403,9 @@ class EditorModel {
      * @returns {Array} Filtered collection definitions
      */
     getCollectionDefsByCategory(category) {
-        return this.getCollectionDefs().filter(typeDef => typeDef.category === category);
+        return this.getCollectionDefs().filter(typeDef => typeDef.objectTypeCategory === category);
     }
-    
+
     /**
      * Get all collections for a given category
      * @param {string} category - Category name to filter by
@@ -429,7 +429,7 @@ class EditorModel {
      */
     getCategoryByType(objectType) {
         const typeDef = this.getCollectionDefs().find(t => t.id === objectType);
-        return typeDef ? typeDef.category : null;
+        return typeDef ? typeDef.objectTypeCategory : null;
     }
 
         
@@ -676,7 +676,7 @@ class EditorModel {
             id: typeId,
             name: typeName || typeId.charAt(0).toUpperCase() + typeId.slice(1),
             singular: typeSingular || typeId.slice(0, -1).charAt(0).toUpperCase() + typeId.slice(0, -1).slice(1),
-            category: typeCategory || 'Uncategorized',
+            objectTypeCategory: typeCategory || 'uncategorized',
             fileName: typeId
         };
 
