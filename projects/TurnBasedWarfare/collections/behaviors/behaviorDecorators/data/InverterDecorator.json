@@ -2,7 +2,7 @@
   "title": "Inverter",
   "description": "Flips success to failure and failure to success",
   "behaviorNodeType": "decorator",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/InverterDecorator.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorDecorators/js/InverterDecorator.js",
   "fileName": "InverterDecorator",
   "childAction": null,
   "parameters": {}

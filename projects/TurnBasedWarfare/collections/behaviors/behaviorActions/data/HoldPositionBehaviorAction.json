@@ -2,7 +2,7 @@
   "title": "Hold Position Action",
   "description": "Makes unit hold position without moving. Triggered by player order with allowMovement: false.",
   "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/HoldPositionBehaviorAction.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/HoldPositionBehaviorAction.js",
   "fileName": "HoldPositionBehaviorAction",
   "parameters": {},
   "memory": {},
@@ -12,11 +12,22 @@
         "id": "unit-1",
         "label": "Holding Unit",
         "components": {
-          "position": { "x": 100, "z": 100 },
-          "velocity": { "vx": 0, "vz": 0 },
+          "position": {
+            "x": 100,
+            "z": 100
+          },
+          "velocity": {
+            "vx": 0,
+            "vz": 0
+          },
           "playerOrder": {
-            "targetPosition": { "x": 100, "z": 100 },
-            "meta": { "allowMovement": false },
+            "targetPosition": {
+              "x": 100,
+              "z": 100
+            },
+            "meta": {
+              "allowMovement": false
+            },
             "issuedTime": 0
           }
         }

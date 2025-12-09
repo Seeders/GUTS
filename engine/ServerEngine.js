@@ -1,5 +1,5 @@
 import BaseEngine from './BaseEngine.js';
-import ServerNetworkManager from '../editor/collections/scripts/libraries/js/ServerNetworkManager.js';
+import ServerNetworkManager from '../global/collections/scripts/libraries/js/ServerNetworkManager.js';
 
 export default class ServerEngine extends BaseEngine {
     constructor() {

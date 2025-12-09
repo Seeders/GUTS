@@ -39,7 +39,7 @@
       }
     ]
   },
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/SelectBehaviorTree.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorTrees/js/SelectBehaviorTree.js",
   "fileName": "SelectBehaviorTree",
   "behaviorActions": [
     "AbilitiesBehaviorTree",

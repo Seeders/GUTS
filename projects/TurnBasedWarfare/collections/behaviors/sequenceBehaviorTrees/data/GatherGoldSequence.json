@@ -2,7 +2,7 @@
   "title": "Gather Gold Sequence",
   "description": "Sequence for mining gold: find mine -> move -> queue -> wait -> extract",
   "behaviorNodeType": "sequence",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/GatherGoldSequence.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/sequenceBehaviorTrees/js/GatherGoldSequence.js",
   "fileName": "GatherGoldSequence",
   "behaviorActions": [
     "FindNearestGoldMineBehaviorAction",
@@ -18,18 +18,33 @@
         "id": "peasant-1",
         "label": "Gold Miner Peasant",
         "components": {
-          "position": { "x": 100, "z": 100 },
-          "velocity": { "vx": 0, "vz": 0 },
-          "team": { "team": 1 },
-          "aiState": { "shared": {} }
+          "position": {
+            "x": 100,
+            "z": 100
+          },
+          "velocity": {
+            "vx": 0,
+            "vz": 0
+          },
+          "team": {
+            "team": 1
+          },
+          "aiState": {
+            "shared": {}
+          }
         }
       },
       {
         "id": "goldmine-1",
         "label": "Gold Mine",
         "components": {
-          "position": { "x": 250, "z": 250 },
-          "team": { "team": 1 },
+          "position": {
+            "x": 250,
+            "z": 250
+          },
+          "team": {
+            "team": 1
+          },
           "goldMine": {
             "goldRemaining": 5000,
             "maxGold": 5000,

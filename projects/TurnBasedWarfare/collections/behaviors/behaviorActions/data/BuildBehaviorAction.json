@@ -7,5 +7,7 @@
   "parameters": {
     "buildRange": 50,
     "defaultBuildTime": 5
-  }
+  },
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/BuildBehaviorAction.js",
+  "fileName": "BuildBehaviorAction"
 }

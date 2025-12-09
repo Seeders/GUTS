@@ -2,7 +2,7 @@
   "title": "Rate Limit Decorator",
   "description": "Limits how often the child node can be executed. Useful for expensive operations or cooldown-like behavior.",
   "behaviorNodeType": "decorator",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/RateLimitDecorator.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorDecorators/js/RateLimitDecorator.js",
   "fileName": "RateLimitDecorator",
   "childAction": null,
   "parameters": {

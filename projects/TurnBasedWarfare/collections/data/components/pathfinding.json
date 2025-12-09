@@ -1,0 +1,9 @@
+{
+  "title": "pathfinding",
+  "schema": {
+    "path": null,
+    "pathIndex": 0,
+    "lastPathRequest": 0,
+    "useDirectMovement": false
+  }
+}

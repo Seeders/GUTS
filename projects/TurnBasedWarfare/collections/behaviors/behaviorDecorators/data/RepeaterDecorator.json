@@ -2,7 +2,7 @@
   "title": "Repeater",
   "description": "Runs the child action multiple times",
   "behaviorNodeType": "decorator",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/RepeaterDecorator.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorDecorators/js/RepeaterDecorator.js",
   "fileName": "RepeaterDecorator",
   "childAction": null,
   "parameters": {

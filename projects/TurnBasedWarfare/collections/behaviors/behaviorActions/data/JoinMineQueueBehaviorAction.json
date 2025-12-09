@@ -2,7 +2,7 @@
   "title": "Join Mine Queue",
   "description": "Adds entity to the mining queue for the target gold mine stored in shared.targetMine",
   "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/JoinMineQueueBehaviorAction.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/JoinMineQueueBehaviorAction.js",
   "fileName": "JoinMineQueueBehaviorAction",
   "parameters": {}
 }

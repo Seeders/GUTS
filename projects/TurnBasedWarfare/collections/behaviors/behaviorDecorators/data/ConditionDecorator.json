@@ -2,7 +2,7 @@
   "title": "Condition Decorator",
   "description": "Only executes child node if a condition is met. Supports component checks, shared state checks, and custom conditions.",
   "behaviorNodeType": "decorator",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/ConditionDecorator.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorDecorators/js/ConditionDecorator.js",
   "fileName": "ConditionDecorator",
   "childAction": null,
   "parameters": {

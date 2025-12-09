@@ -29,8 +29,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "color": {
-            },
+            "color": {},
             "metalness": 0,
             "roughness": 1,
             "x": 0,

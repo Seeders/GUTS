@@ -1,0 +1,12 @@
+{
+  "title": "buff",
+  "schema": {
+    "buffType": "generic",
+    "modifiers": {},
+    "endTime": 0,
+    "stackable": false,
+    "stacks": 1,
+    "appliedTime": 0,
+    "isActive": true
+  }
+}

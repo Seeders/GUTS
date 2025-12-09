@@ -2,7 +2,7 @@
   "title": "Wait",
   "description": "Waits for a specified duration",
   "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/WaitBehaviorAction.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/WaitBehaviorAction.js",
   "fileName": "WaitBehaviorAction",
   "parameters": {
     "duration": 1000,

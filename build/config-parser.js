@@ -13,7 +13,7 @@ class ConfigParser {
     constructor(projectName) {
         this.projectName = projectName;
         this.projectRoot = path.join(__dirname, '..', 'projects', projectName);
-        this.globalRoot = path.join(__dirname, '..', 'editor', 'collections');
+        this.globalRoot = path.join(__dirname, '..', 'global', 'collections');
         this.collectionsRoot = path.join(this.projectRoot, 'collections');
 
         // Cache for library metadata loaded from data JSON files

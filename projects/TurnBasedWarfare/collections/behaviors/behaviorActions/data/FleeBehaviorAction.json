@@ -2,7 +2,7 @@
   "title": "Flee",
   "description": "Runs away from nearest threat",
   "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/FleeBehaviorAction.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/FleeBehaviorAction.js",
   "fileName": "FleeBehaviorAction",
   "parameters": {
     "fleeDistance": 200,

@@ -24,6 +24,6 @@
     ]
   },
   "behaviorNodes": [],
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/AbilitiesBehaviorTree.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorTrees/js/AbilitiesBehaviorTree.js",
   "fileName": "AbilitiesBehaviorTree"
 }

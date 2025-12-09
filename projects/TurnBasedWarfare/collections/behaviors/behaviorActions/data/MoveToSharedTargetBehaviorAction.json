@@ -2,7 +2,7 @@
   "title": "Move To Shared Target",
   "description": "Moves entity toward target position stored in shared state. Returns RUNNING while moving, SUCCESS when arrived.",
   "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/MoveToSharedTargetBehaviorAction.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/MoveToSharedTargetBehaviorAction.js",
   "fileName": "MoveToSharedTargetBehaviorAction",
   "parameters": {
     "targetKey": "targetPosition",

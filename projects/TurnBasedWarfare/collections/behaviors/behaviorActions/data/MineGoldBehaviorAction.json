@@ -10,5 +10,7 @@
     "miningDuration": 2,
     "depositDuration": 1,
     "goldPerTrip": 10
-  }
+  },
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/MineGoldBehaviorAction.js",
+  "fileName": "MineGoldBehaviorAction"
 }

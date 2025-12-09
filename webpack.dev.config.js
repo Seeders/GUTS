@@ -48,9 +48,8 @@ module.exports = {
         extensions: ['.js', '.json'],
         alias: {
             '@engine': path.resolve(__dirname, 'engine'),
-            '@global': path.resolve(__dirname, 'editor', 'collections'),
-            '@project': path.resolve(__dirname, 'projects', projectName),
-            '@scripts': path.resolve(__dirname, 'projects', projectName, 'collections', 'scripts')
+            '@global': path.resolve(__dirname, 'global', 'collections'),
+            '@project': path.resolve(__dirname, 'projects', projectName)
         }
     },
     module: {
@@ -114,7 +113,7 @@ module.exports = {
         watchFiles: {
             paths: [
                 `projects/${projectName}/collections/**/*.js`,
-                `editor/collections/editor/**/*.js`,
+                `global/collections/editor/**/*.js`,
                 `engine/**/*.js`,
                 `projects/${projectName}/config/**/*.json`
             ],

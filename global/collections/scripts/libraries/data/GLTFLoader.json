@@ -1,0 +1,9 @@
+{
+  "title": "GLTF Loader",
+  "isModule": true,
+  "windowContext": "THREE",
+  "requireName": "GLTFLoader",
+  "importName": "GLTFLoader",
+  "fileName": "GLTFLoader",
+  "filePath": "/global/collections/scripts/libraries/js/GLTFLoader.js"
+}

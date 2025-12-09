@@ -2,7 +2,7 @@
   "title": "Find Nearest Gold Mine",
   "description": "Finds the nearest gold mine belonging to entity's team and stores it in shared state (targetMine, targetMinePosition)",
   "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/FindNearestGoldMineBehaviorAction.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/FindNearestGoldMineBehaviorAction.js",
   "fileName": "FindNearestGoldMineBehaviorAction",
   "parameters": {}
 }

@@ -2,7 +2,7 @@
   "title": "Follow",
   "description": "Follows another entity, maintaining distance",
   "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/FollowBehaviorAction.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/FollowBehaviorAction.js",
   "fileName": "FollowBehaviorAction",
   "parameters": {
     "targetKey": "followTarget",

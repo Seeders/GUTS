@@ -1,0 +1,11 @@
+{
+  "title": "visualEffect",
+  "schema": {
+    "effectType": "particle",
+    "effectData": {},
+    "duration": 1,
+    "startTime": 0,
+    "attachedTo": null,
+    "isActive": true
+  }
+}

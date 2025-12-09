@@ -9,7 +9,7 @@ import vm from 'vm';
 
 // Import server-specific classes (these are not in compiled game.js)
 import ServerEngine from '../../engine/ServerEngine.js';
-import ServerMatchmakingService from '../../editor/collections/scripts/libraries/js/ServerMatchmakingService.js';
+import ServerMatchmakingService from '../../global/collections/scripts/libraries/js/ServerMatchmakingService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,7 +75,7 @@ global.io = global._io; // also expose as global.io for convenience
 app.use(express.static(path.join(__dirname, 'dist/client')));
 app.use(express.static(path.join(__dirname, './')));
 app.use('/engine', express.static(path.join(__dirname, '../../engine')));
-app.use('/editor', express.static(path.join(__dirname, '../../editor')));
+app.use('/global', express.static(path.join(__dirname, '../../global')));
 
 // API endpoints
 app.get('/api/server-status', (req, res) => {

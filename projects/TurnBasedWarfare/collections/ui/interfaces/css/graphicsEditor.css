@@ -1,0 +1,141 @@
+/* =============================================================================
+   GRAPHICS EDITOR - MODULE-SPECIFIC STYLES
+   ============================================================================= */
+
+/* Canvas specific styling */
+#graphics-editor-canvas {
+    cursor: grab;
+    outline: none;
+}
+
+#graphics-editor-canvas:active {
+    cursor: grabbing;
+}
+
+/* Equipment list specific styles */
+.graphics-editor__equipment-list {
+    max-height: 200px;
+}
+
+.graphics-editor__no-equipment {
+    text-align: center;
+    padding: var(--editor-spacing-xl);
+    color: var(--editor-text-muted);
+    font-style: italic;
+    font-size: 13px;
+}
+
+/* Equipment item styling */
+.graphics-editor__equipment-item {
+    padding: var(--editor-spacing-md);
+    border-bottom: 1px solid var(--editor-border-color);
+    cursor: pointer;
+    transition: var(--editor-transition);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.graphics-editor__equipment-item:hover {
+    background-color: var(--editor-primary);
+}
+
+.graphics-editor__equipment-item--selected {
+    background-color: var(--editor-primary);
+    color: white;
+}
+
+.graphics-editor__equipment-item:last-child {
+    border-bottom: none;
+}
+
+.graphics-editor__equipment-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.graphics-editor__item-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.graphics-editor__slot-name {
+    color: var(--editor-text-muted);
+    font-size: 12px;
+}
+
+.graphics-editor__bone-info {
+    font-size: 11px;
+    color: var(--editor-text-muted);
+    margin-top: var(--editor-spacing-xs);
+}
+
+/* Shape list specific styles */
+.graphics-editor__shape-item,
+.graphics-editor__group-item {
+    user-select: none;
+    cursor: grab;
+}
+
+.graphics-editor__shape-item:active,
+.graphics-editor__group-item:active {
+    cursor: grabbing;
+}
+
+.graphics-editor__group-item {
+    border-left: 4px solid var(--editor-primary);
+    font-weight: 500;
+}
+
+.graphics-editor__shape-item {
+    border-left: 2px solid var(--editor-bg-lighter);
+}
+
+.graphics-editor__group-shapes {
+    margin-left: var(--editor-spacing-lg);
+    padding: var(--editor-spacing-sm);
+    border-left: 2px dashed var(--editor-border-color);
+}
+
+/* Drag states */
+.graphics-editor__shape-item.dragging,
+.graphics-editor__group-item.dragging {
+    opacity: 0.5;
+}
+
+.graphics-editor__group-item.drag-over {
+    border-color: var(--editor-success);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+}
+
+/* Mode-specific visibility */
+#graphics-editor-container.equipment-mode #graphics-toolbar,
+#graphics-editor-container.equipment-mode #graphics-lists,
+#graphics-editor-container.equipment-mode #inspector {
+    display: none !important;
+}
+
+#graphics-editor-container.equipment-mode #equipment-toolbar,
+#graphics-editor-container.equipment-mode #equipment-controls,
+#graphics-editor-container.equipment-mode #equipment-inspector,
+#graphics-editor-container.equipment-mode #equipment-info,
+#graphics-editor-container.equipment-mode #selected-equipment-info {
+    display: block !important;
+}
+
+#graphics-editor-container.equipment-mode #shape-count,
+#graphics-editor-container.equipment-mode #selected-shape {
+    display: none !important;
+}
+
+/* Transform buttons */
+.graphics-editor__transform-buttons {
+    display: flex;
+    gap: var(--editor-spacing-sm);
+    margin-bottom: var(--editor-spacing-md);
+}
+
+.graphics-editor__transform-buttons button {
+    flex: 1;
+}

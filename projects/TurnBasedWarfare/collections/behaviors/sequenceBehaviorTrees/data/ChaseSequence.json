@@ -2,8 +2,8 @@
   "title": "Chase Sequence",
   "description": "Sequence: check target valid -> move toward enemy",
   "behaviorNodeType": "sequence",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorTrees/js/SequenceBehaviorTree.js",
-  "fileName": "SequenceBehaviorTree",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/sequenceBehaviorTrees/js/ChaseSequence.js",
+  "fileName": "ChaseSequence",
   "behaviorActions": [
     "HasTargetBehaviorAction",
     "MoveToEnemyBehaviorAction"
@@ -14,9 +14,17 @@
         "id": "unit-1",
         "label": "Chasing Unit",
         "components": {
-          "position": { "x": 100, "z": 100 },
-          "velocity": { "vx": 0, "vz": 0 },
-          "team": { "team": 1 },
+          "position": {
+            "x": 100,
+            "z": 100
+          },
+          "velocity": {
+            "vx": 0,
+            "vz": 0
+          },
+          "team": {
+            "team": 1
+          },
           "aiState": {
             "shared": {
               "target": "enemy-1"
@@ -28,9 +36,17 @@
         "id": "enemy-1",
         "label": "Enemy To Chase",
         "components": {
-          "position": { "x": 400, "z": 400 },
-          "velocity": { "vx": 0, "vz": 0 },
-          "team": { "team": 2 },
+          "position": {
+            "x": 400,
+            "z": 400
+          },
+          "velocity": {
+            "vx": 0,
+            "vz": 0
+          },
+          "team": {
+            "team": 2
+          },
           "health": {
             "current": 100,
             "max": 100

@@ -4,5 +4,7 @@
   "type": "IdleBehaviorAction",
   "priority": 0,
   "description": "Do nothing",
-  "parameters": {}
+  "parameters": {},
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/IdleBehaviorAction.js",
+  "fileName": "IdleBehaviorAction"
 }

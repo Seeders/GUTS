@@ -1,0 +1,10 @@
+{
+  "title": "Graphics Editor",
+  "modals": [
+    "rotateShapes",
+    "moveAllShapes",
+    "generateIsometric"
+  ],
+  "fileName": "graphicsEditor",
+  "filePath": "/projects/ui/interfaces/html/graphicsEditor.html"
+}

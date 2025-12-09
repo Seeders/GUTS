@@ -1,0 +1,53 @@
+/* =============================================================================
+   TEXTURE EDITOR - MODULE-SPECIFIC STYLES
+   ============================================================================= */
+
+/* Canvas specific styling */
+#texture-canvas {
+    background-color: transparent;
+    image-rendering: pixelated;
+    border: 1px solid var(--editor-border-color);
+    box-shadow: var(--editor-shadow-md);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* No texture message */
+.texture-editor__no-texture-message {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--editor-text-muted);
+    font-size: 14px;
+    pointer-events: none;
+}
+
+/* Color palette grid */
+.texture-editor__color-palette {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    gap: var(--editor-spacing-sm);
+    margin-bottom: var(--editor-spacing-md);
+}
+
+.texture-editor__color-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    border: 2px solid var(--editor-border-color);
+    border-radius: var(--editor-border-radius-sm);
+    cursor: pointer;
+    transition: var(--editor-transition);
+}
+
+.texture-editor__color-btn:hover {
+    border-color: var(--editor-border-color-hover);
+    transform: scale(1.1);
+}
+
+.texture-editor__color-btn--active {
+    border-color: var(--editor-primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+}

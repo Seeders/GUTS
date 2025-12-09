@@ -1,9 +1,0 @@
-{
-  "title": "THREE SkeletonUtils",
-  "isModule": true,
-  "windowContext": "THREE",
-  "requireName": "SkeletonUtils",
-  "importName": "SkeletonUtils",
-  "fileName": "three_SkeletonUtils",
-  "filePath": "/editor/collections/scripts/libraries/js/three_SkeletonUtils.js"
-}

@@ -2,7 +2,7 @@
   "title": "Patrol",
   "description": "Moves between waypoints in a patrol pattern",
   "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/PatrolBehaviorAction.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/PatrolBehaviorAction.js",
   "fileName": "PatrolBehaviorAction",
   "parameters": {
     "waypoints": [],

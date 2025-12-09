@@ -2,7 +2,7 @@
   "title": "Construct Building",
   "description": "Performs construction over time. Reads targetBuilding from shared state. Returns RUNNING while building, SUCCESS when complete.",
   "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/ConstructBuildingBehaviorAction.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/ConstructBuildingBehaviorAction.js",
   "fileName": "ConstructBuildingBehaviorAction",
   "parameters": {
     "defaultBuildTime": 5

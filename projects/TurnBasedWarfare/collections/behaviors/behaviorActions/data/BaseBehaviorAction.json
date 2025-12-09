@@ -4,5 +4,7 @@
   "type": "BaseBehaviorAction",
   "priority": 0,
   "description": "n/a",
-  "parameters": {}
+  "parameters": {},
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/BaseBehaviorAction.js",
+  "fileName": "BaseBehaviorAction"
 }

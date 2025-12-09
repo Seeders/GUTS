@@ -2,7 +2,7 @@
   "title": "Find Ally Needing Help",
   "description": "Finds allied unit that needs help (low health or in combat)",
   "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/FindAllyNeedingHelpBehaviorAction.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/FindAllyNeedingHelpBehaviorAction.js",
   "fileName": "FindAllyNeedingHelpBehaviorAction",
   "parameters": {
     "range": 500,

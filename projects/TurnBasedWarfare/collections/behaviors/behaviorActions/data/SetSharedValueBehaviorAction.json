@@ -2,7 +2,7 @@
   "title": "Set Shared Value",
   "description": "Sets a value in the shared state (aiState.shared)",
   "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/SetSharedValueBehaviorAction.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/SetSharedValueBehaviorAction.js",
   "fileName": "SetSharedValueBehaviorAction",
   "parameters": {
     "key": "",

@@ -1,0 +1,7 @@
+{
+  "title": "Action",
+  "description": "Leaf node that performs a specific action. Returns SUCCESS, FAILURE, or RUNNING.",
+  "color": "#ef4444",
+  "fillColor": "#3a1e1e",
+  "icon": "action"
+}

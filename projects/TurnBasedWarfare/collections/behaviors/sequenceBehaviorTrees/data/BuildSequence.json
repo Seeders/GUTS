@@ -2,7 +2,7 @@
   "title": "Build Sequence",
   "description": "Sequence for building: check order -> set target -> move -> construct",
   "behaviorNodeType": "sequence",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/BuildSequence.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/sequenceBehaviorTrees/js/BuildSequence.js",
   "fileName": "BuildSequence",
   "behaviorActions": [
     "HasBuildOrderBehaviorAction",
@@ -17,10 +17,20 @@
         "id": "peasant-1",
         "label": "Builder Peasant",
         "components": {
-          "position": { "x": 100, "z": 100 },
-          "velocity": { "vx": 0, "vz": 0 },
-          "team": { "team": 1 },
-          "aiState": { "shared": {} },
+          "position": {
+            "x": 100,
+            "z": 100
+          },
+          "velocity": {
+            "vx": 0,
+            "vz": 0
+          },
+          "team": {
+            "team": 1
+          },
+          "aiState": {
+            "shared": {}
+          },
           "playerOrder": {
             "meta": {
               "buildingId": "building-1"
@@ -33,8 +43,13 @@
         "id": "building-1",
         "label": "Farm Under Construction",
         "components": {
-          "position": { "x": 250, "z": 250 },
-          "team": { "team": 1 },
+          "position": {
+            "x": 250,
+            "z": 250
+          },
+          "team": {
+            "team": 1
+          },
           "placement": {
             "isUnderConstruction": true,
             "constructionProgress": 0,

@@ -2,7 +2,7 @@
   "title": "Mine Gold Tree",
   "description": "Composite behavior tree for gold mining. Selector that tries depositing first (if has gold), then gathering.",
   "behaviorNodeType": "selector",
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/behaviorNodes/js/MineGoldBehaviorTree.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorTrees/js/MineGoldBehaviorTree.js",
   "fileName": "MineGoldBehaviorTree",
   "behaviorActions": [
     "DepositGoldSequence",
@@ -15,10 +15,20 @@
         "id": "miner-1",
         "label": "Gold Miner",
         "components": {
-          "position": { "x": 100, "z": 100 },
-          "velocity": { "vx": 0, "vz": 0 },
-          "team": { "team": 1 },
-          "aiState": { "shared": {} }
+          "position": {
+            "x": 100,
+            "z": 100
+          },
+          "velocity": {
+            "vx": 0,
+            "vz": 0
+          },
+          "team": {
+            "team": 1
+          },
+          "aiState": {
+            "shared": {}
+          }
         }
       }
     ]
