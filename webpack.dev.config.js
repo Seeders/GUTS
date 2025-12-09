@@ -50,7 +50,7 @@ module.exports = {
             '@engine': path.resolve(__dirname, 'engine'),
             '@global': path.resolve(__dirname, 'global'),
             '@project': path.resolve(__dirname, 'projects', projectName),
-            '@scripts': path.resolve(__dirname, 'projects', projectName, 'scripts', 'Scripts')
+            '@scripts': path.resolve(__dirname, 'projects', projectName, 'collections', 'scripts')
         }
     },
     module: {
@@ -113,7 +113,7 @@ module.exports = {
         },
         watchFiles: {
             paths: [
-                `projects/${projectName}/scripts/**/*.js`,
+                `projects/${projectName}/collections/**/*.js`,
                 `global/libraries/**/*.js`,
                 `engine/**/*.js`,
                 `projects/${projectName}/config/**/*.json`

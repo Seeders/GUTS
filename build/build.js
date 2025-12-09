@@ -49,7 +49,7 @@ if (!fs.existsSync(projectPath)) {
     process.exit(1);
 }
 
-const configPath = path.join(projectPath, 'scripts', 'Settings', 'configs', 'game.json');
+const configPath = path.join(projectPath, 'collections', 'settings', 'configs', 'game.json');
 if (!fs.existsSync(configPath)) {
     console.error(`Error: Project "${projectName}" is missing game.json config at ${configPath}`);
     process.exit(1);

@@ -14,7 +14,7 @@ class ConfigParser {
         this.projectName = projectName;
         this.projectRoot = path.join(__dirname, '..', 'projects', projectName);
         this.globalRoot = path.join(__dirname, '..', 'global');
-        this.scriptsRoot = path.join(this.projectRoot, 'scripts');
+        this.collectionsRoot = path.join(this.projectRoot, 'collections');
 
         // Cache for library metadata loaded from data JSON files
         this.libraryMetadata = {};
@@ -33,10 +33,10 @@ class ConfigParser {
      * Load all configs from Settings/configs folder
      */
     loadConfigs() {
-        const configsPath = path.join(this.scriptsRoot, 'Settings', 'configs');
+        const configsPath = path.join(this.collectionsRoot, 'settings', 'configs');
 
         if (!fs.existsSync(configsPath)) {
-            console.warn('  Settings/configs folder not found');
+            console.warn('  settings/configs folder not found');
             return;
         }
 
@@ -54,7 +54,7 @@ class ConfigParser {
      * Load objectTypeDefinitions from Settings/objectTypeDefinitions folder
      */
     loadObjectTypeDefinitions() {
-        const defsPath = path.join(this.scriptsRoot, 'Settings', 'objectTypeDefinitions');
+        const defsPath = path.join(this.collectionsRoot, 'settings', 'objectTypeDefinitions');
         if (!fs.existsSync(defsPath)) {
             console.warn('  objectTypeDefinitions folder not found');
             return;
@@ -92,7 +92,7 @@ class ConfigParser {
         }
 
         // Load project library metadata (overrides global)
-        const projectDataPath = path.join(this.scriptsRoot, 'Scripts', 'libraries', 'data');
+        const projectDataPath = path.join(this.collectionsRoot, 'scripts', 'libraries', 'data');
         if (fs.existsSync(projectDataPath)) {
             const files = fs.readdirSync(projectDataPath).filter(f => f.endsWith('.json'));
             for (const file of files) {
@@ -188,7 +188,7 @@ class ConfigParser {
         console.log('\n  Discovering collections from folder structure...');
 
         // Categories that use JS subfolders (have /js, /data, /html, /css subfolders)
-        const jsSubfolderCategories = new Set(['Scripts', 'Behaviors']);
+        const jsSubfolderCategories = new Set(['scripts', 'behaviors']);
 
         // Build a map of objectTypeDefinition id -> definition for metadata lookup
         const objTypeDefMap = new Map();
@@ -197,12 +197,12 @@ class ConfigParser {
         }
 
         // Scan all top-level directories under scripts/ as potential categories
-        if (!fs.existsSync(this.scriptsRoot)) {
-            console.warn(`    Scripts root not found: ${this.scriptsRoot}`);
+        if (!fs.existsSync(this.collectionsRoot)) {
+            console.warn(`    Scripts root not found: ${this.collectionsRoot}`);
             return;
         }
 
-        const categoryFolders = fs.readdirSync(this.scriptsRoot, { withFileTypes: true })
+        const categoryFolders = fs.readdirSync(this.collectionsRoot, { withFileTypes: true })
             .filter(d => d.isDirectory())
             .map(d => d.name);
 
@@ -210,7 +210,7 @@ class ConfigParser {
 
         // Process each category folder
         for (const category of categoryFolders) {
-            const categoryPath = path.join(this.scriptsRoot, category);
+            const categoryPath = path.join(this.collectionsRoot, category);
             const hasJsSubfolder = jsSubfolderCategories.has(category);
 
             // Get all subfolders in this category
@@ -361,7 +361,7 @@ class ConfigParser {
             let source = null;
 
             // Check project libraries first
-            const projectLibPath = path.join(this.scriptsRoot, 'Scripts', 'libraries', 'js', `${libName}.js`);
+            const projectLibPath = path.join(this.collectionsRoot, 'scripts', 'libraries', 'js', `${libName}.js`);
             if (fs.existsSync(projectLibPath)) {
                 foundPath = projectLibPath;
                 source = 'project';
@@ -579,7 +579,7 @@ class ConfigParser {
 
         const editorModules = editorConfig.editorModules || [];
         const globalModulesPath = path.join(this.globalRoot, 'editorModules');
-        const projectModulesPath = path.join(this.scriptsRoot, 'Settings', 'editorModules');
+        const projectModulesPath = path.join(this.collectionsRoot, 'settings', 'editorModules');
 
         const allLibraries = [];
         const allSystems = [];

@@ -27,14 +27,18 @@
     "SceneManager",
     "EditorECSGame",
     "EditorLoader",
-    "SceneEditor"
+    "SceneEditor",
+    "BaseSystem"
   ],
   "systems": [
+    "ComponentSystem",
     "GridSystem",
     "TerrainSystem",
+    "RenderSystem",
     "WorldSystem",
+    "TerrainDetailSystem",
     "PostProcessingSystem",
-    "RenderSystem"
+    "AnimationSystem"
   ],
   "propertyName": "entities",
   "interface": "sceneEditor",

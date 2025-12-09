@@ -7,7 +7,7 @@ class FileSystemSyncService {
             autoSync: true,
             syncInterval: 3000
         };
-        this.projectScriptDirectoryName = 'scripts';
+        this.projectScriptDirectoryName = 'collections';
         this.propertyConfig = [
             { propertyName: 'script', ext: 'js' },
             { propertyName: 'html', ext: 'html' },
@@ -64,7 +64,7 @@ class FileSystemSyncService {
             id: typeId,
             name: typeName || typeId.charAt(0).toUpperCase() + typeId.slice(1),
             singular: typeSingular || typeId.slice(0, -1),
-            category: typeCategory || 'Uncategorized',
+            objectTypeCategory: typeCategory || 'uncategorized',
             fileName: typeId
         };
 
@@ -395,17 +395,17 @@ class FileSystemSyncService {
             const actualCategory = this.collectionCategories[def.id];
 
             // Skip if we don't know the actual category or it already matches
-            if (!actualCategory || def.category === actualCategory) continue;
+            if (!actualCategory || def.objectTypeCategory === actualCategory) continue;
 
-            console.log(`Updating objectTypeDefinition '${def.id}': category '${def.category}' -> '${actualCategory}'`);
+            console.log(`Updating objectTypeDefinition '${def.id}': objectTypeCategory '${def.objectTypeCategory}' -> '${actualCategory}'`);
 
             // Update the definition in memory
-            def.category = actualCategory;
+            def.objectTypeCategory = actualCategory;
 
             // Also update in currentCollections if it exists there
             if (this.currentCollections.objectTypeDefinitions &&
                 this.currentCollections.objectTypeDefinitions[def.id]) {
-                this.currentCollections.objectTypeDefinitions[def.id].category = actualCategory;
+                this.currentCollections.objectTypeDefinitions[def.id].objectTypeCategory = actualCategory;
             }
 
             // Save the updated definition to the filesystem
