@@ -1427,7 +1427,7 @@ class SceneEditor {
             lastMouseY = e.clientY;
 
             // Pan speed adjusted for orthographic camera
-            const panSpeed = 2 / camera.zoom;
+            const panSpeed = 1 / camera.zoom;
 
             // Get camera's right and up vectors
             const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
