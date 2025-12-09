@@ -43,9 +43,8 @@ const baseConfig = {
         extensions: ['.js', '.json'],
         alias: {
             '@engine': path.resolve(__dirname, 'engine'),
-            '@global': path.resolve(__dirname, 'editor', 'collections'),
+            '@global': path.resolve(__dirname, 'global', 'collections'),
             '@project': path.resolve(__dirname, 'projects', projectName),
-            '@scripts': path.resolve(__dirname, 'projects', projectName, 'collections', 'scripts'),
             // Ensure 'three' resolves to the npm package
             'three': path.resolve(__dirname, 'node_modules', 'three')
         }

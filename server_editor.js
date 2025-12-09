@@ -15,7 +15,7 @@ const port = process.argv[2] || 443;
 // Base directory for all file operations
 const BASE_DIR = path.join(__dirname, '/');
 const PROJS_DIR = path.join(BASE_DIR, 'projects');
-const MODULES_DIR = path.join(BASE_DIR, 'editor', 'collections');
+const MODULES_DIR = path.join(BASE_DIR, 'global', 'collections');
 const CACHE_DIR = path.join(__dirname, 'cache');
 
 const upload = multer({ dest: path.join(BASE_DIR, 'uploads') });

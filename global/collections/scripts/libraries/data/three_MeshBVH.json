@@ -3,5 +3,5 @@
   "isModule": true,
   "windowContext": "THREE",
   "fileName": "three_MeshBVH",
-  "filePath": "/editor/collections/scripts/libraries/js/three_MeshBVH.js"
+  "filePath": "/global/collections/scripts/libraries/js/three_MeshBVH.js"
 }
