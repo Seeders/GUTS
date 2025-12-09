@@ -475,10 +475,24 @@ class FileSystemSyncService {
      * Sync objectTypeDefinitions with actual folder locations.
      * If a collection is in a different folder than its definition says,
      * update the definition and save it to the filesystem.
+     * Also creates missing objectTypeCategory entries for new folders.
      */
     async syncObjectTypeDefinitionsWithFolders(collectionDefs) {
         const projectId = this.gameEditor.model.getCurrentProject();
         if (!projectId) return;
+
+        // Collect all unique categories from folder structure
+        const categoriesFromFolders = new Set(Object.values(this.collectionCategories));
+
+        // Get existing objectTypeCategories
+        const existingCategories = this.currentCollections.objectTypeCategories || {};
+
+        // Create missing objectTypeCategory entries
+        for (const category of categoriesFromFolders) {
+            if (!existingCategories[category]) {
+                await this.createObjectTypeCategory(projectId, category);
+            }
+        }
 
         for (const def of collectionDefs) {
             const actualCategory = this.collectionCategories[def.id];
@@ -516,6 +530,44 @@ class FileSystemSyncService {
             } catch (error) {
                 console.error('Error updating objectTypeDefinition:', error);
             }
+        }
+    }
+
+    /**
+     * Create a new objectTypeCategory entry for a folder that doesn't have one
+     */
+    async createObjectTypeCategory(projectId, categoryId) {
+        // Create a title from the category ID (capitalize first letter)
+        const title = categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
+
+        const categoryData = {
+            title: title
+        };
+
+        // Add to in-memory collections
+        if (!this.currentCollections.objectTypeCategories) {
+            this.currentCollections.objectTypeCategories = {};
+        }
+        this.currentCollections.objectTypeCategories[categoryId] = categoryData;
+
+        // Save to filesystem
+        const filePath = `${projectId}/${this.projectScriptDirectoryName}/Settings/objectTypeCategories/${categoryId}.json`;
+        const jsonContent = JSON.stringify(categoryData, null, 2);
+
+        try {
+            const response = await fetch('/save-file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: filePath, content: jsonContent })
+            });
+
+            if (!response.ok) {
+                console.warn(`Failed to create objectTypeCategory: ${filePath}`);
+            } else {
+                console.log(`Created objectTypeCategory: ${filePath}`);
+            }
+        } catch (error) {
+            console.error('Error creating objectTypeCategory:', error);
         }
     }
 
