@@ -65,6 +65,6 @@
   "snapToGrid": true,
   "height": 100,
   "impassable": false,
-  "spriteScale": 96,
+  "spriteScale": 128,
   "spriteAnimationSet": "goldvein"
 }

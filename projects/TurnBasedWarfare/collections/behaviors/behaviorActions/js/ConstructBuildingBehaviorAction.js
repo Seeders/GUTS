@@ -93,8 +93,8 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
     onBuildComplete(entityId, game) {
         // Clear attack animation - let normal behavior systems take over
         const animState = game.call('getBillboardAnimationState', entityId);
-        if (animState && animState.currentAnimationType === 'attack') {
-            animState.currentAnimationType = null;
+        if (animState && animState.spriteAnimationType === 'attack') {
+            animState.spriteAnimationType = null;
         }
     }
 

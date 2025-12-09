@@ -74,6 +74,16 @@ class InputSystem extends GUTS.BaseSystem {
             this.game.gameSystem.exitToMenu();
         });
 
+        // Camera rotation buttons
+        const rotateCameraLeftBtn = document.getElementById('rotateCameraLeftBtn');
+        const rotateCameraRightBtn = document.getElementById('rotateCameraRightBtn');
+        rotateCameraLeftBtn?.addEventListener('click', () => {
+            this.game.call('rotateCamera', 'left');
+        });
+        rotateCameraRightBtn?.addEventListener('click', () => {
+            this.game.call('rotateCamera', 'right');
+        });
+
         victoryMainMenuBtn?.addEventListener('click', () => {
             // Use leaveGame to properly clean up multiplayer connection
             if (this.game.uiSystem?.leaveGame) {

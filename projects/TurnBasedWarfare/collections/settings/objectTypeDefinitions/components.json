@@ -2,6 +2,6 @@
   "id": "components",
   "name": "Components",
   "singular": "Component",
-  "objectTypeCategory": "data_sets",
+  "objectTypeCategory": "core",
   "isCore": true
 }

@@ -2,5 +2,5 @@
   "id": "systems",
   "name": "Systems",
   "singular": "system",
-  "objectTypeCategory": "scripts"
+  "objectTypeCategory": "core"
 }

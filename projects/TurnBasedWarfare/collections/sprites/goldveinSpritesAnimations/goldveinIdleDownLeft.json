@@ -3,5 +3,6 @@
   "spriteCollection": "goldveinSprites",
   "sprites": [
     "goldveinIdleDownLeft_0"
-  ]
+  ],
+  "fps": 4
 }

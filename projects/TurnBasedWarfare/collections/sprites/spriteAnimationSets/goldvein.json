@@ -12,5 +12,6 @@
     "goldveinIdleRight",
     "goldveinIdleDownRight"
   ],
-  "spriteOffset": 36
+  "spriteOffset": 32,
+  "generatorSettings": "{\"frustumSize\":96,\"cameraDistance\":100,\"spriteSize\":128,\"fps\":4,\"brightness\":5.8,\"palette\":\"main\",\"borderSize\":1,\"outlineColor\":\"#170F13\",\"outlineConnectivity\":4,\"cameraHeight\":2}"
 }

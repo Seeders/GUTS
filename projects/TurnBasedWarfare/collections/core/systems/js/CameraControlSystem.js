@@ -23,12 +23,16 @@ class CameraControlSystem extends GUTS.BaseSystem {
 
     // Camera follow mode
     this.followingEntityId = null;
+
+    // Camera rotation (yaw angle in radians)
+    this.cameraYaw = 135 * Math.PI / 180; // Default isometric angle
   }
 
   init() {
     this.game.register('cameraLookAt', this.lookAtRequest.bind(this));
     this.game.register('toggleCameraFollow', this.toggleFollow.bind(this));
     this.game.register('getCameraFollowTarget', () => this.followingEntityId);
+    this.game.register('rotateCamera', this.rotateCamera.bind(this));
 
     this.onMove  = (e)=>this.onMouseMove(e);
     this.onEnter = ()=>{ this.inside = true; this.holdDirX = 0; this.holdDirZ = 0; };
@@ -198,7 +202,7 @@ class CameraControlSystem extends GUTS.BaseSystem {
 
   lookAt(worldX, worldZ){
     const pitch = 35.264 * Math.PI / 180;
-    const yaw = 135 * Math.PI / 180;
+    const yaw = this.cameraYaw;
     const distance = 10240;
 
     const cdx = Math.sin(yaw) * Math.cos(pitch);
@@ -210,10 +214,41 @@ class CameraControlSystem extends GUTS.BaseSystem {
         z: worldZ - cdz * distance
     };
 
-    const lookAt = { x: worldX, y: 0, z: worldZ };
+    const lookAtPos = { x: worldX, y: 0, z: worldZ };
 
     this.game.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    this.game.camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
+    this.game.camera.lookAt(lookAtPos.x, lookAtPos.y, lookAtPos.z);
+    this.game.camera.userData.lookAt = new THREE.Vector3(lookAtPos.x, lookAtPos.y, lookAtPos.z);
+  }
+
+  /**
+   * Rotate the camera 45 degrees around the look-at point
+   * @param {string} direction - 'left' or 'right'
+   */
+  rotateCamera(direction) {
+    const camera = this.game.camera;
+    if (!camera) return;
+
+    // Raycast from center of screen to find ground point
+    const raycaster = new THREE.Raycaster();
+    const centerScreen = new THREE.Vector2(0, 0); // NDC center
+    raycaster.setFromCamera(centerScreen, camera);
+
+    // Find the terrain/ground
+    const ground = this.game.call('getGroundMesh');
+    if (!ground) return;
+
+    const intersects = raycaster.intersectObject(ground, true);
+    if (intersects.length === 0) return;
+
+    const groundPoint = intersects[0].point;
+
+    // Update yaw and rotate around the ground point
+    const rotationAngle = direction === 'left' ? -Math.PI / 4 : Math.PI / 4;
+    this.cameraYaw += rotationAngle;
+
+    // Set the look-at point and reposition camera
+    this.lookAt(groundPoint.x, groundPoint.z);
   }
 
 

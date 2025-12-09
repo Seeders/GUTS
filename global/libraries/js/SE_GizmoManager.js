@@ -142,10 +142,10 @@ class SE_GizmoManager {
     createRotateGizmo() {
         const group = new THREE.Group();
         group.name = "rotateGizmo";
-        
+
         const radius = 1;
-        const tube = 0.05; // Increased tube size for better visibility and interaction
-        const radialSegments = 24;
+        const tube = 0.15; // Larger tube size for better visibility and raycast interaction
+        const radialSegments = 16;
         const tubularSegments = 48;
         
         // X axis ring (red)
@@ -184,21 +184,22 @@ class SE_GizmoManager {
     createScaleGizmo() {
         const group = new THREE.Group();
         group.name = "scaleGizmo";
-        
-        const lineLength = 1.5; // Increased for better visibility
-        const boxSize = 0.2;    // Increased for better interaction
-        
-        // X axis (red)
-        const xLine = new THREE.Line(
-            new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(lineLength, 0, 0)
-            ]),
-            new THREE.LineBasicMaterial({ color: this.axisColors.x, transparent: true, opacity: 0.6, depthTest: false, linewidth: 2 })
+
+        const lineLength = 1.5;
+        const lineRadius = 0.05; // Cylinder radius for raycast-friendly lines
+        const boxSize = 0.25;
+
+        // X axis (red) - use cylinder instead of line for better raycasting
+        const xLineGeom = new THREE.CylinderGeometry(lineRadius, lineRadius, lineLength, 8);
+        xLineGeom.rotateZ(-Math.PI / 2); // Point along X axis
+        xLineGeom.translate(lineLength / 2, 0, 0); // Center at midpoint
+        const xLine = new THREE.Mesh(
+            xLineGeom,
+            new THREE.MeshBasicMaterial({ color: this.axisColors.x, transparent: true, opacity: 0.6, depthTest: false })
         );
         xLine.userData.axis = 'x';
         xLine.userData.gizmoType = 'scale';
-        
+
         const xBox = new THREE.Mesh(
             new THREE.BoxGeometry(boxSize, boxSize, boxSize),
             new THREE.MeshBasicMaterial({ color: this.axisColors.x, transparent: true, opacity: 0.6, depthTest: false })
@@ -207,38 +208,37 @@ class SE_GizmoManager {
         xBox.name = "scaleX";
         xBox.userData.axis = 'x';
         xBox.userData.gizmoType = 'scale';
-        
+
         // Y axis (green)
-        const yLine = new THREE.Line(
-            new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(0, lineLength, 0)
-            ]),
-            new THREE.LineBasicMaterial({ color: this.axisColors.y, transparent: true, opacity: 0.6, depthTest: false, linewidth: 2 })
+        const yLineGeom = new THREE.CylinderGeometry(lineRadius, lineRadius, lineLength, 8);
+        yLineGeom.translate(0, lineLength / 2, 0); // Center at midpoint (already points along Y)
+        const yLine = new THREE.Mesh(
+            yLineGeom,
+            new THREE.MeshBasicMaterial({ color: this.axisColors.y, transparent: true, opacity: 0.6, depthTest: false })
         );
         yLine.userData.axis = 'y';
         yLine.userData.gizmoType = 'scale';
-        
+
         const yBox = new THREE.Mesh(
             new THREE.BoxGeometry(boxSize, boxSize, boxSize),
-            new THREE.MeshBasicMaterial({ color: this.axisColors.y, transparent: true, opacity: 0.6,  depthTest: false })
+            new THREE.MeshBasicMaterial({ color: this.axisColors.y, transparent: true, opacity: 0.6, depthTest: false })
         );
         yBox.position.set(0, lineLength, 0);
         yBox.name = "scaleY";
         yBox.userData.axis = 'y';
         yBox.userData.gizmoType = 'scale';
-        
+
         // Z axis (blue)
-        const zLine = new THREE.Line(
-            new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(0, 0, lineLength)
-            ]),
-            new THREE.LineBasicMaterial({ color: this.axisColors.z, transparent: true, opacity: 0.6, depthTest: false, linewidth: 2 })
+        const zLineGeom = new THREE.CylinderGeometry(lineRadius, lineRadius, lineLength, 8);
+        zLineGeom.rotateX(Math.PI / 2); // Point along Z axis
+        zLineGeom.translate(0, 0, lineLength / 2); // Center at midpoint
+        const zLine = new THREE.Mesh(
+            zLineGeom,
+            new THREE.MeshBasicMaterial({ color: this.axisColors.z, transparent: true, opacity: 0.6, depthTest: false })
         );
         zLine.userData.axis = 'z';
         zLine.userData.gizmoType = 'scale';
-        
+
         const zBox = new THREE.Mesh(
             new THREE.BoxGeometry(boxSize, boxSize, boxSize),
             new THREE.MeshBasicMaterial({ color: this.axisColors.z, transparent: true, opacity: 0.6, depthTest: false })
@@ -247,17 +247,17 @@ class SE_GizmoManager {
         zBox.name = "scaleZ";
         zBox.userData.axis = 'z';
         zBox.userData.gizmoType = 'scale';
-        
+
         // Uniform scale handle (white)
         const uniformBox = new THREE.Mesh(
             new THREE.BoxGeometry(boxSize * 1.5, boxSize * 1.5, boxSize * 1.5),
-            new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6,  depthTest: false })
+            new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6, depthTest: false })
         );
         uniformBox.position.set(0, 0, 0);
         uniformBox.name = "scaleXYZ";
         uniformBox.userData.axis = 'xyz';
         uniformBox.userData.gizmoType = 'scale';
-        
+
         group.add(xLine);
         group.add(xBox);
         group.add(yLine);
@@ -265,7 +265,7 @@ class SE_GizmoManager {
         group.add(zLine);
         group.add(zBox);
         group.add(uniformBox);
-        
+
         return group;
     }
     
@@ -312,11 +312,17 @@ class SE_GizmoManager {
     }
     
     onMouseDown(event) {
+        // Only respond to right mouse button (button 2) - left click is for selection
+        if (event.button !== 2) return;
         if (!this.targetObject) return;
-        
+
         const intersectedAxis = this.getIntersectedGizmo();
         if (!intersectedAxis) return;
-        
+
+        // Prevent context menu and stop event propagation when clicking on gizmo
+        event.preventDefault();
+        event.stopPropagation();
+
         this.isDragging = true;
         this.selectedAxis = intersectedAxis;
         
@@ -504,44 +510,57 @@ class SE_GizmoManager {
         // Create a plane based on the camera view and selected axis
         const cameraDirection = new THREE.Vector3();
         this.camera.getWorldDirection(cameraDirection);
-        
+
         let planeNormal;
-        
-        // Set plane normal based on selected axis and camera direction
-        if (this.selectedAxis === 'x') {
-            planeNormal = new THREE.Vector3(0, 1, 0);
-            if (Math.abs(cameraDirection.dot(planeNormal)) < 0.2) {
-                planeNormal.set(0, 0, 1);
+
+        // For rotation mode, use plane perpendicular to the rotation axis
+        if (this.mode === 'rotate') {
+            if (this.selectedAxis === 'x') {
+                planeNormal = new THREE.Vector3(1, 0, 0);
+            } else if (this.selectedAxis === 'y') {
+                planeNormal = new THREE.Vector3(0, 1, 0);
+            } else if (this.selectedAxis === 'z') {
+                planeNormal = new THREE.Vector3(0, 0, 1);
+            } else {
+                planeNormal = cameraDirection.clone();
             }
-        } else if (this.selectedAxis === 'y') {
-            planeNormal = new THREE.Vector3(1, 0, 0);
-            if (Math.abs(cameraDirection.dot(planeNormal)) < 0.2) {
-                planeNormal.set(0, 0, 1);
+        } else {
+            // For translate/scale, set plane normal based on selected axis and camera direction
+            if (this.selectedAxis === 'x') {
+                planeNormal = new THREE.Vector3(0, 1, 0);
+                if (Math.abs(cameraDirection.dot(planeNormal)) < 0.2) {
+                    planeNormal.set(0, 0, 1);
+                }
+            } else if (this.selectedAxis === 'y') {
+                planeNormal = new THREE.Vector3(1, 0, 0);
+                if (Math.abs(cameraDirection.dot(planeNormal)) < 0.2) {
+                    planeNormal.set(0, 0, 1);
+                }
+            } else if (this.selectedAxis === 'z') {
+                planeNormal = new THREE.Vector3(1, 0, 0);
+                if (Math.abs(cameraDirection.dot(planeNormal)) < 0.2) {
+                    planeNormal.set(0, 1, 0);
+                }
+            } else if (this.selectedAxis === 'xyz') {
+                planeNormal = cameraDirection.clone();
             }
-        } else if (this.selectedAxis === 'z') {
-            planeNormal = new THREE.Vector3(1, 0, 0);
-            if (Math.abs(cameraDirection.dot(planeNormal)) < 0.2) {
-                planeNormal.set(0, 1, 0);
-            }
-        } else if (this.selectedAxis === 'xyz') {
-            planeNormal = cameraDirection;
         }
-        
-        // Create drag plane
+
+        // Create drag plane passing through the object position
         const plane = new THREE.Plane(planeNormal, -this.targetObject.position.dot(planeNormal));
-        
+
         // Cast ray from mouse and get intersection point with the plane
         this.raycaster.setFromCamera(this.mouse, this.camera);
-        
+
         const intersectionPoint = new THREE.Vector3();
         const didIntersect = this.raycaster.ray.intersectPlane(plane, intersectionPoint);
-        
+
         if (!didIntersect) {
             console.warn("Failed to intersect with drag plane");
             // Return a fallback point to prevent errors
             return this.targetObject.position.clone();
         }
-        
+
         return intersectionPoint;
     }
     
@@ -594,23 +613,29 @@ class SE_GizmoManager {
     
     handleRotation(delta) {
         if (!this.targetObject) return;
-        
-        // Calculate rotation angle based on mouse movement
-        const rotationSpeed = 2.0;
+
+        // Calculate rotation using angular movement around the rotation axis
+        // Get vectors from object center to start and current drag points
+        const objectPos = this.targetObject.position;
+        const toStart = new THREE.Vector3().subVectors(this.dragStartPoint, objectPos);
+        const toCurrent = new THREE.Vector3().subVectors(this.dragCurrentPoint, objectPos);
+
         let angle = 0;
-        
-        // Calculate angle based on the delta movement and distance from center
+
         switch (this.selectedAxis) {
             case 'x':
-                angle = delta.y * rotationSpeed;
+                // Rotation around X axis - project onto YZ plane
+                angle = Math.atan2(toCurrent.z, toCurrent.y) - Math.atan2(toStart.z, toStart.y);
                 this.targetObject.rotation.x += angle;
                 break;
             case 'y':
-                angle = delta.x * rotationSpeed;
+                // Rotation around Y axis - project onto XZ plane
+                angle = Math.atan2(toCurrent.x, toCurrent.z) - Math.atan2(toStart.x, toStart.z);
                 this.targetObject.rotation.y += angle;
                 break;
             case 'z':
-                angle = (delta.x + delta.y) * rotationSpeed;
+                // Rotation around Z axis - project onto XY plane
+                angle = Math.atan2(toCurrent.y, toCurrent.x) - Math.atan2(toStart.y, toStart.x);
                 this.targetObject.rotation.z += angle;
                 break;
             case 'xyz':

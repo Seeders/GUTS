@@ -55,9 +55,16 @@ class AnimationSystem extends GUTS.BaseSystem {
             // Only process instanced entities
             if (!this.game.renderSystem?.isInstanced(entityId)) return;
 
-            // Skip static entities (worldObjects, cliffs) that don't have animations
+            // Check if this is a static entity (worldObjects, cliffs)
             const unitType = this.game.getComponent(entityId, "unitType");
-            if (unitType && (unitType.collection === 'worldObjects' || unitType.collection === 'cliffs')) {
+            const isStaticEntity = unitType && (unitType.collection === 'worldObjects' || unitType.collection === 'cliffs');
+
+            if (isStaticEntity) {
+                // For static entities with sprite animations, only update sprite direction based on camera
+                const animState = this.game.getComponent(entityId, 'animationState');
+                if (animState?.isSprite && animState.spriteAnimations) {
+                    this.updateSpriteDirectionFromRotation(entityId, animState);
+                }
                 return;
             }
 
@@ -95,9 +102,8 @@ class AnimationSystem extends GUTS.BaseSystem {
             isTriggered: false,
             isCelebrating: false,
             // Billboard/sprite animation state
-            isBillboard: isBillboard,
+            isSprite: isBillboard,
             spriteDirection: 'down',
-            spriteFlipped: false,
             // Track fallback usage to prevent thrashing
             lastRequestedClip: null,
             lastResolvedClip: null,
@@ -142,8 +148,11 @@ class AnimationSystem extends GUTS.BaseSystem {
         animState.animationTime += deltaTime;
 
         // Handle billboard/sprite entities separately
-        if (animState.isBillboard) {
-            this.updateBillboardAnimationLogic(entityId, animState, velocity);
+        if (animState.isSprite) {
+            // Only process if sprite animations have been loaded
+            if (animState.spriteAnimations) {
+                this.updateBillboardAnimationLogic(entityId, animState, velocity);
+            }
             return;
         }
 
@@ -217,9 +226,9 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Don't override single-play animations (attack, cast, death) - let them complete naturally
         // These animations have their own completion callbacks that return to idle
-        const billboardAnim = this.game.getComponent(entityId, 'billboardAnimation');
+        const billboardAnim = this.game.getComponent(entityId, 'animationState');
 
-        if (billboardAnim && this.SINGLE_PLAY_ANIMATIONS.has(billboardAnim.currentAnimationType)) {
+        if (billboardAnim && this.SINGLE_PLAY_ANIMATIONS.has(billboardAnim.spriteAnimationType)) {
             // Just update direction for single-play animations (so entity faces target during attack)
             this.updateSpriteDirectionFromRotation(entityId, animState);
             return;
@@ -282,7 +291,6 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Map relative angle to sprite direction
         let newDirection = animState.spriteDirection;
-        let shouldFlip = false;
 
         // 8 sectors of 45 degrees each
         if (angleDeg >= -22.5 && angleDeg < 22.5) {
@@ -311,13 +319,10 @@ class AnimationSystem extends GUTS.BaseSystem {
             newDirection = 'downright';
         }
 
-        // Check if direction changed
-        if (newDirection !== animState.spriteDirection || shouldFlip !== animState.spriteFlipped) {
-            animState.spriteDirection = newDirection;
-            animState.spriteFlipped = shouldFlip;
-
-            // Apply the new direction
-            this.game.call('setBillboardAnimationDirection', entityId, newDirection, shouldFlip);
+        // Check if direction changed and apply it
+        if (newDirection !== animState.spriteDirection) {
+            // Let setBillboardAnimationDirection handle setting the direction and applying the frame
+            this.game.call('setBillboardAnimationDirection', entityId, newDirection);
         }
     }
 
@@ -467,11 +472,11 @@ class AnimationSystem extends GUTS.BaseSystem {
         }
 
         // Handle billboard entities with sprite animations
-        if (animState.isBillboard) {
+        if (animState.isSprite) {
             if (clipName === 'attack') {
                 // Check if already playing attack animation - don't restart it
-                const billboardAnim = this.game.getComponent(entityId, 'billboardAnimation');
-                if (billboardAnim && billboardAnim.currentAnimationType === 'attack') {
+                const billboardAnim = this.game.getComponent(entityId, 'animationState');
+                if (billboardAnim && billboardAnim.spriteAnimationType === 'attack') {
                     return true;  // Already attacking, don't restart
                 }
 
@@ -529,7 +534,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         animState.fallbackCooldown = 0;
 
         // Handle billboard entities with sprite animations
-        if (animState.isBillboard) {
+        if (animState.isSprite) {
             // Set death animation (non-looping, stays on last frame)
             this.game.call(
                 'setBillboardAnimation',
@@ -548,7 +553,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Corpse state is managed by deathState component (set by DeathSystem)
         // For billboard entities, death animation already stays on last frame
         const animState = this.game.getComponent(entityId, "animationState");
-        if (animState?.isBillboard) {
+        if (animState?.isSprite) {
             // Billboard death animations are non-looping and stay on last frame
             return;
         }
@@ -727,9 +732,8 @@ class AnimationSystem extends GUTS.BaseSystem {
      * @param {number} customDuration - Optional custom duration to pace the animation (in seconds)
      */
     setBillboardAnimation(entityId, animationType, loop = true, onComplete = null, customDuration = null) {
-        const animData = this.game.getComponent(entityId, "billboardAnimation");
-        if (!animData) {
-            console.warn(`[AnimationSystem] No animation state for billboard entity ${entityId}`);
+        const animData = this.game.getComponent(entityId, "animationState");
+        if (!animData || !animData.isSprite) {
             return false;
         }
 
@@ -740,21 +744,21 @@ class AnimationSystem extends GUTS.BaseSystem {
         }
 
         // Check if animation type is available
-        if (!animData.animations?.[animationType]) {
+        if (!animData.spriteAnimations?.[animationType]) {
             console.warn(`[AnimationSystem] Animation type '${animationType}' not available for entity ${entityId}`);
             return false;
         }
 
         // If already in this animation type, don't restart
-        if (animData.currentAnimationType === animationType) {
+        if (animData.spriteAnimationType === animationType) {
             return true;
         }
 
         // Set up new animation
-        animData.currentAnimationType = animationType;
-        animData.frameIndex = 0;
-        animData.frameTime = 0;
-        animData.loopAnimation = loop;
+        animData.spriteAnimationType = animationType;
+        animData.spriteFrameIndex = 0;
+        animData.spriteFrameTime = 0;
+        animData.spriteLoopAnimation = loop;
         animData.onAnimationComplete = onComplete;
         animData.customDuration = customDuration; // Custom duration override for pacing
 
@@ -771,32 +775,32 @@ class AnimationSystem extends GUTS.BaseSystem {
      * Get the current animation type for a billboard entity
      */
     getBillboardCurrentAnimation(entityId) {
-        const animData = this.game.getComponent(entityId, "billboardAnimation");
-        return animData?.currentAnimationType || null;
+        const animData = this.game.getComponent(entityId, "animationState");
+        return animData?.spriteAnimationType || null;
     }
 
     /**
      * Get billboard animation state (for direct manipulation by behaviors)
      */
     getBillboardAnimationState(entityId) {
-        return this.game.getComponent(entityId, "billboardAnimation") || null;
+        return this.game.getComponent(entityId, "animationState") || null;
     }
 
     /**
      * Set sprite animation direction for a billboard entity
      */
     setBillboardAnimationDirection(entityId, direction) {
-        const animState = this.game.getComponent(entityId, "billboardAnimation");
-        if (!animState) return false;
+        const animState = this.game.getComponent(entityId, "animationState");
+        if (!animState || !animState.isSprite) return false;
 
-        if (direction !== animState.currentDirection) {
+        if (direction !== animState.spriteDirection) {
             // Don't reset frame for single-play animations - just change direction
-            const shouldResetFrame = !this.SINGLE_PLAY_ANIMATIONS.has(animState.currentAnimationType);
+            const shouldResetFrame = !this.SINGLE_PLAY_ANIMATIONS.has(animState.spriteAnimationType);
 
-            animState.currentDirection = direction;
+            animState.spriteDirection = direction;
             if (shouldResetFrame) {
-                animState.frameIndex = 0;
-                animState.frameTime = 0;
+                animState.spriteFrameIndex = 0;
+                animState.spriteFrameTime = 0;
             }
 
             // Tell EntityRenderer to apply the new frame immediately
@@ -820,30 +824,30 @@ class AnimationSystem extends GUTS.BaseSystem {
         const frameRates = entityRenderer.spriteAnimationFrameRates || {};
         const defaultFrameRate = entityRenderer.defaultFrameRate || 10;
 
-        // Get all entities with billboardAnimation component
-        const billboardEntities = this.game.getEntitiesWith("billboardAnimation");
+        // Get all entities with animationState component that are billboards
+        const billboardEntities = this.game.getEntitiesWith("animationState");
 
         for (const entityId of billboardEntities) {
-            const animState = this.game.getComponent(entityId, "billboardAnimation");
-            if (!animState) continue;
-            // Get animations for current type (stored in AnimationSystem state)
-            const animations = animState.animations?.[animState.currentAnimationType];
+            const animState = this.game.getComponent(entityId, "animationState");
+            if (!animState || !animState.isSprite) continue;
+            // Get animations for current type (stored in animationState)
+            const animations = animState.spriteAnimations?.[animState.spriteAnimationType];
             if (!animations) continue;
 
-            const directionData = animations[animState.currentDirection];
+            const directionData = animations[animState.spriteDirection];
             if (!directionData || !directionData.frames || directionData.frames.length === 0) continue;
 
             const frames = directionData.frames;
             // For non-looping animations, check if already finished (past the last frame)
-            if (!animState.loopAnimation && animState.frameIndex >= frames.length) {
+            if (!animState.spriteLoopAnimation && animState.spriteFrameIndex >= frames.length) {
                 continue;
             }
 
             // Update frame time
-            animState.frameTime += this.game.state.deltaTime;
+            animState.spriteFrameTime += this.game.state.deltaTime;
 
             // Calculate frame duration based on fps from animation set
-            const fps = animState.fps || frameRates[animState.currentAnimationType] || defaultFrameRate;
+            const fps = animState.spriteFps || frameRates[animState.spriteAnimationType] || defaultFrameRate;
             let frameDuration = 1 / fps;
 
             // Override with custom duration if set (e.g., for abilities that need specific timing)
@@ -852,19 +856,19 @@ class AnimationSystem extends GUTS.BaseSystem {
             }
             // Advance frames based on elapsed time (handles lag/large deltaTime correctly)
             let frameChanged = false;
-            const oldFrameIndex = animState.frameIndex;
-            while (animState.frameTime >= frameDuration) {
-                animState.frameTime -= frameDuration;
-                animState.frameIndex++;
+            const oldFrameIndex = animState.spriteFrameIndex;
+            while (animState.spriteFrameTime >= frameDuration) {
+                animState.spriteFrameTime -= frameDuration;
+                animState.spriteFrameIndex++;
                 frameChanged = true;
 
                 // Handle animation completion
-                if (animState.frameIndex >= frames.length) {
-                    if (animState.loopAnimation) {
-                        animState.frameIndex = 0;
+                if (animState.spriteFrameIndex >= frames.length) {
+                    if (animState.spriteLoopAnimation) {
+                        animState.spriteFrameIndex = 0;
                     } else {
-                        animState.frameIndex = frames.length - 1;
-                        animState.frameTime = 0; // Stop accumulating time
+                        animState.spriteFrameIndex = frames.length - 1;
+                        animState.spriteFrameTime = 0; // Stop accumulating time
 
                         // Call completion callback if set
                         if (animState.onAnimationComplete) {
@@ -873,8 +877,8 @@ class AnimationSystem extends GUTS.BaseSystem {
                         } else {
                             // Default behavior: return to idle for single-play animations (except death)
                             // Death animations should stay frozen on the last frame
-                            if (this.SINGLE_PLAY_ANIMATIONS.has(animState.currentAnimationType) &&
-                                animState.currentAnimationType !== 'death') {
+                            if (this.SINGLE_PLAY_ANIMATIONS.has(animState.spriteAnimationType) &&
+                                animState.spriteAnimationType !== 'death') {
                                 this.game.call('setBillboardAnimation', entityId, 'idle', true);
                             }
                         }
@@ -935,17 +939,24 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Get fps from animation set's generator settings
         const animationFps = animSetData.generatorSettings?.fps || null;
 
-        // Add billboardAnimation component to entity
-        this.game.addComponent(entityId, 'billboardAnimation', {
-            spriteAnimationSet,
-            animations,
-            fps: animationFps,
-            currentAnimationType: null,
-            currentDirection: initialDirection,
-            frameIndex: 0,
-            frameTime: 0,
-            loopAnimation: true
-        });
+        // Ensure animationState component exists, then add billboard-specific properties
+        if (!this.game.hasComponent(entityId, 'animationState')) {
+            this.initializeEntityAnimationState(entityId);
+        }
+
+        const animState = this.game.getComponent(entityId, 'animationState');
+        if (animState) {
+            // Add sprite-specific properties to animationState
+            animState.spriteAnimationSet = spriteAnimationSet;
+            animState.spriteAnimations = animations;
+            animState.spriteFps = animationFps;
+            animState.spriteAnimationType = null;
+            animState.spriteDirection = initialDirection;
+            animState.spriteFrameIndex = 0;
+            animState.spriteFrameTime = 0;
+            animState.spriteLoopAnimation = true;
+            animState.isSprite = true;
+        }
 
         // Apply initial idle animation (sets UV coordinates)
         this.setBillboardAnimation(entityId, 'idle', true);

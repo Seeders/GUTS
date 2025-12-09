@@ -58,8 +58,8 @@ class SceneEditor {
         this.raycastHelper = null;
         this.placementPreview = null;
 
-        // Editor context - handles all rendering via game systems
-        this.editorContext = null;
+        // Editor game instance - handles all rendering via game systems
+        this.editorGameInstance = null;
 
         // Gizmo manager - use GUTS global or passed lib
         const GizmoManager = libs.SE_GizmoManager || GUTS.SE_GizmoManager;
@@ -98,10 +98,10 @@ class SceneEditor {
         if (this.state.initialized) return;
 
         // Create editor context (like ECSGame)
-        this.editorContext = new GUTS.EditorECSGame(this.gameEditor, this.canvas);
+        this.editorGameInstance = new GUTS.EditorECSGame(this.gameEditor, this.canvas);
 
         // Use EditorLoader to load assets and initialize (like GameLoader)
-        this.editorLoader = new GUTS.EditorLoader(this.editorContext);
+        this.editorLoader = new GUTS.EditorLoader(this.editorGameInstance);
         await this.editorLoader.load({
             systems: systems
         });
@@ -109,7 +109,7 @@ class SceneEditor {
         // Note: gizmoManager is initialized in handleRenderSceneObject after worldRenderer exists
 
         // Start render loop
-        this.editorContext.startRenderLoop();
+        this.editorGameInstance.startRenderLoop();
 
         this.state.initialized = true;
         console.log('[SceneEditor] Context initialized with systems:', systems);
@@ -157,6 +157,14 @@ class SceneEditor {
         // Camera toggle button
         document.getElementById('scene-camera-toggle')?.addEventListener('click', () => {
             this.toggleCamera();
+        });
+
+        // Camera rotation buttons (only visible in game camera mode)
+        document.getElementById('scene-camera-rotate-left')?.addEventListener('click', () => {
+            this.rotateGameCamera('left');
+        });
+        document.getElementById('scene-camera-rotate-right')?.addEventListener('click', () => {
+            this.rotateGameCamera('right');
         });
 
         // Window resize
@@ -405,7 +413,7 @@ class SceneEditor {
         if (!worldPos) return;
 
         // Get terrain height at position
-        const terrainSystem = this.editorContext?.terrainSystem;
+        const terrainSystem = this.editorGameInstance?.terrainSystem;
         const terrainHeight = terrainSystem?.getTerrainHeightAtPosition?.(worldPos.x, worldPos.z) || worldPos.y;
 
         // Create entity using UnitCreationSystem
@@ -416,13 +424,13 @@ class SceneEditor {
      * Create entity at specific position
      */
     createEntityAtPosition(x, y, z) {
-        if (!this.editorContext) return;
+        if (!this.editorGameInstance) return;
 
         const { collection, spawnType, itemData } = this.placementMode;
         if (!collection || !spawnType) return;
 
         // Use UnitCreationSystem to create the entity with proper components
-        const unitCreationSystem = this.editorContext.unitCreationSystem;
+        const unitCreationSystem = this.editorGameInstance.unitCreationSystem;
         if (!unitCreationSystem) {
             console.error('[SceneEditor] UnitCreationSystem not available');
             return;
@@ -497,19 +505,19 @@ class SceneEditor {
         await this.initializeContext(systems);
 
         // Clear existing entities before loading new scene
-        if (this.editorContext) {
-            this.editorContext.clearAllEntities();
+        if (this.editorGameInstance) {
+            this.editorGameInstance.clearAllEntities();
         }
 
         // Load entities into context - editor systems will render them
         // Pass scene data but our editor systems will handle rendering
-        await this.editorContext.loadScene({ ...fullSceneData, systems });
+        await this.editorGameInstance.loadScene({ ...fullSceneData, systems });
 
         // Setup camera and controls AFTER scene loads (worldRenderer is created during scene load)
-        this.worldRenderer = this.editorContext.worldSystem?.worldRenderer;
+        this.worldRenderer = this.editorGameInstance.worldSystem?.worldRenderer;
         if (this.worldRenderer) {
             // Replace camera with perspective camera (same as TerrainMapEditor)
-            const terrainDataManager = this.editorContext.terrainSystem?.terrainDataManager;
+            const terrainDataManager = this.editorGameInstance.terrainSystem?.terrainDataManager;
             const terrainSize = terrainDataManager?.terrainSize || 1536;
             const canvas = this.canvas;
 
@@ -545,7 +553,7 @@ class SceneEditor {
             this.mouseWorldPos = null;
 
             // Register getWorldPositionFromMouse for SelectedUnitSystem
-            this.editorContext.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
+            this.editorGameInstance.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
 
             // Initialize PlacementPreview
             const gameConfig = this.collections.configs?.game || {};
@@ -553,7 +561,7 @@ class SceneEditor {
                 scene: this.worldRenderer.getScene(),
                 gridSize: gameConfig.gridSize || 48,
                 getTerrainHeight: (x, z) => {
-                    return this.editorContext?.terrainSystem?.getTerrainHeightAtPosition?.(x, z) || 0;
+                    return this.editorGameInstance?.terrainSystem?.getTerrainHeightAtPosition?.(x, z) || 0;
                 }
             });
 
@@ -562,11 +570,11 @@ class SceneEditor {
         }
 
         // Listen for unit selection events from SelectedUnitSystem
-        this.editorContext.on('onUnitSelected', (entityId) => {
+        this.editorGameInstance.on('onUnitSelected', (entityId) => {
             this.selectEntity(entityId);
         });
 
-        this.editorContext.on('onDeSelectAll', () => {
+        this.editorGameInstance.on('onDeSelectAll', () => {
             this.state.selectedEntityId = null;
             this.gizmoManager?.detach();
             this.renderHierarchy();
@@ -582,10 +590,10 @@ class SceneEditor {
      * Remove the selected entity
      */
     removeSelectedEntity() {
-        if (!this.state.selectedEntityId || !this.editorContext) return;
+        if (!this.state.selectedEntityId || !this.editorGameInstance) return;
 
         // Remove from context - systems will update
-        this.editorContext.removeEntity(this.state.selectedEntityId);
+        this.editorGameInstance.removeEntity(this.state.selectedEntityId);
 
         // Remove from entities array
         if (this.state.entities) {
@@ -688,11 +696,11 @@ class SceneEditor {
 
         // Get components from context (merged prefab + overrides)
         const components = {};
-        if (this.editorContext) {
-            const entityComponents = this.editorContext.entities.get(entity.id);
+        if (this.editorGameInstance) {
+            const entityComponents = this.editorGameInstance.entities.get(entity.id);
             if (entityComponents) {
                 for (const componentType of entityComponents) {
-                    components[componentType] = this.editorContext.getComponent(entity.id, componentType);
+                    components[componentType] = this.editorGameInstance.getComponent(entity.id, componentType);
                 }
             }
         }
@@ -932,8 +940,8 @@ class SceneEditor {
      */
     updateEntityComponent(entity, componentType, path, newValue) {
         // Update in context
-        if (this.editorContext) {
-            const currentData = this.editorContext.getComponent(entity.id, componentType);
+        if (this.editorGameInstance) {
+            const currentData = this.editorGameInstance.getComponent(entity.id, componentType);
             if (currentData && path) {
                 const parts = path.split('.');
                 let target = currentData;
@@ -945,7 +953,7 @@ class SceneEditor {
             }
 
             // Trigger systems to update
-            this.editorContext.triggerEvent('onEntityComponentUpdated', { entityId: entity.id, componentType });
+            this.editorGameInstance.triggerEvent('onEntityComponentUpdated', { entityId: entity.id, componentType });
         }
 
         // Update in scene data
@@ -976,8 +984,8 @@ class SceneEditor {
      */
     handleResize() {
         // WorldSystem handles its own resize if initialized
-        if (this.editorContext?.worldSystem) {
-            this.editorContext.worldSystem.onWindowResize?.();
+        if (this.editorGameInstance?.worldSystem) {
+            this.editorGameInstance.worldSystem.onWindowResize?.();
         }
     }
 
@@ -1057,12 +1065,12 @@ class SceneEditor {
      * Attach gizmo to selected entity by positioning helper at entity location
      */
     attachGizmoToEntity(entityId) {
-        if (!this.gizmoManager || !this.gizmoHelper || !this.editorContext) {
+        if (!this.gizmoManager || !this.gizmoHelper || !this.editorGameInstance) {
             return;
         }
 
         // Get entity's transform component
-        const transform = this.editorContext.getComponent(entityId, 'transform');
+        const transform = this.editorGameInstance.getComponent(entityId, 'transform');
         if (!transform) {
             console.warn('[SceneEditor] Entity has no transform component:', entityId);
             this.gizmoManager.detach();
@@ -1088,12 +1096,12 @@ class SceneEditor {
      * Sync gizmo helper transform back to entity component
      */
     syncGizmoToEntity(position, rotation, scale) {
-        if (!this.state.selectedEntityId || !this.editorContext) return;
+        if (!this.state.selectedEntityId || !this.editorGameInstance) return;
 
         const entityId = this.state.selectedEntityId;
 
         // Get current transform
-        const transform = this.editorContext.getComponent(entityId, 'transform');
+        const transform = this.editorGameInstance.getComponent(entityId, 'transform');
         if (!transform) return;
 
         // Update transform component
@@ -1108,10 +1116,10 @@ class SceneEditor {
         }
 
         // Update component in ECS
-        this.editorContext.addComponent(entityId, 'transform', transform);
+        this.editorGameInstance.addComponent(entityId, 'transform', transform);
 
         // Update visual representation via RenderSystem
-        const renderSystem = this.editorContext.renderSystem;
+        const renderSystem = this.editorGameInstance.renderSystem;
         if (renderSystem) {
             // Calculate rotation angle from y-axis rotation for 2D sprites
             const angle = rotation ? rotation.y : 0;
@@ -1205,12 +1213,17 @@ class SceneEditor {
             );
         }
 
-        // Update button text
+        // Update button text and show/hide rotation buttons
         const toggleBtn = document.getElementById('scene-camera-toggle');
         if (toggleBtn) {
             toggleBtn.querySelector('span').textContent = mode === 'scene' ? 'Scene Cam' : 'Game Cam';
             toggleBtn.classList.toggle('editor-module__btn--active', mode === 'game');
         }
+
+        const rotateLeftBtn = document.getElementById('scene-camera-rotate-left');
+        const rotateRightBtn = document.getElementById('scene-camera-rotate-right');
+        if (rotateLeftBtn) rotateLeftBtn.style.display = mode === 'game' ? '' : 'none';
+        if (rotateRightBtn) rotateRightBtn.style.display = mode === 'game' ? '' : 'none';
 
         console.log(`[SceneEditor] Camera mode switched to: ${mode}`);
     }
@@ -1244,7 +1257,7 @@ class SceneEditor {
      * Setup perspective camera for scene editing
      */
     setupSceneCamera(width, height) {
-        const terrainDataManager = this.editorContext?.terrainSystem?.terrainDataManager;
+        const terrainDataManager = this.editorGameInstance?.terrainSystem?.terrainDataManager;
         const terrainSize = terrainDataManager?.terrainSize || 1536;
         const halfSize = terrainSize / 2;
 
@@ -1455,11 +1468,55 @@ class SceneEditor {
     }
 
     /**
+     * Rotate the game camera 45 degrees around the look-at point
+     * @param {string} direction - 'left' or 'right'
+     */
+    rotateGameCamera(direction) {
+        if (this.state.cameraMode !== 'game') return;
+
+        const camera = this.worldRenderer?.camera;
+        if (!camera) return;
+
+        // Raycast from center of screen to find ground point
+        const raycaster = new THREE.Raycaster();
+        const centerScreen = new THREE.Vector2(0, 0); // NDC center
+        raycaster.setFromCamera(centerScreen, camera);
+
+        // Find the ground mesh
+        const ground = this.editorGameInstance?.call('getGroundMesh');
+        if (!ground) return;
+
+        const intersects = raycaster.intersectObject(ground, true);
+        if (intersects.length === 0) return;
+
+        const groundPoint = intersects[0].point;
+
+        const rotationAngle = direction === 'left' ? Math.PI / 4 : -Math.PI / 4;
+
+        // Calculate current offset from ground point
+        const offset = new THREE.Vector3().subVectors(camera.position, groundPoint);
+
+        // Rotate offset around Y axis
+        const cosA = Math.cos(rotationAngle);
+        const sinA = Math.sin(rotationAngle);
+        const newX = offset.x * cosA - offset.z * sinA;
+        const newZ = offset.x * sinA + offset.z * cosA;
+
+        // Apply new position
+        camera.position.x = groundPoint.x + newX;
+        camera.position.z = groundPoint.z + newZ;
+
+        // Update camera to look at the ground point
+        camera.lookAt(groundPoint);
+        camera.userData.lookAt = groundPoint.clone();
+    }
+
+    /**
      * Cleanup
      */
     destroy() {
-        if (this.editorContext) {
-            this.editorContext.destroy();
+        if (this.editorGameInstance) {
+            this.editorGameInstance.destroy();
         }
 
         if (this.gizmoManager) {

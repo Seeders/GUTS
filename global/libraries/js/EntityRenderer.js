@@ -33,7 +33,7 @@ class EntityRenderer {
         this.loadedTextures = new Map(); // textureId -> THREE.Texture
 
         // Sprite animation tracking for billboards
-        this.billboardAnimations = new Map(); // entityId -> { animations, currentDirection, frameTime, frameIndex }
+        this.billboardAnimations = new Map(); // entityId -> { batch, instanceIndex } (GPU rendering data)
 
         // Default frame rates per animation type (frames per second)
         // These are fallbacks if animation data doesn't specify fps
@@ -1149,8 +1149,8 @@ class EntityRenderer {
         let aspectRatio = 1;
 
         // Try to get aspect ratio from animation state
-        if (animState?.animations) {
-            const initialAnim = animState.animations.idle || animState.animations.walk || Object.values(animState.animations)[0];
+        if (animState?.spriteAnimations) {
+            const initialAnim = animState.spriteAnimations.idle || animState.spriteAnimations.walk || Object.values(animState.spriteAnimations)[0];
             const initialFrame = initialAnim?.down?.frames?.[0] || initialAnim?.[Object.keys(initialAnim)[0]]?.frames?.[0];
             if (initialFrame) {
                 aspectRatio = initialFrame.width / initialFrame.height;
@@ -1220,7 +1220,7 @@ class EntityRenderer {
     /**
      * Apply the current animation frame to an instanced billboard
      * @param {string} entityId - Entity ID
-     * @param {object} animState - Animation state from AnimationSystem (currentAnimationType, frameIndex, currentDirection)
+     * @param {object} animState - Animation state from AnimationSystem (spriteAnimationType, spriteFrameIndex, spriteDirection)
      */
     applyBillboardAnimationFrame(entityId, animState) {
         // Get GPU rendering data (batch, instanceIndex)
@@ -1231,21 +1231,21 @@ class EntityRenderer {
         }
 
         // Get animations for current animation type (from AnimationSystem's state)
-        const animations = animState.animations?.[animState.currentAnimationType];
+        const animations = animState.spriteAnimations?.[animState.spriteAnimationType];
 
         if (!animations) {
-            console.warn(`[EntityRenderer] No animations found for type '${animState.currentAnimationType}' on entity ${entityId}. Available types:`, Object.keys(animState.animations || {}));
+            console.warn(`[EntityRenderer] No animations found for type '${animState.spriteAnimationType}' on entity ${entityId}. Available types:`, Object.keys(animState.spriteAnimations || {}));
             return;
         }
 
-        const directionData = animations[animState.currentDirection];
+        const directionData = animations[animState.spriteDirection];
         if (!directionData || !directionData.frames || directionData.frames.length === 0) {
-            console.warn(`[EntityRenderer] No frames for direction '${animState.currentDirection}' in animation type '${animState.currentAnimationType}' on entity ${entityId}. Available directions:`, Object.keys(animations));
+            console.warn(`[EntityRenderer] No frames for direction '${animState.spriteDirection}' in animation type '${animState.spriteAnimationType}' on entity ${entityId}. Available directions:`, Object.keys(animations));
             return;
         }
 
         const frames = directionData.frames;
-        const frameIndex = animState.frameIndex % frames.length;
+        const frameIndex = animState.spriteFrameIndex % frames.length;
         const frame = frames[frameIndex];
 
         if (!frame) return;
