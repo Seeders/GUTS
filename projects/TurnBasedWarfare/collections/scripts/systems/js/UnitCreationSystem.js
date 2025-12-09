@@ -64,18 +64,16 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         this.game.register('createUnit', this.createUnit.bind(this));
     }
     /**
-     * Create a new unit entity with all required components
-     * @param {number} worldX - World X coordinate
-     * @param {number} worldY - World Y coordinate
-     * @param {number} worldZ - World Z coordinate
-     * @param {Object} unitType - Unit type definition
+     * Create a new unit entity with all required components from a placement
+     * @param {Object} placement - Placement data with collection, unitTypeId, etc.
+     * @param {Object} transform - Transform with position, rotation, scale
      * @param {string} team - Team identifier ('left' or 'right')
      * @param {string|null} playerId - Optional player ID
      * @returns {number} Entity ID
      */
-    createPlacement(worldX, worldY, worldZ, placement, team, playerId = null) {
+    createPlacement(placement, transform, team, playerId = null) {
         try {
-            const entity = this.createUnit(worldX, worldY, worldZ, placement.collection, placement.unitTypeId, team, playerId);
+            const entity = this.createUnit(placement.collection, placement.unitTypeId, transform, team, playerId);
 
             this.game.addComponent(entity, 'placement', {
                 placementId: placement.placementId,
@@ -95,21 +93,44 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         }
     }
 
-    createUnit(worldX, worldY, worldZ, collection, spawnType, team, playerId = null) {
+    /**
+     * Create a new unit entity with all required components
+     * @param {string} collection - Collection name (e.g., 'units', 'buildings')
+     * @param {string} spawnType - Spawn type ID
+     * @param {Object} transform - Transform with position, rotation, scale
+     * @param {string} team - Team identifier ('left' or 'right')
+     * @param {string|null} playerId - Optional player ID
+     * @param {string|null} entityId - Optional entity ID (for scene loading)
+     * @returns {number} Entity ID
+     */
+    createUnit(collection, spawnType, transform, team, playerId = null, entityId = null) {
         const unitType = this.game.getCollections()[collection][spawnType];
+        // Ensure transform has defaults
+        const safeTransform = {
+            position: transform?.position || { x: 0, y: 0, z: 0 },
+            rotation: transform?.rotation || { x: 0, y: 0, z: 0 },
+            scale: transform?.scale || { x: 1, y: 1, z: 1 }
+        };
+
         try {
-            // Round world coordinates to ensure deterministic entity IDs across client and server
-            const roundedX = Math.round(worldX * 100) / 100;
-            const roundedZ = Math.round(worldZ * 100) / 100;
-            // Use spawnType as fallback if unitType.id is not set (e.g., in editor before build)
+            // Use provided entityId or generate one from position
             const unitId = unitType.id || spawnType;
-            const round = this.game.state?.round ?? 0;
-            const entity = this.game.createEntity(`${unitId}_${roundedX}_${roundedZ}_${team}_${round}`);
+            let entity;
+            if (entityId) {
+                entity = this.game.createEntity(entityId);
+            } else {
+                // Round world coordinates to ensure deterministic entity IDs across client and server
+                const pos = safeTransform.position;
+                const roundedX = Math.round((pos.x ?? 0) * 100) / 100;
+                const roundedZ = Math.round((pos.z ?? 0) * 100) / 100;
+                const round = this.game.state?.round ?? 0;
+                entity = this.game.createEntity(`${unitId}_${roundedX}_${roundedZ}_${team}_${round}`);
+            }
             console.log('created unit', unitId, team, entity);
             const teamConfig = this.teamConfigs[team];
 
-            // Add core components
-            this.addCoreComponents(entity, worldX, worldY, worldZ, unitType, team, teamConfig);
+            // Add core components - pass full transform object
+            this.addCoreComponents(entity, safeTransform, unitType, team, teamConfig);
 
             // Add combat components
             this.addCombatComponents(entity, unitType);
@@ -222,20 +243,22 @@ class UnitCreationSystem extends GUTS.BaseSystem {
     /**
      * Add core position and identity components
      * @param {number} entity - Entity ID
-     * @param {number} worldX - World X coordinate
-     * @param {number} worldY - World Y coordinate
-     * @param {number} worldZ - World Z coordinate
+     * @param {Object} transform - Transform with position, rotation, scale
      * @param {Object} unitType - Unit type definition
      * @param {string} team - Team identifier
      * @param {Object} teamConfig - Team configuration
      */
-    addCoreComponents(entity, worldX, worldY, worldZ, unitType, team, teamConfig) {
- 
+    addCoreComponents(entity, transform, unitType, team, teamConfig) {
         // Transform component (combines position, rotation, scale)
+        // Use provided transform values, but apply team-based initial facing if no rotation provided
+        const position = transform.position || { x: 0, y: 0, z: 0 };
+        const rotation = transform.rotation || { x: 0, y: teamConfig.initialFacing, z: 0 };
+        const scale = transform.scale || { x: 1, y: 1, z: 1 };
+
         this.game.addComponent(entity, "transform", {
-            position: { x: worldX, y: worldY, z: worldZ },
-            rotation: { x: 0, y: teamConfig.initialFacing, z: 0 },
-            scale: { x: 1, y: 1, z: 1 }
+            position: { x: position.x ?? 0, y: position.y ?? 0, z: position.z ?? 0 },
+            rotation: { x: rotation.x ?? 0, y: rotation.y ?? teamConfig.initialFacing, z: rotation.z ?? 0 },
+            scale: { x: scale.x ?? 1, y: scale.y ?? 1, z: scale.z ?? 1 }
         });
 
         // Velocity component with movement capabilities

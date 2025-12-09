@@ -1097,11 +1097,9 @@ class EntityRenderer {
         const animSetData = animSetName ? collections?.spriteAnimationSets?.[animSetName] : null;
 
         // Get spriteSize from animation set's generatorSettings, fallback to entity's spriteScale, then default 64
-        const spriteScale = animSetData?.generatorSettings?.spriteSize || entityDef?.spriteScale || 64;
-        const heightOffset = (spriteScale / 2);
-        const spriteOffset = entityDef.spriteOffset || (-heightOffset / 4);
+        const spriteScale = animSetData?.generatorSettings?.spriteSize || 64;
         // spriteYOffset allows adjusting vertical position when sprite feet aren't at bottom of frame
-        const spriteYOffset = entityDef?.spriteYOffset || 0;
+        const spriteOffset = entityDef?.spriteOffset || animSetData.spriteOffset || 0;
 
         // Calculate dimensions based on texture aspect ratio
         let aspectRatio = 1;
@@ -1127,7 +1125,7 @@ class EntityRenderer {
         // spriteYOffset adjusts for sprites where feet aren't at the bottom of the frame
         const position = new THREE.Vector3(
             data.position.x,// + spriteOffset,
-            data.position.y + heightOffset,// + spriteYOffset,
+            data.position.y + spriteOffset,
             data.position.z// - spriteOffset
         );
 

@@ -180,6 +180,57 @@
   padding: var(--editor-spacing-md);
 }
 
+/* =============================================================================
+   ICON GRID
+   ============================================================================= */
+
+.editor-module__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--editor-spacing-sm);
+  padding: var(--editor-spacing-md);
+  overflow-y: auto;
+}
+
+.editor-module__grid-item {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 2px solid var(--editor-border-color);
+  border-radius: var(--editor-border-radius-sm);
+  cursor: pointer;
+  transition: var(--editor-transition);
+  overflow: hidden;
+}
+
+.editor-module__grid-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--editor-border-color-hover);
+  transform: scale(1.05);
+}
+
+.editor-module__grid-item--selected {
+  background-color: rgba(99, 102, 241, 0.2);
+  border-color: var(--editor-primary);
+  box-shadow: 0 0 0 1px var(--editor-primary), 0 0 8px rgba(99, 102, 241, 0.3);
+}
+
+.editor-module__grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.editor-module__grid-item-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--editor-text-muted);
+  text-transform: uppercase;
+}
+
 .editor-module__item {
   padding: var(--editor-spacing-md);
   background-color: rgba(255, 255, 255, 0.03);
@@ -381,7 +432,8 @@
   color: var(--editor-text-primary);
   font-size: 13px;
   cursor: pointer;
-  flex: 1;
+  flex: 0 0 auto;
+  width: calc(100% - 8px);
 }
 
 .editor-module__select:focus {

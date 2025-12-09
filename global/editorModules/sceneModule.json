@@ -41,7 +41,8 @@
     "TerrainDetailSystem",
     "PostProcessingSystem",
     "AnimationSystem",
-    "UnitCreationSystem"
+    "UnitCreationSystem",
+    "SelectedUnitSystem"
   ],
   "propertyName": "entities",
   "interface": "sceneEditor",

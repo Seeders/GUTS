@@ -6,5 +6,6 @@
   "placementGridHeight": 1,
   "impassable": false,
   "spriteScale": 32,
-  "renderTexture": "stone_1"
+  "renderTexture": "stone_1",
+  "spriteOffset": 5
 }

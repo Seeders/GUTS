@@ -21,6 +21,62 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
 
         // Configuration
         this.initialized = false;
+
+        // Billboard shader material (shared across all batches)
+        this.billboardMaterial = null;
+    }
+
+    /**
+     * Create a billboard shader material that rotates sprites to face camera on GPU
+     */
+    createBillboardMaterial(texture) {
+        const vertexShader = `
+            varying vec2 vUv;
+
+            void main() {
+                vUv = uv;
+
+                // Get the model-view matrix without rotation (billboard effect)
+                // Extract position from instance matrix
+                vec4 worldPosition = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+
+                // Get scale from instance matrix (diagonal elements for uniform scale)
+                float scaleX = length(instanceMatrix[0].xyz);
+                float scaleY = length(instanceMatrix[1].xyz);
+
+                // Billboard: offset vertices in view space
+                vec4 viewPosition = viewMatrix * worldPosition;
+                viewPosition.xy += position.xy * vec2(scaleX, scaleY);
+
+                gl_Position = projectionMatrix * viewPosition;
+            }
+        `;
+
+        const fragmentShader = `
+            uniform sampler2D map;
+            varying vec2 vUv;
+
+            void main() {
+                vec4 texColor = texture2D(map, vUv);
+
+                // Alpha test
+                if (texColor.a < 0.1) discard;
+
+                gl_FragColor = texColor;
+                #include <colorspace_fragment>
+            }
+        `;
+
+        return new THREE.ShaderMaterial({
+            uniforms: {
+                map: { value: texture }
+            },
+            vertexShader,
+            fragmentShader,
+            transparent: true,
+            side: THREE.DoubleSide,
+            depthWrite: true
+        });
     }
 
     init() {
@@ -137,8 +193,8 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
                     }
 
                     const textureId = worldObjDef.renderTexture;
-                    const spriteScale = worldObjDef.spriteScale || 32;
-                    const offsetY = spriteScale / 4;
+                    const spriteScale = worldObjDef.spriteScale ?? 32;
+                    const yOffset = worldObjDef.spriteOffset ?? 0;
 
                     // Add to placements
                     if (!detailPlacements.has(textureId)) {
@@ -147,9 +203,10 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
 
                     detailPlacements.get(textureId).push({
                         x: tileWorldX + offsetX,
-                        y: worldY + offsetY,
+                        y: worldY + yOffset,
                         z: tileWorldZ + offsetZ,
-                        scale: spriteScale
+                        scale: spriteScale,
+                        yOffset: yOffset
                     });
                 }
             }
@@ -184,37 +241,26 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
         // Get texture dimensions for aspect ratio
         const aspectRatio = texture.image.width / texture.image.height;
 
-        // Create billboard geometry
+        // Create billboard geometry (centered at origin)
         const geometry = new THREE.PlaneGeometry(1, 1);
 
-        // Create material with transparency
-        const material = new THREE.MeshBasicMaterial({
-            map: texture,
-            transparent: true,
-            alphaTest: 0.1,
-            side: THREE.DoubleSide,
-            depthWrite: true
-        });
+        // Create billboard shader material (handles rotation on GPU)
+        const material = this.createBillboardMaterial(texture);
 
         // Create instanced mesh
         const capacity = placements.length;
         const instancedMesh = new THREE.InstancedMesh(geometry, material, capacity);
         instancedMesh.frustumCulled = true;
 
-        // Set up transforms for each instance
+        // Set up transforms for each instance (position and scale only - no rotation needed)
         const dummy = new THREE.Object3D();
-        const camera = this.game.camera;
 
         for (let i = 0; i < placements.length; i++) {
             const p = placements[i];
 
-            dummy.position.set(p.x, p.y + p.scale * 0.5, p.z);
+            dummy.position.set(p.x, p.y, p.z);
             dummy.scale.set(p.scale * aspectRatio, p.scale, 1);
-
-            // Billboard rotation - face camera
-            if (camera) {
-                dummy.quaternion.copy(camera.quaternion);
-            }
+            dummy.rotation.set(0, 0, 0); // No rotation - shader handles billboarding
 
             dummy.updateMatrix();
             instancedMesh.setMatrixAt(i, dummy.matrix);
@@ -237,40 +283,11 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Update billboard rotations to face camera (call each frame if needed)
-     */
-    updateBillboardRotations() {
-        const camera = this.game.camera;
-        if (!camera) return;
-
-        const dummy = new THREE.Object3D();
-
-        for (const [textureId, batch] of this.detailBatches) {
-            const { instancedMesh, placements, aspectRatio } = batch;
-
-            for (let i = 0; i < placements.length; i++) {
-                const p = placements[i];
-
-                dummy.position.set(p.x, p.y + p.scale * 0.5, p.z);
-                dummy.scale.set(p.scale * aspectRatio, p.scale, 1);
-                dummy.quaternion.copy(camera.quaternion);
-                dummy.updateMatrix();
-
-                instancedMesh.setMatrixAt(i, dummy.matrix);
-            }
-
-            instancedMesh.instanceMatrix.needsUpdate = true;
-        }
-    }
-
-    /**
-     * Update is called every frame - update billboard rotations
+     * Update is called every frame
+     * Billboard rotation is handled by shader, so no CPU work needed
      */
     update() {
-        if (!this.initialized || this.game.isServer) return;
-
-        // Update billboard rotations to face camera
-        this.updateBillboardRotations();
+        // Billboard rotation handled by GPU shader - no per-frame updates needed
     }
 
     /**

@@ -696,9 +696,81 @@ const WebpackEditorIntegration = require('./build/editor-integration');
 const webpackIntegration = new WebpackEditorIntegration();
 webpackIntegration.setupRoutes(app);
 
+// Auto-build editor on file changes
+const AUTO_BUILD_DEBOUNCE = 500; // ms to wait before triggering build
+let autoBuildTimeout = null;
+let autoBuildWatcher = null;
+
+function setupEditorAutoBuild(projectName) {
+    if (autoBuildWatcher) {
+        autoBuildWatcher.close();
+    }
+
+    const watchPaths = [
+        PROJS_DIR,
+        path.join(MODULES_DIR, 'libraries'),
+        path.join(MODULES_DIR, 'interfaces'),
+        path.join(MODULES_DIR, 'editorModules'),
+        path.join(__dirname, 'engine')
+    ];
+
+    console.log(`\n👀 Editor auto-build watching for changes in:`);
+    watchPaths.forEach(p => console.log(`   ${p}`));
+
+    autoBuildWatcher = chokidar.watch(watchPaths, {
+        ignored: [
+            /(^|[\/\\])\../, // Ignore dotfiles
+            /node_modules/,
+            /\.map$/
+        ],
+        persistent: true,
+        ignoreInitial: true
+    });
+
+    autoBuildWatcher.on('change', (filePath) => {
+        // Only rebuild for relevant file types
+        if (!filePath.match(/\.(js|json|html|css)$/)) return;
+
+        console.log(`\n📝 File changed: ${path.relative(__dirname, filePath)}`);
+
+        // Debounce multiple rapid changes
+        if (autoBuildTimeout) {
+            clearTimeout(autoBuildTimeout);
+        }
+
+        autoBuildTimeout = setTimeout(async () => {
+            console.log(`🔄 Triggering editor auto-rebuild...`);
+            try {
+                await webpackIntegration.buildEditor(projectName, { production: false });
+            } catch (err) {
+                console.error('Editor auto-build failed:', err.error || err.message || err);
+            }
+        }, AUTO_BUILD_DEBOUNCE);
+    });
+
+    autoBuildWatcher.on('error', (error) => {
+        console.error('Editor auto-build watcher error:', error);
+    });
+}
+
 // Start the server
-server.listen(port, () => {
+server.listen(port, async () => {
     console.log(`Server running on port ${port}`);
     console.log(`Files will be served from: ${PROJS_DIR}`);
     console.log(`Webpack integration enabled`);
+
+    // Default project for auto-build
+    const defaultProject = 'TurnBasedWarfare';
+
+    // Run initial editor build
+    console.log(`\n🚀 Running initial editor build...`);
+    try {
+        await webpackIntegration.buildEditor(defaultProject, { production: false });
+        console.log('✅ Initial editor build complete');
+    } catch (err) {
+        console.error('Initial editor build failed:', err.error || err.message || err);
+    }
+
+    // Setup editor auto-build watcher
+    setupEditorAutoBuild(defaultProject);
 });

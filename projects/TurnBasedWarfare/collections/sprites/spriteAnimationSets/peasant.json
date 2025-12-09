@@ -63,5 +63,6 @@
     "outlineColor": "#170F13",
     "outlineConnectivity": 4,
     "cameraHeight": 1
-  }
+  },
+  "spriteOffset": 16
 }

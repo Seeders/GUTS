@@ -11,5 +11,6 @@
     "goldveinIdleUpRight",
     "goldveinIdleRight",
     "goldveinIdleDownRight"
-  ]
+  ],
+  "spriteOffset": 24
 }

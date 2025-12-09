@@ -7,5 +7,5 @@
   "impassable": true,
   "spriteScale": 89,
   "renderTexture": "tree_jungle",
-  "spriteOffset": 8
+  "spriteOffset": 24
 }

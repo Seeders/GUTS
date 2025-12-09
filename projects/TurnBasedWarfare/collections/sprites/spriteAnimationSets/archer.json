@@ -63,5 +63,6 @@
     "outlineConnectivity": 4,
     "cameraHeight": 1,
     "borderSize": 1
-  }
+  },
+  "spriteOffset": 16
 }

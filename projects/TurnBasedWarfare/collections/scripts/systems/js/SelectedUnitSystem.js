@@ -3,8 +3,10 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         super(game);
         this.game.selectedUnitSystem = this;
         this.canvas = this.game.canvas;
-        
-        
+
+        // Editor mode flag - skip game-specific UI features
+        this.isEditorMode = this.game.isEditor || false;
+
         // Selection circle configuration
         this.CIRCLE_RADIUS = 25;
         this.CIRCLE_SEGMENTS = 32;
@@ -42,28 +44,36 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
     initialize() {
         if (this.initialized || !this.game.scene) return;
-        
+
         this.initialized = true;
-        this.createBoxSelectionElement();
         this.setupBoxSelectionListeners();
-        
+        this.createBoxSelectionElement();
+
+        // Skip game-specific UI setup in editor mode
+        if (this.isEditorMode) return;
+
         const unitPortrait = document.getElementById('unitPortrait');
-        unitPortrait.addEventListener('click', () => {
-            if(this.game.state.selectedEntity.entityId){
-                const isFollowing = this.game.call('toggleCameraFollow', this.game.state.selectedEntity.entityId);
-                // Update visual indicator
-                if (isFollowing) {
-                    unitPortrait.classList.add('following');
-                } else {
-                    unitPortrait.classList.remove('following');
+        if(unitPortrait){
+            unitPortrait.addEventListener('click', () => {
+                if(this.game.state.selectedEntity?.entityId){
+                    const isFollowing = this.game.call('toggleCameraFollow', this.game.state.selectedEntity.entityId);
+                    // Update visual indicator
+                    if (isFollowing) {
+                        unitPortrait.classList.add('following');
+                    } else {
+                        unitPortrait.classList.remove('following');
+                    }
                 }
-            }
-        });
+            });
+        }
     }
     
     onUnFollowEntity(){
+        if (this.isEditorMode) return;
         const unitPortrait = document.getElementById('unitPortrait');
-        unitPortrait.classList.remove('following');
+        if (unitPortrait) {
+            unitPortrait.classList.remove('following');
+        }
     }
 
     createBoxSelectionElement() {
@@ -78,7 +88,22 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             display: none;
             z-index: 10000;
         `;
-        document.body.appendChild(boxElement);
+
+        // Append to canvas parent if it exists and has relative/absolute positioning
+        // Otherwise append to body
+        const canvasParent = this.canvas?.parentElement;
+        if (canvasParent) {
+            // Ensure parent has positioning context
+            const parentStyle = window.getComputedStyle(canvasParent);
+            if (parentStyle.position === 'static') {
+                canvasParent.style.position = 'relative';
+            }
+            canvasParent.appendChild(boxElement);
+            this.boxSelection.useCanvasRelative = true;
+        } else {
+            document.body.appendChild(boxElement);
+            this.boxSelection.useCanvasRelative = false;
+        }
         this.boxSelection.element = boxElement;
     }
     
@@ -164,11 +189,18 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const element = box.element;
         if (!element) return;
 
-        // Calculate box dimensions
-        const left = Math.min(box.startX, box.currentX);
-        const top = Math.min(box.startY, box.currentY);
+        // Calculate box dimensions in client coordinates
+        let left = Math.min(box.startX, box.currentX);
+        let top = Math.min(box.startY, box.currentY);
         const width = Math.abs(box.currentX - box.startX);
         const height = Math.abs(box.currentY - box.startY);
+
+        // If using canvas-relative positioning, convert from client coords to parent-relative
+        if (box.useCanvasRelative && this.canvas?.parentElement) {
+            const parentRect = this.canvas.parentElement.getBoundingClientRect();
+            left -= parentRect.left;
+            top -= parentRect.top;
+        }
 
         // Update element
         element.style.left = left + 'px';
@@ -218,43 +250,51 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const entities = this.game.getEntitiesWith("transform");
 
         entities.forEach(entityId => {
-            // Only select units on player's team
-            const team = this.game.getComponent(entityId, "team");
-            if (!team) return;
+            // In editor mode, select any entity with transform and unitType/renderable
+            // In game mode, only select units on player's team
+            if (!this.isEditorMode) {
+                const team = this.game.getComponent(entityId, "team");
+                if (!team) return;
 
-            // Try multiple ways to check team
-            const unitTeam = team.team || team.side || team.teamId;
-            const myTeam = this.game.state.mySide || this.game.state.playerSide || this.game.state.team;
+                // Try multiple ways to check team
+                const unitTeam = team.team || team.side || team.teamId;
+                const myTeam = this.game.state.mySide || this.game.state.playerSide || this.game.state.team;
 
-            if (unitTeam !== myTeam) {
-                return;
+                if (unitTeam !== myTeam) {
+                    return;
+                }
             }
 
             // Get position component
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
             const unitType = this.game.getComponent(entityId, "unitType");
-            if (!pos || !unitType) return;
-            
+            const renderable = this.game.getComponent(entityId, "renderable");
+
+            // In editor mode, allow selection of any entity with position and renderable
+            if (!pos) return;
+            if (!unitType && !renderable) return;
+
             // Convert world position to screen position
             const screenPos = this.worldToScreen(pos.x, pos.y, pos.z);
             if (!screenPos) return;
-            
+
             // Convert normalized screen coords (0-1) to client coordinates
             const screenX = screenPos.x * rect.width + rect.left;
             const screenY = screenPos.y * rect.height + rect.top;
-            
+
             // Check if within selection box (in client coordinates)
-            if (screenX >= left && screenX <= right && 
+            if (screenX >= left && screenX <= right &&
                 screenY >= top && screenY <= bottom) {
-                if(unitType.collection == 'units'){
+                const collection = unitType?.collection || renderable?.collection;
+                if(collection == 'units'){
                     selectedUnits.push(entityId);
                 } else {
                     selectedBuildings.push(entityId);
                 }
             }
         });
-        
+
         return selectedUnits.length > 0 ? selectedUnits : selectedBuildings;
     }
     worldToScreen(x, y, z) {
@@ -308,11 +348,36 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
     checkUnitSelectionClick(event) {
         const worldPos = this.game.call('getWorldPositionFromMouse');
-    
+
         if (!worldPos) return;
-    
+
+        // In editor mode, use direct entity selection (not placement-based)
+        if (this.isEditorMode) {
+            const entityId = this.getEntityAtWorldPosition(worldPos);
+            if (entityId) {
+                if (event.shiftKey) {
+                    if (this.selectedUnitIds.has(entityId)) {
+                        this.selectedUnitIds.delete(entityId);
+                    } else {
+                        this.selectedUnitIds.add(entityId);
+                    }
+                    this.updateMultipleSquadSelection();
+                } else {
+                    this.deselectAll();
+                    this.selectedUnitIds.add(entityId);
+                    this.selectEntityDirectly(entityId);
+                }
+            } else {
+                if (!event.shiftKey) {
+                    this.deselectAll();
+                }
+            }
+            return;
+        }
+
+        // Game mode: placement-based selection
         const placementId = this.getPlacementAtWorldPosition(worldPos);
-    
+
         if (placementId) {
             const placement = this.game.call('getPlacementById', placementId);
             if (placement && placement.team === this.game.state.mySide) {
@@ -341,31 +406,85 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             }
         }
     }
+
+    /**
+     * Get entity at world position (for editor mode - no placement requirement)
+     */
+    getEntityAtWorldPosition(worldPos) {
+        const clickRadius = 50;
+        let closestEntityId = null;
+        let closestDistance = clickRadius;
+
+        const entities = this.game.getEntitiesWith("transform");
+
+        entities.forEach(entityId => {
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
+            const unitType = this.game.getComponent(entityId, "unitType");
+            const renderable = this.game.getComponent(entityId, "renderable");
+
+            // Must have position and be renderable
+            if (!pos) return;
+            if (!unitType && !renderable) return;
+
+            const dx = pos.x - worldPos.x;
+            const dz = pos.z - worldPos.z;
+            let distance = Math.sqrt(dx * dx + dz * dz);
+
+            // Adjust distance based on unit/building size
+            const size = unitType?.size || 20;
+            distance -= size;
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestEntityId = entityId;
+            }
+        });
+
+        return closestEntityId;
+    }
+
+    /**
+     * Select entity directly (for editor mode - no placement/squad)
+     */
+    selectEntityDirectly(entityId) {
+        if (!entityId) return;
+
+        this.setSelectedEntity(entityId);
+        this.highlightUnits([entityId]);
+        this.game.triggerEvent("onUnitSelected", entityId);
+    }
     
     deselectAll() {
         this.clearAllHighlights();
-        this.selectedUnitIds.clear();                
-        this.game.state.selectedEntity.entityId = null;
-        this.game.state.selectedEntity.collection = null;
+        this.selectedUnitIds.clear();
 
-        const actionPanel = document.getElementById('actionPanel');     
-        if(actionPanel) {
-            actionPanel.innerHTML = "";
+        if (this.game.state.selectedEntity) {
+            this.game.state.selectedEntity.entityId = null;
+            this.game.state.selectedEntity.collection = null;
         }
 
-        const selectedUnits = document.getElementById('selectedUnits');        
-        if(selectedUnits) {
-            selectedUnits.innerHTML = "";
-        }
+        // Skip game UI updates in editor mode
+        if (!this.isEditorMode) {
+            const actionPanel = document.getElementById('actionPanel');
+            if(actionPanel) {
+                actionPanel.innerHTML = "";
+            }
 
-        const unitPortrait = document.getElementById('unitPortrait');
-        if(unitPortrait){
-            unitPortrait.innerHTML = "";
-            unitPortrait.classList.remove('following');
-        }
+            const selectedUnits = document.getElementById('selectedUnits');
+            if(selectedUnits) {
+                selectedUnits.innerHTML = "";
+            }
 
-        // Stop camera following
-        this.game.call('toggleCameraFollow', null);
+            const unitPortrait = document.getElementById('unitPortrait');
+            if(unitPortrait){
+                unitPortrait.innerHTML = "";
+                unitPortrait.classList.remove('following');
+            }
+
+            // Stop camera following
+            this.game.call('toggleCameraFollow', null);
+        }
 
         this.game.triggerEvent('onDeSelectAll');
     }
@@ -436,10 +555,14 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         }
     }
 
-    setSelectedEntity(entityId){         
-        const unitType = this.game.getComponent(entityId, "unitType");     
-        this.game.state.selectedEntity.entityId = entityId;
-        this.game.state.selectedEntity.collection = unitType.collection;      
+    setSelectedEntity(entityId){
+        const unitType = this.game.getComponent(entityId, "unitType");
+        const renderable = this.game.getComponent(entityId, "renderable");
+
+        if (this.game.state.selectedEntity) {
+            this.game.state.selectedEntity.entityId = entityId;
+            this.game.state.selectedEntity.collection = unitType?.collection || renderable?.collection || null;
+        }
     }
 
     update() {
@@ -466,62 +589,67 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             this.clearAllHighlights();
             return;
         }
-        
+
         // Convert to Set for easy comparison
         const newHighlightSet = new Set(unitIds);
-        
+
         // Remove circles for units no longer selected
         for (const entityId of this.highlightedUnits) {
             if (!newHighlightSet.has(entityId)) {
                 this.removeSelectionCircle(entityId);
             }
         }
-        
+
         // Add circles for newly selected units
         for (const entityId of unitIds) {
             if (!this.highlightedUnits.has(entityId)) {
                 this.createSelectionCircle(entityId);
             }
         }
-        
-        if(document){
+
+        // Skip game UI updates in editor mode
+        if (!this.isEditorMode && document) {
             const container = document.getElementById('unitPortrait');
-            container.innerHTML = ``;
-            const portrait = this.createPortrait(unitIds[this.currentSelectedIndex]);
-            if(portrait){
-                container.append(portrait);
-            }
-            // Update follow indicator
-            const followTarget = this.game.call('getCameraFollowTarget');
-            if (followTarget === unitIds[this.currentSelectedIndex]) {
-                container.classList.add('following');
-            } else {
-                container.classList.remove('following');
+            if (container) {
+                container.innerHTML = ``;
+                const portrait = this.createPortrait(unitIds[this.currentSelectedIndex]);
+                if(portrait){
+                    container.append(portrait);
+                }
+                // Update follow indicator
+                const followTarget = this.game.call('getCameraFollowTarget');
+                if (followTarget === unitIds[this.currentSelectedIndex]) {
+                    container.classList.add('following');
+                } else {
+                    container.classList.remove('following');
+                }
             }
             const selectedUnitsContainer = document.getElementById('selectedUnits');
-            selectedUnitsContainer.innerHTML = ``;
-            
-            unitIds.forEach((unitId, index) => {
-                const selectedPortrait = this.createPortrait(unitId);
-                if(selectedPortrait){
-                    const selectedUnitIconContainer = document.createElement('div');
-                    if(index == this.currentSelectedIndex){                        
-                        selectedUnitIconContainer.classList.add('selected');
+            if (selectedUnitsContainer) {
+                selectedUnitsContainer.innerHTML = ``;
+
+                unitIds.forEach((unitId, index) => {
+                    const selectedPortrait = this.createPortrait(unitId);
+                    if(selectedPortrait){
+                        const selectedUnitIconContainer = document.createElement('div');
+                        if(index == this.currentSelectedIndex){
+                            selectedUnitIconContainer.classList.add('selected');
+                        }
+                        selectedUnitIconContainer.append(selectedPortrait);
+                        selectedUnitsContainer.append(selectedUnitIconContainer);
+                        selectedUnitIconContainer.addEventListener('click', () => {
+                            this.deselectAll();
+                            this.selectedUnitIds.add(unitId);
+                            const placement = this.game.getComponent(unitId, "placement");
+                            this.selectUnit(unitId, placement.placementId);
+                        });
                     }
-                    selectedUnitIconContainer.append(selectedPortrait);
-                    selectedUnitsContainer.append(selectedUnitIconContainer);
-                    selectedUnitIconContainer.addEventListener('click', () => {
-                        this.deselectAll();
-                        this.selectedUnitIds.add(unitId);
-                        const placement = this.game.getComponent(unitId, "placement");
-                        this.selectUnit(unitId, placement.placementId);
-                    });
-                }            
-            });            
+                });
+            }
         }
         // Update tracked set
         this.highlightedUnits = newHighlightSet;
-        
+
     }
 
     createPortrait(entityId){

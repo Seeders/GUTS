@@ -5,6 +5,7 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "impassable": false,
-  "spriteScale": 32,
-  "renderTexture": "bush"
+  "spriteScale": 64,
+  "renderTexture": "bush",
+  "spriteOffset": 10
 }

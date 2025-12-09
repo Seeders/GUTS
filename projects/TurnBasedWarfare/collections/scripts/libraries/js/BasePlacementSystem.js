@@ -203,11 +203,12 @@ class BasePlacementSystem extends GUTS.BaseSystem {
                 const terrainHeight = this.game.unitCreationSystem.getTerrainHeight(pos.x, pos.z);
                 const unitY = terrainHeight !== null ? terrainHeight : 0;
 
+                const transform = {
+                    position: { x: pos.x, y: unitY, z: pos.z }
+                };
                 const entityId = this.game.call('createPlacement',
-                    pos.x,
-                    unitY,
-                    pos.z,
                     fullPlacement,
+                    transform,
                     team,
                     playerId
                 );

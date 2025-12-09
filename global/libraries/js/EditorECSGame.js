@@ -8,6 +8,7 @@ class EditorECSGame extends GUTS.BaseECSGame {
         super(app);
         this.canvas = canvas;
         this.isServer = false;
+        this.isEditor = true;  // Flag for systems to detect editor mode
 
         // Entity labels for editor display
         this.entityLabels = new Map();
@@ -19,7 +20,11 @@ class EditorECSGame extends GUTS.BaseECSGame {
             deltaTime: 0.016,
             gameOver: false,
             victory: false,
-            level: null
+            level: null,
+            selectedEntity: {
+                entityId: null,
+                collection: null
+            }
         };
 
         // Game services
@@ -31,6 +36,9 @@ class EditorECSGame extends GUTS.BaseECSGame {
         // Animation loop
         this.animationFrameId = null;
         this.clock = new THREE.Clock();
+
+        // Event listeners for editor callbacks
+        this.eventListeners = new Map();
     }
 
     /**
@@ -191,6 +199,49 @@ class EditorECSGame extends GUTS.BaseECSGame {
     }
 
     /**
+     * Register an event listener callback
+     * @param {string} eventName - Event name to listen for
+     * @param {Function} callback - Callback function
+     */
+    on(eventName, callback) {
+        if (!this.eventListeners.has(eventName)) {
+            this.eventListeners.set(eventName, []);
+        }
+        this.eventListeners.get(eventName).push(callback);
+    }
+
+    /**
+     * Remove an event listener
+     * @param {string} eventName - Event name
+     * @param {Function} callback - Callback to remove
+     */
+    off(eventName, callback) {
+        const listeners = this.eventListeners.get(eventName);
+        if (listeners) {
+            const index = listeners.indexOf(callback);
+            if (index !== -1) {
+                listeners.splice(index, 1);
+            }
+        }
+    }
+
+    /**
+     * Override triggerEvent to also call registered listeners
+     */
+    triggerEvent(eventName, data) {
+        // Call parent implementation (notifies systems)
+        super.triggerEvent(eventName, data);
+
+        // Also call registered listeners
+        const listeners = this.eventListeners.get(eventName);
+        if (listeners) {
+            for (const callback of listeners) {
+                callback(data);
+            }
+        }
+    }
+
+    /**
      * Export scene to JSON format
      */
     exportScene() {
@@ -242,6 +293,9 @@ class EditorECSGame extends GUTS.BaseECSGame {
         for (const entityId of entityIds) {
             this.destroyEntity(entityId);
         }
+
+        // Clear event listeners
+        this.eventListeners.clear();
     }
 }
 

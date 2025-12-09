@@ -18,8 +18,13 @@ class SceneEditor {
             sceneData: null,      // Full scene object with title, systems, etc.
             selectedEntityId: null,
             isDirty: false,
-            initialized: false
+            initialized: false,
+            cameraMode: 'scene'   // 'scene' (perspective) or 'game' (orthographic)
         };
+
+        // Camera configurations storage
+        this.sceneCameraState = null;  // Store perspective camera state
+        this.gameCameraState = null;   // Store orthographic camera state
 
         // UI Elements
         this.elements = {
@@ -43,6 +48,9 @@ class SceneEditor {
             spawnType: null,
             itemData: null
         };
+
+        // Gizmo helper object - represents selected entity position for gizmo attachment
+        this.gizmoHelper = null;
 
         // Mouse tracking for placement
         this.mouseNDC = { x: 0, y: 0 };
@@ -98,15 +106,7 @@ class SceneEditor {
             systems: systems
         });
 
-        // Initialize gizmo manager (will be configured after scene loads when worldRenderer exists)
-        if (this.gizmoManager && this.editorContext.worldSystem?.worldRenderer) {
-            this.gizmoManager.init({
-                scene: this.editorContext.scene,
-                camera: this.editorContext.camera,
-                renderer: this.editorContext.renderer,
-                canvas: this.canvas
-            });
-        }
+        // Note: gizmoManager is initialized in handleRenderSceneObject after worldRenderer exists
 
         // Start render loop
         this.editorContext.startRenderLoop();
@@ -154,6 +154,11 @@ class SceneEditor {
             this.updateGizmoToolbarUI('scene-scale-tool');
         });
 
+        // Camera toggle button
+        document.getElementById('scene-camera-toggle')?.addEventListener('click', () => {
+            this.toggleCamera();
+        });
+
         // Window resize
         window.addEventListener('resize', this.handleResize.bind(this));
 
@@ -171,6 +176,7 @@ class SceneEditor {
 
         this.canvas?.addEventListener('mousemove', (e) => {
             this.updateMouseNDC(e);
+            this.updateMouseWorldPos();
             this.updatePlacementPreview();
         });
 
@@ -227,20 +233,39 @@ class SceneEditor {
         if (!collectionId) return;
 
         const collectionData = this.collections[collectionId] || {};
+        const icons = this.collections.icons || {};
 
         for (const [itemId, itemData] of Object.entries(collectionData)) {
             const item = document.createElement('div');
-            item.className = 'editor-module__list-item';
+            item.className = 'editor-module__grid-item';
             item.dataset.collection = collectionId;
             item.dataset.spawnType = itemId;
-            item.textContent = itemData.title || itemId;
+            item.title = itemData.title || itemId;
+
+            // Try to get the icon for this item
+            const iconId = itemData.icon;
+            const iconData = iconId ? icons[iconId] : null;
+
+            if (iconData && iconData.imagePath) {
+                const img = document.createElement('img');
+                img.src = `./projects/TurnBasedWarfare/resources/${iconData.imagePath}`;
+                img.alt = itemData.title || itemId;
+                item.appendChild(img);
+            } else {
+                // Fallback to text if no icon
+                const label = document.createElement('span');
+                label.className = 'editor-module__grid-item-label';
+                label.textContent = (itemData.title || itemId).substring(0, 3);
+                item.appendChild(label);
+            }
+
             item.addEventListener('click', () => {
                 this.activatePlacementMode(collectionId, itemId, itemData);
                 // Update selection UI
-                this.elements.spawnTypeList.querySelectorAll('.editor-module__list-item').forEach(el => {
-                    el.classList.remove('editor-module__list-item--selected');
+                this.elements.spawnTypeList.querySelectorAll('.editor-module__grid-item').forEach(el => {
+                    el.classList.remove('editor-module__grid-item--selected');
                 });
-                item.classList.add('editor-module__list-item--selected');
+                item.classList.add('editor-module__grid-item--selected');
             });
             this.elements.spawnTypeList.appendChild(item);
         }
@@ -292,6 +317,32 @@ class SceneEditor {
         const rect = this.canvas.getBoundingClientRect();
         this.mouseNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         this.mouseNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    }
+
+    /**
+     * Update mouse world position for SelectedUnitSystem
+     */
+    updateMouseWorldPos() {
+        if (!this.raycastHelper || !this.worldRenderer) {
+            this.mouseWorldPos = null;
+            return;
+        }
+
+        const groundMesh = this.worldRenderer.getGroundMesh();
+        if (groundMesh) {
+            this.mouseWorldPos = this.raycastHelper.rayCastGround(
+                this.mouseNDC.x,
+                this.mouseNDC.y,
+                groundMesh
+            );
+        } else {
+            // Fallback to flat plane at y=0
+            this.mouseWorldPos = this.raycastHelper.rayCastFlatPlane(
+                this.mouseNDC.x,
+                this.mouseNDC.y,
+                0
+            );
+        }
     }
 
     /**
@@ -378,10 +429,13 @@ class SceneEditor {
         }
 
         // Create entity using the same code path as runtime
+        const transform = {
+            position: { x, y, z }
+        };
         const entityId = unitCreationSystem.createUnit(
-            x, y, z,
             collection,
             spawnType,
+            transform,
             'left', // Default team for editor
             null    // No player ID
         );
@@ -401,7 +455,9 @@ class SceneEditor {
             collection: collection,
             spawnType: spawnType,
             name: itemData?.title || spawnType,
-            position: { x, y, z }
+            transform: {
+                position: { x, y, z }
+            }
         };
 
         this.state.entities.push(newEntity);
@@ -485,6 +541,12 @@ class SceneEditor {
                 this.worldRenderer.getScene()
             );
 
+            // Track mouse world position for SelectedUnitSystem
+            this.mouseWorldPos = null;
+
+            // Register getWorldPositionFromMouse for SelectedUnitSystem
+            this.editorContext.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
+
             // Initialize PlacementPreview
             const gameConfig = this.collections.configs?.game || {};
             this.placementPreview = new GUTS.PlacementPreview({
@@ -494,7 +556,22 @@ class SceneEditor {
                     return this.editorContext?.terrainSystem?.getTerrainHeightAtPosition?.(x, z) || 0;
                 }
             });
+
+            // Initialize gizmo manager now that worldRenderer exists
+            this.initializeGizmoManager();
         }
+
+        // Listen for unit selection events from SelectedUnitSystem
+        this.editorContext.on('onUnitSelected', (entityId) => {
+            this.selectEntity(entityId);
+        });
+
+        this.editorContext.on('onDeSelectAll', () => {
+            this.state.selectedEntityId = null;
+            this.gizmoManager?.detach();
+            this.renderHierarchy();
+            this.renderInspector();
+        });
 
         // Render UI
         this.renderHierarchy();
@@ -588,8 +665,8 @@ class SceneEditor {
         // Update inspector
         this.renderInspector();
 
-        // Attach gizmo if entity has a 3D representation
-        // TODO: Get entity object from render system
+        // Attach gizmo to the selected entity
+        this.attachGizmoToEntity(entityId);
     }
 
     /**
@@ -941,6 +1018,125 @@ class SceneEditor {
     }
 
     /**
+     * Initialize the gizmo manager with scene/camera/renderer from worldRenderer
+     */
+    initializeGizmoManager() {
+        if (!this.gizmoManager || !this.worldRenderer) return;
+
+        const scene = this.worldRenderer.getScene();
+        const camera = this.worldRenderer.getCamera();
+        const renderer = this.worldRenderer.renderer;
+        const controls = this.worldRenderer.controls;
+
+        if (!scene || !camera || !renderer) {
+            console.warn('[SceneEditor] Cannot init gizmo manager - missing scene/camera/renderer');
+            return;
+        }
+
+        // Create a helper object for gizmo attachment (since entities are instanced/batched)
+        this.gizmoHelper = new THREE.Object3D();
+        this.gizmoHelper.name = 'gizmoHelper';
+        scene.add(this.gizmoHelper);
+
+        // Initialize gizmo manager with the proper references
+        this.gizmoManager.init({
+            scene: scene,
+            camera: camera,
+            renderer: renderer,
+            controls: controls,
+            // Provide callbacks for transform sync
+            onTransformChange: (position, rotation, scale) => {
+                this.syncGizmoToEntity(position, rotation, scale);
+            }
+        });
+
+        console.log('[SceneEditor] Gizmo manager initialized');
+    }
+
+    /**
+     * Attach gizmo to selected entity by positioning helper at entity location
+     */
+    attachGizmoToEntity(entityId) {
+        if (!this.gizmoManager || !this.gizmoHelper || !this.editorContext) {
+            return;
+        }
+
+        // Get entity's transform component
+        const transform = this.editorContext.getComponent(entityId, 'transform');
+        if (!transform) {
+            console.warn('[SceneEditor] Entity has no transform component:', entityId);
+            this.gizmoManager.detach();
+            return;
+        }
+
+        // Position helper at entity location
+        const pos = transform.position || { x: 0, y: 0, z: 0 };
+        const rot = transform.rotation || { x: 0, y: 0, z: 0 };
+        const scl = transform.scale || { x: 1, y: 1, z: 1 };
+
+        this.gizmoHelper.position.set(pos.x, pos.y, pos.z);
+        this.gizmoHelper.rotation.set(rot.x, rot.y, rot.z);
+        this.gizmoHelper.scale.set(scl.x, scl.y, scl.z);
+
+        // Attach gizmo to helper
+        this.gizmoManager.attach(this.gizmoHelper);
+
+        console.log('[SceneEditor] Gizmo attached to entity:', entityId, 'at position:', pos);
+    }
+
+    /**
+     * Sync gizmo helper transform back to entity component
+     */
+    syncGizmoToEntity(position, rotation, scale) {
+        if (!this.state.selectedEntityId || !this.editorContext) return;
+
+        const entityId = this.state.selectedEntityId;
+
+        // Get current transform
+        const transform = this.editorContext.getComponent(entityId, 'transform');
+        if (!transform) return;
+
+        // Update transform component
+        if (position) {
+            transform.position = { x: position.x, y: position.y, z: position.z };
+        }
+        if (rotation) {
+            transform.rotation = { x: rotation.x, y: rotation.y, z: rotation.z };
+        }
+        if (scale) {
+            transform.scale = { x: scale.x, y: scale.y, z: scale.z };
+        }
+
+        // Update component in ECS
+        this.editorContext.addComponent(entityId, 'transform', transform);
+
+        // Update visual representation via RenderSystem
+        const renderSystem = this.editorContext.renderSystem;
+        if (renderSystem) {
+            // Calculate rotation angle from y-axis rotation for 2D sprites
+            const angle = rotation ? rotation.y : 0;
+            renderSystem.updateEntity(entityId, {
+                position: transform.position,
+                rotation: angle,
+                transform: transform
+            });
+        }
+
+        // Update entity overrides in state.entities for saving
+        const entityData = this.state.entities?.find(e => e.id === entityId);
+        if (entityData) {
+            if (!entityData.components) entityData.components = {};
+            entityData.components.transform = transform;
+        }
+
+        // Mark as dirty
+        this.state.isDirty = true;
+
+        // Update inspector to reflect changes
+        this.renderInspector();
+    }
+
+    /**
      * Update gizmo toolbar UI
      */
     updateGizmoToolbarUI(activeButtonId) {
@@ -965,6 +1161,246 @@ class SceneEditor {
     }
 
     /**
+     * Toggle between scene camera (perspective) and game camera (orthographic)
+     */
+    toggleCamera() {
+        if (!this.worldRenderer) {
+            console.warn('[SceneEditor] WorldRenderer not available for camera toggle');
+            return;
+        }
+
+        const newMode = this.state.cameraMode === 'scene' ? 'game' : 'scene';
+        this.setCameraMode(newMode);
+    }
+
+    /**
+     * Set the camera mode
+     * @param {string} mode - 'scene' or 'game'
+     */
+    setCameraMode(mode) {
+        if (!this.worldRenderer) return;
+
+        const canvas = this.canvas;
+        const width = canvas.clientWidth || canvas.width;
+        const height = canvas.clientHeight || canvas.height;
+
+        // Save current camera state before switching
+        this.saveCameraState();
+
+        if (mode === 'game') {
+            // Switch to orthographic (game) camera
+            this.setupGameCamera(width, height);
+        } else {
+            // Switch to perspective (scene) camera
+            this.setupSceneCamera(width, height);
+        }
+
+        this.state.cameraMode = mode;
+
+        // Update raycast helper with new camera
+        if (this.raycastHelper) {
+            this.raycastHelper = new GUTS.RaycastHelper(
+                this.worldRenderer.getCamera(),
+                this.worldRenderer.getScene()
+            );
+        }
+
+        // Update button text
+        const toggleBtn = document.getElementById('scene-camera-toggle');
+        if (toggleBtn) {
+            toggleBtn.querySelector('span').textContent = mode === 'scene' ? 'Scene Cam' : 'Game Cam';
+            toggleBtn.classList.toggle('editor-module__btn--active', mode === 'game');
+        }
+
+        console.log(`[SceneEditor] Camera mode switched to: ${mode}`);
+    }
+
+    /**
+     * Save the current camera state based on mode
+     */
+    saveCameraState() {
+        if (!this.worldRenderer?.camera) return;
+
+        const camera = this.worldRenderer.camera;
+        const controls = this.worldRenderer.controls;
+
+        if (this.state.cameraMode === 'scene') {
+            this.sceneCameraState = {
+                position: camera.position.clone(),
+                target: controls?.target?.clone() || new THREE.Vector3(0, 0, 0),
+                rotationX: this.worldRenderer.cameraRotationX,
+                rotationY: this.worldRenderer.cameraRotationY
+            };
+        } else {
+            this.gameCameraState = {
+                position: camera.position.clone(),
+                zoom: camera.zoom,
+                lookAt: camera.userData?.lookAt?.clone()
+            };
+        }
+    }
+
+    /**
+     * Setup perspective camera for scene editing
+     */
+    setupSceneCamera(width, height) {
+        const terrainDataManager = this.editorContext?.terrainSystem?.terrainDataManager;
+        const terrainSize = terrainDataManager?.terrainSize || 1536;
+        const halfSize = terrainSize / 2;
+
+        // Create perspective camera
+        const camera = new THREE.PerspectiveCamera(60, width / height, 1, 30000);
+
+        // Restore saved state or use default position
+        if (this.sceneCameraState) {
+            camera.position.copy(this.sceneCameraState.position);
+        } else {
+            // Default: Position in SW corner looking NE
+            camera.position.set(-halfSize, halfSize, halfSize);
+        }
+
+        // Set camera in WorldRenderer
+        this.worldRenderer.camera = camera;
+
+        // Clean up game camera wheel handler if it exists
+        if (this.gameCameraWheelHandler) {
+            this.canvas.removeEventListener('wheel', this.gameCameraWheelHandler);
+            this.gameCameraWheelHandler = null;
+        }
+
+        // Dispose old controls and their event handlers
+        this.cleanupWorldRendererControls();
+
+        // Setup orbit controls for scene editing
+        const targetPos = this.sceneCameraState?.target || { x: 0, y: 0, z: 0 };
+        this.worldRenderer.setupOrbitControls(targetPos);
+
+        // Restore rotation state
+        if (this.sceneCameraState) {
+            this.worldRenderer.cameraRotationX = this.sceneCameraState.rotationX || 0;
+            this.worldRenderer.cameraRotationY = this.sceneCameraState.rotationY || 0;
+        }
+
+        camera.lookAt(targetPos.x || 0, targetPos.y || 0, targetPos.z || 0);
+    }
+
+    /**
+     * Clean up WorldRenderer controls and their event handlers
+     */
+    cleanupWorldRendererControls() {
+        if (!this.worldRenderer) return;
+
+        // Clean up keyboard handlers
+        if (this.worldRenderer.controlsKeyHandlers) {
+            window.removeEventListener('keydown', this.worldRenderer.controlsKeyHandlers.handleKeyDown);
+            window.removeEventListener('keyup', this.worldRenderer.controlsKeyHandlers.handleKeyUp);
+            this.worldRenderer.controlsKeyHandlers = null;
+        }
+
+        // Clean up mouse handlers
+        if (this.worldRenderer.controlsMouseHandlers && this.worldRenderer.renderer?.domElement) {
+            const element = this.worldRenderer.renderer.domElement;
+            element.removeEventListener('mousedown', this.worldRenderer.controlsMouseHandlers.handleMouseDown);
+            element.removeEventListener('mousemove', this.worldRenderer.controlsMouseHandlers.handleMouseMove);
+            element.removeEventListener('mouseup', this.worldRenderer.controlsMouseHandlers.handleMouseUp);
+            element.removeEventListener('wheel', this.worldRenderer.controlsMouseHandlers.handleWheel);
+            this.worldRenderer.controlsMouseHandlers = null;
+        }
+
+        // Dispose orbit controls
+        if (this.worldRenderer.controls) {
+            this.worldRenderer.controls.dispose();
+            this.worldRenderer.controls = null;
+        }
+    }
+
+    /**
+     * Setup orthographic camera for game-view
+     */
+    setupGameCamera(width, height) {
+        // Create orthographic camera like the game uses
+        const camera = new THREE.OrthographicCamera(
+            width / -2,
+            width / 2,
+            height / 2,
+            height / -2,
+            0.1,
+            50000
+        );
+
+        // Restore saved state or use default
+        if (this.gameCameraState) {
+            camera.position.copy(this.gameCameraState.position);
+            camera.zoom = this.gameCameraState.zoom || 1;
+            if (this.gameCameraState.lookAt) {
+                camera.lookAt(this.gameCameraState.lookAt.x, this.gameCameraState.lookAt.y, this.gameCameraState.lookAt.z);
+                camera.userData.lookAt = this.gameCameraState.lookAt.clone();
+            }
+        } else {
+            // Default game camera position (isometric view)
+            // Use the same setup as CameraControlSystem.lookAt()
+            const pitch = 35.264 * Math.PI / 180;
+            const yaw = 135 * Math.PI / 180;
+            const distance = 10240;
+
+            const worldX = 0;
+            const worldZ = 0;
+
+            const cdx = Math.sin(yaw) * Math.cos(pitch);
+            const cdz = Math.cos(yaw) * Math.cos(pitch);
+
+            camera.position.set(
+                worldX - cdx * distance,
+                distance,
+                worldZ - cdz * distance
+            );
+            camera.zoom = 1;
+            camera.lookAt(worldX, 0, worldZ);
+            camera.userData.lookAt = new THREE.Vector3(worldX, 0, worldZ);
+        }
+
+        camera.updateProjectionMatrix();
+
+        // Set camera in WorldRenderer
+        this.worldRenderer.camera = camera;
+
+        // Dispose orbit controls for game camera (it uses edge panning instead)
+        if (this.worldRenderer.controls) {
+            this.worldRenderer.controls.dispose();
+            this.worldRenderer.controls = null;
+        }
+
+        // Setup mouse wheel zoom for game camera
+        this.setupGameCameraControls(camera);
+    }
+
+    /**
+     * Setup simple controls for game camera (zoom + optional pan)
+     */
+    setupGameCameraControls(camera) {
+        // Remove any existing game camera handlers
+        if (this.gameCameraWheelHandler) {
+            this.canvas.removeEventListener('wheel', this.gameCameraWheelHandler);
+        }
+
+        // Mouse wheel zoom
+        this.gameCameraWheelHandler = (e) => {
+            if (this.state.cameraMode !== 'game') return;
+            e.preventDefault();
+
+            if (e.deltaY > 0) {
+                camera.zoom *= 0.9;
+            } else {
+                camera.zoom *= 1.1;
+            }
+            camera.zoom = Math.max(0.1, Math.min(5, camera.zoom));
+            camera.updateProjectionMatrix();
+        };
+
+        this.canvas.addEventListener('wheel', this.gameCameraWheelHandler, { passive: false });
+    }
+
+    /**
      * Cleanup
      */
     destroy() {
@@ -973,7 +1409,22 @@ class SceneEditor {
         }
 
         if (this.gizmoManager) {
+            this.gizmoManager.detach();
             this.gizmoManager.dispose?.();
+        }
+
+        // Remove gizmo helper from scene
+        if (this.gizmoHelper && this.worldRenderer) {
+            const scene = this.worldRenderer.getScene();
+            if (scene) {
+                scene.remove(this.gizmoHelper);
+            }
+            this.gizmoHelper = null;
+        }
+
+        // Clean up game camera wheel handler
+        if (this.gameCameraWheelHandler) {
+            this.canvas?.removeEventListener('wheel', this.gameCameraWheelHandler);
         }
     }
 }
