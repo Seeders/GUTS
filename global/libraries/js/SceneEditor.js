@@ -186,10 +186,10 @@ class SceneEditor {
             }
         });
 
-        // Right-click to cancel placement
+        // Disable context menu on canvas, and cancel placement mode if active
         this.canvas?.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
             if (this.placementMode.active) {
-                e.preventDefault();
                 this.cancelPlacementMode();
             }
         });
@@ -1382,6 +1382,12 @@ class SceneEditor {
         if (this.gameCameraWheelHandler) {
             this.canvas.removeEventListener('wheel', this.gameCameraWheelHandler);
         }
+        if (this.gameCameraMouseDownHandler) {
+            this.canvas.removeEventListener('mousedown', this.gameCameraMouseDownHandler);
+            this.canvas.removeEventListener('mousemove', this.gameCameraMouseMoveHandler);
+            this.canvas.removeEventListener('mouseup', this.gameCameraMouseUpHandler);
+            this.canvas.removeEventListener('mouseleave', this.gameCameraMouseUpHandler);
+        }
 
         // Mouse wheel zoom
         this.gameCameraWheelHandler = (e) => {
@@ -1397,7 +1403,55 @@ class SceneEditor {
             camera.updateProjectionMatrix();
         };
 
+        // Right-click drag to pan
+        let isPanning = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        this.gameCameraMouseDownHandler = (e) => {
+            if (this.state.cameraMode !== 'game') return;
+            if (e.button === 2) {
+                isPanning = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                e.preventDefault();
+            }
+        };
+
+        this.gameCameraMouseMoveHandler = (e) => {
+            if (!isPanning || this.state.cameraMode !== 'game') return;
+
+            const deltaX = e.clientX - lastMouseX;
+            const deltaY = e.clientY - lastMouseY;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+
+            // Pan speed adjusted for orthographic camera
+            const panSpeed = 2 / camera.zoom;
+
+            // Get camera's right and up vectors
+            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+            const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+
+            // Move camera position
+            camera.position.x -= right.x * deltaX * panSpeed;
+            camera.position.y -= right.y * deltaX * panSpeed;
+            camera.position.z -= right.z * deltaX * panSpeed;
+
+            camera.position.x += up.x * deltaY * panSpeed;
+            camera.position.y += up.y * deltaY * panSpeed;
+            camera.position.z += up.z * deltaY * panSpeed;
+        };
+
+        this.gameCameraMouseUpHandler = () => {
+            isPanning = false;
+        };
+
         this.canvas.addEventListener('wheel', this.gameCameraWheelHandler, { passive: false });
+        this.canvas.addEventListener('mousedown', this.gameCameraMouseDownHandler);
+        this.canvas.addEventListener('mousemove', this.gameCameraMouseMoveHandler);
+        this.canvas.addEventListener('mouseup', this.gameCameraMouseUpHandler);
+        this.canvas.addEventListener('mouseleave', this.gameCameraMouseUpHandler);
     }
 
     /**
@@ -1422,9 +1476,15 @@ class SceneEditor {
             this.gizmoHelper = null;
         }
 
-        // Clean up game camera wheel handler
+        // Clean up game camera handlers
         if (this.gameCameraWheelHandler) {
             this.canvas?.removeEventListener('wheel', this.gameCameraWheelHandler);
+        }
+        if (this.gameCameraMouseDownHandler) {
+            this.canvas?.removeEventListener('mousedown', this.gameCameraMouseDownHandler);
+            this.canvas?.removeEventListener('mousemove', this.gameCameraMouseMoveHandler);
+            this.canvas?.removeEventListener('mouseup', this.gameCameraMouseUpHandler);
+            this.canvas?.removeEventListener('mouseleave', this.gameCameraMouseUpHandler);
         }
     }
 }
