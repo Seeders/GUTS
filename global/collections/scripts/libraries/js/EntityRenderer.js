@@ -389,14 +389,18 @@ class EntityRenderer {
 
         // Custom shader material for billboarding with UV manipulation
         const material = new THREE.ShaderMaterial({
-            uniforms: {
-                map: { value: spriteSheetTexture },
-                ambientLightColor: { value: this.currentAmbientLight.clone() }
-            },
+            uniforms: THREE.UniformsUtils.merge([
+                THREE.UniformsLib.fog,
+                {
+                    map: { value: spriteSheetTexture },
+                    ambientLightColor: { value: this.currentAmbientLight.clone() }
+                }
+            ]),
             vertexShader: `
                 attribute vec2 uvOffset;
                 attribute vec2 uvScale;
                 varying vec2 vUv;
+                #include <fog_pars_vertex>
 
                 const float PI = 3.14159265359;
                 const float ANGLE_STEP = PI / 4.0; // 45 degrees (8 directions)
@@ -469,14 +473,19 @@ class EntityRenderer {
                     // Add to world position
                     vec4 finalWorldPos = vec4(worldPos.xyz + rotatedPos, 1.0);
 
+                    // mvPosition is required by fog_vertex
+                    vec4 mvPosition = viewMatrix * finalWorldPos;
+
                     // Transform to clip space
-                    gl_Position = projectionMatrix * viewMatrix * finalWorldPos;
+                    gl_Position = projectionMatrix * mvPosition;
+                    #include <fog_vertex>
                 }
             `,
             fragmentShader: `
                 uniform sampler2D map;
                 uniform vec3 ambientLightColor;
                 varying vec2 vUv;
+                #include <fog_pars_fragment>
 
                 void main() {
                     vec4 texColor = texture2D(map, vUv);
@@ -485,8 +494,10 @@ class EntityRenderer {
                     vec3 litColor = texColor.rgb * ambientLightColor;
                     gl_FragColor = vec4(litColor, texColor.a);
                     #include <colorspace_fragment>
+                    #include <fog_fragment>
                 }
             `,
+            fog: true,
             transparent: true,
             side: THREE.DoubleSide,
             depthWrite: true
@@ -828,14 +839,18 @@ class EntityRenderer {
 
         // Custom shader material for billboarding (always faces camera)
         const material = new THREE.ShaderMaterial({
-            uniforms: {
-                map: { value: texture },
-                ambientLightColor: { value: this.currentAmbientLight.clone() }
-            },
+            uniforms: THREE.UniformsUtils.merge([
+                THREE.UniformsLib.fog,
+                {
+                    map: { value: texture },
+                    ambientLightColor: { value: this.currentAmbientLight.clone() }
+                }
+            ]),
             vertexShader: `
                 attribute vec2 uvOffset;
                 attribute vec2 uvScale;
                 varying vec2 vUv;
+                #include <fog_pars_vertex>
 
                 void main() {
                     // Pass UV with instance-specific offset and scale
@@ -857,6 +872,7 @@ class EntityRenderer {
 
                     // Billboard: Create camera-facing quad
                     // Transform instance position to view space
+                    // mvPosition is also used by fog_vertex
                     vec4 mvPosition = modelViewMatrix * vec4(instancePos, 1.0);
 
                     // Add the billboard quad offset in view space (always faces camera)
@@ -864,12 +880,14 @@ class EntityRenderer {
                     mvPosition.xyz += vec3(position.x * instanceScale.x, position.y * instanceScale.y, 0.0);
 
                     gl_Position = projectionMatrix * mvPosition;
+                    #include <fog_vertex>
                 }
             `,
             fragmentShader: `
                 uniform sampler2D map;
                 uniform vec3 ambientLightColor;
                 varying vec2 vUv;
+                #include <fog_pars_fragment>
 
                 void main() {
                     vec4 texColor = texture2D(map, vUv);
@@ -878,8 +896,10 @@ class EntityRenderer {
                     vec3 litColor = texColor.rgb * ambientLightColor;
                     gl_FragColor = vec4(litColor, texColor.a);
                     #include <colorspace_fragment>
+                    #include <fog_fragment>
                 }
             `,
+            fog: true,
             transparent: true,
             side: THREE.DoubleSide,
             depthWrite: true

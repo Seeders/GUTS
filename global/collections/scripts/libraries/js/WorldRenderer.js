@@ -354,6 +354,9 @@ class WorldRenderer {
             fogSettings.color,
             fogSettings.density
         );
+
+        // Set background color to match fog color so distant objects blend into the fog
+        this.scene.background = new THREE.Color(fogSettings.color);
     }
 
     /**
@@ -1507,7 +1510,7 @@ class WorldRenderer {
             side: THREE.DoubleSide,
             metalness: 0.0,
             roughness: 0.8,
-            fog: false
+            fog: true
         });
 
         this.extensionPlanes = [];
