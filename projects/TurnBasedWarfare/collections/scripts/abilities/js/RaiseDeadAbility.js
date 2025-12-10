@@ -223,7 +223,7 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
     sortCorpsesDeterministically(corpses) {
         return corpses.slice().sort((a, b) => {
             // Sort by entity ID first for primary determinism
-            const idComparison = String(a.entityId).localeCompare(String(b.entityId));
+            const idComparison = a.entityId - b.entityId;
             if (idComparison !== 0) return idComparison;
             
             // Secondary sort by position for additional determinism

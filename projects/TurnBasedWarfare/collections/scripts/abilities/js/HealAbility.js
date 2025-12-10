@@ -161,7 +161,7 @@ class HealAbility extends GUTS.BaseAbility {
         
     findMostInjuredAlly(allies) {
         // Sort allies deterministically first
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedAllies = allies.slice().sort((a, b) => a - b);
 
         let mostInjured = null;
         let lowestHealthRatio = 1.0;

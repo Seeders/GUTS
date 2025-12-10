@@ -49,11 +49,10 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         if (!sourcePos || !sourceCombat || !targetPos) return null;
 
-        // Generate deterministic projectile ID using source entity and game time
-        const projectileId = `projectile_${sourceId}_${Math.floor(this.game.state.now * 1000)}`;
-
-        // Create projectile entity with explicit ID
-        this.game.createEntity(projectileId);
+        // OPTIMIZATION: Use auto-incrementing numeric ID for better Map performance
+        // In deterministic lockstep, both client and server execute attacks at the same tick,
+        // so the counter produces identical IDs on both sides
+        const projectileId = this.game.createEntity();
         const components = this.game.call('getComponents');
         
         // Determine projectile element (from weapon, combat component, or projectile data)
@@ -278,7 +277,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
             "projectile"
         );
         // Sort for deterministic processing order (prevents desync)
-        projectiles.sort((a, b) => String(a).localeCompare(String(b)));
+        // OPTIMIZATION: Numeric IDs allow fast numeric sort instead of localeCompare
+        projectiles.sort((a, b) => a - b);
 
         projectiles.forEach(projectileId => {
             const transform = this.game.getComponent(projectileId, "transform");
@@ -461,11 +461,12 @@ class ProjectileSystem extends GUTS.BaseSystem {
         }
 
         // Sort by distance (closest first), then by entity ID for deterministic tie-breaking
+        // OPTIMIZATION: Numeric IDs allow fast numeric sort instead of localeCompare
         entitiesWithDistance.sort((a, b) => {
             if (Math.abs(a.distance - b.distance) > 0.001) {
                 return a.distance - b.distance;
             }
-            return String(a.entityId).localeCompare(String(b.entityId));
+            return a.entityId - b.entityId;
         });
 
         // Check collision in sorted order - hit closest entity first

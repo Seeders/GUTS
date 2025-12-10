@@ -63,7 +63,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         );
         
         // Sort traps for consistent processing
-        const sortedTraps = existingTraps.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedTraps = existingTraps.slice().sort((a, b) => a - b);
         
         const myTraps = sortedTraps.filter(trapId => {
             const trap = this.game.getComponent(trapId, "trap");
@@ -336,7 +336,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         if (!casterTeam) return;
         
         // Sort entities for consistent processing
-        const sortedEntities = allEntities.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEntities = allEntities.slice().sort((a, b) => a - b);
         
         let damageTargets = [];
         

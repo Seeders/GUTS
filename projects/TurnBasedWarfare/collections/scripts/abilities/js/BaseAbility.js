@@ -171,8 +171,8 @@ class BaseAbility {
         let closestTarget = null;
         let closestDistance = Infinity;
 
-        // Sort for determinism
-        const sortedCandidates = candidates.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (still deterministic, much faster)
+        const sortedCandidates = candidates.slice().sort((a, b) => a - b);
 
         sortedCandidates.forEach(entityId => {
             const transform = this.game.getComponent(entityId, "transform");

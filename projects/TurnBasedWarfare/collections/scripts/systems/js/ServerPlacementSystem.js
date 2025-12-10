@@ -989,12 +989,10 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
 
         const pitch = 35.264 * Math.PI / 180;
         const yaw = 135 * Math.PI / 180;
-        const distance = 10240;
+        const distance = this.getCameraHeight();
 
         const cdx = Math.sin(yaw) * Math.cos(pitch);
         const cdz = Math.cos(yaw) * Math.cos(pitch);
-
-
 
         // Use tile coordinates for camera position (tilePosition is in tile map coordinates)
         const worldPos = this.game.call('tileToWorld', tilePosition.x, tilePosition.z);
@@ -1023,5 +1021,22 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
             },
             playerEntities
         };
+    }
+
+    /**
+     * Get camera height from main camera settings in collections
+     * Falls back to 512 if not found
+     */
+    getCameraHeight() {
+        if (this._cameraHeight !== undefined) {
+            return this._cameraHeight;
+        }
+
+        const collections = this.game.getCollections();
+        const cameraSettings = collections?.cameras?.main;
+
+        this._cameraHeight = cameraSettings?.position?.y || 512;
+
+        return this._cameraHeight;
     }
 }

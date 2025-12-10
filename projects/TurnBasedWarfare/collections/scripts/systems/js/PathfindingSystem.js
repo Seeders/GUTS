@@ -727,9 +727,10 @@ class PathfindingSystem extends GUTS.BaseSystem {
         
         if (this.pathRequests.length === 0) return;
         
+        // OPTIMIZATION: Use numeric sort for entity IDs (still deterministic, much faster)
         this.pathRequests.sort((a, b) => {
             if (b.priority !== a.priority) return b.priority - a.priority;
-            return String(a.entityId).localeCompare(String(b.entityId));
+            return a.entityId - b.entityId;
         });
         
         const pathsToProcess = Math.min(this.MAX_PATHS_PER_FRAME, this.pathRequests.length);

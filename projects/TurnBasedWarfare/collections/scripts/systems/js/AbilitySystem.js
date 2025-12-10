@@ -90,9 +90,8 @@ class AbilitySystem extends GUTS.BaseSystem {
         }
     }
     updateAIAbilityUsage() {
-        const sortedEntityIds = Array.from(this.entityAbilities.keys()).sort((a, b) => 
-            String(a).localeCompare(String(b))
-        );
+        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (still deterministic, much faster)
+        const sortedEntityIds = Array.from(this.entityAbilities.keys()).sort((a, b) => a - b);
         
         sortedEntityIds.forEach(entityId => {
             const abilities = this.entityAbilities.get(entityId);

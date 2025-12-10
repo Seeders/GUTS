@@ -99,7 +99,7 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
         this.createVisualEffect(casterPos, 'presence_wave');
         
         // Sort enemies deterministically for consistent processing
-        const sortedEnemies = targetEnemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = targetEnemies.slice().sort((a, b) => a - b);
         
         let intimidatedCount = 0;
         let refreshedCount = 0;

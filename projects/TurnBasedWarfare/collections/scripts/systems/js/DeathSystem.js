@@ -12,7 +12,8 @@ class DeathSystem extends GUTS.BaseSystem {
         // Get all entities with death state
         const dyingEntities = this.game.getEntitiesWith("deathState");
         // Sort for deterministic processing order (prevents desync)
-        dyingEntities.sort((a, b) => String(a).localeCompare(String(b)));
+        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (still deterministic, much faster)
+        dyingEntities.sort((a, b) => a - b);
         dyingEntities.forEach(entityId => {
             const deathState = this.game.getComponent(entityId, "deathState");
             const unitType = this.game.getComponent(entityId, "unitType");
@@ -96,7 +97,8 @@ class DeathSystem extends GUTS.BaseSystem {
     getCorpsesInRange(position, range, teamFilter = null) {
         const corpses = this.game.getEntitiesWith("deathState");
         // Sort for deterministic processing order (prevents desync)
-        corpses.sort((a, b) => String(a).localeCompare(String(b)));
+        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (still deterministic, much faster)
+        corpses.sort((a, b) => a - b);
         const nearbyCorpses = [];
 
         corpses.forEach(corpseId => {

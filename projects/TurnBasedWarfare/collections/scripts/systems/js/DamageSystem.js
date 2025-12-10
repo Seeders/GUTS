@@ -184,8 +184,8 @@ class DamageSystem extends GUTS.BaseSystem {
             "health",
             "team"
         );
-        // Sort for deterministic processing order (prevents desync)
-        allEntities.sort((a, b) => String(a).localeCompare(String(b)));
+        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (much faster than localeCompare)
+        allEntities.sort((a, b) => a - b);
         allEntities.forEach(entityId => {
             if (entityId === sourceId && !options.allowSelfDamage) return; // Don't damage source by default
 
@@ -378,8 +378,8 @@ class DamageSystem extends GUTS.BaseSystem {
      * Process ongoing poison damage
      */
     processStatusEffects() {
-        // Sort entity IDs for deterministic processing order (prevents desync)
-        const sortedEntityIds = Array.from(this.activeStatusEffects.keys()).sort((a, b) => String(a).localeCompare(String(b)));
+        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (much faster than localeCompare)
+        const sortedEntityIds = Array.from(this.activeStatusEffects.keys()).sort((a, b) => a - b);
 
         for (const entityId of sortedEntityIds) {
             const statusEffects = this.activeStatusEffects.get(entityId);

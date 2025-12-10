@@ -451,7 +451,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
                 return a.distance - b.distance;
             }
             // Secondary sort by entity ID for deterministic tie-breaking
-            return String(a.id).localeCompare(String(b.id));
+            return a.id - b.id;
         });
 
         // Apply splash damage to all targets
@@ -475,7 +475,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
         if (enemies.length === 0) return null;
 
         // Sort enemies deterministically first for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
 
         let bestPosition = null;
         let maxTargetsHit = 0;

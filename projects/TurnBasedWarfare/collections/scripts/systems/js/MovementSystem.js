@@ -57,8 +57,8 @@ class MovementSystem extends GUTS.BaseSystem {
 
         this.frameCounter++;
         const entities = this.game.getEntitiesWith("transform", "velocity");
-        // Sort for deterministic processing order (prevents desync)
-        entities.sort((a, b) => String(a).localeCompare(String(b)));
+        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (much faster than localeCompare)
+        entities.sort((a, b) => a - b);
 
         const unitData = new Map();
 
@@ -201,7 +201,8 @@ class MovementSystem extends GUTS.BaseSystem {
     
     updatePathfindingStaggered(unitData) {
         if (this.pathfindingQueue.length === 0) {
-            const sortedEntityIds = Array.from(unitData.keys()).sort((a, b) => String(a).localeCompare(String(b)));
+            // OPTIMIZATION: Use numeric sort since entity IDs are numbers
+            const sortedEntityIds = Array.from(unitData.keys()).sort((a, b) => a - b);
             sortedEntityIds.forEach(entityId => {
                 const data = unitData.get(entityId);
                 // Chasing means: has a target or targetPosition they're moving toward but not in range yet

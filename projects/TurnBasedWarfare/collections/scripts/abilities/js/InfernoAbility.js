@@ -216,7 +216,7 @@ class InfernoAbility extends GUTS.BaseAbility {
         if (enemies.length < minTargets) return null;
         
         // Sort enemies deterministically first for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         let bestPosition = null;
         let maxTargetsHit = 0;
@@ -271,7 +271,7 @@ class InfernoAbility extends GUTS.BaseAbility {
         if (enemies.length === 0) return casterPos;
         
         // Sort enemies deterministically and pick the first one
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         const firstEnemy = sortedEnemies[0];
         
         const transform = this.game.getComponent(firstEnemy, "transform");

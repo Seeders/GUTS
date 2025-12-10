@@ -76,7 +76,7 @@ class BattleCryAbility extends GUTS.BaseAbility {
         
         // DESYNC SAFE: Get and sort allies deterministically
         const allies = this.getAlliesInRange(casterEntity);
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedAllies = allies.slice().sort((a, b) => a - b);
         
         let ralliedCount = 0;
         

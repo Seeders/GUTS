@@ -93,7 +93,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         if (!casterPos) return;
         
         // Sort hoplites deterministically for consistent processing
-        const sortedHoplites = nearbyHoplites.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedHoplites = nearbyHoplites.slice().sort((a, b) => a - b);
         
         const phalanxSize = sortedHoplites.length + 1; // Include caster
         const armorMultiplier = Math.min(
@@ -182,7 +182,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         });
         
         // Sort deterministically for consistent processing
-        return hoplites.sort((a, b) => String(a).localeCompare(String(b)));
+        return hoplites.sort((a, b) => a - b);
     }
     
     // FIXED: Formation ending warning

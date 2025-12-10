@@ -91,6 +91,22 @@ class SceneEditor {
     }
 
     /**
+     * Get camera height from main camera settings in collections
+     * Falls back to 512 if not found
+     */
+    getCameraHeight() {
+        if (this._cameraHeight !== undefined) {
+            return this._cameraHeight;
+        }
+
+        const cameraSettings = this.collections?.cameras?.main;
+
+        this._cameraHeight = cameraSettings?.position?.y || 512;
+
+        return this._cameraHeight;
+    }
+
+    /**
      * Initialize the editor context with game systems
      * @param {Array<string>} systems - Systems to initialize (from scene data)
      */
@@ -1361,7 +1377,7 @@ class SceneEditor {
             // Use the same setup as CameraControlSystem.lookAt()
             const pitch = 35.264 * Math.PI / 180;
             const yaw = 135 * Math.PI / 180;
-            const distance = 10240;
+            const distance = this.getCameraHeight();
 
             const worldX = 0;
             const worldZ = 0;

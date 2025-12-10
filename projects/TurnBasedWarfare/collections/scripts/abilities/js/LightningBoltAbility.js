@@ -193,7 +193,7 @@ class LightningBoltAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Deterministic highest health enemy finding
     findHighestHealthEnemy(enemies) {
         // Sort enemies deterministically first
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         let strongest = null;
         let highestHealth = 0;
