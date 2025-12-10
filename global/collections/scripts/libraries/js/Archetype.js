@@ -449,6 +449,33 @@ class ArchetypeManager {
     }
 
     /**
+     * Get all entity IDs
+     * @returns {number[]}
+     */
+    getAllEntityIds() {
+        return Array.from(this.entityArchetype.keys());
+    }
+
+    /**
+     * Get entity signature as a Set (for compatibility)
+     * @param {number} entityId
+     * @returns {Set<string>|null}
+     */
+    getEntitySignature(entityId) {
+        const archetype = this.entityArchetype.get(entityId);
+        if (!archetype) return null;
+        return archetype.signatureSet;
+    }
+
+    /**
+     * Get entity count
+     * @returns {number}
+     */
+    get size() {
+        return this.entityArchetype.size;
+    }
+
+    /**
      * Get statistics about archetype usage
      * @returns {Object}
      */
