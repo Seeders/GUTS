@@ -1,8 +1,8 @@
 class ModelManager {
-    constructor(app, config, { ShapeFactory, palette, textures }) {
+    constructor(app, config, { ShapeFactory, palette, textures, models, animations }) {
         this.app = app;
         this.config = config;
-        this.shapeFactory = new ShapeFactory(this.app.getResourcesPath(), palette, textures, null, 1);
+        this.shapeFactory = new ShapeFactory(this.app.getResourcesPath(), palette, textures, null, 1, models, animations);
 
         if (location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
@@ -60,8 +60,15 @@ class ModelManager {
                         if (animVariant && Object.keys(animVariant).length > 0) {
                             const mainGroupName = Object.keys(mergedModel)[0];
                             const animGroupName = Object.keys(animVariant)[0];
-                            if (animVariant[animGroupName]?.shapes?.[0]?.url) {
-                                mergedModel[mainGroupName].shapes[0].url = animVariant[animGroupName].shapes[0].url;
+                            const animShape = animVariant[animGroupName]?.shapes?.[0];
+                            if (animShape) {
+                                // Copy animation reference to merged model
+                                if (animShape.animation) {
+                                    mergedModel[mainGroupName].shapes[0].animation = animShape.animation;
+                                    delete mergedModel[mainGroupName].shapes[0].model;
+                                } else if (animShape.model) {
+                                    mergedModel[mainGroupName].shapes[0].model = animShape.model;
+                                }
                             }
                         }
 

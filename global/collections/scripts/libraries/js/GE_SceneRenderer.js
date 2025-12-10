@@ -487,9 +487,9 @@ class GE_SceneRenderer {
         // Check if this is effectively a static model (no skeleton OR no meaningful animation data)
         const hasAnimationData = Object.values(animations).some(frames =>
             frames && frames.length > 0 && frames.some(frame => {
-                // Check for animation GLB in main.shapes structure
+                // Check for animation reference (new format) or GLB url (legacy format) in main.shapes structure
                 const shapes = frame?.main?.shapes || [];
-                return shapes.some(s => s?.url && s.url.includes('animations/'));
+                return shapes.some(s => s?.animation || (s?.url && s.url.includes('animations/')));
             })
         );
 
@@ -546,20 +546,31 @@ class GE_SceneRenderer {
                 const frame = animationFrames[frameIndex];
 
                 // For GLTF models with animations, we need to load base model + apply animation
-                // Check if this frame has animation GLB
+                // Check if this frame has animation reference (new format) or GLB url (legacy format)
                 const hasAnimationGLB = frame?.main?.shapes?.some(s =>
-                    s.url && s.url.includes('animations/') && (s.url.endsWith('.glb') || s.url.endsWith('.gltf'))
+                    s.animation || (s.url && s.url.includes('animations/'))
                 );
 
                 if (hasAnimationGLB) {
                     // Find the animation shape
                     const animShape = frame?.main?.shapes?.find(s =>
-                        s.url && s.url.includes('animations/') && (s.url.endsWith('.glb') || s.url.endsWith('.gltf'))
+                        s.animation || (s.url && s.url.includes('animations/'))
                     );
 
                     if (animShape) {
+                        // Resolve animation URL - use resolveModelUrl for new format, or direct url for legacy
+                        let animUrl = this.graphicsEditor.shapeFactory.resolveModelUrl(animShape);
+                        if (!animUrl && animShape.url) {
+                            animUrl = animShape.url;
+                        }
+
+                        if (!animUrl) {
+                            console.warn('[SpriteGen] Could not resolve animation URL for shape:', animShape);
+                            continue;
+                        }
+
                         // Load and apply animation to the existing character model
-                        const gltfPath = this.graphicsEditor.shapeFactory.getResourcesPath(animShape.url);
+                        const gltfPath = this.graphicsEditor.shapeFactory.getResourcesPath(animUrl);
                         const animationClip = await new Promise((resolve) => {
                             this.graphicsEditor.shapeFactory.gltfLoader.load(gltfPath, (gltf) => {
                                 if (gltf.animations && gltf.animations.length > 0) {

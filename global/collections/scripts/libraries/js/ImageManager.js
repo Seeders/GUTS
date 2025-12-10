@@ -1,6 +1,6 @@
 
 class ImageManager {
-    constructor(app, {imageSize, palette, textures}) {
+    constructor(app, {imageSize, palette, textures, models, animations}) {
         this.app = app;
         this.images = {};
         this.imageSize = imageSize || 128;
@@ -14,19 +14,19 @@ class ImageManager {
         this.renderer.setSize(this.imageSize, this.imageSize);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        
+
         this.renderTarget = new THREE.WebGLRenderTarget(this.imageSize, this.imageSize);
         this.renderTarget.texture.flipY = true;
-        
+
         // Create reusable scene
         this.scene = new THREE.Scene();
-        
+
         // Create reusable cameras for different views
         const cameraDistance = 64;
         const frustumSize = cameraDistance + 16;
         const aspect = 1;
 
-        this.shapeFactory = new GUTS.ShapeFactory(this.app.getResourcesPath(), palette, textures);
+        this.shapeFactory = new GUTS.ShapeFactory(this.app.getResourcesPath(), palette, textures, null, 32, models, animations);
         if(location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }
