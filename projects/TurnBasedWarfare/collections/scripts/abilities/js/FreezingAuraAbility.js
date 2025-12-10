@@ -114,7 +114,7 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
         const allies = this.getAlliesInRange(casterEntity);
         
         // Sort for consistent processing order
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedAllies = allies.slice().sort((a, b) => a - b);
 
         
         // Process allies - empower undead

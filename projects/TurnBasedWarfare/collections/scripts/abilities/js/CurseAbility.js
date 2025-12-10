@@ -74,7 +74,7 @@ class CurseAbility extends GUTS.BaseAbility {
         if (!casterPos) return;
         
         // DESYNC SAFE: Sort enemies for consistent processing order
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         const cursedEnemies = [];
         

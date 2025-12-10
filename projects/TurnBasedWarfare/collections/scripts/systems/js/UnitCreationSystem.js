@@ -113,20 +113,18 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         };
 
         try {
-            // Use provided entityId or generate one from position
-            const unitId = unitType.id || spawnType;
+            // Use provided entityId or auto-incrementing numeric ID
+            // OPTIMIZATION: Numeric IDs are faster than string IDs for Map operations
+            // In deterministic lockstep, both client and server execute the same operations
+            // in the same order, so the auto-incrementing counter produces identical IDs
             let entity;
             if (entityId) {
                 entity = this.game.createEntity(entityId);
             } else {
-                // Round world coordinates to ensure deterministic entity IDs across client and server
-                const pos = safeTransform.position;
-                const roundedX = Math.round((pos.x ?? 0) * 100) / 100;
-                const roundedZ = Math.round((pos.z ?? 0) * 100) / 100;
-                const round = this.game.state?.round ?? 0;
-                entity = this.game.createEntity(`${unitId}_${roundedX}_${roundedZ}_${team}_${round}`);
+                // Use auto-incrementing numeric ID for better performance
+                entity = this.game.createEntity();
             }
-            console.log('created unit', unitId, team, entity);
+            console.log('created unit', unitType.id || spawnType, team, entity);
             const teamConfig = this.teamConfigs[team];
 
             // OPTIMIZATION: Add all components in single batch call

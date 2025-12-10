@@ -114,7 +114,7 @@ class BurningAuraAbility extends GUTS.BaseAbility {
         const enemies = this.getEnemiesInRange(casterEntity);
         
         // Sort for consistent processing order
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         // Process enemies - burn their health
         sortedEnemies.forEach(enemyId => {

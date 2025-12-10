@@ -250,7 +250,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Deterministic target selection
     findHighestHealthEnemy(enemies) {
         // Sort enemies deterministically first
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         let strongest = null;
         let highestHealth = 0;

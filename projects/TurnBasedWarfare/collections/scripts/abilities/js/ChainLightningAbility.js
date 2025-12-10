@@ -208,7 +208,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
         if (!casterPos) return null;
         
         // Sort enemies deterministically first
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         let closest = null;
         let closestDistance = Infinity;
@@ -240,7 +240,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
         if (!fromPos) return null;
         
         // Sort targets deterministically first
-        const sortedTargets = availableTargets.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedTargets = availableTargets.slice().sort((a, b) => a - b);
         
         let closest = null;
         let closestDistance = Infinity;

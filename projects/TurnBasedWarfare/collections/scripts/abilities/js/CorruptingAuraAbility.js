@@ -103,8 +103,8 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
         const allies = this.getAlliesInRange(casterEntity);
         
         // Sort for consistent processing order
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
+        const sortedAllies = allies.slice().sort((a, b) => a - b);
         
         // Process enemies - drain their health
         sortedEnemies.forEach(enemyId => {

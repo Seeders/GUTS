@@ -97,7 +97,7 @@ class LeapSlamAbility extends GUTS.BaseAbility {
         const casterPos = transform?.position;
         if (!casterPos) return null;
 
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
 
         let closest = null;
         let closestDistance = Infinity;
@@ -332,7 +332,7 @@ class LeapSlamAbility extends GUTS.BaseAbility {
             if (Math.abs(a.distance - b.distance) > 0.001) {
                 return a.distance - b.distance;
             }
-            return String(a.id).localeCompare(String(b.id));
+            return a.id - b.id;
         });
 
         // Apply damage with falloff

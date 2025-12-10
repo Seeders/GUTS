@@ -235,7 +235,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
     // FIXED: Deterministic enemy filtering in line
     getEnemiesInLine(enemies, startPos, endPos) {
         // Sort enemies deterministically first for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         const hitEnemies = [];
         
@@ -296,7 +296,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
             
             // Sort by distance from caster, then by entity ID for tie-breaking
             if (Math.abs(distanceA - distanceB) < 0.001) {
-                return String(a.enemyId).localeCompare(String(b.enemyId));
+                return a.enemyId - b.enemyId;
             }
             return distanceA - distanceB;
         });

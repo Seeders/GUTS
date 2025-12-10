@@ -106,7 +106,7 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Apply disruption effects to enemies in range
     applyDisruptionEffects(casterEntity, enemies, bombPos) {
         // Sort enemies for consistent processing order
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         let disruptedCount = 0;
         
@@ -168,7 +168,7 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
         if (enemies.length < minCluster) return null;
         
         // Sort enemies deterministically first
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         let bestPos = null;
         let bestScore = 0;
