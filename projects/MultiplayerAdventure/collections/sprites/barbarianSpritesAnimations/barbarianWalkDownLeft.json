@@ -1,0 +1,12 @@
+{
+  "title": "barbarian Walk Down Left",
+  "spriteCollection": "barbarianSprites",
+  "sprites": [
+    "barbarianWalkDownLeft_0",
+    "barbarianWalkDownLeft_1",
+    "barbarianWalkDownLeft_2",
+    "barbarianWalkDownLeft_3",
+    "barbarianWalkDownLeft_4"
+  ],
+  "fps": 4
+}

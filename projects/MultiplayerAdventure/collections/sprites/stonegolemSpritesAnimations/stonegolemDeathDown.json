@@ -1,0 +1,16 @@
+{
+  "title": "stonegolem Death Down",
+  "spriteCollection": "stonegolemSprites",
+  "sprites": [
+    "stonegolemDeathDown_0",
+    "stonegolemDeathDown_1",
+    "stonegolemDeathDown_2",
+    "stonegolemDeathDown_3",
+    "stonegolemDeathDown_4",
+    "stonegolemDeathDown_5",
+    "stonegolemDeathDown_6",
+    "stonegolemDeathDown_7",
+    "stonegolemDeathDown_8"
+  ],
+  "fps": 4
+}

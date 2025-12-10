@@ -1,0 +1,17 @@
+{
+  "title": "apprentice Attack Up Left",
+  "spriteCollection": "apprenticeSprites",
+  "sprites": [
+    "apprenticeAttackUpLeft_0",
+    "apprenticeAttackUpLeft_1",
+    "apprenticeAttackUpLeft_2",
+    "apprenticeAttackUpLeft_3",
+    "apprenticeAttackUpLeft_4",
+    "apprenticeAttackUpLeft_5",
+    "apprenticeAttackUpLeft_6",
+    "apprenticeAttackUpLeft_7",
+    "apprenticeAttackUpLeft_8",
+    "apprenticeAttackUpLeft_9"
+  ],
+  "fps": 4
+}

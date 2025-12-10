@@ -1,0 +1,18 @@
+{
+  "title": "icegolem Attack Down",
+  "spriteCollection": "icegolemSprites",
+  "sprites": [
+    "icegolemAttackDown_0",
+    "icegolemAttackDown_1",
+    "icegolemAttackDown_2",
+    "icegolemAttackDown_3",
+    "icegolemAttackDown_4",
+    "icegolemAttackDown_5",
+    "icegolemAttackDown_6",
+    "icegolemAttackDown_7",
+    "icegolemAttackDown_8",
+    "icegolemAttackDown_9",
+    "icegolemAttackDown_10"
+  ],
+  "fps": 4
+}

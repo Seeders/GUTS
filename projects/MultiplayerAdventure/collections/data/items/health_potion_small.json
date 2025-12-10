@@ -1,0 +1,11 @@
+{
+  "title": "Small Health Potion",
+  "name": "Small Health Potion",
+  "description": "Restores 30 health",
+  "icon": "\ud83e\uddc9",
+  "stackable": true,
+  "usable": true,
+  "effect": "heal",
+  "healAmount": 30,
+  "value": 10
+}

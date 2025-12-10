@@ -1,0 +1,28 @@
+{
+  "title": "Barracks",
+  "animationCollection": "barracksSpritesAnimations",
+  "spriteSheet": "sprites/barracksSprites/barracksSheet.png",
+  "idleSpriteAnimations": [
+    "barracksIdleDown",
+    "barracksIdleDownLeft",
+    "barracksIdleLeft",
+    "barracksIdleUpLeft",
+    "barracksIdleUp",
+    "barracksIdleUpRight",
+    "barracksIdleRight",
+    "barracksIdleDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2
+  },
+  "spriteOffset": 42
+}

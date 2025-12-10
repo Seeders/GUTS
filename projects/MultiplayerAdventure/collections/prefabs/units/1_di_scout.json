@@ -1,0 +1,172 @@
+{
+  "title": "Rogue",
+  "size": 25,
+  "height": 50,
+  "value": 35,
+  "hp": 150,
+  "speed": 60,
+  "damage": 40,
+  "attackSpeed": 1.2,
+  "range": 100,
+  "projectile": "arrow",
+  "element": "physical",
+  "armor": 0,
+  "fireResistance": 0.25,
+  "coldResistance": 0.25,
+  "lightningResistance": 0.25,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/idle.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/walk_bow.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/shooting_arrow.glb",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/death_fallback.glb",
+                "id": 0
+              }
+            ],
+            "loops": false
+          }
+        }
+      ],
+      "celebrate": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/dance_thriller.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "url": "models/rogue.glb",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "scale": {
+              "z": 1,
+              "y": 1,
+              "x": 1
+            }
+          }
+        ]
+      }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "woodBow",
+        "attachmentData": {
+          "bone": "LeftHand",
+          "offset": {
+            "x": 0,
+            "y": 3,
+            "z": 5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 90
+          }
+        }
+      }
+    ]
+  },
+  "buyable": true,
+  "specUnits": [
+    "2_di_shadowAssassin",
+    "2_di_trickster",
+    "2_di_goblinBomber"
+  ],
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "icon": "unit_rogue",
+  "visionRange": 800,
+  "supplyCost": 2,
+  "spriteAnimationSet": "rogue"
+}

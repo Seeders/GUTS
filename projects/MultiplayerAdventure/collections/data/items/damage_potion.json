@@ -1,0 +1,12 @@
+{
+  "title": "Strength Potion",
+  "name": "Strength Potion",
+  "description": "Increases damage by 15 for 30 seconds",
+  "icon": "\ud83e\uddea",
+  "stackable": true,
+  "usable": true,
+  "effect": "buff_damage",
+  "buffAmount": 15,
+  "duration": 30,
+  "value": 35
+}

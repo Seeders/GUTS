@@ -1,0 +1,17 @@
+{
+  "title": "Grass",
+  "type": "grass",
+  "texture": "grass",
+  "color": "#5a8a4f",
+  "buildable": true,
+  "walkable": true,
+  "spriteWidth": 24,
+  "spriteHeight": 24,
+  "detailWorldObjects": [
+    "grass_tuft_sprite",
+    "grass_tuft_small_sprite",
+    "bush_sprite",
+    "stone_sprite"
+  ],
+  "detailDensity": 0.1
+}

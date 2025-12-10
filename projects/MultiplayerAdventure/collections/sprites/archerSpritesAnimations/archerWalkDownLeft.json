@@ -1,0 +1,12 @@
+{
+  "title": "archer Walk Down Left",
+  "spriteCollection": "archerSprites",
+  "sprites": [
+    "archerWalkDownLeft_0",
+    "archerWalkDownLeft_1",
+    "archerWalkDownLeft_2",
+    "archerWalkDownLeft_3",
+    "archerWalkDownLeft_4"
+  ],
+  "fps": 4
+}

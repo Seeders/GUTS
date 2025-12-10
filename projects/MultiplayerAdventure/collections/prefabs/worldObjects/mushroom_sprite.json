@@ -1,0 +1,11 @@
+{
+  "title": "Mushroom Sprite",
+  "height": 16,
+  "size": 24,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "impassable": false,
+  "spriteScale": 32,
+  "renderTexture": "mushroom",
+  "spriteOffset": 7
+}

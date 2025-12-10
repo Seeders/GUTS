@@ -1,0 +1,13 @@
+{
+  "title": "Is In Range Check",
+  "description": "Checks if entity is within range of target",
+  "behaviorNodeType": "action",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/IsInRangeBehaviorAction.js",
+  "fileName": "IsInRangeBehaviorAction",
+  "parameters": {
+    "range": 100,
+    "comparison": "within",
+    "targetKey": "target",
+    "minRange": 0
+  }
+}

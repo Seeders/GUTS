@@ -1,0 +1,12 @@
+{
+  "title": "soldier Walk Up Right",
+  "spriteCollection": "soldierSprites",
+  "sprites": [
+    "soldierWalkUpRight_0",
+    "soldierWalkUpRight_1",
+    "soldierWalkUpRight_2",
+    "soldierWalkUpRight_3",
+    "soldierWalkUpRight_4"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,8 @@
+{
+  "title": "arrow Idle Left",
+  "spriteCollection": "arrowSprites",
+  "sprites": [
+    "arrowIdleLeft_0"
+  ],
+  "fps": 4
+}

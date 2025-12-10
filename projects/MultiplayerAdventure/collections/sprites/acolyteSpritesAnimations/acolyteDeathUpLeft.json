@@ -1,0 +1,16 @@
+{
+  "title": "acolyte Death Up Left",
+  "spriteCollection": "acolyteSprites",
+  "sprites": [
+    "acolyteDeathUpLeft_0",
+    "acolyteDeathUpLeft_1",
+    "acolyteDeathUpLeft_2",
+    "acolyteDeathUpLeft_3",
+    "acolyteDeathUpLeft_4",
+    "acolyteDeathUpLeft_5",
+    "acolyteDeathUpLeft_6",
+    "acolyteDeathUpLeft_7",
+    "acolyteDeathUpLeft_8"
+  ],
+  "fps": 4
+}

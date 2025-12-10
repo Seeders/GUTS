@@ -1,0 +1,12 @@
+{
+  "title": "Timeout",
+  "description": "Fails if child action takes longer than specified time",
+  "behaviorNodeType": "decorator",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorDecorators/js/TimeoutDecorator.js",
+  "fileName": "TimeoutDecorator",
+  "childAction": null,
+  "parameters": {
+    "timeout": 5
+  },
+  "memory": {}
+}

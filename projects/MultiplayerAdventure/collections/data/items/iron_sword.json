@@ -1,0 +1,11 @@
+{
+  "title": "Iron Sword",
+  "name": "Iron Sword",
+  "description": "A sturdy iron sword. +12 Damage",
+  "icon": "\u2694\ufe0f",
+  "stackable": false,
+  "usable": false,
+  "equipSlot": "weapon",
+  "bonusDamage": 12,
+  "value": 50
+}

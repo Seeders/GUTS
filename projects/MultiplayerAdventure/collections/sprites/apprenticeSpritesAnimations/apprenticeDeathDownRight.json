@@ -1,0 +1,16 @@
+{
+  "title": "apprentice Death Down Right",
+  "spriteCollection": "apprenticeSprites",
+  "sprites": [
+    "apprenticeDeathDownRight_0",
+    "apprenticeDeathDownRight_1",
+    "apprenticeDeathDownRight_2",
+    "apprenticeDeathDownRight_3",
+    "apprenticeDeathDownRight_4",
+    "apprenticeDeathDownRight_5",
+    "apprenticeDeathDownRight_6",
+    "apprenticeDeathDownRight_7",
+    "apprenticeDeathDownRight_8"
+  ],
+  "fps": 4
+}

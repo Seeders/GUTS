@@ -1,0 +1,29 @@
+{
+  "title": "rogue Attack Down Left",
+  "spriteCollection": "rogueSprites",
+  "sprites": [
+    "rogueAttackDownLeft_0",
+    "rogueAttackDownLeft_1",
+    "rogueAttackDownLeft_2",
+    "rogueAttackDownLeft_3",
+    "rogueAttackDownLeft_4",
+    "rogueAttackDownLeft_5",
+    "rogueAttackDownLeft_6",
+    "rogueAttackDownLeft_7",
+    "rogueAttackDownLeft_8",
+    "rogueAttackDownLeft_9",
+    "rogueAttackDownLeft_10",
+    "rogueAttackDownLeft_11",
+    "rogueAttackDownLeft_12",
+    "rogueAttackDownLeft_13",
+    "rogueAttackDownLeft_14",
+    "rogueAttackDownLeft_15",
+    "rogueAttackDownLeft_16",
+    "rogueAttackDownLeft_17",
+    "rogueAttackDownLeft_18",
+    "rogueAttackDownLeft_19",
+    "rogueAttackDownLeft_20",
+    "rogueAttackDownLeft_21"
+  ],
+  "fps": 4
+}

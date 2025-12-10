@@ -1,0 +1,24 @@
+{
+  "title": "dragonred Takeoff Left",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredTakeoffLeft_0",
+    "dragonredTakeoffLeft_1",
+    "dragonredTakeoffLeft_2",
+    "dragonredTakeoffLeft_3",
+    "dragonredTakeoffLeft_4",
+    "dragonredTakeoffLeft_5",
+    "dragonredTakeoffLeft_6",
+    "dragonredTakeoffLeft_7",
+    "dragonredTakeoffLeft_8",
+    "dragonredTakeoffLeft_9",
+    "dragonredTakeoffLeft_10",
+    "dragonredTakeoffLeft_11",
+    "dragonredTakeoffLeft_12",
+    "dragonredTakeoffLeft_13",
+    "dragonredTakeoffLeft_14",
+    "dragonredTakeoffLeft_15",
+    "dragonredTakeoffLeft_16"
+  ],
+  "fps": 4
+}

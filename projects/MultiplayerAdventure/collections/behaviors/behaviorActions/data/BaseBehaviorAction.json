@@ -1,0 +1,10 @@
+{
+  "title": "Base Action",
+  "behaviorNodeType": "action",
+  "type": "BaseBehaviorAction",
+  "priority": 0,
+  "description": "n/a",
+  "parameters": {},
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/BaseBehaviorAction.js",
+  "fileName": "BaseBehaviorAction"
+}

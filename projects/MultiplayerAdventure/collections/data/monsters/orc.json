@@ -1,0 +1,16 @@
+{
+  "title": "Orc Brute",
+  "health": 150,
+  "damage": 20,
+  "attackSpeed": 0.8,
+  "attackRange": 40,
+  "speed": 60,
+  "aggroRange": 200,
+  "leashRange": 400,
+  "level": 5,
+  "experienceValue": 40,
+  "lootTable": "uncommon",
+  "behaviorTree": "monster_basic",
+  "scale": 1.2,
+  "respawnTime": 60
+}

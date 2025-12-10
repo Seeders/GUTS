@@ -1,0 +1,21 @@
+{
+  "title": "dragonred Celebrate Right",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredCelebrateRight_0",
+    "dragonredCelebrateRight_1",
+    "dragonredCelebrateRight_2",
+    "dragonredCelebrateRight_3",
+    "dragonredCelebrateRight_4",
+    "dragonredCelebrateRight_5",
+    "dragonredCelebrateRight_6",
+    "dragonredCelebrateRight_7",
+    "dragonredCelebrateRight_8",
+    "dragonredCelebrateRight_9",
+    "dragonredCelebrateRight_10",
+    "dragonredCelebrateRight_11",
+    "dragonredCelebrateRight_12",
+    "dragonredCelebrateRight_13"
+  ],
+  "fps": 4
+}

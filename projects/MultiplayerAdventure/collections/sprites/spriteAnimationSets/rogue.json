@@ -1,0 +1,68 @@
+{
+  "title": "Rogue",
+  "animationCollection": "rogueSpritesAnimations",
+  "spriteSheet": "sprites/rogueSprites/rogueSheet.png",
+  "idleSpriteAnimations": [
+    "rogueIdleDown",
+    "rogueIdleDownLeft",
+    "rogueIdleLeft",
+    "rogueIdleUpLeft",
+    "rogueIdleUp",
+    "rogueIdleUpRight",
+    "rogueIdleRight",
+    "rogueIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "rogueWalkDown",
+    "rogueWalkDownLeft",
+    "rogueWalkLeft",
+    "rogueWalkUpLeft",
+    "rogueWalkUp",
+    "rogueWalkUpRight",
+    "rogueWalkRight",
+    "rogueWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "rogueAttackDown",
+    "rogueAttackDownLeft",
+    "rogueAttackLeft",
+    "rogueAttackUpLeft",
+    "rogueAttackUp",
+    "rogueAttackUpRight",
+    "rogueAttackRight",
+    "rogueAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "rogueDeathDown",
+    "rogueDeathDownLeft",
+    "rogueDeathLeft",
+    "rogueDeathUpLeft",
+    "rogueDeathUp",
+    "rogueDeathUpRight",
+    "rogueDeathRight",
+    "rogueDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "rogueCelebrateDown",
+    "rogueCelebrateDownLeft",
+    "rogueCelebrateLeft",
+    "rogueCelebrateUpLeft",
+    "rogueCelebrateUp",
+    "rogueCelebrateUpRight",
+    "rogueCelebrateRight",
+    "rogueCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "borderSize": 1
+  },
+  "spriteOffset": 16
+}

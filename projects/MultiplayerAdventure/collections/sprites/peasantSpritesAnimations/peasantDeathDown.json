@@ -1,0 +1,16 @@
+{
+  "title": "peasant Death Down",
+  "spriteCollection": "peasantSprites",
+  "sprites": [
+    "peasantDeathDown_0",
+    "peasantDeathDown_1",
+    "peasantDeathDown_2",
+    "peasantDeathDown_3",
+    "peasantDeathDown_4",
+    "peasantDeathDown_5",
+    "peasantDeathDown_6",
+    "peasantDeathDown_7",
+    "peasantDeathDown_8"
+  ],
+  "fps": 4
+}

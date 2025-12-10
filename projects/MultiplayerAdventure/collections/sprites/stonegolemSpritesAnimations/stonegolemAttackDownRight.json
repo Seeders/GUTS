@@ -1,0 +1,18 @@
+{
+  "title": "stonegolem Attack Down Right",
+  "spriteCollection": "stonegolemSprites",
+  "sprites": [
+    "stonegolemAttackDownRight_0",
+    "stonegolemAttackDownRight_1",
+    "stonegolemAttackDownRight_2",
+    "stonegolemAttackDownRight_3",
+    "stonegolemAttackDownRight_4",
+    "stonegolemAttackDownRight_5",
+    "stonegolemAttackDownRight_6",
+    "stonegolemAttackDownRight_7",
+    "stonegolemAttackDownRight_8",
+    "stonegolemAttackDownRight_9",
+    "stonegolemAttackDownRight_10"
+  ],
+  "fps": 4
+}

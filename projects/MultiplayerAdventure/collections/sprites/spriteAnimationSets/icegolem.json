@@ -1,0 +1,67 @@
+{
+  "title": "Icegolem",
+  "animationCollection": "icegolemSpritesAnimations",
+  "spriteSheet": "sprites/icegolemSprites/icegolemSheet.png",
+  "idleSpriteAnimations": [
+    "icegolemIdleDown",
+    "icegolemIdleDownLeft",
+    "icegolemIdleLeft",
+    "icegolemIdleUpLeft",
+    "icegolemIdleUp",
+    "icegolemIdleUpRight",
+    "icegolemIdleRight",
+    "icegolemIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "icegolemWalkDown",
+    "icegolemWalkDownLeft",
+    "icegolemWalkLeft",
+    "icegolemWalkUpLeft",
+    "icegolemWalkUp",
+    "icegolemWalkUpRight",
+    "icegolemWalkRight",
+    "icegolemWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "icegolemAttackDown",
+    "icegolemAttackDownLeft",
+    "icegolemAttackLeft",
+    "icegolemAttackUpLeft",
+    "icegolemAttackUp",
+    "icegolemAttackUpRight",
+    "icegolemAttackRight",
+    "icegolemAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "icegolemDeathDown",
+    "icegolemDeathDownLeft",
+    "icegolemDeathLeft",
+    "icegolemDeathUpLeft",
+    "icegolemDeathUp",
+    "icegolemDeathUpRight",
+    "icegolemDeathRight",
+    "icegolemDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "icegolemCelebrateDown",
+    "icegolemCelebrateDownLeft",
+    "icegolemCelebrateLeft",
+    "icegolemCelebrateUpLeft",
+    "icegolemCelebrateUp",
+    "icegolemCelebrateUpRight",
+    "icegolemCelebrateRight",
+    "icegolemCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 2.5,
+    "palette": "main",
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "borderSize": 1
+  }
+}

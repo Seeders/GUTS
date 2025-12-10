@@ -1,0 +1,45 @@
+{
+  "title": "Castle",
+  "category": "townhall",
+  "value": 100,
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {},
+            "metalness": 0,
+            "roughness": 1,
+            "x": 0,
+            "z": 0,
+            "scaleX": 1,
+            "name": "foundation",
+            "url": "models/townhall.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 2,
+          "y": 2,
+          "z": 2
+        }
+      }
+    }
+  },
+  "size": 75,
+  "spriteAnimationSet": "townhall"
+}

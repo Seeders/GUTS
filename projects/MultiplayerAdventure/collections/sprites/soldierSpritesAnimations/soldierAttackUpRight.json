@@ -1,0 +1,14 @@
+{
+  "title": "soldier Attack Up Right",
+  "spriteCollection": "soldierSprites",
+  "sprites": [
+    "soldierAttackUpRight_0",
+    "soldierAttackUpRight_1",
+    "soldierAttackUpRight_2",
+    "soldierAttackUpRight_3",
+    "soldierAttackUpRight_4",
+    "soldierAttackUpRight_5",
+    "soldierAttackUpRight_6"
+  ],
+  "fps": 4
+}

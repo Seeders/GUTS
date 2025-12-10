@@ -1,0 +1,24 @@
+{
+  "title": "dragonred Land Right",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredLandRight_0",
+    "dragonredLandRight_1",
+    "dragonredLandRight_2",
+    "dragonredLandRight_3",
+    "dragonredLandRight_4",
+    "dragonredLandRight_5",
+    "dragonredLandRight_6",
+    "dragonredLandRight_7",
+    "dragonredLandRight_8",
+    "dragonredLandRight_9",
+    "dragonredLandRight_10",
+    "dragonredLandRight_11",
+    "dragonredLandRight_12",
+    "dragonredLandRight_13",
+    "dragonredLandRight_14",
+    "dragonredLandRight_15",
+    "dragonredLandRight_16"
+  ],
+  "fps": 4
+}

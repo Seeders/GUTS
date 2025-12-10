@@ -1,0 +1,8 @@
+{
+  "title": "townhall Idle Down",
+  "spriteCollection": "townhallSprites",
+  "sprites": [
+    "townhallIdleDown_0"
+  ],
+  "fps": 4
+}

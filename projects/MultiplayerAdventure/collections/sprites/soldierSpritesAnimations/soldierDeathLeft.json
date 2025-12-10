@@ -1,0 +1,16 @@
+{
+  "title": "soldier Death Left",
+  "spriteCollection": "soldierSprites",
+  "sprites": [
+    "soldierDeathLeft_0",
+    "soldierDeathLeft_1",
+    "soldierDeathLeft_2",
+    "soldierDeathLeft_3",
+    "soldierDeathLeft_4",
+    "soldierDeathLeft_5",
+    "soldierDeathLeft_6",
+    "soldierDeathLeft_7",
+    "soldierDeathLeft_8"
+  ],
+  "fps": 4
+}

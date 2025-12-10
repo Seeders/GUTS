@@ -1,0 +1,67 @@
+{
+  "title": "Firegolem",
+  "animationCollection": "firegolemSpritesAnimations",
+  "spriteSheet": "sprites/firegolemSprites/firegolemSheet.png",
+  "idleSpriteAnimations": [
+    "firegolemIdleDown",
+    "firegolemIdleDownLeft",
+    "firegolemIdleLeft",
+    "firegolemIdleUpLeft",
+    "firegolemIdleUp",
+    "firegolemIdleUpRight",
+    "firegolemIdleRight",
+    "firegolemIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "firegolemWalkDown",
+    "firegolemWalkDownLeft",
+    "firegolemWalkLeft",
+    "firegolemWalkUpLeft",
+    "firegolemWalkUp",
+    "firegolemWalkUpRight",
+    "firegolemWalkRight",
+    "firegolemWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "firegolemAttackDown",
+    "firegolemAttackDownLeft",
+    "firegolemAttackLeft",
+    "firegolemAttackUpLeft",
+    "firegolemAttackUp",
+    "firegolemAttackUpRight",
+    "firegolemAttackRight",
+    "firegolemAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "firegolemDeathDown",
+    "firegolemDeathDownLeft",
+    "firegolemDeathLeft",
+    "firegolemDeathUpLeft",
+    "firegolemDeathUp",
+    "firegolemDeathUpRight",
+    "firegolemDeathRight",
+    "firegolemDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "firegolemCelebrateDown",
+    "firegolemCelebrateDownLeft",
+    "firegolemCelebrateLeft",
+    "firegolemCelebrateUpLeft",
+    "firegolemCelebrateUp",
+    "firegolemCelebrateUpRight",
+    "firegolemCelebrateRight",
+    "firegolemCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "borderSize": 1
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "title": "Archer",
+  "animationCollection": "archerSpritesAnimations",
+  "spriteSheet": "sprites/archerSprites/archerSheet.png",
+  "idleSpriteAnimations": [
+    "archerIdleDown",
+    "archerIdleDownLeft",
+    "archerIdleLeft",
+    "archerIdleUpLeft",
+    "archerIdleUp",
+    "archerIdleUpRight",
+    "archerIdleRight",
+    "archerIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "archerWalkDown",
+    "archerWalkDownLeft",
+    "archerWalkLeft",
+    "archerWalkUpLeft",
+    "archerWalkUp",
+    "archerWalkUpRight",
+    "archerWalkRight",
+    "archerWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "archerAttackDown",
+    "archerAttackDownLeft",
+    "archerAttackLeft",
+    "archerAttackUpLeft",
+    "archerAttackUp",
+    "archerAttackUpRight",
+    "archerAttackRight",
+    "archerAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "archerDeathDown",
+    "archerDeathDownLeft",
+    "archerDeathLeft",
+    "archerDeathUpLeft",
+    "archerDeathUp",
+    "archerDeathUpRight",
+    "archerDeathRight",
+    "archerDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "archerCelebrateDown",
+    "archerCelebrateDownLeft",
+    "archerCelebrateLeft",
+    "archerCelebrateUpLeft",
+    "archerCelebrateUp",
+    "archerCelebrateUpRight",
+    "archerCelebrateRight",
+    "archerCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 7.9,
+    "palette": "main",
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "borderSize": 1
+  },
+  "spriteOffset": 16
+}

@@ -1,0 +1,8 @@
+{
+  "title": "goldmine Idle Down Right",
+  "spriteCollection": "goldmineSprites",
+  "sprites": [
+    "goldmineIdleDownRight_0"
+  ],
+  "fps": 4
+}

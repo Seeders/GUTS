@@ -1,0 +1,14 @@
+{
+  "title": "soldier Attack Down Left",
+  "spriteCollection": "soldierSprites",
+  "sprites": [
+    "soldierAttackDownLeft_0",
+    "soldierAttackDownLeft_1",
+    "soldierAttackDownLeft_2",
+    "soldierAttackDownLeft_3",
+    "soldierAttackDownLeft_4",
+    "soldierAttackDownLeft_5",
+    "soldierAttackDownLeft_6"
+  ],
+  "fps": 4
+}

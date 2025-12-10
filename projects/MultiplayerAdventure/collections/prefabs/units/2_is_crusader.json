@@ -1,0 +1,171 @@
+{
+  "title": "Templar (2) [IS]",
+  "size": 25,
+  "height": 50,
+  "value": 110,
+  "hp": 200,
+  "speed": 35,
+  "damage": 14,
+  "attackSpeed": 1,
+  "element": "physical",
+  "armor": 6,
+  "fireResistance": 0.2,
+  "coldResistance": 0.2,
+  "lightningResistance": 0.2,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/idle.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/walk_with_shield.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/sword_slash.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/death_fallback.glb",
+                "id": 0
+              }
+            ],
+            "loops": false
+          }
+        }
+      ],
+      "celebrate": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/dance_gangnamstyle.glb",
+                "id": 0
+              }
+            ]
+          }
+        },
+        {
+          "main": {
+            "shapes": [
+              {
+                "url": "animations/dance_thriller.glb",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "url": "models/templar.glb",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1"
+          }
+        ]
+      }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "knightSword",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": -1,
+            "y": 10,
+            "z": 2
+          },
+          "rotation": {
+            "x": 0,
+            "y": 8,
+            "z": 0
+          }
+        }
+      },
+      {
+        "slot": "offHand",
+        "item": "knightShield",
+        "attachmentData": {
+          "bone": "LeftHand",
+          "offset": {
+            "x": 5,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "x": 10,
+            "y": 0,
+            "z": 0
+          }
+        }
+      }
+    ]
+  },
+  "buyable": false,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "abilities": [
+    "HealAbility"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "title": "Soldier",
+  "animationCollection": "soldierSpritesAnimations",
+  "spriteSheet": "sprites/soldierSprites/soldierSheet.png",
+  "idleSpriteAnimations": [
+    "soldierIdleDown",
+    "soldierIdleDownLeft",
+    "soldierIdleLeft",
+    "soldierIdleUpLeft",
+    "soldierIdleUp",
+    "soldierIdleUpRight",
+    "soldierIdleRight",
+    "soldierIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "soldierWalkDown",
+    "soldierWalkDownLeft",
+    "soldierWalkLeft",
+    "soldierWalkUpLeft",
+    "soldierWalkUp",
+    "soldierWalkUpRight",
+    "soldierWalkRight",
+    "soldierWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "soldierAttackDown",
+    "soldierAttackDownLeft",
+    "soldierAttackLeft",
+    "soldierAttackUpLeft",
+    "soldierAttackUp",
+    "soldierAttackUpRight",
+    "soldierAttackRight",
+    "soldierAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "soldierDeathDown",
+    "soldierDeathDownLeft",
+    "soldierDeathLeft",
+    "soldierDeathUpLeft",
+    "soldierDeathUp",
+    "soldierDeathUpRight",
+    "soldierDeathRight",
+    "soldierDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "soldierCelebrateDown",
+    "soldierCelebrateDownLeft",
+    "soldierCelebrateLeft",
+    "soldierCelebrateUpLeft",
+    "soldierCelebrateUp",
+    "soldierCelebrateUpRight",
+    "soldierCelebrateRight",
+    "soldierCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "borderSize": 1
+  },
+  "spriteOffset": 16
+}

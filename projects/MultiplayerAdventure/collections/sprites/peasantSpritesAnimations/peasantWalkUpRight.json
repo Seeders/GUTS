@@ -1,0 +1,12 @@
+{
+  "title": "peasant Walk Up Right",
+  "spriteCollection": "peasantSprites",
+  "sprites": [
+    "peasantWalkUpRight_0",
+    "peasantWalkUpRight_1",
+    "peasantWalkUpRight_2",
+    "peasantWalkUpRight_3",
+    "peasantWalkUpRight_4"
+  ],
+  "fps": 4
+}

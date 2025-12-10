@@ -1,0 +1,8 @@
+{
+  "title": "magetower Idle Right",
+  "spriteCollection": "magetowerSprites",
+  "sprites": [
+    "magetowerIdleRight_0"
+  ],
+  "fps": 4
+}

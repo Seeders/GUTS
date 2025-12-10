@@ -1,0 +1,16 @@
+{
+  "title": "apprentice Death Right",
+  "spriteCollection": "apprenticeSprites",
+  "sprites": [
+    "apprenticeDeathRight_0",
+    "apprenticeDeathRight_1",
+    "apprenticeDeathRight_2",
+    "apprenticeDeathRight_3",
+    "apprenticeDeathRight_4",
+    "apprenticeDeathRight_5",
+    "apprenticeDeathRight_6",
+    "apprenticeDeathRight_7",
+    "apprenticeDeathRight_8"
+  ],
+  "fps": 4
+}

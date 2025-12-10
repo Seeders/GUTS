@@ -1,0 +1,8 @@
+{
+  "title": "magetower Idle Down",
+  "spriteCollection": "magetowerSprites",
+  "sprites": [
+    "magetowerIdleDown_0"
+  ],
+  "fps": 4
+}

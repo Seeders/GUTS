@@ -1,0 +1,12 @@
+{
+  "title": "Leather Armor",
+  "name": "Leather Armor",
+  "description": "Basic protection. +10 Health, +3 Defense",
+  "icon": "\ud83d\udee1\ufe0f",
+  "stackable": false,
+  "usable": false,
+  "equipSlot": "armor",
+  "bonusHealth": 10,
+  "bonusDefense": 3,
+  "value": 30
+}

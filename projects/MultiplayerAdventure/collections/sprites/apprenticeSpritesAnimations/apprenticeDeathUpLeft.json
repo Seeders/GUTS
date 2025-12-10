@@ -1,0 +1,16 @@
+{
+  "title": "apprentice Death Up Left",
+  "spriteCollection": "apprenticeSprites",
+  "sprites": [
+    "apprenticeDeathUpLeft_0",
+    "apprenticeDeathUpLeft_1",
+    "apprenticeDeathUpLeft_2",
+    "apprenticeDeathUpLeft_3",
+    "apprenticeDeathUpLeft_4",
+    "apprenticeDeathUpLeft_5",
+    "apprenticeDeathUpLeft_6",
+    "apprenticeDeathUpLeft_7",
+    "apprenticeDeathUpLeft_8"
+  ],
+  "fps": 4
+}

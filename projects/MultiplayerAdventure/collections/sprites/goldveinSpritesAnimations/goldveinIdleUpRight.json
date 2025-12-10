@@ -1,0 +1,8 @@
+{
+  "title": "goldvein Idle Up Right",
+  "spriteCollection": "goldveinSprites",
+  "sprites": [
+    "goldveinIdleUpRight_0"
+  ],
+  "fps": 4
+}

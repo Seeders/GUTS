@@ -1,0 +1,12 @@
+{
+  "title": "acolyte Walk Right",
+  "spriteCollection": "acolyteSprites",
+  "sprites": [
+    "acolyteWalkRight_0",
+    "acolyteWalkRight_1",
+    "acolyteWalkRight_2",
+    "acolyteWalkRight_3",
+    "acolyteWalkRight_4"
+  ],
+  "fps": 4
+}

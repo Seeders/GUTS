@@ -1,0 +1,28 @@
+{
+  "title": "Cottage",
+  "animationCollection": "cottageSpritesAnimations",
+  "spriteSheet": "sprites/cottageSprites/cottageSheet.png",
+  "idleSpriteAnimations": [
+    "cottageIdleDown",
+    "cottageIdleDownLeft",
+    "cottageIdleLeft",
+    "cottageIdleUpLeft",
+    "cottageIdleUp",
+    "cottageIdleUpRight",
+    "cottageIdleRight",
+    "cottageIdleDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 5.7,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2
+  },
+  "spriteOffset": 32
+}

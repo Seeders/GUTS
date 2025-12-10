@@ -1,0 +1,27 @@
+{
+  "title": "Castle",
+  "animationCollection": "castleSpritesAnimations",
+  "spriteSheet": "sprites/castleSprites/castleSheet.png",
+  "idleSpriteAnimations": [
+    "castleIdleDown",
+    "castleIdleDownLeft",
+    "castleIdleLeft",
+    "castleIdleUpLeft",
+    "castleIdleUp",
+    "castleIdleUpRight",
+    "castleIdleRight",
+    "castleIdleDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 5.4,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2
+  }
+}

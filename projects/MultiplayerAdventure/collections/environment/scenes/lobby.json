@@ -1,0 +1,14 @@
+{
+  "title": "Lobby Scene",
+  "description": "Character selection and server connection",
+  "systems": [
+    "GameSystem",
+    "ScreenSystem",
+    "GameModeSystem",
+    "InputSystem",
+    "TownHubUISystem",
+    "AdventureNetworkSystem",
+    "CharacterSystem"
+  ],
+  "entities": []
+}

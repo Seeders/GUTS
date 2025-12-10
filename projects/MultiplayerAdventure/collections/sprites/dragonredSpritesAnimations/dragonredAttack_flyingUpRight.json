@@ -1,0 +1,20 @@
+{
+  "title": "dragonred Attack_flying Up Right",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredAttack_flyingUpRight_0",
+    "dragonredAttack_flyingUpRight_1",
+    "dragonredAttack_flyingUpRight_2",
+    "dragonredAttack_flyingUpRight_3",
+    "dragonredAttack_flyingUpRight_4",
+    "dragonredAttack_flyingUpRight_5",
+    "dragonredAttack_flyingUpRight_6",
+    "dragonredAttack_flyingUpRight_7",
+    "dragonredAttack_flyingUpRight_8",
+    "dragonredAttack_flyingUpRight_9",
+    "dragonredAttack_flyingUpRight_10",
+    "dragonredAttack_flyingUpRight_11",
+    "dragonredAttack_flyingUpRight_12"
+  ],
+  "fps": 4
+}

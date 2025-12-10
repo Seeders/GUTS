@@ -1,0 +1,48 @@
+{
+  "title": "Forest Dungeon",
+  "description": "A mysterious forest filled with goblins and wild creatures",
+  "minLevel": 1,
+  "maxPlayers": 4,
+  "timeLimit": 600,
+  "spawnPoint": { "x": 0, "y": 0, "z": -200 },
+  "monsterSpawns": [
+    {
+      "type": "goblin",
+      "count": 5,
+      "position": { "x": 100, "y": 0, "z": 0 },
+      "radius": 50
+    },
+    {
+      "type": "goblin",
+      "count": 5,
+      "position": { "x": -100, "y": 0, "z": 100 },
+      "radius": 50
+    },
+    {
+      "type": "orc",
+      "count": 2,
+      "position": { "x": 0, "y": 0, "z": 200 },
+      "radius": 30
+    }
+  ],
+  "objectives": [
+    {
+      "id": "kill_goblins",
+      "type": "kill",
+      "target": "goblin",
+      "required": 10,
+      "description": "Defeat 10 Goblins"
+    },
+    {
+      "id": "kill_boss",
+      "type": "kill",
+      "target": "orc",
+      "required": 2,
+      "description": "Defeat the Orc Brutes"
+    }
+  ],
+  "rewards": {
+    "experience": 150,
+    "gold": 100
+  }
+}

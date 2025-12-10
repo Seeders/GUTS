@@ -1,0 +1,68 @@
+{
+  "title": "Peasant",
+  "animationCollection": "peasantSpritesAnimations",
+  "spriteSheet": "sprites/peasantSprites/peasantSheet.png",
+  "idleSpriteAnimations": [
+    "peasantIdleDown",
+    "peasantIdleDownLeft",
+    "peasantIdleLeft",
+    "peasantIdleUpLeft",
+    "peasantIdleUp",
+    "peasantIdleUpRight",
+    "peasantIdleRight",
+    "peasantIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "peasantWalkDown",
+    "peasantWalkDownLeft",
+    "peasantWalkLeft",
+    "peasantWalkUpLeft",
+    "peasantWalkUp",
+    "peasantWalkUpRight",
+    "peasantWalkRight",
+    "peasantWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "peasantAttackDown",
+    "peasantAttackDownLeft",
+    "peasantAttackLeft",
+    "peasantAttackUpLeft",
+    "peasantAttackUp",
+    "peasantAttackUpRight",
+    "peasantAttackRight",
+    "peasantAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "peasantDeathDown",
+    "peasantDeathDownLeft",
+    "peasantDeathLeft",
+    "peasantDeathUpLeft",
+    "peasantDeathUp",
+    "peasantDeathUpRight",
+    "peasantDeathRight",
+    "peasantDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "peasantCelebrateDown",
+    "peasantCelebrateDownLeft",
+    "peasantCelebrateLeft",
+    "peasantCelebrateUpLeft",
+    "peasantCelebrateUp",
+    "peasantCelebrateUpRight",
+    "peasantCelebrateRight",
+    "peasantCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 6.9,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1
+  },
+  "spriteOffset": 16
+}

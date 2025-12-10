@@ -1,0 +1,22 @@
+{
+  "title": "Common Loot Table",
+  "goldMin": 5,
+  "goldMax": 15,
+  "entries": [
+    {
+      "itemId": "health_potion_small",
+      "chance": 0.3,
+      "quantity": 1
+    },
+    {
+      "itemId": "rusty_sword",
+      "chance": 0.1,
+      "quantity": 1
+    },
+    {
+      "itemId": "leather_armor",
+      "chance": 0.08,
+      "quantity": 1
+    }
+  ]
+}

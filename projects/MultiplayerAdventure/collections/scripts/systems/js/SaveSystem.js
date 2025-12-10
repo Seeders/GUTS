@@ -1,0 +1,500 @@
+class SaveSystem extends GUTS.BaseSystem {
+    constructor(game) {
+        super(game);
+        this.game.saveSystem = this;
+
+        // Save format version for compatibility checking
+        this.SAVE_VERSION = 1;
+
+        // Components to exclude from saves (none - all components including renderable are needed)
+        this.EXCLUDED_COMPONENTS = new Set([]);
+
+        // Entity ID prefixes to exclude from saves
+        // Note: terrain_ is INCLUDED because we need to save terrain state
+        this.EXCLUDED_ENTITY_PREFIXES = [
+            'camera_'
+        ];
+    }
+
+    init() {
+        // Register save/load methods with GameManager
+        this.game.register('saveGame', this.saveGame.bind(this));
+        this.game.register('getSaveData', this.getSaveData.bind(this));
+        this.game.register('loadSaveData', this.loadSaveData.bind(this));
+        this.game.register('listSavedGames', this.listSavedGames.bind(this));
+        this.game.register('deleteSavedGame', this.deleteSavedGame.bind(this));
+    }
+
+    /**
+     * Save the current game state
+     * @param {string} saveName - Optional name for the save
+     * @returns {Object} The save data object
+     */
+    saveGame(saveName = null) {
+        const saveData = this.getSaveData();
+
+        // Generate save name if not provided
+        const timestamp = Date.now();
+        const name = saveName || `save_${new Date(timestamp).toISOString().replace(/[:.]/g, '-')}`;
+        saveData.saveName = name;
+
+        // Store in localStorage
+        const saveKey = `tbw_save_${name}`;
+        localStorage.setItem(saveKey, JSON.stringify(saveData));
+
+        // Update save index
+        this.updateSaveIndex(name, timestamp);
+
+        console.log(`[SaveManager] Game saved as "${name}"`);
+        return saveData;
+    }
+
+    /**
+     * Get the current game state as a serializable object
+     * @returns {Object} The complete game state
+     */
+    getSaveData() {
+        const saveData = {
+            // Metadata
+            saveVersion: this.SAVE_VERSION,
+            timestamp: Date.now(),
+            sceneName: this.game.sceneManager?.getCurrentSceneName() || 'client_game',
+
+            // Level/terrain info
+            level: this.game.state.level || 'level1',
+
+            // Game state
+            state: this.serializeGameState(),
+
+            // All entities with their components (includes placement and unitType components)
+            entities: this.serializeEntities(),
+
+            // Player data (from room if multiplayer)
+            players: this.serializePlayers()
+
+            // Note: Placement data is stored in entity's placement component, not separately
+        };
+
+        return saveData;
+    }
+
+    /**
+     * Serialize core game state
+     */
+    serializeGameState() {
+        const state = this.game.state;
+        return {
+            phase: state.phase,
+            round: state.round || 1,
+            now: state.now || 0,
+            gameOver: state.gameOver || false,
+            victory: state.victory || false,
+            mySide: state.mySide,
+            teamMaxHealth: state.teamMaxHealth,
+            startingGold: state.startingGold
+        };
+    }
+
+    /**
+     * Serialize all game entities and their components
+     */
+    serializeEntities() {
+        const entities = [];
+
+        for (const [entityId, componentSet] of this.game.entities) {
+            // Skip excluded entities (terrain, camera, etc.)
+            if (this.shouldExcludeEntity(entityId)) {
+                continue;
+            }
+
+            const entityData = {
+                id: entityId,
+                components: {}
+            };
+
+            // Serialize each component
+            for (const componentType of componentSet) {
+                // Skip excluded components
+                if (this.EXCLUDED_COMPONENTS.has(componentType)) {
+                    continue;
+                }
+
+                const componentData = this.game.getComponent(entityId, componentType);
+                if (componentData) {
+                    // Deep clone to avoid circular references
+                    entityData.components[componentType] = this.serializeComponent(componentType, componentData);
+                }
+            }
+
+            // Only save entities that have components
+            if (Object.keys(entityData.components).length > 0) {
+                entities.push(entityData);
+            }
+        }
+
+        return entities;
+    }
+
+    /**
+     * Check if an entity should be excluded from saves
+     */
+    shouldExcludeEntity(entityId) {
+        for (const prefix of this.EXCLUDED_ENTITY_PREFIXES) {
+            if (entityId.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Serialize a single component, handling special cases
+     */
+    serializeComponent(componentType, componentData) {
+        // Deep clone the component data
+        const serialized = JSON.parse(JSON.stringify(componentData, (key, value) => {
+            // Handle special cases that can't be serialized
+            if (value instanceof Function) {
+                return undefined;
+            }
+            if (value instanceof Map) {
+                return { __type: 'Map', data: Array.from(value.entries()) };
+            }
+            if (value instanceof Set) {
+                return { __type: 'Set', data: Array.from(value) };
+            }
+            return value;
+        }));
+
+        return serialized;
+    }
+
+    /**
+     * Serialize player data
+     */
+    serializePlayers() {
+        const players = [];
+        const room = this.game.room;
+
+        if (room && room.players) {
+            for (const [playerId, player] of room.players) {
+                players.push({
+                    playerId: playerId,
+                    name: player.name,
+                    isHost: player.isHost,
+                    stats: player.stats ? { ...player.stats } : null,
+                    ready: player.ready,
+                    placementReady: player.placementReady
+                });
+            }
+        } else {
+            // Single player or client-side - get from game state
+            const state = this.game.state;
+            if (state.playerId) {
+                players.push({
+                    playerId: state.playerId,
+                    name: 'Player',
+                    isHost: true,
+                    stats: {
+                        gold: state.gold || state.startingGold,
+                        health: state.health || state.teamMaxHealth,
+                        side: state.mySide || 'left'
+                    }
+                });
+            }
+        }
+
+        return players;
+    }
+
+    // Note: serializePlacements removed - placement data is on entity's placement component
+
+    /**
+     * Load save data and restore game state
+     * @param {Object} saveData - The save data to load
+     * @returns {Promise<boolean>} Success status
+     */
+    async loadSaveData(saveData) {
+        if (!saveData || saveData.saveVersion !== this.SAVE_VERSION) {
+            console.error('[SaveManager] Invalid or incompatible save data');
+            return false;
+        }
+
+        try {
+            // Store save data for SceneManager to use
+            this.game.pendingSaveData = saveData;
+
+            // Update level in state before scene load
+            this.game.state.level = saveData.level || 'level1';
+
+            // The scene will be loaded and save data injected via loadSavedEntities
+            console.log(`[SaveManager] Save data prepared for loading: ${saveData.saveName || 'unnamed'}`);
+            return true;
+        } catch (error) {
+            console.error('[SaveManager] Error preparing save data:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Called by SceneManager after scene entities are spawned
+     * Injects saved entities into the scene
+     */
+    loadSavedEntities() {
+        const saveData = this.game.pendingSaveData;
+        if (!saveData) {
+            return false;
+        }
+
+        console.log(`[SaveManager] Loading ${saveData.entities?.length || 0} saved entities`);
+
+        // Determine team mapping for current players
+        // The save file has 'left' and 'right' teams - map them to current players
+        const currentMySide = this.game.state.mySide || 'left';
+
+        // Restore game state (but preserve current player's side and phase)
+        // Phase must stay as 'placement' initially so UI can initialize
+        if (saveData.state) {
+            const preservedMySide = this.game.state.mySide;
+            const preservedPlayerId = this.game.state.playerId;
+            const preservedPhase = this.game.state.phase;
+            Object.assign(this.game.state, saveData.state);
+            // Restore current player info and phase
+            this.game.state.mySide = preservedMySide;
+            this.game.state.playerId = preservedPlayerId;
+            this.game.state.phase = preservedPhase;
+        }
+
+        // Create entities from save data
+        if (saveData.entities) {
+            let loadedCount = 0;
+            let componentsAdded = 0;
+            for (const entityDef of saveData.entities) {
+                const entityId = entityDef.id;
+
+                // Create the entity
+                this.game.createEntity(entityId);
+                loadedCount++;
+
+                // Add all saved components, mapping teams to current players
+                for (const [componentType, componentData] of Object.entries(entityDef.components)) {
+                    let deserializedData = this.deserializeComponent(componentType, componentData);
+
+                    // Remap team component to current players
+                    if (componentType === 'team' && deserializedData) {
+                        deserializedData = this.remapTeamComponent(deserializedData, currentMySide);
+                    }
+
+                    this.game.addComponent(entityId, componentType, deserializedData);
+                    componentsAdded++;
+                }
+            }
+            console.log(`[SaveManager] Created ${loadedCount} entities with ${componentsAdded} components`);
+
+            // Initialize abilities for loaded entities
+            // AbilitySystem.entityAbilities Map is not saved, so we need to re-register abilities
+            this.initializeAbilitiesForLoadedEntities();
+        }
+
+        // Note: Placement data is now derived from entities with 'placement' component
+        // MultiplayerPlacementSystem.getPlacementById() queries entities directly
+
+        // Clear pending save data
+        this.game.pendingSaveData = null;
+
+        // Clear the isLoadingSave flag after a short delay to let systems initialize
+        setTimeout(() => {
+            this.game.state.isLoadingSave = false;
+        }, 100);
+
+        return true;
+    }
+
+    /**
+     * Remap team component to current player assignments
+     * Save files use 'left'/'right' teams - map to current player's side
+     */
+    remapTeamComponent(teamData, currentMySide) {
+        // The team component has a 'team' field with 'left' or 'right'
+        // Current player is assigned to currentMySide
+        // We keep the team assignments as-is since 'left' and 'right' are the sides
+        // The current player controls their assigned side
+
+        // Just return as-is - the team sides are absolute ('left'/'right')
+        // The game state's mySide determines which side the current player controls
+        return teamData;
+    }
+
+    /**
+     * Deserialize a component, handling special cases
+     */
+    deserializeComponent(componentType, componentData) {
+        // Handle special serialized types
+        const deserialized = JSON.parse(JSON.stringify(componentData), (key, value) => {
+            if (value && typeof value === 'object') {
+                if (value.__type === 'Map') {
+                    return new Map(value.data);
+                }
+                if (value.__type === 'Set') {
+                    return new Set(value.data);
+                }
+            }
+            return value;
+        });
+
+        return deserialized;
+    }
+
+    /**
+     * Load a saved game by name
+     * @param {string} saveName - Name of the save to load
+     * @returns {Object|null} The save data or null if not found
+     */
+    loadSavedGame(saveName) {
+        const saveKey = `tbw_save_${saveName}`;
+        const saveJson = localStorage.getItem(saveKey);
+
+        if (!saveJson) {
+            console.warn(`[SaveManager] Save "${saveName}" not found`);
+            return null;
+        }
+
+        try {
+            return JSON.parse(saveJson);
+        } catch (error) {
+            console.error(`[SaveManager] Error parsing save "${saveName}":`, error);
+            return null;
+        }
+    }
+
+    /**
+     * List all saved games
+     * @returns {Array} Array of save metadata
+     */
+    listSavedGames() {
+        const indexJson = localStorage.getItem('tbw_save_index');
+        if (!indexJson) {
+            return [];
+        }
+
+        try {
+            const index = JSON.parse(indexJson);
+            return Object.entries(index).map(([name, timestamp]) => ({
+                name,
+                timestamp,
+                date: new Date(timestamp).toLocaleString()
+            })).sort((a, b) => b.timestamp - a.timestamp);
+        } catch (error) {
+            console.error('[SaveManager] Error reading save index:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Update the save index
+     */
+    updateSaveIndex(saveName, timestamp) {
+        let index = {};
+        const indexJson = localStorage.getItem('tbw_save_index');
+
+        if (indexJson) {
+            try {
+                index = JSON.parse(indexJson);
+            } catch (error) {
+                index = {};
+            }
+        }
+
+        index[saveName] = timestamp;
+        localStorage.setItem('tbw_save_index', JSON.stringify(index));
+    }
+
+    /**
+     * Delete a saved game
+     * @param {string} saveName - Name of the save to delete
+     */
+    deleteSavedGame(saveName) {
+        const saveKey = `tbw_save_${saveName}`;
+        localStorage.removeItem(saveKey);
+
+        // Update index
+        const indexJson = localStorage.getItem('tbw_save_index');
+        if (indexJson) {
+            try {
+                const index = JSON.parse(indexJson);
+                delete index[saveName];
+                localStorage.setItem('tbw_save_index', JSON.stringify(index));
+            } catch (error) {
+                // Ignore
+            }
+        }
+
+        console.log(`[SaveManager] Deleted save "${saveName}"`);
+    }
+
+    /**
+     * Export save data as a downloadable file
+     * @param {Object} saveData - The save data to export
+     */
+    exportSaveFile(saveData) {
+        const json = JSON.stringify(saveData, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${saveData.saveName || 'game_save'}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    /**
+     * Import save data from a file
+     * @param {File} file - The file to import
+     * @returns {Promise<Object>} The parsed save data
+     */
+    async importSaveFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const saveData = JSON.parse(e.target.result);
+                    resolve(saveData);
+                } catch (error) {
+                    reject(new Error('Invalid save file format'));
+                }
+            };
+            reader.onerror = () => reject(new Error('Error reading file'));
+            reader.readAsText(file);
+        });
+    }
+
+    /**
+     * Initialize abilities for all loaded entities that have them defined
+     * This is needed because AbilitySystem.entityAbilities Map is not saved
+     */
+    initializeAbilitiesForLoadedEntities() {
+        if (!this.game.abilitySystem) {
+            console.warn('[SaveManager] AbilitySystem not available, skipping ability initialization');
+            return;
+        }
+
+        const entitiesWithUnitType = this.game.getEntitiesWith('unitType');
+        let abilitiesInitialized = 0;
+
+        for (const entityId of entitiesWithUnitType) {
+            const unitType = this.game.getComponent(entityId, 'unitType');
+            if (unitType && unitType.abilities && unitType.abilities.length > 0) {
+                this.game.abilitySystem.addAbilitiesToUnit(entityId, unitType.abilities);
+                abilitiesInitialized++;
+            }
+        }
+
+        console.log(`[SaveManager] Initialized abilities for ${abilitiesInitialized} entities`);
+    }
+
+    onSceneUnload() {
+    }
+}

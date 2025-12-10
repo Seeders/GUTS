@@ -1,0 +1,25 @@
+{
+  "title": "Male",
+  "animationCollection": "maleSpriteAnimations",
+  "walkSpriteAnimations": [
+    "maleWalkDown",
+    "maleWalkDownLeft",
+    "maleWalkLeft",
+    "maleWalkUpLeft",
+    "maleWalkUp"
+  ],
+  "attackSpriteAnimations": [
+    "maleAttackDown",
+    "maleAttackDownLeft",
+    "maleAttackLeft",
+    "maleAttackUpLeft",
+    "maleAttackUp"
+  ],
+  "deathSpriteAnimations": [
+    "maleDeathDown",
+    "maleDeathDownLeft",
+    "maleDeathLeft",
+    "maleDeathUpLeft",
+    "maleDeathUp"
+  ]
+}

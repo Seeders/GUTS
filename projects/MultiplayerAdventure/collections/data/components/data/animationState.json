@@ -1,0 +1,23 @@
+{
+  "title": "animationState",
+  "schema": {
+    "currentClip": "idle",
+    "lastStateChange": 0,
+    "animationTime": 0,
+    "minAnimationTime": 0,
+    "pendingClip": null,
+    "pendingSpeed": null,
+    "pendingMinTime": null,
+    "isTriggered": false,
+    "isCelebrating": false,
+    "isSprite": false,
+    "spriteDirection": "down",
+    "spriteAnimationSet": null,
+    "spriteAnimations": null,
+    "spriteFps": null,
+    "spriteAnimationType": null,
+    "spriteFrameIndex": 0,
+    "spriteFrameTime": 0,
+    "spriteLoopAnimation": true
+  }
+}

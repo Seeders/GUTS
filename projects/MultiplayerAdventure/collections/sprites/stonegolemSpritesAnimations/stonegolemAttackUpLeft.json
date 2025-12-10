@@ -1,0 +1,18 @@
+{
+  "title": "stonegolem Attack Up Left",
+  "spriteCollection": "stonegolemSprites",
+  "sprites": [
+    "stonegolemAttackUpLeft_0",
+    "stonegolemAttackUpLeft_1",
+    "stonegolemAttackUpLeft_2",
+    "stonegolemAttackUpLeft_3",
+    "stonegolemAttackUpLeft_4",
+    "stonegolemAttackUpLeft_5",
+    "stonegolemAttackUpLeft_6",
+    "stonegolemAttackUpLeft_7",
+    "stonegolemAttackUpLeft_8",
+    "stonegolemAttackUpLeft_9",
+    "stonegolemAttackUpLeft_10"
+  ],
+  "fps": 4
+}

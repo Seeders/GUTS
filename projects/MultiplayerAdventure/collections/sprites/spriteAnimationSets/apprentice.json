@@ -1,0 +1,68 @@
+{
+  "title": "Apprentice",
+  "animationCollection": "apprenticeSpritesAnimations",
+  "spriteSheet": "sprites/apprenticeSprites/apprenticeSheet.png",
+  "idleSpriteAnimations": [
+    "apprenticeIdleDown",
+    "apprenticeIdleDownLeft",
+    "apprenticeIdleLeft",
+    "apprenticeIdleUpLeft",
+    "apprenticeIdleUp",
+    "apprenticeIdleUpRight",
+    "apprenticeIdleRight",
+    "apprenticeIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "apprenticeWalkDown",
+    "apprenticeWalkDownLeft",
+    "apprenticeWalkLeft",
+    "apprenticeWalkUpLeft",
+    "apprenticeWalkUp",
+    "apprenticeWalkUpRight",
+    "apprenticeWalkRight",
+    "apprenticeWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "apprenticeAttackDown",
+    "apprenticeAttackDownLeft",
+    "apprenticeAttackLeft",
+    "apprenticeAttackUpLeft",
+    "apprenticeAttackUp",
+    "apprenticeAttackUpRight",
+    "apprenticeAttackRight",
+    "apprenticeAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "apprenticeDeathDown",
+    "apprenticeDeathDownLeft",
+    "apprenticeDeathLeft",
+    "apprenticeDeathUpLeft",
+    "apprenticeDeathUp",
+    "apprenticeDeathUpRight",
+    "apprenticeDeathRight",
+    "apprenticeDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "apprenticeCelebrateDown",
+    "apprenticeCelebrateDownLeft",
+    "apprenticeCelebrateLeft",
+    "apprenticeCelebrateUpLeft",
+    "apprenticeCelebrateUp",
+    "apprenticeCelebrateUpRight",
+    "apprenticeCelebrateRight",
+    "apprenticeCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "borderSize": 1
+  },
+  "spriteOffset": 16
+}

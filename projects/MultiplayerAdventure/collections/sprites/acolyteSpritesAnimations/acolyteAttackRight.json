@@ -1,0 +1,14 @@
+{
+  "title": "acolyte Attack Right",
+  "spriteCollection": "acolyteSprites",
+  "sprites": [
+    "acolyteAttackRight_0",
+    "acolyteAttackRight_1",
+    "acolyteAttackRight_2",
+    "acolyteAttackRight_3",
+    "acolyteAttackRight_4",
+    "acolyteAttackRight_5",
+    "acolyteAttackRight_6"
+  ],
+  "fps": 4
+}

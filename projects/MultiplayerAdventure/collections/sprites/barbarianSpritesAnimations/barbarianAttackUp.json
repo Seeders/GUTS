@@ -1,0 +1,14 @@
+{
+  "title": "barbarian Attack Up",
+  "spriteCollection": "barbarianSprites",
+  "sprites": [
+    "barbarianAttackUp_0",
+    "barbarianAttackUp_1",
+    "barbarianAttackUp_2",
+    "barbarianAttackUp_3",
+    "barbarianAttackUp_4",
+    "barbarianAttackUp_5",
+    "barbarianAttackUp_6"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Hell Terrain",
+  "description": "Adds terrain/world rendering to a scene",
+  "components": [
+    {
+      "terrain": {
+        "level": "hell",
+        "world": "hell",
+        "cliffsEnabled": true,
+        "liquidsEnabled": true,
+        "grassEnabled": false,
+        "fogEnabled": true,
+        "shadowsEnabled": true
+      }
+    }
+  ]
+}

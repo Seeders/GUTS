@@ -1,0 +1,27 @@
+{
+  "title": "Uncommon Loot Table",
+  "goldMin": 15,
+  "goldMax": 35,
+  "entries": [
+    {
+      "itemId": "health_potion",
+      "chance": 0.4,
+      "quantity": 1
+    },
+    {
+      "itemId": "iron_sword",
+      "chance": 0.15,
+      "quantity": 1
+    },
+    {
+      "itemId": "chain_armor",
+      "chance": 0.12,
+      "quantity": 1
+    },
+    {
+      "itemId": "damage_potion",
+      "chance": 0.2,
+      "quantity": 1
+    }
+  ]
+}

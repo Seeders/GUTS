@@ -1,0 +1,16 @@
+{
+  "title": "skeleton Death Down Right",
+  "spriteCollection": "skeletonSprites",
+  "sprites": [
+    "skeletonDeathDownRight_0",
+    "skeletonDeathDownRight_1",
+    "skeletonDeathDownRight_2",
+    "skeletonDeathDownRight_3",
+    "skeletonDeathDownRight_4",
+    "skeletonDeathDownRight_5",
+    "skeletonDeathDownRight_6",
+    "skeletonDeathDownRight_7",
+    "skeletonDeathDownRight_8"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,8 @@
+{
+  "title": "barracks Idle Up Right",
+  "spriteCollection": "barracksSprites",
+  "sprites": [
+    "barracksIdleUpRight_0"
+  ],
+  "fps": 4
+}

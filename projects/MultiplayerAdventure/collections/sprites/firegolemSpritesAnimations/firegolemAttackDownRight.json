@@ -1,0 +1,18 @@
+{
+  "title": "firegolem Attack Down Right",
+  "spriteCollection": "firegolemSprites",
+  "sprites": [
+    "firegolemAttackDownRight_0",
+    "firegolemAttackDownRight_1",
+    "firegolemAttackDownRight_2",
+    "firegolemAttackDownRight_3",
+    "firegolemAttackDownRight_4",
+    "firegolemAttackDownRight_5",
+    "firegolemAttackDownRight_6",
+    "firegolemAttackDownRight_7",
+    "firegolemAttackDownRight_8",
+    "firegolemAttackDownRight_9",
+    "firegolemAttackDownRight_10"
+  ],
+  "fps": 4
+}

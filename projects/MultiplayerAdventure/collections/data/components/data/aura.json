@@ -1,0 +1,13 @@
+{
+  "title": "aura",
+  "schema": {
+    "auraType": "generic",
+    "radius": 50,
+    "effects": {},
+    "visualEffect": null,
+    "persistent": true,
+    "pulseInterval": 1.0,
+    "lastPulse": 0,
+    "createdTime": 0
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "title": "Goldmine",
+  "animationCollection": "goldmineSpritesAnimations",
+  "spriteSheet": "sprites/goldmineSprites/goldmineSheet.png",
+  "idleSpriteAnimations": [
+    "goldmineIdleDown",
+    "goldmineIdleDownLeft",
+    "goldmineIdleLeft",
+    "goldmineIdleUpLeft",
+    "goldmineIdleUp",
+    "goldmineIdleUpRight",
+    "goldmineIdleRight",
+    "goldmineIdleDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 5.8,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2
+  },
+  "spriteOffset": 32
+}

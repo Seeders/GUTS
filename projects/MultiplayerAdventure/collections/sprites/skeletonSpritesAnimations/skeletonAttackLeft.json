@@ -1,0 +1,14 @@
+{
+  "title": "skeleton Attack Left",
+  "spriteCollection": "skeletonSprites",
+  "sprites": [
+    "skeletonAttackLeft_0",
+    "skeletonAttackLeft_1",
+    "skeletonAttackLeft_2",
+    "skeletonAttackLeft_3",
+    "skeletonAttackLeft_4",
+    "skeletonAttackLeft_5",
+    "skeletonAttackLeft_6"
+  ],
+  "fps": 4
+}

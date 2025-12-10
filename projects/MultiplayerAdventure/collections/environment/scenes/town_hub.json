@@ -1,0 +1,76 @@
+{
+  "title": "Town Hub Scene",
+  "description": "Social hub where players gather, form parties, and access adventures",
+  "systems": [
+    "ComponentSystem",
+    "GridSystem",
+    "TerrainSystem",
+    "RenderSystem",
+    "WorldSystem",
+    "TerrainDetailSystem",
+    "PostProcessingSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "AnimationSystem",
+    "EffectsSystem",
+    "UnitCreationSystem",
+    "PlayerStatsSystem",
+    "AdventureNetworkSystem",
+    "TownHubSystem",
+    "TownHubUISystem",
+    "PartySystem",
+    "PlayerControlSystem",
+    "HealthBarSystem",
+    "EquipmentSystem",
+    "ParticleSystem",
+    "PathfindingSystem",
+    "CameraControlSystem",
+    "VisionSystem",
+    "InventorySystem",
+    "QuestSystem",
+    "CharacterSystem",
+    "InstanceSystem"
+  ],
+  "entities": [
+    {
+      "id": "terrain_main",
+      "prefab": "terrain_town",
+      "components": {
+        "terrain": {
+          "level": "town_hub",
+          "world": "town"
+        }
+      }
+    },
+    {
+      "id": "npc_adventure_master",
+      "collection": "npcs",
+      "spawnType": "adventure_master",
+      "name": "Adventure Master",
+      "transform": {
+        "position": { "x": 0, "y": 0, "z": -100 }
+      },
+      "components": {
+        "npc": {
+          "type": "adventure_giver",
+          "dialogueId": "adventure_master_intro"
+        }
+      }
+    },
+    {
+      "id": "npc_shopkeeper",
+      "collection": "npcs",
+      "spawnType": "shopkeeper",
+      "name": "Shopkeeper",
+      "transform": {
+        "position": { "x": 150, "y": 0, "z": 50 }
+      },
+      "components": {
+        "npc": {
+          "type": "merchant",
+          "shopId": "general_store"
+        }
+      }
+    }
+  ]
+}

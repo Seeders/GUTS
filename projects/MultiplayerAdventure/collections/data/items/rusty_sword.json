@@ -1,0 +1,11 @@
+{
+  "title": "Rusty Sword",
+  "name": "Rusty Sword",
+  "description": "An old sword. +5 Damage",
+  "icon": "\u2694\ufe0f",
+  "stackable": false,
+  "usable": false,
+  "equipSlot": "weapon",
+  "bonusDamage": 5,
+  "value": 20
+}

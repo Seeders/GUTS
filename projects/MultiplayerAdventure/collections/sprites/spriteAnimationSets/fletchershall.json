@@ -1,0 +1,28 @@
+{
+  "title": "Fletchershall",
+  "animationCollection": "fletchershallSpritesAnimations",
+  "spriteSheet": "sprites/fletchershallSprites/fletchershallSheet.png",
+  "idleSpriteAnimations": [
+    "fletchershallIdleDown",
+    "fletchershallIdleDownLeft",
+    "fletchershallIdleLeft",
+    "fletchershallIdleUpLeft",
+    "fletchershallIdleUp",
+    "fletchershallIdleUpRight",
+    "fletchershallIdleRight",
+    "fletchershallIdleDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 5.9,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2
+  },
+  "spriteOffset": 32
+}

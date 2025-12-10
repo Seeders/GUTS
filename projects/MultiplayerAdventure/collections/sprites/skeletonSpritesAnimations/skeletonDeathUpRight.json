@@ -1,0 +1,16 @@
+{
+  "title": "skeleton Death Up Right",
+  "spriteCollection": "skeletonSprites",
+  "sprites": [
+    "skeletonDeathUpRight_0",
+    "skeletonDeathUpRight_1",
+    "skeletonDeathUpRight_2",
+    "skeletonDeathUpRight_3",
+    "skeletonDeathUpRight_4",
+    "skeletonDeathUpRight_5",
+    "skeletonDeathUpRight_6",
+    "skeletonDeathUpRight_7",
+    "skeletonDeathUpRight_8"
+  ],
+  "fps": 4
+}

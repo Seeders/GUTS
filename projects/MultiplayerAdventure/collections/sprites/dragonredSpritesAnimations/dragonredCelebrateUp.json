@@ -1,0 +1,21 @@
+{
+  "title": "dragonred Celebrate Up",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredCelebrateUp_0",
+    "dragonredCelebrateUp_1",
+    "dragonredCelebrateUp_2",
+    "dragonredCelebrateUp_3",
+    "dragonredCelebrateUp_4",
+    "dragonredCelebrateUp_5",
+    "dragonredCelebrateUp_6",
+    "dragonredCelebrateUp_7",
+    "dragonredCelebrateUp_8",
+    "dragonredCelebrateUp_9",
+    "dragonredCelebrateUp_10",
+    "dragonredCelebrateUp_11",
+    "dragonredCelebrateUp_12",
+    "dragonredCelebrateUp_13"
+  ],
+  "fps": 4
+}

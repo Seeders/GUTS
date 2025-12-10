@@ -1,0 +1,8 @@
+{
+  "title": "Peasant Efficiency",
+  "description": "Increase Gold Per Trip by 5",
+  "value": 100,
+  "effects": [
+    "goldPerTrip"
+  ]
+}

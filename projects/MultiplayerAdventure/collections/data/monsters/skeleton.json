@@ -1,0 +1,29 @@
+{
+  "title": "Skeleton Warrior",
+  "health": 80,
+  "damage": 12,
+  "attackSpeed": 1.0,
+  "attackRange": 35,
+  "speed": 70,
+  "aggroRange": 180,
+  "leashRange": 350,
+  "level": 3,
+  "experienceValue": 25,
+  "lootTable": "common",
+  "behaviorTree": "monster_basic",
+  "scale": 1.0,
+  "respawnTime": 45,
+  "render": {
+    "model": {
+      "main": {
+        "scale": { "x": 1, "y": 1, "z": 1 },
+        "shapes": [
+          {
+            "type": "gltf",
+            "url": "models/skeleton.glb"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "title": "Shire",
+  "lighting": "sunnyDayLighting",
+  "shadow": "sunnyDayShadows",
+  "fog": "sunnyDayFog",
+  "heightMap": "fiveStep",
+  "camera": "main",
+  "extensionSize": 768,
+  "worldObjects": [
+    "tree",
+    "rock",
+    "goldVein",
+    "tree_sprite",
+    "bush_fern_sprite",
+    "bush_sprite",
+    "grass_tuft_small_sprite",
+    "grass_tuft_sprite",
+    "mushroom_sprite",
+    "rock",
+    "stone_2_sprite",
+    "stone_sprite"
+  ],
+  "backgroundColor": "#b3e5fc"
+}

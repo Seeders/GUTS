@@ -1,0 +1,12 @@
+{
+  "title": "skeleton Walk Right",
+  "spriteCollection": "skeletonSprites",
+  "sprites": [
+    "skeletonWalkRight_0",
+    "skeletonWalkRight_1",
+    "skeletonWalkRight_2",
+    "skeletonWalkRight_3",
+    "skeletonWalkRight_4"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,36 @@
+{
+  "title": "Atom One Mid",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
+            "roughness": 1,
+            "metalness": 0,
+            "name": "main",
+            "url": "models/atom_one_mid_grass.glb"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    }
+  }
+}

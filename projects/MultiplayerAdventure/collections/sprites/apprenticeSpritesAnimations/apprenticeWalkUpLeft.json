@@ -1,0 +1,12 @@
+{
+  "title": "apprentice Walk Up Left",
+  "spriteCollection": "apprenticeSprites",
+  "sprites": [
+    "apprenticeWalkUpLeft_0",
+    "apprenticeWalkUpLeft_1",
+    "apprenticeWalkUpLeft_2",
+    "apprenticeWalkUpLeft_3",
+    "apprenticeWalkUpLeft_4"
+  ],
+  "fps": 4
+}

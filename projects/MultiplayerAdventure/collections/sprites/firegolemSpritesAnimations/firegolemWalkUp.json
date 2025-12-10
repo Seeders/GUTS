@@ -1,0 +1,13 @@
+{
+  "title": "firegolem Walk Up",
+  "spriteCollection": "firegolemSprites",
+  "sprites": [
+    "firegolemWalkUp_0",
+    "firegolemWalkUp_1",
+    "firegolemWalkUp_2",
+    "firegolemWalkUp_3",
+    "firegolemWalkUp_4",
+    "firegolemWalkUp_5"
+  ],
+  "fps": 4
+}

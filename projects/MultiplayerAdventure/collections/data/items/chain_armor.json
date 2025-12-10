@@ -1,0 +1,12 @@
+{
+  "title": "Chain Armor",
+  "name": "Chain Armor",
+  "description": "Solid protection. +25 Health, +8 Defense",
+  "icon": "\ud83d\udee1\ufe0f",
+  "stackable": false,
+  "usable": false,
+  "equipSlot": "armor",
+  "bonusHealth": 25,
+  "bonusDefense": 8,
+  "value": 75
+}

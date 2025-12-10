@@ -1,0 +1,8 @@
+{
+  "title": "cottage Idle Left",
+  "spriteCollection": "cottageSprites",
+  "sprites": [
+    "cottageIdleLeft_0"
+  ],
+  "fps": 4
+}

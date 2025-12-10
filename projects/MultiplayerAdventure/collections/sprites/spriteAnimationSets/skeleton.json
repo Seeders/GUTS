@@ -1,0 +1,68 @@
+{
+  "title": "Skeleton",
+  "animationCollection": "skeletonSpritesAnimations",
+  "spriteSheet": "sprites/skeletonSprites/skeletonSheet.png",
+  "idleSpriteAnimations": [
+    "skeletonIdleDown",
+    "skeletonIdleDownLeft",
+    "skeletonIdleLeft",
+    "skeletonIdleUpLeft",
+    "skeletonIdleUp",
+    "skeletonIdleUpRight",
+    "skeletonIdleRight",
+    "skeletonIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "skeletonWalkDown",
+    "skeletonWalkDownLeft",
+    "skeletonWalkLeft",
+    "skeletonWalkUpLeft",
+    "skeletonWalkUp",
+    "skeletonWalkUpRight",
+    "skeletonWalkRight",
+    "skeletonWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "skeletonAttackDown",
+    "skeletonAttackDownLeft",
+    "skeletonAttackLeft",
+    "skeletonAttackUpLeft",
+    "skeletonAttackUp",
+    "skeletonAttackUpRight",
+    "skeletonAttackRight",
+    "skeletonAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "skeletonDeathDown",
+    "skeletonDeathDownLeft",
+    "skeletonDeathLeft",
+    "skeletonDeathUpLeft",
+    "skeletonDeathUp",
+    "skeletonDeathUpRight",
+    "skeletonDeathRight",
+    "skeletonDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "skeletonCelebrateDown",
+    "skeletonCelebrateDownLeft",
+    "skeletonCelebrateLeft",
+    "skeletonCelebrateUpLeft",
+    "skeletonCelebrateUp",
+    "skeletonCelebrateUpRight",
+    "skeletonCelebrateRight",
+    "skeletonCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 7.6,
+    "palette": "main",
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "borderSize": 1
+  },
+  "spriteOffset": 16
+}

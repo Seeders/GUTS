@@ -1,0 +1,50 @@
+{
+  "title": "Wood Bow",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0.1,
+          "z": 0
+        },
+        "rotation": {
+          "x": -4.40619762898109e-16,
+          "z": -0.008513801229241034
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "url": "models/item_bow_peasant.glb",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 2,
+              "y": 2,
+              "z": 5
+            }
+          }
+        ]
+      }
+    }
+  }
+}

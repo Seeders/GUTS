@@ -1,0 +1,16 @@
+{
+  "title": "firegolem Death Right",
+  "spriteCollection": "firegolemSprites",
+  "sprites": [
+    "firegolemDeathRight_0",
+    "firegolemDeathRight_1",
+    "firegolemDeathRight_2",
+    "firegolemDeathRight_3",
+    "firegolemDeathRight_4",
+    "firegolemDeathRight_5",
+    "firegolemDeathRight_6",
+    "firegolemDeathRight_7",
+    "firegolemDeathRight_8"
+  ],
+  "fps": 4
+}

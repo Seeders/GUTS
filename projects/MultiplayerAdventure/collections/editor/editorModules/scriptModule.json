@@ -1,0 +1,13 @@
+{
+  "title": "Script Editor",
+  "container": "script-editor-container",
+  "interface": "scriptEditor",
+  "inputElement": "textarea",
+  "inputDataType": "string",
+  "libraries": [
+    "ScriptEditor"
+  ],
+  "propertyNames": "[\"script\", \"html\", \"css\"]",
+  "loadHook": "editScript",
+  "saveHook": "saveScript"
+}

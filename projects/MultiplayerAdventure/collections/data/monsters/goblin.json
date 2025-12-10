@@ -1,0 +1,29 @@
+{
+  "title": "Goblin",
+  "health": 50,
+  "damage": 8,
+  "attackSpeed": 1.2,
+  "attackRange": 30,
+  "speed": 100,
+  "aggroRange": 150,
+  "leashRange": 300,
+  "level": 1,
+  "experienceValue": 15,
+  "lootTable": "common",
+  "behaviorTree": "monster_basic",
+  "scale": 0.8,
+  "respawnTime": 30,
+  "render": {
+    "model": {
+      "main": {
+        "scale": { "x": 0.8, "y": 0.8, "z": 0.8 },
+        "shapes": [
+          {
+            "type": "gltf",
+            "url": "models/goblin.glb"
+          }
+        ]
+      }
+    }
+  }
+}

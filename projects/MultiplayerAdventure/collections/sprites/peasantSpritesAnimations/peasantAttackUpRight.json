@@ -1,0 +1,14 @@
+{
+  "title": "peasant Attack Up Right",
+  "spriteCollection": "peasantSprites",
+  "sprites": [
+    "peasantAttackUpRight_0",
+    "peasantAttackUpRight_1",
+    "peasantAttackUpRight_2",
+    "peasantAttackUpRight_3",
+    "peasantAttackUpRight_4",
+    "peasantAttackUpRight_5",
+    "peasantAttackUpRight_6"
+  ],
+  "fps": 4
+}

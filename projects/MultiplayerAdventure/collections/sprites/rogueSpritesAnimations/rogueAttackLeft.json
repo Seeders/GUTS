@@ -1,0 +1,29 @@
+{
+  "title": "rogue Attack Left",
+  "spriteCollection": "rogueSprites",
+  "sprites": [
+    "rogueAttackLeft_0",
+    "rogueAttackLeft_1",
+    "rogueAttackLeft_2",
+    "rogueAttackLeft_3",
+    "rogueAttackLeft_4",
+    "rogueAttackLeft_5",
+    "rogueAttackLeft_6",
+    "rogueAttackLeft_7",
+    "rogueAttackLeft_8",
+    "rogueAttackLeft_9",
+    "rogueAttackLeft_10",
+    "rogueAttackLeft_11",
+    "rogueAttackLeft_12",
+    "rogueAttackLeft_13",
+    "rogueAttackLeft_14",
+    "rogueAttackLeft_15",
+    "rogueAttackLeft_16",
+    "rogueAttackLeft_17",
+    "rogueAttackLeft_18",
+    "rogueAttackLeft_19",
+    "rogueAttackLeft_20",
+    "rogueAttackLeft_21"
+  ],
+  "fps": 4
+}

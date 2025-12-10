@@ -1,0 +1,14 @@
+{
+  "title": "dragonred Glide Left",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredGlideLeft_0",
+    "dragonredGlideLeft_1",
+    "dragonredGlideLeft_2",
+    "dragonredGlideLeft_3",
+    "dragonredGlideLeft_4",
+    "dragonredGlideLeft_5",
+    "dragonredGlideLeft_6"
+  ],
+  "fps": 4
+}

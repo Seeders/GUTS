@@ -1,0 +1,8 @@
+{
+  "title": "fletchershall Idle Up Left",
+  "spriteCollection": "fletchershallSprites",
+  "sprites": [
+    "fletchershallIdleUpLeft_0"
+  ],
+  "fps": 4
+}

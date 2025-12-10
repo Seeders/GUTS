@@ -1,0 +1,68 @@
+{
+  "title": "Barbarian",
+  "animationCollection": "barbarianSpritesAnimations",
+  "spriteSheet": "sprites/barbarianSprites/barbarianSheet.png",
+  "idleSpriteAnimations": [
+    "barbarianIdleDown",
+    "barbarianIdleDownLeft",
+    "barbarianIdleLeft",
+    "barbarianIdleUpLeft",
+    "barbarianIdleUp",
+    "barbarianIdleUpRight",
+    "barbarianIdleRight",
+    "barbarianIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "barbarianWalkDown",
+    "barbarianWalkDownLeft",
+    "barbarianWalkLeft",
+    "barbarianWalkUpLeft",
+    "barbarianWalkUp",
+    "barbarianWalkUpRight",
+    "barbarianWalkRight",
+    "barbarianWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "barbarianAttackDown",
+    "barbarianAttackDownLeft",
+    "barbarianAttackLeft",
+    "barbarianAttackUpLeft",
+    "barbarianAttackUp",
+    "barbarianAttackUpRight",
+    "barbarianAttackRight",
+    "barbarianAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "barbarianDeathDown",
+    "barbarianDeathDownLeft",
+    "barbarianDeathLeft",
+    "barbarianDeathUpLeft",
+    "barbarianDeathUp",
+    "barbarianDeathUpRight",
+    "barbarianDeathRight",
+    "barbarianDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "barbarianCelebrateDown",
+    "barbarianCelebrateDownLeft",
+    "barbarianCelebrateLeft",
+    "barbarianCelebrateUpLeft",
+    "barbarianCelebrateUp",
+    "barbarianCelebrateUpRight",
+    "barbarianCelebrateRight",
+    "barbarianCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "borderSize": 1
+  },
+  "spriteOffset": 16
+}

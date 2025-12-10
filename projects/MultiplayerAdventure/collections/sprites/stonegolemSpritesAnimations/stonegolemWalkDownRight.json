@@ -1,0 +1,13 @@
+{
+  "title": "stonegolem Walk Down Right",
+  "spriteCollection": "stonegolemSprites",
+  "sprites": [
+    "stonegolemWalkDownRight_0",
+    "stonegolemWalkDownRight_1",
+    "stonegolemWalkDownRight_2",
+    "stonegolemWalkDownRight_3",
+    "stonegolemWalkDownRight_4",
+    "stonegolemWalkDownRight_5"
+  ],
+  "fps": 4
+}

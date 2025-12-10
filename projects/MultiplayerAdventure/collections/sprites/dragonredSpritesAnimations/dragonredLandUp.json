@@ -1,0 +1,24 @@
+{
+  "title": "dragonred Land Up",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredLandUp_0",
+    "dragonredLandUp_1",
+    "dragonredLandUp_2",
+    "dragonredLandUp_3",
+    "dragonredLandUp_4",
+    "dragonredLandUp_5",
+    "dragonredLandUp_6",
+    "dragonredLandUp_7",
+    "dragonredLandUp_8",
+    "dragonredLandUp_9",
+    "dragonredLandUp_10",
+    "dragonredLandUp_11",
+    "dragonredLandUp_12",
+    "dragonredLandUp_13",
+    "dragonredLandUp_14",
+    "dragonredLandUp_15",
+    "dragonredLandUp_16"
+  ],
+  "fps": 4
+}

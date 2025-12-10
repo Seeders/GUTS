@@ -1,0 +1,7 @@
+{
+  "title": "Parallel",
+  "description": "Composite node that evaluates all children simultaneously. Success/failure based on policy.",
+  "color": "#f59e0b",
+  "fillColor": "#3a2a1e",
+  "icon": "parallel"
+}

@@ -1,0 +1,21 @@
+{
+  "title": "dragonred Celebrate Down Right",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredCelebrateDownRight_0",
+    "dragonredCelebrateDownRight_1",
+    "dragonredCelebrateDownRight_2",
+    "dragonredCelebrateDownRight_3",
+    "dragonredCelebrateDownRight_4",
+    "dragonredCelebrateDownRight_5",
+    "dragonredCelebrateDownRight_6",
+    "dragonredCelebrateDownRight_7",
+    "dragonredCelebrateDownRight_8",
+    "dragonredCelebrateDownRight_9",
+    "dragonredCelebrateDownRight_10",
+    "dragonredCelebrateDownRight_11",
+    "dragonredCelebrateDownRight_12",
+    "dragonredCelebrateDownRight_13"
+  ],
+  "fps": 4
+}

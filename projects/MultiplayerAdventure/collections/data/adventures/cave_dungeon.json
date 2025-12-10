@@ -1,0 +1,48 @@
+{
+  "title": "Crystal Caves",
+  "description": "Deep caves with valuable crystals and dangerous creatures",
+  "minLevel": 5,
+  "maxPlayers": 4,
+  "timeLimit": 900,
+  "spawnPoint": { "x": 0, "y": 0, "z": -250 },
+  "monsterSpawns": [
+    {
+      "type": "skeleton",
+      "count": 8,
+      "position": { "x": 50, "y": 0, "z": 50 },
+      "radius": 80
+    },
+    {
+      "type": "skeleton",
+      "count": 6,
+      "position": { "x": -80, "y": 0, "z": 150 },
+      "radius": 60
+    },
+    {
+      "type": "orc",
+      "count": 3,
+      "position": { "x": 0, "y": 0, "z": 300 },
+      "radius": 40
+    }
+  ],
+  "objectives": [
+    {
+      "id": "kill_skeletons",
+      "type": "kill",
+      "target": "skeleton",
+      "required": 14,
+      "description": "Clear the Skeleton Infestation"
+    },
+    {
+      "id": "kill_orcs",
+      "type": "kill",
+      "target": "orc",
+      "required": 3,
+      "description": "Defeat the Cave Guardians"
+    }
+  ],
+  "rewards": {
+    "experience": 300,
+    "gold": 200
+  }
+}

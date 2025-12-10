@@ -1,0 +1,28 @@
+{
+  "title": "Sentrytower",
+  "animationCollection": "sentrytowerSpritesAnimations",
+  "spriteSheet": "sprites/sentrytowerSprites/sentrytowerSheet.png",
+  "idleSpriteAnimations": [
+    "sentrytowerIdleDown",
+    "sentrytowerIdleDownLeft",
+    "sentrytowerIdleLeft",
+    "sentrytowerIdleUpLeft",
+    "sentrytowerIdleUp",
+    "sentrytowerIdleUpRight",
+    "sentrytowerIdleRight",
+    "sentrytowerIdleDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 9,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2
+  },
+  "spriteOffset": 32
+}

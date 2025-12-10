@@ -1,0 +1,52 @@
+{
+  "damageType": "physical",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0.1
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "url": "models/projectile_arrow.glb",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1"
+          }
+        ],
+        "scale": {
+          "z": 0.25,
+          "y": 0.25,
+          "x": 0.25
+        }
+      }
+    }
+  },
+  "speed": 1000,
+  "title": "Hunting Arrow",
+  "attackSound": "plasma",
+  "hitSound": "plasma",
+  "homing": true,
+  "homingStrength": 0.3
+}

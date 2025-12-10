@@ -1,0 +1,19 @@
+{
+  "level": "town_hub",
+  "mousePosition": "{ x: 0, y: 0, isoX: 0, isoY: 0, gridX: 0, gridY: 0 }",
+  "isPaused": false,
+  "timeScale": 1,
+  "gameOver": false,
+  "victory": false,
+  "modifierSet": "global",
+  "fileName": "state",
+  "phase": "town",
+  "playerGold": 100,
+  "playerLevel": 1,
+  "playerExperience": 0,
+  "currentZone": "town",
+  "inInstance": false,
+  "instanceId": null,
+  "partyId": null,
+  "isPartyLeader": false
+}

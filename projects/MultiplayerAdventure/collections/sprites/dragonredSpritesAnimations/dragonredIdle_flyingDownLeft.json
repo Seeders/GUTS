@@ -1,0 +1,12 @@
+{
+  "title": "dragonred Idle_flying Down Left",
+  "spriteCollection": "dragonredSprites",
+  "sprites": [
+    "dragonredIdle_flyingDownLeft_0",
+    "dragonredIdle_flyingDownLeft_1",
+    "dragonredIdle_flyingDownLeft_2",
+    "dragonredIdle_flyingDownLeft_3",
+    "dragonredIdle_flyingDownLeft_4"
+  ],
+  "fps": 4
+}

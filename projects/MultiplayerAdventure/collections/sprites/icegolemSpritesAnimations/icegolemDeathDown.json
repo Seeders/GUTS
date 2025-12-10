@@ -1,0 +1,16 @@
+{
+  "title": "icegolem Death Down",
+  "spriteCollection": "icegolemSprites",
+  "sprites": [
+    "icegolemDeathDown_0",
+    "icegolemDeathDown_1",
+    "icegolemDeathDown_2",
+    "icegolemDeathDown_3",
+    "icegolemDeathDown_4",
+    "icegolemDeathDown_5",
+    "icegolemDeathDown_6",
+    "icegolemDeathDown_7",
+    "icegolemDeathDown_8"
+  ],
+  "fps": 4
+}

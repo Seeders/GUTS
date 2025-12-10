@@ -1,0 +1,51 @@
+{
+  "title": "Adventure Instance Scene",
+  "description": "Instanced adventure area for party combat and exploration",
+  "systems": [
+    "ComponentSystem",
+    "GridSystem",
+    "TerrainSystem",
+    "RenderSystem",
+    "WorldSystem",
+    "TerrainDetailSystem",
+    "PostProcessingSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "AnimationSystem",
+    "EffectsSystem",
+    "UnitCreationSystem",
+    "PlayerStatsSystem",
+    "AdventureNetworkSystem",
+    "InstanceSystem",
+    "PartySystem",
+    "PlayerControlSystem",
+    "MonsterAISystem",
+    "HealthBarSystem",
+    "EquipmentSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "ParticleSystem",
+    "LifetimeSystem",
+    "PathfindingSystem",
+    "CameraControlSystem",
+    "DamageNumberSystem",
+    "VisionSystem",
+    "LootSystem",
+    "InventorySystem",
+    "CharacterSystem"
+  ],
+  "entities": [
+    {
+      "id": "terrain_main",
+      "prefab": "terrain_dungeon",
+      "components": {
+        "terrain": {
+          "level": "dungeon_1",
+          "world": "dungeon"
+        }
+      }
+    }
+  ]
+}

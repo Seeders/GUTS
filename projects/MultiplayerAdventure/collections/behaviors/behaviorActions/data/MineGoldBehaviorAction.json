@@ -1,0 +1,16 @@
+{
+  "title": "Mine Gold",
+  "behaviorNodeType": "action",
+  "type": "MineGoldBehaviorAction",
+  "priority": 5,
+  "description": "Mine gold from a gold mine",
+  "parameters": {
+    "miningRange": 25,
+    "depositRange": 25,
+    "miningDuration": 2,
+    "depositDuration": 1,
+    "goldPerTrip": 10
+  },
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/MineGoldBehaviorAction.js",
+  "fileName": "MineGoldBehaviorAction"
+}

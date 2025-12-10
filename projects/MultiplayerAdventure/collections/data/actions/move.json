@@ -1,0 +1,7 @@
+{
+  "title": "Force Move",
+  "icon": "order_move",
+  "order": "moveOrderAction",
+  "behaviorAction": "MoveAction",
+  "parameters": "{\"preventEnemiesInRangeCheck\": true}"
+}

@@ -1,0 +1,13 @@
+{
+  "title": "trap",
+  "schema": {
+    "damage": 50,
+    "radius": 80,
+    "triggerRadius": 30,
+    "element": "physical",
+    "caster": null,
+    "triggered": false,
+    "triggerCount": 0,
+    "maxTriggers": 1
+  }
+}

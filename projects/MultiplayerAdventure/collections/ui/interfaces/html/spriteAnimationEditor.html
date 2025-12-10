@@ -1,0 +1,136 @@
+<div id="sprite-animation-container" class="editor-module">
+   <div id="sprite-animation-sidebar" class="editor-module__sidebar editor-module__sidebar--left">
+      <!-- Animation Selection -->
+      <div class="editor-module__panel">
+         <h4 class="editor-module__panel-title">Animation Type</h4>
+         <select id="sprite-animation-type" class="editor-module__select">
+            <option value="idle">Idle</option>
+            <option value="walk">Walk</option>
+            <option value="attack">Attack</option>
+            <option value="death">Death</option>
+            <option value="celebrate">Celebrate</option>
+         </select>
+      </div>
+
+      <!-- Direction Selection -->
+      <div class="editor-module__panel">
+         <h4 class="editor-module__panel-title">Direction</h4>
+         <div id="sprite-direction-grid" class="sprite-animation__direction-grid">
+            <button class="sprite-animation__direction-btn" data-direction="3" title="Up-Left">↖</button>
+            <button class="sprite-animation__direction-btn" data-direction="4" title="Up">↑</button>
+            <button class="sprite-animation__direction-btn" data-direction="5" title="Up-Right">↗</button>
+            <button class="sprite-animation__direction-btn" data-direction="2" title="Left">←</button>
+            <button class="sprite-animation__direction-btn sprite-animation__direction-btn--center" data-direction="-1" title="All">●</button>
+            <button class="sprite-animation__direction-btn" data-direction="6" title="Right">→</button>
+            <button class="sprite-animation__direction-btn" data-direction="1" title="Down-Left">↙</button>
+            <button class="sprite-animation__direction-btn" data-direction="0" title="Down">↓</button>
+            <button class="sprite-animation__direction-btn" data-direction="7" title="Down-Right">↘</button>
+         </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="editor-module__panel">
+         <h4 class="editor-module__panel-title">Playback</h4>
+         <div class="editor-module__flex editor-module__gap-sm">
+            <button id="sprite-play-btn" class="editor-module__btn editor-module__btn--primary" title="Play/Pause">▶</button>
+            <button id="sprite-prev-btn" class="editor-module__btn editor-module__btn--secondary" title="Previous Frame">◀</button>
+            <button id="sprite-next-btn" class="editor-module__btn editor-module__btn--secondary" title="Next Frame">▶</button>
+         </div>
+         <div class="editor-module__form-row">
+            <label class="editor-module__label">Speed:</label>
+            <input type="range" id="sprite-speed-slider" class="editor-module__range" min="1" max="30" value="10">
+            <span id="sprite-speed-value">10 FPS</span>
+         </div>
+         <div class="editor-module__form-row">
+            <label class="editor-module__label">Scale:</label>
+            <input type="range" id="sprite-scale-slider" class="editor-module__range" min="1" max="8" value="4">
+            <span id="sprite-scale-value">4x</span>
+         </div>
+      </div>
+
+      <!-- Animation Info -->
+      <div class="editor-module__panel">
+         <h4 class="editor-module__panel-title">Info</h4>
+         <div id="sprite-info">
+            <div>Animation Set: <span id="sprite-set-name">-</span></div>
+            <div>Sprite Collection: <span id="sprite-collection-name">-</span></div>
+            <div>Current Animation: <span id="sprite-current-anim">-</span></div>
+            <div>Frame: <span id="sprite-frame-info">0 / 0</span></div>
+            <div>Sprite Size: <span id="sprite-size-info">-</span></div>
+         </div>
+      </div>
+
+      <!-- Generator Settings (if available) -->
+      <div class="editor-module__panel" id="sprite-generator-settings-panel" style="display: none;">
+         <h4 class="editor-module__panel-title">Generator Settings</h4>
+         <div id="sprite-generator-settings" style="font-size: 12px;"></div>
+      </div>
+   </div>
+
+   <!-- Canvas Area -->
+   <div id="sprite-canvas-container" class="editor-module__canvas-area editor-module__grid-background">
+      <canvas id="sprite-animation-canvas" class="editor-module__canvas"></canvas>
+   </div>
+
+   <!-- Right Sidebar - Animation List -->
+   <div id="sprite-animation-rightbar" class="editor-module__sidebar editor-module__sidebar--right">
+      <div class="editor-module__panel">
+         <h4 class="editor-module__panel-title">Animations</h4>
+         <div id="sprite-animation-list" class="editor-module__list editor-module__scroll-y"></div>
+      </div>
+   </div>
+</div>
+
+<style>
+   .sprite-animation__direction-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      max-width: 120px;
+      margin: 0 auto;
+   }
+
+   .sprite-animation__direction-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border-color, #444);
+      background: var(--bg-secondary, #2a2a2a);
+      color: var(--text-color, #fff);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+   }
+
+   .sprite-animation__direction-btn:hover {
+      background: var(--bg-hover, #3a3a3a);
+   }
+
+   .sprite-animation__direction-btn.active {
+      background: var(--accent-color, #4a9eff);
+      border-color: var(--accent-color, #4a9eff);
+   }
+
+   .sprite-animation__direction-btn--center {
+      background: var(--bg-tertiary, #333);
+   }
+
+   #sprite-animation-canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+   }
+
+   #sprite-animation-list .editor-module__list-item {
+      padding: 6px 8px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-color, #333);
+   }
+
+   #sprite-animation-list .editor-module__list-item:hover {
+      background: var(--bg-hover, #3a3a3a);
+   }
+
+   #sprite-animation-list .editor-module__list-item.active {
+      background: var(--accent-color, #4a9eff);
+   }
+</style>

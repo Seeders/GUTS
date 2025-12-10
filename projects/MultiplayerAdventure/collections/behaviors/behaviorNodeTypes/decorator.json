@@ -1,0 +1,7 @@
+{
+  "title": "Decorator",
+  "description": "Wrapper node that modifies behavior of a single child (invert, repeat, timeout, etc.).",
+  "color": "#8b5cf6",
+  "fillColor": "#2a1e3a",
+  "icon": "decorator"
+}

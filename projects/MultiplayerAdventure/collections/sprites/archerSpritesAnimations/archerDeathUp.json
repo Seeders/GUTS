@@ -1,0 +1,16 @@
+{
+  "title": "archer Death Up",
+  "spriteCollection": "archerSprites",
+  "sprites": [
+    "archerDeathUp_0",
+    "archerDeathUp_1",
+    "archerDeathUp_2",
+    "archerDeathUp_3",
+    "archerDeathUp_4",
+    "archerDeathUp_5",
+    "archerDeathUp_6",
+    "archerDeathUp_7",
+    "archerDeathUp_8"
+  ],
+  "fps": 4
+}

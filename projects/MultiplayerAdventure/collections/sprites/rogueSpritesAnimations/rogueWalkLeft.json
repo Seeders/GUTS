@@ -1,0 +1,12 @@
+{
+  "title": "rogue Walk Left",
+  "spriteCollection": "rogueSprites",
+  "sprites": [
+    "rogueWalkLeft_0",
+    "rogueWalkLeft_1",
+    "rogueWalkLeft_2",
+    "rogueWalkLeft_3",
+    "rogueWalkLeft_4"
+  ],
+  "fps": 4
+}

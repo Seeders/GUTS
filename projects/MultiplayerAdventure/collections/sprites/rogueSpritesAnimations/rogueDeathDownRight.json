@@ -1,0 +1,16 @@
+{
+  "title": "rogue Death Down Right",
+  "spriteCollection": "rogueSprites",
+  "sprites": [
+    "rogueDeathDownRight_0",
+    "rogueDeathDownRight_1",
+    "rogueDeathDownRight_2",
+    "rogueDeathDownRight_3",
+    "rogueDeathDownRight_4",
+    "rogueDeathDownRight_5",
+    "rogueDeathDownRight_6",
+    "rogueDeathDownRight_7",
+    "rogueDeathDownRight_8"
+  ],
+  "fps": 4
+}

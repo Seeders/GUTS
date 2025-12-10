@@ -1,0 +1,39 @@
+{
+  "title": "Server Game Scene",
+  "description": "Server-side game simulation for adventure instances",
+  "systems": [
+    "ComponentSystem",
+    "PlayerStatsSystem",
+    "GridSystem",
+    "TerrainSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "UnitCreationSystem",
+    "ServerTownHubSystem",
+    "ServerInstanceSystem",
+    "ServerPartySystem",
+    "LifetimeSystem",
+    "PathfindingSystem",
+    "VisionSystem",
+    "LootSystem",
+    "MonsterSpawnSystem",
+    "CharacterSystem",
+    "InventorySystem"
+  ],
+  "entities": [
+    {
+      "id": "terrain_main",
+      "prefab": "terrain",
+      "components": {
+        "terrain": {
+          "level": "town_hub",
+          "world": "town"
+        }
+      }
+    }
+  ]
+}
