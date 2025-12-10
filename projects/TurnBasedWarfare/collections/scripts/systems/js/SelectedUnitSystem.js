@@ -275,6 +275,10 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             if (!pos) return;
             if (!unitType && !renderable) return;
 
+            // Skip world objects (environment objects from level data) in scene editor
+            // These should only be editable in terrain map editor
+            if (this.isEditorMode && unitType?.collection === 'worldObjects') return;
+
             // Convert world position to screen position
             const screenPos = this.worldToScreen(pos.x, pos.y, pos.z);
             if (!screenPos) return;
@@ -426,6 +430,10 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             // Must have position and be renderable
             if (!pos) return;
             if (!unitType && !renderable) return;
+
+            // Skip world objects (environment objects from level data) in scene editor
+            // These should only be editable in terrain map editor
+            if (unitType?.collection === 'worldObjects') return;
 
             const dx = pos.x - worldPos.x;
             const dz = pos.z - worldPos.z;

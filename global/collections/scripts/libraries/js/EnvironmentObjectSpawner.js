@@ -24,31 +24,46 @@ class EnvironmentObjectSpawner {
     }
 
     /**
-     * Get world position from world object
+     * Generate a seeded random number based on grid position
+     * This ensures the same object always gets the same offset
+     */
+    seededRandom(gridX, gridZ, seed = 0) {
+        const n = Math.sin(gridX * 12.9898 + gridZ * 78.233 + seed) * 43758.5453;
+        return n - Math.floor(n);
+    }
+
+    /**
+     * Get world position from world object with random offset within tile
      */
     calculateWorldPosition(worldObj, terrainDataManager) {
         // World objects use gridX/gridZ for tile grid coordinates
         // Convert to world coordinates using tile grid (96) not placement grid (48)
+
+        const GRID_SIZE = 48; // Tile grid size
+        const OFFSET_RANGE = 0.7; // Use 70% of tile size for offset range to keep objects away from edges
+
+        // Generate consistent random offsets based on grid position
+        const randomX = (this.seededRandom(worldObj.gridX, worldObj.gridZ, 1) - 0.5) * GRID_SIZE * OFFSET_RANGE;
+        const randomZ = (this.seededRandom(worldObj.gridX, worldObj.gridZ, 2) - 0.5) * GRID_SIZE * OFFSET_RANGE;
 
         // Use centralized coordinate conversion from CoordinateTranslator if available
         if (this.mode === 'runtime' && this.game?.gameSystem) {
             // Use tileToWorld with centering to place objects in the center of their tile
             const worldPos = this.game.call('tileToWorld', worldObj.gridX, worldObj.gridZ, true);
             return {
-                worldX: worldPos.x,
-                worldZ: worldPos.z
+                worldX: worldPos.x + randomX,
+                worldZ: worldPos.z + randomZ
             };
         }
 
         // Fallback for editor mode or if gameManager not available
-        const GRID_SIZE = 48; // Tile grid size
         const terrainSize = terrainDataManager.terrainSize;
-        // Center the object in the tile
+        // Center the object in the tile, then add random offset
         const pixelX = worldObj.gridX * GRID_SIZE;
         const pixelZ = worldObj.gridZ * GRID_SIZE;
         return {
-            worldX: pixelX - (terrainSize / 2) + (GRID_SIZE / 2),
-            worldZ: pixelZ - (terrainSize / 2) + (GRID_SIZE / 2)
+            worldX: pixelX - (terrainSize / 2) + (GRID_SIZE / 2) + randomX,
+            worldZ: pixelZ - (terrainSize / 2) + (GRID_SIZE / 2) + randomZ
         };
     }
 
@@ -96,11 +111,14 @@ class EnvironmentObjectSpawner {
             return;
         }
 
-        // Calculate world position
+        // Calculate world position (includes random offset within tile)
         const { worldX, worldZ } = this.calculateWorldPosition(worldObj, terrainDataManager);
 
-        // Get terrain height
-        const height = this.getTerrainHeight(worldX, worldZ, terrainDataManager);
+        // Get terrain height with small random variance
+        const baseHeight = this.getTerrainHeight(worldX, worldZ, terrainDataManager);
+        const HEIGHT_VARIANCE = 2; // Small height variance in world units
+        const heightOffset = (this.seededRandom(worldObj.gridX, worldObj.gridZ, 3) - 0.5) * HEIGHT_VARIANCE;
+        const height = baseHeight + heightOffset;
 
         // Fixed rotation and scale (no random variation)
         const rotation = 0;

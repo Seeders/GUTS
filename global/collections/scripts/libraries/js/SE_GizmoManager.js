@@ -144,8 +144,8 @@ class SE_GizmoManager {
         group.name = "rotateGizmo";
 
         const radius = 1;
-        const tube = 0.15; // Larger tube size for better visibility and raycast interaction
-        const radialSegments = 16;
+        const tube = 0.05; // Thin tube for cleaner appearance
+        const radialSegments = 8;
         const tubularSegments = 48;
         
         // X axis ring (red)
@@ -566,13 +566,13 @@ class SE_GizmoManager {
     
     handleDrag() {
         if (!this.selectedAxis) return;
-        
+
         // Get current point on drag plane
         this.dragCurrentPoint = this.getPointOnDragPlane();
-        
+
         // Calculate delta movement
         const delta = new THREE.Vector3().subVectors(this.dragCurrentPoint, this.dragStartPoint);
-        
+
         switch (this.mode) {
             case 'translate':
                 this.handleTranslation(delta);
@@ -584,10 +584,23 @@ class SE_GizmoManager {
                 this.handleScaling(delta);
                 break;
         }
-        
+
         // Update gizmo position to match target object
         this.updateGizmoTransform();
-        
+
+        // Live update: notify callback during drag for real-time entity updates
+        if (this.targetObject && this.onTransformChange) {
+            const position = this.targetObject.position;
+            const rotation = this.targetObject.rotation;
+            const scale = this.targetObject.scale;
+
+            this.onTransformChange(
+                { x: position.x, y: position.y, z: position.z },
+                { x: rotation.x, y: rotation.y, z: rotation.z },
+                { x: scale.x, y: scale.y, z: scale.z }
+            );
+        }
+
         // Update the drag start point to prevent accumulation of tiny movements
         this.dragStartPoint = this.dragCurrentPoint;
     }
@@ -625,17 +638,20 @@ class SE_GizmoManager {
         switch (this.selectedAxis) {
             case 'x':
                 // Rotation around X axis - project onto YZ plane
-                angle = Math.atan2(toCurrent.z, toCurrent.y) - Math.atan2(toStart.z, toStart.y);
+                // Negate for intuitive drag direction
+                angle = Math.atan2(toStart.z, toStart.y) - Math.atan2(toCurrent.z, toCurrent.y);
                 this.targetObject.rotation.x += angle;
                 break;
             case 'y':
                 // Rotation around Y axis - project onto XZ plane
-                angle = Math.atan2(toCurrent.x, toCurrent.z) - Math.atan2(toStart.x, toStart.z);
+                // Negate for intuitive drag direction
+                angle = Math.atan2(toStart.x, toStart.z) - Math.atan2(toCurrent.x, toCurrent.z);
                 this.targetObject.rotation.y += angle;
                 break;
             case 'z':
                 // Rotation around Z axis - project onto XY plane
-                angle = Math.atan2(toCurrent.y, toCurrent.x) - Math.atan2(toStart.y, toStart.x);
+                // Negate for intuitive drag direction
+                angle = Math.atan2(toStart.y, toStart.x) - Math.atan2(toCurrent.y, toCurrent.x);
                 this.targetObject.rotation.z += angle;
                 break;
             case 'xyz':
