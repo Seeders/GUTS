@@ -6,6 +6,9 @@
   "libraries": [
     "GameServices",
     "threejs",
+    "SparseSet",
+    "Archetype",
+    "ComponentPool",
     "BaseECSGame",
     "Rapier",
     "three_MeshBVH",

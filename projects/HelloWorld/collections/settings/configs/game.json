@@ -5,6 +5,9 @@
     "is3D": true,
     "isIsometric": false,
     "libraries": [
+        "SparseSet",
+        "Archetype",
+        "ComponentPool",
         "BaseECSGame",
         "SceneManager",
         "BaseSystem",

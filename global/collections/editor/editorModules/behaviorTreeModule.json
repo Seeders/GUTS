@@ -8,6 +8,9 @@
   "loadHook": "editBehaviorTree",
   "saveHook": "saveBehaviorTree",
   "libraries": [
+    "SparseSet",
+    "Archetype",
+    "ComponentPool",
     "BaseECSGame",
     "BaseSystem",
     "BehaviorTreeDebugger",

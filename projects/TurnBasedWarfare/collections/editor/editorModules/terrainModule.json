@@ -3,6 +3,9 @@
   "container": "level-editor-container",
   "libraries": [
     "threejs",
+    "SparseSet",
+    "Archetype",
+    "ComponentPool",
     "BaseECSGame",
     "SceneManager",
     "EditorECSGame",

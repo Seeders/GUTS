@@ -8,6 +8,9 @@
   "initialScene": "server",
   "libraries": [
     "GameServices",
+    "SparseSet",
+    "Archetype",
+    "ComponentPool",
     "BaseSystem",
     "BaseLoader",
     "ServerGameLoader",
