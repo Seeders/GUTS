@@ -17,7 +17,7 @@
             "metalness": 0,
             "roughness": 1,
             "name": "main",
-            "url": "models/atom_two_mid_grass.glb"
+            "model": "atom_two_mid_grass"
           }
         ],
         "position": {

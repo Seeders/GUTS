@@ -17,7 +17,7 @@
             "roughness": 1,
             "metalness": 0,
             "name": "main",
-            "url": "models/atom_one_base_grass.glb"
+            "model": "atom_one_base_grass"
           }
         ],
         "position": {

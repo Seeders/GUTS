@@ -1810,13 +1810,19 @@ class EntityRenderer {
             }
 
             const shape = entityDef.render.model.main.shapes[0];
-            if (shape.type !== 'gltf') {
-                console.warn(`[EntityRenderer] ${collectionType}.${entityType} shape is not GLTF, type: ${shape.type}`);
+            if (!shape.model) {
+                console.warn(`[EntityRenderer] ${collectionType}.${entityType} shape has no model reference`);
                 continue;
             }
 
             try {
-                const url = `/projects/${this.projectName}/resources/${shape.url}`;
+                // Resolve model reference
+                const modelData = this.collections.models?.[shape.model];
+                if (!modelData?.file) {
+                    console.warn(`[EntityRenderer] Model '${shape.model}' not found in models collection`);
+                    continue;
+                }
+                const url = `/projects/${this.projectName}/resources/${modelData.file}`;
              
                 const gltf = await new Promise((resolve, reject) => {
                     loader.load(url, resolve, undefined, reject);

@@ -19,8 +19,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/dragon_idle.glb",
-                "id": 0
+                "id": 0,
+                "animation": "dragon_idle"
               }
             ]
           }
@@ -31,8 +31,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/dragon_walk.glb",
-                "id": 0
+                "id": 0,
+                "animation": "dragon_walk"
               }
             ]
           }
@@ -43,8 +43,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/dragon_attack.glb",
-                "id": 0
+                "id": 0,
+                "animation": "dragon_attack"
               }
             ]
           }
@@ -56,8 +56,8 @@
             "loops": false,
             "shapes": [
               {
-                "url": "animations/dragon_death.glb",
-                "id": 0
+                "id": 0,
+                "animation": "dragon_death"
               }
             ]
           }
@@ -68,8 +68,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/dragon_cast.glb",
-                "id": 0
+                "id": 0,
+                "animation": "dragon_cast"
               }
             ]
           }
@@ -81,20 +81,17 @@
             "shapes": [
               {
                 "type": "gltf",
-                "url": "animations/dragon_roar.glb",
                 "width": 2,
                 "height": 0.2,
                 "depth": 1,
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "rotationX": 0,
-                "rotationY": 0,
-                "rotationZ": 0,
+                
+                
+                
                 "color": "#FFFFFF",
                 "metalness": "0",
                 "roughness": "1",
-                "id": 0
+                "id": 0,
+                "animation": "dragon_roar"
               }
             ]
           }
@@ -120,19 +117,16 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/dragon.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
+            
+            
+            
             "color": "#FFFFFF",
             "metalness": "0",
-            "roughness": "1"
+            "roughness": "1",
+            "model": "dragon"
           }
         ]
       }

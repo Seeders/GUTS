@@ -19,7 +19,7 @@ class GraphicsEditor {
     constructor(gameEditor, config, {}) {
         this.gameEditor = gameEditor;
         this.config = config;
-        this.shapeFactory = new GUTS.ShapeFactory(this.gameEditor.getResourcesPath(), this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null);
+        this.shapeFactory = new GUTS.ShapeFactory(this.gameEditor.getResourcesPath(), this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null, 32, this.gameEditor.getCollections().models, this.gameEditor.getCollections().animations);
         if(location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }
@@ -368,17 +368,28 @@ class GraphicsEditor {
         }
 
         const frame = currentAnimation[0];
-        const animationShape = frame?.main?.shapes?.find(s =>
-            s.url && s.url.includes('animations/') && (s.url.endsWith('.glb') || s.url.endsWith('.gltf'))
-        );
+        // Find shape with animation reference (new format) or url (legacy format)
+        const animationShape = frame?.main?.shapes?.find(s => s.animation || (s.url && s.url.includes('animations/')));
 
         if (!animationShape) {
             console.warn('No animation GLB found in frame');
             return false;
         }
 
+        // Resolve animation URL - use resolveModelUrl for new format, or direct url for legacy
+        let animationUrl = this.shapeFactory.resolveModelUrl(animationShape);
+        if (!animationUrl && animationShape.url) {
+            // Legacy format fallback
+            animationUrl = animationShape.url;
+        }
+
+        if (!animationUrl) {
+            console.warn(`Could not resolve animation URL for shape:`, animationShape);
+            return false;
+        }
+
         // Load the animation GLB
-        const gltfPath = this.shapeFactory.getResourcesPath(animationShape.url);
+        const gltfPath = this.shapeFactory.getResourcesPath(animationUrl);
         return new Promise((resolve) => {
             this.shapeFactory.gltfLoader.load(
                 gltfPath,

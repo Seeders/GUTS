@@ -7,15 +7,11 @@
           "shapes": {
             "shapes": [
               {
-                "color": {
-                  "paletteColor": "greyDColor"
-                },
+                "color": "#ffffff",
                 "id": 0
               },
-              {
-                "color": {
-                  "paletteColor": "greyDColor"
-                },
+              {                
+                "color": "#ffffff",
                 "id": 1
               }
             ]
@@ -29,29 +25,12 @@
           {
             "type": "tetrahedron",
             "size": 16,
-            "color": {
-              "paletteColor": "greyDColor"
-            },
-            "x": 3.5,
-            "y": 2,
-            "z": 2.5,
-            "rotationX": 50,
-            "rotationY": 140,
-            "rotationZ": 10,
-            "scaleX": 1
+            "color": "#ffffff"
           },
           {
             "type": "tetrahedron",
             "size": 12,
-            "color": {
-              "paletteColor": "greyDColor"
-            },
-            "x": 10.5,
-            "y": 2,
-            "z": 7.5,
-            "rotationX": 50,
-            "rotationY": 150,
-            "rotationZ": 10
+            "color": "#ffffff"
           }
         ],
         "position": {

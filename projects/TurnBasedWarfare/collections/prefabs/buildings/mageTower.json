@@ -13,8 +13,8 @@
           "main": {
             "shapes": [
               {
-                "url": "models/underConstruction.glb",
-                "id": 0
+                "id": 0,
+                "model": "underConstruction"
               }
             ]
           }
@@ -28,11 +28,8 @@
             "type": "gltf",
             "metalness": 0,
             "roughness": 1,
-            "x": 0,
-            "z": 0,
-            "scaleX": 1,
             "name": "foundation",
-            "url": "models/mage_tower.glb"
+            "model": "mage_tower"
           }
         ],
         "position": {

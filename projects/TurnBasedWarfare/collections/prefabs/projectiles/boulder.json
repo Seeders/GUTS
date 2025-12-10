@@ -9,18 +9,7 @@
               {
                 "name": "ball",
                 "type": "sphere",
-                "size": 12,
-                "x": 0,
-                "z": 0,
-                "rotationX": 90,
-                "color": {
-                  "paletteColor": "greyDColor"
-                },
-                "rotationY": 0,
-                "rotationZ": 0,
-                "scaleX": 1,
-                "scaleY": 1,
-                "scaleZ": 1,
+                "size": 12,  
                 "id": 0
               }
             ]
@@ -34,18 +23,7 @@
           {
             "name": "ball",
             "type": "sphere",
-            "size": 12,
-            "x": 0,
-            "z": 0,
-            "rotationX": 90,
-            "color": {
-              "paletteColor": "greyDColor"
-            },
-            "rotationY": 0,
-            "rotationZ": 0,
-            "scaleX": 1,
-            "scaleY": 1,
-            "scaleZ": 1
+            "size": 12
           }
         ],
         "position": {

@@ -38,12 +38,6 @@
             "color": "#ff0000",
             "metalness": 0,
             "roughness": 1,
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
             "url": "models/goldvein.glb"
           }
         ],

@@ -449,47 +449,54 @@ class GE_UIManager {
                 let currentShape = this.graphicsEditor.getFrameShape();
                 let newValue = e.target.value;
                 if (newValue != 'gltf') {
-                    delete currentShape.url
-                }                 
+                    delete currentShape.model;
+                    delete currentShape.animation;
+                }
                 currentShape.type = newValue;
                 this.graphicsEditor.refreshShapes(false);
             }
         });
-        
-        if (shape.type === 'gltf') {            
-            let input = this.addFormRow(inspector, 'Model', 'file', 'url', shape.url, { 'change' :  async (e) => {
-                e.preventDefault();
 
-                // Get the file from the input element
-                const file = e.target.files[0]; // Access the file object
-                if (!file) {
-                    console.error('No file selected');
-                    return;
-                }
-                // // Create FormData and append the file
-                 const formData = new FormData();
-                 formData.append('gltfFile', file); // 'gltfFile' matches the multer.single('gltfFile') on the server
-                 formData.append('projectName', this.gameEditor.getCurrentProject());
-                try {
-                     const response = await fetch('/upload-model', {
-                         method: 'POST',
-                         body: formData // Send the FormData with the file
-                     });
+        if (shape.type === 'gltf' || shape.model || shape.animation) {
+            // Get models and animations from collections
+            const collections = this.graphicsEditor.gameEditor.getCollections();
+            const models = collections.models || {};
+            const animations = collections.animations || {};
 
-                     const result = await response.json();
-                     // Strip project resources path - only keep path from models directory onwards
-                     let shapePath = result.filePath;
-                     const resourcesIndex = shapePath.indexOf('resources/');
-                     if (resourcesIndex !== -1) {
-                         shapePath = shapePath.substring(resourcesIndex + 'resources/'.length);
-                     }
-                     this.graphicsEditor.getFrameShape().url = shapePath;
-                     this.graphicsEditor.refreshShapes(false);
-                } catch (error) {
-                     console.error('Error uploading file:', error);
+            // Model selector
+            const modelOptions = ['(none)', ...Object.keys(models).sort()];
+            this.addFormRow(inspector, 'Model', 'select', 'model', shape.model || '(none)', {
+                options: modelOptions,
+                change: (e) => {
+                    let currentShape = this.graphicsEditor.getFrameShape();
+                    let newValue = e.target.value;
+                    if (newValue === '(none)') {
+                        delete currentShape.model;
+                    } else {
+                        currentShape.model = newValue;
+                        // Clear animation when setting model
+                        delete currentShape.animation;
+                    }
+                    this.graphicsEditor.refreshShapes(false);
                 }
-            }});
-            input.setAttribute("accept",".gltf,.glb");
+            });
+
+            // Animation selector
+            const animationOptions = ['(none)', ...Object.keys(animations).sort()];
+            this.addFormRow(inspector, 'Animation', 'select', 'animation', shape.animation || '(none)', {
+                options: animationOptions,
+                change: (e) => {
+                    let currentShape = this.graphicsEditor.getFrameShape();
+                    let newValue = e.target.value;
+                    if (newValue === '(none)') {
+                        delete currentShape.animation;
+                    } else {
+                        currentShape.animation = newValue;
+                        // Don't delete model - both model and animation should coexist
+                    }
+                    this.graphicsEditor.refreshShapes(false);
+                }
+            });
         }
         // Color picker
         this.addFormRow(inspector, 'Color', 'color', 'color', shape.color);
@@ -497,18 +504,18 @@ class GE_UIManager {
         this.addFormRow(inspector, 'Metalness', 'metalness', 'metalness', shape.metalness || 0.5);
         this.addFormRow(inspector, 'Roughness', 'roughness', 'roughness', shape.roughness || 0.5);
         
-        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scaleX || 1, { min: 0.1, step: 0.1 });
-        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scaleY || 1, { min: 0.1, step: 0.1 });
-        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', shape.scaleZ || 1, { min: 0.1, step: 0.1 });
+        this.addFormRow(inspector, 'X Scale', 'number', 'scaleX', shape.scale?.x ?? 1, { min: 0.1, step: 0.1 });
+        this.addFormRow(inspector, 'Y Scale', 'number', 'scaleY', shape.scale?.y ?? 1, { min: 0.1, step: 0.1 });
+        this.addFormRow(inspector, 'Z Scale', 'number', 'scaleZ', shape.scale?.z ?? 1, { min: 0.1, step: 0.1 });
         // Position inputs
-        this.addFormRow(inspector, 'X Position', 'number', 'x', shape.x || 0, { step: 0.1 });
-        this.addFormRow(inspector, 'Y Position', 'number', 'y', shape.y || 0, { step: 0.1 });
-        this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.z || 0, { step: 0.1 });
-        
+        this.addFormRow(inspector, 'X Position', 'number', 'x', shape.position?.x ?? 0, { step: 0.1 });
+        this.addFormRow(inspector, 'Y Position', 'number', 'y', shape.position?.y ?? 0, { step: 0.1 });
+        this.addFormRow(inspector, 'Z Position', 'number', 'z', shape.position?.z ?? 0, { step: 0.1 });
+
         // Rotation inputs
-        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotationX || 0, { step: 1 });
-        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotationY || 0, { step: 1 });
-        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotationZ || 0, { step: 1 });
+        this.addFormRow(inspector, 'X Rotation', 'number', 'rotationX', shape.rotation?.x ?? 0, { step: 1 });
+        this.addFormRow(inspector, 'Y Rotation', 'number', 'rotationY', shape.rotation?.y ?? 0, { step: 1 });
+        this.addFormRow(inspector, 'Z Rotation', 'number', 'rotationZ', shape.rotation?.z ?? 0, { step: 1 });
         
         // Size inputs
         if (['cube', 'sphere', 'tetrahedron', 'torus'].includes(shape.type)) {

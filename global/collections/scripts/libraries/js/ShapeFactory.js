@@ -1,13 +1,66 @@
 class ShapeFactory {
-    constructor(resourcesPath, palette, textures, libraryClasses, gltfModelScale = 32) {
+    constructor(resourcesPath, palette, textures, libraryClasses, gltfModelScale = 32, models = null, animations = null) {
         this.gltfCache = new Map();
         this.gltfLoader = new THREE.GLTFLoader();
         this.palette = palette;
         this.textures = textures;
-        this.skeleUtils = GUTS.SkeletonUtils;   
+        this.skeleUtils = GUTS.SkeletonUtils;
         this.urlRoot = "/";
         this.resourcesPath = resourcesPath;
-        this.gltfModelScale = gltfModelScale; // Add GLTF scale parameter
+        this.gltfModelScale = gltfModelScale;
+        this.models = models; // Models collection for resolving model references
+        this.animations = animations; // Animations collection for resolving animation references
+    }
+
+    /**
+     * Set the models collection for resolving model references
+     * @param {Object} models - The models collection from getCollections()
+     */
+    setModels(models) {
+        this.models = models;
+    }
+
+    /**
+     * Set the animations collection for resolving animation references
+     * @param {Object} animations - The animations collection from getCollections()
+     */
+    setAnimations(animations) {
+        this.animations = animations;
+    }
+
+    /**
+     * Resolve a model or animation reference to a URL path
+     * @param {Object} shape - The shape object with a model or animation property
+     * @returns {string|null} The resolved URL or null
+     */
+    resolveModelUrl(shape) {
+        // Check for animation reference first
+        if (shape.animation) {
+            if (!this.animations) {
+                console.warn(`[ShapeFactory] Animations collection not available`);
+                return null;
+            }
+            const animData = this.animations[shape.animation];
+            if (animData && animData.file) {
+                return animData.file;
+            }
+            console.warn(`[ShapeFactory] Animation '${shape.animation}' not found in animations collection`);
+            return null;
+        }
+        // Check for model reference
+        if (shape.model) {
+            if (!this.models) {
+                console.warn(`[ShapeFactory] Models collection not available`);
+                return null;
+            }
+            const modelData = this.models[shape.model];
+            if (modelData && modelData.file) {
+                return modelData.file;
+            }
+            console.warn(`[ShapeFactory] Model '${shape.model}' not found in models collection`);
+            return null;
+        }
+        return null;
     }
     
     setURLRoot(root){
@@ -40,9 +93,8 @@ class ShapeFactory {
         // This prevents race conditions where animation GLBs try to find the base model
         for (let index = 0; index < groupData.shapes.length; index++) {
             const shape = groupData.shapes[index];
-            // Check if shape is GLTF by type or by URL extension
-            const isGLTF = shape.type === 'gltf' ||
-                          (shape.url && (shape.url.endsWith('.glb') || shape.url.endsWith('.gltf')));
+            // Check if shape is GLTF by type, model, or animation reference
+            const isGLTF = shape.type === 'gltf' || shape.model || shape.animation;
 
             if (isGLTF) {
                 await this.handleGLTFShape(shape, index, group);
@@ -72,12 +124,24 @@ class ShapeFactory {
     }
 
     async handleGLTFShape(shape, index, group) {
+        // If shape has both model and animation, load model first then apply animation from separate GLB
+        if (shape.model && shape.animation) {
+            // First load the model
+            await this.handleGLTFShape({ ...shape, animation: undefined }, index, group);
+            // Then load animation GLB and apply to the model (without adding to scene)
+            await this.applyAnimationToGroup(shape.animation, group);
+            return;
+        }
+
+        // Resolve the model URL (supports both model references and direct URLs)
+        const resolvedUrl = this.resolveModelUrl(shape);
+
         const applyTransformations = async (model, gltf) => {
             // Extract animations
             const animations = gltf.animations;
 
             // Check if this is an animation-only GLB (from animations folder, no mesh)
-            const isAnimationOnly = shape.url && shape.url.includes('animations/');
+            const isAnimationOnly = resolvedUrl && resolvedUrl.includes('animations/');
             let hasMesh = false;
 
             model.traverse(child => {
@@ -122,28 +186,24 @@ class ShapeFactory {
                 return;
             }
 
-            // Apply individual shape transformations first
+            // Apply individual shape transformations
             model.position.set(
-                (shape.position ? shape.position.x : shape.x) || 0,
-                (shape.position ? shape.position.y : shape.y) || 0,
-                (shape.position ? shape.position.z : shape.z) || 0
+                shape.position?.x ?? 0,
+                shape.position?.y ?? 0,
+                shape.position?.z ?? 0
             );
 
-            // Apply shape-specific scale first, then multiply by global GLTF scale
-            const shapeScaleX = (shape.scale ? shape.scale.x : shape.scaleX) || 1;
-            const shapeScaleY = (shape.scale ? shape.scale.y : shape.scaleY) || 1;
-            const shapeScaleZ = (shape.scale ? shape.scale.z : shape.scaleZ) || 1;
-
+            // Apply shape-specific scale, then multiply by global GLTF scale
             model.scale.set(
-                shapeScaleX * this.gltfModelScale,
-                shapeScaleY * this.gltfModelScale,
-                shapeScaleZ * this.gltfModelScale
+                (shape.scale?.x ?? 1) * this.gltfModelScale,
+                (shape.scale?.y ?? 1) * this.gltfModelScale,
+                (shape.scale?.z ?? 1) * this.gltfModelScale
             );
 
             model.rotation.set(
-                ((shape.rotation ? shape.rotation.x : shape.rotationX) || 0) * Math.PI / 180,
-                ((shape.rotation ? shape.rotation.y : shape.rotationY) || 0) * Math.PI / 180,
-                ((shape.rotation ? shape.rotation.z : shape.rotationZ) || 0) * Math.PI / 180
+                (shape.rotation?.x ?? 0) * Math.PI / 180,
+                (shape.rotation?.y ?? 0) * Math.PI / 180,
+                (shape.rotation?.z ?? 0) * Math.PI / 180
             );
 
             // Store reference to all bones for equipment attachment
@@ -245,32 +305,81 @@ class ShapeFactory {
                 }
             }         
         };
-    
-        if (shape.url) {
-            const cached = this.gltfCache.get(shape.url);
+
+        if (resolvedUrl) {
+            const cached = this.gltfCache.get(resolvedUrl);
             if (cached) {
                 const clonedScene = this.skeleUtils.clone(cached.scene);
                 await applyTransformations(clonedScene, cached);
-            } else if (shape.url && location.hostname !== "") {
+            } else if (resolvedUrl && location.hostname !== "") {
                 await new Promise((resolve, reject) => {
                     this.gltfLoader.load(
-                        this.getResourcesPath(shape.url),
+                        this.getResourcesPath(resolvedUrl),
                         async (gltf) => {
                             const clonedScene = this.skeleUtils.clone(gltf.scene);
-                            this.gltfCache.set(shape.url, gltf);
+                            this.gltfCache.set(resolvedUrl, gltf);
                             await applyTransformations(clonedScene, gltf);
                             resolve();
                         },
                         undefined,
                         (error) => {
-                            console.error(`Failed to load GLTF model at ${shape.url}:`, error);
+                            console.error(`Failed to load GLTF model at ${resolvedUrl}:`, error);
                             reject(error);
                         }
                     );
                 });
             }
+
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Load animation from GLB and apply to existing model in group (without adding mesh to scene)
+     */
+    async applyAnimationToGroup(animationName, group) {
+        const animUrl = this.resolveModelUrl({ animation: animationName });
+        if (!animUrl) return;
+
+        // Find the base model with skeleton
+        let baseModel = null;
+        group.children.forEach(child => {
+            if (child.userData && child.userData.isGLTFRoot && child.userData.skeleton && !baseModel) {
+                baseModel = child;
+            }
+        });
+
+        if (!baseModel) return;
+
+        const cached = this.gltfCache.get(animUrl);
+        const applyAnim = (gltf) => {
+            if (gltf.animations && gltf.animations.length > 0) {
+                if (!baseModel.userData.mixer) {
+                    baseModel.userData.mixer = new THREE.AnimationMixer(baseModel);
+                }
+                const mixer = baseModel.userData.mixer;
+                mixer.stopAllAction();
+                const action = mixer.clipAction(gltf.animations[0]);
+                action.play();
+            }
+        };
+
+        if (cached) {
+            applyAnim(cached);
+        } else {
+            await new Promise((resolve) => {
+                this.gltfLoader.load(
+                    this.getResourcesPath(animUrl),
+                    (gltf) => {
+                        this.gltfCache.set(animUrl, gltf);
+                        applyAnim(gltf);
+                        resolve();
+                    },
+                    undefined,
+                    () => resolve()
+                );
+            });
         }
     }
 
@@ -360,24 +469,24 @@ class ShapeFactory {
 
         const mesh = new THREE.Mesh(geometry, material);
         mesh.userData = { isShape: true, castShadow: true, index: index };
-        
-        // Position and rotation for primitive shapes (no global scale applied)
+
+        // Position, rotation, and scale for primitive shapes
         mesh.position.set(
-            (shape.position && shape.position.x ? shape.position.x : shape.x) || 0, 
-            (shape.position && shape.position.y ? shape.position.y : shape.y) || 0, 
-            (shape.position && shape.position.z ? shape.position.z : shape.z) || 0
+            shape.position?.x ?? 0,
+            shape.position?.y ?? 0,
+            shape.position?.z ?? 0
         );
         mesh.rotation.set(
-            ((shape.rotation && shape.rotation.x ? shape.rotation.x : shape.rotationX) || 0) * Math.PI / 180,
-            ((shape.rotation && shape.rotation.y ? shape.rotation.y : shape.rotationY) || 0) * Math.PI / 180,
-            ((shape.rotation && shape.rotation.z ? shape.rotation.z : shape.rotationZ) || 0) * Math.PI / 180
+            (shape.rotation?.x ?? 0) * Math.PI / 180,
+            (shape.rotation?.y ?? 0) * Math.PI / 180,
+            (shape.rotation?.z ?? 0) * Math.PI / 180
         );
         mesh.scale.set(
-            (shape.scale && shape.scale.x ? shape.scale.x : shape.scaleX) || 1,
-            (shape.scale && shape.scale.y ? shape.scale.y : shape.scaleY) || 1,
-            (shape.scale && shape.scale.z ? shape.scale.z : shape.scaleZ) || 1
+            shape.scale?.x ?? 1,
+            shape.scale?.y ?? 1,
+            shape.scale?.z ?? 1
         );
-        
+
         group.add(mesh);
     }
 

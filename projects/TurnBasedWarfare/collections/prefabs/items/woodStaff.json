@@ -21,7 +21,6 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/item_staff_wood.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
@@ -42,7 +41,8 @@
               "x": 0.99,
               "y": 0.99,
               "z": 0.99
-            }
+            },
+            "model": "item_staff_wood"
           }
         ]
       }
