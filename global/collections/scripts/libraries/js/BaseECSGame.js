@@ -333,6 +333,51 @@ class BaseECSGame {
         this._invalidateQueryCache();
     }
 
+    /**
+     * OPTIMIZATION: Add multiple components at once with single cache invalidation
+     * This is much faster than calling addComponent() multiple times
+     * @param {*} entityId - Entity ID
+     * @param {Object} componentsData - Object mapping componentId -> data
+     */
+    addComponents(entityId, componentsData) {
+        if (!this.entities.has(entityId)) {
+            throw new Error(`Entity ${entityId} does not exist`);
+        }
+
+        // Cache lookups once for all components
+        const componentMethods = this.call('getComponents');
+        const entityComponents = this.entities.get(entityId);
+
+        for (const [componentId, data] of Object.entries(componentsData)) {
+            // Use factory function if available, otherwise use data directly
+            const componentData = componentMethods[componentId]
+                ? componentMethods[componentId](data)
+                : { ...data };
+
+            // Get or create the component map
+            let componentMap = this._componentMapCache.get(componentId);
+            if (!componentMap) {
+                componentMap = new Map();
+                this.components.set(componentId, componentMap);
+                this._componentMapCache.set(componentId, componentMap);
+            }
+
+            componentMap.set(entityId, componentData);
+            entityComponents.add(componentId);
+
+            // Update inverted index
+            let entitySet = this._entitiesByComponent.get(componentId);
+            if (!entitySet) {
+                entitySet = new Set();
+                this._entitiesByComponent.set(componentId, entitySet);
+            }
+            entitySet.add(entityId);
+        }
+
+        // Single cache invalidation for all components
+        this._invalidateQueryCache();
+    }
+
     removeComponent(entityId, componentType) {
         let component = this.getComponent(entityId, componentType);
 
