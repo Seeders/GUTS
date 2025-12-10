@@ -17,6 +17,12 @@ class GridSystem extends GUTS.BaseSystem {
         this.debugVisualization = null;
         this.debugEnabled = false;
         this.debugMeshes = new Map(); // cell key -> mesh
+
+        // OPTIMIZATION: Track entity positions for incremental grid updates
+        // Only update cells when entities actually move
+        this._entityPositions = new Map(); // entityId -> { gridX, gridZ, cells: Set<numericKey> }
+        this._reusableSeenSet = new Set(); // Reusable set for getNearbyUnits to avoid allocations
+        this._reusableCellArray = []; // Reusable array for cell calculations
     }
 
     init() {
@@ -253,18 +259,31 @@ class GridSystem extends GUTS.BaseSystem {
                gridPos.z >= 0 && gridPos.z < this.dimensions.height;
     }
 
+    // OPTIMIZATION: Convert grid coordinates to a single numeric key
+    // This avoids expensive string concatenation and parsing
+    _cellKey(x, z) {
+        return x + z * this.dimensions.width;
+    }
+
+    // OPTIMIZATION: Convert numeric key back to coordinates (only used for debug)
+    _keyToCell(key) {
+        const z = Math.floor(key / this.dimensions.width);
+        const x = key - z * this.dimensions.width;
+        return { x, z };
+    }
+
     isValidGridPlacement(cells, team) {
         if (!cells || cells.length === 0) return false;
-        
+
         for (const cell of cells) {
-            const key = `${cell.x},${cell.z}`;
+            const key = this._cellKey(cell.x, cell.z);
             const cellState = this.state.get(key);
             if (cellState && cellState.occupied) {
                 return false;
             }
         }
 
-        
+
         return true;
     }
 
@@ -315,13 +334,21 @@ class GridSystem extends GUTS.BaseSystem {
 
         const nearbyEntityIds = [];
         const radiusSq = radius * radius;
-        const seen = new Set(); // Prevent duplicates
 
-        for (let gz = gridPos.z - cellRadius; gz <= gridPos.z + cellRadius; gz++) {
-            for (let gx = gridPos.x - cellRadius; gx <= gridPos.x + cellRadius; gx++) {
-                if (!this.isValidPosition({ x: gx, z: gz })) continue;
+        // OPTIMIZATION: Reuse the seen set to avoid allocation per call
+        const seen = this._reusableSeenSet;
+        seen.clear();
 
-                const cellState = this.getCellState(gx, gz);
+        // Pre-calculate bounds to avoid repeated checks
+        const minGx = Math.max(0, gridPos.x - cellRadius);
+        const maxGx = Math.min(this.dimensions.width - 1, gridPos.x + cellRadius);
+        const minGz = Math.max(0, gridPos.z - cellRadius);
+        const maxGz = Math.min(this.dimensions.height - 1, gridPos.z + cellRadius);
+
+        for (let gz = minGz; gz <= maxGz; gz++) {
+            for (let gx = minGx; gx <= maxGx; gx++) {
+                const key = this._cellKey(gx, gz);
+                const cellState = this.state.get(key);
                 if (!cellState?.entities?.length) continue;
 
                 for (const entityId of cellState.entities) {
@@ -348,14 +375,27 @@ class GridSystem extends GUTS.BaseSystem {
                 }
             }
         }
-        return nearbyEntityIds.sort((a, b) => String(a).localeCompare(String(b)));
+
+        // OPTIMIZATION: Use numeric sort instead of localeCompare (much faster)
+        // Entity IDs are numbers, so numeric sort is appropriate and deterministic
+        if (nearbyEntityIds.length > 1) {
+            nearbyEntityIds.sort((a, b) => a - b);
+        }
+        return nearbyEntityIds;
     }
 
     update(deltaTime) {
-        // Rebuild spatial grid fresh each frame from current entity positions
-        this.state.clear();
+        // OPTIMIZATION: Incremental grid update - only update cells when entities move
+        // Instead of clearing and rebuilding the entire grid each frame, we:
+        // 1. Track each entity's previous grid position
+        // 2. Only update cells when an entity moves to different cells
+        // 3. Remove entities that are no longer valid (dead/destroyed)
 
         const entities = this.game.getEntitiesWith('unitType', 'transform');
+
+        // Track which entities we've seen this frame
+        const currentEntitySet = this._reusableSeenSet;
+        currentEntitySet.clear();
 
         for (const entityId of entities) {
             const transform = this.game.getComponent(entityId, 'transform');
@@ -365,17 +405,81 @@ class GridSystem extends GUTS.BaseSystem {
             // Check if entity is alive (skip dead/dying units)
             const health = this.game.getComponent(entityId, 'health');
             const deathState = this.game.getComponent(entityId, 'deathState');
-            if (health && health.current <= 0) continue;
-            if (deathState && deathState.isDying) continue;
+            if (health && health.current <= 0) {
+                // Remove dead entity from grid if it was tracked
+                this._removeEntityFromGrid(entityId);
+                continue;
+            }
+            if (deathState && deathState.isDying) {
+                this._removeEntityFromGrid(entityId);
+                continue;
+            }
 
             // Skip world objects that are not impassable (e.g., gold veins, bushes)
             const unitType = this.game.getComponent(entityId, 'unitType');
             if (unitType && unitType.impassable === false) continue;
 
+            currentEntitySet.add(entityId);
+
+            // Check if entity has moved to a new grid position
+            const gridPos = this.worldToGrid(pos.x, pos.z);
+            const cached = this._entityPositions.get(entityId);
+
+            if (cached && cached.gridX === gridPos.x && cached.gridZ === gridPos.z) {
+                // Entity hasn't moved grid cells, skip update
+                continue;
+            }
+
+            // Entity is new or has moved - update grid
             const cells = this.getUnitCells(entityId);
             if (!cells) continue;
 
-            this.occupyCells(cells, entityId);
+            // Remove from old cells if entity was already tracked
+            if (cached && cached.cellKeys) {
+                for (const oldKey of cached.cellKeys) {
+                    const cellState = this.state.get(oldKey);
+                    if (cellState) {
+                        const idx = cellState.entities.indexOf(entityId);
+                        if (idx !== -1) {
+                            cellState.entities.splice(idx, 1);
+                            if (cellState.entities.length === 0) {
+                                this.state.delete(oldKey);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Add to new cells and cache the position
+            const newCellKeys = new Set();
+            for (const cell of cells) {
+                const key = this._cellKey(cell.x, cell.z);
+                newCellKeys.add(key);
+
+                let cellState = this.state.get(key);
+                if (!cellState) {
+                    cellState = { occupied: true, entities: [] };
+                    this.state.set(key, cellState);
+                }
+
+                if (!cellState.entities.includes(entityId)) {
+                    cellState.entities.push(entityId);
+                }
+            }
+
+            // Update position cache
+            this._entityPositions.set(entityId, {
+                gridX: gridPos.x,
+                gridZ: gridPos.z,
+                cellKeys: newCellKeys
+            });
+        }
+
+        // Clean up entities that no longer exist
+        for (const [entityId, cached] of this._entityPositions) {
+            if (!currentEntitySet.has(entityId)) {
+                this._removeEntityFromGrid(entityId);
+            }
         }
 
         // Update debug visualization if enabled
@@ -384,10 +488,33 @@ class GridSystem extends GUTS.BaseSystem {
         }
     }
 
+    // OPTIMIZATION: Helper to remove an entity from the grid
+    _removeEntityFromGrid(entityId) {
+        const cached = this._entityPositions.get(entityId);
+        if (!cached) return;
+
+        if (cached.cellKeys) {
+            for (const key of cached.cellKeys) {
+                const cellState = this.state.get(key);
+                if (cellState) {
+                    const idx = cellState.entities.indexOf(entityId);
+                    if (idx !== -1) {
+                        cellState.entities.splice(idx, 1);
+                        if (cellState.entities.length === 0) {
+                            this.state.delete(key);
+                        }
+                    }
+                }
+            }
+        }
+
+        this._entityPositions.delete(entityId);
+    }
+
     occupyCells(cells, entityId) {
         if (!cells || cells.length === 0) return;
         for (const cell of cells) {
-            const key = `${cell.x},${cell.z}`;
+            const key = this._cellKey(cell.x, cell.z);
             let cellState = this.state.get(key);
 
             if (!cellState) {
@@ -417,6 +544,7 @@ class GridSystem extends GUTS.BaseSystem {
 
     clear() {
         this.state.clear();
+        this._entityPositions.clear();
     }
 
     toggleVisibility(scene) {
@@ -436,13 +564,13 @@ class GridSystem extends GUTS.BaseSystem {
     }
         
     getCellState(gridX, gridZ) {
-        return this.state.get(`${gridX},${gridZ}`);
+        return this.state.get(this._cellKey(gridX, gridZ));
     }
 
     getOccupiedCells() {
         return Array.from(this.state.entries()).map(([key, value]) => {
-            const [x, z] = key.split(',').map(Number);
-            return { x, z, ...value };
+            const cell = this._keyToCell(key);
+            return { x: cell.x, z: cell.z, ...value };
         });
     }
     
@@ -461,7 +589,7 @@ class GridSystem extends GUTS.BaseSystem {
     // OPTIMIZED: Batch cell queries for better performance
     areCellsOccupied(cells) {
         for (const cell of cells) {
-            const key = `${cell.x},${cell.z}`;
+            const key = this._cellKey(cell.x, cell.z);
             if (this.state.has(key)) {
                 return true;
             }
@@ -580,6 +708,7 @@ class GridSystem extends GUTS.BaseSystem {
 
         // Clear state
         this.state.clear();
+        this._entityPositions.clear();
         this.debugMeshes.clear();
         this.debugEnabled = false;
 
@@ -655,8 +784,8 @@ class GridSystem extends GUTS.BaseSystem {
         for (const [key, cellState] of this.state.entries()) {
             if (!cellState.entities || cellState.entities.length === 0) continue;
 
-            const [gx, gz] = key.split(',').map(Number);
-            const worldPos = this.gridToWorld(gx, gz);
+            const cell = this._keyToCell(key);
+            const worldPos = this.gridToWorld(cell.x, cell.z);
 
             // Determine cell color based on team composition
             let material = this.debugMaterials.neutral;
@@ -715,13 +844,14 @@ class GridSystem extends GUTS.BaseSystem {
 
         if (this.debugEnabled) {
             for (const [key, cellState] of this.state.entries()) {
+                const cell = this._keyToCell(key);
                 const entityNames = cellState.entities.map(id => {
                     const unitType = this.game.getComponent(id, 'unitType');
                     const team = this.game.getComponent(id, 'team');
                     const teamValue = team ? JSON.stringify(team.team) : 'NO_TEAM';
                     return `${unitType?.name || 'unknown'}(team=${teamValue})`;
                 });
-                console.log(`  Cell ${key}: ${entityNames.join(', ')}`);
+                console.log(`  Cell (${cell.x},${cell.z}): ${entityNames.join(', ')}`);
             }
         }
     }

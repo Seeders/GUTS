@@ -278,6 +278,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
             "projectile"
         );
         // Sort for deterministic processing order (prevents desync)
+        // Note: Projectile IDs are strings (projectile_X_Y), so use localeCompare for deterministic sorting
         projectiles.sort((a, b) => String(a).localeCompare(String(b)));
 
         projectiles.forEach(projectileId => {
