@@ -24,6 +24,9 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
 
         // Billboard shader material (shared across all batches)
         this.billboardMaterial = null;
+
+        // Current ambient light color for detail sprites
+        this.currentAmbientLight = new THREE.Color(0xffffff);
     }
 
     /**
@@ -54,6 +57,7 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
 
         const fragmentShader = `
             uniform sampler2D map;
+            uniform vec3 ambientLightColor;
             varying vec2 vUv;
 
             void main() {
@@ -62,14 +66,17 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
                 // Alpha test
                 if (texColor.a < 0.1) discard;
 
-                gl_FragColor = texColor;
+                // Apply ambient lighting
+                vec3 litColor = texColor.rgb * ambientLightColor;
+                gl_FragColor = vec4(litColor, texColor.a);
                 #include <colorspace_fragment>
             }
         `;
 
         return new THREE.ShaderMaterial({
             uniforms: {
-                map: { value: texture }
+                map: { value: texture },
+                ambientLightColor: { value: this.currentAmbientLight.clone() }
             },
             vertexShader,
             fragmentShader,
@@ -82,6 +89,9 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
     init() {
         // Register for terrain ready event
         this.game.register('spawnTerrainDetails', this.spawnTerrainDetails.bind(this));
+
+        // Register lighting update service
+        this.game.register('setTerrainDetailLighting', this.setAmbientLightColor.bind(this));
     }
 
     /**
@@ -316,6 +326,21 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
 
         this.detailBatches.clear();
         this.initialized = false;
+    }
+
+    /**
+     * Update ambient light color for all terrain detail batches
+     * @param {THREE.Color} color - The combined ambient light color
+     */
+    setAmbientLightColor(color) {
+        this.currentAmbientLight.copy(color);
+
+        // Update all existing detail batches
+        for (const batch of this.detailBatches.values()) {
+            if (batch.instancedMesh?.material?.uniforms?.ambientLightColor) {
+                batch.instancedMesh.material.uniforms.ambientLightColor.value.copy(color);
+            }
+        }
     }
 
     /**

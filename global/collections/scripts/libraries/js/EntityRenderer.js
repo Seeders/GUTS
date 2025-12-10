@@ -65,6 +65,8 @@ class EntityRenderer {
             batches: 0
         };
 
+        // Current ambient light color for billboards (updated by setAmbientLightColor)
+        this.currentAmbientLight = new THREE.Color(0xffffff);
     }
 
     /**
@@ -388,7 +390,8 @@ class EntityRenderer {
         // Custom shader material for billboarding with UV manipulation
         const material = new THREE.ShaderMaterial({
             uniforms: {
-                map: { value: spriteSheetTexture }
+                map: { value: spriteSheetTexture },
+                ambientLightColor: { value: this.currentAmbientLight.clone() }
             },
             vertexShader: `
                 attribute vec2 uvOffset;
@@ -472,12 +475,15 @@ class EntityRenderer {
             `,
             fragmentShader: `
                 uniform sampler2D map;
+                uniform vec3 ambientLightColor;
                 varying vec2 vUv;
 
                 void main() {
                     vec4 texColor = texture2D(map, vUv);
                     if (texColor.a < 0.5) discard;
-                    gl_FragColor = texColor;
+                    // Apply ambient lighting to the sprite
+                    vec3 litColor = texColor.rgb * ambientLightColor;
+                    gl_FragColor = vec4(litColor, texColor.a);
                     #include <colorspace_fragment>
                 }
             `,
@@ -823,7 +829,8 @@ class EntityRenderer {
         // Custom shader material for billboarding (always faces camera)
         const material = new THREE.ShaderMaterial({
             uniforms: {
-                map: { value: texture }
+                map: { value: texture },
+                ambientLightColor: { value: this.currentAmbientLight.clone() }
             },
             vertexShader: `
                 attribute vec2 uvOffset;
@@ -861,12 +868,15 @@ class EntityRenderer {
             `,
             fragmentShader: `
                 uniform sampler2D map;
+                uniform vec3 ambientLightColor;
                 varying vec2 vUv;
 
                 void main() {
                     vec4 texColor = texture2D(map, vUv);
                     if (texColor.a < 0.5) discard;
-                    gl_FragColor = texColor;
+                    // Apply ambient lighting to the sprite
+                    vec3 litColor = texColor.rgb * ambientLightColor;
+                    gl_FragColor = vec4(litColor, texColor.a);
                     #include <colorspace_fragment>
                 }
             `,
@@ -1849,5 +1859,26 @@ class EntityRenderer {
 
         this.modelCache.clear();
         this.loadingPromises.clear();
+    }
+
+    /**
+     * Update ambient light color for all billboard batches
+     * @param {THREE.Color|number|string} color - The ambient light color
+     * @param {number} intensity - The ambient light intensity (multiplied with color)
+     */
+    setAmbientLightColor(color, intensity = 1.0) {
+        const lightColor = new THREE.Color(color);
+        // Apply intensity to the color
+        lightColor.multiplyScalar(intensity);
+
+        // Store for future batch creation
+        this.currentAmbientLight.copy(lightColor);
+
+        // Update all existing billboard batches
+        for (const batch of this.billboardBatches.values()) {
+            if (batch.instancedMesh?.material?.uniforms?.ambientLightColor) {
+                batch.instancedMesh.material.uniforms.ambientLightColor.value.copy(lightColor);
+            }
+        }
     }
 }

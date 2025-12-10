@@ -79,6 +79,12 @@ class RenderSystem extends GUTS.BaseSystem {
             minMovementThreshold: 0.1
         });
 
+        // Set initial ambient light color for sprite/billboard rendering
+        // Combine ambient light with hemisphere light for overall scene illumination
+        // Note: Lighting may not be set up yet since WorldSystem.setupWorldRendering is async
+        // We'll apply lighting after WorldSystem finishes (see waitForLightingAndApply below)
+        this.waitForLightingAndApply();
+
         console.log('[RenderSystem] EntityRenderer initialized:', this.entityRenderer ? 'success' : 'failed');
     }
 
@@ -403,6 +409,78 @@ class RenderSystem extends GUTS.BaseSystem {
     isBillboardWithAnimations(entityId) {
         if (!this.entityRenderer) return false;
         return this.entityRenderer.isBillboardWithAnimations(entityId);
+    }
+
+    /**
+     * Wait for WorldSystem to finish setting up lighting, then apply to sprites
+     */
+    async waitForLightingAndApply() {
+        // Wait for WorldSystem's async setup to complete
+        const worldSystem = this.game.worldSystem;
+        if (worldSystem?.setupWorldRenderingPromise) {
+            await worldSystem.setupWorldRenderingPromise;
+        }
+
+        const worldRenderer = worldSystem?.worldRenderer;
+        if (worldRenderer) {
+            this.applySpriteLighting(worldRenderer);
+        }
+    }
+
+    /**
+     * Apply lighting settings to sprites/billboards
+     * Combines ambient, hemisphere sky, and a portion of directional light
+     * for overall scene illumination on flat billboards
+     * @param {WorldRenderer} worldRenderer - The world renderer with lighting
+     */
+    applySpriteLighting(worldRenderer) {
+        if (!this.entityRenderer) return;
+
+        // Start with ambient light as base
+        const combinedColor = new THREE.Color(0x000000);
+
+        // Add ambient light contribution
+        if (worldRenderer.ambientLight) {
+            const ambientContrib = worldRenderer.ambientLight.color.clone();
+            ambientContrib.multiplyScalar(worldRenderer.ambientLight.intensity);
+            combinedColor.add(ambientContrib);
+        }
+
+        // Add hemisphere light sky color contribution (top-down illumination)
+        // Use a blend of sky and ground colors weighted towards sky since sprites face camera
+        if (worldRenderer.hemisphereLight) {
+            const skyContrib = worldRenderer.hemisphereLight.color.clone();
+            const groundContrib = worldRenderer.hemisphereLight.groundColor.clone();
+
+            // Blend 70% sky, 30% ground for sprites that mostly face up/camera
+            skyContrib.multiplyScalar(0.7 * worldRenderer.hemisphereLight.intensity);
+            groundContrib.multiplyScalar(0.3 * worldRenderer.hemisphereLight.intensity);
+
+            combinedColor.add(skyContrib);
+            combinedColor.add(groundContrib);
+        }
+
+        // Add a portion of directional light (simulating average illumination)
+        // Billboards don't have proper normals so we use a fixed factor
+        if (worldRenderer.directionalLight) {
+            const directionalContrib = worldRenderer.directionalLight.color.clone();
+            // Use 50% of directional intensity as average illumination on a flat surface
+            directionalContrib.multiplyScalar(0.5 * worldRenderer.directionalLight.intensity);
+            combinedColor.add(directionalContrib);
+        }
+
+        // Clamp to valid range and apply
+        combinedColor.r = Math.min(1.0, combinedColor.r);
+        combinedColor.g = Math.min(1.0, combinedColor.g);
+        combinedColor.b = Math.min(1.0, combinedColor.b);
+
+        console.log('[RenderSystem] Combined sprite lighting:', combinedColor.r.toFixed(2), combinedColor.g.toFixed(2), combinedColor.b.toFixed(2));
+
+        // Apply combined lighting (intensity 1.0 since we pre-multiplied)
+        this.entityRenderer.setAmbientLightColor(combinedColor, 1.0);
+
+        // Also apply to TerrainDetailSystem (static terrain sprites like grass/trees)
+        this.game.call('setTerrainDetailLighting', combinedColor);
     }
 
     getEntityAnimationState(entityId) {
