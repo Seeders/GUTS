@@ -231,10 +231,8 @@ class MineGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         // Get all entities with goldMine component
         const goldMineEntities = game.getEntitiesWith("goldMine", "transform", "team");
 
-        // Sort for deterministic iteration
-        const sortedMineIds = goldMineEntities.sort((a, b) =>
-            String(a).localeCompare(String(b))
-        );
+        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (still deterministic, much faster)
+        const sortedMineIds = goldMineEntities.sort((a, b) => a - b);
 
         // Search through all gold mines in deterministic order
         for (const mineEntityId of sortedMineIds) {
