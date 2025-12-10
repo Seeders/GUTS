@@ -543,23 +543,7 @@ class TerrainGenerator {
                     z: position.z + trunkRadius 
                 }
             };
-        } else if (worldObjectPrefab.endsWith('rock')) {
-            const rockRadius = 5.0 * scale;
-            const rockHeight = 10.0 * scale;
-            return {
-                id: `${worldObjectPrefab}_${Math.floor(position.x)}_${Math.floor(position.z)}`,
-                min: { 
-                    x: position.x - rockRadius, 
-                    y: position.y, 
-                    z: position.z - rockRadius 
-                },
-                max: { 
-                    x: position.x + rockRadius, 
-                    y: position.y + rockHeight, 
-                    z: position.z + rockRadius 
-                }
-            };
-        }
+        } 
         
         return null;
     }

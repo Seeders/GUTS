@@ -387,7 +387,7 @@ class ShapeFactory {
         let geometry, material;
 
         let colorToUse = shape.color;
-        if(shape.color.paletteColor){
+        if(shape.color?.paletteColor){
             colorToUse = "#ffffff";
             if(this.palette && this.palette[shape.color.paletteColor]){
                 colorToUse = this.palette[shape.color.paletteColor];

@@ -1463,6 +1463,11 @@ class EntityRenderer {
             const removedIndex = entity.instanceIndex;
             batch.entityMap.delete(removedIndex);
 
+            // Hide the instance by setting scale to 0
+            const zeroMatrix = new THREE.Matrix4().makeScale(0, 0, 0);
+            batch.mesh.setMatrixAt(removedIndex, zeroMatrix);
+            batch.mesh.instanceMatrix.needsUpdate = true;
+
             // Add to free list for O(1) reuse
             batch.freeList.push(removedIndex);
 
@@ -1485,6 +1490,11 @@ class EntityRenderer {
             const removedIndex = entity.instanceIndex;
             batch.entityMap.delete(removedIndex);
 
+            // Hide the instance by setting scale to 0
+            const zeroMatrix = new THREE.Matrix4().makeScale(0, 0, 0);
+            batch.instancedMesh.setMatrixAt(removedIndex, zeroMatrix);
+            batch.instancedMesh.instanceMatrix.needsUpdate = true;
+
             // Add to free list for O(1) reuse
             batch.freeList.push(removedIndex);
 
@@ -1505,6 +1515,11 @@ class EntityRenderer {
             const batch = entity.batch;
             const removedIndex = entity.instanceIndex;
             batch.entityMap.delete(removedIndex);
+
+            // Hide the instance by setting scale to 0
+            const zeroMatrix = new THREE.Matrix4().makeScale(0, 0, 0);
+            batch.instancedMesh.setMatrixAt(removedIndex, zeroMatrix);
+            batch.instancedMesh.instanceMatrix.needsUpdate = true;
 
             // Add to free list for O(1) reuse
             batch.freeList.push(removedIndex);
