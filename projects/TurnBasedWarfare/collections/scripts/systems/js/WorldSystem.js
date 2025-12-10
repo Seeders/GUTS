@@ -229,6 +229,10 @@ class WorldSystem extends GUTS.BaseSystem {
         const shadowSettings = collections.shadows?.[world?.shadow];
         this.worldRenderer.setupLighting(lightingSettings, shadowSettings, terrainDataManager.extendedSize);
 
+        // Setup fog
+        const fogSettings = collections.fogs?.[world?.fog];
+        this.worldRenderer.setupFog(fogSettings);
+
         // Setup ground with terrain data
         this.worldRenderer.setupGround(terrainDataManager, this.game.terrainTileMapper, terrainDataManager.heightMapSettings);
 

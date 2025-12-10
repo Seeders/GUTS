@@ -46,7 +46,7 @@
   "entities": [
     {
       "id": "terrain_main",
-      "prefab": "terrain_hell"
+      "prefab": "terrain"
     },
     {
       "id": "dragon_red_1245.45_-1263.26_left_0",

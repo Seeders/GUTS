@@ -1,6 +1,6 @@
 {
   "title": "Sunny Day Fog",
-  "color": "#b3e5fc",
-  "density": 0.004,
-  "enabled": false
+  "color": "#4aa5ff",
+  "density": 0.0004,
+  "enabled": true
 }

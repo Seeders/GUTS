@@ -1692,12 +1692,12 @@ class TerrainMapEditor {
             levelName: levelName
         });
 
-        // Load scene with terrain entity
+        // Load scene with terrain entity (components must be array format)
         await this.editorContext.loadScene({
             systems: editorSystems,
             entities: [{
                 id: 'terrain_entity',
-                components: {
+                components: [{
                     terrain: {
                         level: levelName,
                         world: this.objectData.world,
@@ -1706,7 +1706,7 @@ class TerrainMapEditor {
                         grassEnabled: false,
                         cliffsEnabled: true
                     }
-                }
+                }]
             }]
         });
 

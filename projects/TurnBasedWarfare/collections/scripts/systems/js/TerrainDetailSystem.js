@@ -35,6 +35,7 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
     createBillboardMaterial(texture) {
         const vertexShader = `
             varying vec2 vUv;
+            #include <fog_pars_vertex>
 
             void main() {
                 vUv = uv;
@@ -51,7 +52,11 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
                 vec4 viewPosition = viewMatrix * worldPosition;
                 viewPosition.xy += position.xy * vec2(scaleX, scaleY);
 
+                // mvPosition is required by fog_vertex
+                vec4 mvPosition = viewPosition;
+
                 gl_Position = projectionMatrix * viewPosition;
+                #include <fog_vertex>
             }
         `;
 
@@ -59,6 +64,7 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
             uniform sampler2D map;
             uniform vec3 ambientLightColor;
             varying vec2 vUv;
+            #include <fog_pars_fragment>
 
             void main() {
                 vec4 texColor = texture2D(map, vUv);
@@ -70,16 +76,21 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
                 vec3 litColor = texColor.rgb * ambientLightColor;
                 gl_FragColor = vec4(litColor, texColor.a);
                 #include <colorspace_fragment>
+                #include <fog_fragment>
             }
         `;
 
         return new THREE.ShaderMaterial({
-            uniforms: {
-                map: { value: texture },
-                ambientLightColor: { value: this.currentAmbientLight.clone() }
-            },
+            uniforms: THREE.UniformsUtils.merge([
+                THREE.UniformsLib.fog,
+                {
+                    map: { value: texture },
+                    ambientLightColor: { value: this.currentAmbientLight.clone() }
+                }
+            ]),
             vertexShader,
             fragmentShader,
+            fog: true,
             transparent: true,
             side: THREE.DoubleSide,
             depthWrite: true
