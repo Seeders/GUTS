@@ -535,7 +535,15 @@ class EditorView {
                 } else if (value.toLowerCase() === 'false') {
                   value = false;
                 } else if (value.startsWith('[') && value.endsWith(']')) {
-                  value = JSON.parse(value || []);
+                  value = JSON.parse(value || '[]');
+                } else if (value.startsWith('{') && value.endsWith('}')) {
+                  // Parse JSON objects (e.g., position: { "x": 64, "y": 512, "z": 512 })
+                  try {
+                    value = JSON.parse(value);
+                  } catch (e) {
+                    // If parsing fails, keep as string
+                    console.warn('Failed to parse JSON object:', value, e);
+                  }
                 }
                 let parsed = false;
                 const editorModules = this.controller.model.getCollections().editorModules;
