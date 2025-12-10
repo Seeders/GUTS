@@ -204,24 +204,29 @@ class SceneManager {
                     continue;
                 }
 
-                const components = JSON.parse(JSON.stringify(prefabData.components || {}));
+                const components = JSON.parse(JSON.stringify(prefabData.components || []));
 
                 this.game.createEntity(entityId);
                 this.spawnedEntityIds.add(entityId);
 
-                for (const [componentType, componentData] of Object.entries(components)) {
-                    this.game.addComponent(entityId, componentType, componentData);
+                // Array format: [{ componentType: data }, { componentType: data }, ...]
+                for (const componentObj of components) {
+                    for (const [componentType, componentData] of Object.entries(componentObj)) {
+                        this.game.addComponent(entityId, componentType, componentData);
+                    }
                 }
                 continue;
             }
 
-            // Raw components format: { id, components: { componentType: data, ... } }
-            if (entityDef.components && typeof entityDef.components === 'object') {
+            // Raw components format: { id, components: [...] }
+            if (entityDef.components && Array.isArray(entityDef.components)) {
                 this.game.createEntity(entityId);
                 this.spawnedEntityIds.add(entityId);
 
-                for (const [componentType, componentData] of Object.entries(entityDef.components)) {
-                    this.game.addComponent(entityId, componentType, componentData);
+                for (const componentObj of entityDef.components) {
+                    for (const [componentType, componentData] of Object.entries(componentObj)) {
+                        this.game.addComponent(entityId, componentType, componentData);
+                    }
                 }
                 continue;
             }
