@@ -10,7 +10,7 @@
   "level": 1,
   "experienceValue": 15,
   "lootTable": "common",
-  "behaviorTree": "monster_basic",
+  "behaviorTree": "CombatBehaviorTree",
   "scale": 0.8,
   "respawnTime": 30,
   "render": {

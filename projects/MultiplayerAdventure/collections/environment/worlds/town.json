@@ -1,0 +1,16 @@
+{
+  "title": "Town Center",
+  "lighting": "sunnyDayLighting",
+  "shadow": "sunnyDayShadows",
+  "fog": "sunnyDayFog",
+  "heightMap": "fiveStep",
+  "camera": "main",
+  "extensionSize": 384,
+  "worldObjects": [
+    "tree_sprite",
+    "bush_sprite",
+    "stone_sprite",
+    "grass_tuft_sprite"
+  ],
+  "backgroundColor": "#87CEEB"
+}

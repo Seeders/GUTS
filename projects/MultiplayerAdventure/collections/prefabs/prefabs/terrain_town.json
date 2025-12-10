@@ -1,0 +1,17 @@
+{
+  "title": "Town Terrain",
+  "description": "Terrain for the town hub area",
+  "components": [
+    {
+      "terrain": {
+        "level": "town_center",
+        "world": "town",
+        "cliffsEnabled": true,
+        "liquidsEnabled": true,
+        "grassEnabled": false,
+        "fogEnabled": true,
+        "shadowsEnabled": true
+      }
+    }
+  ]
+}

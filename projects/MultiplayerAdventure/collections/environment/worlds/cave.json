@@ -1,0 +1,15 @@
+{
+  "title": "Crystal Caves",
+  "lighting": "doomLighting",
+  "shadow": "hellShadows",
+  "fog": "hellFog",
+  "heightMap": "fiveStep",
+  "camera": "main",
+  "extensionSize": 384,
+  "worldObjects": [
+    "rock",
+    "stone_sprite",
+    "stone_2_sprite"
+  ],
+  "backgroundColor": "#1a1a2e"
+}

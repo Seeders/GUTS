@@ -1,0 +1,17 @@
+{
+  "title": "Forest Terrain",
+  "description": "Terrain for forest adventure instances",
+  "components": [
+    {
+      "terrain": {
+        "level": "forest_instance",
+        "world": "forest",
+        "cliffsEnabled": true,
+        "liquidsEnabled": true,
+        "grassEnabled": false,
+        "fogEnabled": true,
+        "shadowsEnabled": true
+      }
+    }
+  ]
+}

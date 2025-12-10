@@ -1,0 +1,21 @@
+{
+  "title": "Dark Forest",
+  "lighting": "sunnyDayLighting",
+  "shadow": "sunnyDayShadows",
+  "fog": "sunnyDayFog",
+  "heightMap": "fiveStep",
+  "camera": "main",
+  "extensionSize": 512,
+  "worldObjects": [
+    "tree",
+    "tree_sprite",
+    "bush_fern_sprite",
+    "bush_sprite",
+    "grass_tuft_small_sprite",
+    "grass_tuft_sprite",
+    "mushroom_sprite",
+    "stone_sprite",
+    "rock"
+  ],
+  "backgroundColor": "#2d4a2d"
+}

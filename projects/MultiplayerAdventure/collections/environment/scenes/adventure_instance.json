@@ -39,13 +39,7 @@
   "entities": [
     {
       "id": "terrain_main",
-      "prefab": "terrain_dungeon",
-      "components": {
-        "terrain": {
-          "level": "dungeon_1",
-          "world": "dungeon"
-        }
-      }
+      "prefab": "terrain_forest"
     }
   ]
 }

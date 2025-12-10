@@ -3,26 +3,37 @@
   "description": "Deep caves with valuable crystals and dangerous creatures",
   "minLevel": 5,
   "maxPlayers": 4,
-  "timeLimit": 900,
-  "spawnPoint": { "x": 0, "y": 0, "z": -250 },
-  "monsterSpawns": [
+  "timeLimit": 0,
+  "terrainLevel": "cave_instance",
+  "monstersPerSpawn": 4,
+  "encounters": [
+    { "type": "skeleton", "monsterType": "skeleton" },
+    { "type": "skeleton", "monsterType": "skeleton" },
+    { "type": "orc", "monsterType": "orc" },
+    { "type": "skeleton", "monsterType": "skeleton" }
+  ],
+  "boss": {
+    "type": "orc",
+    "name": "Cave Overlord"
+  },
+  "waves": [
     {
-      "type": "skeleton",
-      "count": 8,
-      "position": { "x": 50, "y": 0, "z": 50 },
-      "radius": 80
+      "spawns": [
+        { "type": "skeleton", "count": 4, "spawnPointIndex": 0 },
+        { "type": "skeleton", "count": 4, "spawnPointIndex": 1 }
+      ]
     },
     {
-      "type": "skeleton",
-      "count": 6,
-      "position": { "x": -80, "y": 0, "z": 150 },
-      "radius": 60
+      "spawns": [
+        { "type": "orc", "count": 2, "spawnPointIndex": 2 },
+        { "type": "skeleton", "count": 3, "spawnPointIndex": 3 }
+      ]
     },
     {
-      "type": "orc",
-      "count": 3,
-      "position": { "x": 0, "y": 0, "z": 300 },
-      "radius": 40
+      "spawns": [
+        { "type": "orc", "count": 3, "spawnPointIndex": 0 },
+        { "type": "orc", "count": 3, "spawnPointIndex": 1 }
+      ]
     }
   ],
   "objectives": [
@@ -30,15 +41,15 @@
       "id": "kill_skeletons",
       "type": "kill",
       "target": "skeleton",
-      "required": 14,
+      "required": 15,
       "description": "Clear the Skeleton Infestation"
     },
     {
       "id": "kill_orcs",
       "type": "kill",
       "target": "orc",
-      "required": 3,
-      "description": "Defeat the Cave Guardians"
+      "required": 8,
+      "description": "Defeat the Orc Guardians"
     }
   ],
   "rewards": {

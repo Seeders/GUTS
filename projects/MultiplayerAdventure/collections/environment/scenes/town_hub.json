@@ -34,13 +34,7 @@
   "entities": [
     {
       "id": "terrain_main",
-      "prefab": "terrain_town",
-      "components": {
-        "terrain": {
-          "level": "town_hub",
-          "world": "town"
-        }
-      }
+      "prefab": "terrain_town"
     },
     {
       "id": "npc_adventure_master",
@@ -48,12 +42,17 @@
       "spawnType": "adventure_master",
       "name": "Adventure Master",
       "transform": {
-        "position": { "x": 0, "y": 0, "z": -100 }
+        "position": { "x": 720, "y": 15, "z": 720 }
       },
       "components": {
         "npc": {
           "type": "adventure_giver",
           "dialogueId": "adventure_master_intro"
+        },
+        "interactable": {
+          "interactionType": "npc",
+          "interactionRadius": 60,
+          "promptText": "Talk to Adventure Master"
         }
       }
     },
@@ -63,12 +62,80 @@
       "spawnType": "shopkeeper",
       "name": "Shopkeeper",
       "transform": {
-        "position": { "x": 150, "y": 0, "z": 50 }
+        "position": { "x": 840, "y": 15, "z": 720 }
       },
       "components": {
         "npc": {
           "type": "merchant",
           "shopId": "general_store"
+        },
+        "interactable": {
+          "interactionType": "npc",
+          "interactionRadius": 60,
+          "promptText": "Open Shop"
+        }
+      }
+    },
+    {
+      "id": "portal_forest",
+      "transform": {
+        "position": { "x": 744, "y": 0, "z": 192 }
+      },
+      "components": {
+        "adventurePortal": {
+          "adventureId": "forest_dungeon",
+          "name": "Forest Dungeon",
+          "description": "A mysterious forest filled with goblins",
+          "minLevel": 1,
+          "maxPlayers": 4,
+          "terrainLevel": "forest_instance"
+        },
+        "interactable": {
+          "interactionType": "portal",
+          "interactionRadius": 80,
+          "promptText": "Enter Forest Dungeon (Lvl 1+)"
+        }
+      }
+    },
+    {
+      "id": "portal_cave",
+      "transform": {
+        "position": { "x": 1296, "y": 0, "z": 744 }
+      },
+      "components": {
+        "adventurePortal": {
+          "adventureId": "cave_dungeon",
+          "name": "Crystal Caves",
+          "description": "Deep caves with valuable crystals and dangers",
+          "minLevel": 5,
+          "maxPlayers": 4,
+          "terrainLevel": "cave_instance"
+        },
+        "interactable": {
+          "interactionType": "portal",
+          "interactionRadius": 80,
+          "promptText": "Enter Crystal Caves (Lvl 5+)"
+        }
+      }
+    },
+    {
+      "id": "portal_castle",
+      "transform": {
+        "position": { "x": 744, "y": 0, "z": 1296 }
+      },
+      "components": {
+        "adventurePortal": {
+          "adventureId": "castle_dungeon",
+          "name": "Haunted Castle",
+          "description": "An ancient castle overrun by undead",
+          "minLevel": 10,
+          "maxPlayers": 4,
+          "terrainLevel": "hell"
+        },
+        "interactable": {
+          "interactionType": "portal",
+          "interactionRadius": 80,
+          "promptText": "Enter Haunted Castle (Lvl 10+)"
         }
       }
     }

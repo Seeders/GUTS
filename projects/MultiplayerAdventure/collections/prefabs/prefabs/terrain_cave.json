@@ -1,0 +1,17 @@
+{
+  "title": "Cave Terrain",
+  "description": "Terrain for cave/dungeon adventure instances",
+  "components": [
+    {
+      "terrain": {
+        "level": "cave_instance",
+        "world": "cave",
+        "cliffsEnabled": true,
+        "liquidsEnabled": true,
+        "grassEnabled": false,
+        "fogEnabled": true,
+        "shadowsEnabled": true
+      }
+    }
+  ]
+}
