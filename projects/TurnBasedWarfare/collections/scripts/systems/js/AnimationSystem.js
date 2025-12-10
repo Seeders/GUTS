@@ -15,6 +15,9 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Cache for availableClips as Sets (batchKey -> Set)
         this._clipSetCache = new Map();
+
+        // Animation batching for efficient updates
+        this._animationBatcher = new AnimationBatcher(game);
     }
 
     init() {
@@ -34,6 +37,16 @@ class AnimationSystem extends GUTS.BaseSystem {
         this.game.register('getBillboardCurrentAnimation', this.getBillboardCurrentAnimation.bind(this));
         this.game.register('getBillboardAnimationState', this.getBillboardAnimationState.bind(this));
 
+        // Animation batcher stats (for debugging/profiling)
+        this.game.register('getAnimationBatcherStats', () => this._animationBatcher.getStats());
+        this.game.register('invalidateAnimationVisibility', (entityId) => {
+            if (entityId) {
+                this._animationBatcher.invalidateEntityVisibility(entityId);
+            } else {
+                this._animationBatcher.invalidateVisibilityCache();
+            }
+        });
+        this.game.register('unregisterAnimatedEntity', this.unregisterAnimatedEntity.bind(this));
     }
 
     calculateAnimationSpeed(attackerId, baseAttackSpeed) {
@@ -815,21 +828,27 @@ class AnimationSystem extends GUTS.BaseSystem {
 
     /**
      * Update billboard sprite animation frames (called every frame)
+     * Uses AnimationBatcher for efficient visibility culling and frame timing
      */
     updateBillboardAnimations(deltaTime) {
         const entityRenderer = this.game.call('getEntityRenderer');
         if (!entityRenderer) return;
 
+        const dt = this.game.state.deltaTime;
+
+        // Get entities that need updates from the batcher
+        // This handles visibility culling and timing checks
+        const { frameUpdates, directionUpdates, cameraHasMoved } = this._animationBatcher.getEntitiesToUpdate(dt);
+
         // Get rendering data to access sprite animation frame rates
         const frameRates = entityRenderer.spriteAnimationFrameRates || {};
         const defaultFrameRate = entityRenderer.defaultFrameRate || 10;
 
-        // Get all entities with animationState component that are billboards
-        const billboardEntities = this.game.getEntitiesWith("animationState");
-
-        for (const entityId of billboardEntities) {
+        // Process frame updates only for entities that need them (based on timing + visibility)
+        for (const entityId of frameUpdates) {
             const animState = this.game.getComponent(entityId, "animationState");
             if (!animState || !animState.isSprite) continue;
+
             // Get animations for current type (stored in animationState)
             const animations = animState.spriteAnimations?.[animState.spriteAnimationType];
             if (!animations) continue;
@@ -838,13 +857,11 @@ class AnimationSystem extends GUTS.BaseSystem {
             if (!directionData || !directionData.frames || directionData.frames.length === 0) continue;
 
             const frames = directionData.frames;
+
             // For non-looping animations, check if already finished (past the last frame)
             if (!animState.spriteLoopAnimation && animState.spriteFrameIndex >= frames.length) {
                 continue;
             }
-
-            // Update frame time
-            animState.spriteFrameTime += this.game.state.deltaTime;
 
             // Calculate frame duration based on fps from animation set
             const fps = animState.spriteFps || frameRates[animState.spriteAnimationType] || defaultFrameRate;
@@ -854,41 +871,48 @@ class AnimationSystem extends GUTS.BaseSystem {
             if (animState.customDuration !== null && animState.customDuration > 0) {
                 frameDuration = animState.customDuration / frames.length;
             }
-            // Advance frames based on elapsed time (handles lag/large deltaTime correctly)
-            let frameChanged = false;
-            const oldFrameIndex = animState.spriteFrameIndex;
-            while (animState.spriteFrameTime >= frameDuration) {
-                animState.spriteFrameTime -= frameDuration;
-                animState.spriteFrameIndex++;
-                frameChanged = true;
 
-                // Handle animation completion
-                if (animState.spriteFrameIndex >= frames.length) {
-                    if (animState.spriteLoopAnimation) {
-                        animState.spriteFrameIndex = 0;
+            // Advance frame (batcher already confirmed enough time has passed)
+            animState.spriteFrameIndex++;
+
+            // Consume the frame time from the accumulator
+            this._animationBatcher.consumeFrameTime(entityId, frameDuration);
+
+            // Handle animation completion
+            if (animState.spriteFrameIndex >= frames.length) {
+                if (animState.spriteLoopAnimation) {
+                    animState.spriteFrameIndex = 0;
+                } else {
+                    animState.spriteFrameIndex = frames.length - 1;
+
+                    // Call completion callback if set
+                    if (animState.onAnimationComplete) {
+                        animState.onAnimationComplete(entityId);
+                        animState.onAnimationComplete = null;
                     } else {
-                        animState.spriteFrameIndex = frames.length - 1;
-                        animState.spriteFrameTime = 0; // Stop accumulating time
-
-                        // Call completion callback if set
-                        if (animState.onAnimationComplete) {
-                            animState.onAnimationComplete(entityId);
-                            animState.onAnimationComplete = null;
-                        } else {
-                            // Default behavior: return to idle for single-play animations (except death)
-                            // Death animations should stay frozen on the last frame
-                            if (this.SINGLE_PLAY_ANIMATIONS.has(animState.spriteAnimationType) &&
-                                animState.spriteAnimationType !== 'death') {
-                                this.game.call('setBillboardAnimation', entityId, 'idle', true);
-                            }
+                        // Default behavior: return to idle for single-play animations (except death)
+                        // Death animations should stay frozen on the last frame
+                        if (this.SINGLE_PLAY_ANIMATIONS.has(animState.spriteAnimationType) &&
+                            animState.spriteAnimationType !== 'death') {
+                            this.game.call('setBillboardAnimation', entityId, 'idle', true);
                         }
-                        break; // Exit loop for non-looping animations
                     }
                 }
             }
-            // Tell EntityRenderer to apply new frame if it changed
-            if (frameChanged) {
-                entityRenderer.applyBillboardAnimationFrame(entityId, animState);
+
+            // Tell EntityRenderer to apply new frame
+            entityRenderer.applyBillboardAnimationFrame(entityId, animState);
+        }
+
+        // Direction updates only when camera has moved (handled by batcher)
+        // This is processed separately and less frequently
+        if (cameraHasMoved && directionUpdates.length > 0) {
+            for (const entityId of directionUpdates) {
+                const animState = this.game.getComponent(entityId, "animationState");
+                if (!animState || !animState.isSprite) continue;
+
+                // Update sprite direction based on camera position (already filtered by visibility)
+                this.updateSpriteDirectionFromRotation(entityId, animState);
             }
         }
     }
@@ -957,6 +981,9 @@ class AnimationSystem extends GUTS.BaseSystem {
             animState.spriteLoopAnimation = true;
             animState.isSprite = true;
         }
+
+        // Register entity with animation batcher for efficient updates
+        this._animationBatcher.registerEntity(entityId);
 
         // Apply initial idle animation (sets UV coordinates)
         this.setBillboardAnimation(entityId, 'idle', true);
@@ -1045,5 +1072,14 @@ class AnimationSystem extends GUTS.BaseSystem {
     dispose() {
         // Clear cached clip sets to avoid stale data on next game
         this._clipSetCache.clear();
+        // Clean up animation batcher
+        this._animationBatcher.dispose();
+    }
+
+    /**
+     * Unregister an entity from animation batching (call when entity is destroyed)
+     */
+    unregisterAnimatedEntity(entityId) {
+        this._animationBatcher.unregisterEntity(entityId);
     }
 }

@@ -9,6 +9,7 @@
     "SparseSet",
     "Archetype",
     "ComponentPool",
+    "AnimationBatcher",
     "BaseECSGame",
     "Rapier",
     "three_MeshBVH",
