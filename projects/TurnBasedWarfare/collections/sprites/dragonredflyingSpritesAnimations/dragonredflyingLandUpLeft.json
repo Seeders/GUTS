@@ -1,0 +1,23 @@
+{
+  "title": "dragonredflying Land Up Left",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingLandUpLeft_0",
+    "dragonredflyingLandUpLeft_1",
+    "dragonredflyingLandUpLeft_2",
+    "dragonredflyingLandUpLeft_3",
+    "dragonredflyingLandUpLeft_4",
+    "dragonredflyingLandUpLeft_5",
+    "dragonredflyingLandUpLeft_6",
+    "dragonredflyingLandUpLeft_7",
+    "dragonredflyingLandUpLeft_8",
+    "dragonredflyingLandUpLeft_9",
+    "dragonredflyingLandUpLeft_10",
+    "dragonredflyingLandUpLeft_11",
+    "dragonredflyingLandUpLeft_12",
+    "dragonredflyingLandUpLeft_13",
+    "dragonredflyingLandUpLeft_14",
+    "dragonredflyingLandUpLeft_15"
+  ],
+  "fps": 4
+}

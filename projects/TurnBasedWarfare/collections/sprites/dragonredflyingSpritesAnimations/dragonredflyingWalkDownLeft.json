@@ -1,0 +1,11 @@
+{
+  "title": "dragonredflying Walk Down Left",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingWalkDownLeft_0",
+    "dragonredflyingWalkDownLeft_1",
+    "dragonredflyingWalkDownLeft_2",
+    "dragonredflyingWalkDownLeft_3"
+  ],
+  "fps": 4
+}

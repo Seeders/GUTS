@@ -463,8 +463,10 @@ class SceneEditor {
             collection: collection,
             spawnType: spawnType,
             name: itemData?.title || spawnType,
-            transform: {
-                position: { x, y, z }
+            components: {
+                transform: {
+                    position: { x, y, z }
+                }
             }
         };
 
@@ -1134,11 +1136,16 @@ class SceneEditor {
         const entityData = this.state.entities?.find(e => e.id === entityId);
         if (entityData) {
             if (!entityData.components) entityData.components = {};
-            entityData.components.transform = transform;
+            entityData.components.transform = {
+                position: transform.position,
+                rotation: transform.rotation,
+                scale: transform.scale
+            };
         }
 
-        // Mark as dirty
+        // Mark as dirty and save
         this.state.isDirty = true;
+        this.handleSave(false);
 
         // Update inspector to reflect changes
         this.renderInspector();

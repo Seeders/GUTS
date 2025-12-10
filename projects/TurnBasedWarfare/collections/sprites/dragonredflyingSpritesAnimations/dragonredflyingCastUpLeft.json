@@ -1,0 +1,19 @@
+{
+  "title": "dragonredflying Cast Up Left",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingCastUpLeft_0",
+    "dragonredflyingCastUpLeft_1",
+    "dragonredflyingCastUpLeft_2",
+    "dragonredflyingCastUpLeft_3",
+    "dragonredflyingCastUpLeft_4",
+    "dragonredflyingCastUpLeft_5",
+    "dragonredflyingCastUpLeft_6",
+    "dragonredflyingCastUpLeft_7",
+    "dragonredflyingCastUpLeft_8",
+    "dragonredflyingCastUpLeft_9",
+    "dragonredflyingCastUpLeft_10",
+    "dragonredflyingCastUpLeft_11"
+  ],
+  "fps": 4
+}

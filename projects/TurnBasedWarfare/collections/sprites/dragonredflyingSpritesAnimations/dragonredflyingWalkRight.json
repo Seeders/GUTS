@@ -1,0 +1,11 @@
+{
+  "title": "dragonredflying Walk Right",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingWalkRight_0",
+    "dragonredflyingWalkRight_1",
+    "dragonredflyingWalkRight_2",
+    "dragonredflyingWalkRight_3"
+  ],
+  "fps": 4
+}

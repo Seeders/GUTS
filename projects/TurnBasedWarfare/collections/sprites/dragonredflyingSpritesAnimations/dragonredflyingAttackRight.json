@@ -1,0 +1,19 @@
+{
+  "title": "dragonredflying Attack Right",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingAttackRight_0",
+    "dragonredflyingAttackRight_1",
+    "dragonredflyingAttackRight_2",
+    "dragonredflyingAttackRight_3",
+    "dragonredflyingAttackRight_4",
+    "dragonredflyingAttackRight_5",
+    "dragonredflyingAttackRight_6",
+    "dragonredflyingAttackRight_7",
+    "dragonredflyingAttackRight_8",
+    "dragonredflyingAttackRight_9",
+    "dragonredflyingAttackRight_10",
+    "dragonredflyingAttackRight_11"
+  ],
+  "fps": 4
+}

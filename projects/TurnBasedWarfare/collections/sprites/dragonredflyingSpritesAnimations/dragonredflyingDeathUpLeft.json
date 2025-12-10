@@ -1,0 +1,17 @@
+{
+  "title": "dragonredflying Death Up Left",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingDeathUpLeft_0",
+    "dragonredflyingDeathUpLeft_1",
+    "dragonredflyingDeathUpLeft_2",
+    "dragonredflyingDeathUpLeft_3",
+    "dragonredflyingDeathUpLeft_4",
+    "dragonredflyingDeathUpLeft_5",
+    "dragonredflyingDeathUpLeft_6",
+    "dragonredflyingDeathUpLeft_7",
+    "dragonredflyingDeathUpLeft_8",
+    "dragonredflyingDeathUpLeft_9"
+  ],
+  "fps": 4
+}

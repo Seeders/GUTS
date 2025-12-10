@@ -231,13 +231,15 @@ class SceneManager {
                 continue;
             }
 
-            // Collection format: { id, collection, spawnType, name?, transform? }
+            // Collection format: { id, collection, spawnType, name?, components?: { transform? } }
             if (!entityDef.collection || !entityDef.spawnType) {
                 console.warn(`[SceneManager] Entity missing collection/spawnType or prefab:`, entityDef);
                 continue;
             }
 
-            const { collection, spawnType, transform } = entityDef;
+            const { collection, spawnType, components } = entityDef;
+            const transform = components?.transform;
+            const team = components?.team?.team ?? 'left';
 
             // Use UnitCreationSystem for consistent entity creation
             const unitCreationSystem = this.game.unitCreationSystem || this.game.systemsByName?.get('UnitCreationSystem');
@@ -248,7 +250,7 @@ class SceneManager {
                     collection,
                     spawnType,
                     transform || {},
-                    transform?.team ?? 'left',
+                    team,
                     null,  // No player ID
                     entityId
                 );

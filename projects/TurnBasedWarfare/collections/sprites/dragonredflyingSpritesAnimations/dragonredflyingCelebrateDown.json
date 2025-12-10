@@ -1,0 +1,23 @@
+{
+  "title": "dragonredflying Celebrate Down",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingCelebrateDown_0",
+    "dragonredflyingCelebrateDown_1",
+    "dragonredflyingCelebrateDown_2",
+    "dragonredflyingCelebrateDown_3",
+    "dragonredflyingCelebrateDown_4",
+    "dragonredflyingCelebrateDown_5",
+    "dragonredflyingCelebrateDown_6",
+    "dragonredflyingCelebrateDown_7",
+    "dragonredflyingCelebrateDown_8",
+    "dragonredflyingCelebrateDown_9",
+    "dragonredflyingCelebrateDown_10",
+    "dragonredflyingCelebrateDown_11",
+    "dragonredflyingCelebrateDown_12",
+    "dragonredflyingCelebrateDown_13",
+    "dragonredflyingCelebrateDown_14",
+    "dragonredflyingCelebrateDown_15"
+  ],
+  "fps": 4
+}

@@ -33,7 +33,6 @@ class AnimationSystem extends GUTS.BaseSystem {
         this.game.register('setBillboardAnimationDirection', this.setBillboardAnimationDirection.bind(this));
         this.game.register('getBillboardCurrentAnimation', this.getBillboardCurrentAnimation.bind(this));
         this.game.register('getBillboardAnimationState', this.getBillboardAnimationState.bind(this));
-
     }
 
     calculateAnimationSpeed(attackerId, baseAttackSpeed) {
@@ -251,15 +250,11 @@ class AnimationSystem extends GUTS.BaseSystem {
     /**
      * Update sprite direction based on entity's rotation.y and camera position
      *
-     * The sprite shown depends on which side of the entity the camera can see,
-     * taking into account the entity's facing direction.
+     * Uses the same snapping calculation as the billboard vertex shader to ensure
+     * the sprite direction changes at exactly the same camera angles as the
+     * billboard rotation snaps.
      *
-     * - If entity faces toward camera → show "down" (front)
-     * - If entity faces away from camera → show "up" (back)
-     * - If entity faces perpendicular → show "left" or "right"
-     *
-     * This combines both: if the entity rotates, or if the camera moves,
-     * the visible sprite changes accordingly.
+     * Shader formula: snappedAngle = round(angle / (PI/4)) * (PI/4)
      */
     updateSpriteDirectionFromRotation(entityId, animState) {
         const transform = this.game.getComponent(entityId, 'transform');
@@ -272,52 +267,39 @@ class AnimationSystem extends GUTS.BaseSystem {
         const rotationY = transform.rotation.y;
         const entityPos = transform.position;
 
-        // Calculate angle from entity to camera in world space
+        // Calculate angle from entity to camera in world space (same as shader)
         const dx = cam.position.x - entityPos.x;
         const dz = cam.position.z - entityPos.z;
         const angleToCamera = Math.atan2(dz, dx);
 
-        // The relative angle: how the entity's facing compares to where the camera is
-        // relativeAngle = 0 means entity is facing directly toward camera → show front
-        // relativeAngle = PI means entity is facing away from camera → show back
-        let relativeAngle = rotationY - angleToCamera;
+        // Snap camera angle to 8 directions using the SAME formula as the shader
+        // This ensures sprite direction changes at exactly the same moment as billboard rotation
+        const ANGLE_STEP = Math.PI / 4; // 45 degrees
+        const snappedCameraAngle = Math.round(angleToCamera / ANGLE_STEP) * ANGLE_STEP;
+
+        // Calculate relative angle using snapped camera angle
+        // This is the entity's facing direction relative to the snapped billboard facing
+        let relativeAngle = rotationY - snappedCameraAngle;
 
         // Normalize to -PI to PI
         while (relativeAngle > Math.PI) relativeAngle -= 2 * Math.PI;
         while (relativeAngle < -Math.PI) relativeAngle += 2 * Math.PI;
 
-        // Convert to degrees
-        const angleDeg = relativeAngle * (180 / Math.PI);
+        // Snap relative angle to 8 directions (same formula)
+        const snappedRelativeAngle = Math.round(relativeAngle / ANGLE_STEP) * ANGLE_STEP;
 
-        // Map relative angle to sprite direction
-        let newDirection = animState.spriteDirection;
+        // Map snapped relative angle to sprite direction
+        // Direction index: 0=down (facing camera), increasing counterclockwise
+        // Normalize to 0..7 index
+        let directionIndex = Math.round(snappedRelativeAngle / ANGLE_STEP);
+        // Handle wrap-around for negative indices
+        directionIndex = ((directionIndex % 8) + 8) % 8;
 
-        // 8 sectors of 45 degrees each
-        if (angleDeg >= -22.5 && angleDeg < 22.5) {
-            // Entity facing toward camera → show front (down)
-            newDirection = 'down';
-        } else if (angleDeg >= 22.5 && angleDeg < 67.5) {
-            // Entity facing front-left of camera → show down-left
-            newDirection = 'downleft';
-        } else if (angleDeg >= 67.5 && angleDeg < 112.5) {
-            // Entity facing left of camera → show left
-            newDirection = 'left';
-        } else if (angleDeg >= 112.5 && angleDeg < 157.5) {
-            // Entity facing back-left of camera → show up-left
-            newDirection = 'upleft';
-        } else if (angleDeg >= 157.5 || angleDeg < -157.5) {
-            // Entity facing away from camera → show back (up)
-            newDirection = 'up';
-        } else if (angleDeg >= -157.5 && angleDeg < -112.5) {
-            // Entity facing back-right of camera → show up-right
-            newDirection = 'upright';
-        } else if (angleDeg >= -112.5 && angleDeg < -67.5) {
-            // Entity facing right of camera → show right
-            newDirection = 'right';
-        } else if (angleDeg >= -67.5 && angleDeg < -22.5) {
-            // Entity facing front-right of camera → show down-right
-            newDirection = 'downright';
-        }
+        // Map index to direction name
+        // Index 0 = facing toward camera = down (front view)
+        // Index increases counterclockwise: 1=downleft, 2=left, 3=upleft, 4=up, 5=upright, 6=right, 7=downright
+        const directions = ['down', 'downleft', 'left', 'upleft', 'up', 'upright', 'right', 'downright'];
+        const newDirection = directions[directionIndex];
 
         // Check if direction changed and apply it
         if (newDirection !== animState.spriteDirection) {

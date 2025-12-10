@@ -46,31 +46,30 @@
   "entities": [
     {
       "id": "terrain_main",
-      "prefab": "terrain_hell"
+      "prefab": "terrain"
     },
     {
       "id": "dragon_red_1245.45_-1263.26_left_0",
       "collection": "units",
       "spawnType": "dragon_red",
       "name": "Dragon Red",
-      "transform": {
-        "position": {
-          "x": 1245.453435039778,
-          "y": 15,
-          "z": -1263.2592047754708
-        }
-      }
-    },
-    {
-      "id": "dragon_red_-1222.72_1256.18_left_0",
-      "collection": "units",
-      "spawnType": "dragon_red",
-      "name": "Dragon Red",
-      "transform": {
-        "position": {
-          "x": -1222.718849666271,
-          "y": 15,
-          "z": 1256.1799002631947
+      "components": {
+        "transform": {
+          "position": {
+            "x": 1195.6231269149953,
+            "y": 15,
+            "z": -1234.5932198695016
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
         }
       }
     },
@@ -79,11 +78,13 @@
       "collection": "buildings",
       "spawnType": "cottage",
       "name": "Cottage",
-      "transform": {
-        "position": {
-          "x": -370.9716446440616,
-          "y": 30,
-          "z": -224.41226511501196
+      "components": {
+        "transform": {
+          "position": {
+            "x": -370.9716446440616,
+            "y": 30,
+            "z": -224.41226511501196
+          }
         }
       }
     },
@@ -92,11 +93,13 @@
       "collection": "buildings",
       "spawnType": "fletchersHall",
       "name": "Fletchers Hall",
-      "transform": {
-        "position": {
-          "x": -346.1296820093521,
-          "y": 30,
-          "z": -294.50906174565995
+      "components": {
+        "transform": {
+          "position": {
+            "x": -346.1296820093521,
+            "y": 30,
+            "z": -294.50906174565995
+          }
         }
       }
     },
@@ -105,11 +108,13 @@
       "collection": "buildings",
       "spawnType": "fletchersHall",
       "name": "Fletchers Hall",
-      "transform": {
-        "position": {
-          "x": -449.1194592989723,
-          "y": 30,
-          "z": -123.63703346213154
+      "components": {
+        "transform": {
+          "position": {
+            "x": -449.1194592989723,
+            "y": 30,
+            "z": -123.63703346213154
+          }
         }
       }
     },
@@ -118,11 +123,38 @@
       "collection": "buildings",
       "spawnType": "cottage",
       "name": "Cottage",
-      "transform": {
-        "position": {
-          "x": -444.52553188256024,
-          "y": 30,
-          "z": -241.36804586839213
+      "components": {
+        "transform": {
+          "position": {
+            "x": -444.52553188256024,
+            "y": 30,
+            "z": -241.36804586839213
+          }
+        }
+      }
+    },
+    {
+      "id": "dragon_red_-1224.12_1152.41_left_0",
+      "collection": "units",
+      "spawnType": "dragon_red",
+      "name": "Dragon Red",
+      "components": {
+        "transform": {
+          "position": {
+            "x": -1191.2036452561938,
+            "y": 15,
+            "z": 1197.129678408611
+          },
+          "rotation": {
+            "x": 0,
+            "y": -0.9474812656006883,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
         }
       }
     }

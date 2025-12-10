@@ -1,0 +1,23 @@
+{
+  "title": "dragonredflying Land Left",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingLandLeft_0",
+    "dragonredflyingLandLeft_1",
+    "dragonredflyingLandLeft_2",
+    "dragonredflyingLandLeft_3",
+    "dragonredflyingLandLeft_4",
+    "dragonredflyingLandLeft_5",
+    "dragonredflyingLandLeft_6",
+    "dragonredflyingLandLeft_7",
+    "dragonredflyingLandLeft_8",
+    "dragonredflyingLandLeft_9",
+    "dragonredflyingLandLeft_10",
+    "dragonredflyingLandLeft_11",
+    "dragonredflyingLandLeft_12",
+    "dragonredflyingLandLeft_13",
+    "dragonredflyingLandLeft_14",
+    "dragonredflyingLandLeft_15"
+  ],
+  "fps": 4
+}
