@@ -26,6 +26,7 @@
     "SparseSet",
     "Archetype",
     "ComponentPool",
+    "AnimationBatcher",
     "BaseECSGame",
     "SceneManager",
     "EditorECSGame",
