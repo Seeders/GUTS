@@ -2,7 +2,7 @@
   "title": "Hell",
   "lighting": "doomLighting",
   "shadow": "hellShadows",
-  "fog": "sunnyDayFog",
+  "fog": "hellFog",
   "heightMap": "fiveStep",
   "camera": "main",
   "extensionSize": 768,
