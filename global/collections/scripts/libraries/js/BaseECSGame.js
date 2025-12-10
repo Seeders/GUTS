@@ -17,16 +17,13 @@ class BaseECSGame {
         this.entitiesToAdd = [];
 
         // ====== OPTIMIZED STORAGE ======
-        // Archetype-based storage (initialized lazily)
+        // Archetype-based storage - single source of truth for entity-component relationships
         this._archetypeManager = null;
 
         // TypedArray pools for numeric components
         this._componentPools = null;
 
-        // Entity tracking: entityId -> Set<componentType>
-        this.entities = new Map();
-
-        // Component storage: componentType -> SparseSet
+        // Component storage: componentType -> SparseSet (for fast component data access)
         this.components = new Map();
 
         this.classes = [];
@@ -191,22 +188,26 @@ class BaseECSGame {
     createEntity(setId) {
         const id = setId || this.getEntityId();
 
-        if (this.entities.has(id)) {
-            const existingComponents = Array.from(this.entities.get(id));
-            console.error(`[BaseECSGame] createEntity called for existing entity ${id}! Existing components: ${existingComponents.join(', ')}`);
-            console.trace('createEntity called from:');
-        }
-
-        this.entities.set(id, new Set());
-
         if (this._archetypeManager) {
-            try {
-                this._archetypeManager.createEntity(id);
-            } catch (e) { /* ignore duplicate */ }
+            if (this._archetypeManager.hasEntity(id)) {
+                const existingComponents = this._archetypeManager.getEntityComponentTypes(id);
+                console.error(`[BaseECSGame] createEntity called for existing entity ${id}! Existing components: ${existingComponents.join(', ')}`);
+                console.trace('createEntity called from:');
+            }
+            this._archetypeManager.createEntity(id);
         }
 
         this._invalidateQueryCache();
         return id;
+    }
+
+    /**
+     * Check if an entity exists
+     * @param {number} entityId
+     * @returns {boolean}
+     */
+    hasEntity(entityId) {
+        return this._archetypeManager ? this._archetypeManager.hasEntity(entityId) : false;
     }
 
     destroyEntity(entityId) {
@@ -218,7 +219,7 @@ class BaseECSGame {
     }
 
     _destroyEntityImmediate(entityId) {
-        if (!this.entities.has(entityId)) return;
+        if (!this._archetypeManager || !this._archetypeManager.hasEntity(entityId)) return;
 
         for (const system of this.systems) {
             if (system.entityDestroyed) {
@@ -226,17 +227,14 @@ class BaseECSGame {
             }
         }
 
-        const componentTypes = this.entities.get(entityId);
+        // Get component types from archetype manager
+        const componentTypes = this._archetypeManager.getEntityComponentTypes(entityId);
         for (const type of componentTypes) {
             this._removeComponentImmediate(entityId, type, true);
         }
 
-        this.entities.delete(entityId);
         this._entityQueryMembership.delete(entityId);
-
-        if (this._archetypeManager) {
-            this._archetypeManager.destroyEntity(entityId);
-        }
+        this._archetypeManager.destroyEntity(entityId);
 
         this._invalidateQueryCache();
     }
@@ -252,7 +250,7 @@ class BaseECSGame {
     }
 
     _addComponentImmediate(entityId, componentId, data) {
-        if (!this.entities.has(entityId)) {
+        if (!this._archetypeManager || !this._archetypeManager.hasEntity(entityId)) {
             throw new Error(`Entity ${entityId} does not exist`);
         }
 
@@ -270,7 +268,7 @@ class BaseECSGame {
             this._componentPools.set(componentId, entityId, componentData);
         }
 
-        // Store in SparseSet
+        // Store in SparseSet for fast component data access
         if (!this.components.has(componentId)) {
             this.components.set(componentId, GUTS.SparseSet ? new GUTS.SparseSet() : new Map());
         }
@@ -279,15 +277,10 @@ class BaseECSGame {
             storage.set(entityId, componentData);
         }
 
-        // Update entity signature
-        const oldSignature = new Set(this.entities.get(entityId));
-        this.entities.get(entityId).add(componentId);
-        const newSignature = this.entities.get(entityId);
-
-        // Update archetype
-        if (this._archetypeManager) {
-            this._archetypeManager.addComponent(entityId, componentId, componentData);
-        }
+        // Get old signature from archetype manager, add component, get new signature
+        const oldSignature = this._archetypeManager.getEntitySignature(entityId) || new Set();
+        this._archetypeManager.addComponent(entityId, componentId, componentData);
+        const newSignature = this._archetypeManager.getEntitySignature(entityId) || new Set();
 
         this._updateQueryCacheForSignatureChange(entityId, oldSignature, newSignature);
     }
@@ -314,18 +307,15 @@ class BaseECSGame {
             storage.delete(entityId);
         }
 
-        if (this.entities.has(entityId)) {
-            const oldSignature = new Set(this.entities.get(entityId));
-            this.entities.get(entityId).delete(componentType);
-            const newSignature = this.entities.get(entityId);
+        if (this._archetypeManager && this._archetypeManager.hasEntity(entityId)) {
+            const oldSignature = this._archetypeManager.getEntitySignature(entityId) || new Set();
 
-            if (this._archetypeManager) {
-                try {
-                    this._archetypeManager.removeComponent(entityId, componentType);
-                } catch (e) { /* ignore */ }
-            }
+            try {
+                this._archetypeManager.removeComponent(entityId, componentType);
+            } catch (e) { /* ignore */ }
 
             if (!skipCacheUpdate) {
+                const newSignature = this._archetypeManager.getEntitySignature(entityId) || new Set();
                 this._updateQueryCacheForSignatureChange(entityId, oldSignature, newSignature);
             }
         }
@@ -411,8 +401,10 @@ class BaseECSGame {
     // ====== QUERY SYSTEM ======
 
     getEntitiesWith(...componentTypes) {
+        if (!this._archetypeManager) return [];
+
         if (componentTypes.length === 0) {
-            return Array.from(this.entities.keys()).sort((a, b) => a - b);
+            return this._archetypeManager.getAllEntityIds().sort((a, b) => a - b);
         }
 
         const queryKey = componentTypes.slice().sort().join(',');
@@ -423,28 +415,9 @@ class BaseECSGame {
             return cached.result;
         }
 
-        // Compute result using archetype manager (most efficient)
-        let result = [];
-        let entitySet = new Set();
-
-        if (this._archetypeManager) {
-            result = this._archetypeManager.getEntitiesWith(...componentTypes);
-            entitySet = new Set(result);
-        } else {
-            // Fallback iteration
-            for (const [entityId, entityComponents] of this.entities) {
-                if (componentTypes.every(type => entityComponents.has(type))) {
-                    result.push(entityId);
-                    entitySet.add(entityId);
-                }
-            }
-
-            if (result.length > 0 && typeof result[0] === 'number') {
-                result.sort((a, b) => a - b);
-            } else {
-                result.sort();
-            }
-        }
+        // Compute result using archetype manager
+        const result = this._archetypeManager.getEntitiesWith(...componentTypes);
+        const entitySet = new Set(result);
 
         // Cache result
         this._queryCache.set(queryKey, {
@@ -605,7 +578,7 @@ class BaseECSGame {
 
     getStorageStats() {
         const stats = {
-            entityCount: this.entities.size,
+            entityCount: this._archetypeManager ? this._archetypeManager.size : 0,
             componentTypes: this.components.size,
             cachedQueries: this._queryCache.size,
             queryCacheVersion: this._queryCacheVersion
