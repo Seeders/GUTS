@@ -20,6 +20,14 @@ class BaseECSGame {
         this._queryCache = new Map();  // queryKey -> { result: [], version: number }
         this._queryCacheVersion = 0;   // Incremented when entities/components change
 
+        // OPTIMIZATION: Track which entities have each component type for faster queries
+        // This inverted index allows O(1) lookup of "which entities have component X"
+        // instead of iterating all entities
+        this._entitiesByComponent = new Map();  // componentType -> Set of entityIds
+
+        // OPTIMIZATION: Cache component type Maps to avoid repeated lookups
+        this._componentMapCache = new Map();  // componentType -> Map (direct reference)
+
         this.nextEntityId = 1;
         this.lastTime = 0;
         this.currentTime = 0;
@@ -267,10 +275,24 @@ class BaseECSGame {
                 }
             });
 
-            const componentTypes = this.entities.get(entityId);
-            componentTypes.forEach(type => {
-                this.removeComponent(entityId, type);
-            });
+            // Get component types before we start removing them
+            const componentTypes = Array.from(this.entities.get(entityId));
+
+            // Remove from component maps and inverted index
+            for (const type of componentTypes) {
+                // Remove from component map
+                const componentMap = this._componentMapCache.get(type);
+                if (componentMap) {
+                    componentMap.delete(entityId);
+                }
+
+                // Remove from inverted index
+                const entitySet = this._entitiesByComponent.get(type);
+                if (entitySet) {
+                    entitySet.delete(entityId);
+                }
+            }
+
             this.entities.delete(entityId);
             this._invalidateQueryCache();
         }
@@ -288,23 +310,48 @@ class BaseECSGame {
         const componentData = componentMethods[componentId]
             ? componentMethods[componentId](data)
             : { ...data };
-        if (!this.components.has(componentId)) {
-            this.components.set(componentId, new Map());
+
+        // Get or create the component map
+        let componentMap = this._componentMapCache.get(componentId);
+        if (!componentMap) {
+            componentMap = new Map();
+            this.components.set(componentId, componentMap);
+            this._componentMapCache.set(componentId, componentMap);
         }
 
-        this.components.get(componentId).set(entityId, componentData);
+        componentMap.set(entityId, componentData);
         this.entities.get(entityId).add(componentId);
+
+        // OPTIMIZATION: Update inverted index for fast queries
+        let entitySet = this._entitiesByComponent.get(componentId);
+        if (!entitySet) {
+            entitySet = new Set();
+            this._entitiesByComponent.set(componentId, entitySet);
+        }
+        entitySet.add(entityId);
+
         this._invalidateQueryCache();
     }
 
     removeComponent(entityId, componentType) {
         let component = this.getComponent(entityId, componentType);
-        if (this.components.has(componentType)) {
-            this.components.get(componentType).delete(entityId);
+
+        // Use cached component map for faster access
+        const componentMap = this._componentMapCache.get(componentType);
+        if (componentMap) {
+            componentMap.delete(entityId);
         }
+
         if (this.entities.has(entityId)) {
             this.entities.get(entityId).delete(componentType);
         }
+
+        // OPTIMIZATION: Update inverted index
+        const entitySet = this._entitiesByComponent.get(componentType);
+        if (entitySet) {
+            entitySet.delete(entityId);
+        }
+
         this._invalidateQueryCache();
         return component;
     }
@@ -317,17 +364,30 @@ class BaseECSGame {
     }
     
     getComponent(entityId, componentType) {
+        // OPTIMIZATION: Use cached component map for direct access
+        const componentMap = this._componentMapCache.get(componentType);
+        if (componentMap) {
+            return componentMap.get(entityId);
+        }
+        // Fallback for components added before cache was populated
         if (this.components.has(componentType)) {
-            return this.components.get(componentType).get(entityId);
+            const map = this.components.get(componentType);
+            this._componentMapCache.set(componentType, map);
+            return map.get(entityId);
         }
         return null;
     }
-    
+
     hasComponent(entityId, componentType) {
-        return this.components.has(componentType) && 
+        // OPTIMIZATION: Use cached component map
+        const componentMap = this._componentMapCache.get(componentType);
+        if (componentMap) {
+            return componentMap.has(entityId);
+        }
+        return this.components.has(componentType) &&
                 this.components.get(componentType).has(entityId);
     }
-    
+
     getEntitiesWith(...componentTypes) {
         // Create cache key from component types
         const queryKey = componentTypes.join(',');
@@ -338,20 +398,70 @@ class BaseECSGame {
             return cached.result;
         }
 
-        // Compute new result
+        // OPTIMIZATION: Use inverted index for faster queries
+        // Start with the smallest set (component with fewest entities)
+        // and intersect with others
+        let smallestSet = null;
+        let smallestSize = Infinity;
+
+        for (const componentType of componentTypes) {
+            const entitySet = this._entitiesByComponent.get(componentType);
+            if (!entitySet || entitySet.size === 0) {
+                // No entities have this component, result is empty
+                const emptyResult = [];
+                this._queryCache.set(queryKey, {
+                    result: emptyResult,
+                    version: this._queryCacheVersion
+                });
+                return emptyResult;
+            }
+            if (entitySet.size < smallestSize) {
+                smallestSize = entitySet.size;
+                smallestSet = entitySet;
+            }
+        }
+
+        // If only one component type, return entities from that set directly
+        if (componentTypes.length === 1) {
+            const result = Array.from(smallestSet);
+            // Sort for deterministic order
+            if (result.length > 1) {
+                if (typeof result[0] === 'number') {
+                    result.sort((a, b) => a - b);
+                } else {
+                    result.sort();
+                }
+            }
+            this._queryCache.set(queryKey, {
+                result,
+                version: this._queryCacheVersion
+            });
+            return result;
+        }
+
+        // Multiple components: iterate smallest set and check others
         const result = [];
-        for (const [entityId, entityComponents] of this.entities) {
-            if (componentTypes.every(type => entityComponents.has(type))) {
+        for (const entityId of smallestSet) {
+            let hasAll = true;
+            for (const componentType of componentTypes) {
+                const entitySet = this._entitiesByComponent.get(componentType);
+                if (!entitySet || !entitySet.has(entityId)) {
+                    hasAll = false;
+                    break;
+                }
+            }
+            if (hasAll) {
                 result.push(entityId);
             }
         }
 
         // Sort for deterministic order across clients/server
-        // Use efficient numeric/string comparison based on ID type
-        if (result.length > 0 && typeof result[0] === 'number') {
-            result.sort((a, b) => a - b);  // Fast numeric sort
-        } else {
-            result.sort();  // Default string sort (faster than localeCompare)
+        if (result.length > 1) {
+            if (typeof result[0] === 'number') {
+                result.sort((a, b) => a - b);  // Fast numeric sort
+            } else {
+                result.sort();  // Default string sort
+            }
         }
 
         // Cache the result
