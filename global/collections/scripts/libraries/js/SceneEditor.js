@@ -564,10 +564,12 @@ class SceneEditor {
             const targetPos = { x: 0, y: 0, z: 0 };
 
             // Position camera in SW corner (-X, +Z) looking NE toward center
-            const cameraHeight = halfSize;
+            // Half the default height, moved 25% toward center
+            const cameraHeight = halfSize * 0.5;
+            const cameraOffset = halfSize * 0.75;
 
             const camera = new THREE.PerspectiveCamera(60, width / height, 1, 30000);
-            camera.position.set(-halfSize, cameraHeight, halfSize);
+            camera.position.set(-cameraOffset, cameraHeight, cameraOffset);
             camera.lookAt(0, 0, 0);
 
             // Replace the camera in WorldRenderer
@@ -1602,6 +1604,13 @@ class SceneEditor {
         // Cancel any active placement mode
         this.cancelPlacementMode();
 
+        // Clear the WebGL canvas BEFORE destroying renderer
+        if (this.worldRenderer?.renderer) {
+            const renderer = this.worldRenderer.renderer;
+            renderer.setClearColor(0x000000, 0);
+            renderer.clear();
+        }
+
         // Detach and clean up gizmo
         if (this.gizmoManager) {
             this.gizmoManager.detach();
@@ -1634,12 +1643,33 @@ class SceneEditor {
         // Clear world renderer reference
         this.worldRenderer = null;
 
+        // Reset canvas to blank state (after renderer is destroyed)
+        if (this.canvas) {
+            this.canvas.width = this.canvas.width;
+        }
+
         // Reset state but keep HTML structure
         this.state.entities = [];
         this.state.sceneData = null;
         this.state.selectedEntityId = null;
         this.state.isDirty = false;
         this.state.initialized = false;
+
+        // Clear the hierarchy list
+        if (this.elements.hierarchy) {
+            this.elements.hierarchy.innerHTML = '';
+        }
+
+        // Clear the inspector and show "no selection" message
+        if (this.elements.components) {
+            this.elements.components.innerHTML = '';
+        }
+        if (this.elements.noSelection) {
+            this.elements.noSelection.style.display = 'block';
+        }
+        if (this.elements.entityInspector) {
+            this.elements.entityInspector.style.display = 'none';
+        }
 
         // Clean up game camera handlers
         if (this.gameCameraWheelHandler) {

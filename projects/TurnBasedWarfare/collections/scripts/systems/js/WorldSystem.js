@@ -115,6 +115,7 @@ class WorldSystem extends GUTS.BaseSystem {
         }
 
         this.worldRenderer = new GUTS.WorldRenderer({
+            game: this.game,
             shadowsEnabled: options.shadowsEnabled !== false,
             fogEnabled: options.fogEnabled !== false,
             enablePostProcessing: options.enablePostProcessing !== false,
@@ -235,9 +236,6 @@ class WorldSystem extends GUTS.BaseSystem {
 
         // Setup ground with terrain data
         this.worldRenderer.setupGround(terrainDataManager, this.game.terrainTileMapper, terrainDataManager.heightMapSettings);
-
-        // Pass game reference to WorldRenderer for service calls
-        this.worldRenderer.game = this.game;
 
         // Update extension configuration in GridSystem's CoordinateTranslator if available
         if (terrainDataManager.extensionSize) {
@@ -422,6 +420,16 @@ class WorldSystem extends GUTS.BaseSystem {
             }
         }
         this.worldRenderer.render();
+    }
+
+    /**
+     * Handle ambient light change event - forward to WorldRenderer
+     * @param {Object} data - { color: THREE.Color, intensity: number }
+     */
+    ambientLightChanged(data) {
+        if (this.worldRenderer?.setAmbientLightColor) {
+            this.worldRenderer.setAmbientLightColor(data.color, data.intensity);
+        }
     }
 
     // Utility methods for external systems

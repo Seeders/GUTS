@@ -481,6 +481,9 @@ class RenderSystem extends GUTS.BaseSystem {
 
         // Also apply to TerrainDetailSystem (static terrain sprites like grass/trees)
         this.game.call('setTerrainDetailLighting', combinedColor);
+
+        // Trigger event for terrain ground shader (WorldRenderer listens)
+        this.game.triggerEvent('ambientLightChanged', { color: combinedColor, intensity: 1.0 });
     }
 
     getEntityAnimationState(entityId) {

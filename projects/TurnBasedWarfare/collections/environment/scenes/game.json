@@ -52,13 +52,7 @@
   ],
   "entities": [
     {
-      "prefab": "terrain",
-      "components": {
-        "terrain": {
-          "level": "level1",
-          "world": "shire"
-        }
-      }
+      "prefab": "terrain"
     },
     {
       "collection": "units",
@@ -80,62 +74,6 @@
             "x": 1,
             "y": 1,
             "z": 1
-          }
-        }
-      }
-    },
-    {
-      "collection": "buildings",
-      "spawnType": "cottage",
-      "name": "Cottage",
-      "components": {
-        "transform": {
-          "position": {
-            "x": -370.97,
-            "y": 30,
-            "z": -224.41
-          }
-        }
-      }
-    },
-    {
-      "collection": "buildings",
-      "spawnType": "fletchersHall",
-      "name": "Fletchers Hall",
-      "components": {
-        "transform": {
-          "position": {
-            "x": -346.13,
-            "y": 30,
-            "z": -294.51
-          }
-        }
-      }
-    },
-    {
-      "collection": "buildings",
-      "spawnType": "fletchersHall",
-      "name": "Fletchers Hall",
-      "components": {
-        "transform": {
-          "position": {
-            "x": -449.12,
-            "y": 30,
-            "z": -123.64
-          }
-        }
-      }
-    },
-    {
-      "collection": "buildings",
-      "spawnType": "cottage",
-      "name": "Cottage",
-      "components": {
-        "transform": {
-          "position": {
-            "x": -444.53,
-            "y": 30,
-            "z": -241.37
           }
         }
       }
