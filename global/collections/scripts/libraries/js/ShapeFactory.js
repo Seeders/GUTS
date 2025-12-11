@@ -393,6 +393,10 @@ class ShapeFactory {
                 colorToUse = this.palette[shape.color.paletteColor];
             }
         }
+        // Default to white if color is undefined or an empty object
+        if (!colorToUse || (typeof colorToUse === 'object' && Object.keys(colorToUse).length === 0)) {
+            colorToUse = 0xffffff;
+        }
         if(shape.texture){
             // If a texture is specified, use it instead of the color
             // If a texture is specified, use it instead of the color

@@ -18,6 +18,7 @@
     "dev": "webpack serve --config webpack.dev.config.js",
     "dev:server": "node server_editor.js",
     "game:server": "node build/run-server.js",
+    "start": "node build/start-project.js",
     "start:editor": "node server_editor.js 5000",
     "webpack": "webpack --config webpack.config.js"
   },

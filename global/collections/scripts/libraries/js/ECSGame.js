@@ -16,9 +16,11 @@ class ECSGame extends GUTS.BaseECSGame {
         }
     }
 
-    init() {    
-        super.init();   
-        this.imageManager.dispose();
+    init() {
+        super.init();
+        // Free up GPU memory from the temporary renderer used for sprite generation,
+        // but keep loadedTextures which are needed at runtime
+        this.imageManager.disposeRenderingResources();
     }
 }
 

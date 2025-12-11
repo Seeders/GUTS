@@ -86,8 +86,8 @@ class EditorECSGame extends GUTS.BaseECSGame {
         // Spawn entities using SceneManager
         await this.sceneManager.spawnSceneEntities(sceneData);
 
-        // Notify systems using SceneManager
-        this.sceneManager.notifySceneLoaded(sceneData);
+        // Notify systems using SceneManager (must await async notifySceneLoaded)
+        await this.sceneManager.notifySceneLoaded(sceneData);
         this.sceneManager.notifyPostSceneLoad(sceneData);
 
         console.log('[EditorECSGame] Scene loaded with', this.entities.size, 'entities');

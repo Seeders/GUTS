@@ -608,7 +608,7 @@ class SE_GizmoManager {
     handleTranslation(delta) {
         // Restrict movement to the selected axis
         let moveVector = new THREE.Vector3();
-        
+
         if (this.selectedAxis === 'x') {
             moveVector.x = delta.x;
         } else if (this.selectedAxis === 'y') {
@@ -619,9 +619,14 @@ class SE_GizmoManager {
             // Allow movement in all directions for xyz
             moveVector.copy(delta);
         }
-        
+
         // Apply the translation
         this.targetObject.position.add(moveVector);
+
+        // Round position to 2 decimal places to avoid floating point precision errors
+        this.targetObject.position.x = Math.round(this.targetObject.position.x * 100) / 100;
+        this.targetObject.position.y = Math.round(this.targetObject.position.y * 100) / 100;
+        this.targetObject.position.z = Math.round(this.targetObject.position.z * 100) / 100;
     }
     
     handleRotation(delta) {
@@ -658,19 +663,24 @@ class SE_GizmoManager {
                 // For free rotation, we would need quaternions and would be more complex
                 break;
         }
+
+        // Round rotation to 2 decimal places to avoid floating point precision errors
+        this.targetObject.rotation.x = Math.round(this.targetObject.rotation.x * 100) / 100;
+        this.targetObject.rotation.y = Math.round(this.targetObject.rotation.y * 100) / 100;
+        this.targetObject.rotation.z = Math.round(this.targetObject.rotation.z * 100) / 100;
     }
-    
+
     handleScaling(delta) {
         if (!this.targetObject) return;
-        
+
         // Calculate scaling factor based on mouse movement
         // Use the dot product of delta and direction from object to camera to determine increase/decrease
         const cameraDelta = new THREE.Vector3().subVectors(this.camera.position, this.targetObject.position).normalize();
         const scaleDirection = Math.sign(delta.dot(cameraDelta));
-        
+
         // Adjust scaling sensitivity
         const scaleFactor = 1 + delta.length() * scaleDirection * 0.1;
-        
+
         // Apply scale based on selected axis
         if (this.selectedAxis === 'xyz') {
             // Uniform scaling
@@ -685,6 +695,11 @@ class SE_GizmoManager {
                 this.targetObject.scale.z *= scaleFactor;
             }
         }
+
+        // Round scale to 2 decimal places to avoid floating point precision errors (minimum 0.01)
+        this.targetObject.scale.x = Math.max(0.01, Math.round(this.targetObject.scale.x * 100) / 100);
+        this.targetObject.scale.y = Math.max(0.01, Math.round(this.targetObject.scale.y * 100) / 100);
+        this.targetObject.scale.z = Math.max(0.01, Math.round(this.targetObject.scale.z * 100) / 100);
     }
     
     attach(object) {
