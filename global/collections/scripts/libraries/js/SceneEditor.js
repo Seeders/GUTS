@@ -460,8 +460,7 @@ class SceneEditor {
             collection,
             spawnType,
             transform,
-            'left', // Default team for editor
-            null    // No player ID
+            'left' // Default team for editor
         );
 
         if (!entityId) {
@@ -1010,10 +1009,15 @@ class SceneEditor {
     /**
      * Save scene data
      * Saves entities array with propertyName: "entities" as expected by editor framework
+     * Entity IDs are stripped - they should be assigned at runtime by load order
      */
     handleSave(fireSave = false) {
-        // Get the entities array to save
-        const entitiesToSave = this.state.entities || [];
+        // Get the entities array to save, stripping internal 'id' field
+        // Entity IDs should be assigned deterministically at load time
+        const entitiesToSave = (this.state.entities || []).map(entity => {
+            const { id, ...entityWithoutId } = entity;
+            return entityWithoutId;
+        });
 
         if (fireSave) {
             const saveEvent = new CustomEvent('saveSceneObject', {

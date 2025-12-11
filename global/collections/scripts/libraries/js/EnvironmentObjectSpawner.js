@@ -18,9 +18,6 @@ class EnvironmentObjectSpawner {
 
         // Common dependencies
         this.collections = options.collections;
-
-        // Track spawned entities for cleanup
-        this.spawnedEntities = new Set();
     }
 
     /**
@@ -33,18 +30,24 @@ class EnvironmentObjectSpawner {
     }
 
     /**
-     * Get world position from world object with random offset within tile
+     * Get world position from world object with optional random offset within tile
+     * @param {Object} worldObj - World object data with gridX/gridZ
+     * @param {Object} terrainDataManager - Terrain data manager
+     * @param {Object} unitType - Unit type definition (may contain hasRandomOffset property)
      */
-    calculateWorldPosition(worldObj, terrainDataManager) {
+    calculateWorldPosition(worldObj, terrainDataManager, unitType) {
         // World objects use gridX/gridZ for tile grid coordinates
         // Convert to world coordinates using tile grid (96) not placement grid (48)
 
         const GRID_SIZE = 48; // Tile grid size
         const OFFSET_RANGE = 0.7; // Use 70% of tile size for offset range to keep objects away from edges
 
-        // Generate consistent random offsets based on grid position
-        const randomX = (this.seededRandom(worldObj.gridX, worldObj.gridZ, 1) - 0.5) * GRID_SIZE * OFFSET_RANGE;
-        const randomZ = (this.seededRandom(worldObj.gridX, worldObj.gridZ, 2) - 0.5) * GRID_SIZE * OFFSET_RANGE;
+        // Check if random offset is enabled (defaults to true for backwards compatibility)
+        const hasRandomOffset = unitType?.hasRandomOffset !== false;
+
+        // Generate consistent random offsets based on grid position (only if enabled)
+        const randomX = hasRandomOffset ? (this.seededRandom(worldObj.gridX, worldObj.gridZ, 1) - 0.5) * GRID_SIZE * OFFSET_RANGE : 0;
+        const randomZ = hasRandomOffset ? (this.seededRandom(worldObj.gridX, worldObj.gridZ, 2) - 0.5) * GRID_SIZE * OFFSET_RANGE : 0;
 
         // Use centralized coordinate conversion from CoordinateTranslator if available
         if (this.mode === 'runtime' && this.game?.gameSystem) {
@@ -84,20 +87,26 @@ class EnvironmentObjectSpawner {
      */
     async spawnWorldObjects(tileMap, terrainDataManager) {
         if (!tileMap?.worldObjects || tileMap.worldObjects.length === 0) {
+            console.log('[EnvironmentObjectSpawner] No world objects to spawn');
             return;
         }
 
         // Clear existing spawned objects
         this.clearWorldObjects();
 
-        const spawnPromises = [];
+        console.log(`[EnvironmentObjectSpawner] Spawning ${tileMap.worldObjects.length} world objects...`);
 
+        // Spawn sequentially to ensure deterministic entity IDs
+        // (parallel spawning can cause non-deterministic ordering)
         for (const worldObj of tileMap.worldObjects) {
-            const promise = this.spawnSingleObject(worldObj, terrainDataManager);
-            spawnPromises.push(promise);
+            await this.spawnSingleObject(worldObj, terrainDataManager);
         }
 
-        await Promise.all(spawnPromises);
+        // Count spawned entities by querying ECS
+        const spawnedCount = this.mode === 'runtime' && this.game
+            ? this.game.getEntitiesWith('worldObject').size
+            : tileMap.worldObjects.length;
+        console.log(`[EnvironmentObjectSpawner] Spawned ${spawnedCount} world object entities`);
     }
 
     /**
@@ -111,14 +120,22 @@ class EnvironmentObjectSpawner {
             return;
         }
 
-        // Calculate world position (includes random offset within tile)
-        const { worldX, worldZ } = this.calculateWorldPosition(worldObj, terrainDataManager);
+        // Check if random offset is enabled (defaults to true for backwards compatibility)
+        const hasRandomOffset = unitType?.hasRandomOffset !== false;
 
-        // Get terrain height with small random variance
-        const baseHeight = this.getTerrainHeight(worldX, worldZ, terrainDataManager);
+        // Calculate world position (includes random offset within tile if enabled)
+        const { worldX: rawWorldX, worldZ: rawWorldZ } = this.calculateWorldPosition(worldObj, terrainDataManager, unitType);
+
+        // Get terrain height with small random variance (only if random offset is enabled)
+        const baseHeight = this.getTerrainHeight(rawWorldX, rawWorldZ, terrainDataManager);
         const HEIGHT_VARIANCE = 2; // Small height variance in world units
-        const heightOffset = (this.seededRandom(worldObj.gridX, worldObj.gridZ, 3) - 0.5) * HEIGHT_VARIANCE;
-        const height = baseHeight + heightOffset;
+        const heightOffset = hasRandomOffset ? (this.seededRandom(worldObj.gridX, worldObj.gridZ, 3) - 0.5) * HEIGHT_VARIANCE : 0;
+        const rawHeight = baseHeight + heightOffset;
+
+        // Round to 2 decimal places to avoid floating point precision errors between client/server
+        const worldX = Math.round(rawWorldX * 100) / 100;
+        const worldZ = Math.round(rawWorldZ * 100) / 100;
+        const height = Math.round(rawHeight * 100) / 100;
 
         // Fixed rotation and scale (no random variation)
         const rotation = 0;
@@ -142,8 +159,8 @@ class EnvironmentObjectSpawner {
             return;
         }
 
-        // Create entity with unique ID
-        const entityId = this.game.createEntity(`env_${worldObj.type}_${worldObj.gridX}_${worldObj.gridZ}`);
+        // Create entity with numeric ID for deterministic synchronization
+        const entityId = this.game.createEntity();
 
         // Add Transform component
         this.game.addComponent(entityId, "transform", {
@@ -155,6 +172,9 @@ class EnvironmentObjectSpawner {
         // Add UnitType component
         const unitTypeData = { ...unitType, collection: "worldObjects", id: worldObj.type };
         this.game.addComponent(entityId, "unitType", unitTypeData);
+
+        // Add worldObject component for easy querying
+        this.game.addComponent(entityId, "worldObject", { type: worldObj.type });
 
         // Add Team component (neutral for world objects)
         this.game.addComponent(entityId, "team", { team: 'neutral' });
@@ -170,7 +190,7 @@ class EnvironmentObjectSpawner {
             this.game.addComponent(entityId, "animation", { scale, rotation, flash: 0 });
         }
 
-        this.spawnedEntities.add(entityId);
+        // Entity is tracked via worldObject component - no need to store in Set
     }
 
     /**
@@ -184,11 +204,8 @@ class EnvironmentObjectSpawner {
         }
 
         // Use the editorContext's spawnWorldObject method which creates ECS entities
-        const entityId = await this.editorContext.spawnWorldObject(worldObj, terrainDataManager);
-
-        if (entityId) {
-            this.spawnedEntities.add(entityId);
-        }
+        // Entity is tracked via worldObject component - no need to store in Set
+        await this.editorContext.spawnWorldObject(worldObj, terrainDataManager);
     }
 
     /**
@@ -196,18 +213,18 @@ class EnvironmentObjectSpawner {
      */
     clearWorldObjects() {
         if (this.mode === 'runtime' && this.game) {
-            // Runtime mode: Destroy ECS entities
-            for (const entityId of this.spawnedEntities) {
+            // Runtime mode: Query and destroy all worldObject entities
+            const worldObjectEntities = this.game.getEntitiesWith('worldObject');
+            for (const entityId of worldObjectEntities) {
                 this.game.destroyEntity(entityId);
             }
         } else if (this.mode === 'editorContext' && this.editorContext) {
-            // EditorContext mode: Remove ECS entities via context
-            for (const entityId of this.spawnedEntities) {
+            // EditorContext mode: Query and remove worldObject entities via context
+            const worldObjectEntities = this.editorContext.game?.getEntitiesWith('worldObject') || [];
+            for (const entityId of worldObjectEntities) {
                 this.editorContext.removeWorldObject(entityId);
             }
         }
-
-        this.spawnedEntities.clear();
     }
 
     /**
@@ -226,6 +243,18 @@ class EnvironmentObjectSpawner {
         this.editorContext = null;
         this.terrainDataManager = null;
         this.collections = null;
+    }
+
+    /**
+     * Get count of spawned world objects by querying ECS
+     */
+    getSpawnedCount() {
+        if (this.mode === 'runtime' && this.game) {
+            return this.game.getEntitiesWith('worldObject').size;
+        } else if (this.mode === 'editorContext' && this.editorContext?.game) {
+            return this.editorContext.game.getEntitiesWith('worldObject').size;
+        }
+        return 0;
     }
 }
 

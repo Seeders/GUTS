@@ -1,9 +1,0 @@
-{
-  "title": "playerStats",
-  "schema": {
-    "odId": "",
-    "side": "left",
-    "gold": 100,
-    "upgrades": []
-  }
-}

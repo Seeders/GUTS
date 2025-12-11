@@ -353,9 +353,10 @@ class ProjectileSystem extends GUTS.BaseSystem {
             // Update rotation for sprite direction
             const transform = this.game.getComponent(projectileId, "transform");
             if (transform?.rotation) {
-                transform.rotation.y = Math.atan2(vel.vz, vel.vx);
+                // Round to 6 decimal places to avoid floating-point precision desync
+                transform.rotation.y = Math.round(Math.atan2(vel.vz, vel.vx) * 1000000) / 1000000;
             }
-            
+
             // For vertical homing, we need to be more careful to maintain ballistic arc
             // Only adjust if we're in the descending phase
             if (vel.vy < 0) { // Falling down
@@ -416,7 +417,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
                 // Update rotation for sprite direction
                 const transform = this.game.getComponent(projectileId, "transform");
                 if (transform?.rotation) {
-                    transform.rotation.y = Math.atan2(vel.vz, vel.vx);
+                    // Round to 6 decimal places to avoid floating-point precision desync
+                    transform.rotation.y = Math.round(Math.atan2(vel.vz, vel.vx) * 1000000) / 1000000;
                 }
             }
         } else {

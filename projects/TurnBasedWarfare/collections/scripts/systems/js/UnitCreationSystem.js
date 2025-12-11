@@ -68,12 +68,12 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @param {Object} placement - Placement data with collection, unitTypeId, etc.
      * @param {Object} transform - Transform with position, rotation, scale
      * @param {string} team - Team identifier ('left' or 'right')
-     * @param {string|null} playerId - Optional player ID
+     * @param {string|null} entityId - Optional entity ID (for scene loading)
      * @returns {number} Entity ID
      */
-    createPlacement(placement, transform, team, playerId = null) {
+    createPlacement(placement, transform, team, entityId = null) {
         try {
-            const entity = this.createUnit(placement.collection, placement.unitTypeId, transform, team, playerId);
+            const entity = this.createUnit(placement.collection, placement.unitTypeId, transform, team, entityId);
 
             this.game.addComponent(entity, 'placement', {
                 placementId: placement.placementId,
@@ -82,8 +82,21 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 collection: placement.collection,
                 team: placement.team,
                 playerId: placement.playerId,
-                roundPlaced: placement.roundPlaced
+                roundPlaced: placement.roundPlaced,
+                // Include building construction state if present
+                isUnderConstruction: placement.isUnderConstruction,
+                buildTime: placement.buildTime,
+                assignedBuilder: placement.assignedBuilder
             });
+
+            // If building is under construction, update renderable to show construction state
+            if (placement.isUnderConstruction) {
+                const renderComponent = this.game.getComponent(entity, 'renderable');
+                if (renderComponent) {
+                    renderComponent.spawnType = 'underConstruction';
+                }
+            }
+
             console.log('created placement', placement.unitTypeId, team, entity);
 
             return entity;
@@ -99,11 +112,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @param {string} spawnType - Spawn type ID
      * @param {Object} transform - Transform with position, rotation, scale
      * @param {string} team - Team identifier ('left' or 'right')
-     * @param {string|null} playerId - Optional player ID
      * @param {string|null} entityId - Optional entity ID (for scene loading)
      * @returns {number} Entity ID
      */
-    createUnit(collection, spawnType, transform, team, playerId = null, entityId = null) {
+    createUnit(collection, spawnType, transform, team, entityId = null) {
         const unitType = this.game.getCollections()[collection][spawnType];
         // Ensure transform has defaults
         const safeTransform = {
@@ -133,14 +145,6 @@ class UnitCreationSystem extends GUTS.BaseSystem {
 
             // Schedule equipment and abilities (async to avoid blocking)
             this.schedulePostCreationSetup(entity, unitType);
-
-            // Set playerId on team component if provided
-            if (playerId) {
-                const teamComponent = this.game.getComponent(entity, "team");
-                if (teamComponent) {
-                    teamComponent.playerId = playerId;
-                }
-            }
 
             // Update statistics
             this.game.call('invalidateSupplyCache');
@@ -248,9 +252,13 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         const maxSpeed = (unitType.speed) * this.SPEED_MODIFIER;
         const maxHP = unitType.hp || this.defaults.hp;
 
+        // Convert collection name to singular component name
+        // e.g., "units" -> "unit", "buildings" -> "building", "worldObjects" -> "worldObject"
+        const collectionComponentName = this.getCollectionComponentName(collection);
+
         // OPTIMIZATION: Add all components in single batch call
         // This does one cache invalidation instead of 13+ separate invalidations
-        this.game.addComponents(entity, {
+        const components = {
             // Core components
             transform: {
                 position: { x: position.x ?? 0, y: position.y ?? 0, z: position.z ?? 0 },
@@ -328,7 +336,33 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 spawnType: unitType.id || spawnType,
                 capacity: 128
             }
-        });
+        };
+
+        // Add collection-type component for easy querying (e.g., unit, building, worldObject)
+        if (collectionComponentName) {
+            components[collectionComponentName] = { type: unitType.id || spawnType };
+        }
+
+        this.game.addComponents(entity, components);
+    }
+
+    /**
+     * Convert collection name to singular component name
+     * @param {string} collection - Collection name (e.g., 'units', 'buildings', 'worldObjects')
+     * @returns {string|null} Singular component name or null if not mapped
+     */
+    getCollectionComponentName(collection) {
+        const collectionToComponent = {
+            'units': 'unit',
+            'buildings': 'building',
+            'worldObjects': 'worldObject',
+            'cliffs': 'cliff',
+            'items': 'item',
+            'particles': 'particle',
+            'projectiles': 'projectile',
+            'visuals': 'visual'
+        };
+        return collectionToComponent[collection] || null;
     }
 
     /**

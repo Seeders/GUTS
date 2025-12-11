@@ -51,12 +51,12 @@ class GameRoom {
 
 
 
-    startGame() {
+    async startGame() {
         this.isActive = true;
-        this.game.init(true);
+        await this.game.init(true);
         // Initialize game scene
         console.log('GameRoom startGame()')
-   
+
     }
 
     processPlayerInput(playerId, inputData) {

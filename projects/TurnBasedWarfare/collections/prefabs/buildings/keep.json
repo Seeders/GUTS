@@ -35,7 +35,7 @@
             "metalness": 0,
             "roughness": 1,
             "name": "foundation",
-            "model": "townHall"
+            "model": "townhall"
           }
         ],
         "position": {

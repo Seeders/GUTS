@@ -250,11 +250,17 @@ class AnimationSystem extends GUTS.BaseSystem {
     /**
      * Update sprite direction based on entity's rotation.y and camera position
      *
+     * For PERSPECTIVE cameras:
      * Uses the same snapping calculation as the billboard vertex shader to ensure
      * the sprite direction changes at exactly the same camera angles as the
      * billboard rotation snaps.
-     *
      * Shader formula: snappedAngle = round(angle / (PI/4)) * (PI/4)
+     *
+     * For ORTHOGRAPHIC cameras:
+     * Uses the raw camera angle (not snapped) since the billboard always faces
+     * the camera directly. The sprite frame shown depends on the entity's facing
+     * direction relative to camera position, which changes smoothly as the camera
+     * rotates around the scene.
      */
     updateSpriteDirectionFromRotation(entityId, animState) {
         const transform = this.game.getComponent(entityId, 'transform');
@@ -265,41 +271,73 @@ class AnimationSystem extends GUTS.BaseSystem {
         if (!cam) return;
 
         const rotationY = transform.rotation.y;
-        const entityPos = transform.position;
-
-        // Calculate angle from entity to camera in world space (same as shader)
-        const dx = cam.position.x - entityPos.x;
-        const dz = cam.position.z - entityPos.z;
-        const angleToCamera = Math.atan2(dz, dx);
-
-        // Snap camera angle to 8 directions using the SAME formula as the shader
-        // This ensures sprite direction changes at exactly the same moment as billboard rotation
         const ANGLE_STEP = Math.PI / 4; // 45 degrees
-        const snappedCameraAngle = Math.round(angleToCamera / ANGLE_STEP) * ANGLE_STEP;
+        let newDirection;
 
-        // Calculate relative angle using snapped camera angle
-        // This is the entity's facing direction relative to the snapped billboard facing
-        let relativeAngle = rotationY - snappedCameraAngle;
+        if (cam.isOrthographicCamera) {
+            // Orthographic: use camera's viewing direction (same for all objects due to parallel projection)
+            // Panning doesn't change the view angle, only rotating the camera does
+            // Get the camera's forward direction in world space (where it's looking)
+            const cameraDirection = new THREE.Vector3(0, 0, -1);
+            cameraDirection.applyQuaternion(cam.quaternion);
 
-        // Normalize to -PI to PI
-        while (relativeAngle > Math.PI) relativeAngle -= 2 * Math.PI;
-        while (relativeAngle < -Math.PI) relativeAngle += 2 * Math.PI;
+            // Calculate angle FROM scene TO camera (opposite of viewing direction)
+            // Use same atan2(z, x) order as perspective branch for consistency
+            const cameraAngle = Math.atan2(-cameraDirection.z, -cameraDirection.x);
 
-        // Snap relative angle to 8 directions (same formula)
-        const snappedRelativeAngle = Math.round(relativeAngle / ANGLE_STEP) * ANGLE_STEP;
+            // Calculate relative angle (entity facing vs camera angle)
+            let relativeAngle = rotationY - cameraAngle;
 
-        // Map snapped relative angle to sprite direction
-        // Direction index: 0=down (facing camera), increasing counterclockwise
-        // Normalize to 0..7 index
-        let directionIndex = Math.round(snappedRelativeAngle / ANGLE_STEP);
-        // Handle wrap-around for negative indices
-        directionIndex = ((directionIndex % 8) + 8) % 8;
+            // Normalize to -PI to PI
+            while (relativeAngle > Math.PI) relativeAngle -= 2 * Math.PI;
+            while (relativeAngle < -Math.PI) relativeAngle += 2 * Math.PI;
 
-        // Map index to direction name
-        // Index 0 = facing toward camera = down (front view)
-        // Index increases counterclockwise: 1=downleft, 2=left, 3=upleft, 4=up, 5=upright, 6=right, 7=downright
-        const directions = ['down', 'downleft', 'left', 'upleft', 'up', 'upright', 'right', 'downright'];
-        const newDirection = directions[directionIndex];
+            // Snap relative angle to 8 directions
+            const snappedRelativeAngle = Math.round(relativeAngle / ANGLE_STEP) * ANGLE_STEP;
+
+            // Map to direction index
+            let directionIndex = Math.round(snappedRelativeAngle / ANGLE_STEP);
+            directionIndex = ((directionIndex % 8) + 8) % 8;
+
+            const directions = ['down', 'downleft', 'left', 'upleft', 'up', 'upright', 'right', 'downright'];
+            newDirection = directions[directionIndex];
+        } else {
+            // Perspective: sprite direction relative to camera angle (existing logic)
+            const entityPos = transform.position;
+
+            // Calculate angle from entity to camera in world space (same as shader)
+            const dx = cam.position.x - entityPos.x;
+            const dz = cam.position.z - entityPos.z;
+            const angleToCamera = Math.atan2(dz, dx);
+
+            // Snap camera angle to 8 directions using the SAME formula as the shader
+            // This ensures sprite direction changes at exactly the same moment as billboard rotation
+            const snappedCameraAngle = Math.round(angleToCamera / ANGLE_STEP) * ANGLE_STEP;
+
+            // Calculate relative angle using snapped camera angle
+            // This is the entity's facing direction relative to the snapped billboard facing
+            let relativeAngle = rotationY - snappedCameraAngle;
+
+            // Normalize to -PI to PI
+            while (relativeAngle > Math.PI) relativeAngle -= 2 * Math.PI;
+            while (relativeAngle < -Math.PI) relativeAngle += 2 * Math.PI;
+
+            // Snap relative angle to 8 directions (same formula)
+            const snappedRelativeAngle = Math.round(relativeAngle / ANGLE_STEP) * ANGLE_STEP;
+
+            // Map snapped relative angle to sprite direction
+            // Direction index: 0=down (facing camera), increasing counterclockwise
+            // Normalize to 0..7 index
+            let directionIndex = Math.round(snappedRelativeAngle / ANGLE_STEP);
+            // Handle wrap-around for negative indices
+            directionIndex = ((directionIndex % 8) + 8) % 8;
+
+            // Map index to direction name
+            // Index 0 = facing toward camera = down (front view)
+            // Index increases counterclockwise: 1=downleft, 2=left, 3=upleft, 4=up, 5=upright, 6=right, 7=downright
+            const directions = ['down', 'downleft', 'left', 'upleft', 'up', 'upright', 'right', 'downright'];
+            newDirection = directions[directionIndex];
+        }
 
         // Check if direction changed and apply it
         if (newDirection !== animState.spriteDirection) {

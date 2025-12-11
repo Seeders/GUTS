@@ -16,13 +16,18 @@ class BuildAbility extends GUTS.BaseAbility {
 
     // Setup method called by placement systems to assign a builder to a building
     // This just sets up playerOrder - actual building logic is in BuildBehaviorAction
-    assignToBuild(peasantEntityId, buildingEntityId, peasantInfo) {
+    // issuedTime should be provided by server for sync - falls back to local time if not provided
+    assignToBuild(peasantEntityId, buildingEntityId, peasantInfo, issuedTime) {
         const transform = this.game.getComponent(buildingEntityId, "transform");
         const buildingPos = transform?.position;
         if (!buildingPos) return;
 
         const buildingPlacement = this.game.getComponent(buildingEntityId, "placement");
         const buildTime = peasantInfo.buildTime;
+
+        // Use provided issuedTime or fall back to current time
+        const orderIssuedTime = issuedTime ?? this.game.state.now;
+        console.log(`[BuildAbility] assignToBuild peasant=${peasantEntityId} building=${buildingEntityId} issuedTime=${orderIssuedTime} (provided=${issuedTime}, now=${this.game.state.now}) isServer=${!!this.game.isServer}`);
 
         // Set up building visual state - show as under construction immediately
         const renderComponent = this.game.getComponent(buildingEntityId, "renderable");
@@ -76,7 +81,7 @@ class BuildAbility extends GUTS.BaseAbility {
                 buildingPosition: buildingPos,
                 preventCombat: true  // Builder should not be interrupted by combat
             },
-            issuedTime: this.game.state.now
+            issuedTime: orderIssuedTime
         });
         this.game.triggerEvent('onIssuedPlayerOrders', peasantEntityId);
 

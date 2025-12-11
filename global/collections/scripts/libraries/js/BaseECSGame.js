@@ -61,17 +61,17 @@ class BaseECSGame {
         return this._services.listServices();
     }
 
-    init(isServer = false, config) {
+    async init(isServer = false, config) {
         this.isServer = isServer;
         if(!this.isServer){
             document.addEventListener('keydown', (e) => {
                 this.triggerEvent('onKeyDown', e.key);
             });
         }
-        this.loadGameScripts(config);
+        await this.loadGameScripts(config);
     }
 
-    loadGameScripts(config) {
+    async loadGameScripts(config) {
         this.collections = this.getCollections();
         this.gameConfig = config ? config : (this.isServer ? this.collections.configs.server : this.collections.configs.game);
 
@@ -85,7 +85,7 @@ class BaseECSGame {
 
         // Load initial scene if configured
         // This enables systems and triggers onSceneLoad() callbacks
-        this.loadInitialScene();
+        await this.loadInitialScene();
     }
 
     /**

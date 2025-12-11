@@ -317,6 +317,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
         this.updateFogTextures();
         this.updateUnitIcons();
         this.updateGoldVeinIcons();
+        this.updateCameraView();
         this.renderMinimap();
     }
 

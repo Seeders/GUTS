@@ -89,8 +89,10 @@ class WorldRenderer {
         this.scene = new THREE.Scene();
 
         // Setup camera (orthographic or perspective based on settings)
-        let width = canvas.clientWidth || window.innerWidth;
-        let height = canvas.clientHeight || window.innerHeight;
+        // Use parent container size if available and non-zero, otherwise window size
+        const parent = canvas.parentElement;
+        let width = (parent && parent.clientWidth > 0) ? parent.clientWidth : window.innerWidth;
+        let height = (parent && parent.clientHeight > 0) ? parent.clientHeight : window.innerHeight;
 
         if (cameraSettings.fov) {
             // Perspective camera
@@ -138,7 +140,8 @@ class WorldRenderer {
             antialias: false,
             alpha: true
         });
-        this.renderer.setSize(width, height);
+        // Set internal resolution but don't override CSS styles (prevents layout conflicts)
+        this.renderer.setSize(width, height, false);
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
         // Setup OrbitControls if requested
@@ -1702,8 +1705,14 @@ class WorldRenderer {
         if (!this.camera || !this.renderer) return;
 
         const canvas = this.renderer.domElement;
-        const width = canvas.clientWidth || window.innerWidth;
-        const height = canvas.clientHeight || window.innerHeight;
+        // Use parent container size if available and non-zero, otherwise window size
+        // Don't use canvas.clientWidth as it can cause shrinking feedback loops
+        const parent = canvas.parentElement;
+        const width = (parent && parent.clientWidth > 0) ? parent.clientWidth : window.innerWidth;
+        const height = (parent && parent.clientHeight > 0) ? parent.clientHeight : window.innerHeight;
+
+        // Skip resize if dimensions are still zero or invalid (prevents WebGL framebuffer errors)
+        if (width <= 0 || height <= 0) return;
 
         // Handle both PerspectiveCamera and OrthographicCamera
         if (this.camera.isPerspectiveCamera) {
@@ -1716,7 +1725,8 @@ class WorldRenderer {
         }
 
         this.camera.updateProjectionMatrix();
-        this.renderer.setSize(width, height);
+        // Set internal resolution but don't override CSS styles (prevents layout conflicts)
+        this.renderer.setSize(width, height, false);
 
         if (this.composer) {
             this.composer.setSize(width, height);

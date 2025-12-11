@@ -58,7 +58,7 @@ class SaveSystem extends GUTS.BaseSystem {
             // Metadata
             saveVersion: this.SAVE_VERSION,
             timestamp: Date.now(),
-            sceneName: this.game.sceneManager?.getCurrentSceneName() || 'client_game',
+            sceneName: this.game.sceneManager?.getCurrentSceneName() || 'game',
 
             // Level/terrain info
             level: this.game.state.level || 'level1',
@@ -139,6 +139,11 @@ class SaveSystem extends GUTS.BaseSystem {
      * Check if an entity should be excluded from saves
      */
     shouldExcludeEntity(entityId) {
+        // Entity IDs can be numbers or strings (e.g., 'terrain_main')
+        // Only check prefixes for string IDs
+        if (typeof entityId !== 'string') {
+            return false;
+        }
         for (const prefix of this.EXCLUDED_ENTITY_PREFIXES) {
             if (entityId.startsWith(prefix)) {
                 return true;

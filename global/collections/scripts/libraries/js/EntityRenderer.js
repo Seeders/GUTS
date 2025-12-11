@@ -426,55 +426,67 @@ class EntityRenderer {
                     // Get world-space instance position
                     vec4 worldPos = modelMatrix * vec4(instancePos, 1.0);
 
-                    // Calculate angle from entity to camera in world XZ plane
-                    // cameraPosition is a built-in uniform provided by THREE.js
-                    float dx = cameraPosition.x - worldPos.x;
-                    float dz = cameraPosition.z - worldPos.z;
-                    // atan2(z, x) gives angle from +X axis, counterclockwise
-                    float angle = atan(dz, dx);
+                    vec4 mvPosition;
 
-                    // Snap angle to nearest 45-degree increment
-                    float snappedAngle = round(angle / ANGLE_STEP) * ANGLE_STEP;
+                    // isOrthographic is a built-in THREE.js uniform
+                    if (isOrthographic) {
+                        // Orthographic camera: simple view-space billboarding (like terrain details)
+                        // Sprites always face directly at camera without directional snapping
+                        vec4 viewPosition = viewMatrix * worldPos;
+                        viewPosition.xy += position.xy * vec2(instanceScale.x, instanceScale.y);
+                        mvPosition = viewPosition;
+                    } else {
+                        // Perspective camera: 8-direction snapped billboarding with vertical tilt
 
-                    // Billboard quad: PlaneGeometry is in XY plane
-                    // Scale the vertices
-                    vec3 scaledPos = vec3(position.x * instanceScale.x, position.y * instanceScale.y, 0.0);
+                        // Calculate angle from entity to camera in world XZ plane
+                        // cameraPosition is a built-in uniform provided by THREE.js
+                        float dx = cameraPosition.x - worldPos.x;
+                        float dz = cameraPosition.z - worldPos.z;
+                        // atan2(z, x) gives angle from +X axis, counterclockwise
+                        float angle = atan(dz, dx);
 
-                    // Rotate quad to face camera at snapped angle (XZ plane)
-                    float cosA = cos(snappedAngle);
-                    float sinA = sin(snappedAngle);
+                        // Snap angle to nearest 45-degree increment
+                        float snappedAngle = round(angle / ANGLE_STEP) * ANGLE_STEP;
 
-                    // Calculate vertical angle to camera for Y-axis billboarding
-                    float dy = cameraPosition.y - worldPos.y;
-                    float horizontalDist = sqrt(dx * dx + dz * dz);
-                    float verticalAngle = atan(dy, horizontalDist);
+                        // Billboard quad: PlaneGeometry is in XY plane
+                        // Scale the vertices
+                        vec3 scaledPos = vec3(position.x * instanceScale.x, position.y * instanceScale.y, 0.0);
 
-                    // Snapped right vector (horizontal, in XZ plane)
-                    vec3 snappedRight = vec3(sinA, 0.0, -cosA);
+                        // Rotate quad to face camera at snapped angle (XZ plane)
+                        float cosA = cos(snappedAngle);
+                        float sinA = sin(snappedAngle);
 
-                    // Forward direction toward camera (snapped in XZ, but we use actual vertical)
-                    vec3 forward = vec3(cosA, 0.0, sinA);
+                        // Calculate vertical angle to camera for Y-axis billboarding
+                        float dy = cameraPosition.y - worldPos.y;
+                        float horizontalDist = sqrt(dx * dx + dz * dz);
+                        float verticalAngle = atan(dy, horizontalDist);
 
-                    // Tilt the up vector based on camera's vertical position
-                    // This makes sprites lean back when camera is above
-                    float cosV = cos(verticalAngle);
-                    float sinV = sin(verticalAngle);
+                        // Snapped right vector (horizontal, in XZ plane)
+                        vec3 snappedRight = vec3(sinA, 0.0, -cosA);
 
-                    // Up vector tilted toward camera (negative sinV to tilt forward)
-                    vec3 up = vec3(
-                        -forward.x * sinV,
-                        cosV,
-                        -forward.z * sinV
-                    );
+                        // Forward direction toward camera (snapped in XZ, but we use actual vertical)
+                        vec3 forward = vec3(cosA, 0.0, sinA);
 
-                    // Build the billboard position
-                    vec3 rotatedPos = snappedRight * scaledPos.x + up * scaledPos.y;
+                        // Tilt the up vector based on camera's vertical position
+                        // This makes sprites lean back when camera is above
+                        float cosV = cos(verticalAngle);
+                        float sinV = sin(verticalAngle);
 
-                    // Add to world position
-                    vec4 finalWorldPos = vec4(worldPos.xyz + rotatedPos, 1.0);
+                        // Up vector tilted toward camera (negative sinV to tilt forward)
+                        vec3 up = vec3(
+                            -forward.x * sinV,
+                            cosV,
+                            -forward.z * sinV
+                        );
 
-                    // mvPosition is required by fog_vertex
-                    vec4 mvPosition = viewMatrix * finalWorldPos;
+                        // Build the billboard position
+                        vec3 rotatedPos = snappedRight * scaledPos.x + up * scaledPos.y;
+
+                        // Add to world position
+                        vec4 finalWorldPos = vec4(worldPos.xyz + rotatedPos, 1.0);
+
+                        mvPosition = viewMatrix * finalWorldPos;
+                    }
 
                     // Transform to clip space
                     gl_Position = projectionMatrix * mvPosition;

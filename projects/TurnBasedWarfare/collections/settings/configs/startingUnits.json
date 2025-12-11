@@ -1,0 +1,51 @@
+{
+  "title": "Starting Units Configuration",
+  "description": "Defines starting units for each team. Positions are relative to the team's starting location in world coordinates.",
+  "prefabs": [
+    {
+      "spawnType": "townHall",
+      "collection": "buildings",
+      "components": {
+        "transform": {
+          "position": { "x": 0, "y": 0, "z": 0 }
+        }
+      }
+    },
+    {
+      "spawnType": "peasant",
+      "collection": "units",
+      "components": {
+        "transform": {
+          "position": { "x": 96, "y": 0, "z": -36 }
+        }
+      }
+    },
+    {
+      "spawnType": "peasant",
+      "collection": "units",
+      "components": {
+        "transform": {
+          "position": { "x": 96, "y": 0, "z": -12 }
+        }
+      }
+    },
+    {
+      "spawnType": "peasant",
+      "collection": "units",
+      "components": {
+        "transform": {
+          "position": { "x": 96, "y": 0, "z": 12 }
+        }
+      }
+    },
+    {
+      "spawnType": "peasant",
+      "collection": "units",
+      "components": {
+        "transform": {
+          "position": { "x": 96, "y": 0, "z": 36 }
+        }
+      }
+    }
+  ]
+}

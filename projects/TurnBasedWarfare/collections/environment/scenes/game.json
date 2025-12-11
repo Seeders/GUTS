@@ -1,68 +1,79 @@
 {
-  "title": "Client Game Scene",
+  "title": "Game Scene",
   "systems": [
     "ComponentSystem",
     "GridSystem",
     "TerrainSystem",
-    "RenderSystem",
-    "WorldSystem",
-    "TerrainDetailSystem",
-    "PostProcessingSystem",
     "RoundSystem",
     "BehaviorSystem",
     "MovementSystem",
     "ProjectileSystem",
-    "AnimationSystem",
-    "ArmyDisplaySystem",
-    "EffectsSystem",
     "SquadSystem",
     "UnitCreationSystem",
     "PlayerStatsSystem",
-    "MultiplayerNetworkSystem",
-    "MultiplayerPlacementSystem",
-    "GameUISystem",
-    "ShopSystem",
     "TeamHealthSystem",
-    "HealthBarSystem",
-    "EquipmentSystem",
     "DeathSystem",
     "DamageSystem",
     "AbilitySystem",
-    "ParticleSystem",
     "SquadExperienceSystem",
     "LifetimeSystem",
     "SchedulingSystem",
     "GoldMineSystem",
     "PathfindingSystem",
+    "VisionSystem",
+    "SupplySystem"
+  ],
+  "clientSystems": [
+    "RenderSystem",
+    "WorldSystem",
+    "TerrainDetailSystem",
+    "PostProcessingSystem",
+    "AnimationSystem",
+    "ArmyDisplaySystem",
+    "EffectsSystem",
+    "MultiplayerNetworkSystem",
+    "MultiplayerPlacementSystem",
+    "GameUISystem",
+    "ShopSystem",
+    "HealthBarSystem",
+    "EquipmentSystem",
+    "ParticleSystem",
     "FogOfWarSystem",
     "SelectedUnitSystem",
     "UnitOrderSystem",
     "MiniMapSystem",
     "CameraControlSystem",
-    "DamageNumberSystem",
-    "VisionSystem",
-    "SupplySystem"
+    "DamageNumberSystem"
+  ],
+  "serverSystems": [
+    "ServerBattlePhaseSystem",
+    "ServerPlacementSystem",
+    "SaveSystem"
   ],
   "entities": [
     {
-      "id": "terrain_main",
-      "prefab": "terrain"
+      "prefab": "terrain",
+      "components": {
+        "terrain": {
+          "level": "level1",
+          "world": "shire"
+        }
+      }
     },
     {
-      "id": "dragon_red_1245.45_-1263.26_left_0",
       "collection": "units",
       "spawnType": "dragon_red",
       "name": "Dragon Red",
       "components": {
         "transform": {
           "position": {
-            "x": 1195.6231269149953,
+            "x": 1195.62,
             "y": 15,
-            "z": -1234.5932198695016
+            "z": -1234.59
           },
           "rotation": {
             "x": 0,
-            "y": 0,
+            "y": 2.67,
             "z": 0
           },
           "scale": {
@@ -74,80 +85,75 @@
       }
     },
     {
-      "id": "cottage_-370.97_-224.41_left_0",
       "collection": "buildings",
       "spawnType": "cottage",
       "name": "Cottage",
       "components": {
         "transform": {
           "position": {
-            "x": -370.9716446440616,
+            "x": -370.97,
             "y": 30,
-            "z": -224.41226511501196
+            "z": -224.41
           }
         }
       }
     },
     {
-      "id": "fletchersHall_-346.13_-294.51_left_0",
       "collection": "buildings",
       "spawnType": "fletchersHall",
       "name": "Fletchers Hall",
       "components": {
         "transform": {
           "position": {
-            "x": -346.1296820093521,
+            "x": -346.13,
             "y": 30,
-            "z": -294.50906174565995
+            "z": -294.51
           }
         }
       }
     },
     {
-      "id": "fletchersHall_-449.12_-123.64_left_0",
       "collection": "buildings",
       "spawnType": "fletchersHall",
       "name": "Fletchers Hall",
       "components": {
         "transform": {
           "position": {
-            "x": -449.1194592989723,
+            "x": -449.12,
             "y": 30,
-            "z": -123.63703346213154
+            "z": -123.64
           }
         }
       }
     },
     {
-      "id": "cottage_-444.53_-241.37_left_0",
       "collection": "buildings",
       "spawnType": "cottage",
       "name": "Cottage",
       "components": {
         "transform": {
           "position": {
-            "x": -444.52553188256024,
+            "x": -444.53,
             "y": 30,
-            "z": -241.36804586839213
+            "z": -241.37
           }
         }
       }
     },
     {
-      "id": "dragon_red_-1224.12_1152.41_left_0",
       "collection": "units",
       "spawnType": "dragon_red",
       "name": "Dragon Red",
       "components": {
         "transform": {
           "position": {
-            "x": -1191.2036452561938,
+            "x": -1191.2,
             "y": 15,
-            "z": 1197.129678408611
+            "z": 1197.13
           },
           "rotation": {
             "x": 0,
-            "y": -0.9474812656006883,
+            "y": -0.95,
             "z": 0
           },
           "scale": {

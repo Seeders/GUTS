@@ -179,11 +179,13 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         const entitySync = this.serializeAllEntities();
         // Broadcast with updated health values
         // Include server simulation time so clients can wait until they've caught up
+        // Include nextEntityId so clients can sync their entity ID counters
         this.serverNetworkManager.broadcastToRoom(room.id, 'BATTLE_END', {
             result: battleResult,
             gameState: room.getGameState(), // This will also have updated player health
             entitySync: entitySync,
-            serverTime: this.game.state.now // Server's global game time when battle ended
+            serverTime: this.game.state.now, // Server's global game time when battle ended
+            nextEntityId: this.game.nextEntityId // Sync entity ID counter
         });
         // Check for game end or continue to next round
         if (this.shouldEndGame(room)) {

@@ -325,9 +325,9 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             return null;
         }
     }
-    findSquadForUnit(entityId) {           
-        const team = this.game.getComponent(entityId, "team");
-        return team?.placementId || null;
+    findSquadForUnit(entityId) {
+        const placement = this.game.getComponent(entityId, "placement");
+        return placement?.placementId || null;
     }
     updateMultipleSquadSelection() {        
         this.currentSelectedIndex = 0;
@@ -355,56 +355,23 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
         if (!worldPos) return;
 
-        // In editor mode, use direct entity selection (not placement-based)
-        if (this.isEditorMode) {
-            const entityId = this.getEntityAtWorldPosition(worldPos);
-            if (entityId) {
-                if (event.shiftKey) {
-                    if (this.selectedUnitIds.has(entityId)) {
-                        this.selectedUnitIds.delete(entityId);
-                    } else {
-                        this.selectedUnitIds.add(entityId);
-                    }
-                    this.updateMultipleSquadSelection();
+        // Use direct entity selection based on team component (works for both editor and game mode)
+        const entityId = this.getEntityAtWorldPosition(worldPos);
+
+        if (entityId) {
+            if (event.shiftKey) {
+                if (this.selectedUnitIds.has(entityId)) {
+                    this.selectedUnitIds.delete(entityId);
                 } else {
-                    this.deselectAll();
                     this.selectedUnitIds.add(entityId);
-                    this.selectEntityDirectly(entityId);
                 }
+                this.updateMultipleSquadSelection();
             } else {
-                if (!event.shiftKey) {
-                    this.deselectAll();
-                }
-            }
-            return;
-        }
-
-        // Game mode: placement-based selection
-        const placementId = this.getPlacementAtWorldPosition(worldPos);
-
-        if (placementId) {
-            const placement = this.game.call('getPlacementById', placementId);
-            if (placement && placement.team === this.game.state.mySide) {
-                let entityId = placement.squadUnits[0];
-                // Check if shift is held for additive selection
-                if (event.shiftKey) {
-                    if (this.selectedUnitIds.has(entityId)) {
-                        // Deselect if already selected
-                        this.selectedUnitIds.delete(entityId);
-                    } else {
-                        // Add to selection
-                        this.selectedUnitIds.add(entityId);
-                    }
-                    this.updateMultipleSquadSelection();
-                } else {
-                    // Single selection (clear others)
-                    this.deselectAll();
-                    this.selectedUnitIds.add(entityId);
-                    this.selectUnit(entityId, placementId);
-                }
+                this.deselectAll();
+                this.selectedUnitIds.add(entityId);
+                this.selectEntityDirectly(entityId);
             }
         } else {
-            // Clicked on empty space - deselect all
             if (!event.shiftKey) {
                 this.deselectAll();
             }
@@ -412,7 +379,9 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Get entity at world position (for editor mode - no placement requirement)
+     * Get entity at world position
+     * In game mode, only returns entities on player's team
+     * In editor mode, returns any selectable entity
      */
     getEntityAtWorldPosition(worldPos) {
         const clickRadius = 50;
@@ -431,9 +400,19 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             if (!pos) return;
             if (!unitType && !renderable) return;
 
-            // Skip world objects (environment objects from level data) in scene editor
-            // These should only be editable in terrain map editor
+            // Skip world objects (environment objects from level data)
             if (unitType?.collection === 'worldObjects') return;
+
+            // In game mode, only select units on player's team
+            if (!this.isEditorMode) {
+                const team = this.game.getComponent(entityId, "team");
+                if (!team) return;
+
+                const unitTeam = team.team || team.side || team.teamId;
+                const myTeam = this.game.state.mySide || this.game.state.playerSide || this.game.state.team;
+
+                if (unitTeam !== myTeam) return;
+            }
 
             const dx = pos.x - worldPos.x;
             const dz = pos.z - worldPos.z;
@@ -648,8 +627,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                         selectedUnitIconContainer.addEventListener('click', () => {
                             this.deselectAll();
                             this.selectedUnitIds.add(unitId);
-                            const placement = this.game.getComponent(unitId, "placement");
-                            this.selectUnit(unitId, placement.placementId);
+                            this.selectEntityDirectly(unitId);
                         });
                     }
                 });
@@ -845,12 +823,14 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         return Array.from(this.highlightedUnits);
     }
     
-    // Get all currently selected squad IDs
+    // Get all currently selected squad/placement IDs (if they have placement component)
     getSelectedSquads() {
         let placementIds = new Set();
         Array.from(this.selectedUnitIds).forEach((unitId) => {
             const placement = this.game.getComponent(unitId, "placement");
-            placementIds.add(placement.placementId);
+            if (placement?.placementId) {
+                placementIds.add(placement.placementId);
+            }
         });
         return [...placementIds];
     }

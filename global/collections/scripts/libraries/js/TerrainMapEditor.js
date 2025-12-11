@@ -1735,6 +1735,12 @@ class TerrainMapEditor {
             this.worldRenderer.updateCameraRotation();
         }
 
+        // Only setup 3D helpers if worldRenderer was successfully created
+        if (!this.worldRenderer) {
+            console.error('[TerrainMapEditor] WorldRenderer not initialized - 3D rendering will be unavailable');
+            return;
+        }
+
         // Recreate RaycastHelper to ensure fresh camera/scene references
         this.raycastHelper = new GUTS.RaycastHelper(
             this.worldRenderer.getCamera(),

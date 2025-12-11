@@ -2,8 +2,6 @@ class GoldMineSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.goldMineSystem = this;
-        this.goldVeinLocations = [];
-
     }
 
     init(params) {
@@ -11,69 +9,59 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
         this.game.register('buildGoldMine', this.buildGoldMine.bind(this));
         this.game.register('isValidGoldMinePlacement', this.isValidGoldMinePlacement.bind(this));
-        this.game.register('getGoldVeinLocations', () => this.goldVeinLocations);
+        this.game.register('getGoldVeinLocations', this.getGoldVeinLocations.bind(this));
         this.game.register('processNextMinerInQueue', this.processNextMinerInQueue.bind(this));
         this.game.register('isMineOccupied', this.isMineOccupied.bind(this));
         this.game.register('isNextInMinerQueue', this.isNextInQueue.bind(this));
         this.game.register('addMinerToQueue', this.addMinerToQueue.bind(this));
-
-        // Gold vein locations found in onSceneLoad after terrain is loaded
     }
 
-    onSceneLoad(sceneData) {
-        // Find gold vein locations now that terrain/world objects are available
-        this.findGoldVeinLocations();
-    }
+    /**
+     * Get gold vein locations by querying ECS entities with worldObject component
+     * Returns array of vein data with world positions and claimed status
+     */
+    getGoldVeinLocations() {
+        const veinLocations = [];
+        const worldObjectEntities = this.game.getEntitiesWith('worldObject', 'transform');
 
-    findGoldVeinLocations() {
-        const tileMap = this.game.call('getTileMap');
-        if (!tileMap?.worldObjects) {
-            console.warn('[GoldMineSystem] No world objects found');
-            return;
+        // Get claimed vein positions from existing gold mines
+        const claimedVeinEntityIds = new Set();
+        const goldMineEntities = this.game.getEntitiesWith('goldMine');
+        for (const mineId of goldMineEntities) {
+            const goldMine = this.game.getComponent(mineId, 'goldMine');
+            if (goldMine?.veinEntityId) {
+                claimedVeinEntityIds.add(goldMine.veinEntityId);
+            }
         }
 
-        const extensionSize = this.game.call('getTerrainExtensionSize');
-        const extendedSize = this.game.call('getTerrainExtendedSize');
+        // Sort for deterministic iteration
+        const sortedEntities = Array.from(worldObjectEntities).sort((a, b) => a - b);
 
-        this.goldVeinLocations = tileMap.worldObjects
-            .filter(obj => obj.type === 'goldVein')
-            .map(obj => {
-                // Convert tile grid coordinates to world position, then to placement grid
-                // Use useExtension=false to match the coordinate system used by mouse raycasting
-                const worldPos = this.game.call('tileToWorld', obj.gridX, obj.gridZ, false);
-                const gridPos = this.game.call('worldToPlacementGrid', worldPos.x, worldPos.z);
-                // Gold veins use placementGridWidth which is already in placement grid units
-                // But we need to match how buildings calculate their cells (footprintWidth * 2)
-                // Since gold veins have placementGridWidth=2, and buildings have footprintWidth=2,
-                // we need to convert: footprintWidth * 2 = 2 * 2 = 4 placement grid cells
-                const veinPlacementGridWidth = obj.placementGridWidth || 2;
-                const veinPlacementGridHeight = obj.placementGridHeight || 2;
-                // Convert to match building footprint calculation
-                const gridWidth = veinPlacementGridWidth * 2;
-                const gridHeight = veinPlacementGridHeight * 2;
+        for (const entityId of sortedEntities) {
+            const worldObj = this.game.getComponent(entityId, 'worldObject');
+            if (worldObj?.type !== 'goldVein') continue;
 
-                const cells = this.calculateGoldVeinCells(gridPos, gridWidth, gridHeight);
+            const transform = this.game.getComponent(entityId, 'transform');
+            const pos = transform?.position;
+            if (!pos) continue;
 
-                return {
-                    gridX: obj.gridX,
-                    gridZ: obj.gridZ,
-                    worldX: worldPos.x,
-                    worldZ: worldPos.z,
-                    gridPos: gridPos,
-                    gridWidth: gridWidth,  // 4 (placement grid cells)
-                    gridHeight: gridHeight,  // 4 (placement grid cells)
-                    cells: cells,
-                    claimed: false,
-                    claimedBy: null,
-                    instanceIndex: null,
-                    originalIndex: tileMap.worldObjects.indexOf(obj)
-                };
+            const gridPos = this.game.call('worldToPlacementGrid', pos.x, pos.z);
+            const unitType = this.game.getComponent(entityId, 'unitType');
+            const gridWidth = (unitType?.placementGridWidth || 2) * 2;
+            const gridHeight = (unitType?.placementGridHeight || 2) * 2;
+
+            veinLocations.push({
+                entityId: entityId,
+                worldX: pos.x,
+                worldZ: pos.z,
+                gridPos: gridPos,
+                gridWidth: gridWidth,
+                gridHeight: gridHeight,
+                claimed: claimedVeinEntityIds.has(entityId)
             });
-
-
-        if (!this.game.isServer) {
-            this.mapGoldVeinInstances();
         }
+
+        return veinLocations;
     }
 
     calculateGoldVeinCells(gridPos, gridWidth, gridHeight) {
@@ -93,15 +81,19 @@ class GoldMineSystem extends GUTS.BaseSystem {
         return cells;
     }
 
+    /**
+     * Check if a gold mine can be placed at the given position
+     * Validates against ECS gold vein entities
+     */
     isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight) {
         const buildingCells = this.calculateGoldVeinCells(gridPos, buildingGridWidth, buildingGridHeight);
+        const veinLocations = this.getGoldVeinLocations();
 
-        for (const vein of this.goldVeinLocations) {
-            if (vein.claimed) {
-                continue;
-            }
+        for (const vein of veinLocations) {
+            if (vein.claimed) continue;
 
-            if (this.cellsMatch(buildingCells, vein.cells)) {
+            const veinCells = this.calculateGoldVeinCells(vein.gridPos, vein.gridWidth, vein.gridHeight);
+            if (this.cellsMatch(buildingCells, veinCells)) {
                 return { valid: true, vein: vein };
             }
         }
@@ -127,49 +119,32 @@ class GoldMineSystem extends GUTS.BaseSystem {
         return true;
     }
 
-    mapGoldVeinInstances() {
-        if (!this.game.call('getWorldScene')) {
-            console.warn('[GoldMineSystem] No scene available for mapping instances');
-            return;
-        }
+    buildGoldMine(entityId, team, gridPos, buildingGridWidth, buildingGridHeight, knownVeinEntityId = null) {
+        let veinEntityId = knownVeinEntityId;
+        let veinCells;
 
-        const goldVeinInstancedMeshes = [];
-        this.game.call('getWorldScene').traverse(child => {
-            if (child instanceof THREE.InstancedMesh && child.userData.objectType === 'goldVein') {
-                goldVeinInstancedMeshes.push(child);
+        if (knownVeinEntityId) {
+            // Vein entity ID provided directly - skip validation (trusted caller)
+            veinCells = this.calculateGoldVeinCells(gridPos, buildingGridWidth, buildingGridHeight);
+        } else {
+            // Validate placement against gold vein entities
+            const validation = this.isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight);
+            if (!validation.valid) {
+                console.warn('[GoldMineSystem] Invalid placement - no matching unclaimed vein');
+                return { success: false, error: 'Must be placed on a gold vein' };
             }
-        });
 
-        let globalIndex = 0;
-        for (const vein of this.goldVeinLocations) {
-            vein.instanceIndex = globalIndex;
-            vein.instancedMeshes = goldVeinInstancedMeshes;
-            globalIndex++;
-        }
-    }
-
-    buildGoldMine(entityId, team, gridPos, buildingGridWidth, buildingGridHeight) {
-        const validation = this.isValidGoldMinePlacement(gridPos, buildingGridWidth, buildingGridHeight);
-        if (!validation.valid) {
-            console.warn('[GoldMineSystem] Invalid placement - no matching unclaimed vein');
-            return { success: false, error: 'Must be placed on a gold vein' };
+            const vein = validation.vein;
+            veinEntityId = vein.entityId;
+            veinCells = this.calculateGoldVeinCells(vein.gridPos, vein.gridWidth, vein.gridHeight);
         }
 
-        const vein = validation.vein;
-
-        vein.claimed = true;
-        vein.claimedBy = team;
-
-        if (!this.game.isServer) {
-            this.replaceVeinWithMine(vein);
-        }
-
-        // Add goldMine component to the entity
+        // Add goldMine component to the entity with reference to the vein entity
         this.game.addComponent(entityId, "goldMine", {
-            veinIndex: vein.originalIndex,
+            veinEntityId: veinEntityId,
             currentMiner: null,
             minerQueue: [],
-            cells: vein.cells
+            cells: veinCells
         });
 
         return { success: true };
@@ -179,12 +154,6 @@ class GoldMineSystem extends GUTS.BaseSystem {
         const goldMine = this.game.getComponent(entityId, "goldMine");
         if (!goldMine) {
             return { success: false, error: 'No gold mine component found' };
-        }
-
-        // Get the vein data
-        const vein = this.goldVeinLocations[goldMine.veinIndex];
-        if (!vein) {
-            console.warn('[GoldMineSystem] Could not find vein data for veinIndex:', goldMine.veinIndex);
         }
 
         // Clear any miners targeting this mine
@@ -200,19 +169,10 @@ class GoldMineSystem extends GUTS.BaseSystem {
             }
         }
 
-        if (vein) {
-            if (!this.game.isServer) {
-                this.restoreVein(vein);
-            } else {
-                vein.claimed = false;
-                vein.claimedBy = null;
-            }
-        }
-
         // Remove the goldMine component from the entity
+        // The vein is automatically "unclaimed" since we query goldMine components dynamically
         this.game.removeComponent(entityId, "goldMine");
 
-        const remainingMines = this.game.getEntitiesWith("goldMine").length;
         return { success: true };
     }
 
@@ -289,56 +249,6 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     }
 
-    replaceVeinWithMine(vein) {
-        return;
-        // if (vein.instancedMeshes && vein.instanceIndex !== null) {
-        //     vein.instancedMeshes.forEach(mesh => {
-        //         const matrix = new THREE.Matrix4();
-        //         const position = new THREE.Vector3(0, -10000, 0);
-        //         matrix.makeTranslation(position.x, position.y, position.z);
-        //         matrix.scale(new THREE.Vector3(0.001, 0.001, 0.001));
-        //         mesh.setMatrixAt(vein.instanceIndex, matrix);
-        //         mesh.instanceMatrix.needsUpdate = true;
-        //     });
-        // } 
-    }
-
-    restoreVein(vein) {
-        // if (vein.instancedMeshes && vein.instanceIndex !== null) {
-        //     const extensionSize = this.game.terrainSystem?.extensionSize || 0;
-        //     const extendedSize = this.game.terrainSystem?.extendedSize || 0;
-        //     const heightMapSettings = this.game.worldSystem?.heightMapSettings;
-            
-        //     let height = 0;
-        //     if (heightMapSettings?.enabled) {
-        //         height = heightMapSettings.heightStep * this.game.terrainSystem.tileMap.extensionTerrainType;
-        //     }
-
-        //     const worldX = (vein.x + extensionSize) - extendedSize / 2;
-        //     const worldZ = (vein.y + extensionSize) - extendedSize / 2;
-
-        //     const dummy = new THREE.Object3D();
-        //     dummy.position.set(worldX, height, worldZ);
-        //     dummy.rotation.y = Math.random() * Math.PI * 2;
-        //     dummy.scale.set(50, 50, 50);
-        //     dummy.updateMatrix();
-
-        //     vein.instancedMeshes.forEach(mesh => {
-        //         const matrix = new THREE.Matrix4();
-        //         matrix.copy(dummy.matrix);
-        //         if (mesh.userData.relativeMatrix) {
-        //             matrix.multiply(mesh.userData.relativeMatrix);
-        //         }
-        //         mesh.setMatrixAt(vein.instanceIndex, matrix);
-        //         mesh.instanceMatrix.needsUpdate = true;
-        //     });            
-        // }
-
-        vein.claimed = false;
-        vein.claimedBy = null;
-    }
-
-
     onBattleEnd() {
         const entities = this.game.getEntitiesWith("miningState");
         entities.forEach(entityId => {
@@ -354,25 +264,11 @@ class GoldMineSystem extends GUTS.BaseSystem {
         const unitType = this.game.getComponent(entityId, "unitType");
         if (unitType.id === 'goldMine') {
             this.game.goldMineSystem.destroyGoldMine(entityId);
-        } 
+        }
     }
 
     reset() {
-        const goldMines = this.game.getEntitiesWith("goldMine");
-
-        for (const entityId of goldMines) {
-            const goldMine = this.game.getComponent(entityId, "goldMine");
-            if (!goldMine) continue;
-
-            const vein = this.goldVeinLocations[goldMine.veinIndex];
-            if (vein) {
-                if (!this.game.isServer) {
-                    this.restoreVein(vein);
-                } else {
-                    vein.claimed = false;
-                    vein.claimedBy = null;
-                }
-            }
-        }
+        // Gold mine state is stored in ECS goldMine components
+        // No manual reset needed - destroying the entity cleans up the component
     }
 }

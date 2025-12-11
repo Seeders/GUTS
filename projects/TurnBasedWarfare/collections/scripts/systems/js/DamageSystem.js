@@ -21,9 +21,6 @@ class DamageSystem extends GUTS.BaseSystem {
             STACK_REFRESH: true     // new poison refreshes duration
         };
 
-        // Status effect tracking
-        this.activeStatusEffects = new Map(); // entityId -> { poison: [...], other effects }
-        
         // Damage event queue for delayed damage (melee attacks, etc.)
         this.pendingDamageEvents = new Map();
 
@@ -331,22 +328,25 @@ class DamageSystem extends GUTS.BaseSystem {
     applyPoisonDoT(sourceId, targetId, totalDamage, options = {}) {
         const duration = options.duration || this.POISON_CONFIG.DEFAULT_DURATION;
         const ticks = options.ticks || this.POISON_CONFIG.DEFAULT_TICKS;
-        
+
         // Poison cannot be resisted - it always applies at full strength
         const perTickDamage = Math.max(1, Math.ceil(totalDamage / ticks));
 
-        // Initialize status effects for target if needed
-        if (!this.activeStatusEffects.has(targetId)) {
-            this.activeStatusEffects.set(targetId, { poison: [] });
+        // Get or create statusEffect component for target
+        let statusEffect = this.game.getComponent(targetId, 'statusEffect');
+        if (!statusEffect) {
+            this.game.addComponent(targetId, 'statusEffect', { poison: [] });
+            statusEffect = this.game.getComponent(targetId, 'statusEffect');
+        }
+        if (!statusEffect.poison) {
+            statusEffect.poison = [];
         }
 
-        const statusEffects = this.activeStatusEffects.get(targetId);
-        
         // Check current poison stacks
-        if (statusEffects.poison.length >= this.POISON_CONFIG.STACK_LIMIT) {
+        if (statusEffect.poison.length >= this.POISON_CONFIG.STACK_LIMIT) {
             if (this.POISON_CONFIG.STACK_REFRESH) {
                 // Remove oldest poison stack and add new one
-                statusEffects.poison.shift();
+                statusEffect.poison.shift();
             } else {
                 // Cannot add more poison
                 return { damage: 0, prevented: true, reason: 'stack_limit' };
@@ -362,13 +362,13 @@ class DamageSystem extends GUTS.BaseSystem {
             totalDamage: perTickDamage * ticks
         };
 
-        statusEffects.poison.push(poisonEffect);
+        statusEffect.poison.push(poisonEffect);
 
-      
+
         return {
             damage: poisonEffect.totalDamage,
             isPoison: true,
-            stacks: statusEffects.poison.length,
+            stacks: statusEffect.poison.length,
             tickDamage: perTickDamage,
             duration: duration
         };
@@ -378,25 +378,31 @@ class DamageSystem extends GUTS.BaseSystem {
      * Process ongoing poison damage
      */
     processStatusEffects() {
-        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (much faster than localeCompare)
-        const sortedEntityIds = Array.from(this.activeStatusEffects.keys()).sort((a, b) => a - b);
+        // Query all entities with statusEffect component
+        const entitiesWithEffects = this.game.getEntitiesWith('statusEffect');
+        // Sort for deterministic processing order
+        const sortedEntityIds = Array.from(entitiesWithEffects).sort((a, b) => a - b);
 
         for (const entityId of sortedEntityIds) {
-            const statusEffects = this.activeStatusEffects.get(entityId);
+            const statusEffect = this.game.getComponent(entityId, 'statusEffect');
+            if (!statusEffect || !statusEffect.poison || statusEffect.poison.length === 0) {
+                continue;
+            }
+
             const targetHealth = this.game.getComponent(entityId, "health");
             const targetDeathState = this.game.getComponent(entityId, "deathState");
-            
+
             if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
-                // Entity is dead or dying, remove all status effects
-                this.activeStatusEffects.delete(entityId);
+                // Entity is dead or dying, remove status effect component
+                this.game.removeComponent(entityId, 'statusEffect');
                 continue;
             }
             // Process poison effects
-            statusEffects.poison = statusEffects.poison.filter(poisonEffect => {
+            statusEffect.poison = statusEffect.poison.filter(poisonEffect => {
                 if (this.game.state.now >= poisonEffect.nextTickTime) {
                     // Apply poison damage
                     targetHealth.current -= poisonEffect.damagePerTick;
-                    
+
                     // Visual feedback for poison
                     this.applyVisualFeedback(entityId, { finalDamage: poisonEffect.damagePerTick }, this.ELEMENT_TYPES.POISON);
 
@@ -416,9 +422,9 @@ class DamageSystem extends GUTS.BaseSystem {
                 return true; // Keep poison effect
             });
 
-            // Remove entity from status effects if no effects remain
-            if (statusEffects.poison.length === 0) {
-                this.activeStatusEffects.delete(entityId);
+            // Remove statusEffect component if no effects remain
+            if (statusEffect.poison.length === 0) {
+                this.game.removeComponent(entityId, 'statusEffect');
             }
         }
     }
@@ -427,14 +433,14 @@ class DamageSystem extends GUTS.BaseSystem {
      * Cure poison effects
      */
     curePoison(targetId, stacksToRemove = null) {
-        const statusEffects = this.activeStatusEffects.get(targetId);
-        if (!statusEffects || statusEffects.poison.length === 0) return false;
+        const statusEffect = this.game.getComponent(targetId, 'statusEffect');
+        if (!statusEffect || !statusEffect.poison || statusEffect.poison.length === 0) return false;
 
-        const removeCount = stacksToRemove || statusEffects.poison.length;
-        const removedStacks = statusEffects.poison.splice(0, removeCount);
+        const removeCount = stacksToRemove || statusEffect.poison.length;
+        statusEffect.poison.splice(0, removeCount);
 
-        if (statusEffects.poison.length === 0) {
-            this.activeStatusEffects.delete(targetId);
+        if (statusEffect.poison.length === 0) {
+            this.game.removeComponent(targetId, 'statusEffect');
         }
 
         return true;
@@ -509,8 +515,8 @@ class DamageSystem extends GUTS.BaseSystem {
     }
 
     getPoisonStacks(entityId) {
-        const statusEffects = this.activeStatusEffects.get(entityId);
-        return statusEffects ? statusEffects.poison.length : 0;
+        const statusEffect = this.game.getComponent(entityId, 'statusEffect');
+        return statusEffect?.poison?.length || 0;
     }
 
 
@@ -556,9 +562,8 @@ class DamageSystem extends GUTS.BaseSystem {
             }
         }
         eventsToRemove.forEach(id => this.pendingDamageEvents.delete(id));
-        
-        // Clear status effects
-        this.activeStatusEffects.delete(entityId);
+
+        // Status effects are automatically cleaned up by ECS when entity is destroyed
     }
 
     update() {
@@ -567,16 +572,21 @@ class DamageSystem extends GUTS.BaseSystem {
     }
 
     clearAllStatusEffects(entityId) {
-        this.activeStatusEffects.delete(entityId);
+        this.game.removeComponent(entityId, 'statusEffect');
     }
 
-    clearAllDamageEffects() {        
-        this.activeStatusEffects.clear();  
+    clearAllDamageEffects() {
+        // Remove all statusEffect components
+        const entitiesWithEffects = this.game.getEntitiesWith('statusEffect');
+        for (const entityId of entitiesWithEffects) {
+            this.game.removeComponent(entityId, 'statusEffect');
+        }
         this.pendingDamageEvents.clear();
     }
 
     getStatusEffects(entityId) {
-        return this.activeStatusEffects.get(entityId) || { poison: [] };
+        const statusEffect = this.game.getComponent(entityId, 'statusEffect');
+        return statusEffect || { poison: [] };
     }
 
 }

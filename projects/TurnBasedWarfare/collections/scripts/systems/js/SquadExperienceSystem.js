@@ -134,8 +134,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             squadSize: unitIds.length,
             canLevelUp: false,
             totalUnitsInSquad: unitIds.length,
-            lastExperienceGain: 0,
-            creationTime: this.game.state.now
+            lastExperienceGain: 0
         };
 
         // Store on placement component

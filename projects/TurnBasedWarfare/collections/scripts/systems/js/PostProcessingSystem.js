@@ -134,6 +134,8 @@ class PostProcessingSystem extends GUTS.BaseSystem {
     }
 
     setSize(width, height) {
+        // Skip resize if dimensions are zero or invalid (prevents WebGL framebuffer errors)
+        if (width <= 0 || height <= 0) return;
         if (this.composer) {
             this.composer.setSize(width, height);
         }

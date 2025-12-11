@@ -25,10 +25,10 @@ class JoinMineQueueBehaviorAction extends GUTS.BaseBehaviorAction {
 
         const goldMine = game.getComponent(targetMine, 'goldMine');
         if (goldMine && (goldMine.minerQueue.includes(entityId) || goldMine.currentMiner === entityId)) {
-            return this.success({ 
+            return this.success({
                 targetMine: targetMine
             });
-        }    
+        }
         game.call('addMinerToQueue', targetMine, entityId);
         return this.success({
             targetMine: targetMine

@@ -22,10 +22,17 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
     /**
      * Get player entity ID from player/socket ID
      * @param {string} playerId - The player's socket ID
-     * @returns {string} The player entity ID
+     * @returns {number|null} The player entity ID (numeric) or null if not found
      */
     getPlayerEntityId(playerId) {
-        return `player_${playerId}`;
+        const playerEntities = this.game.getEntitiesWith('playerStats');
+        for (const entityId of playerEntities) {
+            const stats = this.game.getComponent(entityId, 'playerStats');
+            if (stats && stats.playerId === playerId) {
+                return entityId;
+            }
+        }
+        return null;
     }
 
     /**
@@ -35,6 +42,7 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
      */
     getPlayerStats(playerId) {
         const entityId = this.getPlayerEntityId(playerId);
+        if (entityId === null) return null;
         return this.game.getComponent(entityId, 'playerStats');
     }
 
@@ -140,21 +148,32 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
      * Create a player entity with playerStats component
      * @param {string} playerId - The player's socket ID
      * @param {Object} statsData - Initial stats data
-     * @returns {string} The created entity ID
+     * @returns {number} The created entity ID (numeric)
      */
     createPlayerEntity(playerId, statsData) {
-        const entityId = this.getPlayerEntityId(playerId);
+        // Check if player entity already exists
+        let entityId = this.getPlayerEntityId(playerId);
 
-        if (!this.game.entities.has(entityId)) {
-            this.game.createEntity(entityId);
+        if (entityId === null) {
+            // Create new entity with numeric ID
+            entityId = this.game.createEntity();
         }
 
-        this.game.addComponent(entityId, 'playerStats', {
-            odId: playerId,
-            side: statsData.side || 'left',
-            gold: statsData.gold || 0,
-            upgrades: statsData.upgrades || []
-        });
+        // Add or update playerStats component
+        if (!this.game.hasComponent(entityId, 'playerStats')) {
+            this.game.addComponent(entityId, 'playerStats', {
+                playerId: playerId,
+                side: statsData.side || 'left',
+                gold: statsData.gold || 0,
+                upgrades: statsData.upgrades || []
+            });
+        } else {
+            // Update existing stats
+            const stats = this.game.getComponent(entityId, 'playerStats');
+            stats.side = statsData.side || stats.side;
+            stats.gold = statsData.gold ?? stats.gold;
+            stats.upgrades = statsData.upgrades || stats.upgrades;
+        }
 
         return entityId;
     }

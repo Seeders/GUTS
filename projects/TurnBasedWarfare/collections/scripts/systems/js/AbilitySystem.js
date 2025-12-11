@@ -3,9 +3,9 @@ class AbilitySystem extends GUTS.BaseSystem {
         super(game);
         this.game.abilitySystem = this;
         this.abilityActionCounter = 0;
+        // entityAbilities stores class instances with methods - must remain as Map
         this.entityAbilities = new Map();
-        this.abilityCooldowns = new Map();
-        this.abilityQueue = new Map();
+        // abilityActions stores transient callbacks - must remain as Map
         this.abilityActions = new Map();
     }
 
@@ -43,12 +43,19 @@ class AbilitySystem extends GUTS.BaseSystem {
         this.updateAIAbilityUsage();
     }
     processAbilityQueue() {
-        for (const [entityId, queuedAbility] of this.abilityQueue.entries()) {
+        // Query all entities with abilityQueue component
+        const entitiesWithQueue = this.game.getEntitiesWith('abilityQueue');
+        const sortedEntityIds = Array.from(entitiesWithQueue).sort((a, b) => a - b);
+
+        for (const entityId of sortedEntityIds) {
+            const queuedAbility = this.game.getComponent(entityId, 'abilityQueue');
+            if (!queuedAbility || !queuedAbility.abilityId) continue;
+
             if (this.game.state.now >= queuedAbility.executeTime) {
                 // Cancel queued ability if caster died
                 const deathState = this.game.getComponent(entityId, "deathState");
                 if (deathState && deathState.isDying) {
-                    this.abilityQueue.delete(entityId);
+                    this.game.removeComponent(entityId, 'abilityQueue');
                     continue;
                 }
 
@@ -58,7 +65,7 @@ class AbilitySystem extends GUTS.BaseSystem {
                     if (ability) {
                         // Execute ability and get potential callback
                         const abilityAction = ability.execute(entityId, queuedAbility.targetData);
-                        
+
                         // If ability returns a callback, schedule it deterministically
                         if (typeof abilityAction === 'function') {
                             // Add to a delayed effects queue
@@ -66,7 +73,7 @@ class AbilitySystem extends GUTS.BaseSystem {
                         }
                     }
                 }
-                this.abilityQueue.delete(entityId);
+                this.game.removeComponent(entityId, 'abilityQueue');
             }
         }
     }
@@ -100,7 +107,8 @@ class AbilitySystem extends GUTS.BaseSystem {
     }
     
     considerAbilityUsage(entityId, abilities) {
-        if (this.abilityQueue.has(entityId)) {
+        const queuedAbility = this.game.getComponent(entityId, 'abilityQueue');
+        if (queuedAbility && queuedAbility.abilityId) {
             return; // Entity is already casting an ability, wait for it to finish
         }
 
@@ -146,7 +154,7 @@ class AbilitySystem extends GUTS.BaseSystem {
         if (!ability.isPassive) {
             this.startAbilityAnimation(entityId, ability);
         }
-        this.abilityQueue.set(entityId, {
+        this.game.addComponent(entityId, 'abilityQueue', {
             abilityId: abilityId,
             targetData: targetData,
             executeTime: this.game.state.now + ability.castTime
@@ -207,23 +215,32 @@ class AbilitySystem extends GUTS.BaseSystem {
         if (!casterTransform.rotation) {
             casterTransform.rotation = { x: 0, y: 0, z: 0 };
         }
-        casterTransform.rotation.y = angleToTarget;
+        // Round to 6 decimal places to avoid floating-point precision desync
+        casterTransform.rotation.y = Math.round(angleToTarget * 1000000) / 1000000;
     }
 
     setCooldown(entityId, abilityId, cooldownDuration) {
-        const key = `${entityId}_${abilityId}`;
-        this.abilityCooldowns.set(key, this.game.state.now + cooldownDuration);
+        let cooldowns = this.game.getComponent(entityId, 'abilityCooldowns');
+        if (!cooldowns) {
+            this.game.addComponent(entityId, 'abilityCooldowns', { cooldowns: {} });
+            cooldowns = this.game.getComponent(entityId, 'abilityCooldowns');
+        }
+        cooldowns.cooldowns[abilityId] = this.game.state.now + cooldownDuration;
+        cooldowns.lastAbilityUsed = abilityId;
+        cooldowns.lastAbilityTime = this.game.state.now;
     }
-    
+
     isAbilityOffCooldown(entityId, abilityId) {
-        const key = `${entityId}_${abilityId}`;
-        const cooldownEnd = this.abilityCooldowns.get(key);
+        const cooldowns = this.game.getComponent(entityId, 'abilityCooldowns');
+        if (!cooldowns || !cooldowns.cooldowns) return true;
+        const cooldownEnd = cooldowns.cooldowns[abilityId];
         return !cooldownEnd || this.game.state.now >= cooldownEnd;
     }
-    
+
     getRemainingCooldown(entityId, abilityId) {
-        const key = `${entityId}_${abilityId}`;
-        const cooldownEnd = this.abilityCooldowns.get(key);
+        const cooldowns = this.game.getComponent(entityId, 'abilityCooldowns');
+        if (!cooldowns || !cooldowns.cooldowns) return 0;
+        const cooldownEnd = cooldowns.cooldowns[abilityId];
         return !cooldownEnd ? 0 : Math.max(0, cooldownEnd - this.game.state.now);
     }
     
@@ -253,17 +270,9 @@ class AbilitySystem extends GUTS.BaseSystem {
         
     removeEntityAbilities(entityId) {
         this.entityAbilities.delete(entityId);
-        this.abilityQueue.delete(entityId);
-        
-        // Clean up cooldowns
-        const keysToRemove = [];
-        for (const key of this.abilityCooldowns.keys()) {
-            if (key.startsWith(`${entityId}_`)) {
-                keysToRemove.push(key);
-            }
-        }
-        keysToRemove.forEach(key => this.abilityCooldowns.delete(key));
-        
+        // ECS components are automatically cleaned up when entity is destroyed
+        this.game.removeComponent(entityId, 'abilityQueue');
+        this.game.removeComponent(entityId, 'abilityCooldowns');
     }
     onPlacementPhaseStart() {
         for (const [entityId, abilities] of this.entityAbilities.entries()) {
@@ -275,7 +284,7 @@ class AbilitySystem extends GUTS.BaseSystem {
         }            
     }     
     onBattleEnd() {
-        
+
         // Call onBattleEnd on all ability instances
         for (const [entityId, abilities] of this.entityAbilities.entries()) {
             abilities.forEach(ability => {
@@ -284,19 +293,26 @@ class AbilitySystem extends GUTS.BaseSystem {
                 }
             });
         }
-        
-        // Clear all ability queues and cooldowns
-        this.abilityQueue.clear();
+
+        // Clear all ability queues (remove abilityQueue components)
+        const entitiesWithQueue = this.game.getEntitiesWith('abilityQueue');
+        for (const entityId of entitiesWithQueue) {
+            this.game.removeComponent(entityId, 'abilityQueue');
+        }
+
+        // Clear all cooldowns (remove abilityCooldowns components)
+        const entitiesWithCooldowns = this.game.getEntitiesWith('abilityCooldowns');
+        for (const entityId of entitiesWithCooldowns) {
+            this.game.removeComponent(entityId, 'abilityCooldowns');
+        }
+
         this.abilityActions.clear();
-        this.abilityCooldowns.clear();
         this.abilityActionCounter = 0;
-        
+
     }
 
     destroy() {
         this.entityAbilities.clear();
-        this.abilityCooldowns.clear();
-        this.abilityQueue.clear();
         this.abilityActions.clear();
     }
     entityDestroyed(entityId) {
