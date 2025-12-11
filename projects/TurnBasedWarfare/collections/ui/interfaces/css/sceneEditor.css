@@ -5,6 +5,7 @@
 /* Scene view */
 .scene-editor__scene-view {
     flex: 1;
+    min-height: 0; /* Required for flex child to respect container bounds */
     position: relative;
     overflow: hidden;
 }

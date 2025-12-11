@@ -67,6 +67,8 @@
 .editor-module__sidebar {
   width: var(--editor-sidebar-width);
   min-width: var(--editor-sidebar-width);
+  min-height: 0; /* Allow sidebar to shrink in flex layout */
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   background-color: var(--editor-bg-medium);
@@ -86,6 +88,7 @@
 /* Canvas/Content Area */
 .editor-module__canvas-area {
   flex: 1;
+  min-width: 0;  /* Required for flex child to respect container bounds */
   position: relative;
   background-color: var(--editor-bg-medium);
   border-radius: var(--editor-border-radius);
@@ -568,6 +571,8 @@
 }
 
 .editor-module__scroll-y {
+  flex: 1;
+  min-height: 0; /* Required for flex child to respect overflow */
   overflow-y: auto;
   overflow-x: hidden;
   padding: var(--editor-spacing-lg);

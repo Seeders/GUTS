@@ -510,12 +510,10 @@ class SceneEditor {
      */
     async handleRenderSceneObject(event) {
         // Get entities array and full scene object
+        // We intentionally keep a reference to the editor framework's data
+        // so that edits (gizmo transforms, etc.) persist for saving
         const entities = event.detail.data || [];
         const fullSceneData = event.detail.objectData || { entities };
-
-        // Store both - entities for editing, full scene for context
-        this.state.entities = entities;
-        this.state.sceneData = fullSceneData;
 
         // Use editor module systems (from sceneModule.json config), NOT scene data systems
         // The scene editor has its own systems designed for editing, not gameplay
@@ -524,19 +522,32 @@ class SceneEditor {
         // Initialize context with editor systems
         await this.initializeContext(systems);
 
+        // Store scene data reference
+        this.state.sceneData = fullSceneData;
+
         // Reset camera states so cameras start fresh for each scene load
         this.sceneCameraState = null;
         this.gameCameraState = null;
         this.state.cameraMode = 'scene';
 
         // Clear existing entities before loading new scene
+        // This also resets the entity ID counter
         if (this.editorGameInstance) {
             this.editorGameInstance.clearAllEntities();
         }
 
+        // Strip any stale IDs and assign fresh ones
+        // IDs are runtime-only and must match the ECS counter
+        for (const entity of entities) {
+            delete entity.id;
+            entity.id = this.editorGameInstance.getEntityId();
+        }
+
+        // Store entities for editing
+        this.state.entities = entities;
+
         // Load entities into context - editor systems will render them
-        // Pass scene data but our editor systems will handle rendering
-        await this.editorGameInstance.loadScene({ ...fullSceneData, systems });
+        await this.editorGameInstance.loadScene({ ...this.state.sceneData, systems });
 
         // Setup camera and controls AFTER scene loads (worldRenderer is created during scene load)
         this.worldRenderer = this.editorGameInstance.worldSystem?.worldRenderer;
@@ -1230,6 +1241,21 @@ class SceneEditor {
         // Save current camera state before switching
         this.saveCameraState();
 
+        // Store selected entity to reattach gizmo after camera switch
+        const selectedEntityId = this.state.selectedEntityId;
+
+        // Detach and dispose gizmo before switching cameras
+        if (this.gizmoManager) {
+            this.gizmoManager.detach();
+            this.gizmoManager.dispose();
+        }
+
+        // Remove old gizmo helper from scene
+        if (this.gizmoHelper && this.worldRenderer.getScene()) {
+            this.worldRenderer.getScene().remove(this.gizmoHelper);
+            this.gizmoHelper = null;
+        }
+
         if (mode === 'game') {
             // Switch to orthographic (game) camera
             this.setupGameCamera(width, height);
@@ -1246,6 +1272,14 @@ class SceneEditor {
                 this.worldRenderer.getCamera(),
                 this.worldRenderer.getScene()
             );
+        }
+
+        // Reinitialize gizmo manager with new camera
+        this.initializeGizmoManager();
+
+        // Reattach gizmo to selected entity if there was one
+        if (selectedEntityId) {
+            this.attachGizmoToEntity(selectedEntityId);
         }
 
         // Update button text and show/hide rotation buttons
@@ -1466,6 +1500,11 @@ class SceneEditor {
         this.gameCameraMouseDownHandler = (e) => {
             if (this.state.cameraMode !== 'game') return;
             if (e.button === 2) {
+                // Don't start panning if the gizmo is being hovered - let gizmo handle the drag
+                // Pass the event so gizmo can update mouse position before checking
+                if (this.gizmoManager && this.gizmoManager.isMouseOverGizmo(e)) {
+                    return;
+                }
                 isPanning = true;
                 lastMouseX = e.clientX;
                 lastMouseY = e.clientY;

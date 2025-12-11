@@ -271,15 +271,14 @@ class SE_GizmoManager {
     
     setupEventListeners() {
         const canvas = this.renderer.domElement;
-        
-        canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false);
-        canvas.addEventListener('mousedown', this.onMouseDown.bind(this), false);
-        canvas.addEventListener('mouseup', this.onMouseUp.bind(this), false);
-        
-        // Add keyboard shortcuts for switching transform modes
-        document.addEventListener('keydown', (event) => {
+
+        // Store bound handlers so we can remove them later
+        this.boundMouseMove = this.onMouseMove.bind(this);
+        this.boundMouseDown = this.onMouseDown.bind(this);
+        this.boundMouseUp = this.onMouseUp.bind(this);
+        this.boundKeyDown = (event) => {
             if (!this.targetObject) return;
-            
+
             switch (event.key.toLowerCase()) {
                 case 'g':
                     this.setMode('translate');
@@ -291,7 +290,14 @@ class SE_GizmoManager {
                     this.setMode('scale');
                     break;
             }
-        }, false);
+        };
+
+        canvas.addEventListener('mousemove', this.boundMouseMove, false);
+        canvas.addEventListener('mousedown', this.boundMouseDown, false);
+        canvas.addEventListener('mouseup', this.boundMouseUp, false);
+
+        // Add keyboard shortcuts for switching transform modes
+        document.addEventListener('keydown', this.boundKeyDown, false);
     }
     
     onMouseMove(event) {
@@ -375,9 +381,33 @@ class SE_GizmoManager {
         }
     }
     
+    /**
+     * Check if the mouse is currently over a gizmo
+     * @param {MouseEvent} [event] - Optional mouse event to update position from
+     * @returns {boolean} True if hovering over a gizmo axis
+     */
+    isMouseOverGizmo(event) {
+        // Update mouse position from event if provided
+        if (event && this.renderer?.domElement) {
+            const canvas = this.renderer.domElement;
+            const rect = canvas.getBoundingClientRect();
+            this.mouse.x = ((event.clientX - rect.left) / canvas.clientWidth) * 2 - 1;
+            this.mouse.y = -((event.clientY - rect.top) / canvas.clientHeight) * 2 + 1;
+        }
+        return this.getIntersectedGizmo() !== null;
+    }
+
+    /**
+     * Check if gizmo is currently being dragged
+     * @returns {boolean} True if dragging
+     */
+    isDraggingGizmo() {
+        return this.isDragging;
+    }
+
     getIntersectedGizmo() {
         if (!this.gizmoGroup.visible) return null;
-        
+
         this.raycaster.setFromCamera(this.mouse, this.camera);
         
         let activeGizmo;
@@ -774,18 +804,29 @@ class SE_GizmoManager {
     dispose() {
         this.detach();
 
-        // Remove event listeners
+        // Remove event listeners using stored bound handlers
         if (this.renderer?.domElement) {
             const canvas = this.renderer.domElement;
-            canvas.removeEventListener('mousemove', this.onMouseMove);
-            canvas.removeEventListener('mousedown', this.onMouseDown);
-            canvas.removeEventListener('mouseup', this.onMouseUp);
+            if (this.boundMouseMove) canvas.removeEventListener('mousemove', this.boundMouseMove);
+            if (this.boundMouseDown) canvas.removeEventListener('mousedown', this.boundMouseDown);
+            if (this.boundMouseUp) canvas.removeEventListener('mouseup', this.boundMouseUp);
+        }
+
+        // Remove keyboard event listener
+        if (this.boundKeyDown) {
+            document.removeEventListener('keydown', this.boundKeyDown);
         }
 
         // Remove gizmo group from scene
         if (this.scene && this.gizmoGroup) {
             this.scene.remove(this.gizmoGroup);
         }
+
+        // Clear bound handler references
+        this.boundMouseMove = null;
+        this.boundMouseDown = null;
+        this.boundMouseUp = null;
+        this.boundKeyDown = null;
 
         this.gizmoGroup = null;
         this.translateGizmo = null;
