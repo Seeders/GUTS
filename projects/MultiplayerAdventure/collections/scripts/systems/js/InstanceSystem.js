@@ -22,10 +22,8 @@ class InstanceSystem extends GUTS.BaseSystem {
         this.instanceData = null;
         this.isInInstance = false;
 
-        // Entity tracking (uses numeric entity IDs)
-        this.monsterEntities = new Map(); // monsterId -> { entityId, monsterType }
-        this.lootEntities = new Map(); // lootId -> entityId
-        this.partyMemberEntities = new Map(); // playerId -> entityId
+        // No longer tracking entities with Maps - use ECS queries instead
+        // Entities are found via: getEntitiesWith('monster'), getEntitiesWith('loot'), etc.
 
         // Objectives
         this.objectives = [];
@@ -68,9 +66,9 @@ class InstanceSystem extends GUTS.BaseSystem {
 
         this.game.register('spawnMonster', this.spawnMonster.bind(this));
         this.game.register('spawnMonsterAtSpawnPoint', this.spawnMonsterAtSpawnPoint.bind(this));
-        this.game.register('getMonsterEntities', () => Array.from(this.monsterEntities.values()).map(m => m.entityId));
+        this.game.register('getMonsterEntities', () => this.getMonsterEntityIds());
         this.game.register('handleMonsterDeath', this.handleMonsterDeath.bind(this));
-        this.game.register('getActiveMonsterCount', () => this.monsterEntities.size);
+        this.game.register('getActiveMonsterCount', () => this.getMonsterEntityIds().length);
 
         this.game.register('spawnLoot', this.spawnLoot.bind(this));
         this.game.register('collectLoot', this.collectLoot.bind(this));
@@ -94,6 +92,108 @@ class InstanceSystem extends GUTS.BaseSystem {
 
     handleInstanceCreated(data) {
         console.log('[InstanceSystem] Instance created:', data.instanceId);
+    }
+
+    // === ECS Query Helpers (replaces tracking Maps) ===
+
+    /**
+     * Get all monster entity IDs by querying ECS
+     */
+    getMonsterEntityIds() {
+        const entities = this.game.getEntitiesWith('monster', 'transform');
+        return Array.from(entities).sort((a, b) => a - b); // Numeric sort for determinism
+    }
+
+    /**
+     * Get all monster entities with their data
+     */
+    getMonsterEntities() {
+        const monsters = [];
+        const entities = this.game.getEntitiesWith('monster', 'transform');
+
+        for (const entityId of entities) {
+            const monster = this.game.getComponent(entityId, 'monster');
+            const transform = this.game.getComponent(entityId, 'transform');
+            if (monster && transform) {
+                monsters.push({
+                    entityId,
+                    monsterId: monster.monsterId,
+                    monsterType: monster.monsterType,
+                    isBoss: monster.isBoss,
+                    position: transform.position
+                });
+            }
+        }
+        return monsters;
+    }
+
+    /**
+     * Find monster entity by monsterId using ECS query
+     */
+    findMonsterEntityByMonsterId(monsterId) {
+        const entities = this.game.getEntitiesWith('monster');
+
+        for (const entityId of entities) {
+            const monster = this.game.getComponent(entityId, 'monster');
+            if (monster && monster.monsterId === monsterId) {
+                return entityId;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get all loot entity IDs by querying ECS
+     */
+    getLootEntityIds() {
+        const entities = this.game.getEntitiesWith('loot', 'transform');
+        return Array.from(entities).sort((a, b) => a - b);
+    }
+
+    /**
+     * Find loot entity by lootId using ECS query
+     */
+    findLootEntityByLootId(lootId) {
+        const entities = this.game.getEntitiesWith('loot');
+
+        for (const entityId of entities) {
+            const loot = this.game.getComponent(entityId, 'loot');
+            if (loot && loot.lootId === lootId) {
+                return entityId;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get all party member entity IDs (non-local players) by querying ECS
+     */
+    getPartyMemberEntityIds() {
+        const members = [];
+        const entities = this.game.getEntitiesWith('playerCharacter', 'transform');
+
+        for (const entityId of entities) {
+            const pc = this.game.getComponent(entityId, 'playerCharacter');
+            if (pc && !pc.isLocal) {
+                members.push(entityId);
+            }
+        }
+        return members.sort((a, b) => a - b);
+    }
+
+    /**
+     * Find party member entity by playerId using ECS query
+     */
+    findPartyMemberEntityByPlayerId(playerId) {
+        const entities = this.game.getEntitiesWith('playerCharacter');
+
+        for (const entityId of entities) {
+            const pc = this.game.getComponent(entityId, 'playerCharacter');
+            if (pc && pc.playerId === playerId && !pc.isLocal) {
+                return entityId;
+            }
+        }
+        return null;
     }
 
     handleInstanceJoined(data) {
@@ -352,7 +452,8 @@ class InstanceSystem extends GUTS.BaseSystem {
             }
         });
 
-        this.partyMemberEntities.set(memberData.playerId, entityId);
+        // Entity is now tracked via ECS - no Map needed
+        // Can be found with findPartyMemberEntityByPlayerId()
 
         this.game.call('spawnInstance', entityId, 'units', 'peasant', position);
 
@@ -362,9 +463,11 @@ class InstanceSystem extends GUTS.BaseSystem {
     }
 
     spawnMonster(monsterId, monsterType, position, isBoss = false) {
-        if (this.monsterEntities.has(monsterId)) {
+        // Check if monster already exists using ECS query
+        const existingEntity = this.findMonsterEntityByMonsterId(monsterId);
+        if (existingEntity !== null) {
             console.warn('[InstanceSystem] Monster already spawned:', monsterId);
-            return this.monsterEntities.get(monsterId).entityId;
+            return existingEntity;
         }
 
         const monsters = this.game.getCollections().monsters;
@@ -451,7 +554,8 @@ class InstanceSystem extends GUTS.BaseSystem {
             }
         });
 
-        this.monsterEntities.set(monsterId, { entityId, monsterType });
+        // Entity is now tracked via ECS - no Map needed
+        // Can be found with findMonsterEntityByMonsterId()
 
         // Spawn render instance
         this.game.call('spawnInstance', entityId, 'units', 'peasant', spawnPos);
@@ -462,10 +566,10 @@ class InstanceSystem extends GUTS.BaseSystem {
     }
 
     handleMonsterDeath(monsterId, killerPlayerId) {
-        const monsterData = this.monsterEntities.get(monsterId);
-        if (!monsterData) return;
+        // Find entity via ECS query instead of Map
+        const entityId = this.findMonsterEntityByMonsterId(monsterId);
+        if (entityId === null) return;
 
-        const { entityId } = monsterData;
         const monster = this.game.getComponent(entityId, 'monster');
         const transform = this.game.getComponent(entityId, 'transform');
 
@@ -488,9 +592,10 @@ class InstanceSystem extends GUTS.BaseSystem {
 
         this.game.call('removeInstance', entityId);
         this.game.destroyEntity(entityId);
-        this.monsterEntities.delete(monsterId);
+        // No Map.delete needed - entity is removed from ECS
 
-        if (this.monsterEntities.size === 0) {
+        // Check if all monsters are defeated using ECS query
+        if (this.getMonsterEntityIds().length === 0) {
             this.handleAllMonstersDefeated();
         }
     }
@@ -594,7 +699,8 @@ class InstanceSystem extends GUTS.BaseSystem {
             }
         });
 
-        this.lootEntities.set(lootId, entityId);
+        // Entity is now tracked via ECS - no Map needed
+        // Can be found with findLootEntityByLootId()
 
         this.game.call('spawnInstance', entityId, 'effects', 'loot_bag', lootPos);
 
@@ -602,7 +708,8 @@ class InstanceSystem extends GUTS.BaseSystem {
     }
 
     collectLoot(lootId, playerId) {
-        const entityId = this.lootEntities.get(lootId);
+        // Find entity via ECS query instead of Map
+        const entityId = this.findLootEntityByLootId(lootId);
         if (!entityId) return false;
 
         const loot = this.game.getComponent(entityId, 'loot');
@@ -614,7 +721,7 @@ class InstanceSystem extends GUTS.BaseSystem {
 
         this.game.call('removeInstance', entityId);
         this.game.destroyEntity(entityId);
-        this.lootEntities.delete(lootId);
+        // No Map.delete needed - entity is removed from ECS
 
         this.game.call('showNotification', 'Loot collected!', 'success');
         return true;
@@ -678,29 +785,29 @@ class InstanceSystem extends GUTS.BaseSystem {
     exitInstance(returnToTown = true) {
         console.log('[InstanceSystem] Exiting instance');
 
-        for (const [monsterId, monsterData] of this.monsterEntities) {
-            this.game.call('removeInstance', monsterData.entityId);
-            if (this.game.entities.has(monsterData.entityId)) {
-                this.game.destroyEntity(monsterData.entityId);
-            }
-        }
-        this.monsterEntities.clear();
-
-        for (const [lootId, entityId] of this.lootEntities) {
+        // Cleanup monsters using ECS query
+        for (const entityId of this.getMonsterEntityIds()) {
             this.game.call('removeInstance', entityId);
             if (this.game.entities.has(entityId)) {
                 this.game.destroyEntity(entityId);
             }
         }
-        this.lootEntities.clear();
 
-        for (const [playerId, entityId] of this.partyMemberEntities) {
+        // Cleanup loot using ECS query
+        for (const entityId of this.getLootEntityIds()) {
             this.game.call('removeInstance', entityId);
             if (this.game.entities.has(entityId)) {
                 this.game.destroyEntity(entityId);
             }
         }
-        this.partyMemberEntities.clear();
+
+        // Cleanup party members using ECS query
+        for (const entityId of this.getPartyMemberEntityIds()) {
+            this.game.call('removeInstance', entityId);
+            if (this.game.entities.has(entityId)) {
+                this.game.destroyEntity(entityId);
+            }
+        }
 
         this.instanceId = null;
         this.adventureId = null;
@@ -733,7 +840,7 @@ class InstanceSystem extends GUTS.BaseSystem {
             timeElapsed: this.game.state.now - this.instanceStartTime,
             timeRemaining: this.instanceTimeLimit > 0 ?
                 Math.max(0, this.instanceTimeLimit - (this.game.state.now - this.instanceStartTime)) : null,
-            monstersRemaining: this.monsterEntities.size,
+            monstersRemaining: this.getMonsterEntityIds().length, // Use ECS query
             currentWave: this.currentWave,
             totalWaves: this.monsterWaves.length
         };
@@ -770,9 +877,10 @@ class InstanceSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Update monster positions to stay on terrain
-        for (const [monsterId, monsterData] of this.monsterEntities) {
-            const transform = this.game.getComponent(monsterData.entityId, 'transform');
+        // Update monster positions to stay on terrain using ECS query
+        const monsterEntities = this.game.getEntitiesWith('monster', 'transform');
+        for (const entityId of monsterEntities) {
+            const transform = this.game.getComponent(entityId, 'transform');
             if (transform && transform.position) {
                 const terrainY = this.getTerrainHeightAt(transform.position.x, transform.position.z);
                 transform.position.y = terrainY;
@@ -786,8 +894,9 @@ class InstanceSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Update party member positions on terrain
-        for (const [playerId, entityId] of this.partyMemberEntities) {
+        // Update party member positions on terrain using ECS query
+        const partyMemberEntities = this.getPartyMemberEntityIds();
+        for (const entityId of partyMemberEntities) {
             const transform = this.game.getComponent(entityId, 'transform');
             if (transform && transform.position) {
                 const terrainY = this.getTerrainHeightAt(transform.position.x, transform.position.z);
@@ -795,13 +904,14 @@ class InstanceSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Update loot despawn
-        for (const [lootId, entityId] of this.lootEntities) {
+        // Update loot despawn using ECS query
+        const lootEntities = this.game.getEntitiesWith('loot', 'transform');
+        for (const entityId of lootEntities) {
             const loot = this.game.getComponent(entityId, 'loot');
             if (loot && this.game.state.now >= loot.despawnTime) {
                 this.game.call('removeInstance', entityId);
                 this.game.destroyEntity(entityId);
-                this.lootEntities.delete(lootId);
+                // No Map.delete needed - entity is removed from ECS
             }
         }
     }
