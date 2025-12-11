@@ -19,19 +19,13 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/item_shield_snowflake.glb",
             "width": 2,
             "height": 0.2,
-            "depth": 1,
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
+            "depth": 1,            
             "color": "#FFFFFF",
             "metalness": "0",
-            "roughness": "1"
+            "roughness": "1",
+            "model": "item_shield_snowflake"
           }
         ]
       }

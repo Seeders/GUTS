@@ -16,8 +16,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/idle.glb",
-                "id": 0
+                "id": 0,
+                "animation": "idle"
               }
             ]
           }
@@ -28,8 +28,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/walk_steady_right_hand.glb",
-                "id": 0
+                "id": 0,
+                "animation": "walk_steady_right_hand"
               }
             ]
           }
@@ -40,8 +40,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/sword_slash.glb",
-                "id": 0
+                "id": 0,
+                "animation": "sword_slash"
               }
             ]
           }
@@ -52,8 +52,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/death_fallback.glb",
-                "id": 0
+                "id": 0,
+                "animation": "death_fallback"
               }
             ],
             "loops": false
@@ -65,8 +65,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/dance_thriller.glb",
-                "id": 0
+                "id": 0,
+                "animation": "dance_thriller"
               }
             ]
           }
@@ -93,19 +93,16 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/barbarian.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
+            
+            
+            
             "color": "#FFFFFF",
             "metalness": "0",
-            "roughness": "1"
+            "roughness": "1",
+            "model": "barbarian"
           }
         ]
       }

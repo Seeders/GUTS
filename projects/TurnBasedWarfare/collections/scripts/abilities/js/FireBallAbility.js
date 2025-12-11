@@ -201,7 +201,7 @@ class FireBallAbility extends GUTS.BaseAbility {
         if (!casterPos) return null;
 
         // Sort enemies deterministically first
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
 
         let closestEnemy = null;
         let closestDistance = Infinity;
@@ -456,7 +456,7 @@ class FireBallAbility extends GUTS.BaseAbility {
                 return a.distance - b.distance;
             }
             // Secondary sort by entity ID for deterministic tie-breaking
-            return String(a.id).localeCompare(String(b.id));
+            return a.id - b.id;
         });
 
         // Apply splash damage to all targets

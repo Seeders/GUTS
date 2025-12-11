@@ -70,32 +70,22 @@ class TerrainMapEditor {
         this.canvasEl.style.width = '';
         this.canvasEl.style.height = '';
 
-        // Managers and renderers
-        let palette = this.gameEditor.getPalette();
-        this.imageManager = new GUTS.ImageManager(this.gameEditor,  { imageSize: this.editorSettings.imageSize, palette: palette}, {ShapeFactory: ShapeFactory});
+        // Managers and renderers - initialized by EditorLoader in initGridCanvas
+        this.imageManager = null;
+        this.modelManager = null;
+        this.editorContext = null;
+        this.editorLoader = null;
+
         this.translator = new GUTS.CoordinateTranslator(this.editorSettings, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
         this.modalId = 'modal-addTerrainType';
 
-        this.modelManager = gameEditor.modelManager;
         this.collections = this.gameEditor.getCollections();
         // Bind methods to maintain correct context
         this.init();
     }
 
     async init() {
-        if (!this.modelManager) {
-            const palette = this.gameEditor.getPalette();
-            this.modelManager = new GUTS.ModelManager(
-                this.gameEditor,
-                {},
-                { ShapeFactory: GUTS.ShapeFactory, palette, textures: this.collections.textures }
-            );
-
-            // Load all models
-            for (const objectType in this.collections) {
-                await this.modelManager.loadModels(objectType, this.collections[objectType]);
-            }
-        }
+        // Managers are now created by EditorLoader in initGridCanvas/init3DRendering
         this.setupTerrainTypesUI();
         this.setupTerrainImageProcessor();
         this.setupEnvironmentPanel();
@@ -555,52 +545,56 @@ class TerrainMapEditor {
 
     async initImageManager() {
         let palette = this.gameEditor.getPalette();
-        this.imageManager = new GUTS.ImageManager(this.gameEditor, { imageSize: this.editorSettings.imageSize, palette: palette}, {ShapeFactory: this.engineClasses.ShapeFactory});
+
+        // Use the editorContext's imageManager (created by EditorLoader)
+        // If editorContext doesn't exist yet, initGridCanvas will create it
+        if (!this.imageManager && this.editorContext) {
+            this.imageManager = this.editorContext.imageManager;
+            this.modelManager = this.editorContext.modelManager;
+        }
+
+        // Reload terrain images
         await this.imageManager.loadImages("levels", { level: this.objectData }, false, false);
-        if(this.worldObjects){
+        if (this.worldObjects) {
             await this.imageManager.loadImages("environment", this.worldObjects, false, false);
         }
         const terrainImages = this.imageManager.getImages("levels", "level");
 
         this.terrainTileMapper = new GUTS.TileMap({});
-        if(!this.terrainCanvasBuffer) {
+        if (!this.terrainCanvasBuffer) {
             this.terrainCanvasBuffer = document.createElement('canvas');
         }
         this.terrainCanvasBuffer.width = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
-        this.terrainCanvasBuffer.height =  this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
-        if(!this.gameEditor.modelManager.assetsLoaded){
-            let collections = this.gameEditor.getCollections();
-            for(let objectType in collections) {            
-                await this.gameEditor.modelManager.loadModels(objectType, collections[objectType]);
-            }  
-        } 
+        this.terrainCanvasBuffer.height = this.tileMap.size * this.gameEditor.getCollections().configs.game.gridSize;
+
+        // Models are already loaded by EditorLoader
         const terrainTypeNames = this.tileMap.terrainTypes || [];
         this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric, { terrainTypeNames });
-        
+
         // Ensure translator is up to date before creating game object
         this.translator = new GUTS.CoordinateTranslator(this.editorSettings, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
-        
-        this.game = { 
-            state: {}, 
-            modelManager: this.gameEditor.modelManager, 
-            imageManager: this.imageManager, 
-            canvasBuffer: this.canvasEl, 
-            terrainCanvasBuffer: this.terrainCanvasBuffer, 
-            terrainTileMapper: this.terrainTileMapper, 
-            getCollections: this.gameEditor.getCollections.bind(this.gameEditor), 
+
+        this.game = {
+            state: {},
+            modelManager: this.modelManager,
+            imageManager: this.imageManager,
+            canvasBuffer: this.canvasEl,
+            terrainCanvasBuffer: this.terrainCanvasBuffer,
+            terrainTileMapper: this.terrainTileMapper,
+            getCollections: this.gameEditor.getCollections.bind(this.gameEditor),
             translator: this.translator
         };
 
         this.mapRenderer = new GUTS.MapRenderer(this.game, null);
-        this.mapRenderer.init({ 
-                environment: this.worldObjects, 
-                level: 'level', 
-                levelData: this.objectData,
-                isEditor: true,
-                palette: palette,
-                canvas: this.canvasEl
-            });
-            
+        this.mapRenderer.init({
+            environment: this.worldObjects,
+            level: 'level',
+            levelData: this.objectData,
+            isEditor: true,
+            palette: palette,
+            canvas: this.canvasEl
+        });
+
         // Give the renderer a moment to fully initialize
         await new Promise(resolve => setTimeout(resolve, 50));
     }
@@ -1626,12 +1620,12 @@ class TerrainMapEditor {
         this.isInitializing = true;
 
         try {
-            let palette = this.gameEditor.getPalette();
-            this.imageManager = new this.engineClasses.ImageManager(
-                this.gameEditor,
-                { imageSize: this.editorSettings.imageSize, palette: palette},
-                {ShapeFactory: this.engineClasses.ShapeFactory}
-            );
+            // Initialize 3D rendering first - this creates editorContext with imageManager and modelManager via EditorLoader
+            await this.init3DRendering();
+
+            // Use the editorContext's imageManager (created by EditorLoader)
+            this.imageManager = this.editorContext.imageManager;
+            this.modelManager = this.editorContext.modelManager;
 
             // Load terrain sprite sheets for in-game graphics rendering
             await this.imageManager.loadImages("levels", { level: this.objectData }, false, false);
@@ -1659,9 +1653,6 @@ class TerrainMapEditor {
                 this.gameEditor.getCollections().configs.game.isIsometric,
                 { skipCliffTextures: false, terrainTypeNames } // Enable cliffs for 3D
             );
-
-            // Initialize 3D rendering
-            await this.init3DRendering();
         } finally {
             this.isInitializing = false;
         }
@@ -1742,6 +1733,12 @@ class TerrainMapEditor {
 
             // Force initial camera rotation sync
             this.worldRenderer.updateCameraRotation();
+        }
+
+        // Only setup 3D helpers if worldRenderer was successfully created
+        if (!this.worldRenderer) {
+            console.error('[TerrainMapEditor] WorldRenderer not initialized - 3D rendering will be unavailable');
+            return;
         }
 
         // Recreate RaycastHelper to ensure fresh camera/scene references

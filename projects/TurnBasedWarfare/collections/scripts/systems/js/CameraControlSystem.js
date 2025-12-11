@@ -203,7 +203,7 @@ class CameraControlSystem extends GUTS.BaseSystem {
   lookAt(worldX, worldZ){
     const pitch = 35.264 * Math.PI / 180;
     const yaw = this.cameraYaw;
-    const distance = 10240;
+    const distance = this.getCameraHeight();
 
     const cdx = Math.sin(yaw) * Math.cos(pitch);
     const cdz = Math.cos(yaw) * Math.cos(pitch);
@@ -219,6 +219,23 @@ class CameraControlSystem extends GUTS.BaseSystem {
     this.game.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
     this.game.camera.lookAt(lookAtPos.x, lookAtPos.y, lookAtPos.z);
     this.game.camera.userData.lookAt = new THREE.Vector3(lookAtPos.x, lookAtPos.y, lookAtPos.z);
+  }
+
+  /**
+   * Get camera height from main camera settings in collections
+   * Falls back to 512 if not found
+   */
+  getCameraHeight() {
+    if (this._cameraHeight !== undefined) {
+      return this._cameraHeight;
+    }
+
+    const collections = this.game.getCollections();
+    const cameraSettings = collections?.cameras?.main;
+
+    this._cameraHeight = cameraSettings?.position?.y || 512;
+
+    return this._cameraHeight;
   }
 
   /**

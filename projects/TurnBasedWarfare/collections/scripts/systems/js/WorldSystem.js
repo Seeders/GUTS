@@ -255,12 +255,9 @@ class WorldSystem extends GUTS.BaseSystem {
 
         // Note: updateInstanceCapacities moved to postSceneLoad (RenderSystem needs to init first)
 
-        // Add environment entity visuals
-        if (terrainDataManager.tileMap?.worldObjects) {
-            terrainDataManager.tileMap.worldObjects.forEach(envObj => {
-                this.addWorldEntityVisuals(envObj);
-            });
-        }
+        // Add environment entity visuals to all world object entities
+        // Query entities with unitType component where collection is "worldObjects"
+        this.addWorldObjectVisuals();
 
         // Note: Cliff spawning moved to postSceneLoad to ensure EntityRenderer is available
 
@@ -363,33 +360,28 @@ class WorldSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Add visual components (RENDERABLE) to existing world entities
-     * Entities are created by TerrainSystem with gameplay components
+     * Add visual components (RENDERABLE) to all world object entities
+     * Entities are created by TerrainSystem/EnvironmentObjectSpawner with gameplay components
      * WorldSystem only adds the visual representation on the client
      */
-    addWorldEntityVisuals(worldObj) {
-        const Components = this.game.call('getComponents');
+    addWorldObjectVisuals() {
+        // Query all entities with worldObject component
+        const worldObjectEntities = this.game.getEntitiesWith('worldObject');
 
-        // Find the existing entity created by TerrainSystem using grid coordinates
-        const entityId = `env_${worldObj.type}_${worldObj.gridX}_${worldObj.gridZ}`;
+        for (const entityId of worldObjectEntities) {
+            const worldObject = this.game.getComponent(entityId, 'worldObject');
 
-        // Check if entity exists
-        if (!this.game.entities.has(entityId)) {
-            console.warn(`WorldSystem: World entity ${entityId} not found - TerrainSystem may not have created it`);
-            return;
-        }
-
-        // Add Renderable component for visual representation
-        if (!this.game.hasComponent(entityId, "renderable")) {
-            this.game.addComponent(entityId, "renderable",
-                {
-                    objectType:'worldObjects',
-                    spawnType: worldObj.type,
+            // Add Renderable component for visual representation
+            if (!this.game.hasComponent(entityId, "renderable")) {
+                this.game.addComponent(entityId, "renderable", {
+                    objectType: 'worldObjects',
+                    spawnType: worldObject.type,
                     capacity: 1024
                 });
-        }
+            }
 
-        this.game.triggerEvent('onEntityPositionUpdated', entityId);
+            this.game.triggerEvent('onEntityPositionUpdated', entityId);
+        }
     }
 
     onWindowResize() {
@@ -400,7 +392,7 @@ class WorldSystem extends GUTS.BaseSystem {
         // Update composer if exists (PostProcessingSystem may not be loaded)
         if (this.game.hasService('getPostProcessingComposer')) {
             const composer = this.game.call('getPostProcessingComposer');
-            if (composer) {
+            if (composer && window.innerWidth > 0 && window.innerHeight > 0) {
                 composer.setSize(window.innerWidth, window.innerHeight);
             }
         }

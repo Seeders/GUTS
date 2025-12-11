@@ -31,24 +31,33 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
         this.game.serverEventManager.subscribe('CANCEL_BUILDING', this.handleCancelBuilding.bind(this));
     }
 
+    /**
+     * Called when scene loads - spawn starting units deterministically
+     * Server spawns first (before any clients connect) so entity IDs are consistent
+     */
+    onSceneLoad(sceneData) {
+        console.log('[ServerPlacementSystem] onSceneLoad - spawning starting units');
+        this.spawnStartingUnits();
+    }
+
     handleGetStartingState(eventData) {
         try {
             const { playerId, data } = eventData;
-  
+
             const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-            if (!roomId) { 
-                this.serverNetworkManager.sendToPlayer(playerId, 'GOT_STARTING_STATE', { 
+            if (!roomId) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'GOT_STARTING_STATE', {
                     error: 'Room not found'
                 });
                 return;
             }
             const room = this.engine.getRoom(roomId);
             const player = room.getPlayer(playerId);
-            // Broadcast ready state update to all players in room
+            // Send camera position and player entities (starting units are already spawned)
             if(player){
-                this.serverNetworkManager.sendToPlayer(playerId, 'GOT_STARTING_STATE', this.getStartingState(player));
+                this.serverNetworkManager.sendToPlayer(playerId, 'GOT_STARTING_STATE', this.getStartingStateResponse(player));
             }
-            
+
         } catch (error) {
             console.error('Error getting starting state:', error);
             this.serverNetworkManager.sendToPlayer(eventData.playerId, 'GOT_STARTING_STATE', {
@@ -163,7 +172,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
     handleSetSquadTarget(eventData) {
         try {
             const { playerId, data } = eventData;
-            const { placementId, targetPosition, meta, commandCreatedTime } = data;
+            const { placementId, targetPosition, meta } = data;
             if(this.game.state.phase != "placement") {
                 this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
                     success: false
@@ -188,20 +197,35 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
                 return;
             }
             
-            // Validate placement belongs to player            
+            // Validate placement belongs to player
             const placement = this.getPlacementById(placementId);
-            
+
             if (!placement) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { 
+                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
                     error: 'Placement not found'
                 });
                 return;
             }
-            
+
+            // Server is authoritative for issuedTime
+            const serverIssuedTime = this.game.state.now;
+
+            // Handle build order - update building's assignedBuilder
+            if (meta?.isBuildOrder && meta?.buildingId) {
+                const buildingPlacement = this.game.getComponent(meta.buildingId, 'placement');
+                if (buildingPlacement) {
+                    // Get the builder entity from the placement's squad
+                    const builderEntityId = placement.squadUnits?.[0];
+                    if (builderEntityId) {
+                        buildingPlacement.assignedBuilder = builderEntityId;
+                    }
+                }
+            }
+
             // Store target position in placement data
             // Use UnitOrderSystem to properly queue MOVE commands
             if (this.game.unitOrderSystem) {
-                this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime);
+                this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta, serverIssuedTime);
             } else {
                 // Fallback if UnitOrderSystem not available
                 placement.targetPosition = targetPosition;
@@ -213,33 +237,32 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
                     this.game.addComponent(unitId, "playerOrder", {
                         targetPosition: targetPosition,
                         meta: meta,
-                        issuedTime: commandCreatedTime || this.game.state.now
+                        issuedTime: serverIssuedTime
                     });
                 });
             }
-                    
-               
-            
-            // Send success response to requesting player
+
+            // Send success response to requesting player with server-authoritative time
             this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
                 success: true,
                 placementId,
                 targetPosition,
                 meta,
-                commandCreatedTime: commandCreatedTime
+                issuedTime: serverIssuedTime
             });
-            
+
             // Broadcast to other players in the room
             for (const [otherPlayerId, otherPlayer] of room.players) {
                 if (otherPlayerId !== playerId) {
                     this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGET_SET', {
                         placementId,
                         targetPosition,
-                        meta
+                        meta,
+                        issuedTime: serverIssuedTime
                     });
                 }
             }
-            
+
             console.log(`Player ${playerId} set target for squad ${placementId}:`, targetPosition);
             
         } catch (error) {
@@ -253,7 +276,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
     handleSetSquadTargets(eventData) {
         try {
             const { playerId, data } = eventData;
-            const { placementIds, targetPositions, meta, commandCreatedTime } = data;
+            const { placementIds, targetPositions, meta } = data;
             if(this.game.state.phase != "placement") {
                 this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { 
                     success: false
@@ -278,24 +301,27 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
                 return;
             }
             
+            // Server is authoritative for issuedTime
+            const serverIssuedTime = this.game.state.now;
+
             for(let i = 0; i < placementIds.length; i++){
                 let placementId = placementIds[i];
                 let targetPosition = targetPositions[i];
-                // Validate placement belongs to player            
+                // Validate placement belongs to player
                 const placement = this.getPlacementById(placementId);
-                
+
                 if (!placement) {
                     console.log(placementId, 'not found');
-                    this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { 
+                    this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', {
                         error: 'Placement not found'
                     });
                     return;
                 }
-                
+
                 // Store target position and queue MOVE command immediately
                 // This ensures abilities like mining are properly interrupted during placement phase
                 if (this.game.unitOrderSystem) {
-                    this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime);
+                    this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta, serverIssuedTime);
                 } else {
                     // Fallback if UnitOrderSystem not available
                     placement.targetPosition = targetPosition;
@@ -307,23 +333,26 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
                         this.game.addComponent(unitId, "playerOrder", {
                             targetPosition: targetPosition,
                             meta: meta,
-                            issuedTime: commandCreatedTime || this.game.state.now
+                            issuedTime: serverIssuedTime
                         });
                         this.game.triggerEvent('onIssuedPlayerOrders', unitId);
 
                         console.log(`Player ${playerId} set target for squad ${unitId}:`, targetPosition);
                     });
                 }
-                        
+
 
             }
 
-                        // Send success response to requesting player
+            // Send success response to requesting player with server-authoritative time
             this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', {
                 success: true,
-                commandCreatedTime: commandCreatedTime
+                placementIds,
+                targetPositions,
+                meta,
+                issuedTime: serverIssuedTime
             });
-            
+
             // Broadcast to other players in the room
             for (const [otherPlayerId, otherPlayer] of room.players) {
                 if (otherPlayerId !== playerId) {
@@ -331,7 +360,7 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
                         placementIds,
                         targetPositions,
                         meta,
-                        commandCreatedTime: commandCreatedTime
+                        issuedTime: serverIssuedTime
                     });
                 }
             }
@@ -391,7 +420,8 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
                 gameState: gameState,
                 allReady: true,
                 entitySync: entitySync,
-                serverTime: this.game.state.now
+                serverTime: this.game.state.now,
+                nextEntityId: this.game.nextEntityId // Sync entity ID counter
             });
             this.placementReadyStates.clear();
 
@@ -512,7 +542,13 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
         // Spawn entities using shared base class method
         const result = this.spawnSquad(fullPlacement, player.side, playerId);
 
-        return { success: result.success };
+        // Return entity IDs and server time so client can use them for sync
+        return {
+            success: result.success,
+            squadUnits: result.squad?.squadUnits || [],
+            placementId: result.squad?.placementId,
+            serverTime: this.game.state.now  // Authoritative time for playerOrder sync
+        };
     }
 
 
@@ -854,173 +890,16 @@ class ServerPlacementSystem extends GUTS.BasePlacementSystem {
         return null;
     }
 
-    getStartingState(player){
-        // Get side from player entity's playerStats component (player.side is on the player object from addPlayer)
-        const playerSide = player.side;
-
-        // Get starting position from level data (in tile coordinates)
-        let tilePosition = this.getStartingPositionFromLevel(playerSide);
-
-        // If no starting position found, return error state
-        if (!tilePosition) {
-            console.error('[ServerPlacementSystem] No starting position found for side:', playerSide);
-            return {
-                error: 'No starting position configured for this level',
-                success: false
-            };
-        }
-
-        // Convert tile coordinates to placement grid coordinates
-        // Placement grid = tile * 2 (placement cells are half the size of terrain tiles)
-        const startPosition = {
-            x: tilePosition.x * 2,
-            z: tilePosition.z * 2
-        };
-
-        // Find nearest gold vein
-        let nearestGoldVeinLocation = null;
-        let minDistance = Infinity;
-
-        const goldVeinLocations = this.game.call('getGoldVeinLocations') || [];
-        if (goldVeinLocations.length > 0) {
-            goldVeinLocations.forEach(vein => {
-                // Calculate distance from start position to vein (both in placement grid coordinates)
-                const dx = vein.gridPos.x - startPosition.x;
-                const dz = vein.gridPos.z - startPosition.z;
-                const distance = Math.sqrt(dx * dx + dz * dz);
-
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    nearestGoldVeinLocation = vein.gridPos;
-                }
-            });
-        }
-
-        // If no gold vein found, use a default offset
-        if (!nearestGoldVeinLocation) {
-            console.warn('[ServerPlacementSystem] No gold veins found, using default peasant placement');
-            nearestGoldVeinLocation = { x: startPosition.x + 10, z: startPosition.z };
-        }
-
-        // Calculate peasant positions on the same side as gold mine
-        // TownHall is 2x2, so it occupies a 2x2 area centered at startPosition
-        const dx = nearestGoldVeinLocation.x - startPosition.x;
-        const dz = nearestGoldVeinLocation.z - startPosition.z;
-        
-        let peasantPositions = [];
-        
-        // Determine which side the gold mine is on and place peasants accordingly
-        if (Math.abs(dx) > Math.abs(dz)) {
-            // Gold mine is more to the east or west
-            if (dx > 0) {
-                // Gold mine is to the EAST, place peasants on east side
-                // TownHall occupies x to x+1, so peasants start at x+2
-                peasantPositions = [
-                    { x: startPosition.x + 4, z: startPosition.z - 2 },
-                    { x: startPosition.x + 4, z: startPosition.z },
-                    { x: startPosition.x + 4, z: startPosition.z + 2 },
-                    { x: startPosition.x + 4, z: startPosition.z + 4 }
-                ];
-            } else {
-                // Gold mine is to the WEST, place peasants on west side
-                // TownHall occupies x-1 to x, so peasants start at x-2
-                peasantPositions = [
-                    { x: startPosition.x - 4, z: startPosition.z - 2 },
-                    { x: startPosition.x - 4, z: startPosition.z },
-                    { x: startPosition.x - 4, z: startPosition.z + 2 },
-                    { x: startPosition.x - 4, z: startPosition.z + 4 }
-                ];
-            }
-        } else {
-            // Gold mine is more to the north or south
-            if (dz > 0) {
-                // Gold mine is to the SOUTH, place peasants on south side
-                // TownHall occupies z to z+1, so peasants start at z+2
-                peasantPositions = [
-                    { x: startPosition.x - 2, z: startPosition.z + 4 },
-                    { x: startPosition.x, z: startPosition.z + 4 },
-                    { x: startPosition.x + 2, z: startPosition.z + 4 },
-                    { x: startPosition.x + 4, z: startPosition.z + 4 }
-                ];
-            } else {
-                // Gold mine is to the NORTH, place peasants on north side
-                // TownHall occupies z-1 to z, so peasants start at z-2
-                peasantPositions = [
-                    { x: startPosition.x - 2, z: startPosition.z - 4 },
-                    { x: startPosition.x, z: startPosition.z - 4 },
-                    { x: startPosition.x + 2, z: startPosition.z - 4 },
-                    { x: startPosition.x + 4, z: startPosition.z - 4 }
-                ];
-            }
-        }
-        
-        const startingUnits = [
-            {
-                type: "townHall",
-                collection: "buildings",
-                position: startPosition
-            },
-            {
-                type: "goldMine",
-                collection: "buildings",
-                position: nearestGoldVeinLocation
-            },
-            {
-                type: "peasant",
-                collection: "units",
-                position: peasantPositions[0]
-            },
-            {
-                type: "peasant",
-                collection: "units",
-                position: peasantPositions[1]
-            },
-            {
-                type: "peasant",
-                collection: "units",
-                position: peasantPositions[2]
-            },
-            {
-                type: "peasant",
-                collection: "units",
-                position: peasantPositions[3]
-            }
-        ];
-
-        const pitch = 35.264 * Math.PI / 180;
-        const yaw = 135 * Math.PI / 180;
-        const distance = 10240;
-
-        const cdx = Math.sin(yaw) * Math.cos(pitch);
-        const cdz = Math.cos(yaw) * Math.cos(pitch);
-
-
-
-        // Use tile coordinates for camera position (tilePosition is in tile map coordinates)
-        const worldPos = this.game.call('tileToWorld', tilePosition.x, tilePosition.z);
-
-        const cameraPosition = {
-            x: worldPos.x - cdx * distance,
-            y: distance,
-            z: worldPos.z - cdz * distance
-        };
-
-        const lookAt = {
-            x: worldPos.x,
-            y: 0,
-            z: worldPos.z
-        };
-
+    /**
+     * Get starting state response for a player (player entities only).
+     * Starting units and camera are set up deterministically on scene load.
+     */
+    getStartingStateResponse(player) {
         // Get all player entities with playerStats component (serialized for network)
         const playerEntities = this.game.call('getSerializedPlayerEntities') || [];
 
         return {
             success: true,
-            startingUnits,
-            camera: {
-                position: cameraPosition,
-                lookAt
-            },
             playerEntities
         };
     }

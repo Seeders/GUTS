@@ -1,0 +1,23 @@
+{
+  "title": "dragonredflying Celebrate Up Right",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingCelebrateUpRight_0",
+    "dragonredflyingCelebrateUpRight_1",
+    "dragonredflyingCelebrateUpRight_2",
+    "dragonredflyingCelebrateUpRight_3",
+    "dragonredflyingCelebrateUpRight_4",
+    "dragonredflyingCelebrateUpRight_5",
+    "dragonredflyingCelebrateUpRight_6",
+    "dragonredflyingCelebrateUpRight_7",
+    "dragonredflyingCelebrateUpRight_8",
+    "dragonredflyingCelebrateUpRight_9",
+    "dragonredflyingCelebrateUpRight_10",
+    "dragonredflyingCelebrateUpRight_11",
+    "dragonredflyingCelebrateUpRight_12",
+    "dragonredflyingCelebrateUpRight_13",
+    "dragonredflyingCelebrateUpRight_14",
+    "dragonredflyingCelebrateUpRight_15"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,23 @@
+{
+  "title": "dragonredflying Land Down",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingLandDown_0",
+    "dragonredflyingLandDown_1",
+    "dragonredflyingLandDown_2",
+    "dragonredflyingLandDown_3",
+    "dragonredflyingLandDown_4",
+    "dragonredflyingLandDown_5",
+    "dragonredflyingLandDown_6",
+    "dragonredflyingLandDown_7",
+    "dragonredflyingLandDown_8",
+    "dragonredflyingLandDown_9",
+    "dragonredflyingLandDown_10",
+    "dragonredflyingLandDown_11",
+    "dragonredflyingLandDown_12",
+    "dragonredflyingLandDown_13",
+    "dragonredflyingLandDown_14",
+    "dragonredflyingLandDown_15"
+  ],
+  "fps": 4
+}

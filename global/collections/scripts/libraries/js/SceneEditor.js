@@ -91,6 +91,22 @@ class SceneEditor {
     }
 
     /**
+     * Get camera height from main camera settings in collections
+     * Falls back to 512 if not found
+     */
+    getCameraHeight() {
+        if (this._cameraHeight !== undefined) {
+            return this._cameraHeight;
+        }
+
+        const cameraSettings = this.collections?.cameras?.main;
+
+        this._cameraHeight = cameraSettings?.position?.y || 512;
+
+        return this._cameraHeight;
+    }
+
+    /**
      * Initialize the editor context with game systems
      * @param {Array<string>} systems - Systems to initialize (from scene data)
      */
@@ -444,8 +460,7 @@ class SceneEditor {
             collection,
             spawnType,
             transform,
-            'left', // Default team for editor
-            null    // No player ID
+            'left' // Default team for editor
         );
 
         if (!entityId) {
@@ -463,8 +478,10 @@ class SceneEditor {
             collection: collection,
             spawnType: spawnType,
             name: itemData?.title || spawnType,
-            transform: {
-                position: { x, y, z }
+            components: {
+                transform: {
+                    position: { x, y, z }
+                }
             }
         };
 
@@ -992,10 +1009,15 @@ class SceneEditor {
     /**
      * Save scene data
      * Saves entities array with propertyName: "entities" as expected by editor framework
+     * Entity IDs are stripped - they should be assigned at runtime by load order
      */
     handleSave(fireSave = false) {
-        // Get the entities array to save
-        const entitiesToSave = this.state.entities || [];
+        // Get the entities array to save, stripping internal 'id' field
+        // Entity IDs should be assigned deterministically at load time
+        const entitiesToSave = (this.state.entities || []).map(entity => {
+            const { id, ...entityWithoutId } = entity;
+            return entityWithoutId;
+        });
 
         if (fireSave) {
             const saveEvent = new CustomEvent('saveSceneObject', {
@@ -1134,11 +1156,16 @@ class SceneEditor {
         const entityData = this.state.entities?.find(e => e.id === entityId);
         if (entityData) {
             if (!entityData.components) entityData.components = {};
-            entityData.components.transform = transform;
+            entityData.components.transform = {
+                position: transform.position,
+                rotation: transform.rotation,
+                scale: transform.scale
+            };
         }
 
-        // Mark as dirty
+        // Mark as dirty and save
         this.state.isDirty = true;
+        this.handleSave(false);
 
         // Update inspector to reflect changes
         this.renderInspector();
@@ -1354,7 +1381,7 @@ class SceneEditor {
             // Use the same setup as CameraControlSystem.lookAt()
             const pitch = 35.264 * Math.PI / 180;
             const yaw = 135 * Math.PI / 180;
-            const distance = 10240;
+            const distance = this.getCameraHeight();
 
             const worldX = 0;
             const worldZ = 0;

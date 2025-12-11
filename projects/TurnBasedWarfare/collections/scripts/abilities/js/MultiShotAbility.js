@@ -195,7 +195,7 @@ class MultiShotAbility extends GUTS.BaseAbility {
         if (enemies.length === 0) return [];
         
         // Sort enemies deterministically first for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         // Take up to maxTargets, but prioritize by distance for tactical targeting
         const transform = this.game.getComponent(this.getCasterFromContext(), "transform");
@@ -224,7 +224,7 @@ class MultiShotAbility extends GUTS.BaseAbility {
         // Sort by distance first, then by entity ID for deterministic tie-breaking
         enemiesWithDistance.sort((a, b) => {
             if (Math.abs(a.distance - b.distance) < 0.001) { // Nearly equal distances
-                return String(a.enemyId).localeCompare(String(b.enemyId));
+                return a.enemyId - b.enemyId;
             }
             return a.distance - b.distance;
         });

@@ -41,14 +41,14 @@ class TerrainSystem extends GUTS.BaseSystem {
      * Called when a scene is loaded - initializes terrain if the scene has a terrain entity
      * @param {Object} sceneData - The scene configuration data
      */
-    onSceneLoad(sceneData) {
+    async onSceneLoad(sceneData) {
         // Look for a terrain entity in the scene
         const terrainEntities = this.game.getEntitiesWith('terrain');
 
         if (terrainEntities.length > 0) {
             const terrainEntityId = terrainEntities[0];
             const terrainComponent = this.game.getComponent(terrainEntityId, 'terrain');
-            this.initTerrainFromComponent(terrainComponent, terrainEntityId);
+            await this.initTerrainFromComponent(terrainComponent, terrainEntityId);
         }
         // If no terrain entity, terrain system won't initialize (no terrain in this scene)
     }
@@ -65,14 +65,14 @@ class TerrainSystem extends GUTS.BaseSystem {
      * @param {Object} terrainComponent - The terrain component data
      * @param {string} entityId - The entity ID that has the terrain component
      */
-    initTerrainFromComponent(terrainComponent, entityId) {
+    async initTerrainFromComponent(terrainComponent, entityId) {
         if (!terrainComponent?.level) {
             console.warn('[TerrainSystem] Terrain component missing level reference');
             return;
         }
 
         this.terrainEntityId = entityId;
-        this.initTerrainFromLevel(terrainComponent.level, terrainComponent);
+        await this.initTerrainFromLevel(terrainComponent.level, terrainComponent);
     }
 
     /**
@@ -80,7 +80,7 @@ class TerrainSystem extends GUTS.BaseSystem {
      * @param {string} levelName - The level name to load
      * @param {Object} terrainConfig - Optional terrain component config for overrides
      */
-    initTerrainFromLevel(levelName, terrainConfig = {}) {
+    async initTerrainFromLevel(levelName, terrainConfig = {}) {
         // Clean up existing terrain first
         this.cleanupTerrain();
 
@@ -102,7 +102,7 @@ class TerrainSystem extends GUTS.BaseSystem {
 
         // Skip spawning world objects if loading from a save (save contains all entities)
         if (!this.game.state.isLoadingSave) {
-            this.spawnWorldObjects();
+            await this.spawnWorldObjects();
         } else {
             console.log(`[TerrainSystem] Skipping world object spawn - loading from save`);
         }
@@ -133,13 +133,13 @@ class TerrainSystem extends GUTS.BaseSystem {
      * Creates entities with gameplay components (POSITION, COLLISION, TEAM, UNIT_TYPE)
      * Visual components (RENDERABLE, ANIMATION) are added by WorldSystem on client
      */
-    spawnWorldObjects() {
+    async spawnWorldObjects() {
         if (!this.environmentObjectSpawner || !this.terrainDataManager) {
             console.warn('[TerrainSystem] Cannot spawn world objects: missing dependencies');
             return;
         }
 
-        this.environmentObjectSpawner.spawnWorldObjects(
+        await this.environmentObjectSpawner.spawnWorldObjects(
             this.terrainDataManager.tileMap,
             this.terrainDataManager
         );

@@ -1,0 +1,77 @@
+{
+  "title": "Dragonredflying",
+  "animationCollection": "dragonredflyingSpritesAnimations",
+  "spriteSheet": "sprites/dragonredflyingSprites/dragonredflyingSheet.png",
+  "idleSpriteAnimations": [
+    "dragonredflyingIdleDown",
+    "dragonredflyingIdleDownLeft",
+    "dragonredflyingIdleLeft",
+    "dragonredflyingIdleUpLeft",
+    "dragonredflyingIdleUp",
+    "dragonredflyingIdleUpRight",
+    "dragonredflyingIdleRight",
+    "dragonredflyingIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "dragonredflyingWalkDown",
+    "dragonredflyingWalkDownLeft",
+    "dragonredflyingWalkLeft",
+    "dragonredflyingWalkUpLeft",
+    "dragonredflyingWalkUp",
+    "dragonredflyingWalkUpRight",
+    "dragonredflyingWalkRight",
+    "dragonredflyingWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "dragonredflyingAttackDown",
+    "dragonredflyingAttackDownLeft",
+    "dragonredflyingAttackLeft",
+    "dragonredflyingAttackUpLeft",
+    "dragonredflyingAttackUp",
+    "dragonredflyingAttackUpRight",
+    "dragonredflyingAttackRight",
+    "dragonredflyingAttackDownRight"
+  ],
+  "landSpriteAnimations": [
+    "dragonredflyingLandDown",
+    "dragonredflyingLandDownLeft",
+    "dragonredflyingLandLeft",
+    "dragonredflyingLandUpLeft",
+    "dragonredflyingLandUp",
+    "dragonredflyingLandUpRight",
+    "dragonredflyingLandRight",
+    "dragonredflyingLandDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "dragonredflyingDeathDown",
+    "dragonredflyingDeathDownLeft",
+    "dragonredflyingDeathLeft",
+    "dragonredflyingDeathUpLeft",
+    "dragonredflyingDeathUp",
+    "dragonredflyingDeathUpRight",
+    "dragonredflyingDeathRight",
+    "dragonredflyingDeathDownRight"
+  ],
+  "castSpriteAnimations": [
+    "dragonredflyingCastDown",
+    "dragonredflyingCastDownLeft",
+    "dragonredflyingCastLeft",
+    "dragonredflyingCastUpLeft",
+    "dragonredflyingCastUp",
+    "dragonredflyingCastUpRight",
+    "dragonredflyingCastRight",
+    "dragonredflyingCastDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "dragonredflyingCelebrateDown",
+    "dragonredflyingCelebrateDownLeft",
+    "dragonredflyingCelebrateLeft",
+    "dragonredflyingCelebrateUpLeft",
+    "dragonredflyingCelebrateUp",
+    "dragonredflyingCelebrateUpRight",
+    "dragonredflyingCelebrateRight",
+    "dragonredflyingCelebrateDownRight"
+  ],
+  "generatorSettings": {"frustumSize":1024,"cameraDistance":350,"spriteSize":256,"fps":4,"brightness":8,"palette":"main","borderSize":1,"outlineColor":"#170F13","outlineConnectivity":4,"cameraHeight":1},
+  "spriteOffset": 128
+}

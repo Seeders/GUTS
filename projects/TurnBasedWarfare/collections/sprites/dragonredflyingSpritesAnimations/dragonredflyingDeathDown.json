@@ -1,0 +1,17 @@
+{
+  "title": "dragonredflying Death Down",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingDeathDown_0",
+    "dragonredflyingDeathDown_1",
+    "dragonredflyingDeathDown_2",
+    "dragonredflyingDeathDown_3",
+    "dragonredflyingDeathDown_4",
+    "dragonredflyingDeathDown_5",
+    "dragonredflyingDeathDown_6",
+    "dragonredflyingDeathDown_7",
+    "dragonredflyingDeathDown_8",
+    "dragonredflyingDeathDown_9"
+  ],
+  "fps": 4
+}

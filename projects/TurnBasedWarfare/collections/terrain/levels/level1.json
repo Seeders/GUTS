@@ -16311,7 +16311,7 @@
         "gridZ": 15
       }
     ],
-    "extensionTerrainType": 5,
+    "extensionTerrainType": 2,
     "extensionHeight": 2,
     "terrainBGColor": {
       "paletteColor": "greenMColor"

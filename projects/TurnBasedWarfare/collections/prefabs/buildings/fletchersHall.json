@@ -28,8 +28,8 @@
                 "color": {
                   "paletteColor": ""
                 },
-                "url": "models/underConstruction.glb",
-                "id": 0
+                "id": 0,
+                "model": "underConstruction"
               }
             ]
           }
@@ -46,11 +46,8 @@
             },
             "metalness": 0,
             "roughness": 1,
-            "x": 0,
-            "z": 0,
-            "scaleX": 1,
             "name": "foundation",
-            "url": "models/fletchers_hall.glb"
+            "model": "fletchers_hall"
           }
         ],
         "position": {

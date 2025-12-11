@@ -1,0 +1,169 @@
+{
+  "title": "Dragon Red Flying",
+  "size": 25,
+  "height": 100,
+  "value": 48,
+  "hp": 2500,
+  "speed": 15,
+  "damage": 40,
+  "attackSpeed": 0.7,
+  "element": "fire",
+  "armor": 8,
+  "fireResistance": 1,
+  "coldResistance": -0.25,
+  "lightningResistance": 0.1,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "model": "dragon",
+                "id": 0,
+                "animation": "dragon_flying_idle"
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "model": "dragon",
+                "id": 0,
+                "animation": "dragon_flying"
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "dragon_flying_attack"
+              }
+            ]
+          }
+        }
+      ],
+      "land": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "dragon_land"
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "loops": false,
+            "shapes": [
+              {
+                "type": "gltf",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "model": "dragon",
+                "id": 0,
+                "animation": "dragon_death"
+              }
+            ]
+          }
+        }
+      ],
+      "cast": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "dragon_flying_attack"
+              }
+            ]
+          }
+        }
+      ],
+      "celebrate": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "dragon_land"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 2,
+          "y": 2,
+          "z": 2
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "model": "dragon"
+          }
+        ]
+      }
+    }
+  },
+  "buyable": false,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "abilities": [
+    "FireBallAbility"
+  ],
+  "spriteAnimationSet": "dragonredflying",
+  "spriteYOffset": -48,
+  "range": 10
+}

@@ -16,13 +16,13 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/idle.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
                   "x": 1
                 },
-                "id": 0
+                "id": 0,
+                "animation": "idle"
               }
             ]
           }
@@ -33,13 +33,13 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/walk_bow.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
                   "x": 1
                 },
-                "id": 0
+                "id": 0,
+                "animation": "walk_bow"
               }
             ]
           }
@@ -50,13 +50,13 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/sword_slash.glb",
                 "scale": {
                   "z": 1,
                   "y": 1,
                   "x": 1
                 },
-                "id": 0
+                "id": 0,
+                "animation": "sword_slash"
               }
             ]
           }
@@ -67,8 +67,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/death_fallback.glb",
-                "id": 0
+                "id": 0,
+                "animation": "death_fallback"
               }
             ],
             "loops": false
@@ -80,8 +80,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/dance_thriller.glb",
-                "id": 0
+                "id": 0,
+                "animation": "dance_thriller"
               }
             ]
           }
@@ -108,16 +108,9 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/skeleton.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
             "color": "#FFFFFF",
             "metalness": "0",
             "roughness": "1",
@@ -125,7 +118,8 @@
               "z": 1,
               "y": 1,
               "x": 1
-            }
+            },
+            "model": "skeleton"
           }
         ]
       }

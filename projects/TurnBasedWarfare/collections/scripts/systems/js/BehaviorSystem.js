@@ -116,7 +116,8 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
     getBehaviorEntities() {
         const entities = this.game.getEntitiesWith("aiState", "unitType");
-        entities.sort((a, b) => String(a).localeCompare(String(b)));
+        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (still deterministic, much faster)
+        entities.sort((a, b) => a - b);
         return entities;
     }
 

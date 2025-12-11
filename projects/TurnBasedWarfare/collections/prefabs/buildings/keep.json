@@ -34,11 +34,8 @@
             },
             "metalness": 0,
             "roughness": 1,
-            "x": 0,
-            "z": 0,
-            "scaleX": 1,
             "name": "foundation",
-            "url": "models/townHall.glb"
+            "model": "townhall"
           }
         ],
         "position": {

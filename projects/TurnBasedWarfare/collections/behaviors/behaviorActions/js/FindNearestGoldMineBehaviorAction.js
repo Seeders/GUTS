@@ -28,10 +28,8 @@ class FindNearestGoldMineBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        // Sort for deterministic iteration
-        const sortedMineIds = Array.from(goldMineEntities).sort((a, b) =>
-            String(a).localeCompare(String(b))
-        );
+        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (still deterministic, much faster)
+        const sortedMineIds = Array.from(goldMineEntities).sort((a, b) => a - b);
 
         let closestMine = null;
         let closestPosition = null;

@@ -1,6 +1,6 @@
 
 class ImageManager {
-    constructor(app, {imageSize, palette, textures}) {
+    constructor(app, {imageSize, palette, textures, models, animations}) {
         this.app = app;
         this.images = {};
         this.imageSize = imageSize || 128;
@@ -14,19 +14,19 @@ class ImageManager {
         this.renderer.setSize(this.imageSize, this.imageSize);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        
+
         this.renderTarget = new THREE.WebGLRenderTarget(this.imageSize, this.imageSize);
         this.renderTarget.texture.flipY = true;
-        
+
         // Create reusable scene
         this.scene = new THREE.Scene();
-        
+
         // Create reusable cameras for different views
         const cameraDistance = 64;
         const frustumSize = cameraDistance + 16;
         const aspect = 1;
 
-        this.shapeFactory = new GUTS.ShapeFactory(this.app.getResourcesPath(), palette, textures);
+        this.shapeFactory = new GUTS.ShapeFactory(this.app.getResourcesPath(), palette, textures, null, 32, models, animations);
         if(location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }
@@ -88,8 +88,12 @@ class ImageManager {
         images = {};
     }
 
-    dispose() {
-        // Proper cleanup when the manager is no longer needed
+    /**
+     * Dispose rendering resources used for sprite generation.
+     * Call this after loadImages() to free up GPU memory from the temporary renderer.
+     * Preserves loadedTextures which are still needed at runtime.
+     */
+    disposeRenderingResources() {
         if (this.renderer) {
             this.renderer.dispose();
             this.renderer = null;
@@ -102,16 +106,25 @@ class ImageManager {
             this.ground.geometry.dispose();
             this.ground.material.dispose();
         }
+        // Dispose of other reusable resources used for sprite generation
+        this.cameras = [];
+        this.scene = null;
+        this.lightGroup = null;
+        this.ambientLight = null;
+    }
+
+    /**
+     * Full cleanup when the manager is no longer needed.
+     * Disposes all resources including loaded textures.
+     */
+    dispose() {
+        this.disposeRenderingResources();
+
         // Dispose loaded textures
         for (const texture of this.loadedTextures.values()) {
             texture.dispose();
         }
         this.loadedTextures.clear();
-        // Dispose of other reusable resources
-        this.cameras = [];
-        this.scene = null;
-        this.lightGroup = null;
-        this.ambientLight = null;
     }
 
     async loadImages(prefix, config, checkCache = true, cacheResult = true) {

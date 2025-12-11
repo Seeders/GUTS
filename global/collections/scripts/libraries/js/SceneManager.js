@@ -24,7 +24,13 @@ class SceneManager {
         }
 
         // Get systems needed by new scene for smart cleanup
-        const newSceneSystems = new Set(sceneData.systems || []);
+        // Include base systems + environment-specific systems
+        const isServer = !!this.game.isServer;
+        const baseSystems = sceneData.systems || [];
+        const environmentSystems = isServer
+            ? (sceneData.serverSystems || [])
+            : (sceneData.clientSystems || []);
+        const newSceneSystems = new Set([...baseSystems, ...environmentSystems]);
 
         // Unload current scene if one is loaded
         if (this.currentScene) {
@@ -63,7 +69,7 @@ class SceneManager {
         }
 
         // Notify all systems that scene has loaded (initial setup)
-        this.notifySceneLoaded(sceneData);
+        await this.notifySceneLoaded(sceneData);
 
         // Notify all systems for post-load processing (after all systems have done initial setup)
         this.notifyPostSceneLoad(sceneData);
@@ -150,10 +156,21 @@ class SceneManager {
     /**
      * Configure which systems are enabled based on scene configuration
      * Uses lazy instantiation - only creates systems when a scene needs them
+     * Supports clientSystems and serverSystems for environment-specific systems
      * @param {Object} sceneData - The scene configuration
      */
     configureSystems(sceneData) {
-        const sceneSystems = sceneData.systems || [];
+        // Base systems shared by client and server
+        const baseSystems = sceneData.systems || [];
+
+        // Environment-specific systems
+        const isServer = !!this.game.isServer;
+        const environmentSystems = isServer
+            ? (sceneData.serverSystems || [])
+            : (sceneData.clientSystems || []);
+
+        // Combine base + environment-specific systems
+        const sceneSystems = [...baseSystems, ...environmentSystems];
 
         // Disable all currently active systems first
         for (const system of this.game.systems) {
@@ -231,25 +248,73 @@ class SceneManager {
                 continue;
             }
 
-            // Collection format: { id, collection, spawnType, name?, transform? }
+            // Collection format: { id, collection, spawnType, name?, components?: { transform? } }
             if (!entityDef.collection || !entityDef.spawnType) {
                 console.warn(`[SceneManager] Entity missing collection/spawnType or prefab:`, entityDef);
                 continue;
             }
 
-            const { collection, spawnType, transform } = entityDef;
+            const { collection, spawnType, components } = entityDef;
+            const transform = components?.transform;
+            const team = components?.team?.team ?? 'left';
 
             // Use UnitCreationSystem for consistent entity creation
             const unitCreationSystem = this.game.unitCreationSystem || this.game.systemsByName?.get('UnitCreationSystem');
 
             if (unitCreationSystem) {
-                // Pass the transform object directly (with defaults for missing properties)
-                const createdId = unitCreationSystem.createUnit(
+                // Calculate grid position from world position for placement component
+                const position = transform?.position || { x: 0, y: 0, z: 0 };
+                let gridPosition = { x: 0, z: 0 };
+                if (this.game.call) {
+                    const gridPos = this.game.call('worldToPlacementGrid', position.x, position.z);
+                    if (gridPos) {
+                        gridPosition = gridPos;
+                    }
+                }
+
+                // Generate a unique placement ID for scene entities
+                const placementId = `scene_${collection}_${spawnType}_${entityId}`;
+
+                // Determine playerId based on team
+                // Server: look up player for this team from room
+                // Client: use local playerId if entity is on player's side
+                let playerId = null;
+                if (this.game.isServer) {
+                    // Server knows which player owns each side from the room
+                    const room = this.game.room;
+                    if (room?.players) {
+                        for (const [pid, player] of room.players) {
+                            if (player.side === team) {
+                                playerId = pid;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    // Client: assign own playerId to entities on player's side
+                    const mySide = this.game.state?.mySide;
+                    if (mySide && team === mySide) {
+                        playerId = this.game.clientNetworkManager?.playerId || null;
+                    }
+                }
+
+                // Build placement data to create entity with full placement component
+                // This makes scene entities behave like player-placed units
+                const placement = {
+                    placementId,
+                    gridPosition,
+                    unitTypeId: spawnType,
                     collection,
-                    spawnType,
+                    team,
+                    playerId,
+                    roundPlaced: 0
+                };
+
+                // Use createPlacement so entity gets placement component and is fully controllable
+                const createdId = unitCreationSystem.createPlacement(
+                    placement,
                     transform || {},
-                    transform?.team ?? 'left',
-                    null,  // No player ID
+                    team,
                     entityId
                 );
 
@@ -293,10 +358,10 @@ class SceneManager {
      * Notify all systems that a scene has been loaded
      * @param {Object} sceneData - The scene configuration
      */
-    notifySceneLoaded(sceneData) {
+    async notifySceneLoaded(sceneData) {
         for (const system of this.game.systems) {
             if (system.enabled && system.onSceneLoad) {
-                system.onSceneLoad(sceneData);
+                await system.onSceneLoad(sceneData);
             }
         }
     }

@@ -388,7 +388,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
     }
 
     // Override parent's startGame to add multiplayer lobby logic
-    startGame() {
+    async startGame() {
         if (this.game.state.phase !== 'lobby') {
             console.log(`Cannot start game, not in lobby phase. Current phase: ${this.game.state.phase}`);
             return false;
@@ -400,16 +400,22 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             return false;
         }
 
-        // Store level for server scene loading
-        const level = this.selectedLevel || 'level1';
+        // Store level for scene loading
+        const level = this.selectedLevel;
         this.game.state.level = level;
 
-        // Update server scene's terrain entity to use the selected level
+        // Update game scene's terrain entity to use the selected level
         const collections = this.game.getCollections();
-        const serverScene = collections?.scenes?.server;
-        if (serverScene && serverScene.entities) {
-            const terrainEntity = serverScene.entities.find(e => e.id === 'terrain_main');
-            if (terrainEntity?.components?.terrain) {
+        const gameScene = collections?.scenes?.game;
+        if (gameScene && gameScene.entities) {
+            const terrainEntity = gameScene.entities.find(e => e.prefab === 'terrain');
+            if (terrainEntity) {
+                if (!terrainEntity.components) {
+                    terrainEntity.components = {};
+                }
+                if (!terrainEntity.components.terrain) {
+                    terrainEntity.components.terrain = {};
+                }
                 terrainEntity.components.terrain.level = level;
             }
         }
@@ -437,7 +443,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
         // Call parent's startGame (loads scene, spawns entities, etc.)
         // If pendingSaveData is set, SceneManager will load saved entities instead of scene entities
-        super.startGame();
+        await super.startGame();
 
         // Create player entities now that the game scene is loaded
         this.createPlayerEntities();
@@ -456,7 +462,8 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 entitySync: entitySync,
                 level: level,
                 isLoadingSave: isLoadingSave,
-                saveData: isLoadingSave ? this.pendingSaveData : null
+                saveData: isLoadingSave ? this.pendingSaveData : null,
+                nextEntityId: this.game.nextEntityId
             });
         }
 
@@ -548,6 +555,18 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             // Get experience data from SquadExperienceSystem
             const experience = this.game.squadExperienceSystem?.getSquadInfo(placementComp.placementId);
 
+            // Get squadUnits (entity IDs) for this placement so clients use the same IDs
+            const squadUnits = this.game.placementSystem?.getSquadUnitsForPlacement(placementComp.placementId) || [];
+
+            // Get serverTime from assignedBuilder's playerOrder for sync
+            let serverTime = null;
+            if (placementComp.assignedBuilder) {
+                const builderOrder = this.game.getComponent(placementComp.assignedBuilder, 'playerOrder');
+                if (builderOrder) {
+                    serverTime = builderOrder.issuedTime;
+                }
+            }
+
             placements.push({
                 placementId: placementComp.placementId,
                 gridPosition: placementComp.gridPosition,
@@ -556,7 +575,14 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 team: placementComp.team,
                 playerId: placementComp.playerId,
                 cells: cells,
-                experience: experience || null
+                experience: experience || null,
+                squadUnits: squadUnits,
+                roundPlaced: placementComp.roundPlaced,
+                // Include building construction state if present
+                isUnderConstruction: placementComp.isUnderConstruction || false,
+                buildTime: placementComp.buildTime,
+                assignedBuilder: placementComp.assignedBuilder,
+                serverTime: serverTime  // Authoritative time for builder's playerOrder
             });
         }
 

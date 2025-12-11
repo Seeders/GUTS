@@ -43,13 +43,10 @@ class MovementSystem extends GUTS.BaseSystem {
         this.MIN_DIRECTION_CHANGE = 0.1;
         this.OSCILLATION_DETECTION_FRAMES = 5;
         this.OSCILLATION_THRESHOLD = Math.PI / 6;
-        
-        this.unitStates = new Map();
+
         this.frameCounter = 0;
         this.pathfindingQueue = [];
         this.pathfindingQueueIndex = 0;
-        
-        this.movementHistory = new Map();
     }
     
     update() {
@@ -57,8 +54,8 @@ class MovementSystem extends GUTS.BaseSystem {
 
         this.frameCounter++;
         const entities = this.game.getEntitiesWith("transform", "velocity");
-        // Sort for deterministic processing order (prevents desync)
-        entities.sort((a, b) => String(a).localeCompare(String(b)));
+        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (much faster than localeCompare)
+        entities.sort((a, b) => a - b);
 
         const unitData = new Map();
 
@@ -150,58 +147,65 @@ class MovementSystem extends GUTS.BaseSystem {
     }
     
     updateMovementHistory(entityId, vel) {
-        if (!this.movementHistory.has(entityId)) {
-            this.movementHistory.set(entityId, {
+        let movementState = this.game.getComponent(entityId, 'movementState');
+        if (!movementState) {
+            this.game.addComponent(entityId, 'movementState', {
+                lastPosition: { x: 0, z: 0 },
+                lastMovementTime: 0,
+                stuckTime: 0,
+                lastPathTime: 0,
+                avoidanceDirection: 0,
                 velocityHistory: [],
                 smoothedDirection: { x: 0, z: 0 },
                 dampedForces: { separation: { x: 0, z: 0 }, avoidance: { x: 0, z: 0 } }
             });
+            movementState = this.game.getComponent(entityId, 'movementState');
         }
-        
-        const history = this.movementHistory.get(entityId);
-        
-        history.velocityHistory.push({ 
-            vx: vel.vx, 
-            vz: vel.vz, 
-            frame: this.frameCounter 
+
+        // Round to 6 decimal places to avoid floating-point precision desync across environments
+        movementState.velocityHistory.push({
+            vx: Math.round(vel.vx * 1000000) / 1000000,
+            vz: Math.round(vel.vz * 1000000) / 1000000,
+            frame: this.frameCounter
         });
-        
-        if (history.velocityHistory.length > this.OSCILLATION_DETECTION_FRAMES) {
-            history.velocityHistory.shift();
+
+        if (movementState.velocityHistory.length > this.OSCILLATION_DETECTION_FRAMES) {
+            movementState.velocityHistory.shift();
         }
     }
     
     isUnitOscillating(entityId) {
-        const history = this.movementHistory.get(entityId);
-        if (!history || history.velocityHistory.length < this.OSCILLATION_DETECTION_FRAMES) {
+        const movementState = this.game.getComponent(entityId, 'movementState');
+        if (!movementState || !movementState.velocityHistory || movementState.velocityHistory.length < this.OSCILLATION_DETECTION_FRAMES) {
             return false;
         }
-        
+
         let directionChanges = 0;
         let lastDirection = null;
-        
-        for (const vel of history.velocityHistory) {
+
+        for (const vel of movementState.velocityHistory) {
             const speed = Math.sqrt(vel.vx * vel.vx + vel.vz * vel.vz);
             if (speed < 0.1) continue;
-            
+
             const direction = Math.atan2(vel.vz, vel.vx);
             if (lastDirection !== null) {
                 let angleDiff = Math.abs(direction - lastDirection);
                 if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
-                
+
                 if (angleDiff > this.OSCILLATION_THRESHOLD) {
                     directionChanges++;
                 }
             }
             lastDirection = direction;
         }
-        
+
         return directionChanges >= 2;
     }
     
     updatePathfindingStaggered(unitData) {
         if (this.pathfindingQueue.length === 0) {
-            const sortedEntityIds = Array.from(unitData.keys()).sort((a, b) => String(a).localeCompare(String(b)));
+            // OPTIMIZATION: Use numeric sort since entity IDs are numbers
+            const sortedEntityIds = Array.from(unitData.keys()).sort((a, b) => a - b);
             sortedEntityIds.forEach(entityId => {
                 const data = unitData.get(entityId);
                 // Chasing means: has a target or targetPosition they're moving toward but not in range yet
@@ -234,36 +238,39 @@ class MovementSystem extends GUTS.BaseSystem {
     
     updateUnitState(entityId, pos, vel) {
         const currentTime = this.game.state.now;
-        
-        if (!this.unitStates.has(entityId)) {
-            this.unitStates.set(entityId, {
+
+        let movementState = this.game.getComponent(entityId, 'movementState');
+        if (!movementState) {
+            this.game.addComponent(entityId, 'movementState', {
                 lastPosition: { x: pos.x, z: pos.z },
                 lastMovementTime: currentTime,
                 stuckTime: 0,
                 lastPathTime: 0,
-                avoidanceDirection: 0
+                avoidanceDirection: 0,
+                velocityHistory: [],
+                smoothedDirection: { x: 0, z: 0 },
+                dampedForces: { separation: { x: 0, z: 0 }, avoidance: { x: 0, z: 0 } }
             });
             return;
         }
-        
-        const state = this.unitStates.get(entityId);
+
         const speed = Math.sqrt(vel.vx * vel.vx + vel.vz * vel.vz);
         const distanceMoved = Math.sqrt(
-            Math.pow(pos.x - state.lastPosition.x, 2) + 
-            Math.pow(pos.z - state.lastPosition.z, 2)
+            Math.pow(pos.x - movementState.lastPosition.x, 2) +
+            Math.pow(pos.z - movementState.lastPosition.z, 2)
         );
-        
+
         if (speed < this.STUCK_THRESHOLD && distanceMoved < 1) {
-            state.stuckTime += this.game.state.deltaTime;
+            movementState.stuckTime += this.game.state.deltaTime;
         } else {
-            state.stuckTime = 0;
-            state.lastPosition.x = pos.x;
-            state.lastPosition.z = pos.z;
+            movementState.stuckTime = 0;
+            movementState.lastPosition.x = pos.x;
+            movementState.lastPosition.z = pos.z;
         }
-        
+
         if (distanceMoved > this.REPATH_DISTANCE) {
-            state.avoidanceDirection = 0;
-            state.lastPathTime = currentTime;
+            movementState.avoidanceDirection = 0;
+            movementState.lastPathTime = currentTime;
         }
     }
     
@@ -318,15 +325,15 @@ class MovementSystem extends GUTS.BaseSystem {
         }
         
         if (neighborCount > 0) {
-            const history = this.movementHistory.get(entityId);
-            if (history) {
-                const dampedSeparation = history.dampedForces.separation;
+            const movementState = this.game.getComponent(entityId, 'movementState');
+            if (movementState && movementState.dampedForces) {
+                const dampedSeparation = movementState.dampedForces.separation;
                 dampedSeparation.x *= this.FORCE_DAMPING;
                 dampedSeparation.z *= this.FORCE_DAMPING;
-                
+
                 separationForceX = (separationForceX / neighborCount) * 0.7 + dampedSeparation.x * 0.3;
                 separationForceZ = (separationForceZ / neighborCount) * 0.7 + dampedSeparation.z * 0.3;
-                
+
                 dampedSeparation.x = separationForceX;
                 dampedSeparation.z = separationForceZ;
             } else {
@@ -390,23 +397,22 @@ class MovementSystem extends GUTS.BaseSystem {
         const obstacleInfo = this.findObstaclesInPathOptimized(pos, desiredDirection, unitRadius, entityId, targetEntityId);
         
         if (obstacleInfo.hasObstacle) {
-            const unitState = this.unitStates.get(entityId);
+            const movementState = this.game.getComponent(entityId, 'movementState');
             const avoidanceForce = this.calculateAvoidanceVector(
-                pos, desiredDirection, obstacleInfo, unitState, unitRadius
+                pos, desiredDirection, obstacleInfo, movementState, unitRadius
             );
-            
-            const history = this.movementHistory.get(entityId);
-            if (history) {
-                const dampedAvoidance = history.dampedForces.avoidance;
+
+            if (movementState && movementState.dampedForces) {
+                const dampedAvoidance = movementState.dampedForces.avoidance;
                 dampedAvoidance.x *= this.FORCE_DAMPING;
                 dampedAvoidance.z *= this.FORCE_DAMPING;
-                
+
                 const blendedX = avoidanceForce.x * 0.6 + dampedAvoidance.x * 0.4;
                 const blendedZ = avoidanceForce.z * 0.6 + dampedAvoidance.z * 0.4;
-                
+
                 dampedAvoidance.x = blendedX;
                 dampedAvoidance.z = blendedZ;
-                
+
                 data.avoidanceForce.x = blendedX;
                 data.avoidanceForce.z = blendedZ;
             } else {
@@ -475,39 +481,39 @@ class MovementSystem extends GUTS.BaseSystem {
         };
     }
     
-    calculateAvoidanceVector(pos, desiredDirection, obstacleInfo, unitState, unitRadius) {
+    calculateAvoidanceVector(pos, desiredDirection, obstacleInfo, movementState, unitRadius) {
         if (!obstacleInfo.hasObstacle) {
             return { x: 0, z: 0 };
         }
-        
+
         const obstacle = obstacleInfo.obstacle;
         const toObstacle = {
             x: obstacle.pos.x - pos.x,
             z: obstacle.pos.z - pos.z
         };
-        
+
         const obstacleDistance = Math.sqrt(toObstacle.x * toObstacle.x + toObstacle.z * toObstacle.z);
-        
+
         if (obstacleDistance < 0.1) {
             return { x: 0, z: 0 };
         }
-        
+
         toObstacle.x /= obstacleDistance;
         toObstacle.z /= obstacleDistance;
-        
-        let avoidanceDirection = unitState?.avoidanceDirection || 0;
-        
+
+        let avoidanceDirection = movementState?.avoidanceDirection || 0;
+
         if (avoidanceDirection === 0) {
             const perpLeft = { x: -toObstacle.z, z: toObstacle.x };
             const perpRight = { x: toObstacle.z, z: -toObstacle.x };
-            
+
             const leftAlignment = perpLeft.x * desiredDirection.x + perpLeft.z * desiredDirection.z;
             const rightAlignment = perpRight.x * desiredDirection.x + perpRight.z * desiredDirection.z;
-            
+
             avoidanceDirection = leftAlignment > rightAlignment ? 1 : -1;
-            
-            if (unitState) {
-                unitState.avoidanceDirection = avoidanceDirection;
+
+            if (movementState) {
+                movementState.avoidanceDirection = avoidanceDirection;
             }
         }
         
@@ -722,7 +728,7 @@ class MovementSystem extends GUTS.BaseSystem {
             return;
         }
         
-        const history = this.movementHistory.get(entityId);
+        const movementState = this.game.getComponent(entityId, 'movementState');
         const isOscillating = this.isUnitOscillating(entityId);
         
         let targetVx = desiredVelocity.vx + separationForce.x + avoidanceForce.x;
@@ -744,7 +750,7 @@ class MovementSystem extends GUTS.BaseSystem {
         const targetSpeedSqrd = targetVx * targetVx + targetVz * targetVz;
         const hasTargetMovement = targetSpeedSqrd > 0.01;
 
-        if (history && history.smoothedDirection && hasTargetMovement) {
+        if (movementState && movementState.smoothedDirection && hasTargetMovement) {
             const targetDirection = Math.atan2(targetVz, targetVx);
 
             let currentDirection;
@@ -773,7 +779,8 @@ class MovementSystem extends GUTS.BaseSystem {
                     if (!vel.anchored) {
                         const transform = this.game.getComponent(entityId, "transform");
                         if (transform && transform.rotation) {
-                            transform.rotation.y = smoothedDirection;
+                            // Round to 6 decimal places to avoid floating-point precision desync
+                            transform.rotation.y = Math.round(smoothedDirection * 1000000) / 1000000;
                         }
                     }
                 } else {
@@ -797,7 +804,8 @@ class MovementSystem extends GUTS.BaseSystem {
             if (speedSqrd > 0.001 && !vel.anchored) {
                 const transform = this.game.getComponent(entityId, "transform");
                 if (transform && transform.rotation) {
-                    transform.rotation.y = Math.atan2(vel.vz, vel.vx);
+                    // Round to 6 decimal places to avoid floating-point precision desync
+                    transform.rotation.y = Math.round(Math.atan2(vel.vz, vel.vx) * 1000000) / 1000000;
                 }
             }
             vel.vx = 0;
@@ -877,18 +885,7 @@ class MovementSystem extends GUTS.BaseSystem {
     }
     
     entityDestroyed(entityId) {
-
-        if (this.unitStates) {
-            this.unitStates.delete(entityId);
-        }
-
-        if (this.movementTracking) {
-            this.movementTracking.delete(entityId);
-        }
-
-        if (this.movementHistory) {
-            this.movementHistory.delete(entityId);
-        }
+        // movementState component is automatically cleaned up by ECS when entity is destroyed
     }
 
     isInAttackRange(pos, targetEntityId, entityId) {

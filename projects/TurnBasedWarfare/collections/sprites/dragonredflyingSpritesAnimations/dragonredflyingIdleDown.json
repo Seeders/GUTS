@@ -1,0 +1,11 @@
+{
+  "title": "dragonredflying Idle Down",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingIdleDown_0",
+    "dragonredflyingIdleDown_1",
+    "dragonredflyingIdleDown_2",
+    "dragonredflyingIdleDown_3"
+  ],
+  "fps": 4
+}

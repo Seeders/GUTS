@@ -48,9 +48,10 @@ class EditorLoader {
             {
                 imageSize: gameConfig.imageSize,
                 palette: this.game.palette,
-                textures: this.collections.textures
-            },
-            { ShapeFactory: GUTS.ShapeFactory }
+                textures: this.collections.textures,
+                models: this.collections.models,
+                animations: this.collections.animations
+            }
         );
 
         // Load all images
@@ -70,7 +71,9 @@ class EditorLoader {
             {
                 ShapeFactory: GUTS.ShapeFactory,
                 palette: this.game.palette,
-                textures: this.collections.textures
+                textures: this.collections.textures,
+                models: this.collections.models,
+                animations: this.collections.animations
             }
         );
 
@@ -96,8 +99,7 @@ class EditorLoader {
         // Create image manager for terrain images
         const imageManager = new GUTS.ImageManager(
             this.game.app,
-            { imageSize: gameConfig.imageSize, palette: this.game.palette },
-            { ShapeFactory: GUTS.ShapeFactory }
+            { imageSize: gameConfig.imageSize, palette: this.game.palette, textures: this.collections.textures, models: this.collections.models, animations: this.collections.animations }
         );
 
         await imageManager.loadImages("levels", { level }, false, false);

@@ -97,7 +97,7 @@ class FireStormAbility extends GUTS.BaseAbility {
         if (enemies.length < minTargets) return null;
         
         // Sort enemies deterministically first for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         let bestPosition = null;
         let maxTargetsHit = 0;

@@ -1,0 +1,19 @@
+{
+  "title": "dragonredflying Attack Down",
+  "spriteCollection": "dragonredflyingSprites",
+  "sprites": [
+    "dragonredflyingAttackDown_0",
+    "dragonredflyingAttackDown_1",
+    "dragonredflyingAttackDown_2",
+    "dragonredflyingAttackDown_3",
+    "dragonredflyingAttackDown_4",
+    "dragonredflyingAttackDown_5",
+    "dragonredflyingAttackDown_6",
+    "dragonredflyingAttackDown_7",
+    "dragonredflyingAttackDown_8",
+    "dragonredflyingAttackDown_9",
+    "dragonredflyingAttackDown_10",
+    "dragonredflyingAttackDown_11"
+  ],
+  "fps": 4
+}

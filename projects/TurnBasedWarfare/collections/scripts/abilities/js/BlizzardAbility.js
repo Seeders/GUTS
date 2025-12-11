@@ -391,7 +391,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
             if (Math.abs(a.distance - b.distance) > 0.001) {
                 return a.distance - b.distance;
             }
-            return String(a.id).localeCompare(String(b.id));
+            return a.id - b.id;
         });
 
         // Apply damage to each target
@@ -471,7 +471,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
     findBestClusterPosition(enemies, minTargets) {
         if (enemies.length === 0) return null;
 
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
 
         let bestPosition = null;
         let maxTargetsHit = 0;

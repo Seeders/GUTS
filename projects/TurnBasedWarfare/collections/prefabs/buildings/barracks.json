@@ -19,12 +19,9 @@
                 },
                 "metalness": 0,
                 "roughness": 1,
-                "x": 0,
-                "z": 0,
-                "scaleX": 1,
                 "name": "foundation",
-                "url": "models/underConstruction.glb",
-                "id": 0
+                "id": 0,
+                "model": "underConstruction"
               }
             ]
           }
@@ -41,11 +38,8 @@
             },
             "metalness": 0,
             "roughness": 1,
-            "x": 0,
-            "z": 0,
-            "scaleX": 1,
             "name": "foundation",
-            "url": "models/barracks.glb"
+            "model": "barracks"
           }
         ],
         "position": {

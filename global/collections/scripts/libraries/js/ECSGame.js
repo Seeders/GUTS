@@ -1,11 +1,13 @@
 class ECSGame extends GUTS.BaseECSGame {
     constructor(app){
         super(app);   
-        this.imageManager = new GUTS.ImageManager(app, 
-            { 
-                imageSize: this.getCollections().configs.game.imageSize, 
-                palette: this.getCollections().configs.game.palette, 
-                textures: this.getCollections().textures
+        this.imageManager = new GUTS.ImageManager(app,
+            {
+                imageSize: this.getCollections().configs.game.imageSize,
+                palette: this.getCollections().configs.game.palette,
+                textures: this.getCollections().textures,
+                models: this.getCollections().models,
+                animations: this.getCollections().animations
             }
         );         
         this.state = new GUTS.GameState(this.getCollections());  
@@ -14,9 +16,11 @@ class ECSGame extends GUTS.BaseECSGame {
         }
     }
 
-    init() {    
-        super.init();   
-        this.imageManager.dispose();
+    init() {
+        super.init();
+        // Free up GPU memory from the temporary renderer used for sprite generation,
+        // but keep loadedTextures which are needed at runtime
+        this.imageManager.disposeRenderingResources();
     }
 }
 

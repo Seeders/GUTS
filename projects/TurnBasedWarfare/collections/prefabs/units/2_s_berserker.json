@@ -19,8 +19,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/idle.glb",
-                "id": 0
+                "id": 0,
+                "animation": "idle"
               }
             ]
           }
@@ -31,8 +31,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/walk_steady_right_hand.glb",
-                "id": 0
+                "id": 0,
+                "animation": "walk_steady_right_hand"
               }
             ]
           }
@@ -43,8 +43,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/1h_axe_swing.glb",
-                "id": 0
+                "id": 0,
+                "animation": "1h_axe_swing"
               }
             ]
           }
@@ -55,8 +55,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/death_fallback.glb",
-                "id": 0
+                "id": 0,
+                "animation": "death_fallback"
               }
             ],
             "loops": false
@@ -68,8 +68,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/dance_gangnamstyle.glb",
-                "id": 0
+                "id": 0,
+                "animation": "dance_gangnamstyle"
               }
             ]
           }
@@ -78,8 +78,8 @@
           "main": {
             "shapes": [
               {
-                "url": "animations/dance_thriller.glb",
-                "id": 0
+                "id": 0,
+                "animation": "dance_thriller"
               }
             ]
           }
@@ -106,32 +106,13 @@
         "shapes": [
           {
             "type": "gltf",
-            "url": "models/berserker.glb",
             "width": 2,
             "height": 0.2,
             "depth": 1,
-            "y": 0,
-            "z": 0,
-            "rotationX": 0,
-            "rotationY": 0,
-            "rotationZ": 0,
             "color": "#FFFFFF",
             "metalness": "0",
             "roughness": "1",
-            "position": {
-              "y": 0,
-              "z": 0
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
+            "model": "berserker"
           }
         ]
       }

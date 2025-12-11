@@ -3,8 +3,6 @@ class ShopSystem extends GUTS.BaseSystem {
         super(game);
         this.game.shopSystem = this;
 
-        // Upgrades are tracked per-entity (could also move to entity component if needed)
-        this.buildingUpgrades = new Map();
         this.game.state.selectedEntity = {
             "collection": null,
             "entityId": null
@@ -223,13 +221,14 @@ class ShopSystem extends GUTS.BaseSystem {
         grid.className = 'action-grid';
 
         const buildingId = this.game.state.selectedEntity.entityId;
-        const purchasedUpgrades = this.buildingUpgrades.get(buildingId) || new Set();
+        const upgradesComponent = this.game.getComponent(buildingId, 'buildingUpgrades');
+        const purchasedUpgrades = upgradesComponent?.purchasedUpgrades || [];
 
         building.upgrades.forEach(upgradeId => {
             const upgrade = this.game.getCollections().upgrades[upgradeId];
             if (!upgrade) return;
 
-            const isOwned = purchasedUpgrades.has(upgradeId);
+            const isOwned = purchasedUpgrades.includes(upgradeId);
             const locked = isOwned || !this.game.call('canAffordCost', upgrade.value);
 
             const btn = this.createActionButton({
@@ -353,7 +352,8 @@ class ShopSystem extends GUTS.BaseSystem {
             if(success){
                 const newProgress = productionProgress + buildTime;
                 this.setBuildingProductionProgress(buildingId, newProgress);
-                this.game.call('placeSquadOnBattlefield', placement);
+                // Use server-provided entity IDs
+                this.game.call('placeSquadOnBattlefield', placement, response.squadUnits);
             }
         });
     }
@@ -450,15 +450,20 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     purchaseUpgrade(upgradeId, upgrade) {
+        const buildingId = this.game.state.selectedEntity.entityId;
         this.game.call('purchaseUpgrade', {
             upgradeId,
-            buildingId: this.game.state.selectedEntity.entityId
+            buildingId: buildingId
         }, (success, response) => {
             if (success) {
-                if (!this.buildingUpgrades.has(this.game.state.selectedEntity.entityId)) {
-                    this.buildingUpgrades.set(this.game.state.selectedEntity.entityId, new Set());
+                let upgradesComponent = this.game.getComponent(buildingId, 'buildingUpgrades');
+                if (!upgradesComponent) {
+                    this.game.addComponent(buildingId, 'buildingUpgrades', { purchasedUpgrades: [] });
+                    upgradesComponent = this.game.getComponent(buildingId, 'buildingUpgrades');
                 }
-                this.buildingUpgrades.get(this.game.state.selectedEntity.entityId).add(upgradeId);
+                if (!upgradesComponent.purchasedUpgrades.includes(upgradeId)) {
+                    upgradesComponent.purchasedUpgrades.push(upgradeId);
+                }
                 this.game.call('deductPlayerGold', upgrade.value);
                 this.applyUpgradeEffects(this.game.state.mySide, upgrade);
                 this.showNotification(`${upgrade.title} purchased!`, 'success');

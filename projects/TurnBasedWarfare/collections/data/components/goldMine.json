@@ -1,7 +1,7 @@
 {
   "title": "goldMine",
   "schema": {
-    "veinIndex": null,
+    "veinEntityId": null,
     "currentMiner": null,
     "minerQueue": [],
     "cells": []

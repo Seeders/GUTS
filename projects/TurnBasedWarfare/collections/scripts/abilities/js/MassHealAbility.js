@@ -247,7 +247,7 @@ class MassHealAbility extends GUTS.BaseAbility {
     // FIXED: Deterministic injured ally detection
     getInjuredAllies(allies) {
         // Sort allies deterministically first for consistent processing
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedAllies = allies.slice().sort((a, b) => a - b);
         
         return sortedAllies.filter(allyId => {
             const health = this.game.getComponent(allyId, "health");
@@ -259,7 +259,7 @@ class MassHealAbility extends GUTS.BaseAbility {
     // Helper method to get all valid heal targets (for future use)
     getAllHealTargets(allies) {
         // Sort allies deterministically first for consistent processing
-        const sortedAllies = allies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedAllies = allies.slice().sort((a, b) => a - b);
         
         return sortedAllies.filter(allyId => {
             const health = this.game.getComponent(allyId, "health");

@@ -68,12 +68,12 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @param {Object} placement - Placement data with collection, unitTypeId, etc.
      * @param {Object} transform - Transform with position, rotation, scale
      * @param {string} team - Team identifier ('left' or 'right')
-     * @param {string|null} playerId - Optional player ID
+     * @param {string|null} entityId - Optional entity ID (for scene loading)
      * @returns {number} Entity ID
      */
-    createPlacement(placement, transform, team, playerId = null) {
+    createPlacement(placement, transform, team, entityId = null) {
         try {
-            const entity = this.createUnit(placement.collection, placement.unitTypeId, transform, team, playerId);
+            const entity = this.createUnit(placement.collection, placement.unitTypeId, transform, team, entityId);
 
             this.game.addComponent(entity, 'placement', {
                 placementId: placement.placementId,
@@ -82,8 +82,21 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 collection: placement.collection,
                 team: placement.team,
                 playerId: placement.playerId,
-                roundPlaced: placement.roundPlaced
+                roundPlaced: placement.roundPlaced,
+                // Include building construction state if present
+                isUnderConstruction: placement.isUnderConstruction,
+                buildTime: placement.buildTime,
+                assignedBuilder: placement.assignedBuilder
             });
+
+            // If building is under construction, update renderable to show construction state
+            if (placement.isUnderConstruction) {
+                const renderComponent = this.game.getComponent(entity, 'renderable');
+                if (renderComponent) {
+                    renderComponent.spawnType = 'underConstruction';
+                }
+            }
+
             console.log('created placement', placement.unitTypeId, team, entity);
 
             return entity;
@@ -99,11 +112,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @param {string} spawnType - Spawn type ID
      * @param {Object} transform - Transform with position, rotation, scale
      * @param {string} team - Team identifier ('left' or 'right')
-     * @param {string|null} playerId - Optional player ID
      * @param {string|null} entityId - Optional entity ID (for scene loading)
      * @returns {number} Entity ID
      */
-    createUnit(collection, spawnType, transform, team, playerId = null, entityId = null) {
+    createUnit(collection, spawnType, transform, team, entityId = null) {
         const unitType = this.game.getCollections()[collection][spawnType];
         // Ensure transform has defaults
         const safeTransform = {
@@ -113,44 +125,26 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         };
 
         try {
-            // Use provided entityId or generate one from position
-            const unitId = unitType.id || spawnType;
+            // Use provided entityId or auto-incrementing numeric ID
+            // OPTIMIZATION: Numeric IDs are faster than string IDs for Map operations
+            // In deterministic lockstep, both client and server execute the same operations
+            // in the same order, so the auto-incrementing counter produces identical IDs
             let entity;
             if (entityId) {
                 entity = this.game.createEntity(entityId);
             } else {
-                // Round world coordinates to ensure deterministic entity IDs across client and server
-                const pos = safeTransform.position;
-                const roundedX = Math.round((pos.x ?? 0) * 100) / 100;
-                const roundedZ = Math.round((pos.z ?? 0) * 100) / 100;
-                const round = this.game.state?.round ?? 0;
-                entity = this.game.createEntity(`${unitId}_${roundedX}_${roundedZ}_${team}_${round}`);
+                // Use auto-incrementing numeric ID for better performance
+                entity = this.game.createEntity();
             }
-            console.log('created unit', unitId, team, entity);
+            console.log('created unit', unitType.id || spawnType, team, entity);
             const teamConfig = this.teamConfigs[team];
 
-            // Add core components - pass full transform object
-            this.addCoreComponents(entity, safeTransform, unitType, team, teamConfig);
-
-            // Add combat components
-            this.addCombatComponents(entity, unitType);
-
-            // Add AI and behavior components
-            this.addBehaviorComponents(entity);
-
-            // Add visual and interaction components (pass collection and spawnType for renderable)
-            this.addVisualComponents(entity, unitType, teamConfig, collection, spawnType);
+            // OPTIMIZATION: Add all components in single batch call
+            // This reduces cache invalidation from 13+ times to just once
+            this.addAllComponents(entity, safeTransform, unitType, team, teamConfig, collection, spawnType);
 
             // Schedule equipment and abilities (async to avoid blocking)
             this.schedulePostCreationSetup(entity, unitType);
-
-            // Set playerId on team component if provided
-            if (playerId) {
-                const teamComponent = this.game.getComponent(entity, "team");
-                if (teamComponent) {
-                    teamComponent.playerId = playerId;
-                }
-            }
 
             // Update statistics
             this.game.call('invalidateSupplyCache');
@@ -241,16 +235,141 @@ class UnitCreationSystem extends GUTS.BaseSystem {
     }
     
     /**
-     * Add core position and identity components
+     * Add all unit components in a single batch operation
+     * OPTIMIZATION: Uses addComponents() for single cache invalidation
      * @param {number} entity - Entity ID
      * @param {Object} transform - Transform with position, rotation, scale
      * @param {Object} unitType - Unit type definition
      * @param {string} team - Team identifier
      * @param {Object} teamConfig - Team configuration
+     * @param {string} collection - Collection name
+     * @param {string} spawnType - Spawn type ID
+     */
+    addAllComponents(entity, transform, unitType, team, teamConfig, collection, spawnType) {
+        const position = transform.position || { x: 0, y: 0, z: 0 };
+        const rotation = transform.rotation || { x: 0, y: teamConfig.initialFacing, z: 0 };
+        const scale = transform.scale || { x: 1, y: 1, z: 1 };
+        const maxSpeed = (unitType.speed) * this.SPEED_MODIFIER;
+        const maxHP = unitType.hp || this.defaults.hp;
+
+        // Convert collection name to singular component name
+        // e.g., "units" -> "unit", "buildings" -> "building", "worldObjects" -> "worldObject"
+        const collectionComponentName = this.getCollectionComponentName(collection);
+
+        // OPTIMIZATION: Add all components in single batch call
+        // This does one cache invalidation instead of 13+ separate invalidations
+        const components = {
+            // Core components
+            transform: {
+                position: { x: position.x ?? 0, y: position.y ?? 0, z: position.z ?? 0 },
+                rotation: { x: rotation.x ?? 0, y: rotation.y ?? teamConfig.initialFacing, z: rotation.z ?? 0 },
+                scale: { x: scale.x ?? 1, y: scale.y ?? 1, z: scale.z ?? 1 }
+            },
+            velocity: {
+                vx: 0,
+                vy: 0,
+                vz: 0,
+                maxSpeed: maxSpeed,
+                affectedByGravity: true,
+                anchored: unitType.collection == 'buildings' ? true : false
+            },
+            team: { team: team },
+            unitType: unitType,
+
+            // Combat components
+            health: { max: maxHP, current: maxHP },
+            combat: {
+                damage: unitType.damage,
+                range: unitType.range,
+                attackSpeed: unitType.attackSpeed,
+                projectile: unitType.projectile,
+                lastAttack: 0,
+                element: unitType.element,
+                armor: unitType.armor,
+                fireResistance: unitType.fireResistance,
+                coldResistance: unitType.coldResistance,
+                lightningResistance: unitType.lightningResistance,
+                poisonResistance: 0,
+                visionRange: unitType.visionRange
+            },
+            collision: {
+                radius: unitType.size || this.defaults.size,
+                height: unitType.height
+            },
+
+            // Behavior components
+            aiState: {
+                currentAction: null,
+                rootBehaviorTree: "UnitBattleBehaviorTree",
+                meta: {}
+            },
+            pathfinding: {
+                path: null,
+                pathIndex: 0,
+                lastPathRequest: 0,
+                useDirectMovement: false
+            },
+            combatState: {
+                lastAttacker: null,
+                lastAttackTime: 0
+            },
+            animation: {
+                scale: 1,
+                rotation: 0,
+                flash: 0
+            },
+            equipment: {
+                slots: {
+                    mainHand: null,
+                    offHand: null,
+                    helmet: null,
+                    chest: null,
+                    legs: null,
+                    feet: null,
+                    back: null
+                }
+            },
+
+            // Visual components
+            renderable: {
+                objectType: unitType.collection || collection,
+                spawnType: unitType.id || spawnType,
+                capacity: 128
+            }
+        };
+
+        // Add collection-type component for easy querying (e.g., unit, building, worldObject)
+        if (collectionComponentName) {
+            components[collectionComponentName] = { type: unitType.id || spawnType };
+        }
+
+        this.game.addComponents(entity, components);
+    }
+
+    /**
+     * Convert collection name to singular component name
+     * @param {string} collection - Collection name (e.g., 'units', 'buildings', 'worldObjects')
+     * @returns {string|null} Singular component name or null if not mapped
+     */
+    getCollectionComponentName(collection) {
+        const collectionToComponent = {
+            'units': 'unit',
+            'buildings': 'building',
+            'worldObjects': 'worldObject',
+            'cliffs': 'cliff',
+            'items': 'item',
+            'particles': 'particle',
+            'projectiles': 'projectile',
+            'visuals': 'visual'
+        };
+        return collectionToComponent[collection] || null;
+    }
+
+    /**
+     * Add core position and identity components
+     * @deprecated Use addAllComponents() for better performance
      */
     addCoreComponents(entity, transform, unitType, team, teamConfig) {
-        // Transform component (combines position, rotation, scale)
-        // Use provided transform values, but apply team-based initial facing if no rotation provided
         const position = transform.position || { x: 0, y: 0, z: 0 };
         const rotation = transform.rotation || { x: 0, y: teamConfig.initialFacing, z: 0 };
         const scale = transform.scale || { x: 1, y: 1, z: 1 };
@@ -261,7 +380,6 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             scale: { x: scale.x ?? 1, y: scale.y ?? 1, z: scale.z ?? 1 }
         });
 
-        // Velocity component with movement capabilities
         const maxSpeed = (unitType.speed) * this.SPEED_MODIFIER;
         this.game.addComponent(entity, "velocity", {
             vx: 0,
@@ -272,30 +390,18 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             anchored: unitType.collection == 'buildings' ? true : false
         });
 
-        // Team identification
-        this.game.addComponent(entity, "team", {
-            team: team
-        });
-
-          // Unit type information - full unit data for rendering and gameplay
-        // id and collection are added by the compiler at build time
+        this.game.addComponent(entity, "team", { team: team });
         this.game.addComponent(entity, "unitType", unitType);
     }
-    
+
     /**
      * Add combat-related components
-     * @param {number} entity - Entity ID
-     * @param {Object} unitType - Unit type definition
+     * @deprecated Use addAllComponents() for better performance
      */
     addCombatComponents(entity, unitType) {
-        // Health component
         const maxHP = unitType.hp || this.defaults.hp;
-        this.game.addComponent(entity, "health", {
-            max: maxHP,
-            current: maxHP
-        });
+        this.game.addComponent(entity, "health", { max: maxHP, current: maxHP });
 
-        // Combat component with all combat stats
         this.game.addComponent(entity, "combat", {
             damage: unitType.damage,
             range: unitType.range,
@@ -311,16 +417,15 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             visionRange: unitType.visionRange
         });
 
-        // Collision component for physical interactions
         this.game.addComponent(entity, "collision", {
             radius: unitType.size || this.defaults.size,
             height: unitType.height
         });
     }
-    
+
     /**
      * Add AI and behavior components
-     * @param {number} entity - Entity ID
+     * @deprecated Use addAllComponents() for better performance
      */
     addBehaviorComponents(entity) {
         this.game.addComponent(entity, "aiState", {
@@ -329,7 +434,6 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             meta: {}
         });
 
-        // Pathfinding component (for movement paths)
         this.game.addComponent(entity, "pathfinding", {
             path: null,
             pathIndex: 0,
@@ -337,20 +441,17 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             useDirectMovement: false
         });
 
-        // Combat state component (for combat tracking)
         this.game.addComponent(entity, "combatState", {
             lastAttacker: null,
             lastAttackTime: 0
         });
 
-        // Animation state
         this.game.addComponent(entity, "animation", {
             scale: 1,
             rotation: 0,
             flash: 0
         });
 
-        // Equipment container
         this.game.addComponent(entity, "equipment", {
             slots: {
                 mainHand: null,
@@ -363,18 +464,12 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             }
         });
     }
-    
+
     /**
      * Add visual and rendering components
-     * @param {number} entity - Entity ID
-     * @param {Object} unitType - Unit type definition
-     * @param {Object} teamConfig - Team configuration
-     * @param {string} collection - Collection name (e.g., 'units', 'buildings')
-     * @param {string} spawnType - Spawn type ID (e.g., '1_d_archer')
+     * @deprecated Use addAllComponents() for better performance
      */
     addVisualComponents(entity, unitType, teamConfig, collection, spawnType) {
-        // Renderable component for visual representation
-        // Use passed collection/spawnType as fallback for unitType.collection/id
         this.game.addComponent(entity, "renderable", {
             objectType: unitType.collection || collection,
             spawnType: unitType.id || spawnType,

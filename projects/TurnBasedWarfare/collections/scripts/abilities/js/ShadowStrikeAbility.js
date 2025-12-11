@@ -88,7 +88,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         if (!casterPos) return null;
         
         // Sort enemies deterministically first
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         let closest = null;
         let closestDistance = Infinity;

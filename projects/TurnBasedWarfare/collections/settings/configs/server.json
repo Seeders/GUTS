@@ -5,7 +5,7 @@
   "seed": "auto",
   "appLoaderLibrary": "ServerGameLoader",
   "appLibrary": "ServerECSGame",
-  "initialScene": "server",
+  "initialScene": "game",
   "libraries": [
     "GameServices",
     "BaseSystem",

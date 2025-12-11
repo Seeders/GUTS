@@ -256,7 +256,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
         );
         
         // Sort units for consistent processing order
-        const sortedUnits = allUnits.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedUnits = allUnits.slice().sort((a, b) => a - b);
         
         let undeadDamaged = 0;
         let livingHealed = 0;
@@ -358,7 +358,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             );
             
             return distance <= radius;
-        }).sort((a, b) => String(a).localeCompare(String(b))); // Sort for determinism
+        }).sort((a, b) => a - b); // Sort for determinism
     }
     
     // DESYNC SAFE: Clean up consecration

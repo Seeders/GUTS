@@ -17,7 +17,7 @@
             "metalness": 0,
             "roughness": 1,
             "name": "main",
-            "url": "models/atom_three_grass.glb"
+            "model": "atom_three_grass"
           }
         ],
         "position": {

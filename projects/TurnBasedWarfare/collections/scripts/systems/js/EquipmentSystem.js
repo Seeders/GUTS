@@ -2,10 +2,12 @@ class EquipmentSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.equipmentSystem = this;
-        
-        this.entityEquipment = new Map();
+
+        // Asset cache for loaded models (acceptable as cache)
         this.equipmentCache = new Map();
+        // Rendering infrastructure (batched instanced meshes)
         this.equipmentBatches = new Map();
+        // Rendering instance data per entity/slot (transient render state)
         this.equipmentInstances = new Map();
         
         this.scaleFactor = 32;
@@ -382,9 +384,9 @@ class EquipmentSystem extends GUTS.BaseSystem {
     async unequipItem(entityId, slotType) {
         const equipment = this.game.getComponent(entityId, "equipment");
         if (!equipment || !equipment.slots[slotType]) return true;
-        
+
         const equipInstance = this.equipmentInstances.get(entityId)?.get(slotType);
-        
+
         if (equipInstance) {
             const batch = this.equipmentBatches.get(equipInstance.batchKey);
             if (batch) {
@@ -392,12 +394,7 @@ class EquipmentSystem extends GUTS.BaseSystem {
             }
             this.equipmentInstances.get(entityId)?.delete(slotType);
         }
-        
-        const entityEquip = this.entityEquipment.get(entityId);
-        if (entityEquip) {
-            entityEquip.delete(slotType);
-        }
-        
+
         equipment.slots[slotType] = null;
         return true;
     }
@@ -436,7 +433,7 @@ class EquipmentSystem extends GUTS.BaseSystem {
     
     cleanupRemovedEntities(activeEntities) {
         const activeSet = new Set(activeEntities);
-        
+
         for (const [entityId, equipmentMap] of this.equipmentInstances.entries()) {
             if (!activeSet.has(entityId)) {
                 for (const [slotType, equipInstance] of equipmentMap.entries()) {
@@ -446,7 +443,6 @@ class EquipmentSystem extends GUTS.BaseSystem {
                     }
                 }
                 this.equipmentInstances.delete(entityId);
-                this.entityEquipment.delete(entityId);
             }
         }
     }
@@ -481,7 +477,6 @@ class EquipmentSystem extends GUTS.BaseSystem {
         
         this.equipmentBatches.clear();
         this.equipmentInstances.clear();
-        this.entityEquipment.clear();
         this.equipmentCache.clear();
     }
 }

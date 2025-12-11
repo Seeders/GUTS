@@ -58,6 +58,33 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             this.raycastHelper = new GUTS.RaycastHelper(this.game.camera, this.game.scene);
             console.log('[MultiplayerPlacementSystem] RaycastHelper initialized');
         }
+
+        // Skip if loading from save - entities already exist
+        if (!this.game.state.isLoadingSave) {
+            // Spawn starting units deterministically (same order as server: left first, then right)
+            console.log('[MultiplayerPlacementSystem] onSceneLoad - spawning starting units');
+            this.spawnStartingUnits();
+        }
+    }
+
+    /**
+     * Set up camera position based on player's side using level starting locations
+     */
+    setupCameraForMySide() {
+        const mySide = this.game.state.mySide;
+        if (!mySide) {
+            console.warn('[MultiplayerPlacementSystem] Cannot setup camera - mySide not set');
+            return;
+        }
+
+        const cameraData = this.getCameraPositionForSide(mySide);
+        if (cameraData && this.game.camera) {
+            const pos = cameraData.position;
+            const look = cameraData.lookAt;
+            this.game.camera.position.set(pos.x, pos.y, pos.z);
+            this.game.camera.lookAt(look.x, look.y, look.z);
+            console.log('[MultiplayerPlacementSystem] Camera set for side:', mySide);
+        }
     }
 
     setupEventListeners() {
@@ -149,60 +176,37 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         this.initializeSubsystems();
         this.setupEventListeners();
 
-        // Skip getting starting state if loading from save - entities already exist
+        // Get player entities from server (gold, upgrades, etc.)
+        // Skip if loading from save - entities already exist
         if (!this.game.state.isLoadingSave) {
-            this.getStartingState();
+            this.syncPlayerEntities();
         }
+
+        // Set up camera position for this player's side
+        // Done here because mySide is guaranteed to be set after syncWithServerState
+        this.setupCameraForMySide();
 
         this.onPlacementPhaseStart();
     }
 
-    getStartingState() {
-        console.log('[MultiplayerPlacementSystem] getStartingState called, mySide:', this.game.state.mySide);
+    /**
+     * Sync player entities from server (gold, upgrades, etc.)
+     * Starting units and camera are set up deterministically in onSceneLoad.
+     */
+    syncPlayerEntities() {
+        console.log('[MultiplayerPlacementSystem] syncPlayerEntities called');
 
         this.game.call('getStartingState', (success, response) => {
-            console.log('[MultiplayerPlacementSystem] getStartingState response:', success, response);
-
-            if(success){
-                // Create player entities from server data
-                if (response.playerEntities) {
-                    console.log('[MultiplayerPlacementSystem] Creating player entities:', response.playerEntities);
-                    for (const playerEntity of response.playerEntities) {
-                        if (!this.game.entities.has(playerEntity.entityId)) {
-                            this.game.createEntity(playerEntity.entityId);
-                        }
-                        this.game.addComponent(playerEntity.entityId, 'playerStats', playerEntity.playerStats);
+            if (success && response.playerEntities) {
+                console.log('[MultiplayerPlacementSystem] Creating player entities:', response.playerEntities);
+                for (const playerEntity of response.playerEntities) {
+                    if (!this.game.entities.has(playerEntity.entityId)) {
+                        this.game.createEntity(playerEntity.entityId);
                     }
+                    this.game.addComponent(playerEntity.entityId, 'playerStats', playerEntity.playerStats);
                 }
-
-                console.log('[MultiplayerPlacementSystem] Creating starting units, mySide:', this.game.state.mySide);
-                const buildingTypes = this.game.getCollections().buildings;
-                const unitTypes = this.game.getCollections().buildings;
-                response.startingUnits.forEach((unitData) => {
-                    const unitId = unitData.type;
-                    const unitPos = unitData.position;
-                    const collection = this.game.getCollections()[unitData.collection];
-                    if(collection){
-                        const unitDef = collection[unitId];
-                        // unitDef already has id and collection from compiler
-                        const placement = this.createPlacementData(unitPos, unitDef, this.game.state.mySide);
-                        placement.isStartingState = true;
-                        console.log('[MultiplayerPlacementSystem] Submitting placement:', placement.placementId, 'for side:', this.game.state.mySide);
-                        this.game.call('submitPlacement', placement, (success, response) => {
-                            if(success){
-                                this.placeSquad(placement);
-                            } else {
-                                console.error('[MultiplayerPlacementSystem] Placement failed:', response);
-                            }
-                        });
-                    }
-                });
-                const pos = response.camera.position;
-                const look = response.camera.lookAt;
-                this.game.camera.position.set(pos.x, pos.y, pos.z);
-                this.game.camera.lookAt(look.x, look.y, look.z);
             } else {
-                console.error('[MultiplayerPlacementSystem] getStartingState failed:', response);
+                console.error('[MultiplayerPlacementSystem] syncPlayerEntities failed:', response);
             }
         });
     }
@@ -308,8 +312,9 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             this.game.triggerEvent("onBattleStart");
 
             // Resync entities with server state to ensure both clients are in sync
+            // Pass full data object - resyncEntities handles both entitySync and nextEntityId
             if (data.entitySync) {
-                this.game.call('resyncEntities', data.entitySync);
+                this.game.call('resyncEntities', data);
             }
 
             this.game.desyncDebugger.enabled = true;
@@ -404,7 +409,8 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             if (opponentPlayerId) {
                 placement.playerId = opponentPlayerId;
             }
-            this.placeSquad(placement);
+            // Use squadUnits from placement as server entity IDs to ensure both clients use same IDs
+            this.placeSquad(placement, placement.squadUnits);
         });
 
         if (this.game.state) {
@@ -548,7 +554,10 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
         this.game.call('submitPlacement', placement, (success, response) => {
             if(success){
-                this.placeSquad(placement);
+                // Use server-provided entity IDs and server time for sync
+                placement.serverTime = response.serverTime;
+                console.log(`[MultiplayerPlacementSystem] submitPlacement success, serverTime=${response.serverTime}`);
+                this.placeSquad(placement, response.squadUnits);
             }
         });
     }
@@ -557,7 +566,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         return true;
     }
 
-    placeSquad(placement) {
+    placeSquad(placement, serverEntityIds = null) {
         // Look up unitType from collections
         const unitType = this.getUnitTypeFromPlacement(placement);
         if (!unitType) {
@@ -581,8 +590,8 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             playerId = this.game.clientNetworkManager?.playerId || null;
         }
 
-        // Use shared base class method to spawn squad
-        const result = this.spawnSquad(fullPlacement, placement.team, playerId);
+        // Use shared base class method to spawn squad, passing server entity IDs if available
+        const result = this.spawnSquad(fullPlacement, placement.team, playerId, serverEntityIds);
 
         if (!result.success) {
             console.error('[MultiplayerPlacementSystem] Failed to spawn squad:', result.error);

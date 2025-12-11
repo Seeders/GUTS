@@ -149,7 +149,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         if (enemies.length === 0) return;
         
         // Sort enemies deterministically for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => String(a).localeCompare(String(b)));
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
         
         let tauntedCount = 0;
         

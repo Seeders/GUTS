@@ -1,0 +1,16 @@
+{
+  "title": "movementState",
+  "schema": {
+    "lastPosition": { "x": 0, "z": 0 },
+    "lastMovementTime": 0,
+    "stuckTime": 0,
+    "lastPathTime": 0,
+    "avoidanceDirection": 0,
+    "velocityHistory": [],
+    "smoothedDirection": { "x": 0, "z": 0 },
+    "dampedForces": {
+      "separation": { "x": 0, "z": 0 },
+      "avoidance": { "x": 0, "z": 0 }
+    }
+  }
+}

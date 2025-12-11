@@ -1,0 +1,168 @@
+{
+  "title": "Game Scene",
+  "systems": [
+    "ComponentSystem",
+    "GridSystem",
+    "TerrainSystem",
+    "RoundSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "SquadSystem",
+    "UnitCreationSystem",
+    "PlayerStatsSystem",
+    "TeamHealthSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "SquadExperienceSystem",
+    "LifetimeSystem",
+    "SchedulingSystem",
+    "GoldMineSystem",
+    "PathfindingSystem",
+    "VisionSystem",
+    "SupplySystem"
+  ],
+  "clientSystems": [
+    "RenderSystem",
+    "WorldSystem",
+    "TerrainDetailSystem",
+    "PostProcessingSystem",
+    "AnimationSystem",
+    "ArmyDisplaySystem",
+    "EffectsSystem",
+    "MultiplayerNetworkSystem",
+    "MultiplayerPlacementSystem",
+    "GameUISystem",
+    "ShopSystem",
+    "HealthBarSystem",
+    "EquipmentSystem",
+    "ParticleSystem",
+    "FogOfWarSystem",
+    "SelectedUnitSystem",
+    "UnitOrderSystem",
+    "MiniMapSystem",
+    "CameraControlSystem",
+    "DamageNumberSystem"
+  ],
+  "serverSystems": [
+    "ServerBattlePhaseSystem",
+    "ServerPlacementSystem",
+    "SaveSystem"
+  ],
+  "entities": [
+    {
+      "prefab": "terrain",
+      "components": {
+        "terrain": {
+          "level": "level1",
+          "world": "shire"
+        }
+      }
+    },
+    {
+      "collection": "units",
+      "spawnType": "dragon_red",
+      "name": "Dragon Red",
+      "components": {
+        "transform": {
+          "position": {
+            "x": 1195.62,
+            "y": 15,
+            "z": -1234.59
+          },
+          "rotation": {
+            "x": 0,
+            "y": 2.67,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        }
+      }
+    },
+    {
+      "collection": "buildings",
+      "spawnType": "cottage",
+      "name": "Cottage",
+      "components": {
+        "transform": {
+          "position": {
+            "x": -370.97,
+            "y": 30,
+            "z": -224.41
+          }
+        }
+      }
+    },
+    {
+      "collection": "buildings",
+      "spawnType": "fletchersHall",
+      "name": "Fletchers Hall",
+      "components": {
+        "transform": {
+          "position": {
+            "x": -346.13,
+            "y": 30,
+            "z": -294.51
+          }
+        }
+      }
+    },
+    {
+      "collection": "buildings",
+      "spawnType": "fletchersHall",
+      "name": "Fletchers Hall",
+      "components": {
+        "transform": {
+          "position": {
+            "x": -449.12,
+            "y": 30,
+            "z": -123.64
+          }
+        }
+      }
+    },
+    {
+      "collection": "buildings",
+      "spawnType": "cottage",
+      "name": "Cottage",
+      "components": {
+        "transform": {
+          "position": {
+            "x": -444.53,
+            "y": 30,
+            "z": -241.37
+          }
+        }
+      }
+    },
+    {
+      "collection": "units",
+      "spawnType": "dragon_red",
+      "name": "Dragon Red",
+      "components": {
+        "transform": {
+          "position": {
+            "x": -1191.2,
+            "y": 15,
+            "z": 1197.13
+          },
+          "rotation": {
+            "x": 0,
+            "y": -0.95,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        }
+      }
+    }
+  ]
+}
