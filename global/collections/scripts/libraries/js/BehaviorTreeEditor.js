@@ -22,6 +22,11 @@ class BehaviorTreeEditor {
             this.loadBehaviorTree(event.detail);
         });
 
+        // Listen for unload events
+        document.body.addEventListener('unloadBehaviorTree', () => {
+            this.handleUnload();
+        });
+
         // Setup UI event listeners
         const container = document.getElementById(this.moduleConfig.container);
         if (!container) return;
@@ -1424,7 +1429,7 @@ class BehaviorTreeEditor {
         this.pauseSimulation();
 
         // Clear debug data from BehaviorSystem's processor before resetting
-  
+
         const processor = this.mockGame.behaviorSystem?.processor;
         if (processor) {
             processor.clearAllDebugData();
@@ -1448,5 +1453,51 @@ class BehaviorTreeEditor {
 
         // Clear highlighting
         this.renderTree();
+    }
+
+    /**
+     * Handles unloading the behavior tree editor data
+     * Cleans up simulation state and resets UI
+     */
+    handleUnload() {
+        // Stop any running simulation
+        this.pauseSimulation();
+
+        // Clear mock game context
+        if (this.mockGame) {
+            const processor = this.mockGame.behaviorSystem?.processor;
+            if (processor) {
+                processor.clearAllDebugData();
+            }
+            this.mockGame = null;
+        }
+
+        // Reset state
+        this.currentData = null;
+        this.objectData = null;
+        this.propertyName = null;
+        this.selectedNode = null;
+        this.zoom = 1;
+        this.isScriptBased = false;
+
+        // Clear UI elements
+        const unitTypeEl = document.getElementById('bt-unit-type');
+        const descriptionEl = document.getElementById('bt-description');
+        const titleEl = document.getElementById('bt-tree-title');
+        const canvas = document.getElementById('bt-tree-canvas');
+        const jsonView = document.getElementById('bt-json-view');
+        const varsContainer = document.getElementById('bt-simulation-vars');
+        const resultDiv = document.getElementById('bt-sim-result');
+
+        if (unitTypeEl) unitTypeEl.textContent = 'N/A';
+        if (descriptionEl) descriptionEl.textContent = '';
+        if (titleEl) titleEl.textContent = 'Behavior Tree';
+        if (canvas) canvas.innerHTML = '';
+        if (jsonView) jsonView.value = '';
+        if (varsContainer) varsContainer.innerHTML = '';
+        if (resultDiv) {
+            resultDiv.style.display = 'none';
+            resultDiv.innerHTML = '';
+        }
     }
 }

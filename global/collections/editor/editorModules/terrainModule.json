@@ -40,5 +40,6 @@
   "inputElement": "textarea",
   "inputDataType": "json",
   "loadHook": "editTileMap",
-  "saveHook": "saveTileMap"
+  "saveHook": "saveTileMap",
+  "unloadHook": "unloadTileMap"
 }

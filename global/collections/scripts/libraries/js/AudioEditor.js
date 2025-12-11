@@ -27,11 +27,16 @@ class AudioEditor {
                         display.textContent = formatFn(parseFloat(slider.value));
                     }
                 };
-                
+
                 slider.addEventListener('input', updateDisplayValue);
                 updateDisplayValue();
             }
         };
+
+        // Listen for unload events
+        document.body.addEventListener('unloadAudio', () => {
+            this.handleUnload();
+        });
 
         document.body.addEventListener('editAudio', (event) => {
             try {
@@ -323,7 +328,66 @@ class AudioEditor {
         const settings = this.getUISettings();
         this.audioManager.playSynthSound('audioEditorSound', settings);
     }
-    
+
+    /**
+     * Handles unloading the audio editor data
+     * Resets all UI controls to default values
+     */
+    handleUnload() {
+        // Reset volume
+        this.volume = 1;
+
+        // Reset all UI controls to default values
+        const defaultSettings = {
+            waveform: 'sine',
+            frequency: 440,
+            duration: 1,
+            noise: {
+                type: 'white',
+                amount: 0,
+                filter: {
+                    type: 'none',
+                    frequency: 2000
+                }
+            },
+            envelope: {
+                attack: 0.01,
+                decay: 0.1,
+                sustain: 0.7,
+                release: 0.3
+            },
+            pitchEnvelope: {
+                start: 1,
+                end: 1,
+                time: 1
+            },
+            effects: {
+                filter: {
+                    type: 'lowpass',
+                    frequency: 1000,
+                    Q: 1
+                },
+                distortion: 0,
+                delay: {
+                    time: 0.3,
+                    feedback: 0
+                },
+                reverb: 0,
+                bitcrusher: 0,
+                pan: 0
+            }
+        };
+
+        this.updateUIFromSettings(defaultSettings);
+
+        // Clear status message
+        const status = document.getElementById('status-message');
+        if (status) {
+            status.textContent = '';
+            status.className = '';
+        }
+    }
+
 }
 
 // setupKeyboard() {

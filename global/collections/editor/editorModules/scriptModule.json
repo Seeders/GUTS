@@ -9,5 +9,6 @@
   ],
   "propertyNames": "[\"script\", \"html\", \"css\"]",
   "loadHook": "editScript",
-  "saveHook": "saveScript"
+  "saveHook": "saveScript",
+  "unloadHook": "unloadScript"
 }

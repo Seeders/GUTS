@@ -49,5 +49,6 @@
   "inputElement": "textarea",
   "inputDataType": "array",
   "loadHook": "renderSceneObject",
-  "saveHook": "saveSceneObject"
+  "saveHook": "saveSceneObject",
+  "unloadHook": "unloadSceneObject"
 }

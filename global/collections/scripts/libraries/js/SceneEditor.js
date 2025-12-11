@@ -138,6 +138,9 @@ class SceneEditor {
         // Handle scene data load from editor
         document.body.addEventListener('renderSceneObject', this.handleRenderSceneObject.bind(this));
 
+        // Handle scene data unload when switching away from this editor
+        document.body.addEventListener('unloadSceneObject', this.handleUnloadSceneObject.bind(this));
+
         // Handle editor resize
         document.body.addEventListener('resizedEditor', () => {
             this.handleResize();
@@ -520,6 +523,11 @@ class SceneEditor {
 
         // Initialize context with editor systems
         await this.initializeContext(systems);
+
+        // Reset camera states so cameras start fresh for each scene load
+        this.sceneCameraState = null;
+        this.gameCameraState = null;
+        this.state.cameraMode = 'scene';
 
         // Clear existing entities before loading new scene
         if (this.editorGameInstance) {
@@ -1274,6 +1282,7 @@ class SceneEditor {
         } else {
             this.gameCameraState = {
                 position: camera.position.clone(),
+                quaternion: camera.quaternion.clone(),
                 zoom: camera.zoom,
                 lookAt: camera.userData?.lookAt?.clone()
             };
@@ -1372,8 +1381,14 @@ class SceneEditor {
         if (this.gameCameraState) {
             camera.position.copy(this.gameCameraState.position);
             camera.zoom = this.gameCameraState.zoom || 1;
-            if (this.gameCameraState.lookAt) {
+            // Restore quaternion to preserve exact rotation (important after camera rotations)
+            if (this.gameCameraState.quaternion) {
+                camera.quaternion.copy(this.gameCameraState.quaternion);
+            } else if (this.gameCameraState.lookAt) {
+                // Fallback for old saved state without quaternion
                 camera.lookAt(this.gameCameraState.lookAt.x, this.gameCameraState.lookAt.y, this.gameCameraState.lookAt.z);
+            }
+            if (this.gameCameraState.lookAt) {
                 camera.userData.lookAt = this.gameCameraState.lookAt.clone();
             }
         } else {
@@ -1539,16 +1554,18 @@ class SceneEditor {
     }
 
     /**
-     * Cleanup
+     * Handle unload event when switching away from this editor
+     * Cleans up data and instances while keeping HTML around
      */
-    destroy() {
-        if (this.editorGameInstance) {
-            this.editorGameInstance.destroy();
-        }
+    handleUnloadSceneObject() {
+        console.log('[SceneEditor] Unloading scene data');
 
+        // Cancel any active placement mode
+        this.cancelPlacementMode();
+
+        // Detach and clean up gizmo
         if (this.gizmoManager) {
             this.gizmoManager.detach();
-            this.gizmoManager.dispose?.();
         }
 
         // Remove gizmo helper from scene
@@ -1560,15 +1577,56 @@ class SceneEditor {
             this.gizmoHelper = null;
         }
 
+        // Clean up placement preview
+        if (this.placementPreview) {
+            this.placementPreview.dispose();
+            this.placementPreview = null;
+        }
+
+        // Clean up raycast helper
+        this.raycastHelper = null;
+
+        // Destroy the ECS game instance (clears all entities and systems)
+        if (this.editorGameInstance) {
+            this.editorGameInstance.destroy();
+            this.editorGameInstance = null;
+        }
+
+        // Clear world renderer reference
+        this.worldRenderer = null;
+
+        // Reset state but keep HTML structure
+        this.state.entities = [];
+        this.state.sceneData = null;
+        this.state.selectedEntityId = null;
+        this.state.isDirty = false;
+        this.state.initialized = false;
+
         // Clean up game camera handlers
         if (this.gameCameraWheelHandler) {
             this.canvas?.removeEventListener('wheel', this.gameCameraWheelHandler);
+            this.gameCameraWheelHandler = null;
         }
         if (this.gameCameraMouseDownHandler) {
             this.canvas?.removeEventListener('mousedown', this.gameCameraMouseDownHandler);
             this.canvas?.removeEventListener('mousemove', this.gameCameraMouseMoveHandler);
             this.canvas?.removeEventListener('mouseup', this.gameCameraMouseUpHandler);
             this.canvas?.removeEventListener('mouseleave', this.gameCameraMouseUpHandler);
+            this.gameCameraMouseDownHandler = null;
+            this.gameCameraMouseMoveHandler = null;
+            this.gameCameraMouseUpHandler = null;
+        }
+    }
+
+    /**
+     * Cleanup (full destruction)
+     */
+    destroy() {
+        // Use unload to clean up data first
+        this.handleUnloadSceneObject();
+
+        if (this.gizmoManager) {
+            this.gizmoManager.dispose?.();
         }
     }
 }

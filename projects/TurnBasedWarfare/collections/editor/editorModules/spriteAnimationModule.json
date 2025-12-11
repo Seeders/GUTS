@@ -9,5 +9,6 @@
   "inputElement": "text",
   "inputDataType": "string",
   "loadHook": "renderSpriteAnimation",
-  "saveHook": "saveSpriteAnimation"
+  "saveHook": "saveSpriteAnimation",
+  "unloadHook": "unloadSpriteAnimation"
 }
