@@ -3,7 +3,10 @@ class EditorView {
       this.controller = controller;
       this.elements = controller.elements;
       this.dragState = {};
-      
+
+      // Track currently active module for cleanup on switch
+      this.activeModule = null;
+
       // Initialize UI
       this.setupEventListeners();
       this.renderObjectList();
@@ -591,6 +594,16 @@ class EditorView {
     renderObject() {
         this.controller.dispatchHook('renderObject', arguments);
 
+        // Dispatch unload event for previously active module before switching
+        if (this.activeModule && this.activeModule.unloadHook) {
+            const unloadEvent = new CustomEvent(this.activeModule.unloadHook, {
+                bubbles: true,
+                cancelable: true
+            });
+            document.body.dispatchEvent(unloadEvent);
+        }
+        this.activeModule = null;
+
         // Hide all module containers first
         Object.values(this.controller.getCollections().editorModules).forEach(module => {
             const container = document.getElementById(module.container);
@@ -598,25 +611,25 @@ class EditorView {
                 container.classList.remove('show');
             }
         });
-        
+
         let object = this.controller.getCurrentObject();
         if (!object) {
             this.hideContent();
             return;
         }
-        
+
         // Find the first matching property with a module handler
         let matchingModule = null;
         let matchingProperty = null;
-        
+
         // Check all property modules to find the first matching one
         for (const moduleId in this.controller.getCollections().editorModules) {
             const module = this.controller.getCollections().editorModules[moduleId];
-            
+
             // Check for single propertyName match
             if (module.propertyName) {
                 // Find any property that ends with the module's propertyName
-                const matchingKey = Object.keys(object).find(key => 
+                const matchingKey = Object.keys(object).find(key =>
                     key.toLowerCase().endsWith(module.propertyName.toLowerCase())
                 );
                 if (matchingKey) {
@@ -625,20 +638,20 @@ class EditorView {
                     break;
                 }
             }
-            
+
             // Check for match in propertyNames array
             if (module.propertyNames) {
                 // Safely parse propertyNames if it's a string
-                const propertyNames = Array.isArray(module.propertyNames) ? 
+                const propertyNames = Array.isArray(module.propertyNames) ?
                     module.propertyNames : JSON.parse(module.propertyNames);
-                
+
                 // Find the first property that ends with any of the propertyNames
-                const foundProperty = Object.keys(object).find(key => 
-                    propertyNames.some(propName => 
+                const foundProperty = Object.keys(object).find(key =>
+                    propertyNames.some(propName =>
                         key.toLowerCase().endsWith(propName.toLowerCase())
                     )
                 );
-                
+
                 if (foundProperty) {
                     matchingModule = module;
                     matchingProperty = foundProperty;
@@ -646,17 +659,20 @@ class EditorView {
                 }
             }
         }
-        
+
         if (!matchingModule) {
             this.hideContent();
             return;
         }
-        
+
         this.showContent();
-        
+
+        // Track the active module for cleanup on next switch
+        this.activeModule = matchingModule;
+
         // Show the matching module's container
         document.getElementById(matchingModule.container).classList.add('show');
-        
+
         requestAnimationFrame(() => {
             // Create and dispatch the event with the matching property
             const customEvent = new CustomEvent(matchingModule.loadHook, {
@@ -669,7 +685,7 @@ class EditorView {
                 bubbles: true,
                 cancelable: true
             });
-            
+
             document.body.dispatchEvent(customEvent);
         });
     }

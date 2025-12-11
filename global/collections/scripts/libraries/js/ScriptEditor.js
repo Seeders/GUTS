@@ -59,6 +59,11 @@ class ScriptEditor {
             setTimeout(() => this.handleResize(), 50);
         });
 
+        // Listen for unload events
+        document.body.addEventListener('unloadScript', () => {
+            this.handleUnload();
+        });
+
         const saveBtn = this.container.querySelector('#save-script-btn');
         if (saveBtn) {
             saveBtn.addEventListener('click', () => this.saveScript());
@@ -90,5 +95,20 @@ class ScriptEditor {
         if (this.container && this.container.parentNode) {
             this.container.parentNode.removeChild(this.container);
         }
+    }
+
+    /**
+     * Handles unloading the script editor data
+     * Clears editor content and resets state
+     */
+    handleUnload() {
+        // Clear editor content
+        if (this.scriptEditor) {
+            this.scriptEditor.setValue('');
+        }
+
+        // Reset state
+        this.scriptValue = null;
+        this.savePropertyName = 'script';
     }
 }

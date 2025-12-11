@@ -44,9 +44,52 @@ class SpriteAnimationEditor {
             this.loadAnimationSet(event.detail);
         });
 
+        // Listen for unload events
+        document.body.addEventListener('unloadSpriteAnimation', () => {
+            this.handleUnload();
+        });
+
         // Setup UI after DOM is ready
         this.setupUI();
         this.startAnimationLoop();
+    }
+
+    /**
+     * Handles unloading the sprite animation editor data
+     * Cleans up animation state and resets UI
+     */
+    handleUnload() {
+        // Reset animation state
+        this.currentAnimationSet = null;
+        this.currentAnimationData = null;
+        this.spriteSheet = null;
+        this.spriteSheetImage = null;
+        this.animations = {};
+        this.currentFrameIndex = 0;
+        this.isPlaying = true;
+
+        // Clear UI elements
+        const setNameEl = document.getElementById('sprite-set-name');
+        const collectionNameEl = document.getElementById('sprite-collection-name');
+        const currentAnimEl = document.getElementById('sprite-current-anim');
+        const frameInfoEl = document.getElementById('sprite-frame-info');
+        const sizeInfoEl = document.getElementById('sprite-size-info');
+        const listEl = document.getElementById('sprite-animation-list');
+        const typeSelect = document.getElementById('sprite-animation-type');
+
+        if (setNameEl) setNameEl.textContent = '-';
+        if (collectionNameEl) collectionNameEl.textContent = '-';
+        if (currentAnimEl) currentAnimEl.textContent = '-';
+        if (frameInfoEl) frameInfoEl.textContent = '- / -';
+        if (sizeInfoEl) sizeInfoEl.textContent = '- x -';
+        if (listEl) listEl.innerHTML = '';
+        if (typeSelect) typeSelect.innerHTML = '';
+
+        // Clear canvas
+        if (this.ctx && this.canvas) {
+            this.ctx.fillStyle = '#1a1a2e';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        }
     }
 
     setupUI() {

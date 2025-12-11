@@ -241,6 +241,11 @@ class TerrainMapEditor {
             }
         });
 
+        // Handle unloadTileMap event when switching away from this editor
+        document.body.addEventListener('unloadTileMap', () => {
+            this.handleUnload();
+        });
+
         // Handle editTileMap event
         document.body.addEventListener('editTileMap', async (event) => {
             this.tileMap = event.detail.data;
@@ -2754,5 +2759,59 @@ class TerrainMapEditor {
 
         // Dispatch the event
         document.body.dispatchEvent(myCustomEvent);
+    }
+
+    /**
+     * Handle unload event when switching away from this editor
+     * Cleans up data and instances while keeping HTML around
+     */
+    handleUnload() {
+        console.log('[TerrainMapEditor] Unloading terrain data');
+
+        // Clean up placement preview
+        if (this.placementPreview) {
+            this.placementPreview.dispose();
+            this.placementPreview = null;
+        }
+
+        // Clean up raycast helper
+        this.raycastHelper = null;
+
+        // Destroy the ECS editor context (clears all entities and systems)
+        if (this.editorContext) {
+            this.editorContext.destroy();
+            this.editorContext = null;
+        }
+
+        // Clear world renderer reference
+        this.worldRenderer = null;
+        this.entityRenderer = null;
+        this.terrainDataManager = null;
+        this.environmentObjectSpawner = null;
+
+        // Clear editor loader
+        this.editorLoader = null;
+
+        // Clear terrain tile mapper
+        this.terrainTileMapper = null;
+
+        // Clear image/model managers (they're from editorContext)
+        this.imageManager = null;
+        this.modelManager = null;
+
+        // Clear data references
+        this.tileMap = null;
+        this.objectData = null;
+        this.worldObjects = {};
+
+        // Reset initialization flag so next load starts fresh
+        this.isInitializing = false;
+
+        // Clear canvas buffers
+        this.terrainCanvasBuffer = null;
+
+        // Clear undo/redo history
+        this.undoStack = [];
+        this.redoStack = [];
     }
 }

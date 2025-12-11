@@ -23,5 +23,6 @@
   "inputElement": "textarea",
   "inputDataType": "json",
   "loadHook": "renderGraphicsObject",
-  "saveHook": "saveGraphicsObject"
+  "saveHook": "saveGraphicsObject",
+  "unloadHook": "unloadGraphicsObject"
 }

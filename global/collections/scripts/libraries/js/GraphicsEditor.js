@@ -59,7 +59,50 @@ class GraphicsEditor {
         this.groupManager.init();
         this.gizmoManager.init();
         this.equipmentEditor.init();
-        this.sceneRenderer.animate();    
+        this.sceneRenderer.animate();
+
+        // Listen for unload events
+        document.body.addEventListener('unloadGraphicsObject', () => {
+            this.handleUnload();
+        });
+    }
+
+    /**
+     * Handles unloading the graphics editor data
+     * Clears scene and resets state
+     */
+    handleUnload() {
+        // Clear the scene
+        this.clearScene();
+
+        // Reset state
+        this.state = {
+            editingModel: true,
+            selectedShapeIndex: -1,
+            currentAnimation: "",
+            selectedGroup: "main",
+            currentFrame: 0,
+            renderData: { model: {}, animations: { idle: [{ main: { shapes: [], position: {x: 0, y: 0, z: 0}, rotation: {x:0,y:0,z:0}, scale: {x:1, y:1, z:1}} }] } }
+        };
+
+        // Clear equipment
+        if (this.equipmentEditor && this.equipmentEditor.equipmentModels) {
+            this.equipmentEditor.equipmentModels.clear();
+        }
+
+        // Clear shape manager original materials
+        if (this.shapeManager && this.shapeManager.originalMaterials) {
+            this.shapeManager.originalMaterials.clear();
+        }
+
+        // Update shape count display
+        const shapeCountEl = document.getElementById('shape-count');
+        if (shapeCountEl) shapeCountEl.textContent = '0';
+
+        // Update UI list
+        if (this.uiManager) {
+            this.uiManager.updateList();
+        }
     }
 
     /**
