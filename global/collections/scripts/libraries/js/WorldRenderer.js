@@ -45,8 +45,7 @@ class WorldRenderer {
         // Settings and data (injected from outside)
         this.terrainDataManager = null;
         this.tileMapper = null;
-        this.collections = null;
-        this.game = null;  // For accessing game services via call()
+        this.game = config.game || null;  // For accessing game services via call()
 
         // Configuration
         this.config = {
@@ -496,14 +495,65 @@ class WorldRenderer {
 
         this.groundVertices = groundGeometry.attributes.position;
 
-        // Create ground material with flat shading for sharp terrain steps
-        const groundMaterial = new THREE.MeshStandardMaterial({
-            map: this.groundTexture,
-            side: THREE.DoubleSide,
-            metalness: 0.0,
-            roughness: 1,
-            flatShading: true
-        });
+        // Try to load terrain shader from collections, fallback to default
+        const level = this.terrainDataManager?.level;
+        const terrainShaderName = level?.terrainShader || 'terrain';
+        const collections = this.game?.getCollections?.() || {};
+        const shaderDef = collections.shaders?.[terrainShaderName];
+
+        let groundMaterial;
+
+        if (shaderDef && shaderDef.fragmentScript && shaderDef.vertexScript) {
+            // Build uniforms from shader definition
+            const shaderUniforms = THREE.UniformsUtils.merge([
+                THREE.UniformsLib.fog,
+                { map: { value: this.groundTexture } }
+            ]);
+
+            if (shaderDef.uniforms) {
+                for (const [key, uniformDef] of Object.entries(shaderDef.uniforms)) {
+                    const isVector = shaderDef.vectors?.includes(key);
+                    let value = uniformDef.value;
+
+                    if (isVector) {
+                        if (Array.isArray(value)) {
+                            value = new THREE.Vector3(value[0], value[1], value[2]);
+                        } else if (typeof value === 'string' && value.startsWith('#')) {
+                            const color = new THREE.Color(value);
+                            value = new THREE.Vector3(color.r, color.g, color.b);
+                        } else {
+                            value = new THREE.Vector3(1, 1, 1);
+                        }
+                    }
+
+                    shaderUniforms[key] = { value };
+                }
+            }
+
+            // Add fog uniforms
+            shaderUniforms.fogColor = { value: this.scene?.fog?.color || new THREE.Color(0xffffff) };
+            shaderUniforms.fogDensity = { value: this.scene?.fog?.density || 0.01 };
+
+            groundMaterial = new THREE.ShaderMaterial({
+                uniforms: shaderUniforms,
+                vertexShader: shaderDef.vertexScript,
+                fragmentShader: shaderDef.fragmentScript,
+                fog: true,
+                side: THREE.DoubleSide
+            });
+        } else {
+            // Fallback to MeshStandardMaterial if no shader defined
+            groundMaterial = new THREE.MeshStandardMaterial({
+                map: this.groundTexture,
+                side: THREE.DoubleSide,
+                metalness: 0.0,
+                roughness: 1,
+                flatShading: true
+            });
+        }
+
+        // Store reference to update ambient light later
+        this.groundMaterial = groundMaterial;
 
         // Create ground mesh
         this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
@@ -746,30 +796,127 @@ class WorldRenderer {
         geometry.setIndex(indices);
         geometry.computeVertexNormals(); // For lighting
 
-        // Step 7: Create material based on terrain type color
+        // Step 7: Create material - use shader from collections if available
         const terrainTypeData = tileMap.terrainTypes?.[terrainType];
-        let color = 0x0088ff; // Default blue for water
-        let opacity = 0.7;
+        const terrainTypeName = terrainTypeData?.name || terrainTypeData || '';
+        const isWater = typeof terrainTypeName === 'string' && terrainTypeName.toLowerCase().includes('water');
+        const isLava = typeof terrainTypeName === 'string' && terrainTypeName.toLowerCase().includes('lava');
 
-        if (terrainTypeData) {
-            // Parse hex color if available
-            if (terrainTypeData.color) {
+        // Determine which shader to use based on terrain type
+        // waterShader/lavaShader are on the level object, not tileMap
+        const level = this.terrainDataManager?.level;
+        const shaderName = isWater ? level?.waterShader : (isLava ? level?.lavaShader : null);
+        const collections = this.game?.getCollections?.() || {};
+        const shaderDef = shaderName && collections.shaders?.[shaderName];
+
+        let material;
+
+        if (shaderDef && shaderDef.fragmentScript && shaderDef.vertexScript) {
+            // Build uniforms from shader definition
+            const shaderUniforms = {};
+
+            if (shaderDef.uniforms) {
+                for (const [key, uniformDef] of Object.entries(shaderDef.uniforms)) {
+                    // Check if this is a vector uniform
+                    const isVector = shaderDef.vectors?.includes(key);
+                    let value = uniformDef.value;
+
+                    if (isVector) {
+                        if (Array.isArray(value)) {
+                            value = new THREE.Vector3(value[0], value[1], value[2]);
+                        } else if (typeof value === 'string' && value.startsWith('#')) {
+                            // Convert hex color to Vector3
+                            const color = new THREE.Color(value);
+                            value = new THREE.Vector3(color.r, color.g, color.b);
+                        } else {
+                            value = new THREE.Vector3(0, 0, 0);
+                        }
+                    }
+
+                    shaderUniforms[key] = { value };
+                }
+            }
+
+            // Set liquid color from terrain type color if not already set
+            let color = 0x0088ff;
+            if (terrainTypeData?.color) {
                 color = parseInt(terrainTypeData.color.replace('#', '0x'));
             }
-            // Check if this is lava (or other opaque liquid)
-            if (terrainTypeData.name && terrainTypeData.name.toLowerCase().includes('lava')) {
-                opacity = 0.9;
-            }
-        }
+            const threeColor = new THREE.Color(color);
 
-        const material = new THREE.MeshStandardMaterial({
-            color: color,
-            transparent: true,
-            opacity: opacity,
-            side: THREE.DoubleSide,
-            metalness: 0.1,
-            roughness: 0.3
-        });
+            // Helper to check if a Vector3 uniform needs to be set
+            // Catches: missing value, empty string, or default black Vector3(0,0,0)
+            const needsColorValue = (uniform) => {
+                if (!uniform) return false;
+                const val = uniform.value;
+                if (!val) return true;
+                if (typeof val === 'string' && val.length === 0) return true;
+                if (val.isVector3 && val.x === 0 && val.y === 0 && val.z === 0) return true;
+                return false;
+            };
+
+            if (needsColorValue(shaderUniforms.liquidColor)) {
+                shaderUniforms.liquidColor.value = new THREE.Vector3(threeColor.r, threeColor.g, threeColor.b);
+            }
+            if (needsColorValue(shaderUniforms.foamColor)) {
+                // Lighter version for foam
+                shaderUniforms.foamColor.value = new THREE.Vector3(
+                    Math.min(1, threeColor.r + 0.3),
+                    Math.min(1, threeColor.g + 0.3),
+                    Math.min(1, threeColor.b + 0.3)
+                );
+            }
+
+            // Add fog uniforms
+            shaderUniforms.fogColor = { value: this.scene?.fog?.color || new THREE.Color(0xffffff) };
+            shaderUniforms.fogDensity = { value: this.scene?.fog?.density || 0.01 };
+
+            // Load texture if specified in shader definition
+            if (shaderDef.texture && this.game?.imageManager) {
+                const texture = this.game.imageManager.getTexture(shaderDef.texture);
+                if (texture) {
+                    // Configure texture for repeating
+                    texture.wrapS = THREE.RepeatWrapping;
+                    texture.wrapT = THREE.RepeatWrapping;
+                    // Override colorSpace to NoColorSpace (empty string) to disable
+                    // sRGB→linear conversion. ShaderMaterial doesn't convert back,
+                    // so we need raw texture values to match other sprites.
+                    texture.colorSpace = '';
+                    shaderUniforms.overlayTexture = { value: texture };
+                }
+            }
+
+            material = new THREE.ShaderMaterial({
+                uniforms: shaderUniforms,
+                vertexShader: shaderDef.vertexScript,
+                fragmentShader: shaderDef.fragmentScript,
+                transparent: true,
+                side: THREE.DoubleSide,
+                depthWrite: true
+            });
+        } else {
+            // Fallback to standard material
+            let color = 0x0088ff;
+            let opacity = 0.7;
+
+            if (terrainTypeData) {
+                if (terrainTypeData.color) {
+                    color = parseInt(terrainTypeData.color.replace('#', '0x'));
+                }
+                if (isLava) {
+                    opacity = 0.9;
+                }
+            }
+
+            material = new THREE.MeshStandardMaterial({
+                color: color,
+                transparent: true,
+                opacity: opacity,
+                side: THREE.DoubleSide,
+                metalness: 0.1,
+                roughness: 0.3
+            });
+        }
 
         // Step 8: Create mesh (vertices already have correct Y coordinates)
         const liquidMesh = new THREE.Mesh(geometry, material);
@@ -1731,6 +1878,20 @@ class WorldRenderer {
         if (this.composer) {
             this.composer.setSize(width, height);
         }
+    }
+
+    /**
+     * Set the ambient light color for terrain shader (matches sprite lighting)
+     * @param {THREE.Color|number|string} color - The ambient light color
+     * @param {number} intensity - The ambient light intensity (multiplied with color)
+     */
+    setAmbientLightColor(color, intensity = 1.0) {
+        if (!this.groundMaterial?.uniforms?.ambientLightColor) return;
+
+        const lightColor = new THREE.Color(color);
+        lightColor.multiplyScalar(intensity);
+
+        this.groundMaterial.uniforms.ambientLightColor.value.set(lightColor.r, lightColor.g, lightColor.b);
     }
 
     /**

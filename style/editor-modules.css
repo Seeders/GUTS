@@ -93,6 +93,7 @@
   background-color: var(--editor-bg-medium);
   border-radius: var(--editor-border-radius);
   overflow: hidden;
+  min-height: calc(80vh);
   order: 2;
   display: flex;
   flex-direction: column;

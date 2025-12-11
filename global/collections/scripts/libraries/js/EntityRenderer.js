@@ -298,22 +298,70 @@ class EntityRenderer {
         modelGroup.traverse((child) => {
             if (child.isMesh && !geometry) {
                 geometry = child.geometry;
-                material = child.material.clone();
+                const originalMaterial = child.material;
 
                 // For cliffs, compute smooth vertex normals to remove hard edge lines
                 if (collection === 'cliffs') {
                     geometry = geometry.clone();
                     geometry.computeVertexNormals();
-                    material.flatShading = false;
-                    material.needsUpdate = true;
-                }
 
-                // Set SRGB color space for textures
-                if (material.map) {
-                    material.map.colorSpace = THREE.SRGBColorSpace;
-                }
-                if (material.emissiveMap) {
-                    material.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+                    // Use custom shader material that matches terrain/sprite lighting
+                    const cliffTexture = originalMaterial.map;
+                    if (cliffTexture) {
+                        cliffTexture.colorSpace = THREE.SRGBColorSpace;
+                        // Use nearest neighbor filtering for pixel art style
+                        cliffTexture.minFilter = THREE.NearestFilter;
+                        cliffTexture.magFilter = THREE.NearestFilter;
+                    }
+
+                    material = new THREE.ShaderMaterial({
+                        uniforms: THREE.UniformsUtils.merge([
+                            THREE.UniformsLib.fog,
+                            {
+                                map: { value: cliffTexture },
+                                ambientLightColor: { value: this.currentAmbientLight.clone() }
+                            }
+                        ]),
+                        vertexShader: `
+                            varying vec2 vUv;
+                            #include <fog_pars_vertex>
+
+                            void main() {
+                                vUv = uv;
+                                vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+                                gl_Position = projectionMatrix * mvPosition;
+                                #include <fog_vertex>
+                            }
+                        `,
+                        fragmentShader: `
+                            uniform sampler2D map;
+                            uniform vec3 ambientLightColor;
+                            varying vec2 vUv;
+                            #include <fog_pars_fragment>
+
+                            void main() {
+                                vec4 texColor = texture2D(map, vUv);
+                                if (texColor.a < 0.5) discard;
+                                // Apply ambient lighting the same way sprites do
+                                vec3 litColor = texColor.rgb * ambientLightColor;
+                                gl_FragColor = vec4(litColor, texColor.a);
+                                #include <colorspace_fragment>
+                                #include <fog_fragment>
+                            }
+                        `,
+                        fog: true,
+                        side: THREE.DoubleSide
+                    });
+                } else {
+                    material = originalMaterial.clone();
+
+                    // Set SRGB color space for textures
+                    if (material.map) {
+                        material.map.colorSpace = THREE.SRGBColorSpace;
+                    }
+                    if (material.emissiveMap) {
+                        material.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+                    }
                 }
             }
         });
@@ -1915,7 +1963,7 @@ class EntityRenderer {
     }
 
     /**
-     * Update ambient light color for all billboard batches
+     * Update ambient light color for all billboard and static batches
      * @param {THREE.Color|number|string} color - The ambient light color
      * @param {number} intensity - The ambient light intensity (multiplied with color)
      */
@@ -1929,6 +1977,13 @@ class EntityRenderer {
 
         // Update all existing billboard batches
         for (const batch of this.billboardBatches.values()) {
+            if (batch.instancedMesh?.material?.uniforms?.ambientLightColor) {
+                batch.instancedMesh.material.uniforms.ambientLightColor.value.copy(lightColor);
+            }
+        }
+
+        // Update all existing static batches (cliffs use ShaderMaterial with ambientLightColor)
+        for (const batch of this.staticBatches.values()) {
             if (batch.instancedMesh?.material?.uniforms?.ambientLightColor) {
                 batch.instancedMesh.material.uniforms.ambientLightColor.value.copy(lightColor);
             }
