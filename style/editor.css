@@ -89,13 +89,15 @@
   #main-content-container > div {
     display: none;
     height: 100%;
+    max-height: 100%;
     width: 100%;
     position: relative;
-    overflow-y: auto;
+    overflow: visible; /* Allow inspector to overflow */
   }
-  
+
   #main-content-container > div.show {
     display: flex;
+    align-items: flex-start; /* Don't stretch children to tallest */
   }
   #togglePropertyVisibility {
     float: right;

@@ -108,6 +108,9 @@ class SceneManager {
         }
         this.spawnedEntityIds.clear();
 
+        // Reset entity ID counter so new scene starts fresh
+        this.game.nextEntityId = 1;
+
         // Destroy systems that are NOT needed by the new scene
         this.destroyUnneededSystems(keepSystems);
 
