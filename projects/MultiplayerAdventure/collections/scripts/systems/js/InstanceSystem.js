@@ -8,6 +8,8 @@
  * - Objective tracking
  * - Instance completion
  * - Deterministic sync with server
+ *
+ * Uses numeric entity IDs for performance (deterministic lockstep compatible)
  */
 class InstanceSystem extends GUTS.BaseSystem {
     constructor(game) {
@@ -20,8 +22,8 @@ class InstanceSystem extends GUTS.BaseSystem {
         this.instanceData = null;
         this.isInInstance = false;
 
-        // Entity tracking
-        this.monsterEntities = new Map(); // monsterId -> entityId
+        // Entity tracking (uses numeric entity IDs)
+        this.monsterEntities = new Map(); // monsterId -> { entityId, monsterType }
         this.lootEntities = new Map(); // lootId -> entityId
         this.partyMemberEntities = new Map(); // playerId -> entityId
 
@@ -31,7 +33,7 @@ class InstanceSystem extends GUTS.BaseSystem {
 
         // Instance timer
         this.instanceStartTime = 0;
-        this.instanceTimeLimit = 0; // 0 = no limit
+        this.instanceTimeLimit = 0;
 
         // Spawn points from terrain
         this.spawnPoints = {
@@ -59,34 +61,28 @@ class InstanceSystem extends GUTS.BaseSystem {
     }
 
     registerServices() {
-        // Instance info
         this.game.register('getInstanceId', () => this.instanceId);
         this.game.register('getAdventureId', () => this.adventureId);
         this.game.register('isInInstance', () => this.isInInstance);
         this.game.register('getInstanceData', () => this.instanceData);
 
-        // Monster management
         this.game.register('spawnMonster', this.spawnMonster.bind(this));
         this.game.register('spawnMonsterAtSpawnPoint', this.spawnMonsterAtSpawnPoint.bind(this));
-        this.game.register('getMonsterEntities', () => Array.from(this.monsterEntities.values()));
+        this.game.register('getMonsterEntities', () => Array.from(this.monsterEntities.values()).map(m => m.entityId));
         this.game.register('handleMonsterDeath', this.handleMonsterDeath.bind(this));
         this.game.register('getActiveMonsterCount', () => this.monsterEntities.size);
 
-        // Loot management
         this.game.register('spawnLoot', this.spawnLoot.bind(this));
         this.game.register('collectLoot', this.collectLoot.bind(this));
 
-        // Objectives
         this.game.register('getObjectives', () => this.objectives);
         this.game.register('isObjectiveComplete', (id) => this.completedObjectives.has(id));
         this.game.register('completeObjective', this.completeObjective.bind(this));
 
-        // Instance control
         this.game.register('initializeInstance', this.initializeInstance.bind(this));
         this.game.register('exitInstance', this.exitInstance.bind(this));
         this.game.register('getInstanceProgress', this.getInstanceProgress.bind(this));
 
-        // Terrain utilities
         this.game.register('getInstanceSpawnPoint', () => this.spawnPoints.player);
         this.game.register('getMonsterSpawnPoints', () => this.spawnPoints.monsters);
     }
@@ -107,7 +103,6 @@ class InstanceSystem extends GUTS.BaseSystem {
         this.isInInstance = true;
         this.instanceStartTime = this.game.state.now;
 
-        // Load adventure definition
         const adventures = this.game.getCollections().adventures;
         if (adventures && adventures[this.adventureId]) {
             const adventureDef = adventures[this.adventureId];
@@ -116,9 +111,7 @@ class InstanceSystem extends GUTS.BaseSystem {
             this.monsterWaves = adventureDef.waves || [];
         }
 
-        // Switch to adventure instance scene
         this.game.switchScene('adventure_instance').then(() => {
-            // Wait for terrain to be ready
             this.waitForTerrain().then(() => {
                 this.initializeInstance(data);
             });
@@ -142,7 +135,7 @@ class InstanceSystem extends GUTS.BaseSystem {
     }
 
     setupTerrainData() {
-        const terrainSize = this.game.call('getTerrainSize') || 2304; // 48 * 48 default
+        const terrainSize = this.game.call('getTerrainSize') || 2304;
         const margin = this.gridSize * 2;
 
         this.terrainBounds = {
@@ -152,14 +145,11 @@ class InstanceSystem extends GUTS.BaseSystem {
             maxZ: terrainSize - margin
         };
 
-        // Get spawn points from terrain tile map
         this.loadSpawnPointsFromTerrain();
-
         console.log('[InstanceSystem] Terrain ready, bounds:', this.terrainBounds);
     }
 
     loadSpawnPointsFromTerrain() {
-        // Try to get tile map data
         const tileMap = this.game.call('getTileMap');
 
         if (tileMap && tileMap.worldObjects) {
@@ -184,7 +174,6 @@ class InstanceSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Default spawn point if none defined
         if (!this.spawnPoints.player) {
             const terrainSize = this.game.call('getTerrainSize') || 2304;
             this.spawnPoints.player = {
@@ -194,12 +183,10 @@ class InstanceSystem extends GUTS.BaseSystem {
             };
         }
 
-        // Default monster spawn points if none defined
         if (this.spawnPoints.monsters.length === 0) {
             const terrainSize = this.game.call('getTerrainSize') || 2304;
             const center = terrainSize / 2;
 
-            // Create spawn points in a grid pattern
             const spawnLocations = [
                 { x: center - 200, z: center - 100 },
                 { x: center + 200, z: center - 100 },
@@ -232,21 +219,16 @@ class InstanceSystem extends GUTS.BaseSystem {
     initializeInstance(data) {
         console.log('[InstanceSystem] Initializing instance:', this.instanceId);
 
-        // Use terrain-aware spawn point
         const spawnPoint = this.spawnPoints.player || data.spawnPoint || { x: 0, y: 0, z: 0 };
-
-        // Spawn party members
         const partyMembers = this.game.call('getPartyMembers') || [];
 
         if (partyMembers.length === 0) {
-            // Solo play - spawn local player
             this.game.call('spawnLocalPlayer', spawnPoint);
         } else {
             for (const member of partyMembers) {
                 if (member.isLocal) {
                     this.game.call('spawnLocalPlayer', spawnPoint);
                 } else {
-                    // Offset spawn position slightly for other members
                     const offset = { x: (Math.random() - 0.5) * 50, z: (Math.random() - 0.5) * 50 };
                     const memberSpawn = {
                         x: spawnPoint.x + offset.x,
@@ -258,7 +240,6 @@ class InstanceSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Spawn initial monsters based on adventure definition
         if (data.initialMonsters) {
             for (const monsterData of data.initialMonsters) {
                 const pos = { ...monsterData.position };
@@ -266,17 +247,14 @@ class InstanceSystem extends GUTS.BaseSystem {
                 this.spawnMonster(monsterData.id, monsterData.type, pos);
             }
         } else {
-            // Spawn monsters at terrain-defined spawn points
             this.spawnInitialMonsters();
         }
 
-        // Start instance
         this.game.state.phase = 'adventure';
         this.game.triggerEvent('onInstanceStarted', { instanceId: this.instanceId });
     }
 
     spawnInitialMonsters() {
-        // Get adventure definition for monster types
         const adventures = this.game.getCollections().adventures;
         const adventureDef = adventures?.[this.adventureId];
 
@@ -288,12 +266,9 @@ class InstanceSystem extends GUTS.BaseSystem {
         const encounters = adventureDef.encounters || [];
         const monsterTypes = encounters.map(e => e.type || e.monsterType || 'goblin');
 
-        // Spawn monsters at each spawn point
         for (let i = 0; i < this.spawnPoints.monsters.length; i++) {
             const spawnPoint = this.spawnPoints.monsters[i];
             const monsterType = monsterTypes[i % monsterTypes.length];
-
-            // Spawn a group of monsters at this point
             const groupSize = adventureDef.monstersPerSpawn || 3;
 
             for (let j = 0; j < groupSize; j++) {
@@ -308,14 +283,13 @@ class InstanceSystem extends GUTS.BaseSystem {
                     z: spawnPoint.z + offset.z
                 };
 
-                const monsterId = `${this.instanceId}_monster_${this.nextMonsterId++}`;
+                const monsterId = this.nextMonsterId++;
                 this.spawnMonster(monsterId, monsterType, position);
             }
         }
 
-        // Spawn boss if defined
         if (this.spawnPoints.boss && adventureDef.boss) {
-            const bossId = `${this.instanceId}_boss`;
+            const bossId = this.nextMonsterId++;
             this.spawnMonster(bossId, adventureDef.boss.type || 'orc', this.spawnPoints.boss, true);
         }
     }
@@ -324,69 +298,75 @@ class InstanceSystem extends GUTS.BaseSystem {
         const spawnPoint = this.spawnPoints.monsters[spawnPointIndex % this.spawnPoints.monsters.length];
         if (!spawnPoint) return null;
 
-        const monsterId = `${this.instanceId}_monster_${this.nextMonsterId++}`;
+        const monsterId = this.nextMonsterId++;
         return this.spawnMonster(monsterId, monsterType, spawnPoint);
     }
 
     spawnPartyMember(memberData, spawnPoint) {
-        const entityId = `party_member_${memberData.playerId}`;
         const position = spawnPoint || this.spawnPoints.player || { x: 0, y: 0, z: 0 };
-
-        // Ensure Y is terrain-aware
         position.y = this.getTerrainHeightAt(position.x, position.z);
 
-        if (!this.game.entities.has(entityId)) {
-            this.game.createEntity(entityId);
-        }
+        // Create entity with numeric ID
+        const entityId = this.game.createEntity();
 
-        this.game.addComponent(entityId, 'transform', {
-            position: { ...position },
-            rotation: { x: 0, y: 0, z: 0 },
-            scale: { x: 1, y: 1, z: 1 }
+        // Use addComponents for batch operation
+        this.game.addComponents(entityId, {
+            transform: {
+                position: { x: position.x, y: position.y, z: position.z },
+                rotation: { x: 0, y: 0, z: 0 },
+                scale: { x: 1, y: 1, z: 1 }
+            },
+            velocity: {
+                vx: 0,
+                vy: 0,
+                vz: 0,
+                maxSpeed: 150,
+                affectedByGravity: true,
+                anchored: false
+            },
+            playerCharacter: {
+                playerId: memberData.playerId,
+                playerName: memberData.name,
+                isLocal: false,
+                characterClass: memberData.characterClass || 'warrior',
+                level: memberData.level || 1
+            },
+            health: {
+                current: memberData.health?.current || 100,
+                max: memberData.health?.max || 100
+            },
+            team: {
+                team: 'player'
+            },
+            collision: {
+                radius: 10,
+                height: 50
+            },
+            renderable: {
+                objectType: 'units',
+                spawnType: 'peasant',
+                capacity: 128
+            },
+            networkSynced: {
+                lastUpdate: 0
+            }
         });
-
-        this.game.addComponent(entityId, 'velocity', { vx: 0, vy: 0, vz: 0 });
-
-        this.game.addComponent(entityId, 'playerCharacter', {
-            playerId: memberData.playerId,
-            playerName: memberData.name,
-            isLocal: false,
-            characterClass: memberData.characterClass || 'warrior',
-            level: memberData.level || 1
-        });
-
-        this.game.addComponent(entityId, 'health', {
-            current: memberData.health?.current || 100,
-            max: memberData.health?.max || 100
-        });
-
-        this.game.addComponent(entityId, 'team', {
-            team: 'player'
-        });
-
-        this.game.addComponent(entityId, 'unitType', {
-            id: 'player_character',
-            collection: 'units'
-        });
-
-        this.game.addComponent(entityId, 'networkSynced', { lastUpdate: 0 });
 
         this.partyMemberEntities.set(memberData.playerId, entityId);
 
-        this.game.call('spawnInstance', entityId, 'units', 'player_character', position);
+        this.game.call('spawnInstance', entityId, 'units', 'peasant', position);
+
+        console.log('[InstanceSystem] Spawned party member:', memberData.name, 'entityId:', entityId);
 
         return entityId;
     }
 
     spawnMonster(monsterId, monsterType, position, isBoss = false) {
-        const entityId = `monster_${monsterId}`;
-
         if (this.monsterEntities.has(monsterId)) {
             console.warn('[InstanceSystem] Monster already spawned:', monsterId);
-            return this.monsterEntities.get(monsterId);
+            return this.monsterEntities.get(monsterId).entityId;
         }
 
-        // Get monster definition from collections
         const monsters = this.game.getCollections().monsters;
         const monsterDef = monsters?.[monsterType];
 
@@ -395,104 +375,101 @@ class InstanceSystem extends GUTS.BaseSystem {
             return null;
         }
 
-        if (!this.game.entities.has(entityId)) {
-            this.game.createEntity(entityId);
-        }
-
-        // Ensure Y is terrain-aware
         const spawnPos = { ...position };
         spawnPos.y = this.getTerrainHeightAt(spawnPos.x, spawnPos.z);
 
-        // Scale up bosses
         const scale = isBoss ? (monsterDef.scale || 1) * 1.5 : (monsterDef.scale || 1);
-
-        // Transform
-        this.game.addComponent(entityId, 'transform', {
-            position: spawnPos,
-            rotation: { x: 0, y: 0, z: 0 },
-            scale: { x: scale, y: scale, z: scale }
-        });
-
-        this.game.addComponent(entityId, 'velocity', { vx: 0, vy: 0, vz: 0 });
-
-        // Unit type
-        this.game.addComponent(entityId, 'unitType', {
-            id: monsterType,
-            collection: 'monsters'
-        });
-
-        // Health (bosses have more HP)
         const healthMult = isBoss ? 3 : 1;
-        this.game.addComponent(entityId, 'health', {
-            current: (monsterDef.health || 100) * healthMult,
-            max: (monsterDef.health || 100) * healthMult
+        const maxHP = (monsterDef.health || 100) * healthMult;
+
+        // Create entity with numeric ID
+        const entityId = this.game.createEntity();
+
+        // Use addComponents for batch operation (single cache invalidation)
+        this.game.addComponents(entityId, {
+            transform: {
+                position: { x: spawnPos.x, y: spawnPos.y, z: spawnPos.z },
+                rotation: { x: 0, y: 0, z: 0 },
+                scale: { x: scale, y: scale, z: scale }
+            },
+            velocity: {
+                vx: 0,
+                vy: 0,
+                vz: 0,
+                maxSpeed: (monsterDef.speed || 80) * 20,
+                affectedByGravity: true,
+                anchored: false
+            },
+            health: {
+                current: maxHP,
+                max: maxHP
+            },
+            combat: {
+                damage: monsterDef.damage || 10,
+                range: monsterDef.attackRange || 50,
+                attackSpeed: monsterDef.attackSpeed || 1,
+                lastAttack: 0
+            },
+            collision: {
+                radius: (monsterDef.size || 10) * scale,
+                height: 50
+            },
+            aiState: {
+                currentAction: null,
+                rootBehaviorTree: monsterDef.behaviorTree || 'CombatBehaviorTree',
+                meta: {
+                    aggroRange: monsterDef.aggroRange || 200,
+                    leashRange: monsterDef.leashRange || 400,
+                    homePosition: { x: spawnPos.x, y: spawnPos.y, z: spawnPos.z }
+                }
+            },
+            pathfinding: {
+                path: null,
+                pathIndex: 0,
+                lastPathRequest: 0,
+                useDirectMovement: false
+            },
+            combatState: {
+                lastAttacker: null,
+                lastAttackTime: 0
+            },
+            team: {
+                team: 'enemy'
+            },
+            monster: {
+                monsterId,
+                monsterType,
+                isBoss,
+                level: monsterDef.level || 1,
+                experienceValue: (monsterDef.experienceValue || 10) * (isBoss ? 10 : 1),
+                lootTable: isBoss ? 'uncommon' : (monsterDef.lootTable || 'common')
+            },
+            renderable: {
+                objectType: 'units',
+                spawnType: 'peasant', // Use peasant as placeholder model
+                capacity: 128
+            }
         });
 
-        // Combat stats
-        this.game.addComponent(entityId, 'combat', {
-            damage: monsterDef.damage || 10,
-            attackSpeed: monsterDef.attackSpeed || 1,
-            attackRange: monsterDef.attackRange || 50,
-            lastAttack: 0
-        });
-
-        // Movement
-        this.game.addComponent(entityId, 'movement', {
-            speed: monsterDef.speed || 80,
-            acceleration: 300,
-            friction: 0.9
-        });
-
-        // AI state - uses existing BehaviorSystem
-        this.game.addComponent(entityId, 'aiState', {
-            state: 'idle',
-            target: null,
-            targetPosition: null,
-            aggroRange: monsterDef.aggroRange || 200,
-            leashRange: monsterDef.leashRange || 400,
-            homePosition: { ...spawnPos }
-        });
-
-        // Behavior tree for AI
-        this.game.addComponent(entityId, 'behavior', {
-            treeId: monsterDef.behaviorTree || 'CombatBehaviorTree',
-            blackboard: {}
-        });
-
-        // Team
-        this.game.addComponent(entityId, 'team', {
-            team: 'enemy'
-        });
-
-        // Monster-specific data
-        this.game.addComponent(entityId, 'monster', {
-            monsterId,
-            monsterType,
-            isBoss,
-            level: monsterDef.level || 1,
-            experienceValue: (monsterDef.experienceValue || 10) * (isBoss ? 10 : 1),
-            lootTable: isBoss ? 'uncommon' : (monsterDef.lootTable || 'common')
-        });
-
-        this.monsterEntities.set(monsterId, entityId);
+        this.monsterEntities.set(monsterId, { entityId, monsterType });
 
         // Spawn render instance
-        this.game.call('spawnInstance', entityId, 'monsters', monsterType, spawnPos);
+        this.game.call('spawnInstance', entityId, 'units', 'peasant', spawnPos);
 
-        console.log('[InstanceSystem] Spawned', isBoss ? 'boss' : 'monster', monsterType, 'at', spawnPos);
+        console.log('[InstanceSystem] Spawned', isBoss ? 'boss' : 'monster', monsterType, 'entityId:', entityId);
 
         return entityId;
     }
 
     handleMonsterDeath(monsterId, killerPlayerId) {
-        const entityId = this.monsterEntities.get(monsterId);
-        if (!entityId) return;
+        const monsterData = this.monsterEntities.get(monsterId);
+        if (!monsterData) return;
 
+        const { entityId } = monsterData;
         const monster = this.game.getComponent(entityId, 'monster');
         const transform = this.game.getComponent(entityId, 'transform');
 
         if (monster && transform) {
-            // Award experience
             if (this.game.call('isExperienceShared') && this.game.call('isInParty')) {
                 const partySize = this.game.call('getPartySize') || 1;
                 const expPerMember = Math.floor(monster.experienceValue / partySize);
@@ -501,24 +478,18 @@ class InstanceSystem extends GUTS.BaseSystem {
                 this.game.call('awardExperience', monster.experienceValue);
             }
 
-            // Drop loot
             this.generateLootDrop(monster.lootTable, transform.position);
-
-            // Check kill objectives
             this.checkKillObjective(monster.monsterType);
 
-            // Boss death triggers special handling
             if (monster.isBoss) {
                 this.handleBossDeath(monster);
             }
         }
 
-        // Remove monster entity
         this.game.call('removeInstance', entityId);
         this.game.destroyEntity(entityId);
         this.monsterEntities.delete(monsterId);
 
-        // Check if all monsters are dead
         if (this.monsterEntities.size === 0) {
             this.handleAllMonstersDefeated();
         }
@@ -533,9 +504,7 @@ class InstanceSystem extends GUTS.BaseSystem {
     }
 
     handleAllMonstersDefeated() {
-        // Check if there are more waves
         if (this.currentWave < this.monsterWaves.length) {
-            // Spawn next wave
             setTimeout(() => {
                 this.spawnWave(this.currentWave);
                 this.currentWave++;
@@ -564,7 +533,7 @@ class InstanceSystem extends GUTS.BaseSystem {
                         z: spawnPoint.z + offset.z
                     };
 
-                    const monsterId = `${this.instanceId}_wave${waveIndex}_monster_${this.nextMonsterId++}`;
+                    const monsterId = this.nextMonsterId++;
                     this.spawnMonster(monsterId, spawn.type, position);
                 }
             }
@@ -590,7 +559,7 @@ class InstanceSystem extends GUTS.BaseSystem {
         }
 
         if (items.length > 0) {
-            const lootId = `loot_${Date.now()}_${Math.floor(this.game.rng?.random() * 1000 || Math.random() * 1000)}`;
+            const lootId = this.nextMonsterId++; // Reuse counter for unique IDs
             this.spawnLoot(lootId, position, items);
         }
 
@@ -599,33 +568,30 @@ class InstanceSystem extends GUTS.BaseSystem {
     }
 
     spawnLoot(lootId, position, items) {
-        const entityId = `loot_${lootId}`;
-
-        if (!this.game.entities.has(entityId)) {
-            this.game.createEntity(entityId);
-        }
-
-        // Ensure loot is on terrain
         const lootPos = { ...position };
         lootPos.y = this.getTerrainHeightAt(lootPos.x, lootPos.z);
 
-        this.game.addComponent(entityId, 'transform', {
-            position: lootPos,
-            rotation: { x: 0, y: 0, z: 0 },
-            scale: { x: 1, y: 1, z: 1 }
-        });
+        // Create entity with numeric ID
+        const entityId = this.game.createEntity();
 
-        this.game.addComponent(entityId, 'loot', {
-            lootId,
-            items,
-            spawnTime: this.game.state.now,
-            despawnTime: this.game.state.now + 120
-        });
-
-        this.game.addComponent(entityId, 'interactable', {
-            interactionType: 'loot',
-            interactionRadius: 30,
-            promptText: 'Pick up loot'
+        // Use addComponents for batch operation
+        this.game.addComponents(entityId, {
+            transform: {
+                position: { x: lootPos.x, y: lootPos.y, z: lootPos.z },
+                rotation: { x: 0, y: 0, z: 0 },
+                scale: { x: 1, y: 1, z: 1 }
+            },
+            loot: {
+                lootId,
+                items,
+                spawnTime: this.game.state.now,
+                despawnTime: this.game.state.now + 120
+            },
+            interactable: {
+                interactionType: 'loot',
+                interactionRadius: 30,
+                promptText: 'Pick up loot'
+            }
         });
 
         this.lootEntities.set(lootId, entityId);
@@ -712,10 +678,10 @@ class InstanceSystem extends GUTS.BaseSystem {
     exitInstance(returnToTown = true) {
         console.log('[InstanceSystem] Exiting instance');
 
-        for (const [monsterId, entityId] of this.monsterEntities) {
-            this.game.call('removeInstance', entityId);
-            if (this.game.entities.has(entityId)) {
-                this.game.destroyEntity(entityId);
+        for (const [monsterId, monsterData] of this.monsterEntities) {
+            this.game.call('removeInstance', monsterData.entityId);
+            if (this.game.entities.has(monsterData.entityId)) {
+                this.game.destroyEntity(monsterData.entityId);
             }
         }
         this.monsterEntities.clear();
@@ -736,7 +702,6 @@ class InstanceSystem extends GUTS.BaseSystem {
         }
         this.partyMemberEntities.clear();
 
-        // Reset state
         this.instanceId = null;
         this.adventureId = null;
         this.instanceData = null;
@@ -796,7 +761,6 @@ class InstanceSystem extends GUTS.BaseSystem {
     update() {
         if (!this.isInInstance || !this.terrainReady) return;
 
-        // Check time limit
         if (this.instanceTimeLimit > 0) {
             const elapsed = this.game.state.now - this.instanceStartTime;
             if (elapsed >= this.instanceTimeLimit) {
@@ -807,14 +771,12 @@ class InstanceSystem extends GUTS.BaseSystem {
         }
 
         // Update monster positions to stay on terrain
-        for (const [monsterId, entityId] of this.monsterEntities) {
-            const transform = this.game.getComponent(entityId, 'transform');
+        for (const [monsterId, monsterData] of this.monsterEntities) {
+            const transform = this.game.getComponent(monsterData.entityId, 'transform');
             if (transform && transform.position) {
-                // Keep on terrain
                 const terrainY = this.getTerrainHeightAt(transform.position.x, transform.position.z);
                 transform.position.y = terrainY;
 
-                // Enforce bounds
                 if (this.terrainBounds) {
                     transform.position.x = Math.max(this.terrainBounds.minX,
                         Math.min(this.terrainBounds.maxX, transform.position.x));

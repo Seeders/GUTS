@@ -5,40 +5,43 @@
     "ComponentSystem",
     "GridSystem",
     "TerrainSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "UnitCreationSystem",
+    "PlayerStatsSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "LifetimeSystem",
+    "PathfindingSystem",
+    "VisionSystem"
+  ],
+  "clientSystems": [
     "RenderSystem",
     "WorldSystem",
     "TerrainDetailSystem",
     "PostProcessingSystem",
-    "BehaviorSystem",
-    "MovementSystem",
-    "ProjectileSystem",
     "AnimationSystem",
     "EffectsSystem",
-    "UnitCreationSystem",
-    "PlayerStatsSystem",
     "AdventureNetworkSystem",
     "InstanceSystem",
     "PartySystem",
     "PlayerControlSystem",
-    "MonsterAISystem",
     "HealthBarSystem",
     "EquipmentSystem",
-    "DeathSystem",
-    "DamageSystem",
-    "AbilitySystem",
     "ParticleSystem",
-    "LifetimeSystem",
-    "PathfindingSystem",
     "CameraControlSystem",
     "DamageNumberSystem",
-    "VisionSystem",
     "LootSystem",
     "InventorySystem",
     "CharacterSystem"
   ],
+  "serverSystems": [
+    "ServerInstanceSystem"
+  ],
   "entities": [
     {
-      "id": "terrain_main",
       "prefab": "terrain_forest"
     }
   ]

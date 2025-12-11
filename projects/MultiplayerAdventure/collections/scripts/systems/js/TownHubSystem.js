@@ -5,25 +5,56 @@
  * - Player spawning in town (terrain-aware)
  * - Other player entity management
  * - NPC interactions
- * - Adventure portal management from scene entities
+ * - Adventure portal management
  * - Town-specific game logic with terrain integration
+ *
+ * Uses numeric entity IDs for performance (deterministic lockstep compatible)
  */
 class TownHubSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.townHubSystem = this;
 
-        // Player tracking
+        // Player tracking (uses numeric entity IDs)
         this.localPlayerEntityId = null;
-        this.otherPlayerEntities = new Map(); // playerId -> entityId
+        this.otherPlayerEntities = new Map(); // playerId -> numeric entityId
 
         // Town configuration (will be set from terrain)
         this.spawnPoint = { x: 0, y: 0, z: 0 };
-        this.townBounds = null; // Will be set from terrain
-        this.gridSize = 48; // Standard grid size
+        this.townBounds = null;
+        this.gridSize = 48;
 
-        // Adventure portals (loaded from scene entities)
-        this.adventurePortals = new Map(); // portalId -> { position, adventureId, name }
+        // Adventure portals
+        this.adventurePortals = new Map(); // portalIndex -> { entityId, position, adventureId, name }
+        this.portalDefinitions = [
+            {
+                adventureId: 'forest_dungeon',
+                name: 'Forest Dungeon',
+                description: 'A mysterious forest filled with goblins',
+                minLevel: 1,
+                maxPlayers: 4,
+                terrainLevel: 'forest_instance',
+                gridPosition: { x: 15, z: 4 } // North road
+            },
+            {
+                adventureId: 'cave_dungeon',
+                name: 'Crystal Caves',
+                description: 'Deep caves with valuable crystals and dangers',
+                minLevel: 5,
+                maxPlayers: 4,
+                terrainLevel: 'cave_instance',
+                gridPosition: { x: 27, z: 15 } // East road
+            },
+            {
+                adventureId: 'castle_dungeon',
+                name: 'Haunted Castle',
+                description: 'An ancient castle overrun by undead',
+                minLevel: 10,
+                maxPlayers: 4,
+                terrainLevel: 'hell',
+                gridPosition: { x: 15, z: 27 } // South road
+            }
+        ];
 
         // Terrain integration
         this.terrainReady = false;
@@ -49,7 +80,6 @@ class TownHubSystem extends GUTS.BaseSystem {
         this.game.register('getTerrainHeightAt', this.getTerrainHeightAt.bind(this));
 
         // Portal management
-        this.game.register('registerAdventurePortal', this.registerAdventurePortal.bind(this));
         this.game.register('getAdventurePortals', () => this.adventurePortals);
         this.game.register('getNearestPortal', this.getNearestPortal.bind(this));
         this.game.register('getPortalByAdventureId', this.getPortalByAdventureId.bind(this));
@@ -66,7 +96,6 @@ class TownHubSystem extends GUTS.BaseSystem {
     }
 
     async waitForTerrain() {
-        // Wait for terrain system to initialize
         return new Promise((resolve) => {
             const checkTerrain = () => {
                 const terrainSize = this.game.call('getTerrainSize');
@@ -87,11 +116,11 @@ class TownHubSystem extends GUTS.BaseSystem {
         // Get terrain bounds
         this.setupTerrainBounds();
 
-        // Load portals from scene entities
-        this.loadPortalsFromScene(sceneData);
-
         // Calculate spawn point at town center
         this.calculateSpawnPoint();
+
+        // Create adventure portals
+        this.createAdventurePortals();
 
         // Spawn local player at terrain-aware position
         this.spawnLocalPlayer();
@@ -101,7 +130,6 @@ class TownHubSystem extends GUTS.BaseSystem {
         this.game.call('enterTown', playerName, (success, data) => {
             if (success) {
                 console.log('[TownHubSystem] Successfully entered town');
-                // Spawn other players already in town
                 if (data && data.players) {
                     for (const player of data.players) {
                         if (player.playerId !== this.game.call('getPlayerId')) {
@@ -114,10 +142,8 @@ class TownHubSystem extends GUTS.BaseSystem {
     }
 
     setupTerrainBounds() {
-        const terrainSize = this.game.call('getTerrainSize') || 1536; // 32 * 48 default
-        const extendedSize = this.game.call('getTerrainExtendedSize') || terrainSize;
+        const terrainSize = this.game.call('getTerrainSize') || 1536;
 
-        // Use the main terrain size for bounds, with a small margin
         const margin = this.gridSize;
         this.townBounds = {
             minX: margin,
@@ -130,12 +156,10 @@ class TownHubSystem extends GUTS.BaseSystem {
     }
 
     calculateSpawnPoint() {
-        // Spawn at the center of the terrain (on the plaza)
         const terrainSize = this.game.call('getTerrainSize') || 1536;
         const centerX = terrainSize / 2;
         const centerZ = terrainSize / 2;
 
-        // Get terrain height at spawn point
         const height = this.getTerrainHeightAt(centerX, centerZ);
 
         this.spawnPoint = {
@@ -148,7 +172,6 @@ class TownHubSystem extends GUTS.BaseSystem {
     }
 
     getTerrainHeightAt(worldX, worldZ) {
-        // Try smooth height first, then regular
         let height = this.game.call('getTerrainHeightAtPositionSmooth', worldX, worldZ);
         if (height === undefined || height === null) {
             height = this.game.call('getTerrainHeightAtPosition', worldX, worldZ);
@@ -156,165 +179,189 @@ class TownHubSystem extends GUTS.BaseSystem {
         return height || 0;
     }
 
-    loadPortalsFromScene(sceneData) {
-        // Load portals from scene entity definitions
-        if (sceneData.entities) {
-            for (const entityDef of sceneData.entities) {
-                if (entityDef.components?.adventurePortal) {
-                    const portalData = entityDef.components.adventurePortal;
-                    const position = entityDef.transform?.position || { x: 0, y: 0, z: 0 };
+    createAdventurePortals() {
+        for (let i = 0; i < this.portalDefinitions.length; i++) {
+            const def = this.portalDefinitions[i];
 
-                    // Get terrain height at portal position
-                    position.y = this.getTerrainHeightAt(position.x, position.z);
+            // Calculate world position from grid position
+            const worldX = def.gridPosition.x * this.gridSize + this.gridSize / 2;
+            const worldZ = def.gridPosition.z * this.gridSize + this.gridSize / 2;
+            const worldY = this.getTerrainHeightAt(worldX, worldZ);
 
-                    this.registerAdventurePortal(entityDef.id, {
-                        position,
-                        adventureId: portalData.adventureId,
-                        name: portalData.name,
-                        description: portalData.description,
-                        minLevel: portalData.minLevel || 1,
-                        maxPlayers: portalData.maxPlayers || 4,
-                        terrainLevel: portalData.terrainLevel
-                    });
+            const position = { x: worldX, y: worldY, z: worldZ };
+
+            // Create entity with numeric ID
+            const entityId = this.game.createEntity();
+
+            // Use addComponents for batch operation (single cache invalidation)
+            this.game.addComponents(entityId, {
+                transform: {
+                    position: { x: position.x, y: position.y, z: position.z },
+                    rotation: { x: 0, y: 0, z: 0 },
+                    scale: { x: 2, y: 2, z: 2 }
+                },
+                adventurePortal: {
+                    adventureId: def.adventureId,
+                    name: def.name,
+                    description: def.description,
+                    minLevel: def.minLevel,
+                    maxPlayers: def.maxPlayers,
+                    terrainLevel: def.terrainLevel
+                },
+                interactable: {
+                    interactionType: 'portal',
+                    interactionRadius: 80,
+                    promptText: `Enter ${def.name} (Lvl ${def.minLevel}+)`
                 }
-            }
-        }
+            });
 
-        console.log('[TownHubSystem] Loaded', this.adventurePortals.size, 'portals from scene');
+            this.adventurePortals.set(i, {
+                entityId,
+                position,
+                adventureId: def.adventureId,
+                name: def.name,
+                description: def.description,
+                minLevel: def.minLevel,
+                maxPlayers: def.maxPlayers,
+                terrainLevel: def.terrainLevel
+            });
+
+            // Spawn visual marker
+            this.game.call('spawnInstance', entityId, 'effects', 'portal_effect', position);
+
+            console.log('[TownHubSystem] Created portal:', def.name, 'at', position, 'entityId:', entityId);
+        }
     }
 
     spawnLocalPlayer(position = null) {
         let spawnPos = position || { ...this.spawnPoint };
-
-        // Ensure Y position is terrain-aware
         spawnPos.y = this.getTerrainHeightAt(spawnPos.x, spawnPos.z);
 
         const playerId = this.game.call('getPlayerId');
         const playerName = this.game.call('getPlayerName') || 'Adventurer';
 
-        // Create player entity
-        const entityId = `local_player`;
+        // Create entity with numeric ID
+        const entityId = this.game.createEntity();
 
-        if (!this.game.entities.has(entityId)) {
-            this.game.createEntity(entityId);
-        }
-
-        // Add components
-        this.game.addComponent(entityId, 'transform', {
-            position: { x: spawnPos.x, y: spawnPos.y, z: spawnPos.z },
-            rotation: { x: 0, y: 0, z: 0 },
-            scale: { x: 1, y: 1, z: 1 }
-        });
-
-        this.game.addComponent(entityId, 'velocity', {
-            vx: 0, vy: 0, vz: 0
-        });
-
-        this.game.addComponent(entityId, 'playerCharacter', {
-            playerId: playerId,
-            playerName: playerName,
-            isLocal: true,
-            characterClass: 'warrior', // Default class
-            level: this.game.state.playerLevel || 1
-        });
-
-        this.game.addComponent(entityId, 'health', {
-            current: 100,
-            max: 100
-        });
-
-        this.game.addComponent(entityId, 'movement', {
-            speed: 150,
-            acceleration: 500,
-            friction: 0.9
-        });
-
-        this.game.addComponent(entityId, 'controllable', {
-            isControlled: true
-        });
-
-        // Team for combat system
-        this.game.addComponent(entityId, 'team', {
-            team: 'player'
-        });
-
-        // Visual representation
-        this.game.addComponent(entityId, 'unitType', {
-            id: 'player_character',
-            collection: 'units'
+        // Use addComponents for batch operation (single cache invalidation)
+        this.game.addComponents(entityId, {
+            transform: {
+                position: { x: spawnPos.x, y: spawnPos.y, z: spawnPos.z },
+                rotation: { x: 0, y: 0, z: 0 },
+                scale: { x: 1, y: 1, z: 1 }
+            },
+            velocity: {
+                vx: 0,
+                vy: 0,
+                vz: 0,
+                maxSpeed: 150,
+                affectedByGravity: true,
+                anchored: false
+            },
+            playerCharacter: {
+                playerId: playerId,
+                playerName: playerName,
+                isLocal: true,
+                characterClass: 'warrior',
+                level: this.game.state.playerLevel || 1
+            },
+            health: {
+                current: 100,
+                max: 100
+            },
+            movement: {
+                speed: 150,
+                acceleration: 500,
+                friction: 0.9
+            },
+            controllable: {
+                isControlled: true
+            },
+            team: {
+                team: 'player'
+            },
+            collision: {
+                radius: 10,
+                height: 50
+            },
+            renderable: {
+                objectType: 'units',
+                spawnType: 'peasant',
+                capacity: 128
+            }
         });
 
         this.localPlayerEntityId = entityId;
 
         // Spawn render instance
-        this.game.call('spawnInstance', entityId, 'units', 'player_character', spawnPos);
+        this.game.call('spawnInstance', entityId, 'units', 'peasant', spawnPos);
 
-        console.log('[TownHubSystem] Spawned local player at:', spawnPos);
+        console.log('[TownHubSystem] Spawned local player at:', spawnPos, 'entityId:', entityId);
 
         return entityId;
     }
 
     spawnOtherPlayer(playerId, playerName, position) {
-        const entityId = `player_${playerId}`;
-
         if (this.otherPlayerEntities.has(playerId)) {
             console.warn('[TownHubSystem] Player already spawned:', playerId);
             return this.otherPlayerEntities.get(playerId);
         }
 
         let spawnPos = position || { ...this.spawnPoint };
-
-        // Ensure Y position is terrain-aware
         spawnPos.y = this.getTerrainHeightAt(spawnPos.x, spawnPos.z);
 
-        if (!this.game.entities.has(entityId)) {
-            this.game.createEntity(entityId);
-        }
+        // Create entity with numeric ID
+        const entityId = this.game.createEntity();
 
-        // Add components
-        this.game.addComponent(entityId, 'transform', {
-            position: { x: spawnPos.x, y: spawnPos.y, z: spawnPos.z },
-            rotation: { x: 0, y: 0, z: 0 },
-            scale: { x: 1, y: 1, z: 1 }
-        });
-
-        this.game.addComponent(entityId, 'velocity', {
-            vx: 0, vy: 0, vz: 0
-        });
-
-        this.game.addComponent(entityId, 'playerCharacter', {
-            playerId: playerId,
-            playerName: playerName,
-            isLocal: false,
-            characterClass: 'warrior',
-            level: 1
-        });
-
-        this.game.addComponent(entityId, 'health', {
-            current: 100,
-            max: 100
-        });
-
-        this.game.addComponent(entityId, 'team', {
-            team: 'player'
-        });
-
-        this.game.addComponent(entityId, 'unitType', {
-            id: 'player_character',
-            collection: 'units'
-        });
-
-        // Mark as network synced (position comes from server)
-        this.game.addComponent(entityId, 'networkSynced', {
-            lastUpdate: 0
+        // Use addComponents for batch operation
+        this.game.addComponents(entityId, {
+            transform: {
+                position: { x: spawnPos.x, y: spawnPos.y, z: spawnPos.z },
+                rotation: { x: 0, y: 0, z: 0 },
+                scale: { x: 1, y: 1, z: 1 }
+            },
+            velocity: {
+                vx: 0,
+                vy: 0,
+                vz: 0,
+                maxSpeed: 150,
+                affectedByGravity: true,
+                anchored: false
+            },
+            playerCharacter: {
+                playerId: playerId,
+                playerName: playerName,
+                isLocal: false,
+                characterClass: 'warrior',
+                level: 1
+            },
+            health: {
+                current: 100,
+                max: 100
+            },
+            team: {
+                team: 'player'
+            },
+            collision: {
+                radius: 10,
+                height: 50
+            },
+            renderable: {
+                objectType: 'units',
+                spawnType: 'peasant',
+                capacity: 128
+            },
+            networkSynced: {
+                lastUpdate: 0
+            }
         });
 
         this.otherPlayerEntities.set(playerId, entityId);
 
         // Spawn render instance
-        this.game.call('spawnInstance', entityId, 'units', 'player_character', spawnPos);
+        this.game.call('spawnInstance', entityId, 'units', 'peasant', spawnPos);
 
-        console.log('[TownHubSystem] Spawned other player:', playerName, 'at:', spawnPos);
+        console.log('[TownHubSystem] Spawned other player:', playerName, 'at:', spawnPos, 'entityId:', entityId);
 
         return entityId;
     }
@@ -323,10 +370,7 @@ class TownHubSystem extends GUTS.BaseSystem {
         const entityId = this.otherPlayerEntities.get(playerId);
         if (!entityId) return;
 
-        // Remove render instance
         this.game.call('removeInstance', entityId);
-
-        // Destroy entity
         this.game.destroyEntity(entityId);
 
         this.otherPlayerEntities.delete(playerId);
@@ -342,7 +386,6 @@ class TownHubSystem extends GUTS.BaseSystem {
 
         if (transform && position) {
             transform.position.x = position.x;
-            // Update Y to terrain height
             transform.position.y = this.getTerrainHeightAt(position.x, position.z);
             transform.position.z = position.z;
         }
@@ -353,56 +396,15 @@ class TownHubSystem extends GUTS.BaseSystem {
             vel.vz = velocity.vz || 0;
         }
 
-        // Update render transform
         if (transform) {
             this.game.call('updateInstanceTransform', entityId, transform.position);
         }
     }
 
-    registerAdventurePortal(portalId, portalData) {
-        this.adventurePortals.set(portalId, portalData);
-
-        // Create portal entity if it doesn't exist
-        const entityId = portalId;
-        if (!this.game.entities.has(entityId)) {
-            this.game.createEntity(entityId);
-        }
-
-        // Ensure position has proper terrain height
-        const position = { ...portalData.position };
-        position.y = this.getTerrainHeightAt(position.x, position.z);
-
-        this.game.addComponent(entityId, 'transform', {
-            position,
-            rotation: { x: 0, y: 0, z: 0 },
-            scale: { x: 2, y: 2, z: 2 }
-        });
-
-        this.game.addComponent(entityId, 'adventurePortal', {
-            adventureId: portalData.adventureId,
-            name: portalData.name,
-            description: portalData.description,
-            minLevel: portalData.minLevel || 1,
-            maxPlayers: portalData.maxPlayers || 4,
-            terrainLevel: portalData.terrainLevel
-        });
-
-        this.game.addComponent(entityId, 'interactable', {
-            interactionType: 'portal',
-            interactionRadius: 80,
-            promptText: `Enter ${portalData.name} (Lvl ${portalData.minLevel}+)`
-        });
-
-        // Spawn a visual marker for the portal
-        this.game.call('spawnInstance', entityId, 'effects', 'portal_effect', position);
-
-        console.log('[TownHubSystem] Registered portal:', portalData.name, 'at', position);
-    }
-
     getPortalByAdventureId(adventureId) {
-        for (const [portalId, portalData] of this.adventurePortals) {
+        for (const [index, portalData] of this.adventurePortals) {
             if (portalData.adventureId === adventureId) {
-                return { portalId, ...portalData };
+                return { portalIndex: index, ...portalData };
             }
         }
         return null;
@@ -412,14 +414,14 @@ class TownHubSystem extends GUTS.BaseSystem {
         let nearest = null;
         let nearestDist = Infinity;
 
-        for (const [portalId, portalData] of this.adventurePortals) {
+        for (const [index, portalData] of this.adventurePortals) {
             const dx = portalData.position.x - position.x;
             const dz = portalData.position.z - position.z;
             const dist = Math.sqrt(dx * dx + dz * dz);
 
             if (dist < nearestDist && dist <= maxDistance) {
                 nearestDist = dist;
-                nearest = { portalId, ...portalData, distance: dist };
+                nearest = { portalIndex: index, ...portalData, distance: dist };
             }
         }
 
@@ -442,13 +444,11 @@ class TownHubSystem extends GUTS.BaseSystem {
         if (this.localPlayerEntityId) {
             const transform = this.game.getComponent(this.localPlayerEntityId, 'transform');
             if (transform && transform.position && this.townBounds) {
-                // Clamp to town bounds
                 transform.position.x = Math.max(this.townBounds.minX,
                     Math.min(this.townBounds.maxX, transform.position.x));
                 transform.position.z = Math.max(this.townBounds.minZ,
                     Math.min(this.townBounds.maxZ, transform.position.z));
 
-                // Update Y to match terrain height
                 const terrainY = this.getTerrainHeightAt(transform.position.x, transform.position.z);
                 transform.position.y = terrainY;
             }
@@ -470,10 +470,9 @@ class TownHubSystem extends GUTS.BaseSystem {
         const nearestPortal = this.getNearestPortal(transform.position, 80);
 
         if (nearestPortal) {
-            // Show portal interaction prompt
             this.game.call('showInteractionPrompt', {
                 type: 'portal',
-                text: nearestPortal.promptText || `Enter ${nearestPortal.name}`,
+                text: `Enter ${nearestPortal.name}`,
                 adventureId: nearestPortal.adventureId,
                 minLevel: nearestPortal.minLevel
             });
@@ -488,7 +487,6 @@ class TownHubSystem extends GUTS.BaseSystem {
         const transform = this.game.getComponent(this.localPlayerEntityId, 'transform');
         if (!transform) return;
 
-        // Check all entities with npc component
         for (const [entityId, entity] of this.game.entities) {
             const npc = this.game.getComponent(entityId, 'npc');
             const interactable = this.game.getComponent(entityId, 'interactable');
@@ -506,20 +504,21 @@ class TownHubSystem extends GUTS.BaseSystem {
                         npcType: npc.type,
                         entityId
                     });
-                    return; // Only show one prompt at a time
+                    return;
                 }
             }
         }
     }
 
     onSceneUnload() {
-        // Clean up all player entities
+        // Clean up local player
         if (this.localPlayerEntityId && this.game.entities.has(this.localPlayerEntityId)) {
             this.game.call('removeInstance', this.localPlayerEntityId);
             this.game.destroyEntity(this.localPlayerEntityId);
         }
         this.localPlayerEntityId = null;
 
+        // Clean up other players
         for (const [playerId, entityId] of this.otherPlayerEntities) {
             if (this.game.entities.has(entityId)) {
                 this.game.call('removeInstance', entityId);
@@ -529,10 +528,10 @@ class TownHubSystem extends GUTS.BaseSystem {
         this.otherPlayerEntities.clear();
 
         // Clean up portals
-        for (const [portalId] of this.adventurePortals) {
-            if (this.game.entities.has(portalId)) {
-                this.game.call('removeInstance', portalId);
-                this.game.destroyEntity(portalId);
+        for (const [index, portalData] of this.adventurePortals) {
+            if (this.game.entities.has(portalData.entityId)) {
+                this.game.call('removeInstance', portalData.entityId);
+                this.game.destroyEntity(portalData.entityId);
             }
         }
         this.adventurePortals.clear();

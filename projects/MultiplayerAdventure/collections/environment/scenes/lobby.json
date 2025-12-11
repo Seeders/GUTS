@@ -3,12 +3,14 @@
   "description": "Character selection and server connection",
   "systems": [
     "GameSystem",
+    "CharacterSystem"
+  ],
+  "clientSystems": [
     "ScreenSystem",
     "GameModeSystem",
     "InputSystem",
     "TownHubUISystem",
-    "AdventureNetworkSystem",
-    "CharacterSystem"
+    "AdventureNetworkSystem"
   ],
   "entities": []
 }
