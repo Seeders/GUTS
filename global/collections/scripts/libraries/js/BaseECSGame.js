@@ -312,6 +312,9 @@ class BaseECSGame {
                 } else if (schemaValue.$bitmask) {
                     // $bitmask is stored as individual 32-bit fields (baseName0, baseName1, etc.)
                     result[key] = this._createBitmaskProxy(componentId, entityId, key, schemaValue.$bitmask, prefix);
+                } else if (schemaValue.$enum) {
+                    // $enum fields are stored as numeric indices, read directly
+                    result[key] = this._getNumericField(componentId, entityId, fieldPath);
                 } else {
                     result[key] = this._readNumericComponent(componentId, entityId, schemaValue, fieldPath);
                 }
