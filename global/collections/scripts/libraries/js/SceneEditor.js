@@ -459,11 +459,22 @@ class SceneEditor {
         const transform = {
             position: { x, y, z }
         };
+        // Get numeric indices for createUnit
+        const enums = this.editorGameInstance.call?.('getEnums');
+        const collectionIndex = enums?.objectTypeDefinitions?.[collection] ?? -1;
+        const spawnTypeIndex = enums?.[collection]?.[spawnType] ?? -1;
+        const defaultTeam = enums?.team?.left ?? 2;
+
+        if (collectionIndex < 0 || spawnTypeIndex < 0) {
+            console.error('[SceneEditor] Invalid collection/spawnType:', collection, spawnType);
+            return;
+        }
+
         const entityId = unitCreationSystem.createUnit(
-            collection,
-            spawnType,
+            collectionIndex,
+            spawnTypeIndex,
             transform,
-            'left' // Default team for editor
+            defaultTeam // Numeric team enum
         );
 
         if (!entityId) {

@@ -169,15 +169,19 @@ class EnvironmentObjectSpawner {
             scale: { x: scale, y: scale, z: scale }
         });
 
-        // Add UnitType component
-        const unitTypeData = { ...unitType, collection: "worldObjects", id: worldObj.type };
-        this.game.addComponent(entityId, "unitType", unitTypeData);
+        // Add UnitType component with numeric indices
+        const enums = this.game.call('getEnums');
+        const worldObjectTypeIndex = enums.worldObjects?.[worldObj.type] ?? -1;
+        this.game.addComponent(entityId, "unitType", {
+            collection: enums.objectTypeDefinitions?.worldObjects ?? -1,
+            type: worldObjectTypeIndex
+        });
 
-        // Add worldObject component for easy querying
-        this.game.addComponent(entityId, "worldObject", { type: worldObj.type });
+        // Add worldObject component for easy querying (type is numeric index)
+        this.game.addComponent(entityId, "worldObject", { type: worldObjectTypeIndex });
 
-        // Add Team component (neutral for world objects)
-        this.game.addComponent(entityId, "team", { team: 'neutral' });
+        // Add Team component (neutral for world objects) using numeric enum
+        this.game.addComponent(entityId, "team", { team: enums.team?.neutral ?? 0 });
 
         // Add Collision component if the object should block movement
         // Check for impassable property (true means it blocks movement)

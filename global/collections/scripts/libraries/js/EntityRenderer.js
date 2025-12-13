@@ -46,6 +46,13 @@ class EntityRenderer {
         };
         this.defaultFrameRate = 10; // Used when no fps specified in animation data
 
+        // Direction names array for converting numeric direction to string
+        const directionEnumMap = this.game?.call('getEnumMap', 'direction');
+        this.directionNames = directionEnumMap?.toValue;
+
+        // Cache reverseEnums for index-to-name lookups
+        this.reverseEnums = this.game?.call('getReverseEnums');
+
         // Static GLTF model cache
         this.modelCache = new Map(); // collectionType -> { entityType: modelData }
         this.loadingPromises = new Map();
@@ -67,26 +74,89 @@ class EntityRenderer {
 
         // Current ambient light color for billboards (updated by setAmbientLightColor)
         this.currentAmbientLight = new THREE.Color(0xffffff);
+
+    }
+
+    /**
+     * Get entity definition by numeric indices
+     * Uses reverseEnums from game to look up collection/type names, then accesses collections
+     * @param {number} objectTypeIndex - Index into objectTypeDefinitions
+     * @param {number} spawnTypeIndex - Index into the collection
+     * @returns {Object|null} Entity definition or null
+     */
+    getEntityDefByIndex(objectTypeIndex, spawnTypeIndex) {
+        const collectionName = this.reverseEnums?.objectTypeDefinitions?.[objectTypeIndex];
+        if (!collectionName) return null;
+        const typeName = this.reverseEnums?.[collectionName]?.[spawnTypeIndex];
+        if (!typeName) return null;
+        return this.collections?.[collectionName]?.[typeName] || null;
+    }
+
+    /**
+     * Get collection name by numeric index
+     * @param {number} objectTypeIndex - Index into objectTypeDefinitions
+     * @returns {string|null} Collection name or null
+     */
+    getCollectionNameByIndex(objectTypeIndex) {
+        return this.reverseEnums?.objectTypeDefinitions?.[objectTypeIndex] || null;
+    }
+
+    /**
+     * Get type name by numeric indices
+     * @param {number} objectTypeIndex - Index into objectTypeDefinitions
+     * @param {number} spawnTypeIndex - Index into the collection
+     * @returns {string|null} Type name or null
+     */
+    getTypeNameByIndex(objectTypeIndex, spawnTypeIndex) {
+        const collectionName = this.reverseEnums?.objectTypeDefinitions?.[objectTypeIndex];
+        if (!collectionName) return null;
+        return this.reverseEnums?.[collectionName]?.[spawnTypeIndex] || null;
     }
 
     /**
      * Unified API: Spawn an entity
      * Auto-detects whether to use GLTF or VAT based on entity definition
+     * Accepts either:
+     * - Numeric indices: { objectType, spawnType } for O(1) lookup
+     * - String names: { collection, type } for backwards compatibility
      */
     async spawnEntity(entityId, data) {
-        // data: { collection, type, position: {x,y,z}, rotation, facing, velocity }
-
         if (this.entities.has(entityId)) {
             console.warn(`[EntityRenderer] Entity ${entityId} already exists`);
             return false;
         }
 
-        // Get entity definition
-        const entityDef = this.collections?.[data.collection]?.[data.type];
-        if (!entityDef) {
-            console.warn(`[EntityRenderer] No definition found for ${data.collection}.${data.type}`);
+        let entityDef, collection, type;
+
+        // Check if using numeric indices or string names
+        if (typeof data.objectType === 'number' && typeof data.spawnType === 'number') {
+            // Numeric indices - O(1) lookup
+            entityDef = this.getEntityDefByIndex(data.objectType, data.spawnType);
+            collection = this.getCollectionNameByIndex(data.objectType);
+            type = this.getTypeNameByIndex(data.objectType, data.spawnType);
+
+            if (!entityDef || !collection || !type) {
+                console.warn(`[EntityRenderer] No definition found for objectType=${data.objectType}, spawnType=${data.spawnType} (entityDef=${!!entityDef}, collection=${collection}, type=${type})`);
+                return false;
+            }
+        } else if (data.collection && data.type) {
+            // String names - backwards compatibility (used by WorldRenderer for cliffs)
+            collection = data.collection;
+            type = data.type;
+            entityDef = this.collections?.[collection]?.[type];
+
+            if (!entityDef) {
+                console.warn(`[EntityRenderer] No definition found for ${collection}.${type}`);
+                return false;
+            }
+        } else {
+            console.warn(`[EntityRenderer] Invalid spawn data - need objectType/spawnType or collection/type`);
             return false;
         }
+
+        // Store resolved names in data for downstream methods
+        data.collection = collection;
+        data.type = type;
 
         // Check for billboard rendering (renderTexture or spriteAnimationSet property)
         if (entityDef.renderTexture || entityDef.spriteAnimationSet) {
@@ -94,13 +164,13 @@ class EntityRenderer {
         }
 
         // Determine rendering technique
-        const useVAT = this.shouldUseVAT(entityDef, data.collection);
+        const useVAT = this.shouldUseVAT(entityDef, collection);
 
         if (useVAT && this.modelManager) {
             return await this.spawnVATEntity(entityId, data, entityDef);
         } else {
             // Use instanced rendering for cliffs and worldObjects
-            if (data.collection === 'cliffs' || data.collection === 'worldObjects') {
+            if (collection === 'cliffs' || collection === 'worldObjects') {
                 return await this.spawnInstancedEntity(entityId, data, entityDef);
             } else {
                 return await this.spawnStaticEntity(entityId, data, entityDef);
@@ -1227,23 +1297,33 @@ class EntityRenderer {
 
         // Get animation state to access sprite animation set
         const animState = this.game.call('getBillboardAnimationState', entityId);
-        const animSetName = animState?.spriteAnimationSet;
-        const animSetData = animSetName ? collections?.spriteAnimationSets?.[animSetName] : null;
+        // spriteAnimationSet is stored as a numeric index - convert to string name for collection lookup
+        const spriteAnimSetIndex = animState?.spriteAnimationSet;
+        let animSetName = null;
+        let animSetData = null;
+        if (spriteAnimSetIndex !== undefined && spriteAnimSetIndex >= 0) {
+            // Convert numeric index to string name using cached reverseEnums
+            animSetName = this.reverseEnums?.spriteAnimationSets?.[spriteAnimSetIndex];
+            animSetData = animSetName ? collections?.spriteAnimationSets?.[animSetName] : null;
+        }
 
         // Get spriteSize from animation set's generatorSettings, fallback to entity's spriteScale, then default 64
-        const spriteScale = animSetData?.generatorSettings?.spriteSize || entityDef.spriteScale || 32;
+        const spriteScale = animSetData?.generatorSettings?.spriteSize || entityDef?.spriteScale || 32;
         // spriteYOffset allows adjusting vertical position when sprite feet aren't at bottom of frame
-        const spriteOffset = entityDef?.spriteOffset || animSetData.spriteOffset || 0;
+        const spriteOffset = entityDef?.spriteOffset || animSetData?.spriteOffset || 0;
 
         // Calculate dimensions based on texture aspect ratio
         let aspectRatio = 1;
 
-        // Try to get aspect ratio from animation state
-        if (animState?.spriteAnimations) {
-            const initialAnim = animState.spriteAnimations.idle || animState.spriteAnimations.walk || Object.values(animState.spriteAnimations)[0];
-            const initialFrame = initialAnim?.down?.frames?.[0] || initialAnim?.[Object.keys(initialAnim)[0]]?.frames?.[0];
-            if (initialFrame) {
-                aspectRatio = initialFrame.width / initialFrame.height;
+        // Try to get aspect ratio from animation state (sprite animations in shared cache)
+        if (animState?.spriteAnimationSet >= 0) {
+            const spriteAnimations = this.game?.call('getSpriteAnimationData', animState.spriteAnimationSet)?.animations;
+            if (spriteAnimations) {
+                const initialAnim = spriteAnimations.idle || spriteAnimations.walk || Object.values(spriteAnimations)[0];
+                const initialFrame = initialAnim?.down?.frames?.[0] || initialAnim?.[Object.keys(initialAnim)[0]]?.frames?.[0];
+                if (initialFrame) {
+                    aspectRatio = initialFrame.width / initialFrame.height;
+                }
             }
         } else {
             if (batch.spriteSheetTexture?.image) {
@@ -1320,17 +1400,36 @@ class EntityRenderer {
             return;
         }
 
-        // Get animations for current animation type (from AnimationSystem's state)
-        const animations = animState.spriteAnimations?.[animState.spriteAnimationType];
+        // Get sprite animations from shared cache
+        const spriteAnimationData = this.game?.call('getSpriteAnimationData', animState.spriteAnimationSet);
+        const spriteAnimations = spriteAnimationData?.animations;
 
-        if (!animations) {
-            console.warn(`[EntityRenderer] No animations found for type '${animState.spriteAnimationType}' on entity ${entityId}. Available types:`, Object.keys(animState.spriteAnimations || {}));
+        if (!spriteAnimations) {
+            console.warn(`[EntityRenderer] No sprite animations found for animationSet ${animState.spriteAnimationSet} on entity ${entityId}`);
             return;
         }
 
-        const directionData = animations[animState.spriteDirection];
+        // Convert numeric animation type to string for lookup
+        const animationTypeEnumMap = this.game?.call('getEnumMap', 'animationType');
+        const animationTypeName = typeof animState.spriteAnimationType === 'number'
+            ? animationTypeEnumMap?.toValue?.[animState.spriteAnimationType]
+            : animState.spriteAnimationType;
+
+        // Get animations for current animation type
+        const animations = spriteAnimations[animationTypeName];
+
+        if (!animations) {
+            console.warn(`[EntityRenderer] No animations found for type '${animationTypeName}' on entity ${entityId}. Available types:`, Object.keys(spriteAnimations));
+            return;
+        }
+
+        // Convert numeric direction to string for animation lookup
+        const directionName = typeof animState.spriteDirection === 'number'
+            ? this.directionNames[animState.spriteDirection]
+            : animState.spriteDirection;
+        const directionData = animations[directionName];
         if (!directionData || !directionData.frames || directionData.frames.length === 0) {
-            console.warn(`[EntityRenderer] No frames for direction '${animState.spriteDirection}' in animation type '${animState.spriteAnimationType}' on entity ${entityId}. Available directions:`, Object.keys(animations));
+            console.warn(`[EntityRenderer] No frames for direction '${directionName}' in animation type '${animState.spriteAnimationType}' on entity ${entityId}. Available directions:`, Object.keys(animations));
             return;
         }
 

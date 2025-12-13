@@ -6,20 +6,29 @@ class GameRoom {
         this.serverNetworkManager = this.engine.serverNetworkManager;
         this.game.room = this;
         this.maxPlayers = maxPlayers;
-        this.players = new Map();
+        this.players = new Map();  // socketId -> player data
+        this.socketToNumericId = new Map();  // socketId -> numeric playerId
+        this.numericToSocketId = new Map();  // numeric playerId -> socketId
+        this.nextPlayerId = 0;  // Counter for assigning numeric IDs
         this.isActive = false;
         this.lastStateSnapshot = null;
         this.stateHistory = []; // For lag compensation
         this.inputBuffer = new Map(); // Player inputs awaiting processing
     }
 
-    addPlayer(playerId, playerData) {
+    addPlayer(socketId, playerData) {
         if (this.players.size >= this.maxPlayers) {
             return { success: false, reason: 'Room full' };
         }
 
-        this.players.set(playerId, {
-            id: playerId,
+        // Assign numeric player ID
+        const numericPlayerId = this.nextPlayerId++;
+        this.socketToNumericId.set(socketId, numericPlayerId);
+        this.numericToSocketId.set(numericPlayerId, socketId);
+
+        this.players.set(socketId, {
+            id: socketId,
+            numericId: numericPlayerId,
             ...playerData,
             lastInputSequence: 0,
             inputBuffer: [],
@@ -31,22 +40,42 @@ class GameRoom {
             this.startGame();
         }
 
-        return { success: true };
+        return { success: true, numericPlayerId };
     }
 
-    removePlayer(playerId) {
-        if (this.players.has(playerId)) {
+    removePlayer(socketId) {
+        if (this.players.has(socketId)) {
+            // Clean up numeric ID mappings
+            const numericId = this.socketToNumericId.get(socketId);
+            if (numericId !== undefined) {
+                this.numericToSocketId.delete(numericId);
+                this.socketToNumericId.delete(socketId);
+            }
+
             // Remove player entity from game
-            this.players.delete(playerId);
-            
+            this.players.delete(socketId);
+
             if (this.players.size === 0) {
                 this.isActive = false;
             }
         }
     }
 
-    getPlayer(playerId){
-        return this.players.get(playerId);
+    getPlayer(socketId) {
+        return this.players.get(socketId);
+    }
+
+    getPlayerByNumericId(numericId) {
+        const socketId = this.numericToSocketId.get(numericId);
+        return socketId ? this.players.get(socketId) : null;
+    }
+
+    getNumericPlayerId(socketId) {
+        return this.socketToNumericId.get(socketId);
+    }
+
+    getSocketId(numericId) {
+        return this.numericToSocketId.get(numericId);
     }
 
 

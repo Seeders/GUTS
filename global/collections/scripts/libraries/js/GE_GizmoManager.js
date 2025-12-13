@@ -569,5 +569,4 @@ class GE_GizmoManager {
         rotateBtn.className = this.gizmoMode === 'rotate' ? 'active' : '';
         scaleBtn.className = this.gizmoMode === 'scale' ? 'active' : '';
     }
-    
 }

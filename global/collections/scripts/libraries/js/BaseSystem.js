@@ -3,6 +3,9 @@ class BaseSystem {
         this.game = game;
         this.engine = game.app;
         this.enabled = true;
+        this.enums = this.game.getEnums();
+        this.collections = this.game.getCollections();
+        this.reverseEnums = this.game.getReverseEnums();
     }
 
     /**

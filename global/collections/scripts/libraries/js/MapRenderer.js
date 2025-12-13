@@ -356,5 +356,4 @@ class MapRenderer extends GUTS.Component {
             }
         });
     }
-
 }

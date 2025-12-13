@@ -1203,8 +1203,9 @@ class BehaviorTreeEditor {
         // Highlight active node in graph based on first result with action
         let highlightedAction = null;
         for (const { aiState } of results) {
-            if (aiState && aiState.currentAction) {
-                highlightedAction = aiState.currentAction;
+            if (aiState && aiState.currentAction >= 0) {
+                // Convert numeric indices to action name for highlighting
+                highlightedAction = this._getActionName(aiState.currentActionCollection, aiState.currentAction);
                 break;
             }
         }
@@ -1266,12 +1267,13 @@ class BehaviorTreeEditor {
             }
 
             // Also show current action from aiState if available
-            if (aiState && aiState.currentAction) {
+            if (aiState && aiState.currentAction >= 0) {
+                const actionName = this._getActionName(aiState.currentActionCollection, aiState.currentAction);
                 const actionDiv = document.createElement('div');
                 actionDiv.style.marginTop = '8px';
                 actionDiv.style.paddingTop = '8px';
                 actionDiv.style.borderTop = '1px solid #333';
-                actionDiv.innerHTML = `<div style="color: #aaa;"><strong>Current Action:</strong> ${aiState.currentAction}</div>`;
+                actionDiv.innerHTML = `<div style="color: #aaa;"><strong>Current Action:</strong> ${actionName}</div>`;
                 resultContent.appendChild(actionDiv);
             }
 
@@ -1499,5 +1501,29 @@ class BehaviorTreeEditor {
             resultDiv.style.display = 'none';
             resultDiv.innerHTML = '';
         }
+    }
+
+    /**
+     * Convert collection index and node index to action name string
+     * @param {number} collectionIndex - aiState enum index for collection type
+     * @param {number} nodeIndex - index within the collection
+     * @returns {string} Action name or 'Unknown'
+     */
+    _getActionName(collectionIndex, nodeIndex) {
+        if (collectionIndex < 0 || nodeIndex < 0) return 'None';
+
+        const collectionNames = ['behaviorActions', 'behaviorDecorators', 'behaviorTrees', 'sequenceBehaviorTrees'];
+        const collectionName = collectionNames[collectionIndex];
+        if (!collectionName) return 'Unknown';
+
+        // Try to get from mock game's enum maps
+        if (this.mockGame && this.mockGame.hasService && this.mockGame.hasService('getEnumMap')) {
+            const enumMap = this.mockGame.call('getEnumMap', collectionName);
+            if (enumMap && enumMap.toValue && enumMap.toValue[nodeIndex]) {
+                return enumMap.toValue[nodeIndex];
+            }
+        }
+
+        return `${collectionName}[${nodeIndex}]`;
     }
 }

@@ -122,5 +122,4 @@ class GE_ShapeManager {
             this.graphicsEditor.refreshShapes(true);
         }
     }
-
 }

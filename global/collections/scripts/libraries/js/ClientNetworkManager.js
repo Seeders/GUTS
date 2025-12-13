@@ -4,19 +4,23 @@ class ClientNetworkManager {
         this.game.clientNetworkManager = this;
         this.socket = null;
         this.isConnected = false;
-        
+
+        // Player identification
+        this.playerId = null;  // Socket ID (string)
+        this.numericPlayerId = -1;  // Numeric player ID for ECS components
+
         // Configuration
         this.serverUrl = options.serverUrl || this.game.getCollections().configs.multiplayer.serverUrl;
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = options.maxReconnectAttempts || 5;
         this.reconnectDelay = options.reconnectDelay || 1000;
         this.callTimeout = options.callTimeout || 10000;
-        
+
         // Event system
         this.listeners = new Map(); // eventName -> Set of callbacks
         this.oneTimeCallbacks = new Map(); // eventName -> Map of callbackId -> callback
         this.callbackCounter = 0;
-        
+
     }
 
     // =============================================

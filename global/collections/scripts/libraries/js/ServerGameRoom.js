@@ -1,17 +1,20 @@
 class ServerGameRoom extends global.GUTS.GameRoom {
     constructor(engine, roomId, gameInstance, maxPlayers = 2, gameConfig = {}) {
         super(engine, roomId, gameInstance, maxPlayers);
-        
+
+        // Get enums for phase comparisons
+        this.enums = this.game.getEnums();
+
         // Add multiplayer lobby functionality
-        this.game.state.phase = 'waiting'; // 'waiting', 'lobby', 'playing', 'ended'
+        this.game.state.phase = this.enums.gamePhase.waiting;
         this.gameConfig = gameConfig;
         this.createdAt = Date.now();
         this.nextRoomId = 1000;
         this.currentRoomIds = [];
-        
+
         // Subscribe to events from network manager
         this.subscribeToEvents();
-        
+
         console.log(`ServerGameRoom ${roomId} created for ${maxPlayers} players`);
     }
 
@@ -41,7 +44,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             // Find available room
             let availableRoom = null;
             for (const [roomId, room] of this.engine.gameRooms) {
-                if ((this.game.state.phase === 'waiting' || this.game.state.phase === 'lobby') && 
+                if ((this.game.state.phase === this.enums.gamePhase.waiting || this.game.state.phase === this.enums.gamePhase.lobby) &&
                     room.players.size < room.maxPlayers) {
                     availableRoom = room;
                     break;
@@ -100,11 +103,11 @@ class ServerGameRoom extends global.GUTS.GameRoom {
     handleToggleReady(eventData) {
         const { playerId, data } = eventData;
         try {
-            // Store the selected level from host
+            // Store the selected level from host (numeric index)
             const player = this.players.get(playerId);
-            if (player?.isHost && data?.level) {
+            if (player?.isHost && data?.level !== undefined) {
                 this.selectedLevel = data.level;
-                console.log(`Host selected level: ${this.selectedLevel}`);
+                console.log(`Host selected level index: ${this.selectedLevel}`);
             }
 
             const success = this.togglePlayerReady(playerId);
@@ -135,7 +138,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             }
 
             // Only allow in lobby phase
-            if (this.game.state.phase !== 'lobby' && this.game.state.phase !== 'waiting') {
+            if (this.game.state.phase !== this.enums.gamePhase.lobby && this.game.state.phase !== this.enums.gamePhase.waiting) {
                 this.serverNetworkManager.sendToPlayer(playerId, 'SAVE_DATA_UPLOADED', {
                     success: false,
                     error: 'Can only upload save data in lobby'
@@ -146,9 +149,13 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             // Store save data for this room
             this.pendingSaveData = data.saveData;
 
-            // Update level to match save
-            if (data.saveData?.level) {
-                this.selectedLevel = data.saveData.level;
+            // Update level to match save - handle both string (legacy) and numeric
+            if (data.saveData?.level !== undefined) {
+                if (typeof data.saveData.level === 'string') {
+                    this.selectedLevel = this.enums.levels?.[data.saveData.level] ?? 1;
+                } else {
+                    this.selectedLevel = data.saveData.level;
+                }
             }
 
             console.log(`[ServerGameRoom] Save data uploaded by host. Level: ${this.selectedLevel}`);
@@ -282,7 +289,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
         // Destroy the player entity
         const playerEntityId = room.game.call('getPlayerEntityId', playerId);
-        if (room.game && room.game.entities.has(playerEntityId)) {
+        if (room.game && room.game.entityExists(playerEntityId)) {
             try {
                 room.game.destroyEntity(playerEntityId);
             } catch (error) {
@@ -290,9 +297,10 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             }
         }
 
-        // Clear any placement data
+        // Clear any placement data (use numeric ID for ECS comparison)
         if (room.game && room.game.placementSystem) {
-            room.game.placementSystem.clearPlayerPlacements(playerId);
+            const numericId = room.getNumericPlayerId(playerId);
+            room.game.placementSystem.clearPlayerPlacements(numericId);
         }
 
         // Clear any battle data
@@ -334,10 +342,11 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             player.ready = false;
             player.placementReady = false;
             player.isHost = playerData.isHost || false;
-            player.side = playerData.isHost ? 'left' : 'right';
+            // Team enum: left=2, right=3 (host is left team)
+            player.team = playerData.isHost ? 2 : 3;
 
             // If room is full, enter lobby phase (don't auto-start like parent does)
-            if (this.players.size === this.maxPlayers && this.game.state.phase === 'waiting') {
+            if (this.players.size === this.maxPlayers && this.game.state.phase === this.enums.gamePhase.waiting) {
                 this.enterLobbyPhase();
             }
         }
@@ -346,7 +355,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
     }
 
     enterLobbyPhase() {
-        this.game.state.phase = 'lobby';
+        this.game.state.phase = this.enums.gamePhase.lobby;
         
         // Broadcast lobby entered to all players in room
         if (this.serverNetworkManager) {
@@ -360,7 +369,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
     togglePlayerReady(playerId) {
         const player = this.players.get(playerId);
-        if (!player || (this.game.state.phase !== 'lobby' && this.game.state.phase !== 'waiting')) {
+        if (!player || (this.game.state.phase !== this.enums.gamePhase.lobby && this.game.state.phase !== this.enums.gamePhase.waiting)) {
             console.log("no player or not in lobby/waiting phase", this.game.state.phase);
             return false;
         }
@@ -389,7 +398,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
     // Override parent's startGame to add multiplayer lobby logic
     async startGame() {
-        if (this.game.state.phase !== 'lobby') {
+        if (this.game.state.phase !== this.enums.gamePhase.lobby) {
             console.log(`Cannot start game, not in lobby phase. Current phase: ${this.game.state.phase}`);
             return false;
         }
@@ -420,7 +429,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             }
         }
 
-        this.game.state.phase = 'placement';
+        this.game.state.phase = this.enums.gamePhase.placement;
 
         // If we have pending save data, restore player stats and set up for entity loading
         const isLoadingSave = !!this.pendingSaveData;
@@ -449,7 +458,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         this.createPlayerEntities();
 
         // Log after scene load to verify entities were created
-        const entityCount = this.game.entities?.size || 0;
+        const entityCount = this.game.getEntityCount?.() || 0;
         console.log(`[ServerGameRoom] After startGame. Total entities on server: ${entityCount}`);
 
         // Broadcast game started with level info, entity sync, and save data flag
@@ -479,7 +488,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         for (const [playerId, player] of this.players) {
             // Create player entity with playerStats component via service
             this.game.call('createPlayerEntity', playerId, {
-                side: player.side,
+                team: player.team,
                 gold: this.game.state.startingGold,
                 upgrades: []
             });
@@ -508,7 +517,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 isHost: p.isHost || false,
                 stats: {
                     gold: playerStats?.gold ?? this.game.state.startingGold,
-                    side: playerStats?.side ?? p.side
+                    team: playerStats?.side ?? p.team  // side field in playerStats component stores numeric team
                 },
                 placements: placements
             });
@@ -528,8 +537,11 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
     // Get placement data for client (spawning entities and syncing experience)
     // Client looks up unitType from collections using unitTypeId + collection
-    getPlacementsForPlayer(playerId) {
+    getPlacementsForPlayer(socketPlayerId) {
         if (!this.game.componentSystem) return [];
+
+        // Convert string playerId to numeric for comparison with ECS storage
+        const playerId = this.getNumericPlayerId(socketPlayerId);
 
         const placements = [];
         const seenPlacementIds = new Set();
@@ -544,10 +556,11 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             seenPlacementIds.add(placementComp.placementId);
 
             // Calculate cells for grid reservation on client
-            const collections = this.game.getCollections();
-            const unitType = collections[placementComp.collection]?.[placementComp.unitTypeId];
+            // Look up unitType using getUnitTypeDef since placement stores numeric indices
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             let cells = [];
-            if (unitType && this.game.squadSystem) {
+            if (unitType && this.game.squadSystem && placementComp.gridPosition) {
                 const squadData = this.game.squadSystem.getSquadData(unitType);
                 cells = this.game.squadSystem.getSquadCells(placementComp.gridPosition, squadData);
             }
@@ -557,13 +570,31 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
             // Get squadUnits (entity IDs) for this placement so clients use the same IDs
             const squadUnits = this.game.placementSystem?.getSquadUnitsForPlacement(placementComp.placementId) || [];
+            console.log(`[getPlacementsForPlayer] placementId=${placementComp.placementId}, entityId=${entityId}, squadUnits=${JSON.stringify(squadUnits)}, team=${placementComp.team}`);
 
             // Get serverTime from assignedBuilder's playerOrder for sync
             let serverTime = null;
-            if (placementComp.assignedBuilder) {
+            if (placementComp.assignedBuilder && placementComp.assignedBuilder !== -1) {
                 const builderOrder = this.game.getComponent(placementComp.assignedBuilder, 'playerOrder');
                 if (builderOrder) {
                     serverTime = builderOrder.issuedTime;
+                }
+            }
+
+            // Get playerOrder from first squad unit (all units in squad share same order)
+            // This is needed so opponent clients can simulate unit movement during battle
+            let playerOrder = null;
+            if (squadUnits.length > 0) {
+                const firstUnitOrder = this.game.getComponent(squadUnits[0], 'playerOrder');
+                if (firstUnitOrder && (firstUnitOrder.targetPositionX !== 0 || firstUnitOrder.targetPositionZ !== 0)) {
+                    playerOrder = {
+                        targetPositionX: firstUnitOrder.targetPositionX,
+                        targetPositionY: firstUnitOrder.targetPositionY,
+                        targetPositionZ: firstUnitOrder.targetPositionZ,
+                        isMoveOrder: firstUnitOrder.isMoveOrder,
+                        preventEnemiesInRangeCheck: firstUnitOrder.preventEnemiesInRangeCheck,
+                        issuedTime: firstUnitOrder.issuedTime
+                    };
                 }
             }
 
@@ -579,10 +610,11 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 squadUnits: squadUnits,
                 roundPlaced: placementComp.roundPlaced,
                 // Include building construction state if present
-                isUnderConstruction: placementComp.isUnderConstruction || false,
+                isUnderConstruction: placementComp.isUnderConstruction === 1,
                 buildTime: placementComp.buildTime,
-                assignedBuilder: placementComp.assignedBuilder,
-                serverTime: serverTime  // Authoritative time for builder's playerOrder
+                assignedBuilder: placementComp.assignedBuilder !== -1 ? placementComp.assignedBuilder : null,
+                serverTime: serverTime,  // Authoritative time for builder's playerOrder
+                playerOrder: playerOrder  // Movement order for battle simulation on opponent clients
             });
         }
 

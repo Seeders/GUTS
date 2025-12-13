@@ -7,7 +7,7 @@ class BehaviorTreeProcessor {
     constructor(game, options = {}) {
         this.game = game;
 
-        // Unified node storage (new approach)
+        // Unified node storage
         this.nodes = new Map();
 
         // Debugger for execution tracing
@@ -113,7 +113,7 @@ class BehaviorTreeProcessor {
     }
 
     /**
-     * Register a behavior node (unified)
+     * Register a behavior node
      * @param {string} nodeId - Node class name
      * @param {Object} nodeData - Node configuration data
      */
@@ -129,14 +129,13 @@ class BehaviorTreeProcessor {
     }
 
     /**
-     * Get a registered node by type (unified lookup)
+     * Get a registered node by type (string ID lookup)
      * @param {string} type - Node type name
      * @returns {Object} Node instance
      */
     getNodeByType(type) {
         return this.nodes.get(type);
     }
-
 
     /**
      * Evaluate a registered behavior node for an entity
@@ -145,7 +144,7 @@ class BehaviorTreeProcessor {
      * @returns {Object|null} Action result from evaluation
      */
     evaluate(nodeId, entityId) {
-        const node = this.nodes.get(nodeId);
+        const node = this.getNodeByType(nodeId);
         if (!node) {
             console.warn(`Behavior node not found: ${nodeId}`);
             return null;
