@@ -1,9 +1,0 @@
-{
-  "title": "THREE.PointerLockControls",
-  "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/controls/PointerLockControls.js",
-  "isModule": true,
-  "windowContext": "THREE",
-  "requireName": "PointerLockControls",
-  "importName": "PointerLockControls",
-  "fileName": "three_PointerLockControls"
-}

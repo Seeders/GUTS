@@ -42,26 +42,30 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     getUnitsDeployed() {
         try {
             const playerUnits = this.game.getEntitiesWith("team", "unitType") || [];
+            const enums = this.game.getEnums();
+            const myTeamId = enums.team[this.game.state.myTeam];
 
             return playerUnits.filter(entityId => {
                 const team = this.game.getComponent(entityId, "team");
-                return team?.team === 'player';
+                return team?.team === myTeamId;
             }).length;
         } catch (error) {
             return 0;
         }
     }
-    
+
     getUnitsRemaining() {
         try {
             const alivePlayerUnits = this.game.getEntitiesWith(
                 "team", "health", "unitType"
             ) || [];
+            const enums = this.game.getEnums();
+            const myTeamId = enums.team[this.game.state.myTeam];
 
             return alivePlayerUnits.filter(entityId => {
                 const team = this.game.getComponent(entityId, "team");
                 const health = this.game.getComponent(entityId, "health");
-                return team?.team === 'player' && health?.current > 0;
+                return team?.team === myTeamId && health?.current > 0;
             }).length;
         } catch (error) {
             return 0;
@@ -88,12 +92,15 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     calculateArmyValue() {
         try {
             const playerUnits = this.game.getEntitiesWith("team", "unitType") || [];
+            const enums = this.game.getEnums();
+            const myTeamId = enums.team[this.game.state.myTeam];
 
             return playerUnits.reduce((total, entityId) => {
                 const team = this.game.getComponent(entityId, "team");
-                const unitType = this.game.getComponent(entityId, "unitType");
-                
-                if (team?.team === 'player' && unitType?.value) {
+                const unitTypeComp = this.game.getComponent(entityId, "unitType");
+                const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+
+                if (team?.team === myTeamId && unitType?.value) {
                     return total + unitType.value;
                 }
                 return total;

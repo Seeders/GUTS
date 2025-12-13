@@ -17,6 +17,7 @@ class SaveSystem extends GUTS.BaseSystem {
     }
 
     init() {
+        // Initialize enums
         // Register save/load methods with GameManager
         this.game.register('saveGame', this.saveGame.bind(this));
         this.game.register('getSaveData', this.getSaveData.bind(this));
@@ -60,8 +61,8 @@ class SaveSystem extends GUTS.BaseSystem {
             timestamp: Date.now(),
             sceneName: this.game.sceneManager?.getCurrentSceneName() || 'game',
 
-            // Level/terrain info
-            level: this.game.state.level || 'level1',
+            // Level/terrain info (numeric index)
+            level: this.game.state.level ?? 1,
 
             // Game state
             state: this.serializeGameState(),
@@ -89,7 +90,7 @@ class SaveSystem extends GUTS.BaseSystem {
             now: state.now || 0,
             gameOver: state.gameOver || false,
             victory: state.victory || false,
-            mySide: state.mySide,
+            myTeam: state.myTeam,
             teamMaxHealth: state.teamMaxHealth,
             startingGold: state.startingGold
         };
@@ -100,8 +101,9 @@ class SaveSystem extends GUTS.BaseSystem {
      */
     serializeEntities() {
         const entities = [];
+        const allEntityIds = this.game.getAllEntities();
 
-        for (const [entityId, componentSet] of this.game.entities) {
+        for (const entityId of allEntityIds) {
             // Skip excluded entities (terrain, camera, etc.)
             if (this.shouldExcludeEntity(entityId)) {
                 continue;
@@ -112,8 +114,11 @@ class SaveSystem extends GUTS.BaseSystem {
                 components: {}
             };
 
+            // Get component types for this entity
+            const componentTypes = this.game.getEntityComponentTypes(entityId);
+
             // Serialize each component
-            for (const componentType of componentSet) {
+            for (const componentType of componentTypes) {
                 // Skip excluded components
                 if (this.EXCLUDED_COMPONENTS.has(componentType)) {
                     continue;
@@ -203,7 +208,7 @@ class SaveSystem extends GUTS.BaseSystem {
                     stats: {
                         gold: state.gold || state.startingGold,
                         health: state.health || state.teamMaxHealth,
-                        side: state.mySide || 'left'
+                        team: state.myTeam ?? this.enums.team.left
                     }
                 });
             }
@@ -229,8 +234,13 @@ class SaveSystem extends GUTS.BaseSystem {
             // Store save data for SceneManager to use
             this.game.pendingSaveData = saveData;
 
-            // Update level in state before scene load
-            this.game.state.level = saveData.level || 'level1';
+            // Update level in state before scene load (convert string to index if needed for backwards compat)
+            let levelValue = saveData.level ?? 1;
+            if (typeof levelValue === 'string') {
+                const enums = this.game.getEnums();
+                levelValue = enums.levels?.[levelValue] ?? 1;
+            }
+            this.game.state.level = levelValue;
 
             // The scene will be loaded and save data injected via loadSavedEntities
             console.log(`[SaveManager] Save data prepared for loading: ${saveData.saveName || 'unnamed'}`);
@@ -253,19 +263,15 @@ class SaveSystem extends GUTS.BaseSystem {
 
         console.log(`[SaveManager] Loading ${saveData.entities?.length || 0} saved entities`);
 
-        // Determine team mapping for current players
-        // The save file has 'left' and 'right' teams - map them to current players
-        const currentMySide = this.game.state.mySide || 'left';
-
-        // Restore game state (but preserve current player's side and phase)
+        // Restore game state (but preserve current player's team and phase)
         // Phase must stay as 'placement' initially so UI can initialize
         if (saveData.state) {
-            const preservedMySide = this.game.state.mySide;
+            const preservedMySide = this.game.state.myTeam;
             const preservedPlayerId = this.game.state.playerId;
             const preservedPhase = this.game.state.phase;
             Object.assign(this.game.state, saveData.state);
             // Restore current player info and phase
-            this.game.state.mySide = preservedMySide;
+            this.game.state.myTeam = preservedMySide;
             this.game.state.playerId = preservedPlayerId;
             this.game.state.phase = preservedPhase;
         }
@@ -281,15 +287,9 @@ class SaveSystem extends GUTS.BaseSystem {
                 this.game.createEntity(entityId);
                 loadedCount++;
 
-                // Add all saved components, mapping teams to current players
+                // Add all saved components
                 for (const [componentType, componentData] of Object.entries(entityDef.components)) {
-                    let deserializedData = this.deserializeComponent(componentType, componentData);
-
-                    // Remap team component to current players
-                    if (componentType === 'team' && deserializedData) {
-                        deserializedData = this.remapTeamComponent(deserializedData, currentMySide);
-                    }
-
+                    const deserializedData = this.deserializeComponent(componentType, componentData);
                     this.game.addComponent(entityId, componentType, deserializedData);
                     componentsAdded++;
                 }
@@ -313,21 +313,6 @@ class SaveSystem extends GUTS.BaseSystem {
         }, 100);
 
         return true;
-    }
-
-    /**
-     * Remap team component to current player assignments
-     * Save files use 'left'/'right' teams - map to current player's side
-     */
-    remapTeamComponent(teamData, currentMySide) {
-        // The team component has a 'team' field with 'left' or 'right'
-        // Current player is assigned to currentMySide
-        // We keep the team assignments as-is since 'left' and 'right' are the sides
-        // The current player controls their assigned side
-
-        // Just return as-is - the team sides are absolute ('left'/'right')
-        // The game state's mySide determines which side the current player controls
-        return teamData;
     }
 
     /**
@@ -490,7 +475,8 @@ class SaveSystem extends GUTS.BaseSystem {
         let abilitiesInitialized = 0;
 
         for (const entityId of entitiesWithUnitType) {
-            const unitType = this.game.getComponent(entityId, 'unitType');
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             if (unitType && unitType.abilities && unitType.abilities.length > 0) {
                 this.game.abilitySystem.addAbilitiesToUnit(entityId, unitType.abilities);
                 abilitiesInitialized++;

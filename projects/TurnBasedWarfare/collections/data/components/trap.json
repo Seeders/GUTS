@@ -4,9 +4,9 @@
     "damage": 50,
     "radius": 80,
     "triggerRadius": 30,
-    "element": "physical",
-    "caster": null,
-    "triggered": false,
+    "element": 0,
+    "caster": -1,
+    "triggered": 0,
     "triggerCount": 0,
     "maxTriggers": 1
   }

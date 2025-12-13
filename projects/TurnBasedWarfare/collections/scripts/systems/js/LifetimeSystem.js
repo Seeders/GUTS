@@ -189,14 +189,9 @@ class LifetimeSystem extends GUTS.BaseSystem {
             // Restore original team
             targetTeam.team = mindControl.originalTeam;
 
-            // Clear AI target
-            const targetAI = this.game.getComponent(entityId, "aiState");
-            if (targetAI && targetAI.aiBehavior) {
-                targetAI.target = null;
-                targetAI.targetPosition = null;
-                targetAI.path = [];
-                targetAI.meta = {};
-            }
+            // Clear AI behavior state
+            this.game.call('clearBehaviorState', entityId);
+            this.game.call('clearEntityPath', entityId);
             
             // Visual effect
             if (targetPos) {

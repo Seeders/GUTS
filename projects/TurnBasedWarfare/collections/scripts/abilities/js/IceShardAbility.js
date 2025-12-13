@@ -17,7 +17,7 @@ class IceShardAbility extends GUTS.BaseAbility {
         
         this.damage = 40;
         this.shardCount = 3;
-        this.element = 'cold';
+        this.element = this.enums.element.cold;
         this.slowDuration = 3.0;
     }
     

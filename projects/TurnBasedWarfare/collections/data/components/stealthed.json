@@ -4,8 +4,8 @@
     "stealthLevel": 1,
     "detectionRadius": 30,
     "stealthStartTime": 0,
-    "canAttackWhileStealth": false,
-    "breaksOnAttack": true,
-    "isStealth": true
+    "canAttackWhileStealth": 0,
+    "breaksOnAttack": 1,
+    "isStealth": 1
   }
 }

@@ -85,3 +85,4 @@ class SetSharedValueBehaviorAction extends GUTS.BaseBehaviorAction {
         });
     }
 }
+

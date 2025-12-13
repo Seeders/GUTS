@@ -16,7 +16,7 @@ class FireBallAbility extends GUTS.BaseAbility {
 
         this.damage = 30;
         this.splashRadius = 80;
-        this.element = 'fire';
+        this.element = this.enums.element.fire;
 
         // Store target position at cast time for ballistic trajectory
         this.targetPosition = null;

@@ -1,4 +1,7 @@
 {
   "title": "unitType",
-  "schema": {}
+  "schema": {
+    "collection": -1,
+    "type": -1
+  }
 }

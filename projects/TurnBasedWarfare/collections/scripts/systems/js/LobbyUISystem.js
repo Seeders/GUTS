@@ -35,7 +35,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
         const setupDialog = document.createElement('div');
         setupDialog.className = 'multiplayer-setup-dialog modal';
 
-        const interfaceConfig = this.game.getCollections().interfaces[mode.interfaceId];
+        const interfaceConfig = this.collections.interfaces[mode.interfaceId];
         setupDialog.innerHTML = interfaceConfig?.html || `Interface ${mode.interfaceId} not found`;
 
         document.body.appendChild(setupDialog);
@@ -341,7 +341,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
         const levelSelect = document.getElementById('levelSelect');
         if (!levelSelect) return;
 
-        const collections = this.game.getCollections();
+        const collections = this.collections;
         const levels = collections?.levels || {};
 
         levelSelect.innerHTML = '';

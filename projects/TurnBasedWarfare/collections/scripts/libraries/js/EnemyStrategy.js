@@ -329,9 +329,10 @@ class EnemyStrategy {
         
         playerPlacements.forEach(placement => {
             // Get unitType from entity using squadUnits
-            const unit = placement.squadUnits?.length > 0
+            const unitTypeComp = placement.squadUnits?.length > 0
                 ? this.game.getComponent(placement.squadUnits[0], 'unitType')
                 : null;
+            const unit = this.game.call('getUnitTypeDef', unitTypeComp);
             if (!unit) return;
 
             const squadSize = placement.isSquad ? placement.squadUnits.length : 1;

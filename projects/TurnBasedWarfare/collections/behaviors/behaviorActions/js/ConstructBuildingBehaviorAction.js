@@ -15,7 +15,8 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         const memory = this.getMemory(entityId);
 
         const buildingId = shared.targetBuilding;
-        if (!buildingId) {
+        // targetBuilding is null/undefined when not set, or could be 0 (valid entity ID)
+        if (buildingId === undefined || buildingId === null || buildingId < 0) {
             return this.failure();
         }
 
@@ -52,6 +53,21 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
             // Clear memory for next construction
             memory.constructionStartTime = null;
 
+            // Clear buildingState so peasant can return to other behaviors (mining)
+            const buildingState = game.getComponent(entityId, 'buildingState');
+            if (buildingState) {
+                buildingState.targetBuildingEntityId = -1;
+                buildingState.buildTime = 0;
+                buildingState.constructionStartTime = 0;
+            }
+
+            // Remove playerOrder so unit returns to normal behaviors (like mining)
+            // This allows AbilitiesBehaviorTree to take over since PlayerOrderBehaviorTree
+            // returns null when there's no playerOrder component
+            if (game.hasComponent(entityId, 'playerOrder')) {
+                game.removeComponent(entityId, 'playerOrder');
+            }
+
             // Clean up after build complete
             this.onBuildComplete(entityId, game);
 
@@ -81,12 +97,6 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
             const dz = buildingPos.z - pos.z;
             if (!transform.rotation) transform.rotation = { x: 0, y: 0, z: 0 };
             transform.rotation.y = Math.atan2(dz, dx);
-        }
-
-        // Clear movement target
-        const playerOrder = game.getComponent(entityId, 'playerOrder');
-        if (playerOrder) {
-            playerOrder.targetPosition = null;
         }
     }
 
@@ -118,17 +128,17 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
             return;
         }
 
-        const actualBuildingType = unitTypeComponent;
-
         // 1. Update renderable - change from underConstruction to actual building
+        // unitTypeComponent.type is the numeric spawnType index
         const renderComponent = game.getComponent(buildingId, 'renderable');
         if (renderComponent) {
-            renderComponent.spawnType = actualBuildingType.id;
+            renderComponent.spawnType = unitTypeComponent.type;
             game.call('removeInstance', buildingId);
         }
 
-        // 2. Restore health to full
-        const maxHP = actualBuildingType.hp || 100;
+        // 2. Restore health to full - get unit def from collections using numeric indices
+        const unitTypeDef = game.call('getUnitTypeDef', unitTypeComponent);
+        const maxHP = unitTypeDef?.hp || 100;
         const health = game.getComponent(buildingId, 'health');
         if (health) {
             health.max = maxHP;
@@ -143,7 +153,8 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // 5. Change building to idle animation
         if (game.animationSystem) {
-            game.animationSystem.changeAnimation(buildingId, 'idle', 1.0, 0);
+            const enums = game.call('getEnums');
+            game.animationSystem.changeAnimation(buildingId, enums.animationType.idle, 1.0, 0);
         }
     }
 
@@ -151,7 +162,8 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const memory = this.getMemory(entityId);
         const buildingId = shared.targetBuilding;
-        if (!buildingId) {
+        // targetBuilding is null/undefined when not set, or could be 0 (valid entity ID)
+        if (buildingId === undefined || buildingId === null || buildingId < 0) {
             return;
         }
         const elapsed = game.state.round - memory.constructionStartTime + 1;
@@ -171,6 +183,19 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
             // Clear memory for next construction
             memory.constructionStartTime = null;
 
+            // Clear buildingState so peasant can return to other behaviors (mining)
+            const buildingState = game.getComponent(entityId, 'buildingState');
+            if (buildingState) {
+                buildingState.targetBuildingEntityId = -1;
+                buildingState.buildTime = 0;
+                buildingState.constructionStartTime = 0;
+            }
+
+            // Remove playerOrder so unit returns to normal behaviors (like mining)
+            if (game.hasComponent(entityId, 'playerOrder')) {
+                game.removeComponent(entityId, 'playerOrder');
+            }
+
             this.onBuildComplete(entityId, game);
         }
 
@@ -181,7 +206,8 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Clean up assigned builder reference
         const shared = this.getShared(entityId, game);
-        if (shared.targetBuilding) {
+        // targetBuilding is null/undefined when not set, or could be 0 (valid entity ID)
+        if (shared.targetBuilding !== undefined && shared.targetBuilding !== null && shared.targetBuilding >= 0) {
             const buildingPlacement = game.getComponent(shared.targetBuilding, 'placement');
             if (buildingPlacement && buildingPlacement.assignedBuilder === entityId) {
                 buildingPlacement.assignedBuilder = null;

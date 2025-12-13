@@ -19,7 +19,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
         this.blizzardRadius = 120;
         this.duration = 3.0;
         this.tickInterval = 0.3;
-        this.element = 'cold';
+        this.element = this.enums.element.cold;
         this.shardHeight = 400; // Height ice shards fall from
     }
 

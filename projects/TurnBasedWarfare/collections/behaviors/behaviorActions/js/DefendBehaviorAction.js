@@ -101,7 +101,8 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
             if (!targetHealth || targetHealth.current <= 0) continue;
 
             const targetDeathState = game.getComponent(targetId, 'deathState');
-            if (targetDeathState && targetDeathState.isDying) continue;
+            const enums = game.call('getEnums');
+            if (targetDeathState && targetDeathState.state !== enums?.deathState?.alive) continue;
 
             const targetTransform = game.getComponent(targetId, 'transform');
             const targetPos = targetTransform?.position;
@@ -145,7 +146,8 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Trigger attack
         if (game.has('triggerSinglePlayAnimation')) {
-            game.call('triggerSinglePlayAnimation', attackerId, 'attack', combat.attackSpeed);
+            const enums = game.call('getEnums');
+            game.call('triggerSinglePlayAnimation', attackerId, enums.animationType.attack, combat.attackSpeed);
         }
 
         if (combat.projectile) {

@@ -89,26 +89,21 @@ class BattleCryAbility extends GUTS.BaseAbility {
             if (!allyPos || !allyHealth || allyHealth.current <= 0) return;
 
             // DESYNC SAFE: Check if already rallied - don't stack multiple battle cries
+            const enums = this.game.getEnums();
             const existingBuff = this.game.getComponent(allyId, "buff");
-            
-            if (existingBuff && existingBuff.buffType === 'rallied') {
+
+            if (existingBuff && existingBuff.buffType === enums.buffTypes.rallied) {
                 // DESYNC SAFE: Refresh duration instead of stacking
                 existingBuff.endTime = this.game.state.now + this.duration;
                 existingBuff.appliedTime = this.game.state.now; // Update applied time
             } else {
                 // Apply new rally buff
                 this.game.addComponent(allyId, "buff", {
-                    buffType: 'rallied',
-                    modifiers: {
-                        damageMultiplier: this.damageMultiplier,
-                        moralBoost: true,
-                        fearImmunity: true
-                    },
+                    buffType: enums.buffTypes.rallied,
                     endTime: this.game.state.now + this.duration,
-                    stackable: false,
-                    stacks: 1,
                     appliedTime: this.game.state.now,
-                    isActive: true
+                    stacks: 1,
+                    sourceEntity: casterEntity
                 });
             }
             
@@ -224,9 +219,10 @@ class BattleCryAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Remove rally buff
     removeRallyBuff(allyId) {
         // Check if ally still exists and has the rally buff
+        const enums = this.game.getEnums();
         if (this.game.hasComponent(allyId, "buff")) {
             const buff = this.game.getComponent(allyId, "buff");
-            if (buff && buff.buffType === 'rallied') {
+            if (buff && buff.buffType === enums.buffTypes.rallied) {
                 this.game.removeComponent(allyId, "buff");
 
                 // Visual effect when rally expires

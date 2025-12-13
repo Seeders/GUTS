@@ -43,7 +43,9 @@ class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
         // Get or find target
         let targetId = shared[targetKey];
 
-        if (!targetId || !this.isValidTarget(targetId, game)) {
+        // targetId is null/undefined when not set, or could be 0 (valid entity ID)
+        const hasValidTarget = targetId !== undefined && targetId !== null && targetId >= 0 && this.isValidTarget(targetId, game);
+        if (!hasValidTarget) {
             // Try to find a new target
             const newTarget = this.findNearestEnemy(entityId, game, pos, team, combat.visionRange || 300);
             if (newTarget) {
@@ -156,7 +158,8 @@ class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
         combat.lastAttack = game.state.now;
 
         if (game.has('triggerSinglePlayAnimation')) {
-            game.call('triggerSinglePlayAnimation', attackerId, 'attack', combat.attackSpeed);
+            const enums = game.call('getEnums');
+            game.call('triggerSinglePlayAnimation', attackerId, enums.animationType.attack, combat.attackSpeed);
         }
 
         if (combat.projectile) {
@@ -178,7 +181,8 @@ class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
         if (!targetHealth || targetHealth.current <= 0) return false;
 
         const targetDeathState = game.getComponent(targetId, 'deathState');
-        if (targetDeathState && targetDeathState.isDying) return false;
+        // deathState.state: 0=alive, 1=dying, 2=corpse - skip non-alive
+        if (targetDeathState && targetDeathState.state > 0) return false;
 
         return true;
     }

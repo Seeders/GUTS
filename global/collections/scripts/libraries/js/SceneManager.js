@@ -102,7 +102,7 @@ class SceneManager {
 
         // Destroy ALL entities - not just scene-spawned ones
         // This includes dynamically created entities (units, projectiles, etc.)
-        const allEntityIds = Array.from(this.game.entities.keys());
+        const allEntityIds = this.game.getAllEntities();
         for (const entityId of allEntityIds) {
             this.game.destroyEntity(entityId);
         }
@@ -259,7 +259,10 @@ class SceneManager {
 
             const { collection, spawnType, components } = entityDef;
             const transform = components?.transform;
-            const team = components?.team?.team ?? 'left';
+            // Team should be numeric; fallback to left team (2) if not specified
+            const enums = this.game.call?.('getEnums');
+            const defaultTeam = enums?.team?.left ?? 2;
+            const team = components?.team?.team ?? defaultTeam;
 
             // Use UnitCreationSystem for consistent entity creation
             const unitCreationSystem = this.game.unitCreationSystem || this.game.systemsByName?.get('UnitCreationSystem');
@@ -275,30 +278,44 @@ class SceneManager {
                     }
                 }
 
-                // Generate a unique placement ID for scene entities
-                const placementId = `scene_${collection}_${spawnType}_${entityId}`;
+                // Generate a numeric placement ID for scene entities
+                // Use placementSystem's auto-incrementing ID (server-authoritative)
+                const placementId = this.game.placementSystem?._getNextPlacementId() ?? -1;
 
-                // Determine playerId based on team
+                // Determine playerId based on team (numeric ID for ECS)
                 // Server: look up player for this team from room
-                // Client: use local playerId if entity is on player's side
-                let playerId = null;
+                // Client: use local numericPlayerId if entity is on player's team
+                let playerId = -1;
                 if (this.game.isServer) {
-                    // Server knows which player owns each side from the room
+                    // Server knows which player owns each team from the room
                     const room = this.game.room;
                     if (room?.players) {
                         for (const [pid, player] of room.players) {
-                            if (player.side === team) {
-                                playerId = pid;
+                            if (player.team === team) {
+                                playerId = player.numericId !== undefined ? player.numericId : -1;
                                 break;
                             }
                         }
                     }
                 } else {
-                    // Client: assign own playerId to entities on player's side
-                    const mySide = this.game.state?.mySide;
-                    if (mySide && team === mySide) {
-                        playerId = this.game.clientNetworkManager?.playerId || null;
+                    // Client: assign own numericPlayerId to entities on player's team
+                    const myTeam = this.game.state?.myTeam;
+                    if (myTeam !== undefined && team === myTeam) {
+                        playerId = this.game.clientNetworkManager?.numericPlayerId ?? -1;
                     }
+                }
+
+                // Convert string collection/spawnType to numeric indices
+                if (!enums) {
+                    console.error(`[SceneManager] Enums not available for entity ${entityId}`);
+                    continue;
+                }
+                const collectionIndex = enums.objectTypeDefinitions?.[collection] ?? -1;
+                const spawnTypeIndex = enums[collection]?.[spawnType] ?? -1;
+
+                if (collectionIndex < 0 || spawnTypeIndex < 0) {
+                    console.warn(`[SceneManager] Invalid collection/spawnType: ${collection}/${spawnType} (indices: ${collectionIndex}/${spawnTypeIndex})`);
+                    continue;
                 }
 
                 // Build placement data to create entity with full placement component
@@ -306,8 +323,8 @@ class SceneManager {
                 const placement = {
                     placementId,
                     gridPosition,
-                    unitTypeId: spawnType,
-                    collection,
+                    unitTypeId: spawnTypeIndex,
+                    collection: collectionIndex,
                     team,
                     playerId,
                     roundPlaced: 0

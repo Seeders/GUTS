@@ -637,14 +637,17 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const myTeam = this.game.state.mySide;
-        if (!myTeam) return;
+        const myTeam = this.game.state.myTeam;
+        // myTeam can be 0 (neutral) which is falsy, so check for undefined/null explicitly
+        if (myTeam === undefined || myTeam === null) return;
 
-        const myUnits = this.game.getEntitiesWith(
+        const allUnitsWithTeam = this.game.getEntitiesWith(
             "transform",
             "team",
             "health"
-        ).filter(id => {
+        );
+
+        const myUnits = allUnitsWithTeam.filter(id => {
             const team = this.game.getComponent(id, "team");
             return team?.team === myTeam;
         });
@@ -668,7 +671,8 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         for (const entityId of myUnits) {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
-            const unitType = this.game.getComponent(entityId, "unitType");
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             if (!pos) continue;
 
             const visionRadius = unitType?.visionRange || this.VISION_RADIUS;

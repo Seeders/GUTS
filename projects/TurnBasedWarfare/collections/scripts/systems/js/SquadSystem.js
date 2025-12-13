@@ -2,15 +2,7 @@ class SquadSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.squadSystem = this;
-        this.ELEMENT_TYPES = {
-            PHYSICAL: 'physical',
-            FIRE: 'fire',
-            COLD: 'cold',
-            LIGHTNING: 'lightning',
-            POISON: 'poison',
-            DIVINE: 'divine'
-        };
-        
+
         this.DEFAULT_SQUAD_CONFIG = {
             squadWidth: 1,
             squadHeight: 1,
@@ -180,17 +172,18 @@ class SquadSystem extends GUTS.BaseSystem {
      */
     getFormationType(squadData) {
         const { squadWidth, squadHeight } = squadData;
-        
+        const enums = this.game.getEnums();
+
         if (squadWidth === 1 && squadHeight === 1) {
-            return 'single';
+            return enums.formationType.single;
         } else if (squadWidth === 1) {
-            return 'column';
+            return enums.formationType.column;
         } else if (squadHeight === 1) {
-            return 'line';
+            return enums.formationType.line;
         } else if (squadWidth === squadHeight) {
-            return 'square';
+            return enums.formationType.square;
         } else {
-            return 'rectangle';
+            return enums.formationType.rectangle;
         }
     }
     

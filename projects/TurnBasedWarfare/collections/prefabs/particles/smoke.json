@@ -12,9 +12,6 @@
                 "color": {
                   "paletteColor": "greyDColor"
                 },
-                
-                
-                
                 "id": 0
               }
             ]
@@ -29,9 +26,6 @@
                 "color": {
                   "paletteColor": "greyDColor"
                 },
-                
-                
-                
                 "id": 0
               }
             ],
@@ -85,8 +79,6 @@
             "type": "sphere",
             "size": 1,
             "color": "#000000",
-            
-            
             "rotationZ": 0
           }
         ],

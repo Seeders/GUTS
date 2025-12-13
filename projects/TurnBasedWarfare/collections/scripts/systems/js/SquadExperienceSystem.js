@@ -200,7 +200,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      * @returns {boolean} Success status
      */
     async levelUpSquad(placementId, specializationId = null, playerId = null, callback) {
-        if (this.game.state.phase !== 'placement') {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
             console.log("incorrect phase to level up");
             callback(false);
             return;
@@ -313,13 +313,12 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         if (!squadData) return false;
         
         // Get the specialization unit type
-        const collections = this.game.getCollections();
-        if (!collections || !collections.units || !collections.units[specializationId]) {
+        if (!collections || !this.collections.units || !this.collections.units[specializationId]) {
             console.error(`Specialization unit type ${specializationId} not found`);
             return false;
         }
         
-        const specializationUnitType = collections.units[specializationId];
+        const specializationUnitType = this.collections.units[specializationId];
         
         // Find the placement in PlacementSystem
         const placement = this.game.call('getPlacementById', placementId);
@@ -336,11 +335,22 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         // specializationUnitType already has id and collection from compiler
         const newUnitType = specializationUnitType;
 
+        // Convert specializationId to numeric index
+        const enums = this.game.getEnums();
+        const spawnTypeIndex = enums?.units?.[specializationId] ?? -1;
+        const collectionIndex = enums?.objectTypeDefinitions?.units ?? -1;
+
+        if (spawnTypeIndex < 0 || collectionIndex < 0) {
+            console.error(`Cannot find enum for specialization: ${specializationId}`);
+            return false;
+        }
+
         // Create a modified placement object with the new unitType for unit creation
         const specializedPlacement = {
             ...placement,
             unitType: newUnitType,
-            unitTypeId: specializationId
+            unitTypeId: spawnTypeIndex,
+            collection: collectionIndex
         };
 
         // Recreate all units in the squad with the new unit type
@@ -399,8 +409,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         const currentUnitType = this.getCurrentUnitType(placementId, squadData.team);
         if (!currentUnitType || !currentUnitType.specUnits) return;
         
-        const collections = this.game.getCollections();
-        if (!collections || !collections.units) return;
         
         // Create specialization selection modal
         const modal = document.createElement('div');
@@ -435,7 +443,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         // Add specialization options
         const optionsContainer = content.querySelector('#specialization-options');
         currentUnitType.specUnits.forEach(specId => {
-            const specUnit = collections.units[specId];
+            const specUnit = this.collections.units[specId];
             if (specUnit) {
                 const optionButton = document.createElement('button');
                 optionButton.style.cssText = `
@@ -499,7 +507,8 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         for (const entityId of entitiesWithPlacement) {
             const placement = this.game.getComponent(entityId, 'placement');
             if (placement && placement.placementId === placementId && placement.squadUnits?.length > 0) {
-                return this.game.getComponent(placement.squadUnits[0], 'unitType');
+                const unitTypeComp = this.game.getComponent(placement.squadUnits[0], 'unitType');
+                return this.game.call('getUnitTypeDef', unitTypeComp);
             }
         }
         return null;
@@ -538,9 +547,10 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         }
 
         squadData.unitIds.forEach(entityId => {
-            const unitType = this.game.getComponent(entityId, "unitType");
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             if (unitType) {
-                const baseUnitData = this.game.getCollections().units[unitType.id];
+                const baseUnitData = unitType;
             
                 // Apply health bonus
                 const health = this.game.getComponent(entityId, "health");
@@ -627,22 +637,24 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      */
     getSquadDisplayName(placementId) {
         // Try to get the name from placement system - get unitType from entity
-        const playerPlacements = this.game.call('getPlacementsForSide', this.game.state.mySide);
+        const playerPlacements = this.game.call('getPlacementsForSide', this.game.state.myTeam);
         if (playerPlacements) {
             const placement = playerPlacements.find(p => p.placementId === placementId);
             if (placement && placement.squadUnits && placement.squadUnits.length > 0) {
-                const unitType = this.game.getComponent(placement.squadUnits[0], 'unitType');
+                const unitTypeComp = this.game.getComponent(placement.squadUnits[0], 'unitType');
+                const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
                 if (unitType) {
                     return unitType.title || unitType.id || 'Squad';
                 }
             }
         }
 
-        const enemyPlacements = this.game.call('getPlacementsForSide', this.game.state.mySide === 'left' ? 'right' : 'left');
+        const enemyPlacements = this.game.call('getOpponentPlacements');
         if (enemyPlacements) {
             const enemyPlacement = enemyPlacements.find(p => p.placementId === placementId);
             if (enemyPlacement && enemyPlacement.squadUnits && enemyPlacement.squadUnits.length > 0) {
-                const unitType = this.game.getComponent(enemyPlacement.squadUnits[0], 'unitType');
+                const unitTypeComp = this.game.getComponent(enemyPlacement.squadUnits[0], 'unitType');
+                const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
                 if (unitType) {
                     return unitType.title || unitType.id || 'Enemy Squad';
                 }
@@ -680,7 +692,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         for (const squad of this.getAllSquadsWithExperience()) {
             const squadData = squad.experience;
             const team = this.getPlacementTeam(squad.placementId);
-            if (squadData.canLevelUp && team === this.game.state.mySide) {
+            if (squadData.canLevelUp && team === this.game.state.myTeam) {
                 readySquads.push({
                     ...squadData,
                     placementId: squad.placementId,
@@ -738,7 +750,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
 
     tickBaselineXP() {
         // Optional: restrict to combat only
-        if (this.config.baselineXPCombatOnly && this.game?.state?.phase !== 'battle') return;
+        if (this.config.baselineXPCombatOnly && this.game?.state?.phase !== this.enums.gamePhase.battle) return;
 
         for (const squad of this.getAllSquadsWithExperience()) {
             const squadData = squad.experience;
@@ -798,6 +810,9 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      * @returns {Object} Debug info
      */
     getDebugInfo() {
+        const enums = this.game.getEnums();
+        const TEAM_LEFT = enums.team.left;
+        const TEAM_RIGHT = enums.team.right;
         const allSquads = this.getAllSquadsWithExperience();
         const squads = allSquads.map(s => ({
             ...s.experience,
@@ -805,8 +820,8 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         }));
         return {
             totalSquads: squads.length,
-            leftSquads: squads.filter(s => s.team === 'left').length,
-            rightSquads: squads.filter(s => s.team === 'right').length,
+            leftSquads: squads.filter(s => s.team === TEAM_LEFT).length,
+            rightSquads: squads.filter(s => s.team === TEAM_RIGHT).length,
             squadsReadyToLevelUp: squads.filter(s => s.canLevelUp).length,
             averageLevel: squads.length > 0 ? squads.reduce((sum, s) => sum + s.level, 0) / squads.length : 0,
             maxLevel: Math.max(0, ...squads.map(s => s.level))

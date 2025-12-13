@@ -1,8 +1,20 @@
 {
   "title": "commandQueue",
   "schema": {
-    "commands": [],
-    "currentCommand": null,
-    "commandHistory": []
+    "commands": {
+      "$fixedArray": {
+        "size": 8,
+        "default": -1
+      }
+    },
+    "commandCount": 0,
+    "currentCommand": -1,
+    "commandHistory": {
+      "$fixedArray": {
+        "size": 16,
+        "default": -1
+      }
+    },
+    "historyCount": 0
   }
 }

@@ -8,16 +8,31 @@ class AnimationSystem extends GUTS.BaseSystem {
         this.MIN_ATTACK_ANIMATION_TIME = 0.4;
         this.STATE_CHANGE_COOLDOWN = 0.1;
 
-        // Single-play animations (play once then stop/transition)
-        this.SINGLE_PLAY_ANIMATIONS = new Set([
-            'attack', 'cast', 'death'
-        ]);
-
         // Cache for availableClips as Sets (batchKey -> Set)
         this._clipSetCache = new Map();
     }
 
     init() {
+        // Get enums
+        // Cache direction names array for fast index->string lookup
+        this.directionEnumMap = this.game.call('getEnumMap', 'direction');
+        this.directionNames = this.directionEnumMap.toValue;
+
+        // Cache animation type names array for fast index->string lookup
+        this.animationTypeEnumMap = this.game.call('getEnumMap', 'animationType');
+        this.animationTypeNames = this.animationTypeEnumMap.toValue;
+
+        // Shared cache for sprite animation data (keyed by spriteAnimationSet index)
+        // This avoids storing complex objects per-entity
+        this.spriteAnimationCache = new Map();
+
+        // Single-play animations using enum values
+        this.SINGLE_PLAY_ANIMATIONS = new Set([
+            this.enums.animationType.attack,
+            this.enums.animationType.cast,
+            this.enums.animationType.death
+        ]);
+
         // Register methods with GameManager
         this.game.register('triggerSinglePlayAnimation', this.triggerSinglePlayAnimation.bind(this));
         this.game.register('isAnimationFinished', this.isAnimationFinished.bind(this));
@@ -33,6 +48,27 @@ class AnimationSystem extends GUTS.BaseSystem {
         this.game.register('setBillboardAnimationDirection', this.setBillboardAnimationDirection.bind(this));
         this.game.register('getBillboardCurrentAnimation', this.getBillboardCurrentAnimation.bind(this));
         this.game.register('getBillboardAnimationState', this.getBillboardAnimationState.bind(this));
+        this.game.register('getSpriteAnimationData', this.getSpriteAnimationData.bind(this));
+    }
+
+    /**
+     * Get sprite animation data from shared cache
+     * @param {number} spriteAnimationSetIndex - The spriteAnimationSets collection index
+     * @returns {object|null} Animation data object or null if not cached
+     */
+    getSpriteAnimationData(spriteAnimationSetIndex) {
+        return this.spriteAnimationCache.get(spriteAnimationSetIndex) || null;
+    }
+
+    /**
+     * Get sprite animations for an entity from the shared cache
+     * @param {object} animState - The entity's animationState component
+     * @returns {object|null} The animations object keyed by animation type name
+     */
+    _getSpriteAnimations(animState) {
+        if (!animState || animState.spriteAnimationSet < 0) return null;
+        const cachedData = this.spriteAnimationCache.get(animState.spriteAnimationSet);
+        return cachedData?.animations || null;
     }
 
     calculateAnimationSpeed(attackerId, baseAttackSpeed) {
@@ -55,13 +91,14 @@ class AnimationSystem extends GUTS.BaseSystem {
             if (!this.game.renderSystem?.isInstanced(entityId)) return;
 
             // Check if this is a static entity (worldObjects, cliffs)
-            const unitType = this.game.getComponent(entityId, "unitType");
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             const isStaticEntity = unitType && (unitType.collection === 'worldObjects' || unitType.collection === 'cliffs');
 
             if (isStaticEntity) {
                 // For static entities with sprite animations, only update sprite direction based on camera
                 const animState = this.game.getComponent(entityId, 'animationState');
-                if (animState?.isSprite && animState.spriteAnimations) {
+                if (animState?.isSprite && this._getSpriteAnimations(animState)) {
                     this.updateSpriteDirectionFromRotation(entityId, animState);
                 }
                 return;
@@ -89,23 +126,29 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Check if this is a billboard entity with sprite animations
         const isBillboard = this.game.call('isBillboardWithAnimations', entityId);
 
-        // Add animationState component to entity
+        // Add animationState component to entity (all values numeric for TypedArray storage)
         this.game.addComponent(entityId, 'animationState', {
-            currentClip: 'idle',
+            currentClip: this.enums.animationType.idle,
             lastStateChange: this.game.state?.now || 0,
             animationTime: 0,
             minAnimationTime: 0,
-            pendingClip: null,
-            pendingSpeed: null,
-            pendingMinTime: null,
-            isTriggered: false,
-            isCelebrating: false,
+            pendingClip: -1,
+            pendingSpeed: -1,
+            pendingMinTime: -1,
+            isTriggered: 0,
+            isCelebrating: 0,
             // Billboard/sprite animation state
-            isSprite: isBillboard,
-            spriteDirection: 'down',
+            isSprite: isBillboard ? 1 : 0,
+            spriteDirection: this.enums.direction.down,
+            spriteAnimationSet: -1,
+            spriteFps: -1,
+            spriteAnimationType: -1,
+            spriteFrameIndex: 0,
+            spriteFrameTime: 0,
+            spriteLoopAnimation: 1,
             // Track fallback usage to prevent thrashing
-            lastRequestedClip: null,
-            lastResolvedClip: null,
+            lastRequestedClip: -1,
+            lastResolvedClip: -1,
             fallbackCooldown: 0
         });
 
@@ -114,8 +157,9 @@ class AnimationSystem extends GUTS.BaseSystem {
             // Billboard animation state will be initialized by onBillboardSpawned callback from EntityRenderer
             // (this happens when EntityRenderer finishes spawning the billboard)
         } else {
-            // VAT entities use clip-based animations
-            this.game.renderSystem?.setInstanceClip(entityId, 'idle', true);
+            // VAT entities use clip-based animations - convert enum to string for render system
+            const idleClipName = this.animationTypeNames[this.enums.animationType.idle];
+            this.game.renderSystem?.setInstanceClip(entityId, idleClipName, true);
             this.game.renderSystem?.setInstanceSpeed(entityId, 1);
         }
     }
@@ -126,7 +170,7 @@ class AnimationSystem extends GUTS.BaseSystem {
      */
     isEntityDead(entityId) {
         const deathState = this.game.getComponent(entityId, "deathState");
-        return deathState && deathState.isDying;
+        return deathState && deathState.state >= this.enums.deathState.dying;
     }
 
     /**
@@ -134,7 +178,7 @@ class AnimationSystem extends GUTS.BaseSystem {
      */
     isEntityCorpse(entityId) {
         const deathState = this.game.getComponent(entityId, "deathState");
-        return deathState && deathState.state === 'corpse';
+        return deathState && deathState.state === this.enums.deathState.corpse;
     }
 
     updateEntityAnimationLogic(entityId, velocity, health, combat, aiState) {
@@ -148,8 +192,8 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Handle billboard/sprite entities separately
         if (animState.isSprite) {
-            // Only process if sprite animations have been loaded
-            if (animState.spriteAnimations) {
+            // Only process if sprite animations have been loaded (spriteAnimationSet >= 0)
+            if (animState.spriteAnimationSet >= 0) {
                 this.updateBillboardAnimationLogic(entityId, animState, velocity);
             }
             return;
@@ -216,8 +260,8 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Only animate during battle phase - show idle during placement
         // But only for living entities (dead entities checked above)
-        if (this.game.state?.phase !== 'battle') {
-            this.game.call('setBillboardAnimation', entityId, 'idle', true);
+        if (this.game.state?.phase !== this.enums.gamePhase.battle) {
+            this.game.call('setBillboardAnimation', entityId, this.enums.animationType.idle, true);
             // Still update sprite direction based on camera position (important for editor)
             this.updateSpriteDirectionFromRotation(entityId, animState);
             return;
@@ -240,7 +284,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         const isMoving = Math.abs(vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(vz) > this.MIN_MOVEMENT_THRESHOLD;
 
         // Set walk or idle animation based on movement
-        const animationType = isMoving ? 'walk' : 'idle';
+        const animationType = isMoving ? this.enums.animationType.walk : this.enums.animationType.idle;
         this.game.call('setBillboardAnimation', entityId, animationType, true);
 
         // Update sprite direction from rotation (set by MovementSystem when moving, or by attack behavior when attacking)
@@ -299,8 +343,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             let directionIndex = Math.round(snappedRelativeAngle / ANGLE_STEP);
             directionIndex = ((directionIndex % 8) + 8) % 8;
 
-            const directions = ['down', 'downleft', 'left', 'upleft', 'up', 'upright', 'right', 'downright'];
-            newDirection = directions[directionIndex];
+            newDirection = directionIndex; // directionIndex maps directly to enum
         } else {
             // Perspective: sprite direction relative to camera angle (existing logic)
             const entityPos = transform.position;
@@ -332,11 +375,9 @@ class AnimationSystem extends GUTS.BaseSystem {
             // Handle wrap-around for negative indices
             directionIndex = ((directionIndex % 8) + 8) % 8;
 
-            // Map index to direction name
-            // Index 0 = facing toward camera = down (front view)
-            // Index increases counterclockwise: 1=downleft, 2=left, 3=upleft, 4=up, 5=upright, 6=right, 7=downright
-            const directions = ['down', 'downleft', 'left', 'upleft', 'up', 'upright', 'right', 'downright'];
-            newDirection = directions[directionIndex];
+            // directionIndex maps directly to direction enum:
+            // 0=down, 1=downleft, 2=left, 3=upleft, 4=up, 5=upright, 6=right, 7=downright
+            newDirection = directionIndex;
         }
 
         // Check if direction changed and apply it
@@ -347,37 +388,34 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     determineDesiredAnimation(entityId, velocity, health, combat, aiState) {
-        let clip = 'idle';
+        let clip = this.enums.animationType.idle;
         let speed = 1.0;
         let minTime = 0;
 
-        if(this.game.state.phase == 'battle'){
+        if(this.game.state.phase === this.enums.gamePhase.battle){
             // Check movement first
             const isMoving = velocity && (Math.abs(velocity.vx) > this.MIN_MOVEMENT_THRESHOLD || Math.abs(velocity.vz) > this.MIN_MOVEMENT_THRESHOLD);
 
             if (isMoving) {
-                clip = 'walk';
+                clip = this.enums.animationType.walk;
                 speed = this.calculateWalkSpeed(velocity);
             }
 
-            // AI action overrides based on currentAction
-            if (aiState && aiState.currentAction) {
+            // AI action overrides based on currentAction (collection + index)
+            // Only check behaviorActions collection (aiState enum index 0)
+            if (aiState && aiState.currentAction >= 0 && aiState.currentActionCollection === this.enums.behaviorCollection.behaviorActions) {
                 const actionType = aiState.currentAction;
 
-                switch (actionType) {
-                    case 'AttackEnemyBehaviorAction':
-                    case 'CombatBehaviorAction':
-                        // During combat, prefer walking if moving, otherwise idle
-                        if (!isMoving) {
-                            clip = 'idle';
-                            speed = 1.0;
-                        }
-                        break;
-
-                    case 'MoveBehaviorAction':
-                        clip = 'walk';
-                        speed = this.calculateWalkSpeed(velocity);
-                        break;
+                if (actionType === this.enums.behaviorActions.AttackEnemyBehaviorAction ||
+                    actionType === this.enums.behaviorActions.CombatBehaviorAction) {
+                    // During combat, prefer walking if moving, otherwise idle
+                    if (!isMoving) {
+                        clip = this.enums.animationType.idle;
+                        speed = 1.0;
+                    }
+                } else if (actionType === this.enums.behaviorActions.MoveBehaviorAction) {
+                    clip = this.enums.animationType.walk;
+                    speed = this.calculateWalkSpeed(velocity);
                 }
             }
         }
@@ -431,24 +469,27 @@ class AnimationSystem extends GUTS.BaseSystem {
         return false;
     }
 
-    changeAnimation(entityId, clipName, speed = 1.0, minTime = 0) {
+    changeAnimation(entityId, clip, speed = 1.0, minTime = 0) {
         const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) return false;
 
+        // Convert numeric enum to string clip name for render system
+        const clipName = typeof clip === 'number' ? this.animationTypeNames[clip] : clip;
+
         // Try to resolve clip name to available clip
         const resolvedClip = this.resolveClipName(entityId, clipName);
-        
+
         // Apply animation change
         const success = this.game.renderSystem?.setInstanceClip(entityId, resolvedClip, true);
         if (success) {
             this.game.renderSystem?.setInstanceSpeed(entityId, speed);
-            
-            // Update state
-            animState.currentClip = resolvedClip;
+
+            // Update state (store numeric enum value)
+            animState.currentClip = clip;
             animState.lastStateChange = this.game.state?.now || 0;
             animState.animationTime = 0;
             animState.minAnimationTime = minTime;
-            
+
             return true;
         } else {
           //  console.warn(`[AnimationSystem] ❌ Failed to change animation for entity ${entityId}: ${clipName} -> ${resolvedClip}`);
@@ -473,10 +514,10 @@ class AnimationSystem extends GUTS.BaseSystem {
         const minTime = animState.pendingMinTime || 0;
 
         // Clear pending state
-        animState.pendingClip = null;
-        animState.pendingSpeed = null;
-        animState.pendingMinTime = null;
-        animState.isTriggered = false;
+        animState.pendingClip = -1;
+        animState.pendingSpeed = -1;
+        animState.pendingMinTime = -1;
+        animState.isTriggered = 0;
 
         // Apply the animation
         this.changeAnimation(entityId, clip, speed, minTime);
@@ -493,10 +534,10 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Handle billboard entities with sprite animations
         if (animState.isSprite) {
-            if (clipName === 'attack') {
+            if (clipName === this.enums.animationType.attack) {
                 // Check if already playing attack animation - don't restart it
                 const billboardAnim = this.game.getComponent(entityId, 'animationState');
-                if (billboardAnim && billboardAnim.spriteAnimationType === 'attack') {
+                if (billboardAnim && billboardAnim.spriteAnimationType === this.enums.animationType.attack) {
                     return true;  // Already attacking, don't restart
                 }
 
@@ -506,11 +547,11 @@ class AnimationSystem extends GUTS.BaseSystem {
                 this.game.call(
                     'setBillboardAnimation',
                     entityId,
-                    'attack',
+                    this.enums.animationType.attack,
                     false,  // don't loop - play once
                     (completedEntityId) => {
                         // Return to idle animation after attack finishes
-                        this.game.call('setBillboardAnimation', completedEntityId, 'idle', true);
+                        this.game.call('setBillboardAnimation', completedEntityId, this.enums.animationType.idle, true);
                     },
                     minTime > 0 ? minTime : null  // Pass minTime as custom duration if provided
                 );
@@ -524,7 +565,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         animState.pendingClip = clipName;
         animState.pendingSpeed = speed;
         animState.pendingMinTime = minTime;
-        animState.isTriggered = true;
+        animState.isTriggered = 1;
 
         return true;
     }
@@ -540,17 +581,17 @@ class AnimationSystem extends GUTS.BaseSystem {
         // We just need to clear animation system's local state and play the animation
 
         // Clear celebration state
-        animState.isCelebrating = false;
+        animState.isCelebrating = 0;
 
         // Clear any pending animations
-        animState.isTriggered = false;
-        animState.pendingClip = null;
-        animState.pendingSpeed = null;
-        animState.pendingMinTime = null;
+        animState.isTriggered = 0;
+        animState.pendingClip = -1;
+        animState.pendingSpeed = -1;
+        animState.pendingMinTime = -1;
 
         // Reset fallback tracking for death animation
-        animState.lastRequestedClip = null;
-        animState.lastResolvedClip = null;
+        animState.lastRequestedClip = -1;
+        animState.lastResolvedClip = -1;
         animState.fallbackCooldown = 0;
 
         // Handle billboard entities with sprite animations
@@ -559,14 +600,14 @@ class AnimationSystem extends GUTS.BaseSystem {
             this.game.call(
                 'setBillboardAnimation',
                 entityId,
-                'death',
+                this.enums.animationType.death,
                 false  // don't loop
             );
             return;
         }
 
         // Apply death animation immediately for VAT/model entities
-        this.changeAnimation(entityId, 'death', 1.0, 0);
+        this.changeAnimation(entityId, this.enums.animationType.death, 1.0, 0);
     }
 
     setCorpseAnimation(entityId) {
@@ -595,12 +636,12 @@ class AnimationSystem extends GUTS.BaseSystem {
         const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) return;
 
-        animState.isCelebrating = true;
-        
+        animState.isCelebrating = 1;
+
         // Try celebration animations, fallback to idle
-        const celebrationClips = ['celebrate'];
-        let clipToUse = 'idle';
-        
+        const celebrationClips = [this.enums.animationType.celebrate];
+        let clipToUse = this.enums.animationType.idle;
+
         for (const clip of celebrationClips) {
             if (this.hasClip(entityId, clip)) {
                 clipToUse = clip;
@@ -615,20 +656,8 @@ class AnimationSystem extends GUTS.BaseSystem {
         const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) return;
 
-        animState.isCelebrating = false;
-        this.changeAnimation(entityId, 'idle', 1.0, 0);
-    }
-
-    entityJump(entityId, speed = 1.0) {
-        if (this.hasClip(entityId, 'leap')) {
-            this.triggerSinglePlayAnimation(entityId, 'leap', speed, 0.5);
-        }
-    }
-
-    entityThrow(entityId, speed = 1.0) {
-        if (this.hasClip(entityId, 'throw')) {
-            this.triggerSinglePlayAnimation(entityId, 'throw', speed, 0.3);
-        }
+        animState.isCelebrating = 0;
+        this.changeAnimation(entityId, this.enums.animationType.idle, 1.0, 0);
     }
 
     stopAllAnimations(entityId) {
@@ -643,8 +672,8 @@ class AnimationSystem extends GUTS.BaseSystem {
         return Math.min(2.0, Math.max(0.5, speed / 30)); // Adjust divisor based on your units
     }
 
-    isAnimationFinished(entityId, clipName) {
-        if (!this.SINGLE_PLAY_ANIMATIONS.has(clipName)) {
+    isAnimationFinished(entityId, clip) {
+        if (!this.SINGLE_PLAY_ANIMATIONS.has(clip)) {
             return false; // Continuous animations never finish
         }
 
@@ -656,8 +685,19 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Check if we've played through most of the clip
         const progress = animationState.animTime / animationState.clipDuration;
         const isFinished = progress >= 0.9; // Consider finished at 90%
-        
+
         return isFinished;
+    }
+
+    /**
+     * Convert numeric renderable indices to string names
+     */
+    _getRenderableNames(renderable) {
+        const objectTypeIndex = renderable.objectType;
+        const spawnTypeIndex = renderable.spawnType;
+        const collectionName = this.reverseEnums.objectTypeDefinitions?.[objectTypeIndex];
+        const spawnTypeName = collectionName ? this.reverseEnums[collectionName]?.[spawnTypeIndex] : null;
+        return { collectionName, spawnTypeName };
     }
 
     /**
@@ -681,11 +721,17 @@ class AnimationSystem extends GUTS.BaseSystem {
         return clipSet;
     }
 
-    hasClip(entityId, clipName) {
+    hasClip(entityId, clip) {
         const renderable = this.game.getComponent(entityId, "renderable");
         if (!renderable) return false;
 
-        const clipSet = this._getClipSet(renderable.objectType, renderable.spawnType);
+        const { collectionName, spawnTypeName } = this._getRenderableNames(renderable);
+        if (!collectionName || !spawnTypeName) return false;
+
+        // Convert numeric enum to string clip name
+        const clipName = typeof clip === 'number' ? this.animationTypeNames[clip] : clip;
+
+        const clipSet = this._getClipSet(collectionName, spawnTypeName);
         return clipSet?.has(clipName) || false;
     }
 
@@ -693,7 +739,10 @@ class AnimationSystem extends GUTS.BaseSystem {
         const renderable = this.game.getComponent(entityId, "renderable");
         if (!renderable) return 'idle';
 
-        const clipSet = this._getClipSet(renderable.objectType, renderable.spawnType);
+        const { collectionName, spawnTypeName } = this._getRenderableNames(renderable);
+        if (!collectionName || !spawnTypeName) return 'idle';
+
+        const clipSet = this._getClipSet(collectionName, spawnTypeName);
         if (!clipSet) return 'idle';
 
         // Return if exact match exists (O(1) Set lookup)
@@ -701,28 +750,8 @@ class AnimationSystem extends GUTS.BaseSystem {
             return desiredClip;
         }
 
-        // Try fallbacks
-        const fallbacks = {
-            'attack': ['combat', 'fight', 'swing', 'strike', 'idle'],
-            'shoot': ['bow', 'cast', 'throw', 'attack', 'idle'],
-            'bow': ['shoot', 'cast', 'throw', 'attack', 'idle'],
-            'cast': ['shoot', 'throw', 'attack', 'idle'],
-            'walk': ['run', 'move', 'step', 'idle'],
-            'hurt': ['damage', 'hit', 'pain', 'idle'],
-            'death': ['die', 'idle'],
-            'celebrate': ['victory', 'cheer', 'dance', 'happy', 'win', 'idle']
-        };
-
-        const fallbackList = fallbacks[desiredClip] || ['idle'];
-        for (const fallback of fallbackList) {
-            if (clipSet.has(fallback)) {
-                return fallback;
-            }
-        }
-
-        // Final fallback - get first clip from the set
-        const firstClip = clipSet.values().next().value;
-        return firstClip || 'idle';
+        // Return idle if desired clip not found
+        return 'idle';
     }
 
     // Cleanup is handled automatically by ECS when entities are destroyed
@@ -746,7 +775,7 @@ class AnimationSystem extends GUTS.BaseSystem {
     /**
      * Set animation for a billboard entity
      * @param {string} entityId - The entity to animate
-     * @param {string} animationType - Animation type (idle, walk, attack, death, celebrate)
+     * @param {number} animationType - Animation type enum value (idle, walk, attack, death, celebrate)
      * @param {boolean} loop - Whether the animation should loop (default: true)
      * @param {function} onComplete - Optional callback when animation finishes (for non-looping animations)
      * @param {number} customDuration - Optional custom duration to pace the animation (in seconds)
@@ -759,13 +788,19 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Check death state from component (single source of truth)
         // Don't allow animation changes for dead entities (except death animation itself)
-        if (this.isEntityDead(entityId) && animationType !== 'death') {
+        if (this.isEntityDead(entityId) && animationType !== this.enums.animationType.death) {
             return false;
         }
 
+        // Convert numeric enum to string for animation data lookup
+        const animationTypeName = this.animationTypeNames[animationType];
+
+        // Get sprite animations from shared cache
+        const spriteAnimations = this._getSpriteAnimations(animData);
+
         // Check if animation type is available
-        if (!animData.spriteAnimations?.[animationType]) {
-            console.warn(`[AnimationSystem] Animation type '${animationType}' not available for entity ${entityId}`);
+        if (!spriteAnimations?.[animationTypeName]) {
+            console.warn(`[AnimationSystem] Animation type '${animationTypeName}' not available for entity ${entityId}`);
             return false;
         }
 
@@ -774,11 +809,11 @@ class AnimationSystem extends GUTS.BaseSystem {
             return true;
         }
 
-        // Set up new animation
+        // Set up new animation (store numeric enum value)
         animData.spriteAnimationType = animationType;
         animData.spriteFrameIndex = 0;
         animData.spriteFrameTime = 0;
-        animData.spriteLoopAnimation = loop;
+        animData.spriteLoopAnimation = loop ? 1 : 0;
         animData.onAnimationComplete = onComplete;
         animData.customDuration = customDuration; // Custom duration override for pacing
 
@@ -850,11 +885,18 @@ class AnimationSystem extends GUTS.BaseSystem {
         for (const entityId of billboardEntities) {
             const animState = this.game.getComponent(entityId, "animationState");
             if (!animState || !animState.isSprite) continue;
-            // Get animations for current type (stored in animationState)
-            const animations = animState.spriteAnimations?.[animState.spriteAnimationType];
+
+            // Get sprite animations from shared cache
+            const spriteAnimations = this._getSpriteAnimations(animState);
+            if (!spriteAnimations) continue;
+
+            // Get animations for current type - convert numeric enum to string for lookup
+            const animationTypeName = this.animationTypeNames[animState.spriteAnimationType];
+            const animations = spriteAnimations[animationTypeName];
             if (!animations) continue;
 
-            const directionData = animations[animState.spriteDirection];
+            const directionName = this.directionNames[animState.spriteDirection];
+            const directionData = animations[directionName];
             if (!directionData || !directionData.frames || directionData.frames.length === 0) continue;
 
             const frames = directionData.frames;
@@ -867,7 +909,8 @@ class AnimationSystem extends GUTS.BaseSystem {
             animState.spriteFrameTime += this.game.state.deltaTime;
 
             // Calculate frame duration based on fps from animation set
-            const fps = animState.spriteFps || frameRates[animState.spriteAnimationType] || defaultFrameRate;
+            // Note: spriteFps defaults to -1 in TypedArray storage, so check for > 0
+            const fps = (animState.spriteFps > 0 ? animState.spriteFps : null) || frameRates[animState.spriteAnimationType] || defaultFrameRate;
             let frameDuration = 1 / fps;
 
             // Override with custom duration if set (e.g., for abilities that need specific timing)
@@ -898,8 +941,8 @@ class AnimationSystem extends GUTS.BaseSystem {
                             // Default behavior: return to idle for single-play animations (except death)
                             // Death animations should stay frozen on the last frame
                             if (this.SINGLE_PLAY_ANIMATIONS.has(animState.spriteAnimationType) &&
-                                animState.spriteAnimationType !== 'death') {
-                                this.game.call('setBillboardAnimation', entityId, 'idle', true);
+                                animState.spriteAnimationType !== this.enums.animationType.death) {
+                                this.game.call('setBillboardAnimation', entityId, this.enums.animationType.idle, true);
                             }
                         }
                         break; // Exit loop for non-looping animations
@@ -920,44 +963,64 @@ class AnimationSystem extends GUTS.BaseSystem {
     billboardSpawned(eventData) {
         const { entityId, spriteAnimationSet, spriteAnimationCollection } = eventData;
 
+        // Get numeric index for the sprite animation set
+        const spriteAnimationSetIndex = this.enums.spriteAnimationSets[spriteAnimationSet];
+        if (spriteAnimationSetIndex === undefined) {
+            console.warn(`[AnimationSystem] No enum index found for spriteAnimationSet '${spriteAnimationSet}'`);
+            return;
+        }
+
         // Get animation data from collections
-        const animSetData = this.game.getCollections()?.spriteAnimationSets?.[spriteAnimationSet];
+        const animSetData = this.collections?.spriteAnimationSets?.[spriteAnimationSet];
         if (!animSetData) {
             console.warn(`[AnimationSystem] No animation set found for ${spriteAnimationSet}`);
             return;
         }
 
-        // Build animation data structure from collections
-        const animations = {};
-        const animTypes = ['idle', 'walk', 'attack', 'death', 'celebrate'];
+        // Check if animation data is already cached for this animation set
+        let cachedData = this.spriteAnimationCache.get(spriteAnimationSetIndex);
+        if (!cachedData) {
+            // Build animation data structure from collections (once per animation set type)
+            // Animation data is stored keyed by string names (idle, walk, etc.) for lookup
+            const animations = {};
 
-        for (const animType of animTypes) {
-            const animKey = `${animType}SpriteAnimations`;
-            const animNames = animSetData[animKey];
+            for (let i = 0; i < this.animationTypeNames.length; i++) {
+                const animTypeName = this.animationTypeNames[i];
+                const animKey = `${animTypeName}SpriteAnimations`;
+                const animNames = animSetData[animKey];
 
-            if (animNames && animNames.length > 0) {
-                animations[animType] = this.loadAnimationsFromCollections(animNames, spriteAnimationCollection);
+                if (animNames && animNames.length > 0) {
+                    animations[animTypeName] = this.loadAnimationsFromCollections(animNames, spriteAnimationCollection);
+                }
             }
+
+            // Get fps from animation set's generator settings
+            const animationFps = animSetData.generatorSettings?.fps || -1;
+
+            // Cache the shared animation data
+            cachedData = {
+                animations,
+                fps: animationFps
+            };
+            this.spriteAnimationCache.set(spriteAnimationSetIndex, cachedData);
         }
 
         // Determine initial direction based on entity type and team
-        const unitType = this.game.getComponent(entityId, 'unitType');
+        const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
         const team = this.game.getComponent(entityId, 'team');
         const isBuilding = unitType?.collection === 'buildings';
 
         let initialDirection;
         if (isBuilding) {
             // Buildings face downleft for better isometric view
-            initialDirection = 'downleft';
+            initialDirection = this.enums.direction.downleft;
         } else {
             // Units face based on their team
             // Team 'left' faces upright (toward opponent on right)
             // Team 'right' faces downleft (toward opponent on left)
-            initialDirection = team?.id === 'left' ? 'upright' : 'downleft';
+            initialDirection = team?.team === this.enums.team.left ? this.enums.direction.upright : this.enums.direction.downleft;
         }
-
-        // Get fps from animation set's generator settings
-        const animationFps = animSetData.generatorSettings?.fps || null;
 
         // Ensure animationState component exists, then add billboard-specific properties
         if (!this.game.hasComponent(entityId, 'animationState')) {
@@ -966,20 +1029,19 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         const animState = this.game.getComponent(entityId, 'animationState');
         if (animState) {
-            // Add sprite-specific properties to animationState
-            animState.spriteAnimationSet = spriteAnimationSet;
-            animState.spriteAnimations = animations;
-            animState.spriteFps = animationFps;
-            animState.spriteAnimationType = null;
+            // Store only numeric values - animation data is in shared cache
+            animState.spriteAnimationSet = spriteAnimationSetIndex;
+            animState.spriteFps = cachedData.fps;
+            animState.spriteAnimationType = -1; // No animation set yet
             animState.spriteDirection = initialDirection;
             animState.spriteFrameIndex = 0;
             animState.spriteFrameTime = 0;
-            animState.spriteLoopAnimation = true;
-            animState.isSprite = true;
+            animState.spriteLoopAnimation = 1; // true = 1
+            animState.isSprite = 1; // true = 1
         }
 
         // Apply initial idle animation (sets UV coordinates)
-        this.setBillboardAnimation(entityId, 'idle', true);
+        this.setBillboardAnimation(entityId, this.enums.animationType.idle, true);
 
         // Update entity transform now that UV coordinates are set
         // This ensures aspect ratio calculation works correctly
@@ -1002,7 +1064,7 @@ class AnimationSystem extends GUTS.BaseSystem {
      * Load animation data from collections
      */
     loadAnimationsFromCollections(animNames, collectionName) {
-        const collections = this.game.getCollections();
+        const collections = this.collections;
         const result = {};
 
         for (const animName of animNames) {
@@ -1060,10 +1122,14 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     onSceneUnload() {
+        // Clear sprite animation cache on scene unload
+        this.spriteAnimationCache.clear();
     }
 
     dispose() {
         // Clear cached clip sets to avoid stale data on next game
         this._clipSetCache.clear();
+        // Clear sprite animation cache
+        this.spriteAnimationCache.clear();
     }
 }

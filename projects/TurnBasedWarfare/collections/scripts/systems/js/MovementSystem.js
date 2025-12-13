@@ -47,10 +47,14 @@ class MovementSystem extends GUTS.BaseSystem {
         this.frameCounter = 0;
         this.pathfindingQueue = [];
         this.pathfindingQueueIndex = 0;
+
     }
-    
+
+    init() {
+    }
+
     update() {
-        if (this.game.state.phase !== 'battle') return;
+        if (this.game.state.phase !== this.enums.gamePhase.battle) return;
 
         this.frameCounter++;
         const entities = this.game.getEntitiesWith("transform", "velocity");
@@ -73,10 +77,13 @@ class MovementSystem extends GUTS.BaseSystem {
                 const unitRadius = this.getUnitRadius(collision);
 
                 // Unit should stay still if: anchored (buildings only), or attacking and in range
+                // Check behaviorActions collection (aiState enum index 0)
+                const behaviorMeta = aiState ? this.game.call('getBehaviorMeta', entityId) : null;
                 const isAttacking = !!aiState &&
-                    (aiState.currentAction === 'AttackEnemyBehaviorAction' || aiState.currentAction === 'CombatBehaviorAction') &&
-                    !!aiState.meta.target &&
-                    this.isInAttackRange(pos, aiState.meta.target, entityId);
+                    aiState.currentActionCollection === this.enums.behaviorCollection.behaviorActions &&
+                    (aiState.currentAction === this.enums.behaviorActions.AttackEnemyBehaviorAction || aiState.currentAction === this.enums.behaviorActions.CombatBehaviorAction) &&
+                    !!behaviorMeta?.target &&
+                    this.isInAttackRange(pos, behaviorMeta.target, entityId);
                 const isAnchored = vel.anchored || isAttacking;
 
                 unitData.set(entityId, {
@@ -155,35 +162,47 @@ class MovementSystem extends GUTS.BaseSystem {
                 stuckTime: 0,
                 lastPathTime: 0,
                 avoidanceDirection: 0,
-                velocityHistory: [],
+                velocityHistoryIndex: 0,
+                velocityHistoryCount: 0,
                 smoothedDirection: { x: 0, z: 0 },
                 dampedForces: { separation: { x: 0, z: 0 }, avoidance: { x: 0, z: 0 } }
             });
             movementState = this.game.getComponent(entityId, 'movementState');
         }
 
-        // Round to 6 decimal places to avoid floating-point precision desync across environments
-        movementState.velocityHistory.push({
-            vx: Math.round(vel.vx * 1000000) / 1000000,
-            vz: Math.round(vel.vz * 1000000) / 1000000,
-            frame: this.frameCounter
-        });
+        // Use ring buffer pattern for velocityHistory (fixed array of size 5)
+        const BUFFER_SIZE = 5;
+        const idx = movementState.velocityHistoryIndex;
 
-        if (movementState.velocityHistory.length > this.OSCILLATION_DETECTION_FRAMES) {
-            movementState.velocityHistory.shift();
+        // Round to 6 decimal places to avoid floating-point precision desync across environments
+        movementState.velocityHistory[idx].vx = Math.round(vel.vx * 1000000) / 1000000;
+        movementState.velocityHistory[idx].vz = Math.round(vel.vz * 1000000) / 1000000;
+        movementState.velocityHistory[idx].frame = this.frameCounter;
+
+        // Advance ring buffer index
+        movementState.velocityHistoryIndex = (idx + 1) % BUFFER_SIZE;
+        if (movementState.velocityHistoryCount < BUFFER_SIZE) {
+            movementState.velocityHistoryCount++;
         }
     }
-    
+
     isUnitOscillating(entityId) {
         const movementState = this.game.getComponent(entityId, 'movementState');
-        if (!movementState || !movementState.velocityHistory || movementState.velocityHistory.length < this.OSCILLATION_DETECTION_FRAMES) {
+        if (!movementState || movementState.velocityHistoryCount < this.OSCILLATION_DETECTION_FRAMES) {
             return false;
         }
 
         let directionChanges = 0;
         let lastDirection = null;
 
-        for (const vel of movementState.velocityHistory) {
+        // Read from ring buffer in order (oldest to newest)
+        const BUFFER_SIZE = 5;
+        const count = movementState.velocityHistoryCount;
+        const startIdx = (movementState.velocityHistoryIndex - count + BUFFER_SIZE) % BUFFER_SIZE;
+
+        for (let i = 0; i < count; i++) {
+            const bufferIdx = (startIdx + i) % BUFFER_SIZE;
+            const vel = movementState.velocityHistory[bufferIdx];
             const speed = Math.sqrt(vel.vx * vel.vx + vel.vz * vel.vz);
             if (speed < 0.1) continue;
 
@@ -209,9 +228,10 @@ class MovementSystem extends GUTS.BaseSystem {
             sortedEntityIds.forEach(entityId => {
                 const data = unitData.get(entityId);
                 // Chasing means: has a target or targetPosition they're moving toward but not in range yet
+                const behaviorShared = data.aiState ? this.game.call('getBehaviorShared', entityId) : null;
                 const isChasing = data.aiState &&
-                    data.aiState.currentAction &&
-                    (data.aiState.shared || (data.aiState.shared && data.aiState.shared.targetPosition)) &&
+                    data.aiState.currentAction >= 0 &&
+                    (behaviorShared || behaviorShared?.targetPosition) &&
                     !data.isAnchored;
 
                 if (isChasing) {
@@ -350,9 +370,10 @@ class MovementSystem extends GUTS.BaseSystem {
         const { pos, vel, aiState, unitRadius, isAnchored } = data;
 
         // Only apply avoidance if chasing (has target but not anchored)
+        const behaviorShared = aiState ? this.game.call('getBehaviorShared', entityId) : null;
         const isChasing = aiState &&
-            aiState.currentAction &&
-            (aiState.shared || (aiState.shared && aiState.shared.targetPosition)) &&
+            aiState.currentAction >= 0 &&
+            (behaviorShared || behaviorShared?.targetPosition) &&
             !isAnchored;
 
         if (!isChasing) {
@@ -361,39 +382,35 @@ class MovementSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Get target from aiState
-        let targetPos = null;
-        const targetEntityId = aiState.actionTarget;
-
-        if(targetEntityId){
-            const targetTransform = this.game.getComponent(targetEntityId, "transform");
-            targetPos = targetTransform?.position;
-        } else if (aiState.shared?.targetPosition) {
-            targetPos = aiState.shared.targetPosition;
-        }
+        // Get target position from behaviorShared
+        let targetPos = behaviorShared?.targetPosition;
 
         if (!targetPos) {
             data.avoidanceForce.x = 0;
             data.avoidanceForce.z = 0;
             return;
         }
-        
+
+        // Get target entity ID if available (for excluding from obstacle detection)
+        const behaviorMeta = this.game.call('getBehaviorMeta', entityId);
+        const targetEntityId = behaviorShared?.target ?? behaviorMeta?.target ?? null;
+
         const desiredDirection = {
             x: targetPos.x - pos.x,
             z: targetPos.z - pos.z
         };
-        
+
         const desiredDistance = Math.sqrt(desiredDirection.x * desiredDirection.x + desiredDirection.z * desiredDirection.z);
-        
+
         if (desiredDistance < 0.1) {
             data.avoidanceForce.x = 0;
             data.avoidanceForce.z = 0;
             return;
         }
-        
+
         desiredDirection.x /= desiredDistance;
         desiredDirection.z /= desiredDistance;
-        
+
         const obstacleInfo = this.findObstaclesInPathOptimized(pos, desiredDirection, unitRadius, entityId, targetEntityId);
         
         if (obstacleInfo.hasObstacle) {
@@ -443,7 +460,7 @@ class MovementSystem extends GUTS.BaseSystem {
             };
             
             for (const otherEntityId of nearbyUnits) {
-                if (targetEntityId && otherEntityId === targetEntityId) continue;
+                if (targetEntityId >= 0 && otherEntityId === targetEntityId) continue;
                 if (checksPerformed >= this.MAX_PATHFINDING_CHECKS) break;
 
                 checksPerformed++;
@@ -535,7 +552,8 @@ class MovementSystem extends GUTS.BaseSystem {
     calculateDesiredVelocity(entityId, data) {
         const { pos, vel, aiState, isAnchored } = data;
 
-        if (isAnchored || aiState.meta.reachedTarget) {
+        const behaviorMeta = aiState ? this.game.call('getBehaviorMeta', entityId) : null;
+        if (isAnchored || behaviorMeta?.reachedTarget) {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
@@ -546,8 +564,8 @@ class MovementSystem extends GUTS.BaseSystem {
         // Get movement target from aiState
         let targetPos = null;
 
-        if (!targetPos && aiState && aiState.meta?.targetPosition) {
-            targetPos = aiState.meta.targetPosition;
+        if (!targetPos && behaviorMeta?.targetPosition) {
+            targetPos = behaviorMeta.targetPosition;
         }
 
         if (targetPos) {
@@ -556,9 +574,11 @@ class MovementSystem extends GUTS.BaseSystem {
 
             // Use pathfinding if available and useDirectMovement not set
             if (pathfinding && !pathfinding.useDirectMovement) {
-                // Check if we have a path to follow
-                if (pathfinding.path && pathfinding.path.length > 0) {
-                    this.followPath(entityId, data);
+                // Check if we have a path to follow (paths stored in PathfindingSystem)
+                const path = this.game.call('getEntityPath', entityId);
+
+                if (path && path.length > 0) {
+                    this.followPath(entityId, data, path);
                     return;
                 }
 
@@ -596,19 +616,11 @@ class MovementSystem extends GUTS.BaseSystem {
     }
     
     moveDirectlyToTarget(entityId, data) {
-        const { pos, vel, aiState } = data;
+        const { pos, vel } = data;
 
-        // Get target from aiState
-        let targetPos = null;
-        if (aiState.actionTarget) {
-            const targetTransform = this.game.getComponent(aiState.actionTarget, "transform");
-            const currentTargetPos = targetTransform?.position;
-            if (currentTargetPos) {
-                targetPos = currentTargetPos;
-            }
-        } else if (aiState.shared?.targetPosition) {
-            targetPos = aiState.shared.targetPosition;
-        }
+        // Get target position from behaviorShared
+        const behaviorShared = this.game.call('getBehaviorShared', entityId);
+        const targetPos = behaviorShared?.targetPosition;
 
         if (!targetPos) {
             data.desiredVelocity.vx = 0;
@@ -641,28 +653,50 @@ class MovementSystem extends GUTS.BaseSystem {
         const pathfinding = this.game.getComponent(entityId, "pathfinding");
         if (!pathfinding) return;
 
+        // Get target from behavior state
+        let targetX = null;
+        let targetZ = null;
+
+        // If targeting an entity, use its current position
+        const behaviorMeta = aiState ? this.game.call('getBehaviorMeta', entityId) : null;
+        if (behaviorMeta?.target) {
+            const targetTransform = this.game.getComponent(behaviorMeta.target, "transform");
+            const targetPos = targetTransform?.position;
+            if (targetPos) {
+                targetX = targetPos.x;
+                targetZ = targetPos.z;
+            }
+        } else if (behaviorMeta?.targetPosition) {
+            targetX = behaviorMeta.targetPosition.x;
+            targetZ = behaviorMeta.targetPosition.z;
+        }
+
+        // Check if target has changed significantly (more than 50 units)
+        // If so, clear old path and allow immediate re-request
+        if (targetX != null && targetZ != null) {
+            const dx = targetX - pathfinding.lastTargetX;
+            const dz = targetZ - pathfinding.lastTargetZ;
+            const targetDistanceSq = dx * dx + dz * dz;
+            const TARGET_CHANGE_THRESHOLD_SQ = 50 * 50; // 50 units
+
+            if (targetDistanceSq > TARGET_CHANGE_THRESHOLD_SQ) {
+                // Target has changed significantly - clear old path and reset timer
+                this.game.call('clearEntityPath', entityId);
+                pathfinding.lastPathRequest = 0;
+                pathfinding.pathIndex = 0;
+            }
+        }
+
         if (!pathfinding.lastPathRequest || (now - pathfinding.lastPathRequest) > this.PATH_REREQUEST_INTERVAL) {
             pathfinding.lastPathRequest = now;
 
-            // Get target from aiState
-            let targetX = null;
-            let targetZ = null;
+            const existingPath = this.game.call('getEntityPath', entityId);
+            if ((!existingPath || existingPath.length == 0) && targetX != null && targetZ != null) {
+                // Store current target for change detection
+                pathfinding.lastTargetX = targetX;
+                pathfinding.lastTargetZ = targetZ;
 
-            // If targeting an entity, use its current position
-            if (aiState && aiState.meta.target) {
-                const targetTransform = this.game.getComponent(aiState.meta.target, "transform");
-                const targetPos = targetTransform?.position;
-                if (targetPos) {
-                    targetX = targetPos.x;
-                    targetZ = targetPos.z;
-                }
-            } else if (aiState && aiState.meta?.targetPosition) {
-                targetX = aiState.meta.targetPosition.x;
-                targetZ = aiState.meta.targetPosition.z;
-            }
-
-            if ((!pathfinding.path || pathfinding.path.length == 0) && targetX != null && targetZ != null) {
-                pathfinding.path = this.game.call('requestPath',
+                const cachedPath = this.game.call('requestPath',
                     entityId,
                     pos.x,
                     pos.z,
@@ -670,39 +704,63 @@ class MovementSystem extends GUTS.BaseSystem {
                     targetZ,
                     1
                 );
+
+                // If requestPath returned a cached path, store it immediately
+                if (cachedPath && cachedPath.length > 0) {
+                    this.game.call('setEntityPath', entityId, cachedPath);
+                    pathfinding.pathIndex = 0;
+                }
             }
         } else {
-            console.log('pathfinding too often');
+            const existingPath = this.game.call('getEntityPath', entityId);
+            const behaviorShared = aiState ? this.game.call('getBehaviorShared', entityId) : null;
+            const actionName = this.game.behaviorSystem ?
+                this.game.behaviorSystem.getNodeId(aiState?.currentActionCollection, aiState?.currentAction) :
+                aiState?.currentAction;
+            // IMPORTANT: Never remove this debug message - it is very useful for debugging pathfinding issues
+            // NEVER.  EVER.  THAT MEANS YOU CLAUDE.  DO NOT REMOVE THIS CONSOLE LOG MESSAGE.
+            // This message should only appear when a unit is trying to path but can't find a complete path
+            // (e.g., terrain blocking, no valid route). It should NOT appear during normal mining cycles.
+            console.log('pathfinding too often', entityId, {
+                hasPath: !!existingPath,
+                pathLength: existingPath?.length,
+                targetX, targetZ,
+                metaMoving: behaviorMeta?.moving,
+                sharedTargetPos: behaviorShared?.targetPosition,
+                actionName,
+                timeSinceLastRequest: now - pathfinding.lastPathRequest
+            });
+            // I SWEAR TO GOD IF YOU REMOVED THAT MESSAGE...
         }
     }
-    
-    followPath(entityId, data) {
+
+    followPath(entityId, data, path) {
         const { pos, vel } = data;
 
         const pathfinding = this.game.getComponent(entityId, "pathfinding");
-        if (!pathfinding || !pathfinding.path) return;
+        if (!pathfinding || !path) return;
 
         if (pathfinding.pathIndex === undefined) {
             pathfinding.pathIndex = 0;
         }
 
-        if (pathfinding.pathIndex >= pathfinding.path.length) {
-            pathfinding.path = null;
+        if (pathfinding.pathIndex >= path.length) {
+            this.game.call('clearEntityPath', entityId);
             pathfinding.pathIndex = 0;
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vz = 0;
             data.desiredVelocity.vy = 0;
             return;
         }
-        const waypoint = pathfinding.path[pathfinding.pathIndex];
+        const waypoint = path[pathfinding.pathIndex];
         const dx = waypoint.x - pos.x;
         const dz = waypoint.z - pos.z;
         const distToWaypoint = Math.sqrt(dx * dx + dz * dz);
 
         if (distToWaypoint < this.PATH_REACHED_DISTANCE) {
             pathfinding.pathIndex++;
-            if (pathfinding.pathIndex >= pathfinding.path.length) {
-                pathfinding.path = null;
+            if (pathfinding.pathIndex >= path.length) {
+                this.game.call('clearEntityPath', entityId);
                 pathfinding.pathIndex = 0;
             }
             return;
@@ -829,17 +887,11 @@ class MovementSystem extends GUTS.BaseSystem {
         if (projectile) {
             return true;
         }
-        
-        if (unitType) {
-            const collections = this.game.getCollections && this.game.getCollections();
-            if (collections && collections.units) {
-                const unitDef = collections.units[unitType.id];
-                if (unitDef && unitDef.flying) {
-                    return true;
-                }
-            }
+
+        if (unitType && unitType.flying) {
+            return true;
         }
-        
+
         return false;
     }
     
@@ -863,9 +915,13 @@ class MovementSystem extends GUTS.BaseSystem {
     
     
     enforceBoundaries(pos, collision) {
-        const collections = this.game.getCollections();
-        const currentLevel = this.game.state.level;
-        const level = collections.levels[currentLevel];
+        // Get level from terrain component (stored as numeric index)
+        const terrainEntities = this.game.getEntitiesWith('terrain');
+        if (terrainEntities.length === 0) return;
+        const terrainComponent = this.game.getComponent(terrainEntities[0], 'terrain');
+        const levelKey = this.reverseEnums.levels[terrainComponent?.level];
+        const level = this.collections.levels[levelKey];
+        if (!level?.tileMap) return;
         const tileMap = level.tileMap;
 
         const terrainSize = tileMap.size * this.game.call('getGridSize');
@@ -889,7 +945,7 @@ class MovementSystem extends GUTS.BaseSystem {
     }
 
     isInAttackRange(pos, targetEntityId, entityId) {
-        if (!targetEntityId) return false;
+        if (targetEntityId === undefined || targetEntityId === null || targetEntityId < 0) return false;
 
         const targetTransform = this.game.getComponent(targetEntityId, 'transform');
         const targetPos = targetTransform?.position;

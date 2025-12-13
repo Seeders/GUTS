@@ -1,0 +1,9 @@
+{
+  "title": "GamePhase",
+  "enum": [
+    "lobby",
+    "placement",
+    "battle",
+    "ended"
+  ]
+}

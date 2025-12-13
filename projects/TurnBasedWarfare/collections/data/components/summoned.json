@@ -1,10 +1,10 @@
 {
   "title": "summoned",
   "schema": {
-    "summoner": null,
-    "summonType": "generic",
-    "originalStats": null,
+    "summoner": -1,
+    "summonType": -1,
+    "originalStats": -1,
     "createdTime": 0,
-    "isSummoned": true
+    "isSummoned": 1
   }
 }

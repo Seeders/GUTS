@@ -18,7 +18,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         this.damageReduction = 0.75; // 75% damage reduction
         this.tauntRadius = 200;
         this.originalArmorMultiplier = 1.0;
-        this.element = 'physical';
+        this.element = this.enums.element.physical;
     }
     
     defineEffects() {
@@ -110,7 +110,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
             endTime: endTime,
             tauntRadius: this.tauntRadius,
             originalArmor: originalArmor,
-            isActive: true
+            isActive: 1
         });
         
         // Schedule defensive stance visual effect
@@ -168,16 +168,16 @@ class ShieldWallAbility extends GUTS.BaseAbility {
                 taunter: casterEntity,
                 endTime: tauntEndTime,
                 radius: this.tauntRadius,
-                isTaunted: true
+                isTaunted: 1
             });
             
-            // Force AI to target the shield wall user
-
-            enemyAI.target = casterEntity;
+            // Force AI to target the shield wall user via behavior state
             const casterTransform = this.game.getComponent(casterEntity, "transform");
-            enemyAI.targetPosition = casterTransform?.position;
-            enemyAI.path = [];
-            enemyAI.meta = {};
+            this.game.call('setBehaviorMeta', enemyId, {
+                target: casterEntity,
+                targetPosition: casterTransform?.position
+            });
+            this.game.call('clearEntityPath', enemyId);
         
             // Schedule staggered taunt effects for visual appeal
             this.game.schedulingSystem.scheduleAction(() => {

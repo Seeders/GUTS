@@ -1,9 +1,13 @@
 {
   "title": "playerStats",
   "schema": {
-    "odId": "",
-    "side": "left",
+    "playerId": -1,
+    "side": 2,
     "gold": 100,
-    "upgrades": []
+    "upgrades": {
+      "$bitmask": {
+        "sizeFrom": "upgrades"
+      }
+    }
   }
 }

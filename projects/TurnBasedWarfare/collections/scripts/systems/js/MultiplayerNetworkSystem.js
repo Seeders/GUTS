@@ -148,9 +148,10 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
                     this.roomId = data.roomId;
                     this.isHost = data.isHost;
                     this.gameState = data.gameState;
+                    this.game.clientNetworkManager.numericPlayerId = data.numericPlayerId;
 
-                    // Set mySide from lobby response so it's available before game scene loads
-                    this.setMySideFromGameState(data.playerId, data.gameState);
+                    // Set myTeam from lobby response so it's available before game scene loads
+                    this.setMyTeamFromGameState(data.playerId, data.gameState);
 
                     this.game.uiSystem.showNotification(`Room created! Code: ${this.roomId}`, 'success');
                     this.game.uiSystem.showLobby(data.gameState, this.roomId);
@@ -161,7 +162,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
 
     joinRoom(roomId, playerName) {
         this.game.uiSystem.showNotification('Joining room...', 'info');
-        
+
         this.game.clientNetworkManager.call(
             'JOIN_ROOM',
             { roomId, playerName },
@@ -173,9 +174,10 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
                     this.roomId = data.roomId;
                     this.isHost = data.isHost;
                     this.gameState = data.gameState;
+                    this.game.clientNetworkManager.numericPlayerId = data.numericPlayerId;
 
-                    // Set mySide from lobby response so it's available before game scene loads
-                    this.setMySideFromGameState(data.playerId, data.gameState);
+                    // Set myTeam from lobby response so it's available before game scene loads
+                    this.setMyTeamFromGameState(data.playerId, data.gameState);
 
                     this.game.uiSystem.showNotification(`Joined room ${this.roomId}`, 'success');
                     this.game.uiSystem.showLobby(data.gameState, this.roomId);
@@ -199,8 +201,8 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
                     this.isHost = data.isHost;
                     this.gameState = data.gameState;
 
-                    // Set mySide from lobby response so it's available before game scene loads
-                    this.setMySideFromGameState(data.playerId, data.gameState);
+                    // Set myTeam from lobby response so it's available before game scene loads
+                    this.setMyTeamFromGameState(data.playerId, data.gameState);
 
                     this.game.uiSystem.showNotification(`Match found! Entering room...`, 'success');
                     this.game.uiSystem.showLobby(data.gameState, this.roomId);
@@ -242,16 +244,16 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     }
 
     submitPlacement(placement, callback){
-        if(this.game.state.phase != "placement") {
+        if(this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
         };
 
-        // Send only minimal placement data - server looks up unitType from collections
+        // Send only minimal placement data - server resolves unitType from numeric indices
         // No targetPosition - that's handled by aiState/behaviors via SET_SQUAD_TARGET
         const minimalPlacement = {
             placementId: placement.placementId,
             gridPosition: placement.gridPosition,
-            unitTypeId: placement.unitTypeId || placement.unitType?.id,
+            unitTypeId: placement.unitTypeId,
             collection: placement.collection,
             team: placement.team,
             playerId: placement.playerId,
@@ -276,7 +278,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     }
 
     cancelBuilding(data, callback) {
-        if (this.game.state.phase !== 'placement') {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
             return;
         }
@@ -307,7 +309,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     }
     
     purchaseUpgrade(data, callback){
-        if(this.game.state.phase != "placement") {
+        if(this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
         };
         this.game.clientNetworkManager.call(
@@ -327,7 +329,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     }
 
     setSquadTarget(data, callback) {
-        if(this.game.state.phase != "placement") {
+        if(this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
         };
         this.game.clientNetworkManager.call(
@@ -347,7 +349,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     }
 
     setSquadTargets(data, callback) {
-        if(this.game.state.phase != "placement") {
+        if(this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
         };
         this.game.clientNetworkManager.call(
@@ -367,7 +369,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     }
 
     toggleReadyForBattle(callback) {
-        if(this.game.state.phase != "placement") {
+        if(this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
         };
         this.game.clientNetworkManager.call(
@@ -387,15 +389,17 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     }
 
     toggleReady() {
-        // Include selected level from UI (host's selection will be used)
-        const selectedLevel = this.game.uiSystem?.getSelectedLevel() || 'level1';
-        this.game.clientNetworkManager.call('TOGGLE_READY', { level: selectedLevel });
+        // Include selected level from UI (host's selection will be used) as numeric index
+        const selectedLevelName = this.game.uiSystem?.getSelectedLevel() || 'level1';
+        const levelIndex = this.enums.levels?.[selectedLevelName] ?? 1;
+        this.game.clientNetworkManager.call('TOGGLE_READY', { level: levelIndex });
     }
 
     startGame() {
         if (!this.isHost) return;
-        const selectedLevel = this.game.uiSystem?.getSelectedLevel() || 'level1';
-        this.game.clientNetworkManager.call('START_GAME', { level: selectedLevel });
+        const selectedLevelName = this.game.uiSystem?.getSelectedLevel() || 'level1';
+        const levelIndex = this.enums.levels?.[selectedLevelName] ?? 1;
+        this.game.clientNetworkManager.call('START_GAME', { level: levelIndex });
     }
 
     leaveRoom() {
@@ -403,16 +407,17 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Set mySide from game state response (lobby join/create)
-     * This ensures mySide is available before the game scene loads
+     * Set myTeam from game state response (lobby join/create)
+     * This ensures myTeam is available before the game scene loads
      */
-    setMySideFromGameState(playerId, gameState) {
+    setMyTeamFromGameState(playerId, gameState) {
         if (!gameState?.players || !playerId) return;
 
         const myPlayer = gameState.players.find(p => p.id === playerId);
-        if (myPlayer?.stats?.side) {
-            this.game.state.mySide = myPlayer.stats.side;
-            console.log('[MultiplayerNetworkSystem] Set mySide from lobby:', this.game.state.mySide);
+        if (myPlayer?.stats?.team !== undefined) {
+            // Server sends numeric team directly
+            this.game.state.myTeam = myPlayer.stats.team;
+            console.log('[MultiplayerNetworkSystem] Set myTeam from lobby:', this.game.state.myTeam);
         }
     }
 
@@ -463,12 +468,12 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     }
 
     async handleGameStarted(data) {
-        // Store the level from server
-        const level = data.level || 'level1';
-        this.game.state.level = level;
+        // Store the level from server (numeric index)
+        const levelIndex = data.level ?? 1;
+        this.game.state.level = levelIndex;
 
         console.log('[MultiplayerNetworkManager] handleGameStarted:', {
-            level,
+            levelIndex,
             isLoadingSave: data.isLoadingSave,
             hasSaveData: !!data.saveData,
             entityCount: data.saveData?.entities?.length || 0
@@ -485,7 +490,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
 
         // Load the game scene with the selected level
         // First, we need to modify the scene's terrain entity to use the selected level
-        const collections = this.game.getCollections();
+        const collections = this.collections;
         const gameScene = collections?.scenes?.game;
 
         if (gameScene && gameScene.entities) {
@@ -498,7 +503,8 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
                 if (!terrainEntity.components.terrain) {
                     terrainEntity.components.terrain = {};
                 }
-                terrainEntity.components.terrain.level = level;
+                // Set level as numeric index
+                terrainEntity.components.terrain.level = levelIndex;
             }
         }
 
@@ -594,7 +600,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         })
         this.game.state.round += 1;
         // Transition back to placement phase
-        this.game.state.phase = 'placement';
+        this.game.state.phase = this.enums.gamePhase.placement;
 
         // Reset the engine's accumulator to prevent catchup after sync
         if (this.game.app?.resetAccumulator) {
@@ -605,143 +611,20 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Resync client state with server
-     * @param {Object} syncData - Can be either:
-     *   - entitySync object directly (legacy)
-     *   - Full sync object with { entitySync, nextEntityId }
+     * Resync client state with server using direct ECS data sync
+     * @param {Object} syncData - Object with { entitySync (ECS data), nextEntityId }
      */
     resyncEntities(syncData) {
-        // Support both legacy (entitySync directly) and new format (full sync object)
-        let entitySync, nextEntityId;
-        if (syncData.entitySync) {
-            entitySync = syncData.entitySync;
-            nextEntityId = syncData.nextEntityId;
-        } else {
-            entitySync = syncData;
+        const ecsData = syncData.entitySync;
+        if (!ecsData) {
+            console.warn('[resyncEntities] No entitySync data provided');
+            return;
         }
 
-        // Sync entity ID counter with server
-        if (nextEntityId !== undefined) {
-            this.game.nextEntityId = nextEntityId;
-        }
+        // Apply raw ECS data directly to arrays
+        this.game.applyECSData(ecsData);
 
-        const differences = {
-            created: [],
-            deleted: [],
-            updated: [],
-            componentAdded: [],
-            componentUpdated: []
-        };
-
-        // Get all server entity IDs - throw error if non-numeric IDs found
-        const serverEntityIds = new Set();
-        for (const id of Object.keys(entitySync)) {
-            const numId = parseInt(id, 10);
-            if (isNaN(numId)) {
-                throw new Error(`[resyncEntities] Server sent non-numeric entity ID: "${id}". All entity IDs must be numeric.`);
-            }
-            serverEntityIds.add(numId);
-        }
-
-        // Get all client entity IDs - throw error if non-numeric IDs found
-        const clientEntityIds = new Set();
-        for (const [entityId] of this.game.entities) {
-            if (typeof entityId !== 'number') {
-                throw new Error(`[resyncEntities] Client has non-numeric entity ID: "${entityId}" (type: ${typeof entityId}). All entity IDs must be numeric.`);
-            }
-            clientEntityIds.add(entityId);
-        }
-
-        // Find entities to create (exist on server but not client)
-        const entitiesToCreate = [];
-        for (const entityId of serverEntityIds) {
-            if (!clientEntityIds.has(entityId)) {
-                entitiesToCreate.push(entityId);
-            }
-        }
-
-        // Find entities to delete (exist on client but not server)
-        // Skip entities marked as CLIENT_ONLY - they only exist on client
-        const entitiesToDelete = [];
-        for (const entityId of clientEntityIds) {
-            if (!serverEntityIds.has(entityId)) {
-                // Check if entity is marked as client-only
-                const isClientOnly = this.game.hasComponent(entityId, "CLIENT_ONLY");
-                if (!isClientOnly) {
-                    entitiesToDelete.push(entityId);
-                }
-            }
-        }
-
-        // Create missing entities
-        for (const entityId of entitiesToCreate) {
-            try {
-                // Create the entity with the same ID
-                this.game.createEntity(entityId);
-
-                // Add all components from server
-                const components = entitySync[entityId];
-                for (const [componentType, componentData] of Object.entries(components)) {
-                    this.game.addComponent(entityId, componentType, JSON.parse(JSON.stringify(componentData)));
-                }
-
-                differences.created.push({
-                    entityId,
-                    components: Object.keys(components)
-                });
-            } catch (error) {
-                console.error(`Failed to create entity ${entityId}:`, error);
-            }
-        }
-
-        // Delete extra entities
-        for (const entityId of entitiesToDelete) {
-            try {
-                this.game.destroyEntity(entityId);
-                differences.deleted.push(entityId);
-            } catch (error) {
-                console.error(`Failed to delete entity ${entityId}:`, error);
-            }
-        }
-
-        // Update existing entities
-        for (const [entityIdStr, components] of Object.entries(entitySync)) {
-            const entityId = parseInt(entityIdStr, 10);
-            // Skip entities we just created
-            if (entitiesToCreate.includes(entityId)) continue;
-
-            for (const [componentType, componentData] of Object.entries(components)) {
-                if (this.game.hasComponent(entityId, componentType)) {
-                    // Update existing component
-                    const existing = this.game.getComponent(entityId, componentType);
-                    const componentDiffs = this.compareComponents(entityId, componentType, existing, componentData);
-
-                    if (componentDiffs.length > 0) {
-                        differences.componentUpdated.push({
-                            entityId,
-                            componentType,
-                            diffs: componentDiffs
-                        });
-                    }
-
-                    Object.assign(existing, componentData);
-                } else {
-                    // Add missing component
-                    try {
-                        this.game.addComponent(entityId, componentType, JSON.parse(JSON.stringify(componentData)));
-                        differences.componentAdded.push({
-                            entityId,
-                            componentType
-                        });
-                    } catch (error) {
-                        console.error(`Failed to add component ${componentType} to ${entityId}:`, error);
-                    }
-                }
-            }
-        }
-
-        // Log all differences
-        this.logSyncDifferences(differences);
+        console.log(`[resyncEntities] Applied ECS data sync, nextEntityId: ${this.game.nextEntityId}`);
     }
 
     compareComponents(entityId, componentType, clientData, serverData) {
@@ -842,7 +725,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         const reason = data.result.reason || 'unknown';
 
         // Pause the game
-        this.game.state.phase = 'ended';
+        this.game.state.phase = this.enums.gamePhase.ended;
         this.game.state.isPaused = true;
 
         // Determine the result message based on reason
@@ -948,7 +831,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
 
     handleRoundResult(roundResult) {
         const state = this.game.state;
-        state.phase = 'ended';      
+        state.phase = this.enums.gamePhase.ended;
     }
 
     handleOpponentSquadTarget(data) {
@@ -977,43 +860,37 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
             for (const playerData of gameState.players) {
                 const playerEntityId = this.game.call('getPlayerEntityId', playerData.id);
 
-                if (this.game.entities.has(playerEntityId)) {
+                if (this.game.entityExists(playerEntityId)) {
                     // Update existing player entity
                     const stats = this.game.getComponent(playerEntityId, 'playerStats');
                     if (stats && playerData.stats) {
                         stats.gold = playerData.stats.gold;
-                        stats.side = playerData.stats.side;
+                        stats.side = playerData.stats.team;  // side field stores numeric team
                     }
                 }
             }
         }
 
         if (myPlayer) {
-            // Sync squad count and side
+            // Sync squad count and team
             if (this.game.state) {
-                this.game.state.mySide = myPlayer.stats.side;
-                console.log('[syncWithServerState] SET mySide to:', this.game.state.mySide);
+                // Server sends numeric team directly
+                this.game.state.myTeam = myPlayer.stats.team;
+                console.log('[syncWithServerState] SET myTeam to:', this.game.state.myTeam);
                 this.game.state.round = gameState.round;
                 this.game.state.serverGameState = gameState;
             }
 
-            // Set team sides in grid system
-            const opponent = gameState.players.find(p => p.id !== myPlayerId);
-            if (opponent && this.game.gridSystem) {
-                this.game.gridSystem.setTeamSides({
-                    player: myPlayer.stats.side,
-                    enemy: opponent.stats.side
-                });
+            // Set team bounds in grid system (using numeric team values)
+            if (this.game.gridSystem) {
+                this.game.gridSystem.setTeamBounds(this.game.state.myTeam);
             }
 
-            // Also set sides in placement system
+            // Also set team bounds in placement system
+            const opponent = gameState.players.find(p => p.id !== myPlayerId);
             if (this.game.placementSystem ) {
-                if(this.game.placementSystem.setTeamSides) {
-
-                    this.game.placementSystem.setTeamSides({
-                        player: myPlayer.stats.side,
-                        enemy: opponent.stats.side
-                    });
+                if(this.game.placementSystem.setTeamBounds) {
+                    this.game.placementSystem.setTeamBounds(this.game.state.myTeam);
                 }
 
                 // Sync experience for both player and opponent placements

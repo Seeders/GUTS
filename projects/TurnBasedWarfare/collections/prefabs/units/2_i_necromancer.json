@@ -46,9 +46,6 @@
             "shapes": [
               {
                 "type": "gltf",
-                
-                
-                
                 "color": "#FFFFFF",
                 "metalness": "0",
                 "roughness": "1",
@@ -115,9 +112,6 @@
         "shapes": [
           {
             "type": "gltf",
-            
-            
-            
             "color": "#FFFFFF",
             "metalness": "0",
             "roughness": "1",

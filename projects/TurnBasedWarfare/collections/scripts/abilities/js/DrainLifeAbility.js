@@ -17,7 +17,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
         
         this.drainAmount = 60;
         this.healRatio = 0.8; // Heal 80% of drained health
-        this.element = 'physical';
+        this.element = this.enums.element.physical;
     }
     
     defineEffects() {

@@ -226,13 +226,13 @@ class GameUISystem extends GUTS.BaseSystem {
 
         const phaseStatusEl = document.getElementById('phaseStatus');
         if (phaseStatusEl) {
-            if (state.phase === 'placement') {
+            if (state.phase === this.enums.gamePhase.placement) {
                 if (state.playerReady) {
                     phaseStatusEl.textContent = 'Army deployed! Waiting for opponent...';
                 } else {
                     phaseStatusEl.textContent = 'Deploy your units and get ready!';
                 }
-            } else if (state.phase === 'battle') {
+            } else if (state.phase === this.enums.gamePhase.battle) {
                 phaseStatusEl.textContent = 'Battle in progress! Watch your units fight!';
             }
         }
@@ -255,18 +255,18 @@ class GameUISystem extends GUTS.BaseSystem {
     updateSideDisplay() {
         const sideDisplay = document.getElementById('playerSide');
         if (sideDisplay) {
-            sideDisplay.textContent = this.game.state.mySide || 0;
+            sideDisplay.textContent = this.game.state.myTeam || 0;
         }
     }
 
     handleRoundResult(roundResult) {
         const state = this.game.state;
-        state.phase = 'ended';
+        state.phase = this.enums.gamePhase.ended;
     }
 
     onPlacementPhaseStart() {
         const state = this.game.state;
-        state.phase = 'placement';
+        state.phase = this.enums.gamePhase.placement;
         state.phaseTimeLeft = null;
         state.playerReady = false;
         state.enemyPlacementComplete = false;
@@ -295,10 +295,9 @@ class GameUISystem extends GUTS.BaseSystem {
     startVictoryCelebration(victoriousUnits) {
         const firstUnit = victoriousUnits[0];
         const team = this.game.getComponent(firstUnit, "team");
-        const teamType = team?.team || 'player';
 
         victoriousUnits.forEach(entityId => {
-            this.game.call('startCelebration', entityId, teamType);
+            this.game.call('startCelebration', entityId, team?.team);
         });
     }
 

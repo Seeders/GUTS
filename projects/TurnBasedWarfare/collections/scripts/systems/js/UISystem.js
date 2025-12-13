@@ -24,7 +24,7 @@ class UISystem extends GUTS.BaseSystem {
     
     update() {
         const readyButton = document.getElementById('readyButton');
-        if (this.game.state.phase === 'placement') {
+        if (this.game.state.phase === this.enums.gamePhase.placement) {
             readyButton.disabled = false;
             readyButton.textContent = this.game.state.playerReady ? 'Waiting for battle...' : 'Ready for Battle!';
         } else {

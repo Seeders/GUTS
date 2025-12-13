@@ -17,7 +17,8 @@ class MoveToEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const targetId = shared[targetKey];
 
-        if (!targetId) {
+        // targetId is null/undefined when not set, or could be 0 (valid entity ID)
+        if (targetId === undefined || targetId === null || targetId < 0) {
             return this.failure();
         }
 

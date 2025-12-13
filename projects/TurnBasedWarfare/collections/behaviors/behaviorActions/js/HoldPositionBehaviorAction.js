@@ -7,7 +7,8 @@ class HoldPositionBehaviorAction extends GUTS.BaseBehaviorAction {
         const playerOrder = game.getComponent(entityId, 'playerOrder');
 
         // Check if this is a hold position order
-        if (!playerOrder || !playerOrder.meta || playerOrder.meta.allowMovement !== false) {
+        // Hold position orders have isMoveOrder set to 0 (false) and targetPosition at current location
+        if (!playerOrder || playerOrder.isMoveOrder === 1) {
             return this.failure();
         }
 
@@ -19,10 +20,7 @@ class HoldPositionBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Clear pathfinding
-        const pathfinding = game.getComponent(entityId, 'pathfinding');
-        if (pathfinding) {
-            pathfinding.path = [];
-        }
+        game.call('clearEntityPath', entityId);
 
         // Return success - unit is holding position
         // This will prevent combat and other behaviors from taking over

@@ -29,7 +29,8 @@ class FilterVisibleEnemiesBehaviorAction extends GUTS.BaseBehaviorAction {
 
         const transform = game.getComponent(entityId, 'transform');
         const pos = transform?.position;
-        const unitType = game.getComponent(entityId, 'unitType');
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitType = game.call('getUnitTypeDef', unitTypeComp);
 
         if (!pos) {
             return this.failure();

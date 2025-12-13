@@ -1,6 +1,6 @@
 {
   "title": "leaping",
   "schema": {
-    "isLeaping": true
+    "isLeaping": 1
   }
 }

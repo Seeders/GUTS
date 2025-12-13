@@ -1,11 +1,14 @@
 class ArmyDisplaySystem extends GUTS.BaseSystem {
     constructor(game) {
-        super(game);  
+        super(game);
         this.game.armyDisplaySystem = this;
         this.updateInterval = null;
         this.lastUpdateData = null;
     }
-    
+
+    init() {
+    }
+
     initialize() {
         this.addArmyDisplayCSS();
         this.setupUpdateLoop();
@@ -58,7 +61,8 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
 
             allUnits.forEach(entityId => {
                 const team = this.game.getComponent(entityId, "team");
-                const unitType = this.game.getComponent(entityId, "unitType");
+                const unitTypeComp = this.game.getComponent(entityId, "unitType");
+                const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
                 const health = this.game.getComponent(entityId, "health");
                 const transform = this.game.getComponent(entityId, "transform");
                 const position = transform?.position;
@@ -66,8 +70,8 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
 
                 const unitInfo = {
                     id: entityId,
-                    type: unitType?.type || 'Unknown',
-                    name: unitType?.name || unitType?.type || 'Unit',
+                    type: unitType?.id || 'Unknown',
+                    name: unitType?.name || unitType?.id || 'Unit',
                     health: health?.current || 0,
                     maxHealth: health?.max || 1,
                     position: position ? { x: position.x, z: position.z } : null,
@@ -75,9 +79,11 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
                     status: this.getUnitStatus(entityId)
                 };
                 
-                if (team?.team === 'player') {
+                const enums = this.game.getEnums();
+                const myTeamId = enums.team[this.game.state.myTeam];
+                if (team?.team === myTeamId) {
                     playerUnits.push(unitInfo);
-                } else if (team?.team === 'enemy') {
+                } else if (team?.team !== myTeamId && team?.team !== undefined) {
                     enemyUnits.push(unitInfo);
                 }
             });
@@ -118,11 +124,12 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
 
             if (health?.current <= 0) return 'dead';
 
-            if (aiState?.currentAction) {
+            if (aiState && aiState.currentAction >= 0 && aiState.currentActionCollection === this.enums.behaviorCollection.behaviorActions) {
                 const actionType = aiState.currentAction;
-                if (actionType === 'AttackEnemyBehaviorAction' || actionType === 'CombatBehaviorAction') return 'attacking';
-                if (actionType === 'MoveBehaviorAction') return 'moving';
-                if (actionType === 'IdleBehaviorAction') return 'idle';
+                if (actionType === this.enums.behaviorActions.AttackEnemyBehaviorAction ||
+                    actionType === this.enums.behaviorActions.CombatBehaviorAction) return 'attacking';
+                if (actionType === this.enums.behaviorActions.MoveBehaviorAction) return 'moving';
+                if (actionType === this.enums.behaviorActions.IdleBehaviorAction) return 'idle';
             }
 
             return 'idle';

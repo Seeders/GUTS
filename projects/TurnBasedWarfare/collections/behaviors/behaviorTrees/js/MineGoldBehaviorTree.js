@@ -56,34 +56,9 @@ class MineGoldBehaviorTree extends GUTS.BaseBehaviorTree {
      * Clean up shared state when mining behavior ends
      */
     onEnd(entityId, game) {
-        const shared = this.getShared(entityId, game);
-
-        // Clear all mining-related shared state
-        shared.targetMine = null;
-        shared.targetMinePosition = null;
-        shared.targetDepot = null;
-        shared.targetDepotPosition = null;
-        shared.targetPosition = null;
-        shared.inMineQueue = false;
-        shared.canMine = false;
-        shared.hasGold = false;
-        shared.goldAmount = 0;
-        shared.miningProgress = 0;
+        // Clear behavior state via BehaviorSystem
+        game.call('clearBehaviorState', entityId);
 
         super.onEnd(entityId, game);
-    }
-
-    /**
-     * Get shared state (delegates to BaseBehaviorTree helper)
-     */
-    getShared(entityId, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
-        if (aiState) {
-            if (!aiState.shared) {
-                aiState.shared = {};
-            }
-            return aiState.shared;
-        }
-        return {};
     }
 }

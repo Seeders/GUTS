@@ -56,7 +56,11 @@ class Engine extends BaseEngine {
         this.gameInstance = new GUTS[projectConfig.appLibrary](this);
         this.loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);
         await this.loader.load();
-        
+
+        // Cache battle phase enum for game loop comparison
+        const enums = this.gameInstance.call('getEnums');
+        this.battlePhaseEnum = enums?.gamePhase?.battle;
+
         this.start();
     }
 
@@ -106,7 +110,7 @@ class Engine extends BaseEngine {
 
         // Only accumulate time during battle phase to prevent catchup after placement
         const phase = this.gameInstance?.state?.phase;
-        if (phase === 'battle') {
+        if (phase === this.battlePhaseEnum) {
             this.accumulator += deltaTime;
         }
 
@@ -122,7 +126,7 @@ class Engine extends BaseEngine {
         }
 
         // During non-battle phases, still tick once per frame for UI updates
-        if (phase !== 'battle' && this.accumulator < this.tickRate) {
+        if (phase !== this.battlePhaseEnum && this.accumulator < this.tickRate) {
             await this.tick();
         }
 

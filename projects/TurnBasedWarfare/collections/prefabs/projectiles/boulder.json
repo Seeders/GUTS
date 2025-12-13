@@ -9,7 +9,7 @@
               {
                 "name": "ball",
                 "type": "sphere",
-                "size": 12,  
+                "size": 12,
                 "id": 0
               }
             ]

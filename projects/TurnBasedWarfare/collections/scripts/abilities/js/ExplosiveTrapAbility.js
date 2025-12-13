@@ -111,21 +111,24 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         });
 
         // DESYNC SAFE: Trap component with proper game time
+        const enums = this.game.getEnums();
         this.game.addComponent(trapId, "trap", {
             damage: this.trapDamage,
             radius: this.explosionRadius,
             triggerRadius: this.triggerRadius,
-            element: 'physical',
+            element: enums.element.physical,
             caster: casterEntity,
-            triggered: false,
+            triggered: 0,
             triggerCount: 0,
             maxTriggers: 1
         });
 
         // Visual indicator (hidden from enemies in actual gameplay)
+        const objectTypeIndex = this.enums.objectTypeDefinitions?.effects ?? -1;
+        const spawnTypeIndex = this.enums.effects?.hidden_trap ?? -1;
         this.game.addComponent(trapId, "renderable", {
-            objectType: "effects",
-            spawnType: "hidden_trap",
+            objectType: objectTypeIndex,
+            spawnType: spawnTypeIndex,
             capacity: 128
         });
 
@@ -208,7 +211,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         if (!trapComponent || !trapPos || trapComponent.triggered) return;
         
         // Mark trap as triggered
-        trapComponent.triggered = true;
+        trapComponent.triggered = 1;
         trapComponent.triggerCount++;
         
         // Visual explosion effect

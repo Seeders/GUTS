@@ -1,0 +1,13 @@
+{
+  "title": "Animation Type",
+  "enum": [
+    "idle",
+    "walk",
+    "run",
+    "attack",
+    "cast",
+    "hit",
+    "death",
+    "celebrate"
+  ]
+}

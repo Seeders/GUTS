@@ -11,6 +11,26 @@ class BasePlacementSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.placementSystem = this;
+
+        // Auto-incrementing placement ID counter (server-authoritative)
+        // Starts at 1, 0 and -1 reserved for invalid/unset
+        this._nextPlacementId = 1;
+    }
+
+    /**
+     * Get the next placement ID (server-authoritative)
+     * Only server should call this - clients receive IDs from server
+     */
+    _getNextPlacementId() {
+        return this._nextPlacementId++;
+    }
+
+    /**
+     * Sync placement ID counter from server
+     * Called when client receives updated counter from server
+     */
+    syncNextPlacementId(nextId) {
+        this._nextPlacementId = nextId;
     }
 
     /**
@@ -143,7 +163,8 @@ class BasePlacementSystem extends GUTS.BaseSystem {
         for (const entityId of entitiesWithPlacement) {
             const placementComp = this.game.getComponent(entityId, 'placement');
             if (placementComp?.placementId === placementId) {
-                return this.game.getComponent(entityId, 'unitType');
+                const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+                return this.game.call('getUnitTypeDef', unitTypeComp);
             }
         }
         return null;
@@ -186,8 +207,10 @@ class BasePlacementSystem extends GUTS.BaseSystem {
             // Calculate cells occupied by the squad
             const cells = this.game.squadSystem.getSquadCells(gridPosition, squadData);
 
-            // Generate placement ID if not provided
-            const placementId = placement.placementId || `squad_${team}_${gridPosition.x}_${gridPosition.z}_${this.game.state.round}`;
+            // Use provided placementId if valid (>= 0, from server), otherwise generate new one
+            // On server: always generates (client sends -1)
+            // On client: uses server-provided placementId from submitPlacement response
+            const placementId = (placement.placementId >= 0) ? placement.placementId : this._getNextPlacementId();
 
             // Build placement object with all required data
             const fullPlacement = {
@@ -243,7 +266,8 @@ class BasePlacementSystem extends GUTS.BaseSystem {
 
             // Handle peasant/builder assignment for buildings
             // Two cases: local placement has peasantInfo, synced placement has assignedBuilder
-            if (placement.collection === 'buildings') {
+            // Use unitType.collection (string) since placement.collection may be numeric
+            if (unitType.collection === 'buildings') {
                 const buildingEntityId = squadUnits[0];
                 let peasantId = null;
                 let peasantInfo = null;
@@ -302,13 +326,41 @@ class BasePlacementSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Get unitType from collections using placement's unitTypeId and collection
-     * @param {Object} placement - Placement with unitTypeId and collection
+     * Get unitType from collections using placement's numeric unitTypeId and collection indices
+     * @param {Object} placement - Placement with numeric unitTypeId and collection indices
      * @returns {Object|null} The unitType definition or null
      */
     getUnitTypeFromPlacement(placement) {
-        const collections = this.game.getCollections();
-        return collections[placement.collection]?.[placement.unitTypeId] || null;
+        if (placement.collection === -1 || placement.unitTypeId === -1) {
+            return null;
+        }
+
+
+        // Resolve numeric collection index to collection name
+        const collectionEnumMap = this.game.call('getEnumMap', 'objectTypeDefinitions');
+        const collectionName = collectionEnumMap?.toValue?.[placement.collection];
+
+        if (!collectionName || !this.collections[collectionName]) {
+            return null;
+        }
+
+        // Resolve numeric unitTypeId to type name within that collection
+        const typeEnumMap = this.game.call('getEnumMap', collectionName);
+        const typeName = typeEnumMap?.toValue?.[placement.unitTypeId];
+
+        if (!typeName) {
+            return null;
+        }
+
+        const def = this.collections[collectionName]?.[typeName];
+        if (def) {
+            return {
+                ...def,
+                id: typeName,
+                collection: collectionName
+            };
+        }
+        return null;
     }
 
     /**
@@ -318,8 +370,7 @@ class BasePlacementSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with spawned units per team
      */
     spawnStartingUnits() {
-        const collections = this.game.getCollections();
-        const startingUnitsConfig = collections.configs?.startingUnits;
+        const startingUnitsConfig = this.collections.configs.startingUnits;
 
         if (!startingUnitsConfig?.prefabs) {
             console.warn('[BasePlacementSystem] No startingUnits config found');
@@ -341,7 +392,8 @@ class BasePlacementSystem extends GUTS.BaseSystem {
         // Spawn in deterministic order: left first, then right
         // IMPORTANT: Spawn ALL units first, then ALL gold mines to ensure
         // entity IDs are consistent between client and server
-        const teams = ['left', 'right'];
+        // Use numeric team enum values
+        const teams = [this.enums.team.left, this.enums.team.right];
         const teamWorldPositions = {};
 
         // Phase 1: Spawn all units for both teams
@@ -391,6 +443,9 @@ class BasePlacementSystem extends GUTS.BaseSystem {
         // Query gold vein entities directly from ECS (worldObject component with type: 'goldVein')
         const worldObjectEntities = this.game.getEntitiesWith('worldObject', 'transform');
 
+        // Get numeric enum index for goldVein type (worldObject.type is now numeric)
+        const goldVeinTypeIndex = this.game.getEnums()?.worldObjects?.goldVein ?? -1;
+
         // Find all gold vein entities and track which are already claimed by existing gold mines
         const claimedVeinPositions = new Set();
         const goldMineEntities = this.game.getEntitiesWith('goldMine');
@@ -413,7 +468,8 @@ class BasePlacementSystem extends GUTS.BaseSystem {
 
         for (const entityId of sortedEntities) {
             const worldObj = this.game.getComponent(entityId, 'worldObject');
-            if (worldObj?.type !== 'goldVein') continue;
+            // worldObject.type is now a numeric index - compare to goldVein enum index
+            if (worldObj?.type !== goldVeinTypeIndex) continue;
 
             const transform = this.game.getComponent(entityId, 'transform');
             const pos = transform?.position;
@@ -440,8 +496,7 @@ class BasePlacementSystem extends GUTS.BaseSystem {
         }
 
         // Get gold mine building type
-        const collections = this.game.getCollections();
-        const goldMineType = collections.buildings?.goldMine;
+        const goldMineType = this.collections.buildings?.goldMine;
         if (!goldMineType) {
             console.error('[BasePlacementSystem] Gold mine building type not found');
             return { success: false, error: 'Gold mine type not found' };
@@ -449,17 +504,24 @@ class BasePlacementSystem extends GUTS.BaseSystem {
 
         // Convert world position to placement grid position
         const gridPos = this.game.call('worldToPlacementGrid', nearestVeinPos.x, nearestVeinPos.z);
-        const placementId = `starting_${team}_goldMine`;
+        // Generate numeric placement ID
+        const placementId = this._getNextPlacementId();
 
-        // Build placement data
+        // Get enum indices for numeric storage
+        const enums = this.game.getEnums();
+        const collectionIndex = enums.objectTypeDefinitions?.buildings ?? -1;
+        const typeIndex = enums.buildings?.goldMine ?? -1;
+
+        // Build placement data with numeric indices
+        // team is expected to already be numeric from game.state.myTeam
         const placement = {
             placementId,
             gridPosition: gridPos,
-            unitTypeId: 'goldMine',
-            collection: 'buildings',
+            unitTypeId: typeIndex,
+            collection: collectionIndex,
             team: team,
             isStartingState: true,
-            unitType: goldMineType
+            unitType: { ...goldMineType, id: 'goldMine', collection: 'buildings' }
         };
 
         // Calculate cells for grid reservation
@@ -504,7 +566,6 @@ class BasePlacementSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with spawned entity IDs
      */
     spawnStartingUnitsForTeam(prefabs, team, startingWorldPos) {
-        const collections = this.game.getCollections();
         const spawnedUnits = [];
 
         for (let i = 0; i < prefabs.length; i++) {
@@ -513,7 +574,7 @@ class BasePlacementSystem extends GUTS.BaseSystem {
             const spawnType = prefabDef.spawnType;
 
             // Get the unit type from collections
-            const unitType = collections[collection]?.[spawnType];
+            const unitType = this.collections[collection]?.[spawnType];
             if (!unitType) {
                 console.error(`[BasePlacementSystem] Unit type not found: ${collection}/${spawnType}`);
                 continue;
@@ -529,18 +590,24 @@ class BasePlacementSystem extends GUTS.BaseSystem {
             // Convert world position to placement grid position
             const gridPos = this.game.call('worldToPlacementGrid', worldX, worldZ);
 
-            // Generate placement ID
-            const placementId = `starting_${team}_${spawnType}_${i}`;
+            // Generate numeric placement ID
+            const placementId = this._getNextPlacementId();
 
-            // Build placement data
+            // Get enum indices for numeric storage
+            const enums = this.game.getEnums();
+            const collectionIndex = enums.objectTypeDefinitions?.[collection] ?? -1;
+            const typeIndex = enums[collection]?.[spawnType] ?? -1;
+
+            // Build placement data with numeric indices
+            // team is expected to already be numeric from game.state.myTeam
             const placement = {
                 placementId,
                 gridPosition: gridPos,
-                unitTypeId: spawnType,
-                collection: collection,
+                unitTypeId: typeIndex,
+                collection: collectionIndex,
                 team: team,
                 isStartingState: true,
-                unitType
+                unitType: { ...unitType, id: spawnType, collection: collection }
             };
 
             // Calculate cells for grid reservation
@@ -586,23 +653,29 @@ class BasePlacementSystem extends GUTS.BaseSystem {
 
         const terrainEntityId = terrainEntities[0];
         const terrainComponent = this.game.getComponent(terrainEntityId, 'terrain');
-        if (!terrainComponent?.level) {
+        const levelIndex = terrainComponent?.level;
+        if (levelIndex === undefined || levelIndex < 0) {
             console.warn('[BasePlacementSystem] Terrain entity missing level');
             return null;
         }
 
-        // Get level data from collections
-        const level = this.game.getCollections().levels[terrainComponent.level];
+        // Get level data by numeric index
+        const levelKey = this.reverseEnums.levels[levelIndex];
+        const level = this.collections.levels[levelKey];
         if (!level?.tileMap?.startingLocations) {
-            console.warn(`[BasePlacementSystem] Level '${terrainComponent.level}' has no startingLocations`);
+            console.warn(`[BasePlacementSystem] Level index ${levelIndex} has no startingLocations`);
             return null;
         }
 
-        // Build locations map
+        // Build locations map using numeric team enum keys
         const locations = {};
         for (const loc of level.tileMap.startingLocations) {
             if (loc.side && loc.gridX !== undefined) {
-                locations[loc.side] = { x: loc.gridX, z: loc.gridZ };
+                // Convert string side ('left'/'right') to numeric team enum
+                const teamEnumValue = this.enums.team?.[loc.side];
+                if (teamEnumValue !== undefined) {
+                    locations[teamEnumValue] = { x: loc.gridX, z: loc.gridZ };
+                }
             }
         }
 
@@ -618,27 +691,26 @@ class BasePlacementSystem extends GUTS.BaseSystem {
             return this._cameraHeight;
         }
 
-        const collections = this.game.getCollections();
-        const cameraSettings = collections?.cameras?.main;
+        const cameraSettings = this.collections.cameras.main;
 
-        this._cameraHeight = cameraSettings?.position?.y || 512;
+        this._cameraHeight = cameraSettings.position.y || 512;
 
         return this._cameraHeight;
     }
 
     /**
-     * Calculate camera position for a given side based on level starting location
-     * @param {string} side - 'left' or 'right'
+     * Calculate camera position for a given team based on level starting location
+     * @param {number} team - numeric team enum value
      * @returns {Object|null} { position: {x,y,z}, lookAt: {x,y,z} } or null
      */
-    getCameraPositionForSide(side) {
+    getCameraPositionForTeam(team) {
         const startingLocations = this.getStartingLocationsFromLevel();
-        if (!startingLocations || !startingLocations[side]) {
-            console.warn(`[BasePlacementSystem] No starting location for side: ${side}`);
+        if (!startingLocations || !startingLocations[team]) {
+            console.warn(`[BasePlacementSystem] No starting location for team: ${team}`);
             return null;
         }
 
-        const tilePosition = startingLocations[side];
+        const tilePosition = startingLocations[team];
 
         const pitch = 35.264 * Math.PI / 180;
         const yaw = 135 * Math.PI / 180;

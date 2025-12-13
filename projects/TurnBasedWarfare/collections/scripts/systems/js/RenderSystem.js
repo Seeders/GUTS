@@ -218,15 +218,10 @@ class RenderSystem extends GUTS.BaseSystem {
             const transform = this.game.getComponent(entityId, "transform");
             const renderable = this.game.getComponent(entityId, "renderable");
             const velocity = this.game.getComponent(entityId, "velocity");
-            const unitType = this.game.getComponent(entityId, "unitType");
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
 
             if (!unitType || !transform?.position) {
-                // Debug: log why entity is skipped
-                if (!this.spawnedEntities.has(entityId) && !this._skippedWarnings?.has(entityId)) {
-                    console.warn(`[RenderSystem] Skipping entity ${entityId}: unitType=${!!unitType}, position=${!!transform?.position}`);
-                    if (!this._skippedWarnings) this._skippedWarnings = new Set();
-                    this._skippedWarnings.add(entityId);
-                }
                 continue;
             }
 
@@ -243,9 +238,12 @@ class RenderSystem extends GUTS.BaseSystem {
                 continue;
             }
 
-            // Validate renderable data
-            if (typeof renderable.objectType !== 'string' || typeof renderable.spawnType !== 'string') {
-                console.error(`[RenderSystem] Invalid renderable for ${entityId}:`, renderable);
+            // Pass numeric indices directly to EntityRenderer (O(1) lookup)
+            const objectType = renderable.objectType;
+            const spawnType = renderable.spawnType;
+
+            if (objectType < 0 || spawnType < 0) {
+                console.error(`[RenderSystem] Invalid renderable for ${entityId}: objectType=${objectType}, spawnType=${spawnType}`);
                 continue;
             }
 
@@ -254,10 +252,10 @@ class RenderSystem extends GUTS.BaseSystem {
                 // Mark as spawned immediately to prevent race condition with async spawn
                 this.spawnedEntities.add(entityId);
 
-                // Spawn new entity
+                // Spawn new entity using numeric indices
                 await this.spawnEntity(entityId, {
-                    collection: renderable.objectType,
-                    type: renderable.spawnType,
+                    objectType: objectType,
+                    spawnType: spawnType,
                     position: { x: pos.x, y: pos.y, z: pos.z },
                     rotation: angle,
                     transform: transform,
@@ -316,9 +314,10 @@ class RenderSystem extends GUTS.BaseSystem {
             this._stats.entitiesSpawned++;
 
             // Trigger billboard spawn event for AnimationSystem
-            const collections = this.game.getCollections();
-            const entityDef = collections?.[data.collection]?.[data.type];
+            // Use EntityRenderer's indexed lookup (data.collection/type are resolved by EntityRenderer)
+            const entityDef = this.entityRenderer.getEntityDefByIndex(data.objectType, data.spawnType);
             if (entityDef?.spriteAnimationSet) {
+                const collections = this.collections;
                 const animSetData = collections?.spriteAnimationSets?.[entityDef.spriteAnimationSet];
                 const spriteAnimationCollection = animSetData?.animationCollection || 'peasantSpritesAnimations';
                 this.game.triggerEvent('billboardSpawned', {

@@ -138,11 +138,8 @@ class HealthBarSystem extends GUTS.BaseSystem {
         
 
         // Position group above unit
-        const unitType  = this.game.getComponent(entityId, "unitType");
-        const collections = this.game.getCollections?.();
-        const unitData = (unitType && collections && collections[unitType.collection])
-            ? collections[unitType.collection][unitType.id]
-            : null;
+        const unitTypeComp = this.game.getComponent(entityId, "unitType");
+        const unitData = this.game.call('getUnitTypeDef', unitTypeComp);
 
         const baseY   = pos.y || 0;
         const heightY = (unitData && unitData.height != null)
@@ -186,12 +183,8 @@ class HealthBarSystem extends GUTS.BaseSystem {
     }
     
     getHealthColor(team) {
-        const teamColors = {
-            'player': 0x00ff00,  // Green for player
-            'enemy': 0x00ff00,   // Green for enemy (all start green)
-            'neutral': 0x00ff00  // Green for neutral
-        };
-        return teamColors[team?.team] || teamColors.neutral;
+        // All teams use green - color changes based on health percent instead
+        return 0x00ff00;
     }
     
     getHealthColorByPercent(percent, team) {
@@ -321,7 +314,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
         });
     }
     isEnemy(teamComp) {
-        const myTeam = this.game?.state?.mySide;
+        const myTeam = this.game?.state?.myTeam;
         if (myTeam == null || !teamComp) return false;
         return teamComp.team !== myTeam;
     }

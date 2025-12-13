@@ -18,7 +18,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
         this.maxJumps = 5;
         this.jumpRange = 70;
         this.damageReduction = 0.8;
-        this.element = 'lightning';
+        this.element = this.enums.element.lightning;
     }
     
     defineEffects() {

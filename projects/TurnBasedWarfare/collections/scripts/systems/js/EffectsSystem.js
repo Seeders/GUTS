@@ -857,16 +857,19 @@ class EffectsSystem extends GUTS.BaseSystem {
     }
     
     getDamageColor(type) {
-        switch (type) {
-            case 'heal': return 0x00ff88;
-            case 'critical': return 0xff0044;
-            case 'poison': return 0x8a2be2;
-            case 'fire': return 0xff4400;
-            case 'cold': return 0x00bfff;
-            case 'lightning': return 0xffff00;
-            case 'divine': return 0xffd700;
-            default: return 0xff4444;
-        }
+        // Handle string types for special cases (heal, critical)
+        if (type === 'heal') return 0x00ff88;
+        if (type === 'critical') return 0xff0044;
+
+        // Handle numeric element enum values
+        if (type === this.enums.element.poison) return 0x8a2be2;
+        if (type === this.enums.element.fire) return 0xff4400;
+        if (type === this.enums.element.cold) return 0x00bfff;
+        if (type === this.enums.element.lightning) return 0xffff00;
+        if (type === this.enums.element.holy) return 0xffd700;
+        if (type === this.enums.element.shadow) return 0x4b0082;
+        // Physical and default
+        return 0xff4444;
     }
     
     addEffectsCSS() {

@@ -20,7 +20,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         this.maxArmorMultiplier = 2.0;   // Cap at 200%
         this.baseCounterChance = 0.2;    // 20% base counter attack chance
         this.perHopliteCounterBonus = 0.05; // +5% per hoplite
-        this.element = 'physical';
+        this.element = this.enums.element.physical;
     }
     
     defineEffects() {
@@ -59,7 +59,8 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
     canExecute(casterEntity) {
         // Check if caster already has a phalanx buff to prevent re-casting
         const existingBuff = this.game.getComponent(casterEntity, "buff");
-        if (existingBuff && existingBuff.buffType === 'phalanx') return false;
+        const enums = this.game.getEnums();
+        if (existingBuff && existingBuff.buffType === enums.buffTypes.phalanx) return false;
         
         // Must have at least one nearby hoplite ally (not counting self)
         const nearbyHoplites = this.getNearbyHoplites(casterEntity);
@@ -112,30 +113,24 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         // Process hoplites in deterministic order
         allHoplites.forEach((hopliteId, index) => {
             // Validate hoplite still exists and is a hoplite
-            const unitType = this.game.getComponent(hopliteId, "unitType");
+            const unitTypeComp = this.game.getComponent(hopliteId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             const transform = this.game.getComponent(hopliteId, "transform");
             const position = transform?.position;
-            
+
             if (!unitType || !position || unitType.id !== 'hoplite') return;
             
             // Apply phalanx buff
             const currentTime = this.game.state.now || this.game.state.now || 0;
             const endTime = currentTime + this.formationDuration;
+            const enums = this.game.getEnums();
 
             this.game.addComponent(hopliteId, "buff", {
-                buffType: 'phalanx',
-                modifiers: {
-                    armorMultiplier: armorMultiplier,
-                    counterAttackChance: counterAttackChance,
-                    formationSize: phalanxSize,
-                    formationLeader: casterEntity,
-                    formationRole: (hopliteId === casterEntity) ? 'leader' : 'member'
-                },
+                buffType: enums.buffTypes.phalanx,
                 endTime: endTime,
-                stackable: false,
-                stacks: 1,
                 appliedTime: currentTime,
-                isActive: true
+                stacks: 1,
+                sourceEntity: casterEntity
             });
             
             // Create phalanx effect on each member
@@ -176,8 +171,9 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         // Filter and sort hoplites deterministically
         const hoplites = allAllies.filter(allyId => {
             if (allyId === casterEntity) return false; // Exclude self
-            
-            const unitType = this.game.getComponent(allyId, "unitType");
+
+            const unitTypeComp = this.game.getComponent(allyId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             return unitType && unitType.id === 'hoplite';
         });
         
@@ -189,13 +185,14 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
     warnFormationEnding(hopliteIds) {
         let activeFormationMembers = 0;
         
+        const enums = this.game.getEnums();
         hopliteIds.forEach(hopliteId => {
             // Check if hoplite still exists and has the phalanx buff
             const buff = this.game.getComponent(hopliteId, "buff");
             const transform = this.game.getComponent(hopliteId, "transform");
             const position = transform?.position;
-            
-            if (!buff || buff.buffType !== 'phalanx' || !position) return;
+
+            if (!buff || buff.buffType !== enums.buffTypes.phalanx || !position) return;
             
             // Create warning effect
             this.createVisualEffect(position, 'cast', { 

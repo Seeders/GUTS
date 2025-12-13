@@ -129,7 +129,8 @@ class VisionSystem extends GUTS.BaseSystem {
                     const treePos = treeTransform?.position;
                     if (!treePos) continue;
 
-                    const treeUnitType = this.game.getComponent(treeId, 'unitType');
+                    const treeUnitTypeComp = this.game.getComponent(treeId, 'unitType');
+                    const treeUnitType = this.game.call('getUnitTypeDef', treeUnitTypeComp);
                     const treeSize = treeUnitType?.size || gridSize;
                     const treeHeight = treeUnitType?.height || 0;
 

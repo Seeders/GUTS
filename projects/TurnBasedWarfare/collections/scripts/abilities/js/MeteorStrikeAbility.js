@@ -17,7 +17,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
         this.damage = 200;
         this.splashRadius = 120;
         this.delay = 2.0;
-        this.element = 'fire';
+        this.element = this.enums.element.fire;
         this.minTargets = 0;
         this.meteorHeight = 500; // Height meteor falls from
     }

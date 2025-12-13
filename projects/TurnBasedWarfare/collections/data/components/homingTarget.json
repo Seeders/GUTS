@@ -1,8 +1,12 @@
 {
   "title": "homingTarget",
   "schema": {
-    "targetId": null,
+    "targetId": -1,
     "homingStrength": 0.5,
-    "lastKnownPosition": null
+    "lastKnownPosition": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
   }
 }

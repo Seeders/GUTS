@@ -18,6 +18,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     init(params) {
         this.params = params || {};
 
+        // Initialize enums
         this.game.register('startBattle', this.startBattle.bind(this));
     }
 
@@ -26,7 +27,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
             this.game.state.isPaused = false;
             // Change room phase
-            this.game.state.phase = 'battle';
+            this.game.state.phase = this.enums.gamePhase.battle;
 
             // Reset game time to sync with client (client also calls resetCurrentTime)
             this.game.resetCurrentTime();
@@ -50,7 +51,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
     // Called by game update loop to check for battle end
     update() {
-        if (this.game.state?.phase !== 'battle') {
+        if (this.game.state?.phase !== this.enums.gamePhase.battle) {
             return;
         }
         // Check for battle end conditions
@@ -84,19 +85,22 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         const room = this.game.room;
         if (!room) return null;
 
-        // Get all alive buildings grouped by team
-        const buildingsByTeam = { left: [], right: [] };
+        // Get all alive buildings grouped by team (using numeric team keys)
+        const buildingsByTeam = {};
+        buildingsByTeam[this.enums.team.left] = [];
+        buildingsByTeam[this.enums.team.right] = [];
 
         const buildingEntities = this.game.getEntitiesWith('unitType', 'team', 'health');
         for (const entityId of buildingEntities) {
-            const unitType = this.game.getComponent(entityId, 'unitType');
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             if (!unitType || unitType.collection !== 'buildings') continue;
 
             const health = this.game.getComponent(entityId, 'health');
             if (!health || health.current <= 0) continue;
 
             const deathState = this.game.getComponent(entityId, 'deathState');
-            if (deathState && deathState.isDying) continue;
+            if (deathState && deathState.state >= this.enums.deathState.dying) continue;
 
             const team = this.game.getComponent(entityId, 'team');
             if (team && buildingsByTeam[team.team] !== undefined) {
@@ -106,16 +110,16 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
         // Check if any team has no buildings left
         let losingTeam = null;
-        if (buildingsByTeam.left.length === 0 && buildingsByTeam.right.length > 0) {
-            losingTeam = 'left';
-        } else if (buildingsByTeam.right.length === 0 && buildingsByTeam.left.length > 0) {
-            losingTeam = 'right';
+        if (buildingsByTeam[this.enums.team.left].length === 0 && buildingsByTeam[this.enums.team.right].length > 0) {
+            losingTeam = this.enums.team.left;
+        } else if (buildingsByTeam[this.enums.team.right].length === 0 && buildingsByTeam[this.enums.team.left].length > 0) {
+            losingTeam = this.enums.team.right;
         }
 
-        if (losingTeam) {
+        if (losingTeam !== null) {
             // Find the winner (player on the opposite team)
             for (const [playerId, player] of room.players) {
-                if (player.stats.side !== losingTeam) {
+                if (player.team !== losingTeam) {
                     return {
                         winner: playerId,
                         reason: 'buildings_destroyed'
@@ -129,13 +133,13 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
     checkNoCombatActive(aliveEntities) {
         for (const entityId of aliveEntities) {
-            const aiState = this.game.getComponent(entityId, "aiState");
-         //   console.log(entityId, 'currentTarget', aiState.target);
-            if (aiState && aiState.target) {
+            // Check behaviorMeta for active target (not aiState component)
+            const behaviorMeta = this.game.call('getBehaviorMeta', entityId);
+            if (behaviorMeta?.target !== undefined && behaviorMeta.target !== null && behaviorMeta.target >= 0) {
                 return false;
             }
         }
-        
+
         return true;
     }
 
@@ -193,7 +197,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         } else {
             this.game.state.round += 1;
             // Transition back to placement phase
-            this.game.state.phase = 'placement';
+            this.game.state.phase = this.enums.gamePhase.placement;
             // Reset placement ready states
             for (const [playerId, player] of room.players) {
                 player.placementReady = false;
@@ -204,20 +208,8 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
 
     serializeAllEntities() {
-        const serialized = {};
-        
-        for (const [entityId, componentTypes] of this.game.entities) {
-            serialized[entityId] = {};
-            
-            for (const componentType of componentTypes) {
-                const component = this.game.getComponent(entityId, componentType);
-                if (component) {
-                    serialized[entityId][componentType] = JSON.parse(JSON.stringify(component));
-                }
-            }
-        }
-        
-        return serialized;
+        // Return raw ECS data for direct array sync
+        return this.game.getECSData();
     }
     calculateRoundGold(round) {
         return this.baseGoldPerRound + (round * this.baseGoldPerRound);
@@ -235,7 +227,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
                         const health = this.game.getComponent(entityId, "health");
                         const deathState = this.game.getComponent(entityId, "deathState");
                   
-                        if (health && health.current > 0 && (!deathState || !deathState.isDying)) {
+                        if (health && health.current > 0 && (!deathState || deathState.state === this.enums.deathState.alive)) {
                             sideSurvivors.push(entityId);
                             survivingCount++;
                         }
@@ -278,7 +270,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     endGame(room, reason = 'buildings_destroyed') {
-        this.game.state.phase = 'ended';
+        this.game.state.phase = this.enums.gamePhase.ended;
 
         // Determine final winner based on building victory condition
         const buildingVictory = this.checkBuildingVictoryCondition();
@@ -318,7 +310,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         if (!room) return;
 
         // If game is in battle or placement phase, the remaining player wins
-        if (this.game.state.phase === 'battle' || this.game.state.phase === 'placement') {
+        if (this.game.state.phase === this.enums.gamePhase.battle || this.game.state.phase === this.enums.gamePhase.placement) {
             // Find the remaining player
             let remainingPlayer = null;
             for (const [id, player] of room.players) {
@@ -364,5 +356,4 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         // Clear squad references
         this.createdSquads.clear();
     }
-
 }

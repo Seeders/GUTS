@@ -17,7 +17,7 @@ class FireStormAbility extends GUTS.BaseAbility {
         
         this.stormRadius = 90;
         this.damage = 70;
-        this.element = 'fire';
+        this.element = this.enums.element.fire;
         this.minTargets = 3;
     }
     

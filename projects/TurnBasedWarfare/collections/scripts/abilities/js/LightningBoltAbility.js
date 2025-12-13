@@ -17,7 +17,7 @@ class LightningBoltAbility extends GUTS.BaseAbility {
         
         this.damage = 55;
         this.criticalChance = 0.3; // 30% crit chance
-        this.element = 'lightning';
+        this.element = this.enums.element.lightning;
     }
     
     defineEffects() {

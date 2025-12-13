@@ -62,7 +62,8 @@ class FindAllyNeedingHelpBehaviorAction extends GUTS.BaseBehaviorAction {
             if (!allyHealth || allyHealth.current <= 0) continue;
 
             const allyDeathState = game.getComponent(allyId, 'deathState');
-            if (allyDeathState && allyDeathState.isDying) continue;
+            const enums = game.call('getEnums');
+            if (allyDeathState && allyDeathState.state !== enums?.deathState?.alive) continue;
 
             const allyTransform = game.getComponent(allyId, 'transform');
             const allyPos = allyTransform?.position;
@@ -109,7 +110,10 @@ class FindAllyNeedingHelpBehaviorAction extends GUTS.BaseBehaviorAction {
 
     isInCombat(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiState');
-        if (aiState && aiState.currentAction === 'CombatBehaviorAction') {
+        const enums = game.call('getEnums');
+        if (aiState && aiState.currentAction >= 0 &&
+            aiState.currentActionCollection === enums.behaviorCollection.behaviorActions &&
+            aiState.currentAction === enums.behaviorActions.CombatBehaviorAction) {
             return true;
         }
         return false;

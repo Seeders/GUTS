@@ -1,20 +1,23 @@
 class UnitRadiusSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
-        this.game.unitRadiusSystem = this;        
+        this.game.unitRadiusSystem = this;
         this.debugCircles = new Map(); // entityId -> { sizeCircle, attackCircle }
         this.enabled = false; // Toggle this to show/hide circles
-        
+
         // Visual configuration
         this.SIZE_CIRCLE_COLOR = 0x00ff00;      // Green for unit size
         this.ATTACK_CIRCLE_COLOR = 0xff0000;    // Red for attack range
         this.CIRCLE_OPACITY = 0.3;
         this.CIRCLE_LINE_WIDTH = 2;
     }
+
+    init() {
+    }
     
     update() {
         if (!this.enabled ) return;
-        if(this.game.state.phase !== 'battle') {
+        if(this.game.state.phase !== this.enums.gamePhase.battle) {
             this.hideAllCircles();
             return;
         }
@@ -70,8 +73,11 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
 
         // Show/hide attack circle based on entity action
         const aiState = this.game.getComponent(entityId, "aiState");
-        const isAttacking = aiState && aiState.currentAction && (aiState.currentAction === 'AttackEnemyBehaviorAction' || aiState.currentAction === 'CombatBehaviorAction');
-        const isChasing = aiState && aiState.currentAction && (aiState.shared || (aiState.shared && aiState.shared.targetPosition));
+        const behaviorShared = aiState ? this.game.call('getBehaviorShared', entityId) : null;
+        const isAttacking = aiState && aiState.currentAction >= 0 &&
+            aiState.currentActionCollection === this.enums.behaviorCollection.behaviorActions &&
+            (aiState.currentAction === this.enums.behaviorActions.AttackEnemyBehaviorAction || aiState.currentAction === this.enums.behaviorActions.CombatBehaviorAction);
+        const isChasing = aiState && aiState.currentAction >= 0 && (behaviorShared || behaviorShared?.targetPosition);
 
         if (isAttacking) {
             circles.attackCircle.visible = true;

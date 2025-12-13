@@ -81,3 +81,4 @@ class GameSystem extends GUTS.BaseSystem {
     onSceneUnload() {
     }
 }
+

@@ -1,13 +1,11 @@
 {
   "title": "environmentalHazard",
   "schema": {
-    "hazardType": "generic",
+    "hazardType": 0,
     "damagePerTick": 10,
     "tickInterval": 1,
-    "element": "physical",
-    "affectsTeams": [
-      "all"
-    ],
+    "element": 0,
+    "affectsTeams": 15,
     "lastTickTime": 0,
     "createdTime": 0
   }

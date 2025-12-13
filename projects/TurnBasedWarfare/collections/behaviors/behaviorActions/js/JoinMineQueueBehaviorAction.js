@@ -18,16 +18,19 @@ class JoinMineQueueBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const targetMine = shared.targetMine;
 
-        if (!targetMine) {
+        // targetMine is -1 when not set
+        if (targetMine === undefined || targetMine === null || targetMine < 0) {
             return this.failure();
         }
 
-
         const goldMine = game.getComponent(targetMine, 'goldMine');
-        if (goldMine && (goldMine.minerQueue.includes(entityId) || goldMine.currentMiner === entityId)) {
-            return this.success({
-                targetMine: targetMine
-            });
+
+        if (goldMine) {
+            // Check if already current miner or in queue
+            const queuePos = game.call('getMinerQueuePosition', targetMine, entityId);
+            if (goldMine.currentMiner === entityId || queuePos >= 0) {
+                return this.success({ targetMine: targetMine });
+            }
         }
         game.call('addMinerToQueue', targetMine, entityId);
         return this.success({

@@ -1,9 +1,9 @@
 {
   "title": "aiState",
   "schema": {
-    "currentAction": null,
-    "rootBehaviorTree": null,
-    "meta": {},
-    "shared": {}
+    "currentAction": -1,
+    "currentActionCollection": -1,
+    "rootBehaviorTree": -1,
+    "rootBehaviorTreeCollection": -1
   }
 }

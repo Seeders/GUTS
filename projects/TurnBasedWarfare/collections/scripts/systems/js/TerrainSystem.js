@@ -66,13 +66,22 @@ class TerrainSystem extends GUTS.BaseSystem {
      * @param {string} entityId - The entity ID that has the terrain component
      */
     async initTerrainFromComponent(terrainComponent, entityId) {
-        if (!terrainComponent?.level) {
+        // Level is stored as numeric enum index
+        const levelIndex = terrainComponent?.level;
+        if (levelIndex === undefined || levelIndex < 0) {
             console.warn('[TerrainSystem] Terrain component missing level reference');
             return;
         }
 
+        // Get level name from reverse enum
+        const levelName = this.reverseEnums.levels[levelIndex];
+        if (!levelName) {
+            console.warn(`[TerrainSystem] Invalid level index: ${levelIndex}`);
+            return;
+        }
+
         this.terrainEntityId = entityId;
-        await this.initTerrainFromLevel(terrainComponent.level, terrainComponent);
+        await this.initTerrainFromLevel(levelName, terrainComponent);
     }
 
     /**
@@ -87,17 +96,16 @@ class TerrainSystem extends GUTS.BaseSystem {
         // Store current level for getLevel() query
         this.currentLevel = levelName;
 
-        const collections = this.game.getCollections();
-        const gameConfig = collections.configs.game;
+        const gameConfig = this.collections.configs.game;
 
         this.terrainDataManager = new GUTS.TerrainDataManager();
-        this.terrainDataManager.init(collections, gameConfig, levelName);
+        this.terrainDataManager.init(this.collections, gameConfig, levelName);
 
         // Initialize EnvironmentObjectSpawner in runtime mode
         this.environmentObjectSpawner = new GUTS.EnvironmentObjectSpawner({
             mode: 'runtime',
             game: this.game,
-            collections: collections
+            collections: this.collections
         });
 
         // Skip spawning world objects if loading from a save (save contains all entities)

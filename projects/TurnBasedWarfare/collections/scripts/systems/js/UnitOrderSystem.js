@@ -43,7 +43,8 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         actionPanel.innerHTML = "";
 
         const firstUnit = placement.squadUnits?.[0];
-        const unitType = firstUnit ? this.game.getComponent(firstUnit, "unitType") : null;
+        const unitTypeComp = firstUnit ? this.game.getComponent(firstUnit, "unitType") : null;
+        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
         
         let squadPanel = document.createElement('div');
         squadPanel.id = 'squadActionPanel';
@@ -73,17 +74,17 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             if(!actionSetId) {
                 actionSetId = unitType.actionSet;
             }
-            let currentActionSet = this.game.getCollections().actionSets[actionSetId];
+            let currentActionSet = this.collections.actionSets[actionSetId];
             if(currentActionSet.actions){
                 actions = currentActionSet.actions;
-                const actionsCollection = this.game.getCollections().actions;
+                const actionsCollection = this.collections.actions;
                 actions.forEach((actionId) => {
                     let action = actionsCollection[actionId];
                     const btn = this.createActionButton(action, panel, selectedUnitId, unitType);
                     grid.appendChild(btn);
                 });
             } else if(currentActionSet.buildings){
-                const buildings = this.game.getCollections().buildings;
+                const buildings = this.collections.buildings;
                 currentActionSet.buildings.forEach(buildingId => {
                     if (buildingId === 'underConstruction') return;
                     
@@ -114,7 +115,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const iconEl = document.createElement('div');
         iconEl.className = 'action-btn-icon';
         if(action.icon){
-            const icon = this.game.getCollections().icons[action.icon];
+            const icon = this.collections.icons[action.icon];
             if(icon && icon.imagePath){
                 const img = document.createElement('img');
                 img.src = `./resources/${icon.imagePath}`;
@@ -153,7 +154,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const iconEl = document.createElement('div');
         iconEl.className = 'action-btn-icon';
         if(building.icon){
-            const icon = this.game.getCollections().icons[building.icon];
+            const icon = this.collections.icons[building.icon];
             if(icon && icon.imagePath){
                 const img = document.createElement('img');
                 img.src = `./resources/${icon.imagePath}`;
@@ -203,7 +204,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
     startTargeting(meta = {}) {
         this.stopTargeting();
-        if(this.game.state.phase != 'placement') return;
+        if(this.game.state.phase !== this.enums.gamePhase.placement) return;
         this.isTargeting = true;
         this.orderMeta = meta;
         this.pendingCallbacks = 0;
@@ -254,7 +255,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             }
         });
 
-        const meta = { allowMovement: false };
+        const meta = { isMoveOrder: 0 };
 
         // Send to server for authoritative confirmation
         this.game.call('setSquadTargets',
@@ -274,11 +275,8 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                                 this.game.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
                             }
 
-                            // Clear path in pathfinding component
-                            const pathfinding = this.game.getComponent(unitId, "pathfinding");
-                            if (pathfinding) {
-                                pathfinding.path = [];
-                            }
+                            // Clear path in pathfinding system
+                            this.game.call('clearEntityPath', unitId);
                         });
                     });
                 }
@@ -293,8 +291,9 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         }
     }
     onUnitSelected(entityId){
-        const unitType = this.game.getComponent(entityId, "unitType");
-        if(unitType.collection == "units") {
+        const unitTypeComp = this.game.getComponent(entityId, "unitType");
+        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        if(unitType && unitType.collection === "units") {
             const placement = this.game.getComponent(entityId, "placement");                    
             const placementId = placement.placementId;
             this.showSquadActionPanel(placementId);   
@@ -314,8 +313,12 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             const placement = this.game.call('getPlacementById', placementId);
             placement.squadUnits.forEach((entityId) => {
                 const playerOrder = this.game.getComponent(entityId, "playerOrder");
-                if(playerOrder && playerOrder.targetPosition) {
-                    targetPositions.push(playerOrder.targetPosition);
+                if(playerOrder && (playerOrder.targetPositionX !== 0 || playerOrder.targetPositionZ !== 0)) {
+                    targetPositions.push({
+                        x: playerOrder.targetPositionX,
+                        y: playerOrder.targetPositionY,
+                        z: playerOrder.targetPositionZ
+                    });
                 }
             });
         });
@@ -411,7 +414,8 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             const placement = this.game.getComponent(entityId, "placement");
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
-            const unitType = this.game.getComponent(entityId, "unitType");
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
 
             if (!placement || !pos || !unitType) continue;
             if (unitType.collection !== 'buildings') continue;
@@ -473,9 +477,8 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const targetPosition = { x: buildingPos.x, y: 0, z: buildingPos.z };
         const meta = {
             buildingId: buildingEntityId,
-            buildingPosition: buildingPos,
-            preventCombat: true,
-            isBuildOrder: true
+            preventEnemiesInRangeCheck: 1,
+            isMoveOrder: 0
         };
 
         this.game.call('setSquadTarget',
@@ -504,10 +507,14 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     }
 
     issueMoveOrders(placementIds, targetPosition) {
-        if(this.game.state.phase != "placement") {
+        if(this.game.state.phase !== this.enums.gamePhase.placement) {
             return;
         };
-        const meta = { ...this.orderMeta, isMoveOrder: true };
+        const meta = {
+            ...this.orderMeta,
+            isMoveOrder: 1,
+            preventEnemiesInRangeCheck: this.orderMeta.preventEnemiesInRangeCheck ? 1 : 0
+        };
         this.orderMeta = {};
         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
         // Send to server - server will set authoritative issuedTime and respond
@@ -558,8 +565,18 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                     this.game.removeComponent(unitId, "playerOrder");
                 }
                 this.game.addComponent(unitId, "playerOrder", {
-                    targetPosition: targetPosition,
-                    meta: meta,
+                    targetPositionX: targetPosition.x || 0,
+                    targetPositionY: targetPosition.y || 0,
+                    targetPositionZ: targetPosition.z || 0,
+                    buildingId: meta.buildingId || -1,
+                    isMoveOrder: meta.isMoveOrder || 0,
+                    preventEnemiesInRangeCheck: meta.preventEnemiesInRangeCheck || 0,
+                    completed: 0,
+                    targetMine: -1,
+                    targetMinePositionX: 0,
+                    targetMinePositionY: 0,
+                    targetMinePositionZ: 0,
+                    miningStartTime: 0,
                     issuedTime: createdTime
                 });
             }

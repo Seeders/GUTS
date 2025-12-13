@@ -1,3 +1,2 @@
-class AttackSequence extends GUTS.SequenceBehaviorTree {
+class ChaseSequence extends GUTS.SequenceBehaviorTree {}
 
-}

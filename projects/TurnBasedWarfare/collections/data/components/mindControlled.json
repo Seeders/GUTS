@@ -1,9 +1,9 @@
 {
   "title": "mindControlled",
   "schema": {
-    "originalTeam": "neutral",
-    "controller": null,
+    "originalTeam": 0,
+    "controller": -1,
     "endTime": 0,
-    "isControlled": true
+    "isControlled": 1
   }
 }

@@ -326,13 +326,13 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
                 value: skeletonDef.value || 25
             });
 
-            this.game.addComponent(skeletonId, "buff", {
+            this.game.addComponent(skeletonId, "velocity", {
                 vx: 0,
                 vy: 0,
                 vz: 0,
                 maxSpeed: (skeletonDef.speed || 1) * 20,
-                affectedByGravity: true,
-                anchored: false
+                affectedByGravity: 1,
+                anchored: 0
             });
 
             return skeletonId;

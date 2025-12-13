@@ -136,3 +136,4 @@ class SeededRandom {
         return Math.abs(seed) || 1;
     }
 }
+

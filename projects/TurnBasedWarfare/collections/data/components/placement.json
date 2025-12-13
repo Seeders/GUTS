@@ -1,4 +1,18 @@
 {
   "title": "placement",
-  "schema": {}
+  "schema": {
+    "placementId": -1,
+    "unitTypeId": -1,
+    "collection": -1,
+    "team": -1,
+    "playerId": -1,
+    "roundPlaced": 0,
+    "isUnderConstruction": 0,
+    "buildTime": 0,
+    "assignedBuilder": -1,
+    "gridPosition": {
+      "x": 0,
+      "z": 0
+    }
+  }
 }

@@ -1,0 +1,9 @@
+{
+  "title": "Phalanx",
+  "damageMultiplier": 1,
+  "attackSpeedMultiplier": 1,
+  "armorMultiplier": 1.5,
+  "damageTakenMultiplier": 0.8,
+  "damageReduction": 5,
+  "accuracyReduction": 0
+}

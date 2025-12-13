@@ -285,4 +285,3 @@ class NetworkManager {
       this.connected = false;
     }
   }
-}

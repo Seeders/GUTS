@@ -10,6 +10,7 @@ class AbilitySystem extends GUTS.BaseSystem {
     }
 
     init() {
+        // Initialize enums
         this.game.register('getEntityAbilities', this.getEntityAbilities.bind(this));
         this.game.register('removeEntityAbilities', this.removeEntityAbilities.bind(this));
     }
@@ -23,7 +24,7 @@ class AbilitySystem extends GUTS.BaseSystem {
         abilityIds.forEach(abilityId => {
             const AbilityClass = GUTS[abilityId];
             if (AbilityClass) {
-                const abilityInstance = new AbilityClass(this.game, this.game.getCollections().abilities[abilityId]);
+                const abilityInstance = new AbilityClass(this.game, this.collections.abilities[abilityId]);
                 unitAbilities.push(abilityInstance);
             } else {
                 console.warn(`Ability '${abilityId}' not found!`);
@@ -36,7 +37,7 @@ class AbilitySystem extends GUTS.BaseSystem {
     }
 
     update() {
-        if (this.game.state.phase !== 'battle') return;
+        if (this.game.state.phase !== this.enums.gamePhase.battle) return;
 
         this.processAbilityQueue();
         this.processAbilityActions();
@@ -49,12 +50,13 @@ class AbilitySystem extends GUTS.BaseSystem {
 
         for (const entityId of sortedEntityIds) {
             const queuedAbility = this.game.getComponent(entityId, 'abilityQueue');
-            if (!queuedAbility || !queuedAbility.abilityId) continue;
+            // abilityId is -1 when no ability queued
+            if (!queuedAbility || queuedAbility.abilityId < 0) continue;
 
             if (this.game.state.now >= queuedAbility.executeTime) {
                 // Cancel queued ability if caster died
                 const deathState = this.game.getComponent(entityId, "deathState");
-                if (deathState && deathState.isDying) {
+                if (deathState && deathState.state !== this.enums.deathState.alive) {
                     this.game.removeComponent(entityId, 'abilityQueue');
                     continue;
                 }
@@ -108,13 +110,14 @@ class AbilitySystem extends GUTS.BaseSystem {
     
     considerAbilityUsage(entityId, abilities) {
         const queuedAbility = this.game.getComponent(entityId, 'abilityQueue');
-        if (queuedAbility && queuedAbility.abilityId) {
+        // abilityId is -1 when no ability queued
+        if (queuedAbility && queuedAbility.abilityId >= 0) {
             return; // Entity is already casting an ability, wait for it to finish
         }
 
         // Don't allow dead/dying entities to consider abilities
         const deathState = this.game.getComponent(entityId, "deathState");
-        if (deathState && deathState.isDying) return;
+        if (deathState && deathState.state !== this.enums.deathState.alive) return;
 
         const availableAbilities = abilities
             .filter(ability => this.isAbilityOffCooldown(entityId, ability.id))
@@ -138,7 +141,7 @@ class AbilitySystem extends GUTS.BaseSystem {
 
         // Don't allow dead/dying entities to use abilities
         const deathState = this.game.getComponent(entityId, "deathState");
-        if (deathState && deathState.isDying) return false;
+        if (deathState && deathState.state !== this.enums.deathState.alive) return false;
 
         if (!this.isAbilityOffCooldown(entityId, abilityId)) {
             return false;
@@ -168,25 +171,21 @@ class AbilitySystem extends GUTS.BaseSystem {
     }
     
     startAbilityAnimation(entityId, ability) {
-        const animationsToTry = ['attack', 'idle'];
+        // Use ability's configured animation or default to cast
+        const anim = ability.animation !== undefined ? ability.animation : this.enums.animationType.cast;
 
-        for (const anim of animationsToTry) {
+        // For abilities, calculate animation speed based on cast time
+        let animationSpeed = 1.0;
+        let minAnimationTime = 1.5;
 
-            // For abilities, calculate animation speed based on cast time
-            let animationSpeed = 1.0;
-            let minAnimationTime = 1.5;
-
-            if (ability && ability.castTime > 0) {
-                // Convert cast time to rate (casts per second)
-                const castRate = 1 / ability.castTime;
-                animationSpeed = this.game.call('calculateAnimationSpeed', entityId, castRate);
-                minAnimationTime = ability.castTime;
-            }
-            if(this.game.hasService('triggerSinglePlayAnimation')){
-                this.game.call('triggerSinglePlayAnimation', entityId, anim, animationSpeed, minAnimationTime);
-            }
-            break;
-
+        if (ability && ability.castTime > 0) {
+            // Convert cast time to rate (casts per second)
+            const castRate = 1 / ability.castTime;
+            animationSpeed = this.game.call('calculateAnimationSpeed', entityId, castRate);
+            minAnimationTime = ability.castTime;
+        }
+        if (this.game.hasService('triggerSinglePlayAnimation')) {
+            this.game.call('triggerSinglePlayAnimation', entityId, anim, animationSpeed, minAnimationTime);
         }
     }
 
@@ -195,9 +194,9 @@ class AbilitySystem extends GUTS.BaseSystem {
         const velocity = this.game.getComponent(entityId, "velocity");
         if (velocity?.anchored) return;
 
-        // Get target for facing
+        // Get target for facing (targetId is -1 when no target)
         const targetId = ability.getTargetForFacing(entityId);
-        if (!targetId || targetId === entityId) return;
+        if (targetId === undefined || targetId === null || targetId < 0 || targetId === entityId) return;
 
         const casterTransform = this.game.getComponent(entityId, "transform");
         const targetTransform = this.game.getComponent(targetId, "transform");
@@ -222,25 +221,35 @@ class AbilitySystem extends GUTS.BaseSystem {
     setCooldown(entityId, abilityId, cooldownDuration) {
         let cooldowns = this.game.getComponent(entityId, 'abilityCooldowns');
         if (!cooldowns) {
-            this.game.addComponent(entityId, 'abilityCooldowns', { cooldowns: {} });
+            this.game.addComponent(entityId, 'abilityCooldowns', {});
             cooldowns = this.game.getComponent(entityId, 'abilityCooldowns');
         }
-        cooldowns.cooldowns[abilityId] = this.game.state.now + cooldownDuration;
-        cooldowns.lastAbilityUsed = abilityId;
+        // Convert ability string ID to numeric index for TypedArray storage
+        const abilityIndex = this.enums.abilities[abilityId];
+        if (abilityIndex !== undefined) {
+            cooldowns[`cooldowns${abilityIndex}`] = this.game.state.now + cooldownDuration;
+        }
+        cooldowns.lastAbilityUsed = abilityIndex !== undefined ? abilityIndex : -1;
         cooldowns.lastAbilityTime = this.game.state.now;
     }
 
     isAbilityOffCooldown(entityId, abilityId) {
         const cooldowns = this.game.getComponent(entityId, 'abilityCooldowns');
-        if (!cooldowns || !cooldowns.cooldowns) return true;
-        const cooldownEnd = cooldowns.cooldowns[abilityId];
+        if (!cooldowns) return true;
+        // Convert ability string ID to numeric index
+        const abilityIndex = this.enums.abilities[abilityId];
+        if (abilityIndex === undefined) return true;
+        const cooldownEnd = cooldowns[`cooldowns${abilityIndex}`];
         return !cooldownEnd || this.game.state.now >= cooldownEnd;
     }
 
     getRemainingCooldown(entityId, abilityId) {
         const cooldowns = this.game.getComponent(entityId, 'abilityCooldowns');
-        if (!cooldowns || !cooldowns.cooldowns) return 0;
-        const cooldownEnd = cooldowns.cooldowns[abilityId];
+        if (!cooldowns) return 0;
+        // Convert ability string ID to numeric index
+        const abilityIndex = this.enums.abilities[abilityId];
+        if (abilityIndex === undefined) return 0;
+        const cooldownEnd = cooldowns[`cooldowns${abilityIndex}`];
         return !cooldownEnd ? 0 : Math.max(0, cooldownEnd - this.game.state.now);
     }
     
@@ -265,7 +274,7 @@ class AbilitySystem extends GUTS.BaseSystem {
     }
     
     getAvailableAbilityIds() {
-        return Object.keys(this.game.getCollections().abilities);
+        return Object.keys(this.collections.abilities);
     }
         
     removeEntityAbilities(entityId) {

@@ -25,4 +25,3 @@ class HelloSystem extends GUTS.BaseSystem {
             overlay.remove();
         }
     }
-}

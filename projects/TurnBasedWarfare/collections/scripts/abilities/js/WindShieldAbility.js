@@ -74,27 +74,24 @@ class WindShieldAbility extends GUTS.BaseAbility {
             const allyPos = transform?.position;
             if (!allyPos) return;
             // Shield effect
-            this.createVisualEffect(allyPos, 'shield');            
-            
+            this.createVisualEffect(allyPos, 'shield');
+
             // DESYNC SAFE: Add shield component using scheduling system for duration
+            const enums = this.game.getEnums();
             this.game.addComponent(allyId, "buff", {
-                buffType: 'wind_shield',
-                modifiers: {
-                    deflectionChance: this.deflectionChance,
-                    projectileReflection: true
-                },
+                buffType: enums.buffTypes.wind_shield,
                 endTime: this.game.state.now + this.shieldDuration,
-                stackable: false,
-                stacks: 1,
                 appliedTime: this.game.state.now,
-                isActive: true
+                stacks: 1,
+                sourceEntity: casterEntity
             });
             
             // DESYNC SAFE: Schedule shield removal
             this.game.schedulingSystem.scheduleAction(() => {
+                const enums = this.game.getEnums();
                 if (this.game.hasComponent(allyId, "buff")) {
                     const buff = this.game.getComponent(allyId, "buff");
-                    if (buff && buff.buffType === 'wind_shield') {
+                    if (buff && buff.buffType === enums.buffTypes.wind_shield) {
                         this.game.removeComponent(allyId, "buff");
 
                         // Visual effect when shield expires

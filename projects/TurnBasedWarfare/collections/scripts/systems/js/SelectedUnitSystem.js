@@ -258,7 +258,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
                 // Try multiple ways to check team
                 const unitTeam = team.team || team.side || team.teamId;
-                const myTeam = this.game.state.mySide || this.game.state.playerSide || this.game.state.team;
+                const myTeam = this.game.state.myTeam || this.game.state.playerSide || this.game.state.team;
 
                 if (unitTeam !== myTeam) {
                     return;
@@ -268,7 +268,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             // Get position component
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
-            const unitType = this.game.getComponent(entityId, "unitType");
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             const renderable = this.game.getComponent(entityId, "renderable");
 
             // In editor mode, allow selection of any entity with position and renderable
@@ -277,7 +278,10 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
             // Skip world objects (environment objects from level data) in scene editor
             // These should only be editable in terrain map editor
-            if (this.isEditorMode && unitType?.collection === 'worldObjects') return;
+            // Get collection name from unitType or renderable's objectType
+            const renderableCollection = renderable ? this.reverseEnums.objectTypeDefinitions?.[renderable.objectType] : null;
+            const collection = unitType?.collection || renderableCollection;
+            if (this.isEditorMode && collection === 'worldObjects') return;
 
             // Convert world position to screen position
             const screenPos = this.worldToScreen(pos.x, pos.y, pos.z);
@@ -290,7 +294,6 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             // Check if within selection box (in client coordinates)
             if (screenX >= left && screenX <= right &&
                 screenY >= top && screenY <= bottom) {
-                const collection = unitType?.collection || renderable?.collection;
                 if(collection == 'units'){
                     selectedUnits.push(entityId);
                 } else {
@@ -393,7 +396,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         entities.forEach(entityId => {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
-            const unitType = this.game.getComponent(entityId, "unitType");
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             const renderable = this.game.getComponent(entityId, "renderable");
 
             // Must have position and be renderable
@@ -401,7 +405,9 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             if (!unitType && !renderable) return;
 
             // Skip world objects (environment objects from level data)
-            if (unitType?.collection === 'worldObjects') return;
+            const renderableCollection = renderable ? this.reverseEnums.objectTypeDefinitions?.[renderable.objectType] : null;
+            const collection = unitType?.collection || renderableCollection;
+            if (collection === 'worldObjects') return;
 
             // In game mode, only select units on player's team
             if (!this.isEditorMode) {
@@ -409,7 +415,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                 if (!team) return;
 
                 const unitTeam = team.team || team.side || team.teamId;
-                const myTeam = this.game.state.mySide || this.game.state.playerSide || this.game.state.team;
+                const myTeam = this.game.state.myTeam || this.game.state.playerSide || this.game.state.team;
 
                 if (unitTeam !== myTeam) return;
             }
@@ -491,7 +497,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
             const placement = this.game.getComponent(entityId, "placement");
-            const unitType = this.game.getComponent(entityId, "unitType");
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
 
             if (!pos || !placement) return;
 
@@ -500,7 +507,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             let distance = Math.sqrt(dx * dx + dz * dz);
 
             // Adjust distance based on unit/building size
-            if(unitType && unitType.size) {
+            if (unitType && unitType.size) {
                 distance -= unitType.size;
             }
 
@@ -514,7 +521,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
         // If we found an entity but no placementId, try to find it from playerPlacements
         if (closestEntityId && !closestPlacementId) {
-            const placements = this.game.call('getPlacementsForSide', this.game.state.mySide);
+            const placements = this.game.call('getPlacementsForSide', this.game.state.myTeam);
             if (placements) {
                 for (const placement of placements) {
                     if (placement.squadUnits && placement.squadUnits.includes(closestEntityId)) {
@@ -543,12 +550,15 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
 
     setSelectedEntity(entityId){
-        const unitType = this.game.getComponent(entityId, "unitType");
+        const unitTypeComp = this.game.getComponent(entityId, "unitType");
+        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
         const renderable = this.game.getComponent(entityId, "renderable");
+        // Convert renderable's objectType index to collection name
+        const renderableCollection = renderable ? this.reverseEnums.objectTypeDefinitions?.[renderable.objectType] : null;
 
         if (this.game.state.selectedEntity) {
             this.game.state.selectedEntity.entityId = entityId;
-            this.game.state.selectedEntity.collection = unitType?.collection || renderable?.collection || null;
+            this.game.state.selectedEntity.collection = unitType?.collection || renderableCollection || null;
         }
     }
 
@@ -640,10 +650,11 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
     createPortrait(entityId){
         if(document) {
-            const unitType = this.game.getComponent(entityId, "unitType");
-            const icon = this.game.getCollections().icons[unitType.icon];
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const icon = unitType ? this.collections.icons[unitType.icon] : null;
 
-            if(icon){
+            if (icon) {
                 const img = document.createElement('img');
                 img.src = `./resources/${icon.imagePath}`;
                 return img;
@@ -732,19 +743,13 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     
     getUnitRadius(entityId) {
         // Try to get unit type to determine appropriate radius
-        const unitType = this.game.getComponent(entityId, "unitType");
-        
-        if (unitType) {
-            const collections = this.game.getCollections?.();
-            const unitData = (collections && collections[unitType.collection])
-                ? collections[unitType.collection][unitType.id]
-                : null;
-            
-            if (unitData && unitData.size) {
-                return unitData.size + 2; // Slightly larger than unit
-            }
+        const unitTypeComp = this.game.getComponent(entityId, "unitType");
+        const unitData = this.game.call('getUnitTypeDef', unitTypeComp);
+
+        if (unitData && unitData.size) {
+            return unitData.size + 2; // Slightly larger than unit
         }
-        
+
         // Default radius if no unit data
         return this.CIRCLE_RADIUS;
     }

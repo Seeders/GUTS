@@ -97,18 +97,13 @@ class CurseAbility extends GUTS.BaseAbility {
                 this.createVisualEffect(enemyPos, 'curse');
 
                 // DESYNC SAFE: Use buff system instead of directly modifying stats
+                const enums = this.game.getEnums();
                 this.game.addComponent(enemyId, "buff", {
-                    buffType: 'curse',
-                    modifiers: {
-                        damageMultiplier: this.damageReduction,
-                        damageTakenMultiplier: this.vulnerabilityIncrease,
-                        isCursed: true
-                    },
+                    buffType: enums.buffTypes.curse,
                     endTime: this.game.state.now + this.duration,
-                    stackable: false,
-                    stacks: 1,
                     appliedTime: this.game.state.now,
-                    isActive: true
+                    stacks: 1,
+                    sourceEntity: casterEntity
                 });
                 
                 // Create dark aura effect (client only)
@@ -139,9 +134,10 @@ class CurseAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Remove curse effect
     removeCurse(enemyId) {
         // Check if enemy still exists and has the curse buff
+        const enums = this.game.getEnums();
         if (this.game.hasComponent(enemyId, "buff")) {
             const buff = this.game.getComponent(enemyId, "buff");
-            if (buff && buff.buffType === 'curse') {
+            if (buff && buff.buffType === enums.buffTypes.curse) {
                 this.game.removeComponent(enemyId, "buff");
 
                 // Visual effect when curse expires

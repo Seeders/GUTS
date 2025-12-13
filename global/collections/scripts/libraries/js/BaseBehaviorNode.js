@@ -238,8 +238,9 @@ class BaseBehaviorNode {
      */
     endTrace(debugger_, trace, result, entityId, game) {
         if (debugger_ && trace) {
-            const aiState = game.getComponent?.(entityId, 'aiState');
-            const stateSnapshot = aiState?.shared ? { shared: { ...aiState.shared } } : null;
+            // Get shared state from BehaviorSystem
+            const shared = game.call('getBehaviorShared', entityId);
+            const stateSnapshot = shared ? { shared: { ...shared } } : null;
             debugger_.endEvaluation(trace, result, stateSnapshot);
         }
     }
@@ -280,14 +281,13 @@ class BaseBehaviorNode {
     }
 
     getShared(entityId, game) {
-        const aiState = game.getComponent(entityId, 'aiState');
-        if (aiState) {
-            if (!aiState.shared) {
-                aiState.shared = {};
-            }
-            return aiState.shared;
-        }
-        return {};
+        // Shared state is now stored in BehaviorSystem, not in the component
+        return game.call('getBehaviorShared', entityId);
+    }
+
+    getMeta(entityId, game) {
+        // Meta state is now stored in BehaviorSystem, not in the component
+        return game.call('getBehaviorMeta', entityId);
     }
 
     clearRunningState(entityId) {
@@ -355,4 +355,10 @@ if (typeof module !== 'undefined' && module.exports) {
 // Make available on GUTS global
 if (typeof GUTS !== 'undefined') {
     GUTS.BaseBehaviorNode = BaseBehaviorNode;
+}
+
+
+// Auto-generated exports
+if (typeof window !== 'undefined' && window.GUTS) {
+  window.GUTS.BaseBehaviorNode = BaseBehaviorNode;
 }

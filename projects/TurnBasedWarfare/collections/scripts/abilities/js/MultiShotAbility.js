@@ -17,7 +17,7 @@ class MultiShotAbility extends GUTS.BaseAbility {
         this.maxTargets = 3;
         this.arrowDamage = 35;
         this.shotInterval = 0.2; // Time between each arrow
-        this.element = 'physical';
+        this.element = this.enums.element.physical;
     }
     
     defineEffects() {

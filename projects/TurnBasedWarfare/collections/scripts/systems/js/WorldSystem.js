@@ -101,7 +101,10 @@ class WorldSystem extends GUTS.BaseSystem {
             cliffsEnabled: terrainComponent.cliffsEnabled !== false
         });
 
-        this.initializeThreeJS(terrainComponent.level, terrainComponent.world);
+        // Level and world are stored as numeric indices
+        const levelName = this.reverseEnums.levels[terrainComponent.level];
+        const worldName = this.reverseEnums.worlds[terrainComponent.world];
+        this.initializeThreeJS(levelName, worldName);
     }
 
     /**
@@ -169,11 +172,10 @@ class WorldSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const collections = this.game.getCollections();
-        const level = collections.levels?.[levelName];
+        const level = this.collections.levels?.[levelName];
         const effectiveWorldName = worldName || level?.world;
-        const world = collections.worlds?.[effectiveWorldName];
-        const cameraSettings = collections.cameras?.[world?.camera];
+        const world = this.collections.worlds?.[effectiveWorldName];
+        const cameraSettings = this.collections.cameras?.[world?.camera];
 
         // Initialize Three.js through WorldRenderer
         // Never enable OrbitControls here - game uses CameraControlSystem, editors call setupOrbitControls manually
@@ -206,9 +208,8 @@ class WorldSystem extends GUTS.BaseSystem {
      * @param {string} worldName - The world name
      */
     async setupWorldRendering(levelName, worldName) {
-        const collections = this.game.getCollections();
-        const world = collections.worlds?.[worldName];
-        const gameConfig = collections.configs?.game || {};
+        const world = this.collections.worlds?.[worldName];
+        const gameConfig = this.collections.configs?.game || {};
 
         // Set background color
         this.worldRenderer.setBackgroundColor(world?.backgroundColor || '#87CEEB');
@@ -226,12 +227,12 @@ class WorldSystem extends GUTS.BaseSystem {
         }
 
         // Setup lighting
-        const lightingSettings = collections.lightings?.[world?.lighting];
-        const shadowSettings = collections.shadows?.[world?.shadow];
+        const lightingSettings = this.collections.lightings?.[world?.lighting];
+        const shadowSettings = this.collections.shadows?.[world?.shadow];
         this.worldRenderer.setupLighting(lightingSettings, shadowSettings, terrainDataManager.extendedSize);
 
         // Setup fog
-        const fogSettings = collections.fogs?.[world?.fog];
+        const fogSettings = this.collections.fogs?.[world?.fog];
         this.worldRenderer.setupFog(fogSettings);
 
         // Setup ground with terrain data
@@ -305,7 +306,7 @@ class WorldSystem extends GUTS.BaseSystem {
     }
 
     setupPostProcessing() {
-        const gameConfig = this.game.getCollections()?.configs?.game;
+        const gameConfig = this.collections.configs?.game;
         if (!gameConfig) return;
 
         // Check if PostProcessingSystem is available
@@ -370,9 +371,12 @@ class WorldSystem extends GUTS.BaseSystem {
             const worldObject = this.game.getComponent(entityId, 'worldObject');
 
             // Add Renderable component for visual representation
+            // Store numeric indices: objectType = collection index, spawnType = item index within collection
+            // worldObject.type is already a numeric index (converted from string when component was created)
             if (!this.game.hasComponent(entityId, "renderable")) {
+                const objectTypeIndex = this.enums.objectTypeDefinitions?.worldObjects ?? -1;
                 this.game.addComponent(entityId, "renderable", {
-                    objectType: 'worldObjects',
+                    objectType: objectTypeIndex,
                     spawnType: worldObject.type,
                     capacity: 1024
                 });
@@ -448,10 +452,13 @@ class WorldSystem extends GUTS.BaseSystem {
         const terrainComponent = this.game.getComponent(this.terrainEntityId, 'terrain');
         if (!terrainComponent) return;
 
-        const collections = this.game.getCollections();
-        const level = collections.levels?.[terrainComponent.level];
-        const world = collections.worlds?.[terrainComponent.world || level?.world];
-        const cameraSettings = collections.cameras?.[world?.camera];
+        // Level and world are stored as numeric indices
+        const levelKey = this.reverseEnums.levels[terrainComponent.level];
+        const worldKey = this.reverseEnums.worlds[terrainComponent.world];
+        const level = this.collections.levels[levelKey];
+        const world = this.collections.worlds[worldKey] ||
+                      (level?.world ? this.collections.worlds?.[level.world] : null);
+        const cameraSettings = world?.camera ? this.collections.cameras?.[world.camera] : null;
 
         if (cameraSettings) {
             this.worldRenderer.resetCamera(cameraSettings);
@@ -473,8 +480,7 @@ class WorldSystem extends GUTS.BaseSystem {
      * @param {Object} gameConfig - Game configuration
      */
     async initTerrainTileMapper(levelName, terrainDataManager, gameConfig) {
-        const collections = this.game.getCollections();
-        const level = collections.levels?.[levelName];
+        const level = this.collections.levels?.[levelName];
         if (!level) {
             console.warn(`[WorldSystem] Level '${levelName}' not found for tile mapper`);
             return;

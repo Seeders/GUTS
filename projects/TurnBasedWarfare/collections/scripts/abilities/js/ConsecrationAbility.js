@@ -101,21 +101,22 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             scale: { x: 1, y: 1, z: 1 }
         });
 
+        const enums = this.game.getEnums();
         this.game.addComponent(consecrationId, "temporaryEffect", {
-            effectType: 'consecrated_ground',
-            data: {
-                caster: casterEntity,
-                radius: this.consecrationRadius,
-                tickInterval: this.tickInterval,
-                tickDamage: this.tickDamage,
-                tickHeal: this.tickHeal
-            },
+            effectType: enums.temporaryEffectType.consecrated_ground,
+            caster: casterEntity,
+            radius: this.consecrationRadius,
+            tickInterval: this.tickInterval,
+            tickDamage: this.tickDamage,
+            tickHeal: this.tickHeal,
             createdTime: this.game.state.now
         });
 
+        const objectTypeIndex = this.enums.objectTypeDefinitions?.effects ?? -1;
+        const spawnTypeIndex = this.enums.effects?.consecration ?? -1;
         this.game.addComponent(consecrationId, "renderable", {
-            objectType: "effects",
-            spawnType: "consecration",
+            objectType: objectTypeIndex,
+            spawnType: spawnTypeIndex,
             capacity: 128
         });
         
@@ -266,16 +267,17 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             const unitPos = transform?.position;
             const health = this.game.getComponent(unitId, "health");
             const team = this.game.getComponent(unitId, "team");
-            const unitType = this.game.getComponent(unitId, "unitType");
-            
+            const unitTypeComp = this.game.getComponent(unitId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+
             if (!unitPos || !health || !team || health.current <= 0) return;
-            
+
             // Check if unit is in consecration radius
             const distance = Math.sqrt(
-                Math.pow(unitPos.x - consecrationPos.x, 2) + 
+                Math.pow(unitPos.x - consecrationPos.x, 2) +
                 Math.pow(unitPos.z - consecrationPos.z, 2)
             );
-            
+
             if (distance <= this.consecrationRadius) {
                 // DESYNC SAFE: Determine if unit is undead/evil deterministically
                 const isUndead = this.isUndeadUnit(unitType);

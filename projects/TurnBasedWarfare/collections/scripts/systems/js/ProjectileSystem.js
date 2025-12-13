@@ -30,6 +30,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
 
     init() {
+        // Initialize enums
         this.game.register('deleteProjectileTrail', this.deleteProjectileTrail.bind(this));
         this.game.register('fireProjectile', this.fireProjectile.bind(this));
     }
@@ -79,7 +80,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
             });
 
         this.game.addComponent(projectileId, "velocity",
-            { vx: trajectory.vx, vy: trajectory.vy, vz: trajectory.vz, maxSpeed: projectileData.speed, affectedByGravity: projectileData.ballistic || false, anchored: false });
+            { vx: trajectory.vx, vy: trajectory.vy, vz: trajectory.vz, maxSpeed: projectileData.speed, affectedByGravity: projectileData.ballistic ? 1 : 0, anchored: 0 });
 
          // Enhanced projectile component with element
         this.game.addComponent(projectileId, "projectile", {
@@ -107,10 +108,12 @@ class ProjectileSystem extends GUTS.BaseSystem {
         });
 
         const sourceTeam = this.game.getComponent(sourceId, "team");
-
-        // Add UNIT_TYPE component for projectiles
-        this.game.addComponent(projectileId, "unitType",
-            {});
+   
+        // Add UNIT_TYPE component for projectiles (numeric indices)
+        this.game.addComponent(projectileId, "unitType", {
+            collection: this.enums.objectTypeDefinitions?.projectiles ?? -1,
+            type: this.enums.projectiles?.[projectileData.id] ?? -1
+        });
 
         // Add TEAM component (same team as source)
         if (sourceTeam) {
@@ -118,9 +121,11 @@ class ProjectileSystem extends GUTS.BaseSystem {
                 { team: sourceTeam.team });
         }
 
-        // Visual component
+        // Visual component - use numeric indices
+        const objectTypeIndex = this.enums.objectTypeDefinitions?.projectiles ?? -1;
+        const spawnTypeIndex = this.enums.projectiles?.[projectileData.id] ?? -1;
         this.game.addComponent(projectileId, "renderable",
-            { objectType: "projectiles", spawnType: projectileData.id });
+            { objectType: objectTypeIndex, spawnType: spawnTypeIndex });
         
         // Use LifetimeSystem instead of direct component
         if (!this.game.isServer) {
@@ -161,7 +166,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         
         // 1. Check projectile data for explicit element
         if (projectileData.element) {
-            return projectileData.element;
+            return this.enums.elements[projectileData.element];
         }
         
         // 2. Check combat component element
@@ -171,8 +176,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         }
         
         // 3. Default to physical
-        const elementTypes = this.game.call('getDamageElementTypes');
-        return elementTypes?.PHYSICAL || 'physical';
+        return this.enums.element.physical;
     }
 
     calculateTrajectory(sourcePos, targetPos, projectileData) {
@@ -269,7 +273,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
     
     update() {
-        if (this.game.state.phase !== 'battle') return;
+        if (this.game.state.phase !== this.enums.gamePhase.battle) return;
 
         const projectiles = this.game.getEntitiesWith(
             "transform",
@@ -292,10 +296,10 @@ class ProjectileSystem extends GUTS.BaseSystem {
                 return;
             }
 
-            // Update homing behavior
-            if (homing && homing.targetId && projectile.isBallistic) {
+            // Update homing behavior (targetId is -1 when no target)
+            if (homing && homing.targetId >= 0 && projectile.isBallistic) {
                 this.updateBallisticHoming(projectileId, pos, vel, projectile, homing);
-            } else if (homing && homing.targetId) {
+            } else if (homing && homing.targetId >= 0) {
                 this.updateHomingProjectile(projectileId, pos, vel, projectile, homing);
             }
 
@@ -422,7 +426,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
                 }
             }
         } else {
-            homing.targetId = null;
+            // Target is gone - set to -1 (invalid entity ID) not null
+            homing.targetId = -1;
         }
     }
     
@@ -474,7 +479,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Check collision in sorted order - hit closest entity first
         for (const { entityId, entityPos, distance } of entitiesWithDistance) {
             // Get entity radius for collision detection
-            const entityUnitType = this.game.getComponent(entityId, "unitType");
+            const entityUnitTypeComp = this.game.getComponent(entityId, "unitType");
+            const entityUnitType = this.game.call('getUnitTypeDef', entityUnitTypeComp);
             const entityRadius = this.getUnitRadius(entityUnitType);
 
             // Check collision for direct hit
@@ -504,8 +510,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
     handleProjectileHit(projectileId, targetId, targetPos, projectile) {
         const damage = projectile.damage;
-        const elementTypes = this.game.call('getDamageElementTypes');
-        const element = projectile.element || elementTypes.PHYSICAL;
+        const element = this.enums.element[projectile.element] || this.enums.element.physical;
 
         // Apply damage on both client and server for sync
         this.game.call('applyDamage', projectile.source, targetId, damage, element, {
@@ -543,8 +548,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         const splashRadius = projectile.splashRadius || 80;
         const splashDamage = Math.floor(projectile.damage);
-        const elementTypes = this.game.call('getDamageElementTypes');
-        const element = projectile.element || elementTypes.PHYSICAL;
+        const element = this.enums.elements[projectile.element] || this.enums.element.physical;
 
         // Apply splash damage on both client and server for sync
         this.game.call('applySplashDamage',
@@ -580,7 +584,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
             vel.vx = 0;
             vel.vy = 0;
             vel.vz = 0;
-            vel.affectedByGravity = false;
+            vel.affectedByGravity = 0;
         }
 
         // Position the arrow at ground level, partially embedded
@@ -629,7 +633,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
             const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
 
             // Get entity radius for collision detection
-            const entityUnitType = this.game.getComponent(entityId, 'unitType');
+            const entityUnitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const entityUnitType = this.game.call('getUnitTypeDef', entityUnitTypeComp);
             const entityRadius = this.getUnitRadius(entityUnitType);
 
             // Check if arrow landed within unit's radius
@@ -651,20 +656,19 @@ class ProjectileSystem extends GUTS.BaseSystem {
     getElementalEffectColor(element) {
         if (this.game.isServer) return '#ff2200'; // blood-red
 
-        const elementTypes = this.game.call('getDamageElementTypes');
-
+ 
         switch (element) {
-            case elementTypes.FIRE:
+            case this.enums.element.fire:
                 return '#ffaa00'; // Default orange
-            case elementTypes.COLD:
+            case this.enums.element.cold:
                 return '#44aaff'; // Light blue
-            case elementTypes.LIGHTNING:
+            case this.enums.element.lightning:
                 return '#ffff44'; // Bright yellow
-            case elementTypes.POISON:
+            case this.enums.element.poison:
                 return '#44ff44'; // Green
-            case elementTypes.DIVINE:
+            case this.enums.element.divine:
                 return '#ffddaa'; // Golden
-            case elementTypes.PHYSICAL:
+            case this.enums.element.physical:
             default:
                 return '#ff2200'; // Default orange
         }
@@ -674,20 +678,19 @@ class ProjectileSystem extends GUTS.BaseSystem {
     getElementalExplosionEffect(element) {
         if (this.game.isServer) return 'explosion';
 
-        const elementTypes = this.game.call('getDamageElementTypes');
-
+  
         switch (element) {
-            case elementTypes.FIRE:
+            case this.enums.element.fire:
                 return 'fire_explosion';
-            case elementTypes.COLD:
+            case this.enums.element.cold:
                 return 'ice_explosion';
-            case elementTypes.LIGHTNING:
+            case this.enums.element.lightning:
                 return 'lightning_explosion';
-            case elementTypes.POISON:
+            case this.enums.element.poison:
                 return 'poison_explosion';
-            case elementTypes.DIVINE:
+            case this.enums.element.divine:
                 return 'divine_explosion';
-            case elementTypes.PHYSICAL:
+            case this.enums.element.physical:
             default:
                 return 'explosion';
         }
@@ -720,19 +723,11 @@ class ProjectileSystem extends GUTS.BaseSystem {
     
     getUnitRadius(unitType) {
         const DEFAULT_UNIT_RADIUS = 15;
-        
+
         if (unitType && unitType.size) {
             return Math.max(DEFAULT_UNIT_RADIUS, unitType.size);
         }
-        
-        const collections = this.game.getCollections && this.game.getCollections();
-        if (collections && collections.units && unitType) {
-            const unitDef = collections.units[unitType.id];
-            if (unitDef && unitDef.size) {
-                return Math.max(DEFAULT_UNIT_RADIUS, unitDef.size);
-            }
-        }
-        
+
         return DEFAULT_UNIT_RADIUS;
     }
     
@@ -759,7 +754,5 @@ class ProjectileSystem extends GUTS.BaseSystem {
         if (this.activeProjectiles) {
             this.activeProjectiles.clear();
         }
-
-        console.log('[ProjectileSystem] Scene unloaded - resources cleaned up');
     }
 }

@@ -141,7 +141,7 @@ class ChargeAbility extends GUTS.BaseAbility {
             chargeStartTime: this.game.state.now,
             chargeDistance: 0,
             maxChargeDistance: distance,
-            isCharging: true
+            isCharging: 1
         });
         
         // Set velocity for charge
@@ -339,23 +339,19 @@ class ChargeAbility extends GUTS.BaseAbility {
             }
 
             // Deal damage
-            this.dealDamageWithEffects(casterEntity, targetId, this.chargeDamage, 'physical', {
+            this.dealDamageWithEffects(casterEntity, targetId, this.chargeDamage, this.enums.element.physical, {
                 isCharge: true,
                 knockback: true
             });
 
             // DESYNC SAFE: Apply stun using buff system
+            const enums = this.game.getEnums();
             this.game.addComponent(targetId, "buff", {
-                buffType: 'stunned',
-                modifiers: {
-                    movementDisabled: true,
-                    attackDisabled: true
-                },
+                buffType: enums.buffTypes.stunned,
                 endTime: this.game.state.now + this.stunDuration,
-                stackable: false,
-                stacks: 1,
                 appliedTime: this.game.state.now,
-                isActive: true
+                stacks: 1,
+                sourceEntity: casterEntity
             });
 
             // DESYNC SAFE: Schedule stun removal
@@ -373,9 +369,10 @@ class ChargeAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Remove stun effect
     removeStun(targetId) {
         // Check if target still exists and has the stun buff
+        const enums = this.game.getEnums();
         if (this.game.hasComponent(targetId, "buff")) {
             const buff = this.game.getComponent(targetId, "buff");
-            if (buff && buff.buffType === 'stunned') {
+            if (buff && buff.buffType === enums.buffTypes.stunned) {
                 this.game.removeComponent(targetId, "buff");
 
                 // Visual effect when stun expires

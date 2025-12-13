@@ -14,6 +14,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
         this.game.register('isMineOccupied', this.isMineOccupied.bind(this));
         this.game.register('isNextInMinerQueue', this.isNextInQueue.bind(this));
         this.game.register('addMinerToQueue', this.addMinerToQueue.bind(this));
+        this.game.register('getMinerQueuePosition', this.getQueuePosition.bind(this));
     }
 
     /**
@@ -29,7 +30,8 @@ class GoldMineSystem extends GUTS.BaseSystem {
         const goldMineEntities = this.game.getEntitiesWith('goldMine');
         for (const mineId of goldMineEntities) {
             const goldMine = this.game.getComponent(mineId, 'goldMine');
-            if (goldMine?.veinEntityId) {
+            // veinEntityId is -1 when no vein, >= 0 when valid
+            if (goldMine?.veinEntityId >= 0) {
                 claimedVeinEntityIds.add(goldMine.veinEntityId);
             }
         }
@@ -39,14 +41,16 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
         for (const entityId of sortedEntities) {
             const worldObj = this.game.getComponent(entityId, 'worldObject');
-            if (worldObj?.type !== 'goldVein') continue;
+            const goldVeinTypeIndex = this.enums.worldObjects?.goldVein ?? -1;
+            if (worldObj?.type !== goldVeinTypeIndex) continue;
 
             const transform = this.game.getComponent(entityId, 'transform');
             const pos = transform?.position;
             if (!pos) continue;
 
             const gridPos = this.game.call('worldToPlacementGrid', pos.x, pos.z);
-            const unitType = this.game.getComponent(entityId, 'unitType');
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             const gridWidth = (unitType?.placementGridWidth || 2) * 2;
             const gridHeight = (unitType?.placementGridHeight || 2) * 2;
 
@@ -140,11 +144,12 @@ class GoldMineSystem extends GUTS.BaseSystem {
         }
 
         // Add goldMine component to the entity with reference to the vein entity
+        // Note: minerQueue is a $fixedArray in the schema, so we don't pass it here
+        // The TypedArray system will initialize it from the schema defaults (-1 for all slots)
         this.game.addComponent(entityId, "goldMine", {
             veinEntityId: veinEntityId,
-            currentMiner: null,
-            minerQueue: [],
-            cells: veinCells
+            currentMiner: -1
+            // minerQueue is initialized by the schema's $fixedArray definition
         });
 
         return { success: true };
@@ -165,7 +170,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
                 miningState.targetMineEntityId = null;
                 miningState.targetMinePosition = null;
                 miningState.waitingPosition = null;
-                miningState.state = 'idle';
+                miningState.state = this.enums.miningState.idle;
             }
         }
 
@@ -178,8 +183,9 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     // Check if a mine is currently occupied by looking at component states
     isMineOccupied(mineEntityId) {
-        const goldMine = this.game.getComponent(mineEntityId, "goldMine");                    
-        if (goldMine && goldMine.currentMiner) {
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");
+        // currentMiner is -1 when empty, >= 0 when occupied
+        if (goldMine && goldMine.currentMiner >= 0) {
             return true;
         }
         return false;
@@ -191,9 +197,9 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
         for (const minerEntityId of miners) {
             const miningState = this.game.getComponent(minerEntityId, "miningState");
-            if (miningState && 
-                miningState.targetMineEntityId === mineEntityId && 
-                miningState.state === 'mining') {
+            if (miningState &&
+                miningState.targetMineEntityId === mineEntityId &&
+                miningState.state === this.enums.miningState.mining) {
                 return minerEntityId;
             }
         }
@@ -201,49 +207,106 @@ class GoldMineSystem extends GUTS.BaseSystem {
         return null;
     }
 
-    // Get all miners in queue (waiting_at_mine state) for a specific mine
-    getMinersInQueue(mineEntityId) {
-        const goldMine = this.game.getComponent(mineEntityId, "goldMine");              
-        return goldMine.minerQueue;
-    }
+    // Fixed array size for minerQueue
+    static MINER_QUEUE_SIZE = 8;
 
-    // Get queue position for a specific miner
+    // Get queue position for a specific miner (-1 if not found)
     getQueuePosition(mineEntityId, minerEntityId) {
-        const queue = this.getMinersInQueue(mineEntityId);
-        return queue.indexOf(minerEntityId);
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");
+        if (!goldMine) return -1;
+        for (let i = 0; i < GoldMineSystem.MINER_QUEUE_SIZE; i++) {
+            if (goldMine.minerQueue[i] === minerEntityId) {
+                return i;
+            }
+        }
+        return -1;
     }
 
-    onIssuedPlayerOrders(entityId){
+    // Remove a miner from all mine queues when they receive new orders
+    onIssuedPlayerOrders(entityId) {
         const goldMines = this.game.getEntitiesWith('goldMine');
         goldMines.forEach((mineId) => {
-            const goldMine = this.game.getComponent(mineId, 'goldMine');
-            const index = goldMine.minerQueue.indexOf(entityId);
-            if(index != -1) {
-                goldMine.minerQueue.splice(index, 1);
-            }
+            this.removeMinerFromQueue(mineId, entityId);
         });
     }
 
-    addMinerToQueue(mineEntityId, minerEntityId){
+    // Remove a specific miner from a mine's queue
+    removeMinerFromQueue(mineEntityId, minerEntityId) {
         const goldMine = this.game.getComponent(mineEntityId, "goldMine");
-        goldMine.minerQueue.push(minerEntityId);
+        if (!goldMine) return;
+
+        // Find and remove the miner, shifting remaining entries left
+        let foundIndex = -1;
+        for (let i = 0; i < GoldMineSystem.MINER_QUEUE_SIZE; i++) {
+            if (goldMine.minerQueue[i] === minerEntityId) {
+                foundIndex = i;
+                break;
+            }
+        }
+
+        if (foundIndex !== -1) {
+            // Shift all entries after foundIndex left by one
+            for (let i = foundIndex; i < GoldMineSystem.MINER_QUEUE_SIZE - 1; i++) {
+                goldMine.minerQueue[i] = goldMine.minerQueue[i + 1];
+            }
+            // Clear the last slot
+            goldMine.minerQueue[GoldMineSystem.MINER_QUEUE_SIZE - 1] = -1;
+        }
     }
 
-    // Check if a miner is next in queue
+    // Add a miner to the end of the queue
+    addMinerToQueue(mineEntityId, minerEntityId) {
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");
+        if (!goldMine) return false;
+
+        // Find first empty slot (-1 means empty)
+        for (let i = 0; i < GoldMineSystem.MINER_QUEUE_SIZE; i++) {
+            if (goldMine.minerQueue[i] === -1) {
+                goldMine.minerQueue[i] = minerEntityId;
+                return true;
+            }
+        }
+        return false; // Queue full
+    }
+
+    // Check if a miner is next in queue (first valid entry)
     isNextInQueue(mineEntityId, minerEntityId) {
-        const queue = this.getMinersInQueue(mineEntityId);
-        return queue.length > 0 && queue[0] === minerEntityId;
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");
+        if (!goldMine) return false;
+        return goldMine.minerQueue[0] === minerEntityId;
+    }
+
+    // Get count of miners in queue
+    getQueueCount(mineEntityId) {
+        const goldMine = this.game.getComponent(mineEntityId, "goldMine");
+        if (!goldMine) return 0;
+        let count = 0;
+        for (let i = 0; i < GoldMineSystem.MINER_QUEUE_SIZE; i++) {
+            if (goldMine.minerQueue[i] !== -1) count++;
+        }
+        return count;
     }
 
     // Process next miner in queue when mine becomes available
     processNextMinerInQueue(mineEntityId) {
         const goldMine = this.game.getComponent(mineEntityId, "goldMine");
-        goldMine.currentMiner = null;
-        if (goldMine.minerQueue.length === 0) {
+        if (!goldMine) return;
+        goldMine.currentMiner = -1;
+
+        // Check if queue is empty
+        if (goldMine.minerQueue[0] === -1) {
             return;
         }
 
-        let nextMiner = goldMine.minerQueue.shift();
+        // Get next miner (shift operation)
+        const nextMiner = goldMine.minerQueue[0];
+
+        // Shift all entries left
+        for (let i = 0; i < GoldMineSystem.MINER_QUEUE_SIZE - 1; i++) {
+            goldMine.minerQueue[i] = goldMine.minerQueue[i + 1];
+        }
+        goldMine.minerQueue[GoldMineSystem.MINER_QUEUE_SIZE - 1] = -1;
+
         goldMine.currentMiner = nextMiner;
 
 
@@ -261,8 +324,9 @@ class GoldMineSystem extends GUTS.BaseSystem {
     }
 
     onDestroyBuilding(entityId){
-        const unitType = this.game.getComponent(entityId, "unitType");
-        if (unitType.id === 'goldMine') {
+        const unitTypeComp = this.game.getComponent(entityId, "unitType");
+        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        if (unitType?.id === 'goldMine') {
             this.game.goldMineSystem.destroyGoldMine(entityId);
         }
     }

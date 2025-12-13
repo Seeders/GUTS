@@ -195,11 +195,15 @@ class DamageNumberSystem extends GUTS.BaseSystem {
         };
     }
     
-    showDamageNumber(x, y, z, damage, type = 'physical') {
+    showDamageNumber(x, y, z, damage, type = null) {
+        // Default to physical element
+        if (type === null) {
+            type = this.enums.element.physical;
+        }
         console.log('showing damage number', x, y, z, damage, type);
         // Get or create damage number object
         let damageObj = this.damageNumberPool.pop();
-        
+
         if (!damageObj) {
             damageObj = {
                 charStartIndex: 0, // Index in instance buffer where this number's chars start
@@ -212,7 +216,7 @@ class DamageNumberSystem extends GUTS.BaseSystem {
                 text: ''
             };
         }
-        
+
         // Setup damage number
         damageObj.text = Math.abs(Math.round(damage)).toString();
         damageObj.charCount = damageObj.text.length;
@@ -223,33 +227,11 @@ class DamageNumberSystem extends GUTS.BaseSystem {
             this.VERTICAL_SPEED, // Initial upward velocity
             0
         );
-        
-        // Set color based on type
-        switch (type) {
-            case 'heal':
-                damageObj.color.setHex(0x00ff88);
-                break;
-            case 'critical':
-                damageObj.color.setHex(0xff0044);
-                damageObj.velocity.y = 12;
-                break;
-            case 'poison':
-                damageObj.color.setHex(0x8a2be2);
-                break;
-            case 'fire':
-                damageObj.color.setHex(0xff4400);
-                break;
-            case 'cold':
-                damageObj.color.setHex(0x00bfff);
-                break;
-            case 'lightning':
-                damageObj.color.setHex(0xffff00);
-                break;
-            case 'divine':
-                damageObj.color.setHex(0xffd700);
-                break;
-            default:
-                damageObj.color.setHex(0xffffff);
+
+        // Set color based on element type (numeric enum)
+        damageObj.color.setHex(this.getDamageColor(type));
+        if (type === 'critical') {
+            damageObj.velocity.y = 12;
         }
         
         // Allocate character instances
@@ -500,16 +482,19 @@ class DamageNumberSystem extends GUTS.BaseSystem {
     }
         
     getDamageColor(type) {
-        switch (type) {
-            case 'heal': return 0x00ff88;
-            case 'critical': return 0xff0044;
-            case 'poison': return 0x8a2be2;
-            case 'fire': return 0xff4400;
-            case 'cold': return 0x00bfff;
-            case 'lightning': return 0xffff00;
-            case 'divine': return 0xffd700;
-            default: return 0xff4444;
-        }
+        // Handle string types for special cases (heal, critical)
+        if (type === 'heal') return 0x00ff88;
+        if (type === 'critical') return 0xff0044;
+
+        // Handle numeric element enum values
+        if (type === this.enums.element.poison) return 0x8a2be2;
+        if (type === this.enums.element.fire) return 0xff4400;
+        if (type === this.enums.element.cold) return 0x00bfff;
+        if (type === this.enums.element.lightning) return 0xffff00;
+        if (type === this.enums.element.holy) return 0xffd700;
+        if (type === this.enums.element.shadow) return 0x4b0082;
+        // Physical and default
+        return 0xff4444;
     }
         
     // Main update method called by game loop

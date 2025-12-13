@@ -46,7 +46,8 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const nearbyEntityIds = game.call('getNearbyUnits', pos, range, entityId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
-        const unitType = game.getComponent(entityId, 'unitType');
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitType = game.call('getUnitTypeDef', unitTypeComp);
         const hasLOSCheck = game.hasService('hasLineOfSight');
 
         // First pass: collect valid enemies with their positions and directions
@@ -59,7 +60,8 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             if (!targetHealth || targetHealth.current <= 0) continue;
 
             const targetDeathState = game.getComponent(targetId, 'deathState');
-            if (targetDeathState && targetDeathState.isDying) continue;
+            // deathState.state: 0=alive, 1=dying, 2=corpse
+            if (targetDeathState && targetDeathState.state > 0) continue;
 
             const targetTransform = game.getComponent(targetId, 'transform');
             const targetPos = targetTransform?.position;

@@ -5,6 +5,7 @@ class DeathSystem extends GUTS.BaseSystem {
     }
 
     init() {
+        // Initialize enums
         this.game.register("startDeathProcess", this.startDeathProcess.bind(this));
     }
 
@@ -16,15 +17,18 @@ class DeathSystem extends GUTS.BaseSystem {
         dyingEntities.sort((a, b) => a - b);
         dyingEntities.forEach(entityId => {
             const deathState = this.game.getComponent(entityId, "deathState");
-            const unitType = this.game.getComponent(entityId, "unitType");
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
 
-            if (deathState.isDying) {
+            if (deathState.state === this.enums.deathState.dying) {
                 const timeSinceDeath = this.game.state.now - deathState.deathStartTime;
 
                 const timerExpired = timeSinceDeath >= deathState.deathAnimationDuration * 0.975;
-                
+
                 if (timerExpired) {
-                    if(unitType && unitType.collection == "buildings"){
+                    // Check if entity is a building using numeric unitType.collection index
+                    const isBuilding = unitTypeComp && unitTypeComp.collection === this.enums.objectTypeDefinitions.buildings;
+                    if (isBuilding) {
                         this.destroyBuilding(entityId);
                     } else {
                         this.convertToCorpse(entityId);
@@ -35,11 +39,8 @@ class DeathSystem extends GUTS.BaseSystem {
     }
 
     startDeathProcess(entityId){
-        console.log(entityId, "DIED");
-
         this.game.addComponent(entityId, 'deathState', {
-            isDying: true,
-            state: 'dying',
+            state: this.enums.deathState.dying,
             deathStartTime: this.game.state.now
         });
 
@@ -84,7 +85,7 @@ class DeathSystem extends GUTS.BaseSystem {
         // Update death state to corpse - keep the component to prevent revival
         const deathState = this.game.getComponent(entityId, "deathState");
         if (deathState) {
-            deathState.state = 'corpse';
+            deathState.state = this.enums.deathState.corpse;
             deathState.corpseTime = this.game.state.now || 0;
             deathState.teamAtDeath = team.team;
         }
@@ -105,7 +106,7 @@ class DeathSystem extends GUTS.BaseSystem {
             const deathState = this.game.getComponent(corpseId, "deathState");
 
             // Only include actual corpses, not dying entities
-            if (!deathState || deathState.state !== 'corpse') return;
+            if (!deathState || deathState.state !== this.enums.deathState.corpse) return;
 
             const transform = this.game.getComponent(corpseId, "transform");
             const corpsePos = transform?.position;
@@ -141,7 +142,7 @@ class DeathSystem extends GUTS.BaseSystem {
     consumeCorpse(corpseId) {
         // Remove corpse from battlefield (for abilities that consume corpses)
         const deathState = this.game.getComponent(corpseId, "deathState");
-        if (!deathState || deathState.state !== 'corpse') return null;
+        if (!deathState || deathState.state !== this.enums.deathState.corpse) return null;
 
         const unitType = this.game.getComponent(corpseId, "unitType");
         if (!unitType) return null;
@@ -163,7 +164,7 @@ class DeathSystem extends GUTS.BaseSystem {
         const allDeathStates = this.game.getEntitiesWith("deathState");
         return allDeathStates.filter(entityId => {
             const deathState = this.game.getComponent(entityId, "deathState");
-            return deathState && deathState.state === 'corpse';
+            return deathState && deathState.state === this.enums.deathState.corpse;
         });
     }
 
@@ -181,6 +182,5 @@ class DeathSystem extends GUTS.BaseSystem {
         allCorpses.forEach(corpseId => {
             this.game.destroyEntity(corpseId);
         });
-        console.log(`Cleaned up ${allCorpses.length} corpses at end of battle`);
     }
 }

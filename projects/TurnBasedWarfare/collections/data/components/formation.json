@@ -1,12 +1,15 @@
 {
   "title": "formation",
   "schema": {
-    "formationType": "none",
+    "formationType": 0,
     "formationSize": 1,
-    "formationLeader": null,
-    "formationMembers": [],
-    "formationBonuses": {},
-    "isActive": false,
+    "formationLeader": -1,
+    "formationMembers": {
+      "$bitmask": {
+        "size": 64
+      }
+    },
+    "isActive": 0,
     "createdTime": 0
   }
 }

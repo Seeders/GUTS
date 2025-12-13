@@ -1,13 +1,13 @@
 {
   "title": "statusEffect",
   "schema": {
-    "effectType": "buff",
-    "element": null,
+    "effectType": 0,
+    "element": -1,
     "duration": 0,
     "startTime": 0,
-    "sourceId": null,
+    "sourceId": -1,
     "stacks": 1,
     "maxStacks": 1,
-    "poison": []
+    "poison": -1
   }
 }

@@ -41,7 +41,7 @@ class EquipmentSystem extends GUTS.BaseSystem {
 
     getItemData(itemId) {
         if (!itemId) return null;
-        const collections = this.game.getCollections();
+        const collections = this.collections;
         return collections.items?.[itemId] || null;
     }
 

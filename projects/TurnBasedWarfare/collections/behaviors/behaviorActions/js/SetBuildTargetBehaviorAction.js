@@ -1,7 +1,7 @@
 /**
- * SetBuildTargetBehaviorAction - Gets building info from playerOrder and stores in shared state
+ * SetBuildTargetBehaviorAction - Gets building info from buildingState and stores in shared state
  *
- * Reads playerOrder.meta.buildingId and stores:
+ * Reads buildingState.targetBuildingEntityId and stores:
  * - shared.targetBuilding - Building entity ID
  * - shared.targetPosition - Building position (for MoveToSharedTargetBehaviorAction)
  * - shared.buildTime - Construction time required
@@ -11,13 +11,13 @@
 class SetBuildTargetBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
-        const playerOrder = game.getComponent(entityId, 'playerOrder');
+        const buildingState = game.getComponent(entityId, 'buildingState');
 
-        if (!playerOrder || !playerOrder.meta || !playerOrder.meta.buildingId) {
+        if (!buildingState || buildingState.targetBuildingEntityId === -1) {
             return this.failure();
         }
 
-        const buildingId = playerOrder.meta.buildingId;
+        const buildingId = buildingState.targetBuildingEntityId;
         const buildingTransform = game.getComponent(buildingId, 'transform');
         const buildingPos = buildingTransform?.position;
         const buildingPlacement = game.getComponent(buildingId, 'placement');
@@ -30,7 +30,7 @@ class SetBuildTargetBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         shared.targetBuilding = buildingId;
         shared.targetPosition = { x: buildingPos.x, z: buildingPos.z };
-        shared.buildTime = buildingPlacement.buildTime || this.parameters.defaultBuildTime || 5;
+        shared.buildTime = buildingState.buildTime || buildingPlacement.buildTime || this.parameters.defaultBuildTime || 5;
 
         return this.success();
     }

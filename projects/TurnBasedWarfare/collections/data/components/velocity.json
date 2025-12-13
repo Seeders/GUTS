@@ -5,7 +5,7 @@
     "vy": 0,
     "vz": 0,
     "maxSpeed": 100,
-    "affectedByGravity": true,
-    "anchored": false
+    "affectedByGravity": 1,
+    "anchored": 0
   }
 }

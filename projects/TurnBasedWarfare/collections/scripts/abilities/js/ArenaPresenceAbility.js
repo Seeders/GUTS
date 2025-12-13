@@ -146,11 +146,12 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
         }
         
         // Check if already intimidated - don't stack multiple intimidations
+        const enums = this.game.getEnums();
         const existingBuff = this.game.getComponent(enemyId, "buff");
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.intimidationDuration;
-        
-        if (existingBuff && existingBuff.buffType === 'intimidated') {
+
+        if (existingBuff && existingBuff.buffType === enums.buffTypes.intimidated) {
             // Refresh duration instead of stacking
             existingBuff.endTime = endTime;
             existingBuff.appliedTime = currentTime;
@@ -162,21 +163,13 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
             // Apply new intimidation buff
             const Components = this.game.call('getComponents');
 
-            this.game.addComponent(enemyId, "buff", 
-                Components.Buff(
-                    'intimidated', 
-                    { 
-                        damageReduction: this.damageReduction,
-                        accuracyReduction: this.accuracyReduction,
-                        intimidatedBy: casterEntity,
-                        fearLevel: 1
-                    }, 
-                    endTime,      // End time
-                    false,        // Not stackable
-                    1,            // Single stack
-                    currentTime   // Applied time
-                )
-            );
+            this.game.addComponent(enemyId, "buff", {
+                buffType: enums.buffTypes.intimidated,
+                endTime: endTime,
+                appliedTime: currentTime,
+                stacks: 1,
+                sourceEntity: casterEntity
+            });
             
        
             
@@ -207,9 +200,10 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
     
     // Helper method to get current intimidation status
     getIntimidationStatus(enemyId) {
+        const enums = this.game.getEnums();
         const buff = this.game.getComponent(enemyId, "buff");
-        
-        if (!buff || buff.buffType !== 'intimidated') {
+
+        if (!buff || buff.buffType !== enums.buffTypes.intimidated) {
             return { isIntimidated: false };
         }
         
@@ -219,9 +213,9 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
         return {
             isIntimidated: true,
             timeRemaining: timeRemaining,
-            damageReduction: buff.modifiers?.damageReduction || this.damageReduction,
-            accuracyReduction: buff.modifiers?.accuracyReduction || this.accuracyReduction,
-            intimidatedBy: buff.modifiers?.intimidatedBy
+            damageReduction: buff.damageReduction || this.damageReduction,
+            accuracyReduction: buff.accuracyReduction || this.accuracyReduction,
+            intimidatedBy: buff.intimidatedBy
         };
     }
 }

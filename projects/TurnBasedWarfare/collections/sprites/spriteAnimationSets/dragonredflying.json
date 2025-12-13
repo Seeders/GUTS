@@ -72,6 +72,17 @@
     "dragonredflyingCelebrateRight",
     "dragonredflyingCelebrateDownRight"
   ],
-  "generatorSettings": {"frustumSize":1024,"cameraDistance":350,"spriteSize":256,"fps":4,"brightness":8,"palette":"main","borderSize":1,"outlineColor":"#170F13","outlineConnectivity":4,"cameraHeight":1},
+  "generatorSettings": {
+    "frustumSize": 1024,
+    "cameraDistance": 350,
+    "spriteSize": 256,
+    "fps": 4,
+    "brightness": 8,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1
+  },
   "spriteOffset": 128
 }

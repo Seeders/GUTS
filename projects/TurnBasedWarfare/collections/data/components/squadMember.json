@@ -1,13 +1,10 @@
 {
   "title": "squadMember",
   "schema": {
-    "squadId": null,
-    "squadRole": "member",
-    "squadPosition": {
-      "x": 0,
-      "z": 0
-    },
-    "squadBonuses": {},
+    "squadId": -1,
+    "squadRole": 0,
+    "squadPositionX": 0,
+    "squadPositionZ": 0,
     "joinedTime": 0
   }
 }

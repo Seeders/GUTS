@@ -41,7 +41,8 @@ class FindNearestDepotBehaviorAction extends GUTS.BaseBehaviorAction {
         // Find nearest depot belonging to our team
         for (const depotId of depotEntities) {
             const depotTeam = game.getComponent(depotId, 'team');
-            const depotUnitType = game.getComponent(depotId, 'unitType');
+            const depotUnitTypeComp = game.getComponent(depotId, 'unitType');
+            const depotUnitType = game.call('getUnitTypeDef', depotUnitTypeComp);
             const depotTransform = game.getComponent(depotId, 'transform');
             const depotPos = depotTransform?.position;
 

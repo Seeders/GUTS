@@ -6,17 +6,21 @@ class GameLoader extends GUTS.BaseLoader {
        // this.collections.configs.game.canvasHeight = window.outerHeight;
         this.game.palette = this.collections.palettes && this.collections.configs.game.palette ? this.collections.palettes[this.collections.configs.game.palette] : null;
         this.isometric = this.collections.configs.game.isIsometric;
-        this.game.state.tileMapData = this.collections.levels[this.game.state.level].tileMap;
+        const levelIndex = this.game.state.level;
+        const reverseEnums = this.game.getReverseEnums();
+        const levelKey = reverseEnums.levels[levelIndex];
+        const level = this.collections.levels[levelKey];
+        this.game.state.tileMapData = level?.tileMap;
         this.game.state.isometric = this.collections.configs.game.isIsometric;
         if (this.game.state.modifierSet && this.collections.modifierSets) {
             this.game.state.stats = this.collections.modifierSets[this.game.state.modifierSet];
             this.game.state.defaultStats = { ...this.game.state.stats };
-        }   
+        }
 
         this.setupCanvas(this.collections.configs.game.canvasWidth, this.collections.configs.game.canvasHeight);
-        await this.loadAssets();  
-        const terrainImages = this.game.imageManager.getImages("levels", this.game.state.level);
-        const terrainTypeNames = this.collections.levels[this.game.state.level].tileMap.terrainTypes || [];
+        await this.loadAssets();
+        const terrainImages = this.game.imageManager.getImages("levels", levelKey);
+        const terrainTypeNames = level?.tileMap?.terrainTypes || [];
 
         this.game.terrainTileMapper = new GUTS.TileMap({});
 
@@ -40,8 +44,11 @@ class GameLoader extends GUTS.BaseLoader {
         this.canvas.setAttribute('height', canvasHeight);  
         
         this.terrainCanvasBuffer = document.createElement('canvas');
-        this.terrainCanvasBuffer.width = this.collections.configs.game.gridSize * this.collections.levels[this.game.state.level].tileMap.terrainMap[0].length;
-        this.terrainCanvasBuffer.height = this.collections.configs.game.gridSize * this.collections.levels[this.game.state.level].tileMap.terrainMap.length;
+        const reverseEnums = this.game.getReverseEnums();
+        const levelKey = reverseEnums.levels[this.game.state.level];
+        const level = this.collections.levels[levelKey];
+        this.terrainCanvasBuffer.width = this.collections.configs.game.gridSize * (level?.tileMap?.terrainMap?.[0]?.length || 32);
+        this.terrainCanvasBuffer.height = this.collections.configs.game.gridSize * (level?.tileMap?.terrainMap?.length || 32);
 
         this.game.canvas = this.canvas;
         this.game.finalCtx = this.finalCtx;

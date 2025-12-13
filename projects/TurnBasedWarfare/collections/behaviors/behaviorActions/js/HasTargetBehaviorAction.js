@@ -18,7 +18,8 @@ class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const targetId = shared[targetKey];
 
-        if (!targetId) {
+        // targetId is null/undefined when not set, or could be 0 (valid entity ID)
+        if (targetId === undefined || targetId === null || targetId < 0) {
             return this.failure();
         }
 
@@ -32,7 +33,8 @@ class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
             }
 
             const targetDeathState = game.getComponent(targetId, 'deathState');
-            if (targetDeathState && targetDeathState.isDying) {
+            const enums = game.call('getEnums');
+            if (targetDeathState && targetDeathState.state !== enums?.deathState?.alive) {
                 shared[targetKey] = null;
                 return this.failure();
             }

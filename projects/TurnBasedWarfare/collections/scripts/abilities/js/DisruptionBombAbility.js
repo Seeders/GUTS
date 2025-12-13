@@ -125,26 +125,21 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
             
             if (distance <= this.explosionRadius) {
                 // DESYNC SAFE: Check if already disrupted - don't stack disruptions
+                const enums = this.game.getEnums();
                 const existingBuff = this.game.getComponent(enemyId, buff);
-                
-                if (existingBuff && existingBuff.buffType === 'disrupted') {
+
+                if (existingBuff && existingBuff.buffType === enums.buffTypes.disrupted) {
                     // DESYNC SAFE: Just refresh duration instead of stacking
                     existingBuff.endTime = this.game.state.now + this.disruptionDuration;
                     existingBuff.appliedTime = this.game.state.now;
                 } else {
                     // Apply new disruption buff
                     this.game.addComponent(enemyId, "buff", {
-                        buffType: 'disrupted',
-                        modifiers: {
-                            abilitiesDisabled: true,
-                            accuracyReduction: this.accuracyReduction,
-                            movementSlowed: this.movementSlowed
-                        },
+                        buffType: enums.buffTypes.disrupted,
                         endTime: this.game.state.now + this.disruptionDuration,
-                        stackable: false,
-                        stacks: 1,
                         appliedTime: this.game.state.now,
-                        isActive: true
+                        stacks: 1,
+                        sourceEntity: casterEntity
                     });
 
                     // DESYNC SAFE: Schedule disruption removal
@@ -205,9 +200,10 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Remove disruption effect
     removeDisruption(enemyId) {
         // Check if enemy still exists and has the disruption buff
+        const enums = this.game.getEnums();
         if (this.game.hasComponent(enemyId, "buff")) {
             const buff = this.game.getComponent(enemyId, "buff");
-            if (buff && buff.buffType === 'disrupted') {
+            if (buff && buff.buffType === enums.buffTypes.disrupted) {
                 this.game.removeComponent(enemyId, "buff");
                 
                 // Visual effect when disruption expires

@@ -1,0 +1,13 @@
+{
+  "title": "Bone",
+  "enum": [
+    "Hand_R",
+    "Hand_L",
+    "Head",
+    "Spine",
+    "Hips",
+    "Foot_R",
+    "Foot_L",
+    "Back"
+  ]
+}

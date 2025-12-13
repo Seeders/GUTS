@@ -1,8 +1,16 @@
 {
   "title": "abilityCooldowns",
+  "enum": [
+    "abilities"
+  ],
   "schema": {
-    "cooldowns": {},
-    "lastAbilityUsed": null,
+    "cooldowns": {
+      "$fixedArray": {
+        "sizeFrom": "abilities",
+        "default": 0
+      }
+    },
+    "lastAbilityUsed": -1,
     "lastAbilityTime": 0
   }
 }

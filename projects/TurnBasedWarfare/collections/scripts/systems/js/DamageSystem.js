@@ -2,16 +2,6 @@ class DamageSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.damageSystem = this;
-        
-        // Element types
-        this.ELEMENT_TYPES = {
-            PHYSICAL: 'physical',
-            FIRE: 'fire',
-            COLD: 'cold',
-            LIGHTNING: 'lightning',
-            POISON: 'poison',
-            DIVINE: 'divine'
-        };
 
         // Poison DoT configuration
         this.POISON_CONFIG = {
@@ -33,16 +23,32 @@ class DamageSystem extends GUTS.BaseSystem {
     }
 
     init() {
+        // Initialize enums
+
+
+        // Cache buffTypes collection for modifier lookups
+        this.buffTypes = this.collections.buffTypes;
+        this.buffTypeKeys = Object.keys(this.buffTypes).sort();
+
         // Register methods with GameManager
         this.game.register('applyDamage', this.applyDamage.bind(this));
         this.game.register('applySplashDamage', this.applySplashDamage.bind(this));
-        this.game.register('getDamageElementTypes', () => this.ELEMENT_TYPES);
         this.game.register('scheduleDamage', this.scheduleDamage.bind(this));
         this.game.register('curePoison', this.curePoison.bind(this));
         this.game.register('getPoisonStacks', this.getPoisonStacks.bind(this));
         this.game.register('clearAllDamageEffects', this.clearAllDamageEffects.bind(this));
         this.game.register('clearAllStatusEffects', this.clearAllStatusEffects.bind(this));
         this.game.register('getAttackerModifiers', this.getAttackerModifiers.bind(this));
+        this.game.register('getBuffTypeDef', this.getBuffTypeDef.bind(this));
+    }
+
+    /**
+     * Get buff type definition by numeric index
+     */
+    getBuffTypeDef(buffTypeIndex) {
+        if (buffTypeIndex < 0 || buffTypeIndex >= this.buffTypeKeys.length) return null;
+        const buffTypeKey = this.buffTypeKeys[buffTypeIndex];
+        return this.buffTypes[buffTypeKey];
     }
 
     // =============================================
@@ -52,35 +58,34 @@ class DamageSystem extends GUTS.BaseSystem {
     /**
      * Main damage application method - handles all damage types and resistances
      * @param {number} sourceId - Entity dealing damage
-     * @param {number} targetId - Entity receiving damage  
+     * @param {number} targetId - Entity receiving damage
      * @param {number} baseDamage - Base damage amount
-     * @param {string} element - Damage element type
+     * @param {number} element - Damage element type (numeric enum value)
      * @param {Object} options - Additional options (splash, crit, etc.)
      */
-    applyDamage(sourceId, targetId, baseDamage, element = this.ELEMENT_TYPES.PHYSICAL, options = {}) {
+    applyDamage(sourceId, targetId, baseDamage, element = this.enums.element.physical, options = {}) {
         const targetHealth = this.game.getComponent(targetId, "health");
         const targetDeathState = this.game.getComponent(targetId, "deathState");
-        const targetUnitType = this.game.getComponent(targetId, "unitType");
+        const targetUnitTypeComp = this.game.getComponent(targetId, "unitType");
+        const targetUnitType = this.game.call('getUnitTypeDef', targetUnitTypeComp);
         const targetTransform = this.game.getComponent(targetId, "transform");
         const targetPos = targetTransform?.position;
 
-        if (!targetHealth || (targetDeathState && targetDeathState.isDying)) {
+        if (!targetHealth || (targetDeathState && targetDeathState.state !== this.enums.deathState.alive)) {
             return { damage: 0, prevented: true, reason: 'target_invalid' };
         }
-        
+
         const defenderMods = this.getDefenderModifiers(targetId);
         // Get target's defenses
         const defenses = this.getEntityDefenses(targetId, defenderMods);
         const attackerMods = this.getAttackerModifiers(sourceId);
         let buffedDamage = baseDamage * attackerMods.damageMultiplier;
 
-        
-
         if (options.isCritical) {
             buffedDamage *= options.criticalMultiplier || 2.0;
         }
         // Handle poison as special case (DoT)
-        if (element === this.ELEMENT_TYPES.POISON) {
+        if (element === this.enums.element.poison) {
             return this.applyPoisonDoT(sourceId, targetId, buffedDamage, options);
         }
         // Calculate final damage after resistances/armor
@@ -105,9 +110,9 @@ class DamageSystem extends GUTS.BaseSystem {
                 combatState.lastAttackTime = this.game.state.now;
             }
         }
-        
+
         this.game.call('showDamageNumber', targetPos.x, targetPos.y + targetUnitType.height, targetPos.z, damageResult.finalDamage, element);
-        
+
         return {
             damage: damageResult.finalDamage,
             originalDamage: baseDamage,
@@ -119,45 +124,67 @@ class DamageSystem extends GUTS.BaseSystem {
     }
     getAttackerModifiers(attackerId) {
         const buff = this.game.getComponent(attackerId, "buff");
-        if (!buff || !buff.isActive) return { 
+        const defaultMods = {
             damageMultiplier: 1.0,
-            attackSpeedMultiplier: 1.0 
+            attackSpeedMultiplier: 1.0
         };
-        
+
+        if (!buff) return defaultMods;
+
         const currentTime = this.game.state.now || 0;
-        if (buff.endTime && currentTime > buff.endTime) return { 
-            damageMultiplier: 1.0,
-            attackSpeedMultiplier: 1.0 
-        };
-        
+        if (buff.endTime && currentTime > buff.endTime) return defaultMods;
+
+        // Look up buff type definition from collection
+        const buffTypeDef = this.getBuffTypeDef(buff.buffType);
+        if (!buffTypeDef) return defaultMods;
+
+        // Apply stack multiplier for stackable buffs (e.g., marked damage increase)
+        let damageMultiplier = buffTypeDef.damageMultiplier || 1.0;
+        if (buffTypeDef.stackable && buffTypeDef.damagePerStack && buff.stacks > 1) {
+            damageMultiplier = 1 + (buffTypeDef.damagePerStack * buff.stacks);
+        }
+
         return {
-            damageMultiplier: buff.modifiers?.damageMultiplier || 1.0,
-            attackSpeedMultiplier: buff.modifiers?.attackSpeedMultiplier || 1.0
+            damageMultiplier: damageMultiplier,
+            attackSpeedMultiplier: buffTypeDef.attackSpeedMultiplier || 1.0
         };
     }
+
     getDefenderModifiers(defenderId) {
         const buff = this.game.getComponent(defenderId, "buff");
-        if (!buff || !buff.isActive) return { 
-            armorMultiplier: 1.0, 
-            damageTakenMultiplier: 1.0, 
-            damageReduction: 0 
+        const defaultMods = {
+            armorMultiplier: 1.0,
+            damageTakenMultiplier: 1.0,
+            damageReduction: 0,
+            additionalLightningResistance: 0,
+            additionalFireResistance: 0,
+            additionalColdResistance: 0,
+            additionalElementalResistance: 0
         };
-        
+
+        if (!buff) return defaultMods;
+
         const currentTime = this.game.state.now || 0;
-        if (buff.endTime && currentTime > buff.endTime) return { 
-            armorMultiplier: 1.0, 
-            damageTakenMultiplier: 1.0, 
-            damageReduction: 0 
-        };
-        
+        if (buff.endTime && currentTime > buff.endTime) return defaultMods;
+
+        // Look up buff type definition from collection
+        const buffTypeDef = this.getBuffTypeDef(buff.buffType);
+        if (!buffTypeDef) return defaultMods;
+
+        // Apply stack multiplier for stackable buffs (e.g., marked damage taken increase)
+        let damageTakenMultiplier = buffTypeDef.damageTakenMultiplier || 1.0;
+        if (buffTypeDef.stackable && buffTypeDef.damagePerStack && buff.stacks > 1) {
+            damageTakenMultiplier = 1 + (buffTypeDef.damagePerStack * buff.stacks);
+        }
+
         return {
-            armorMultiplier: buff.modifiers?.armorMultiplier || buff.armorMultiplier || 1.0,
-            damageTakenMultiplier: buff.modifiers?.damageTakenMultiplier || buff.damageTakenMultiplier || 1.0,
-            damageReduction: buff.modifiers?.damageReduction || buff.damageReduction || 0,
-            additionalLightningResistance: buff.modifiers?.additionalLightningResistance || buff.additionalLightningResistance || 0,
-            additionalFireResistance: buff.modifiers?.additionalFireResistance || buff.additionalFireResistance || 0,
-            additionalColdResistance: buff.modifiers?.additionalColdResistance || buff.additionalColdResistance || 0,
-            additionalElementalResistance: buff.modifiers?.additionalElementalResistance || buff.additionalElementalResistance || 0
+            armorMultiplier: buffTypeDef.armorMultiplier || 1.0,
+            damageTakenMultiplier: damageTakenMultiplier,
+            damageReduction: buffTypeDef.damageReduction || 0,
+            additionalLightningResistance: buffTypeDef.additionalLightningResistance || 0,
+            additionalFireResistance: buffTypeDef.additionalFireResistance || 0,
+            additionalColdResistance: buffTypeDef.additionalColdResistance || 0,
+            additionalElementalResistance: buffTypeDef.additionalElementalResistance || 0
         };
     }
     /**
@@ -165,14 +192,14 @@ class DamageSystem extends GUTS.BaseSystem {
      * @param {number} sourceId - Source of the damage
      * @param {Object} centerPos - Center position {x, y, z}
      * @param {number} baseDamage - Base damage amount
-     * @param {string} element - Damage element
+     * @param {number} element - Damage element (numeric)
      * @param {number} radius - Splash radius
      * @param {Object} options - Additional options
      */
     applySplashDamage(sourceId, centerPos, baseDamage, element, radius, options = {}) {
         const results = [];
         const sourceTeam = this.game.getComponent(sourceId, "team");
-        
+
         if (!sourceTeam) return results;
 
         // Find all entities within splash radius
@@ -189,18 +216,18 @@ class DamageSystem extends GUTS.BaseSystem {
             const entityTransform = this.game.getComponent(entityId, "transform");
             const entityPos = entityTransform?.position;
             const entityTeam = this.game.getComponent(entityId, "team");
-            
+
             if (!entityPos || !entityTeam) return;
             if (entityTeam.team === sourceTeam.team && !options.allowFriendlyFire) return;
 
             // Calculate 3D distance from explosion center
             const distance = this.calculateDistance3D(centerPos, entityPos);
-            
+
             if (distance <= radius) {
                 // Calculate damage based on distance (closer = more damage)
                 const damageMultiplier = Math.max(0.2, 1 - (distance / radius));
                 const adjustedDamage = Math.floor(baseDamage * damageMultiplier);
-           
+
                 // Apply damage (experience will be awarded inside applyDamage)
                 const result = this.applyDamage(sourceId, entityId, adjustedDamage, element, {
                     ...options,
@@ -208,7 +235,7 @@ class DamageSystem extends GUTS.BaseSystem {
                     splashDistance: distance,
                     splashMultiplier: damageMultiplier
                 });
-                
+
 
                 if (result.damage > 0) {
                     results.push({
@@ -234,48 +261,38 @@ class DamageSystem extends GUTS.BaseSystem {
         let finalDamage = baseDamage;
         let mitigated = 0;
 
-        // Apply element-specific damage reduction
-        switch (element) {
-            case this.ELEMENT_TYPES.PHYSICAL:
-                const armor = defenses.armor || 0;
-                mitigated = Math.min(armor, finalDamage - this.MIN_DAMAGE);
-                finalDamage = Math.max(this.MIN_DAMAGE, finalDamage - armor);
-                break;
-
-            case this.ELEMENT_TYPES.FIRE:
-                const fireResist = this.capResistance(defenses.fireResistance || 0);
-                mitigated = Math.floor(finalDamage * fireResist);
-                finalDamage = Math.max(this.MIN_DAMAGE, Math.floor(finalDamage * (1 - fireResist)));
-                break;
-
-            case this.ELEMENT_TYPES.COLD:
-                const coldResist = this.capResistance(defenses.coldResistance || 0);
-                mitigated = Math.floor(finalDamage * coldResist);
-                finalDamage = Math.max(this.MIN_DAMAGE, Math.floor(finalDamage * (1 - coldResist)));
-                break;
-
-            case this.ELEMENT_TYPES.LIGHTNING:
-                const lightningResist = this.capResistance(defenses.lightningResistance || 0);
-                mitigated = Math.floor(finalDamage * lightningResist);
-                finalDamage = Math.max(this.MIN_DAMAGE, Math.floor(finalDamage * (1 - lightningResist)));
-                break;
-
-            case this.ELEMENT_TYPES.DIVINE:
-                // Divine damage cannot be reduced
-                mitigated = 0;
-                finalDamage = Math.max(this.MIN_DAMAGE, Math.floor(finalDamage));
-                break;
-
-            default:
-                console.warn(`Unknown damage element: ${element}, treating as physical`);
-                const defaultArmor = defenses.armor || 0;
-                mitigated = Math.min(defaultArmor, finalDamage - this.MIN_DAMAGE);
-                finalDamage = Math.max(this.MIN_DAMAGE, finalDamage - defaultArmor);
-                break;
+        // Apply element-specific damage reduction using numeric comparisons
+        if (element === this.enums.element.physical) {
+            const armor = defenses.armor || 0;
+            mitigated = Math.min(armor, finalDamage - this.MIN_DAMAGE);
+            finalDamage = Math.max(this.MIN_DAMAGE, finalDamage - armor);
+        } else if (element === this.enums.element.fire) {
+            const fireResist = this.capResistance(defenses.fireResistance || 0);
+            mitigated = Math.floor(finalDamage * fireResist);
+            finalDamage = Math.max(this.MIN_DAMAGE, Math.floor(finalDamage * (1 - fireResist)));
+        } else if (element === this.enums.element.cold) {
+            const coldResist = this.capResistance(defenses.coldResistance || 0);
+            mitigated = Math.floor(finalDamage * coldResist);
+            finalDamage = Math.max(this.MIN_DAMAGE, Math.floor(finalDamage * (1 - coldResist)));
+        } else if (element === this.enums.element.lightning) {
+            const lightningResist = this.capResistance(defenses.lightningResistance || 0);
+            mitigated = Math.floor(finalDamage * lightningResist);
+            finalDamage = Math.max(this.MIN_DAMAGE, Math.floor(finalDamage * (1 - lightningResist)));
+        } else if (element === this.enums.element.holy || element === this.enums.element.shadow) {
+            // Divine/Holy and Shadow damage cannot be reduced
+            mitigated = 0;
+            finalDamage = Math.max(this.MIN_DAMAGE, Math.floor(finalDamage));
+        } else {
+            // Unknown element - treat as physical
+            console.warn(`Unknown damage element: ${element}, treating as physical`);
+            const defaultArmor = defenses.armor || 0;
+            mitigated = Math.min(defaultArmor, finalDamage - this.MIN_DAMAGE);
+            finalDamage = Math.max(this.MIN_DAMAGE, finalDamage - defaultArmor);
         }
+
         // Apply damage taken multiplier (from marks, etc.)
         finalDamage *= defenderMods.damageTakenMultiplier;
-        
+
         // Apply flat damage reduction (from intimidation, shield wall, etc.)
         if (defenderMods.damageReduction > 0) {
             const reductionAmount = Math.floor(finalDamage * defenderMods.damageReduction);
@@ -392,7 +409,7 @@ class DamageSystem extends GUTS.BaseSystem {
             const targetHealth = this.game.getComponent(entityId, "health");
             const targetDeathState = this.game.getComponent(entityId, "deathState");
 
-            if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.isDying)) {
+            if (!targetHealth || targetHealth.current <= 0 || (targetDeathState && targetDeathState.state !== this.enums.deathState.alive)) {
                 // Entity is dead or dying, remove status effect component
                 this.game.removeComponent(entityId, 'statusEffect');
                 continue;
@@ -404,7 +421,7 @@ class DamageSystem extends GUTS.BaseSystem {
                     targetHealth.current -= poisonEffect.damagePerTick;
 
                     // Visual feedback for poison
-                    this.applyVisualFeedback(entityId, { finalDamage: poisonEffect.damagePerTick }, this.ELEMENT_TYPES.POISON);
+                    this.applyVisualFeedback(entityId, { finalDamage: poisonEffect.damagePerTick }, this.enums.element.poison);
 
                     // Check for death from poison
                     if (targetHealth.current <= 0) {
@@ -456,17 +473,17 @@ class DamageSystem extends GUTS.BaseSystem {
     scheduleDamage(sourceId, targetId, damage, element, delay, options = {}) {
         const triggerTime = this.game.state.now + delay;
         const eventId = `${sourceId}_${targetId}_${Math.round(this.game.state.now * 1000)}_${this.damageEventCounter++}`;
-        
+
         this.pendingDamageEvents.set(eventId, {
             sourceId,
             targetId,
             damage,
-            element: element || this.ELEMENT_TYPES.PHYSICAL,
+            element: element ?? this.enums.element.physical,
             triggerTime,
             options,
             eventId
         });
-        
+
         return eventId;
     }
 
@@ -486,19 +503,19 @@ class DamageSystem extends GUTS.BaseSystem {
                 // Check if target is still valid
                 const targetHealth = this.game.getComponent(event.targetId, "health");
                 const targetDeathState = this.game.getComponent(event.targetId, "deathState");
-                
-                if (targetHealth && targetHealth.current > 0 && (!targetDeathState || !targetDeathState.isDying)) {
+
+                if (targetHealth && targetHealth.current > 0 && (!targetDeathState || targetDeathState.state === this.enums.deathState.alive)) {
                     // Apply the delayed damage
                      this.applyDamage(event.sourceId, event.targetId, event.damage, event.element, {
                         ...event.options,
                         isDelayed: true
                     });
                 }
-                
+
                 eventsToRemove.push(eventId);
             }
         }
-        
+
         eventsToRemove.forEach(id => this.pendingDamageEvents.delete(id));
     }
 
@@ -523,26 +540,19 @@ class DamageSystem extends GUTS.BaseSystem {
     applyVisualFeedback(targetId, damageResult, element) {
         const targetAnimation = this.game.getComponent(targetId, "animation");
         if (targetAnimation) {
-            // Different flash intensities based on element
-            switch (element) {
-                case this.ELEMENT_TYPES.FIRE:
-                    targetAnimation.flash = 0.6;
-                    break;
-                case this.ELEMENT_TYPES.COLD:
-                    targetAnimation.flash = 0.5;
-                    break;
-                case this.ELEMENT_TYPES.LIGHTNING:
-                    targetAnimation.flash = 0.8;
-                    break;
-                case this.ELEMENT_TYPES.POISON:
-                    targetAnimation.flash = 0.3; // Subtle for DoT
-                    break;
-                case this.ELEMENT_TYPES.DIVINE:
-                    targetAnimation.flash = 0.7;
-                    break;
-                default:
-                    targetAnimation.flash = 0.5;
-                    break;
+            // Different flash intensities based on element (using numeric comparisons)
+            if (element === this.enums.element.fire) {
+                targetAnimation.flash = 0.6;
+            } else if (element === this.enums.element.cold) {
+                targetAnimation.flash = 0.5;
+            } else if (element === this.enums.element.lightning) {
+                targetAnimation.flash = 0.8;
+            } else if (element === this.enums.element.poison) {
+                targetAnimation.flash = 0.3; // Subtle for DoT
+            } else if (element === this.enums.element.holy || element === this.enums.element.shadow) {
+                targetAnimation.flash = 0.7;
+            } else {
+                targetAnimation.flash = 0.5;
             }
         }
     }

@@ -133,14 +133,15 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
         
         // Process allies - empower undead
         sortedAllies.forEach(allyId => {
-            const unitType = this.game.getComponent(allyId, "unitType");
+            const unitTypeComp = this.game.getComponent(allyId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             const transform = this.game.getComponent(allyId, "transform");
             const allyPos = transform?.position;
 
             if (!unitType || !allyPos) return;
-            
+
             // Check if this is an undead unit
-            if (unitType.id === 'skeleton' || unitType.title.includes('undead') || unitType.title.includes('Skeleton')) {
+            if (unitType.id === 'skeleton' || unitType.title?.includes('undead') || unitType.title?.includes('Skeleton')) {
                 const distance = Math.sqrt(
                     Math.pow(allyPos.x - casterPos.x, 2) + 
                     Math.pow(allyPos.z - casterPos.z, 2)
@@ -148,20 +149,16 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
                 
                 if (distance <= this.range) {
                     // Check if already has empowerment buff
+                    const enums = this.game.getEnums();
                     const existingBuff = this.game.getComponent(allyId, "buff");
-                    
-                    if (!existingBuff || existingBuff.buffType !== 'dark_empowerment') {
+
+                    if (!existingBuff || existingBuff.buffType !== enums.buffTypes.dark_empowerment) {
                         this.game.addComponent(allyId, "buff", {
-                            buffType: 'dark_empowerment',
-                            modifiers: {
-                                damageMultiplier: 1.3,
-                                attackSpeedMultiplier: 1.2
-                            },
+                            buffType: enums.buffTypes.dark_empowerment,
                             endTime: this.game.state.now + 3.0,
-                            stackable: false,
-                            stacks: 1,
                             appliedTime: this.game.state.now,
-                            isActive: true
+                            stacks: 1,
+                            sourceEntity: casterEntity
                         });
 
                         // Visual empowerment effect

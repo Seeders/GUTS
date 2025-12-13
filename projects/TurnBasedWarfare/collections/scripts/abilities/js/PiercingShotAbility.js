@@ -16,7 +16,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
         
         this.piercingDamage = 45;
         this.lineWidth = 20; // Width of the piercing line
-        this.element = 'physical';
+        this.element = this.enums.element.physical;
     }
     
     defineEffects() {

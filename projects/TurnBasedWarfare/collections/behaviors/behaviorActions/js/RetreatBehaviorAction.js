@@ -99,7 +99,8 @@ class RetreatBehaviorAction extends GUTS.BaseBehaviorAction {
         combat.lastAttack = game.state.now;
 
         if (game.has('triggerSinglePlayAnimation')) {
-            game.call('triggerSinglePlayAnimation', attackerId, 'attack', combat.attackSpeed);
+            const enums = game.call('getEnums');
+            game.call('triggerSinglePlayAnimation', attackerId, enums.animationType.attack, combat.attackSpeed);
         }
 
         if (combat.projectile) {
@@ -177,3 +178,4 @@ class RetreatBehaviorAction extends GUTS.BaseBehaviorAction {
         return baseRange + attackerRadius + targetRadius;
     }
 }
+

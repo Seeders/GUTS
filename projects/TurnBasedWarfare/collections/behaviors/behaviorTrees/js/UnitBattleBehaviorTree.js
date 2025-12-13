@@ -1,3 +1,2 @@
-class UnitBattleBehaviorTree extends GUTS.BaseBehaviorTree {
-    
-}
+class UnitBattleBehaviorTree extends GUTS.BaseBehaviorTree {}
+

@@ -197,7 +197,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
 
             this.game.addComponent(imageId, "mirrorImage", {
                 originalEntity: originalId,
-                isIllusion: true,
+                isIllusion: 1,
                 createdTime: this.game.state.now || 0
             });
 
@@ -207,9 +207,12 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
                 scale: { x: 1, y: 1, z: 1 }
             });
 
+            // Get enums to look up collection and type names
+            const enums = this.game.getEnums();
+            // Use unitType's numeric indices directly for renderable
             this.game.addComponent(imageId, "renderable", {
-                objectType: "units",
-                spawnType: unitType.id || unitType.title,
+                objectType: unitType.collection,
+                spawnType: unitType.type,
                 capacity: 128
             });
 
@@ -218,9 +221,8 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
             });
 
             this.game.addComponent(imageId, "unitType", {
-                id: unitType.id || unitType.title,
-                title: `Mirror Image`,
-                value: 0
+                collection: unitType.collection,
+                type: unitType.type
             });
 
             this.game.addComponent(imageId, "velocity", {
@@ -228,8 +230,8 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
                 vy: 0,
                 vz: 0,
                 maxSpeed: velocity?.maxSpeed || 40,
-                affectedByGravity: true,
-                anchored: false
+                affectedByGravity: 1,
+                anchored: 0
             });
 
             return imageId;

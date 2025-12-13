@@ -236,8 +236,8 @@ class RandomSelectorBehaviorTree extends GUTS.BaseBehaviorTree {
      */
     endTrace(debugger_, trace, result, entityId, game) {
         if (debugger_ && trace) {
-            const aiState = game.getComponent?.(entityId, 'aiState');
-            const stateSnapshot = aiState?.shared ? { shared: { ...aiState.shared } } : null;
+            const shared = game.call('getBehaviorShared', entityId);
+            const stateSnapshot = shared ? { shared: { ...shared } } : null;
             debugger_.endEvaluation(trace, result, stateSnapshot);
         }
     }

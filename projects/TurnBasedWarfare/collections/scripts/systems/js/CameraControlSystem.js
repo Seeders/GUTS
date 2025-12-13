@@ -71,9 +71,10 @@ class CameraControlSystem extends GUTS.BaseSystem {
 
     for (const entityId of buildings) {
       const team = this.game.getComponent(entityId, 'team');
-      const unitType = this.game.getComponent(entityId, 'unitType');
+      const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+      const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
 
-      if (team?.team === this.game.state.mySide && unitType?.collection === 'buildings') {
+      if (team?.team === this.game.state.myTeam && unitType?.collection === 'buildings') {
         const transform = this.game.getComponent(entityId, 'transform');
         if (transform?.position) {
           targetPos = transform.position;
@@ -230,7 +231,7 @@ class CameraControlSystem extends GUTS.BaseSystem {
       return this._cameraHeight;
     }
 
-    const collections = this.game.getCollections();
+    const collections = this.collections;
     const cameraSettings = collections?.cameras?.main;
 
     this._cameraHeight = cameraSettings?.position?.y || 512;

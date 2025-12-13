@@ -3,23 +3,8 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         super(game);
         this.game.unitCreationSystem = this;
         this.SPEED_MODIFIER = 20;
-        // Default component values for missing unit data
-        this.defaults = {
-            hp: 100,
-            damage: 10,
-            range: 30,
-            speed: 40,
-            attackSpeed: 1.0,
-            size: 5,
-            height: 50,
-            armor: 0,
-            fireResistance: 0,
-            coldResistance: 0,
-            lightningResistance: 0,
-            element: 'physical',
-            projectile: null,
-            value: 50
-        };
+        // Default component values for missing unit data (initialized in init after enums available)
+        this.defaults = null;
         
         // Equipment slot priorities for auto-equipping
         this.equipmentPriority = [
@@ -31,19 +16,9 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             'accessory'
         ];
         
-        // Team-specific configurations
-        this.teamConfigs = {
-            left: {
-                initialFacing: 0,
-                aiState: 'idle',
-                colorTint: null
-            },
-            right: {
-                initialFacing: Math.PI,
-                aiState: 'idle',
-                colorTint: 0xff4444
-            }
-        };
+        // Team-specific configurations (keyed by numeric team enum: left=2, right=3)
+        // These will be re-keyed in init() when enums are available
+        this.teamConfigs = {};
         
         // Component creation cache for performance
         this.componentCache = new Map();
@@ -60,12 +35,42 @@ class UnitCreationSystem extends GUTS.BaseSystem {
     }
     
     init() {
+        // Initialize team configs with numeric keys
+        const TEAM_LEFT = this.enums.team.left;
+        const TEAM_RIGHT = this.enums.team.right;
+        this.teamConfigs[TEAM_LEFT] = {
+            initialFacing: 0,
+            colorTint: null
+        };
+        this.teamConfigs[TEAM_RIGHT] = {
+            initialFacing: Math.PI,
+            colorTint: 0xff4444
+        };
+
+        this.defaults = {
+            hp: 100,
+            damage: 10,
+            range: 30,
+            speed: 40,
+            attackSpeed: 1.0,
+            size: 5,
+            height: 50,
+            armor: 0,
+            fireResistance: 0,
+            coldResistance: 0,
+            lightningResistance: 0,
+            element: this.enums.element.physical,
+            projectile: -1,
+            value: 50
+        };
         this.game.register('createPlacement', this.createPlacement.bind(this));
         this.game.register('createUnit', this.createUnit.bind(this));
     }
     /**
      * Create a new unit entity with all required components from a placement
-     * @param {Object} placement - Placement data with collection, unitTypeId, etc.
+     * @param {Object} placement - Placement data with collection, unitTypeId, unitType, etc.
+     *                             collection/unitTypeId are numeric indices
+     *                             unitType is the resolved definition object with string id/collection
      * @param {Object} transform - Transform with position, rotation, scale
      * @param {string} team - Team identifier ('left' or 'right')
      * @param {string|null} entityId - Optional entity ID (for scene loading)
@@ -73,7 +78,16 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      */
     createPlacement(placement, transform, team, entityId = null) {
         try {
-            const entity = this.createUnit(placement.collection, placement.unitTypeId, transform, team, entityId);
+            // placement.collection and placement.unitTypeId are numeric indices
+            const collectionIndex = placement.collection;
+            const unitTypeIndex = placement.unitTypeId;
+
+            if (collectionIndex < 0 || unitTypeIndex < 0) {
+                console.log('Invalid placement - collection:', collectionIndex, 'unitTypeId:', unitTypeIndex, placement);
+                throw new Error(`Invalid placement - missing collection or unitTypeId (collection=${collectionIndex}, unitTypeId=${unitTypeIndex})`);
+            }
+
+            const entity = this.createUnit(collectionIndex, unitTypeIndex, transform, team, entityId);
 
             this.game.addComponent(entity, 'placement', {
                 placementId: placement.placementId,
@@ -81,23 +95,23 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 unitTypeId: placement.unitTypeId,
                 collection: placement.collection,
                 team: placement.team,
-                playerId: placement.playerId,
+                playerId: placement.playerId ?? -1,
                 roundPlaced: placement.roundPlaced,
                 // Include building construction state if present
-                isUnderConstruction: placement.isUnderConstruction,
-                buildTime: placement.buildTime,
-                assignedBuilder: placement.assignedBuilder
+                isUnderConstruction: placement.isUnderConstruction ? 1 : 0,
+                buildTime: placement.buildTime ?? 0,
+                assignedBuilder: placement.assignedBuilder ?? -1
             });
 
             // If building is under construction, update renderable to show construction state
             if (placement.isUnderConstruction) {
                 const renderComponent = this.game.getComponent(entity, 'renderable');
                 if (renderComponent) {
-                    renderComponent.spawnType = 'underConstruction';
+                    renderComponent.spawnType = this.enums.buildings.underConstruction;
                 }
             }
 
-            console.log('created placement', placement.unitTypeId, team, entity);
+            console.log('created placement', placement.unitTypeId, team, entity, 'placementId:', placement.placementId);
 
             return entity;
         } catch (error) {
@@ -108,15 +122,23 @@ class UnitCreationSystem extends GUTS.BaseSystem {
 
     /**
      * Create a new unit entity with all required components
-     * @param {string} collection - Collection name (e.g., 'units', 'buildings')
-     * @param {string} spawnType - Spawn type ID
+     * @param {number} collectionIndex - Collection index (objectTypeDefinitions enum)
+     * @param {number} spawnTypeIndex - Spawn type index (collection enum)
      * @param {Object} transform - Transform with position, rotation, scale
-     * @param {string} team - Team identifier ('left' or 'right')
-     * @param {string|null} entityId - Optional entity ID (for scene loading)
+     * @param {number} team - Team identifier (numeric)
+     * @param {number|null} entityId - Optional entity ID (for scene loading)
      * @returns {number} Entity ID
      */
-    createUnit(collection, spawnType, transform, team, entityId = null) {
-        const unitType = this.game.getCollections()[collection][spawnType];
+    createUnit(collectionIndex, spawnTypeIndex, transform, team, entityId = null) {
+        // Convert numeric indices to strings for collection lookup
+        const collection = this.reverseEnums.objectTypeDefinitions?.[collectionIndex];
+        const spawnType = collection ? this.reverseEnums[collection]?.[spawnTypeIndex] : null;
+
+        if (!collection || !spawnType) {
+            throw new Error(`Invalid unit indices: collection=${collectionIndex}, spawnType=${spawnTypeIndex}`);
+        }
+
+        const unitType = this.collections[collection][spawnType];
         // Ensure transform has defaults
         const safeTransform = {
             position: transform?.position || { x: 0, y: 0, z: 0 },
@@ -141,7 +163,8 @@ class UnitCreationSystem extends GUTS.BaseSystem {
 
             // OPTIMIZATION: Add all components in single batch call
             // This reduces cache invalidation from 13+ times to just once
-            this.addAllComponents(entity, safeTransform, unitType, team, teamConfig, collection, spawnType);
+            // Pass numeric indices for renderable component
+            this.addAllComponents(entity, safeTransform, unitType, team, teamConfig, collectionIndex, spawnTypeIndex);
 
             // Schedule equipment and abilities (async to avoid blocking)
             this.schedulePostCreationSetup(entity, unitType);
@@ -196,10 +219,11 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         }
         
         // Fallback squad info
+        const enums = this.game.getEnums();
         return {
             unitName: unitType.title || unitType.id || 'Unknown',
             squadSize: 1,
-            formationType: 'single',
+            formationType: enums.formationType.single,
             spacing: 1
         };
     }
@@ -242,19 +266,21 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @param {Object} unitType - Unit type definition
      * @param {string} team - Team identifier
      * @param {Object} teamConfig - Team configuration
-     * @param {string} collection - Collection name
-     * @param {string} spawnType - Spawn type ID
+     * @param {number} collectionIndex - Collection index (objectTypeDefinitions enum)
+     * @param {number} spawnTypeIndex - Spawn type index (collection enum)
      */
-    addAllComponents(entity, transform, unitType, team, teamConfig, collection, spawnType) {
+    addAllComponents(entity, transform, unitType, team, teamConfig, collectionIndex, spawnTypeIndex) {
         const position = transform.position || { x: 0, y: 0, z: 0 };
         const rotation = transform.rotation || { x: 0, y: teamConfig.initialFacing, z: 0 };
         const scale = transform.scale || { x: 1, y: 1, z: 1 };
         const maxSpeed = (unitType.speed) * this.SPEED_MODIFIER;
         const maxHP = unitType.hp || this.defaults.hp;
 
+        // Get collection name from index for component name lookup
+        const collectionName = this.reverseEnums.objectTypeDefinitions?.[collectionIndex];
         // Convert collection name to singular component name
         // e.g., "units" -> "unit", "buildings" -> "building", "worldObjects" -> "worldObject"
-        const collectionComponentName = this.getCollectionComponentName(collection);
+        const collectionComponentName = this.getCollectionComponentName(collectionName);
 
         // OPTIMIZATION: Add all components in single batch call
         // This does one cache invalidation instead of 13+ separate invalidations
@@ -270,11 +296,15 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 vy: 0,
                 vz: 0,
                 maxSpeed: maxSpeed,
-                affectedByGravity: true,
-                anchored: unitType.collection == 'buildings' ? true : false
+                affectedByGravity: 1,
+                anchored: collectionName === 'buildings' ? 1 : 0
             },
-            team: { team: team },
-            unitType: unitType,
+            // team can be either a string ('left'/'right') or numeric enum value
+            team: { team: typeof team === 'number' ? team : (this.enums.team?.[team] ?? 0) },
+            unitType: {
+                collection: collectionIndex,
+                type: spawnTypeIndex
+            },
 
             // Combat components
             health: { max: maxHP, current: maxHP },
@@ -299,9 +329,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
 
             // Behavior components
             aiState: {
-                currentAction: null,
-                rootBehaviorTree: "UnitBattleBehaviorTree",
-                meta: {}
+                currentAction: -1,
+                currentActionCollection: -1,
+                rootBehaviorTree: this.enums.behaviorTrees.UnitBattleBehaviorTree,
+                rootBehaviorTreeCollection: this.enums.behaviorCollection.behaviorTrees
             },
             pathfinding: {
                 path: null,
@@ -332,15 +363,16 @@ class UnitCreationSystem extends GUTS.BaseSystem {
 
             // Visual components
             renderable: {
-                objectType: unitType.collection || collection,
-                spawnType: unitType.id || spawnType,
+                objectType: collectionIndex,
+                spawnType: spawnTypeIndex,
                 capacity: 128
             }
         };
 
         // Add collection-type component for easy querying (e.g., unit, building, worldObject)
+        // Store numeric type index (same as spawnTypeIndex) for TypedArray compatibility
         if (collectionComponentName) {
-            components[collectionComponentName] = { type: unitType.id || spawnType };
+            components[collectionComponentName] = { type: spawnTypeIndex };
         }
 
         this.game.addComponents(entity, components);
@@ -386,12 +418,20 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             vy: 0,
             vz: 0,
             maxSpeed: maxSpeed,
-            affectedByGravity: true,
-            anchored: unitType.collection == 'buildings' ? true : false
+            affectedByGravity: 1,
+            anchored: unitType.collection == 'buildings' ? 1 : 0
         });
 
-        this.game.addComponent(entity, "team", { team: team });
-        this.game.addComponent(entity, "unitType", unitType);
+        // team can be either a string ('left'/'right') or numeric enum value
+        const teamValue = typeof team === 'number' ? team : (this.enums.team?.[team] ?? 0);
+        this.game.addComponent(entity, "team", { team: teamValue });
+        // Store numeric indices for collection and type
+        const collection = unitType.collection || 'units';
+        const spawnType = unitType.id || unitType.title;
+        this.game.addComponent(entity, "unitType", {
+            collection: this.enums.objectTypeDefinitions[collection] ?? -1,
+            type: this.enums[collection]?.[spawnType] ?? -1
+        });
     }
 
     /**
@@ -429,9 +469,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      */
     addBehaviorComponents(entity) {
         this.game.addComponent(entity, "aiState", {
-            currentAction: null,
-            rootBehaviorTree: "UnitBattleBehaviorTree",
-            meta: {}
+            currentAction: -1,
+            currentActionCollection: -1,
+            rootBehaviorTree: this.enums.behaviorTrees.UnitBattleBehaviorTree,
+            rootBehaviorTreeCollection: this.enums.behaviorCollection.behaviorTrees
         });
 
         this.game.addComponent(entity, "pathfinding", {
@@ -470,9 +511,13 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @deprecated Use addAllComponents() for better performance
      */
     addVisualComponents(entity, unitType, teamConfig, collection, spawnType) {
+        const collectionName = unitType.collection || collection;
+        const typeName = unitType.id || spawnType;
+        const objectTypeIndex = this.enums.objectTypeDefinitions?.[collectionName] ?? -1;
+        const spawnTypeIndex = this.enums[collectionName]?.[typeName] ?? -1;
         this.game.addComponent(entity, "renderable", {
-            objectType: unitType.collection || collection,
-            spawnType: unitType.id || spawnType,
+            objectType: objectTypeIndex,
+            spawnType: spawnTypeIndex,
             capacity: 128
         });
     }
@@ -571,11 +616,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      */
     getItemFromCollection(itemId) {
         try {
-            const collections = this.game.getCollections();
-            if (!collections?.items?.[itemId]) {
+            if (!this.collections.items?.[itemId]) {
                 return null;
             }
-            return collections.items[itemId];
+            return this.collections.items[itemId];
         } catch (error) {
             console.warn(`Error accessing item collection for ${itemId}:`, error);
             return null;
@@ -589,11 +633,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      */
     getAbilityFromCollection(abilityId) {
         try {
-            const collections = this.game.getCollections();
-            if (!collections?.abilities?.[abilityId]) {
+            if (!this.collections.abilities?.[abilityId]) {
                 return null;
             }
-            return collections.abilities[abilityId];
+            return this.collections.abilities[abilityId];
         } catch (error) {
             console.warn(`Error accessing ability collection for ${abilityId}:`, error);
             return null;

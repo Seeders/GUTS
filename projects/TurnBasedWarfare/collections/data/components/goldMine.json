@@ -1,9 +1,13 @@
 {
   "title": "goldMine",
   "schema": {
-    "veinEntityId": null,
-    "currentMiner": null,
-    "minerQueue": [],
-    "cells": []
+    "veinEntityId": -1,
+    "currentMiner": -1,
+    "minerQueue": {
+      "$fixedArray": {
+        "size": 8,
+        "default": -1
+      }
+    }
   }
 }

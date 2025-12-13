@@ -5,11 +5,12 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
     }
 
     init() {
+        // Initialize enums
         // Register service functions
         this.game.register('getPlayerEntityId', this.getPlayerEntityId.bind(this));
         this.game.register('getPlayerStats', this.getPlayerStats.bind(this));
         this.game.register('getLocalPlayerStats', this.getLocalPlayerStats.bind(this));
-        this.game.register('getPlayerStatsBySide', this.getPlayerStatsBySide.bind(this));
+        this.game.register('getPlayerStatsByTeam', this.getPlayerStatsByTeam.bind(this));
         this.game.register('getPlayerEntities', this.getPlayerEntities.bind(this));
         this.game.register('getSerializedPlayerEntities', this.getSerializedPlayerEntities.bind(this));
         this.game.register('getPlayerGold', this.getPlayerGold.bind(this));
@@ -20,15 +21,21 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Get player entity ID from player/socket ID
-     * @param {string} playerId - The player's socket ID
+     * Get player entity ID from player ID (socket ID on server, converts to numeric)
+     * @param {string|number} playerId - Socket ID (string) or numeric player ID
      * @returns {number|null} The player entity ID (numeric) or null if not found
      */
     getPlayerEntityId(playerId) {
+        // Convert socket ID to numeric if on server
+        let numericId = playerId;
+        if (typeof playerId === 'string' && this.game.room) {
+            numericId = this.game.room.getNumericPlayerId(playerId);
+        }
+
         const playerEntities = this.game.getEntitiesWith('playerStats');
         for (const entityId of playerEntities) {
             const stats = this.game.getComponent(entityId, 'playerStats');
-            if (stats && stats.playerId === playerId) {
+            if (stats && stats.playerId === numericId) {
                 return entityId;
             }
         }
@@ -37,7 +44,7 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
 
     /**
      * Get playerStats component for a player
-     * @param {string} playerId - The player's socket ID
+     * @param {string|number} playerId - Socket ID (string) or numeric player ID
      * @returns {Object|null} The playerStats component or null
      */
     getPlayerStats(playerId) {
@@ -51,21 +58,22 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
      * @returns {Object|null} The local player's stats or null
      */
     getLocalPlayerStats() {
-        const playerId = this.game.state.playerId || this.game.clientNetworkManager?.playerId;
-        if (!playerId) return null;
-        return this.getPlayerStats(playerId);
+        // Use numeric playerId for ECS lookup
+        const numericId = this.game.clientNetworkManager?.numericPlayerId;
+        if (numericId === undefined || numericId === -1) return null;
+        return this.getPlayerStats(numericId);
     }
 
     /**
-     * Get playerStats by team side
-     * @param {string} side - 'left' or 'right'
-     * @returns {Object|null} The playerStats component for that side
+     * Get playerStats by team
+     * @param {number} team - Numeric team value (from enums.team)
+     * @returns {Object|null} The playerStats component for that team
      */
-    getPlayerStatsBySide(side) {
+    getPlayerStatsByTeam(team) {
         const playerEntities = this.game.getEntitiesWith('playerStats');
         for (const entityId of playerEntities) {
             const stats = this.game.getComponent(entityId, 'playerStats');
-            if (stats && stats.side === side) {
+            if (stats && stats.side === team) {
                 return stats;
             }
         }
@@ -119,12 +127,12 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Add gold to a player by side
-     * @param {string} side - 'left' or 'right'
+     * Add gold to a player by team
+     * @param {number} team - Numeric team value (from enums.team)
      * @param {number} amount - Gold to add
      */
-    addPlayerGold(side, amount) {
-        const stats = this.getPlayerStatsBySide(side);
+    addPlayerGold(team, amount) {
+        const stats = this.getPlayerStatsByTeam(team);
         if (stats) {
             stats.gold = (stats.gold || 0) + amount;
         }
@@ -146,13 +154,19 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
 
     /**
      * Create a player entity with playerStats component
-     * @param {string} playerId - The player's socket ID
-     * @param {Object} statsData - Initial stats data
+     * @param {string} socketPlayerId - The player's socket ID (server converts to numeric)
+     * @param {Object} statsData - Initial stats data (team should be numeric)
      * @returns {number} The created entity ID (numeric)
      */
-    createPlayerEntity(playerId, statsData) {
+    createPlayerEntity(socketPlayerId, statsData) {
+        // Convert socket ID to numeric for ECS storage
+        let numericId = socketPlayerId;
+        if (typeof socketPlayerId === 'string' && this.game.room) {
+            numericId = this.game.room.getNumericPlayerId(socketPlayerId);
+        }
+
         // Check if player entity already exists
-        let entityId = this.getPlayerEntityId(playerId);
+        let entityId = this.getPlayerEntityId(numericId);
 
         if (entityId === null) {
             // Create new entity with numeric ID
@@ -162,15 +176,15 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
         // Add or update playerStats component
         if (!this.game.hasComponent(entityId, 'playerStats')) {
             this.game.addComponent(entityId, 'playerStats', {
-                playerId: playerId,
-                side: statsData.side || 'left',
+                playerId: numericId,
+                side: statsData.team ?? this.enums.team.left,
                 gold: statsData.gold || 0,
                 upgrades: statsData.upgrades || []
             });
         } else {
             // Update existing stats
             const stats = this.game.getComponent(entityId, 'playerStats');
-            stats.side = statsData.side || stats.side;
+            stats.side = statsData.team ?? stats.side;
             stats.gold = statsData.gold ?? stats.gold;
             stats.upgrades = statsData.upgrades || stats.upgrades;
         }

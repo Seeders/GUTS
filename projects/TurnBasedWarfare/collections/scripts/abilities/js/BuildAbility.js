@@ -27,12 +27,12 @@ class BuildAbility extends GUTS.BaseAbility {
 
         // Use provided issuedTime or fall back to current time
         const orderIssuedTime = issuedTime ?? this.game.state.now;
-        console.log(`[BuildAbility] assignToBuild peasant=${peasantEntityId} building=${buildingEntityId} issuedTime=${orderIssuedTime} (provided=${issuedTime}, now=${this.game.state.now}) isServer=${!!this.game.isServer}`);
 
         // Set up building visual state - show as under construction immediately
         const renderComponent = this.game.getComponent(buildingEntityId, "renderable");
         if (renderComponent) {
-            renderComponent.spawnType = 'underConstruction';
+            const enums = this.game.call('getEnums');
+            renderComponent.spawnType = enums.buildings.underConstruction;
         }
 
         // Set up building placement state
@@ -42,11 +42,10 @@ class BuildAbility extends GUTS.BaseAbility {
             buildingPlacement.assignedBuilder = peasantEntityId;
         }
 
-        // Set playerOrder for building - behavior tree will handle the rest via BuildBehaviorAction
         // If peasant already has a build order, clean up the old building first
-        const existingPlayerOrder = this.game.getComponent(peasantEntityId, "playerOrder");
-        if (existingPlayerOrder && existingPlayerOrder.meta && existingPlayerOrder.meta.buildingId) {
-            const oldBuildingId = existingPlayerOrder.meta.buildingId;
+        const existingBuildingState = this.game.getComponent(peasantEntityId, "buildingState");
+        if (existingBuildingState && existingBuildingState.targetBuildingEntityId !== -1) {
+            const oldBuildingId = existingBuildingState.targetBuildingEntityId;
             const oldBuildingPlacement = this.game.getComponent(oldBuildingId, "placement");
 
             // Cancel old building if it was under construction and assigned to this peasant
@@ -70,28 +69,50 @@ class BuildAbility extends GUTS.BaseAbility {
             }
         }
 
-        // Remove existing player order if present, then add new one
-        if (this.game.hasComponent(peasantEntityId, "playerOrder")) {
-            this.game.removeComponent(peasantEntityId, "playerOrder");
+        // Set buildingState for the peasant - add if missing, otherwise update
+        let buildingState = this.game.getComponent(peasantEntityId, "buildingState");
+        if (!buildingState) {
+            this.game.addComponent(peasantEntityId, "buildingState", {
+                targetBuildingEntityId: buildingEntityId,
+                buildTime: buildTime,
+                constructionStartTime: 0
+            });
+        } else {
+            buildingState.targetBuildingEntityId = buildingEntityId;
+            buildingState.buildTime = buildTime;
+            buildingState.constructionStartTime = 0;
         }
-        this.game.addComponent(peasantEntityId, "playerOrder", {
-            targetPosition: buildingPos,
-            meta: {
-                buildingId: buildingEntityId,
-                buildingPosition: buildingPos,
-                preventCombat: true  // Builder should not be interrupted by combat
-            },
-            issuedTime: orderIssuedTime
-        });
+
+        // Set playerOrder for movement to the building site - add if missing, otherwise update
+        let playerOrder = this.game.getComponent(peasantEntityId, "playerOrder");
+        if (!playerOrder) {
+            this.game.addComponent(peasantEntityId, "playerOrder", {
+                targetPositionX: buildingPos.x || 0,
+                targetPositionY: buildingPos.y || 0,
+                targetPositionZ: buildingPos.z || 0,
+                isMoveOrder: 0,
+                preventEnemiesInRangeCheck: 1,  // Builder should not be interrupted by combat
+                completed: 0,
+                issuedTime: orderIssuedTime
+            });
+        } else {
+            playerOrder.targetPositionX = buildingPos.x || 0;
+            playerOrder.targetPositionY = buildingPos.y || 0;
+            playerOrder.targetPositionZ = buildingPos.z || 0;
+            playerOrder.isMoveOrder = 0;
+            playerOrder.preventEnemiesInRangeCheck = 1;
+            playerOrder.completed = 0;
+            playerOrder.issuedTime = orderIssuedTime;
+        }
         this.game.triggerEvent('onIssuedPlayerOrders', peasantEntityId);
 
         const aiState = this.game.getComponent(peasantEntityId, "aiState");
-        
+
         if(aiState){
-            aiState.currentAction = "";
-            aiState.meta = {};
-            aiState.shared = {};
-        console.log('cleared aiState', peasantEntityId, aiState);
+            aiState.currentAction = -1;
+            aiState.currentActionCollection = -1;
+            // Clear behavior state via BehaviorSystem
+            this.game.call('clearBehaviorState', peasantEntityId);
         }
     }
 

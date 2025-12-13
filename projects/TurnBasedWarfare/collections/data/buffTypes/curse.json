@@ -1,0 +1,9 @@
+{
+  "title": "Curse",
+  "damageMultiplier": 0.85,
+  "attackSpeedMultiplier": 1,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 1.2,
+  "damageReduction": 0,
+  "accuracyReduction": 0
+}

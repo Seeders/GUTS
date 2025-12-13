@@ -48,10 +48,22 @@ class MoveToSharedTargetBehaviorAction extends GUTS.BaseBehaviorAction {
                 }
             }
 
+            // Clear targetPosition from shared state to stop pathfinding requests
+            shared.targetPosition = null;
+
+            // Clear the path so a new one can be requested for the next destination
+            game.call('clearEntityPath', entityId);
+
+            // Reset pathfinding state
+            const pathfinding = game.getComponent(entityId, 'pathfinding');
+            if (pathfinding) {
+                pathfinding.pathIndex = 0;
+                pathfinding.lastPathRequest = 0;
+            }
+
             return this.success({
                 arrived: true,
-                distance: distance,
-                targetPosition: targetPosition
+                distance: distance
             });
         }
 
@@ -63,3 +75,4 @@ class MoveToSharedTargetBehaviorAction extends GUTS.BaseBehaviorAction {
         });
     }
 }
+

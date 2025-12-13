@@ -1,7 +1,0 @@
-{
-  "title": "Sequence",
-  "description": "Composite node that evaluates children in order until one fails. All must succeed (AND logic).",
-  "color": "#3b82f6",
-  "fillColor": "#1e2a3a",
-  "icon": "sequence"
-}

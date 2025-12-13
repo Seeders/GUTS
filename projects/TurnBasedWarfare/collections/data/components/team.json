@@ -1,6 +1,6 @@
 {
   "title": "team",
   "schema": {
-    "team": "neutral"
+    "team": 0
   }
 }

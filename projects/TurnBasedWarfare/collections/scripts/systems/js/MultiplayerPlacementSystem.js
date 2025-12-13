@@ -40,16 +40,27 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
     init(params) {
         this.params = params || {};
 
+        // Cache team enums for opponent side calculation
         // RaycastHelper initialized in onSceneLoad when scene/camera are available
 
         this.game.register('getPlacementById', this.getPlacementById.bind(this));
         this.game.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
         this.game.register('createPlacementData', this.createPlacementData.bind(this));
         this.game.register('placeSquadOnBattlefield', this.placeSquad.bind(this));
-        this.game.register('getOpponentPlacements', () => this.getPlacementsForSide(this.game.state.mySide === 'left' ? 'right' : 'left'));
+        this.game.register('getOpponentPlacements', () => this.getPlacementsForSide(this.getOpponentSide()));
         this.game.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
         this.game.register('handleReadyForBattleUpdate', this.handleReadyForBattleUpdate.bind(this));
         this.mouseWorldOffset = { x: this.game.call('getPlacementGridSize') / 2, z: this.game.call('getPlacementGridSize') / 2 };
+    }
+
+    /**
+     * Get the opponent's team side (numeric)
+     * @returns {number} The opponent's team enum value
+     */
+    getOpponentSide() {
+        const TEAM_LEFT = this.enums.team.left;
+        const TEAM_RIGHT = this.enums.team.right;
+        return this.game.state.myTeam === TEAM_LEFT ? TEAM_RIGHT : TEAM_LEFT;
     }
 
     onSceneLoad(sceneData) {
@@ -71,19 +82,19 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
      * Set up camera position based on player's side using level starting locations
      */
     setupCameraForMySide() {
-        const mySide = this.game.state.mySide;
-        if (!mySide) {
-            console.warn('[MultiplayerPlacementSystem] Cannot setup camera - mySide not set');
+        const myTeam = this.game.state.myTeam;
+        if (!myTeam) {
+            console.warn('[MultiplayerPlacementSystem] Cannot setup camera - myTeam not set');
             return;
         }
 
-        const cameraData = this.getCameraPositionForSide(mySide);
+        const cameraData = this.getCameraPositionForTeam(myTeam);
         if (cameraData && this.game.camera) {
             const pos = cameraData.position;
             const look = cameraData.lookAt;
             this.game.camera.position.set(pos.x, pos.y, pos.z);
             this.game.camera.lookAt(look.x, look.y, look.z);
-            console.log('[MultiplayerPlacementSystem] Camera set for side:', mySide);
+            console.log('[MultiplayerPlacementSystem] Camera set for side:', myTeam);
         }
     }
 
@@ -153,7 +164,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             this.mouseWorldPos = this.rayCastGround(this.mouseScreenPos.x, this.mouseScreenPos.y);
             this.mouseWorldPos.x += this.mouseWorldOffset.x;
             this.mouseWorldPos.z += this.mouseWorldOffset.z;
-            if (this.game.state.phase === 'placement' && 
+            if (this.game.state.phase === this.enums.gamePhase.placement &&
                 this.game.state.selectedUnitType) {
                 this.updatePlacementPreview();
             }
@@ -183,7 +194,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         }
 
         // Set up camera position for this player's side
-        // Done here because mySide is guaranteed to be set after syncWithServerState
+        // Done here because myTeam is guaranteed to be set after syncWithServerState
         this.setupCameraForMySide();
 
         this.onPlacementPhaseStart();
@@ -200,7 +211,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             if (success && response.playerEntities) {
                 console.log('[MultiplayerPlacementSystem] Creating player entities:', response.playerEntities);
                 for (const playerEntity of response.playerEntities) {
-                    if (!this.game.entities.has(playerEntity.entityId)) {
+                    if (!this.game.entityExists(playerEntity.entityId)) {
                         this.game.createEntity(playerEntity.entityId);
                     }
                     this.game.addComponent(playerEntity.entityId, 'playerStats', playerEntity.playerStats);
@@ -278,23 +289,28 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
     handleReadyForBattleUpdate(data) {
         const myPlayerId = this.game.clientNetworkManager.playerId;
+        console.log('[SYNC DEBUG] handleReadyForBattleUpdate received:', {
+            allReady: data.allReady,
+            hasEntitySync: !!data.entitySync,
+            nextEntityIdFromServer: data.nextEntityId,
+            clientNextEntityId: this.game.nextEntityId
+        });
         if (data.playerId === myPlayerId) {
             this.isPlayerReady = data.ready;
             this.updatePlacementUI();
-        } 
-        
+        }
+
         if (data.allReady) {
+            // FIRST: Apply opponent placements to create entities with correct IDs
             let opponentPlacements = null;
-            let opponentPlayerId = null;
             data.gameState.players.forEach((player) => {
                 if(player.id != myPlayerId){
                     opponentPlacements = player.placements;
-                    opponentPlayerId = player.id;
                 }
             });
-            this.applyOpponentPlacements(opponentPlacements, opponentPlayerId);
+            this.applyOpponentPlacements(opponentPlacements);
             this.applyTargetPositions();
-            this.game.state.phase = 'battle';
+            this.game.state.phase = this.enums.gamePhase.battle;
 
             // Initialize deterministic RNG for this battle (must match server seed)
             const roomId = this.game.clientNetworkManager?.roomId || 'default';
@@ -311,8 +327,8 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             this.resetAI();
             this.game.triggerEvent("onBattleStart");
 
-            // Resync entities with server state to ensure both clients are in sync
-            // Pass full data object - resyncEntities handles both entitySync and nextEntityId
+            // THEN: Resync entities with server state to ensure both clients match
+            // Server serializes AFTER onBattleStart, so client must also run it first
             if (data.entitySync) {
                 this.game.call('resyncEntities', data);
             }
@@ -345,9 +361,20 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         for (const entityId of entitiesWithPlacement) {
             const placementComp = this.game.getComponent(entityId, 'placement');
             const playerOrder = this.game.getComponent(entityId, 'playerOrder');
-            if (placementComp && playerOrder?.targetPosition) {
-                placementComp.targetPosition = playerOrder.targetPosition;
-                placementComp.meta = playerOrder.meta;
+            const buildingState = this.game.getComponent(entityId, 'buildingState');
+            if (placementComp && playerOrder && (playerOrder.targetPositionX !== 0 || playerOrder.targetPositionZ !== 0)) {
+                placementComp.targetPosition = {
+                    x: playerOrder.targetPositionX,
+                    y: playerOrder.targetPositionY,
+                    z: playerOrder.targetPositionZ
+                };
+                // Store meta fields if needed (for legacy placement component)
+                placementComp.meta = {
+                    buildingId: (buildingState && buildingState.targetBuildingEntityId !== -1) ? buildingState.targetBuildingEntityId : undefined,
+                    isMoveOrder: playerOrder.isMoveOrder === 1,
+                    preventEnemiesInRangeCheck: playerOrder.preventEnemiesInRangeCheck === 1,
+                    completed: playerOrder.completed === 1
+                };
             }
         }
     }
@@ -373,7 +400,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
 
     update() {
         // Check battle duration limit during battle phase
-        if (this.game.state.phase === 'battle') {
+        if (this.game.state.phase === this.enums.gamePhase.battle) {
             const battleDuration = (this.game.state.now || 0) - this.battleStartTime;
 
             // Pause game when client reaches max battle duration
@@ -385,7 +412,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             }
         }
 
-        if (this.game.state.phase !== 'placement') {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
             this.lastRaycastTime = 0;
             this.lastValidationTime = 0;
             this.lastUpdateTime = 0;
@@ -400,17 +427,42 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         }
     }
 
-    applyOpponentPlacements(opponentData, opponentPlayerId = null) {
+    applyOpponentPlacements(opponentData) {
         opponentData.forEach(placement => {
             if(this.game.call('getOpponentPlacements').find(p => p.placementId === placement.placementId)) {
                 return;
             }
-            // Store opponent's playerId on placement for unit creation
-            if (opponentPlayerId) {
-                placement.playerId = opponentPlayerId;
-            }
+            // placement.playerId already contains the numeric player ID from server
             // Use squadUnits from placement as server entity IDs to ensure both clients use same IDs
             this.placeSquad(placement, placement.squadUnits);
+
+            // Apply playerOrder to opponent units so they move during battle
+            // This is critical for visibility - we need to simulate their movement
+            if (placement.playerOrder && placement.squadUnits) {
+                placement.squadUnits.forEach(unitId => {
+                    if (this.game.entityExists(unitId)) {
+                        // Remove existing player order if present, then add new one
+                        if (this.game.hasComponent(unitId, "playerOrder")) {
+                            this.game.removeComponent(unitId, "playerOrder");
+                        }
+                        this.game.addComponent(unitId, "playerOrder", {
+                            targetPositionX: placement.playerOrder.targetPositionX,
+                            targetPositionY: placement.playerOrder.targetPositionY,
+                            targetPositionZ: placement.playerOrder.targetPositionZ,
+                            buildingId: -1,
+                            isMoveOrder: placement.playerOrder.isMoveOrder || 0,
+                            preventEnemiesInRangeCheck: placement.playerOrder.preventEnemiesInRangeCheck || 0,
+                            completed: 0,
+                            targetMine: -1,
+                            targetMinePositionX: 0,
+                            targetMinePositionY: 0,
+                            targetMinePositionZ: 0,
+                            miningStartTime: 0,
+                            issuedTime: placement.playerOrder.issuedTime || 0
+                        });
+                    }
+                });
+            }
         });
 
         if (this.game.state) {
@@ -445,10 +497,11 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                 const transform = {
                     position: { x: pos.x, y: unitY, z: pos.z }
                 };
+                const opponentTeam = this.getOpponentSide();
                 let entityId = this.game.call('createPlacement',
                     placementWithUnitType,
                     transform,
-                    this.game.state.mySide == 'right' ? 'left' : 'right'
+                    opponentTeam
                 );
                 if (unitType.id === 'goldMine') {
                     // Convert footprint (terrain grid units) to placement grid cells
@@ -457,11 +510,9 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                     const gridWidth = footprintWidth * 2;
                     const gridHeight = footprintHeight * 2;
 
-                    const opponentSide = this.game.state.mySide === 'right' ? 'left' : 'right';
-
                     this.game.call('buildGoldMine',
                         entityId,
-                        opponentSide,
+                        opponentTeam,
                         opponentPlacement.gridPosition,
                         gridWidth,
                         gridHeight
@@ -510,7 +561,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             return;
         }
         
-        if (state.phase !== 'placement') {
+        if (state.phase !== this.enums.gamePhase.placement) {
             return;
         }
         if(!state.selectedUnitType) {
@@ -528,7 +579,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         if (!this.game.call('canAffordCost', state.selectedUnitType.value)) {
             return;
         }
-        if (this.game.supplySystem && !this.game.supplySystem.canAffordSupply(this.game.state.mySide, state.selectedUnitType)) {
+        if (this.game.supplySystem && !this.game.supplySystem.canAffordSupply(this.game.state.myTeam, state.selectedUnitType)) {
             console.log('Not enough supply to place this unit');
             return;
         }
@@ -550,14 +601,21 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             }
         }
         
-        const placement = this.createPlacementData(gridPos, state.selectedUnitType, this.game.state.mySide);
+        const placement = this.createPlacementData(gridPos, state.selectedUnitType, this.game.state.myTeam);
 
         this.game.call('submitPlacement', placement, (success, response) => {
             if(success){
-                // Use server-provided entity IDs and server time for sync
+                // Use server-provided placementId, entity IDs and server time for sync
+                // Server's placementId is authoritative to avoid conflicts between clients
+                placement.placementId = response.placementId;
                 placement.serverTime = response.serverTime;
-                console.log(`[MultiplayerPlacementSystem] submitPlacement success, serverTime=${response.serverTime}`);
+                console.log(`[MultiplayerPlacementSystem] submitPlacement success, placementId=${response.placementId}, serverEntityIds=${JSON.stringify(response.squadUnits)}, nextEntityId=${response.nextEntityId}`);
                 this.placeSquad(placement, response.squadUnits);
+                // Sync nextEntityId from server AFTER creating entities
+                // Server's nextEntityId is the next available ID after all entities it knows about
+                if (response.nextEntityId !== undefined) {
+                    this.game.nextEntityId = response.nextEntityId;
+                }
             }
         });
     }
@@ -583,11 +641,11 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         // Create undo info before spawning
         const undoInfo = this.createUndoInfo(placement, unitType);
 
-        // Use playerId from placement if available (for opponent units)
-        // Otherwise use local player's ID for own team units
-        let playerId = placement.playerId || null;
-        if (!playerId && placement.team === this.game.state.mySide) {
-            playerId = this.game.clientNetworkManager?.playerId || null;
+        // Use playerId from placement if available (already numeric from server)
+        // Otherwise use local player's numeric ID for own team units
+        let playerId = placement.playerId ?? null;
+        if (playerId === null && placement.team === this.game.state.myTeam) {
+            playerId = this.game.clientNetworkManager?.numericPlayerId ?? -1;
         }
 
         // Use shared base class method to spawn squad, passing server entity IDs if available
@@ -636,27 +694,34 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
             gridPosition: { ...placement.gridPosition },
             cells: [...placement.cells],
             unitIds: [],
-            team: this.game.state.mySide,
+            team: this.game.state.myTeam,
             timestamp: this.game.state.now
         };
     }
 
     createPlacementData(gridPos, unitType, team) {
-        const placementId = `squad_${team}_${gridPos.x}_${gridPos.z}_${this.game.state.round}`;
-
         // Calculate cells for grid reservation
         const squadData = this.game.squadSystem.getSquadData(unitType);
         const cells = this.game.squadSystem.getSquadCells(gridPos, squadData);
 
-        // Minimal placement data - unitType looked up from collections when needed
+        // Get enum indices for numeric storage
+        const enums = this.game.getEnums();
+        const collectionIndex = enums.objectTypeDefinitions?.[unitType.collection] ?? -1;
+        const typeIndex = enums[unitType.collection]?.[unitType.id] ?? -1;
+        // team is always numeric (from game.state.myTeam which server sets as numeric)
+
+        // Placement data with numeric indices for ECS storage
+        // placementId is -1 - server will assign the authoritative ID
+        // Include resolved unitType for createPlacement to use
+        // playerId is numeric (from clientNetworkManager.numericPlayerId)
         return {
-            placementId: placementId,
+            placementId: -1,  // Server assigns authoritative placementId
             gridPosition: gridPos,
-            unitTypeId: unitType.id,
-            collection: unitType.collection,
-            team: team,
-            playerId: this.game.clientNetworkManager?.playerId || null,
-            targetPosition: this.game.state.targetPositions.get(placementId),
+            unitTypeId: typeIndex,
+            collection: collectionIndex,
+            unitType: unitType,  // Resolved definition for createPlacement
+            team: team,  // Already numeric from game.state.myTeam
+            playerId: this.game.clientNetworkManager?.numericPlayerId ?? -1,
             roundPlaced: this.game.state.round,
             timestamp: this.game.state.now,
             cells: cells,
@@ -710,7 +775,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
     }
 
     isMyTeam(team){
-        return team == this.game.state.mySide;
+        return team == this.game.state.myTeam;
     }
 
     createPlacementEffects(unitPositions, team) {
@@ -737,10 +802,10 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         
         const state = this.game.state;
         
-        if (state.phase !== 'placement') {
+        if (state.phase !== this.enums.gamePhase.placement) {
             return;
         }
-        
+
         if (this.isPlayerReady) {
             return;
         }
@@ -759,7 +824,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                 }
             });
 
-            this.game.call('addPlayerGold', this.game.state.mySide, undoInfo.cost);
+            this.game.call('addPlayerGold', this.game.state.myTeam, undoInfo.cost);
 
             this.game.call('removeSquad', undoInfo.placementId);
 
@@ -791,7 +856,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
     }
 
     collectPlayerPlacements() {
-        return this.getPlacementsForSide(this.game.state.mySide);
+        return this.getPlacementsForSide(this.game.state.myTeam);
     }
 
    
@@ -885,7 +950,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
                 const validation = this.game.call('isValidGoldMinePlacement', gridPos, gridWidth, gridHeight);
                 isValid = validation.valid;
             } else {
-                gridValid = this.game.call('isValidGridPlacement', cells, this.game.state.mySide);
+                gridValid = this.game.call('isValidGridPlacement', cells, this.game.state.myTeam);
 
                 let terrainValid = true;
                 cells.forEach((cell) => {
@@ -908,7 +973,7 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         } else {
             const squadData = this.game.squadSystem.getSquadData(selectedUnitType);
             cells = this.game.squadSystem.getSquadCells(gridPos, squadData);
-            gridValid = this.game.call('isValidGridPlacement', cells, this.game.state.mySide);
+            gridValid = this.game.call('isValidGridPlacement', cells, this.game.state.myTeam);
             isValid = gridValid;
         }
         return isValid;
@@ -937,11 +1002,13 @@ class MultiplayerPlacementSystem extends GUTS.BasePlacementSystem {
         };
     }
 
-    setTeamSides(sides) {
-        this.teamSides = {
-            player: sides?.player || 'left',
-            enemy: sides?.enemy || 'right'
-        };
+    /**
+     * Set team bounds (called by MultiplayerNetworkSystem)
+     * Note: This system uses game.state.myTeam directly via getOpponentSide()
+     * @param {number} myTeam - Numeric team value (from enums.team)
+     */
+    setTeamBounds(myTeam) {
+        // This system uses game.state.myTeam directly, so no need to store locally
     }
 
     calculateBuildingCells(gridPos, building) {

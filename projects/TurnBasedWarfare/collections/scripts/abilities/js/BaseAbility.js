@@ -2,19 +2,51 @@ class BaseAbility {
     constructor(game, config = {}) {
         this.game = game;
         this.config = config;
+
+        // Initialize enums
+        this.enums = this.game.getEnums();
+
         this.id = config.id || 'unknown';
         this.name = config.name || 'Unknown Ability';
         this.description = config.description || '';
         this.cooldown = config.cooldown || 10.0;
         this.range = config.range || 100;
         this.manaCost = config.manaCost || 0;
-        this.targetType = config.targetType || 'auto';
-        this.animation = config.animation || 'cast';
+        // Convert string targetType to numeric enum value
+        this.targetType = this._resolveTargetType(config.targetType);
+        // Convert string animation to numeric enum value
+        this.animation = this._resolveAnimationType(config.animation);
         this.priority = config.priority || 5;
         this.castTime = config.castTime || 1.5;
         this.autoTrigger = config.autoTrigger || 'combat';
 
         this.effects = this.defineEffects();
+    }
+
+    _resolveTargetType(targetTypeConfig) {
+        // If already numeric, return as-is
+        if (typeof targetTypeConfig === 'number') {
+            return targetTypeConfig;
+        }
+        // Convert string to numeric enum value
+        if (targetTypeConfig && this.enums.targetType[targetTypeConfig] !== undefined) {
+            return this.enums.targetType[targetTypeConfig];
+        }
+        // Default to auto
+        return this.enums.targetType.auto;
+    }
+
+    _resolveAnimationType(animationConfig) {
+        // If already numeric, return as-is
+        if (typeof animationConfig === 'number') {
+            return animationConfig;
+        }
+        // Convert string to numeric enum value
+        if (animationConfig && this.enums.animationType[animationConfig] !== undefined) {
+            return this.enums.animationType[animationConfig];
+        }
+        // Default to cast
+        return this.enums.animationType.cast;
     }
     getBehaviorAction(entityId, game) {
         if(this.config.behaviorAction){
@@ -50,7 +82,11 @@ class BaseAbility {
       
     }
     
-    dealDamageWithEffects(sourceId, targetId, damage, element = 'physical', options = {}) {
+    dealDamageWithEffects(sourceId, targetId, damage, element = null, options = {}) {
+        // Default to physical element using numeric enum
+        if (element === null) {
+            element = this.enums.element.physical;
+        }
         if (this.game.damageSystem) {
             const result = this.game.damageSystem.applyDamage(sourceId, targetId, damage, element, { isSpell: true, ...options });
 
@@ -150,7 +186,7 @@ class BaseAbility {
     // Get the target entity for facing purposes
     getTargetForFacing(casterEntity) {
         // Self-targeting abilities don't need facing change
-        if (this.targetType === 'self') return null;
+        if (this.targetType === this.enums.targetType.self) return null;
 
         const transform = this.game.getComponent(casterEntity, "transform");
         const casterPos = transform?.position;
@@ -158,9 +194,9 @@ class BaseAbility {
 
         let candidates = [];
 
-        if (this.targetType === 'enemy' || this.targetType === 'auto') {
+        if (this.targetType === this.enums.targetType.enemy || this.targetType === this.enums.targetType.auto) {
             candidates = this.getEnemiesInRange(casterEntity, this.range);
-        } else if (this.targetType === 'ally') {
+        } else if (this.targetType === this.enums.targetType.ally) {
             candidates = this.getAlliesInRange(casterEntity, this.range)
                 .filter(id => id !== casterEntity); // Exclude self
         }

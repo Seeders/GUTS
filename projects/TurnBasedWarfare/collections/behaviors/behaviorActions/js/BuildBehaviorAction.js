@@ -1,16 +1,13 @@
 class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
-        // Skip if MoveBehaviorAction is already handling this order
-        const aiState = game.getComponent(entityId, 'aiState');
-   
-        // Read from playerOrder component (like MoveBehaviorAction)
-        const playerOrder = game.getComponent(entityId, 'playerOrder');
-        if (!playerOrder || !playerOrder.meta || !playerOrder.meta.buildingId) {
+        // Read from buildingState component
+        const buildingState = game.getComponent(entityId, 'buildingState');
+        if (!buildingState || buildingState.targetBuildingEntityId === -1) {
             return null;
         }
 
-        const buildingId = playerOrder.meta.buildingId;
+        const buildingId = buildingState.targetBuildingEntityId;
         const buildingPlacement = game.getComponent(buildingId, 'placement');
 
         // Check if building exists and is under construction
@@ -18,23 +15,24 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             return null;
         }
 
-        const state = aiState.meta.buildState || 'traveling_to_building';
+        const meta = this.getMeta(entityId, game);
+        const state = meta.buildState || 'traveling_to_building';
 
-        // State machine - return state objects, don't modify aiState.meta
+        // State machine - return state objects, don't modify meta directly
         switch (state) {
             case 'traveling_to_building':
-                return this.travelToBuilding(entityId, aiState, game);
+                return this.travelToBuilding(entityId, meta, game);
             case 'building':
-                return this.doBuilding(entityId, aiState, game);
+                return this.doBuilding(entityId, meta, game);
         }
 
         return null;
     }
 
-    travelToBuilding(entityId, aiState, game) {
-        // Get building info from playerOrder or aiState.meta
-        const playerOrder = game.getComponent(entityId, 'playerOrder');
-        const buildingId = playerOrder.meta.buildingId || aiState.meta.buildingId;
+    travelToBuilding(entityId, meta, game) {
+        // Get building info from buildingState or meta
+        const buildingState = game.getComponent(entityId, 'buildingState');
+        const buildingId = (buildingState && buildingState.targetBuildingEntityId !== -1) ? buildingState.targetBuildingEntityId : meta.buildingId;
         const buildingTransform = game.getComponent(buildingId, 'transform');
         const buildingPos = buildingTransform?.position;
 
@@ -65,7 +63,9 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             // Clear playerOrder.targetPosition to stop movement
             const playerOrder = game.getComponent(entityId, 'playerOrder');
             if (playerOrder) {
-                playerOrder.targetPosition = null;
+                playerOrder.targetPositionX = 0;
+                playerOrder.targetPositionY = 0;
+                playerOrder.targetPositionZ = 0;
             }
 
             // Stop the unit so it doesn't move while building
@@ -93,8 +93,8 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         };
     }
 
-    doBuilding(entityId, aiState, game) {
-        const buildingId = aiState.meta.buildingId;
+    doBuilding(entityId, meta, game) {
+        const buildingId = meta.buildingId;
         const buildingPlacement = game.getComponent(buildingId, 'placement');
         const unitType = game.getComponent(buildingId, 'unitType');
 
@@ -113,7 +113,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             }
         }
 
-        const elapsed = game.state.round - aiState.meta.constructionStartTime;
+        const elapsed = game.state.round - meta.constructionStartTime;
         const buildTime = buildingPlacement.buildTime || this.parameters.defaultBuildTime;
 
 
@@ -131,30 +131,32 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         // Still building - return state to continue
         return {
             buildingId: buildingId,
-            buildingPosition: aiState.meta.buildingPosition,
+            buildingPosition: meta.buildingPosition,
             buildState: 'building',
-            constructionStartTime: aiState.meta.constructionStartTime
+            constructionStartTime: meta.constructionStartTime
         };
     }
 
     completeConstruction(entityId, buildingId, buildingPlacement, game) {
         // Get unitType from the entity's unitType component (not from placement)
-        const actualBuildingType = game.getComponent(buildingId, 'unitType');
-        if (!buildingPlacement || !actualBuildingType) {
+        const unitTypeComponent = game.getComponent(buildingId, 'unitType');
+        if (!buildingPlacement || !unitTypeComponent) {
             console.error('[BuildBehaviorAction] Cannot complete construction - missing placement or unitType', buildingId);
             return;
         }
 
         // 1. Restore renderable component - change from underConstruction to actual building
+        // unitTypeComponent.type is the numeric spawnType index
         const renderComponent = game.getComponent(buildingId, 'renderable');
         if (renderComponent) {
-            renderComponent.spawnType = actualBuildingType.id;
+            renderComponent.spawnType = unitTypeComponent.type;
             // Remove instance to trigger re-spawn with correct model
             game.call('removeInstance', buildingId);
         }
 
-        // 2. Restore health to full (health component is kept during construction)
-        const maxHP = actualBuildingType.hp || 100;
+        // 2. Restore health to full - get unit def from collections using numeric indices
+        const unitTypeDef = game.call('getUnitTypeDef', unitTypeComponent);
+        const maxHP = unitTypeDef?.hp || 100;
         const health = game.getComponent(buildingId, 'health');
         if (health) {
             health.max = maxHP;
@@ -169,17 +171,20 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // 5. Change to idle animation
         if (game.animationSystem) {
-            game.animationSystem.changeAnimation(buildingId, 'idle', 1.0, 0);
+            const enums = game.call('getEnums');
+            game.animationSystem.changeAnimation(buildingId, enums.animationType.idle, 1.0, 0);
         }
 
     }
 
     onEnd(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiState');
-        if (!aiState || !aiState.meta) return;
+        if (!aiState) return;
 
-        const buildingId = aiState.meta.buildingId;
-        if (buildingId) {
+        const meta = this.getMeta(entityId, game);
+        const buildingId = meta.buildingId;
+        // buildingId is null/undefined when not set, or could be 0 (valid entity ID)
+        if (buildingId !== undefined && buildingId !== null && buildingId >= 0) {
             const buildingPlacement = game.getComponent(buildingId, 'placement');
 
             // Clean up if action was interrupted
@@ -189,9 +194,10 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
 
-        // Clear all meta data (like MineGoldBehaviorAction)
-        aiState.meta = {};
-        aiState.currentAction = null;
+        // Clear all behavior state (like MineGoldBehaviorAction)
+        game.call('clearBehaviorState', entityId);
+        aiState.currentAction = -1;
+        aiState.currentActionCollection = -1;
     }
 
     distance(pos, target) {

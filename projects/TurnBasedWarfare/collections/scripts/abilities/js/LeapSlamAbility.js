@@ -153,12 +153,12 @@ class LeapSlamAbility extends GUTS.BaseAbility {
         });
 
         // Add leaping component so behavior system skips this unit
-        this.game.addComponent(casterEntity, "leaping", { isLeaping: true });
+        this.game.addComponent(casterEntity, "leaping", { isLeaping: 1 });
 
         // Trigger attack animation for the duration of the leap
         // The animation should play once during the entire leap, paced to match the leap duration
         if (this.game.hasService('triggerSinglePlayAnimation')) {
-            this.game.call('triggerSinglePlayAnimation', casterEntity, 'attack', 1.0, leapDuration);
+            this.game.call('triggerSinglePlayAnimation', casterEntity, this.enums.animationType.attack, 1.0, leapDuration);
         }
 
         // Dust burst at launch (client only)
@@ -340,7 +340,7 @@ class LeapSlamAbility extends GUTS.BaseAbility {
             const damageMultiplier = Math.max(0.5, 1.0 - (target.distance / splashRadius) * 0.5);
             const splashDamage = Math.floor(damage * damageMultiplier);
 
-            this.dealDamageWithEffects(casterEntity, target.id, splashDamage, 'physical', {
+            this.dealDamageWithEffects(casterEntity, target.id, splashDamage, this.enums.element.physical, {
                 isLeapSlam: true
             });
         });
@@ -366,3 +366,4 @@ class LeapSlamAbility extends GUTS.BaseAbility {
         }
     }
 }
+

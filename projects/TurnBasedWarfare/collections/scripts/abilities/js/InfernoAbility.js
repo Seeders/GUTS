@@ -19,7 +19,7 @@ class InfernoAbility extends GUTS.BaseAbility {
         this.infernoRadius = 120;
         this.duration = 4.0;
         this.tickInterval = 0.5;
-        this.element = 'fire';
+        this.element = this.enums.element.fire;
     }
     
     defineEffects() {

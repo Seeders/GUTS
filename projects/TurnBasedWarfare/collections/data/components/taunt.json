@@ -1,9 +1,9 @@
 {
   "title": "taunt",
   "schema": {
-    "taunter": null,
+    "taunter": -1,
     "endTime": 0,
     "radius": 0,
-    "isTaunted": true
+    "isTaunted": 1
   }
 }

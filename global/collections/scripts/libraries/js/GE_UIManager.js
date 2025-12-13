@@ -880,5 +880,4 @@ class GE_UIManager {
             }
         });
     }
-
 }

@@ -131,7 +131,7 @@ class BurningAuraAbility extends GUTS.BaseAbility {
             
             if (distance <= this.range) {
                 // Apply burn damage
-                this.dealDamageWithEffects(casterEntity, enemyId, this.drainPerSecond, 'fire', {
+                this.dealDamageWithEffects(casterEntity, enemyId, this.drainPerSecond, this.enums.element.fire, {
                     tickIndex: tickIndex
                 });
                 

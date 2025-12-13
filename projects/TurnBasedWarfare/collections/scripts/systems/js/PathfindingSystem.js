@@ -19,6 +19,9 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.pathRequests = [];
         this.MAX_PATHS_PER_FRAME = 100;
 
+        // Entity paths storage (entityId -> waypoint array)
+        this.entityPaths = new Map();
+
         // Path smoothing configuration
         // Lower values = less aggressive smoothing = less corner cutting
         // Higher values = more aggressive smoothing = smoother but riskier paths
@@ -39,12 +42,32 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.game.register('hasRampAt', this.hasRampAt.bind(this));
         this.game.register('hasDirectWalkablePath', this.hasDirectWalkablePath.bind(this));
         this.game.register('togglePathfindingDebug', this.toggleDebugVisualization.bind(this));
+        this.game.register('getEntityPath', this.getEntityPath.bind(this));
+        this.game.register('setEntityPath', this.setEntityPath.bind(this));
+        this.game.register('clearEntityPath', this.clearEntityPath.bind(this));
+    }
+
+    // Path accessor methods - paths stored in system Map, not on component
+    getEntityPath(entityId) {
+        return this.entityPaths.get(entityId) || null;
+    }
+
+    setEntityPath(entityId, path) {
+        if (path && path.length > 0) {
+            this.entityPaths.set(entityId, path);
+        } else {
+            this.entityPaths.delete(entityId);
+        }
+    }
+
+    clearEntityPath(entityId) {
+        this.entityPaths.delete(entityId);
     }
 
     onSceneLoad(sceneData) {
         if (this.initialized) return;
 
-        const collections = this.game.getCollections();
+        const collections = this.collections;
         if (!collections) {
             console.warn('PathfindingSystem: Collections not available');
             return;
@@ -219,7 +242,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         }
         
         // Second pass: mark cells occupied by impassable worldObjects as impassable
-        const collections = this.game.getCollections();
+        const collections = this.collections;
         const levelId = this.game.call('getLevel');
         const level = collections.levels?.[levelId];
         const tileMap = level?.tileMap;
@@ -319,12 +342,12 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
     requestPath(entityId, startX, startZ, endX, endZ, priority = 0) {
         const cacheKey = `${Math.floor(startX/50)},${Math.floor(startZ/50)}-${Math.floor(endX/50)},${Math.floor(endZ/50)}`;
-        
+
         const cached = this.pathCache.get(cacheKey);
         if (cached && (this.game.state.now - cached.timestamp) < this.CACHE_EXPIRY_TIME) {
             return cached.path;
         }
-        
+
         this.pathRequests.push({
             entityId,
             startX,
@@ -335,7 +358,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
             cacheKey,
             timestamp: this.game.state.now
         });
-        
+
         return null;
     }
 
@@ -726,18 +749,18 @@ class PathfindingSystem extends GUTS.BaseSystem {
         }
         
         if (this.pathRequests.length === 0) return;
-        
+
         // OPTIMIZATION: Use numeric sort for entity IDs (still deterministic, much faster)
         this.pathRequests.sort((a, b) => {
             if (b.priority !== a.priority) return b.priority - a.priority;
             return a.entityId - b.entityId;
         });
-        
+
         const pathsToProcess = Math.min(this.MAX_PATHS_PER_FRAME, this.pathRequests.length);
-        
+
         for (let i = 0; i < pathsToProcess; i++) {
             const request = this.pathRequests.shift();
-            
+
             const path = this.findPath(
                 request.startX,
                 request.startZ,
@@ -745,12 +768,13 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 request.endZ,
                 request.cacheKey
             );
-            
-            if (path && this.game.componentSystem) {
-                // Store path in pathfinding component (not aiState)
+
+            if (path) {
+                // Store path in system Map
+                this.setEntityPath(request.entityId, path);
+                // Reset path index in component
                 const pathfindingComp = this.game.getComponent(request.entityId, "pathfinding");
                 if (pathfindingComp) {
-                    pathfindingComp.path = path;
                     pathfindingComp.pathIndex = 0;
                 }
             }
@@ -966,6 +990,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.navMesh = null;
         this.walkabilityCache.clear();
         this.pathCache.clear();
+        this.entityPaths.clear();
         this.pathRequests = [];
         this.ramps.clear();
         this.terrainTypes = null;

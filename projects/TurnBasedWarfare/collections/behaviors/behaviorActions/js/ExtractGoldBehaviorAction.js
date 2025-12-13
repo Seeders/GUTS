@@ -26,7 +26,8 @@ class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         const memory = this.getMemory(entityId);
         const targetMine = shared.targetMine;
 
-        if (!targetMine) {
+        // targetMine is null/undefined when not set, or could be 0 (valid entity ID)
+        if (targetMine === undefined || targetMine === null || targetMine < 0) {
             return this.failure();
         }
 

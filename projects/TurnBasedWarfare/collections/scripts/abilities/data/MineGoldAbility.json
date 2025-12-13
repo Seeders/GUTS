@@ -1,5 +1,5 @@
 {
-  "filePath": "/projects/TurnBasedWarfare/scripts/Scripts/abilities/js/MineGoldAbility.js",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/MineGoldAbility.js",
   "fileName": "MineGoldAbility",
   "behaviorAction": "MineGoldBehaviorTree"
 }

@@ -16,12 +16,18 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const targetId = shared[targetKey];
 
-        if (!targetId) {
+        // DEBUG
+        console.log(`[AttackEnemyBehaviorAction.execute] Entity ${entityId}, targetKey=${targetKey}, targetId=${targetId}`);
+
+        // targetId is null/undefined when not set, or could be 0 (valid entity ID)
+        if (targetId === undefined || targetId === null || targetId < 0) {
+            console.log(`[AttackEnemyBehaviorAction.execute] Entity ${entityId} - no valid target, returning failure`);
             return this.failure();
         }
 
         const combat = game.getComponent(entityId, 'combat');
         if (!combat) {
+            console.log(`[AttackEnemyBehaviorAction.execute] Entity ${entityId} - no combat component, returning failure`);
             return this.failure();
         }
 
@@ -45,23 +51,12 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     onEnd(entityId, game) {
         // Reset animation to idle when combat ends
         if (!game.isServer && game.hasService('setBillboardAnimation')) {
-            game.call('setBillboardAnimation', entityId, 'idle', true);
+            const enums = game.call('getEnums');
+            game.call('setBillboardAnimation', entityId, enums.animationType.idle, true);
         }
     }
 
     performAttack(attackerId, targetId, game, combat) {
-        if (!combat.lastAttack) combat.lastAttack = 0;
-
-        const effectiveAttackSpeed = this.getEffectiveAttackSpeed(attackerId, game, combat.attackSpeed);
-        const timeSinceLastAttack = game.state.now - combat.lastAttack;
-
-        if (timeSinceLastAttack < 1 / effectiveAttackSpeed) {
-            // Attack on cooldown
-            return;
-        }
-
-        combat.lastAttack = game.state.now;
-
         // Face the target
         const attackerTransform = game.getComponent(attackerId, 'transform');
         const attackerPos = attackerTransform?.position;
@@ -75,23 +70,57 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             attackerTransform.rotation.y = Math.atan2(dz, dx);
         }
 
+        // DEBUG: Log combat state
+        const hasProjectile = combat.projectile !== -1 && combat.projectile !== 0 && combat.projectile;
+        console.log(`[AttackEnemy] Entity ${attackerId} attacking ${targetId}`, {
+            projectile: combat.projectile,
+            damage: combat.damage,
+            hasAbilitySystem: !!game.abilitySystem,
+            hasProjectile: hasProjectile,
+            isAbilityOnly: !hasProjectile && combat.damage <= 0
+        });
+
+        // Ability-only units (damage = 0, no projectile) use abilities for combat
+        // Abilities have their own cooldowns managed by AbilitySystem
+        // Note: projectile = -1 means no projectile (numeric components use -1 for "none")
+        if (!hasProjectile && combat.damage <= 0 && game.abilitySystem) {
+            console.log(`[AttackEnemy] Entity ${attackerId} is ability-only unit, calling useOffensiveAbility`);
+            this.useOffensiveAbility(attackerId, targetId, game);
+            return;
+        }
+
+        // Basic attacks (projectile or melee) use attackSpeed cooldown
+        if (!combat.lastAttack) combat.lastAttack = 0;
+        const effectiveAttackSpeed = this.getEffectiveAttackSpeed(attackerId, game, combat.attackSpeed);
+
+        if (effectiveAttackSpeed > 0) {
+            const timeSinceLastAttack = game.state.now - combat.lastAttack;
+            if (timeSinceLastAttack < 1 / effectiveAttackSpeed) {
+                // Attack on cooldown
+                return;
+            }
+        }
+
+        combat.lastAttack = game.state.now;
+
         // Trigger attack animation (sprite direction is derived from rotation.y set above)
-        if (!game.isServer && game.hasService('triggerSinglePlayAnimation')) {
+        if (!game.isServer && game.hasService('triggerSinglePlayAnimation') && effectiveAttackSpeed > 0) {
+            const enums = game.call('getEnums');
             const animationSpeed = combat.attackSpeed;
             const minAnimationTime = 1 / combat.attackSpeed * 0.8;
-            game.call('triggerSinglePlayAnimation', attackerId, 'attack', animationSpeed, minAnimationTime);
+            game.call('triggerSinglePlayAnimation', attackerId, enums.animationType.attack, animationSpeed, minAnimationTime);
         }
 
         // Handle projectile or melee damage
         if (combat.projectile) {
             // Schedule projectile to fire at 50% through the attack animation (release point)
-            const projectileDelay = (1 / combat.attackSpeed) * 0.5;
+            const projectileDelay = effectiveAttackSpeed > 0 ? (1 / combat.attackSpeed) * 0.5 : 0;
             game.schedulingSystem.scheduleAction(() => {
                 this.fireProjectile(attackerId, targetId, game, combat);
             }, projectileDelay, attackerId);
         } else if (combat.damage > 0) {
             // Melee attack - schedule damage
-            const damageDelay = (1 / combat.attackSpeed) * 0.5;
+            const damageDelay = effectiveAttackSpeed > 0 ? (1 / combat.attackSpeed) * 0.5 : 0;
             const element = this.getDamageElement(attackerId, game, combat);
 
             game.call('scheduleDamage',
@@ -105,24 +134,41 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
                     weaponRange: (combat.range || 50) + 10
                 }
             );
-        } else if (game.abilitySystem) {
-            // Ability-only units (damage = 0) - use abilities for combat
-            this.useOffensiveAbility(attackerId, targetId, game);
         }
     }
 
     useOffensiveAbility(attackerId, targetId, game) {
         const abilities = game.call('getEntityAbilities', attackerId);
-        if (!abilities || abilities.length === 0) return;
+        console.log(`[useOffensiveAbility] Entity ${attackerId} abilities:`, abilities?.map(a => a.id) || 'none');
+
+        if (!abilities || abilities.length === 0) {
+            console.log(`[useOffensiveAbility] Entity ${attackerId} has no abilities, returning`);
+            return;
+        }
 
         // Find available offensive abilities
-        const availableAbilities = abilities
-            .filter(ability => game.abilitySystem.isAbilityOffCooldown(attackerId, ability.id))
-            .filter(ability => !ability.canExecute || ability.canExecute(attackerId))
+        const offCooldownAbilities = abilities.filter(ability => {
+            const offCooldown = game.abilitySystem.isAbilityOffCooldown(attackerId, ability.id);
+            console.log(`[useOffensiveAbility] Ability ${ability.id} offCooldown: ${offCooldown}`);
+            return offCooldown;
+        });
+
+        const canExecuteAbilities = offCooldownAbilities.filter(ability => {
+            const canExec = !ability.canExecute || ability.canExecute(attackerId);
+            console.log(`[useOffensiveAbility] Ability ${ability.id} canExecute: ${canExec}`);
+            return canExec;
+        });
+
+        const availableAbilities = canExecuteAbilities
             .sort((a, b) => (b.priority || 0) - (a.priority || 0) || a.id.localeCompare(b.id));
 
+        console.log(`[useOffensiveAbility] Available abilities:`, availableAbilities.map(a => a.id));
+
         if (availableAbilities.length > 0) {
+            console.log(`[useOffensiveAbility] Using ability ${availableAbilities[0].id} on target ${targetId}`);
             game.abilitySystem.useAbility(attackerId, availableAbilities[0].id, { target: targetId });
+        } else {
+            console.log(`[useOffensiveAbility] No available abilities for entity ${attackerId}`);
         }
     }
 
@@ -159,7 +205,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             return weaponElement;
         }
 
-        return game.damageSystem?.ELEMENT_TYPES?.PHYSICAL || 'physical';
+        return game.getEnums().element.physical;
     }
 
     getWeaponElement(entityId, game) {

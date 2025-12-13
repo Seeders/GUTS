@@ -213,15 +213,16 @@ class SmiteAbility extends GUTS.BaseAbility {
         }
         
         // Calculate damage (bonus vs undead)
-        const targetUnitType = this.game.getComponent(targetId, "unitType");
+        const targetUnitTypeComp = this.game.getComponent(targetId, "unitType");
+        const targetUnitType = this.game.call('getUnitTypeDef', targetUnitTypeComp);
         let damage = this.damage;
         let isUndeadTarget = false;
-        
+
         if (targetUnitType && (
-            targetUnitType.title.includes('undead') || 
-            targetUnitType.title.includes('skeleton') ||
-            targetUnitType.title.includes('zombie') ||
-            targetUnitType.id.includes('undead')
+            targetUnitType.title?.includes('undead') ||
+            targetUnitType.title?.includes('skeleton') ||
+            targetUnitType.title?.includes('zombie') ||
+            targetUnitType.id?.includes('undead')
         )) {
             damage = Math.floor(damage * this.bonusDamageVsUndead);
             isUndeadTarget = true;
@@ -314,13 +315,14 @@ class SmiteAbility extends GUTS.BaseAbility {
     
     // Helper method to check if target is undead (for potential future use)
     isUndeadTarget(targetId) {
-        const targetUnitType = this.game.getComponent(targetId, "unitType");
+        const targetUnitTypeComp = this.game.getComponent(targetId, "unitType");
+        const targetUnitType = this.game.call('getUnitTypeDef', targetUnitTypeComp);
         if (!targetUnitType) return false;
-        
-        return targetUnitType.title.includes('undead') || 
-               targetUnitType.title.includes('skeleton') ||
-               targetUnitType.title.includes('zombie') ||
-               targetUnitType.id.includes('undead');
+
+        return targetUnitType.title?.includes('undead') ||
+               targetUnitType.title?.includes('skeleton') ||
+               targetUnitType.title?.includes('zombie') ||
+               targetUnitType.id?.includes('undead');
     }
     
     // Helper method to get effective damage against target

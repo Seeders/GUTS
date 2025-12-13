@@ -204,7 +204,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         }
 
         // Deal critical backstab damage
-        this.dealDamageWithEffects(casterEntity, targetId, this.backstabDamage, 'physical', {
+        this.dealDamageWithEffects(casterEntity, targetId, this.backstabDamage, this.enums.element.physical, {
             isCritical: true,
             criticalMultiplier: 2.0,
             isBackstab: true

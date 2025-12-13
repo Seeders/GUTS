@@ -1,7 +1,7 @@
 {
   "title": "camera",
   "schema": {
-    "type": "perspective",
+    "type": 0,
     "fov": 60,
     "near": 0.1,
     "far": 10000,

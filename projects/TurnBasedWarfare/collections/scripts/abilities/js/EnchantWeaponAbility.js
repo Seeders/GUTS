@@ -16,7 +16,12 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
         
         this.elementalDamage = 15;
         this.duration = 30.0; // 30 seconds
-        this.availableElements = ['fire', 'cold', 'lightning'];
+        // Use numeric enum values for elements
+        this.availableElements = [
+            this.enums.element.fire,
+            this.enums.element.cold,
+            this.enums.element.lightning
+        ];
     }
     
     defineEffects() {
@@ -105,30 +110,26 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
             if (!allyPos || !allyHealth || allyHealth.current <= 0) return;
             
             // DESYNC SAFE: Check if already enchanted - don't stack enchantments
+            const enums = this.game.getEnums();
             const existingBuff = this.game.getComponent(allyId, "buff");
-            
+
             // DESYNC SAFE: Select element deterministically based on ally index and game time
             const selectedElement = this.selectDeterministicElement(allyId, index);
-            
-            if (existingBuff && existingBuff.buffType === 'enchant_weapon') {
+
+            if (existingBuff && existingBuff.buffType === enums.buffTypes.enchant_weapon) {
                 // DESYNC SAFE: Refresh duration and update element
                 existingBuff.endTime = this.game.state.now + this.duration;
                 existingBuff.appliedTime = this.game.state.now;
-                existingBuff.modifiers.weaponElement = selectedElement;
+                existingBuff.weaponElement = selectedElement;
             } else {
-                // Apply new weapon enchantment
+                // Apply new weapon enchantment - modifiers from buffTypes/enchant_weapon.json
                 this.game.addComponent(allyId, "buff", {
-                    buffType: 'enchant_weapon',
-                    modifiers: {
-                        weaponElement: selectedElement,
-                        elementalDamage: this.elementalDamage,
-                        glowing: true
-                    },
+                    buffType: enums.buffTypes.enchant_weapon,
                     endTime: this.game.state.now + this.duration,
-                    stackable: false,
-                    stacks: 1,
                     appliedTime: this.game.state.now,
-                    isActive: true
+                    stacks: 1,
+                    sourceEntity: casterEntity,
+                    weaponElement: selectedElement
                 });
 
                 // DESYNC SAFE: Schedule enchantment removal
@@ -138,7 +139,7 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
             }
             
             // Visual enchantment effect based on element
-            this.createVisualEffect(allyPos, `enchant_${selectedElement}`);
+            this.createVisualEffect(allyPos, this.getElementEffectName(selectedElement));
             
             enchantedCount++;
         });
@@ -169,46 +170,54 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
     // DESYNC SAFE: Remove enchantment effect
     removeEnchantment(allyId) {
         // Check if ally still exists and has the enchantment buff
+        const enums = this.game.getEnums();
         if (this.game.hasComponent(allyId, "buff")) {
             const buff = this.game.getComponent(allyId, "buff");
-            if (buff && buff.buffType === 'enchant_weapon') {
-                const element = buff.modifiers.weaponElement || 'fire';
-                
+            if (buff && buff.buffType === enums.buffTypes.enchant_weapon) {
+                const element = buff.weaponElement >= 0 ? buff.weaponElement : this.enums.element.fire;
+
                 this.game.removeComponent(allyId, "buff");
-                
+
                 // Visual effect when enchantment expires
                 const transform = this.game.getComponent(allyId, "transform");
                 const allyPos = transform?.position;
                 if (allyPos) {
-                    this.createVisualEffect(allyPos, `enchant_${element}`, { 
-                        count: 3, 
+                    this.createVisualEffect(allyPos, this.getElementEffectName(element), {
+                        count: 3,
                         scaleMultiplier: 0.6,
                         speedMultiplier: 0.8
                     });
                 }
-                
-              
             }
         }
     }
     
+    // Helper method to get effect name from numeric element enum
+    getElementEffectName(element) {
+        if (element === this.enums.element.fire) return 'enchant_fire';
+        if (element === this.enums.element.cold) return 'enchant_cold';
+        if (element === this.enums.element.lightning) return 'enchant_lightning';
+        return 'enchant_fire';
+    }
+
     // Helper method to get enchantment color for UI/effects
     getElementColor(element) {
-        switch (element) {
-            case 'fire': return 0xFF4500;
-            case 'cold': return 0x00BFFF;
-            case 'lightning': return 0xFFFF00;
-            default: return 0xFFD700;
-        }
+        if (element === this.enums.element.fire) return 0xFF4500;
+        if (element === this.enums.element.cold) return 0x00BFFF;
+        if (element === this.enums.element.lightning) return 0xFFFF00;
+        return 0xFFD700;
     }
-    
+
     // Helper method to get element damage type for combat system integration
+    // Returns the numeric enum value for the element
     getElementDamageType(element) {
-        switch (element) {
-            case 'fire': return 'fire';
-            case 'cold': return 'cold';
-            case 'lightning': return 'lightning';
-            default: return 'magic';
+        // element is already a numeric enum, just return it
+        // Default to physical if invalid
+        if (element === this.enums.element.fire ||
+            element === this.enums.element.cold ||
+            element === this.enums.element.lightning) {
+            return element;
         }
+        return this.enums.element.physical;
     }
 }

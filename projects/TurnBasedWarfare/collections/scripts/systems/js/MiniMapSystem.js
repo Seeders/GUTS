@@ -337,7 +337,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
 
     updateUnitIcons() {
-        const myTeam = this.game.state.mySide;
+        const myTeam = this.game.state.myTeam;
         if (!myTeam) return;
 
         const entities = this.game.getEntitiesWith(
@@ -345,8 +345,9 @@ class MiniMapSystem extends GUTS.BaseSystem {
             "team",
             "unitType"
         ).filter(id => {
-            const unitType = this.game.getComponent(id, "unitType");
-            return unitType.collection == "units" || unitType.collection == "buildings"
+            const unitTypeComp = this.game.getComponent(id, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            return unitType && (unitType.collection === "units" || unitType.collection === "buildings");
         });
 
         let friendlyUnitIndex = 0;
@@ -359,19 +360,20 @@ class MiniMapSystem extends GUTS.BaseSystem {
             const pos = transform?.position;
             const team = this.game.getComponent(entityId, "team");
             const projectile = this.game.getComponent(entityId, "projectile");
-            const unitType = this.game.getComponent(entityId, "unitType");
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
 
-            if (!pos || !team || projectile) continue;
-            
+            if (!pos || !team || projectile || !unitType) continue;
+
             const isMyUnit = team.team === myTeam;
             const visible = this.game.fogOfWarSystem?.isVisibleAt(pos.x, pos.z);
-            
+
             if (!isMyUnit && !visible) continue;
-            
+
             this.tempMatrix.makeTranslation(pos.x, 0, pos.z);
             this.tempMatrix.multiply(this.rotationMatrix);
-            
-            if (unitType.collection == 'buildings') {
+
+            if (unitType.collection === 'buildings') {
                 // It's a building
                 if (isMyUnit) {
                     this.friendlyBuildingMesh.setMatrixAt(friendlyBuildingIndex, this.tempMatrix);
@@ -380,7 +382,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
                     this.enemyBuildingMesh.setMatrixAt(enemyBuildingIndex, this.tempMatrix);
                     enemyBuildingIndex++;
                 }
-            } else if(unitType.collection == 'units') {
+            } else if (unitType.collection === 'units') {
                 // It's a unit
                 if (isMyUnit) {
                     this.friendlyInstancedMesh.setMatrixAt(friendlyUnitIndex, this.tempMatrix);

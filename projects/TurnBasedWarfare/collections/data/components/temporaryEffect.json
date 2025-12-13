@@ -1,8 +1,12 @@
 {
   "title": "temporaryEffect",
   "schema": {
-    "effectType": "generic",
-    "data": {},
+    "effectType": 0,
+    "caster": -1,
+    "radius": 0,
+    "tickInterval": 1,
+    "tickDamage": 0,
+    "tickHeal": 0,
     "createdTime": 0
   }
 }

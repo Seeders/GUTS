@@ -157,7 +157,6 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const collections = this.game.getCollections();
 
         // Collect all detail placements grouped by texture
         // Map: textureId -> Array of { x, y, z, scale }
@@ -175,7 +174,7 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
                 if (!terrainTypeName) continue;
 
                 // Get terrain type definition
-                const terrainTypeDef = collections.terrainTypes?.[terrainTypeName];
+                const terrainTypeDef = this.collections.terrainTypes?.[terrainTypeName];
                 if (!terrainTypeDef?.detailWorldObjects || !terrainTypeDef.detailDensity) {
                     continue;
                 }
@@ -208,7 +207,7 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
                     const detailType = detailObjects[detailIndex];
 
                     // Get the world object definition to find its texture
-                    const worldObjDef = collections.worldObjects?.[detailType];
+                    const worldObjDef = this.collections.worldObjects?.[detailType];
                     if (!worldObjDef?.renderTexture) {
                         continue;
                     }

@@ -95,16 +95,18 @@ class ServerNetworkManager {
 
             if (result.success) {
                 this.currentRoomIds.push(roomId);
-                this.playerSockets.set(socket.id, { 
-                    socket, 
+                this.playerSockets.set(socket.id, {
+                    socket,
                     roomId,
-                    isHost: true 
+                    isHost: true,
+                    numericPlayerId: result.numericPlayerId
                 });
                 socket.join(roomId);
-                
+
                 socket.emit('ROOM_CREATED', {
                     roomId: roomId,
                     playerId: socket.id,
+                    numericPlayerId: result.numericPlayerId,
                     isHost: true,
                     gameState: room.getGameState()
                 });
@@ -147,7 +149,8 @@ class ServerNetworkManager {
             }
             
             // Check if room allows joining
-            if (room.game.state.phase !== 'waiting' && room.game.state.phase !== 'lobby') {
+            const enums = room.game.call('getEnums');
+            if (room.game.state.phase !== enums.gamePhase.waiting && room.game.state.phase !== enums.gamePhase.lobby) {
                 this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
                     error: 'Game already in progress' 
                 });
@@ -161,17 +164,25 @@ class ServerNetworkManager {
 
             if (result.success) {
                 this.joinRoom(playerId, roomId);
-                
+
+                // Store numeric ID in socket info
+                const socketInfo = this.playerSockets.get(playerId);
+                if (socketInfo) {
+                    socketInfo.numericPlayerId = result.numericPlayerId;
+                }
+
                 this.sendToPlayer(playerId, 'ROOM_JOINED', {
                     roomId: roomId,
                     playerId: playerId,
+                    numericPlayerId: result.numericPlayerId,
                     isHost: false,
                     gameState: room.getGameState()
                 });
-                
+
                 // Notify other players
                 this.broadcastToRoom(roomId, 'PLAYER_JOINED', {
                     playerId: playerId,
+                    numericPlayerId: result.numericPlayerId,
                     playerName: playerName,
                     gameState: room.getGameState()
                 });
@@ -212,8 +223,10 @@ class ServerNetworkManager {
             if (roomId) {
                 const room = this.engine.gameRooms.get(roomId);
                 if (room && room.game.serverEventManager) {
+                    const numericPlayerId = room.getNumericPlayerId(playerId);
                     room.game.serverEventManager.emit(eventName, {
                         playerId: playerId,
+                        numericPlayerId: numericPlayerId,
                         eventName: eventName,
                         data: data,
                         socket: socket,

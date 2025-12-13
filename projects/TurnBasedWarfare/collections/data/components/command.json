@@ -1,14 +1,17 @@
 {
   "title": "command",
   "schema": {
-    "type": "move",
-    "controllerId": null,
-    "targetPosition": null,
-    "target": null,
-    "meta": {},
+    "type": 0,
+    "controllerId": -1,
+    "targetPosition": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "target": -1,
     "priority": 0,
-    "interruptible": true,
+    "interruptible": 1,
     "createdTime": 0,
-    "id": null
+    "id": -1
   }
 }

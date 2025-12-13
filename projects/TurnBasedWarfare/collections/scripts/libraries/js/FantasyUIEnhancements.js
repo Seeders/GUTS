@@ -556,3 +556,4 @@ if(typeof FantasyUIEnhancements != 'undefined'){
         window.FantasyUIEnhancements = FantasyUIEnhancements;
     }
 }
+

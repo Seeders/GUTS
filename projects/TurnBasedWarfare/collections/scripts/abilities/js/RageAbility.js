@@ -17,7 +17,7 @@ class RageAbility extends GUTS.BaseAbility {
         this.rageDuration = 8.0;
         this.damageMultiplier = 1.5;
         this.attackSpeedMultiplier = 1.3;
-        this.element = 'physical';
+        this.element = this.enums.element.physical;
     }
     
     defineEffects() {
@@ -60,7 +60,8 @@ class RageAbility extends GUTS.BaseAbility {
         
         // Don't stack rage buffs - check if already raged
         const existingBuff = this.game.getComponent(casterEntity, "buff");
-        if (existingBuff && existingBuff.buffType === 'rage') return false;
+        const enums = this.game.getEnums();
+        if (existingBuff && existingBuff.buffType === enums.buffTypes.rage) return false;
         
         return true;
     }
@@ -171,18 +172,13 @@ class RageAbility extends GUTS.BaseAbility {
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.rageDuration;
 
+        const enums = this.game.getEnums();
         this.game.addComponent(casterEntity, "buff", {
-            buffType: 'rage',
-            modifiers: {
-                damageMultiplier: this.damageMultiplier,
-                attackSpeedMultiplier: this.attackSpeedMultiplier,
-                moveSpeedMultiplier: 1.1 // Slight movement speed bonus
-            },
+            buffType: enums.buffTypes.rage,
             endTime: endTime,
-            stackable: false,
-            stacks: 1,
             appliedTime: currentTime,
-            isActive: true
+            stacks: 1,
+            sourceEntity: casterEntity
         });
         
         // Screen effects for dramatic impact
@@ -205,7 +201,8 @@ class RageAbility extends GUTS.BaseAbility {
         
         // Check if entity still exists and has the buff
         const buff = this.game.getComponent(casterEntity, "buff");
-        if (!buff || buff.buffType !== 'rage') return;
+        const enums = this.game.getEnums();
+        if (!buff || buff.buffType !== enums.buffTypes.rage) return;
         
         if (casterPos) {
             // Create fading effect

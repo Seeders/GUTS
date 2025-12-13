@@ -1,5 +1,5 @@
 {
-  "level": "level1",
+  "level": 1,
   "mousePosition": "{ x: 0, y: 0, isoX: 0, isoY: 0, gridX: 0, gridY: 0 }",
   "isPaused": false,
   "isLevelingUp": false,
@@ -9,12 +9,12 @@
   "modifierSet": "global",
   "fileName": "state",
   "population": 0,
-  "phase": "placement",
+  "phase": 1,
   "round": 1,
   "playerGold": 100,
   "playerReady": false,
   "phaseTimeLeft": 30,
-  "selectedUnitType": "",
+  "selectedUnitType": null,
   "teamMaxHealth": 2500,
   "startingGold": 100
 }

@@ -5,8 +5,6 @@ class GridSystem extends GUTS.BaseSystem {
 
         this.state = new Map();
 
-        // NEW: track which half each team owns
-        this.teamSides = { player: 'left', enemy: 'right' };
         this.leftBounds = null;
         this.rightBounds = null;
 
@@ -102,12 +100,14 @@ class GridSystem extends GUTS.BaseSystem {
         this.game.register('updateCoordinateConfig', (config) =>
             this.coordinateTranslator.updateConfig(config));
 
-        const collections = this.game.getCollections();
+        const collections = this.collections;
 
         const terrainGridSize = collections.configs.game.gridSize;
         const placementGridSize = terrainGridSize / 2; // Placement grid is always half the terrain grid
-        const currentLevel = collections.configs.state.level;
-        const tileMapSize = collections.levels[currentLevel]?.tileMap?.size || 32;
+        const currentLevelIndex = collections.configs.state.level;
+        const levelKey = this.reverseEnums.levels[currentLevelIndex];
+        const level = collections.levels[levelKey];
+        const tileMapSize = level?.tileMap?.size || 32;
         const terrainSize = tileMapSize * terrainGridSize;
 
         this.cellSize = placementGridSize;
@@ -152,7 +152,8 @@ class GridSystem extends GUTS.BaseSystem {
             maxZ: this.dimensions.height - 1
         };
 
-        // Default: player=left, enemy=right (can be swapped later)
+        // Initialize enums
+        // Default: left team uses left bounds, right team uses right bounds
         this.playerBounds = this.leftBounds;
         this.enemyBounds  = this.rightBounds;
         
@@ -165,19 +166,19 @@ class GridSystem extends GUTS.BaseSystem {
         };
     }
 
-    // NEW: set which half each team owns (call this when you learn sides from the server)
-    setTeamSides(sides) {
-        if (sides?.player === 'left' || sides?.player === 'right') {
-            this.teamSides.player = sides.player;
+    /**
+     * Set which bounds each team uses
+     * @param {number} myTeam - Numeric team value (from enums.team)
+     */
+    setTeamBounds(myTeam) {
+        // myTeam gets left bounds, opponent gets right bounds
+        if (myTeam === this.enums.team.left) {
+            this.playerBounds = this.leftBounds;
+            this.enemyBounds = this.rightBounds;
+        } else {
+            this.playerBounds = this.rightBounds;
+            this.enemyBounds = this.leftBounds;
         }
-        if (sides?.enemy === 'left' || sides?.enemy === 'right') {
-            this.teamSides.enemy = sides.enemy;
-        }
-
-        // Point player/enemy bounds at the correct half
-        this.playerBounds = (this.teamSides.player === 'left') ? this.leftBounds : this.rightBounds;
-        this.enemyBounds  = (this.teamSides.enemy  === 'left') ? this.leftBounds : this.rightBounds;
-
     }
     
     createVisualization(scene) {
@@ -289,11 +290,12 @@ class GridSystem extends GUTS.BaseSystem {
 
     getUnitCells(entityId) {
 
-        const unitType = this.game.getComponent(entityId, "unitType");
+        const unitTypeComp = this.game.getComponent(entityId, "unitType");
+        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
         const transform = this.game.getComponent(entityId, "transform");
         const pos = transform?.position;
 
-        if(!unitType) return null;
+        if (!unitType) return null;
         const cells = [];
 
         // For buildings, convert footprint (terrain grid units) to placement grid cells
@@ -364,7 +366,8 @@ class GridSystem extends GUTS.BaseSystem {
                     const distSq = dx * dx + dz * dz;
 
                     if (collection) {
-                        const unitType = this.game.getComponent(entityId, "unitType");
+                        const unitTypeComp = this.game.getComponent(entityId, "unitType");
+                        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
                         if (!unitType || unitType.collection !== collection) continue;
                     }
 
@@ -410,13 +413,14 @@ class GridSystem extends GUTS.BaseSystem {
                 this._removeEntityFromGrid(entityId);
                 continue;
             }
-            if (deathState && deathState.isDying) {
+            if (deathState && deathState.state !== this.enums.deathState.alive) {
                 this._removeEntityFromGrid(entityId);
                 continue;
             }
 
             // Skip world objects that are not impassable (e.g., gold veins, bushes)
-            const unitType = this.game.getComponent(entityId, 'unitType');
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             if (unitType && unitType.impassable === false) continue;
 
             currentEntitySet.add(entityId);
@@ -558,9 +562,13 @@ class GridSystem extends GUTS.BaseSystem {
         }
     }
     
+    /**
+     * Get bounds for a team
+     * @param {number} team - Numeric team value (from enums.team)
+     * @returns {Object} The bounds for that team
+     */
     getBounds(team) {
-        // Keep API compatibility; these references are updated by setTeamSides()
-        return team === 'right' ? this.rightBounds : this.leftBounds;
+        return team === this.enums.team.right ? this.rightBounds : this.leftBounds;
     }
         
     getCellState(gridX, gridZ) {
@@ -579,7 +587,6 @@ class GridSystem extends GUTS.BaseSystem {
             dimensions: this.dimensions,
             leftBounds: this.leftBounds,
             rightBounds: this.rightBounds,
-            teamSides: { ...this.teamSides },
             occupiedCells: this.getOccupiedCells(),
             totalCells: this.dimensions.width * this.dimensions.height,
             occupiedCount: this.state.size
@@ -606,10 +613,12 @@ class GridSystem extends GUTS.BaseSystem {
         if (terrainEntities.length === 0) return;
 
         const terrainComponent = this.game.getComponent(terrainEntities[0], 'terrain');
-        if (!terrainComponent?.level) return;
+        const levelIndex = terrainComponent?.level;
+        if (levelIndex === undefined || levelIndex < 0) return;
 
-        const collections = this.game.getCollections();
-        const level = collections.levels?.[terrainComponent.level];
+        const collections = this.collections;
+        const levelKey = this.reverseEnums.levels[levelIndex];
+        const level = collections.levels[levelKey];
         if (!level?.tileMap?.size) return;
 
         const newTileMapSize = level.tileMap.size;
@@ -661,7 +670,7 @@ class GridSystem extends GUTS.BaseSystem {
             maxZ: this.dimensions.startZ + (this.dimensions.height * placementGridSize)
         };
 
-        console.log(`[GridSystem] Updated for level: ${terrainComponent.level} (tileMapSize: ${newTileMapSize})`);
+        console.log(`[GridSystem] Updated for level index: ${levelIndex} (tileMapSize: ${newTileMapSize})`);
     }
 
     
@@ -795,9 +804,8 @@ class GridSystem extends GUTS.BaseSystem {
             for (const entityId of cellState.entities) {
                 const team = this.game.getComponent(entityId, 'team');
                 if (team) {
-                    // Team values are 'left' and 'right'
-                    if (team.team === 'left') hasPlayer = true;
-                    else if (team.team === 'right') hasEnemy = true;
+                    if (team.team === this.enums.team.left) hasPlayer = true;
+                    else if (team.team === this.enums.team.right) hasEnemy = true;
                 }
             }
 
@@ -846,7 +854,8 @@ class GridSystem extends GUTS.BaseSystem {
             for (const [key, cellState] of this.state.entries()) {
                 const cell = this._keyToCell(key);
                 const entityNames = cellState.entities.map(id => {
-                    const unitType = this.game.getComponent(id, 'unitType');
+                    const unitTypeComp = this.game.getComponent(id, 'unitType');
+                    const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
                     const team = this.game.getComponent(id, 'team');
                     const teamValue = team ? JSON.stringify(team.team) : 'NO_TEAM';
                     return `${unitType?.name || 'unknown'}(team=${teamValue})`;

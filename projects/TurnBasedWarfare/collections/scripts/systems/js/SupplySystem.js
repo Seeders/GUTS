@@ -10,6 +10,7 @@ class SupplySystem extends GUTS.BaseSystem {
     }
 
     init() {
+        // Initialize enums
         this.game.register('getCurrentSupply', this.getCurrentSupply.bind(this));
         this.game.register('getCurrentPopulation', this.getCurrentPopulation.bind(this));
         this.game.register('canAffordSupply', this.canAffordSupply.bind(this));
@@ -53,15 +54,17 @@ class SupplySystem extends GUTS.BaseSystem {
         const entities = this.game.getEntitiesWith('unitType');
 
         for (const entityId of entities) {
-            const unitType = this.game.getComponent(entityId, 'unitType');
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             const team = this.game.getComponent(entityId, 'team');
             const health = this.game.getComponent(entityId, 'health');
             const deathState = this.game.getComponent(entityId, 'deathState');
 
-            // Skip if no team or dead/dying
+            // Skip if no team or dead/dying or no unit type
+            if (!unitType) continue;
             if (!team?.team) continue;
             if (health && health.current <= 0) continue;
-            if (deathState && deathState.isDying) continue;
+            if (deathState && deathState.state !== this.enums.deathState.alive) continue;
 
             const teamId = team.team;
 
@@ -89,7 +92,7 @@ class SupplySystem extends GUTS.BaseSystem {
     updateSupplyDisplay() {
         if (!this.supplyElement) return;
 
-        const team = this.game.state.mySide;
+        const team = this.game.state.myTeam;
         if (!team) return;
 
         const currentPop = this.getCurrentPopulation(team);
@@ -100,7 +103,7 @@ class SupplySystem extends GUTS.BaseSystem {
 
     update() {
         if (this.game.isServer) return;
-        if (this.game.state.phase === 'placement') {
+        if (this.game.state.phase === this.enums.gamePhase.placement) {
             this.updateSupplyDisplay();
         }
     }

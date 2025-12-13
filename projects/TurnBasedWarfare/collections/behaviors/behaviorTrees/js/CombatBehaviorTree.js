@@ -15,8 +15,9 @@ class CombatBehaviorTree extends GUTS.BaseBehaviorTree {
         }
 
         // Skip non-combat units (peasants mining, etc.)
-        const unitType = game.getComponent(entityId, 'unitType');
-        if (combat.damage === 0 && (!unitType.abilities || unitType.abilities.length === 0)) {
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitType = game.call('getUnitTypeDef', unitTypeComp);
+        if (combat.damage === 0 && (!unitType?.abilities || unitType.abilities.length === 0)) {
             return null;
         }
 

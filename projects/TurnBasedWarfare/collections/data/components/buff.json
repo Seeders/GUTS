@@ -1,12 +1,14 @@
 {
   "title": "buff",
+  "enum": [
+    "buffTypes"
+  ],
   "schema": {
-    "buffType": "generic",
-    "modifiers": {},
+    "buffType": 0,
     "endTime": 0,
-    "stackable": false,
-    "stacks": 1,
     "appliedTime": 0,
-    "isActive": true
+    "stacks": 1,
+    "sourceEntity": -1,
+    "weaponElement": -1
   }
 }

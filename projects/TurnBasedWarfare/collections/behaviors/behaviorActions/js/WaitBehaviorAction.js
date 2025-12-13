@@ -72,3 +72,4 @@ class WaitBehaviorAction extends GUTS.BaseBehaviorAction {
         this.clearMemory(entityId);
     }
 }
+
