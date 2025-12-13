@@ -54,6 +54,10 @@ class BaseECSGame {
         this._queryCache = new Map();
         this._queryCacheVersion = 0;
 
+        // Proxy cache for getComponent - avoids creating new proxies every call
+        // Map: componentType -> Map(entityId -> proxy)
+        this._proxyCache = new Map();
+
         // Pre-allocated result array for queries (avoids allocation in hot path)
         this._queryResultBuffer = new Uint32Array(this.MAX_ENTITIES);
 
@@ -178,6 +182,9 @@ class BaseECSGame {
             } else if (typeof value === 'boolean') {
                 // Booleans stored as 0/1 in TypedArrays
                 fields.push(fieldPath);
+            } else if (value === null) {
+                // null fields stored as -Infinity in TypedArrays
+                fields.push(fieldPath);
             } else if (typeof value === 'string' && enumMap && enumMap.toIndex.hasOwnProperty(value)) {
                 // String that will be converted to enum index - treat as numeric
                 fields.push(fieldPath);
@@ -240,22 +247,66 @@ class BaseECSGame {
 
     /**
      * Set a value in a numeric component's TypedArray storage
+     * Converts null to -Infinity for storage (sentinel value)
      */
     _setNumericField(componentId, entityId, fieldPath, value) {
         const key = `${componentId}.${fieldPath}`;
         const arr = this._numericArrays.get(key);
         if (arr) {
-            arr[entityId] = value;
+            // Convert null to -Infinity for storage (sentinel value)
+            arr[entityId] = value === null ? -Infinity : value;
         }
     }
 
     /**
-     * Get a value from a numeric component's TypedArray storage
+     * Get a value from a numeric component's TypedArray storage (internal)
      */
     _getNumericField(componentId, entityId, fieldPath) {
         const key = `${componentId}.${fieldPath}`;
         const arr = this._numericArrays.get(key);
-        return arr ? arr[entityId] : undefined;
+        return arr ? (arr[entityId] === -Infinity ? null : arr[entityId]) : undefined;
+    }
+
+    /**
+     * Direct field read - bypasses proxy for maximum performance in hot paths
+     * Use for tight loops where proxy overhead matters (collision, pathfinding)
+     * @param {number} entityId - Entity ID
+     * @param {string} componentType - Component name (e.g., 'transform')
+     * @param {string} fieldPath - Dot-separated path (e.g., 'position.x')
+     * @returns {number|null} - Raw value, or null if field was null
+     * @example
+     * // Instead of: game.getComponent(id, 'transform').position.x
+     * const x = game.getField(id, 'transform', 'position.x');
+     */
+    getField(entityId, componentType, fieldPath) {
+        const value = this._getNumericField(componentType, entityId, fieldPath);
+        // Convert -Infinity back to null (null sentinel value)
+        return value === -Infinity ? null : value;
+    }
+
+    /**
+     * Direct field write - bypasses proxy for maximum performance in hot paths
+     * @param {number} entityId - Entity ID
+     * @param {string} componentType - Component name (e.g., 'transform')
+     * @param {string} fieldPath - Dot-separated path (e.g., 'position.x')
+     * @param {number|null} value - Value to set
+     * @example
+     * // Instead of: game.getComponent(id, 'transform').position.x = 100
+     * game.setField(id, 'transform', 'position.x', 100);
+     */
+    setField(entityId, componentType, fieldPath, value) {
+        // Convert null to -Infinity for storage
+        const storedValue = value === null ? -Infinity : value;
+        this._setNumericField(componentType, entityId, fieldPath, storedValue);
+    }
+
+    /**
+     * Check if a field value represents null/unset
+     * @param {number} value - Value from getField or direct TypedArray read
+     * @returns {boolean} - True if value represents null
+     */
+    isNull(value) {
+        return value === -Infinity || value === null;
     }
 
     /**
@@ -280,6 +331,12 @@ class BaseECSGame {
                     dataValue = typeof schemaValue === 'boolean' ? (schemaValue ? 1 : 0) : schemaValue;
                 }
                 this._setNumericField(componentId, entityId, fieldPath, dataValue);
+            } else if (schemaValue === null) {
+                // null schema fields: store null as -Infinity, use -Infinity as default
+                if (dataValue === undefined || dataValue === null) {
+                    dataValue = -Infinity;
+                }
+                this._setNumericField(componentId, entityId, fieldPath, dataValue);
             } else if (schemaValue && typeof schemaValue === 'object' && !Array.isArray(schemaValue)) {
                 this._writeNumericComponent(componentId, entityId, data, schemaValue, fieldPath);
             }
@@ -287,51 +344,143 @@ class BaseECSGame {
     }
 
     /**
-     * Read component data from TypedArrays and return as proxy object that syncs writes back
-     * Converts stored 0/1 back to booleans based on schema type
-     * Handles $fixedArray by creating array-like proxy objects
+     * Read component data from TypedArrays and return as proxy object
+     * Proxy reads/writes directly from TypedArrays on every access (no stale data)
+     * Proxies are cached per entity+component to avoid GC churn
      */
     _readNumericComponent(componentId, entityId, schema, prefix = '') {
-        const result = {};
+        // For top-level calls (no prefix), check proxy cache first
+        if (!prefix) {
+            let componentCache = this._proxyCache.get(componentId);
+            if (!componentCache) {
+                componentCache = new Map();
+                this._proxyCache.set(componentId, componentCache);
+            }
+            const cached = componentCache.get(entityId);
+            if (cached) {
+                return cached;
+            }
+            // Create and cache the proxy
+            const proxy = this._createComponentProxy(componentId, entityId, schema, '');
+            componentCache.set(entityId, proxy);
+            return proxy;
+        }
+        // Nested objects (with prefix) still create proxies but aren't cached separately
+        return this._createComponentProxy(componentId, entityId, schema, prefix);
+    }
+
+    /**
+     * Create a proxy that reads/writes directly from TypedArrays
+     * Every property access goes through the proxy traps for live data
+     */
+    _createComponentProxy(componentId, entityId, schema, prefix) {
         const game = this;
 
+        // Build schema info for fast lookups
+        const schemaInfo = {};
         for (const key in schema) {
-            const fieldPath = prefix ? `${prefix}.${key}` : key;
             const schemaValue = schema[key];
-
-            if (typeof schemaValue === 'number' || typeof schemaValue === 'string') {
-                // Numbers and enum values stay as numbers
-                result[key] = this._getNumericField(componentId, entityId, fieldPath);
-            } else if (typeof schemaValue === 'boolean') {
-                // Convert 0/1 back to boolean
-                result[key] = this._getNumericField(componentId, entityId, fieldPath) !== 0;
-            } else if (schemaValue && typeof schemaValue === 'object' && !Array.isArray(schemaValue)) {
-                // Check for $fixedArray directive
-                if (schemaValue.$fixedArray) {
-                    result[key] = this._createFixedArrayProxy(componentId, entityId, key, schemaValue.$fixedArray, prefix);
-                } else if (schemaValue.$bitmask) {
-                    // $bitmask is stored as individual 32-bit fields (baseName0, baseName1, etc.)
-                    result[key] = this._createBitmaskProxy(componentId, entityId, key, schemaValue.$bitmask, prefix);
-                } else if (schemaValue.$enum) {
-                    // $enum fields are stored as numeric indices, read directly
-                    result[key] = this._getNumericField(componentId, entityId, fieldPath);
-                } else {
-                    result[key] = this._readNumericComponent(componentId, entityId, schemaValue, fieldPath);
-                }
-            }
+            schemaInfo[key] = {
+                fieldPath: prefix ? `${prefix}.${key}` : key,
+                type: schemaValue === null ? 'null' :
+                      typeof schemaValue === 'boolean' ? 'boolean' :
+                      (typeof schemaValue === 'number' || typeof schemaValue === 'string') ? 'number' :
+                      (schemaValue && schemaValue.$fixedArray) ? 'fixedArray' :
+                      (schemaValue && schemaValue.$bitmask) ? 'bitmask' :
+                      (schemaValue && schemaValue.$enum) ? 'enum' :
+                      (schemaValue && typeof schemaValue === 'object') ? 'nested' : 'unknown',
+                schemaValue
+            };
         }
 
-        // Return a proxy that syncs writes back to TypedArrays
-        return new Proxy(result, {
+        // Cache for nested proxies (fixedArray, bitmask, nested objects)
+        const nestedCache = {};
+
+        return new Proxy({}, {
+            get(target, prop) {
+                // Support JSON.stringify
+                if (prop === 'toJSON') {
+                    return () => {
+                        const result = {};
+                        for (const key in schemaInfo) {
+                            const info = schemaInfo[key];
+                            if (info.type === 'number' || info.type === 'enum') {
+                                result[key] = game._getNumericField(componentId, entityId, info.fieldPath);
+                            } else if (info.type === 'boolean') {
+                                result[key] = game._getNumericField(componentId, entityId, info.fieldPath) !== 0;
+                            } else if (info.type === 'null') {
+                                const stored = game._getNumericField(componentId, entityId, info.fieldPath);
+                                result[key] = stored === -Infinity ? null : stored;
+                            } else if (info.type === 'fixedArray' || info.type === 'bitmask' || info.type === 'nested') {
+                                // Trigger the getter to get the nested proxy, then toJSON it
+                                const nested = nestedCache[key] || game._createNestedProxy(componentId, entityId, key, info, prefix);
+                                result[key] = nested.toJSON ? nested.toJSON() : nested;
+                            }
+                        }
+                        return result;
+                    };
+                }
+
+                const info = schemaInfo[prop];
+                if (!info) return undefined;
+
+                if (info.type === 'number' || info.type === 'enum') {
+                    return game._getNumericField(componentId, entityId, info.fieldPath);
+                } else if (info.type === 'boolean') {
+                    return game._getNumericField(componentId, entityId, info.fieldPath) !== 0;
+                } else if (info.type === 'null') {
+                    const stored = game._getNumericField(componentId, entityId, info.fieldPath);
+                    return stored === -Infinity ? null : stored;
+                } else if (info.type === 'fixedArray' || info.type === 'bitmask' || info.type === 'nested') {
+                    // Cache nested proxies to avoid recreation
+                    if (!nestedCache[prop]) {
+                        nestedCache[prop] = game._createNestedProxy(componentId, entityId, prop, info, prefix);
+                    }
+                    return nestedCache[prop];
+                }
+                return undefined;
+            },
             set(target, prop, value) {
-                // Convert booleans to 0/1 for storage
-                const storedValue = typeof value === 'boolean' ? (value ? 1 : 0) : value;
-                target[prop] = value;
-                const fieldPath = prefix ? `${prefix}.${prop}` : prop;
-                game._setNumericField(componentId, entityId, fieldPath, storedValue);
-                return true;
+                const info = schemaInfo[prop];
+                if (!info) return false;
+
+                let storedValue = value;
+                if (info.type === 'boolean') {
+                    storedValue = value ? 1 : 0;
+                } else if (info.type === 'null' && value === null) {
+                    storedValue = -Infinity;
+                }
+
+                if (info.type === 'number' || info.type === 'boolean' || info.type === 'null' || info.type === 'enum') {
+                    game._setNumericField(componentId, entityId, info.fieldPath, storedValue);
+                    return true;
+                }
+                return false;
+            },
+            ownKeys() {
+                return Object.keys(schemaInfo);
+            },
+            getOwnPropertyDescriptor(target, prop) {
+                if (prop in schemaInfo) {
+                    return { configurable: true, enumerable: true };
+                }
+                return undefined;
             }
         });
+    }
+
+    /**
+     * Create nested proxy for fixedArray, bitmask, or nested object
+     */
+    _createNestedProxy(componentId, entityId, key, info, prefix) {
+        if (info.type === 'fixedArray') {
+            return this._createFixedArrayProxy(componentId, entityId, key, info.schemaValue.$fixedArray, prefix);
+        } else if (info.type === 'bitmask') {
+            return this._createBitmaskProxy(componentId, entityId, key, info.schemaValue.$bitmask, prefix);
+        } else if (info.type === 'nested') {
+            return this._createComponentProxy(componentId, entityId, info.schemaValue, info.fieldPath);
+        }
+        return undefined;
     }
 
     /**
@@ -682,9 +831,20 @@ class BaseECSGame {
     }
 
     getEntityId() {
-        // Recycle freed entity IDs for better memory locality
+        // Recycle freed entity IDs deterministically - always use lowest available
+        // This ensures client and server get the same ID even if destruction order differs
         if (this.freeEntityCount > 0) {
-            return this.freeEntityIds[--this.freeEntityCount];
+            // Find the minimum ID in the free list for deterministic selection
+            let minIdx = 0;
+            for (let i = 1; i < this.freeEntityCount; i++) {
+                if (this.freeEntityIds[i] < this.freeEntityIds[minIdx]) {
+                    minIdx = i;
+                }
+            }
+            const id = this.freeEntityIds[minIdx];
+            // Swap with last and decrement count
+            this.freeEntityIds[minIdx] = this.freeEntityIds[--this.freeEntityCount];
+            return id;
         }
         if (this.nextEntityId >= this.MAX_ENTITIES) {
             throw new Error(`Maximum entity limit (${this.MAX_ENTITIES}) reached`);
@@ -822,6 +982,11 @@ class BaseECSGame {
             }
         }
 
+        // Clear cached proxies for this entity
+        for (const [, componentCache] of this._proxyCache) {
+            componentCache.delete(entityId);
+        }
+
         // Note: TypedArray numeric data doesn't need clearing -
         // the bitmask ensures it won't be read
 
@@ -936,6 +1101,12 @@ class BaseECSGame {
         const storage = this._objectComponents.get(componentType);
         if (storage) {
             storage[entityId] = undefined;
+        }
+
+        // Clear cached proxy for this entity+component
+        const componentCache = this._proxyCache.get(componentType);
+        if (componentCache) {
+            componentCache.delete(entityId);
         }
 
         this._invalidateQueryCache();
@@ -1066,6 +1237,20 @@ class BaseECSGame {
         // Sync entity ID counter
         if (data.nextEntityId !== undefined) {
             this.nextEntityId = data.nextEntityId;
+        }
+
+        // Rebuild freeEntityIds from entityAlive to ensure consistency
+        // After applying server state, find all dead entity IDs that can be recycled
+        this.freeEntityCount = 0;
+        for (let i = 1; i < this.nextEntityId; i++) {
+            if (this.entityAlive[i] === 0) {
+                this.freeEntityIds[this.freeEntityCount++] = i;
+            }
+        }
+
+        // Clear all cached proxies since data has been overwritten
+        for (const [, componentCache] of this._proxyCache) {
+            componentCache.clear();
         }
 
         this._invalidateQueryCache();

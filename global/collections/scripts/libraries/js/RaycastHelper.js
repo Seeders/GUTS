@@ -6,7 +6,7 @@
  * - Fallback flat plane raycasting
  * - Converting mouse screen coordinates to world positions
  *
- * Used by both the game (MultiplayerPlacementSystem) and editor (TerrainMapEditor)
+ * Used by both the game (PlacementUISystem) and editor (TerrainMapEditor)
  */
 class RaycastHelper {
     constructor(camera, scene) {

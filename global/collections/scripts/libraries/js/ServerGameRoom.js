@@ -300,7 +300,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         // Clear any placement data (use numeric ID for ECS comparison)
         if (room.game && room.game.placementSystem) {
             const numericId = room.getNumericPlayerId(playerId);
-            room.game.placementSystem.clearPlayerPlacements(numericId);
+            room.game.call('clearPlayerPlacements', numericId);
         }
 
         // Clear any battle data
@@ -498,14 +498,14 @@ class ServerGameRoom extends global.GUTS.GameRoom {
     }
 
     // Enhanced game state for multiplayer
-    // Placements included for spawning opponent entities on client
+    // networkUnitData included for spawning opponent entities on client
     // entitySync is authoritative for component data
     getGameState() {
         let players = Array.from(this.players.values());
         let playerData = [];
         players.forEach((p) => {
-            // Get minimal placement data for spawning entities
-            const placements = this.getPlacementsForPlayer(p.id);
+            // Get network unit data for spawning entities (includes placement + sync data)
+            const networkUnitData = this.getNetworkUnitDataForPlayer(p.id);
 
             // Get stats from player entity if it exists (after game starts)
             const playerStats = this.game.call('getPlayerStats', p.id);
@@ -515,11 +515,12 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 name: p.name,
                 ready: p.ready || false,
                 isHost: p.isHost || false,
+                team: playerStats?.side ?? p.team,  // Team at top level for easy access
                 stats: {
                     gold: playerStats?.gold ?? this.game.state.startingGold,
                     team: playerStats?.side ?? p.team  // side field in playerStats component stores numeric team
                 },
-                placements: placements
+                networkUnitData: networkUnitData
             });
         });
         return {
@@ -535,15 +536,21 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         };
     }
 
-    // Get placement data for client (spawning entities and syncing experience)
-    // Client looks up unitType from collections using unitTypeId + collection
-    getPlacementsForPlayer(socketPlayerId) {
+    /**
+     * Get network unit data for client (spawning entities and syncing experience)
+     * This is different from the placement component - it includes additional sync data
+     * like experience, squadUnits, playerOrder, etc. for network transmission.
+     * Client looks up unitType from collections using unitTypeId + collection
+     * @param {string} socketPlayerId - The socket player ID
+     * @returns {Array} Array of network unit data objects
+     */
+    getNetworkUnitDataForPlayer(socketPlayerId) {
         if (!this.game.componentSystem) return [];
 
         // Convert string playerId to numeric for comparison with ECS storage
         const playerId = this.getNumericPlayerId(socketPlayerId);
 
-        const placements = [];
+        const networkUnitData = [];
         const seenPlacementIds = new Set();
         const entitiesWithPlacement = this.game.getEntitiesWith('placement');
 
@@ -552,6 +559,8 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             if (!placementComp?.placementId) continue;
             if (placementComp.playerId !== playerId) continue;
             if (seenPlacementIds.has(placementComp.placementId)) continue;
+            // Skip scene entities (roundPlaced === 0) - they're loaded from scene, not player placements
+            if (placementComp.roundPlaced === 0) continue;
 
             seenPlacementIds.add(placementComp.placementId);
 
@@ -570,7 +579,11 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
             // Get squadUnits (entity IDs) for this placement so clients use the same IDs
             const squadUnits = this.game.placementSystem?.getSquadUnitsForPlacement(placementComp.placementId) || [];
-            console.log(`[getPlacementsForPlayer] placementId=${placementComp.placementId}, entityId=${entityId}, squadUnits=${JSON.stringify(squadUnits)}, team=${placementComp.team}`);
+
+            // Get team from the team component (not placement.team which is deprecated)
+            const teamComp = this.game.getComponent(entityId, 'team');
+            const team = teamComp?.team;
+            console.log(`[getNetworkUnitDataForPlayer] placementId=${placementComp.placementId}, entityId=${entityId}, squadUnits=${JSON.stringify(squadUnits)}, team=${team}`);
 
             // Get serverTime from assignedBuilder's playerOrder for sync
             let serverTime = null;
@@ -598,12 +611,12 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 }
             }
 
-            placements.push({
+            networkUnitData.push({
                 placementId: placementComp.placementId,
                 gridPosition: placementComp.gridPosition,
                 unitTypeId: placementComp.unitTypeId,
                 collection: placementComp.collection,
-                team: placementComp.team,
+                team: team,  // From team component
                 playerId: placementComp.playerId,
                 cells: cells,
                 experience: experience || null,
@@ -618,7 +631,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             });
         }
 
-        return placements;
+        return networkUnitData;
     }
 
     generateRoomId() {
@@ -642,7 +655,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             const playerStats = room.game.call('getPlayerStats', playerId);
             if (playerStats) {
                 playerStats.gold = room.game.state.startingGold;
-                playerStats.upgrades = [];
+                playerStats.upgrades = 0;
             }
 
             // Reset ready states

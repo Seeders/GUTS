@@ -318,9 +318,9 @@ class SceneManager {
                     continue;
                 }
 
-                // Build placement data to create entity with full placement component
+                // Build networkUnitData data to create entity with full placement component
                 // This makes scene entities behave like player-placed units
-                const placement = {
+                const networkUnitData = {
                     placementId,
                     gridPosition,
                     unitTypeId: spawnTypeIndex,
@@ -332,7 +332,7 @@ class SceneManager {
 
                 // Use createPlacement so entity gets placement component and is fully controllable
                 const createdId = unitCreationSystem.createPlacement(
-                    placement,
+                    networkUnitData,
                     transform || {},
                     team,
                     entityId
