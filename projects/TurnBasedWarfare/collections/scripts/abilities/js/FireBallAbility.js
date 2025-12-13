@@ -1,7 +1,6 @@
 class FireBallAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
-            id: 'fireBall',
             name: 'Fire Ball',
             description: 'Launch a fiery projectile that explodes on impact',
             cooldown: 1,
@@ -120,7 +119,7 @@ class FireBallAbility extends GUTS.BaseAbility {
         const casterTransform = this.game.getComponent(casterEntity, "transform");
         const casterPos = casterTransform?.position;
         if (!casterPos) return;
-       
+
         const enemies = this.getEnemiesInRange(casterEntity, this.range);
 
         // DESYNC SAFE: Find closest enemy deterministically

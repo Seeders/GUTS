@@ -48,7 +48,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
         const targetTransform = this.game.getComponent(targetId, "transform");
         const targetPos = targetTransform?.position;
 
-        if (!sourcePos || !sourceCombat || !targetPos) return null;
+        if (!sourcePos || !sourceCombat || !targetPos) {
+            return null;
+        }
 
         // OPTIMIZATION: Use auto-incrementing numeric ID for better Map performance
         // In deterministic lockstep, both client and server execute attacks at the same tick,
@@ -163,10 +165,11 @@ class ProjectileSystem extends GUTS.BaseSystem {
      */
     determineProjectileElement(sourceId, projectileData) {
         // Priority order: projectile data > weapon element > combat element > default physical
-        
-        // 1. Check projectile data for explicit element
-        if (projectileData.element) {
-            return this.enums.elements[projectileData.element];
+
+        // 1. Check projectile data for explicit element (already numeric)
+        if (projectileData.element !== undefined && projectileData.element !== null) {
+            // element is already a numeric enum value, return it directly
+            return projectileData.element;
         }
         
         // 2. Check combat component element
@@ -433,7 +436,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
     
     checkProjectileCollisions(projectileId, pos, projectile) {
         // Skip if already destroyed by another check
-        if (!this.game.hasEntity(projectileId)) return;
+        if (!this.game.entityExists(projectileId)) return;
 
         // Get all potential targets
         const allEntities = this.game.getEntitiesWith(
@@ -548,7 +551,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         const splashRadius = projectile.splashRadius || 80;
         const splashDamage = Math.floor(projectile.damage);
-        const element = this.enums.elements[projectile.element] || this.enums.element.physical;
+        // projectile.element is already a numeric enum value
+        const element = projectile.element !== undefined ? projectile.element : this.enums.element.physical;
 
         // Apply splash damage on both client and server for sync
         this.game.call('applySplashDamage',

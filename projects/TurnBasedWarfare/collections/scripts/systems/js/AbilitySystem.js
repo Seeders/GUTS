@@ -47,6 +47,7 @@ class AbilitySystem extends GUTS.BaseSystem {
         // Query all entities with abilityQueue component
         const entitiesWithQueue = this.game.getEntitiesWith('abilityQueue');
         const sortedEntityIds = Array.from(entitiesWithQueue).sort((a, b) => a - b);
+        const reverseEnums = this.game.getReverseEnums();
 
         for (const entityId of sortedEntityIds) {
             const queuedAbility = this.game.getComponent(entityId, 'abilityQueue');
@@ -63,10 +64,14 @@ class AbilitySystem extends GUTS.BaseSystem {
 
                 const abilities = this.entityAbilities.get(entityId);
                 if (abilities) {
-                    const ability = abilities.find(a => a.id === queuedAbility.abilityId);
+                    // queuedAbility.abilityId is numeric index, convert to string name
+                    const abilityName = reverseEnums?.abilities?.[queuedAbility.abilityId];
+                    const ability = abilities.find(a => a.id === abilityName);
                     if (ability) {
+                        // Convert targetData back from -1 to null for abilities that expect null
+                        const targetData = queuedAbility.targetData >= 0 ? queuedAbility.targetData : null;
                         // Execute ability and get potential callback
-                        const abilityAction = ability.execute(entityId, queuedAbility.targetData);
+                        const abilityAction = ability.execute(entityId, targetData);
 
                         // If ability returns a callback, schedule it deterministically
                         if (typeof abilityAction === 'function') {
@@ -133,6 +138,12 @@ class AbilitySystem extends GUTS.BaseSystem {
     }
     
     useAbility(entityId, abilityId, targetData = null) {
+        // Check if entity already has a queued ability - don't overwrite it
+        const existingQueue = this.game.getComponent(entityId, 'abilityQueue');
+        if (existingQueue && existingQueue.abilityId >= 0) {
+            return false;
+        }
+
         const abilities = this.entityAbilities.get(entityId);
         if (!abilities) return false;
 
@@ -143,13 +154,9 @@ class AbilitySystem extends GUTS.BaseSystem {
         const deathState = this.game.getComponent(entityId, "deathState");
         if (deathState && deathState.state !== this.enums.deathState.alive) return false;
 
-        if (!this.isAbilityOffCooldown(entityId, abilityId)) {
-            return false;
-        }
-        
-        if (!ability.canExecute(entityId, targetData)) {
-            return false;
-        }
+        if (!this.isAbilityOffCooldown(entityId, abilityId)) return false;
+
+        if (!ability.canExecute(entityId, targetData)) return false;
 
         // Face the target before casting (unless targeting self)
         this.faceTarget(entityId, ability);
@@ -157,9 +164,13 @@ class AbilitySystem extends GUTS.BaseSystem {
         if (!ability.isPassive) {
             this.startAbilityAnimation(entityId, ability);
         }
+        // Convert ability string ID to numeric index for TypedArray storage
+        const abilityIndex = this.enums.abilities[abilityId];
+        // targetData is typically a target entity ID or -1 for no target
+        const targetDataValue = (targetData !== null && targetData !== undefined) ? targetData : -1;
         this.game.addComponent(entityId, 'abilityQueue', {
-            abilityId: abilityId,
-            targetData: targetData,
+            abilityId: abilityIndex !== undefined ? abilityIndex : -1,
+            targetData: targetDataValue,
             executeTime: this.game.state.now + ability.castTime
         });
 

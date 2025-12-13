@@ -16,18 +16,13 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const targetId = shared[targetKey];
 
-        // DEBUG
-        console.log(`[AttackEnemyBehaviorAction.execute] Entity ${entityId}, targetKey=${targetKey}, targetId=${targetId}`);
-
         // targetId is null/undefined when not set, or could be 0 (valid entity ID)
         if (targetId === undefined || targetId === null || targetId < 0) {
-            console.log(`[AttackEnemyBehaviorAction.execute] Entity ${entityId} - no valid target, returning failure`);
             return this.failure();
         }
 
         const combat = game.getComponent(entityId, 'combat');
         if (!combat) {
-            console.log(`[AttackEnemyBehaviorAction.execute] Entity ${entityId} - no combat component, returning failure`);
             return this.failure();
         }
 
@@ -70,21 +65,13 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             attackerTransform.rotation.y = Math.atan2(dz, dx);
         }
 
-        // DEBUG: Log combat state
-        const hasProjectile = combat.projectile !== -1 && combat.projectile !== 0 && combat.projectile;
-        console.log(`[AttackEnemy] Entity ${attackerId} attacking ${targetId}`, {
-            projectile: combat.projectile,
-            damage: combat.damage,
-            hasAbilitySystem: !!game.abilitySystem,
-            hasProjectile: hasProjectile,
-            isAbilityOnly: !hasProjectile && combat.damage <= 0
-        });
+        // Note: projectile index 0 is valid (first alphabetically sorted projectile like "arrow")
+        // Only -1 means "no projectile" in numeric ECS components
+        const hasProjectile = combat.projectile !== -1 && combat.projectile !== undefined;
 
         // Ability-only units (damage = 0, no projectile) use abilities for combat
         // Abilities have their own cooldowns managed by AbilitySystem
-        // Note: projectile = -1 means no projectile (numeric components use -1 for "none")
         if (!hasProjectile && combat.damage <= 0 && game.abilitySystem) {
-            console.log(`[AttackEnemy] Entity ${attackerId} is ability-only unit, calling useOffensiveAbility`);
             this.useOffensiveAbility(attackerId, targetId, game);
             return;
         }
@@ -112,7 +99,8 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Handle projectile or melee damage
-        if (combat.projectile) {
+        // Note: projectile index 0 is valid, only -1 means "no projectile"
+        if (hasProjectile) {
             // Schedule projectile to fire at 50% through the attack animation (release point)
             const projectileDelay = effectiveAttackSpeed > 0 ? (1 / combat.attackSpeed) * 0.5 : 0;
             game.schedulingSystem.scheduleAction(() => {
@@ -139,36 +127,17 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
     useOffensiveAbility(attackerId, targetId, game) {
         const abilities = game.call('getEntityAbilities', attackerId);
-        console.log(`[useOffensiveAbility] Entity ${attackerId} abilities:`, abilities?.map(a => a.id) || 'none');
-
-        if (!abilities || abilities.length === 0) {
-            console.log(`[useOffensiveAbility] Entity ${attackerId} has no abilities, returning`);
-            return;
-        }
+        if (!abilities || abilities.length === 0) return;
 
         // Find available offensive abilities
-        const offCooldownAbilities = abilities.filter(ability => {
-            const offCooldown = game.abilitySystem.isAbilityOffCooldown(attackerId, ability.id);
-            console.log(`[useOffensiveAbility] Ability ${ability.id} offCooldown: ${offCooldown}`);
-            return offCooldown;
-        });
-
-        const canExecuteAbilities = offCooldownAbilities.filter(ability => {
-            const canExec = !ability.canExecute || ability.canExecute(attackerId);
-            console.log(`[useOffensiveAbility] Ability ${ability.id} canExecute: ${canExec}`);
-            return canExec;
-        });
-
-        const availableAbilities = canExecuteAbilities
+        const availableAbilities = abilities
+            .filter(ability => game.abilitySystem.isAbilityOffCooldown(attackerId, ability.id))
+            .filter(ability => !ability.canExecute || ability.canExecute(attackerId))
             .sort((a, b) => (b.priority || 0) - (a.priority || 0) || a.id.localeCompare(b.id));
 
-        console.log(`[useOffensiveAbility] Available abilities:`, availableAbilities.map(a => a.id));
-
         if (availableAbilities.length > 0) {
-            console.log(`[useOffensiveAbility] Using ability ${availableAbilities[0].id} on target ${targetId}`);
-            game.abilitySystem.useAbility(attackerId, availableAbilities[0].id, { target: targetId });
-        } else {
-            console.log(`[useOffensiveAbility] No available abilities for entity ${attackerId}`);
+            // Pass targetId directly as a number - ECS components require numeric values
+            game.abilitySystem.useAbility(attackerId, availableAbilities[0].id, targetId);
         }
     }
 
@@ -176,10 +145,15 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const targetHealth = game.getComponent(targetId, 'health');
         if (!targetHealth || targetHealth.current <= 0) return;
 
-        const projectileData = game.getCollections().projectiles[combat.projectile];
+        // combat.projectile is a numeric index, need to convert to string name
+        const reverseEnums = game.getReverseEnums();
+        const projectileName = reverseEnums?.projectiles?.[combat.projectile];
+        if (!projectileName) return;
+
+        const projectileData = game.getCollections().projectiles?.[projectileName];
         if (projectileData) {
             game.call('fireProjectile', attackerId, targetId, {
-                id: combat.projectile,
+                id: projectileName,
                 ...projectileData
             });
         }
