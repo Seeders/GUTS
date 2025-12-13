@@ -1,7 +1,7 @@
-class MultiplayerNetworkSystem extends GUTS.BaseSystem {
+class ClientNetworkSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
-        this.game.multiplayerNetworkSystem = this;
+        this.game.clientNetworkSystem = this;
         
         // State tracking
         this.roomId = null;
@@ -14,7 +14,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
     // GUTS Manager Interface
     init(params) {
         this.params = params || {};
-        console.log('[MultiplayerNetworkSystem] network system init');
+        console.log('[ClientNetworkSystem] network system init');
         this.registerServices();
         this.connectToServer();
         this.setupNetworkListeners();
@@ -28,7 +28,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         this.game.register('toggleReady', this.toggleReady.bind(this));
         this.game.register('startGame', this.startGame.bind(this));
         this.game.register('getStartingState', this.getStartingState.bind(this));
-        this.game.register('submitPlacement', this.submitPlacement.bind(this));
+        this.game.register('submitPlacementToServer', this.submitPlacementToServer.bind(this));
         this.game.register('purchaseUpgrade', this.purchaseUpgrade.bind(this));
         this.game.register('toggleReadyForBattle', this.toggleReadyForBattle.bind(this));
         this.game.register('setSquadTarget', this.setSquadTarget.bind(this));
@@ -36,6 +36,8 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         this.game.register('cancelBuilding', this.cancelBuilding.bind(this));
         this.game.register('uploadSaveData', this.uploadSaveData.bind(this));
         this.game.register('resyncEntities', this.resyncEntities.bind(this));
+        this.game.register('sendCheatRequest', this.sendCheatRequest.bind(this));
+        this.game.register('sendPlacementRequest', this.sendPlacementRequest.bind(this));
     }
 
     async connectToServer() {
@@ -104,7 +106,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
                 this.handleOpponentSquadTargets(data);
             }),
             nm.listen('READY_FOR_BATTLE_UPDATE', (data) => {
-                console.log('[MultiplayerNetworkSystem] READY_FOR_BATTLE_UPDATE received:', data);
+                console.log('[ClientNetworkSystem] READY_FOR_BATTLE_UPDATE received:', data);
                 this.syncWithServerState(data);
                 this.handleReadyForBattleUpdate(data);
             }),
@@ -130,12 +132,16 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
 
             nm.listen('OPPONENT_BUILDING_CANCELLED', (data) => {
                 this.handleOpponentBuildingCancelled(data);
+            }),
+
+            nm.listen('CHEAT_BROADCAST', (data) => {
+                this.handleCheatBroadcast(data);
             })
         );
     }
 
     createRoom(playerName, maxPlayers = 2) {
-        this.game.uiSystem.showNotification('Creating room...', 'info');
+        this.game.call('showNotification', 'Creating room...', 'info');
 
         this.game.clientNetworkManager.call(
             'CREATE_ROOM',
@@ -143,7 +149,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
             'ROOM_CREATED',
             (data, error) => {
                 if (error) {
-                    this.game.uiSystem.showNotification(`Failed to create room: ${error.message}`, 'error');
+                    this.game.call('showNotification', `Failed to create room: ${error.message}`, 'error');
                 } else {
                     this.roomId = data.roomId;
                     this.isHost = data.isHost;
@@ -153,15 +159,15 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
                     // Set myTeam from lobby response so it's available before game scene loads
                     this.setMyTeamFromGameState(data.playerId, data.gameState);
 
-                    this.game.uiSystem.showNotification(`Room created! Code: ${this.roomId}`, 'success');
-                    this.game.uiSystem.showLobby(data.gameState, this.roomId);
+                    this.game.call('showNotification', `Room created! Code: ${this.roomId}`, 'success');
+                    this.game.call('showLobby', data.gameState, this.roomId);
                 }
             }
         );
     }
 
     joinRoom(roomId, playerName) {
-        this.game.uiSystem.showNotification('Joining room...', 'info');
+        this.game.call('showNotification', 'Joining room...', 'info');
 
         this.game.clientNetworkManager.call(
             'JOIN_ROOM',
@@ -169,7 +175,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
             'ROOM_JOINED',
             (data, error) => {
                 if (error) {
-                    this.game.uiSystem.showNotification(`Failed to join room: ${error.message}`, 'error');
+                    this.game.call('showNotification', `Failed to join room: ${error.message}`, 'error');
                 } else {
                     this.roomId = data.roomId;
                     this.isHost = data.isHost;
@@ -179,15 +185,15 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
                     // Set myTeam from lobby response so it's available before game scene loads
                     this.setMyTeamFromGameState(data.playerId, data.gameState);
 
-                    this.game.uiSystem.showNotification(`Joined room ${this.roomId}`, 'success');
-                    this.game.uiSystem.showLobby(data.gameState, this.roomId);
+                    this.game.call('showNotification', `Joined room ${this.roomId}`, 'success');
+                    this.game.call('showLobby', data.gameState, this.roomId);
                 }
             }
         );
     }
 
     startQuickMatch(playerName) {
-        this.game.uiSystem.showNotification('Finding opponent...', 'info');
+        this.game.call('showNotification', 'Finding opponent...', 'info');
 
         this.game.clientNetworkManager.call(
             'QUICK_MATCH',
@@ -195,7 +201,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
             'QUICK_MATCH_FOUND',
             (data, error) => {
                 if (error) {
-                    this.game.uiSystem.showNotification(`Quick match failed: ${error.message}`, 'error');
+                    this.game.call('showNotification', `Quick match failed: ${error.message}`, 'error');
                 } else {
                     this.roomId = data.roomId;
                     this.isHost = data.isHost;
@@ -204,8 +210,8 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
                     // Set myTeam from lobby response so it's available before game scene loads
                     this.setMyTeamFromGameState(data.playerId, data.gameState);
 
-                    this.game.uiSystem.showNotification(`Match found! Entering room...`, 'success');
-                    this.game.uiSystem.showLobby(data.gameState, this.roomId);
+                    this.game.call('showNotification', `Match found! Entering room...`, 'success');
+                    this.game.call('showLobby', data.gameState, this.roomId);
                 }
             }
         );
@@ -243,24 +249,33 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         );
     }
 
-    submitPlacement(placement, callback){
+    /**
+     * Send placement request to server (used by PlacementUISystem)
+     * Alias for submitPlacement with cleaner interface
+     */
+    sendPlacementRequest(placement, callback) {
+        this.submitPlacementToServer(placement, callback);
+    }
+
+    submitPlacementToServer(networkUnitData, callback){
         if(this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
-        };
+            return;
+        }
 
         // Send only minimal placement data - server resolves unitType from numeric indices
         // No targetPosition - that's handled by aiState/behaviors via SET_SQUAD_TARGET
         const minimalPlacement = {
-            placementId: placement.placementId,
-            gridPosition: placement.gridPosition,
-            unitTypeId: placement.unitTypeId,
-            collection: placement.collection,
-            team: placement.team,
-            playerId: placement.playerId,
-            roundPlaced: placement.roundPlaced,
-            timestamp: placement.timestamp,
-            peasantInfo: placement.peasantInfo,
-            isStartingState: placement.isStartingState
+            placementId: networkUnitData.placementId,
+            gridPosition: networkUnitData.gridPosition,
+            unitTypeId: networkUnitData.unitTypeId,
+            collection: networkUnitData.collection,
+            team: networkUnitData.team,
+            playerId: networkUnitData.playerId,
+            roundPlaced: networkUnitData.roundPlaced,
+            timestamp: networkUnitData.timestamp,
+            peasantInfo: networkUnitData.peasantInfo,
+            isStartingState: networkUnitData.isStartingState
         };
 
         this.game.clientNetworkManager.call(
@@ -301,11 +316,10 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
 
     handleOpponentBuildingCancelled(data) {
         const { placementId, side } = data;
-        
-        if (this.game.placementSystem && this.game.placementSystem.removeOpponentPlacement) {
-            this.game.placementSystem.removeOpponentPlacement(placementId);
-            this.game.uiSystem?.showNotification('Opponent cancelled a building', 'info', 1500);
-        }
+
+        // Remove the opponent's cancelled placement
+        this.game.call('clearPlayerPlacements', side, [placementId]);
+        this.game.call('showNotification', 'Opponent cancelled a building', 'info', 1500);
     }
     
     purchaseUpgrade(data, callback){
@@ -390,14 +404,14 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
 
     toggleReady() {
         // Include selected level from UI (host's selection will be used) as numeric index
-        const selectedLevelName = this.game.uiSystem?.getSelectedLevel() || 'level1';
+        const selectedLevelName = this.game.call('getSelectedLevel') || 'level1';
         const levelIndex = this.enums.levels?.[selectedLevelName] ?? 1;
         this.game.clientNetworkManager.call('TOGGLE_READY', { level: levelIndex });
     }
 
     startGame() {
         if (!this.isHost) return;
-        const selectedLevelName = this.game.uiSystem?.getSelectedLevel() || 'level1';
+        const selectedLevelName = this.game.call('getSelectedLevel') || 'level1';
         const levelIndex = this.enums.levels?.[selectedLevelName] ?? 1;
         this.game.clientNetworkManager.call('START_GAME', { level: levelIndex });
     }
@@ -417,25 +431,22 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         if (myPlayer?.stats?.team !== undefined) {
             // Server sends numeric team directly
             this.game.state.myTeam = myPlayer.stats.team;
-            console.log('[MultiplayerNetworkSystem] Set myTeam from lobby:', this.game.state.myTeam);
+            console.log('[ClientNetworkSystem] Set myTeam from lobby:', this.game.state.myTeam);
         }
     }
 
     handlePlayerJoined(data){
-
-        this.game.uiSystem.showNotification(`${data.playerName} joined the room`, 'info');
-        this.game.uiSystem.updateLobby(data.gameState);
+        this.game.call('showNotification', `${data.playerName} joined the room`, 'info');
+        this.game.call('updateLobby', data.gameState);
     }
 
     handlePlayerLeft(data){
-
-        this.game.uiSystem.showNotification('Player left the room', 'warning');
-        this.game.uiSystem.updateLobby(data.gameState);
+        this.game.call('showNotification', 'Player left the room', 'warning');
+        this.game.call('updateLobby', data.gameState);
     }
 
     handlePlayerReadyUpdate(data){
-
-        this.game.uiSystem.updateLobby(data.gameState);
+        this.game.call('updateLobby', data.gameState);
         console.log('handlePlayerReadyUpdate', data);
         // Show notification for ready state changes
         const myPlayerId = this.game.clientNetworkManager.playerId;
@@ -443,20 +454,20 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
             if(!data.ready){
                 console.log("not ready", data);
             }
-            this.game.uiSystem.showNotification(
+            this.game.call('showNotification',
                 data.ready ? 'You are ready!' : 'Ready status removed',
                 data.ready ? 'success' : 'info'
             );
         }
 
         if (data.allReady) {
-            this.game.uiSystem.showNotification('All players ready! Game starting...', 'success');
+            this.game.call('showNotification', 'All players ready! Game starting...', 'success');
         }
     }
 
     handleSaveDataLoaded(data) {
         // Show notification that host loaded a save file
-        this.game.uiSystem.showNotification(`Save loaded: ${data.saveName}. Level: ${data.level}`, 'info', 5000);
+        this.game.call('showNotification', `Save loaded: ${data.saveName}. Level: ${data.level}`, 'info', 5000);
 
         // Update level selector to match save
         if (data.level) {
@@ -472,7 +483,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         const levelIndex = data.level ?? 1;
         this.game.state.level = levelIndex;
 
-        console.log('[MultiplayerNetworkManager] handleGameStarted:', {
+        console.log('[ClientNetworkSystem] handleGameStarted:', {
             levelIndex,
             isLoadingSave: data.isLoadingSave,
             hasSaveData: !!data.saveData,
@@ -482,11 +493,11 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         // Check if server is sending save data (host uploaded a save file)
         if (data.isLoadingSave && data.saveData) {
             this.game.pendingSaveData = data.saveData;
-            console.log('[MultiplayerNetworkManager] Set pendingSaveData with', data.saveData.entities?.length, 'entities');
+            console.log('[ClientNetworkSystem] Set pendingSaveData with', data.saveData.entities?.length, 'entities');
         }
 
         // Show loading screen
-        this.game.screenSystem.showLoadingScreen();
+        this.game.call('showLoadingScreen');
 
         // Load the game scene with the selected level
         // First, we need to modify the scene's terrain entity to use the selected level
@@ -514,16 +525,45 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         // Sync nextEntityId from server to ensure subsequent entity creation is in sync
         if (data.nextEntityId !== undefined) {
             this.game.nextEntityId = data.nextEntityId;
-            console.log('[MultiplayerNetworkManager] Synced nextEntityId to:', data.nextEntityId);
+            console.log('[ClientNetworkSystem] Synced nextEntityId to:', data.nextEntityId);
         }
 
+        // Create player entities from server (gold, upgrades, etc.)
+        this.syncPlayerEntities();
+
         // Now initialize the game
-        // Player entities will be created via getStartingState call in MultiplayerPlacementSystem
-        this.game.gameSystem.initializeGame(data);
+        this.game.call('initializeGame', data);
+    }
+
+    /**
+     * Sync player entities from server (gold, upgrades, etc.)
+     */
+    syncPlayerEntities() {
+        console.log('[ClientNetworkSystem] syncPlayerEntities called');
+
+        this.game.call('getStartingState', (success, response) => {
+            if (success && response.playerEntities) {
+                console.log('[ClientNetworkSystem] Creating player entities:', response.playerEntities);
+                for (const playerEntity of response.playerEntities) {
+                    if (!this.game.entityExists(playerEntity.entityId)) {
+                        this.game.createEntity(playerEntity.entityId);
+                    }
+                    if (!this.game.hasComponent(playerEntity.entityId, 'playerStats')) {
+                        this.game.addComponent(playerEntity.entityId, 'playerStats', playerEntity.playerStats);
+                    } else {
+                        // Update existing component
+                        const stats = this.game.getComponent(playerEntity.entityId, 'playerStats');
+                        Object.assign(stats, playerEntity.playerStats);
+                    }
+                }
+            } else {
+                console.error('[ClientNetworkSystem] syncPlayerEntities failed:', response);
+            }
+        });
     }
 
     handleReadyForBattleUpdate(data) {
-        console.log('[MultiplayerNetworkSystem] handleReadyForBattleUpdate called, hasService:', this.game.hasService('handleReadyForBattleUpdate'));
+        console.log('[ClientNetworkSystem] handleReadyForBattleUpdate called, hasService:', this.game.hasService('handleReadyForBattleUpdate'));
         this.game.call('handleReadyForBattleUpdate', data);
     }
 
@@ -568,9 +608,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
 
         // Unpause game if it was paused waiting for battle end
         this.game.state.isPaused = false;
-        if (this.game.placementSystem) {
-            this.game.placementSystem.isBattlePaused = false;
-        }
+        this.game.call('setBattlePaused', false);
 
         console.log(`Applying battle end sync at client time: ${this.game.state.now?.toFixed(3)}`);
 
@@ -744,10 +782,10 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         // Populate stats and show appropriate screen
         if (isWinner) {
             this.populateGameEndStats('victoryStats', data.result, reasonText);
-            this.game.screenSystem.showVictoryScreen();
+            this.game.call('showVictoryScreen');
         } else {
             this.populateGameEndStats('defeatStats', data.result, reasonText);
-            this.game.screenSystem.showDefeatScreen();
+            this.game.call('showDefeatScreen');
         }
     }
 
@@ -815,9 +853,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         const leaveBtn = document.getElementById('gameEndedLeaveBtn');
         leaveBtn.addEventListener('click', () => {
             modal.remove();
-            if (this.game.uiSystem && this.game.uiSystem.leaveGame) {
-                this.game.uiSystem.leaveGame();
-            }
+            this.game.call('leaveGame');
         });
 
         // Add hover effect
@@ -836,13 +872,13 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
 
     handleOpponentSquadTarget(data) {
         const { placementId, targetPosition, meta, issuedTime } = data;
-        this.game.unitOrderSystem.applySquadTargetPosition(placementId, targetPosition, meta, issuedTime);
+        this.game.call('applySquadTargetPosition', placementId, targetPosition, meta, issuedTime);
     }
 
     handleOpponentSquadTargets(data) {
         const { placementIds, targetPositions, meta, issuedTime } = data;
-        console.log('[MultiplayerNetworkManager] Received OPPONENT_SQUAD_TARGETS_SET:', { placementIds, targetPositions, issuedTime });
-        this.game.unitOrderSystem.applySquadsTargetPositions(placementIds, targetPositions, meta, issuedTime);
+        console.log('[ClientNetworkSystem] Received OPPONENT_SQUAD_TARGETS_SET:', { placementIds, targetPositions, issuedTime });
+        this.game.call('applySquadsTargetPositions', placementIds, targetPositions, meta, issuedTime);
     }
 
     syncWithServerState(data) {
@@ -881,34 +917,76 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
                 this.game.state.serverGameState = gameState;
             }
 
-            // Set team bounds in grid system (using numeric team values)
-            if (this.game.gridSystem) {
-                this.game.gridSystem.setTeamBounds(this.game.state.myTeam);
-            }
-
-            // Also set team bounds in placement system
             const opponent = gameState.players.find(p => p.id !== myPlayerId);
-            if (this.game.placementSystem ) {
-                if(this.game.placementSystem.setTeamBounds) {
-                    this.game.placementSystem.setTeamBounds(this.game.state.myTeam);
-                }
 
-                // Sync experience for both player and opponent placements
-                this.game.placementSystem.setPlacementExperience(myPlayer.placements);
-                if (opponent && opponent.placements) {
-                    this.game.placementSystem.setPlacementExperience(opponent.placements);
-                }
+            // Sync experience for both player and opponent network unit data
+            this.syncNetworkUnitDataExperience(myPlayer.networkUnitData);
+            if (opponent && opponent.networkUnitData) {
+                this.syncNetworkUnitDataExperience(opponent.networkUnitData);
             }
-
 
             // Update UI to reflect synced experience data
-            if (this.game.shopSystem && this.game.shopSystem.updateGoldDisplay) {
-                this.game.shopSystem.updateGoldDisplay();
+            if (this.game.hasService('updateGoldDisplay')) {
+                this.game.call('updateGoldDisplay');
             }
 
         }
     }
- 
+
+    /**
+     * Sync experience data from network unit data
+     * NetworkUnitData includes experience info that needs to be applied to local squads
+     * @param {Array} networkUnitData - Array of network unit data objects with experience data
+     */
+    syncNetworkUnitDataExperience(networkUnitData) {
+        if (!networkUnitData) return;
+
+        for (const unitData of networkUnitData) {
+            if (unitData.experience) {
+                this.game.call('setSquadInfo', unitData.placementId, unitData.experience);
+            }
+        }
+    }
+
+    // ==================== CHEAT NETWORK HANDLING ====================
+
+    /**
+     * Send cheat request to server
+     */
+    sendCheatRequest(cheatName, params, callback) {
+        this.game.clientNetworkManager.call(
+            'EXECUTE_CHEAT',
+            { cheatName, params },
+            'CHEAT_EXECUTED',
+            (data, error) => {
+                if (error) {
+                    console.error(`[ClientNetworkSystem] Cheat failed:`, error);
+                    if (callback) callback(false, error);
+                } else if (data.error) {
+                    console.error(`[ClientNetworkSystem] Cheat rejected:`, data.error);
+                    if (callback) callback(false, data.error);
+                } else {
+                    console.log(`[ClientNetworkSystem] Cheat executed:`, data);
+                    if (callback) callback(true, data);
+                }
+            }
+        );
+    }
+
+    /**
+     * Handle cheat broadcast from server - execute on client
+     */
+    handleCheatBroadcast(data) {
+        const { cheatName, params, result } = data;
+        console.log(`[ClientNetworkSystem] Received cheat broadcast: ${cheatName}`, params);
+
+        // Merge server result (contains entity IDs) into params
+        const mergedParams = { ...params, ...result };
+
+        // Execute the cheat locally using CheatCodeSystem
+        this.game.call('executeCheat', cheatName, mergedParams);
+    }
+
     dispose() {
         this.networkUnsubscribers.forEach(unsubscribe => {
             if (typeof unsubscribe === 'function') {
@@ -916,7 +994,7 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
             }
         });
         this.networkUnsubscribers = [];
-        console.log('[MultiplayerNetworkSystem] dispose');
+        console.log('[ClientNetworkSystem] dispose');
     }
 
     onSceneUnload() {
@@ -932,6 +1010,6 @@ class MultiplayerNetworkSystem extends GUTS.BaseSystem {
         if (gameEndedModal) {
             gameEndedModal.remove();
         }
-        console.log('[MultiplayerNetworkSystem] unloaded');
+        console.log('[ClientNetworkSystem] unloaded');
     }
 }

@@ -21,7 +21,7 @@ class InputSystem extends GUTS.BaseSystem {
         if (!canvas) return;
         
         canvas.addEventListener('click', (event) => {
-            this.game.placementSystem.handleCanvasClick(event);
+            this.game.call('handleCanvasClick', event);
         });
         
         canvas.addEventListener('contextmenu', (event) => {
@@ -51,7 +51,7 @@ class InputSystem extends GUTS.BaseSystem {
         const pausedMainMenuBtn = document.getElementById('paused_MainMenuBtn');
 
         mainMenuPlayGameBtn?.addEventListener('click', () => {
-            this.game.screenSystem.showGameModeSelect();
+            this.game.call('showGameModeSelect');
         });
         mainMenuTutorialBtn?.addEventListener('click', () => {
             alert('Tutorial coming soon! Check the battle log for basic instructions when you start playing.');
@@ -64,14 +64,14 @@ class InputSystem extends GUTS.BaseSystem {
         });
 
         gameModeBackBtn?.addEventListener('click', () => {
-            this.game.screenSystem.showMainMenu();
+            this.game.call('showMainMenu');
         });
 
         gamePauseBtn?.addEventListener('click', () => {
-            this.game.gameSystem.pauseGame();
+            this.game.call('pauseGame');
         });
         gameExitBtn?.addEventListener('click', () => {
-            this.game.gameSystem.exitToMenu();
+            this.game.call('exitToMenu');
         });
 
         // Camera rotation buttons
@@ -86,30 +86,22 @@ class InputSystem extends GUTS.BaseSystem {
 
         victoryMainMenuBtn?.addEventListener('click', () => {
             // Use leaveGame to properly clean up multiplayer connection
-            if (this.game.uiSystem?.leaveGame) {
-                this.game.uiSystem.leaveGame();
-            } else {
-                this.game.screenSystem.showMainMenu();
-            }
+            this.game.call('leaveGame');
         });
 
         defeatMainMenuBtn?.addEventListener('click', () => {
             // Use leaveGame to properly clean up multiplayer connection
-            if (this.game.uiSystem?.leaveGame) {
-                this.game.uiSystem.leaveGame();
-            } else {
-                this.game.screenSystem.showMainMenu();
-            }
+            this.game.call('leaveGame');
         });
 
         pausedResumeBtn?.addEventListener('click', () => {
-            this.game.gameSystem.resumeGame();
+            this.game.call('resumeGame');
         });
         pausedRestartBtn?.addEventListener('click', () => {
-            this.game.gameSystem.restartGame();
+            this.game.call('restartGame');
         });
         pausedMainMenuBtn?.addEventListener('click', () => {
-            this.game.screenSystem.showMainMenu();
+            this.game.call('showMainMenu');
         });
 
 
@@ -227,7 +219,7 @@ class InputSystem extends GUTS.BaseSystem {
                 selected.classList.remove('selected');
             });
             state.selectedUnitType = null;
-            this.game.placementSystem.handleUnitSelectionChange(null);
+            this.game.call('handleUnitSelectionChange');
         }
     }
     cycleThroughUnits() {

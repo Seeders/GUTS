@@ -8,7 +8,7 @@
     "endTime": 0,
     "appliedTime": 0,
     "stacks": 1,
-    "sourceEntity": -1,
-    "weaponElement": -1
+    "sourceEntity": null,
+    "weaponElement": null
   }
 }

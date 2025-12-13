@@ -279,9 +279,7 @@ class WorldSystem extends GUTS.BaseSystem {
         }
 
         // Update instance capacities now that RenderSystem has initialized EntityRenderer
-        if (this.game.renderSystem) {
-            this.game.renderSystem.updateInstanceCapacities();
-        }
+        this.game.call('updateInstanceCapacities');
 
         // Spawn cliff entities using WorldRenderer
         // Note: useExtension = false because analyzeCliffs() returns coordinates in tile space (not extended space)

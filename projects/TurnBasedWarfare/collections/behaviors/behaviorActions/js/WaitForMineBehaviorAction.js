@@ -21,11 +21,13 @@ class WaitForMineBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // targetMine is null/undefined when not set, or could be 0 (valid entity ID)
         if (targetMine === undefined || targetMine === null || targetMine < 0) {
+            console.log(`[WaitForMine] entity=${entityId} FAILURE: invalid targetMine=${targetMine}`);
             return this.failure();
         }
 
         const goldMine = game.getComponent(targetMine, 'goldMine');
         if (!goldMine) {
+            console.log(`[WaitForMine] entity=${entityId} FAILURE: no goldMine component on ${targetMine}`);
             return this.failure();
         }
 
@@ -36,10 +38,13 @@ class WaitForMineBehaviorAction extends GUTS.BaseBehaviorAction {
         const isNextInQueue = game.call('isNextInMinerQueue', targetMine, entityId);
         const isMineOccupied = game.call('isMineOccupied', targetMine);
 
+        console.log(`[WaitForMine] entity=${entityId} mine=${targetMine} currentMiner=${goldMine.currentMiner} (type=${typeof goldMine.currentMiner}) isCurrentMiner=${isCurrentMiner} isNextInQueue=${isNextInQueue} isMineOccupied=${isMineOccupied}`);
+
         if (isCurrentMiner || (isNextInQueue && !isMineOccupied)) {
             // It's our turn!
             if (!isCurrentMiner) {
                 // Process queue to become current miner
+                console.log(`[WaitForMine] entity=${entityId} processing queue to become current miner`);
                 game.call('processNextMinerInQueue', targetMine);
             }
 
@@ -61,6 +66,7 @@ class WaitForMineBehaviorAction extends GUTS.BaseBehaviorAction {
                 }
             }
 
+            console.log(`[WaitForMine] entity=${entityId} SUCCESS: it's our turn to mine`);
             return this.success({
                 isCurrentMiner: true,
                 targetMine: targetMine
@@ -70,6 +76,7 @@ class WaitForMineBehaviorAction extends GUTS.BaseBehaviorAction {
         // Still waiting
         shared.canMine = false;
 
+        console.log(`[WaitForMine] entity=${entityId} RUNNING: waiting in queue`);
         return this.running({
             waiting: true,
             isNextInQueue: isNextInQueue,

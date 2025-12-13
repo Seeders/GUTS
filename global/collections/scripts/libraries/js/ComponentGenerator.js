@@ -168,7 +168,7 @@ class ComponentGenerator {
     _expandFixedArray(baseName, config) {
         const result = {};
         const size = config.size || 0;
-        const defaultValue = config.default !== undefined ? config.default : 0;
+        const defaultValue = config.default !== undefined ? config.default : null;
         const fields = config.fields;
 
         if (fields && Array.isArray(fields)) {

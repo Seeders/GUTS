@@ -7,7 +7,7 @@ class FireBallAbility extends GUTS.BaseAbility {
             range: 300,
             manaCost: 0,
             targetType: 'enemy',
-            animation: 'cast',
+            animation: 'attack',
             priority: 7,
             castTime: 0.5,
             ...params

@@ -6,12 +6,12 @@ class ResultsSystem extends GUTS.BaseSystem {
 
     showVictory(stats) {
         this.populateStats('victoryStats', stats, 'victory');
-        this.game.screenSystem.showVictoryScreen();
+        this.game.call('showVictoryScreen');
     }
 
     showDefeat(stats) {
         this.populateStats('defeatStats', stats, 'defeat');
-        this.game.screenSystem.showDefeatScreen();
+        this.game.call('showDefeatScreen');
     }
 
     populateStats(containerId, stats, type) {

@@ -1,7 +1,7 @@
 {
   "title": "charging",
   "schema": {
-    "target": -1,
+    "target": null,
     "chargeSpeed": 100,
     "chargeDamage": 50,
     "chargeStartTime": 0,

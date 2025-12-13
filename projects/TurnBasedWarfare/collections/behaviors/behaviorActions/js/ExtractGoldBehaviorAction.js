@@ -54,9 +54,9 @@ class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             shared.miningProgress = 1;
 
             // Process next miner in queue
-            if (game.goldMineSystem) {
-                game.goldMineSystem.processNextMinerInQueue(targetMine);
-            }
+            console.log(`[ExtractGold] entity=${entityId} mining complete, calling processNextMinerInQueue for mine=${targetMine}`);
+            game.call('processNextMinerInQueue', targetMine);
+
 
             // Clear mine-related shared state
             shared.targetMine = null;
@@ -67,6 +67,7 @@ class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             // Reset memory
             memory.miningStartTime = null;
 
+            console.log(`[ExtractGold] entity=${entityId} SUCCESS: miningComplete with ${goldPerTrip} gold`);
             return this.success({
                 goldAmount: goldPerTrip,
                 miningComplete: true

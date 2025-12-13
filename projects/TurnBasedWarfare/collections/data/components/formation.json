@@ -3,7 +3,7 @@
   "schema": {
     "formationType": 0,
     "formationSize": 1,
-    "formationLeader": -1,
+    "formationLeader": null,
     "formationMembers": {
       "$bitmask": {
         "size": 64

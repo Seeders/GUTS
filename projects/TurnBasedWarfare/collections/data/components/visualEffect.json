@@ -4,7 +4,7 @@
     "effectType": 0,
     "duration": 1,
     "startTime": 0,
-    "attachedTo": -1,
+    "attachedTo": null,
     "isActive": 1
   }
 }

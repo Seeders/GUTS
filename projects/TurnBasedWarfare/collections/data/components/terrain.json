@@ -5,8 +5,8 @@
     "worlds"
   ],
   "schema": {
-    "level": -1,
-    "world": -1,
+    "level": null,
+    "world": null,
     "cliffsEnabled": 1,
     "liquidsEnabled": 1,
     "grassEnabled": 0,

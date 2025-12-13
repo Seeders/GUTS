@@ -1,7 +1,7 @@
 class MultiplayerECSGame extends GUTS.ECSGame {
     constructor(app) {
         super(app);
-        this.multiplayerNetworkSystem = new GUTS.ClientNetworkManager(this);
+        this.clientNetworkManager = new GUTS.ClientNetworkManager(this);
         this.isMultiplayer = true;
         this.isConnected = false;
         this.isServer = false;
@@ -17,7 +17,7 @@ class MultiplayerECSGame extends GUTS.ECSGame {
             
             // Connect to server
             try {
-                await this.multiplayerNetworkSystem.connect(config.networkConfig?.serverUrl);
+                await this.clientNetworkManager.connect(config.networkConfig?.serverUrl);
                 this.isConnected = true;
                 console.log('Connected to multiplayer server');
                 

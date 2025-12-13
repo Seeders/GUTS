@@ -10,7 +10,7 @@
         "default": 0
       }
     },
-    "lastAbilityUsed": -1,
+    "lastAbilityUsed": null,
     "lastAbilityTime": 0
   }
 }

@@ -33,6 +33,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
         this.game.register('getBehaviorShared', this.getBehaviorShared.bind(this));
         this.game.register('setBehaviorMeta', this.setBehaviorMeta.bind(this));
         this.game.register('clearBehaviorState', this.clearBehaviorState.bind(this));
+        this.game.register('getBehaviorNodeId', this.getNodeId.bind(this));
 
         this.processor.initializeFromCollections(this.collections);
     }
@@ -226,7 +227,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
      */
     shouldSwitchAction(aiState, desiredAction) {
         if (!desiredAction || !desiredAction.action || !desiredAction.meta) return false;
-        if (aiState.currentAction < 0) return true;
+        if (aiState.currentAction == null) return true;
 
         // Get indices for desired action
         const desiredIndices = this.getNodeIndices(desiredAction.action);
@@ -255,7 +256,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
                            aiState.currentActionCollection !== desiredIndices.collection;
 
         // End current action if switching to a different one
-        if (isNewAction && aiState.currentAction >= 0) {
+        if (isNewAction && aiState.currentAction != null) {
             const currentActionId = this.getNodeId(aiState.currentActionCollection, aiState.currentAction);
             const currentExecutor = this.processor.getNodeByType(currentActionId);
             if (currentExecutor) {

@@ -20,6 +20,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
         // Initialize enums
         this.game.register('startBattle', this.startBattle.bind(this));
+        this.game.register('serializeAllEntities', this.serializeAllEntities.bind(this));
     }
 
     startBattle(room) {

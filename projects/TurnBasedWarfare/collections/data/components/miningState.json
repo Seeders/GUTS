@@ -4,12 +4,12 @@
     "state": {
       "$enum": "miningState"
     },
-    "targetMine": -1,
-    "targetTownHall": -1,
+    "targetMine": null,
+    "targetTownHall": null,
     "hasGold": 0,
     "miningStartTime": 0,
     "depositStartTime": 0,
     "team": 0,
-    "entityId": -1
+    "entityId": null
   }
 }

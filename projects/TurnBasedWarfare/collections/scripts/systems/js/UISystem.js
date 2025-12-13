@@ -12,8 +12,7 @@ class UISystem extends GUTS.BaseSystem {
     }
 
     setupEventListeners() {
-        // Delegate to input handler
-        this.game.inputSystem.setup();
+        // Input handlers are now set up in InputSystem.init()
     }
     
     start() {

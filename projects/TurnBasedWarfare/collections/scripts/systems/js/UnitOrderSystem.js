@@ -17,6 +17,8 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     }
 
     init() {
+        this.game.register('applySquadTargetPosition', this.applySquadTargetPosition.bind(this));
+        this.game.register('applySquadsTargetPositions', this.applySquadsTargetPositions.bind(this));
         // Preview created in onGameStarted when scene is available
     }
 
@@ -442,13 +444,11 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
             for (const unitId of placement.squadUnits) {
                 // Check if unit has BuildAbility
-                if (this.game.abilitySystem) {
-                    const abilities = this.game.abilitySystem.getEntityAbilities(unitId);
-                    if (abilities) {
-                        for (const ability of abilities) {
-                            if (ability.id === 'build') {
-                                return unitId;
-                            }
+                const abilities = this.game.call('getEntityAbilities', unitId);
+                if (abilities) {
+                    for (const ability of abilities) {
+                        if (ability.id === 'build') {
+                            return unitId;
                         }
                     }
                 }
@@ -467,8 +467,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         if (!buildingPos || !buildingPlacement || !builderPlacement) return;
 
         // Verify the builder has BuildAbility
-        if (!this.game.abilitySystem) return;
-        const abilities = this.game.abilitySystem.getEntityAbilities(builderEntityId);
+        const abilities = this.game.call('getEntityAbilities', builderEntityId);
         if (!abilities) return;
         const buildAbility = abilities.find(a => a.id === 'build');
         if (!buildAbility) return;
@@ -557,7 +556,6 @@ class UnitOrderSystem extends GUTS.BaseSystem {
             return;
         }
         const createdTime = commandCreatedTime || this.game.state.now;
-        placement.targetPosition = targetPosition;
         placement.squadUnits.forEach((unitId) => {
             if(targetPosition){
                 // Remove existing player order if present, then add new one

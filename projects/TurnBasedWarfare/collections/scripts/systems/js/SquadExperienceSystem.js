@@ -9,13 +9,13 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             maxLevel: 10,                // Maximum squad level
             levelUpCostRatio: 0.5,       // Cost to level up = squad value * ratio
             experienceMultiplier: 1.0,   // Global experience gain multiplier
-            baselineXPPerSecond: 1,   // tune: ~1–3% of a cheap unit’s value per 10s
+            baselineXPPerSecond: 1,   // tune: ~1–3% of a cheap unit's value per 10s
             baselineXPCombatOnly: true  // only tick during combat phase
         };
-        
+
         // Level bonuses (applied to all units in squad)
         this.levelBonuses = {
-            1: { hp: 1.0, damage: 1.0, name: "Rookie" },            
+            1: { hp: 1.0, damage: 1.0, name: "Rookie" },
             2: { hp: 1.15, damage: 1.15, name: "Veteran" },
             3: { hp: 1.3, damage: 1.3, name: "Ascended" },
             4: { hp: 1.4, damage: 1.4, name: "Elite" },
@@ -26,7 +26,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             9: { hp: 1.9, damage: 1.9, name: "Transcendent" },
             10: { hp: 2.0, damage: 2.0, name: "Godlike" }
         };
-        
+
         // UI update throttling
         this.lastUIUpdate = 0;
         this.UI_UPDATE_INTERVAL = 500; // Update UI every 500ms
@@ -45,99 +45,105 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         this.game.register('findSquadByUnitId', this.findSquadByUnitId.bind(this));
         this.game.register('getCurrentUnitType', this.getCurrentUnitType.bind(this));
         this.game.register('getSquadInfo', this.getSquadInfo.bind(this));
+        this.game.register('setSquadInfo', this.setSquadInfo.bind(this));
         this.game.register('resetSquadExperience', this.reset.bind(this));
     }
 
     /**
-     * Get experience data from placement component
-     * @param {string} placementId - Placement ID
-     * @returns {Object|null} Experience data stored on placement
+     * Get experience data from the first unit in the squad
+     * Experience is stored on individual unit entities
+     * @param {number} placementId - Placement ID
+     * @returns {Object|null} Experience data
      */
     getSquadExperience(placementId) {
-        // Find entity with this placementId
-        const entitiesWithPlacement = this.game.getEntitiesWith('placement');
-        for (const entityId of entitiesWithPlacement) {
-            const placement = this.game.getComponent(entityId, 'placement');
-            if (placement && placement.placementId === placementId) {
-                return placement.experience || null;
-            }
-        }
-        return null;
+        const unitIds = this.getSquadUnits(placementId);
+        if (!unitIds.length) return null;
+        // Get experience from first unit (all units in squad share same experience values)
+        return this.game.getComponent(unitIds[0], 'experience') || null;
     }
 
     /**
-     * Set experience data on placement component
-     * @param {string} placementId - Placement ID
+     * Set experience data on all unit entities in the squad
+     * @param {number} placementId - Placement ID
      * @param {Object} experienceData - Experience data to store
      */
     setSquadExperience(placementId, experienceData) {
-        const entitiesWithPlacement = this.game.getEntitiesWith('placement');
-        for (const entityId of entitiesWithPlacement) {
-            const placement = this.game.getComponent(entityId, 'placement');
-            if (placement && placement.placementId === placementId) {
-                placement.experience = experienceData;
-                return true;
+        const unitIds = this.getSquadUnits(placementId);
+        if (!unitIds.length) return false;
+
+        for (const entityId of unitIds) {
+            const existing = this.game.getComponent(entityId, 'experience');
+            if (existing && experienceData) {
+                Object.assign(existing, experienceData);
             }
         }
-        return false;
+        return true;
     }
 
     /**
-     * Get all placements with experience data for iteration
-     * @returns {Array} Array of {placementId, placement, experience} objects
+     * Get all squads with experience data for iteration
+     * @returns {Array} Array of {placementId, experience} objects
      */
     getAllSquadsWithExperience() {
         const squads = [];
-        const entitiesWithPlacement = this.game.getEntitiesWith('placement');
-        for (const entityId of entitiesWithPlacement) {
+        const placements = this.game.getEntitiesWith('placement');
+        for (const entityId of placements) {
             const placement = this.game.getComponent(entityId, 'placement');
-            if (placement && placement.experience) {
-                squads.push({
-                    placementId: placement.placementId,
-                    placement: placement,
-                    experience: placement.experience
-                });
+            if (placement && placement.squadUnits?.length > 0) {
+                const experience = this.game.getComponent(placement.squadUnits[0], 'experience');
+                if (experience) {
+                    squads.push({
+                        placementId: placement.placementId,
+                        experience: experience
+                    });
+                }
             }
         }
         return squads;
     }
 
     /**
+     * Get squad unit IDs for a placement from PlacementSystem
+     * @param {number} placementId - Placement ID
+     * @returns {Array} Array of unit entity IDs
+     */
+    getSquadUnits(placementId) {
+        const placement = this.game.call('getPlacementById', placementId);
+        return placement?.squadUnits || [];
+    }
+
+    /**
      * Initialize experience tracking for a new squad
-     * Experience data is stored directly on the placement component
-     * @param {string} placementId - Unique placement identifier
+     * Experience components already exist on units from UnitCreationSystem,
+     * this updates them with squad-specific values
+     * @param {number} placementId - Unique placement identifier
      * @param {Object} unitType - Unit type definition (not squadData)
-     * @param {Array} unitIds - Array of entity IDs in the squad
+     * @param {Array} unitIds - Array of entity IDs in the squad (used for initial count)
      */
     initializeSquad(placementId, unitType, unitIds) {
-        // Check if we already have experience data on the placement
+        // Check if already initialized with squad-specific values
         const existingData = this.getSquadExperience(placementId);
-        if (existingData) {
-            // Update unit IDs for existing squad
-            existingData.unitIds = [...unitIds];
-            existingData.squadSize = unitIds.length;
-
-            // Apply level bonuses to units
+        if (existingData && existingData.squadValue > 0) {
+            // Already initialized, just apply level bonuses
             this.applyLevelBonuses(placementId);
             return existingData;
         }
 
-        // Create new experience data on the placement component
+        // Update experience components on all units with squad-specific values
         const squadValue = this.calculateSquadValue(unitType);
+        const squadSize = unitIds.length;
 
         const experienceData = {
             level: 1,
             experience: 0,
             experienceToNextLevel: this.calculateExperienceNeeded(0),
             squadValue: squadValue,
-            unitIds: [...unitIds],
-            squadSize: unitIds.length,
-            canLevelUp: false,
-            totalUnitsInSquad: unitIds.length,
+            canLevelUp: 0,
+            totalUnitsInSquad: squadSize,
             lastExperienceGain: 0
         };
 
-        // Store on placement component
+        // Update experience component on all units in squad
         this.setSquadExperience(placementId, experienceData);
 
         // Apply initial bonuses if any
@@ -287,7 +293,8 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             
         console.log('leveling squad for cost', placementId, levelUpCost);
         // Visual effects
-        squadData.unitIds.forEach(entityId => {
+        const unitIds = this.getSquadUnits(placementId);
+        unitIds.forEach(entityId => {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
             if (pos) {
@@ -327,10 +334,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             return false;
         }
 
-        // Get old unitType from the first entity
-        const oldUnitType = placement.squadUnits?.length > 0
-            ? this.game.getComponent(placement.squadUnits[0], 'unitType')
-            : null;
 
         // specializationUnitType already has id and collection from compiler
         const newUnitType = specializationUnitType;
@@ -346,21 +349,21 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         }
 
         // Create a modified placement object with the new unitType for unit creation
-        const specializedPlacement = {
+        const specializedUnitData = {
             ...placement,
-            unitType: newUnitType,
             unitTypeId: spawnTypeIndex,
             collection: collectionIndex
         };
 
         // Recreate all units in the squad with the new unit type
+        const oldUnitIds = this.getSquadUnits(placementId);
         const newUnitIds = [];
 
-        console.log('applying specialization to ', squadData, squadData.unitIds);
+        console.log('applying specialization to ', squadData, oldUnitIds);
         console.log('placement', placement);
         // Store positions of old units
         const positions = [];
-        squadData.unitIds.forEach(entityId => {
+        oldUnitIds.forEach(entityId => {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
             if (pos) {
@@ -377,22 +380,19 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
 
         // Create new specialized units at the same positions
         positions.forEach(pos => {
-            const terrainHeight = this.game.unitCreationSystem.getTerrainHeight(pos.x, pos.z);
+            const terrainHeight = this.game.call('getTerrainHeight', pos.x, pos.z);
             const unitY = terrainHeight !== null ? terrainHeight : pos.y;
 
             const transform = {
                 position: { x: pos.x, y: unitY, z: pos.z }
             };
             const entityId = this.game.call('createPlacement',
-                specializedPlacement,
+                specializedUnitData,
                 transform,
                 team
             );
             newUnitIds.push(entityId);
         });
-
-        // Update squad data with new unit IDs
-        squadData.unitIds = newUnitIds;
 
         // Update squad value based on new unit type
         squadData.squadValue = this.calculateSquadValue(newUnitType);
@@ -546,7 +546,8 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             return;
         }
 
-        squadData.unitIds.forEach(entityId => {
+        const unitIds = this.getSquadUnits(placementId);
+        unitIds.forEach(entityId => {
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
             const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             if (unitType) {
@@ -582,18 +583,18 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      * @returns {number} Total health
      */
     calculateSquadTotalHealth(placementId) {
-        const squadData = this.getSquadExperience(placementId);
-        if (!squadData) return 100; // Default fallback
+        const unitIds = this.getSquadUnits(placementId);
+        if (!unitIds.length) return 100; // Default fallback
 
         let totalHealth = 0;
 
-        squadData.unitIds.forEach(entityId => {
+        unitIds.forEach(entityId => {
             const health = this.game.getComponent(entityId, "health");
             if (health) {
                 totalHealth += health.max;
             }
         });
-        
+
         return Math.max(1, totalHealth); // Avoid division by zero
     }
     
@@ -623,7 +624,8 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      */
     findSquadByUnitId(entityId) {
         for (const squad of this.getAllSquadsWithExperience()) {
-            if (squad.experience.unitIds.includes(entityId)) {
+            const unitIds = this.getSquadUnits(squad.placementId);
+            if (unitIds.includes(entityId)) {
                 return squad.experience;
             }
         }
@@ -733,12 +735,12 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     
     /**
      * Clean up squad data when units are destroyed
-     * Clears experience data from the placement component
-     * @param {string} placementId - Squad placement ID
+     * Experience components are removed when units are destroyed
+     * @param {number} placementId - Squad placement ID
      */
     removeSquad(placementId) {
-        // Clear experience from placement component
-        this.setSquadExperience(placementId, null);
+        // Experience components are automatically cleaned up when units are destroyed
+        // No additional cleanup needed
     }
 
     /**
@@ -757,19 +759,20 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             // Respect caps: no gain if at max or waiting for manual level-up
             if (squadData.level >= this.config.maxLevel || squadData.canLevelUp) continue;
 
-            const unitsAliveInSquad = this.unitsAliveInSquad(squadData);
-            if (unitsAliveInSquad > 0) {
-                const squadLivingRatio = unitsAliveInSquad / squadData.totalUnitsInSquad;
+            const unitsAlive = this.unitsAliveInSquad(squad.placementId);
+            if (unitsAlive > 0) {
+                const squadLivingRatio = unitsAlive / squadData.totalUnitsInSquad;
                 const xp = squadLivingRatio * this.config.baselineXPPerSecond * this.game.state.deltaTime * this.config.experienceMultiplier;
                 if (xp > 0) this.addExperience(squad.placementId, xp);
             }
         }
     }
 
-    unitsAliveInSquad(squadData) {
-        if (!squadData || !squadData.unitIds?.length) return 0;
+    unitsAliveInSquad(placementId) {
+        const unitIds = this.getSquadUnits(placementId);
+        if (!unitIds.length) return 0;
         let count = 0;
-        for (const id of squadData.unitIds) {
+        for (const id of unitIds) {
             const h = this.game.getComponent(id, "health");
             if (h && h.current > 0) count++;
         }
@@ -778,30 +781,29 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
 
     /**
      * Clean up experience data for squads with dead/missing units
-     * Updates unit lists on placement components
+     * No longer needed since unitIds are queried dynamically
      */
     onPlacementPhaseStart() {
-        for (const squad of this.getAllSquadsWithExperience()) {
-            const squadData = squad.experience;
-            const validUnits = squadData.unitIds.filter(entityId => {
-                const health = this.game.getComponent(entityId, "health");
-                return health && health.current > 0;
-            });
-
-            if (validUnits.length < squadData.unitIds.length) {
-                squadData.unitIds = validUnits;
-                squadData.squadSize = validUnits.length;
-            }
-        }
+        // unitIds are now retrieved dynamically via getSquadUnits
+        // so no cleanup is needed here
     }
 
     /**
      * Reset all experience data (for new game)
-     * Clears experience from all placement components
+     * Resets experience components on all units to default values
      */
     reset() {
+        const defaultExperience = {
+            level: 1,
+            experience: 0,
+            experienceToNextLevel: this.calculateExperienceNeeded(0),
+            squadValue: 0,
+            canLevelUp: 0,
+            totalUnitsInSquad: 1,
+            lastExperienceGain: 0
+        };
         for (const squad of this.getAllSquadsWithExperience()) {
-            this.setSquadExperience(squad.placementId, null);
+            this.setSquadExperience(squad.placementId, defaultExperience);
         }
     }
 

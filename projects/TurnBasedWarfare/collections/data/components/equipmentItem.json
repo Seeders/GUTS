@@ -1,14 +1,14 @@
 {
   "title": "equipmentItem",
   "schema": {
-    "itemType": -1,
-    "modelPath": -1,
+    "itemType": null,
+    "modelPath": null,
     "armor": 0,
     "fireResistance": 0,
     "coldResistance": 0,
     "lightningResistance": 0,
     "poisonResistance": 0,
-    "element": -1,
+    "element": null,
     "mainHandBone": 0,
     "mainHandOffsetX": 0,
     "mainHandOffsetY": 0,

@@ -299,10 +299,10 @@ class ProjectileSystem extends GUTS.BaseSystem {
                 return;
             }
 
-            // Update homing behavior (targetId is -1 when no target)
-            if (homing && homing.targetId >= 0 && projectile.isBallistic) {
+            // Update homing behavior (targetId is null when no target)
+            if (homing && homing.targetId != null && projectile.isBallistic) {
                 this.updateBallisticHoming(projectileId, pos, vel, projectile, homing);
-            } else if (homing && homing.targetId >= 0) {
+            } else if (homing && homing.targetId != null) {
                 this.updateHomingProjectile(projectileId, pos, vel, projectile, homing);
             }
 
@@ -429,8 +429,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
                 }
             }
         } else {
-            // Target is gone - set to -1 (invalid entity ID) not null
-            homing.targetId = -1;
+            // Target is gone - set to null
+            homing.targetId = null;
         }
     }
     

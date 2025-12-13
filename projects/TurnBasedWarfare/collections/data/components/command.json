@@ -2,16 +2,16 @@
   "title": "command",
   "schema": {
     "type": 0,
-    "controllerId": -1,
+    "controllerId": null,
     "targetPosition": {
       "x": 0,
       "y": 0,
       "z": 0
     },
-    "target": -1,
+    "target": null,
     "priority": 0,
     "interruptible": 1,
     "createdTime": 0,
-    "id": -1
+    "id": null
   }
 }

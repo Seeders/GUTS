@@ -3,7 +3,7 @@
   "schema": {
     "auraType": 0,
     "radius": 50,
-    "visualEffect": -1,
+    "visualEffect": null,
     "persistent": 1,
     "pulseInterval": 1,
     "lastPulse": 0,

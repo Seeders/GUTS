@@ -1,9 +1,9 @@
 {
   "title": "summoned",
   "schema": {
-    "summoner": -1,
-    "summonType": -1,
-    "originalStats": -1,
+    "summoner": null,
+    "summonType": null,
+    "originalStats": null,
     "createdTime": 0,
     "isSummoned": 1
   }

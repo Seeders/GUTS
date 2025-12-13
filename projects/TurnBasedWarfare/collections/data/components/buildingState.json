@@ -1,7 +1,7 @@
 {
   "title": "buildingState",
   "schema": {
-    "targetBuildingEntityId": -1,
+    "targetBuildingEntityId": null,
     "buildTime": 0,
     "constructionStartTime": 0
   }

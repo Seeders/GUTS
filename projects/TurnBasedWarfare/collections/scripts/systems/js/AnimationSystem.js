@@ -26,6 +26,10 @@ class AnimationSystem extends GUTS.BaseSystem {
         // This avoids storing complex objects per-entity
         this.spriteAnimationCache = new Map();
 
+        // Callback map for animation completion (entityId -> callback)
+        // Stored here instead of on component since callbacks can't be serialized
+        this._animationCallbacks = new Map();
+
         // Single-play animations using enum values
         this.SINGLE_PLAY_ANIMATIONS = new Set([
             this.enums.animationType.attack,
@@ -66,7 +70,7 @@ class AnimationSystem extends GUTS.BaseSystem {
      * @returns {object|null} The animations object keyed by animation type name
      */
     _getSpriteAnimations(animState) {
-        if (!animState || animState.spriteAnimationSet < 0) return null;
+        if (!animState || animState.spriteAnimationSet == null) return null;
         const cachedData = this.spriteAnimationCache.get(animState.spriteAnimationSet);
         return cachedData?.animations || null;
     }
@@ -192,8 +196,8 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Handle billboard/sprite entities separately
         if (animState.isSprite) {
-            // Only process if sprite animations have been loaded (spriteAnimationSet >= 0)
-            if (animState.spriteAnimationSet >= 0) {
+            // Only process if sprite animations have been loaded (spriteAnimationSet != null)
+            if (animState.spriteAnimationSet != null) {
                 this.updateBillboardAnimationLogic(entityId, animState, velocity);
             }
             return;
@@ -534,23 +538,23 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Handle billboard entities with sprite animations
         if (animState.isSprite) {
-            if (clipName === this.enums.animationType.attack) {
-                // Check if already playing attack animation - don't restart it
+            if (clipName === this.enums.animationType.attack || clipName === this.enums.animationType.cast) {
+                // Check if already playing this animation - don't restart it
                 const billboardAnim = this.game.getComponent(entityId, 'animationState');
-                if (billboardAnim && billboardAnim.spriteAnimationType === this.enums.animationType.attack) {
-                    return true;  // Already attacking, don't restart
+                if (billboardAnim && billboardAnim.spriteAnimationType === clipName) {
+                    return true;  // Already playing, don't restart
                 }
 
-                // Set attack animation (single-play, not looping)
+                // Set animation (single-play, not looping)
                 // When animation completes, return to idle
-                // Use minTime as customDuration to pace the animation (e.g., for leap slam)
+                // Use minTime as customDuration to pace the animation
                 this.game.call(
                     'setBillboardAnimation',
                     entityId,
-                    this.enums.animationType.attack,
+                    clipName,
                     false,  // don't loop - play once
                     (completedEntityId) => {
-                        // Return to idle animation after attack finishes
+                        // Return to idle animation after animation finishes
                         this.game.call('setBillboardAnimation', completedEntityId, this.enums.animationType.idle, true);
                     },
                     minTime > 0 ? minTime : null  // Pass minTime as custom duration if provided
@@ -761,6 +765,13 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     /**
+     * Clean up when entity is destroyed
+     */
+    entityDestroyed(entityId) {
+        this._animationCallbacks.delete(entityId);
+    }
+
+    /**
      * Get all entity animation states (for debugging/inspection)
      */
     getEntityAnimations() {
@@ -814,8 +825,14 @@ class AnimationSystem extends GUTS.BaseSystem {
         animData.spriteFrameIndex = 0;
         animData.spriteFrameTime = 0;
         animData.spriteLoopAnimation = loop ? 1 : 0;
-        animData.onAnimationComplete = onComplete;
         animData.customDuration = customDuration; // Custom duration override for pacing
+
+        // Store callback in system map (not on component - callbacks can't be serialized)
+        if (onComplete) {
+            this._animationCallbacks.set(entityId, onComplete);
+        } else {
+            this._animationCallbacks.delete(entityId);
+        }
 
         // Tell EntityRenderer to apply the first frame
         const entityRenderer = this.game.call('getEntityRenderer');
@@ -933,10 +950,11 @@ class AnimationSystem extends GUTS.BaseSystem {
                         animState.spriteFrameIndex = frames.length - 1;
                         animState.spriteFrameTime = 0; // Stop accumulating time
 
-                        // Call completion callback if set
-                        if (animState.onAnimationComplete) {
-                            animState.onAnimationComplete(entityId);
-                            animState.onAnimationComplete = null;
+                        // Call completion callback if set (stored in system map)
+                        const callback = this._animationCallbacks.get(entityId);
+                        if (callback) {
+                            this._animationCallbacks.delete(entityId);
+                            callback(entityId);
                         } else {
                             // Default behavior: return to idle for single-play animations (except death)
                             // Death animations should stay frozen on the last frame

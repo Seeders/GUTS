@@ -13,6 +13,7 @@ class AbilitySystem extends GUTS.BaseSystem {
         // Initialize enums
         this.game.register('getEntityAbilities', this.getEntityAbilities.bind(this));
         this.game.register('removeEntityAbilities', this.removeEntityAbilities.bind(this));
+        this.game.register('addAbilitiesToUnit', this.addAbilitiesToUnit.bind(this));
     }
 
     addAbilitiesToUnit(entityId, abilityIds) {
@@ -51,8 +52,8 @@ class AbilitySystem extends GUTS.BaseSystem {
 
         for (const entityId of sortedEntityIds) {
             const queuedAbility = this.game.getComponent(entityId, 'abilityQueue');
-            // abilityId is -1 when no ability queued
-            if (!queuedAbility || queuedAbility.abilityId < 0) continue;
+            // abilityId is null when no ability queued
+            if (!queuedAbility || queuedAbility.abilityId == null) continue;
 
             if (this.game.state.now >= queuedAbility.executeTime) {
                 // Cancel queued ability if caster died
@@ -68,8 +69,8 @@ class AbilitySystem extends GUTS.BaseSystem {
                     const abilityName = reverseEnums?.abilities?.[queuedAbility.abilityId];
                     const ability = abilities.find(a => a.id === abilityName);
                     if (ability) {
-                        // Convert targetData back from -1 to null for abilities that expect null
-                        const targetData = queuedAbility.targetData >= 0 ? queuedAbility.targetData : null;
+                        // targetData is null when no target
+                        const targetData = queuedAbility.targetData;
                         // Execute ability and get potential callback
                         const abilityAction = ability.execute(entityId, targetData);
 
@@ -115,8 +116,8 @@ class AbilitySystem extends GUTS.BaseSystem {
     
     considerAbilityUsage(entityId, abilities) {
         const queuedAbility = this.game.getComponent(entityId, 'abilityQueue');
-        // abilityId is -1 when no ability queued
-        if (queuedAbility && queuedAbility.abilityId >= 0) {
+        // abilityId is null when no ability queued
+        if (queuedAbility && queuedAbility.abilityId != null) {
             return; // Entity is already casting an ability, wait for it to finish
         }
 
@@ -140,7 +141,7 @@ class AbilitySystem extends GUTS.BaseSystem {
     useAbility(entityId, abilityId, targetData = null) {
         // Check if entity already has a queued ability - don't overwrite it
         const existingQueue = this.game.getComponent(entityId, 'abilityQueue');
-        if (existingQueue && existingQueue.abilityId >= 0) {
+        if (existingQueue && existingQueue.abilityId != null) {
             return false;
         }
 
@@ -166,11 +167,10 @@ class AbilitySystem extends GUTS.BaseSystem {
         }
         // Convert ability string ID to numeric index for TypedArray storage
         const abilityIndex = this.enums.abilities[abilityId];
-        // targetData is typically a target entity ID or -1 for no target
-        const targetDataValue = (targetData !== null && targetData !== undefined) ? targetData : -1;
+        // targetData is typically a target entity ID or null for no target
         this.game.addComponent(entityId, 'abilityQueue', {
-            abilityId: abilityIndex !== undefined ? abilityIndex : -1,
-            targetData: targetDataValue,
+            abilityId: abilityIndex !== undefined ? abilityIndex : null,
+            targetData: targetData ?? null,
             executeTime: this.game.state.now + ability.castTime
         });
 
@@ -205,9 +205,9 @@ class AbilitySystem extends GUTS.BaseSystem {
         const velocity = this.game.getComponent(entityId, "velocity");
         if (velocity?.anchored) return;
 
-        // Get target for facing (targetId is -1 when no target)
+        // Get target for facing (targetId is null when no target)
         const targetId = ability.getTargetForFacing(entityId);
-        if (targetId === undefined || targetId === null || targetId < 0 || targetId === entityId) return;
+        if (targetId == null || targetId === entityId) return;
 
         const casterTransform = this.game.getComponent(entityId, "transform");
         const targetTransform = this.game.getComponent(targetId, "transform");
@@ -238,9 +238,9 @@ class AbilitySystem extends GUTS.BaseSystem {
         // Convert ability string ID to numeric index for TypedArray storage
         const abilityIndex = this.enums.abilities[abilityId];
         if (abilityIndex !== undefined) {
-            cooldowns[`cooldowns${abilityIndex}`] = this.game.state.now + cooldownDuration;
+            cooldowns.cooldowns[abilityIndex] = this.game.state.now + cooldownDuration;
         }
-        cooldowns.lastAbilityUsed = abilityIndex !== undefined ? abilityIndex : -1;
+        cooldowns.lastAbilityUsed = abilityIndex !== undefined ? abilityIndex : null;
         cooldowns.lastAbilityTime = this.game.state.now;
     }
 
@@ -250,7 +250,7 @@ class AbilitySystem extends GUTS.BaseSystem {
         // Convert ability string ID to numeric index
         const abilityIndex = this.enums.abilities[abilityId];
         if (abilityIndex === undefined) return true;
-        const cooldownEnd = cooldowns[`cooldowns${abilityIndex}`];
+        const cooldownEnd = cooldowns.cooldowns[abilityIndex];
         return !cooldownEnd || this.game.state.now >= cooldownEnd;
     }
 
@@ -260,7 +260,7 @@ class AbilitySystem extends GUTS.BaseSystem {
         // Convert ability string ID to numeric index
         const abilityIndex = this.enums.abilities[abilityId];
         if (abilityIndex === undefined) return 0;
-        const cooldownEnd = cooldowns[`cooldowns${abilityIndex}`];
+        const cooldownEnd = cooldowns.cooldowns[abilityIndex];
         return !cooldownEnd ? 0 : Math.max(0, cooldownEnd - this.game.state.now);
     }
     

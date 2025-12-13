@@ -1,9 +1,9 @@
 {
   "title": "equipmentSlot",
   "schema": {
-    "slotType": -1,
-    "itemId": -1,
-    "attachmentPoint": -1,
+    "slotType": null,
+    "itemId": null,
+    "attachmentPoint": null,
     "offset": {
       "x": 0,
       "y": 0,

@@ -2,7 +2,7 @@
   "title": "mindControlled",
   "schema": {
     "originalTeam": 0,
-    "controller": -1,
+    "controller": null,
     "endTime": 0,
     "isControlled": 1
   }

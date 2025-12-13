@@ -15,6 +15,10 @@ class LobbyUISystem extends GUTS.BaseSystem {
 
     init(params) {
         this.params = params || {};
+        this.game.register('showLobby', this.showLobby.bind(this));
+        this.game.register('updateLobby', this.updateLobby.bind(this));
+        this.game.register('getSelectedLevel', this.getSelectedLevel.bind(this));
+        this.game.register('handleMultiplayerModeSelection', this.handleMultiplayerModeSelection.bind(this));
         this.initializeUI();
     }
 
@@ -293,7 +297,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
         if (!file) return;
 
         try {
-            const saveData = await this.game.saveSystem.importSaveFile(file);
+            const saveData = await this.game.call('importSaveFile', file);
 
             if (!saveData) {
                 this.showNotification('Invalid save file', 'error');
@@ -493,9 +497,8 @@ class LobbyUISystem extends GUTS.BaseSystem {
         this.currentScreen = null;
         this.roomId = null;
 
-        if (this.game.screenSystem?.showMainMenu) {
-            this.game.screenSystem.showMainMenu();
-        } else {
+        this.game.call('showMainMenu');
+        if (!this.game.hasService('showMainMenu')) {
             window.location.reload();
         }
     }

@@ -1,7 +1,7 @@
 {
   "title": "playerStats",
   "schema": {
-    "playerId": -1,
+    "playerId": null,
     "side": 2,
     "gold": 100,
     "upgrades": {

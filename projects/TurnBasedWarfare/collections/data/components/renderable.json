@@ -1,8 +1,8 @@
 {
   "title": "renderable",
   "schema": {
-    "objectType": -1,
-    "spawnType": -1,
+    "objectType": null,
+    "spawnType": null,
     "capacity": 128
   }
 }

@@ -4,8 +4,8 @@
     "damage": 10,
     "speed": 200,
     "range": 100,
-    "target": -1,
-    "source": -1,
+    "target": null,
+    "source": null,
     "startTime": 0,
     "element": 0
   }

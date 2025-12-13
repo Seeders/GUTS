@@ -65,10 +65,12 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         };
         this.game.register('createPlacement', this.createPlacement.bind(this));
         this.game.register('createUnit', this.createUnit.bind(this));
+        this.game.register('getTerrainHeight', this.getTerrainHeight.bind(this));
+        this.game.register('incrementSquadsCreated', () => { this.stats.squadsCreated++; });
     }
     /**
      * Create a new unit entity with all required components from a placement
-     * @param {Object} placement - Placement data with collection, unitTypeId, unitType, etc.
+     * @param {Object} networkUnitData - Placement data with collection, unitTypeId, unitType, etc.
      *                             collection/unitTypeId are numeric indices
      *                             unitType is the resolved definition object with string id/collection
      * @param {Object} transform - Transform with position, rotation, scale
@@ -76,42 +78,42 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @param {string|null} entityId - Optional entity ID (for scene loading)
      * @returns {number} Entity ID
      */
-    createPlacement(placement, transform, team, entityId = null) {
+    createPlacement(networkUnitData, transform, team, entityId = null) {
         try {
             // placement.collection and placement.unitTypeId are numeric indices
-            const collectionIndex = placement.collection;
-            const unitTypeIndex = placement.unitTypeId;
+            const collectionIndex = networkUnitData.collection;
+            const unitTypeIndex = networkUnitData.unitTypeId;
 
             if (collectionIndex < 0 || unitTypeIndex < 0) {
-                console.log('Invalid placement - collection:', collectionIndex, 'unitTypeId:', unitTypeIndex, placement);
+                console.log('Invalid placement - collection:', collectionIndex, 'unitTypeId:', unitTypeIndex, networkUnitData);
                 throw new Error(`Invalid placement - missing collection or unitTypeId (collection=${collectionIndex}, unitTypeId=${unitTypeIndex})`);
             }
 
             const entity = this.createUnit(collectionIndex, unitTypeIndex, transform, team, entityId);
 
             this.game.addComponent(entity, 'placement', {
-                placementId: placement.placementId,
-                gridPosition: placement.gridPosition,
-                unitTypeId: placement.unitTypeId,
-                collection: placement.collection,
-                team: placement.team,
-                playerId: placement.playerId ?? -1,
-                roundPlaced: placement.roundPlaced,
+                placementId: networkUnitData.placementId,
+                gridPosition: networkUnitData.gridPosition,
+                unitTypeId: networkUnitData.unitTypeId,
+                collection: networkUnitData.collection,
+                team: team,
+                playerId: networkUnitData.playerId ?? -1,
+                roundPlaced: networkUnitData.roundPlaced,
                 // Include building construction state if present
-                isUnderConstruction: placement.isUnderConstruction ? 1 : 0,
-                buildTime: placement.buildTime ?? 0,
-                assignedBuilder: placement.assignedBuilder ?? -1
+                isUnderConstruction: networkUnitData.isUnderConstruction ? 1 : 0,
+                buildTime: networkUnitData.buildTime ?? 0,
+                assignedBuilder: networkUnitData.assignedBuilder ?? -1
             });
 
             // If building is under construction, update renderable to show construction state
-            if (placement.isUnderConstruction) {
+            if (networkUnitData.isUnderConstruction) {
                 const renderComponent = this.game.getComponent(entity, 'renderable');
                 if (renderComponent) {
                     renderComponent.spawnType = this.enums.buildings.underConstruction;
                 }
             }
 
-            console.log('created placement', placement.unitTypeId, team, entity, 'placementId:', placement.placementId);
+            console.log('created placement', networkUnitData.unitTypeId, team, entity, 'placementId:', networkUnitData.placementId);
 
             return entity;
         } catch (error) {
@@ -193,13 +195,13 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 }
 
                 // Free grid cells
-                if (this.game.gridSystem && squad.placementId) {
-                    this.game.gridSystem.freeCells(squad.placementId);
+                if (squad.placementId) {
+                    this.game.call('releaseGridCells', squad.placementId);
                 }
 
                 // Remove from experience system
-                if (this.game.squadExperienceSystem && squad.placementId) {
-                    this.game.squadExperienceSystem.removeSquad(squad.placementId);
+                if (squad.placementId) {
+                    this.game.call('removeSquadExperience', squad.placementId);
                 }
 
             } catch (error) {
@@ -214,10 +216,11 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @returns {Object} Squad information
      */
     getSquadInfo(unitType) {
-        if (this.game.squadSystem) {
-            return this.game.squadSystem.getSquadInfo(unitType);
+        const squadInfo = this.game.call('getSquadInfoFromType', unitType);
+        if (squadInfo) {
+            return squadInfo;
         }
-        
+
         // Fallback squad info
         const enums = this.game.getEnums();
         return {
@@ -236,22 +239,21 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @returns {boolean} True if placement is valid
      */
     canPlaceSquad(gridPosition, unitType, team) {
-        if (!this.game.squadSystem || !this.game.gridSystem) {
-            return this.game.gridSystem ? 
-                this.game.gridSystem.isValidPosition(gridPosition) : true;
-        }
-
         try {
-            const squadData = this.game.squadSystem.getSquadData(unitType);
-            const validation = this.game.squadSystem.validateSquadConfig(squadData);
-            
-            if (!validation.valid) {
+            const squadData = this.game.call('getSquadData', unitType);
+            if (!squadData) {
+                return this.game.call('isValidGridPosition', gridPosition) ?? true;
+            }
+
+            const validation = this.game.call('validateSquadConfig', squadData);
+
+            if (!validation?.valid) {
                 return false;
             }
 
-            const cells = this.game.squadSystem.getSquadCells(gridPosition, squadData);
-            return this.game.gridSystem.isValidPlacement(cells, team);
-            
+            const cells = this.game.call('getSquadCells', gridPosition, squadData);
+            return this.game.call('isValidGridPlacement', cells, team) ?? true;
+
         } catch (error) {
             console.warn('Squad placement validation failed:', error);
             return false;
@@ -366,6 +368,17 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 objectType: collectionIndex,
                 spawnType: spawnTypeIndex,
                 capacity: 128
+            },
+
+            // Experience component
+            experience: {
+                level: 1,
+                experience: 0,
+                experienceToNextLevel: 15,
+                squadValue: 0,
+                canLevelUp: 0,
+                totalUnitsInSquad: 1,
+                lastExperienceGain: 0
             }
         };
 
@@ -557,10 +570,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 const itemData = this.getItemFromCollection(equippedItem.item);
                 if (itemData) {
                     try {
-                        await this.game.equipmentSystem.equipItem(
-                            entityId, 
-                            equippedItem, 
-                            itemData, 
+                        await this.game.call('equipItem',
+                            entityId,
+                            equippedItem,
+                            itemData,
                             equippedItem.item
                         );
                     } catch (equipError) {
@@ -584,10 +597,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @param {Object} unitType - Unit type definition
      */
     setupAbilities(entityId, unitType) {
-        if (!this.game.abilitySystem || !unitType?.abilities) {
+        if (!unitType?.abilities) {
             return;
         }
-        
+
         try {
             // Validate abilities exist before adding
             const validAbilities = unitType.abilities.filter(abilityId => {
@@ -599,9 +612,9 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 }
                 return true;
             });
-            
+
             if (validAbilities.length > 0) {
-                this.game.abilitySystem.addAbilitiesToUnit(entityId, validAbilities);
+                this.game.call('addAbilitiesToUnit', entityId, validAbilities);
             }
         } catch (error) {
             console.error(`Ability setup failed for entity ${entityId}:`, error);
@@ -651,8 +664,9 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      */
     getTerrainHeight(worldX, worldZ) {
         try {
-            if (this.game.terrainSystem?.getTerrainHeightAtPosition) {
-                return this.game.terrainSystem.getTerrainHeightAtPosition(worldX, worldZ);
+            const height = this.game.call('getTerrainHeightAtPosition', worldX, worldZ);
+            if (height !== undefined) {
+                return height;
             }
         } catch (error) {
             console.warn(`Error getting terrain height at (${worldX}, ${worldZ}):`, error);

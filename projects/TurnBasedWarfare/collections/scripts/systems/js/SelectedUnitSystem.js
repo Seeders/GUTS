@@ -40,6 +40,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
     init() {
         this.game.register('getSelectedSquads', this.getSelectedSquads.bind(this));
+        this.game.register('deselectAllUnits', this.deselectAll.bind(this));
     }
 
     initialize() {

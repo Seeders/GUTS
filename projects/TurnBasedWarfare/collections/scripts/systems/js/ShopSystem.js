@@ -22,18 +22,19 @@ class ShopSystem extends GUTS.BaseSystem {
      * Get all completed buildings for a specific side
      * Queries entity data directly instead of maintaining a separate map
      */
-    getOwnedBuildings(side) {
+    getOwnedBuildings(teamIndex) {
         const buildings = new Map(); // buildingType -> [entityIds]
-        const entitiesWithPlacement = this.game.getEntitiesWith('placement');
+        const entitiesWithPlacement = this.game.getEntitiesWith('placement', 'team');
 
         for (const entityId of entitiesWithPlacement) {
             const placement = this.game.getComponent(entityId, 'placement');
+            const teamComp = this.game.getComponent(entityId, 'team');
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
             const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
 
             if (!placement || !unitType) continue;
             if (unitType.collection !== 'buildings') continue;
-            if (placement.team !== side) continue;
+            if (teamComp.team !== teamIndex) continue;
             if (placement.isUnderConstruction) continue;
 
             const buildingType = unitType.id;
@@ -183,7 +184,7 @@ class ShopSystem extends GUTS.BaseSystem {
             const canAfford = this.game.call('canAffordCost', unit.value);
             const hasCapacity = buildTime <= remainingCapacity + 0.001;
             
-            const hasSupply = !this.game.supplySystem || this.game.supplySystem.canAffordSupply(this.game.state.myTeam, unit);
+            const hasSupply = this.game.call('canAffordSupply', this.game.state.myTeam, unit) ?? true;
             
             let locked = !canAfford || !hasCapacity || !hasSupply;
             let lockReason = null;
@@ -349,15 +350,20 @@ class ShopSystem extends GUTS.BaseSystem {
             this.showNotification('No valid placement near building!', 'error');
             return;
         }
-        const placement = this.game.call('createPlacementData', placementPos, unit, this.game.state.myTeam);
+        const networkUnitData = this.game.call('createNetworkUnitData', placementPos, unit, this.game.state.myTeam);
 
-        this.game.call('submitPlacement', placement, (success, response) => {
+        this.game.call('sendPlacementRequest', networkUnitData, (success, response) => {
             if(success){
                 const newProgress = productionProgress + buildTime;
                 this.setBuildingProductionProgress(buildingId, newProgress);
                 // Use server-provided placementId and entity IDs
-                placement.placementId = response.placementId;
-                this.game.call('placeSquadOnBattlefield', placement, response.squadUnits);
+                networkUnitData.placementId = response.placementId;
+                this.game.call('spawnSquad',
+                    networkUnitData,
+                    this.game.state.myTeam,
+                    this.game.clientNetworkManager?.numericPlayerId,
+                    response.squadUnits
+                );
             }
         });
     }
@@ -367,17 +373,13 @@ class ShopSystem extends GUTS.BaseSystem {
         const placement = this.game.call('getPlacementById', placementId);
         if (!buildingGridPos || !placement) return null;
 
-        const gridSystem = this.game.gridSystem;
-        const placementSystem = this.game.placementSystem;
-        if (!gridSystem || !placementSystem) return null;
-
         // Get building cells by computing from its unit type
         const buildingUnitType = this.game.call('getUnitTypeDef', {
             collection: placement.collection,
             type: placement.unitTypeId
         });
-        const buildingSquadData = buildingUnitType ? this.game.squadSystem.getSquadData(buildingUnitType) : null;
-        const buildingCells = buildingSquadData ? this.game.squadSystem.getSquadCells(buildingGridPos, buildingSquadData) : [];
+        const buildingSquadData = buildingUnitType ? this.game.call('getSquadData', buildingUnitType) : null;
+        const buildingCells = buildingSquadData ? this.game.call('getSquadCells', buildingGridPos, buildingSquadData) : [];
         const buildingCellSet = new Set(buildingCells.map(cell => `${cell.x},${cell.z}`));
 
         const searchRadius = 12;
@@ -394,8 +396,8 @@ class ShopSystem extends GUTS.BaseSystem {
                 continue;
             }
             
-            const unitSquadData = this.game.squadSystem.getSquadData(unitDef);
-            const unitCells = this.game.squadSystem.getSquadCells(testPos, unitSquadData);
+            const unitSquadData = this.game.call('getSquadData', unitDef);
+            const unitCells = this.game.call('getSquadCells', testPos, unitSquadData);
             
             const overlapsBuilding = unitCells.some(cell => 
                 buildingCellSet.has(`${cell.x},${cell.z}`)
@@ -405,8 +407,7 @@ class ShopSystem extends GUTS.BaseSystem {
                 continue;
             }
 
-            const worldPos = gridSystem.gridToWorld(testPos.x, testPos.z);
-            if (placementSystem.isValidGridPlacement(worldPos, unitDef)) {
+            if (this.game.call('isValidGridPlacement', [testPos], this.game.state.myTeam)) {
                 return testPos;
             }
         }
@@ -464,7 +465,7 @@ class ShopSystem extends GUTS.BaseSystem {
         if (!worldPos) return null;
 
         // Convert world position to grid position
-        return this.game.gridSystem.worldToGrid(worldPos.x, worldPos.z);
+        return this.game.call('worldToPlacementGrid', worldPos.x, worldPos.z);
     }
 
     purchaseUpgrade(upgradeId, upgrade) {
@@ -748,9 +749,7 @@ class ShopSystem extends GUTS.BaseSystem {
         this.game.destroyEntity(buildingEntityId);
 
         // Deselect all
-        if (this.game.selectedUnitSystem) {
-            this.game.selectedUnitSystem.deselectAll();
-        }
+        this.game.call('deselectAllUnits');
     }
 
     reset() {

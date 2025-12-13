@@ -2,7 +2,7 @@
   "title": "temporaryEffect",
   "schema": {
     "effectType": 0,
-    "caster": -1,
+    "caster": null,
     "radius": 0,
     "tickInterval": 1,
     "tickDamage": 0,

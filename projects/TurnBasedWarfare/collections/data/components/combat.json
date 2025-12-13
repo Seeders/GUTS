@@ -4,7 +4,7 @@
     "damage": 0,
     "range": 1,
     "attackSpeed": 1,
-    "projectile": -1,
+    "projectile": null,
     "lastAttack": 0,
     "element": 0,
     "armor": 0,

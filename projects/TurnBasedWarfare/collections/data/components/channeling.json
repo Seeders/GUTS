@@ -1,7 +1,7 @@
 {
   "title": "channeling",
   "schema": {
-    "abilityId": -1,
+    "abilityId": null,
     "channelDuration": 3,
     "channelStartTime": 0,
     "canBeInterrupted": 1,

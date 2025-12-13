@@ -30,6 +30,7 @@ class TerrainSystem extends GUTS.BaseSystem {
         this.game.register('initTerrainFromComponent', this.initTerrainFromComponent.bind(this));
         this.game.register('hasTerrain', () => this.terrainDataManager !== null);
         this.game.register('getLevel', () => this.currentLevel);
+        this.game.register('isTerrainInitialized', () => this.initialized && this.terrainDataManager !== null);
 
         // TerrainSystem waits for scene to load via onSceneLoad()
         // Terrain entity in scene triggers terrain initialization

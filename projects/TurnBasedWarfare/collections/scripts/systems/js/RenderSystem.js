@@ -242,7 +242,7 @@ class RenderSystem extends GUTS.BaseSystem {
             const objectType = renderable.objectType;
             const spawnType = renderable.spawnType;
 
-            if (objectType < 0 || spawnType < 0) {
+            if (objectType == null || spawnType == null) {
                 console.error(`[RenderSystem] Invalid renderable for ${entityId}: objectType=${objectType}, spawnType=${spawnType}`);
                 continue;
             }

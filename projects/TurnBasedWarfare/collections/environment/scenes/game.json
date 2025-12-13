@@ -21,7 +21,8 @@
     "GoldMineSystem",
     "PathfindingSystem",
     "VisionSystem",
-    "SupplySystem"
+    "SupplySystem",
+    "PlacementSystem"
   ],
   "clientSystems": [
     "RenderSystem",
@@ -31,8 +32,8 @@
     "AnimationSystem",
     "ArmyDisplaySystem",
     "EffectsSystem",
-    "MultiplayerNetworkSystem",
-    "MultiplayerPlacementSystem",
+    "ClientNetworkSystem",
+    "PlacementUISystem",
     "GameUISystem",
     "ShopSystem",
     "HealthBarSystem",
@@ -47,7 +48,7 @@
   ],
   "serverSystems": [
     "ServerBattlePhaseSystem",
-    "ServerPlacementSystem",
+    "ServerNetworkSystem",
     "SaveSystem"
   ],
   "entities": [

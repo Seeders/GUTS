@@ -4,15 +4,15 @@
     "commands": {
       "$fixedArray": {
         "size": 8,
-        "default": -1
+        "default": null
       }
     },
     "commandCount": 0,
-    "currentCommand": -1,
+    "currentCommand": null,
     "commandHistory": {
       "$fixedArray": {
         "size": 16,
-        "default": -1
+        "default": null
       }
     },
     "historyCount": 0

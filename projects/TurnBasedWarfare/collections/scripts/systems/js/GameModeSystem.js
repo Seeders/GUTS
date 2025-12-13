@@ -1,7 +1,17 @@
 class GameModeSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
-        this.game.gameModeSystem = this;        
+        this.game.gameModeSystem = this;
+        this.selectedGameMode = null;
+        this.modes = null;
+    }
+
+    init() {
+        this.game.register('getSelectedMode', this.getSelectedMode.bind(this));
+        this.game.register('setGameMode', this.setGameMode.bind(this));
+    }
+
+    onSceneLoad() {
         this.modes = this.initializeGameModes();
         this.setupUI();
     }
@@ -20,7 +30,7 @@ class GameModeSystem extends GUTS.BaseSystem {
                 maxPlayers: 2,
                 startingGold: 100,
                 onStart: (mode) => {
-                    this.game.uiSystem.handleMultiplayerModeSelection(mode);
+                    this.game.call('handleMultiplayerModeSelection', mode);
                 }
             }
             // ,
@@ -103,22 +113,42 @@ class GameModeSystem extends GUTS.BaseSystem {
         document.querySelectorAll('.mode-card').forEach(card => {
             card.classList.remove('selected');
         });
-        
+
         // Add selection to clicked card
         const selectedCard = document.querySelector(`[data-mode="${modeId}"]`);
         if (selectedCard) {
             selectedCard.classList.add('selected');
-            this.game.screenSystem.setGameMode(modeId);
+            this.setGameMode(modeId);
             const modeConfig = this.getModeConfig(modeId);
             modeConfig.onStart(modeConfig);
         }
     }
 
+    setGameMode(modeId) {
+        this.selectedGameMode = modeId;
+        // Store mode config in game.state so it persists across scenes
+        if (this.modes && this.modes[modeId]) {
+            const mode = this.modes[modeId];
+            this.game.state.gameMode = {
+                id: mode.id,
+                title: mode.title,
+                description: mode.description,
+                isMultiplayer: mode.isMultiplayer,
+                maxPlayers: mode.maxPlayers,
+                startingGold: mode.startingGold
+            };
+        }
+    }
+
     getSelectedMode() {
-        return this.modes[this.game.screenSystem.selectedGameMode];
+        // Return from game.state (works across scenes without needing modes initialized)
+        return this.game.state.gameMode || null;
     }
 
     getModeConfig(modeId) {
+        if (!this.modes) {
+            return null;
+        }
         return this.modes[modeId];
     }
 

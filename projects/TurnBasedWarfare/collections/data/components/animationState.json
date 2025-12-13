@@ -5,18 +5,19 @@
     "lastStateChange": 0,
     "animationTime": 0,
     "minAnimationTime": 0,
-    "pendingClip": -1,
-    "pendingSpeed": -1,
-    "pendingMinTime": -1,
+    "pendingClip": null,
+    "pendingSpeed": null,
+    "pendingMinTime": null,
     "isTriggered": 0,
     "isCelebrating": 0,
     "isSprite": 0,
     "spriteDirection": 0,
-    "spriteAnimationSet": -1,
-    "spriteFps": -1,
-    "spriteAnimationType": -1,
+    "spriteAnimationSet": null,
+    "spriteFps": null,
+    "spriteAnimationType": null,
     "spriteFrameIndex": 0,
     "spriteFrameTime": 0,
-    "spriteLoopAnimation": 1
+    "spriteLoopAnimation": 1,
+    "customDuration": null
   }
 }

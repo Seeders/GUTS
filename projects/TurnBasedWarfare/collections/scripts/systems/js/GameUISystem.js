@@ -10,6 +10,8 @@ class GameUISystem extends GUTS.BaseSystem {
 
     init(params) {
         this.params = params || {};
+        this.game.register('leaveGame', this.leaveGame.bind(this));
+        this.game.register('updateGoldDisplay', this.updateGoldDisplay.bind(this));
         this.initializeUI();
     }
 
@@ -135,14 +137,13 @@ class GameUISystem extends GUTS.BaseSystem {
     }
 
     saveGame() {
-        if (!this.game.saveSystem) {
-            this.showNotification('Save system not available', 'error');
-            return;
-        }
-
         try {
-            const saveData = this.game.saveSystem.getSaveData();
-            this.game.saveSystem.exportSaveFile(saveData);
+            const saveData = this.game.call('getSaveData');
+            if (!saveData) {
+                this.showNotification('Save system not available', 'error');
+                return;
+            }
+            this.game.call('exportSaveFile', saveData);
             this.showNotification('Game saved! File downloaded.', 'success');
         } catch (error) {
             console.error('[GameUISystem] Error saving game:', error);
@@ -178,9 +179,8 @@ class GameUISystem extends GUTS.BaseSystem {
 
         await this.game.switchScene('lobby');
 
-        if (this.game.screenSystem?.showMainMenu) {
-            this.game.screenSystem.showMainMenu();
-        } else {
+        this.game.call('showMainMenu');
+        if (!this.game.hasService('showMainMenu')) {
             window.location.reload();
         }
     }

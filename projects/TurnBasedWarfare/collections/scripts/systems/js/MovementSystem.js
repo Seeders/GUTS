@@ -714,9 +714,8 @@ class MovementSystem extends GUTS.BaseSystem {
         } else {
             const existingPath = this.game.call('getEntityPath', entityId);
             const behaviorShared = aiState ? this.game.call('getBehaviorShared', entityId) : null;
-            const actionName = this.game.behaviorSystem ?
-                this.game.behaviorSystem.getNodeId(aiState?.currentActionCollection, aiState?.currentAction) :
-                aiState?.currentAction;
+            const actionName = this.game.call('getBehaviorNodeId', aiState?.currentActionCollection, aiState?.currentAction)
+                ?? aiState?.currentAction;
             // IMPORTANT: Never remove this debug message - it is very useful for debugging pathfinding issues
             // NEVER.  EVER.  THAT MEANS YOU CLAUDE.  DO NOT REMOVE THIS CONSOLE LOG MESSAGE.
             // This message should only appear when a unit is trying to path but can't find a complete path

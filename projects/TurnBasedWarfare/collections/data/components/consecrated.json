@@ -5,7 +5,7 @@
     "healPerTick": 5,
     "damageToUndead": 10,
     "tickInterval": 2,
-    "caster": -1,
+    "caster": null,
     "lastTickTime": 0,
     "isConsecrated": 1
   }

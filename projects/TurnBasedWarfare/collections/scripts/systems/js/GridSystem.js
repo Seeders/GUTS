@@ -347,6 +347,10 @@ class GridSystem extends GUTS.BaseSystem {
         const minGz = Math.max(0, gridPos.z - cellRadius);
         const maxGz = Math.min(this.dimensions.height - 1, gridPos.z + cellRadius);
 
+        // Cache query position for inner loop
+        const posX = pos.x;
+        const posZ = pos.z;
+
         for (let gz = minGz; gz <= maxGz; gz++) {
             for (let gx = minGx; gx <= maxGx; gx++) {
                 const key = this._cellKey(gx, gz);
@@ -356,19 +360,20 @@ class GridSystem extends GUTS.BaseSystem {
                 for (const entityId of cellState.entities) {
                     if (entityId === excludeEntityId || seen.has(entityId)) continue;
 
-                    const transform = this.game.getComponent(entityId, "transform");
-                    const entityPos = transform?.position;
+                    // OPTIMIZATION: Use direct field access instead of proxy
+                    const entityX = this.game.getField(entityId, 'transform', 'position.x');
+                    const entityZ = this.game.getField(entityId, 'transform', 'position.z');
 
-                    if (!entityPos) continue;
+                    if (entityX === undefined) continue;
 
-                    const dx = entityPos.x - pos.x;
-                    const dz = entityPos.z - pos.z;
+                    const dx = entityX - posX;
+                    const dz = entityZ - posZ;
                     const distSq = dx * dx + dz * dz;
 
                     if (collection) {
-                        const unitTypeComp = this.game.getComponent(entityId, "unitType");
-                        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
-                        if (!unitType || unitType.collection !== collection) continue;
+                        // OPTIMIZATION: Direct field access for unitType collection check
+                        const entityCollection = this.game.getField(entityId, 'unitType', 'collection');
+                        if (this.game.isNull(entityCollection) || entityCollection !== collection) continue;
                     }
 
                     if (distSq <= radiusSq) {
@@ -401,24 +406,26 @@ class GridSystem extends GUTS.BaseSystem {
         currentEntitySet.clear();
 
         for (const entityId of entities) {
-            const transform = this.game.getComponent(entityId, 'transform');
-            const pos = transform?.position;
-            if (!pos) continue;
+            // OPTIMIZATION: Use direct field access instead of proxy
+            const posX = this.game.getField(entityId, 'transform', 'position.x');
+            const posZ = this.game.getField(entityId, 'transform', 'position.z');
+            if (posX === undefined) continue;
 
             // Check if entity is alive (skip dead/dying units)
-            const health = this.game.getComponent(entityId, 'health');
-            const deathState = this.game.getComponent(entityId, 'deathState');
-            if (health && health.current <= 0) {
+            const healthCurrent = this.game.getField(entityId, 'health', 'current');
+            if (healthCurrent !== undefined && healthCurrent <= 0) {
                 // Remove dead entity from grid if it was tracked
                 this._removeEntityFromGrid(entityId);
                 continue;
             }
-            if (deathState && deathState.state !== this.enums.deathState.alive) {
+            const deathStateValue = this.game.getField(entityId, 'deathState', 'state');
+            if (deathStateValue !== undefined && deathStateValue !== this.enums.deathState.alive) {
                 this._removeEntityFromGrid(entityId);
                 continue;
             }
 
             // Skip world objects that are not impassable (e.g., gold veins, bushes)
+            // Note: getUnitTypeDef still needed for prefab data lookup
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
             const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             if (unitType && unitType.impassable === false) continue;
@@ -426,7 +433,7 @@ class GridSystem extends GUTS.BaseSystem {
             currentEntitySet.add(entityId);
 
             // Check if entity has moved to a new grid position
-            const gridPos = this.worldToGrid(pos.x, pos.z);
+            const gridPos = this.worldToGrid(posX, posZ);
             const cached = this._entityPositions.get(entityId);
 
             if (cached && cached.gridX === gridPos.x && cached.gridZ === gridPos.z) {

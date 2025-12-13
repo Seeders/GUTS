@@ -81,7 +81,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
             return;
         }
 
-        if (!this.game.terrainSystem || !this.game.terrainSystem.initialized) {
+        if (!this.game.call('isTerrainInitialized')) {
             console.warn('PathfindingSystem: Waiting for terrain system...');
             return;
         }

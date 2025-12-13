@@ -1,15 +1,16 @@
 {
   "title": "placement",
   "schema": {
-    "placementId": -1,
-    "unitTypeId": -1,
-    "collection": -1,
-    "team": -1,
-    "playerId": -1,
+    "placementId": null,
+    "unitTypeId": null,
+    "collection": null,
+    "team": null,
+    "playerId": null,
     "roundPlaced": 0,
     "isUnderConstruction": 0,
     "buildTime": 0,
-    "assignedBuilder": -1,
+    "assignedBuilder": null,
+    "productionProgress": 0,
     "gridPosition": {
       "x": 0,
       "z": 0

@@ -18,8 +18,11 @@ class JoinMineQueueBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const targetMine = shared.targetMine;
 
+        console.log(`[JoinMineQueue] entity=${entityId} targetMine=${targetMine}`);
+
         // targetMine is -1 when not set
         if (targetMine === undefined || targetMine === null || targetMine < 0) {
+            console.log(`[JoinMineQueue] entity=${entityId} FAILURE: invalid targetMine`);
             return this.failure();
         }
 
@@ -28,10 +31,13 @@ class JoinMineQueueBehaviorAction extends GUTS.BaseBehaviorAction {
         if (goldMine) {
             // Check if already current miner or in queue
             const queuePos = game.call('getMinerQueuePosition', targetMine, entityId);
+            console.log(`[JoinMineQueue] entity=${entityId} currentMiner=${goldMine.currentMiner} (type=${typeof goldMine.currentMiner}) queuePos=${queuePos}`);
             if (goldMine.currentMiner === entityId || queuePos >= 0) {
+                console.log(`[JoinMineQueue] entity=${entityId} SUCCESS: already current miner or in queue`);
                 return this.success({ targetMine: targetMine });
             }
         }
+        console.log(`[JoinMineQueue] entity=${entityId} adding to queue...`);
         game.call('addMinerToQueue', targetMine, entityId);
         return this.success({
             targetMine: targetMine

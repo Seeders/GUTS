@@ -24,6 +24,8 @@ class SaveSystem extends GUTS.BaseSystem {
         this.game.register('loadSaveData', this.loadSaveData.bind(this));
         this.game.register('listSavedGames', this.listSavedGames.bind(this));
         this.game.register('deleteSavedGame', this.deleteSavedGame.bind(this));
+        this.game.register('exportSaveFile', this.exportSaveFile.bind(this));
+        this.game.register('importSaveFile', this.importSaveFile.bind(this));
     }
 
     /**
@@ -302,7 +304,7 @@ class SaveSystem extends GUTS.BaseSystem {
         }
 
         // Note: Placement data is now derived from entities with 'placement' component
-        // MultiplayerPlacementSystem.getPlacementById() queries entities directly
+        // PlacementSystem.getPlacementById() queries entities directly
 
         // Clear pending save data
         this.game.pendingSaveData = null;
@@ -478,7 +480,7 @@ class SaveSystem extends GUTS.BaseSystem {
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
             const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             if (unitType && unitType.abilities && unitType.abilities.length > 0) {
-                this.game.abilitySystem.addAbilitiesToUnit(entityId, unitType.abilities);
+                this.game.call('addAbilitiesToUnit', entityId, unitType.abilities);
                 abilitiesInitialized++;
             }
         }

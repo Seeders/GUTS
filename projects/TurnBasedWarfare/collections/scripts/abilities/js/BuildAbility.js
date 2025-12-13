@@ -44,7 +44,7 @@ class BuildAbility extends GUTS.BaseAbility {
 
         // If peasant already has a build order, clean up the old building first
         const existingBuildingState = this.game.getComponent(peasantEntityId, "buildingState");
-        if (existingBuildingState && existingBuildingState.targetBuildingEntityId !== -1) {
+        if (existingBuildingState && existingBuildingState.targetBuildingEntityId != null) {
             const oldBuildingId = existingBuildingState.targetBuildingEntityId;
             const oldBuildingPlacement = this.game.getComponent(oldBuildingId, "placement");
 
@@ -53,8 +53,8 @@ class BuildAbility extends GUTS.BaseAbility {
                 oldBuildingPlacement.isUnderConstruction &&
                 oldBuildingPlacement.assignedBuilder === peasantEntityId) {
                 // Use network manager to cancel with proper refund
-                if (this.game.multiplayerNetworkSystem && this.game.multiplayerNetworkSystem.cancelBuilding) {
-                    this.game.multiplayerNetworkSystem.cancelBuilding({
+                if (this.game.clientNetworkSystem && this.game.clientNetworkSystem.cancelBuilding) {
+                    this.game.clientNetworkSystem.cancelBuilding({
                         placementId: oldBuildingPlacement.placementId,
                         buildingEntityId: oldBuildingId
                     }, (success) => {

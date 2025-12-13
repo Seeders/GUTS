@@ -1,7 +1,7 @@
 {
   "title": "squadMember",
   "schema": {
-    "squadId": -1,
+    "squadId": null,
     "squadRole": 0,
     "squadPositionX": 0,
     "squadPositionZ": 0,

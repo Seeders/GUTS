@@ -7,7 +7,7 @@
     "poisonResistance": 0,
     "physicalResistance": 0,
     "divineResistance": 0,
-    "duration": -1,
+    "duration": null,
     "permanent": 1
   }
 }

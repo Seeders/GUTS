@@ -2,12 +2,12 @@
   "title": "statusEffect",
   "schema": {
     "effectType": 0,
-    "element": -1,
+    "element": null,
     "duration": 0,
     "startTime": 0,
-    "sourceId": -1,
+    "sourceId": null,
     "stacks": 1,
     "maxStacks": 1,
-    "poison": -1
+    "poison": null
   }
 }
