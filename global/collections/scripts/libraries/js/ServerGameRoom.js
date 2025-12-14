@@ -587,7 +587,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
             // Get serverTime from assignedBuilder's playerOrder for sync
             let serverTime = null;
-            if (placementComp.assignedBuilder && placementComp.assignedBuilder !== -1) {
+            if (placementComp.assignedBuilder != null) {
                 const builderOrder = this.game.getComponent(placementComp.assignedBuilder, 'playerOrder');
                 if (builderOrder) {
                     serverTime = builderOrder.issuedTime;
