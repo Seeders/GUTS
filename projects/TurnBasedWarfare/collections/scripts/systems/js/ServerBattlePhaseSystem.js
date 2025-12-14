@@ -181,7 +181,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             playerStats: playerStats
         };
         
-        const entitySync = this.serializeAllEntities();
+        const entitySync = this.serializeAllEntities(false); // Delta sync at battle end
         // Broadcast with updated health values
         // Include server simulation time so clients can wait until they've caught up
         // Include nextEntityId so clients can sync their entity ID counters
@@ -208,9 +208,11 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
 
-    serializeAllEntities() {
+    serializeAllEntities(fullSync = true) {
         // Return raw ECS data for direct array sync
-        return this.game.getECSData();
+        // fullSync=true: send complete state (used for initial sync, battle start)
+        // fullSync=false: send only changes since last sync (used for periodic updates)
+        return this.game.getECSData(fullSync);
     }
     calculateRoundGold(round) {
         return this.baseGoldPerRound + (round * this.baseGoldPerRound);

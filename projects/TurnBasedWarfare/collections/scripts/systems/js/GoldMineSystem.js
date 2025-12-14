@@ -186,7 +186,9 @@ class GoldMineSystem extends GUTS.BaseSystem {
     isMineOccupied(mineEntityId) {
         const goldMine = this.game.getComponent(mineEntityId, "goldMine");
         // currentMiner is null when empty (can't use truthy since 0 is a valid entity ID)
-        return goldMine && goldMine.currentMiner !== null;
+        const occupied = goldMine && goldMine.currentMiner !== null;
+        console.log(`[GoldMineSystem] isMineOccupied(${mineEntityId}): ${occupied}, currentMiner=${goldMine?.currentMiner}`);
+        return occupied;
     }
 
     // Get the current miner at a mine by checking component states
@@ -255,23 +257,33 @@ class GoldMineSystem extends GUTS.BaseSystem {
     // Add a miner to the end of the queue
     addMinerToQueue(mineEntityId, minerEntityId) {
         const goldMine = this.game.getComponent(mineEntityId, "goldMine");
-        if (!goldMine) return false;
+        if (!goldMine) {
+            console.log(`[GoldMineSystem] addMinerToQueue(${mineEntityId}, ${minerEntityId}): no goldMine component`);
+            return false;
+        }
 
         // Find first empty slot (null means empty)
         for (let i = 0; i < GoldMineSystem.MINER_QUEUE_SIZE; i++) {
             if (goldMine.minerQueue[i] === null) {
                 goldMine.minerQueue[i] = minerEntityId;
+                console.log(`[GoldMineSystem] addMinerToQueue(${mineEntityId}, ${minerEntityId}): added at slot ${i}`);
                 return true;
             }
         }
+        console.log(`[GoldMineSystem] addMinerToQueue(${mineEntityId}, ${minerEntityId}): queue full`);
         return false; // Queue full
     }
 
     // Check if a miner is next in queue (first valid entry)
     isNextInQueue(mineEntityId, minerEntityId) {
         const goldMine = this.game.getComponent(mineEntityId, "goldMine");
-        if (!goldMine) return false;
-        return goldMine.minerQueue[0] === minerEntityId;
+        if (!goldMine) {
+            console.log(`[GoldMineSystem] isNextInQueue(${mineEntityId}, ${minerEntityId}): false - no goldMine component`);
+            return false;
+        }
+        const isNext = goldMine.minerQueue[0] === minerEntityId;
+        console.log(`[GoldMineSystem] isNextInQueue(${mineEntityId}, ${minerEntityId}): ${isNext}, queue[0]=${goldMine.minerQueue[0]}`);
+        return isNext;
     }
 
     // Get count of miners in queue
@@ -288,13 +300,20 @@ class GoldMineSystem extends GUTS.BaseSystem {
     // Process next miner in queue when mine becomes available
     processNextMinerInQueue(mineEntityId) {
         const goldMine = this.game.getComponent(mineEntityId, "goldMine");
-        if (!goldMine) return;
+        if (!goldMine) {
+            console.log(`[GoldMineSystem] processNextMinerInQueue(${mineEntityId}): no goldMine component`);
+            return;
+        }
 
+        const prevMiner = goldMine.currentMiner;
         goldMine.currentMiner = null;
 
         // Check if queue is empty (null means empty slot)
         const nextMiner = goldMine.minerQueue[0];
+        console.log(`[GoldMineSystem] processNextMinerInQueue(${mineEntityId}): prevMiner=${prevMiner}, nextMiner=${nextMiner}, queue=[${goldMine.minerQueue[0]}, ${goldMine.minerQueue[1]}, ${goldMine.minerQueue[2]}, ...]`);
+
         if (nextMiner === null) {
+            console.log(`[GoldMineSystem] processNextMinerInQueue(${mineEntityId}): queue empty`);
             return;
         }
 
@@ -305,6 +324,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
         goldMine.minerQueue[GoldMineSystem.MINER_QUEUE_SIZE - 1] = null;
 
         goldMine.currentMiner = nextMiner;
+        console.log(`[GoldMineSystem] processNextMinerInQueue(${mineEntityId}): set currentMiner=${nextMiner}`);
     }
 
     onBattleEnd() {

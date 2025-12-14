@@ -30,7 +30,7 @@ class FindNearestDepotBehaviorAction extends GUTS.BaseBehaviorAction {
         // Get all entities that could be depots
         const depotEntities = game.getEntitiesWith('transform', 'team', 'unitType');
 
-        if (!depotEntities || depotEntities.size === 0) {
+        if (!depotEntities || depotEntities.length === 0) {
             return this.failure();
         }
 

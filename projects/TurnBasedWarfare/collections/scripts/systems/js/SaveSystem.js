@@ -4,7 +4,9 @@ class SaveSystem extends GUTS.BaseSystem {
         this.game.saveSystem = this;
 
         // Save format version for compatibility checking
-        this.SAVE_VERSION = 1;
+        // v1: Legacy per-entity serialization
+        // v2: ECS sparse format with null sentinel support
+        this.SAVE_VERSION = 2;
 
         // Components to exclude from saves (none - all components including renderable are needed)
         this.EXCLUDED_COMPONENTS = new Set([]);
@@ -69,13 +71,11 @@ class SaveSystem extends GUTS.BaseSystem {
             // Game state
             state: this.serializeGameState(),
 
-            // All entities with their components (includes placement and unitType components)
-            entities: this.serializeEntities(),
+            // ECS data in sparse format (efficient, handles null sentinels correctly)
+            ecsData: this.game.getECSData(true),
 
             // Player data (from room if multiplayer)
             players: this.serializePlayers()
-
-            // Note: Placement data is stored in entity's placement component, not separately
         };
 
         return saveData;
@@ -98,8 +98,14 @@ class SaveSystem extends GUTS.BaseSystem {
         };
     }
 
+    // ============================================
+    // LEGACY METHODS (for loading v1 saves)
+    // New saves use getECSData() sparse format
+    // ============================================
+
     /**
      * Serialize all game entities and their components
+     * @deprecated Use getECSData() for new saves
      */
     serializeEntities() {
         const entities = [];
@@ -227,7 +233,8 @@ class SaveSystem extends GUTS.BaseSystem {
      * @returns {Promise<boolean>} Success status
      */
     async loadSaveData(saveData) {
-        if (!saveData || saveData.saveVersion !== this.SAVE_VERSION) {
+        // Support both v1 (legacy) and v2 (ECS sparse format)
+        if (!saveData || (saveData.saveVersion !== 1 && saveData.saveVersion !== 2)) {
             console.error('[SaveManager] Invalid or incompatible save data');
             return false;
         }
@@ -263,8 +270,6 @@ class SaveSystem extends GUTS.BaseSystem {
             return false;
         }
 
-        console.log(`[SaveManager] Loading ${saveData.entities?.length || 0} saved entities`);
-
         // Restore game state (but preserve current player's team and phase)
         // Phase must stay as 'placement' initially so UI can initialize
         if (saveData.state) {
@@ -278,8 +283,17 @@ class SaveSystem extends GUTS.BaseSystem {
             this.game.state.phase = preservedPhase;
         }
 
-        // Create entities from save data
-        if (saveData.entities) {
+        // Load ECS data using new format if available
+        if (saveData.ecsData) {
+            console.log(`[SaveManager] Loading ECS data (nextEntityId: ${saveData.ecsData.nextEntityId})`);
+            this.game.applyECSData(saveData.ecsData);
+
+            // Initialize abilities for loaded entities
+            // AbilitySystem.entityAbilities Map is not saved, so we need to re-register abilities
+            this.initializeAbilitiesForLoadedEntities();
+        } else if (saveData.entities) {
+            // Legacy format: load entities one by one
+            console.log(`[SaveManager] Loading ${saveData.entities.length} saved entities (legacy format)`);
             let loadedCount = 0;
             let componentsAdded = 0;
             for (const entityDef of saveData.entities) {
@@ -299,7 +313,6 @@ class SaveSystem extends GUTS.BaseSystem {
             console.log(`[SaveManager] Created ${loadedCount} entities with ${componentsAdded} components`);
 
             // Initialize abilities for loaded entities
-            // AbilitySystem.entityAbilities Map is not saved, so we need to re-register abilities
             this.initializeAbilitiesForLoadedEntities();
         }
 
