@@ -54,6 +54,15 @@ class BaseECSGame {
         this._queryCache = new Map();
         this._queryCacheVersion = 0;
 
+        // Delta sync tracking - stores last synced state for computing deltas
+        this._lastSyncedState = null;
+
+        // Client-only components - excluded from server sync to preserve client state
+        // These components are managed locally and should not be overwritten by server
+        this._clientOnlyComponents = new Set([
+            'renderable'
+        ]);
+
         // Proxy cache for getComponent - avoids creating new proxies every call
         // Map: componentType -> Map(entityId -> proxy)
         this._proxyCache = new Map();
@@ -247,24 +256,34 @@ class BaseECSGame {
 
     /**
      * Set a value in a numeric component's TypedArray storage
-     * Converts null to -Infinity for storage (sentinel value)
+     * Note: Caller should use _toStorageValue() if passing user-provided values
      */
     _setNumericField(componentId, entityId, fieldPath, value) {
         const key = `${componentId}.${fieldPath}`;
         const arr = this._numericArrays.get(key);
         if (arr) {
-            // Convert null to -Infinity for storage (sentinel value)
-            arr[entityId] = value === null ? -Infinity : value;
+            arr[entityId] = value;
         }
     }
 
     /**
      * Get a value from a numeric component's TypedArray storage (internal)
+     * Converts -Infinity (null sentinel) back to null for API consumers
      */
     _getNumericField(componentId, entityId, fieldPath) {
         const key = `${componentId}.${fieldPath}`;
         const arr = this._numericArrays.get(key);
-        return arr ? (arr[entityId] === -Infinity ? null : arr[entityId]) : undefined;
+        if (!arr) return undefined;
+        return this._fromStorageValue(arr[entityId]);
+    }
+
+    /**
+     * Get raw value from TypedArray storage without null conversion (for internal use)
+     */
+    _getRawNumericField(componentId, entityId, fieldPath) {
+        const key = `${componentId}.${fieldPath}`;
+        const arr = this._numericArrays.get(key);
+        return arr ? arr[entityId] : undefined;
     }
 
     /**
@@ -279,9 +298,7 @@ class BaseECSGame {
      * const x = game.getField(id, 'transform', 'position.x');
      */
     getField(entityId, componentType, fieldPath) {
-        const value = this._getNumericField(componentType, entityId, fieldPath);
-        // Convert -Infinity back to null (null sentinel value)
-        return value === -Infinity ? null : value;
+        return this._getNumericField(componentType, entityId, fieldPath);
     }
 
     /**
@@ -295,9 +312,7 @@ class BaseECSGame {
      * game.setField(id, 'transform', 'position.x', 100);
      */
     setField(entityId, componentType, fieldPath, value) {
-        // Convert null to -Infinity for storage
-        const storedValue = value === null ? -Infinity : value;
-        this._setNumericField(componentType, entityId, fieldPath, storedValue);
+        this._setNumericField(componentType, entityId, fieldPath, this._toStorageValue(value));
     }
 
     /**
@@ -307,6 +322,49 @@ class BaseECSGame {
      */
     isNull(value) {
         return value === -Infinity || value === null;
+    }
+
+    // ============================================
+    // NULL SENTINEL CONVERSION UTILITIES
+    // ============================================
+    // TypedArrays can't store null, so we use -Infinity as a sentinel value.
+    // These methods provide consistent conversion at all boundaries:
+    //   - _toStorageValue / _fromStorageValue: for TypedArray read/write
+    //   - _toSyncValue / _fromSyncValue: for JSON serialization (sync)
+    // ============================================
+
+    /**
+     * Convert API value to TypedArray storage format
+     * null -> -Infinity (null sentinel), other values pass through
+     */
+    _toStorageValue(value) {
+        return value === null ? -Infinity : value;
+    }
+
+    /**
+     * Convert TypedArray storage value to API format
+     * -Infinity (null sentinel) -> null, other values pass through
+     */
+    _fromStorageValue(value) {
+        return value === -Infinity ? null : value;
+    }
+
+    /**
+     * Convert TypedArray storage value to JSON-safe format for sync
+     * -Infinity (null sentinel) -> null (JSON null), other values pass through
+     * Note: This is the same as _fromStorageValue since JSON uses null
+     */
+    _toSyncValue(value) {
+        return value === -Infinity ? null : value;
+    }
+
+    /**
+     * Convert JSON sync value back to TypedArray storage format
+     * null (JSON null) -> -Infinity (null sentinel), other values pass through
+     * Note: This is the same as _toStorageValue since JSON uses null
+     */
+    _fromSyncValue(value) {
+        return value === null ? -Infinity : value;
     }
 
     /**
@@ -332,11 +390,11 @@ class BaseECSGame {
                 }
                 this._setNumericField(componentId, entityId, fieldPath, dataValue);
             } else if (schemaValue === null) {
-                // null schema fields: store null as -Infinity, use -Infinity as default
-                if (dataValue === undefined || dataValue === null) {
-                    dataValue = -Infinity;
+                // null schema fields: use null sentinel as default
+                if (dataValue === undefined) {
+                    dataValue = null;
                 }
-                this._setNumericField(componentId, entityId, fieldPath, dataValue);
+                this._setNumericField(componentId, entityId, fieldPath, this._toStorageValue(dataValue));
             } else if (schemaValue && typeof schemaValue === 'object' && !Array.isArray(schemaValue)) {
                 this._writeNumericComponent(componentId, entityId, data, schemaValue, fieldPath);
             }
@@ -409,8 +467,7 @@ class BaseECSGame {
                             } else if (info.type === 'boolean') {
                                 result[key] = game._getNumericField(componentId, entityId, info.fieldPath) !== 0;
                             } else if (info.type === 'null') {
-                                const stored = game._getNumericField(componentId, entityId, info.fieldPath);
-                                result[key] = stored === -Infinity ? null : stored;
+                                result[key] = game._getNumericField(componentId, entityId, info.fieldPath);
                             } else if (info.type === 'fixedArray' || info.type === 'bitmask' || info.type === 'nested') {
                                 // Trigger the getter to get the nested proxy, then toJSON it
                                 const nested = nestedCache[key] || game._createNestedProxy(componentId, entityId, key, info, prefix);
@@ -429,8 +486,7 @@ class BaseECSGame {
                 } else if (info.type === 'boolean') {
                     return game._getNumericField(componentId, entityId, info.fieldPath) !== 0;
                 } else if (info.type === 'null') {
-                    const stored = game._getNumericField(componentId, entityId, info.fieldPath);
-                    return stored === -Infinity ? null : stored;
+                    return game._getNumericField(componentId, entityId, info.fieldPath);
                 } else if (info.type === 'fixedArray' || info.type === 'bitmask' || info.type === 'nested') {
                     // Cache nested proxies to avoid recreation
                     if (!nestedCache[prop]) {
@@ -447,8 +503,8 @@ class BaseECSGame {
                 let storedValue = value;
                 if (info.type === 'boolean') {
                     storedValue = value ? 1 : 0;
-                } else if (info.type === 'null' && value === null) {
-                    storedValue = -Infinity;
+                } else if (info.type === 'null') {
+                    storedValue = game._toStorageValue(value);
                 }
 
                 if (info.type === 'number' || info.type === 'boolean' || info.type === 'null' || info.type === 'enum') {
@@ -529,7 +585,7 @@ class BaseECSGame {
                         return new Proxy(element, {
                             set(t, f, v) {
                                 t[f] = v;
-                                game._setNumericField(componentId, entityId, `${fieldPrefix}_${f}${index}`, v);
+                                game._setNumericField(componentId, entityId, `${fieldPrefix}_${f}${index}`, game._toStorageValue(v));
                                 return true;
                             }
                         });
@@ -541,7 +597,7 @@ class BaseECSGame {
                     if (!isNaN(index) && index >= 0 && index < size && typeof value === 'object') {
                         for (const field of fields) {
                             if (value[field] !== undefined) {
-                                game._setNumericField(componentId, entityId, `${fieldPrefix}_${field}${index}`, value[field]);
+                                game._setNumericField(componentId, entityId, `${fieldPrefix}_${field}${index}`, game._toStorageValue(value[field]));
                             }
                         }
                         return true;
@@ -596,7 +652,7 @@ class BaseECSGame {
                 set(target, prop, value) {
                     const index = parseInt(prop, 10);
                     if (!isNaN(index) && index >= 0 && index < size) {
-                        game._setNumericField(componentId, entityId, `${fieldPrefix}${index}`, value);
+                        game._setNumericField(componentId, entityId, `${fieldPrefix}${index}`, game._toStorageValue(value));
                         return true;
                     }
                     return false;
@@ -674,7 +730,7 @@ class BaseECSGame {
             set(target, prop, value) {
                 const index = parseInt(prop, 10);
                 if (!isNaN(index) && index >= 0 && index < fieldCount) {
-                    game._setNumericField(componentId, entityId, `${fieldPrefix}${index}`, value);
+                    game._setNumericField(componentId, entityId, `${fieldPrefix}${index}`, game._toStorageValue(value));
                     return true;
                 }
                 return false;
@@ -1153,35 +1209,96 @@ class BaseECSGame {
     }
 
     /**
-     * Get all ECS data for network sync
-     * Returns the raw TypedArrays and object components directly
+     * Get ECS data for network sync
+     * @param {boolean} fullSync - If true, sends full state and resets delta tracking.
+     *                             If false, sends only changes since last sync.
+     * Returns sparse format to minimize payload size
      * Format: {
-     *   entityAlive: Uint8Array,
-     *   entityComponentMask: Uint32Array,
-     *   numericArrays: { key: Float32Array },
+     *   fullSync: boolean,  // true if this is a full state sync
+     *   entityAlive: { entityId: 1, ... },  // sparse: only alive entities (or changed)
+     *   entityDead: [entityId, ...],  // only in delta: entities that died since last sync
+     *   entityComponentMask: { entityId: [low, high], ... },  // sparse: only entities with components (or changed)
+     *   numericArrays: { key: { entityId: value, ... } },  // sparse: only non-zero/non-null values (or changed)
      *   objectComponents: { componentType: { entityId: data } },
      *   nextEntityId: number
      * }
      */
-    getECSData() {
-        // Get only the used portion of arrays (up to nextEntityId)
+    getECSData(fullSync = true) {
         const maxEntity = this.nextEntityId;
+        const lastState = this._lastSyncedState;
 
+        // If fullSync or no previous state, send everything
+        if (fullSync || !lastState) {
+            const result = this._getFullECSData(maxEntity);
+            result.fullSync = true;
+            // Store current state for future delta calculations
+            this._lastSyncedState = this._captureStateSnapshot(maxEntity);
+            return result;
+        }
+
+        // Delta sync - only send what changed
+        return this._getDeltaECSData(maxEntity, lastState);
+    }
+
+    /**
+     * Get full ECS state (sparse format)
+     */
+    _getFullECSData(maxEntity) {
         const result = {
             nextEntityId: this.nextEntityId,
-            entityAlive: this.entityAlive.slice(0, maxEntity),
-            entityComponentMask: this.entityComponentMask.slice(0, maxEntity * 2),
+            entityAlive: {},
+            entityComponentMask: {},
             numericArrays: {},
             objectComponents: {}
         };
 
-        // Include all numeric arrays (sliced to maxEntity)
-        for (const [key, arr] of this._numericArrays) {
-            result.numericArrays[key] = Array.from(arr.slice(0, maxEntity));
+        // Sparse entityAlive - only include alive entities (value = 1)
+        for (let i = 0; i < maxEntity; i++) {
+            if (this.entityAlive[i] === 1) {
+                result.entityAlive[i] = 1;
+            }
         }
 
-        // Include object components
+        // Sparse entityComponentMask - only include entities with components
+        // Stored as [low, high] pairs for the two 32-bit parts
+        for (let i = 0; i < maxEntity; i++) {
+            const low = this.entityComponentMask[i * 2];
+            const high = this.entityComponentMask[i * 2 + 1];
+            if (low !== 0 || high !== 0) {
+                result.entityComponentMask[i] = [low, high];
+            }
+        }
+
+        // Include numeric arrays in sparse format (only non-zero, non-null values)
+        // Skip client-only components
+        for (const [key, arr] of this._numericArrays) {
+            // key format is "componentType.fieldPath" - extract component type
+            const componentType = key.split('.')[0];
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;  // Skip client-only components
+            }
+
+            const sparse = {};
+            for (let i = 0; i < maxEntity; i++) {
+                const val = arr[i];
+                // Skip zeros (default value for most fields)
+                // Include -Infinity as null for proper null sentinel sync
+                if (val !== 0) {
+                    sparse[i] = this._toSyncValue(val);
+                }
+            }
+            // Only include if there are any values
+            if (Object.keys(sparse).length > 0) {
+                result.numericArrays[key] = sparse;
+            }
+        }
+
+        // Include object components - skip client-only
         for (const [componentType, storage] of this._objectComponents) {
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;
+            }
+
             const componentData = {};
             for (let i = 0; i < maxEntity; i++) {
                 if (storage[i] !== undefined) {
@@ -1197,52 +1314,356 @@ class BaseECSGame {
     }
 
     /**
-     * Apply ECS data from server directly to arrays
+     * Capture a snapshot of current state for delta comparison
+     */
+    _captureStateSnapshot(maxEntity) {
+        const snapshot = {
+            nextEntityId: this.nextEntityId,
+            entityAlive: new Uint8Array(maxEntity),
+            entityComponentMask: new Uint32Array(maxEntity * 2),
+            numericArrays: new Map(),
+            objectComponents: new Map()
+        };
+
+        // Copy entityAlive
+        snapshot.entityAlive.set(this.entityAlive.subarray(0, maxEntity));
+
+        // Copy entityComponentMask
+        snapshot.entityComponentMask.set(this.entityComponentMask.subarray(0, maxEntity * 2));
+
+        // Copy numeric arrays
+        for (const [key, arr] of this._numericArrays) {
+            snapshot.numericArrays.set(key, new Float32Array(arr.subarray(0, maxEntity)));
+        }
+
+        // Deep copy object components
+        for (const [componentType, storage] of this._objectComponents) {
+            const copy = new Array(maxEntity);
+            for (let i = 0; i < maxEntity; i++) {
+                if (storage[i] !== undefined) {
+                    copy[i] = JSON.parse(JSON.stringify(storage[i]));
+                }
+            }
+            snapshot.objectComponents.set(componentType, copy);
+        }
+
+        return snapshot;
+    }
+
+    /**
+     * Get delta ECS data - only changes since last sync
+     */
+    _getDeltaECSData(maxEntity, lastState) {
+        const result = {
+            fullSync: false,
+            nextEntityId: this.nextEntityId,
+            entityAlive: {},
+            entityDead: [],
+            entityComponentMask: {},
+            numericArrays: {},
+            objectComponents: {}
+        };
+
+        const lastMaxEntity = lastState.nextEntityId;
+
+        // Check entityAlive changes
+        for (let i = 0; i < maxEntity; i++) {
+            const current = this.entityAlive[i];
+            const previous = i < lastMaxEntity ? lastState.entityAlive[i] : 0;
+
+            if (current !== previous) {
+                if (current === 1) {
+                    result.entityAlive[i] = 1;  // Entity became alive
+                } else {
+                    result.entityDead.push(i);  // Entity died
+                }
+            }
+        }
+
+        // Check entityComponentMask changes
+        for (let i = 0; i < maxEntity; i++) {
+            const lowCurrent = this.entityComponentMask[i * 2];
+            const highCurrent = this.entityComponentMask[i * 2 + 1];
+            const lowPrev = i < lastMaxEntity ? lastState.entityComponentMask[i * 2] : 0;
+            const highPrev = i < lastMaxEntity ? lastState.entityComponentMask[i * 2 + 1] : 0;
+
+            if (lowCurrent !== lowPrev || highCurrent !== highPrev) {
+                result.entityComponentMask[i] = [lowCurrent, highCurrent];
+            }
+        }
+
+        // Check numeric array changes - skip client-only components
+        for (const [key, arr] of this._numericArrays) {
+            const componentType = key.split('.')[0];
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;
+            }
+
+            const lastArr = lastState.numericArrays.get(key);
+            const sparse = {};
+
+            for (let i = 0; i < maxEntity; i++) {
+                const current = arr[i];
+                const previous = (lastArr && i < lastMaxEntity) ? lastArr[i] : 0;
+
+                if (current !== previous) {
+                    // Include the new value (even if 0 or -Infinity, since it changed)
+                    sparse[i] = this._toSyncValue(current);
+                }
+            }
+
+            if (Object.keys(sparse).length > 0) {
+                result.numericArrays[key] = sparse;
+            }
+        }
+
+        // Check object component changes - skip client-only
+        for (const [componentType, storage] of this._objectComponents) {
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;
+            }
+
+            const lastStorage = lastState.objectComponents.get(componentType);
+            const componentData = {};
+
+            for (let i = 0; i < maxEntity; i++) {
+                const current = storage[i];
+                const previous = lastStorage ? lastStorage[i] : undefined;
+
+                // Check if changed (simple JSON comparison)
+                const currentStr = current !== undefined ? JSON.stringify(current) : undefined;
+                const previousStr = previous !== undefined ? JSON.stringify(previous) : undefined;
+
+                if (currentStr !== previousStr) {
+                    if (current !== undefined) {
+                        componentData[i] = current;
+                    } else {
+                        // Mark as removed with null
+                        componentData[i] = null;
+                    }
+                }
+            }
+
+            if (Object.keys(componentData).length > 0) {
+                result.objectComponents[componentType] = componentData;
+            }
+        }
+
+        // Remove empty arrays/objects from result
+        if (result.entityDead.length === 0) delete result.entityDead;
+        if (Object.keys(result.entityAlive).length === 0) delete result.entityAlive;
+        if (Object.keys(result.entityComponentMask).length === 0) delete result.entityComponentMask;
+        if (Object.keys(result.numericArrays).length === 0) delete result.numericArrays;
+        if (Object.keys(result.objectComponents).length === 0) delete result.objectComponents;
+
+        // Update snapshot for next delta
+        this._lastSyncedState = this._captureStateSnapshot(maxEntity);
+
+        return result;
+    }
+
+    /**
+     * Reset delta tracking - call this when you want the next sync to be a full sync
+     */
+    resetSyncState() {
+        this._lastSyncedState = null;
+    }
+
+    /**
+     * Apply ECS data from server (handles both full sync and delta sync)
      */
     applyECSData(data) {
-        // Apply entity alive flags
+        // Check if this is a full sync or delta sync
+        if (data.fullSync !== false) {
+            this._applyFullECSData(data);
+        } else {
+            this._applyDeltaECSData(data);
+        }
+
+        // Common cleanup for both sync types
+        this._finalizeECSSync(data);
+    }
+
+    /**
+     * Apply full ECS sync - replaces all state
+     */
+    _applyFullECSData(data) {
+        const maxEntity = data.nextEntityId || this.nextEntityId;
+
+        // Clear and apply entity alive flags from sparse format
+        this.entityAlive.fill(0, 0, maxEntity);
         if (data.entityAlive) {
-            for (let i = 0; i < data.entityAlive.length; i++) {
-                this.entityAlive[i] = data.entityAlive[i];
+            for (const entityIdStr of Object.keys(data.entityAlive)) {
+                this.entityAlive[parseInt(entityIdStr, 10)] = 1;
             }
         }
 
-        // Apply component masks
+        // Build bitmask for client-only components to preserve
+        let clientOnlyMaskLow = 0;
+        let clientOnlyMaskHigh = 0;
+        for (const componentType of this._clientOnlyComponents) {
+            const typeId = this._componentTypeId.get(componentType);
+            if (typeId !== undefined) {
+                if (typeId < 32) {
+                    clientOnlyMaskLow |= (1 << typeId);
+                } else {
+                    clientOnlyMaskHigh |= (1 << (typeId - 32));
+                }
+            }
+        }
+
+        // Apply component masks from sparse format, preserving client-only component bits
+        for (let i = 0; i < maxEntity; i++) {
+            // Preserve client-only bits from current mask
+            const preservedLow = this.entityComponentMask[i * 2] & clientOnlyMaskLow;
+            const preservedHigh = this.entityComponentMask[i * 2 + 1] & clientOnlyMaskHigh;
+            // Clear the mask
+            this.entityComponentMask[i * 2] = preservedLow;
+            this.entityComponentMask[i * 2 + 1] = preservedHigh;
+        }
         if (data.entityComponentMask) {
-            for (let i = 0; i < data.entityComponentMask.length; i++) {
-                this.entityComponentMask[i] = data.entityComponentMask[i];
+            for (const [entityIdStr, mask] of Object.entries(data.entityComponentMask)) {
+                const entityId = parseInt(entityIdStr, 10);
+                // Merge server mask with preserved client-only bits
+                this.entityComponentMask[entityId * 2] |= mask[0];
+                this.entityComponentMask[entityId * 2 + 1] |= mask[1];
             }
         }
 
-        // Apply numeric arrays directly
-        // JSON serialization converts -Infinity to null, so we must convert back
-        for (const [key, values] of Object.entries(data.numericArrays || {})) {
+        // Apply numeric arrays - only clear/replace arrays that server sends
+        // Skip client-only components even if server sends them (backwards compatibility)
+        for (const [key, sparse] of Object.entries(data.numericArrays || {})) {
+            const componentType = key.split('.')[0];
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;  // Don't apply client-only components from server
+            }
+
             let arr = this._numericArrays.get(key);
             if (!arr) {
                 arr = new Float32Array(this.MAX_ENTITIES);
                 this._numericArrays.set(key, arr);
             }
-            for (let i = 0; i < values.length; i++) {
-                // Convert null back to -Infinity (JSON roundtrip loses -Infinity)
-                arr[i] = values[i] === null ? -Infinity : values[i];
+            // Clear this specific array before applying server data
+            arr.fill(0, 0, maxEntity);
+            // Apply server values
+            for (const [entityIdStr, value] of Object.entries(sparse)) {
+                arr[parseInt(entityIdStr, 10)] = this._fromSyncValue(value);
             }
         }
 
-        // Apply object components
+        // Apply object components - only clear/replace components that server sends
+        // Skip client-only components
         for (const [componentType, componentData] of Object.entries(data.objectComponents || {})) {
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;
+            }
+
             const storage = this._getObjectStorage(componentType);
+            // Clear this specific component type before applying server data
+            for (let i = 0; i < maxEntity; i++) {
+                storage[i] = undefined;
+            }
+            // Apply server values
             for (const [entityIdStr, value] of Object.entries(componentData)) {
                 storage[parseInt(entityIdStr, 10)] = value;
             }
         }
+    }
 
+    /**
+     * Apply delta ECS sync - only applies changes
+     */
+    _applyDeltaECSData(data) {
+        // Apply entity deaths
+        if (data.entityDead) {
+            for (const entityId of data.entityDead) {
+                this.entityAlive[entityId] = 0;
+                // Clear component mask for dead entities
+                this.entityComponentMask[entityId * 2] = 0;
+                this.entityComponentMask[entityId * 2 + 1] = 0;
+            }
+        }
+
+        // Apply new/changed alive entities
+        if (data.entityAlive) {
+            for (const entityIdStr of Object.keys(data.entityAlive)) {
+                this.entityAlive[parseInt(entityIdStr, 10)] = 1;
+            }
+        }
+
+        // Apply component mask changes, preserving client-only component bits
+        if (data.entityComponentMask) {
+            // Build bitmask for client-only components to preserve
+            let clientOnlyMaskLow = 0;
+            let clientOnlyMaskHigh = 0;
+            for (const componentType of this._clientOnlyComponents) {
+                const typeId = this._componentTypeId.get(componentType);
+                if (typeId !== undefined) {
+                    if (typeId < 32) {
+                        clientOnlyMaskLow |= (1 << typeId);
+                    } else {
+                        clientOnlyMaskHigh |= (1 << (typeId - 32));
+                    }
+                }
+            }
+
+            for (const [entityIdStr, mask] of Object.entries(data.entityComponentMask)) {
+                const entityId = parseInt(entityIdStr, 10);
+                // Preserve client-only bits, apply server bits
+                const preservedLow = this.entityComponentMask[entityId * 2] & clientOnlyMaskLow;
+                const preservedHigh = this.entityComponentMask[entityId * 2 + 1] & clientOnlyMaskHigh;
+                this.entityComponentMask[entityId * 2] = mask[0] | preservedLow;
+                this.entityComponentMask[entityId * 2 + 1] = mask[1] | preservedHigh;
+            }
+        }
+
+        // Apply numeric array changes (only changed values)
+        // Skip client-only components
+        for (const [key, sparse] of Object.entries(data.numericArrays || {})) {
+            const componentType = key.split('.')[0];
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;
+            }
+
+            let arr = this._numericArrays.get(key);
+            if (!arr) {
+                arr = new Float32Array(this.MAX_ENTITIES);
+                this._numericArrays.set(key, arr);
+            }
+            for (const [entityIdStr, value] of Object.entries(sparse)) {
+                arr[parseInt(entityIdStr, 10)] = this._fromSyncValue(value);
+            }
+        }
+
+        // Apply object component changes - skip client-only
+        for (const [componentType, componentData] of Object.entries(data.objectComponents || {})) {
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;
+            }
+
+            const storage = this._getObjectStorage(componentType);
+            for (const [entityIdStr, value] of Object.entries(componentData)) {
+                const entityId = parseInt(entityIdStr, 10);
+                if (value === null) {
+                    // null means removed
+                    storage[entityId] = undefined;
+                } else {
+                    storage[entityId] = value;
+                }
+            }
+        }
+    }
+
+    /**
+     * Finalize ECS sync - common cleanup for both full and delta
+     */
+    _finalizeECSSync(data) {
         // Sync entity ID counter
         if (data.nextEntityId !== undefined) {
             this.nextEntityId = data.nextEntityId;
         }
 
         // Rebuild freeEntityIds from entityAlive to ensure consistency
-        // After applying server state, find all dead entity IDs that can be recycled
         this.freeEntityCount = 0;
         for (let i = 1; i < this.nextEntityId; i++) {
             if (this.entityAlive[i] === 0) {
@@ -1273,9 +1694,9 @@ class BaseECSGame {
 
         const componentInfo = this._numericComponentInfo.get(componentType);
         if (componentInfo && componentInfo.isNumeric) {
-            // Write to TypedArrays
+            // Write to TypedArrays (convert null to storage sentinel)
             for (const fieldPath in updates) {
-                this._setNumericField(componentType, entityId, fieldPath, updates[fieldPath]);
+                this._setNumericField(componentType, entityId, fieldPath, this._toStorageValue(updates[fieldPath]));
             }
         } else {
             // Update object storage
