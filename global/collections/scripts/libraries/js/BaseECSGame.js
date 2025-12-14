@@ -1215,6 +1215,7 @@ class BaseECSGame {
         }
 
         // Apply numeric arrays directly
+        // JSON serialization converts -Infinity to null, so we must convert back
         for (const [key, values] of Object.entries(data.numericArrays || {})) {
             let arr = this._numericArrays.get(key);
             if (!arr) {
@@ -1222,7 +1223,8 @@ class BaseECSGame {
                 this._numericArrays.set(key, arr);
             }
             for (let i = 0; i < values.length; i++) {
-                arr[i] = values[i];
+                // Convert null back to -Infinity (JSON roundtrip loses -Infinity)
+                arr[i] = values[i] === null ? -Infinity : values[i];
             }
         }
 
