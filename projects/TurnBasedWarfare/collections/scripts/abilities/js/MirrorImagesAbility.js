@@ -197,7 +197,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
 
             this.game.addComponent(imageId, "mirrorImage", {
                 originalEntity: originalId,
-                isIllusion: 1,
+                isIllusion: true,
                 createdTime: this.game.state.now || 0
             });
 
@@ -230,8 +230,8 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
                 vy: 0,
                 vz: 0,
                 maxSpeed: velocity?.maxSpeed || 40,
-                affectedByGravity: 1,
-                anchored: 0
+                affectedByGravity: true,
+                anchored: false
             });
 
             return imageId;

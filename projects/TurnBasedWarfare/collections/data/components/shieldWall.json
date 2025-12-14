@@ -5,6 +5,6 @@
     "endTime": 0,
     "tauntRadius": 200,
     "originalArmor": 0,
-    "isActive": 1
+    "isActive": true
   }
 }

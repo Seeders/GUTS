@@ -21,13 +21,11 @@ class WaitForMineBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // targetMine is null/undefined when not set, or could be 0 (valid entity ID)
         if (targetMine === undefined || targetMine === null || targetMine < 0) {
-            console.log(`[WaitForMine] Entity ${entityId}: FAILURE - no targetMine (value: ${targetMine})`);
             return this.failure();
         }
 
         const goldMine = game.getComponent(targetMine, 'goldMine');
         if (!goldMine) {
-            console.log(`[WaitForMine] Entity ${entityId}: FAILURE - no goldMine component on targetMine ${targetMine}`);
             return this.failure();
         }
 
@@ -38,8 +36,7 @@ class WaitForMineBehaviorAction extends GUTS.BaseBehaviorAction {
         const isNextInQueue = game.call('isNextInMinerQueue', targetMine, entityId);
         const isMineOccupied = game.call('isMineOccupied', targetMine);
 
-        console.log(`[WaitForMine] Entity ${entityId}: targetMine=${targetMine}, isCurrentMiner=${isCurrentMiner}, isNextInQueue=${isNextInQueue}, isMineOccupied=${isMineOccupied}, currentMiner=${goldMine.currentMiner}, queue=[${goldMine.minerQueue[0]}, ${goldMine.minerQueue[1]}, ...]`);
-
+      
         if (isCurrentMiner || (isNextInQueue && !isMineOccupied)) {
             // It's our turn!
             if (!isCurrentMiner) {

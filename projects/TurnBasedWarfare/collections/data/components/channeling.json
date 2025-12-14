@@ -4,8 +4,8 @@
     "abilityId": null,
     "channelDuration": 3,
     "channelStartTime": 0,
-    "canBeInterrupted": 1,
+    "canBeInterrupted": true,
     "interruptThreshold": 10,
-    "isChanneling": 1
+    "isChanneling": true
   }
 }

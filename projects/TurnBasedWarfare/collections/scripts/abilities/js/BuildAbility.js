@@ -90,18 +90,18 @@ class BuildAbility extends GUTS.BaseAbility {
                 targetPositionX: buildingPos.x || 0,
                 targetPositionY: buildingPos.y || 0,
                 targetPositionZ: buildingPos.z || 0,
-                isMoveOrder: 0,
-                preventEnemiesInRangeCheck: 1,  // Builder should not be interrupted by combat
-                completed: 0,
+                isMoveOrder: false,
+                preventEnemiesInRangeCheck: true,  // Builder should not be interrupted by combat
+                completed: false,
                 issuedTime: orderIssuedTime
             });
         } else {
             playerOrder.targetPositionX = buildingPos.x || 0;
             playerOrder.targetPositionY = buildingPos.y || 0;
             playerOrder.targetPositionZ = buildingPos.z || 0;
-            playerOrder.isMoveOrder = 0;
-            playerOrder.preventEnemiesInRangeCheck = 1;
-            playerOrder.completed = 0;
+            playerOrder.isMoveOrder = false;
+            playerOrder.preventEnemiesInRangeCheck = true;
+            playerOrder.completed = false;
             playerOrder.issuedTime = orderIssuedTime;
         }
         this.game.triggerEvent('onIssuedPlayerOrders', peasantEntityId);
@@ -109,8 +109,8 @@ class BuildAbility extends GUTS.BaseAbility {
         const aiState = this.game.getComponent(peasantEntityId, "aiState");
 
         if(aiState){
-            aiState.currentAction = -1;
-            aiState.currentActionCollection = -1;
+            aiState.currentAction = null;
+            aiState.currentActionCollection = null;
             // Clear behavior state via BehaviorSystem
             this.game.call('clearBehaviorState', peasantEntityId);
         }

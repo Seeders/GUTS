@@ -351,7 +351,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
             // Resync entities with server state to ensure both clients are in sync
             if (data.entitySync) {
-                this.game.call('resyncEntities', data.entitySync);
+                this.game.call('resyncEntities', data);
             }
 
             if (this.game.desyncDebugger) {
@@ -493,6 +493,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.game.call('sendPlacementRequest', networkUnitData, (success, response) => {
             if (success) {
                 // Place squad with server-provided entity IDs
+                networkUnitData.placementId = response.placementId;
                 this.game.call('spawnSquad',
                     networkUnitData,
                     this.game.state.myTeam,

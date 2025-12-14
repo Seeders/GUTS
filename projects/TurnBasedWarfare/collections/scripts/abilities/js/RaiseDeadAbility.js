@@ -331,8 +331,8 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
                 vy: 0,
                 vz: 0,
                 maxSpeed: (skeletonDef.speed || 1) * 20,
-                affectedByGravity: 1,
-                anchored: 0
+                affectedByGravity: true,
+                anchored: false
             });
 
             return skeletonId;

@@ -659,10 +659,46 @@ class ClientNetworkSystem extends GUTS.BaseSystem {
             return;
         }
 
+        // Debug: Check for playerOrder data in sync
+        const playerOrderKeys = Object.keys(ecsData.numericArrays || {}).filter(k => k.startsWith('playerOrder'));
+        if (playerOrderKeys.length > 0) {
+            console.log('[resyncEntities] playerOrder fields in sync data:', playerOrderKeys);
+            for (const key of playerOrderKeys) {
+                console.log(`[resyncEntities]   ${key}:`, ecsData.numericArrays[key]);
+            }
+        } else {
+            console.log('[resyncEntities] No playerOrder fields found in sync data');
+        }
+
+        // Debug: Check entityComponentMask for playerOrder bit
+        const playerOrderTypeId = this.game._componentTypeId?.get('playerOrder');
+        console.log('[resyncEntities] playerOrder typeId:', playerOrderTypeId);
+        if (ecsData.entityComponentMask) {
+            for (const entityIdStr of ['1566', '1568']) {
+                const mask = ecsData.entityComponentMask[entityIdStr];
+                if (mask) {
+                    const hasPlayerOrder = playerOrderTypeId < 32
+                        ? (mask[0] & (1 << playerOrderTypeId)) !== 0
+                        : (mask[1] & (1 << (playerOrderTypeId - 32))) !== 0;
+                    console.log(`[resyncEntities] Entity ${entityIdStr} mask:`, mask, `hasPlayerOrder bit:`, hasPlayerOrder);
+                } else {
+                    console.log(`[resyncEntities] Entity ${entityIdStr} has no mask in sync data`);
+                }
+            }
+        }
+
         // Apply raw ECS data directly to arrays
         this.game.applyECSData(ecsData);
 
         console.log(`[resyncEntities] Applied ECS data sync, nextEntityId: ${this.game.nextEntityId}`);
+
+        // Debug: Check playerOrder components on entities after sync
+        const entitiesWithPlayerOrder = this.game.getEntitiesWith('playerOrder');
+        console.log(`[resyncEntities] Entities with playerOrder after sync:`, entitiesWithPlayerOrder);
+        for (const entityId of entitiesWithPlayerOrder) {
+            const po = this.game.getComponent(entityId, 'playerOrder');
+            console.log(`[resyncEntities] Entity ${entityId} playerOrder:`, po?.toJSON ? po.toJSON() : po);
+        }
     }
 
     compareComponents(entityId, componentType, clientData, serverData) {

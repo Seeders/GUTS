@@ -82,7 +82,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
             });
 
         this.game.addComponent(projectileId, "velocity",
-            { vx: trajectory.vx, vy: trajectory.vy, vz: trajectory.vz, maxSpeed: projectileData.speed, affectedByGravity: projectileData.ballistic ? 1 : 0, anchored: 0 });
+            { vx: trajectory.vx, vy: trajectory.vy, vz: trajectory.vz, maxSpeed: projectileData.speed, affectedByGravity: !!projectileData.ballistic, anchored: false });
 
          // Enhanced projectile component with element
         this.game.addComponent(projectileId, "projectile", {
@@ -588,7 +588,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
             vel.vx = 0;
             vel.vy = 0;
             vel.vz = 0;
-            vel.affectedByGravity = 0;
+            vel.affectedByGravity = false;
         }
 
         // Position the arrow at ground level, partially embedded

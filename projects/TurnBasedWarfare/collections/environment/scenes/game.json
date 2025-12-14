@@ -22,7 +22,9 @@
     "PathfindingSystem",
     "VisionSystem",
     "SupplySystem",
-    "PlacementSystem"
+    "PlacementSystem",
+    "UnitOrderSystem",
+    "CheatCodeSystem"
   ],
   "clientSystems": [
     "RenderSystem",
@@ -41,7 +43,7 @@
     "ParticleSystem",
     "FogOfWarSystem",
     "SelectedUnitSystem",
-    "UnitOrderSystem",
+    "UnitOrderUISystem",
     "MiniMapSystem",
     "CameraControlSystem",
     "DamageNumberSystem"

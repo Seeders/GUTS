@@ -153,7 +153,7 @@ class LeapSlamAbility extends GUTS.BaseAbility {
         });
 
         // Add leaping component so behavior system skips this unit
-        this.game.addComponent(casterEntity, "leaping", { isLeaping: 1 });
+        this.game.addComponent(casterEntity, "leaping", { isLeaping: true });
 
         // Trigger attack animation for the duration of the leap
         // The animation should play once during the entire leap, paced to match the leap duration

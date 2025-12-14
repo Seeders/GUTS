@@ -2,7 +2,7 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
         const playerOrder = game.getComponent(entityId, 'playerOrder');
-        if (!playerOrder || playerOrder.isMoveOrder !== 1) {
+        if (!playerOrder || !playerOrder.isMoveOrder) {
             return this.failure();
         }
 
@@ -13,7 +13,7 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
         };
 
         if (targetPosition.x !== 0 || targetPosition.z !== 0) {
-            const isForceMove = playerOrder.preventEnemiesInRangeCheck === 1;
+            const isForceMove = playerOrder.preventEnemiesInRangeCheck;
             const transform = game.getComponent(entityId, 'transform');
             const pos = transform?.position;
             const distanceToTarget = this.distance(pos, targetPosition);
@@ -23,7 +23,7 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
                 // Movement complete - mark order as complete but keep the component
                 // The order will be cleared at the start of the next placement phase
                 // This allows the unit to hold position until the battle ends
-                playerOrder.completed = 1;
+                playerOrder.completed = true;
 
                 return this.success({
                     targetPosition: targetPosition,

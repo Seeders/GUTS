@@ -754,8 +754,8 @@ class PlacementSystem extends GUTS.BaseSystem {
                 unitData.unitType = this.getUnitTypeFromPlacement(unitData);
             }
 
-            // Spawn the squad for this team
-            this.spawnSquad(unitData, team, playerId);
+            // Spawn the squad for this team, using server-provided entity IDs if available
+            this.spawnSquad(unitData, team, playerId, unitData.squadUnits);
         });
     }
 

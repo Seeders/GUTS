@@ -131,28 +131,29 @@ class AnimationSystem extends GUTS.BaseSystem {
         const isBillboard = this.game.call('isBillboardWithAnimations', entityId);
 
         // Add animationState component to entity (all values numeric for TypedArray storage)
+        // Use null for "not set" values - will be stored as -Infinity in TypedArray
         this.game.addComponent(entityId, 'animationState', {
             currentClip: this.enums.animationType.idle,
             lastStateChange: this.game.state?.now || 0,
             animationTime: 0,
             minAnimationTime: 0,
-            pendingClip: -1,
-            pendingSpeed: -1,
-            pendingMinTime: -1,
-            isTriggered: 0,
-            isCelebrating: 0,
+            pendingClip: null,
+            pendingSpeed: null,
+            pendingMinTime: null,
+            isTriggered: false,
+            isCelebrating: false,
             // Billboard/sprite animation state
-            isSprite: isBillboard ? 1 : 0,
+            isSprite: isBillboard,
             spriteDirection: this.enums.direction.down,
-            spriteAnimationSet: -1,
-            spriteFps: -1,
-            spriteAnimationType: -1,
+            spriteAnimationSet: null,
+            spriteFps: null,
+            spriteAnimationType: null,
             spriteFrameIndex: 0,
             spriteFrameTime: 0,
-            spriteLoopAnimation: 1,
+            spriteLoopAnimation: true,
             // Track fallback usage to prevent thrashing
-            lastRequestedClip: -1,
-            lastResolvedClip: -1,
+            lastRequestedClip: null,
+            lastResolvedClip: null,
             fallbackCooldown: 0
         });
 
@@ -518,10 +519,10 @@ class AnimationSystem extends GUTS.BaseSystem {
         const minTime = animState.pendingMinTime || 0;
 
         // Clear pending state
-        animState.pendingClip = -1;
-        animState.pendingSpeed = -1;
-        animState.pendingMinTime = -1;
-        animState.isTriggered = 0;
+        animState.pendingClip = null;
+        animState.pendingSpeed = null;
+        animState.pendingMinTime = null;
+        animState.isTriggered = false;
 
         // Apply the animation
         this.changeAnimation(entityId, clip, speed, minTime);
@@ -569,7 +570,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         animState.pendingClip = clipName;
         animState.pendingSpeed = speed;
         animState.pendingMinTime = minTime;
-        animState.isTriggered = 1;
+        animState.isTriggered = true;
 
         return true;
     }
@@ -585,17 +586,17 @@ class AnimationSystem extends GUTS.BaseSystem {
         // We just need to clear animation system's local state and play the animation
 
         // Clear celebration state
-        animState.isCelebrating = 0;
+        animState.isCelebrating = false;
 
         // Clear any pending animations
-        animState.isTriggered = 0;
-        animState.pendingClip = -1;
-        animState.pendingSpeed = -1;
-        animState.pendingMinTime = -1;
+        animState.isTriggered = false;
+        animState.pendingClip = null;
+        animState.pendingSpeed = null;
+        animState.pendingMinTime = null;
 
         // Reset fallback tracking for death animation
-        animState.lastRequestedClip = -1;
-        animState.lastResolvedClip = -1;
+        animState.lastRequestedClip = null;
+        animState.lastResolvedClip = null;
         animState.fallbackCooldown = 0;
 
         // Handle billboard entities with sprite animations
@@ -640,7 +641,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) return;
 
-        animState.isCelebrating = 1;
+        animState.isCelebrating = true;
 
         // Try celebration animations, fallback to idle
         const celebrationClips = [this.enums.animationType.celebrate];
@@ -660,7 +661,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) return;
 
-        animState.isCelebrating = 0;
+        animState.isCelebrating = false;
         this.changeAnimation(entityId, this.enums.animationType.idle, 1.0, 0);
     }
 
@@ -1050,12 +1051,12 @@ class AnimationSystem extends GUTS.BaseSystem {
             // Store only numeric values - animation data is in shared cache
             animState.spriteAnimationSet = spriteAnimationSetIndex;
             animState.spriteFps = cachedData.fps;
-            animState.spriteAnimationType = -1; // No animation set yet
+            animState.spriteAnimationType = null; // No animation set yet
             animState.spriteDirection = initialDirection;
             animState.spriteFrameIndex = 0;
             animState.spriteFrameTime = 0;
-            animState.spriteLoopAnimation = 1; // true = 1
-            animState.isSprite = 1; // true = 1
+            animState.spriteLoopAnimation = true;
+            animState.isSprite = true;
         }
 
         // Apply initial idle animation (sets UV coordinates)

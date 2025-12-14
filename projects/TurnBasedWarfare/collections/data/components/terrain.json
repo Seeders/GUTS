@@ -7,10 +7,10 @@
   "schema": {
     "level": null,
     "world": null,
-    "cliffsEnabled": 1,
-    "liquidsEnabled": 1,
-    "grassEnabled": 0,
-    "fogEnabled": 1,
-    "shadowsEnabled": 1
+    "cliffsEnabled": true,
+    "liquidsEnabled": true,
+    "grassEnabled": false,
+    "fogEnabled": true,
+    "shadowsEnabled": true
   }
 }

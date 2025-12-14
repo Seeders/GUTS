@@ -3,7 +3,7 @@
   "schema": {
     "pathIndex": 0,
     "lastPathRequest": 0,
-    "useDirectMovement": 0,
+    "useDirectMovement": false,
     "lastTargetX": 0,
     "lastTargetZ": 0
   }

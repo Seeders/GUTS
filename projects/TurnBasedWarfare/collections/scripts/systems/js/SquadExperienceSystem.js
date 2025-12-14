@@ -138,7 +138,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             experience: 0,
             experienceToNextLevel: this.calculateExperienceNeeded(0),
             squadValue: squadValue,
-            canLevelUp: 0,
+            canLevelUp: false,
             totalUnitsInSquad: squadSize,
             lastExperienceGain: 0
         };
@@ -798,7 +798,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             experience: 0,
             experienceToNextLevel: this.calculateExperienceNeeded(0),
             squadValue: 0,
-            canLevelUp: 0,
+            canLevelUp: false,
             totalUnitsInSquad: 1,
             lastExperienceGain: 0
         };

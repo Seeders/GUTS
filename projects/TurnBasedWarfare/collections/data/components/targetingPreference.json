@@ -13,7 +13,7 @@
     },
     "targetPriority": 0,
     "maxTargetRange": 200,
-    "requiresLineOfSight": 0,
+    "requiresLineOfSight": false,
     "currentTarget": null,
     "targetLockTime": 0
   }

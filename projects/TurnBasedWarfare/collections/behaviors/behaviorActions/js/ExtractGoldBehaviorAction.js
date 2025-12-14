@@ -28,15 +28,13 @@ class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // targetMine is null/undefined when not set, or could be 0 (valid entity ID)
         if (targetMine === undefined || targetMine === null || targetMine < 0) {
-            console.log(`[ExtractGold] Entity ${entityId}: FAILURE - no targetMine (value: ${targetMine})`);
             return this.failure();
         }
 
         const duration = (this.parameters.duration || 2);
         const goldPerTrip = this.parameters.goldPerTrip || 10;
 
-        console.log(`[ExtractGold] Entity ${entityId}: targetMine=${targetMine}, miningStartTime=${memory.miningStartTime}, now=${game.state.now}`);
-
+       
         // Initialize mining start time
         if (!memory.miningStartTime) {
             memory.miningStartTime = game.state.now;

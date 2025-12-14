@@ -18,17 +18,14 @@ class FindNearestGoldMineBehaviorAction extends GUTS.BaseBehaviorAction {
         const team = game.getComponent(entityId, 'team');
 
         if (!pos || !team) {
-            console.log(`[FindNearestGoldMine] Entity ${entityId}: FAILURE - no pos or team`);
             return this.failure();
         }
 
         // Get all gold mine entities
         const goldMineEntities = game.getEntitiesWith('goldMine', 'transform', 'team');
 
-        console.log(`[FindNearestGoldMine] Entity ${entityId}: Found ${goldMineEntities?.length || 0} gold mines, my team=${team.team}`);
-
+      
         if (!goldMineEntities || goldMineEntities.length === 0) {
-            console.log(`[FindNearestGoldMine] Entity ${entityId}: FAILURE - no gold mines found`);
             return this.failure();
         }
 
@@ -57,7 +54,6 @@ class FindNearestGoldMineBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         if (!closestMine) {
-            console.log(`[FindNearestGoldMine] Entity ${entityId}: FAILURE - no mine for team ${team.team}`);
             return this.failure();
         }
 
@@ -67,8 +63,7 @@ class FindNearestGoldMineBehaviorAction extends GUTS.BaseBehaviorAction {
         shared.targetMinePosition = closestPosition;
         shared.targetPosition = closestPosition; // For movement
 
-        console.log(`[FindNearestGoldMine] Entity ${entityId}: SUCCESS - found mine ${closestMine} at distance ${closestDistance.toFixed(1)}`);
-
+     
         return this.success({
             targetMine: closestMine,
             targetPosition: closestPosition,

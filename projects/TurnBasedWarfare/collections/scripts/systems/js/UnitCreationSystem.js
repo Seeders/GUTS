@@ -60,7 +60,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             coldResistance: 0,
             lightningResistance: 0,
             element: this.enums.element.physical,
-            projectile: -1,
+            projectile: null,
             value: 50
         };
         this.game.register('createPlacement', this.createPlacement.bind(this));
@@ -298,8 +298,8 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 vy: 0,
                 vz: 0,
                 maxSpeed: maxSpeed,
-                affectedByGravity: 1,
-                anchored: collectionName === 'buildings' ? 1 : 0
+                affectedByGravity: true,
+                anchored: collectionName === 'buildings'
             },
             // team can be either a string ('left'/'right') or numeric enum value
             team: { team: typeof team === 'number' ? team : (this.enums.team?.[team] ?? 0) },
@@ -331,8 +331,8 @@ class UnitCreationSystem extends GUTS.BaseSystem {
 
             // Behavior components
             aiState: {
-                currentAction: -1,
-                currentActionCollection: -1,
+                currentAction: null,
+                currentActionCollection: null,
                 rootBehaviorTree: this.enums.behaviorTrees.UnitBattleBehaviorTree,
                 rootBehaviorTreeCollection: this.enums.behaviorCollection.behaviorTrees
             },
@@ -376,7 +376,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 experience: 0,
                 experienceToNextLevel: 15,
                 squadValue: 0,
-                canLevelUp: 0,
+                canLevelUp: false,
                 totalUnitsInSquad: 1,
                 lastExperienceGain: 0
             }
@@ -431,8 +431,8 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             vy: 0,
             vz: 0,
             maxSpeed: maxSpeed,
-            affectedByGravity: 1,
-            anchored: unitType.collection == 'buildings' ? 1 : 0
+            affectedByGravity: true,
+            anchored: unitType.collection == 'buildings'
         });
 
         // team can be either a string ('left'/'right') or numeric enum value
@@ -482,8 +482,8 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      */
     addBehaviorComponents(entity) {
         this.game.addComponent(entity, "aiState", {
-            currentAction: -1,
-            currentActionCollection: -1,
+            currentAction: null,
+            currentActionCollection: null,
             rootBehaviorTree: this.enums.behaviorTrees.UnitBattleBehaviorTree,
             rootBehaviorTreeCollection: this.enums.behaviorCollection.behaviorTrees
         });

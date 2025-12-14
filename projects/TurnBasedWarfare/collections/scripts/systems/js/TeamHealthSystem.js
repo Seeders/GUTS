@@ -208,7 +208,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
         const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
         if (unitType) {
             return {
-                placementId: -1,  // Unknown placement - use -1 as invalid marker
+                placementId: null,  // Unknown placement - use null as invalid marker
                 unitType: unitType
             };
         }

@@ -7,6 +7,6 @@
     "tickInterval": 2,
     "caster": null,
     "lastTickTime": 0,
-    "isConsecrated": 1
+    "isConsecrated": true
   }
 }

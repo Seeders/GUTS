@@ -8,16 +8,19 @@
     "pendingClip": null,
     "pendingSpeed": null,
     "pendingMinTime": null,
-    "isTriggered": 0,
-    "isCelebrating": 0,
-    "isSprite": 0,
+    "isTriggered": false,
+    "isCelebrating": false,
+    "isSprite": false,
     "spriteDirection": 0,
     "spriteAnimationSet": null,
     "spriteFps": null,
     "spriteAnimationType": null,
     "spriteFrameIndex": 0,
     "spriteFrameTime": 0,
-    "spriteLoopAnimation": 1,
-    "customDuration": null
+    "spriteLoopAnimation": true,
+    "customDuration": null,
+    "lastRequestedClip": null,
+    "lastResolvedClip": null,
+    "fallbackCooldown": 0
   }
 }

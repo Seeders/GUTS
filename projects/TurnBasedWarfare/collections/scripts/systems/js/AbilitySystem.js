@@ -183,7 +183,7 @@ class AbilitySystem extends GUTS.BaseSystem {
     
     startAbilityAnimation(entityId, ability) {
         // Use ability's configured animation or default to cast
-        const anim = ability.animation !== undefined ? ability.animation : this.enums.animationType.cast;
+        const anim = ability.animation !== undefined ? ability.animation : this.enums.animationType.attack;
 
         // For abilities, calculate animation speed based on cast time
         let animationSpeed = 1.0;

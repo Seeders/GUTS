@@ -6,7 +6,7 @@
     "triggerRadius": 30,
     "element": 0,
     "caster": null,
-    "triggered": 0,
+    "triggered": false,
     "triggerCount": 0,
     "maxTriggers": 1
   }

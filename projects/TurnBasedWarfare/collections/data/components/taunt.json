@@ -4,6 +4,6 @@
     "taunter": null,
     "endTime": 0,
     "radius": 0,
-    "isTaunted": 1
+    "isTaunted": true
   }
 }

@@ -69,8 +69,8 @@ class DesyncDebugger {
                     attackSpeed: combat.attackSpeed
                 } : null),
                 aiStateHash: this.hash(aiState ? {
-                    currentAction: aiState.currentAction >= 0 ? aiState.currentAction : -1,
-                    currentActionCollection: aiState.currentActionCollection >= 0 ? aiState.currentActionCollection : -1,
+                    currentAction: aiState.currentAction ?? 'null',
+                    currentActionCollection: aiState.currentActionCollection ?? 'null',
                     meta: this.game.call('getBehaviorMeta', entityId) || 'null'
                 } : null),
                 aiState: JSON.stringify(aiState)

@@ -60,7 +60,8 @@ class BaseECSGame {
         // Client-only components - excluded from server sync to preserve client state
         // These components are managed locally and should not be overwritten by server
         this._clientOnlyComponents = new Set([
-            'renderable'
+            'renderable',
+            'animationState'
         ]);
 
         // Proxy cache for getComponent - avoids creating new proxies every call
@@ -101,6 +102,13 @@ class BaseECSGame {
         this.register("getEnums", this.getEnums.bind(this));
         this.register("getReverseEnums", this.getReverseEnums.bind(this));
         this.register("getUnitTypeDef", this.getUnitTypeDef.bind(this));
+
+        // Pre-register all component types in alphabetical order for deterministic type IDs
+        // This ensures server and client have identical type ID mappings
+        const componentNames = Object.keys(collections.components).sort();
+        for (const componentName of componentNames) {
+            this._getComponentTypeId(componentName);
+        }
     }
 
     /**
@@ -109,9 +117,7 @@ class BaseECSGame {
     _getComponentTypeId(componentType) {
         let typeId = this._componentTypeId.get(componentType);
         if (typeId === undefined) {
-            if (this._nextComponentTypeId >= 64) {
-                throw new Error('Maximum 64 component types supported');
-            }
+
             typeId = this._nextComponentTypeId++;
             this._componentTypeId.set(componentType, typeId);
             this._componentTypeNames[typeId] = componentType;

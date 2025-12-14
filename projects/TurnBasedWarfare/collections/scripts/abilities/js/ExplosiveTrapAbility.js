@@ -118,7 +118,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
             triggerRadius: this.triggerRadius,
             element: enums.element.physical,
             caster: casterEntity,
-            triggered: 0,
+            triggered: false,
             triggerCount: 0,
             maxTriggers: 1
         });
@@ -211,7 +211,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         if (!trapComponent || !trapPos || trapComponent.triggered) return;
         
         // Mark trap as triggered
-        trapComponent.triggered = 1;
+        trapComponent.triggered = true;
         trapComponent.triggerCount++;
         
         // Visual explosion effect

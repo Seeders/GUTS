@@ -5,7 +5,7 @@
     "experience": 0,
     "experienceToNextLevel": 15,
     "squadValue": 0,
-    "canLevelUp": 0,
+    "canLevelUp": false,
     "totalUnitsInSquad": 1,
     "lastExperienceGain": 0
   }

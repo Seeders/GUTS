@@ -4,6 +4,6 @@
     "reflectionPercent": 0.5,
     "endTime": 0,
     "totalReflected": 0,
-    "isActive": 1
+    "isActive": true
   }
 }

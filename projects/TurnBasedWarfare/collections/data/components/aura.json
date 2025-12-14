@@ -4,7 +4,7 @@
     "auraType": 0,
     "radius": 50,
     "visualEffect": null,
-    "persistent": 1,
+    "persistent": true,
     "pulseInterval": 1,
     "lastPulse": 0,
     "createdTime": 0

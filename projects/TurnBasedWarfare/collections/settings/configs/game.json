@@ -101,11 +101,13 @@
     "FogOfWarSystem",
     "SelectedUnitSystem",
     "UnitOrderSystem",
+    "UnitOrderUISystem",
     "MiniMapSystem",
     "CameraControlSystem",
     "DamageNumberSystem",
     "VisionSystem",
-    "SupplySystem"
+    "SupplySystem",
+    "CheatCodeSystem"
   ],
   "classes": [
     {

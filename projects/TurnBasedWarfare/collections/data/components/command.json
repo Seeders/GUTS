@@ -10,7 +10,7 @@
     },
     "target": null,
     "priority": 0,
-    "interruptible": 1,
+    "interruptible": true,
     "createdTime": 0,
     "id": null
   }

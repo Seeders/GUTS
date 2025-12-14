@@ -1782,7 +1782,18 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     z-index: 3000;
     backdrop-filter: blur(5px);
 }
-
+#rotateCameraLeftBtn {
+    width: 6.5em;
+}
+#rotateCameraRightBtn {
+    position: absolute;
+    right: 0;
+    width: 6.5em;
+}
+#placementReadyBtn {
+    width: 100%;
+    margin-top: 1em;
+}
 .setup-content {
     background: 
         linear-gradient(145deg, rgba(26, 13, 26, 0.95), rgba(13, 10, 26, 0.95));

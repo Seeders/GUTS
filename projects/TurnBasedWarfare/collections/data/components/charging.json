@@ -7,6 +7,6 @@
     "chargeStartTime": 0,
     "chargeDistance": 0,
     "maxChargeDistance": 150,
-    "isCharging": 1
+    "isCharging": true
   }
 }

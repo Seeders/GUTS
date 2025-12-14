@@ -9,7 +9,7 @@
         "size": 64
       }
     },
-    "isActive": 0,
+    "isActive": false,
     "createdTime": 0
   }
 }

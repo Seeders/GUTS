@@ -651,6 +651,7 @@ class MovementSystem extends GUTS.BaseSystem {
         const now = this.game.state.now;
 
         const pathfinding = this.game.getComponent(entityId, "pathfinding");
+        const transform = this.game.getComponent(entityId, "transform");
         if (!pathfinding) return;
 
         // Get target from behavior state
@@ -729,6 +730,8 @@ class MovementSystem extends GUTS.BaseSystem {
                 actionName,
                 timeSinceLastRequest: now - pathfinding.lastPathRequest
             });
+            behaviorMeta.targetPosition = transform.position;
+            behaviorMeta.target = null;
             // I SWEAR TO GOD IF YOU REMOVED THAT MESSAGE...
         }
     }

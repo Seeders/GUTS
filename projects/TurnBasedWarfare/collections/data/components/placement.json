@@ -7,7 +7,7 @@
     "team": null,
     "playerId": null,
     "roundPlaced": 0,
-    "isUnderConstruction": 0,
+    "isUnderConstruction": false,
     "buildTime": 0,
     "assignedBuilder": null,
     "productionProgress": 0,

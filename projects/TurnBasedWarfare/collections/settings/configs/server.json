@@ -50,13 +50,15 @@
     "SquadExperienceSystem",
     "ServerBattlePhaseSystem",
     "PlacementSystem",
+    "UnitOrderSystem",
     "ServerNetworkSystem",
     "LifetimeSystem",
     "SchedulingSystem",
     "PathfindingSystem",
     "GoldMineSystem",
     "VisionSystem",
-    "SupplySystem"
+    "SupplySystem",
+    "CheatCodeSystem"
   ],
   "classes": [
     {

@@ -2,7 +2,7 @@
   "title": "mirrorImage",
   "schema": {
     "originalEntity": null,
-    "isIllusion": 1,
+    "isIllusion": true,
     "createdTime": 0
   }
 }

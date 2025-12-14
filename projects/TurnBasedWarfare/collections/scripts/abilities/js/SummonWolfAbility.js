@@ -169,8 +169,8 @@ class SummonWolfAbility extends GUTS.BaseAbility {
                 vy: 0,
                 vz: 0,
                 maxSpeed: (unitDef.speed) * 20,
-                affectedByGravity: 1,
-                anchored: 0
+                affectedByGravity: true,
+                anchored: false
             });
 
             const objectTypeIndex = this.enums.objectTypeDefinitions?.units ?? -1;
@@ -191,7 +191,7 @@ class SummonWolfAbility extends GUTS.BaseAbility {
                 damage: unitDef.damage,
                 range: unitDef.range,
                 attackSpeed: unitDef.attackSpeed,
-                projectile: -1,
+                projectile: null,
                 lastAttack: 0,
                 element: enums.element.physical,
                 armor: 0,
@@ -217,10 +217,10 @@ class SummonWolfAbility extends GUTS.BaseAbility {
             });
 
             this.game.addComponent(creatureId, "aiState", {
-                currentAction: -1,
-                rootBehaviorTree: -1,
-                meta: {},
-                shared: {}
+                currentAction: null,
+                currentActionCollection: null,
+                rootBehaviorTree: null,
+                rootBehaviorTreeCollection: null
             });
 
             this.game.addComponent(creatureId, "animation", {
@@ -232,10 +232,10 @@ class SummonWolfAbility extends GUTS.BaseAbility {
             // DESYNC SAFE: Use game time for summoned component
             this.game.addComponent(creatureId, "summoned", {
                 summoner: summoner,
-                summonType: enums.units[unitDefId] ?? 0,
-                originalStats: -1,
+                summonType: enums.units[unitDefId] ?? null,
+                originalStats: null,
                 createdTime: this.game.state.now || 0,
-                isSummoned: 1
+                isSummoned: true
             });
 
             return creatureId;

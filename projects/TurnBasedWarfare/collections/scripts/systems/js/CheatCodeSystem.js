@@ -33,6 +33,10 @@ class CheatCodeSystem extends GUTS.BaseSystem {
         if (!this.game.isServer) {
             this.game.register('cheat', this.requestCheat.bind(this));
             this.game.register('cheats', this.listCheats.bind(this));
+        } else {
+            // Server-side: execute cheats directly (no network round-trip needed)
+            this.game.register('cheat', (cheatName, params) => this.executeCheat(cheatName, params));
+            this.game.register('cheats', this.listCheats.bind(this));
         }
 
         // Register cheat handlers
@@ -186,6 +190,7 @@ class CheatCodeSystem extends GUTS.BaseSystem {
 
     /**
      * Spawn units at a position in a grid formation
+     * Uses the standard UnitCreationSystem pipeline for proper unit setup
      * @param {object} params - { collection, type, amount, x, z, team, entityIds? }
      */
     executeSpawnUnits(params) {
@@ -195,89 +200,44 @@ class CheatCodeSystem extends GUTS.BaseSystem {
         const positions = this.calculateGroupPositions(x, z, amount, unitType);
         const spawnedUnits = [];
 
-        // Get enum indices for numeric storage
-        const collectionIndex = this.enums.objectTypeDefinitions?.[collection] ?? null;
-        const typeIndex = this.enums[collection]?.[type] ?? null;
+        // Get enum indices for createUnit
+        const collectionIndex = this.enums.objectTypeDefinitions?.[collection] ?? -1;
+        const typeIndex = this.enums[collection]?.[type] ?? -1;
+
+        if (collectionIndex < 0 || typeIndex < 0) {
+            console.error(`[CheatCodeSystem] Invalid collection/type: ${collection}.${type}`);
+            return { error: `Invalid collection/type: ${collection}.${type}` };
+        }
 
         for (let i = 0; i < amount; i++) {
             const pos = positions[i];
             if (!pos) continue;
 
-            // Use server-provided entity ID if available, otherwise create new
-            const entityId = entityIds?.[i] ?? this.game.createEntity();
-
             // Get terrain height at spawn position
             const terrainHeight = this.game.call('getTerrainHeightAtPosition', pos.x, pos.z) ?? 0;
 
-            // Add core components
-            this.game.addComponent(entityId, 'transform', {
+            // Build transform for this unit
+            const transform = {
                 position: { x: pos.x, y: terrainHeight, z: pos.z },
                 rotation: { x: 0, y: 0, z: 0 },
                 scale: { x: 1, y: 1, z: 1 }
-            });
+            };
 
-            this.game.addComponent(entityId, 'unitType', {
+            // Build placement data for createPlacement
+            const placementData = {
                 collection: collectionIndex,
-                type: typeIndex
-            });
+                unitTypeId: typeIndex,
+                placementId: this.game.placementSystem._getNextPlacementId(),
+                gridPosition: { x: Math.floor(pos.x / 32), z: Math.floor(pos.z / 32) },
+                playerId: null,
+                roundPlaced: this.game.state?.round ?? 1
+            };
 
-            this.game.addComponent(entityId, 'team', {
-                team: team
-            });
+            // Use server-provided entity ID if available
+            const providedEntityId = entityIds?.[i] ?? null;
 
-            this.game.addComponent(entityId, 'renderable', {
-                objectType: collectionIndex,
-                spawnType: typeIndex
-            });
-
-            // Add health component
-            const maxHealth = unitType.health || 100;
-            this.game.addComponent(entityId, 'health', {
-                current: maxHealth,
-                max: maxHealth
-            });
-
-            // Add death state component
-            this.game.addComponent(entityId, 'deathState', {
-                state: this.enums.deathState.alive,
-                deathTime: 0
-            });
-
-            // Add velocity component for movement
-            this.game.addComponent(entityId, 'velocity', {
-                vx: 0,
-                vy: 0,
-                vz: 0,
-                maxSpeed: unitType.moveSpeed || 30,
-                affectedByGravity: 1,
-                anchored: 0
-            });
-
-            // Add combat component if unit has attack
-            if (unitType.damage || unitType.attackSpeed) {
-                this.game.addComponent(entityId, 'combat', {
-                    damage: unitType.damage || 10,
-                    attackSpeed: unitType.attackSpeed || 1,
-                    range: unitType.range || 30,
-                    lastAttack: 0,
-                    target: null
-                });
-            }
-
-            // Add AI state for behavior
-            if (this.enums.behaviorTrees?.[unitType.behaviorTree]) {
-                this.game.addComponent(entityId, 'aiState', {
-                    rootBehaviorTree: this.enums.behaviorTrees[unitType.behaviorTree] ?? 0,
-                    rootBehaviorTreeCollection: this.enums.behaviorCollection?.behaviorTrees ?? 0,
-                    currentAction: null,
-                    currentActionCollection: null
-                });
-            }
-
-            // Add abilities if unit has them
-            if (unitType.abilities) {
-                this.game.call('addAbilitiesToUnit', entityId, unitType.abilities);
-            }
+            // Use the standard unit creation pipeline with placement
+            const entityId = this.game.call('createPlacement', placementData, transform, team, providedEntityId);
 
             spawnedUnits.push(entityId);
         }

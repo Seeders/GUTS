@@ -8,6 +8,6 @@
     "physicalResistance": 0,
     "divineResistance": 0,
     "duration": null,
-    "permanent": 1
+    "permanent": true
   }
 }

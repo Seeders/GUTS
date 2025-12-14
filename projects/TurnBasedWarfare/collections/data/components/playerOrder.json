@@ -4,9 +4,9 @@
     "targetPositionX": 0,
     "targetPositionY": 0,
     "targetPositionZ": 0,
-    "isMoveOrder": 0,
-    "preventEnemiesInRangeCheck": 0,
-    "completed": 0,
+    "isMoveOrder": false,
+    "preventEnemiesInRangeCheck": false,
+    "completed": false,
     "issuedTime": 0
   }
 }

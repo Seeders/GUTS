@@ -215,7 +215,7 @@ class ServerNetworkSystem extends GUTS.BaseSystem {
             const serverIssuedTime = this.game.state.now;
 
             // Handle build order - update building's assignedBuilder and set buildingState
-            if (meta?.buildingId && meta.buildingId !== -1) {
+            if (meta?.buildingId != null) {
                 const buildingPlacement = this.game.getComponent(meta.buildingId, 'placement');
                 if (buildingPlacement) {
                     const builderEntityId = placement.squadUnits?.[0];
@@ -556,35 +556,34 @@ class ServerNetworkSystem extends GUTS.BaseSystem {
         return states.length === this.numPlayers && states.every(ready => ready === true);
     }
 
-    purchaseUpgrade(playerId, player, data) {
+    purchaseUpgrade(playerId, _player, data) {
         if (this.game.state.phase !== this.enums.gamePhase.placement) {
             return { success: false, error: `Not in placement phase (${this.game.state.phase})` };
         }
 
         const playerStats = this.game.call('getPlayerStats', playerId);
         const playerGold = playerStats?.gold || 0;
-        const playerTeam = player.team;
 
         const upgrade = this.collections.upgrades[data.upgradeId];
+        const upgradeIndex = this.enums.upgrades?.[data.upgradeId];
+
+        if (upgradeIndex === undefined) {
+            return { success: false, error: `Unknown upgrade: ${data.upgradeId}` };
+        }
+
+        // Check if already purchased (bitmask check)
+        if (playerStats.upgrades & (1 << upgradeIndex)) {
+            return { success: false, error: "Upgrade already purchased." };
+        }
+
         if (upgrade?.value <= playerGold) {
+            // Deduct gold
             playerStats.gold -= upgrade.value;
 
-            if (!this.game.state.teams) {
-                this.game.state.teams = {};
-            }
-            if (!this.game.state.teams[playerTeam]) {
-                this.game.state.teams[playerTeam] = {};
-            }
-            if (!this.game.state.teams[playerTeam].effects) {
-                this.game.state.teams[playerTeam].effects = {};
-            }
+            // Add upgrade to bitmask
+            playerStats.upgrades |= (1 << upgradeIndex);
 
-            upgrade.effects.forEach((effectId) => {
-                const effect = this.collections.effects[effectId];
-                this.game.state.teams[playerTeam].effects[effectId] = effect;
-            });
-
-            return { success: true };
+            return { success: true, upgradeId: data.upgradeId };
         }
 
         return { success: false, error: "Not enough gold." };

@@ -83,10 +83,18 @@ class ShopSystem extends GUTS.BaseSystem {
         container.innerHTML = '';
     }
 
-    clearSelectedEntity() {    
+    clearSelectedEntity() {
         this.game.state.selectedEntity.entityId = null;
         this.game.state.selectedEntity.collection = null;
     }
+
+    refreshShopUI() {
+        const entityId = this.game.state.selectedEntity?.entityId;
+        if (entityId) {
+            this.onUnitSelected(entityId);
+        }
+    }
+
     onUnitSelected(entityId){
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
         const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
@@ -224,15 +232,16 @@ class ShopSystem extends GUTS.BaseSystem {
         const grid = document.createElement('div');
         grid.className = 'action-grid';
 
-        const buildingId = this.game.state.selectedEntity.entityId;
-        const upgradesComponent = this.game.getComponent(buildingId, 'buildingUpgrades');
-        const purchasedUpgrades = upgradesComponent?.purchasedUpgrades || [];
+        // Get purchased upgrades from playerStats bitmask
+        const playerStats = this.game.call('getLocalPlayerStats');
+        const purchasedUpgradesBitmask = playerStats?.upgrades || 0;
 
         building.upgrades.forEach(upgradeId => {
             const upgrade = this.collections.upgrades[upgradeId];
             if (!upgrade) return;
 
-            const isOwned = purchasedUpgrades.includes(upgradeId);
+            const upgradeIndex = this.enums.upgrades?.[upgradeId];
+            const isOwned = upgradeIndex !== undefined && (purchasedUpgradesBitmask & (1 << upgradeIndex)) !== 0;
             const locked = isOwned || !this.game.call('canAffordCost', upgrade.value);
 
             const btn = this.createActionButton({
@@ -242,7 +251,7 @@ class ShopSystem extends GUTS.BaseSystem {
                 locked: locked,
                 lockReason: isOwned ? 'Owned' : (locked ? "Can't afford" : null),
                 owned: isOwned,
-                onClick: () => !isOwned && this.purchaseUpgrade(upgradeId, upgrade, buildingId)
+                onClick: () => !isOwned && this.purchaseUpgrade(upgradeId, upgrade)
             });
             grid.appendChild(btn);
         });
@@ -469,23 +478,18 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     purchaseUpgrade(upgradeId, upgrade) {
-        const buildingId = this.game.state.selectedEntity.entityId;
         this.game.call('purchaseUpgrade', {
-            upgradeId,
-            buildingId: buildingId
+            upgradeId
         }, (success, response) => {
             if (success) {
-                let upgradesComponent = this.game.getComponent(buildingId, 'buildingUpgrades');
-                if (!upgradesComponent) {
-                    this.game.addComponent(buildingId, 'buildingUpgrades', { purchasedUpgrades: [] });
-                    upgradesComponent = this.game.getComponent(buildingId, 'buildingUpgrades');
-                }
-                if (!upgradesComponent.purchasedUpgrades.includes(upgradeId)) {
-                    upgradesComponent.purchasedUpgrades.push(upgradeId);
-                }
-                this.game.call('deductPlayerGold', upgrade.value);
+                // Server already deducted gold and updated playerStats.upgrades bitmask
+                // Just apply local effects and show notification
                 this.applyUpgradeEffects(this.game.state.myTeam, upgrade);
                 this.showNotification(`${upgrade.title} purchased!`, 'success');
+                // Refresh the UI to show the upgrade as owned
+                this.refreshShopUI();
+            } else {
+                this.showNotification(response?.error || 'Purchase failed', 'error');
             }
         });
     }
