@@ -810,6 +810,5 @@ class FogOfWarSystem extends GUTS.BaseSystem {
      * Note: dispose() is called by SceneManager after onSceneUnload
      */
     onSceneUnload() {
-        console.log('[FogOfWarSystem] Scene unloaded - resources cleaned up');
     }
 }

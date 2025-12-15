@@ -62,7 +62,6 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
         const unitRadius = this.getUnitRadius(collision);
         const attackRange = this.getAttackRange(combat, collision);
         
-        //console.log(`Entity ${entityId}: unitRadius=${unitRadius}, attackRange=${attackRange}, pos=(${pos.x}, ${pos.y})`);
         
         // Scale the circles - base circle is 50 units radius, so scale accordingly
         circles.sizeCircle.scale.setScalar(unitRadius / 50);
@@ -190,7 +189,6 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
         } else {
             this.hideAllCircles();
         }
-        console.log(`Unit debug circles ${this.enabled ? 'enabled' : 'disabled'}`);
     }
     
     cleanup() {

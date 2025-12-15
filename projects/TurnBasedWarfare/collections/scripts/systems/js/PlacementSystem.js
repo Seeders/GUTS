@@ -39,14 +39,12 @@ class PlacementSystem extends GUTS.BaseSystem {
         this.game.register('getCameraPositionForTeam', this.getCameraPositionForTeam.bind(this));
         this.game.register('applyNetworkUnitData', this.applyNetworkUnitData.bind(this));
 
-        console.log('[PlacementSystem] Initialized');
     }
 
     /**
      * Called when scene loads - spawn starting units deterministically
      */
     onSceneLoad(sceneData) {
-        console.log('[PlacementSystem] onSceneLoad - spawning starting units');
         this.spawnStartingUnits();
     }
 
@@ -226,7 +224,6 @@ class PlacementSystem extends GUTS.BaseSystem {
             const validation = this.game.call('validateSquadConfig', squadData);
 
             if (!validation.valid) {
-                console.log('[PlacementSystem] Invalid squad config');
                 return { success: false, error: 'Invalid squad config' };
             }
 
@@ -458,7 +455,6 @@ class PlacementSystem extends GUTS.BaseSystem {
             }
         }
 
-        console.log('[PlacementSystem] Starting units spawned:', result);
         return result;
     }
 
@@ -573,7 +569,6 @@ class PlacementSystem extends GUTS.BaseSystem {
             // to avoid cell matching issues due to position rounding
             this.game.call('buildGoldMine', entityId, team, gridPos, gridWidth, gridHeight, nearestVeinEntityId);
 
-            console.log(`[PlacementSystem] Spawned starting gold mine for team ${team} at position:`, gridPos);
             return {
                 success: true,
                 entityId: entityId,
@@ -775,17 +770,14 @@ class PlacementSystem extends GUTS.BaseSystem {
         const playerTeam = player.team;
 
         if (newUnitCost > playerGold) {
-            console.log(`Player ${player.id} insufficient gold: ${newUnitCost} > ${playerGold}`);
             return false;
         }
 
         if (this.game.hasService('canAffordSupply') && !this.game.call('canAffordSupply', playerTeam, placement.unitType)) {
-            console.log(`Player ${player.id} insufficient supply for unit: ${placement.unitType.id}`);
             return false;
         }
 
         if (!placement.gridPosition || !placement.unitType) {
-            console.log(`Player ${player.id} invalid placement data:`, placement);
             return false;
         }
 
@@ -793,7 +785,6 @@ class PlacementSystem extends GUTS.BaseSystem {
         const squadData = this.game.call('getSquadData', placement.unitType);
         const cells = this.game.call('getSquadCells', placement.gridPosition, squadData);
         if (!this.game.call('isValidGridPlacement', cells, playerTeam)) {
-            console.log('Invalid Placement', placement);
             return false;
         }
 
@@ -929,7 +920,6 @@ class PlacementSystem extends GUTS.BaseSystem {
                 }
             }
 
-            console.log(`Cleared placements for player ${playerId}`);
         } catch (error) {
             console.error(`Error clearing placements for player ${playerId}:`, error);
         }

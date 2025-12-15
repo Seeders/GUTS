@@ -50,7 +50,6 @@ class SaveSystem extends GUTS.BaseSystem {
         // Update save index
         this.updateSaveIndex(name, timestamp);
 
-        console.log(`[SaveManager] Game saved as "${name}"`);
         return saveData;
     }
 
@@ -252,7 +251,6 @@ class SaveSystem extends GUTS.BaseSystem {
             this.game.state.level = levelValue;
 
             // The scene will be loaded and save data injected via loadSavedEntities
-            console.log(`[SaveManager] Save data prepared for loading: ${saveData.saveName || 'unnamed'}`);
             return true;
         } catch (error) {
             console.error('[SaveManager] Error preparing save data:', error);
@@ -285,7 +283,6 @@ class SaveSystem extends GUTS.BaseSystem {
 
         // Load ECS data using new format if available
         if (saveData.ecsData) {
-            console.log(`[SaveManager] Loading ECS data (nextEntityId: ${saveData.ecsData.nextEntityId})`);
             this.game.applyECSData(saveData.ecsData);
 
             // Initialize abilities for loaded entities
@@ -293,7 +290,6 @@ class SaveSystem extends GUTS.BaseSystem {
             this.initializeAbilitiesForLoadedEntities();
         } else if (saveData.entities) {
             // Legacy format: load entities one by one
-            console.log(`[SaveManager] Loading ${saveData.entities.length} saved entities (legacy format)`);
             let loadedCount = 0;
             let componentsAdded = 0;
             for (const entityDef of saveData.entities) {
@@ -310,7 +306,6 @@ class SaveSystem extends GUTS.BaseSystem {
                     componentsAdded++;
                 }
             }
-            console.log(`[SaveManager] Created ${loadedCount} entities with ${componentsAdded} components`);
 
             // Initialize abilities for loaded entities
             this.initializeAbilitiesForLoadedEntities();
@@ -434,7 +429,6 @@ class SaveSystem extends GUTS.BaseSystem {
             }
         }
 
-        console.log(`[SaveManager] Deleted save "${saveName}"`);
     }
 
     /**
@@ -498,7 +492,6 @@ class SaveSystem extends GUTS.BaseSystem {
             }
         }
 
-        console.log(`[SaveManager] Initialized abilities for ${abilitiesInitialized} entities`);
     }
 
     onSceneUnload() {

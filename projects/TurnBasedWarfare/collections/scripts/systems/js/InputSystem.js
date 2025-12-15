@@ -189,7 +189,6 @@ class InputSystem extends GUTS.BaseSystem {
     
     handleKeyRelease(event) {
         // Handle specific key release events
-        console.log(event.code);
         switch (event.code) {
             case 'Tab':
                 this.cycleThroughUnits();

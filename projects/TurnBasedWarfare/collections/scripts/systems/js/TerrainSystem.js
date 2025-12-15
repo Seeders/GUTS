@@ -113,10 +113,8 @@ class TerrainSystem extends GUTS.BaseSystem {
         if (!this.game.state.isLoadingSave) {
             await this.spawnWorldObjects();
         } else {
-            console.log(`[TerrainSystem] Skipping world object spawn - loading from save`);
         }
 
-        console.log(`[TerrainSystem] Terrain initialized from level: ${levelName}`);
     }
 
     /**

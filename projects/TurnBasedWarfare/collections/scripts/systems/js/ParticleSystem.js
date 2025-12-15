@@ -591,6 +591,5 @@ class ParticleSystem extends GUTS.BaseSystem {
       this.freeList.push(i);
     }
 
-    console.log('[ParticleSystem] Scene unloaded - resources cleaned up');
   }
 }

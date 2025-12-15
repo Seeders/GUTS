@@ -200,7 +200,6 @@ class DamageNumberSystem extends GUTS.BaseSystem {
         if (type === null) {
             type = this.enums.element.physical;
         }
-        console.log('showing damage number', x, y, z, damage, type);
         // Get or create damage number object
         let damageObj = this.damageNumberPool.pop();
 
@@ -325,10 +324,9 @@ class DamageNumberSystem extends GUTS.BaseSystem {
         scales.needsUpdate = true;
         uvOffsets.needsUpdate = true;
     }
-    
+
     updateDamageNumbers() {
         if (!this.game.state || this.damageNumbers.length === 0 || !this.game.camera) return;
-        console.log('update');
         // Update camera vectors for billboarding
         const camera = this.game.camera;
         const cameraRight = new THREE.Vector3();
@@ -527,7 +525,5 @@ class DamageNumberSystem extends GUTS.BaseSystem {
         this.damageTextContext = null;
         this.activeCharInstances = 0;
         this.stats.activeDamageNumbers = 0;
-
-        console.log('[DamageNumberSystem] Scene unloaded - resources cleaned up');
     }
 }

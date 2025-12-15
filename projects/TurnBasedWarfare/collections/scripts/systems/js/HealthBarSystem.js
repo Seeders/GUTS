@@ -18,9 +18,8 @@ class HealthBarSystem extends GUTS.BaseSystem {
     
     initialize() {
         if (this.initialized || !this.game.scene) return;
-        
+
         this.initialized = true;
-        console.log('Simple Quad HealthBarSystem initialized');
     }
     
     update() {
@@ -360,12 +359,9 @@ class HealthBarSystem extends GUTS.BaseSystem {
 
         this.healthBars.clear();
         this.initialized = false;
-
-        console.log('Simple Quad HealthBarSystem destroyed');
     }
 
     onSceneUnload() {
         this.destroy();
-        console.log('[HealthBarSystem] Scene unloaded - resources cleaned up');
     }
 }

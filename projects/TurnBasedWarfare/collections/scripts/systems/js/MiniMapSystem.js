@@ -613,7 +613,6 @@ class MiniMapSystem extends GUTS.BaseSystem {
     onSceneUnload() {
         // Note: dispose() is called by SceneManager after onSceneUnload
         // So we just reset state here, actual cleanup happens in dispose()
-        console.log('[MiniMapSystem] Scene unloaded - resources cleaned up');
     }
 
     dispose() {

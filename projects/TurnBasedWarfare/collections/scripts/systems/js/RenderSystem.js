@@ -52,7 +52,6 @@ class RenderSystem extends GUTS.BaseSystem {
      * Uses postSceneLoad to ensure WorldSystem has created the Three.js scene first
      */
     postSceneLoad(sceneData) {
-        console.log('[RenderSystem] postSceneLoad called, game.scene:', this.game.scene ? 'exists' : 'null');
 
         // Scene should be available now from WorldSystem
         if (!this.game.scene) {
@@ -85,7 +84,6 @@ class RenderSystem extends GUTS.BaseSystem {
         // We'll apply lighting after WorldSystem finishes (see waitForLightingAndApply below)
         this.waitForLightingAndApply();
 
-        console.log('[RenderSystem] EntityRenderer initialized:', this.entityRenderer ? 'success' : 'failed');
     }
 
     /**
@@ -473,7 +471,6 @@ class RenderSystem extends GUTS.BaseSystem {
         combinedColor.g = Math.min(1.0, combinedColor.g);
         combinedColor.b = Math.min(1.0, combinedColor.b);
 
-        console.log('[RenderSystem] Combined sprite lighting:', combinedColor.r.toFixed(2), combinedColor.g.toFixed(2), combinedColor.b.toFixed(2));
 
         // Apply combined lighting (intensity 1.0 since we pre-multiplied)
         this.entityRenderer.setAmbientLightColor(combinedColor, 1.0);
@@ -537,7 +534,6 @@ class RenderSystem extends GUTS.BaseSystem {
             entitiesUpdated: 0
         };
 
-        console.log('[RenderSystem] Scene unloaded - resources cleaned up');
     }
 
 }

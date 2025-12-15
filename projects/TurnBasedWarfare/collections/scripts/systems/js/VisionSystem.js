@@ -227,6 +227,5 @@ class VisionSystem extends GUTS.BaseSystem {
         this._gridSize = null;
         this._terrainSize = null;
 
-        console.log('[VisionSystem] Scene unloaded - resources cleaned up');
     }
 }

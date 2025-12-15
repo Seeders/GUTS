@@ -12,7 +12,6 @@ class TeamHealthSystem extends GUTS.BaseSystem {
         this.roundProcessed = false;
 
         if(!this.game.isServer){
-            console.log('this.game', this.game);
             this.initializeUI();
         }
     }

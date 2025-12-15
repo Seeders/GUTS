@@ -107,14 +107,12 @@ class PlacementUISystem extends GUTS.BaseSystem {
             z: this.game.call('getPlacementGridSize') / 2
         };
 
-        console.log('[PlacementUISystem] Initialized');
     }
 
     onSceneLoad(sceneData) {
         // Initialize RaycastHelper when scene and camera are available
         if (this.game.scene && this.game.camera && !this.raycastHelper) {
             this.raycastHelper = new GUTS.RaycastHelper(this.game.camera, this.game.scene);
-            console.log('[PlacementUISystem] RaycastHelper initialized');
         }
     }
 
@@ -150,7 +148,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const look = cameraData.lookAt;
             this.game.camera.position.set(pos.x, pos.y, pos.z);
             this.game.camera.lookAt(look.x, look.y, look.z);
-            console.log('[PlacementUISystem] Camera set for side:', myTeam);
         }
     }
 
@@ -244,7 +241,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
             if (battleDuration >= this.battleDuration && !this.isBattlePaused) {
                 this.isBattlePaused = true;
                 this.game.state.isPaused = true;
-                console.log(`Client reached max battle duration (${this.battleDuration}s), pausing until server sends BATTLE_END`);
             }
         }
 

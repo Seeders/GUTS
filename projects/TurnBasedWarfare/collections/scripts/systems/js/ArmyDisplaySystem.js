@@ -302,17 +302,15 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
                 if (position) {
                     // Convert world position to screen position and show highlight
                     // This is a placeholder - actual implementation would depend on rendering system
-                    console.log(`Highlighting unit ${unitId} at position (${position.x}, ${position.z})`);
                 }
             } catch (error) {
                 console.warn('Could not highlight unit:', error);
             }
         }
     }
-    
+
     unhighlightUnit(unitId) {
         // Remove highlight
-        console.log(`Unhighlighting unit ${unitId}`);
     }
     
     updateArmyStats(armyData) {
@@ -359,10 +357,8 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
         // Update army composition displays
         const playerComposition = this.analyzeComposition(armyData.playerUnits);
         const enemyComposition = this.analyzeComposition(armyData.enemyUnits);
-        
+
         // Could update composition indicators here
-        console.log('Player composition:', playerComposition);
-        console.log('Enemy composition:', enemyComposition);
     }
     
     analyzeComposition(units) {

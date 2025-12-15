@@ -138,7 +138,6 @@ class SquadSystem extends GUTS.BaseSystem {
         const startX = centerWorldPos.x - (formationWorldWidth / 2) + (stepX / 2);
         const startZ = centerWorldPos.z - (formationWorldHeight / 2) + (stepZ / 2);
 
-        console.log(stepX, formationWorldWidth, squadWidth, centerWorldPos, formationWorldWidth, stepX);
 
         for (let row = 0; row < squadHeight; row++) {
             for (let col = 0; col < squadWidth; col++) {

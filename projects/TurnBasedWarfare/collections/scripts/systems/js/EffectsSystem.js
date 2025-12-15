@@ -1071,6 +1071,5 @@ class EffectsSystem extends GUTS.BaseSystem {
             styleElement.remove();
         }
 
-        console.log('[EffectsSystem] Scene unloaded - resources cleaned up');
     }
 }

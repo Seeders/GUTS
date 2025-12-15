@@ -337,7 +337,6 @@ class ShopSystem extends GUTS.BaseSystem {
         const placementId = this.getBuildingPlacementId(buildingId);
 
         if (!placementId) {
-            console.log('no building selected');
             this.showNotification('No building selected!', 'error');
             return;
         }
@@ -355,7 +354,6 @@ class ShopSystem extends GUTS.BaseSystem {
         unit.collection = 'units';
         const placementPos = this.findBuildingPlacementPosition(placementId, unit);
         if (!placementPos) {
-            console.log('no valid placement');
             this.showNotification('No valid placement near building!', 'error');
             return;
         }
@@ -385,27 +383,30 @@ class ShopSystem extends GUTS.BaseSystem {
         const buildingCells = buildingSquadData ? this.game.call('getSquadCells', buildingGridPos, buildingSquadData) : [];
         const buildingCellSet = new Set(buildingCells.map(cell => `${cell.x},${cell.z}`));
 
+        // Get camera direction to building to determine which side is "toward camera"
+        const cameraDir = this.getCameraDirectionToBuilding(placementId);
+
         const searchRadius = 12;
-        const spiralOffsets = this.generateSpiralOffsets(searchRadius);
+        const spiralOffsets = this.generateSpiralOffsets(searchRadius, cameraDir);
 
         for (const offset of spiralOffsets) {
             const testPos = {
                 x: buildingGridPos.x + offset.x,
                 z: buildingGridPos.z + offset.z
             };
-            
+
             const testCellKey = `${testPos.x},${testPos.z}`;
             if (buildingCellSet.has(testCellKey)) {
                 continue;
             }
-            
+
             const unitSquadData = this.game.call('getSquadData', unitDef);
             const unitCells = this.game.call('getSquadCells', testPos, unitSquadData);
-            
-            const overlapsBuilding = unitCells.some(cell => 
+
+            const overlapsBuilding = unitCells.some(cell =>
                 buildingCellSet.has(`${cell.x},${cell.z}`)
             );
-            
+
             if (overlapsBuilding) {
                 continue;
             }
@@ -418,26 +419,70 @@ class ShopSystem extends GUTS.BaseSystem {
         return null;
     }
 
-    generateSpiralOffsets(maxRadius) {
+    /**
+     * Get the direction from camera to building (normalized)
+     * Units should spawn on the camera side of the building (opposite this direction)
+     */
+    getCameraDirectionToBuilding(placementId) {
+        const placement = this.game.call('getPlacementById', placementId);
+        if (!placement?.squadUnits?.length) return { x: 0, z: 1 };
+
+        const buildingEntityId = placement.squadUnits[0];
+        const transform = this.game.getComponent(buildingEntityId, 'transform');
+        const buildingPos = transform?.position;
+        if (!buildingPos) return { x: 0, z: 1 };
+
+        // Get camera position
+        const camera = this.game.renderSystem?.camera;
+        if (!camera) return { x: 0, z: 1 };
+
+        const cameraPos = camera.position;
+
+        // Direction from camera to building
+        const dx = buildingPos.x - cameraPos.x;
+        const dz = buildingPos.z - cameraPos.z;
+        const length = Math.sqrt(dx * dx + dz * dz);
+
+        if (length < 0.001) return { x: 0, z: 1 };
+
+        return {
+            x: dx / length,
+            z: dz / length
+        };
+    }
+
+    generateSpiralOffsets(maxRadius, cameraDir = null) {
         const offsets = [];
-        let x = 0, z = 0;
-        let dx = 0, dz = -1;
-        
-        for (let i = 0; i < (maxRadius * 2) * (maxRadius * 2); i++) {
-            if ((-maxRadius < x && x <= maxRadius) && (-maxRadius < z && z <= maxRadius)) {
+
+        // Generate all positions within the radius
+        for (let x = -maxRadius; x <= maxRadius; x++) {
+            for (let z = -maxRadius; z <= maxRadius; z++) {
                 offsets.push({ x, z });
             }
-            
-            if (x === z || (x < 0 && x === -z) || (x > 0 && x === 1 - z)) {
-                const temp = dx;
-                dx = -dz;
-                dz = temp;
-            }
-            
-            x += dx;
-            z += dz;
         }
-        
+
+        // Sort by camera-side preference
+        // Units spawn on the camera side (opposite the camera direction)
+        // So we want positions where offset dot (-cameraDir) is highest
+        const biasX = cameraDir ? -cameraDir.x : 0;
+        const biasZ = cameraDir ? -cameraDir.z : 1;
+
+        offsets.sort((a, b) => {
+            // Camera bias score: prefer positions toward the camera
+            const biasA = a.x * biasX + a.z * biasZ;
+            const biasB = b.x * biasX + b.z * biasZ;
+
+            // Higher bias = more toward camera = should come first
+            if (Math.abs(biasB - biasA) > 0.001) {
+                return biasB - biasA;
+            }
+
+            // Tie-breaker: closer to building center
+            const distA = Math.abs(a.x) + Math.abs(a.z);
+            const distB = Math.abs(b.x) + Math.abs(b.z);
+            return distA - distB;
+        });
+
         return offsets;
     }
 

@@ -677,7 +677,6 @@ class GridSystem extends GUTS.BaseSystem {
             maxZ: this.dimensions.startZ + (this.dimensions.height * placementGridSize)
         };
 
-        console.log(`[GridSystem] Updated for level index: ${levelIndex} (tileMapSize: ${newTileMapSize})`);
     }
 
     
@@ -728,7 +727,6 @@ class GridSystem extends GUTS.BaseSystem {
         this.debugMeshes.clear();
         this.debugEnabled = false;
 
-        console.log('[GridSystem] Scene unloaded - resources cleaned up');
     }
 
     /**
@@ -780,7 +778,6 @@ class GridSystem extends GUTS.BaseSystem {
             })
         };
 
-        console.log('[GridSystem] Debug visualization initialized');
     }
 
     /**
@@ -835,7 +832,6 @@ class GridSystem extends GUTS.BaseSystem {
      * Toggle debug visualization on/off
      */
     toggleDebugVisualization() {
-        console.log('[GridSystem] toggleSpatialGridDebug called');
 
         if (!this.debugVisualization) {
             if (!this.game.isServer && this.game.uiScene) {
@@ -854,8 +850,6 @@ class GridSystem extends GUTS.BaseSystem {
         }
 
         // Log current grid state for debugging
-        console.log(`[GridSystem] Debug visualization ${this.debugEnabled ? 'ENABLED' : 'DISABLED'}`);
-        console.log(`[GridSystem] Current state: ${this.state.size} occupied cells`);
 
         if (this.debugEnabled) {
             for (const [key, cellState] of this.state.entries()) {
@@ -867,7 +861,6 @@ class GridSystem extends GUTS.BaseSystem {
                     const teamValue = team ? JSON.stringify(team.team) : 'NO_TEAM';
                     return `${unitType?.name || 'unknown'}(team=${teamValue})`;
                 });
-                console.log(`  Cell (${cell.x},${cell.z}): ${entityNames.join(', ')}`);
             }
         }
     }

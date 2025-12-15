@@ -5,6 +5,7 @@
   "isIsometric": false,
   "libraries": [
     "GameServices",
+    "CallLogger",
     "threejs",
     "BaseECSGame",
     "Rapier",

@@ -19,7 +19,6 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
         // Debug: Log the playerOrder type ID
         const playerOrderTypeId = this.game._componentTypeId?.get('playerOrder');
-        console.log('[UnitOrderSystem] Initialized, playerOrder typeId:', playerOrderTypeId);
     }
 
     /**
@@ -34,19 +33,16 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const placement = this.game.call('getPlacementById', placementId);
         if (!placement) {
             // Placement doesn't exist yet - entity sync at battle start will handle it
-            console.log(`[UnitOrderSystem] applySquadTargetPosition - placement ${placementId} not found (may be synced later)`);
             return;
         }
 
         const createdTime = commandCreatedTime || this.game.state.now;
 
-        console.log(`[UnitOrderSystem] applySquadTargetPosition: placementId=${placementId}, targetPosition=`, targetPosition, `meta=`, meta, `issuedTime=${createdTime}, squadUnits=`, placement.squadUnits);
 
         placement.squadUnits.forEach((unitId) => {
             if (targetPosition) {
                 // Remove existing player order if present, then add new one
                 if (this.game.hasComponent(unitId, "playerOrder")) {
-                    console.log(`[UnitOrderSystem] Removing existing playerOrder from entity ${unitId}`);
                     this.game.removeComponent(unitId, "playerOrder");
                 }
 
@@ -60,12 +56,10 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                     issuedTime: createdTime
                 };
 
-                console.log(`[UnitOrderSystem] Adding playerOrder to entity ${unitId}:`, playerOrderData);
                 this.game.addComponent(unitId, "playerOrder", playerOrderData);
 
                 // Verify it was added
                 const verifyOrder = this.game.getComponent(unitId, "playerOrder");
-                console.log(`[UnitOrderSystem] Verified playerOrder on entity ${unitId}:`, verifyOrder?.toJSON ? verifyOrder.toJSON() : verifyOrder);
 
                 // Debug: Check if component bit is set in mask
                 const typeId = this.game._componentTypeId?.get('playerOrder');
@@ -75,7 +69,6 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 const hasBit = typeId < 32
                     ? (mask0 & (1 << typeId)) !== 0
                     : (mask1 & (1 << (typeId - 32))) !== 0;
-                console.log(`[UnitOrderSystem] Entity ${unitId} mask after add: [${mask0}, ${mask1}], typeId=${typeId}, hasBit=${hasBit}`);
             }
         });
     }

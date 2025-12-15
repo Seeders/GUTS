@@ -85,6 +85,11 @@ class BaseECSGame {
             this.performanceMonitor = new GUTS.PerformanceMonitor();
         }
 
+        // Call logging for debugging
+        if (typeof GUTS !== 'undefined' && typeof GUTS.CallLogger !== 'undefined') {
+            this.callLogger = new GUTS.CallLogger();
+        }
+
         // Initialize component type registry with common components
         this._initComponentTypes();
     }
@@ -786,7 +791,11 @@ class BaseECSGame {
     }
 
     call(key, ...args) {
-        return this._services.call(key, ...args);
+        const result = this._services.call(key, ...args);
+        if (this.callLogger) {
+            this.callLogger.log(key, args, result, this.state.now);
+        }
+        return result;
     }
 
     listServices() {

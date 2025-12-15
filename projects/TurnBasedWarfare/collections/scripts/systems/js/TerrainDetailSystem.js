@@ -238,7 +238,6 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
         }
 
         this.initialized = true;
-        console.log(`[TerrainDetailSystem] Spawned ${this.getTotalDetailCount()} detail objects in ${this.detailBatches.size} batches`);
     }
 
     /**
@@ -365,6 +364,5 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
      */
     onSceneUnload() {
         this.clearDetails();
-        console.log('[TerrainDetailSystem] Scene unloaded - resources cleaned up');
     }
 }

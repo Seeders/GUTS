@@ -21,12 +21,10 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.params = params || {};
 
         if (!this.serverNetworkManager) {
-            console.log('[ServerNetworkSystem] No server network manager - skipping server event subscriptions');
             return;
         }
 
         this.subscribeToEvents();
-        console.log('[ServerNetworkSystem] Initialized');
     }
 
     subscribeToEvents() {
@@ -48,7 +46,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         // Cheat events
         this.game.serverEventManager.subscribe('EXECUTE_CHEAT', this.handleExecuteCheat.bind(this));
 
-        console.log('[ServerNetworkSystem] Server events subscribed');
     }
 
     // ==================== PLACEMENT HANDLERS ====================
@@ -344,7 +341,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
         this.serverNetworkManager.sendToPlayer(playerId, 'READY_FOR_BATTLE_RESPONSE', { success: true });
 
-        console.log('[ServerNetworkSystem] Ready for battle:', {
             playerId,
             readyStates: [...this.placementReadyStates.entries()],
             numPlayers: this.numPlayers,
@@ -373,7 +369,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
                 }
             }
 
-            console.log('[SERVER SYNC DEBUG] Broadcasting READY_FOR_BATTLE_UPDATE:', {
                 nextEntityId: this.game.nextEntityId,
                 entitySyncNextEntityId: entitySync.nextEntityId,
                 entityAliveLength: entitySync.entityAlive?.length,
@@ -467,7 +462,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const { playerId, data } = eventData;
         const { cheatName, params } = data;
 
-        console.log(`[ServerNetworkSystem] Received cheat request from player ${playerId}: ${cheatName}`, params);
 
         const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
         if (!roomId) {
@@ -499,7 +493,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             initiatedBy: playerId
         });
 
-        console.log(`[ServerNetworkSystem] Cheat ${cheatName} executed and broadcast to room ${roomId}`);
     }
 
     // ==================== HELPER METHODS ====================

@@ -56,7 +56,6 @@ class PostProcessingSystem extends GUTS.BaseSystem {
             this.rebuildComposer();
         }
 
-        console.log('[PostProcessingSystem] Composer initialized');
     }
 
     getPostProcessingComposer() {
@@ -183,6 +182,5 @@ class PostProcessingSystem extends GUTS.BaseSystem {
             this.composer = null;
         }
 
-        console.log('[PostProcessingSystem] Scene unloaded - resources cleaned up');
     }
 }

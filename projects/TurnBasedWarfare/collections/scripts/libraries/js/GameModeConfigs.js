@@ -88,9 +88,9 @@ class GameModeConfigs {
             case 'infinite_scaling':
                 // Allow unlimited round progression
                 break;
-                
+
             default:
-                console.log(`Applying special rule: ${rule}`);
+                break;
         }
     }
 }

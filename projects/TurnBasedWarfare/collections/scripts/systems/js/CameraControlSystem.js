@@ -154,7 +154,6 @@ class CameraControlSystem extends GUTS.BaseSystem {
 
   onSceneUnload() {
     // Note: dispose() is called by SceneManager after onSceneUnload
-    console.log('[CameraControlSystem] Scene unloaded - resources cleaned up');
   }
 
   onMouseMove(e) {

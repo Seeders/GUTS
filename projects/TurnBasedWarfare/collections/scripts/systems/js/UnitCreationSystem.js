@@ -85,7 +85,6 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             const unitTypeIndex = networkUnitData.unitTypeId;
 
             if (collectionIndex < 0 || unitTypeIndex < 0) {
-                console.log('Invalid placement - collection:', collectionIndex, 'unitTypeId:', unitTypeIndex, networkUnitData);
                 throw new Error(`Invalid placement - missing collection or unitTypeId (collection=${collectionIndex}, unitTypeId=${unitTypeIndex})`);
             }
 
@@ -113,7 +112,6 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 }
             }
 
-            console.log('created placement', networkUnitData.unitTypeId, team, entity, 'placementId:', networkUnitData.placementId);
 
             return entity;
         } catch (error) {
@@ -160,7 +158,6 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 // Use auto-incrementing numeric ID for better performance
                 entity = this.game.createEntity();
             }
-            console.log('created unit', unitType.id || spawnType, team, entity);
             const teamConfig = this.teamConfigs[team];
 
             // OPTIMIZATION: Add all components in single batch call

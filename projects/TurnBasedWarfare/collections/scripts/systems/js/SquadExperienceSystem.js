@@ -207,14 +207,12 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      */
     async levelUpSquad(placementId, specializationId = null, playerId = null, callback) {
         if (this.game.state.phase !== this.enums.gamePhase.placement) {
-            console.log("incorrect phase to level up");
             callback(false);
             return;
         }
 
         const squadData = this.getSquadExperience(placementId);
         if (!squadData || !squadData.canLevelUp) {
-            console.log("squad cant level up", placementId, squadData);
             callback(false);
             return;
         }        
@@ -225,7 +223,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         const hasSpecializations = currentUnitType && currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
         if (!this.game.isServer && isSpecializationLevel && hasSpecializations && !specializationId) {
             this.showSpecializationSelection(placementId, squadData, callback);
-            console.log('showing spec selection');
             return;
         }
         
@@ -238,7 +235,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
                         { placementId, specializationId }, 'SQUAD_LEVELED');
        
                     if (!success) {
-                        console.log('no success making network call apply_spec or level_squad');
                         callback(false);
                     } 
                     this.applySpecialization(placementId, specializationId, playerId);
@@ -248,7 +244,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
                         { placementId }, 'SQUAD_LEVELED');
                     
                     if (!success) {
-                        console.log('no success making network call level_squad');
                         callback(false);
                     }
                 }
@@ -259,7 +254,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             
         } catch (error) {
             // Refund gold on any error
-            console.log('failed to level squad', error);
             callback(false);
         }
     }
@@ -278,7 +272,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     }
 
     finishLevelingSquad(squadData, placementId, specializationId) {
-        console.log('finishLevelingSquad');
         // Level up
         squadData.level++;
         squadData.experience = 0;
@@ -291,7 +284,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         const levelUpCost = this.getLevelUpCost(placementId);
         this.game.call('deductPlayerGold', levelUpCost);
             
-        console.log('leveling squad for cost', placementId, levelUpCost);
         // Visual effects
         const unitIds = this.getSquadUnits(placementId);
         unitIds.forEach(entityId => {
@@ -359,8 +351,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         const oldUnitIds = this.getSquadUnits(placementId);
         const newUnitIds = [];
 
-        console.log('applying specialization to ', squadData, oldUnitIds);
-        console.log('placement', placement);
         // Store positions of old units
         const positions = [];
         oldUnitIds.forEach(entityId => {
@@ -720,7 +710,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     setSquadInfo(placementId, placementExperience){
         if(placementExperience){
             this.setSquadExperience(placementId, placementExperience);
-            console.log('applying opponent level bonuses', placementId);
             this.applyLevelBonuses(placementId);
         }
     }

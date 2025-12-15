@@ -14,7 +14,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     // GUTS Manager Interface
     init(params) {
         this.params = params || {};
-        console.log('[ClientNetworkSystem] network system init');
         this.registerServices();
         this.connectToServer();
         this.setupNetworkListeners();
@@ -106,7 +105,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                 this.handleOpponentSquadTargets(data);
             }),
             nm.listen('READY_FOR_BATTLE_UPDATE', (data) => {
-                console.log('[ClientNetworkSystem] READY_FOR_BATTLE_UPDATE received:', data);
                 this.syncWithServerState(data);
                 this.handleReadyForBattleUpdate(data);
             }),
@@ -312,14 +310,12 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             'BUILDING_CANCELLED',
             (data, error) => {
                 if (error || data.error) {
-                    console.log('Cancel building error:', error || data.error);
                     callback(false, error || data.error);
                 } else {
                     // Call shared processCancelBuilding to do the same cleanup as server
                     const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
                     this.processCancelBuilding(buildingEntityId, numericPlayerId);
 
-                    console.log('Cancel building response:', data);
                     callback(true, data);
                 }
             }
@@ -348,7 +344,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             'PURCHASED_UPGRADE',
             (data, error) => {
                 if (data.error) {
-                    console.log('Purchase error:', data.error);
                     callback(false, error);
                 } else {
                     // Call shared processPurchaseUpgrade to do the same as server
@@ -358,7 +353,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                         this.processPurchaseUpgrade(numericPlayerId, upgradeId, upgrade);
                     }
 
-                    console.log('Purchase response:', data);
                     callback(true, data);
                 }
             }
@@ -377,13 +371,11 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             'SQUAD_TARGET_SET',
             (data, error) => {
                 if (error || data.error) {
-                    console.log('Set target error:', error || data.error);
                     callback(false, error || data.error);
                 } else {
                     // Call shared processSquadTarget with server's authoritative issuedTime
                     this.processSquadTarget(data.placementId, data.targetPosition, data.meta, data.issuedTime);
 
-                    console.log('Set target response:', data);
                     callback(true, data);
                 }
             }
@@ -402,13 +394,11 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             'SQUAD_TARGETS_SET',
             (data, error) => {
                 if (error || data.error) {
-                    console.log('Set target error:', error || data.error);
                     callback(false, error || data.error);
                 } else {
                     // Call shared processSquadTargets with server's authoritative issuedTime
                     this.processSquadTargets(data.placementIds, data.targetPositions, data.meta, data.issuedTime);
 
-                    console.log('Set target response:', data);
                     callback(true, data);
                 }
             }
@@ -423,12 +413,10 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             'READY_FOR_BATTLE',
             {},
             'READY_FOR_BATTLE_RESPONSE',
-            (data, error) => {                                
+            (data, error) => {
                 if (data.error) {
-                    console.log('Battle ready state error:', data.error);
                     callback(false, data.error);
                 } else {
-                    console.log('Battle ready state updated:', data);
                     callback(true, data);
                 }
             }
@@ -464,7 +452,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         if (myPlayer?.stats?.team !== undefined) {
             // Server sends numeric team directly
             this.game.state.myTeam = myPlayer.stats.team;
-            console.log('[ClientNetworkSystem] Set myTeam from lobby:', this.game.state.myTeam);
         }
     }
 
@@ -480,13 +467,9 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
     handlePlayerReadyUpdate(data){
         this.game.call('updateLobby', data.gameState);
-        console.log('handlePlayerReadyUpdate', data);
         // Show notification for ready state changes
         const myPlayerId = this.game.clientNetworkManager.playerId;
         if (data.playerId === myPlayerId) {
-            if(!data.ready){
-                console.log("not ready", data);
-            }
             this.game.call('showNotification',
                 data.ready ? 'You are ready!' : 'Ready status removed',
                 data.ready ? 'success' : 'info'
@@ -516,17 +499,9 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         const levelIndex = data.level ?? 1;
         this.game.state.level = levelIndex;
 
-        console.log('[ClientNetworkSystem] handleGameStarted:', {
-            levelIndex,
-            isLoadingSave: data.isLoadingSave,
-            hasSaveData: !!data.saveData,
-            entityCount: data.saveData?.entities?.length || 0
-        });
-
         // Check if server is sending save data (host uploaded a save file)
         if (data.isLoadingSave && data.saveData) {
             this.game.pendingSaveData = data.saveData;
-            console.log('[ClientNetworkSystem] Set pendingSaveData with', data.saveData.entities?.length, 'entities');
         }
 
         // Show loading screen
@@ -558,7 +533,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         // Sync nextEntityId from server to ensure subsequent entity creation is in sync
         if (data.nextEntityId !== undefined) {
             this.game.nextEntityId = data.nextEntityId;
-            console.log('[ClientNetworkSystem] Synced nextEntityId to:', data.nextEntityId);
         }
 
         // Create player entities from server (gold, upgrades, etc.)
@@ -572,11 +546,8 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
      * Sync player entities from server (gold, upgrades, etc.)
      */
     syncPlayerEntities() {
-        console.log('[ClientNetworkSystem] syncPlayerEntities called');
-
         this.game.call('getStartingState', (success, response) => {
             if (success && response.playerEntities) {
-                console.log('[ClientNetworkSystem] Creating player entities:', response.playerEntities);
                 for (const playerEntity of response.playerEntities) {
                     if (!this.game.entityExists(playerEntity.entityId)) {
                         this.game.createEntity(playerEntity.entityId);
@@ -596,7 +567,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     handleReadyForBattleUpdate(data) {
-        console.log('[ClientNetworkSystem] handleReadyForBattleUpdate called, hasService:', this.game.hasService('handleReadyForBattleUpdate'));
         this.game.call('handleReadyForBattleUpdate', data);
     }
 
@@ -607,14 +577,11 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         const serverTime = data.serverTime || 0;
         const clientTime = this.game.state.now || 0;
 
-        console.log(`Battle end received. Server time: ${serverTime.toFixed(3)}, Client time: ${clientTime.toFixed(3)}`);
-
         // If client is already caught up, apply immediately
         if (clientTime >= serverTime - 0.01) { // Small tolerance for float precision
             this.applyBattleEndSync();
         } else {
             // Wait for client to catch up
-            console.log(`Waiting for client to catch up... (${(serverTime - clientTime).toFixed(3)}s behind)`);
             this.waitForBattleEndSync();
         }
     }
@@ -643,8 +610,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.state.isPaused = false;
         this.game.call('setBattlePaused', false);
 
-        console.log(`Applying battle end sync at client time: ${this.game.state.now?.toFixed(3)}`);
-
         // Trigger onBattleEnd BEFORE resync to match server state
         // Server serializes entities AFTER onBattleEnd, so client must also
         // run onBattleEnd before comparing to have matching state
@@ -655,7 +620,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             this.resyncEntities(data);
         }
 
-        console.log('battle result', data);
         this.game.desyncDebugger.displaySync(true);
         this.game.desyncDebugger.enabled = false;
         // Update player entity gold from server state
@@ -688,50 +652,11 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     resyncEntities(syncData) {
         const ecsData = syncData.entitySync;
         if (!ecsData) {
-            console.warn('[resyncEntities] No entitySync data provided');
             return;
-        }
-
-        // Debug: Check for playerOrder data in sync
-        const playerOrderKeys = Object.keys(ecsData.numericArrays || {}).filter(k => k.startsWith('playerOrder'));
-        if (playerOrderKeys.length > 0) {
-            console.log('[resyncEntities] playerOrder fields in sync data:', playerOrderKeys);
-            for (const key of playerOrderKeys) {
-                console.log(`[resyncEntities]   ${key}:`, ecsData.numericArrays[key]);
-            }
-        } else {
-            console.log('[resyncEntities] No playerOrder fields found in sync data');
-        }
-
-        // Debug: Check entityComponentMask for playerOrder bit
-        const playerOrderTypeId = this.game._componentTypeId?.get('playerOrder');
-        console.log('[resyncEntities] playerOrder typeId:', playerOrderTypeId);
-        if (ecsData.entityComponentMask) {
-            for (const entityIdStr of ['1566', '1568']) {
-                const mask = ecsData.entityComponentMask[entityIdStr];
-                if (mask) {
-                    const hasPlayerOrder = playerOrderTypeId < 32
-                        ? (mask[0] & (1 << playerOrderTypeId)) !== 0
-                        : (mask[1] & (1 << (playerOrderTypeId - 32))) !== 0;
-                    console.log(`[resyncEntities] Entity ${entityIdStr} mask:`, mask, `hasPlayerOrder bit:`, hasPlayerOrder);
-                } else {
-                    console.log(`[resyncEntities] Entity ${entityIdStr} has no mask in sync data`);
-                }
-            }
         }
 
         // Apply raw ECS data directly to arrays
         this.game.applyECSData(ecsData);
-
-        console.log(`[resyncEntities] Applied ECS data sync, nextEntityId: ${this.game.nextEntityId}`);
-
-        // Debug: Check playerOrder components on entities after sync
-        const entitiesWithPlayerOrder = this.game.getEntitiesWith('playerOrder');
-        console.log(`[resyncEntities] Entities with playerOrder after sync:`, entitiesWithPlayerOrder);
-        for (const entityId of entitiesWithPlayerOrder) {
-            const po = this.game.getComponent(entityId, 'playerOrder');
-            console.log(`[resyncEntities] Entity ${entityId} playerOrder:`, po?.toJSON ? po.toJSON() : po);
-        }
     }
 
     compareComponents(entityId, componentType, clientData, serverData) {
@@ -774,56 +699,8 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             differences.componentUpdated.length > 0;
 
         if (!hasAnyDifferences) {
-            console.log('%c[SYNC] No differences found - client and server are in sync!', 'color: green');
             return;
         }
-
-        console.log('%c[SYNC] State differences detected:', 'color: orange; font-weight: bold');
-
-        // Log created entities
-        if (differences.created.length > 0) {
-            console.group('%c[SYNC] Entities created on client (missing from client):', 'color: cyan');
-            for (const item of differences.created) {
-                console.log(`  + ${item.entityId} [${item.components.join(', ')}]`);
-            }
-            console.groupEnd();
-        }
-
-        // Log deleted entities
-        if (differences.deleted.length > 0) {
-            console.group('%c[SYNC] Entities deleted from client (extra on client):', 'color: red');
-            for (const entityId of differences.deleted) {
-                console.log(`  - ${entityId}`);
-            }
-            console.groupEnd();
-        }
-
-        // Log added components
-        if (differences.componentAdded.length > 0) {
-            console.group('%c[SYNC] Components added to entities:', 'color: cyan');
-            for (const item of differences.componentAdded) {
-                console.log(`  + ${item.entityId}.${item.componentType}`);
-            }
-            console.groupEnd();
-        }
-
-        // Log updated components with details
-        if (differences.componentUpdated.length > 0) {
-            console.group('%c[SYNC] Components updated with different values:', 'color: yellow');
-            for (const item of differences.componentUpdated) {
-                console.group(`  ~ ${item.entityId}.${item.componentType}`);
-                for (const diff of item.diffs) {
-                    const clientStr = JSON.stringify(diff.client);
-                    const serverStr = JSON.stringify(diff.server);
-                    console.log(`    ${diff.property}: c:${clientStr} -> s:${serverStr}`);
-                }
-                console.groupEnd();
-            }
-            console.groupEnd();
-        }
-
-        // Summary
-        console.log(`%c[SYNC] Summary: ${differences.created.length} created, ${differences.deleted.length} deleted, ${differences.componentAdded.length} components added, ${differences.componentUpdated.length} components updated`, 'color: orange');
     }
 
     handleGameEnd(data) {
@@ -947,7 +824,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
     handleOpponentSquadTargets(data) {
         const { placementIds, targetPositions, meta, issuedTime } = data;
-        console.log('[ClientNetworkSystem] Received OPPONENT_SQUAD_TARGETS_SET:', { placementIds, targetPositions, issuedTime });
         // Use shared processSquadTargets for opponent actions too
         this.processSquadTargets(placementIds, targetPositions, meta, issuedTime);
     }
@@ -956,11 +832,8 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         if(!data.gameState) return;
         const gameState = data.gameState;
         if (!gameState.players) return;
-        console.log('sync with server', gameState);
         const myPlayerId = this.game.clientNetworkManager.playerId;
         const myPlayer = gameState.players.find(p => p.id === myPlayerId);
-
-        console.log('[syncWithServerState] myPlayerId:', myPlayerId, 'myPlayer:', myPlayer, 'myPlayer.stats:', myPlayer?.stats);
 
         // Only update player entities if PlayerStatsSystem is loaded (in game scene, not lobby)
         if (this.game.hasService('getPlayerEntityId')) {
@@ -983,7 +856,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             if (this.game.state) {
                 // Server sends numeric team directly
                 this.game.state.myTeam = myPlayer.stats.team;
-                console.log('[syncWithServerState] SET myTeam to:', this.game.state.myTeam);
                 this.game.state.round = gameState.round;
                 this.game.state.serverGameState = gameState;
             }
@@ -1031,13 +903,10 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             'CHEAT_EXECUTED',
             (data, error) => {
                 if (error) {
-                    console.error(`[ClientNetworkSystem] Cheat failed:`, error);
                     if (callback) callback(false, error);
                 } else if (data.error) {
-                    console.error(`[ClientNetworkSystem] Cheat rejected:`, data.error);
                     if (callback) callback(false, data.error);
                 } else {
-                    console.log(`[ClientNetworkSystem] Cheat executed:`, data);
                     if (callback) callback(true, data);
                 }
             }
@@ -1049,7 +918,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
      */
     handleCheatBroadcast(data) {
         const { cheatName, params, result } = data;
-        console.log(`[ClientNetworkSystem] Received cheat broadcast: ${cheatName}`, params);
 
         // Merge server result (contains entity IDs) into params
         const mergedParams = { ...params, ...result };
@@ -1065,7 +933,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             }
         });
         this.networkUnsubscribers = [];
-        console.log('[ClientNetworkSystem] dispose');
     }
 
     onSceneUnload() {
@@ -1081,6 +948,5 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         if (gameEndedModal) {
             gameEndedModal.remove();
         }
-        console.log('[ClientNetworkSystem] unloaded');
     }
 }

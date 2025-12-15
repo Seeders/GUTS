@@ -32,7 +32,6 @@ class EquipmentSystem extends GUTS.BaseSystem {
             back: { x: 0, y: 0, z: -0.2 }
         };
         
-        console.log('[Equipment] System initialized with bone attachment texture');
     }
 
     init() {
@@ -220,7 +219,6 @@ class EquipmentSystem extends GUTS.BaseSystem {
             if (bone.name === boneName || 
                 bone.name.replace(this.bonePrefix, '') === boneName ||
                 bone.name.includes(boneName)) {
-                console.log(`[Equipment] Found attachment bone "${boneName}" at index ${i} (original: ${bone.index})`);
                 return i;
             }
         }
@@ -305,7 +303,6 @@ class EquipmentSystem extends GUTS.BaseSystem {
         //     equippedItem: itemData
         // };
         
-        // console.log(`[Equipment] Equipped ${spawnType} to entity ${entityId} slot ${slotType} attachment bone ${attachmentBoneIndex}`);
         // return true;
     }
     

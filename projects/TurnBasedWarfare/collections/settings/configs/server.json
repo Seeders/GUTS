@@ -8,6 +8,7 @@
   "initialScene": "game",
   "libraries": [
     "GameServices",
+    "CallLogger",
     "BaseSystem",
     "BaseLoader",
     "ServerGameLoader",

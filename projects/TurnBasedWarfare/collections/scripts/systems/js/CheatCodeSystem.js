@@ -41,8 +41,6 @@ class CheatCodeSystem extends GUTS.BaseSystem {
 
         // Register cheat handlers
         this.registerCheats();
-
-        console.log('[CheatCodeSystem] Initialized. Use game.call("cheats") to list available cheats.');
     }
 
     registerCheats() {
@@ -80,12 +78,9 @@ class CheatCodeSystem extends GUTS.BaseSystem {
     requestCheat(cheatName, params = {}, callback = null) {
         const cheat = this.cheats.get(cheatName);
         if (!cheat) {
-            console.error(`[CheatCodeSystem] Unknown cheat: ${cheatName}`);
             this.listCheats();
             return false;
         }
-
-        console.log(`[CheatCodeSystem] Requesting cheat: ${cheatName}`, params);
 
         // Send through network system
         this.game.call('sendCheatRequest', cheatName, params, callback);
@@ -115,7 +110,6 @@ class CheatCodeSystem extends GUTS.BaseSystem {
             return { error: `Unknown cheat: ${cheatName}` };
         }
 
-        console.log(`[CheatCodeSystem] Executing cheat: ${cheatName}`, params);
         return cheat.execute(params);
     }
 
@@ -123,15 +117,59 @@ class CheatCodeSystem extends GUTS.BaseSystem {
      * List all available cheats
      */
     listCheats() {
-        console.log('\n=== Available Cheats ===\n');
+        return Array.from(this.cheats.keys());
+    }
+
+    /**
+     * Print help information about available cheats
+     */
+    help() {
+        console.log(`
+╔══════════════════════════════════════════════════════════════════╗
+║                      CHEAT CODE HELP                             ║
+╚══════════════════════════════════════════════════════════════════╝
+
+USAGE
+─────
+  game.call('cheat', 'cheatName', { params })
+  game.call('cheats')                          List available cheats
+
+AVAILABLE CHEATS
+────────────────
+`);
         for (const [name, cheat] of this.cheats) {
-            console.log(`${name}:`);
-            console.log(`  Description: ${cheat.description}`);
-            console.log(`  Usage: ${cheat.usage}`);
-            console.log(`  Example: ${cheat.example}`);
+            console.log(`  ${name}`);
+            console.log(`    ${cheat.description}`);
+            console.log(`    Usage: ${cheat.usage}`);
+            console.log(`    Example: ${cheat.example}`);
             console.log('');
         }
-        return Array.from(this.cheats.keys());
+
+        console.log(`
+EXAMPLES
+────────
+  // Spawn 5 footmen at position (100, 100) for team 2
+  game.call('cheat', 'spawnUnits', {
+    collection: 'units',
+    type: 'footman',
+    amount: 5,
+    x: 100,
+    z: 100,
+    team: 2
+  })
+
+  // Give team 2 1000 gold
+  game.call('cheat', 'addGold', { amount: 1000, team: 2 })
+
+  // Kill all units on team 3
+  game.call('cheat', 'killEnemies', { team: 3 })
+
+NOTES
+─────
+  - Cheats are sent to server for validation and execution
+  - Server broadcasts result to all clients for synchronization
+  - Team 2 is typically player 1, Team 3 is typically player 2/enemy
+`);
     }
 
     // ==================== VALIDATORS ====================
@@ -145,8 +183,8 @@ class CheatCodeSystem extends GUTS.BaseSystem {
         if (!type) {
             return { valid: false, error: 'Missing type parameter' };
         }
-        if (amount == null || amount < 1 || amount > 100) {
-            return { valid: false, error: 'Amount must be between 1 and 100' };
+        if (amount == null || amount < 1 || amount > 1000) {
+            return { valid: false, error: 'Amount must be between 1 and 1000' };
         }
         if (x == null || z == null) {
             return { valid: false, error: 'Missing x or z coordinates' };
@@ -242,12 +280,12 @@ class CheatCodeSystem extends GUTS.BaseSystem {
             spawnedUnits.push(entityId);
         }
 
-        console.log(`[CheatCodeSystem] Spawned ${spawnedUnits.length} ${type} units at (${x}, ${z}) for team ${team}`);
         return { entityIds: spawnedUnits };
     }
 
     /**
      * Calculate grid positions for a group of units centered at a point
+     * Uses spiral search to find free cells when positions are occupied
      */
     calculateGroupPositions(centerX, centerZ, amount, unitType) {
         const positions = [];
@@ -257,20 +295,63 @@ class CheatCodeSystem extends GUTS.BaseSystem {
         const unitHeight = unitType.placementGridHeight || 1;
         const spacing = Math.max(unitWidth, unitHeight) * cellSize;
 
-        const gridSize = Math.ceil(Math.sqrt(amount));
+        // Track which grid cells are occupied (by existing entities or new spawns)
+        const occupiedCells = new Set();
 
-        const startX = centerX - ((gridSize - 1) * spacing) / 2;
-        const startZ = centerZ - ((gridSize - 1) * spacing) / 2;
+        // Mark existing entity positions as occupied
+        const entities = this.game.getEntitiesWith('transform');
+        for (const entityId of entities) {
+            const transform = this.game.getComponent(entityId, 'transform');
+            if (transform?.position) {
+                const cellX = Math.floor(transform.position.x / spacing);
+                const cellZ = Math.floor(transform.position.z / spacing);
+                occupiedCells.add(`${cellX},${cellZ}`);
+            }
+        }
+
+        // Spiral search starting from center
+        const centerCellX = Math.floor(centerX / spacing);
+        const centerCellZ = Math.floor(centerZ / spacing);
 
         let count = 0;
-        for (let row = 0; row < gridSize && count < amount; row++) {
-            for (let col = 0; col < gridSize && count < amount; col++) {
-                positions.push({
-                    x: startX + col * spacing,
-                    z: startZ + row * spacing
-                });
-                count++;
+        let radius = 0;
+        const maxRadius = Math.ceil(Math.sqrt(amount)) + 50; // Search up to this far out
+
+        while (count < amount && radius <= maxRadius) {
+            if (radius === 0) {
+                // Check center cell
+                const key = `${centerCellX},${centerCellZ}`;
+                if (!occupiedCells.has(key)) {
+                    positions.push({
+                        x: centerCellX * spacing + spacing / 2,
+                        z: centerCellZ * spacing + spacing / 2
+                    });
+                    occupiedCells.add(key);
+                    count++;
+                }
+            } else {
+                // Check cells in a square ring at this radius
+                for (let dx = -radius; dx <= radius && count < amount; dx++) {
+                    for (let dz = -radius; dz <= radius && count < amount; dz++) {
+                        // Only check cells on the edge of the ring
+                        if (Math.abs(dx) !== radius && Math.abs(dz) !== radius) continue;
+
+                        const cellX = centerCellX + dx;
+                        const cellZ = centerCellZ + dz;
+                        const key = `${cellX},${cellZ}`;
+
+                        if (!occupiedCells.has(key)) {
+                            positions.push({
+                                x: cellX * spacing + spacing / 2,
+                                z: cellZ * spacing + spacing / 2
+                            });
+                            occupiedCells.add(key);
+                            count++;
+                        }
+                    }
+                }
             }
+            radius++;
         }
 
         return positions;
@@ -283,7 +364,6 @@ class CheatCodeSystem extends GUTS.BaseSystem {
         const { amount, team } = params;
 
         this.game.call('addPlayerGold', team, amount);
-        console.log(`[CheatCodeSystem] Added ${amount} gold to team ${team}`);
         return { success: true, amount, team };
     }
 
@@ -307,7 +387,6 @@ class CheatCodeSystem extends GUTS.BaseSystem {
             }
         }
 
-        console.log(`[CheatCodeSystem] Killed ${killCount} units on team ${team}`);
         return { killed: killCount };
     }
 }

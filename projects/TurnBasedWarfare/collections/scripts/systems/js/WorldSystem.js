@@ -64,14 +64,11 @@ class WorldSystem extends GUTS.BaseSystem {
     onSceneLoad(sceneData) {
         // Look for terrain entity in scene
         const terrainEntities = this.game.getEntitiesWith('terrain');
-        console.log('[WorldSystem] onSceneLoad - terrain entities found:', terrainEntities.length);
 
         if (terrainEntities.length > 0) {
             const terrainEntityId = terrainEntities[0];
             const terrainComponent = this.game.getComponent(terrainEntityId, 'terrain');
-            console.log('[WorldSystem] terrain component:', terrainComponent);
             this.initWorldFromTerrain(terrainComponent, terrainEntityId);
-            console.log('[WorldSystem] initWorldFromTerrain completed, game.scene:', this.game.scene ? 'exists' : 'null');
         }
         // If no terrain entity, world system won't initialize (no terrain = no world rendering)
     }
@@ -268,14 +265,11 @@ class WorldSystem extends GUTS.BaseSystem {
      * Used for operations that need other systems to be fully initialized
      */
     async postSceneLoad(sceneData) {
-        console.log('[WorldSystem] postSceneLoad called, worldRenderer:', this.worldRenderer ? 'exists' : 'null');
         if (!this.worldRenderer) return;
 
         // Wait for async setupWorldRendering to complete if it's still running
         if (this.setupWorldRenderingPromise) {
-            console.log('[WorldSystem] Waiting for setupWorldRendering to complete...');
             await this.setupWorldRenderingPromise;
-            console.log('[WorldSystem] setupWorldRendering completed');
         }
 
         // Update instance capacities now that RenderSystem has initialized EntityRenderer
@@ -284,11 +278,8 @@ class WorldSystem extends GUTS.BaseSystem {
         // Spawn cliff entities using WorldRenderer
         // Note: useExtension = false because analyzeCliffs() returns coordinates in tile space (not extended space)
         const entityRenderer = this.game.call('getEntityRenderer');
-        console.log('[WorldSystem] entityRenderer from service:', entityRenderer ? 'exists' : 'null');
         if (entityRenderer) {
-            console.log('[WorldSystem] Spawning cliffs...');
             await this.worldRenderer.spawnCliffs(entityRenderer, false);
-            console.log('[WorldSystem] Cliffs spawned');
         } else {
             console.warn('[WorldSystem] EntityRenderer not available for cliff spawning');
         }
@@ -353,7 +344,6 @@ class WorldSystem extends GUTS.BaseSystem {
             }
         });
 
-        console.log('[WorldSystem] Registered post-processing passes');
     }
 
     /**
@@ -516,7 +506,6 @@ class WorldSystem extends GUTS.BaseSystem {
             { skipCliffTextures: false, terrainTypeNames }
         );
 
-        console.log(`[WorldSystem] Initialized terrain tile mapper for level: ${levelName}`);
     }
 
     destroy() {

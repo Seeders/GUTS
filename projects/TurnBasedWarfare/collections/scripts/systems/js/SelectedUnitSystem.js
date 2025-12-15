@@ -724,7 +724,6 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             baseOpacity: 0.8
         });
         
-        console.log(`[SelectedUnitSystem] Created selection circle for entity ${entityId}`);
     }
     
     updateSelectionCircles() {
@@ -787,7 +786,6 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         // Remove from map
         this.selectionCircles.delete(entityId);
         
-        console.log(`[SelectedUnitSystem] Removed selection circle for entity ${entityId}`);
     }
     
     // Configuration methods
@@ -871,7 +869,6 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         this.selectedUnitIds.clear();
         this.initialized = false;
 
-        console.log('[SelectedUnitSystem] Destroyed');
     }
 
     onSceneUnload() {
@@ -887,6 +884,5 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
         this.currentSelectedIndex = 0;
 
-        console.log('[SelectedUnitSystem] Scene unloaded - resources cleaned up');
     }
 }

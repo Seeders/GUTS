@@ -23,12 +23,7 @@ class DesyncDebugger {
                 entityCount: entities.length,
                 stateData: stateData,
                 time: this.game.state.now
-            });   
-            if(this.game.isServer){
-                console.log(this.game.state.now, hash);                    
-            } else {
-                console.log(this.game.state.now, hash, stateData);                    
-            }
+            });
         }
     }
 
@@ -120,12 +115,10 @@ class DesyncDebugger {
 
     enableDetailedLogging() {
         this.detailedLogging = true;
-        console.log("Detailed desync logging enabled");
     }
 
     disableDetailedLogging() {
         this.detailedLogging = false;
-        console.log("Detailed desync logging disabled");
     }
 
     // Get the last N frame hashes for comparison
@@ -145,7 +138,6 @@ class DesyncDebugger {
             timeIncreasingMonotonically: recent.every((frame, i) => i === 0 || frame.time > recent[i-1].time)
         };
 
-        console.log("Desync Analysis:", patterns);
         return patterns;
     }
 }
