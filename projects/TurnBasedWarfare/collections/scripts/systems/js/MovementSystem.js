@@ -971,7 +971,4 @@ class MovementSystem extends GUTS.BaseSystem {
         return distance <= effectiveRange;
     }
 
-    ping() {
-        console.log('pong');
-    }
 }

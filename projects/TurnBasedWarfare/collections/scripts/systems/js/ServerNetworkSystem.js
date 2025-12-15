@@ -45,7 +45,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
         // Cheat events
         this.game.serverEventManager.subscribe('EXECUTE_CHEAT', this.handleExecuteCheat.bind(this));
-
     }
 
     // ==================== PLACEMENT HANDLERS ====================
@@ -341,13 +340,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
         this.serverNetworkManager.sendToPlayer(playerId, 'READY_FOR_BATTLE_RESPONSE', { success: true });
 
-            playerId,
-            readyStates: [...this.placementReadyStates.entries()],
-            numPlayers: this.numPlayers,
-            phase: this.game.state.phase,
-            allReady: this.areAllPlayersReady()
-        });
-
         // Check if all players are ready
         if (this.areAllPlayersReady() && this.game.state.phase === this.enums.gamePhase.placement) {
             const gameState = room.getGameState();
@@ -361,25 +353,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
             // Serialize all entities for client sync
             const entitySync = this.game.call('serializeAllEntities');
-
-            let aliveCount = 0;
-            if (entitySync.entityAlive) {
-                for (let i = 0; i < entitySync.entityAlive.length; i++) {
-                    if (entitySync.entityAlive[i]) aliveCount++;
-                }
-            }
-
-                nextEntityId: this.game.nextEntityId,
-                entitySyncNextEntityId: entitySync.nextEntityId,
-                entityAliveLength: entitySync.entityAlive?.length,
-                aliveEntityCount: aliveCount,
-                entitiesWithPlacement: this.game.getEntitiesWith('placement').length,
-                entitiesWithTeam: this.game.getEntitiesWith('team').length,
-                placementsByTeam: {
-                    left: this.game.call('getPlacementsForSide', this.enums.team.left).length,
-                    right: this.game.call('getPlacementsForSide', this.enums.team.right).length
-                }
-            });
 
             this.serverNetworkManager.broadcastToRoom(roomId, 'READY_FOR_BATTLE_UPDATE', {
                 gameState: gameState,
@@ -462,7 +435,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const { playerId, data } = eventData;
         const { cheatName, params } = data;
 
-
         const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
         if (!roomId) {
             this.serverNetworkManager.sendToPlayer(playerId, 'CHEAT_EXECUTED', { error: 'Room not found' });
@@ -492,7 +464,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             result: cheatResult.result,
             initiatedBy: playerId
         });
-
     }
 
     // ==================== HELPER METHODS ====================

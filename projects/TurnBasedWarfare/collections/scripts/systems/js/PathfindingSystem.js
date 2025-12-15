@@ -949,10 +949,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
         }
     }
 
-    ping() {
-        console.log('pong');
-    }
-
     onSceneUnload() {
         // Clean up debug visualization
         if (this.debugVisualization) {

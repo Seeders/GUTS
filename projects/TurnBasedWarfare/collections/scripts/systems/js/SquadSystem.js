@@ -30,7 +30,11 @@ class SquadSystem extends GUTS.BaseSystem {
             squadWidth: unitType.squadWidth || this.DEFAULT_SQUAD_CONFIG.squadWidth,
             squadHeight: unitType.squadHeight || this.DEFAULT_SQUAD_CONFIG.squadHeight,
             placementGridWidth: unitType.placementGridWidth || this.DEFAULT_SQUAD_CONFIG.placementGridWidth,
-            placementGridHeight: unitType.placementGridHeight || this.DEFAULT_SQUAD_CONFIG.placementGridHeight
+            placementGridHeight: unitType.placementGridHeight || this.DEFAULT_SQUAD_CONFIG.placementGridHeight,
+            // Include building-specific properties for getSquadCells to use
+            collection: unitType.collection,
+            footprintWidth: unitType.footprintWidth,
+            footprintHeight: unitType.footprintHeight
         };
     }
     
@@ -43,7 +47,7 @@ class SquadSystem extends GUTS.BaseSystem {
     getSquadCells(gridPos, squadData) {
         const cells = [];
         const { placementGridWidth, placementGridHeight } = squadData;
-        
+
         if(squadData.collection == "buildings"){
             return this.calculateFootprintCells(gridPos, squadData);
         }
@@ -65,20 +69,24 @@ class SquadSystem extends GUTS.BaseSystem {
       
     calculateFootprintCells(gridPos, building) {
         const cells = [];
-        // Footprint is in terrain grid units - use directly for preview
+        // Footprint is in terrain/tile grid units
+        // Placement grid is 2x the resolution of terrain grid
         const footprintWidth = building.footprintWidth || building.placementGridWidth || 1;
         const footprintHeight = building.footprintHeight || building.placementGridHeight || 1;
 
-        const startX = gridPos.x - Math.floor(footprintWidth * 2 / 2);
-        const startZ = gridPos.z - Math.floor(footprintHeight * 2 / 2);
+        // Convert footprint to placement grid cells (2x)
+        const placementWidth = footprintWidth * 2;
+        const placementHeight = footprintHeight * 2;
 
-        // Calculate center position for each footprint cell in placement grid coordinates
-        for (let z = 0; z < footprintHeight; z++) {
-            for (let x = 0; x < footprintWidth; x++) {
-                // Each footprint cell is centered in its 2x2 placement grid area
+        const startX = gridPos.x - Math.floor(placementWidth / 2);
+        const startZ = gridPos.z - Math.floor(placementHeight / 2);
+
+        // Return ALL cells in the footprint area
+        for (let z = 0; z < placementHeight; z++) {
+            for (let x = 0; x < placementWidth; x++) {
                 cells.push({
-                    x: startX + x * 2 + 1,  // Center of 2-cell width
-                    z: startZ + z * 2 + 1   // Center of 2-cell height
+                    x: startX + x,
+                    z: startZ + z
                 });
             }
         }

@@ -38,11 +38,12 @@ class PlacementSystem extends GUTS.BaseSystem {
         this.game.register('clearAllPlacements', this.clearAllPlacements.bind(this));
         this.game.register('getCameraPositionForTeam', this.getCameraPositionForTeam.bind(this));
         this.game.register('applyNetworkUnitData', this.applyNetworkUnitData.bind(this));
+        this.game.register('findBuildingSpawnPosition', this.findBuildingSpawnPosition.bind(this));
 
     }
 
     /**
-     * Called when scene loads - spawn starting units deterministically
+     * Called when scene loads - spawn starting units
      */
     onSceneLoad(sceneData) {
         this.spawnStartingUnits();
@@ -435,10 +436,15 @@ class PlacementSystem extends GUTS.BaseSystem {
             const worldPos = this.game.call('tileToWorld', startingLoc.x, startingLoc.z);
             teamWorldPositions[team] = worldPos;
 
+            // Find nearest gold vein to determine spawn direction for units
+            const nearestVein = this.game.call('findNearestGoldVein', worldPos);
+            const goldVeinPos = nearestVein?.position || null;
+
             const teamResult = this.spawnStartingUnitsForTeam(
                 startingUnitsConfig.prefabs,
                 team,
-                worldPos
+                worldPos,
+                goldVeinPos
             );
 
             result.teams[team] = teamResult;
@@ -466,60 +472,14 @@ class PlacementSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with spawned gold mine info
      */
     spawnStartingGoldMine(team, startingWorldPos) {
-        // Query gold vein entities directly from ECS (worldObject component with type: 'goldVein')
-        const worldObjectEntities = this.game.getEntitiesWith('worldObject', 'transform');
-
-        // Get numeric enum index for goldVein type (worldObject.type is now numeric)
-        const goldVeinTypeIndex = this.game.getEnums()?.worldObjects?.goldVein ?? -1;
-
-        // Find all gold vein entities and track which are already claimed by existing gold mines
-        const claimedVeinPositions = new Set();
-        const goldMineEntities = this.game.getEntitiesWith('goldMine');
-        for (const mineId of goldMineEntities) {
-            const mineTransform = this.game.getComponent(mineId, 'transform');
-            if (mineTransform?.position) {
-                // Use rounded position as key to match gold vein positions
-                const key = `${Math.round(mineTransform.position.x)},${Math.round(mineTransform.position.z)}`;
-                claimedVeinPositions.add(key);
-            }
-        }
-
-        // Find the nearest unclaimed gold vein entity
-        let nearestVeinEntityId = null;
-        let nearestVeinPos = null;
-        let nearestDistance = Infinity;
-
-        // Sort entity IDs for deterministic iteration
-        const sortedEntities = Array.from(worldObjectEntities).sort((a, b) => a - b);
-
-        for (const entityId of sortedEntities) {
-            const worldObj = this.game.getComponent(entityId, 'worldObject');
-            // worldObject.type is now a numeric index - compare to goldVein enum index
-            if (worldObj?.type !== goldVeinTypeIndex) continue;
-
-            const transform = this.game.getComponent(entityId, 'transform');
-            const pos = transform?.position;
-            if (!pos) continue;
-
-            // Check if this vein is already claimed
-            const posKey = `${Math.round(pos.x)},${Math.round(pos.z)}`;
-            if (claimedVeinPositions.has(posKey)) continue;
-
-            const dx = pos.x - startingWorldPos.x;
-            const dz = pos.z - startingWorldPos.z;
-            const distance = Math.sqrt(dx * dx + dz * dz);
-
-            if (distance < nearestDistance) {
-                nearestDistance = distance;
-                nearestVeinEntityId = entityId;
-                nearestVeinPos = pos;
-            }
-        }
-
-        if (!nearestVeinEntityId) {
+        const nearestVein = this.game.call('findNearestGoldVein', startingWorldPos);
+        if (!nearestVein) {
             console.warn('[PlacementSystem] No unclaimed gold vein entity found for team:', team);
             return { success: false, error: 'No unclaimed gold veins' };
         }
+
+        const nearestVeinEntityId = nearestVein.entityId;
+        const nearestVeinPos = nearestVein.position;
 
         // Get gold mine building type
         const goldMineType = this.collections.buildings?.goldMine;
@@ -586,42 +546,63 @@ class PlacementSystem extends GUTS.BaseSystem {
      * @param {Array} prefabs - Array of prefab definitions from config
      * @param {string} team - Team identifier ('left' or 'right')
      * @param {Object} startingWorldPos - Starting world position { x, y, z }
+     * @param {Object|null} goldVeinPos - Gold vein world position to spawn units toward
      * @returns {Object} Result with spawned entity IDs
      */
-    spawnStartingUnitsForTeam(prefabs, team, startingWorldPos) {
+    spawnStartingUnitsForTeam(prefabs, team, startingWorldPos, goldVeinPos = null) {
         const spawnedUnits = [];
+
+        // Track spawned building positions for unit placement toward gold vein
+        let buildingGridPos = null;
+        let buildingCellSet = null;
 
         for (let i = 0; i < prefabs.length; i++) {
             const prefabDef = prefabs[i];
             const collection = prefabDef.collection;
             const spawnType = prefabDef.spawnType;
 
-            // Get the unit type from collections
-            const unitType = this.collections[collection]?.[spawnType];
+            // Get the unit type using getUnitTypeDef (same as ShopSystem) so collection is properly set
+            const enums = this.game.getEnums();
+            const collectionIndex = enums.objectTypeDefinitions?.[collection] ?? -1;
+            const typeIndex = enums[collection]?.[spawnType] ?? -1;
+            const unitType = this.game.call('getUnitTypeDef', { collection: collectionIndex, type: typeIndex });
             if (!unitType) {
                 console.error(`[PlacementSystem] Unit type not found: ${collection}/${spawnType}`);
                 continue;
             }
 
-            // Get relative position from prefab definition
-            const relativePos = prefabDef.components?.transform?.position || { x: 0, y: 0, z: 0 };
+            let gridPos;
 
-            // Calculate absolute world position
-            const worldX = startingWorldPos.x + relativePos.x;
-            const worldZ = startingWorldPos.z + relativePos.z;
+            // For non-building units, find position adjacent to building toward gold vein
+            if (collection === 'units' && buildingGridPos) {
+                gridPos = this.findBuildingAdjacentPosition(buildingGridPos, buildingCellSet, unitType, goldVeinPos);
+                if (!gridPos) {
+                    // Fallback to original relative position
+                    const relativePos = prefabDef.components?.transform?.position || { x: 0, y: 0, z: 0 };
+                    const worldX = startingWorldPos.x + relativePos.x;
+                    const worldZ = startingWorldPos.z + relativePos.z;
+                    gridPos = this.game.call('worldToPlacementGrid', worldX, worldZ);
+                }
+            } else {
+                // Get relative position from prefab definition
+                const relativePos = prefabDef.components?.transform?.position || { x: 0, y: 0, z: 0 };
+                const worldX = startingWorldPos.x + relativePos.x;
+                const worldZ = startingWorldPos.z + relativePos.z;
+                gridPos = this.game.call('worldToPlacementGrid', worldX, worldZ);
 
-            // Convert world position to placement grid position
-            const gridPos = this.game.call('worldToPlacementGrid', worldX, worldZ);
+                // Track building position for subsequent unit spawns (same pattern as ShopSystem)
+                if (collection === 'buildings') {
+                    buildingGridPos = gridPos;
+                    const buildingSquadData = this.game.call('getSquadData', unitType);
+                    const buildingCells = this.game.call('getSquadCells', gridPos, buildingSquadData);
+                    buildingCellSet = new Set(buildingCells.map(cell => `${cell.x},${cell.z}`));
+                }
+            }
 
             // Generate numeric placement ID
             const placementId = this._getNextPlacementId();
 
-            // Get enum indices for numeric storage
-            const enums = this.game.getEnums();
-            const collectionIndex = enums.objectTypeDefinitions?.[collection] ?? -1;
-            const typeIndex = enums[collection]?.[spawnType] ?? -1;
-
-            // Build placement data with numeric indices
+            // Build placement data with numeric indices (enums/collectionIndex/typeIndex already computed above)
             // team is expected to already be numeric from game.state.myTeam
             const placement = {
                 placementId,
@@ -962,6 +943,163 @@ class PlacementSystem extends GUTS.BaseSystem {
         this._cameraHeight = cameraSettings.position.y || 512;
 
         return this._cameraHeight;
+    }
+
+    /**
+     * Find a position for a unit relative to a building using fixed spiral pattern
+     * Spirals outward: west → south → east → north
+     * @param {Object} buildingGridPos - Grid position of the building
+     * @param {Set} buildingCellSet - Set of cells occupied by the building
+     * @param {Object} unitType - Unit type definition
+     * @param {Object|null} targetWorldPos - Optional target world position to spawn units toward (e.g., gold vein)
+     * @returns {Object|null} Grid position {x, z} or null if no valid position found
+     */
+    findBuildingAdjacentPosition(buildingGridPos, buildingCellSet, unitType, targetWorldPos = null) {
+        // Generate positions starting from the side closest to target, going along that side first
+        const offsets = [];
+        const maxRadius = 16;
+
+        // Calculate building bounds from buildingCellSet
+        let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+        if (buildingCellSet && buildingCellSet.size > 0) {
+            for (const cellKey of buildingCellSet) {
+                const [cx, cz] = cellKey.split(',').map(Number);
+                minX = Math.min(minX, cx);
+                maxX = Math.max(maxX, cx);
+                minZ = Math.min(minZ, cz);
+                maxZ = Math.max(maxZ, cz);
+            }
+        } else {
+            // Fallback for no building cells
+            minX = maxX = buildingGridPos.x;
+            minZ = maxZ = buildingGridPos.z;
+        }
+
+        // Determine which side to start from based on target position
+        // Default: west side
+        let startSide = 'west';
+        if (targetWorldPos) {
+            const buildingWorldPos = this.game.call('placementGridToWorld', buildingGridPos.x, buildingGridPos.z);
+            const dx = targetWorldPos.x - buildingWorldPos.x;
+            const dz = targetWorldPos.z - buildingWorldPos.z;
+
+            // Pick the side closest to target based on which axis has larger difference
+            if (Math.abs(dx) >= Math.abs(dz)) {
+                startSide = dx < 0 ? 'west' : 'east';
+            } else {
+                startSide = dz < 0 ? 'north' : 'south';
+            }
+        }
+
+        // Define side order based on starting side (clockwise from start)
+        const sideOrders = {
+            'west': ['west', 'south', 'east', 'north'],
+            'south': ['south', 'east', 'north', 'west'],
+            'east': ['east', 'north', 'west', 'south'],
+            'north': ['north', 'west', 'south', 'east']
+        };
+        const sides = sideOrders[startSide];
+
+        // Generate positions layer by layer (distance from building)
+        for (let layer = 1; layer <= maxRadius; layer++) {
+            for (const side of sides) {
+                if (side === 'west') {
+                    // West side: x = minX - layer, z from minZ to maxZ
+                    const x = minX - layer;
+                    for (let z = minZ; z <= maxZ; z++) {
+                        offsets.push({ x, z });
+                    }
+                } else if (side === 'east') {
+                    // East side: x = maxX + layer, z from minZ to maxZ
+                    const x = maxX + layer;
+                    for (let z = minZ; z <= maxZ; z++) {
+                        offsets.push({ x, z });
+                    }
+                } else if (side === 'north') {
+                    // North side: z = minZ - layer, x from minX to maxX
+                    const z = minZ - layer;
+                    for (let x = minX; x <= maxX; x++) {
+                        offsets.push({ x, z });
+                    }
+                } else if (side === 'south') {
+                    // South side: z = maxZ + layer, x from minX to maxX
+                    const z = maxZ + layer;
+                    for (let x = minX; x <= maxX; x++) {
+                        offsets.push({ x, z });
+                    }
+                }
+            }
+            // Add corners for this layer after all sides
+            const corners = [
+                { x: minX - layer, z: minZ - layer }, // NW
+                { x: maxX + layer, z: minZ - layer }, // NE
+                { x: minX - layer, z: maxZ + layer }, // SW
+                { x: maxX + layer, z: maxZ + layer }  // SE
+            ];
+            for (const corner of corners) {
+                offsets.push(corner);
+            }
+        }
+
+        // Find first valid position (offsets are absolute grid positions)
+        for (const testPos of offsets) {
+
+            // Skip building cells
+            if (buildingCellSet?.has(`${testPos.x},${testPos.z}`)) {
+                continue;
+            }
+
+            // Check if unit would overlap building
+            const unitSquadData = this.game.call('getSquadData', unitType);
+            const unitCells = this.game.call('getSquadCells', testPos, unitSquadData);
+            const overlapsBuilding = unitCells.some(cell =>
+                buildingCellSet?.has(`${cell.x},${cell.z}`)
+            );
+            if (overlapsBuilding) {
+                continue;
+            }
+
+            // Check grid occupancy - ensure position isn't already taken by other units
+            const isOccupied = !this.game.call('isValidGridPlacement', unitCells);
+            if (isOccupied) {
+                continue;
+            }
+
+            // Found a valid position
+            return testPos;
+        }
+
+        return null;
+    }
+
+    /**
+     * Find spawn position for a unit relative to a building (by placementId)
+     * @param {number} placementId - The building's placement ID
+     * @param {Object} unitDef - Unit type definition (must have collection set)
+     * @returns {Object|null} Grid position {x, z} or null if no valid position found
+     */
+    findBuildingSpawnPosition(placementId, unitDef) {
+        const placement = this.game.call('getPlacementById', placementId);
+        if (!placement) return null;
+
+        const buildingGridPos = placement.gridPosition;
+        if (!buildingGridPos) return null;
+
+        // Get building unit type and compute its cells
+        const buildingUnitType = this.game.call('getUnitTypeDef', {
+            collection: placement.collection,
+            type: placement.unitTypeId
+        });
+        const buildingSquadData = buildingUnitType ? this.game.call('getSquadData', buildingUnitType) : null;
+        const buildingCells = buildingSquadData ? this.game.call('getSquadCells', buildingGridPos, buildingSquadData) : [];
+        const buildingCellSet = new Set(buildingCells.map(cell => `${cell.x},${cell.z}`));
+
+        // Find nearest gold vein to spawn units toward (include claimed veins)
+        const buildingWorldPos = this.game.call('placementGridToWorld', buildingGridPos.x, buildingGridPos.z);
+        const nearestVein = this.game.call('findNearestGoldVein', buildingWorldPos, false);
+        const goldVeinPos = nearestVein?.position || null;
+
+        return this.findBuildingAdjacentPosition(buildingGridPos, buildingCellSet, unitDef, goldVeinPos);
     }
 
     /**

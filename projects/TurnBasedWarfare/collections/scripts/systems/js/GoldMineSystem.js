@@ -10,6 +10,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
         this.game.register('buildGoldMine', this.buildGoldMine.bind(this));
         this.game.register('isValidGoldMinePlacement', this.isValidGoldMinePlacement.bind(this));
         this.game.register('getGoldVeinLocations', this.getGoldVeinLocations.bind(this));
+        this.game.register('findNearestGoldVein', this.findNearestGoldVein.bind(this));
         this.game.register('processNextMinerInQueue', this.processNextMinerInQueue.bind(this));
         this.game.register('isMineOccupied', this.isMineOccupied.bind(this));
         this.game.register('isNextInMinerQueue', this.isNextInQueue.bind(this));
@@ -67,6 +68,41 @@ class GoldMineSystem extends GUTS.BaseSystem {
         }
 
         return veinLocations;
+    }
+
+    /**
+     * Find the nearest gold vein to a world position
+     * @param {Object} worldPos - World position { x, z }
+     * @param {boolean} unclaimedOnly - If true, only return unclaimed veins (default: true)
+     * @returns {Object|null} { entityId, position } or null if none found
+     */
+    findNearestGoldVein(worldPos, unclaimedOnly = true) {
+        const veinLocations = this.getGoldVeinLocations();
+
+        let nearestVein = null;
+        let nearestDistance = Infinity;
+
+        for (const vein of veinLocations) {
+            if (unclaimedOnly && vein.claimed) continue;
+
+            const dx = vein.worldX - worldPos.x;
+            const dz = vein.worldZ - worldPos.z;
+            const distance = Math.sqrt(dx * dx + dz * dz);
+
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestVein = vein;
+            }
+        }
+
+        if (!nearestVein) {
+            return null;
+        }
+
+        return {
+            entityId: nearestVein.entityId,
+            position: { x: nearestVein.worldX, z: nearestVein.worldZ }
+        };
     }
 
     calculateGoldVeinCells(gridPos, gridWidth, gridHeight) {

@@ -17,16 +17,19 @@
     },
     {
       "spawnType": "peasant",
-      "collection": "units",
-      "components": {
-        "transform": {
-          "position": {
-            "x": 96,
-            "y": 0,
-            "z": -36
-          }
-        }
-      }
+      "collection": "units"
+    },
+    {
+      "spawnType": "peasant",
+      "collection": "units"
+    },
+    {
+      "spawnType": "peasant",
+      "collection": "units"
+    },
+    {
+      "spawnType": "peasant",
+      "collection": "units"
     }
   ]
 }

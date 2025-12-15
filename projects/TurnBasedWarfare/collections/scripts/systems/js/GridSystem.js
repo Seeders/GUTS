@@ -822,8 +822,12 @@ class GridSystem extends GUTS.BaseSystem {
             }
 
             const mesh = new THREE.Mesh(this.debugGeometry, material);
-            const terrainHeight = this.game.call('getTerrainHeightAtPosition', worldPos.x, worldPos.z) || 0;
-            mesh.position.set(worldPos.x, terrainHeight + 1, worldPos.z);
+            // Offset by half cell size to center on the cell (gridToWorld returns corner position)
+            const halfSize = this.cellSize / 2;
+            const centerX = worldPos.x + halfSize;
+            const centerZ = worldPos.z + halfSize;
+            const terrainHeight = this.game.call('getTerrainHeightAtPosition', centerX, centerZ) || 0;
+            mesh.position.set(centerX, terrainHeight + 1, centerZ);
             this.debugVisualization.add(mesh);
         }
     }
