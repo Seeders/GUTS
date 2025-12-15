@@ -492,18 +492,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         this.game.call('sendPlacementRequest', networkUnitData, (success, response) => {
             if (success) {
-                // Call placePlacement just like the server does, but with server-provided entity IDs
-                networkUnitData.placementId = response.placementId;
-                const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
-                const player = { team: this.game.state.myTeam };
-
-                this.game.call('placePlacement',
-                    numericPlayerId,
-                    numericPlayerId,
-                    player,
-                    networkUnitData,
-                    response.squadUnits
-                );
+                // Domain logic (placePlacement, gold deduction, spawn) now handled by ClientNetworkSystem
+                // Here we just handle UI concerns: undo stack, effects, UI updates
 
                 // Add to undo stack
                 this.addToUndoStack({

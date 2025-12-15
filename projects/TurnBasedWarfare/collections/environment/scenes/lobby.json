@@ -7,6 +7,7 @@
     "GameModeSystem",
     "InputSystem",
     "LobbyUISystem",
+    "BaseNetworkSystem",
     "ClientNetworkSystem"
   ],
   "entities": []

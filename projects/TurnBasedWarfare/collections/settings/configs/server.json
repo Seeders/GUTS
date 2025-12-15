@@ -51,6 +51,7 @@
     "ServerBattlePhaseSystem",
     "PlacementSystem",
     "UnitOrderSystem",
+    "BaseNetworkSystem",
     "ServerNetworkSystem",
     "LifetimeSystem",
     "SchedulingSystem",

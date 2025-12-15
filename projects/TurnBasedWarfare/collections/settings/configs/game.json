@@ -67,6 +67,7 @@
     "UnitCreationSystem",
     "SquadSystem",
     "PlacementSystem",
+    "BaseNetworkSystem",
     "ClientNetworkSystem",
     "InputSystem",
     "GridSystem",

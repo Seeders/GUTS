@@ -361,22 +361,12 @@ class ShopSystem extends GUTS.BaseSystem {
         }
         const networkUnitData = this.game.call('createNetworkUnitData', placementPos, unit, this.game.state.myTeam);
 
-        this.game.call('sendPlacementRequest', networkUnitData, (success, response) => {
+        this.game.call('sendPlacementRequest', networkUnitData, (success) => {
             if(success){
+                // Domain logic (placePlacement, gold deduction, spawn) now handled by ClientNetworkSystem
+                // Here we just handle UI concerns: production progress
                 const newProgress = productionProgress + buildTime;
                 this.setBuildingProductionProgress(buildingId, newProgress);
-                // Call placePlacement just like the server does, but with server-provided entity IDs
-                networkUnitData.placementId = response.placementId;
-                const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
-                const player = { team: this.game.state.myTeam };
-
-                this.game.call('placePlacement',
-                    numericPlayerId,
-                    numericPlayerId,
-                    player,
-                    networkUnitData,
-                    response.squadUnits
-                );
             }
         });
     }
@@ -486,15 +476,8 @@ class ShopSystem extends GUTS.BaseSystem {
             upgradeId
         }, (success, response) => {
             if (success) {
-                // Mirror server logic: deduct gold and set upgrade bitmask
-                const playerStats = this.game.call('getLocalPlayerStats');
-                if (playerStats) {
-                    playerStats.gold -= upgrade.value;
-                    const upgradeIndex = this.enums.upgrades?.[upgradeId];
-                    if (upgradeIndex !== undefined) {
-                        playerStats.upgrades |= (1 << upgradeIndex);
-                    }
-                }
+                // Domain logic (gold deduction, bitmask) now handled by ClientNetworkSystem
+                // Here we just handle UI concerns: effects, notifications, UI refresh
 
                 // Apply upgrade effects and show notification
                 this.applyUpgradeEffects(this.game.state.myTeam, upgrade);
@@ -717,8 +700,9 @@ class ShopSystem extends GUTS.BaseSystem {
                     return;
                 }
 
-                // Server confirmed, now do local cleanup
-                this.performLocalCancelConstruction(buildingEntityId, placement);
+                // Domain logic (refund, cleanup, destroy) now handled by ClientNetworkSystem
+                // Here we just handle UI concerns: notification
+                this.game.uiSystem?.showNotification(`Refunded ${response?.refundAmount || 0} gold`, 'success', 1500);
             });
         } else {
             // Fallback for single-player or when network not available

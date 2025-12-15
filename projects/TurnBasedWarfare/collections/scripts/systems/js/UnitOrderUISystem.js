@@ -270,10 +270,10 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         // Send to server for authoritative confirmation
         this.game.call('setSquadTargets',
             { placementIds, targetPositions, meta },
-            (success, responseData) => {
+            (success) => {
                 if (success) {
-                    const issuedTime = responseData?.issuedTime;
-                    this.game.call('applySquadsTargetPositions', placementIds, targetPositions, meta, issuedTime);
+                    // Domain logic (applySquadsTargetPositions) now handled by ClientNetworkSystem
+                    // Here we just handle UI concerns: visual feedback
 
                     // Show visual feedback
                     placementIds.forEach((placementId) => {
@@ -456,15 +456,10 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
         this.game.call('setSquadTarget',
             { placementId: builderPlacement.placementId, targetPosition, meta },
-            (success, responseData) => {
+            (success) => {
                 if (success) {
-                    const issuedTime = responseData?.issuedTime;
-
-                    // Update building's assigned builder
-                    buildingPlacement.assignedBuilder = builderEntityId;
-
-                    // Apply player order with server time
-                    this.game.call('applySquadTargetPosition', builderPlacement.placementId, targetPosition, meta, issuedTime);
+                    // Domain logic (applySquadTargetPosition, buildingState, assignedBuilder) now handled by ClientNetworkSystem
+                    // Here we just handle UI concerns: effects, notifications, ability tracking
 
                     // Store peasantId in ability for completion tracking
                     buildAbility.peasantId = builderEntityId;
@@ -493,11 +488,10 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         // Send to server - server will set authoritative issuedTime and respond
         this.game.call('setSquadTargets',
             { placementIds, targetPositions, meta },
-            (success, responseData) => {
+            (success) => {
                 if (success) {
-                    // Use server-authoritative issuedTime
-                    const issuedTime = responseData?.issuedTime;
-                    this.game.call('applySquadsTargetPositions', placementIds, targetPositions, meta, issuedTime);
+                    // Domain logic (applySquadsTargetPositions) now handled by ClientNetworkSystem
+                    // Here we just handle UI concerns: targeting state, visual feedback
                     this.startTargeting();
                     this.showMoveTargets();
                 }

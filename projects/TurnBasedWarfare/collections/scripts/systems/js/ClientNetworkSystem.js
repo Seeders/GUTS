@@ -1,4 +1,4 @@
-class ClientNetworkSystem extends GUTS.BaseSystem {
+class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     constructor(game) {
         super(game);
         this.game.clientNetworkSystem = this;
@@ -286,27 +286,39 @@ class ClientNetworkSystem extends GUTS.BaseSystem {
                 if (data.error) {
                     callback(false, error);
                 } else {
+                    // Call shared processPlacement with server-provided entity IDs
+                    networkUnitData.placementId = data.placementId;
+                    const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
+                    const player = { team: this.game.state.myTeam };
+                    this.processPlacement(numericPlayerId, numericPlayerId, player, networkUnitData, data.squadUnits);
+
                     callback(true, data);
                 }
             }
         );
     }
 
-    cancelBuilding(data, callback) {
+    cancelBuilding(requestData, callback) {
         if (this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
             return;
         }
-        
+
+        const { buildingEntityId } = requestData;
+
         this.game.clientNetworkManager.call(
             'CANCEL_BUILDING',
-            data,
+            requestData,
             'BUILDING_CANCELLED',
             (data, error) => {
                 if (error || data.error) {
                     console.log('Cancel building error:', error || data.error);
                     callback(false, error || data.error);
                 } else {
+                    // Call shared processCancelBuilding to do the same cleanup as server
+                    const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
+                    this.processCancelBuilding(buildingEntityId, numericPlayerId);
+
                     console.log('Cancel building response:', data);
                     callback(true, data);
                 }
@@ -322,19 +334,30 @@ class ClientNetworkSystem extends GUTS.BaseSystem {
         this.game.call('showNotification', 'Opponent cancelled a building', 'info', 1500);
     }
     
-    purchaseUpgrade(data, callback){
+    purchaseUpgrade(requestData, callback){
         if(this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
-        };
+            return;
+        }
+
+        const { upgradeId } = requestData;
+
         this.game.clientNetworkManager.call(
             'PURCHASE_UPGRADE',
-            { data },
+            { data: requestData },
             'PURCHASED_UPGRADE',
-            (data, error) => {           
+            (data, error) => {
                 if (data.error) {
                     console.log('Purchase error:', data.error);
                     callback(false, error);
                 } else {
+                    // Call shared processPurchaseUpgrade to do the same as server
+                    const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
+                    const upgrade = this.collections.upgrades[upgradeId];
+                    if (upgrade) {
+                        this.processPurchaseUpgrade(numericPlayerId, upgradeId, upgrade);
+                    }
+
                     console.log('Purchase response:', data);
                     callback(true, data);
                 }
@@ -342,19 +365,24 @@ class ClientNetworkSystem extends GUTS.BaseSystem {
         );
     }
 
-    setSquadTarget(data, callback) {
+    setSquadTarget(requestData, callback) {
         if(this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
-        };
+            return;
+        }
+
         this.game.clientNetworkManager.call(
             'SET_SQUAD_TARGET',
-            data,
+            requestData,
             'SQUAD_TARGET_SET',
             (data, error) => {
                 if (error || data.error) {
                     console.log('Set target error:', error || data.error);
                     callback(false, error || data.error);
                 } else {
+                    // Call shared processSquadTarget with server's authoritative issuedTime
+                    this.processSquadTarget(data.placementId, data.targetPosition, data.meta, data.issuedTime);
+
                     console.log('Set target response:', data);
                     callback(true, data);
                 }
@@ -362,19 +390,24 @@ class ClientNetworkSystem extends GUTS.BaseSystem {
         );
     }
 
-    setSquadTargets(data, callback) {
+    setSquadTargets(requestData, callback) {
         if(this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
-        };
+            return;
+        }
+
         this.game.clientNetworkManager.call(
             'SET_SQUAD_TARGETS',
-            data,
+            requestData,
             'SQUAD_TARGETS_SET',
             (data, error) => {
                 if (error || data.error) {
                     console.log('Set target error:', error || data.error);
                     callback(false, error || data.error);
                 } else {
+                    // Call shared processSquadTargets with server's authoritative issuedTime
+                    this.processSquadTargets(data.placementIds, data.targetPositions, data.meta, data.issuedTime);
+
                     console.log('Set target response:', data);
                     callback(true, data);
                 }
@@ -908,13 +941,15 @@ class ClientNetworkSystem extends GUTS.BaseSystem {
 
     handleOpponentSquadTarget(data) {
         const { placementId, targetPosition, meta, issuedTime } = data;
-        this.game.call('applySquadTargetPosition', placementId, targetPosition, meta, issuedTime);
+        // Use shared processSquadTarget for opponent actions too
+        this.processSquadTarget(placementId, targetPosition, meta, issuedTime);
     }
 
     handleOpponentSquadTargets(data) {
         const { placementIds, targetPositions, meta, issuedTime } = data;
         console.log('[ClientNetworkSystem] Received OPPONENT_SQUAD_TARGETS_SET:', { placementIds, targetPositions, issuedTime });
-        this.game.call('applySquadsTargetPositions', placementIds, targetPositions, meta, issuedTime);
+        // Use shared processSquadTargets for opponent actions too
+        this.processSquadTargets(placementIds, targetPositions, meta, issuedTime);
     }
 
     syncWithServerState(data) {
@@ -1010,7 +1045,7 @@ class ClientNetworkSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Handle cheat broadcast from server - execute on client
+     * Handle cheat broadcast from server - execute on client using shared processCheat
      */
     handleCheatBroadcast(data) {
         const { cheatName, params, result } = data;
@@ -1019,8 +1054,8 @@ class ClientNetworkSystem extends GUTS.BaseSystem {
         // Merge server result (contains entity IDs) into params
         const mergedParams = { ...params, ...result };
 
-        // Execute the cheat locally using CheatCodeSystem
-        this.game.call('executeCheat', cheatName, mergedParams);
+        // Execute the cheat locally using shared processCheat
+        this.processCheat(cheatName, mergedParams);
     }
 
     dispose() {

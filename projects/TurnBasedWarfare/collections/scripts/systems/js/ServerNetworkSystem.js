@@ -8,7 +8,7 @@
  * Domain systems contain the actual logic and run identically on client/server.
  * This system is purely a network adapter layer.
  */
-class ServerNetworkSystem extends GUTS.BaseSystem {
+class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
     constructor(game) {
         super(game);
         this.game.serverNetworkSystem = this;
@@ -99,8 +99,8 @@ class ServerNetworkSystem extends GUTS.BaseSystem {
             const room = this.engine.getRoom(roomId);
             const player = room.getPlayer(playerId);
 
-            // Call PlacementSystem to handle the actual placement
-            const result = this.game.call('placePlacement', playerId, numericPlayerId, player, placement);
+            // Call shared processPlacement (server passes null for serverEntityIds to generate new IDs)
+            const result = this.processPlacement(playerId, numericPlayerId, player, placement, null);
             this.serverNetworkManager.sendToPlayer(playerId, 'SUBMITTED_PLACEMENT', result);
 
         } catch (error) {
@@ -124,10 +124,25 @@ class ServerNetworkSystem extends GUTS.BaseSystem {
                 return;
             }
 
-            const room = this.engine.getRoom(roomId);
-            const player = room.getPlayer(playerId);
+            // Call shared processPurchaseUpgrade
+            const upgrade = this.collections.upgrades[data.data.upgradeId];
+            if (!upgrade) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_UPGRADE', {
+                    success: false,
+                    error: `Unknown upgrade: ${data.data.upgradeId}`
+                });
+                return;
+            }
 
-            const result = this.purchaseUpgrade(playerId, player, data.data);
+            if (this.game.state.phase !== this.enums.gamePhase.placement) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_UPGRADE', {
+                    success: false,
+                    error: `Not in placement phase (${this.game.state.phase})`
+                });
+                return;
+            }
+
+            const result = this.processPurchaseUpgrade(playerId, data.data.upgradeId, upgrade);
             this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_UPGRADE', result);
 
         } catch (error) {
@@ -214,32 +229,8 @@ class ServerNetworkSystem extends GUTS.BaseSystem {
             // Server is authoritative for issuedTime
             const serverIssuedTime = this.game.state.now;
 
-            // Handle build order - update building's assignedBuilder and set buildingState
-            if (meta?.buildingId != null) {
-                const buildingPlacement = this.game.getComponent(meta.buildingId, 'placement');
-                if (buildingPlacement) {
-                    const builderEntityId = placement.squadUnits?.[0];
-                    if (builderEntityId) {
-                        buildingPlacement.assignedBuilder = builderEntityId;
-
-                        let buildingState = this.game.getComponent(builderEntityId, "buildingState");
-                        if (!buildingState) {
-                            this.game.addComponent(builderEntityId, "buildingState", {
-                                targetBuildingEntityId: meta.buildingId,
-                                buildTime: buildingPlacement.buildTime || 5,
-                                constructionStartTime: 0
-                            });
-                        } else {
-                            buildingState.targetBuildingEntityId = meta.buildingId;
-                            buildingState.buildTime = buildingPlacement.buildTime || 5;
-                            buildingState.constructionStartTime = 0;
-                        }
-                    }
-                }
-            }
-
-            // Apply target position via UnitOrderSystem
-            this.game.call('applySquadTargetPosition', placementId, targetPosition, meta, serverIssuedTime);
+            // Call shared processSquadTarget (handles build orders and applies target)
+            this.processSquadTarget(placementId, targetPosition, meta, serverIssuedTime);
 
             // Send success response
             this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
@@ -296,18 +287,17 @@ class ServerNetworkSystem extends GUTS.BaseSystem {
 
             const serverIssuedTime = this.game.state.now;
 
+            // Validate all placements first
             for (let i = 0; i < placementIds.length; i++) {
-                const placementId = placementIds[i];
-                const targetPosition = targetPositions[i];
-
-                const placement = this.game.call('getPlacementById', placementId);
+                const placement = this.game.call('getPlacementById', placementIds[i]);
                 if (!placement) {
                     this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { error: 'Placement not found' });
                     return;
                 }
-
-                this.game.call('applySquadTargetPosition', placementId, targetPosition, meta, serverIssuedTime);
             }
+
+            // Call shared processSquadTargets
+            this.processSquadTargets(placementIds, targetPositions, meta, serverIssuedTime);
 
             this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', {
                 success: true,
@@ -419,7 +409,7 @@ class ServerNetworkSystem extends GUTS.BaseSystem {
     handleCancelBuilding(eventData) {
         try {
             const { playerId, numericPlayerId, data } = eventData;
-            const { placementId, buildingEntityId } = data;
+            const { buildingEntityId } = data;
 
             const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
             if (!roomId) {
@@ -435,61 +425,30 @@ class ServerNetworkSystem extends GUTS.BaseSystem {
                 return;
             }
 
-            const placement = this.game.getComponent(buildingEntityId, 'placement');
-            if (!placement) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { error: 'Building not found' });
+            // Call shared processCancelBuilding (validates, refunds gold, cleans up, destroys)
+            const result = this.processCancelBuilding(buildingEntityId, numericPlayerId);
+
+            if (!result.success) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', result);
                 return;
             }
 
-            if (placement.playerId !== numericPlayerId) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { error: 'Building does not belong to this player' });
-                return;
-            }
-
-            if (!placement.isUnderConstruction) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { error: 'Building is not under construction' });
-                return;
-            }
-
-            // Get unitType for refund
-            const unitTypeComp = this.game.getComponent(buildingEntityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
-            const refundAmount = unitType?.value || 0;
-
-            if (refundAmount > 0) {
-                player.gold = (player.gold || 0) + refundAmount;
-            }
-
-            // Clean up builder
-            const assignedBuilder = placement.assignedBuilder;
-            if (assignedBuilder) {
-                if (this.game.hasComponent(assignedBuilder, "buildingState")) {
-                    this.game.removeComponent(assignedBuilder, "buildingState");
-                }
-                const builderVel = this.game.getComponent(assignedBuilder, "velocity");
-                if (builderVel) {
-                    builderVel.vx = 0;
-                    builderVel.vz = 0;
-                }
-            }
-
-            // Destroy building
-            this.game.call('removeInstance', buildingEntityId);
-            this.game.destroyEntity(buildingEntityId);
+            // Get current gold for response
+            const playerStats = this.game.call('getPlayerStats', playerId);
 
             this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', {
                 success: true,
-                placementId,
-                refundAmount,
-                gold: player.gold
+                placementId: result.placementId,
+                refundAmount: result.refundAmount,
+                gold: playerStats?.gold ?? 0
             });
 
             // Broadcast to other players
             for (const [otherPlayerId] of room.players) {
                 if (otherPlayerId !== playerId) {
                     this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_BUILDING_CANCELLED', {
-                        placementId,
-                        team: player.team
+                        placementId: result.placementId,
+                        team: playerStats?.side
                     });
                 }
             }
@@ -516,17 +475,11 @@ class ServerNetworkSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Validate cheat
-        const validation = this.game.call('validateCheat', cheatName, params);
-        if (!validation.valid) {
-            this.serverNetworkManager.sendToPlayer(playerId, 'CHEAT_EXECUTED', { error: validation.error });
-            return;
-        }
+        // Call shared processCheat (validates and executes)
+        const cheatResult = this.processCheat(cheatName, params);
 
-        // Execute cheat
-        const result = this.game.call('executeCheat', cheatName, params);
-        if (result.error) {
-            this.serverNetworkManager.sendToPlayer(playerId, 'CHEAT_EXECUTED', { error: result.error });
+        if (!cheatResult.success) {
+            this.serverNetworkManager.sendToPlayer(playerId, 'CHEAT_EXECUTED', { error: cheatResult.error });
             return;
         }
 
@@ -535,14 +488,14 @@ class ServerNetworkSystem extends GUTS.BaseSystem {
             success: true,
             cheatName,
             params,
-            result
+            result: cheatResult.result
         });
 
         // Broadcast to all players
         this.serverNetworkManager.broadcastToRoom(roomId, 'CHEAT_BROADCAST', {
             cheatName,
             params,
-            result,
+            result: cheatResult.result,
             initiatedBy: playerId
         });
 
@@ -554,39 +507,6 @@ class ServerNetworkSystem extends GUTS.BaseSystem {
     areAllPlayersReady() {
         const states = [...this.placementReadyStates.values()];
         return states.length === this.numPlayers && states.every(ready => ready === true);
-    }
-
-    purchaseUpgrade(playerId, _player, data) {
-        if (this.game.state.phase !== this.enums.gamePhase.placement) {
-            return { success: false, error: `Not in placement phase (${this.game.state.phase})` };
-        }
-
-        const playerStats = this.game.call('getPlayerStats', playerId);
-        const playerGold = playerStats?.gold || 0;
-
-        const upgrade = this.collections.upgrades[data.upgradeId];
-        const upgradeIndex = this.enums.upgrades?.[data.upgradeId];
-
-        if (upgradeIndex === undefined) {
-            return { success: false, error: `Unknown upgrade: ${data.upgradeId}` };
-        }
-
-        // Check if already purchased (bitmask check)
-        if (playerStats.upgrades & (1 << upgradeIndex)) {
-            return { success: false, error: "Upgrade already purchased." };
-        }
-
-        if (upgrade?.value <= playerGold) {
-            // Deduct gold
-            playerStats.gold -= upgrade.value;
-
-            // Add upgrade to bitmask
-            playerStats.upgrades |= (1 << upgradeIndex);
-
-            return { success: true, upgradeId: data.upgradeId };
-        }
-
-        return { success: false, error: "Not enough gold." };
     }
 
     getStartingStateResponse(player) {
