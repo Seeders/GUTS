@@ -492,12 +492,16 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         this.game.call('sendPlacementRequest', networkUnitData, (success, response) => {
             if (success) {
-                // Place squad with server-provided entity IDs
+                // Call placePlacement just like the server does, but with server-provided entity IDs
                 networkUnitData.placementId = response.placementId;
-                this.game.call('spawnSquad',
+                const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
+                const player = { team: this.game.state.myTeam };
+
+                this.game.call('placePlacement',
+                    numericPlayerId,
+                    numericPlayerId,
+                    player,
                     networkUnitData,
-                    this.game.state.myTeam,
-                    this.game.clientNetworkManager?.numericPlayerId,
                     response.squadUnits
                 );
 

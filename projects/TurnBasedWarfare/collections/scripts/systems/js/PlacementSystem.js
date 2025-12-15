@@ -806,9 +806,10 @@ class PlacementSystem extends GUTS.BaseSystem {
      * @param {number} numericPlayerId - Numeric player ID (for ECS storage)
      * @param {Object} player - Player data
      * @param {Object} placement - Placement data
+     * @param {number[]|null} serverEntityIds - Optional entity IDs from server (client uses these)
      * @returns {Object} Result with success, entityIds, etc.
      */
-    placePlacement(socketPlayerId, numericPlayerId, player, placement) {
+    placePlacement(socketPlayerId, numericPlayerId, player, placement, serverEntityIds = null) {
         if (this.game.state.phase !== this.enums.gamePhase.placement) {
             return { success: false, error: `Not in placement phase (${this.game.state.phase})` };
         }
@@ -839,8 +840,8 @@ class PlacementSystem extends GUTS.BaseSystem {
             playerStats.gold -= unitType.value;
         }
 
-        // Spawn entities
-        const result = this.spawnSquad(fullPlacement, player.team, numericPlayerId);
+        // Spawn entities (client passes serverEntityIds to match server's entity IDs)
+        const result = this.spawnSquad(fullPlacement, player.team, numericPlayerId, serverEntityIds);
 
         return {
             success: result.success,

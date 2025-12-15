@@ -365,12 +365,16 @@ class ShopSystem extends GUTS.BaseSystem {
             if(success){
                 const newProgress = productionProgress + buildTime;
                 this.setBuildingProductionProgress(buildingId, newProgress);
-                // Use server-provided placementId and entity IDs
+                // Call placePlacement just like the server does, but with server-provided entity IDs
                 networkUnitData.placementId = response.placementId;
-                this.game.call('spawnSquad',
+                const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
+                const player = { team: this.game.state.myTeam };
+
+                this.game.call('placePlacement',
+                    numericPlayerId,
+                    numericPlayerId,
+                    player,
                     networkUnitData,
-                    this.game.state.myTeam,
-                    this.game.clientNetworkManager?.numericPlayerId,
                     response.squadUnits
                 );
             }
@@ -482,8 +486,17 @@ class ShopSystem extends GUTS.BaseSystem {
             upgradeId
         }, (success, response) => {
             if (success) {
-                // Server already deducted gold and updated playerStats.upgrades bitmask
-                // Just apply local effects and show notification
+                // Mirror server logic: deduct gold and set upgrade bitmask
+                const playerStats = this.game.call('getLocalPlayerStats');
+                if (playerStats) {
+                    playerStats.gold -= upgrade.value;
+                    const upgradeIndex = this.enums.upgrades?.[upgradeId];
+                    if (upgradeIndex !== undefined) {
+                        playerStats.upgrades |= (1 << upgradeIndex);
+                    }
+                }
+
+                // Apply upgrade effects and show notification
                 this.applyUpgradeEffects(this.game.state.myTeam, upgrade);
                 this.showNotification(`${upgrade.title} purchased!`, 'success');
                 // Refresh the UI to show the upgrade as owned
