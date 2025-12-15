@@ -259,9 +259,9 @@ class SceneManager {
 
             const { collection, spawnType, components } = entityDef;
             const transform = components?.transform;
-            // Team should be numeric; fallback to left team (2) if not specified
+            // Team should be numeric; fallback to hostile team (1) for scene entities if not specified
             const enums = this.game.call?.('getEnums');
-            const defaultTeam = enums?.team?.left ?? 2;
+            const defaultTeam = enums?.team?.hostile ?? 1;
             const team = components?.team?.team ?? defaultTeam;
 
             // Use UnitCreationSystem for consistent entity creation
