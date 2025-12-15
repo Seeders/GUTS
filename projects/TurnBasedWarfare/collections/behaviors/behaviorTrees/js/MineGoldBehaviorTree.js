@@ -44,7 +44,8 @@ class MineGoldBehaviorTree extends GUTS.BaseBehaviorTree {
         if (isEnemyNearby) {
             const enemyCheckResult = isEnemyNearby.execute(entityId, game);
             if (enemyCheckResult && enemyCheckResult.status === 'success') {
-                // Enemy nearby - return null to let combat behavior take over
+                // Enemy nearby - clear running state and return null to let combat behavior take over
+                this.runningState.delete(entityId);
                 return null;
             }
         }

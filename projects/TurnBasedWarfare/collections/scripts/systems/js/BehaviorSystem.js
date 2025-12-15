@@ -11,6 +11,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
         // Entity behavior state storage (moved out of component for TypedArray compatibility)
         // Stores { meta: {}, shared: {} } per entity
         this.entityBehaviorState = new Map();
+
     }
 
     init() {

@@ -22,19 +22,17 @@ class MoveToEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const transform = game.getComponent(entityId, 'transform');
-        const pos = transform?.position;
         const targetTransform = game.getComponent(targetId, 'transform');
         const targetPos = targetTransform?.position;
         const combat = game.getComponent(entityId, 'combat');
 
-        if (!pos || !targetPos || !combat) {
+        if (!targetPos || !combat) {
             return this.failure();
         }
 
-        const effectiveRange = this.getEffectiveAttackRange(entityId, targetId, game);
-        const arrivalRange = params.arrivalRange || effectiveRange;
-        const distance = this.distance(pos, targetPos);
+        const baseRange = combat.range || 50;
+        const arrivalRange = params.arrivalRange || GUTS.GameUtils.getEffectiveRange(game, entityId, targetId, baseRange);
+        const distance = GUTS.GameUtils.getDistanceBetweenEntities(game, entityId, targetId);
 
         // Check if in range
         if (distance <= arrivalRange) {
@@ -52,28 +50,5 @@ class MoveToEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             target: targetId,
             moving: true
         });
-    }
-
-    distance(pos1, pos2) {
-        const dx = pos2.x - pos1.x;
-        const dz = pos2.z - pos1.z;
-        return Math.sqrt(dx * dx + dz * dz);
-    }
-
-    /**
-     * Get effective attack range accounting for unit collision radii
-     * Effective range = base range + attacker radius + target radius
-     */
-    getEffectiveAttackRange(attackerId, targetId, game) {
-        const combat = game.getComponent(attackerId, 'combat');
-        const baseRange = combat?.range || 50;
-
-        const attackerCollision = game.getComponent(attackerId, 'collision');
-        const targetCollision = game.getComponent(targetId, 'collision');
-
-        const attackerRadius = attackerCollision?.radius || 0;
-        const targetRadius = targetCollision?.radius || 0;
-
-        return baseRange + attackerRadius + targetRadius;
     }
 }

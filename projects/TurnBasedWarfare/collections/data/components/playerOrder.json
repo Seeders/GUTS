@@ -7,6 +7,7 @@
     "isMoveOrder": false,
     "preventEnemiesInRangeCheck": false,
     "completed": false,
-    "issuedTime": 0
+    "issuedTime": 0,
+    "enabled": false
   }
 }

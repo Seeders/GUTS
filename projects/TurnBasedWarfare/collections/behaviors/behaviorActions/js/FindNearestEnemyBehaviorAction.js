@@ -23,7 +23,8 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const range = params.range !== undefined ? params.range : (combat?.visionRange || 300);
+        // Use unit's visionRange first, then fall back to params.range or default 300
+        const range = combat?.visionRange || params.range || 300;
 
         const nearestEnemy = this.findNearestEnemy(entityId, game, pos, team, range);
 
@@ -44,7 +45,9 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     findNearestEnemy(entityId, game, pos, team, range) {
         // Use spatial grid for efficient lookup - returns array of entityIds
         const nearbyEntityIds = game.call('getNearbyUnits', pos, range, entityId);
-        if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
+        if (!nearbyEntityIds || nearbyEntityIds.length === 0) {
+            return null;
+        }
 
         const unitTypeComp = game.getComponent(entityId, 'unitType');
         const unitType = game.call('getUnitTypeDef', unitTypeComp);
@@ -52,20 +55,29 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // First pass: collect valid enemies with their positions and directions
         const enemies = [];
+
         for (const targetId of nearbyEntityIds) {
             const targetTeam = game.getComponent(targetId, 'team');
-            if (!targetTeam || targetTeam.team === team.team) continue;
+            if (!targetTeam || targetTeam.team === team.team) {
+                continue;
+            }
 
             const targetHealth = game.getComponent(targetId, 'health');
-            if (!targetHealth || targetHealth.current <= 0) continue;
+            if (!targetHealth || targetHealth.current <= 0) {
+                continue;
+            }
 
             const targetDeathState = game.getComponent(targetId, 'deathState');
             // deathState.state: 0=alive, 1=dying, 2=corpse
-            if (targetDeathState && targetDeathState.state > 0) continue;
+            if (targetDeathState && targetDeathState.state > 0) {
+                continue;
+            }
 
             const targetTransform = game.getComponent(targetId, 'transform');
             const targetPos = targetTransform?.position;
-            if (!targetPos) continue;
+            if (!targetPos) {
+                continue;
+            }
 
             const dx = targetPos.x - pos.x;
             const dz = targetPos.z - pos.z;
@@ -74,7 +86,9 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             enemies.push({ id: targetId, pos: targetPos, distance, dx, dz });
         }
 
-        if (enemies.length === 0) return null;
+        if (enemies.length === 0) {
+            return null;
+        }
 
         // If no LOS check available, just return nearest
         if (!hasLOSCheck) {

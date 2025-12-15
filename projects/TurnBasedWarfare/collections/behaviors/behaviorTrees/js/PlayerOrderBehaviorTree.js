@@ -16,8 +16,11 @@ class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
     evaluate(entityId, game) {
         const playerOrder = game.getComponent(entityId, 'playerOrder');
 
-        // No player order component - skip this tree
-        if (!playerOrder) {
+        // No player order component or order not enabled - skip this tree
+        if (!playerOrder || !playerOrder.enabled) {
+            // IMPORTANT: Clear our running state when yielding - otherwise the parent
+            // selector might resume us when we should be skipped
+            this.runningState.delete(entityId);
             return null;
         }
 
@@ -35,6 +38,9 @@ class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
                 const findResult = findEnemy.execute(entityId, game);
                 if (findResult && findResult.status === 'success') {
                     // Enemy found and shared.target is now set - let combat take over
+                    // IMPORTANT: Clear our running state so we don't resume MoveBehaviorAction
+                    // when we should be yielding to combat
+                    this.runningState.delete(entityId);
                     return null;
                 }
             }

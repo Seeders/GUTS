@@ -61,11 +61,19 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
                 buildingState.constructionStartTime = 0;
             }
 
-            // Remove playerOrder so unit returns to normal behaviors (like mining)
+            // Disable playerOrder so unit returns to normal behaviors (like mining)
             // This allows AbilitiesBehaviorTree to take over since PlayerOrderBehaviorTree
-            // returns null when there's no playerOrder component
-            if (game.hasComponent(entityId, 'playerOrder')) {
-                game.removeComponent(entityId, 'playerOrder');
+            // returns null when playerOrder.enabled is false
+            const playerOrder = game.getComponent(entityId, 'playerOrder');
+            if (playerOrder) {
+                playerOrder.enabled = false;
+                playerOrder.targetPositionX = 0;
+                playerOrder.targetPositionY = 0;
+                playerOrder.targetPositionZ = 0;
+                playerOrder.isMoveOrder = false;
+                playerOrder.preventEnemiesInRangeCheck = false;
+                playerOrder.completed = false;
+                playerOrder.issuedTime = 0;
             }
 
             // Clean up after build complete
@@ -191,9 +199,17 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
                 buildingState.constructionStartTime = 0;
             }
 
-            // Remove playerOrder so unit returns to normal behaviors (like mining)
-            if (game.hasComponent(entityId, 'playerOrder')) {
-                game.removeComponent(entityId, 'playerOrder');
+            // Disable playerOrder so unit returns to normal behaviors (like mining)
+            const playerOrder = game.getComponent(entityId, 'playerOrder');
+            if (playerOrder) {
+                playerOrder.enabled = false;
+                playerOrder.targetPositionX = 0;
+                playerOrder.targetPositionY = 0;
+                playerOrder.targetPositionZ = 0;
+                playerOrder.isMoveOrder = false;
+                playerOrder.preventEnemiesInRangeCheck = false;
+                playerOrder.completed = false;
+                playerOrder.issuedTime = 0;
             }
 
             this.onBuildComplete(entityId, game);

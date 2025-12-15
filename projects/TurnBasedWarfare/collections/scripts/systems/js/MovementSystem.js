@@ -83,7 +83,7 @@ class MovementSystem extends GUTS.BaseSystem {
                     aiState.currentActionCollection === this.enums.behaviorCollection.behaviorActions &&
                     (aiState.currentAction === this.enums.behaviorActions.AttackEnemyBehaviorAction || aiState.currentAction === this.enums.behaviorActions.CombatBehaviorAction) &&
                     !!behaviorMeta?.target &&
-                    this.isInAttackRange(pos, behaviorMeta.target, entityId);
+                    this.isInAttackRange(behaviorMeta.target, entityId);
                 const isAnchored = vel.anchored || isAttacking;
 
                 unitData.set(entityId, {
@@ -575,7 +575,25 @@ class MovementSystem extends GUTS.BaseSystem {
             // Use pathfinding if available and useDirectMovement not set
             if (pathfinding && !pathfinding.useDirectMovement) {
                 // Check if we have a path to follow (paths stored in PathfindingSystem)
-                const path = this.game.call('getEntityPath', entityId);
+                let path = this.game.call('getEntityPath', entityId);
+
+                // Check if target has changed significantly - if so, clear the stale path
+                if (path && path.length > 0) {
+                    const currentTargetX = targetPos.x;
+                    const currentTargetZ = targetPos.z;
+                    const dx = currentTargetX - pathfinding.lastTargetX;
+                    const dz = currentTargetZ - pathfinding.lastTargetZ;
+                    const targetDistanceSq = dx * dx + dz * dz;
+                    const TARGET_CHANGE_THRESHOLD_SQ = 50 * 50; // 50 units
+
+                    if (targetDistanceSq > TARGET_CHANGE_THRESHOLD_SQ) {
+                        // Target has changed significantly - clear old path
+                        this.game.call('clearEntityPath', entityId);
+                        pathfinding.lastPathRequest = 0;
+                        pathfinding.pathIndex = 0;
+                        path = null; // Force new path request
+                    }
+                }
 
                 if (path && path.length > 0) {
                     this.followPath(entityId, data, path);
@@ -946,29 +964,14 @@ class MovementSystem extends GUTS.BaseSystem {
         // movementState component is automatically cleaned up by ECS when entity is destroyed
     }
 
-    isInAttackRange(pos, targetEntityId, entityId) {
+    isInAttackRange(targetEntityId, entityId) {
         if (targetEntityId === undefined || targetEntityId === null || targetEntityId < 0) return false;
-
-        const targetTransform = this.game.getComponent(targetEntityId, 'transform');
-        const targetPos = targetTransform?.position;
-        if (!targetPos) return false;
 
         const combat = this.game.getComponent(entityId, 'combat');
         if (!combat) return false;
 
-        const dx = targetPos.x - pos.x;
-        const dz = targetPos.z - pos.z;
-        const distance = Math.sqrt(dx * dx + dz * dz);
-
-        // Get effective range accounting for unit collision radii
         const baseRange = combat.range || combat.attackRange || 50;
-        const attackerCollision = this.game.getComponent(entityId, 'collision');
-        const targetCollision = this.game.getComponent(targetEntityId, 'collision');
-        const attackerRadius = attackerCollision?.radius || 0;
-        const targetRadius = targetCollision?.radius || 0;
-        const effectiveRange = baseRange + attackerRadius + targetRadius;
-
-        return distance <= effectiveRange;
+        return GUTS.GameUtils.isInRange(this.game, entityId, targetEntityId, baseRange);
     }
 
 }

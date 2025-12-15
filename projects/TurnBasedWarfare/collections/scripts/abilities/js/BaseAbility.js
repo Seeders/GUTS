@@ -103,15 +103,19 @@ class BaseAbility {
     }
     
     // Use spatial grid for efficient lookup - returns array of entityIds
+    // Accounts for collision radii when checking if enemies are in range
     getEnemiesInRange(casterEntity, range = null) {
-        const effectiveRange = range || this.range;
+        const baseRange = range || this.range;
         const transform = this.game.getComponent(casterEntity, "transform");
         const casterPos = transform?.position;
         const casterTeam = this.game.getComponent(casterEntity, "team");
+        const casterRadius = GUTS.GameUtils.getCollisionRadius(this.game, casterEntity);
 
         if (!casterPos || !casterTeam) return [];
 
-        const nearbyEntityIds = this.game.call('getNearbyUnits', casterPos, effectiveRange, casterEntity);
+        // Search with extended range to account for target collision radii
+        const searchRange = baseRange + casterRadius + 50; // +50 as buffer for large units
+        const nearbyEntityIds = this.game.call('getNearbyUnits', casterPos, searchRange, casterEntity);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
 
         return nearbyEntityIds.filter(entityId => {
@@ -121,20 +125,25 @@ class BaseAbility {
             if (!team || !health || health.current <= 0) return false;
             if (team.team === casterTeam.team) return false;
 
-            return true;
+            // Use shared utility for consistent range checking
+            return GUTS.GameUtils.isInRange(this.game, casterEntity, entityId, baseRange);
         });
     }
 
     // Use spatial grid for efficient lookup - returns array of entityIds
+    // Accounts for collision radii when checking if allies are in range
     getAlliesInRange(casterEntity, range = null) {
-        const effectiveRange = range || this.range;
+        const baseRange = range || this.range;
         const transform = this.game.getComponent(casterEntity, "transform");
         const casterPos = transform?.position;
         const casterTeam = this.game.getComponent(casterEntity, "team");
+        const casterRadius = GUTS.GameUtils.getCollisionRadius(this.game, casterEntity);
 
         if (!casterPos || !casterTeam) return [];
 
-        const nearbyEntityIds = this.game.call('getNearbyUnits', casterPos, effectiveRange, null);
+        // Search with extended range to account for target collision radii
+        const searchRange = baseRange + casterRadius + 50; // +50 as buffer for large units
+        const nearbyEntityIds = this.game.call('getNearbyUnits', casterPos, searchRange, null);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
 
         return nearbyEntityIds.filter(entityId => {
@@ -144,7 +153,8 @@ class BaseAbility {
             if (!team || !health || health.current <= 0) return false;
             if (team.team !== casterTeam.team) return false;
 
-            return true;
+            // Use shared utility for consistent range checking
+            return GUTS.GameUtils.isInRange(this.game, casterEntity, entityId, baseRange);
         });
     }
     

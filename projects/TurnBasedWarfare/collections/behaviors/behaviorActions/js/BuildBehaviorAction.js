@@ -60,9 +60,10 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
                 pos.z = buildingPos.z;
             }
 
-            // Clear playerOrder.targetPosition to stop movement
+            // Clear playerOrder to stop movement
             const playerOrder = game.getComponent(entityId, 'playerOrder');
             if (playerOrder) {
+                playerOrder.enabled = false;
                 playerOrder.targetPositionX = 0;
                 playerOrder.targetPositionY = 0;
                 playerOrder.targetPositionZ = 0;
@@ -121,8 +122,18 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             // Complete construction
             this.completeConstruction(entityId, buildingId, buildingPlacement, game);
 
-            // Remove player order so unit can return to normal behavior
-            game.removeComponent(entityId, 'playerOrder');
+            // Disable player order so unit can return to normal behavior
+            const playerOrder = game.getComponent(entityId, 'playerOrder');
+            if (playerOrder) {
+                playerOrder.enabled = false;
+                playerOrder.targetPositionX = 0;
+                playerOrder.targetPositionY = 0;
+                playerOrder.targetPositionZ = 0;
+                playerOrder.isMoveOrder = false;
+                playerOrder.preventEnemiesInRangeCheck = false;
+                playerOrder.completed = false;
+                playerOrder.issuedTime = 0;
+            }
 
             // Return null to end this action (building is complete)
             return null;

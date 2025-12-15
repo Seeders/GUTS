@@ -8,7 +8,7 @@ class HoldPositionBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Check if this is a hold position order
         // Hold position orders have isMoveOrder set to false and targetPosition at current location
-        if (!playerOrder || playerOrder.isMoveOrder) {
+        if (!playerOrder || !playerOrder.enabled || playerOrder.isMoveOrder) {
             return this.failure();
         }
 

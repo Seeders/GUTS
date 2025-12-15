@@ -40,22 +40,37 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
         placement.squadUnits.forEach((unitId) => {
             if (targetPosition) {
-                // Remove existing player order if present, then add new one
-                if (this.game.hasComponent(unitId, "playerOrder")) {
-                    this.game.removeComponent(unitId, "playerOrder");
+                // Get or create playerOrder component and update its values
+                let playerOrder = this.game.getComponent(unitId, "playerOrder");
+                if (!playerOrder) {
+                    this.game.addComponent(unitId, "playerOrder", {});
+                    playerOrder = this.game.getComponent(unitId, "playerOrder");
                 }
 
-                const playerOrderData = {
-                    targetPositionX: targetPosition.x || 0,
-                    targetPositionY: targetPosition.y || 0,
-                    targetPositionZ: targetPosition.z || 0,
-                    isMoveOrder: !!meta?.isMoveOrder,
-                    preventEnemiesInRangeCheck: !!meta?.preventEnemiesInRangeCheck,
-                    completed: false,
-                    issuedTime: createdTime
-                };
+                // Update playerOrder values
+                playerOrder.targetPositionX = targetPosition.x || 0;
+                playerOrder.targetPositionY = targetPosition.y || 0;
+                playerOrder.targetPositionZ = targetPosition.z || 0;
+                playerOrder.isMoveOrder = !!meta?.isMoveOrder;
+                playerOrder.preventEnemiesInRangeCheck = !!meta?.preventEnemiesInRangeCheck;
+                playerOrder.completed = false;
+                playerOrder.issuedTime = createdTime;
+                playerOrder.enabled = true;
 
-                this.game.addComponent(unitId, "playerOrder", playerOrderData);
+                // Clear any existing pathfinding path so the unit doesn't continue following
+                // an old path to a previous destination when battle starts
+                if (this.game.hasService('clearEntityPath')) {
+                    this.game.call('clearEntityPath', unitId);
+                }
+
+                // Also reset pathfinding component state to force immediate path recalculation
+                const pathfinding = this.game.getComponent(unitId, 'pathfinding');
+                if (pathfinding) {
+                    pathfinding.lastPathRequest = 0;
+                    pathfinding.pathIndex = 0;
+                    pathfinding.lastTargetX = 0;
+                    pathfinding.lastTargetZ = 0;
+                }
             }
         });
     }

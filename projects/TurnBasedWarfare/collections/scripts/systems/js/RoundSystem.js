@@ -13,9 +13,15 @@ class RoundSystem extends GUTS.BaseSystem {
         entities.forEach((entityId) => {
             const playerOrder = this.game.getComponent(entityId, 'playerOrder');
             if (playerOrder && playerOrder.completed) {
-                // Remove the completed order entirely rather than clearing fields
-                // This avoids leaving a playerOrder with empty meta that fails checks
-                this.game.removeComponent(entityId, 'playerOrder');
+                // Disable the completed order and reset to defaults
+                playerOrder.enabled = false;
+                playerOrder.targetPositionX = 0;
+                playerOrder.targetPositionY = 0;
+                playerOrder.targetPositionZ = 0;
+                playerOrder.isMoveOrder = false;
+                playerOrder.preventEnemiesInRangeCheck = false;
+                playerOrder.completed = false;
+                playerOrder.issuedTime = 0;
             }
         });
     }

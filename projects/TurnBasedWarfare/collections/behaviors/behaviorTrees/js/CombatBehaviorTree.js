@@ -1,8 +1,12 @@
 class CombatBehaviorTree extends GUTS.BaseBehaviorTree {
     evaluate(entityId, game) {
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitTypeDef = game.call('getUnitTypeDef', unitTypeComp);
+
         // Check if player order prevents combat
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         if (playerOrder?.meta?.preventCombat) {
+            this.runningState.delete(entityId);
             return null;
         }
 
@@ -11,13 +15,13 @@ class CombatBehaviorTree extends GUTS.BaseBehaviorTree {
 
         // Skip if unit can't fight
         if (!combat || !health || health.current <= 0) {
+            this.runningState.delete(entityId);
             return null;
         }
 
         // Skip non-combat units (peasants mining, etc.)
-        const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitType = game.call('getUnitTypeDef', unitTypeComp);
-        if (combat.damage === 0 && (!unitType?.abilities || unitType.abilities.length === 0)) {
+        if (combat.damage === 0 && (!unitTypeDef?.abilities || unitTypeDef.abilities.length === 0)) {
+            this.runningState.delete(entityId);
             return null;
         }
 
