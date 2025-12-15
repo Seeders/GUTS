@@ -418,6 +418,7 @@ class GridSystem extends GUTS.BaseSystem {
                 this._removeEntityFromGrid(entityId);
                 continue;
             }
+            // Check death state - all units have deathState initialized to alive (0) on creation
             const deathStateValue = this.game.getField(entityId, 'deathState', 'state');
             if (deathStateValue !== undefined && deathStateValue !== this.enums.deathState.alive) {
                 this._removeEntityFromGrid(entityId);

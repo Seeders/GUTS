@@ -38,7 +38,6 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
         const createdTime = commandCreatedTime || this.game.state.now;
 
-
         placement.squadUnits.forEach((unitId) => {
             if (targetPosition) {
                 // Remove existing player order if present, then add new one
@@ -57,18 +56,6 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 };
 
                 this.game.addComponent(unitId, "playerOrder", playerOrderData);
-
-                // Verify it was added
-                const verifyOrder = this.game.getComponent(unitId, "playerOrder");
-
-                // Debug: Check if component bit is set in mask
-                const typeId = this.game._componentTypeId?.get('playerOrder');
-                const maskIndex = unitId * 2;
-                const mask0 = this.game.entityComponentMask[maskIndex];
-                const mask1 = this.game.entityComponentMask[maskIndex + 1];
-                const hasBit = typeId < 32
-                    ? (mask0 & (1 << typeId)) !== 0
-                    : (mask1 & (1 << (typeId - 32))) !== 0;
             }
         });
     }

@@ -682,7 +682,9 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     reset() {
-        this.clearSelectedEntity();
+        // Don't clear selected entity - selection should persist across phase transitions
+        // The visual selection (circles, UI) is managed by SelectedUnitSystem
+        // and remains intact; we need game.state.selectedEntity to match
     }
 
   

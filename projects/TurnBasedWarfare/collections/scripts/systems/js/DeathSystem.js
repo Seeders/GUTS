@@ -10,8 +10,13 @@ class DeathSystem extends GUTS.BaseSystem {
     }
 
     update() {
-        // Get all entities with death state
-        const dyingEntities = this.game.getEntitiesWith("deathState");
+        // Get all entities with death state and filter to only dying entities
+        // (deathState is now always present on units, initialized to alive)
+        const allEntities = this.game.getEntitiesWith("deathState");
+        const dyingEntities = allEntities.filter(entityId => {
+            const deathState = this.game.getComponent(entityId, "deathState");
+            return deathState && deathState.state === this.enums.deathState.dying;
+        });
         // Sort for deterministic processing order (prevents desync)
         // OPTIMIZATION: Use numeric sort since entity IDs are numbers (still deterministic, much faster)
         dyingEntities.sort((a, b) => a - b);
@@ -39,10 +44,18 @@ class DeathSystem extends GUTS.BaseSystem {
     }
 
     startDeathProcess(entityId){
-        this.game.addComponent(entityId, 'deathState', {
-            state: this.enums.deathState.dying,
-            deathStartTime: this.game.state.now
-        });
+        // Update existing deathState component (always present on units)
+        const deathState = this.game.getComponent(entityId, 'deathState');
+        if (deathState) {
+            deathState.state = this.enums.deathState.dying;
+            deathState.deathStartTime = this.game.state.now;
+        } else {
+            // Fallback for entities without deathState (shouldn't happen for units)
+            this.game.addComponent(entityId, 'deathState', {
+                state: this.enums.deathState.dying,
+                deathStartTime: this.game.state.now
+            });
+        }
 
         // Trigger death animation
         if(this.game.hasService('playDeathAnimation')){

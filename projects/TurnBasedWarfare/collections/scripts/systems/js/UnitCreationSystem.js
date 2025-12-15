@@ -376,6 +376,16 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 canLevelUp: false,
                 totalUnitsInSquad: 1,
                 lastExperienceGain: 0
+            },
+
+            // Death state - always present, initialized to alive
+            // This prevents stale TypedArray data from recycled entity IDs
+            deathState: {
+                state: this.enums.deathState.alive,
+                deathStartTime: 0,
+                deathAnimationDuration: 2,
+                corpseTime: 0,
+                teamAtDeath: 0
             }
         };
 

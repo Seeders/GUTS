@@ -506,6 +506,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 // Update UI
                 this.updatePlacementUI();
                 this.game.call('updateGoldDisplay');
+
+                // Clear placement mode after successful placement
+                // This prevents placing multiple buildings in a row without re-selecting
+                this.game.state.selectedUnitType = null;
+                this.game.state.peasantBuildingPlacement = null;
+                if (this.placementPreview) {
+                    this.placementPreview.clear();
+                }
+                document.body.style.cursor = 'default';
             } else {
                 this.game.call('showNotification', response.error || 'Placement failed', 'error', 2000);
             }
