@@ -429,14 +429,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         const cells = this.game.call('getSquadCells', gridPos, squadData);
         const isValid = this.game.call('isValidGridPlacement', cells, this.game.state.myTeam);
-        const isBuilding = unitType.collection === 'buildings';
 
         this.cachedValidation = isValid;
 
-        // Get world positions for cells
-        const worldPositions = cells.map(cell =>
-            this.game.call('placementGridToWorld', cell.x, cell.z)
-        );
+        // Get world positions for cells (offset by half cell to center on cell)
+        const halfCell = this.game.call('getPlacementGridSize') / 2;
+        const worldPositions = cells.map(cell => {
+            const pos = this.game.call('placementGridToWorld', cell.x, cell.z);
+            return { x: pos.x + halfCell, z: pos.z + halfCell };
+        });
 
         // Get unit positions for squad preview
         let unitPositions = null;
@@ -446,9 +447,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         // Update preview with correct API
         if (unitPositions && unitPositions.length > 0) {
-            this.placementPreview.showWithUnitMarkers(worldPositions, unitPositions, isValid, isBuilding);
+            this.placementPreview.showWithUnitMarkers(worldPositions, unitPositions, isValid);
         } else {
-            this.placementPreview.showAtWorldPositions(worldPositions, isValid, isBuilding);
+            this.placementPreview.showAtWorldPositions(worldPositions, isValid);
         }
 
         this.updateCursorState(isValid);
