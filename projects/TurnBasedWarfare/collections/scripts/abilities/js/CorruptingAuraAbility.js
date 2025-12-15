@@ -121,7 +121,7 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
             
             if (distance <= this.range) {
                 // Apply drain damage
-                this.dealDamageWithEffects(casterEntity, enemyId, this.drainPerSecond, 'divine', {
+                this.dealDamageWithEffects(casterEntity, enemyId, this.drainPerSecond, 'holy', {
                     isCorruption: true,
                     tickIndex: tickIndex
                 });

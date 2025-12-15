@@ -16,7 +16,7 @@ class HealAbility extends GUTS.BaseAbility {
         });
         
         this.healAmount = 80;
-        this.element = 'divine';
+        this.element = 'holy';
     }
     
     defineEffects() {
@@ -74,7 +74,7 @@ class HealAbility extends GUTS.BaseAbility {
         
         // Show immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Divine light mends wounds!`);
+        this.logAbilityUsage(casterEntity, `Holy light mends wounds!`);
         
     
         this.game.schedulingSystem.scheduleAction(() => {

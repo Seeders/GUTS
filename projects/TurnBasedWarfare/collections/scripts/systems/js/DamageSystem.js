@@ -111,7 +111,9 @@ class DamageSystem extends GUTS.BaseSystem {
             }
         }
 
-        this.game.call('showDamageNumber', targetPos.x, targetPos.y + targetUnitType.height, targetPos.z, damageResult.finalDamage, element);
+        if (targetPos && targetUnitType) {
+            this.game.call('showDamageNumber', targetPos.x, targetPos.y + targetUnitType.height, targetPos.z, damageResult.finalDamage, element);
+        }
 
         return {
             damage: damageResult.finalDamage,
@@ -279,7 +281,7 @@ class DamageSystem extends GUTS.BaseSystem {
             mitigated = Math.floor(finalDamage * lightningResist);
             finalDamage = Math.max(this.MIN_DAMAGE, Math.floor(finalDamage * (1 - lightningResist)));
         } else if (element === this.enums.element.holy || element === this.enums.element.shadow) {
-            // Divine/Holy and Shadow damage cannot be reduced
+            // Holy and Shadow damage cannot be reduced
             mitigated = 0;
             finalDamage = Math.max(this.MIN_DAMAGE, Math.floor(finalDamage));
         } else {

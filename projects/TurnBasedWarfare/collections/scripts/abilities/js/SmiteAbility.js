@@ -2,8 +2,8 @@ class SmiteAbility extends GUTS.BaseAbility {
     constructor(game, params = {}) {
         super(game, {
             id: 'smite',
-            name: 'Divine Smite',
-            description: 'Calls down divine wrath upon the strongest enemy',
+            name: 'Holy Smite',
+            description: 'Calls down holy wrath upon the strongest enemy',
             cooldown: 6.0,
             range: 400,
             manaCost: 65,
@@ -18,7 +18,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         this.damage = 80;
         this.bonusDamageVsUndead = 2.0; // Double damage vs undead
         this.pillarDelay = 0.5; // Time between pillar and damage
-        this.element = 'divine';
+        this.element = 'holy';
     }
     
     defineEffects() {
@@ -51,7 +51,7 @@ class SmiteAbility extends GUTS.BaseAbility {
                     speedMultiplier: 2.0
                 }
             },
-            divine_judgment: {
+            holy_judgment: {
                 type: 'magic',
                 options: {
                     count: 3,
@@ -86,15 +86,15 @@ class SmiteAbility extends GUTS.BaseAbility {
         
         // Show immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Divine judgment descends from the heavens!`);
-        
-        // Schedule the divine smite after cast time
+        this.logAbilityUsage(casterEntity, `Holy judgment descends from the heavens!`);
+
+        // Schedule the holy smite after cast time
         this.game.schedulingSystem.scheduleAction(() => {
-            this.performDivineSmite(casterEntity, target, targetPos);
+            this.performHolySmite(casterEntity, target, targetPos);
         }, this.castTime, casterEntity);
     }
     
-    performDivineSmite(casterEntity, targetId, originalTargetPos) {
+    performHolySmite(casterEntity, targetId, originalTargetPos) {
         // Get current target position (target may have moved)
         const transform = this.game.getComponent(targetId, "transform");
         const currentTargetPos = transform?.position;
@@ -103,10 +103,10 @@ class SmiteAbility extends GUTS.BaseAbility {
         // Create pillar of light effect
         this.createVisualEffect(targetPos, 'pillar');
 
-        // Create divine judgment aura effect
-        this.createVisualEffect(targetPos, 'divine_judgment');
+        // Create holy judgment aura effect
+        this.createVisualEffect(targetPos, 'holy_judgment');
 
-        // Enhanced divine pillar descending from sky (client only)
+        // Enhanced holy pillar descending from sky (client only)
         if (!this.game.isServer) {
             // Pillar of golden light descending
             const pillarSteps = 8;
@@ -173,7 +173,7 @@ class SmiteAbility extends GUTS.BaseAbility {
                         drag: 0.85,
                         blending: 'additive'
                     },
-                    // White divine sparkles
+                    // White holy sparkles
                     {
                         count: 20,
                         lifetime: 0.7,
@@ -196,7 +196,7 @@ class SmiteAbility extends GUTS.BaseAbility {
             this.game.effectsSystem.playScreenShake(0.3, 3);
         }
 
-        this.logAbilityUsage(casterEntity, `A pillar of divine light appears!`);
+        this.logAbilityUsage(casterEntity, `A pillar of holy light appears!`);
 
         // Schedule the actual damage after pillar effect
         this.game.schedulingSystem.scheduleAction(() => {
@@ -208,7 +208,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         // Validate target still exists
         const targetHealth = this.game.getComponent(targetId, "health");
         if (!targetHealth || targetHealth.current <= 0) {
-            this.logAbilityUsage(casterEntity, `Divine judgment finds no target!`);
+            this.logAbilityUsage(casterEntity, `Holy judgment finds no target!`);
             return;
         }
         
@@ -228,7 +228,7 @@ class SmiteAbility extends GUTS.BaseAbility {
             isUndeadTarget = true;
         }
         
-        // Apply divine damage
+        // Apply holy damage
         this.dealDamageWithEffects(casterEntity, targetId, damage, this.element, {
             isSmite: true,
             isCritical: true,
@@ -239,7 +239,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         // Create smite impact effect
         this.createVisualEffect(targetPos, 'smite');
 
-        // Enhanced divine explosion on impact (client only)
+        // Enhanced holy explosion on impact (client only)
         if (!this.game.isServer) {
             this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z),

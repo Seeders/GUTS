@@ -284,7 +284,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
                 
                 if (isUndead) {
                     // Damage undead/evil units
-                    this.dealDamageWithEffects(casterEntity, unitId, this.tickDamage, 'divine', {
+                    this.dealDamageWithEffects(casterEntity, unitId, this.tickDamage, 'holy', {
                         isConsecration: true,
                         tickIndex: tickIndex
                     });

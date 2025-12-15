@@ -17,7 +17,7 @@ class MassHealAbility extends GUTS.BaseAbility {
         
         this.healPercent = 0.4; // 40% of max health
         this.minInjuredAllies = 3;
-        this.element = 'divine';
+        this.element = 'holy';
     }
     
     defineEffects() {
@@ -71,7 +71,7 @@ class MassHealAbility extends GUTS.BaseAbility {
         
         // Show immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Divine energy gathers to heal the wounded!`);
+        this.logAbilityUsage(casterEntity, `Holy energy gathers to heal the wounded!`);
         
         // Schedule the mass heal to trigger after cast time
         this.game.schedulingSystem.scheduleAction(() => {
@@ -88,13 +88,13 @@ class MassHealAbility extends GUTS.BaseAbility {
         // Sort allies deterministically for consistent processing order
         const sortedAllies = targetAllies.slice().sort((a, b) => String(a).localeCompare(String(b)));
 
-        // Create central divine burst at caster
+        // Create central holy burst at caster
         if (!this.game.isServer && casterPos) {
             // Central holy nova explosion
             this.game.call('createLayeredEffect', {
                 position: new THREE.Vector3(casterPos.x, casterPos.y + 40, casterPos.z),
                 layers: [
-                    // Bright divine core
+                    // Bright holy core
                     {
                         count: 15,
                         lifetime: 0.4,

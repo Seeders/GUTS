@@ -68,7 +68,7 @@ class LightningBoltAbility extends GUTS.BaseAbility {
         
         // Immediate cast effect
         this.createVisualEffect(casterPos, 'cast');
-        this.logAbilityUsage(casterEntity, `Lightning crackles with divine fury!`, true);
+        this.logAbilityUsage(casterEntity, `Lightning crackles with electric fury!`, true);
         
         this.game.schedulingSystem.scheduleAction(() => {
             this.strikeLightning(casterEntity, target, targetPos);

@@ -22,7 +22,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             5: { hp: 1.5, damage: 1.5, name: "Champion" },
             6: { hp: 1.6, damage: 1.6, name: "Legendary" },
             7: { hp: 1.7, damage: 1.7, name: "Mythic" },
-            8: { hp: 1.8, damage: 1.8, name: "Divine" },
+            8: { hp: 1.8, damage: 1.8, name: "Holy" },
             9: { hp: 1.9, damage: 1.9, name: "Transcendent" },
             10: { hp: 2.0, damage: 2.0, name: "Godlike" }
         };

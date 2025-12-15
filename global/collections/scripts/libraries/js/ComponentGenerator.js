@@ -164,10 +164,18 @@ class ComponentGenerator {
      * Expand a $fixedArray directive into individual fields
      * { "$fixedArray": { "size": 5, "default": -1 } }
      * { "$fixedArray": { "size": 5, "default": 0, "fields": ["vx", "vz", "frame"] } }
+     * { "$fixedArray": { "sizeFrom": "abilities", "default": 0 } } -> fields based on collection size
      */
     _expandFixedArray(baseName, config) {
         const result = {};
-        const size = config.size || 0;
+        let size;
+        if (config.sizeFrom) {
+            // Get size from collection/enum
+            const enumMap = this._collectionEnumMaps[config.sizeFrom];
+            size = enumMap ? enumMap.toValue.length : 0;
+        } else {
+            size = config.size || 0;
+        }
         const defaultValue = config.default !== undefined ? config.default : null;
         const fields = config.fields;
 

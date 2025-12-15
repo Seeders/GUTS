@@ -66,8 +66,8 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Note: projectile index 0 is valid (first alphabetically sorted projectile like "arrow")
-        // Only -1 means "no projectile" in numeric ECS components
-        const hasProjectile = combat.projectile !== -1 && combat.projectile !== undefined;
+        // null, undefined, or -1 means "no projectile"
+        const hasProjectile = combat.projectile !== null && combat.projectile !== -1 && combat.projectile !== undefined;
 
         // Ability-only units (damage = 0, no projectile) use abilities for combat
         // Abilities have their own cooldowns managed by AbilitySystem

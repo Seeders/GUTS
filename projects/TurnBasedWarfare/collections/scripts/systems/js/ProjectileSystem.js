@@ -670,7 +670,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
                 return '#ffff44'; // Bright yellow
             case this.enums.element.poison:
                 return '#44ff44'; // Green
-            case this.enums.element.divine:
+            case this.enums.element.holy:
                 return '#ffddaa'; // Golden
             case this.enums.element.physical:
             default:
@@ -692,8 +692,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
                 return 'lightning_explosion';
             case this.enums.element.poison:
                 return 'poison_explosion';
-            case this.enums.element.divine:
-                return 'divine_explosion';
+            case this.enums.element.holy:
+                return 'holy_explosion';
             case this.enums.element.physical:
             default:
                 return 'explosion';

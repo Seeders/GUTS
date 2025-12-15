@@ -7,7 +7,7 @@
   "speed": 45,
   "damage": 10,
   "attackSpeed": 0.9,
-  "element": "divine",
+  "element": "holy",
   "armor": 6,
   "buyable": true,
   "specUnits": [

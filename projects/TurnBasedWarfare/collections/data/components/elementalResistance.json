@@ -6,7 +6,7 @@
     "lightningResistance": 0,
     "poisonResistance": 0,
     "physicalResistance": 0,
-    "divineResistance": 0,
+    "holyResistance": 0,
     "duration": null,
     "permanent": true
   }

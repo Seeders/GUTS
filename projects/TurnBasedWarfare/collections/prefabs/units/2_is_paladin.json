@@ -7,7 +7,7 @@
   "speed": 35,
   "damage": 14,
   "attackSpeed": 1,
-  "element": "divine",
+  "element": "holy",
   "armor": 6,
   "fireResistance": 0.2,
   "coldResistance": 0.2,
