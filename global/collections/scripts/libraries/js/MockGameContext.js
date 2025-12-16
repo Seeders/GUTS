@@ -39,12 +39,12 @@ class MockGameContext extends GUTS.BaseECSGame {
         }
 
         // If no entities were added, create a default one
-        if (this.entities.size === 0) {
+        if (this.getEntityCount() === 0) {
             this.initializeEntity('entity-1', {}, 'Entity 1');
         }
 
         // Set current entity to first one
-        this.currentEntityId = Array.from(this.entities.keys())[0];
+        this.currentEntityId = this.getAllEntities()[0];
     }
 
     /**
@@ -75,7 +75,7 @@ class MockGameContext extends GUTS.BaseECSGame {
      * @param {string} label - New label
      */
     setEntityLabel(entityId, label) {
-        if (this.entities.has(entityId)) {
+        if (this.entityExists(entityId)) {
             this.entityLabels.set(entityId, label);
         }
     }
@@ -114,8 +114,8 @@ class MockGameContext extends GUTS.BaseECSGame {
      */
     export() {
         const exported = [];
-        for (const entityId of this.entities.keys()) {
-            const componentTypes = this.entities.get(entityId);
+        for (const entityId of this.getAllEntities()) {
+            const componentTypes = this.getEntityComponentTypes(entityId);
             const componentsObj = {};
 
             // Extract all components for this entity

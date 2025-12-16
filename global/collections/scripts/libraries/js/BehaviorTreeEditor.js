@@ -654,7 +654,7 @@ class BehaviorTreeEditor {
                 const newId = `entity-${Date.now()}`;
                 this.mockGame.initializeEntity(newId, {
                     position: { x: 0, y: 0, z: 0 },
-                }, `Entity ${this.mockGame.entities.size}`);
+                }, `Entity ${this.mockGame.getEntityCount()}`);
                 this.renderAllEntities(entitiesContainer);
                 this.syncMockEntitiesToObjectData();
             });
@@ -665,7 +665,7 @@ class BehaviorTreeEditor {
         container.innerHTML = '';
 
         // Iterate over all entity IDs from BaseECSGame
-        for (const entityId of this.mockGame.entities.keys()) {
+        for (const entityId of this.mockGame.getAllEntities()) {
             this.createEntityEditor(container, entityId);
         }
     }
@@ -712,7 +712,7 @@ class BehaviorTreeEditor {
         removeBtn.style.borderRadius = '3px';
         removeBtn.style.cursor = 'pointer';
         removeBtn.addEventListener('click', () => {
-            if (this.mockGame.entities.size <= 1) {
+            if (this.mockGame.getEntityCount() <= 1) {
                 alert('Cannot remove the last entity');
                 return;
             }
@@ -741,13 +741,11 @@ class BehaviorTreeEditor {
         const componentsDiv = document.createElement('div');
 
         // Get component types for this entity from BaseECSGame
-        const componentTypes = this.mockGame.entities.get(entityId);
-        if (componentTypes) {
-            for (const componentType of componentTypes) {
-                const componentData = this.mockGame.getComponent(entityId, componentType);
-                if (componentData) {
-                    this.createComponentEditor(componentsDiv, entityId, componentType, componentData);
-                }
+        const componentTypes = this.mockGame.getEntityComponentTypes(entityId);
+        for (const componentType of componentTypes) {
+            const componentData = this.mockGame.getComponent(entityId, componentType);
+            if (componentData) {
+                this.createComponentEditor(componentsDiv, entityId, componentType, componentData);
             }
         }
 
@@ -1161,7 +1159,7 @@ class BehaviorTreeEditor {
 
         // Evaluate behavior tree only for the main entity (first entity)
         const results = [];
-        const entityIds = Array.from(this.mockGame.entities.keys());
+        const entityIds = this.mockGame.getAllEntities();
 
         if (entityIds.length > 0) {
             const mainEntityId = entityIds[0];
