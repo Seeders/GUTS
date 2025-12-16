@@ -4,6 +4,7 @@ class BaseEngine {
         this.currentTime = Date.now();
         this.lastTime = Date.now();
         this.deltaTime = 0;
+        this.accumulator = 0;
         this.engineClasses = [];
         this.appClasses = {};
         this.libraries = {};
@@ -22,7 +23,10 @@ class BaseEngine {
     }
 
 
- 
+    resetAccumulator() {
+        this.accumulator = 0;
+    }
+
 
     start() {
         this.running = true;
