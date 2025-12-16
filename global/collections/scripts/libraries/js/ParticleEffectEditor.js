@@ -265,7 +265,7 @@ class ParticleEffectEditor {
 
     const saveEvent = new CustomEvent(this.moduleConfig.saveHook, {
       detail: {
-        data: this.currentData,
+        data: JSON.stringify(this.currentData),
         propertyName: this.propertyName
       }
     });
