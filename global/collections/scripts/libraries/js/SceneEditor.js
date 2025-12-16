@@ -746,11 +746,9 @@ class SceneEditor {
         // Get components from context (merged prefab + overrides)
         const components = {};
         if (this.editorGameInstance) {
-            const entityComponents = this.editorGameInstance.entities.get(entity.id);
-            if (entityComponents) {
-                for (const componentType of entityComponents) {
-                    components[componentType] = this.editorGameInstance.getComponent(entity.id, componentType);
-                }
+            const entityComponents = this.editorGameInstance.getEntityComponentTypes(entity.id);
+            for (const componentType of entityComponents) {
+                components[componentType] = this.editorGameInstance.getComponent(entity.id, componentType);
             }
         }
 

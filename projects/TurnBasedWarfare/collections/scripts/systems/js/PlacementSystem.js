@@ -176,11 +176,16 @@ class PlacementSystem extends GUTS.BaseSystem {
 
     /**
      * Clean up a dead squad - release grid cells and remove from squad manager
-     * @param {Object} placement - The placement object
+     * @param {Object} placement - The placement object with squadUnits array
      */
     cleanupDeadSquad(placement) {
         if (placement.placementId) {
-            this.game.call('releaseGridCells', placement.placementId);
+            // Release grid cells for each entity (use entityId, not placementId)
+            if (placement.squadUnits) {
+                for (const entityId of placement.squadUnits) {
+                    this.game.call('releaseGridCells', entityId);
+                }
+            }
             this.game.call('removeSquad', placement.placementId);
         }
     }
@@ -751,14 +756,19 @@ class PlacementSystem extends GUTS.BaseSystem {
         const playerTeam = player.team;
 
         if (newUnitCost > playerGold) {
+            console.log('[validatePlacement] FAIL: Not enough gold', { newUnitCost, playerGold });
             return false;
         }
 
-        if (this.game.hasService('canAffordSupply') && !this.game.call('canAffordSupply', playerTeam, placement.unitType)) {
+        // Only check supply for units, not buildings (buildings provide supply, not consume it)
+        const isBuilding = placement.unitType?.collection === 'buildings' || placement.collection === this.enums?.objectTypeDefinitions?.buildings;
+        if (!isBuilding && this.game.hasService('canAffordSupply') && !this.game.call('canAffordSupply', playerTeam, placement.unitType)) {
+            console.log('[validatePlacement] FAIL: Not enough supply', { playerTeam, unitType: placement.unitType?.id });
             return false;
         }
 
         if (!placement.gridPosition || !placement.unitType) {
+            console.log('[validatePlacement] FAIL: Missing gridPosition or unitType', { gridPosition: placement.gridPosition, unitType: placement.unitType?.id });
             return false;
         }
 
@@ -766,6 +776,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         const squadData = this.game.call('getSquadData', placement.unitType);
         const cells = this.game.call('getSquadCells', placement.gridPosition, squadData);
         if (!this.game.call('isValidGridPlacement', cells, playerTeam)) {
+            console.log('[validatePlacement] FAIL: Invalid grid placement', { gridPosition: placement.gridPosition, cells, playerTeam });
             return false;
         }
 
@@ -782,13 +793,18 @@ class PlacementSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with success, entityIds, etc.
      */
     placePlacement(socketPlayerId, numericPlayerId, player, placement, serverEntityIds = null) {
+        console.log('[placePlacement] Starting', { socketPlayerId, numericPlayerId, player, placement, serverEntityIds });
+
         if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            console.log('[placePlacement] FAIL: Not in placement phase', this.game.state.phase);
             return { success: false, error: `Not in placement phase (${this.game.state.phase})` };
         }
 
         // Look up full unitType from collections
         const unitType = this.getUnitTypeFromPlacement(placement);
+        console.log('[placePlacement] Resolved unitType', { unitType: unitType?.id, collection: placement.collection, unitTypeId: placement.unitTypeId });
         if (!unitType) {
+            console.log('[placePlacement] FAIL: Unit type not found');
             return { success: false, error: `Unit type not found: collection=${placement.collection}, unitTypeId=${placement.unitTypeId}` };
         }
 
@@ -801,9 +817,11 @@ class PlacementSystem extends GUTS.BaseSystem {
 
         // Get player stats
         const playerStats = this.game.call('getPlayerStats', socketPlayerId);
+        console.log('[placePlacement] Player stats', { gold: playerStats?.gold, team: player?.team });
 
         // Validate placement
         if (!this.validatePlacement(fullPlacement, player, playerStats)) {
+            console.log('[placePlacement] FAIL: validatePlacement returned false');
             return { success: false, error: 'Invalid placement' };
         }
 
@@ -890,11 +908,10 @@ class PlacementSystem extends GUTS.BaseSystem {
                 }
             }
 
-            for (const { entityId, placementId } of entitiesToDestroy) {
+            for (const { entityId } of entitiesToDestroy) {
                 try {
-                    if (placementId) {
-                        this.game.call('releaseGridCells', placementId);
-                    }
+                    // Release grid cells using entityId, not placementId
+                    this.game.call('releaseGridCells', entityId);
                     this.game.destroyEntity(entityId);
                 } catch (error) {
                     console.warn(`Error destroying entity ${entityId}:`, error);
@@ -912,10 +929,8 @@ class PlacementSystem extends GUTS.BaseSystem {
     clearAllPlacements() {
         const entitiesWithPlacement = this.game.getEntitiesWith('placement');
         for (const entityId of entitiesWithPlacement) {
-            const placementComp = this.game.getComponent(entityId, 'placement');
-            if (placementComp?.placementId) {
-                this.game.call('releaseGridCells', placementComp.placementId);
-            }
+            // Release grid cells using entityId, not placementId
+            this.game.call('releaseGridCells', entityId);
             this.game.destroyEntity(entityId);
         }
     }

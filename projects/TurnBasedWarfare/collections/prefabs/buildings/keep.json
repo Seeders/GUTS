@@ -12,12 +12,12 @@
   ],
   "height": 100,
   "size": 48,
-  "icon": "building_townHall",
+  "icon": "building_keep",
   "hp": 2500,
   "visionRange": 200,
   "supplyProvided": 10,
   "spriteScale": 128,
-  "renderTexture": "townhall",
+  "renderTexture": "keep",
   "render": {
     "animations": {
       "idle": [
@@ -29,13 +29,11 @@
         "shapes": [
           {
             "type": "gltf",
-            "color": {
-              "paletteColor": "blueDColor"
-            },
+            "color": {},
             "metalness": 0,
             "roughness": 1,
             "name": "foundation",
-            "model": "townhall"
+            "model": "keep"
           }
         ],
         "position": {
@@ -55,5 +53,5 @@
       }
     }
   },
-  "spriteAnimationSet": "townhall"
+  "spriteAnimationSet": "keep"
 }

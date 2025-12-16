@@ -120,21 +120,38 @@ class ShopSystem extends GUTS.BaseSystem {
         if (this.isBuildingCompleted(buildingId)) {
             const hasUnits = building.units && building.units.length > 0;
             const hasUpgrades = building.upgrades && building.upgrades.length > 0;
-            if (hasUnits) {
-                const unitsSection = this.createUnitsSection(building);
-                container.appendChild(unitsSection);
-            }
+            const hasUpgradesTo = building.upgradesTo && building.upgradesTo.building;
 
-            if (hasUpgrades) {
-                const upgradesSection = this.createUpgradesSection(building);
-                container.appendChild(upgradesSection);
-            }
-
-            if (!hasUnits && !hasUpgrades) {
+            if (!hasUnits && !hasUpgrades && !hasUpgradesTo) {
                 const empty = document.createElement('div');
                 empty.className = 'action-empty';
                 empty.textContent = 'No actions available';
                 container.appendChild(empty);
+            } else {
+                // Create single unified grid for all actions
+                const section = document.createElement('div');
+                section.className = 'action-section';
+
+                const grid = document.createElement('div');
+                grid.className = 'action-grid';
+
+                // Add unit buttons
+                if (hasUnits) {
+                    this.addUnitButtons(grid, building);
+                }
+
+                // Add upgrade buttons
+                if (hasUpgrades) {
+                    this.addUpgradeButtons(grid, building);
+                }
+
+                // Add building upgrade button
+                if (hasUpgradesTo) {
+                    this.addBuildingUpgradeButton(grid, building);
+                }
+
+                section.appendChild(grid);
+                container.appendChild(section);
             }
         } else if (placement.isUnderConstruction) {
             // Building is under construction - show cancel button
@@ -174,26 +191,20 @@ class ShopSystem extends GUTS.BaseSystem {
         container.removeAttribute('style');
     }
 
-    createUnitsSection(building) {
-        const section = document.createElement('div');
-        section.className = 'action-section';
-
-        const grid = document.createElement('div');
-        grid.className = 'action-grid';
+    addUnitButtons(grid, building) {
         const UnitTypes = this.collections.units;
-
         const buildingId = this.game.state.selectedEntity.entityId;
         const productionProgress = this.getBuildingProductionProgress(buildingId);
         const remainingCapacity = 1 - productionProgress;
-        
+
         building.units.forEach(unitId => {
             const unit = UnitTypes[unitId];
             const buildTime = unit.buildTime || 1;
             const canAfford = this.game.call('canAffordCost', unit.value);
             const hasCapacity = buildTime <= remainingCapacity + 0.001;
-            
+
             const hasSupply = this.game.call('canAffordSupply', this.game.state.myTeam, unit) ?? true;
-            
+
             let locked = !canAfford || !hasCapacity || !hasSupply;
             let lockReason = null;
             if (!canAfford) {
@@ -203,7 +214,7 @@ class ShopSystem extends GUTS.BaseSystem {
             } else if (!hasSupply) {
                 lockReason = "Not enough supply";
             }
-            
+
             const btn = this.createActionButton({
                 iconId: unit.icon,
                 title: unit.title,
@@ -215,23 +226,9 @@ class ShopSystem extends GUTS.BaseSystem {
             });
             grid.appendChild(btn);
         });
-
-        section.appendChild(grid);
-        return section;
     }
 
-    createUpgradesSection(building) {
-        const section = document.createElement('div');
-        section.className = 'action-section';
-
-        const header = document.createElement('div');
-        header.className = 'action-section-header';
-        header.textContent = 'UPGRADES';
-        section.appendChild(header);
-
-        const grid = document.createElement('div');
-        grid.className = 'action-grid';
-
+    addUpgradeButtons(grid, building) {
         // Get purchased upgrades from playerStats bitmask
         const playerStats = this.game.call('getLocalPlayerStats');
         const purchasedUpgradesBitmask = playerStats?.upgrades || 0;
@@ -245,7 +242,7 @@ class ShopSystem extends GUTS.BaseSystem {
             const locked = isOwned || !this.game.call('canAffordCost', upgrade.value);
 
             const btn = this.createActionButton({
-                icon: upgrade.icon || '⭐',
+                iconId: upgrade.icon,
                 title: upgrade.title,
                 cost: upgrade.value,
                 locked: locked,
@@ -255,9 +252,57 @@ class ShopSystem extends GUTS.BaseSystem {
             });
             grid.appendChild(btn);
         });
+    }
 
-        section.appendChild(grid);
-        return section;
+    addBuildingUpgradeButton(grid, building) {
+        const upgradeInfo = building.upgradesTo;
+        const targetBuildingId = upgradeInfo.building;
+        const targetBuilding = this.collections.buildings[targetBuildingId];
+
+        if (!targetBuilding) {
+            console.error(`Target building ${targetBuildingId} not found`);
+            return;
+        }
+
+        // Use target building's value as the upgrade cost
+        const cost = targetBuilding.value || 0;
+        const canAfford = this.game.call('canAffordCost', cost);
+        const locked = !canAfford;
+
+        const btn = this.createActionButton({
+            iconId: targetBuilding.icon,
+            title: `Upgrade to ${targetBuilding.title}`,
+            cost: cost,
+            locked: locked,
+            lockReason: locked ? "Can't afford" : null,
+            onClick: () => this.purchaseBuildingUpgrade(targetBuildingId)
+        });
+        grid.appendChild(btn);
+    }
+
+    purchaseBuildingUpgrade(targetBuildingId) {
+        const buildingId = this.game.state.selectedEntity.entityId;
+        const placementId = this.getBuildingPlacementId(buildingId);
+
+        if (!placementId) {
+            this.showNotification('No building selected!', 'error');
+            return;
+        }
+
+        this.game.call('upgradeBuildingRequest', {
+            buildingEntityId: buildingId,
+            placementId: placementId,
+            targetBuildingId: targetBuildingId
+        }, (success, response) => {
+            if (success) {
+                this.showNotification(`Upgraded to ${this.collections.buildings[targetBuildingId].title}!`, 'success');
+                // Clear selection since the old building is destroyed
+                this.clearSelectedEntity();
+                this.clearActionPanel();
+            } else {
+                this.showNotification(response?.error || 'Upgrade failed', 'error');
+            }
+        });
     }
 
     createActionButton(options) {

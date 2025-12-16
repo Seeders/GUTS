@@ -33,6 +33,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.register('setSquadTarget', this.setSquadTarget.bind(this));
         this.game.register('setSquadTargets', this.setSquadTargets.bind(this));
         this.game.register('cancelBuilding', this.cancelBuilding.bind(this));
+        this.game.register('upgradeBuildingRequest', this.upgradeBuildingRequest.bind(this));
         this.game.register('uploadSaveData', this.uploadSaveData.bind(this));
         this.game.register('resyncEntities', this.resyncEntities.bind(this));
         this.game.register('sendCheatRequest', this.sendCheatRequest.bind(this));
@@ -130,6 +131,10 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
             nm.listen('OPPONENT_BUILDING_CANCELLED', (data) => {
                 this.handleOpponentBuildingCancelled(data);
+            }),
+
+            nm.listen('OPPONENT_BUILDING_UPGRADED', (data) => {
+                this.handleOpponentBuildingUpgraded(data);
             }),
 
             nm.listen('CHEAT_BROADCAST', (data) => {
@@ -329,7 +334,70 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.call('clearPlayerPlacements', side, [placementId]);
         this.game.call('showNotification', 'Opponent cancelled a building', 'info', 1500);
     }
-    
+
+    handleOpponentBuildingUpgraded(data) {
+        const { buildingEntityId, placementId, targetBuildingId, newEntityId, newPlacementId } = data;
+
+        // Get opponent's team from the old building
+        const oldPlacement = this.game.getComponent(buildingEntityId, 'placement');
+        const opponentTeam = oldPlacement?.team;
+        const opponentPlayerId = oldPlacement?.playerId;
+
+        if (opponentTeam === undefined) {
+            return;
+        }
+
+        // Use shared processUpgradeBuilding with opponent's data
+        const player = { team: opponentTeam };
+
+        this.processUpgradeBuilding(
+            opponentPlayerId,
+            opponentPlayerId,
+            player,
+            buildingEntityId,
+            placementId,
+            targetBuildingId,
+            [newEntityId],
+            newPlacementId
+        );
+    }
+
+    upgradeBuildingRequest(requestData, callback) {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            callback(false, { error: 'Not in placement phase.' });
+            return;
+        }
+
+        this.game.clientNetworkManager.call(
+            'UPGRADE_BUILDING',
+            requestData,
+            'BUILDING_UPGRADED',
+            (data, error) => {
+                if (error || data.error) {
+                    callback(false, { error: error || data.error });
+                } else {
+                    // Call shared processUpgradeBuilding with server-provided entity IDs
+                    const { buildingEntityId, placementId, targetBuildingId } = requestData;
+                    const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
+                    const player = { team: this.game.state.myTeam };
+
+                    this.processUpgradeBuilding(
+                        numericPlayerId,
+                        numericPlayerId,
+                        player,
+                        buildingEntityId,
+                        placementId,
+                        targetBuildingId,
+                        [data.newEntityId],
+                        data.newPlacementId
+                    );
+
+                    callback(true, data);
+                }
+            }
+        );
+    }
+
     purchaseUpgrade(requestData, callback){
         if(this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');

@@ -14,9 +14,7 @@
             "shapes": [
               {
                 "type": "gltf",
-                "color": {
-                  "paletteColor": "blueDColor"
-                },
+                "color": "#ffffff",
                 "metalness": 0,
                 "roughness": 1,
                 "name": "foundation",
@@ -33,9 +31,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "color": {
-              "paletteColor": "blueDColor"
-            },
+            "color": "#ffffff",
             "metalness": 0,
             "roughness": 1,
             "name": "foundation",

@@ -2,6 +2,22 @@
   "title": "Castle",
   "category": "townhall",
   "value": 100,
+  "upgrades": [
+    "peasantEfficiency"
+  ],
+  "footprintWidth": 3,
+  "footprintHeight": 3,
+  "units": [
+    "peasant"
+  ],
+  "height": 100,
+  "size": 48,
+  "icon": "building_castle",
+  "hp": 2500,
+  "visionRange": 200,
+  "supplyProvided": 10,
+  "spriteScale": 128,
+  "renderTexture": "castle",
   "render": {
     "animations": {
       "idle": [
@@ -17,7 +33,7 @@
             "metalness": 0,
             "roughness": 1,
             "name": "foundation",
-            "model": "townhall"
+            "model": "castle"
           }
         ],
         "position": {
@@ -37,6 +53,5 @@
       }
     }
   },
-  "size": 75,
-  "spriteAnimationSet": "townhall"
+  "spriteAnimationSet": "castle"
 }

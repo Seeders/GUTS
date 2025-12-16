@@ -42,6 +42,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('SET_SQUAD_TARGET', this.handleSetSquadTarget.bind(this));
         this.game.serverEventManager.subscribe('SET_SQUAD_TARGETS', this.handleSetSquadTargets.bind(this));
         this.game.serverEventManager.subscribe('CANCEL_BUILDING', this.handleCancelBuilding.bind(this));
+        this.game.serverEventManager.subscribe('UPGRADE_BUILDING', this.handleUpgradeBuilding.bind(this));
 
         // Cheat events
         this.game.serverEventManager.subscribe('EXECUTE_CHEAT', this.handleExecuteCheat.bind(this));
@@ -425,6 +426,91 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             console.error('Error cancelling building:', error);
             this.serverNetworkManager.sendToPlayer(eventData.playerId, 'BUILDING_CANCELLED', {
                 error: 'Server error while cancelling building'
+            });
+        }
+    }
+
+    handleUpgradeBuilding(eventData) {
+        try {
+            const { playerId, numericPlayerId, data } = eventData;
+            const { buildingEntityId, placementId, targetBuildingId } = data;
+
+            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
+            if (!roomId) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: 'Room not found' });
+                return;
+            }
+
+            const room = this.engine.getRoom(roomId);
+            const player = room.getPlayer(playerId);
+
+            if (!player) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: 'Player not found' });
+                return;
+            }
+
+            // Validate phase
+            if (this.game.state.phase !== this.enums.gamePhase.placement) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: 'Not in placement phase' });
+                return;
+            }
+
+            // Validate target building exists
+            const targetBuilding = this.collections.buildings[targetBuildingId];
+            if (!targetBuilding) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: 'Invalid target building' });
+                return;
+            }
+
+            // Validate gold (use target building's value as cost)
+            const upgradeCost = targetBuilding.value || 0;
+            const playerStats = this.game.call('getPlayerStats', playerId);
+            if (!playerStats || playerStats.gold < upgradeCost) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: 'Not enough gold' });
+                return;
+            }
+
+            // Validate old building exists
+            const oldTransform = this.game.getComponent(buildingEntityId, 'transform');
+            if (!oldTransform?.position) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: 'Building not found' });
+                return;
+            }
+
+            // Call shared processUpgradeBuilding (server generates new entity IDs)
+            const result = this.processUpgradeBuilding(playerId, numericPlayerId, player, buildingEntityId, placementId, targetBuildingId, null);
+
+            if (!result.success) {
+                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: result.error });
+                return;
+            }
+
+            this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', {
+                success: true,
+                newEntityId: result.newEntityId,
+                newPlacementId: result.newPlacementId,
+                gridPosition: result.gridPosition,
+                gold: playerStats.gold
+            });
+
+            // Broadcast to other players
+            for (const [otherPlayerId] of room.players) {
+                if (otherPlayerId !== playerId) {
+                    this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_BUILDING_UPGRADED', {
+                        buildingEntityId: buildingEntityId,
+                        placementId: placementId,
+                        targetBuildingId: targetBuildingId,
+                        newEntityId: result.newEntityId,
+                        newPlacementId: result.newPlacementId,
+                        gridPosition: result.gridPosition
+                    });
+                }
+            }
+
+        } catch (error) {
+            console.error('Error upgrading building:', error);
+            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'BUILDING_UPGRADED', {
+                error: 'Server error while upgrading building'
             });
         }
     }

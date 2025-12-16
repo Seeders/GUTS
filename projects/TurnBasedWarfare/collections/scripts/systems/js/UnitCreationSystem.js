@@ -191,9 +191,9 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                     }
                 }
 
-                // Free grid cells
-                if (squad.placementId) {
-                    this.game.call('releaseGridCells', squad.placementId);
+                // Free grid cells (use entityId, not placementId)
+                for (const unit of squad.squadUnits || []) {
+                    this.game.call('releaseGridCells', unit);
                 }
 
                 // Remove from experience system

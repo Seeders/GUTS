@@ -174,6 +174,75 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
         };
     }
 
+    // ==================== BUILDING UPGRADE ====================
+
+    /**
+     * Process building upgrade - releases grid, destroys old building, spawns new one
+     * @param {string} socketPlayerId - Socket player ID (for stats lookup)
+     * @param {number} numericPlayerId - Numeric player ID (for ECS storage)
+     * @param {Object} player - Player data with team
+     * @param {number} buildingEntityId - The old building entity ID
+     * @param {number} oldPlacementId - The old placement ID
+     * @param {string} targetBuildingId - The target building type ID
+     * @param {number[]|null} serverEntityIds - Entity IDs from server (client uses these)
+     * @param {number|null} newPlacementId - Placement ID from server (client uses this)
+     * @returns {Object} Result with success, newEntityId, newPlacementId, gridPosition
+     */
+    processUpgradeBuilding(socketPlayerId, numericPlayerId, player, buildingEntityId, oldPlacementId, targetBuildingId, serverEntityIds = null, newPlacementId = null) {
+        console.log('[processUpgradeBuilding] Starting', { socketPlayerId, numericPlayerId, buildingEntityId, oldPlacementId, targetBuildingId, serverEntityIds, newPlacementId });
+
+        // Get grid position from old placement before destroying
+        const oldPlacement = this.game.call('getPlacementById', oldPlacementId);
+        const gridPosition = oldPlacement?.gridPosition;
+        console.log('[processUpgradeBuilding] Old placement', { oldPlacement, gridPosition });
+
+        if (!gridPosition) {
+            console.log('[processUpgradeBuilding] FAIL: Could not get grid position');
+            return { success: false, error: 'Could not get grid position' };
+        }
+
+        // Release grid cells before destroying the old building (use entityId, not placementId)
+        console.log('[processUpgradeBuilding] Releasing grid cells for entityId', buildingEntityId);
+        this.game.call('releaseGridCells', buildingEntityId);
+
+        // Remove old building visual representation
+        this.game.call('removeInstance', buildingEntityId);
+
+        // Destroy old building entity
+        this.game.destroyEntity(buildingEntityId);
+
+        // Create new building via normal placement flow
+        const enums = this.game.getEnums();
+        const collectionIndex = enums?.objectTypeDefinitions?.buildings ?? -1;
+        const spawnTypeIndex = enums?.buildings?.[targetBuildingId] ?? -1;
+        console.log('[processUpgradeBuilding] Resolved enums', { collectionIndex, spawnTypeIndex, targetBuildingId });
+
+        const networkBuildingData = {
+            placementId: newPlacementId, // Server generates, client uses server-provided value
+            gridPosition: gridPosition,
+            unitTypeId: spawnTypeIndex,
+            collection: collectionIndex,
+            team: player.team,
+            playerId: numericPlayerId,
+            roundPlaced: this.game.state.round || 1,
+            timestamp: this.game.state.now
+        };
+        console.log('[processUpgradeBuilding] networkBuildingData', networkBuildingData);
+
+        // Spawn new building
+        console.log('[processUpgradeBuilding] Calling processPlacement with serverEntityIds', serverEntityIds);
+        const result = this.processPlacement(socketPlayerId, numericPlayerId, player, networkBuildingData, serverEntityIds);
+        console.log('[processUpgradeBuilding] processPlacement result', result);
+
+        return {
+            success: result.success,
+            newEntityId: result.squadUnits?.[0],
+            newPlacementId: result.placementId,
+            gridPosition: gridPosition,
+            error: result.error
+        };
+    }
+
     // ==================== CHEAT ====================
 
     /**

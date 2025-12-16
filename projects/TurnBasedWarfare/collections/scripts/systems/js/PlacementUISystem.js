@@ -579,9 +579,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
             }
         }
 
-        // Release grid cells
-        if (undoInfo.placementId) {
-            this.game.call('releaseGridCells', undoInfo.placementId);
+        // Release grid cells (use entityId, not placementId)
+        if (undoInfo.squadUnits) {
+            for (const entityId of undoInfo.squadUnits) {
+                this.game.call('releaseGridCells', entityId);
+            }
         }
 
         // Refund gold

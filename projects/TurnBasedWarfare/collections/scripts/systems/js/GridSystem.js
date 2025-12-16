@@ -274,16 +274,19 @@ class GridSystem extends GUTS.BaseSystem {
     }
 
     isValidGridPlacement(cells, team) {
-        if (!cells || cells.length === 0) return false;
+        if (!cells || cells.length === 0) {
+            console.log('[isValidGridPlacement] FAIL: No cells provided');
+            return false;
+        }
 
         for (const cell of cells) {
             const key = this._cellKey(cell.x, cell.z);
             const cellState = this.state.get(key);
             if (cellState && cellState.occupied) {
+                console.log('[isValidGridPlacement] FAIL: Cell occupied', { cell, key, entities: cellState.entities });
                 return false;
             }
         }
-
 
         return true;
     }
@@ -543,15 +546,18 @@ class GridSystem extends GUTS.BaseSystem {
 
     freeCells(entityId) {
         // Remove entity from all cells it occupies
+        let freedCount = 0;
         for (const [key, cellState] of this.state.entries()) {
             const idx = cellState.entities.indexOf(entityId);
             if (idx !== -1) {
                 cellState.entities.splice(idx, 1);
+                freedCount++;
                 if (cellState.entities.length === 0) {
                     this.state.delete(key);
                 }
             }
         }
+        console.log('[freeCells] Released cells for entityId', entityId, 'count:', freedCount);
     }
 
     clear() {

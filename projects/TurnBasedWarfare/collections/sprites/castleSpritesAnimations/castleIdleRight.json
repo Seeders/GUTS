@@ -1,0 +1,8 @@
+{
+  "title": "castle Idle Right",
+  "spriteCollection": "castleSprites",
+  "sprites": [
+    "castleIdleRight_0"
+  ],
+  "fps": 4
+}

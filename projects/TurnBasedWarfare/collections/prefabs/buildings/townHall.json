@@ -5,6 +5,9 @@
   "upgrades": [
     "peasantEfficiency"
   ],
+  "upgradesTo": {
+    "building": "keep"
+  },
   "footprintWidth": 3,
   "footprintHeight": 3,
   "units": [

@@ -90,7 +90,7 @@ class EditorECSGame extends GUTS.BaseECSGame {
         await this.sceneManager.notifySceneLoaded(sceneData);
         this.sceneManager.notifyPostSceneLoad(sceneData);
 
-        console.log('[EditorECSGame] Scene loaded with', this.entities.size, 'entities');
+        console.log('[EditorECSGame] Scene loaded with', this.getEntityCount(), 'entities');
     }
 
     /**
@@ -247,8 +247,8 @@ class EditorECSGame extends GUTS.BaseECSGame {
     exportScene() {
         const entities = [];
 
-        for (const entityId of this.entities.keys()) {
-            const componentTypes = this.entities.get(entityId);
+        for (const entityId of this.getAllEntities()) {
+            const componentTypes = this.getEntityComponentTypes(entityId);
             const componentsObj = {};
 
             for (const componentType of componentTypes) {
@@ -289,7 +289,7 @@ class EditorECSGame extends GUTS.BaseECSGame {
 
         this.systems = [];
 
-        const entityIds = Array.from(this.entities.keys());
+        const entityIds = this.getAllEntities();
         for (const entityId of entityIds) {
             this.destroyEntity(entityId);
         }
