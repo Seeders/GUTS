@@ -36,15 +36,21 @@ class UnitCreationSystem extends GUTS.BaseSystem {
     
     init() {
         // Initialize team configs with numeric keys
+        const TEAM_NEUTRAL = this.enums.team.neutral;
+        const TEAM_HOSTILE = this.enums.team.hostile;
         const TEAM_LEFT = this.enums.team.left;
         const TEAM_RIGHT = this.enums.team.right;
+        this.teamConfigs[TEAM_NEUTRAL] = {
+            initialFacing: 0
+        };
+        this.teamConfigs[TEAM_HOSTILE] = {
+            initialFacing: 0
+        };
         this.teamConfigs[TEAM_LEFT] = {
-            initialFacing: 0,
-            colorTint: null
+            initialFacing: 0
         };
         this.teamConfigs[TEAM_RIGHT] = {
-            initialFacing: Math.PI,
-            colorTint: 0xff4444
+            initialFacing: Math.PI
         };
 
         this.defaults = {
@@ -139,10 +145,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         }
 
         const unitType = this.collections[collection][spawnType];
-        // Ensure transform has defaults
+        // Ensure transform has defaults (rotation handled by addAllComponents based on team/building)
         const safeTransform = {
             position: transform?.position || { x: 0, y: 0, z: 0 },
-            rotation: transform?.rotation || { x: 0, y: 0, z: 0 },
+            rotation: transform?.rotation, // Let addAllComponents set default facing
             scale: transform?.scale || { x: 1, y: 1, z: 1 }
         };
 
@@ -270,7 +276,6 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      */
     addAllComponents(entity, transform, unitType, team, teamConfig, collectionIndex, spawnTypeIndex) {
         const position = transform.position || { x: 0, y: 0, z: 0 };
-        const rotation = transform.rotation || { x: 0, y: teamConfig.initialFacing, z: 0 };
         const scale = transform.scale || { x: 1, y: 1, z: 1 };
         const maxSpeed = (unitType.speed) * this.SPEED_MODIFIER;
         const maxHP = unitType.hp || this.defaults.hp;
@@ -281,13 +286,22 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         // e.g., "units" -> "unit", "buildings" -> "building", "worldObjects" -> "worldObject"
         const collectionComponentName = this.getCollectionComponentName(collectionName);
 
+        // Buildings always face -X direction (Math.PI), units face based on team
+        const isBuilding = collectionName === 'buildings';
+        const defaultFacing = isBuilding ? Math.PI : teamConfig.initialFacing;
+        // Only use transform.rotation if explicitly provided, otherwise use default facing
+        const hasExplicitRotation = transform.rotation != null;
+        const rotationY = hasExplicitRotation ? (transform.rotation.y ?? defaultFacing) : defaultFacing;
+        const rotationX = hasExplicitRotation ? (transform.rotation.x ?? 0) : 0;
+        const rotationZ = hasExplicitRotation ? (transform.rotation.z ?? 0) : 0;
+
         // OPTIMIZATION: Add all components in single batch call
         // This does one cache invalidation instead of 13+ separate invalidations
         const components = {
             // Core components
             transform: {
                 position: { x: position.x ?? 0, y: position.y ?? 0, z: position.z ?? 0 },
-                rotation: { x: rotation.x ?? 0, y: rotation.y ?? teamConfig.initialFacing, z: rotation.z ?? 0 },
+                rotation: { x: rotationX, y: rotationY, z: rotationZ },
                 scale: { x: scale.x ?? 1, y: scale.y ?? 1, z: scale.z ?? 1 }
             },
             velocity: {
@@ -423,12 +437,20 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      */
     addCoreComponents(entity, transform, unitType, team, teamConfig) {
         const position = transform.position || { x: 0, y: 0, z: 0 };
-        const rotation = transform.rotation || { x: 0, y: teamConfig.initialFacing, z: 0 };
         const scale = transform.scale || { x: 1, y: 1, z: 1 };
+
+        // Buildings always face -X direction (Math.PI), units face based on team
+        const isBuilding = unitType.collection === 'buildings';
+        const defaultFacing = isBuilding ? Math.PI : teamConfig.initialFacing;
+        // Only use transform.rotation if explicitly provided, otherwise use default facing
+        const hasExplicitRotation = transform.rotation != null;
+        const rotationY = hasExplicitRotation ? (transform.rotation.y ?? defaultFacing) : defaultFacing;
+        const rotationX = hasExplicitRotation ? (transform.rotation.x ?? 0) : 0;
+        const rotationZ = hasExplicitRotation ? (transform.rotation.z ?? 0) : 0;
 
         this.game.addComponent(entity, "transform", {
             position: { x: position.x ?? 0, y: position.y ?? 0, z: position.z ?? 0 },
-            rotation: { x: rotation.x ?? 0, y: rotation.y ?? teamConfig.initialFacing, z: rotation.z ?? 0 },
+            rotation: { x: rotationX, y: rotationY, z: rotationZ },
             scale: { x: scale.x ?? 1, y: scale.y ?? 1, z: scale.z ?? 1 }
         });
 

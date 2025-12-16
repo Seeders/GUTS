@@ -39,7 +39,15 @@ class PlacementSystem extends GUTS.BaseSystem {
         this.game.register('getCameraPositionForTeam', this.getCameraPositionForTeam.bind(this));
         this.game.register('applyNetworkUnitData', this.applyNetworkUnitData.bind(this));
         this.game.register('findBuildingSpawnPosition', this.findBuildingSpawnPosition.bind(this));
+    }
 
+    /**
+     * Handle tab becoming visible - reset accumulator during placement to prevent catchup
+     */
+    onTabVisible() {
+        if (this.game.state.phase === this.enums.gamePhase.placement) {
+            this.game.app?.resetAccumulator();
+        }
     }
 
     /**
@@ -819,8 +827,8 @@ class PlacementSystem extends GUTS.BaseSystem {
         const playerStats = this.game.call('getPlayerStats', socketPlayerId);
         console.log('[placePlacement] Player stats', { gold: playerStats?.gold, team: player?.team });
 
-        // Validate placement
-        if (!this.validatePlacement(fullPlacement, player, playerStats)) {
+        // Validate placement (skip if upgrading - already validated and grid released)
+        if (!placement.skipValidation && !this.validatePlacement(fullPlacement, player, playerStats)) {
             console.log('[placePlacement] FAIL: validatePlacement returned false');
             return { success: false, error: 'Invalid placement' };
         }

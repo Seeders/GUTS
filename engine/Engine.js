@@ -5,7 +5,6 @@ class Engine extends BaseEngine {
         this.isServer = false;
         this.tickRate = 1 / 20; // 20 TPS
         this.lastTick = 0;
-        this.accumulator = 0;
         const urlParams = new URLSearchParams(window.location.search);
         this.serverMode = urlParams.get('isServer');
         this.services = new Map();
@@ -100,7 +99,6 @@ class Engine extends BaseEngine {
             this.applicationTarget.style = '';
         });
     }
-
     async gameLoop() {
         if (!this.running) return;
 
@@ -108,13 +106,10 @@ class Engine extends BaseEngine {
         const deltaTime = (now - this.lastTick) / 1000;
         this.lastTick = now;
 
-        // Only accumulate time during battle phase to prevent catchup after placement
-        const phase = this.gameInstance?.state?.phase;
-        if (phase === this.battlePhaseEnum) {
-            this.accumulator += deltaTime;
-        }
+        // Always accumulate time for fixed timestep
+        this.accumulator += deltaTime;
 
-        // Process ticks, but limit per frame to catch up gradually
+        // Process ticks at fixed rate, limit per frame to catch up gradually
         // This prevents lag spikes while maintaining sync
         const maxTicksPerFrame = 3;
         let ticksProcessed = 0;
@@ -123,11 +118,6 @@ class Engine extends BaseEngine {
             await this.tick();
             this.accumulator -= this.tickRate;
             ticksProcessed++;
-        }
-
-        // During non-battle phases, still tick once per frame for UI updates
-        if (phase !== this.battlePhaseEnum && this.accumulator < this.tickRate) {
-            await this.tick();
         }
 
         // Schedule next frame using requestAnimationFrame when tab is active
@@ -160,6 +150,10 @@ class Engine extends BaseEngine {
             if (this.intervalId) {
                 clearInterval(this.intervalId);
                 this.intervalId = null;
+            }
+            // Notify game that tab became visible (for catchup handling)
+            if (this.gameInstance?.triggerEvent) {
+                this.gameInstance.triggerEvent('onTabVisible');
             }
             this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
         }

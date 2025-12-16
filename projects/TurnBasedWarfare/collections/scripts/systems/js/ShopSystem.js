@@ -120,7 +120,7 @@ class ShopSystem extends GUTS.BaseSystem {
         if (this.isBuildingCompleted(buildingId)) {
             const hasUnits = building.units && building.units.length > 0;
             const hasUpgrades = building.upgrades && building.upgrades.length > 0;
-            const hasUpgradesTo = building.upgradesTo && building.upgradesTo.building;
+            const hasUpgradesTo = !!building.upgradesToBuilding;
 
             if (!hasUnits && !hasUpgrades && !hasUpgradesTo) {
                 const empty = document.createElement('div');
@@ -255,8 +255,7 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     addBuildingUpgradeButton(grid, building) {
-        const upgradeInfo = building.upgradesTo;
-        const targetBuildingId = upgradeInfo.building;
+        const targetBuildingId = building.upgradesToBuilding;
         const targetBuilding = this.collections.buildings[targetBuildingId];
 
         if (!targetBuilding) {

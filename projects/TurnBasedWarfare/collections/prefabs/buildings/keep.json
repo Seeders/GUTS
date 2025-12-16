@@ -5,6 +5,7 @@
   "upgrades": [
     "peasantEfficiency"
   ],
+  "upgradesToBuilding": "castle",
   "footprintWidth": 3,
   "footprintHeight": 3,
   "units": [

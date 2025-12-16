@@ -225,7 +225,8 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             team: player.team,
             playerId: numericPlayerId,
             roundPlaced: this.game.state.round || 1,
-            timestamp: this.game.state.now
+            timestamp: this.game.state.now,
+            skipValidation: true // Skip validation for upgrades since we already validated and released the grid
         };
         console.log('[processUpgradeBuilding] networkBuildingData', networkBuildingData);
 
