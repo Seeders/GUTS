@@ -125,5 +125,7 @@
     "MeteorStrikeAbility"
   ],
   "range": 100,
-  "projectile": "fireball"
+  "projectile": "fireball",
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

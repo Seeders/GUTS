@@ -162,5 +162,9 @@
   "icon": "unit_rogue",
   "visionRange": 800,
   "supplyCost": 2,
-  "spriteAnimationSet": "rogue"
+  "spriteAnimationSet": "rogue",
+  "requiresUnits": [],
+  "requiresBuildings": [
+    "mageTower"
+  ]
 }

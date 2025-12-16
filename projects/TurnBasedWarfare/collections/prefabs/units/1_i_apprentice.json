@@ -168,5 +168,7 @@
   "icon": "unit_apprentice",
   "visionRange": 500,
   "supplyCost": 2,
-  "spriteAnimationSet": "apprentice"
+  "spriteAnimationSet": "apprentice",
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

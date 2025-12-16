@@ -183,5 +183,7 @@
   "placementGridHeight": 1,
   "abilities": [
     "SummonWolfAbility"
-  ]
+  ],
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

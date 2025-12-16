@@ -164,5 +164,7 @@
   "placementGridHeight": 1,
   "abilities": [
     "ArenaPresenceAbility"
-  ]
+  ],
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

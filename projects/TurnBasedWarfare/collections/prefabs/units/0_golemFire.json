@@ -121,5 +121,7 @@
   "placementGridHeight": 1,
   "abilities": [
     "BurningAuraAbility"
-  ]
+  ],
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

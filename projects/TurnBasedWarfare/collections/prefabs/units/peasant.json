@@ -122,5 +122,7 @@
     "equipment": []
   },
   "spriteAnimationSet": "peasant",
-  "range": 1
+  "range": 1,
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

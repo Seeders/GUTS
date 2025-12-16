@@ -143,5 +143,7 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "range": 200,
-  "projectile": "bolt"
+  "projectile": "bolt",
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

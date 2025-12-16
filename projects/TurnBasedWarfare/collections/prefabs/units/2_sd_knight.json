@@ -162,5 +162,7 @@
   "placementGridHeight": 1,
   "abilities": [
     "ChargeAbility"
-  ]
+  ],
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

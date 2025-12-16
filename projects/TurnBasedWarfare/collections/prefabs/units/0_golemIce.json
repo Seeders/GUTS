@@ -122,5 +122,7 @@
   "abilities": [
     "FreezingAuraAbility"
   ],
-  "spriteAnimationSet": "icegolem"
+  "spriteAnimationSet": "icegolem",
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

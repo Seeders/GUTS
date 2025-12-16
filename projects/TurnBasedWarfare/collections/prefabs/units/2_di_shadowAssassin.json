@@ -177,5 +177,7 @@
   "placementGridHeight": 1,
   "abilities": [
     "ShadowStrikeAbility"
-  ]
+  ],
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

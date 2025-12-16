@@ -4,5 +4,9 @@
   "value": 100,
   "effects": [
     "spellDamage"
+  ],
+  "icon": "elemental_damage",
+  "requiresBuildings": [
+    "keep"
   ]
 }

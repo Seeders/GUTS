@@ -161,5 +161,7 @@
   "placementGridHeight": 1,
   "abilities": [
     "HealAbility"
-  ]
+  ],
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

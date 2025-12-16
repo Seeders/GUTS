@@ -156,5 +156,10 @@
   ],
   "spriteAnimationSet": "dragonred",
   "spriteYOffset": -48,
-  "range": 10
+  "range": 10,
+  "requiresUnits": [],
+  "requiresBuildings": [
+    "castle"
+  ],
+  "icon": "dragon"
 }

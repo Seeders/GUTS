@@ -174,5 +174,9 @@
       }
     ]
   },
-  "range": 1
+  "range": 1,
+  "requiresUnits": [],
+  "requiresBuildings": [
+    "barracks"
+  ]
 }

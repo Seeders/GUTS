@@ -159,5 +159,7 @@
   "squadHeight": 1,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "abilities": []
+  "abilities": [],
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

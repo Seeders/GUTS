@@ -64,5 +64,7 @@
   "hp": 2000,
   "height": 100,
   "spriteAnimationSet": "goldmine",
-  "spriteScale": 128
+  "spriteScale": 128,
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

@@ -56,8 +56,8 @@
     }
   },
   "units": [
-    "1_sd_soldier",
-    "1_s_barbarian"
+    "1_s_barbarian",
+    "1_sd_soldier"
   ],
   "footprintWidth": 2,
   "footprintHeight": 3,
@@ -66,5 +66,7 @@
   "icon": "building_barracks",
   "hp": 1500,
   "supplies": 7,
-  "spriteAnimationSet": "barracks"
+  "spriteAnimationSet": "barracks",
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

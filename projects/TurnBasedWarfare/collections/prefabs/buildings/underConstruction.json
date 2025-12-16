@@ -47,5 +47,7 @@
   "size": 75,
   "hp": 1000,
   "spriteAnimationSet": "underconstruction",
-  "spriteScale": 128
+  "spriteScale": 128,
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

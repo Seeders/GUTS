@@ -48,6 +48,67 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     /**
+     * Get all owned units for a specific side (alive, not under construction)
+     */
+    getOwnedUnits(teamIndex) {
+        const units = new Map(); // unitType -> [entityIds]
+        const entitiesWithTeam = this.game.getEntitiesWith('unitType', 'team', 'health');
+
+        for (const entityId of entitiesWithTeam) {
+            const teamComp = this.game.getComponent(entityId, 'team');
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const health = this.game.getComponent(entityId, 'health');
+
+            if (!unitType || !health) continue;
+            if (unitType.collection !== 'units') continue;
+            if (teamComp.team !== teamIndex) continue;
+            if (health.current <= 0) continue;
+
+            const unitTypeId = unitType.id;
+            if (!units.has(unitTypeId)) {
+                units.set(unitTypeId, []);
+            }
+            units.get(unitTypeId).push(entityId);
+        }
+
+        return units;
+    }
+
+    /**
+     * Check if requirements are met for a unit or building
+     * @param {Object} def - Unit or building definition with optional requiresUnits/requiresBuildings arrays
+     * @returns {{met: boolean, reason: string|null}}
+     */
+    checkRequirements(def) {
+        const teamIndex = this.game.state.myTeam;
+
+        if (def.requiresBuildings && def.requiresBuildings.length > 0) {
+            const ownedBuildings = this.getOwnedBuildings(teamIndex);
+            for (const reqBuilding of def.requiresBuildings) {
+                if (!ownedBuildings.has(reqBuilding)) {
+                    const buildingDef = this.collections.buildings[reqBuilding];
+                    const buildingName = buildingDef?.title || reqBuilding;
+                    return { met: false, reason: `Requires ${buildingName}` };
+                }
+            }
+        }
+
+        if (def.requiresUnits && def.requiresUnits.length > 0) {
+            const ownedUnits = this.getOwnedUnits(teamIndex);
+            for (const reqUnit of def.requiresUnits) {
+                if (!ownedUnits.has(reqUnit)) {
+                    const unitDef = this.collections.units[reqUnit];
+                    const unitName = unitDef?.title || reqUnit;
+                    return { met: false, reason: `Requires ${unitName}` };
+                }
+            }
+        }
+
+        return { met: true, reason: null };
+    }
+
+    /**
      * Check if a building entity is completed (not under construction)
      */
     isBuildingCompleted(entityId) {
@@ -202,12 +263,14 @@ class ShopSystem extends GUTS.BaseSystem {
             const buildTime = unit.buildTime || 1;
             const canAfford = this.game.call('canAffordCost', unit.value);
             const hasCapacity = buildTime <= remainingCapacity + 0.001;
-
             const hasSupply = this.game.call('canAffordSupply', this.game.state.myTeam, unit) ?? true;
+            const requirements = this.checkRequirements(unit);
 
-            let locked = !canAfford || !hasCapacity || !hasSupply;
+            let locked = !canAfford || !hasCapacity || !hasSupply || !requirements.met;
             let lockReason = null;
-            if (!canAfford) {
+            if (!requirements.met) {
+                lockReason = requirements.reason;
+            } else if (!canAfford) {
                 lockReason = "Can't afford";
             } else if (!hasCapacity) {
                 lockReason = `Need ${buildTime.toFixed(1)} rounds`;
@@ -239,14 +302,25 @@ class ShopSystem extends GUTS.BaseSystem {
 
             const upgradeIndex = this.enums.upgrades?.[upgradeId];
             const isOwned = upgradeIndex !== undefined && (purchasedUpgradesBitmask & (1 << upgradeIndex)) !== 0;
-            const locked = isOwned || !this.game.call('canAffordCost', upgrade.value);
+            const canAfford = this.game.call('canAffordCost', upgrade.value);
+            const requirements = this.checkRequirements(upgrade);
+            const locked = isOwned || !canAfford || !requirements.met;
+
+            let lockReason = null;
+            if (isOwned) {
+                lockReason = 'Owned';
+            } else if (!requirements.met) {
+                lockReason = requirements.reason;
+            } else if (!canAfford) {
+                lockReason = "Can't afford";
+            }
 
             const btn = this.createActionButton({
                 iconId: upgrade.icon,
                 title: upgrade.title,
                 cost: upgrade.value,
                 locked: locked,
-                lockReason: isOwned ? 'Owned' : (locked ? "Can't afford" : null),
+                lockReason: lockReason,
                 owned: isOwned,
                 onClick: () => !isOwned && this.purchaseUpgrade(upgradeId, upgrade)
             });
@@ -351,29 +425,15 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     isBuildingLocked(buildingId, building) {
-        return !this.game.call('canAffordCost', building.value) ||
-               (building.requires && !this.hasRequirements(building.requires));
+        const requirements = this.checkRequirements(building);
+        return !this.game.call('canAffordCost', building.value) || !requirements.met;
     }
 
     getLockReason(buildingId, building) {
+        const requirements = this.checkRequirements(building);
+        if (!requirements.met) return requirements.reason;
         if (!this.game.call('canAffordCost', building.value)) return "Can't afford";
-        if (building.requires && !this.hasRequirements(building.requires)) {
-            return 'Missing requirements';
-        }
         return null;
-    }
-
-    hasRequirements(requirements) {
-        if (requirements.townHallLevel) {
-            if (this.townHallLevel < requirements.townHallLevel) return false;
-        }
-        if (requirements.buildings) {
-            const ownedBuildings = this.getOwnedBuildings(this.game.state.myTeam);
-            for (const reqBuilding of requirements.buildings) {
-                if (!ownedBuildings.has(reqBuilding)) return false;
-            }
-        }
-        return true;
     }
 
     purchaseUnit(unitId, unit) {

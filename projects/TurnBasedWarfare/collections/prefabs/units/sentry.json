@@ -147,5 +147,7 @@
         }
       }
     }
-  }
+  },
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

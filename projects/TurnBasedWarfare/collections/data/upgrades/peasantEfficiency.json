@@ -2,8 +2,11 @@
   "title": "Peasant Efficiency",
   "description": "Increase Gold Per Trip by 5",
   "value": 100,
-  "icon": "upgrade_peasantEfficiency",
+  "icon": "wrench",
   "effects": [
     "goldPerTrip"
+  ],
+  "requiresBuildings": [
+    "keep"
   ]
 }

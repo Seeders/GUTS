@@ -54,5 +54,7 @@
       }
     }
   },
-  "spriteAnimationSet": "keep"
+  "spriteAnimationSet": "keep",
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

@@ -5,8 +5,8 @@
   "category": "attribute",
   "renderTexture": "fletchers_hall",
   "units": [
-    "1_di_scout",
-    "1_d_archer"
+    "1_d_archer",
+    "1_di_scout"
   ],
   "footprintWidth": 2,
   "footprintHeight": 2,
@@ -67,5 +67,7 @@
       }
     }
   },
-  "spriteAnimationSet": "fletchershall"
+  "spriteAnimationSet": "fletchershall",
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

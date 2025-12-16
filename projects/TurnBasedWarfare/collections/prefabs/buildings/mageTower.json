@@ -53,8 +53,8 @@
     "spellDamage"
   ],
   "units": [
-    "1_is_acolyte",
     "1_i_apprentice",
+    "1_is_acolyte",
     "dragon_red"
   ],
   "footprintWidth": 2,
@@ -64,5 +64,7 @@
   "size": 50,
   "icon": "building_mageTower",
   "hp": 1500,
-  "spriteAnimationSet": "magetower"
+  "spriteAnimationSet": "magetower",
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

@@ -163,5 +163,9 @@
   "icon": "unit_soldier",
   "visionRange": 500,
   "supplyCost": 2,
-  "spriteAnimationSet": "soldier"
+  "spriteAnimationSet": "soldier",
+  "requiresUnits": [],
+  "requiresBuildings": [
+    "fletchersHall"
+  ]
 }

@@ -166,5 +166,7 @@
   "placementGridHeight": 1,
   "abilities": [
     "ExplosiveTrapAbility"
-  ]
+  ],
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

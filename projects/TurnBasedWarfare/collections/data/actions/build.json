@@ -1,6 +1,6 @@
 {
   "title": "Peasant Build",
-  "icon": "building_townHall",
+  "icon": "hammer",
   "actionSet": "peasant_buildings",
   "ability": "BuildAbility"
 }

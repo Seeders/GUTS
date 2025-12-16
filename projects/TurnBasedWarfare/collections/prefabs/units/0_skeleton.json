@@ -149,5 +149,7 @@
   "squadHeight": 1,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "spriteAnimationSet": "skeleton"
+  "spriteAnimationSet": "skeleton",
+  "requiresUnits": [],
+  "requiresBuildings": []
 }

@@ -13,9 +13,7 @@
           "main": {
             "shapes": [
               {
-                "color": {
-                  "paletteColor": "blueDColor"
-                },
+                "color": "#ffffff",
                 "id": 0,
                 "model": "underConstruction"
               }
@@ -29,9 +27,7 @@
         "shapes": [
           {
             "type": "gltf",
-            "color": {
-              "paletteColor": "blueDColor"
-            },
+            "color": "#ffffff",
             "metalness": 0,
             "roughness": 1,
             "name": "foundation",
@@ -60,11 +56,13 @@
   "footprintHeight": 2,
   "height": 100,
   "size": 50,
-  "icon": "unit_archer",
+  "icon": "rain_of_arrows",
   "damage": 20,
   "attackSpeed": 1,
   "range": 300,
   "projectile": "arrow",
   "element": "physical",
-  "hp": 500
+  "hp": 500,
+  "requiresUnits": [],
+  "requiresBuildings": []
 }
