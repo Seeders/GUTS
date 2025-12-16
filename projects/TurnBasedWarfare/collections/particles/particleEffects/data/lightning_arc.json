@@ -1,0 +1,31 @@
+{
+  "title": "Lightning Arc",
+  "category": "lightning",
+  "tags": [
+    "lightning",
+    "electric",
+    "arc"
+  ],
+  "particleEffectData": {
+    "count": 15,
+    "lifetime": 0.3,
+    "scale": 8,
+    "scaleMultiplier": 1.2,
+    "startColor": "#88ddff",
+    "endColor": "#4488ff",
+    "emitterShape": "sphere",
+    "emitterRadius": 15,
+    "heightOffset": 30,
+    "velocityXMin": -100,
+    "velocityXMax": 100,
+    "velocityYMin": 50,
+    "velocityYMax": 120,
+    "velocityZMin": -100,
+    "velocityZMax": 100,
+    "gravity": -50,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "title": "Tornado",
+  "category": "wind",
+  "tags": [
+    "wind",
+    "tornado",
+    "shield",
+    "buff"
+  ],
+  "layers": [
+    {
+      "effect": "wind_swirl_base",
+      "delay": 0
+    },
+    {
+      "effect": "wind_swirl_mid",
+      "delay": 0
+    },
+    {
+      "effect": "wind_swirl_top",
+      "delay": 0
+    },
+    {
+      "effect": "wind_wisps",
+      "delay": 0
+    }
+  ],
+  "repeating": true,
+  "repeatInterval": 0.4
+}

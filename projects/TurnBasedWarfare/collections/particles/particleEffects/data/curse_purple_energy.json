@@ -1,0 +1,31 @@
+{
+  "title": "Curse Purple Energy",
+  "category": "shadow",
+  "tags": [
+    "curse",
+    "purple",
+    "energy"
+  ],
+  "particleEffectData": {
+    "count": 15,
+    "lifetime": 0.6,
+    "scale": 12,
+    "scaleMultiplier": 1.5,
+    "startColor": "#8844cc",
+    "endColor": "#330066",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 30,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 20,
+    "velocityYMax": 60,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": -30,
+    "drag": 0.92,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

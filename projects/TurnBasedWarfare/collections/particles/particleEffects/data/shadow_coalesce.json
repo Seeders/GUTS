@@ -1,0 +1,31 @@
+{
+  "title": "Shadow Coalesce",
+  "category": "shadow",
+  "tags": [
+    "shadow",
+    "dark",
+    "teleport"
+  ],
+  "particleEffectData": {
+    "count": 18,
+    "lifetime": 0.4,
+    "scale": 20,
+    "scaleMultiplier": 0.3,
+    "startColor": "#444444",
+    "endColor": "#111111",
+    "emitterShape": "sphere",
+    "emitterRadius": 30,
+    "heightOffset": 30,
+    "velocityXMin": -40,
+    "velocityXMax": 40,
+    "velocityYMin": -20,
+    "velocityYMax": 40,
+    "velocityZMin": -40,
+    "velocityZMax": 40,
+    "gravity": 0,
+    "drag": 0.85,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "title": "Dust Launch",
+  "category": "physical",
+  "tags": [
+    "dust",
+    "launch",
+    "ground"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 0.5,
+    "scale": 18,
+    "scaleMultiplier": 2,
+    "startColor": "#a08060",
+    "endColor": "#665544",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 10,
+    "velocityXMin": -60,
+    "velocityXMax": 60,
+    "velocityYMin": 10,
+    "velocityYMax": 50,
+    "velocityZMin": -60,
+    "velocityZMax": 60,
+    "gravity": 80,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

@@ -1,6 +1,3 @@
 {
-  "id": "abilities",
-  "name": "Abilities",
-  "singular": "ability",
-  "objectTypeCategory": "scripts"
+  "title": "Scripts"
 }

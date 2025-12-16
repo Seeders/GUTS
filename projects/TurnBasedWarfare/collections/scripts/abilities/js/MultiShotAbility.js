@@ -90,39 +90,10 @@ class MultiShotAbility extends GUTS.BaseAbility {
         // Create volley effect
         this.createVisualEffect(casterPos, 'volley');
 
-        // Enhanced volley launch burst
+        // Enhanced volley launch burst using preset effect system
         if (!this.game.isServer) {
-            this.game.call('createLayeredEffect', {
-                position: new THREE.Vector3(casterPos.x, casterPos.y + 25, casterPos.z),
-                layers: [
-                    // Arrow trail burst
-                    {
-                        count: 15,
-                        lifetime: 0.4,
-                        color: 0xcd853f,
-                        colorRange: { start: 0xf4a460, end: 0x8b4513 },
-                        scale: 12,
-                        scaleMultiplier: 1.5,
-                        velocityRange: { x: [-80, 80], y: [30, 80], z: [-80, 80] },
-                        gravity: 100,
-                        drag: 0.93,
-                        blending: 'normal'
-                    },
-                    // Golden glint
-                    {
-                        count: 8,
-                        lifetime: 0.3,
-                        color: 0xffd700,
-                        colorRange: { start: 0xffffff, end: 0xdaa520 },
-                        scale: 8,
-                        scaleMultiplier: 1.2,
-                        velocityRange: { x: [-50, 50], y: [40, 100], z: [-50, 50] },
-                        gravity: 0,
-                        drag: 0.85,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            this.game.call('playEffectSystem', 'multishot_volley',
+                new THREE.Vector3(casterPos.x, casterPos.y + 25, casterPos.z));
         }
 
         // Fire arrows at each target with staggered timing

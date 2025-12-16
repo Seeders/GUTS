@@ -1,0 +1,31 @@
+{
+  "title": "Rally Empowerment",
+  "category": "buff",
+  "tags": [
+    "rally",
+    "buff",
+    "golden"
+  ],
+  "particleEffectData": {
+    "count": 10,
+    "lifetime": 0.5,
+    "scale": 15,
+    "scaleMultiplier": 1.8,
+    "startColor": "#ffffff",
+    "endColor": "#ffaa00",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 25,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 50,
+    "velocityYMax": 120,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": -40,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

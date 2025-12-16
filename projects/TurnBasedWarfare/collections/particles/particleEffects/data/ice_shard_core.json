@@ -1,0 +1,31 @@
+{
+  "title": "Ice Shard Core",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "shard",
+    "projectile"
+  ],
+  "particleEffectData": {
+    "count": 6,
+    "lifetime": 0.12,
+    "scale": 20,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ffffff",
+    "endColor": "#44ddff",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 0,
+    "velocityXMin": -5,
+    "velocityXMax": 5,
+    "velocityYMin": -5,
+    "velocityYMax": 5,
+    "velocityZMin": -5,
+    "velocityZMax": 5,
+    "gravity": 0,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

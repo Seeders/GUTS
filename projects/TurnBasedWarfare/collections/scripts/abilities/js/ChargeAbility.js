@@ -151,41 +151,12 @@ class ChargeAbility extends GUTS.BaseAbility {
         // Visual charge effect
         this.createVisualEffect(pos, 'charge');
 
-        // Enhanced charge initiation - dust burst and battle cry
+        // Enhanced charge initiation - dust burst and battle cry using preset effect
         if (!this.game.isServer) {
-            this.game.call('createLayeredEffect', {
-                position: new THREE.Vector3(pos.x, pos.y + 10, pos.z),
-                layers: [
-                    // Ground dust burst
-                    {
-                        count: 25,
-                        lifetime: 0.6,
-                        color: 0x8b7355,
-                        colorRange: { start: 0xa08060, end: 0x665544 },
-                        scale: 20,
-                        scaleMultiplier: 2.0,
-                        velocityRange: { x: [-80, 80], y: [20, 80], z: [-80, 80] },
-                        gravity: 50,
-                        drag: 0.92,
-                        blending: 'normal'
-                    },
-                    // Metal glint from armor
-                    {
-                        count: 8,
-                        lifetime: 0.3,
-                        color: 0xcccccc,
-                        colorRange: { start: 0xffffff, end: 0x888888 },
-                        scale: 10,
-                        scaleMultiplier: 1.5,
-                        velocityRange: { x: [-40, 40], y: [40, 100], z: [-40, 40] },
-                        gravity: 0,
-                        drag: 0.85,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            this.game.call('playEffectSystem', 'charge_initiate',
+                new THREE.Vector3(pos.x, pos.y + 10, pos.z));
 
-            // Create dust trail during charge
+            // Create dust trail during charge using preset effects
             const trailSteps = 6;
             for (let i = 1; i <= trailSteps; i++) {
                 const delay = (this.chargeDuration / trailSteps) * i * 0.5;
@@ -194,22 +165,8 @@ class ChargeAbility extends GUTS.BaseAbility {
                 const trailZ = pos.z + (targetPos.z - pos.z) * progress;
 
                 this.game.schedulingSystem.scheduleAction(() => {
-                    this.game.call('createParticles', {
-                        position: new THREE.Vector3(trailX, pos.y + 5, trailZ),
-                        count: 12,
-                        lifetime: 0.5,
-                        visual: {
-                            color: 0x8b7355,
-                            colorRange: { start: 0x9a8265, end: 0x554433 },
-                            scale: 15,
-                            scaleMultiplier: 1.5,
-                            fadeOut: true,
-                            blending: 'normal'
-                        },
-                        velocityRange: { x: [-30, 30], y: [10, 40], z: [-30, 30] },
-                        gravity: 30,
-                        drag: 0.9
-                    });
+                    this.game.call('playEffect', 'charge_dust_trail',
+                        new THREE.Vector3(trailX, pos.y + 5, trailZ));
                 }, delay, casterEntity);
             }
         }
@@ -257,85 +214,14 @@ class ChargeAbility extends GUTS.BaseAbility {
             // Visual impact effect
             this.createVisualEffect(targetPos, 'impact');
 
-            // Enhanced massive impact explosion
+            // Enhanced massive impact explosion using preset effect
             if (!this.game.isServer) {
-                this.game.call('createLayeredEffect', {
-                    position: new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z),
-                    layers: [
-                        // Shockwave flash
-                        {
-                            count: 10,
-                            lifetime: 0.2,
-                            color: 0xffffff,
-                            colorRange: { start: 0xffffff, end: 0xffaa44 },
-                            scale: 40,
-                            scaleMultiplier: 3.0,
-                            velocityRange: { x: [-60, 60], y: [20, 60], z: [-60, 60] },
-                            gravity: 0,
-                            drag: 0.7,
-                            blending: 'additive'
-                        },
-                        // Orange impact sparks
-                        {
-                            count: 30,
-                            lifetime: 0.6,
-                            color: 0xff6600,
-                            colorRange: { start: 0xffaa44, end: 0xcc4400 },
-                            scale: 12,
-                            scaleMultiplier: 1.0,
-                            velocityRange: { x: [-120, 120], y: [60, 180], z: [-120, 120] },
-                            gravity: 300,
-                            drag: 0.95,
-                            blending: 'additive'
-                        },
-                        // Dust cloud
-                        {
-                            count: 20,
-                            lifetime: 0.8,
-                            color: 0x8b7355,
-                            colorRange: { start: 0xa08060, end: 0x554433 },
-                            scale: 25,
-                            scaleMultiplier: 2.5,
-                            velocityRange: { x: [-100, 100], y: [30, 100], z: [-100, 100] },
-                            gravity: 80,
-                            drag: 0.9,
-                            blending: 'normal'
-                        },
-                        // Metal debris
-                        {
-                            count: 12,
-                            lifetime: 0.7,
-                            color: 0xaaaaaa,
-                            colorRange: { start: 0xcccccc, end: 0x666666 },
-                            scale: 6,
-                            scaleMultiplier: 0.6,
-                            velocityRange: { x: [-80, 80], y: [80, 160], z: [-80, 80] },
-                            gravity: 400,
-                            drag: 0.97,
-                            blending: 'normal'
-                        }
-                    ]
-                });
+                this.game.call('playEffectSystem', 'charge_impact',
+                    new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z));
 
-                // Ground crack ring
-                this.game.call('createParticles', {
-                    position: new THREE.Vector3(targetPos.x, targetPos.y + 3, targetPos.z),
-                    count: 20,
-                    lifetime: 0.5,
-                    visual: {
-                        color: 0x665544,
-                        colorRange: { start: 0x887766, end: 0x443322 },
-                        scale: 15,
-                        scaleMultiplier: 1.8,
-                        fadeOut: true,
-                        blending: 'normal'
-                    },
-                    velocityRange: { x: [-50, 50], y: [5, 15], z: [-50, 50] },
-                    gravity: 20,
-                    drag: 0.9,
-                    emitterShape: 'ring',
-                    emitterRadius: 30
-                });
+                // Ground crack ring using preset effect
+                this.game.call('playEffect', 'ground_crack_ring',
+                    new THREE.Vector3(targetPos.x, targetPos.y + 3, targetPos.z));
             }
 
             // Deal damage

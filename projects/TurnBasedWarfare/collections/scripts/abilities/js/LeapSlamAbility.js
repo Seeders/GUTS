@@ -163,23 +163,8 @@ class LeapSlamAbility extends GUTS.BaseAbility {
 
         // Dust burst at launch (client only)
         if (!this.game.isServer) {
-            this.game.call('createLayeredEffect', {
-                position: new THREE.Vector3(pos.x, pos.y + 10, pos.z),
-                layers: [
-                    {
-                        count: 20,
-                        lifetime: 0.5,
-                        color: 0x8b7355,
-                        colorRange: { start: 0xa08060, end: 0x665544 },
-                        scale: 18,
-                        scaleMultiplier: 2.0,
-                        velocityRange: { x: [-60, 60], y: [10, 50], z: [-60, 60] },
-                        gravity: 80,
-                        drag: 0.9,
-                        blending: 'normal'
-                    }
-                ]
-            });
+            this.game.call('playEffectSystem', 'leap_slam_launch',
+                new THREE.Vector3(pos.x, pos.y + 10, pos.z));
         }
 
         // Complete the leap after duration
@@ -229,65 +214,8 @@ class LeapSlamAbility extends GUTS.BaseAbility {
 
         // Epic ground slam effect (client only)
         if (!this.game.isServer) {
-            this.game.call('createLayeredEffect', {
-                position: new THREE.Vector3(landingPos.x, landingPos.y + 10, landingPos.z),
-                layers: [
-                    // Central impact flash
-                    {
-                        count: 8,
-                        lifetime: 0.2,
-                        color: 0xFFAA00,
-                        colorRange: { start: 0xFFFFFF, end: 0xFF6600 },
-                        scale: 35,
-                        scaleMultiplier: 3.0,
-                        velocityRange: { x: [-30, 30], y: [30, 80], z: [-30, 30] },
-                        gravity: 0,
-                        drag: 0.7,
-                        blending: 'additive'
-                    },
-                    // Dust explosion
-                    {
-                        count: 30,
-                        lifetime: 0.8,
-                        color: 0x8b7355,
-                        colorRange: { start: 0xa08060, end: 0x443322 },
-                        scale: 25,
-                        scaleMultiplier: 2.5,
-                        velocityRange: { x: [-100, 100], y: [40, 120], z: [-100, 100] },
-                        gravity: 150,
-                        drag: 0.92,
-                        blending: 'normal'
-                    },
-                    // Ground ring shockwave
-                    {
-                        count: 24,
-                        lifetime: 0.4,
-                        color: 0xCC8844,
-                        colorRange: { start: 0xDDAA66, end: 0x886633 },
-                        scale: 15,
-                        scaleMultiplier: 1.2,
-                        velocityRange: { x: [-150, 150], y: [5, 20], z: [-150, 150] },
-                        gravity: 50,
-                        drag: 0.85,
-                        emitterShape: 'ring',
-                        emitterRadius: 20,
-                        blending: 'normal'
-                    },
-                    // Rock debris
-                    {
-                        count: 15,
-                        lifetime: 0.6,
-                        color: 0x666666,
-                        colorRange: { start: 0x888888, end: 0x444444 },
-                        scale: 8,
-                        scaleMultiplier: 0.6,
-                        velocityRange: { x: [-80, 80], y: [100, 200], z: [-80, 80] },
-                        gravity: 400,
-                        drag: 0.98,
-                        blending: 'normal'
-                    }
-                ]
-            });
+            this.game.call('playEffectSystem', 'leap_slam_impact',
+                new THREE.Vector3(landingPos.x, landingPos.y + 10, landingPos.z));
         }
 
         // Screen shake

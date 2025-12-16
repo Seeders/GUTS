@@ -1,0 +1,31 @@
+{
+  "title": "Wind Wisps",
+  "category": "wind",
+  "tags": [
+    "wind",
+    "tornado",
+    "wisps"
+  ],
+  "particleEffectData": {
+    "count": 3,
+    "lifetime": 0.5,
+    "scale": 5,
+    "scaleMultiplier": 0.6,
+    "startColor": "#ffffff",
+    "endColor": "#e0ffff",
+    "emitterShape": "ring",
+    "emitterRadius": 6,
+    "heightOffset": 45,
+    "velocityXMin": -10,
+    "velocityXMax": 10,
+    "velocityYMin": 120,
+    "velocityYMax": 180,
+    "velocityZMin": -10,
+    "velocityZMax": 10,
+    "gravity": -80,
+    "drag": 0.88,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

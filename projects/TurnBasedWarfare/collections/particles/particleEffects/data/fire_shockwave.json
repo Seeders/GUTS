@@ -1,0 +1,31 @@
+{
+  "title": "Fire Shockwave",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "explosion",
+    "shockwave"
+  ],
+  "particleEffectData": {
+    "count": 16,
+    "lifetime": 0.6,
+    "scale": 16,
+    "scaleMultiplier": 1,
+    "startColor": "#ffaa00",
+    "endColor": "#ff4400",
+    "emitterShape": "ring",
+    "emitterRadius": 10,
+    "heightOffset": 0,
+    "velocityXMin": -120,
+    "velocityXMax": 120,
+    "velocityYMin": 5,
+    "velocityYMax": 20,
+    "velocityZMin": -120,
+    "velocityZMax": 120,
+    "gravity": 50,
+    "drag": 0.85,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

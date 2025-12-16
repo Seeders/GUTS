@@ -1,0 +1,30 @@
+{
+  "title": "Fire Embers",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "sparks"
+  ],
+  "particleEffectData": {
+    "count": 15,
+    "lifetime": 1.5,
+    "scale": 6,
+    "scaleMultiplier": 0.8,
+    "startColor": "#ffcc00",
+    "endColor": "#ff4400",
+    "emitterShape": "sphere",
+    "emitterRadius": 25,
+    "heightOffset": 10,
+    "velocityXMin": -60,
+    "velocityXMax": 60,
+    "velocityYMin": 80,
+    "velocityYMax": 180,
+    "velocityZMin": -60,
+    "velocityZMax": 60,
+    "gravity": 30,
+    "drag": 0.96,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  }
+}

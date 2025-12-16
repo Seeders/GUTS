@@ -33,6 +33,8 @@ class ParticleSystem extends GUTS.BaseSystem {
     this.game.register('initializeParticleSystem', this.initialize.bind(this));
     this.game.register('createLayeredEffect', this.createLayeredEffect.bind(this));
     this.game.register('createParticlesWithEmitter', this.createParticlesWithEmitter.bind(this));
+    this.game.register('playEffect', this.playEffect.bind(this));
+    this.game.register('playEffectSystem', this.playEffectSystem.bind(this));
   }
 
   initialize() {
@@ -590,6 +592,225 @@ class ParticleSystem extends GUTS.BaseSystem {
     for (let i = 0; i < this.CAPACITY; i++) {
       this.freeList.push(i);
     }
+  }
 
+  // ===== Named Effect System Methods =====
+
+  /**
+   * Play a named particle effect from the particleEffects collection
+   * @param {string} effectName - Name of the effect in collections
+   * @param {THREE.Vector3|Object} position - World position {x, y, z}
+   * @param {Object} overrides - Optional parameter overrides
+   */
+  playEffect(effectName, position, overrides = {}) {
+    const collections = this.game.getCollections();
+    const effectData = collections.particleEffects?.[effectName];
+
+    if (!effectData) {
+      console.warn(`[ParticleSystem] Effect '${effectName}' not found in particleEffects collection`);
+      return;
+    }
+
+    const config = this._buildConfigFromEffect(effectData, position, overrides);
+    this.createParticlesWithEmitter(config);
+  }
+
+  /**
+   * Play a named particle effect system (multi-layer)
+   * @param {string} systemName - Name of the system in collections
+   * @param {THREE.Vector3|Object} position - World position {x, y, z}
+   * @param {Object} overrides - Optional parameter overrides
+   * @returns {Object|null} - Returns control object for repeating systems, null otherwise
+   */
+  playEffectSystem(systemName, position, overrides = {}) {
+    const collections = this.game.getCollections();
+    const systemData = collections.particleEffectSystems?.[systemName];
+
+    if (!systemData) {
+      console.warn(`[ParticleSystem] Effect system '${systemName}' not found in particleEffectSystems collection`);
+      return null;
+    }
+
+    // Handle repeating effect systems (like tornado)
+    if (systemData.repeating && systemData.repeatInterval > 0) {
+      return this._startRepeatingEffectSystem(systemData, position, overrides);
+    }
+
+    // Play each layer with its delay
+    this._playEffectSystemLayers(systemData, position, overrides);
+
+    // Handle screen effects (flattened format)
+    if (systemData.screenShakeDuration || systemData.screenFlashColor) {
+      this._applyScreenEffects(systemData);
+    }
+
+    return null;
+  }
+
+  /**
+   * Start a repeating effect system that continues until stopped
+   * @returns {Object} Control object with stop() method
+   */
+  _startRepeatingEffectSystem(systemData, position, overrides) {
+    let isActive = true;
+    const interval = systemData.repeatInterval || 0.5;
+
+    const playOnce = () => {
+      if (!isActive) return;
+      this._playEffectSystemLayers(systemData, position, overrides);
+
+      if (isActive && this.game.schedulingSystem) {
+        this.game.schedulingSystem.scheduleAction(playOnce, interval);
+      }
+    };
+
+    // Play immediately
+    playOnce();
+
+    // Return control object
+    return {
+      stop: () => {
+        isActive = false;
+      },
+      isActive: () => isActive
+    };
+  }
+
+  /**
+   * Play all layers of an effect system (flattened format)
+   */
+  _playEffectSystemLayers(systemData, position, overrides) {
+    const collections = this.game.getCollections();
+
+    for (const layer of systemData.layers) {
+      const effectData = collections.particleEffects?.[layer.effect];
+      if (!effectData) {
+        console.warn(`[ParticleSystem] Effect '${layer.effect}' not found for system layer`);
+        continue;
+      }
+
+      // Calculate layer position with offset (flattened format uses positionOffsetX/Y/Z)
+      let layerPos = { x: position.x, y: position.y, z: position.z };
+      if (layer.positionOffsetX !== undefined) layerPos.x += layer.positionOffsetX;
+      if (layer.positionOffsetY !== undefined) layerPos.y += layer.positionOffsetY;
+      if (layer.positionOffsetZ !== undefined) layerPos.z += layer.positionOffsetZ;
+
+      // Build layer overrides (flattened format)
+      const layerOverrides = { ...overrides };
+      if (layer.countMultiplier) layerOverrides.countMultiplier = layer.countMultiplier;
+      if (layer.scaleMultiplier) layerOverrides.scaleMultiplier = layer.scaleMultiplier;
+
+      // Velocity overrides from flattened layer properties
+      if (layer.velocityXMin !== undefined) layerOverrides.velocityXMin = layer.velocityXMin;
+      if (layer.velocityXMax !== undefined) layerOverrides.velocityXMax = layer.velocityXMax;
+      if (layer.velocityYMin !== undefined) layerOverrides.velocityYMin = layer.velocityYMin;
+      if (layer.velocityYMax !== undefined) layerOverrides.velocityYMax = layer.velocityYMax;
+      if (layer.velocityZMin !== undefined) layerOverrides.velocityZMin = layer.velocityZMin;
+      if (layer.velocityZMax !== undefined) layerOverrides.velocityZMax = layer.velocityZMax;
+      if (layer.gravity !== undefined) layerOverrides.gravity = layer.gravity;
+      if (layer.drag !== undefined) layerOverrides.drag = layer.drag;
+
+      const config = this._buildConfigFromEffect(effectData, layerPos, layerOverrides);
+
+      // Handle delay
+      if (layer.delay && layer.delay > 0 && this.game.schedulingSystem) {
+        this.game.schedulingSystem.scheduleAction(() => {
+          this.createParticlesWithEmitter(config);
+        }, layer.delay);
+      } else {
+        this.createParticlesWithEmitter(config);
+      }
+    }
+  }
+
+  /**
+   * Build a particle config from effect data
+   * Supports both new format (with particleEffectData wrapper) and legacy flat format
+   */
+  _buildConfigFromEffect(effectData, position, overrides = {}) {
+    // Parse colors from hex strings
+    const parseColor = (colorStr) => {
+      if (!colorStr) return 0xffffff;
+      if (typeof colorStr === 'number') return colorStr;
+      if (typeof colorStr === 'string') {
+        if (colorStr.startsWith('#')) {
+          return parseInt(colorStr.slice(1), 16);
+        }
+        if (colorStr.startsWith('0x')) {
+          return parseInt(colorStr, 16);
+        }
+      }
+      return 0xffffff;
+    };
+
+    // Support both new format (particleEffectData wrapper) and legacy flat format
+    const data = effectData.particleEffectData || effectData;
+
+    // Calculate count with multiplier
+    let count = data.count || 10;
+    if (overrides.countMultiplier) count = Math.round(count * overrides.countMultiplier);
+
+    // Calculate scale with multiplier
+    let scale = data.scale || 16;
+    let scaleMult = data.scaleMultiplier || 1.0;
+    if (overrides.scaleMultiplier) scaleMult *= overrides.scaleMultiplier;
+
+    // Build velocity range from flattened properties
+    const velocityRange = {
+      x: [
+        overrides.velocityXMin ?? data.velocityXMin ?? -30,
+        overrides.velocityXMax ?? data.velocityXMax ?? 30
+      ],
+      y: [
+        overrides.velocityYMin ?? data.velocityYMin ?? 50,
+        overrides.velocityYMax ?? data.velocityYMax ?? 120
+      ],
+      z: [
+        overrides.velocityZMin ?? data.velocityZMin ?? -30,
+        overrides.velocityZMax ?? data.velocityZMax ?? 30
+      ]
+    };
+
+    // Get colors (flattened format uses startColor/endColor)
+    const startColor = parseColor(overrides.startColor || data.startColor);
+    const endColor = parseColor(overrides.endColor || data.endColor || data.startColor);
+
+    return {
+      position: position instanceof THREE.Vector3 ? position : new THREE.Vector3(position.x, position.y, position.z),
+      count: count,
+      lifetime: data.lifetime || 1.0,
+      visual: {
+        color: startColor,
+        colorRange: {
+          start: startColor,
+          end: endColor
+        },
+        scale: scale,
+        scaleMultiplier: scaleMult,
+        fadeOut: data.fadeOut !== false,
+        scaleOverTime: data.scaleOverTime !== false,
+        blending: data.blending || 'additive'
+      },
+      velocityRange: velocityRange,
+      gravity: overrides.gravity ?? data.gravity ?? -100,
+      drag: overrides.drag ?? data.drag ?? 0.98,
+      speedMultiplier: data.speedMultiplier || 1.0,
+      heightOffset: data.heightOffset || 0,
+      emitterShape: data.emitterShape || 'point',
+      emitterRadius: data.emitterRadius || 0
+    };
+  }
+
+  /**
+   * Apply screen effects from effect system (flattened format)
+   */
+  _applyScreenEffects(systemData) {
+    // Flattened format uses screenShakeDuration/screenShakeIntensity
+    if (systemData.screenShakeDuration && this.game.hasService('playScreenShake')) {
+      this.game.call('playScreenShake', systemData.screenShakeDuration, systemData.screenShakeIntensity || 1);
+    }
+    if (systemData.screenFlashColor && this.game.hasService('playScreenFlash')) {
+      this.game.call('playScreenFlash', systemData.screenFlashColor, systemData.screenFlashDuration || 0.2);
+    }
   }
 }

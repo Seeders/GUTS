@@ -1,0 +1,32 @@
+{
+  "title": "Ice Shard Sparkles",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "shard",
+    "sparkles",
+    "trail"
+  ],
+  "particleEffectData": {
+    "count": 3,
+    "lifetime": 0.5,
+    "scale": 6,
+    "scaleMultiplier": 0.5,
+    "startColor": "#ffffff",
+    "endColor": "#aaddff",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 0,
+    "velocityXMin": -20,
+    "velocityXMax": 20,
+    "velocityYMin": 10,
+    "velocityYMax": 40,
+    "velocityZMin": -20,
+    "velocityZMax": 20,
+    "gravity": -10,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

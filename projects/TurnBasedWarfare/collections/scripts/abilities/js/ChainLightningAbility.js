@@ -128,41 +128,10 @@ class ChainLightningAbility extends GUTS.BaseAbility {
             this.createVisualEffect(targetPos, 'lightning');
             this.createVisualEffect(targetPos, 'sparks');
 
-            // Enhanced electric burst at impact
+            // Use preset lightning_impact effect system
             if (!this.game.isServer) {
-                const impactPos = new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z);
-
-                this.game.call('createLayeredEffect', {
-                    position: impactPos,
-                    layers: [
-                        // Bright flash
-                        {
-                            count: 10,
-                            lifetime: 0.2,
-                            color: 0xffffff,
-                            colorRange: { start: 0xffffff, end: 0x00ddff },
-                            scale: 30,
-                            scaleMultiplier: 2.0,
-                            velocityRange: { x: [-50, 50], y: [-20, 80], z: [-50, 50] },
-                            gravity: 0,
-                            drag: 0.8,
-                            blending: 'additive'
-                        },
-                        // Electric sparks
-                        {
-                            count: 15,
-                            lifetime: 0.4,
-                            color: 0x00ddff,
-                            colorRange: { start: 0xffffff, end: 0x0066ff },
-                            scale: 8,
-                            scaleMultiplier: 0.6,
-                            velocityRange: { x: [-80, 80], y: [20, 100], z: [-80, 80] },
-                            gravity: 150,
-                            drag: 0.95,
-                            blending: 'additive'
-                        }
-                    ]
-                });
+                this.game.call('playEffectSystem', 'lightning_impact',
+                    new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z));
             }
 
             // Apply damage
@@ -376,44 +345,16 @@ class ChainLightningAbility extends GUTS.BaseAbility {
     }
     
     createLightningPoints(fromPos, toPos) {
-        // Create bright particle effects at connection points
+        // Create bright particle effects at connection points using presets
         if (!this.game.isServer) {
             // Source point sparks
-            this.game.call('createParticles', {
-                position: new THREE.Vector3(fromPos.x, fromPos.y + 50, fromPos.z),
-                count: 8,
-                lifetime: 0.3,
-                visual: {
-                    color: 0x00ddff,
-                    colorRange: { start: 0xffffff, end: 0x0088ff },
-                    scale: 12,
-                    scaleMultiplier: 0.8,
-                    fadeOut: true,
-                    blending: 'additive'
-                },
-                velocityRange: { x: [-40, 40], y: [20, 60], z: [-40, 40] },
-                gravity: 100,
-                drag: 0.95
-            });
+            this.game.call('playEffect', 'lightning_sparks',
+                new THREE.Vector3(fromPos.x, fromPos.y + 50, fromPos.z));
 
             // Target point sparks
             this.game.schedulingSystem.scheduleAction(() => {
-                this.game.call('createParticles', {
-                    position: new THREE.Vector3(toPos.x, toPos.y + 50, toPos.z),
-                    count: 10,
-                    lifetime: 0.4,
-                    visual: {
-                        color: 0x00ddff,
-                        colorRange: { start: 0xffffff, end: 0x0088ff },
-                        scale: 15,
-                        scaleMultiplier: 1.0,
-                        fadeOut: true,
-                        blending: 'additive'
-                    },
-                    velocityRange: { x: [-50, 50], y: [30, 80], z: [-50, 50] },
-                    gravity: 120,
-                    drag: 0.95
-                });
+                this.game.call('playEffect', 'lightning_sparks',
+                    new THREE.Vector3(toPos.x, toPos.y + 50, toPos.z));
             }, 0.05, null);
         }
     }

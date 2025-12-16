@@ -161,30 +161,10 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
             }, i * warningInterval, null);
         }
 
-        // Create ground ring effect using layered particles
+        // Create ground ring effect using preset effect
         if (!this.game.isServer) {
             const ringPos = new THREE.Vector3(position.x, position.y + 5, position.z);
-
-            this.game.call('createLayeredEffect', {
-                position: ringPos,
-                layers: [
-                    // Expanding warning ring
-                    {
-                        count: 24,
-                        lifetime: this.delay,
-                        color: 0xff2200,
-                        colorRange: { start: 0xff4400, end: 0xff0000 },
-                        scale: 10,
-                        scaleMultiplier: 0.8,
-                        velocityRange: { x: [-80, 80], y: [5, 15], z: [-80, 80] },
-                        gravity: 0,
-                        drag: 0.98,
-                        emitterShape: 'ring',
-                        emitterRadius: 20,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            this.game.call('playEffect', 'meteor_warning', ringPos);
         }
     }
 
@@ -205,45 +185,11 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
             this.game.schedulingSystem.scheduleAction(() => {
                 this.createMeteorTrail(trailPos);
 
-                // Create the meteor "body" as a burst of particles
+                // Create the meteor "body" using preset effects
                 if (!this.game.isServer) {
                     const position = new THREE.Vector3(trailPos.x, trailPos.y, trailPos.z);
-
-                    // Glowing meteor core
-                    this.game.call('createParticles', {
-                        position: position,
-                        count: 8,
-                        lifetime: 0.15,
-                        visual: {
-                            color: 0xffff00,
-                            colorRange: { start: 0xffffff, end: 0xffaa00 },
-                            scale: 40,
-                            scaleMultiplier: 1.2,
-                            fadeOut: true,
-                            blending: 'additive'
-                        },
-                        velocityRange: { x: [-10, 10], y: [-10, 10], z: [-10, 10] },
-                        gravity: 0,
-                        drag: 0.9
-                    });
-
-                    // Outer flame layer
-                    this.game.call('createParticles', {
-                        position: position,
-                        count: 12,
-                        lifetime: 0.2,
-                        visual: {
-                            color: 0xff6600,
-                            colorRange: { start: 0xff8800, end: 0xff2200 },
-                            scale: 50,
-                            scaleMultiplier: 1.0,
-                            fadeOut: true,
-                            blending: 'additive'
-                        },
-                        velocityRange: { x: [-15, 15], y: [-5, 20], z: [-15, 15] },
-                        gravity: 0,
-                        drag: 0.85
-                    });
+                    this.game.call('playEffect', 'meteor_core', position);
+                    this.game.call('playEffect', 'meteor_flame', position);
                 }
             }, i * trailInterval, null);
         }
@@ -256,27 +202,10 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
         // Smoke trail
         this.createVisualEffect(currentPos, 'trail_smoke', { heightOffset: 0 });
 
-        // Additional layered trail effect
+        // Use preset meteor trail effect
         if (!this.game.isServer) {
-            const position = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
-
-            this.game.call('createParticles', {
-                position: position,
-                count: 4,
-                lifetime: 1.0,
-                visual: {
-                    color: 0xff4400,
-                    colorRange: { start: 0xffaa00, end: 0xff2200 },
-                    scale: 20,
-                    scaleMultiplier: 1.5,
-                    fadeOut: true,
-                    scaleOverTime: true,
-                    blending: 'additive'
-                },
-                velocityRange: { x: [-30, 30], y: [20, 60], z: [-30, 30] },
-                gravity: -20,
-                drag: 0.95
-            });
+            this.game.call('playEffect', 'meteor_trail',
+                new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z));
         }
     }
 
@@ -292,116 +221,10 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
             this.game.effectsSystem.playScreenFlash('#ff4400', 0.5);
         }
 
-        // Advanced layered explosion
+        // Use preset meteor_impact effect system
         if (!this.game.isServer) {
-            const explosionPos = new THREE.Vector3(position.x, position.y + 50, position.z);
-
-            this.game.call('createLayeredEffect', {
-                position: explosionPos,
-                layers: [
-                    // Bright flash core
-                    {
-                        count: 15,
-                        lifetime: 0.4,
-                        color: 0xffffff,
-                        colorRange: { start: 0xffffff, end: 0xffff00 },
-                        scale: 60,
-                        scaleMultiplier: 4.0,
-                        velocityRange: { x: [-150, 150], y: [-50, 200], z: [-150, 150] },
-                        gravity: 0,
-                        drag: 0.75,
-                        blending: 'additive'
-                    },
-                    // Main fireball expansion
-                    {
-                        count: 40,
-                        lifetime: 1.0,
-                        color: 0xff6600,
-                        colorRange: { start: 0xffaa00, end: 0xff2200 },
-                        scale: 35,
-                        scaleMultiplier: 2.5,
-                        velocityRange: { x: [-120, 120], y: [30, 180], z: [-120, 120] },
-                        gravity: -40,
-                        drag: 0.88,
-                        emitterShape: 'sphere',
-                        emitterRadius: 30,
-                        blending: 'additive'
-                    },
-                    // Secondary flames
-                    {
-                        count: 25,
-                        lifetime: 1.5,
-                        color: 0xff4400,
-                        colorRange: { start: 0xff8800, end: 0x880000 },
-                        scale: 30,
-                        scaleMultiplier: 2.0,
-                        velocityRange: { x: [-80, 80], y: [50, 140], z: [-80, 80] },
-                        gravity: -60,
-                        drag: 0.9,
-                        emitterShape: 'sphere',
-                        emitterRadius: 40,
-                        blending: 'additive'
-                    },
-                    // Rising smoke column
-                    {
-                        count: 20,
-                        lifetime: 2.5,
-                        color: 0x444444,
-                        colorRange: { start: 0x555555, end: 0x111111 },
-                        scale: 45,
-                        scaleMultiplier: 3.0,
-                        velocityRange: { x: [-30, 30], y: [80, 160], z: [-30, 30] },
-                        gravity: -50,
-                        drag: 0.96,
-                        blending: 'normal'
-                    },
-                    // Ground shockwave ring
-                    {
-                        count: 32,
-                        lifetime: 0.8,
-                        color: 0xff8800,
-                        colorRange: { start: 0xffaa00, end: 0xff4400 },
-                        scale: 20,
-                        scaleMultiplier: 1.2,
-                        velocityRange: { x: [-180, 180], y: [5, 30], z: [-180, 180] },
-                        gravity: 80,
-                        drag: 0.82,
-                        emitterShape: 'ring',
-                        emitterRadius: 20,
-                        blending: 'additive'
-                    },
-                    // Flying debris/rocks
-                    {
-                        count: 30,
-                        lifetime: 2.0,
-                        color: 0x664422,
-                        colorRange: { start: 0x886644, end: 0x442200 },
-                        scale: 10,
-                        scaleMultiplier: 0.8,
-                        velocityRange: { x: [-140, 140], y: [100, 250], z: [-140, 140] },
-                        gravity: 300,
-                        drag: 0.98,
-                        emitterShape: 'sphere',
-                        emitterRadius: 20,
-                        blending: 'normal'
-                    },
-                    // Flying embers
-                    {
-                        count: 35,
-                        lifetime: 2.0,
-                        color: 0xffaa00,
-                        colorRange: { start: 0xffcc00, end: 0xff4400 },
-                        scale: 8,
-                        scaleMultiplier: 0.5,
-                        velocityRange: { x: [-120, 120], y: [100, 220], z: [-120, 120] },
-                        gravity: 250,
-                        drag: 0.97,
-                        emitterShape: 'sphere',
-                        emitterRadius: 15,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            this.game.call('playEffectSystem', 'meteor_impact',
+                new THREE.Vector3(position.x, position.y + 50, position.z));
         }
 
         // Apply splash damage

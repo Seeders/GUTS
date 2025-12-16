@@ -126,39 +126,10 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         // Visual effect at original position before teleport
         this.createVisualEffect(casterPos, 'teleport');
 
-        // Enhanced shadow dissolution effect at departure (client only)
+        // Use preset shadow_teleport effect system at departure (client only)
         if (!this.game.isServer) {
-            this.game.call('createLayeredEffect', {
-                position: new THREE.Vector3(casterPos.x, casterPos.y + 30, casterPos.z),
-                layers: [
-                    // Dark smoke burst
-                    {
-                        count: 20,
-                        lifetime: 0.6,
-                        color: 0x1a1a1a,
-                        colorRange: { start: 0x333333, end: 0x000000 },
-                        scale: 25,
-                        scaleMultiplier: 2.0,
-                        velocityRange: { x: [-80, 80], y: [30, 100], z: [-80, 80] },
-                        gravity: -30,
-                        drag: 0.9,
-                        blending: 'normal'
-                    },
-                    // Purple shadow wisps
-                    {
-                        count: 15,
-                        lifetime: 0.5,
-                        color: 0x6622aa,
-                        colorRange: { start: 0x8844cc, end: 0x220066 },
-                        scale: 12,
-                        scaleMultiplier: 1.5,
-                        velocityRange: { x: [-60, 60], y: [50, 120], z: [-60, 60] },
-                        gravity: -50,
-                        drag: 0.92,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            this.game.call('playEffectSystem', 'shadow_teleport',
+                new THREE.Vector3(casterPos.x, casterPos.y + 30, casterPos.z));
         }
 
         // Teleport behind target
@@ -168,39 +139,10 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         // Visual effect at new position after teleport
         this.createVisualEffect(teleportPos, 'teleport');
 
-        // Enhanced shadow coalesce effect at arrival (client only)
+        // Use preset shadow_arrive effect system at arrival (client only)
         if (!this.game.isServer) {
-            this.game.call('createLayeredEffect', {
-                position: new THREE.Vector3(teleportPos.x, teleportPos.y + 30, teleportPos.z),
-                layers: [
-                    // Shadow gathering inward
-                    {
-                        count: 18,
-                        lifetime: 0.4,
-                        color: 0x2a2a2a,
-                        colorRange: { start: 0x444444, end: 0x111111 },
-                        scale: 20,
-                        scaleMultiplier: 0.3,
-                        velocityRange: { x: [-40, 40], y: [-20, 40], z: [-40, 40] },
-                        gravity: 0,
-                        drag: 0.85,
-                        blending: 'normal'
-                    },
-                    // Dark red malice
-                    {
-                        count: 12,
-                        lifetime: 0.3,
-                        color: 0x880000,
-                        colorRange: { start: 0xaa2222, end: 0x440000 },
-                        scale: 15,
-                        scaleMultiplier: 1.2,
-                        velocityRange: { x: [-50, 50], y: [20, 80], z: [-50, 50] },
-                        gravity: -20,
-                        drag: 0.88,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            this.game.call('playEffectSystem', 'shadow_arrive',
+                new THREE.Vector3(teleportPos.x, teleportPos.y + 30, teleportPos.z));
         }
 
         // Deal critical backstab damage
@@ -213,39 +155,10 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         // Backstab effect
         this.createVisualEffect(targetPos, 'backstab');
 
-        // Enhanced backstab blood/shadow burst (client only)
+        // Use preset backstab effect system (client only)
         if (!this.game.isServer) {
-            this.game.call('createLayeredEffect', {
-                position: new THREE.Vector3(targetPos.x, targetPos.y + 25, targetPos.z),
-                layers: [
-                    // Blood spray
-                    {
-                        count: 20,
-                        lifetime: 0.5,
-                        color: 0xcc0000,
-                        colorRange: { start: 0xff2222, end: 0x880000 },
-                        scale: 10,
-                        scaleMultiplier: 0.8,
-                        velocityRange: { x: [-80, 80], y: [40, 120], z: [-80, 80] },
-                        gravity: 200,
-                        drag: 0.94,
-                        blending: 'normal'
-                    },
-                    // Dark energy slash
-                    {
-                        count: 10,
-                        lifetime: 0.3,
-                        color: 0x440044,
-                        colorRange: { start: 0x660066, end: 0x220022 },
-                        scale: 25,
-                        scaleMultiplier: 2.0,
-                        velocityRange: { x: [-30, 30], y: [10, 50], z: [-30, 30] },
-                        gravity: 0,
-                        drag: 0.8,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            this.game.call('playEffectSystem', 'backstab',
+                new THREE.Vector3(targetPos.x, targetPos.y + 25, targetPos.z));
         }
 
         // Screen effect for dramatic teleport (client only)

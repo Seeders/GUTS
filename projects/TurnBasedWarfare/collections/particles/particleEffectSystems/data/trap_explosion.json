@@ -1,0 +1,28 @@
+{
+  "title": "Trap Explosion",
+  "category": "explosion",
+  "layers": [
+    {
+      "effect": "trap_explosion_flash",
+      "delay": 0
+    },
+    {
+      "effect": "trap_fireball",
+      "delay": 0.02
+    },
+    {
+      "effect": "trap_smoke",
+      "delay": 0.05
+    },
+    {
+      "effect": "trap_debris",
+      "delay": 0.03
+    },
+    {
+      "effect": "trap_embers",
+      "delay": 0.1
+    }
+  ],
+  "screenShakeDuration": 0.3,
+  "screenShakeIntensity": 2
+}

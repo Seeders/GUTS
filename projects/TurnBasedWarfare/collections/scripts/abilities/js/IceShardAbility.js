@@ -125,27 +125,11 @@ class IceShardAbility extends GUTS.BaseAbility {
         // Visual effect at launch
         this.createVisualEffect(casterPos, 'shard');
 
-        // Create frost trail effect
+        // Create frost trail effect using preset effects
         if (!this.game.isServer) {
             // Launch burst
             const launchPos = new THREE.Vector3(casterPos.x, casterPos.y + 50, casterPos.z);
-
-            this.game.call('createParticles', {
-                position: launchPos,
-                count: 8,
-                lifetime: 0.4,
-                visual: {
-                    color: 0x88ffff,
-                    colorRange: { start: 0xffffff, end: 0x44ddff },
-                    scale: 15,
-                    scaleMultiplier: 1.2,
-                    fadeOut: true,
-                    blending: 'additive'
-                },
-                velocityRange: { x: [-30, 30], y: [20, 50], z: [-30, 30] },
-                gravity: -20,
-                drag: 0.9
-            });
+            this.game.call('playEffect', 'ice_shards', launchPos);
 
             // Create trail particles along path
             const trailCount = 5;
@@ -156,22 +140,8 @@ class IceShardAbility extends GUTS.BaseAbility {
                 const trailZ = casterPos.z + (targetPos.z - casterPos.z) * progress;
 
                 this.game.schedulingSystem.scheduleAction(() => {
-                    this.game.call('createParticles', {
-                        position: new THREE.Vector3(trailX, trailY, trailZ),
-                        count: 4,
-                        lifetime: 0.5,
-                        visual: {
-                            color: 0xaaddff,
-                            colorRange: { start: 0xffffff, end: 0x6699ff },
-                            scale: 10,
-                            scaleMultiplier: 0.8,
-                            fadeOut: true,
-                            blending: 'additive'
-                        },
-                        velocityRange: { x: [-15, 15], y: [10, 30], z: [-15, 15] },
-                        gravity: -10,
-                        drag: 0.95
-                    });
+                    this.game.call('playEffect', 'ice_trail',
+                        new THREE.Vector3(trailX, trailY, trailZ));
                 }, i * 0.05, null);
             }
         }
@@ -190,41 +160,10 @@ class IceShardAbility extends GUTS.BaseAbility {
                 this.createVisualEffect(currentTargetPos, 'impact');
                 this.createVisualEffect(currentTargetPos, 'frost');
 
-                // Enhanced ice shatter effect
+                // Use preset ice_impact effect system
                 if (!this.game.isServer) {
-                    const impactPos = new THREE.Vector3(currentTargetPos.x, currentTargetPos.y + 50, currentTargetPos.z);
-
-                    this.game.call('createLayeredEffect', {
-                        position: impactPos,
-                        layers: [
-                            // Ice shatter burst
-                            {
-                                count: 15,
-                                lifetime: 0.5,
-                                color: 0x88ffff,
-                                colorRange: { start: 0xffffff, end: 0x44ddff },
-                                scale: 12,
-                                scaleMultiplier: 1.0,
-                                velocityRange: { x: [-60, 60], y: [20, 80], z: [-60, 60] },
-                                gravity: 150,
-                                drag: 0.95,
-                                blending: 'additive'
-                            },
-                            // Frost mist
-                            {
-                                count: 10,
-                                lifetime: 0.8,
-                                color: 0xaaddff,
-                                colorRange: { start: 0xcceeFF, end: 0x6699ff },
-                                scale: 18,
-                                scaleMultiplier: 1.5,
-                                velocityRange: { x: [-30, 30], y: [10, 40], z: [-30, 30] },
-                                gravity: -30,
-                                drag: 0.92,
-                                blending: 'additive'
-                            }
-                        ]
-                    });
+                    this.game.call('playEffectSystem', 'ice_impact',
+                        new THREE.Vector3(currentTargetPos.x, currentTargetPos.y + 50, currentTargetPos.z));
                 }
             }
         }, 0.25, casterEntity);

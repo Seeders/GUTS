@@ -1,0 +1,137 @@
+<div id="particle-effect-system-editor-container" class="editor-module">
+  <div class="editor-module__sidebar editor-module__sidebar--left">
+    <div class="editor-module__toolbar">
+      <button id="peSaveBtn" class="editor-module__btn editor-module__btn--primary" title="Save Changes">Save</button>
+      <button id="pePlayBtn" class="editor-module__btn" title="Play">Play</button>
+      <button id="peLoopBtn" class="editor-module__btn" title="Loop">Loop</button>
+      <button id="peResetBtn" class="editor-module__btn" title="Reset">Reset</button>
+    </div>
+
+    <div class="editor-module__section" style="padding: 10px; border-bottom: 1px solid #444;">
+      <div class="editor-module__form-row">
+        <label for="pePlaybackSpeed" class="editor-module__label">Speed:</label>
+        <input type="range" id="pePlaybackSpeed" class="editor-module__slider" value="1" step="0.25" min="0.25" max="2">
+        <span id="pePlaybackSpeedValue" class="editor-module__value-display">1x</span>
+      </div>
+    </div>
+
+    <div class="editor-module__scroll-y">
+      <div class="editor-module__section">
+        <h3 class="editor-module__section-title">System Info</h3>
+        <div class="editor-module__form-row">
+          <label for="peSystemTitle" class="editor-module__label">Title:</label>
+          <input type="text" id="peSystemTitle" class="editor-module__input" placeholder="System name">
+        </div>
+        <div class="editor-module__form-row">
+          <label for="peSystemCategory" class="editor-module__label">Category:</label>
+          <select id="peSystemCategory" class="editor-module__select">
+            <option value="explosion">Explosion</option>
+            <option value="fire">Fire</option>
+            <option value="ice">Ice</option>
+            <option value="lightning">Lightning</option>
+            <option value="wind">Wind</option>
+            <option value="shadow">Shadow</option>
+            <option value="holy">Holy</option>
+            <option value="heal">Heal</option>
+            <option value="utility">Utility</option>
+          </select>
+        </div>
+        <div class="editor-module__form-row">
+          <label for="peSystemTags" class="editor-module__label">Tags:</label>
+          <input type="text" id="peSystemTags" class="editor-module__input" placeholder="tag1, tag2, tag3">
+        </div>
+      </div>
+
+      <div class="editor-module__section">
+        <h3 class="editor-module__section-title">Repeat Settings</h3>
+        <div class="editor-module__form-row">
+          <label class="editor-module__checkbox-label">
+            <input type="checkbox" id="peSystemRepeating">
+            Repeating
+          </label>
+        </div>
+        <div class="editor-module__form-row">
+          <label for="peSystemRepeatInterval" class="editor-module__label">Interval:</label>
+          <input type="range" id="peSystemRepeatInterval" class="editor-module__slider" value="0.5" step="0.1" min="0.1" max="2">
+          <span id="peSystemRepeatIntervalValue" class="editor-module__value-display">0.5s</span>
+        </div>
+      </div>
+
+      <div class="editor-module__section">
+        <h3 class="editor-module__section-title">Layers</h3>
+        <div class="editor-module__form-row">
+          <button id="peAddLayerBtn" class="editor-module__btn editor-module__btn--small">+ Add Layer</button>
+        </div>
+        <div id="peLayersList" class="particle-editor__layers-list">
+        </div>
+      </div>
+
+      <div class="editor-module__section">
+        <h3 class="editor-module__section-title">Screen Effects</h3>
+        <div class="editor-module__form-row">
+          <label class="editor-module__checkbox-label">
+            <input type="checkbox" id="peScreenShake">
+            Screen Shake
+          </label>
+        </div>
+        <div class="editor-module__form-row">
+          <label for="peShakeDuration" class="editor-module__label">Duration:</label>
+          <input type="range" id="peShakeDuration" class="editor-module__slider" value="0.2" step="0.05" min="0.05" max="1">
+          <span id="peShakeDurationValue" class="editor-module__value-display">0.2s</span>
+        </div>
+        <div class="editor-module__form-row">
+          <label for="peShakeIntensity" class="editor-module__label">Intensity:</label>
+          <input type="range" id="peShakeIntensity" class="editor-module__slider" value="3" step="1" min="1" max="10">
+          <span id="peShakeIntensityValue" class="editor-module__value-display">3</span>
+        </div>
+        <div class="editor-module__form-row">
+          <label class="editor-module__checkbox-label">
+            <input type="checkbox" id="peScreenFlash">
+            Screen Flash
+          </label>
+        </div>
+        <div class="editor-module__form-row">
+          <label for="peFlashColor" class="editor-module__label">Flash Color:</label>
+          <input type="color" id="peFlashColor" class="editor-module__color-input" value="#ffffff">
+        </div>
+        <div class="editor-module__form-row">
+          <label for="peFlashDuration" class="editor-module__label">Flash Duration:</label>
+          <input type="range" id="peFlashDuration" class="editor-module__slider" value="0.1" step="0.01" min="0.01" max="0.5">
+          <span id="peFlashDurationValue" class="editor-module__value-display">0.1s</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="editor-module__canvas-area editor-module__grid-background">
+    <canvas id="peCanvas" class="editor-module__canvas"></canvas>
+
+    <div class="editor-module__status-bar">
+      <span id="peStatusText">Ready</span> |
+      Particles: <span id="peParticleCountStatus">0</span> |
+      <span id="peLoopStatus"></span>
+    </div>
+  </div>
+
+  <div class="editor-module__sidebar editor-module__sidebar--right">
+    <div class="editor-module__section">
+      <h3 class="editor-module__section-title">System Presets</h3>
+      <div class="editor-module__form-row">
+        <select id="pePresetCategory" class="editor-module__select">
+          <option value="all">All Categories</option>
+          <option value="fire">Fire</option>
+          <option value="ice">Ice</option>
+          <option value="lightning">Lightning</option>
+          <option value="wind">Wind</option>
+          <option value="shadow">Shadow</option>
+          <option value="holy">Holy</option>
+          <option value="heal">Heal</option>
+          <option value="explosion">Explosion</option>
+          <option value="utility">Utility</option>
+        </select>
+      </div>
+      <div id="pePresetsList" class="particle-editor__presets-list editor-module__scroll-y">
+      </div>
+    </div>
+  </div>
+</div>

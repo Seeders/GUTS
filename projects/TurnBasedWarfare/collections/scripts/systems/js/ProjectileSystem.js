@@ -488,11 +488,139 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
             // Check collision for direct hit
             if (distance <= entityRadius + this.HIT_DETECTION_RADIUS) {
+                // Check if target has wind shield buff - reflect projectile back
+                if (this.checkWindShieldReflection(projectileId, entityId, pos, projectile)) {
+                    break; // Projectile was reflected, stop processing
+                }
+
                 // Direct hit detected!
                 this.handleProjectileHit(projectileId, entityId, entityPos, projectile);
                 break; // Stop after first hit
             }
         }
+    }
+
+    /**
+     * Check if target has wind shield and reflect projectile back to attacker
+     * Returns true if projectile was reflected, false otherwise
+     */
+    checkWindShieldReflection(projectileId, targetId, projectilePos, projectile) {
+        // Check if target has wind_shield buff
+        const buff = this.game.getComponent(targetId, "buff");
+        if (!buff) return false;
+
+        const enums = this.game.getEnums();
+        if (buff.buffType !== enums.buffTypes?.wind_shield) return false;
+
+        // Check if buff is still active
+        if (buff.endTime && buff.endTime < this.game.state.now) return false;
+
+        // Wind shield active! Reflect the projectile back to attacker
+        const sourceId = projectile.source;
+        const sourceTransform = this.game.getComponent(sourceId, "transform");
+        const sourcePos = sourceTransform?.position;
+
+        if (!sourcePos) {
+            // Source is gone, just destroy the projectile
+            this.destroyProjectile(projectileId);
+            return true;
+        }
+
+        // Get current velocity to reverse direction
+        const vel = this.game.getComponent(projectileId, "velocity");
+        const transform = this.game.getComponent(projectileId, "transform");
+
+        if (!vel || !transform) {
+            this.destroyProjectile(projectileId);
+            return true;
+        }
+
+        // Calculate direction back to attacker
+        const dx = sourcePos.x - projectilePos.x;
+        const dy = (sourcePos.y + 20) - projectilePos.y; // Aim at center mass
+        const dz = sourcePos.z - projectilePos.z;
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+        if (dist < 1) {
+            this.destroyProjectile(projectileId);
+            return true;
+        }
+
+        // Maintain original speed but reverse direction toward attacker
+        const speed = Math.sqrt(vel.vx * vel.vx + vel.vy * vel.vy + vel.vz * vel.vz);
+        const reflectSpeed = Math.max(speed, projectile.speed || 200);
+
+        vel.vx = this.roundForDeterminism((dx / dist) * reflectSpeed);
+        vel.vy = this.roundForDeterminism((dy / dist) * reflectSpeed);
+        vel.vz = this.roundForDeterminism((dz / dist) * reflectSpeed);
+
+        // Update rotation to face new direction
+        if (transform.rotation) {
+            transform.rotation.y = this.roundForDeterminism(Math.atan2(vel.vz, vel.vx));
+        }
+
+        // Swap source and target - projectile now belongs to the defender
+        const originalSource = projectile.source;
+        projectile.source = targetId;
+        projectile.target = originalSource;
+
+        // Update team to match new owner
+        const targetTeam = this.game.getComponent(targetId, "team");
+        const projectileTeamComp = this.game.getComponent(projectileId, "team");
+        if (targetTeam && projectileTeamComp) {
+            projectileTeamComp.team = targetTeam.team;
+        }
+
+        // Update homing if present
+        const homing = this.game.getComponent(projectileId, "homingTarget");
+        if (homing) {
+            homing.targetId = originalSource;
+            if (sourcePos) {
+                homing.lastKnownPosition = { x: sourcePos.x, y: sourcePos.y, z: sourcePos.z };
+            }
+        }
+
+        // Visual effect for reflection - wind swirl
+        if (!this.game.isServer) {
+            const targetTransform = this.game.getComponent(targetId, "transform");
+            const shieldPos = targetTransform?.position;
+            if (shieldPos) {
+                this.game.call('createLayeredEffect', {
+                    position: new THREE.Vector3(shieldPos.x, shieldPos.y + 25, shieldPos.z),
+                    layers: [
+                        // Wind deflection burst
+                        {
+                            count: 12,
+                            lifetime: 0.5,
+                            color: 0xE0FFFF,
+                            colorRange: { start: 0xE0FFFF, end: 0x87CEEB },
+                            scale: 8,
+                            scaleMultiplier: 1.2,
+                            velocityRange: { x: [-50, 50], y: [30, 80], z: [-50, 50] },
+                            gravity: -30,
+                            drag: 0.92,
+                            blending: 'additive',
+                            emitterShape: 'ring',
+                            emitterRadius: 15
+                        },
+                        // Sparkle effect
+                        {
+                            count: 6,
+                            lifetime: 0.3,
+                            color: 0xFFFFFF,
+                            scale: 5,
+                            scaleMultiplier: 0.8,
+                            velocityRange: { x: [-30, 30], y: [50, 100], z: [-30, 30] },
+                            gravity: -50,
+                            drag: 0.88,
+                            blending: 'additive'
+                        }
+                    ]
+                });
+            }
+        }
+
+        return true;
     }
     
     handleProjectileGroundImpact(entityId, pos, projectile) {
@@ -511,7 +639,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         }
     }
 
-    handleProjectileHit(projectileId, targetId, targetPos, projectile) {
+    handleProjectileHit(projectileId, targetId, _targetPos, projectile) {
         const damage = projectile.damage;
         const element = this.enums.element[projectile.element] || this.enums.element.physical;
 
@@ -520,14 +648,6 @@ class ProjectileSystem extends GUTS.BaseSystem {
             isProjectile: true,
             projectileId: projectileId
         });
-
-        // Visual effects only on client
-        if (!this.game.isServer) {
-            this.game.call('createParticleEffect', targetPos.x, targetPos.y, targetPos.z, 'magic', {
-                color: this.getElementalEffectColor(element),
-                count: 3
-            });
-        }
 
         this.destroyProjectile(projectileId);
     }

@@ -110,7 +110,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
             scaleMultiplier: 1.5
         });
 
-        // Enhanced beam trail particles
+        // Enhanced beam trail particles using preset effects
         if (!this.game.isServer) {
             // Create particles along the beam path
             const beamSteps = 6;
@@ -119,56 +119,13 @@ class PiercingShotAbility extends GUTS.BaseAbility {
                 const trailX = startPos.x + (endPos.x - startPos.x) * t;
                 const trailZ = startPos.z + (endPos.z - startPos.z) * t;
 
-                this.game.call('createParticles', {
-                    position: new THREE.Vector3(trailX, startPos.y + 15, trailZ),
-                    count: 8,
-                    lifetime: 0.4,
-                    visual: {
-                        color: 0x4682b4,
-                        colorRange: { start: 0x87ceeb, end: 0x4169e1 },
-                        scale: 10,
-                        scaleMultiplier: 1.2,
-                        fadeOut: true,
-                        blending: 'additive'
-                    },
-                    velocityRange: { x: [-30, 30], y: [20, 60], z: [-30, 30] },
-                    gravity: 0,
-                    drag: 0.9
-                });
+                this.game.call('playEffect', 'piercing_beam_trail',
+                    new THREE.Vector3(trailX, startPos.y + 15, trailZ));
             }
 
-            // Muzzle flash at start
-            this.game.call('createLayeredEffect', {
-                position: new THREE.Vector3(startPos.x, startPos.y + 15, startPos.z),
-                layers: [
-                    // Bright flash
-                    {
-                        count: 8,
-                        lifetime: 0.2,
-                        color: 0xffffff,
-                        colorRange: { start: 0xffffff, end: 0x87ceeb },
-                        scale: 20,
-                        scaleMultiplier: 2.5,
-                        velocityRange: { x: [-40, 40], y: [20, 60], z: [-40, 40] },
-                        gravity: 0,
-                        drag: 0.8,
-                        blending: 'additive'
-                    },
-                    // Blue sparks
-                    {
-                        count: 12,
-                        lifetime: 0.4,
-                        color: 0x4682b4,
-                        colorRange: { start: 0x87ceeb, end: 0x4169e1 },
-                        scale: 8,
-                        scaleMultiplier: 0.8,
-                        velocityRange: { x: [-60, 60], y: [30, 80], z: [-60, 60] },
-                        gravity: 100,
-                        drag: 0.94,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            // Muzzle flash at start using preset effect system
+            this.game.call('playEffectSystem', 'piercing_muzzle_flash',
+                new THREE.Vector3(startPos.x, startPos.y + 15, startPos.z));
         }
 
         // Create energy beam if effects system supports it

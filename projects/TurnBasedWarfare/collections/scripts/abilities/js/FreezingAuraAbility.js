@@ -160,52 +160,10 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
                 heightOffset: 50
             });
 
-            // Enhanced freezing aura pulse
+            // Enhanced freezing aura pulse using preset effect system
             if (!this.game.isServer) {
-                this.game.call('createLayeredEffect', {
-                    position: new THREE.Vector3(casterPos.x, casterPos.y + 20, casterPos.z),
-                    layers: [
-                        // Ice crystal ring
-                        {
-                            count: 18,
-                            lifetime: 0.8,
-                            color: 0x88ddff,
-                            colorRange: { start: 0xaaeeff, end: 0x4488cc },
-                            scale: 12,
-                            scaleMultiplier: 1.5,
-                            velocityRange: { x: [-70, 70], y: [5, 40], z: [-70, 70] },
-                            gravity: 30,
-                            drag: 0.92,
-                            blending: 'additive'
-                        },
-                        // Frost mist rising
-                        {
-                            count: 15,
-                            lifetime: 0.7,
-                            color: 0xccffff,
-                            colorRange: { start: 0xffffff, end: 0x88ccff },
-                            scale: 20,
-                            scaleMultiplier: 2.0,
-                            velocityRange: { x: [-40, 40], y: [30, 80], z: [-40, 40] },
-                            gravity: -30,
-                            drag: 0.88,
-                            blending: 'additive'
-                        },
-                        // Snowflakes
-                        {
-                            count: 12,
-                            lifetime: 1.2,
-                            color: 0xffffff,
-                            colorRange: { start: 0xffffff, end: 0xccddff },
-                            scale: 4,
-                            scaleMultiplier: 0.4,
-                            velocityRange: { x: [-50, 50], y: [-20, 30], z: [-50, 50] },
-                            gravity: 60,
-                            drag: 0.97,
-                            blending: 'additive'
-                        }
-                    ]
-                });
+                this.game.call('playEffectSystem', 'freezing_aura',
+                    new THREE.Vector3(casterPos.x, casterPos.y + 20, casterPos.z));
             }
         }
     }

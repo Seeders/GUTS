@@ -1,0 +1,31 @@
+{
+  "title": "Armor Glint",
+  "category": "physical",
+  "tags": [
+    "metal",
+    "glint",
+    "armor"
+  ],
+  "particleEffectData": {
+    "count": 8,
+    "lifetime": 0.3,
+    "scale": 10,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ffffff",
+    "endColor": "#888888",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 10,
+    "velocityXMin": -40,
+    "velocityXMax": 40,
+    "velocityYMin": 40,
+    "velocityYMax": 100,
+    "velocityZMin": -40,
+    "velocityZMax": 40,
+    "gravity": 0,
+    "drag": 0.85,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

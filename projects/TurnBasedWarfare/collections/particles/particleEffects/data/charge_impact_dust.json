@@ -1,0 +1,31 @@
+{
+  "title": "Charge Impact Dust",
+  "category": "physical",
+  "tags": [
+    "charge",
+    "impact",
+    "dust"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 0.8,
+    "scale": 25,
+    "scaleMultiplier": 2.5,
+    "startColor": "#a08060",
+    "endColor": "#554433",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 20,
+    "velocityXMin": -100,
+    "velocityXMax": 100,
+    "velocityYMin": 30,
+    "velocityYMax": 100,
+    "velocityZMin": -100,
+    "velocityZMax": 100,
+    "gravity": 80,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

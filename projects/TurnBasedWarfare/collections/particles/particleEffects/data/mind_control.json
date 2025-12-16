@@ -1,0 +1,32 @@
+{
+  "title": "Mind Control",
+  "category": "shadow",
+  "tags": [
+    "mind",
+    "control",
+    "psychic",
+    "purple"
+  ],
+  "particleEffectData": {
+    "count": 15,
+    "lifetime": 0.8,
+    "scale": 12,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ff00ff",
+    "endColor": "#660066",
+    "emitterShape": "sphere",
+    "emitterRadius": 15,
+    "heightOffset": 50,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": -20,
+    "velocityYMax": 40,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": -20,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

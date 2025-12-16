@@ -131,57 +131,17 @@ class BlizzardAbility extends GUTS.BaseAbility {
     createAmbientSnow(centerPos) {
         if (this.game.isServer) return;
 
-        // Create continuous snow effect over the duration
-        const snowInterval = 0.15;
+        // Create continuous snow effect over the duration using preset effects
+        const snowInterval = 0.3;
         const snowCount = Math.floor(this.duration / snowInterval);
 
         for (let i = 0; i < snowCount; i++) {
             this.game.schedulingSystem.scheduleAction(() => {
-                const position = new THREE.Vector3(
-                    centerPos.x,
-                    centerPos.y + 200,
-                    centerPos.z
-                );
-
-                // Falling snowflakes
-                this.game.call('createParticles', {
-                    position: position,
-                    count: 15,
-                    lifetime: 2.0,
-                    visual: {
-                        color: 0xffffff,
-                        colorRange: { start: 0xffffff, end: 0xddddff },
-                        scale: 8,
-                        scaleMultiplier: 0.6,
-                        fadeOut: true,
-                        blending: 'additive'
-                    },
-                    velocityRange: { x: [-60, 60], y: [-80, -40], z: [-60, 60] },
-                    gravity: 50,
-                    drag: 0.98,
-                    emitterShape: 'disk',
-                    emitterRadius: this.blizzardRadius
-                });
-
-                // Swirling frost mist
-                this.game.call('createParticles', {
-                    position: new THREE.Vector3(centerPos.x, centerPos.y + 30, centerPos.z),
-                    count: 8,
-                    lifetime: 1.5,
-                    visual: {
-                        color: 0xaaddff,
-                        colorRange: { start: 0xcceeFF, end: 0x6699ff },
-                        scale: 25,
-                        scaleMultiplier: 1.5,
-                        fadeOut: true,
-                        blending: 'additive'
-                    },
-                    velocityRange: { x: [-40, 40], y: [10, 40], z: [-40, 40] },
-                    gravity: -20,
-                    drag: 0.95,
-                    emitterShape: 'ring',
-                    emitterRadius: this.blizzardRadius * 0.5
-                });
+                // Use preset ice effects
+                this.game.call('playEffect', 'ice_mist',
+                    new THREE.Vector3(centerPos.x, centerPos.y + 30, centerPos.z));
+                this.game.call('playEffect', 'frost_aura',
+                    new THREE.Vector3(centerPos.x, centerPos.y + 10, centerPos.z));
             }, i * snowInterval, null);
         }
     }
@@ -221,7 +181,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
     createFallingIceShard(casterEntity, targetPos) {
         if (this.game.isServer) return;
 
-        // Create falling ice shard using particles
+        // Create falling ice shard using preset effects
         const fallDuration = 0.4;
         const trailInterval = 0.04;
         const trailCount = Math.floor(fallDuration / trailInterval);
@@ -238,60 +198,13 @@ class BlizzardAbility extends GUTS.BaseAbility {
             this.game.schedulingSystem.scheduleAction(() => {
                 const position = new THREE.Vector3(shardPos.x, shardPos.y, shardPos.z);
 
-                // Ice shard core - bright cyan
-                this.game.call('createParticles', {
-                    position: position,
-                    count: 6,
-                    lifetime: 0.12,
-                    visual: {
-                        color: 0x88ffff,
-                        colorRange: { start: 0xffffff, end: 0x44ddff },
-                        scale: 20,
-                        scaleMultiplier: 1.5,
-                        fadeOut: true,
-                        blending: 'additive'
-                    },
-                    velocityRange: { x: [-5, 5], y: [-5, 5], z: [-5, 5] },
-                    gravity: 0,
-                    drag: 0.9
-                });
+                // Ice shard core and glow using preset effects
+                this.game.call('playEffect', 'ice_shard_core', position);
+                this.game.call('playEffect', 'ice_shard_glow', position);
 
-                // Outer frost glow
-                this.game.call('createParticles', {
-                    position: position,
-                    count: 4,
-                    lifetime: 0.15,
-                    visual: {
-                        color: 0x4488ff,
-                        colorRange: { start: 0x88ccff, end: 0x2266ff },
-                        scale: 30,
-                        scaleMultiplier: 0.8,
-                        fadeOut: true,
-                        blending: 'additive'
-                    },
-                    velocityRange: { x: [-8, 8], y: [5, 15], z: [-8, 8] },
-                    gravity: 0,
-                    drag: 0.85
-                });
-
-                // Trail sparkles
+                // Trail sparkles every other frame
                 if (i % 2 === 0) {
-                    this.game.call('createParticles', {
-                        position: position,
-                        count: 3,
-                        lifetime: 0.5,
-                        visual: {
-                            color: 0xffffff,
-                            colorRange: { start: 0xffffff, end: 0xaaddff },
-                            scale: 6,
-                            scaleMultiplier: 0.5,
-                            fadeOut: true,
-                            blending: 'additive'
-                        },
-                        velocityRange: { x: [-20, 20], y: [10, 40], z: [-20, 20] },
-                        gravity: -10,
-                        drag: 0.95
-                    });
+                    this.game.call('playEffect', 'ice_shard_sparkles', position);
                 }
             }, i * trailInterval, null);
         }
@@ -309,43 +222,9 @@ class BlizzardAbility extends GUTS.BaseAbility {
         if (!this.game.isServer) {
             const impactPos = new THREE.Vector3(position.x, position.y + 10, position.z);
 
-            // Ice shatter burst
-            this.game.call('createParticles', {
-                position: impactPos,
-                count: 12,
-                lifetime: 0.6,
-                visual: {
-                    color: 0x88ddff,
-                    colorRange: { start: 0xffffff, end: 0x4488ff },
-                    scale: 12,
-                    scaleMultiplier: 0.8,
-                    fadeOut: true,
-                    blending: 'additive'
-                },
-                velocityRange: { x: [-60, 60], y: [20, 80], z: [-60, 60] },
-                gravity: 150,
-                drag: 0.95
-            });
-
-            // Frost ring on ground
-            this.game.call('createParticles', {
-                position: impactPos,
-                count: 8,
-                lifetime: 0.4,
-                visual: {
-                    color: 0xaaddff,
-                    colorRange: { start: 0xcceeFF, end: 0x6699ff },
-                    scale: 10,
-                    scaleMultiplier: 1.0,
-                    fadeOut: true,
-                    blending: 'additive'
-                },
-                velocityRange: { x: [-50, 50], y: [5, 15], z: [-50, 50] },
-                gravity: 30,
-                drag: 0.9,
-                emitterShape: 'ring',
-                emitterRadius: 5
-            });
+            // Use preset ice shatter and frost ring effects
+            this.game.call('playEffect', 'ice_shatter', impactPos);
+            this.game.call('playEffect', 'frost_ring', impactPos);
         }
     }
 
@@ -414,56 +293,8 @@ class BlizzardAbility extends GUTS.BaseAbility {
         if (!this.game.isServer) {
             const burstPos = new THREE.Vector3(centerPos.x, centerPos.y + 50, centerPos.z);
 
-            this.game.call('createLayeredEffect', {
-                position: burstPos,
-                layers: [
-                    // Central ice burst
-                    {
-                        count: 20,
-                        lifetime: 0.8,
-                        color: 0x88ffff,
-                        colorRange: { start: 0xffffff, end: 0x44ddff },
-                        scale: 40,
-                        scaleMultiplier: 2.5,
-                        velocityRange: { x: [-100, 100], y: [30, 120], z: [-100, 100] },
-                        gravity: -30,
-                        drag: 0.85,
-                        emitterShape: 'sphere',
-                        emitterRadius: 20,
-                        blending: 'additive'
-                    },
-                    // Frost ring expansion
-                    {
-                        count: 24,
-                        lifetime: 0.6,
-                        color: 0xaaddff,
-                        colorRange: { start: 0xcceeFF, end: 0x6699ff },
-                        scale: 15,
-                        scaleMultiplier: 1.2,
-                        velocityRange: { x: [-120, 120], y: [5, 20], z: [-120, 120] },
-                        gravity: 50,
-                        drag: 0.88,
-                        emitterShape: 'ring',
-                        emitterRadius: 30,
-                        blending: 'additive'
-                    },
-                    // Ice crystal debris
-                    {
-                        count: 30,
-                        lifetime: 1.5,
-                        color: 0x88ddff,
-                        colorRange: { start: 0xffffff, end: 0x4488ff },
-                        scale: 8,
-                        scaleMultiplier: 0.6,
-                        velocityRange: { x: [-80, 80], y: [60, 150], z: [-80, 80] },
-                        gravity: 200,
-                        drag: 0.97,
-                        emitterShape: 'sphere',
-                        emitterRadius: 15,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            // Use preset blizzard finale effect system
+            this.game.call('playEffectSystem', 'blizzard_finale', burstPos);
         }
     }
 

@@ -1,0 +1,20 @@
+{
+  "title": "Ice Impact",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "frost",
+    "impact"
+  ],
+  "layers": [
+    {
+      "effect": "ice_sparkles",
+      "delay": 0
+    },
+    {
+      "effect": "ice_mist",
+      "delay": 0,
+      "countMultiplier": 0.8
+    }
+  ]
+}

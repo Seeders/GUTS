@@ -1,0 +1,19 @@
+{
+  "title": "Shadow Arrive",
+  "category": "shadow",
+  "tags": [
+    "shadow",
+    "teleport",
+    "dark"
+  ],
+  "layers": [
+    {
+      "effect": "shadow_coalesce",
+      "delay": 0
+    },
+    {
+      "effect": "shadow_malice",
+      "delay": 0.1
+    }
+  ]
+}

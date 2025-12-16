@@ -1,0 +1,31 @@
+{
+  "title": "Ground Crack Ring",
+  "category": "physical",
+  "tags": [
+    "ground",
+    "crack",
+    "ring"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 0.5,
+    "scale": 15,
+    "scaleMultiplier": 1.8,
+    "startColor": "#887766",
+    "endColor": "#443322",
+    "emitterShape": "ring",
+    "emitterRadius": 30,
+    "heightOffset": 3,
+    "velocityXMin": -50,
+    "velocityXMax": 50,
+    "velocityYMin": 5,
+    "velocityYMax": 15,
+    "velocityZMin": -50,
+    "velocityZMax": 50,
+    "gravity": 20,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

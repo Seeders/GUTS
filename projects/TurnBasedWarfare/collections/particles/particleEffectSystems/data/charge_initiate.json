@@ -1,0 +1,14 @@
+{
+  "title": "Charge Initiate",
+  "category": "physical",
+  "layers": [
+    {
+      "effect": "charge_dust_burst",
+      "delay": 0
+    },
+    {
+      "effect": "armor_glint",
+      "delay": 0.05
+    }
+  ]
+}

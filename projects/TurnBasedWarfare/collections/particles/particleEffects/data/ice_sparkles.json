@@ -1,0 +1,31 @@
+{
+  "title": "Ice Sparkles",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "frost",
+    "sparkles"
+  ],
+  "particleEffectData": {
+    "count": 15,
+    "lifetime": 0.5,
+    "scale": 12,
+    "scaleMultiplier": 1,
+    "startColor": "#ffffff",
+    "endColor": "#44ddff",
+    "emitterShape": "sphere",
+    "emitterRadius": 15,
+    "heightOffset": 50,
+    "velocityXMin": -60,
+    "velocityXMax": 60,
+    "velocityYMin": 20,
+    "velocityYMax": 80,
+    "velocityZMin": -60,
+    "velocityZMax": 60,
+    "gravity": 150,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

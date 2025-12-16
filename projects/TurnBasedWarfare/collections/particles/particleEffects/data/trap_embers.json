@@ -1,0 +1,31 @@
+{
+  "title": "Trap Embers",
+  "category": "explosion",
+  "tags": [
+    "trap",
+    "explosion",
+    "embers"
+  ],
+  "particleEffectData": {
+    "count": 15,
+    "lifetime": 1.2,
+    "scale": 5,
+    "scaleMultiplier": 0.4,
+    "startColor": "#ffaa66",
+    "endColor": "#cc2200",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 20,
+    "velocityXMin": -80,
+    "velocityXMax": 80,
+    "velocityYMin": 120,
+    "velocityYMax": 220,
+    "velocityZMin": -80,
+    "velocityZMax": 80,
+    "gravity": 150,
+    "drag": 0.98,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

@@ -88,53 +88,10 @@ class MassHealAbility extends GUTS.BaseAbility {
         // Sort allies deterministically for consistent processing order
         const sortedAllies = targetAllies.slice().sort((a, b) => String(a).localeCompare(String(b)));
 
-        // Create central holy burst at caster
+        // Create central holy burst at caster using preset effect system
         if (!this.game.isServer && casterPos) {
-            // Central holy nova explosion
-            this.game.call('createLayeredEffect', {
-                position: new THREE.Vector3(casterPos.x, casterPos.y + 40, casterPos.z),
-                layers: [
-                    // Bright holy core
-                    {
-                        count: 15,
-                        lifetime: 0.4,
-                        color: 0xffffff,
-                        colorRange: { start: 0xffffff, end: 0x88ff88 },
-                        scale: 50,
-                        scaleMultiplier: 3.0,
-                        velocityRange: { x: [-30, 30], y: [50, 120], z: [-30, 30] },
-                        gravity: -40,
-                        drag: 0.85,
-                        blending: 'additive'
-                    },
-                    // Expanding green healing wave
-                    {
-                        count: 30,
-                        lifetime: 0.6,
-                        color: 0x88ff88,
-                        colorRange: { start: 0xaaffaa, end: 0x44cc44 },
-                        scale: 20,
-                        scaleMultiplier: 2.0,
-                        velocityRange: { x: [-150, 150], y: [20, 80], z: [-150, 150] },
-                        gravity: -20,
-                        drag: 0.92,
-                        blending: 'additive'
-                    },
-                    // Golden sparkles
-                    {
-                        count: 20,
-                        lifetime: 0.8,
-                        color: 0xffffaa,
-                        colorRange: { start: 0xffffff, end: 0xffdd66 },
-                        scale: 8,
-                        scaleMultiplier: 0.6,
-                        velocityRange: { x: [-100, 100], y: [60, 140], z: [-100, 100] },
-                        gravity: -30,
-                        drag: 0.94,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            this.game.call('playEffectSystem', 'heal_burst',
+                new THREE.Vector3(casterPos.x, casterPos.y + 40, casterPos.z));
         }
 
         // Process each ally deterministically
@@ -163,58 +120,11 @@ class MassHealAbility extends GUTS.BaseAbility {
                     if (!this.game.isServer) {
                         const delay = index * 0.1;
                         this.game.schedulingSystem.scheduleAction(() => {
-                            // Rising healing light column
-                            this.game.call('createLayeredEffect', {
-                                position: new THREE.Vector3(allyPos.x, allyPos.y + 20, allyPos.z),
-                                layers: [
-                                    // Green healing glow
-                                    {
-                                        count: 12,
-                                        lifetime: 0.5,
-                                        color: 0x88ff88,
-                                        colorRange: { start: 0xaaffaa, end: 0x44aa44 },
-                                        scale: 18,
-                                        scaleMultiplier: 1.8,
-                                        velocityRange: { x: [-20, 20], y: [60, 120], z: [-20, 20] },
-                                        gravity: -50,
-                                        drag: 0.9,
-                                        blending: 'additive'
-                                    },
-                                    // White sparkles
-                                    {
-                                        count: 8,
-                                        lifetime: 0.6,
-                                        color: 0xffffff,
-                                        colorRange: { start: 0xffffff, end: 0xaaffaa },
-                                        scale: 6,
-                                        scaleMultiplier: 0.5,
-                                        velocityRange: { x: [-40, 40], y: [80, 150], z: [-40, 40] },
-                                        gravity: -60,
-                                        drag: 0.92,
-                                        blending: 'additive'
-                                    }
-                                ]
-                            });
-
-                            // Healing ring at feet
-                            this.game.call('createParticles', {
-                                position: new THREE.Vector3(allyPos.x, allyPos.y + 5, allyPos.z),
-                                count: 12,
-                                lifetime: 0.4,
-                                visual: {
-                                    color: 0x88ff88,
-                                    colorRange: { start: 0xaaffaa, end: 0x66cc66 },
-                                    scale: 10,
-                                    scaleMultiplier: 1.2,
-                                    fadeOut: true,
-                                    blending: 'additive'
-                                },
-                                velocityRange: { x: [-10, 10], y: [20, 50], z: [-10, 10] },
-                                gravity: -20,
-                                drag: 0.95,
-                                emitterShape: 'ring',
-                                emitterRadius: 25
-                            });
+                            // Use preset heal effects
+                            this.game.call('playEffect', 'heal_glow',
+                                new THREE.Vector3(allyPos.x, allyPos.y + 20, allyPos.z));
+                            this.game.call('playEffect', 'heal_sparkles',
+                                new THREE.Vector3(allyPos.x, allyPos.y + 20, allyPos.z));
                         }, delay, allyId);
                     }
 

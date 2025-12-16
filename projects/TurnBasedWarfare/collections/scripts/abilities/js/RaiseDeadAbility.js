@@ -121,72 +121,14 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
                 this.createVisualEffect(corpseData.position, 'raise_dead');
                 this.logCorpseRaising(consumedCorpse, team);
 
-                // Enhanced necromantic rising effect (client only)
+                // Enhanced necromantic rising effect (client only) using preset effect system
                 if (!this.game.isServer) {
-                    this.game.call('createLayeredEffect', {
-                        position: new THREE.Vector3(corpseData.position.x, corpseData.position.y + 20, corpseData.position.z),
-                        layers: [
-                            // Dark mist rising from ground
-                            {
-                                count: 20,
-                                lifetime: 0.8,
-                                color: 0x1a0033,
-                                colorRange: { start: 0x330066, end: 0x000011 },
-                                scale: 25,
-                                scaleMultiplier: 2.5,
-                                velocityRange: { x: [-40, 40], y: [40, 100], z: [-40, 40] },
-                                gravity: -40,
-                                drag: 0.88,
-                                blending: 'normal'
-                            },
-                            // Purple necromantic energy
-                            {
-                                count: 15,
-                                lifetime: 0.6,
-                                color: 0x8b008b,
-                                colorRange: { start: 0xda70d6, end: 0x4b0082 },
-                                scale: 15,
-                                scaleMultiplier: 1.8,
-                                velocityRange: { x: [-30, 30], y: [60, 120], z: [-30, 30] },
-                                gravity: -50,
-                                drag: 0.9,
-                                blending: 'additive'
-                            },
-                            // Sickly green death energy
-                            {
-                                count: 10,
-                                lifetime: 0.5,
-                                color: 0x228b22,
-                                colorRange: { start: 0x32cd32, end: 0x006400 },
-                                scale: 10,
-                                scaleMultiplier: 1.2,
-                                velocityRange: { x: [-50, 50], y: [80, 150], z: [-50, 50] },
-                                gravity: 60,
-                                drag: 0.94,
-                                blending: 'additive'
-                            }
-                        ]
-                    });
+                    this.game.call('playEffectSystem', 'raise_dead',
+                        new THREE.Vector3(corpseData.position.x, corpseData.position.y + 20, corpseData.position.z));
 
-                    // Ground disturbance ring
-                    this.game.call('createParticles', {
-                        position: new THREE.Vector3(corpseData.position.x, corpseData.position.y + 3, corpseData.position.z),
-                        count: 16,
-                        lifetime: 0.6,
-                        visual: {
-                            color: 0x4b0082,
-                            colorRange: { start: 0x8b008b, end: 0x220044 },
-                            scale: 12,
-                            scaleMultiplier: 1.5,
-                            fadeOut: true,
-                            blending: 'additive'
-                        },
-                        velocityRange: { x: [-20, 20], y: [10, 40], z: [-20, 20] },
-                        gravity: -20,
-                        drag: 0.92,
-                        emitterShape: 'ring',
-                        emitterRadius: 25
-                    });
+                    // Ground disturbance ring using preset effect
+                    this.game.call('playEffect', 'undead_summon',
+                        new THREE.Vector3(corpseData.position.x, corpseData.position.y + 3, corpseData.position.z));
                 }
 
                 // Schedule a delayed necromancy effect for dramatic flair

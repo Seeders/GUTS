@@ -12,7 +12,9 @@
     "audioModule",
     "exportScriptModule",
     "textureEditor",
-    "behaviorTreeModule"
+    "behaviorTreeModule",
+    "particleEffectSystemModule",
+    "particleEffectModule"
   ],
   "path": "/",
   "fileName": "editor"

@@ -142,42 +142,11 @@ class DrainLifeAbility extends GUTS.BaseAbility {
 
             // Create flowing dark energy particles from target to caster (client only)
             if (!this.game.isServer) {
-                // Dark energy extraction at target
+                // Dark energy extraction at target using preset effect system
                 const targetEffectPos = new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z);
+                this.game.call('playEffectSystem', 'drain_life_target', targetEffectPos);
 
-                this.game.call('createLayeredEffect', {
-                    position: targetEffectPos,
-                    layers: [
-                        // Soul extraction burst
-                        {
-                            count: 20,
-                            lifetime: 0.6,
-                            color: 0xcc00ff,
-                            colorRange: { start: 0xff44ff, end: 0x660099 },
-                            scale: 20,
-                            scaleMultiplier: 1.5,
-                            velocityRange: { x: [-60, 60], y: [20, 80], z: [-60, 60] },
-                            gravity: -50,
-                            drag: 0.9,
-                            blending: 'additive'
-                        },
-                        // Dark wisps
-                        {
-                            count: 15,
-                            lifetime: 0.8,
-                            color: 0x660099,
-                            colorRange: { start: 0x9900cc, end: 0x330044 },
-                            scale: 15,
-                            scaleMultiplier: 1.2,
-                            velocityRange: { x: [-40, 40], y: [30, 100], z: [-40, 40] },
-                            gravity: -80,
-                            drag: 0.95,
-                            blending: 'additive'
-                        }
-                    ]
-                });
-
-                // Flowing energy stream from target to caster
+                // Flowing energy stream from target to caster using preset effect
                 const streamCount = 8;
                 for (let i = 0; i < streamCount; i++) {
                     this.game.schedulingSystem.scheduleAction(() => {
@@ -187,22 +156,8 @@ class DrainLifeAbility extends GUTS.BaseAbility {
                         const streamY = targetPos.y + (casterPos.y - targetPos.y) * progress + 50 + Math.sin(progress * Math.PI) * 30;
                         const streamZ = targetPos.z + (casterPos.z - targetPos.z) * progress;
 
-                        this.game.call('createParticles', {
-                            position: new THREE.Vector3(streamX, streamY, streamZ),
-                            count: 6,
-                            lifetime: 0.4,
-                            visual: {
-                                color: 0xaa00ff,
-                                colorRange: { start: 0xff66ff, end: 0x660099 },
-                                scale: 12,
-                                scaleMultiplier: 0.8,
-                                fadeOut: true,
-                                blending: 'additive'
-                            },
-                            velocityRange: { x: [-20, 20], y: [-10, 30], z: [-20, 20] },
-                            gravity: -30,
-                            drag: 0.95
-                        });
+                        this.game.call('playEffect', 'drain_stream',
+                            new THREE.Vector3(streamX, streamY, streamZ));
                     }, i * 0.05, null);
                 }
             }
@@ -211,30 +166,10 @@ class DrainLifeAbility extends GUTS.BaseAbility {
             if (actualHeal > 0) {
                 this.createVisualEffect(casterPos, 'heal');
 
-                // Enhanced heal absorption effect (client only)
+                // Enhanced heal absorption effect (client only) using preset effect system
                 if (!this.game.isServer) {
                     const casterEffectPos = new THREE.Vector3(casterPos.x, casterPos.y + 50, casterPos.z);
-
-                    this.game.call('createLayeredEffect', {
-                        position: casterEffectPos,
-                        layers: [
-                            // Absorbed energy
-                            {
-                                count: 15,
-                                lifetime: 1.0,
-                                color: 0xaa44ff,
-                                colorRange: { start: 0xff88ff, end: 0x9900cc },
-                                scale: 18,
-                                scaleMultiplier: 1.5,
-                                velocityRange: { x: [-30, 30], y: [30, 80], z: [-30, 30] },
-                                gravity: -60,
-                                drag: 0.92,
-                                emitterShape: 'ring',
-                                emitterRadius: 15,
-                                blending: 'additive'
-                            }
-                        ]
-                    });
+                    this.game.call('playEffectSystem', 'drain_life_absorb', casterEffectPos);
                 }
 
                 if (!this.game.isServer && this.game.hasService('showDamageNumber')) {

@@ -1,0 +1,31 @@
+{
+  "title": "Drain Stream",
+  "category": "shadow",
+  "tags": [
+    "shadow",
+    "drain",
+    "stream"
+  ],
+  "particleEffectData": {
+    "count": 6,
+    "lifetime": 0.4,
+    "scale": 12,
+    "scaleMultiplier": 0.8,
+    "startColor": "#ff66ff",
+    "endColor": "#660099",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 0,
+    "velocityXMin": -20,
+    "velocityXMax": 20,
+    "velocityYMin": -10,
+    "velocityYMax": 30,
+    "velocityZMin": -20,
+    "velocityZMax": 20,
+    "gravity": -30,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

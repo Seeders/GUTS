@@ -1,0 +1,37 @@
+{
+  "title": "Particle Effect System Editor",
+  "container": "particle-effect-system-editor-container",
+  "libraries": [
+    "threejs",
+    "BaseECSGame",
+    "SceneManager",
+    "EditorECSGame",
+    "EditorLoader",
+    "ShapeFactory",
+    "ModelManager",
+    "CoordinateTranslator",
+    "ImageManager",
+    "CanvasUtility",
+    "GE_GroupManager",
+    "GLTFLoader",
+    "WorldRenderer",
+    "RaycastHelper",
+    "three_MeshBVH",
+    "EntityRenderer",
+    "GameServices",
+    "ComponentGenerator",
+    "ParticleEffectSystemEditor"
+  ],
+  "systems": [
+    "ComponentSystem",
+    "RenderSystem",
+    "ParticleSystem"
+  ],
+  "propertyName": "layers",
+  "interface": "particleEffectSystemEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "loadHook": "editParticleEffectSystem",
+  "saveHook": "saveParticleEffectSystem",
+  "unloadHook": "unloadParticleEffectSystem"
+}

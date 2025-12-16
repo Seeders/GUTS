@@ -88,73 +88,15 @@ class Tornado extends GUTS.BaseAbility {
                 // Apply curse effect
                 this.createVisualEffect(enemyPos, 'curse');
 
-                // Enhanced dark curse visual
+                // Enhanced dark curse visual using preset effects
                 if (!this.game.isServer) {
-                    // Dark energy swirl around target
-                    this.game.call('createLayeredEffect', {
-                        position: new THREE.Vector3(enemyPos.x, enemyPos.y + 30, enemyPos.z),
-                        layers: [
-                            // Dark mist
-                            {
-                                count: 20,
-                                lifetime: 0.8,
-                                color: 0x1a1a1a,
-                                colorRange: { start: 0x333333, end: 0x000000 },
-                                scale: 25,
-                                scaleMultiplier: 2.0,
-                                velocityRange: { x: [-40, 40], y: [-20, 40], z: [-40, 40] },
-                                gravity: -10,
-                                drag: 0.9,
-                                blending: 'normal'
-                            },
-                            // Purple curse energy
-                            {
-                                count: 15,
-                                lifetime: 0.6,
-                                color: 0x6622aa,
-                                colorRange: { start: 0x8844cc, end: 0x330066 },
-                                scale: 12,
-                                scaleMultiplier: 1.5,
-                                velocityRange: { x: [-30, 30], y: [20, 60], z: [-30, 30] },
-                                gravity: -30,
-                                drag: 0.92,
-                                blending: 'additive'
-                            },
-                            // Sickly green sparks
-                            {
-                                count: 10,
-                                lifetime: 0.5,
-                                color: 0x44aa22,
-                                colorRange: { start: 0x66cc44, end: 0x226611 },
-                                scale: 8,
-                                scaleMultiplier: 0.8,
-                                velocityRange: { x: [-50, 50], y: [30, 80], z: [-50, 50] },
-                                gravity: 50,
-                                drag: 0.94,
-                                blending: 'additive'
-                            }
-                        ]
-                    });
+                    // Dark energy swirl around target using preset effect
+                    this.game.call('playEffectSystem', 'curse_apply',
+                        new THREE.Vector3(enemyPos.x, enemyPos.y + 30, enemyPos.z));
 
-                    // Curse symbols rising
-                    this.game.call('createParticles', {
-                        position: new THREE.Vector3(enemyPos.x, enemyPos.y + 5, enemyPos.z),
-                        count: 12,
-                        lifetime: 1.0,
-                        visual: {
-                            color: 0x660066,
-                            colorRange: { start: 0x882288, end: 0x440044 },
-                            scale: 10,
-                            scaleMultiplier: 0.6,
-                            fadeOut: true,
-                            blending: 'additive'
-                        },
-                        velocityRange: { x: [-15, 15], y: [30, 80], z: [-15, 15] },
-                        gravity: -40,
-                        drag: 0.95,
-                        emitterShape: 'ring',
-                        emitterRadius: 20
-                    });
+                    // Curse symbols rising using preset effect
+                    this.game.call('playEffect', 'curse_symbols',
+                        new THREE.Vector3(enemyPos.x, enemyPos.y + 5, enemyPos.z));
                 }
 
                 // Reduce enemy damage

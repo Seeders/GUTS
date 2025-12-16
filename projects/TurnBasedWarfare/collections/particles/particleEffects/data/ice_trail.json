@@ -1,0 +1,31 @@
+{
+  "title": "Ice Trail",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "frost",
+    "trail"
+  ],
+  "particleEffectData": {
+    "count": 4,
+    "lifetime": 0.5,
+    "scale": 10,
+    "scaleMultiplier": 0.8,
+    "startColor": "#ffffff",
+    "endColor": "#6699ff",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 0,
+    "velocityXMin": -15,
+    "velocityXMax": 15,
+    "velocityYMin": 10,
+    "velocityYMax": 30,
+    "velocityZMin": -15,
+    "velocityZMax": 15,
+    "gravity": -10,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

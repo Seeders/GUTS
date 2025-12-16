@@ -145,42 +145,8 @@ class ConsecrationAbility extends GUTS.BaseAbility {
         if (!this.game.isServer) {
             const glowPos = new THREE.Vector3(consecrationPos.x, consecrationPos.y + 10, consecrationPos.z);
 
-            // Initial holy burst
-            this.game.call('createLayeredEffect', {
-                position: glowPos,
-                layers: [
-                    // Expanding golden ring
-                    {
-                        count: 32,
-                        lifetime: 1.0,
-                        color: 0xffdd44,
-                        colorRange: { start: 0xffffff, end: 0xffaa00 },
-                        scale: 15,
-                        scaleMultiplier: 1.0,
-                        velocityRange: { x: [-100, 100], y: [5, 20], z: [-100, 100] },
-                        gravity: 20,
-                        drag: 0.9,
-                        emitterShape: 'ring',
-                        emitterRadius: 20,
-                        blending: 'additive'
-                    },
-                    // Rising light pillars
-                    {
-                        count: 20,
-                        lifetime: 1.5,
-                        color: 0xffff88,
-                        colorRange: { start: 0xffffff, end: 0xffdd44 },
-                        scale: 20,
-                        scaleMultiplier: 2.0,
-                        velocityRange: { x: [-20, 20], y: [60, 120], z: [-20, 20] },
-                        gravity: -40,
-                        drag: 0.95,
-                        emitterShape: 'disk',
-                        emitterRadius: this.consecrationRadius * 0.8,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            // Initial holy burst using preset effect system
+            this.game.call('playEffectSystem', 'consecration_burst', glowPos);
 
             // Schedule continuous ground glow throughout duration
             const glowInterval = 0.5;
@@ -188,45 +154,13 @@ class ConsecrationAbility extends GUTS.BaseAbility {
 
             for (let i = 0; i < glowCount; i++) {
                 this.game.schedulingSystem.scheduleAction(() => {
-                    // Ground particles
-                    this.game.call('createParticles', {
-                        position: new THREE.Vector3(consecrationPos.x, consecrationPos.y + 5, consecrationPos.z),
-                        count: 10,
-                        lifetime: 1.2,
-                        visual: {
-                            color: 0xffdd44,
-                            colorRange: { start: 0xffff88, end: 0xffaa00 },
-                            scale: 15,
-                            scaleMultiplier: 1.0,
-                            fadeOut: true,
-                            blending: 'additive'
-                        },
-                        velocityRange: { x: [-30, 30], y: [20, 50], z: [-30, 30] },
-                        gravity: -30,
-                        drag: 0.96,
-                        emitterShape: 'disk',
-                        emitterRadius: this.consecrationRadius * 0.6
-                    });
+                    // Ground particles using preset effects
+                    this.game.call('playEffect', 'holy_ground_glow',
+                        new THREE.Vector3(consecrationPos.x, consecrationPos.y + 5, consecrationPos.z));
 
-                    // Edge sparkles
-                    this.game.call('createParticles', {
-                        position: new THREE.Vector3(consecrationPos.x, consecrationPos.y + 5, consecrationPos.z),
-                        count: 6,
-                        lifetime: 0.8,
-                        visual: {
-                            color: 0xffffff,
-                            colorRange: { start: 0xffffff, end: 0xffffaa },
-                            scale: 8,
-                            scaleMultiplier: 0.5,
-                            fadeOut: true,
-                            blending: 'additive'
-                        },
-                        velocityRange: { x: [-20, 20], y: [30, 60], z: [-20, 20] },
-                        gravity: -20,
-                        drag: 0.98,
-                        emitterShape: 'ring',
-                        emitterRadius: this.consecrationRadius * 0.9
-                    });
+                    // Edge sparkles using preset effects
+                    this.game.call('playEffect', 'holy_edge_sparkles',
+                        new THREE.Vector3(consecrationPos.x, consecrationPos.y + 5, consecrationPos.z));
                 }, i * glowInterval, consecrationId);
             }
         }

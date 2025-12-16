@@ -151,45 +151,11 @@ class FireBallAbility extends GUTS.BaseAbility {
         // Main cast particles
         this.createVisualEffect(casterPos, 'cast');
 
-        // Additional swirling effect using layered particles
+        // Use preset fire effects for charging
         if (!this.game.isServer) {
-            const position = new THREE.Vector3(
-                casterPos.x,
-                casterPos.y + 75,
-                casterPos.z
-            );
-
-            this.game.call('createLayeredEffect', {
-                position: position,
-                layers: [
-                    // Inner bright core
-                    {
-                        count: 5,
-                        lifetime: 1.2,
-                        color: 0xffff00,
-                        colorRange: { start: 0xffffff, end: 0xffaa00 },
-                        scale: 20,
-                        scaleMultiplier: 1.5,
-                        velocityRange: { x: [-20, 20], y: [30, 60], z: [-20, 20] },
-                        gravity: -50,
-                        drag: 0.95,
-                        blending: 'additive'
-                    },
-                    // Outer swirling flames
-                    {
-                        count: 10,
-                        lifetime: 1.0,
-                        color: 0xff6600,
-                        colorRange: { start: 0xff8800, end: 0xff2200 },
-                        scale: 16,
-                        scaleMultiplier: 1.2,
-                        velocityRange: { x: [-40, 40], y: [20, 80], z: [-40, 40] },
-                        gravity: -80,
-                        drag: 0.92,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            const pos = new THREE.Vector3(casterPos.x, casterPos.y + 75, casterPos.z);
+            this.game.call('playEffect', 'fire_burst_core', pos);
+            this.game.call('playEffect', 'fire_burst_secondary', pos);
         }
     }
 
@@ -271,27 +237,11 @@ class FireBallAbility extends GUTS.BaseAbility {
         // Sparks
         this.createVisualEffect(currentPos, 'trail_sparks', { heightOffset: 0 });
 
-        // Additional smoke trail using particle system
+        // Use preset trail effects
         if (!this.game.isServer) {
-            const position = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
-
-            this.game.call('createParticles', {
-                position: position,
-                count: 2,
-                lifetime: 0.8,
-                visual: {
-                    color: 0x555555,
-                    colorRange: { start: 0x666666, end: 0x222222 },
-                    scale: 12,
-                    scaleMultiplier: 1.5,
-                    fadeOut: true,
-                    scaleOverTime: true,
-                    blending: 'normal'
-                },
-                velocityRange: { x: [-15, 15], y: [-10, 30], z: [-15, 15] },
-                gravity: -20,
-                drag: 0.95
-            });
+            const pos = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
+            this.game.call('playEffect', 'fire_trail', pos);
+            this.game.call('playEffect', 'smoke_rising', pos);
         }
     }
 
@@ -309,106 +259,10 @@ class FireBallAbility extends GUTS.BaseAbility {
             this.createVisualEffect(impactPos, 'explosion_smoke');
         }, 0.1);
 
-        // Advanced layered explosion using new particle system
+        // Use preset explosion_fire effect system
         if (!this.game.isServer) {
-            const position = new THREE.Vector3(
-                impactPos.x,
-                impactPos.y + 75,
-                impactPos.z
-            );
-
-            // Create layered explosion effect
-            this.game.call('createLayeredEffect', {
-                position: position,
-                layers: [
-                    // Bright flash core - instant expansion
-                    {
-                        count: 8,
-                        lifetime: 0.3,
-                        color: 0xffffff,
-                        colorRange: { start: 0xffffff, end: 0xffff00 },
-                        scale: 40,
-                        scaleMultiplier: 3.0,
-                        velocityRange: { x: [-100, 100], y: [-50, 150], z: [-100, 100] },
-                        gravity: 0,
-                        drag: 0.8,
-                        blending: 'additive'
-                    },
-                    // Main fireball - spherical expansion
-                    {
-                        count: 25,
-                        lifetime: 0.8,
-                        color: 0xff6600,
-                        colorRange: { start: 0xffaa00, end: 0xff2200 },
-                        scale: 24,
-                        scaleMultiplier: 2.0,
-                        velocityRange: { x: [-80, 80], y: [20, 120], z: [-80, 80] },
-                        gravity: -30,
-                        drag: 0.9,
-                        emitterShape: 'sphere',
-                        emitterRadius: 15,
-                        blending: 'additive'
-                    },
-                    // Secondary flames - slower expansion
-                    {
-                        count: 15,
-                        lifetime: 1.2,
-                        color: 0xff4400,
-                        colorRange: { start: 0xff8800, end: 0x880000 },
-                        scale: 20,
-                        scaleMultiplier: 1.8,
-                        velocityRange: { x: [-60, 60], y: [40, 100], z: [-60, 60] },
-                        gravity: -60,
-                        drag: 0.92,
-                        emitterShape: 'sphere',
-                        emitterRadius: 20,
-                        blending: 'additive'
-                    },
-                    // Rising smoke column
-                    {
-                        count: 12,
-                        lifetime: 2.0,
-                        color: 0x444444,
-                        colorRange: { start: 0x555555, end: 0x111111 },
-                        scale: 30,
-                        scaleMultiplier: 2.5,
-                        velocityRange: { x: [-20, 20], y: [60, 120], z: [-20, 20] },
-                        gravity: -40,
-                        drag: 0.96,
-                        blending: 'normal'
-                    },
-                    // Ground ring shockwave
-                    {
-                        count: 16,
-                        lifetime: 0.6,
-                        color: 0xff8800,
-                        colorRange: { start: 0xffaa00, end: 0xff4400 },
-                        scale: 16,
-                        scaleMultiplier: 1.0,
-                        velocityRange: { x: [-120, 120], y: [5, 20], z: [-120, 120] },
-                        gravity: 50,
-                        drag: 0.85,
-                        emitterShape: 'ring',
-                        emitterRadius: 10,
-                        blending: 'additive'
-                    },
-                    // Flying embers/debris
-                    {
-                        count: 20,
-                        lifetime: 1.5,
-                        color: 0xffaa00,
-                        colorRange: { start: 0xffcc00, end: 0xff4400 },
-                        scale: 6,
-                        scaleMultiplier: 0.5,
-                        velocityRange: { x: [-100, 100], y: [80, 180], z: [-100, 100] },
-                        gravity: 200,
-                        drag: 0.98,
-                        emitterShape: 'sphere',
-                        emitterRadius: 10,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            const pos = new THREE.Vector3(impactPos.x, impactPos.y + 75, impactPos.z);
+            this.game.call('playEffectSystem', 'explosion_fire', pos);
         }
     }
 

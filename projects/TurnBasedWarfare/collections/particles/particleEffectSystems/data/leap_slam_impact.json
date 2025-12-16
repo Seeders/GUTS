@@ -1,0 +1,28 @@
+{
+  "title": "Leap Slam Impact",
+  "category": "physical",
+  "tags": [
+    "leap",
+    "slam",
+    "impact",
+    "ground"
+  ],
+  "layers": [
+    {
+      "effect": "impact_flash",
+      "delay": 0
+    },
+    {
+      "effect": "dust_explosion",
+      "delay": 0
+    },
+    {
+      "effect": "ground_shockwave",
+      "delay": 0.05
+    },
+    {
+      "effect": "rock_debris",
+      "delay": 0.1
+    }
+  ]
+}

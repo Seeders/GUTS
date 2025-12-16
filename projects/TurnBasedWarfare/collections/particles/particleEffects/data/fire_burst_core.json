@@ -1,0 +1,31 @@
+{
+  "title": "Fire Burst Core",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "explosion",
+    "impact"
+  ],
+  "particleEffectData": {
+    "count": 12,
+    "lifetime": 0.4,
+    "scale": 25,
+    "scaleMultiplier": 2,
+    "startColor": "#ffffff",
+    "endColor": "#ffaa00",
+    "emitterShape": "sphere",
+    "emitterRadius": 10,
+    "heightOffset": 0,
+    "velocityXMin": -100,
+    "velocityXMax": 100,
+    "velocityYMin": 50,
+    "velocityYMax": 150,
+    "velocityZMin": -100,
+    "velocityZMax": 100,
+    "gravity": -20,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

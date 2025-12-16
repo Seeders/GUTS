@@ -1,0 +1,31 @@
+{
+  "title": "Holy Explosion",
+  "category": "holy",
+  "tags": [
+    "holy",
+    "explosion",
+    "damage"
+  ],
+  "particleEffectData": {
+    "count": 25,
+    "lifetime": 0.5,
+    "scale": 18,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ffffff",
+    "endColor": "#ff8800",
+    "emitterShape": "sphere",
+    "emitterRadius": 15,
+    "heightOffset": 20,
+    "velocityXMin": -100,
+    "velocityXMax": 100,
+    "velocityYMin": 50,
+    "velocityYMax": 150,
+    "velocityZMin": -100,
+    "velocityZMax": 100,
+    "gravity": 150,
+    "drag": 0.93,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

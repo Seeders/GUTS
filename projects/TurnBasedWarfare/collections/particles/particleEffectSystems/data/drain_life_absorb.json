@@ -1,0 +1,16 @@
+{
+  "title": "Drain Life Absorb",
+  "category": "shadow",
+  "tags": [
+    "shadow",
+    "drain",
+    "heal",
+    "absorb"
+  ],
+  "layers": [
+    {
+      "effect": "drain_absorb",
+      "delay": 0
+    }
+  ]
+}

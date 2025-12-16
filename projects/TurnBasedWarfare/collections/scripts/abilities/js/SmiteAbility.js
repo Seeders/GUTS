@@ -106,88 +106,28 @@ class SmiteAbility extends GUTS.BaseAbility {
         // Create holy judgment aura effect
         this.createVisualEffect(targetPos, 'holy_judgment');
 
-        // Enhanced holy pillar descending from sky (client only)
+        // Use preset particle effects (client only)
         if (!this.game.isServer) {
-            // Pillar of golden light descending
+            const pos = new THREE.Vector3(targetPos.x, targetPos.y, targetPos.z);
+
+            // Pillar of golden light descending using preset effect
             const pillarSteps = 8;
             for (let i = 0; i < pillarSteps; i++) {
                 const delay = i * 0.05;
                 const height = 300 - (i * 35);
 
                 this.game.schedulingSystem.scheduleAction(() => {
-                    this.game.call('createParticles', {
-                        position: new THREE.Vector3(targetPos.x, targetPos.y + height, targetPos.z),
-                        count: 15,
-                        lifetime: 0.4,
-                        visual: {
-                            color: 0xffd700,
-                            colorRange: { start: 0xffffff, end: 0xffa500 },
-                            scale: 20,
-                            scaleMultiplier: 1.8,
-                            fadeOut: true,
-                            blending: 'additive'
-                        },
-                        velocityRange: { x: [-30, 30], y: [-150, -80], z: [-30, 30] },
-                        gravity: 100,
-                        drag: 0.9,
-                        emitterShape: 'ring',
-                        emitterRadius: 15
-                    });
+                    this.game.call('playEffect', 'holy_pillar',
+                        new THREE.Vector3(targetPos.x, targetPos.y + height, targetPos.z));
                 }, delay, targetId);
             }
 
             // Warning ring on ground
-            this.game.call('createParticles', {
-                position: new THREE.Vector3(targetPos.x, targetPos.y + 5, targetPos.z),
-                count: 24,
-                lifetime: 0.6,
-                visual: {
-                    color: 0xffd700,
-                    colorRange: { start: 0xffffff, end: 0xffaa00 },
-                    scale: 15,
-                    scaleMultiplier: 1.2,
-                    fadeOut: true,
-                    blending: 'additive'
-                },
-                velocityRange: { x: [-10, 10], y: [20, 60], z: [-10, 10] },
-                gravity: -20,
-                drag: 0.95,
-                emitterShape: 'ring',
-                emitterRadius: 40
-            });
+            this.game.call('playEffect', 'holy_ring', pos);
 
-            // Holy symbols/sparkles rising
-            this.game.call('createLayeredEffect', {
-                position: new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z),
-                layers: [
-                    // Golden core glow
-                    {
-                        count: 10,
-                        lifetime: 0.5,
-                        color: 0xffd700,
-                        colorRange: { start: 0xffffff, end: 0xffa500 },
-                        scale: 30,
-                        scaleMultiplier: 2.5,
-                        velocityRange: { x: [-20, 20], y: [50, 120], z: [-20, 20] },
-                        gravity: -30,
-                        drag: 0.85,
-                        blending: 'additive'
-                    },
-                    // White holy sparkles
-                    {
-                        count: 20,
-                        lifetime: 0.7,
-                        color: 0xffffff,
-                        colorRange: { start: 0xffffff, end: 0xffffcc },
-                        scale: 8,
-                        scaleMultiplier: 0.6,
-                        velocityRange: { x: [-60, 60], y: [80, 180], z: [-60, 60] },
-                        gravity: -50,
-                        drag: 0.92,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            // Holy sparkles rising
+            this.game.call('playEffect', 'holy_light', new THREE.Vector3(pos.x, pos.y + 20, pos.z));
+            this.game.call('playEffect', 'holy_sparkles', new THREE.Vector3(pos.x, pos.y + 20, pos.z));
         }
 
         // Screen flash and shake (client only)
@@ -239,52 +179,10 @@ class SmiteAbility extends GUTS.BaseAbility {
         // Create smite impact effect
         this.createVisualEffect(targetPos, 'smite');
 
-        // Enhanced holy explosion on impact (client only)
+        // Use preset holy_smite effect system for impact (client only)
         if (!this.game.isServer) {
-            this.game.call('createLayeredEffect', {
-                position: new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z),
-                layers: [
-                    // Blinding flash
-                    {
-                        count: 8,
-                        lifetime: 0.2,
-                        color: 0xffffff,
-                        colorRange: { start: 0xffffff, end: 0xffd700 },
-                        scale: 50,
-                        scaleMultiplier: 3.0,
-                        velocityRange: { x: [-50, 50], y: [20, 80], z: [-50, 50] },
-                        gravity: 0,
-                        drag: 0.7,
-                        blending: 'additive'
-                    },
-                    // Golden explosion
-                    {
-                        count: 25,
-                        lifetime: 0.5,
-                        color: 0xffd700,
-                        colorRange: { start: 0xffffff, end: 0xff8800 },
-                        scale: 18,
-                        scaleMultiplier: 1.5,
-                        velocityRange: { x: [-100, 100], y: [50, 150], z: [-100, 100] },
-                        gravity: 150,
-                        drag: 0.93,
-                        blending: 'additive'
-                    },
-                    // Holy embers
-                    {
-                        count: 15,
-                        lifetime: 0.8,
-                        color: 0xffffaa,
-                        colorRange: { start: 0xffffff, end: 0xffcc00 },
-                        scale: 6,
-                        scaleMultiplier: 0.5,
-                        velocityRange: { x: [-80, 80], y: [100, 200], z: [-80, 80] },
-                        gravity: 100,
-                        drag: 0.96,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            this.game.call('playEffectSystem', 'holy_smite',
+                new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z));
         }
     }
     

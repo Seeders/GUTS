@@ -1,0 +1,22 @@
+{
+  "title": "Backstab",
+  "category": "damage",
+  "tags": [
+    "damage",
+    "physical",
+    "critical"
+  ],
+  "layers": [
+    {
+      "effect": "blood_spray",
+      "delay": 0
+    },
+    {
+      "effect": "shadow_wisps",
+      "delay": 0,
+      "countMultiplier": 0.5
+    }
+  ],
+  "screenShakeDuration": 0.2,
+  "screenShakeIntensity": 1.5
+}

@@ -94,56 +94,10 @@ class HealAbility extends GUTS.BaseAbility {
         this.createVisualEffect(targetPos, 'heal');
         this.createVisualEffect(targetPos, 'sparkles');
 
-        // Enhanced holy light effect (client only)
+        // Use preset heal_burst effect system (client only)
         if (!this.game.isServer) {
-            const healPos = new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z);
-
-            this.game.call('createLayeredEffect', {
-                position: healPos,
-                layers: [
-                    // Rising golden light
-                    {
-                        count: 20,
-                        lifetime: 1.2,
-                        color: 0xffdd66,
-                        colorRange: { start: 0xffffff, end: 0xffaa00 },
-                        scale: 20,
-                        scaleMultiplier: 1.5,
-                        velocityRange: { x: [-20, 20], y: [40, 100], z: [-20, 20] },
-                        gravity: -80,
-                        drag: 0.95,
-                        blending: 'additive'
-                    },
-                    // Spiral healing particles
-                    {
-                        count: 15,
-                        lifetime: 1.0,
-                        color: 0x88ff88,
-                        colorRange: { start: 0xffffff, end: 0x44ff44 },
-                        scale: 15,
-                        scaleMultiplier: 1.2,
-                        velocityRange: { x: [-40, 40], y: [30, 80], z: [-40, 40] },
-                        gravity: -60,
-                        drag: 0.92,
-                        emitterShape: 'ring',
-                        emitterRadius: 20,
-                        blending: 'additive'
-                    },
-                    // White sparkles
-                    {
-                        count: 12,
-                        lifetime: 0.8,
-                        color: 0xffffff,
-                        colorRange: { start: 0xffffff, end: 0xffffaa },
-                        scale: 8,
-                        scaleMultiplier: 0.5,
-                        velocityRange: { x: [-30, 30], y: [50, 120], z: [-30, 30] },
-                        gravity: -40,
-                        drag: 0.98,
-                        blending: 'additive'
-                    }
-                ]
-            });
+            this.game.call('playEffectSystem', 'heal_burst',
+                new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z));
         }
 
         // Apply healing

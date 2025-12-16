@@ -1,0 +1,31 @@
+{
+  "title": "Heal Glow",
+  "category": "heal",
+  "tags": [
+    "heal",
+    "magic",
+    "support"
+  ],
+  "particleEffectData": {
+    "count": 12,
+    "lifetime": 1,
+    "scale": 15,
+    "scaleMultiplier": 1.2,
+    "startColor": "#88ff88",
+    "endColor": "#22aa22",
+    "emitterShape": "ring",
+    "emitterRadius": 25,
+    "heightOffset": 0,
+    "velocityXMin": -15,
+    "velocityXMax": 15,
+    "velocityYMin": 60,
+    "velocityYMax": 120,
+    "velocityZMin": -15,
+    "velocityZMax": 15,
+    "gravity": -40,
+    "drag": 0.94,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

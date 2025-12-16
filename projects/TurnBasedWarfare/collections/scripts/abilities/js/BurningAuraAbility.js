@@ -147,52 +147,10 @@ class BurningAuraAbility extends GUTS.BaseAbility {
                 heightOffset: 15
             });
 
-            // Enhanced burning aura pulse
+            // Enhanced burning aura pulse using preset effect system
             if (!this.game.isServer) {
-                this.game.call('createLayeredEffect', {
-                    position: new THREE.Vector3(casterPos.x, casterPos.y + 20, casterPos.z),
-                    layers: [
-                        // Fire ring expanding
-                        {
-                            count: 20,
-                            lifetime: 0.8,
-                            color: 0xff4400,
-                            colorRange: { start: 0xffaa44, end: 0xcc2200 },
-                            scale: 15,
-                            scaleMultiplier: 1.5,
-                            velocityRange: { x: [-80, 80], y: [10, 50], z: [-80, 80] },
-                            gravity: -20,
-                            drag: 0.92,
-                            blending: 'additive'
-                        },
-                        // Rising flames
-                        {
-                            count: 15,
-                            lifetime: 0.6,
-                            color: 0xff6600,
-                            colorRange: { start: 0xffcc44, end: 0xff3300 },
-                            scale: 12,
-                            scaleMultiplier: 1.8,
-                            velocityRange: { x: [-30, 30], y: [60, 120], z: [-30, 30] },
-                            gravity: -50,
-                            drag: 0.9,
-                            blending: 'additive'
-                        },
-                        // Hot embers
-                        {
-                            count: 10,
-                            lifetime: 1.0,
-                            color: 0xffaa44,
-                            colorRange: { start: 0xffffff, end: 0xff8800 },
-                            scale: 5,
-                            scaleMultiplier: 0.5,
-                            velocityRange: { x: [-50, 50], y: [80, 150], z: [-50, 50] },
-                            gravity: 50,
-                            drag: 0.96,
-                            blending: 'additive'
-                        }
-                    ]
-                });
+                this.game.call('playEffectSystem', 'burning_aura',
+                    new THREE.Vector3(casterPos.x, casterPos.y + 20, casterPos.z));
             }
         }
     }

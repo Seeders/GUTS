@@ -1,0 +1,30 @@
+{
+  "title": "Tornado Disperse",
+  "category": "wind",
+  "tags": [
+    "wind",
+    "tornado",
+    "end"
+  ],
+  "layers": [
+    {
+      "effect": "wind_swirl_base",
+      "delay": 0,
+      "countMultiplier": 2,
+      "velocityXMin": -80,
+      "velocityXMax": 80,
+      "velocityYMin": 20,
+      "velocityYMax": 60,
+      "velocityZMin": -80,
+      "velocityZMax": 80
+    },
+    {
+      "effect": "wind_wisps",
+      "delay": 0,
+      "countMultiplier": 1.5,
+      "positionOffsetX": 0,
+      "positionOffsetY": 20,
+      "positionOffsetZ": 0
+    }
+  ]
+}

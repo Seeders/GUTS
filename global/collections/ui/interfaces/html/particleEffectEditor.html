@@ -1,0 +1,149 @@
+<div id="particle-effect-editor-container" class="editor-module">
+  <div class="editor-module__sidebar editor-module__sidebar--left">
+    <div class="editor-module__toolbar">
+      <button id="spePlayBtn" class="editor-module__btn" title="Play">Play</button>
+      <button id="speLoopBtn" class="editor-module__btn" title="Loop">Loop</button>
+      <button id="speResetBtn" class="editor-module__btn" title="Reset">Reset</button>
+    </div>
+
+    <div class="editor-module__section" style="padding: 10px; border-bottom: 1px solid #444;">
+      <div class="editor-module__form-row">
+        <label for="spePlaybackSpeed" class="editor-module__label">Speed:</label>
+        <input type="range" id="spePlaybackSpeed" class="editor-module__slider" value="1" step="0.25" min="0.25" max="2">
+        <span id="spePlaybackSpeedValue" class="editor-module__value-display">1x</span>
+      </div>
+    </div>
+
+    <div class="editor-module__scroll-y">
+      <div class="editor-module__section">
+        <h3 class="editor-module__section-title">Particle Settings</h3>
+        <div class="editor-module__form-row">
+          <label for="speParticleCount" class="editor-module__label">Count:</label>
+          <input type="range" id="speParticleCount" class="editor-module__slider" value="10" step="1" min="1" max="100">
+          <span id="speParticleCountValue" class="editor-module__value-display">10</span>
+        </div>
+        <div class="editor-module__form-row">
+          <label for="speParticleLifetime" class="editor-module__label">Lifetime:</label>
+          <input type="range" id="speParticleLifetime" class="editor-module__slider" value="1" step="0.1" min="0.1" max="5">
+          <span id="speParticleLifetimeValue" class="editor-module__value-display">1s</span>
+        </div>
+        <div class="editor-module__form-row">
+          <label for="speParticleScale" class="editor-module__label">Scale:</label>
+          <input type="range" id="speParticleScale" class="editor-module__slider" value="10" step="1" min="1" max="100">
+          <span id="speParticleScaleValue" class="editor-module__value-display">10</span>
+        </div>
+        <div class="editor-module__form-row">
+          <label for="speParticleScaleMultiplier" class="editor-module__label">Scale Mult:</label>
+          <input type="range" id="speParticleScaleMultiplier" class="editor-module__slider" value="1" step="0.1" min="0.5" max="3">
+          <span id="speParticleScaleMultiplierValue" class="editor-module__value-display">1x</span>
+        </div>
+      </div>
+
+      <div class="editor-module__section">
+        <h3 class="editor-module__section-title">Colors</h3>
+        <div class="editor-module__form-row">
+          <label for="speColorStart" class="editor-module__label">Start:</label>
+          <input type="color" id="speColorStart" class="editor-module__color-input" value="#ffffff">
+          <input type="text" id="speColorStartHex" class="editor-module__input editor-module__input--small" value="#ffffff">
+        </div>
+        <div class="editor-module__form-row">
+          <label for="speColorEnd" class="editor-module__label">End:</label>
+          <input type="color" id="speColorEnd" class="editor-module__color-input" value="#888888">
+          <input type="text" id="speColorEndHex" class="editor-module__input editor-module__input--small" value="#888888">
+        </div>
+      </div>
+
+      <div class="editor-module__section">
+        <h3 class="editor-module__section-title">Emitter</h3>
+        <div class="editor-module__form-row">
+          <label for="speEmitterShape" class="editor-module__label">Shape:</label>
+          <select id="speEmitterShape" class="editor-module__select">
+            <option value="point">Point</option>
+            <option value="sphere">Sphere</option>
+            <option value="ring">Ring</option>
+            <option value="disk">Disk</option>
+          </select>
+        </div>
+        <div class="editor-module__form-row">
+          <label for="speEmitterRadius" class="editor-module__label">Radius:</label>
+          <input type="range" id="speEmitterRadius" class="editor-module__slider" value="10" step="1" min="0" max="100">
+          <span id="speEmitterRadiusValue" class="editor-module__value-display">10</span>
+        </div>
+        <div class="editor-module__form-row">
+          <label for="speEmitterHeightOffset" class="editor-module__label">Height Offset:</label>
+          <input type="range" id="speEmitterHeightOffset" class="editor-module__slider" value="0" step="5" min="-100" max="200">
+          <span id="speEmitterHeightOffsetValue" class="editor-module__value-display">0</span>
+        </div>
+      </div>
+
+      <div class="editor-module__section">
+        <h3 class="editor-module__section-title">Physics</h3>
+        <div class="editor-module__form-row">
+          <label for="speGravity" class="editor-module__label">Gravity:</label>
+          <input type="range" id="speGravity" class="editor-module__slider" value="0" step="5" min="-200" max="200">
+          <span id="speGravityValue" class="editor-module__value-display">0</span>
+        </div>
+        <div class="editor-module__form-row">
+          <label for="speDrag" class="editor-module__label">Drag:</label>
+          <input type="range" id="speDrag" class="editor-module__slider" value="1" step="0.01" min="0.8" max="1">
+          <span id="speDragValue" class="editor-module__value-display">1.00</span>
+        </div>
+      </div>
+
+      <div class="editor-module__section">
+        <h3 class="editor-module__section-title">Velocity Range</h3>
+        <div class="editor-module__form-row">
+          <label class="editor-module__label">X:</label>
+          <input type="number" id="speVelXMin" class="editor-module__input editor-module__input--small" value="-50">
+          <span class="editor-module__label">to</span>
+          <input type="number" id="speVelXMax" class="editor-module__input editor-module__input--small" value="50">
+        </div>
+        <div class="editor-module__form-row">
+          <label class="editor-module__label">Y:</label>
+          <input type="number" id="speVelYMin" class="editor-module__input editor-module__input--small" value="0">
+          <span class="editor-module__label">to</span>
+          <input type="number" id="speVelYMax" class="editor-module__input editor-module__input--small" value="100">
+        </div>
+        <div class="editor-module__form-row">
+          <label class="editor-module__label">Z:</label>
+          <input type="number" id="speVelZMin" class="editor-module__input editor-module__input--small" value="-50">
+          <span class="editor-module__label">to</span>
+          <input type="number" id="speVelZMax" class="editor-module__input editor-module__input--small" value="50">
+        </div>
+      </div>
+
+      <div class="editor-module__section">
+        <h3 class="editor-module__section-title">Visual Options</h3>
+        <div class="editor-module__form-row">
+          <label class="editor-module__checkbox-label">
+            <input type="checkbox" id="speFadeOut" checked>
+            Fade Out
+          </label>
+        </div>
+        <div class="editor-module__form-row">
+          <label class="editor-module__checkbox-label">
+            <input type="checkbox" id="speScaleOverTime" checked>
+            Scale Over Time
+          </label>
+        </div>
+        <div class="editor-module__form-row">
+          <label for="speBlending" class="editor-module__label">Blending:</label>
+          <select id="speBlending" class="editor-module__select">
+            <option value="additive">Additive</option>
+            <option value="normal">Normal</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="editor-module__canvas-area editor-module__grid-background">
+    <canvas id="speCanvas" class="editor-module__canvas"></canvas>
+
+    <div class="editor-module__status-bar">
+      <span id="speStatusText">Ready</span> |
+      Particles: <span id="speParticleCountStatus">0</span> |
+      <span id="speLoopStatus"></span>
+    </div>
+  </div>
+</div>

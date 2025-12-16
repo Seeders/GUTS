@@ -1,0 +1,31 @@
+{
+  "title": "Charge Impact Flash",
+  "category": "physical",
+  "tags": [
+    "charge",
+    "impact",
+    "flash"
+  ],
+  "particleEffectData": {
+    "count": 10,
+    "lifetime": 0.2,
+    "scale": 40,
+    "scaleMultiplier": 3,
+    "startColor": "#ffffff",
+    "endColor": "#ffaa44",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 20,
+    "velocityXMin": -60,
+    "velocityXMax": 60,
+    "velocityYMin": 20,
+    "velocityYMax": 60,
+    "velocityZMin": -60,
+    "velocityZMax": 60,
+    "gravity": 0,
+    "drag": 0.7,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

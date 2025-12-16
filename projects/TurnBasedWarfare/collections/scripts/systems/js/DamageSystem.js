@@ -557,6 +557,15 @@ class DamageSystem extends GUTS.BaseSystem {
                 targetAnimation.flash = 0.5;
             }
         }
+
+        // Play blood spray effect for physical damage
+        if (element === this.enums.element.physical && damageResult.finalDamage > 0) {
+            const targetTransform = this.game.getComponent(targetId, "transform");
+            if (targetTransform?.position) {
+                const pos = targetTransform.position;
+                this.game.call('playEffect', 'blood_spray', { x: pos.x, y: pos.y, z: pos.z });
+            }
+        }
     }
 
 

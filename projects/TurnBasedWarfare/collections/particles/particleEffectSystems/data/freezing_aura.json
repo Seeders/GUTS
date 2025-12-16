@@ -1,0 +1,23 @@
+{
+  "title": "Freezing Aura",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "frost",
+    "aura",
+    "buff"
+  ],
+  "layers": [
+    {
+      "effect": "frost_aura",
+      "delay": 0
+    },
+    {
+      "effect": "ice_mist",
+      "delay": 0,
+      "countMultiplier": 0.5
+    }
+  ],
+  "repeating": true,
+  "repeatInterval": 0.5
+}
