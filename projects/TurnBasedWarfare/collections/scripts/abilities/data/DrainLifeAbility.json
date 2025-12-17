@@ -1,4 +1,7 @@
 {
+  "fileName": "DrainLifeAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/DrainLifeAbility.js",
-  "fileName": "DrainLifeAbility"
+  "castParticleEffectSystems": ["dark_energy", "dark_sparkles"],
+  "drainParticleEffectSystems": ["dark_burst", "dark_energy"],
+  "healParticleEffectSystems": ["dark_heal", "dark_sparkles"]
 }

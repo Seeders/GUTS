@@ -1,5 +1,5 @@
 class FreezingAuraAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'freezing_aura',
             name: 'Freezing Aura',
@@ -12,7 +12,7 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
             priority: 6,
             castTime: 0,
             passive: true,
-            ...params
+            ...abilityData
         });
         this.drainPerSecond = 8;
         this.cycleDuration = 12.0; // Duration of each cycle
@@ -52,40 +52,7 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
             this.startAuraCycle(casterEntity);
         }, this.cycleDuration, casterEntity);
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4B0082,
-                    colorRange: { start: 0x4B0082, end: 0x000000 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.8
-                }
-            },
-            freezing: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x2F4F4F,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            empowerment: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B0000,
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         // Passive ability - cannot be manually executed
         return false;
@@ -145,26 +112,15 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
                         sourceEntity: casterEntity
                     });
 
-                    // Visual empowerment effect
-                    this.createVisualEffect(allyPos, 'empowerment', { heightOffset: 5 });
+                    // Visual buff effect
+                    this.playConfiguredEffects('buff', allyPos);
                 }
             }
-            
         });
-        
-        // Additional visual effects every few ticks
-        if (tickIndex % 3 === 0) {
-            this.createVisualEffect(casterPos, 'freezing', {
-                count: 6,
-                scaleMultiplier: 2.5,
-                heightOffset: 50
-            });
 
-            // Enhanced freezing aura pulse using preset effect system
-            if (!this.game.isServer) {
-                this.game.call('playEffectSystem', 'freezing_aura',
-                    new THREE.Vector3(casterPos.x, casterPos.y + 20, casterPos.z));
-            }
+        // Aura pulse effect every few ticks
+        if (tickIndex % 3 === 0) {
+            this.playConfiguredEffects('aura', casterPos);
         }
     }
 }

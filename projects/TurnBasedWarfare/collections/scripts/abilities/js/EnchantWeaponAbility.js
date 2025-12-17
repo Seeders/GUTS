@@ -1,5 +1,5 @@
 class EnchantWeaponAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'enchant_weapon',
             name: 'Enchant Weapon',
@@ -11,7 +11,7 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 5,
             castTime: 1.5,
-            ...params
+            ...abilityData
         });
         
         this.elementalDamage = 15;
@@ -23,49 +23,7 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
             this.enums.element.lightning
         ];
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFFD700,
-                    colorRange: { start: 0xFFD700, end: 0xFFA500 },
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 1.5
-                }
-            },
-            enchant_fire: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFF4500,
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.2
-                }
-            },
-            enchant_cold: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x00BFFF,
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.2
-                }
-            },
-            enchant_lightning: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFFFF00,
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         const allies = this.getAlliesInRange(casterEntity);
         // Only use if there are allies to enchant (excluding self)
@@ -78,7 +36,7 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
         if (!casterPos) return;
         
         // Immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Enchanter begins weaving magical enhancements!`);
         
         // DESYNC SAFE: Use scheduling system for enchantment application
@@ -139,8 +97,8 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
             }
             
             // Visual enchantment effect based on element
-            this.createVisualEffect(allyPos, this.getElementEffectName(selectedElement));
-            
+            this.playConfiguredEffects(this.getElementEffectName(selectedElement), allyPos);
+
             enchantedCount++;
         });
         
@@ -174,19 +132,13 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
         if (this.game.hasComponent(allyId, "buff")) {
             const buff = this.game.getComponent(allyId, "buff");
             if (buff && buff.buffType === enums.buffTypes.enchant_weapon) {
-                const element = buff.weaponElement >= 0 ? buff.weaponElement : this.enums.element.fire;
-
                 this.game.removeComponent(allyId, "buff");
 
                 // Visual effect when enchantment expires
                 const transform = this.game.getComponent(allyId, "transform");
                 const allyPos = transform?.position;
                 if (allyPos) {
-                    this.createVisualEffect(allyPos, this.getElementEffectName(element), {
-                        count: 3,
-                        scaleMultiplier: 0.6,
-                        speedMultiplier: 0.8
-                    });
+                    this.playConfiguredEffects('expiration', allyPos);
                 }
             }
         }

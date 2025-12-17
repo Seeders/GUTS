@@ -1,4 +1,6 @@
 {
   "fileName": "HealAbility",
-  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/HealAbility.js"
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/HealAbility.js",
+  "castParticleEffectSystems": ["holy_light", "holy_sparkles"],
+  "impactParticleEffectSystems": ["heal_glow", "heal_sparkles", "heal_burst"]
 }

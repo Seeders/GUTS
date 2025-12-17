@@ -1,5 +1,5 @@
 class ShieldWallAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'shield_wall',
             name: 'Shield Wall',
@@ -11,7 +11,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 4,
             castTime: 1.0,
-            ...params
+            ...abilityData
         });
         
         this.wallDuration = 10.0;
@@ -19,48 +19,6 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         this.tauntRadius = 200;
         this.originalArmorMultiplier = 1.0;
         this.element = this.enums.element.physical;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x708090,
-                    colorRange: { start: 0x708090, end: 0xC0C0C0 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            shield_formation: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4682B4,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.8
-                }
-            },
-            defensive_stance: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x2F4F4F,
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 0.6
-                }
-            },
-            taunt_aura: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFF6347,
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 1.5
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -79,7 +37,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         if (!casterPos) return null;
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Soldier prepares to form a shield wall...`);
         
         // Schedule the shield wall formation after cast time
@@ -96,7 +54,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         if (!casterPos) return;
         
         // Create shield formation effect
-        this.createVisualEffect(casterPos, 'shield_formation');
+        this.playConfiguredEffects('burst', casterPos);
         
         // Store original armor for restoration later
         const originalArmor = casterCombat ? casterCombat.armor : 0;
@@ -118,7 +76,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
             const transform = this.game.getComponent(casterEntity, "transform");
             const pos = transform?.position;
             if (pos) {
-                this.createVisualEffect(pos, 'defensive_stance');
+                this.playConfiguredEffects('buff', pos);
             }
         }, 0.5, casterEntity);
         
@@ -183,7 +141,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
             this.game.schedulingSystem.scheduleAction(() => {
                 const pos = enemyTransform?.position;
                 if (pos) {
-                    this.createVisualEffect(pos, 'taunt_aura');
+                    this.playConfiguredEffects('debuff', pos);
                 }
             }, index * 0.1, enemyId);
             
@@ -206,11 +164,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         if (!shieldWall || !shieldWall.isActive || !casterPos) return;
         
         // Create warning effect
-        this.createVisualEffect(casterPos, 'cast', { 
-            count: 4, 
-            color: 0x708090,
-            scaleMultiplier: 0.8 
-        });
+        this.playConfiguredEffects('sustained', casterPos);
      
     }
     
@@ -224,10 +178,7 @@ class ShieldWallAbility extends GUTS.BaseAbility {
         
         // Create dissolution effect
         if (casterPos) {
-            this.createVisualEffect(casterPos, 'defensive_stance', { 
-                count: 6, 
-                scaleMultiplier: 0.6 
-            });
+            this.playConfiguredEffects('expiration', casterPos);
         }
         
         // Remove shield wall component

@@ -1,5 +1,5 @@
 class ArenaPresenceAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'arena_presence',
             name: 'Arena Presence',
@@ -11,7 +11,7 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 5,
             castTime: 1.2,
-            ...params
+            ...abilityData
         });
         
         this.intimidationDuration = 15.0;
@@ -19,48 +19,6 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
         this.accuracyReduction = 0.2; // 20% accuracy reduction
         this.fearRadius = this.range;
         this.element = 'psychological';
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B0000,
-                    colorRange: { start: 0x8B0000, end: 0xFF4500 },
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 1.0
-                }
-            },
-            intimidation_aura: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x800000,
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 0.6
-                }
-            },
-            fear_effect: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4B0000,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 2.0
-                }
-            },
-            presence_wave: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x660000,
-                    scaleMultiplier: 3.0,
-                    speedMultiplier: 0.8
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -78,7 +36,7 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
         if (enemies.length === 0) return null;
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Gladiator's presence fills the arena with dread...`);
         
         // Schedule the intimidation after cast time
@@ -93,10 +51,10 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
         if (!casterPos) return;
         
         // Create intimidation aura effect
-        this.createVisualEffect(casterPos, 'intimidation_aura');
-        
+        this.playConfiguredEffects('aura', casterPos);
+
         // Create expanding presence wave
-        this.createVisualEffect(casterPos, 'presence_wave');
+        this.playConfiguredEffects('burst', casterPos);
         
         // Sort enemies deterministically for consistent processing
         const sortedEnemies = targetEnemies.slice().sort((a, b) => a - b);
@@ -120,7 +78,7 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
                     const transform = this.game.getComponent(enemyId, "transform");
                     const enemyPos = transform?.position;
                     if (enemyPos) {
-                        this.createVisualEffect(enemyPos, 'fear_effect');
+                        this.playConfiguredEffects('debuff', enemyPos);
                     }
                 }, index * 0.1, enemyId);
             }

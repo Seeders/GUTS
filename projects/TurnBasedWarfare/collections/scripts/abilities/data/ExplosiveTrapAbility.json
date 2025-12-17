@@ -1,4 +1,8 @@
 {
+  "fileName": "ExplosiveTrapAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/ExplosiveTrapAbility.js",
-  "fileName": "ExplosiveTrapAbility"
+  "castParticleEffectSystems": ["dust_burst"],
+  "targetParticleEffectSystems": ["dust_burst"],
+  "impactParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary", "smoke_burst"],
+  "expirationParticleEffectSystems": ["dust_burst"]
 }

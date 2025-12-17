@@ -1,4 +1,8 @@
 {
+  "fileName": "SmiteAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/SmiteAbility.js",
-  "fileName": "SmiteAbility"
+  "castParticleEffectSystems": ["holy_light", "holy_sparkles"],
+  "pillarParticleEffectSystems": ["holy_pillar", "holy_light"],
+  "warningParticleEffectSystems": ["holy_ring"],
+  "impactParticleEffectSystems": ["holy_explosion", "holy_sparkles"]
 }

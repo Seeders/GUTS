@@ -1,4 +1,6 @@
 {
+  "fileName": "Tornado",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/Tornado.js",
-  "fileName": "Tornado"
+  "castParticleEffectSystems": ["dark_energy", "dark_sparkles"],
+  "debuffParticleEffectSystems": ["dark_burst", "dark_sparkles"]
 }

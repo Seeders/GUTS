@@ -1,5 +1,5 @@
 class LightningBoltAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'lightning_bolt',
             name: 'Lightning Bolt',
@@ -12,69 +12,45 @@ class LightningBoltAbility extends GUTS.BaseAbility {
             priority: 7,
             castTime: 0.5,
             autoTrigger: 'enemy_in_range',
-            ...params
+            ...abilityData
         });
-        
+
         this.damage = 55;
         this.criticalChance = 0.3; // 30% crit chance
         this.element = this.enums.element.lightning;
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 1,
-                    color: 0xffff44,
-                    colorRange: { start: 0xffff44, end: 0xffffff },
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 4.0
-                }
-            },
-            lightning: {
-                type: 'magic',
-                options: {
-                    count: 2,
-                    color: 0xffffaa,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 5.0
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         const enemies = this.getEnemiesInRange(casterEntity);
         return enemies.length >= 1;
     }
-    
+
     execute(casterEntity) {
         const casterTransform = this.game.getComponent(casterEntity, "transform");
         const casterPos = casterTransform?.position;
         if (!casterPos) return;
-        
+
         // DESYNC SAFE: Get and sort enemies deterministically
         const enemies = this.getEnemiesInRange(casterEntity);
         if (enemies.length === 0) return;
-        
+
         // DESYNC SAFE: Find target with highest health deterministically
         const target = this.findHighestHealthEnemy(enemies);
         if (!target) return;
-        
+
         const targetTransform = this.game.getComponent(target, "transform");
         const targetPos = targetTransform?.position;
         if (!targetPos) return;
-        
+
         // Immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Lightning crackles with electric fury!`, true);
-        
+
         this.game.schedulingSystem.scheduleAction(() => {
             this.strikeLightning(casterEntity, target, targetPos);
         }, this.castTime, casterEntity);
     }
-    
+
     strikeLightning(casterEntity, targetId, targetPos) {
         const transform = this.game.getComponent(casterEntity, "transform");
         const casterPos = transform?.position;
@@ -93,13 +69,7 @@ class LightningBoltAbility extends GUTS.BaseAbility {
         }
 
         // Lightning effect at target
-        this.createVisualEffect(targetPos, 'lightning');
-
-        // Use preset lightning_strike effect system
-        if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'lightning_strike',
-                new THREE.Vector3(targetPos.x, targetPos.y + 30, targetPos.z));
-        }
+        this.playConfiguredEffects('impact', targetPos);
 
         // Screen flash
         if (this.game.effectsSystem) {
@@ -116,24 +86,24 @@ class LightningBoltAbility extends GUTS.BaseAbility {
             isInstant: true
         });
     }
-    
+
     // DESYNC SAFE: Deterministic critical hit calculation
     isDeterministicCritical(casterId, targetId) {
         // Create a deterministic "random" value based on entity IDs and game time
         const seed = parseInt(casterId) + parseInt(targetId) + Math.floor(this.game.state.now * 100);
         const pseudoRandom = (seed * 9301 + 49297) % 233280 / 233280; // Simple PRNG
-        
+
         return pseudoRandom < this.criticalChance;
     }
-    
+
     // DESYNC SAFE: Deterministic highest health enemy finding
     findHighestHealthEnemy(enemies) {
         // Sort enemies deterministically first
         const sortedEnemies = enemies.slice().sort((a, b) => a - b);
-        
+
         let strongest = null;
         let highestHealth = 0;
-        
+
         sortedEnemies.forEach(enemyId => {
             const health = this.game.getComponent(enemyId, "health");
             if (health && health.current >= highestHealth) { // Use >= for consistent tie-breaking
@@ -141,7 +111,7 @@ class LightningBoltAbility extends GUTS.BaseAbility {
                 strongest = enemyId;
             }
         });
-        
+
         return strongest;
     }
 }

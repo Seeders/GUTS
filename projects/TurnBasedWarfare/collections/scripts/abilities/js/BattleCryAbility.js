@@ -1,5 +1,5 @@
 class BattleCryAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'battle_cry',
             name: 'Battle Cry',
@@ -11,37 +11,13 @@ class BattleCryAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 8,
             castTime: 1.0,
-            ...params
+            ...abilityData
         });
         
         this.damageMultiplier = 1.3; // 30% damage boost
         this.duration = 20.0; // 20 seconds
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFFD700,
-                    colorRange: { start: 0xFFD700, end: 0xFF4500 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 1.5
-                }
-            },
-            rally: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFF6347,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.8
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         const allies = this.getAlliesInRange(casterEntity);
         // Only use if there are at least 2 allies to rally (including potentially the caster)
@@ -54,8 +30,8 @@ class BattleCryAbility extends GUTS.BaseAbility {
         if (!casterPos) return;
         
         // Immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
-        
+        this.playConfiguredEffects('cast', casterPos);
+
         // DESYNC SAFE: Use scheduling system for the rally effect
         this.game.schedulingSystem.scheduleAction(() => {
             this.performBattleCry(casterEntity);
@@ -108,13 +84,7 @@ class BattleCryAbility extends GUTS.BaseAbility {
             }
             
             // Visual rally effect on each ally
-            this.createVisualEffect(allyPos, 'rally');
-
-            // Enhanced individual rally effect using preset effect
-            if (!this.game.isServer) {
-                this.game.call('playEffect', 'rally_empowerment',
-                    new THREE.Vector3(allyPos.x, allyPos.y + 25, allyPos.z));
-            }
+            this.playConfiguredEffects('buff', allyPos);
 
             // DESYNC SAFE: Schedule buff removal
             this.game.schedulingSystem.scheduleAction(() => {
@@ -131,18 +101,7 @@ class BattleCryAbility extends GUTS.BaseAbility {
         }
 
         // Additional visual effect at caster position
-        this.createVisualEffect(casterPos, 'rally', {
-            count: 12,
-            scaleMultiplier: 3.0,
-            heightOffset: 20
-        });
-
-        // Enhanced central battle cry burst using preset effect
-        if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'battle_cry_burst',
-                new THREE.Vector3(casterPos.x, casterPos.y + 40, casterPos.z));
-        }
- 
+        this.playConfiguredEffects('burst', casterPos);
     }
     
     // DESYNC SAFE: Remove rally buff
@@ -158,13 +117,8 @@ class BattleCryAbility extends GUTS.BaseAbility {
                 const transform = this.game.getComponent(allyId, "transform");
                 const allyPos = transform?.position;
                 if (allyPos) {
-                    this.createVisualEffect(allyPos, 'rally', { 
-                        count: 2, 
-                        scaleMultiplier: 0.8,
-                        color: 0xCD853F 
-                    });
+                    this.playConfiguredEffects('expiration', allyPos);
                 }
-       
             }
         }
     }

@@ -1,4 +1,13 @@
 {
   "fileName": "FireBallAbility",
-  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/FireBallAbility.js"
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/FireBallAbility.js",
+  "castParticleEffectSystems": [],
+  "trailParticleEffectSystems": [
+    "fire_trail",
+    "smoke_trail"
+  ],
+  "impactParticleEffectSystems": [
+    "fire_burst_core",
+    "fire_burst_secondary"
+  ]
 }

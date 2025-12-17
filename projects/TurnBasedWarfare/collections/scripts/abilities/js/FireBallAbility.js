@@ -1,5 +1,5 @@
 class FireBallAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             name: 'Fire Ball',
             description: 'Launch a fiery projectile that explodes on impact',
@@ -10,7 +10,7 @@ class FireBallAbility extends GUTS.BaseAbility {
             animation: 'attack',
             priority: 7,
             castTime: 0.5,
-            ...params
+            ...abilityData
         });
 
         this.damage = 30;
@@ -19,93 +19,6 @@ class FireBallAbility extends GUTS.BaseAbility {
 
         // Store target position at cast time for ballistic trajectory
         this.targetPosition = null;
-    }
-
-    defineEffects() {
-        return {
-            // Charging effect at caster
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 8,
-                    color: 0xff6600,
-                    colorRange: { start: 0xffaa00, end: 0xff2200 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 0.6
-                }
-            },
-            // Trail particles during flight
-            trail_fire: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xff4400,
-                    colorRange: { start: 0xffff00, end: 0xff2200 },
-                    scaleMultiplier: 0.8,
-                    speedMultiplier: 0.5
-                }
-            },
-            trail_sparks: {
-                type: 'magic',
-                options: {
-                    count: 2,
-                    color: 0xffaa00,
-                    scaleMultiplier: 0.3,
-                    speedMultiplier: 2.0
-                }
-            },
-            // Main explosion
-            explosion_core: {
-                type: 'explosion',
-                options: {
-                    count: 15,
-                    color: 0xffff00,
-                    colorRange: { start: 0xffffff, end: 0xff4400 },
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 1.8
-                }
-            },
-            explosion_fire: {
-                type: 'explosion',
-                options: {
-                    count: 20,
-                    color: 0xff6600,
-                    colorRange: { start: 0xff8800, end: 0xff0000 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 1.5
-                }
-            },
-            explosion_smoke: {
-                type: 'magic',
-                options: {
-                    count: 8,
-                    color: 0x444444,
-                    colorRange: { start: 0x666666, end: 0x222222 },
-                    scaleMultiplier: 3.0,
-                    speedMultiplier: 0.4
-                }
-            },
-            explosion_embers: {
-                type: 'damage',
-                options: {
-                    count: 12,
-                    color: 0xff4400,
-                    colorRange: { start: 0xffaa00, end: 0xff2200 },
-                    scaleMultiplier: 0.4,
-                    speedMultiplier: 2.5
-                }
-            },
-            // Impact on targets
-            impact: {
-                type: 'damage',
-                options: {
-                    count: 5,
-                    color: 0xff4400,
-                    colorRange: { start: 0xffaa00, end: 0xff0000 },
-                    scaleMultiplier: 1.2
-                }
-            }
-        };
     }
 
     canExecute(casterEntity) {
@@ -137,26 +50,12 @@ class FireBallAbility extends GUTS.BaseAbility {
             z: targetPos.z
         };
 
-        // Immediate cast effect - charging energy
-        this.createCastEffect(casterPos);
+        // Cast effect at caster position
+        this.playConfiguredEffects('cast', casterPos);
 
         this.logAbilityUsage(casterEntity, `Fireball launched at enemy target!`, true);
 
         this.fireProjectile(casterEntity, closestEnemy);
-    }
-
-    // Create impressive charging effect at caster
-    createCastEffect(casterPos) {
-        if (!this.game.effectsSystem) return;
-        // Main cast particles
-        this.createVisualEffect(casterPos, 'cast');
-
-        // Use preset fire effects for charging
-        if (!this.game.isServer) {
-            const pos = new THREE.Vector3(casterPos.x, casterPos.y + 75, casterPos.z);
-            this.game.call('playEffect', 'fire_burst_core', pos);
-            this.game.call('playEffect', 'fire_burst_secondary', pos);
-        }
     }
 
     // DESYNC SAFE: Deterministic closest enemy finding
@@ -213,57 +112,19 @@ class FireBallAbility extends GUTS.BaseAbility {
             // Store the captured target position
             targetPosition: this.targetPosition,
             onHit: (impactPos) => {
-                // Epic explosion effect
-                this.createExplosionEffect(impactPos);
+                // Impact particle effects
+                this.playConfiguredEffects('impact', { x: impactPos.x, y: impactPos.y + 10, z: impactPos.z });
 
                 // DESYNC SAFE: Handle splash damage deterministically
                 this.handleSplashDamage(casterEntity, impactPos);
             },
             onTravel: (currentPos) => {
-                // Rich trail effect during flight
-                this.createTrailEffect(currentPos);
+                // Trail particle effects
+                this.playConfiguredEffects('trail', currentPos);
             }
         };
 
         this.game.call('fireProjectile', casterEntity, targetId, projectileData);
-    }
-
-    // Create rich trail effect for projectile
-    createTrailEffect(currentPos) {
-        if (!this.game.effectsSystem) return;
-        // Fire trail
-        this.createVisualEffect(currentPos, 'trail_fire', { heightOffset: 0 });
-
-        // Sparks
-        this.createVisualEffect(currentPos, 'trail_sparks', { heightOffset: 0 });
-
-        // Use preset trail effects
-        if (!this.game.isServer) {
-            const pos = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z);
-            this.game.call('playEffect', 'fire_trail', pos);
-            this.game.call('playEffect', 'smoke_rising', pos);
-        }
-    }
-
-    // Create epic multi-layered explosion effect
-    createExplosionEffect(impactPos) {
-        if (!this.game.effectsSystem) return;
-
-        // Standard explosion effects
-        this.createVisualEffect(impactPos, 'explosion_core');
-        this.createVisualEffect(impactPos, 'explosion_fire');
-        this.createVisualEffect(impactPos, 'explosion_embers');
-
-        // Delayed smoke rising
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.createVisualEffect(impactPos, 'explosion_smoke');
-        }, 0.1);
-
-        // Use preset explosion_fire effect system
-        if (!this.game.isServer) {
-            const pos = new THREE.Vector3(impactPos.x, impactPos.y + 75, impactPos.z);
-            this.game.call('playEffectSystem', 'explosion_fire', pos);
-        }
     }
 
     // DESYNC SAFE: Handle splash damage deterministically
@@ -322,9 +183,6 @@ class FireBallAbility extends GUTS.BaseAbility {
             this.dealDamageWithEffects(casterEntity, target.id, splashDamage, this.element, {
                 isSplash: true
             });
-
-            // Impact effect on each target
-            this.createVisualEffect(target.position, 'impact');
         });
     }
 }

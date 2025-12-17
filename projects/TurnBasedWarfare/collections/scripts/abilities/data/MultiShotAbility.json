@@ -1,4 +1,9 @@
 {
+  "fileName": "MultiShotAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/MultiShotAbility.js",
-  "fileName": "MultiShotAbility"
+  "castParticleEffectSystems": ["dust_burst"],
+  "burstParticleEffectSystems": ["dust_burst"],
+  "launchParticleEffectSystems": ["dust_burst"],
+  "impactParticleEffectSystems": ["dust_burst"],
+  "trailParticleEffectSystems": ["dust_trail"]
 }

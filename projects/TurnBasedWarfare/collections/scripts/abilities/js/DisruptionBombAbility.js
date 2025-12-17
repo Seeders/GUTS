@@ -1,5 +1,5 @@
 class DisruptionBombAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'disruption_bomb',
             name: 'Disruption Bomb',
@@ -11,47 +11,13 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 6,
             castTime: 1.3,
-            ...params
+            ...abilityData
         });
         
         this.explosionRadius = 90;
         this.disruptionDuration = 12.0;
         this.accuracyReduction = 0.4; // 40% accuracy reduction
         this.movementSlowed = 0.6; // Movement slowed to 60%
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFF4500,
-                    colorRange: { start: 0xFF4500, end: 0xFF8C00 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.8
-                }
-            },
-            explosion: {
-                type: 'explosion',
-                options: {
-                    count: 3,
-                    color: 0x8A2BE2,
-                    colorRange: { start: 0x8A2BE2, end: 0x4B0082 },
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 2.0
-                }
-            },
-            disruption: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x9932CC,
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.0
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -65,7 +31,7 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
         if (!pos) return;
         
         // Immediate cast effect
-        this.createVisualEffect(pos, 'cast');
+        this.playConfiguredEffects('cast', pos);
         this.logAbilityUsage(casterEntity, `Saboteur prepares a disruption bomb!`);
         
         // DESYNC SAFE: Use scheduling system for bomb throw and explosion
@@ -90,7 +56,7 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
         const targetPos = clusterPos || pos;
         
         // Visual explosion effect
-        this.createVisualEffect(targetPos, 'explosion');
+        this.playConfiguredEffects('impact', targetPos);
         
         // Screen effects for dramatic explosion (client only)
         if (!this.game.isServer && this.game.effectsSystem) {
@@ -149,7 +115,7 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
                 }
                 
                 // Visual disruption effect on each affected enemy
-                this.createVisualEffect(enemyPos, 'disruption');
+                this.playConfiguredEffects('debuff', enemyPos);
                 
                 disruptedCount++;
             }
@@ -210,11 +176,7 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
                 const transform = this.game.getComponent(enemyId, "transform");
                 const enemyPos = transform?.position;
                 if (enemyPos) {
-                    this.createVisualEffect(enemyPos, 'disruption', { 
-                        count: 3, 
-                        scaleMultiplier: 0.8,
-                        color: 0x87CEEB 
-                    });
+                    this.playConfiguredEffects('expiration', enemyPos);
                 }
                 
            

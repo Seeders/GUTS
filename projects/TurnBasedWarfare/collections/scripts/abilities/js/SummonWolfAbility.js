@@ -1,5 +1,5 @@
 class SummonWolfAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'summon_wolf',
             name: 'Summon Wolf',
@@ -11,35 +11,11 @@ class SummonWolfAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 5,
             castTime: 1.0,
-            ...params
+            ...abilityData
         });
         this.hasSummon = false;
         this.summonId = '0_skeleton';
         this.summonedWolfId = null; // Track the specific summoned wolf
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x228b22,
-                    colorRange: { start: 0x228b22, end: 0x90ee90 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.2
-                }
-            },
-            summon: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x32cd32,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.8
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -66,7 +42,7 @@ class SummonWolfAbility extends GUTS.BaseAbility {
         if (!pos || !team) return;
         
         // Immediate cast effect
-        this.createVisualEffect(pos, 'cast');
+        this.playConfiguredEffects('cast', pos);
         this.logAbilityUsage(casterEntity, "Beast Master summons a faithful wolf!");
         
         // DESYNC SAFE: Use scheduling system for summoning
@@ -91,7 +67,7 @@ class SummonWolfAbility extends GUTS.BaseAbility {
             this.summonedWolfId = wolfId;
             
             // Summon effect at wolf position
-            this.createVisualEffect(wolfPosition, 'summon');
+            this.playConfiguredEffects('summon', wolfPosition);
             
             // Screen effect for dramatic summoning
             if (this.game.effectsSystem) {

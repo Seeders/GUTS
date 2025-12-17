@@ -1,5 +1,5 @@
 class BloodlustAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'bloodlust',
             name: 'Bloodlust',
@@ -11,7 +11,7 @@ class BloodlustAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 7,
             castTime: 1.0,
-            ...params
+            ...abilityData
         });
         
         this.lifeStealAmount = 0.3; // 30% life steal
@@ -19,31 +19,7 @@ class BloodlustAbility extends GUTS.BaseAbility {
         this.maxStacks = 10; // Maximum kill stacks
         this.duration = 30.0; // 30 seconds duration
     }
-    
-    defineEffects() {
-        return {
-            cast: { 
-                type: 'magic', 
-                options: { 
-                    count: 3, 
-                    color: 0x880000, 
-                    colorRange: { start: 0x880000, end: 0xDC143C },
-                    scaleMultiplier: 1.4,
-                    speedMultiplier: 1.2
-                } 
-            },
-            bloodlust: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xB22222,
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 0.8
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         // Check if already has bloodlust active to prevent stacking
         const enums = this.game.getEnums();
@@ -57,7 +33,7 @@ class BloodlustAbility extends GUTS.BaseAbility {
         if (!pos) return;
         
         // Immediate cast effect
-        this.createVisualEffect(pos, 'cast');
+        this.playConfiguredEffects('cast', pos);
         this.logAbilityUsage(casterEntity, "Berserker enters a bloodthirsty frenzy!", true);
         
         // DESYNC SAFE: Use scheduling system for bloodlust activation
@@ -83,7 +59,7 @@ class BloodlustAbility extends GUTS.BaseAbility {
             existingBuff.appliedTime = this.game.state.now;
 
             // Visual refresh effect
-            this.createVisualEffect(casterPos, 'bloodlust');
+            this.playConfiguredEffects('buff', casterPos);
             return;
         }
 
@@ -95,9 +71,9 @@ class BloodlustAbility extends GUTS.BaseAbility {
             stacks: 0, // Start with 0 kill stacks
             sourceEntity: casterEntity
         });
-        
+
         // Visual bloodlust effect
-        this.createVisualEffect(casterPos, 'bloodlust');
+        this.playConfiguredEffects('buff', casterPos);
         
         // Screen effect for dramatic activation
         if (this.game.effectsSystem) {
@@ -126,11 +102,7 @@ class BloodlustAbility extends GUTS.BaseAbility {
                 const transform = this.game.getComponent(casterEntity, "transform");
                 const casterPos = transform?.position;
                 if (casterPos) {
-                    this.createVisualEffect(casterPos, 'bloodlust', {
-                        count: 5,
-                        scaleMultiplier: 0.8,
-                        color: 0x696969
-                    });
+                    this.playConfiguredEffects('expiration', casterPos);
                 }
             }
         }
@@ -154,11 +126,7 @@ class BloodlustAbility extends GUTS.BaseAbility {
             const transform = this.game.getComponent(killerId, "transform");
             const killerPos = transform?.position;
             if (killerPos) {
-                this.createVisualEffect(killerPos, 'bloodlust', {
-                    count: 3,
-                    scaleMultiplier: 1.2,
-                    heightOffset: 10
-                });
+                this.playConfiguredEffects('stack', killerPos);
             }
         }
     }

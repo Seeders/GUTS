@@ -1,5 +1,5 @@
 class CurseAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'curse',
             name: 'Curse',
@@ -12,7 +12,7 @@ class CurseAbility extends GUTS.BaseAbility {
             priority: 5,
             castTime: 1.5,
             autoTrigger: 'strong_enemies',
-            ...params
+            ...abilityData
         });
         
         this.curseRadius = 100;
@@ -20,31 +20,7 @@ class CurseAbility extends GUTS.BaseAbility {
         this.vulnerabilityIncrease = 1.3; // 30% more damage taken
         this.duration = 20.0;
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x2F4F4F,
-                    colorRange: { start: 0x2F4F4F, end: 0x000000 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 0.8
-                }
-            },
-            curse: {
-                type: 'magic',
-                options: {
-                    count: 2,
-                    color: 0x696969,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.5
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         const enemies = this.getEnemiesInRange(casterEntity);
         return enemies.length >= 2;
@@ -60,7 +36,7 @@ class CurseAbility extends GUTS.BaseAbility {
         if (enemies.length === 0) return;
         
         // Immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Dark magic weakens the enemy forces!`);
         
         this.game.schedulingSystem.scheduleAction(() => {
@@ -94,7 +70,7 @@ class CurseAbility extends GUTS.BaseAbility {
             
             if (distance <= this.curseRadius) {
                 // Apply curse effect visually
-                this.createVisualEffect(enemyPos, 'curse');
+                this.playConfiguredEffects('debuff', enemyPos);
 
                 // DESYNC SAFE: Use buff system instead of directly modifying stats
                 const enums = this.game.getEnums();
@@ -144,14 +120,8 @@ class CurseAbility extends GUTS.BaseAbility {
                 const transform = this.game.getComponent(enemyId, "transform");
                 const enemyPos = transform?.position;
                 if (enemyPos) {
-                    this.createVisualEffect(enemyPos, 'curse', { 
-                        count: 1, 
-                        scaleMultiplier: 0.8,
-                        color: 0x808080 
-                    });
+                    this.playConfiguredEffects('expiration', enemyPos);
                 }
-                
-            
             }
         }
     }

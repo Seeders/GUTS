@@ -1,5 +1,5 @@
 class ChainLightningAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'chain_lightning',
             name: 'Chain Lightning',
@@ -11,7 +11,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 7,
             castTime: 1,
-            ...params
+            ...abilityData
         });
         
         this.initialDamage = 60;
@@ -20,61 +20,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
         this.damageReduction = 0.8;
         this.element = this.enums.element.lightning;
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 15,
-                    color: 0x00ccff,
-                    colorRange: { start: 0xffffff, end: 0x0088ff },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 3.0
-                }
-            },
-            lightning: {
-                type: 'explosion',
-                options: {
-                    count: 20,
-                    color: 0x00ddff,
-                    colorRange: { start: 0xffffff, end: 0x0066ff },
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 4.0
-                }
-            },
-            arc: {
-                type: 'magic',
-                options: {
-                    count: 10,
-                    color: 0x88ccff,
-                    colorRange: { start: 0xffffff, end: 0x4488ff },
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 3.5
-                }
-            },
-            sparks: {
-                type: 'damage',
-                options: {
-                    count: 12,
-                    color: 0xffff00,
-                    colorRange: { start: 0xffffff, end: 0x00aaff },
-                    scaleMultiplier: 0.5,
-                    speedMultiplier: 4.0
-                }
-            },
-            impact: {
-                type: 'damage',
-                options: {
-                    count: 8,
-                    color: 0x00aaff,
-                    colorRange: { start: 0xffffff, end: 0x0066ff },
-                    scaleMultiplier: 1.5
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         const enemies = this.getEnemiesInRange(casterEntity);
         return enemies.length >= 1;
@@ -90,7 +36,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
         if (enemies.length === 0) return;
         
         // Initial cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
    
         // DESYNC SAFE: Find closest enemy deterministically
         const firstTarget = this.findClosestEnemy(casterEntity, enemies);
@@ -125,14 +71,7 @@ class ChainLightningAbility extends GUTS.BaseAbility {
         
         this.game.schedulingSystem.scheduleAction(() => {
             // Lightning strike effect
-            this.createVisualEffect(targetPos, 'lightning');
-            this.createVisualEffect(targetPos, 'sparks');
-
-            // Use preset lightning_impact effect system
-            if (!this.game.isServer) {
-                this.game.call('playEffectSystem', 'lightning_impact',
-                    new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z));
-            }
+            this.playConfiguredEffects('chain', targetPos);
 
             // Apply damage
             this.dealDamageWithEffects(sourceId, currentTarget, Math.floor(damage), this.element);

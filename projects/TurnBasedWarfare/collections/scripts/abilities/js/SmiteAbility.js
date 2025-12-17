@@ -1,5 +1,5 @@
 class SmiteAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'smite',
             name: 'Holy Smite',
@@ -12,7 +12,7 @@ class SmiteAbility extends GUTS.BaseAbility {
             priority: 9,
             castTime: 1.8,
             autoTrigger: 'strong_enemy',
-            ...params
+            ...abilityData
         });
         
         this.damage = 80;
@@ -20,49 +20,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         this.pillarDelay = 0.5; // Time between pillar and damage
         this.element = 'holy';
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFFD700,
-                    colorRange: { start: 0xFFD700, end: 0xFFFACD },
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 1.2
-                }
-            },
-            smite: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFFF8DC,
-                    scaleMultiplier: 3.0,
-                    speedMultiplier: 0.8
-                }
-            },
-            pillar: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xF0E68C,
-                    scaleMultiplier: 4.0,
-                    speedMultiplier: 2.0
-                }
-            },
-            holy_judgment: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFFFFE0,
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 1.5
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         const enemies = this.getEnemiesInRange(casterEntity);
         return enemies.length >= 1;
@@ -85,7 +43,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         if (!targetPos) return null;
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Holy judgment descends from the heavens!`);
 
         // Schedule the holy smite after cast time
@@ -101,34 +59,10 @@ class SmiteAbility extends GUTS.BaseAbility {
         const targetPos = currentTargetPos || originalTargetPos; // Fallback to original position
 
         // Create pillar of light effect
-        this.createVisualEffect(targetPos, 'pillar');
+        this.playConfiguredEffects('pillar', targetPos);
 
-        // Create holy judgment aura effect
-        this.createVisualEffect(targetPos, 'holy_judgment');
-
-        // Use preset particle effects (client only)
-        if (!this.game.isServer) {
-            const pos = new THREE.Vector3(targetPos.x, targetPos.y, targetPos.z);
-
-            // Pillar of golden light descending using preset effect
-            const pillarSteps = 8;
-            for (let i = 0; i < pillarSteps; i++) {
-                const delay = i * 0.05;
-                const height = 300 - (i * 35);
-
-                this.game.schedulingSystem.scheduleAction(() => {
-                    this.game.call('playEffect', 'holy_pillar',
-                        new THREE.Vector3(targetPos.x, targetPos.y + height, targetPos.z));
-                }, delay, targetId);
-            }
-
-            // Warning ring on ground
-            this.game.call('playEffect', 'holy_ring', pos);
-
-            // Holy sparkles rising
-            this.game.call('playEffect', 'holy_light', new THREE.Vector3(pos.x, pos.y + 20, pos.z));
-            this.game.call('playEffect', 'holy_sparkles', new THREE.Vector3(pos.x, pos.y + 20, pos.z));
-        }
+        // Create warning ring effect
+        this.playConfiguredEffects('warning', targetPos);
 
         // Screen flash and shake (client only)
         if (!this.game.isServer && this.game.effectsSystem) {
@@ -177,13 +111,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         });
         
         // Create smite impact effect
-        this.createVisualEffect(targetPos, 'smite');
-
-        // Use preset holy_smite effect system for impact (client only)
-        if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'holy_smite',
-                new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z));
-        }
+        this.playConfiguredEffects('impact', targetPos);
     }
     
     // FIXED: Deterministic highest health enemy selection

@@ -1,5 +1,5 @@
 class FireStormAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'fireStorm',
             name: 'Fire Storm',
@@ -12,38 +12,13 @@ class FireStormAbility extends GUTS.BaseAbility {
             priority: 8,
             castTime: 2.5,
             autoTrigger: 'enemy_cluster',
-            ...params
+            ...abilityData
         });
         
         this.stormRadius = 90;
         this.damage = 70;
         this.element = this.enums.element.fire;
         this.minTargets = 3;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xff2200,
-                    colorRange: { start: 0xff2200, end: 0xffaa00 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            firestorm: {
-                type: 'explosion',
-                options: {
-                    count: 3,
-                    color: 0xff4400,
-                    colorRange: { start: 0xff4400, end: 0xff0000 },
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 0.6
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -63,7 +38,7 @@ class FireStormAbility extends GUTS.BaseAbility {
         if (!clusterPos) return null;
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `The sky darkens as firestorm approaches!`);
         
         // Schedule the firestorm to hit after cast time
@@ -74,7 +49,7 @@ class FireStormAbility extends GUTS.BaseAbility {
     
     performFirestorm(casterEntity, targetPos) {
         // Create firestorm visual effect
-        this.createVisualEffect(targetPos, 'firestorm');
+        this.playConfiguredEffects('impact', targetPos);
         
         // Apply fire damage to all enemies in storm area
         if (this.game.damageSystem) {

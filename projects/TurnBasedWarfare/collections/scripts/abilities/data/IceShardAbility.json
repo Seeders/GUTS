@@ -1,4 +1,8 @@
 {
+  "fileName": "IceShardAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/IceShardAbility.js",
-  "fileName": "IceShardAbility"
+  "castParticleEffectSystems": ["ice_shard_core", "ice_shard_glow"],
+  "launchParticleEffectSystems": ["ice_shards"],
+  "trailParticleEffectSystems": ["ice_trail"],
+  "impactParticleEffectSystems": ["ice_shatter", "frost_ring"]
 }

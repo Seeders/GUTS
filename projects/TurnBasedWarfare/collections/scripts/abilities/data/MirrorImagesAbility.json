@@ -1,4 +1,8 @@
 {
+  "fileName": "MirrorImagesAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/MirrorImagesAbility.js",
-  "fileName": "MirrorImagesAbility"
+  "castParticleEffectSystems": ["ice_shards", "ice_sparkles"],
+  "burstParticleEffectSystems": ["ice_ring", "ice_sparkles"],
+  "summonParticleEffectSystems": ["ice_shards", "holy_sparkles"],
+  "expirationParticleEffectSystems": ["ice_sparkles"]
 }

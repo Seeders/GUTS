@@ -1,5 +1,5 @@
 class PhalanxFormationAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'phalanx_formation',
             name: 'Phalanx Formation',
@@ -11,7 +11,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 7,
             castTime: 1.2,
-            ...params
+            ...abilityData
         });
         
         this.formationDuration = 25.0;
@@ -21,39 +21,6 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         this.baseCounterChance = 0.2;    // 20% base counter attack chance
         this.perHopliteCounterBonus = 0.05; // +5% per hoplite
         this.element = this.enums.element.physical;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4169E1,
-                    colorRange: { start: 0x4169E1, end: 0xB0C4DE },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            formation: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x6495ED,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.8
-                }
-            },
-            phalanx: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x87CEEB,
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -78,7 +45,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         if (nearbyHoplites.length === 0) return null;
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, 
             `Hoplite begins forming phalanx with ${nearbyHoplites.length} allies...`);
         
@@ -104,7 +71,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         const counterAttackChance = this.baseCounterChance + (phalanxSize * this.perHopliteCounterBonus);
         
         // Create formation effect at caster position
-        this.createVisualEffect(casterPos, 'formation');
+        this.playConfiguredEffects('burst', casterPos);
         
         // Apply formation buff to all Hoplites in range (including caster)
         const allHoplites = [casterEntity, ...sortedHoplites];
@@ -134,17 +101,14 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
             });
             
             // Create phalanx effect on each member
-            this.createVisualEffect(position, 'phalanx');
+            this.playConfiguredEffects('buff', position);
             
             // Schedule a delayed formation link effect for visual appeal
             this.game.schedulingSystem.scheduleAction(() => {
                 const transform = this.game.getComponent(hopliteId, "transform");
                 const pos = transform?.position;
                 if (pos) {
-                    this.createVisualEffect(pos, 'formation', { 
-                        count: 3, 
-                        scaleMultiplier: 1.0 
-                    });
+                    this.playConfiguredEffects('sustained', pos);
                 }
             }, index * 0.2, hopliteId); // Staggered visual effects
             
@@ -195,11 +159,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
             if (!buff || buff.buffType !== enums.buffTypes.phalanx || !position) return;
             
             // Create warning effect
-            this.createVisualEffect(position, 'cast', { 
-                count: 3, 
-                color: 0x4169E1,
-                scaleMultiplier: 0.8 
-            });
+            this.playConfiguredEffects('expiration', position);
             
             activeFormationMembers++;
         });

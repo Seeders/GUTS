@@ -1,5 +1,5 @@
 class BlizzardAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'blizzard',
             name: 'Blizzard',
@@ -12,7 +12,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
             priority: 10,
             castTime: 1.0,
             autoTrigger: 'many_enemies',
-            ...params
+            ...abilityData
         });
 
         this.damage = 25;
@@ -21,60 +21,6 @@ class BlizzardAbility extends GUTS.BaseAbility {
         this.tickInterval = 0.3;
         this.element = this.enums.element.cold;
         this.shardHeight = 400; // Height ice shards fall from
-    }
-
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 15,
-                    color: 0x88ccff,
-                    colorRange: { start: 0xaaddff, end: 0x4488ff },
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 0.6
-                }
-            },
-            ice_impact: {
-                type: 'magic',
-                options: {
-                    count: 8,
-                    color: 0x88ddff,
-                    colorRange: { start: 0xffffff, end: 0x4488ff },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 2.0
-                }
-            },
-            frost_burst: {
-                type: 'explosion',
-                options: {
-                    count: 12,
-                    color: 0xaaddff,
-                    colorRange: { start: 0xffffff, end: 0x6699ff },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 1.2
-                }
-            },
-            snow: {
-                type: 'magic',
-                options: {
-                    count: 5,
-                    color: 0xffffff,
-                    colorRange: { start: 0xffffff, end: 0xddddff },
-                    scaleMultiplier: 0.8,
-                    speedMultiplier: 0.3
-                }
-            },
-            impact: {
-                type: 'damage',
-                options: {
-                    count: 6,
-                    color: 0x88ccff,
-                    colorRange: { start: 0xaaddff, end: 0x4488ff },
-                    scaleMultiplier: 1.2
-                }
-            }
-        };
     }
 
     canExecute(casterEntity) {
@@ -93,7 +39,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
         if (!targetPos) return;
 
         // Immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `An arctic blizzard engulfs the battlefield!`, true);
 
         // Schedule blizzard start after cast time
@@ -131,17 +77,13 @@ class BlizzardAbility extends GUTS.BaseAbility {
     createAmbientSnow(centerPos) {
         if (this.game.isServer) return;
 
-        // Create continuous snow effect over the duration using preset effects
+        // Create continuous snow effect over the duration
         const snowInterval = 0.3;
         const snowCount = Math.floor(this.duration / snowInterval);
 
         for (let i = 0; i < snowCount; i++) {
             this.game.schedulingSystem.scheduleAction(() => {
-                // Use preset ice effects
-                this.game.call('playEffect', 'ice_mist',
-                    new THREE.Vector3(centerPos.x, centerPos.y + 30, centerPos.z));
-                this.game.call('playEffect', 'frost_aura',
-                    new THREE.Vector3(centerPos.x, centerPos.y + 10, centerPos.z));
+                this.playConfiguredEffects('ambient', centerPos);
             }, i * snowInterval, null);
         }
     }
@@ -181,7 +123,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
     createFallingIceShard(casterEntity, targetPos) {
         if (this.game.isServer) return;
 
-        // Create falling ice shard using preset effects
+        // Create falling ice shard
         const fallDuration = 0.4;
         const trailInterval = 0.04;
         const trailCount = Math.floor(fallDuration / trailInterval);
@@ -196,16 +138,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
             };
 
             this.game.schedulingSystem.scheduleAction(() => {
-                const position = new THREE.Vector3(shardPos.x, shardPos.y, shardPos.z);
-
-                // Ice shard core and glow using preset effects
-                this.game.call('playEffect', 'ice_shard_core', position);
-                this.game.call('playEffect', 'ice_shard_glow', position);
-
-                // Trail sparkles every other frame
-                if (i % 2 === 0) {
-                    this.game.call('playEffect', 'ice_shard_sparkles', position);
-                }
+                this.playConfiguredEffects('shard', shardPos);
             }, i * trailInterval, null);
         }
 
@@ -216,16 +149,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
     }
 
     createShardImpact(position) {
-        // Impact particles
-        this.createVisualEffect(position, 'ice_impact', { heightOffset: 0 });
-
-        if (!this.game.isServer) {
-            const impactPos = new THREE.Vector3(position.x, position.y + 10, position.z);
-
-            // Use preset ice shatter and frost ring effects
-            this.game.call('playEffect', 'ice_shatter', impactPos);
-            this.game.call('playEffect', 'frost_ring', impactPos);
-        }
+        this.playConfiguredEffects('impact', position);
     }
 
     applyAreaDamage(casterEntity, centerPos, tickIndex) {
@@ -287,15 +211,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
     }
 
     createFinalBurst(centerPos) {
-        // Big frost explosion at the end
-        this.createVisualEffect(centerPos, 'frost_burst');
-
-        if (!this.game.isServer) {
-            const burstPos = new THREE.Vector3(centerPos.x, centerPos.y + 50, centerPos.z);
-
-            // Use preset blizzard finale effect system
-            this.game.call('playEffectSystem', 'blizzard_finale', burstPos);
-        }
+        this.playConfiguredEffects('burst', centerPos);
     }
 
     // Override from BaseAbility - find best cluster for targeting

@@ -12,27 +12,27 @@
           {
             "name": "core",
             "type": "sphere",
-            "size": 1.5,
+            "size": 5,
             "color": {
-              "paletteColor": "yellowColor"
+              "paletteColor": "Orange14Color"
             },
             "emissive": {
-              "paletteColor": "yellowColor"
+              "paletteColor": "Orange14Color"
             },
-            "emissiveIntensity": 2
+            "emissiveIntensity": 3
           },
           {
             "name": "outerFlame",
             "type": "sphere",
-            "size": 2.5,
+            "size": 8,
             "color": {
-              "paletteColor": "orangeColor"
+              "paletteColor": "Orange18Color"
             },
             "emissive": {
-              "paletteColor": "orangeColor"
+              "paletteColor": "Orange18Color"
             },
-            "emissiveIntensity": 1.5,
-            "opacity": 0.7,
+            "emissiveIntensity": 2,
+            "opacity": 0.6,
             "scale": {
               "y": 0.8
             }
@@ -40,15 +40,15 @@
           {
             "name": "glow",
             "type": "sphere",
-            "size": 4,
+            "size": 12,
             "color": {
-              "paletteColor": "redDColor"
+              "paletteColor": "Orange19Color"
             },
             "emissive": {
-              "paletteColor": "redDColor"
+              "paletteColor": "Orange19Color"
             },
-            "emissiveIntensity": 1,
-            "opacity": 0.3
+            "emissiveIntensity": 1.5,
+            "opacity": 0.25
           }
         ],
         "position": {

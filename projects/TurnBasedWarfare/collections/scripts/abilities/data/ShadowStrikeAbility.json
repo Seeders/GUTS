@@ -1,4 +1,8 @@
 {
+  "fileName": "ShadowStrikeAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/ShadowStrikeAbility.js",
-  "fileName": "ShadowStrikeAbility"
+  "castParticleEffectSystems": ["dark_energy"],
+  "launchParticleEffectSystems": ["dark_burst", "dark_sparkles"],
+  "targetParticleEffectSystems": ["dark_burst", "dark_sparkles"],
+  "impactParticleEffectSystems": ["fire_burst_core", "dark_energy"]
 }

@@ -1,5 +1,5 @@
 class ConsecrationAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'consecration',
             name: 'Consecration',
@@ -11,82 +11,37 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 7,
             castTime: 2.0,
-            ...params
+            ...abilityData
         });
-        
+
         this.consecrationRadius = 120;
         this.duration = 15.0; // 15 seconds
         this.tickInterval = 2.0; // Every 2 seconds
         this.tickDamage = 12; // Damage to undead per tick
         this.tickHeal = 8; // Healing to living per tick
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 20,
-                    color: 0xffdd66,
-                    colorRange: { start: 0xffffff, end: 0xffaa00 },
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            consecration: {
-                type: 'heal',
-                options: {
-                    count: 12,
-                    color: 0xffff88,
-                    colorRange: { start: 0xffffff, end: 0xffdd44 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 0.6
-                }
-            },
-            purge: {
-                type: 'damage',
-                options: {
-                    count: 15,
-                    color: 0xffffff,
-                    colorRange: { start: 0xffffff, end: 0xffff88 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 2.5
-                }
-            },
-            ground_glow: {
-                type: 'magic',
-                options: {
-                    count: 8,
-                    color: 0xffdd44,
-                    colorRange: { start: 0xffff88, end: 0xffaa00 },
-                    scaleMultiplier: 1.0,
-                    speedMultiplier: 0.4
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         // Check if there are units nearby that would benefit from consecration
         const nearbyUnits = this.getUnitsInRange(casterEntity, this.consecrationRadius);
         return nearbyUnits.length >= 2; // At least 2 units to affect
     }
-    
+
     execute(casterEntity) {
         const transform = this.game.getComponent(casterEntity, "transform");
         const pos = transform?.position;
         if (!pos) return;
-        
+
         // Immediate cast effect
-        this.createVisualEffect(pos, 'cast');
+        this.playConfiguredEffects('cast', pos);
         this.logAbilityUsage(casterEntity, "Templar consecrates the battlefield with holy power!", true);
-        
+
         // DESYNC SAFE: Use scheduling system for consecration creation
         this.game.schedulingSystem.scheduleAction(() => {
             this.createConsecration(casterEntity, pos);
         }, this.castTime, casterEntity);
     }
-    
+
     createConsecration(casterEntity, consecrationPos) {
         // Check if caster is still alive
         const casterHealth = this.game.getComponent(casterEntity, "health");
@@ -119,53 +74,44 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             spawnType: spawnTypeIndex,
             capacity: 128
         });
-        
+
         // DESYNC SAFE: Schedule all consecration ticks using the scheduling system
         const totalTicks = Math.floor(this.duration / this.tickInterval);
-        
+
         for (let tickIndex = 0; tickIndex < totalTicks; tickIndex++) {
             const tickDelay = this.tickInterval * tickIndex;
-            
+
             this.game.schedulingSystem.scheduleAction(() => {
                 this.executeConsecrationTick(consecrationId, casterEntity, consecrationPos, tickIndex);
             }, tickDelay, consecrationId);
         }
-        
+
         // DESYNC SAFE: Schedule consecration cleanup
         this.game.schedulingSystem.scheduleAction(() => {
             this.cleanupConsecration(consecrationId);
         }, this.duration, consecrationId);
-        
+
         // Screen effect for consecration creation
         if (this.game.effectsSystem) {
             this.game.effectsSystem.playScreenFlash('#ffffaa', 0.5);
         }
 
-        // Create initial burst and continuous ground glow
+        // Create initial burst effect
+        this.playConfiguredEffects('burst', consecrationPos);
+
+        // Schedule continuous ground glow throughout duration
         if (!this.game.isServer) {
-            const glowPos = new THREE.Vector3(consecrationPos.x, consecrationPos.y + 10, consecrationPos.z);
-
-            // Initial holy burst using preset effect system
-            this.game.call('playEffectSystem', 'consecration_burst', glowPos);
-
-            // Schedule continuous ground glow throughout duration
             const glowInterval = 0.5;
             const glowCount = Math.floor(this.duration / glowInterval);
 
             for (let i = 0; i < glowCount; i++) {
                 this.game.schedulingSystem.scheduleAction(() => {
-                    // Ground particles using preset effects
-                    this.game.call('playEffect', 'holy_ground_glow',
-                        new THREE.Vector3(consecrationPos.x, consecrationPos.y + 5, consecrationPos.z));
-
-                    // Edge sparkles using preset effects
-                    this.game.call('playEffect', 'holy_edge_sparkles',
-                        new THREE.Vector3(consecrationPos.x, consecrationPos.y + 5, consecrationPos.z));
+                    this.playConfiguredEffects('sustained', consecrationPos);
                 }, i * glowInterval, consecrationId);
             }
         }
     }
-    
+
     // DESYNC SAFE: Execute a single consecration tick deterministically
     executeConsecrationTick(consecrationId, casterEntity, consecrationPos, tickIndex) {
         // Check if consecration entity still exists
@@ -189,13 +135,10 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             "health",
             "team"
         );
-        
+
         // Sort units for consistent processing order
         const sortedUnits = allUnits.slice().sort((a, b) => a - b);
-        
-        let undeadDamaged = 0;
-        let livingHealed = 0;
-        
+
         sortedUnits.forEach(unitId => {
             const transform = this.game.getComponent(unitId, "transform");
             const unitPos = transform?.position;
@@ -215,51 +158,43 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             if (distance <= this.consecrationRadius) {
                 // DESYNC SAFE: Determine if unit is undead/evil deterministically
                 const isUndead = this.isUndeadUnit(unitType);
-                
+
                 if (isUndead) {
                     // Damage undead/evil units
                     this.dealDamageWithEffects(casterEntity, unitId, this.tickDamage, 'holy', {
                         isConsecration: true,
                         tickIndex: tickIndex
                     });
-                    this.createVisualEffect(unitPos, 'purge', { heightOffset: 10 });
-                    undeadDamaged++;
+                    this.playConfiguredEffects('tick', unitPos);
                 } else if (team.team === casterTeam.team) {
                     // Heal living allies
                     if (health.current < health.max) {
                         const healAmount = Math.min(this.tickHeal, health.max - health.current);
                         health.current += healAmount;
-                        
-                        this.createVisualEffect(unitPos, 'consecration', { heightOffset: 10 });
-                        
+
+                        this.playConfiguredEffects('heal', unitPos);
+
                         if (!this.game.isServer && this.game.hasService('showDamageNumber')) {
                             this.game.call('showDamageNumber',
                                 unitPos.x, unitPos.y + 15, unitPos.z,
                                 healAmount, 'heal'
                             );
                         }
-                        livingHealed++;
                     }
                 }
             }
         });
-        
+
         // Additional visual effects every few ticks
         if (tickIndex % 3 === 0) {
-            this.createVisualEffect(consecrationPos, 'consecration', { 
-                count: 8, 
-                scaleMultiplier: 2.0,
-                heightOffset: 5 
-            });
+            this.playConfiguredEffects('burst', consecrationPos);
         }
-        
-   
     }
-    
+
     // DESYNC SAFE: Determine if unit is undead deterministically
     isUndeadUnit(unitType) {
         if (!unitType) return false;
-        
+
         // Check various undead/evil identifiers
         return (
             unitType.id === 'skeleton' ||
@@ -269,7 +204,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             unitType.id === 'demon'
         );
     }
-    
+
     // DESYNC SAFE: Get all units in range
     getUnitsInRange(casterEntity, radius) {
         const transform = this.game.getComponent(casterEntity, "transform");
@@ -285,18 +220,18 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             const transform = this.game.getComponent(unitId, "transform");
             const unitPos = transform?.position;
             const health = this.game.getComponent(unitId, "health");
-            
+
             if (!unitPos || !health || health.current <= 0) return false;
-            
+
             const distance = Math.sqrt(
-                Math.pow(unitPos.x - casterPos.x, 2) + 
+                Math.pow(unitPos.x - casterPos.x, 2) +
                 Math.pow(unitPos.z - casterPos.z, 2)
             );
-            
+
             return distance <= radius;
         }).sort((a, b) => a - b); // Sort for determinism
     }
-    
+
     // DESYNC SAFE: Clean up consecration
     cleanupConsecration(consecrationId) {
         if (this.game.hasComponent(consecrationId, "temporaryEffect")) {
@@ -304,16 +239,10 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             const transform = this.game.getComponent(consecrationId, "transform");
             const consecrationPos = transform?.position;
             if (consecrationPos) {
-                this.createVisualEffect(consecrationPos, 'consecration', { 
-                    count: 12, 
-                    scaleMultiplier: 1.5,
-                    color: 0xffd700 
-                });
+                this.playConfiguredEffects('expiration', consecrationPos);
             }
-            
+
             this.game.destroyEntity(consecrationId);
-            
-       
         }
     }
 }

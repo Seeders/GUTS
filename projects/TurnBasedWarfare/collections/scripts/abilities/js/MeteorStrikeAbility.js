@@ -1,5 +1,5 @@
 class MeteorStrikeAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'meteor_strike',
             name: 'Meteor Strike',
@@ -11,7 +11,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 10,
             castTime: 1.0,
-            ...params
+            ...abilityData
         });
 
         this.damage = 200;
@@ -20,100 +20,6 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
         this.element = this.enums.element.fire;
         this.minTargets = 0;
         this.meteorHeight = 500; // Height meteor falls from
-    }
-
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 12,
-                    color: 0xff4400,
-                    colorRange: { start: 0xffaa00, end: 0xff2200 },
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 0.8
-                }
-            },
-            warning: {
-                type: 'magic',
-                options: {
-                    count: 8,
-                    color: 0xff0000,
-                    colorRange: { start: 0xff4400, end: 0xff0000 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 1.5
-                }
-            },
-            trail_fire: {
-                type: 'magic',
-                options: {
-                    count: 5,
-                    color: 0xff4400,
-                    colorRange: { start: 0xffff00, end: 0xff2200 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 0.6
-                }
-            },
-            trail_smoke: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x555555,
-                    colorRange: { start: 0x666666, end: 0x222222 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.3
-                }
-            },
-            explosion_core: {
-                type: 'explosion',
-                options: {
-                    count: 25,
-                    color: 0xffff00,
-                    colorRange: { start: 0xffffff, end: 0xff4400 },
-                    scaleMultiplier: 5.0,
-                    speedMultiplier: 2.0
-                }
-            },
-            explosion_fire: {
-                type: 'explosion',
-                options: {
-                    count: 30,
-                    color: 0xff6600,
-                    colorRange: { start: 0xff8800, end: 0xff0000 },
-                    scaleMultiplier: 4.0,
-                    speedMultiplier: 1.5
-                }
-            },
-            explosion_debris: {
-                type: 'damage',
-                options: {
-                    count: 20,
-                    color: 0x664422,
-                    colorRange: { start: 0x886644, end: 0x442200 },
-                    scaleMultiplier: 1.0,
-                    speedMultiplier: 3.0
-                }
-            },
-            explosion_embers: {
-                type: 'damage',
-                options: {
-                    count: 15,
-                    color: 0xffaa00,
-                    colorRange: { start: 0xffcc00, end: 0xff4400 },
-                    scaleMultiplier: 0.6,
-                    speedMultiplier: 2.5
-                }
-            },
-            impact: {
-                type: 'damage',
-                options: {
-                    count: 8,
-                    color: 0xff4400,
-                    colorRange: { start: 0xffaa00, end: 0xff0000 },
-                    scaleMultiplier: 1.5
-                }
-            }
-        };
     }
 
     canExecute(casterEntity) {
@@ -132,7 +38,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
         if (!targetPos) return null;
 
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `A massive meteor approaches from the heavens!`);
 
         // Schedule warning indicator after cast time
@@ -149,7 +55,7 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
 
     createMeteorWarning(position) {
         // Create warning effect
-        this.createVisualEffect(position, 'warning');
+        this.playConfiguredEffects('warning', position);
 
         // Schedule repeated warning effects during the delay period
         const warningInterval = 0.4;
@@ -157,18 +63,14 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
 
         for (let i = 1; i < warningCount; i++) {
             this.game.schedulingSystem.scheduleAction(() => {
-                this.createVisualEffect(position, 'warning');
+                this.playConfiguredEffects('warning', position);
             }, i * warningInterval, null);
-        }
-
-        // Create ground ring effect using preset effect
-        if (!this.game.isServer) {
-            const ringPos = new THREE.Vector3(position.x, position.y + 5, position.z);
-            this.game.call('playEffect', 'meteor_warning', ringPos);
         }
     }
 
     spawnFallingMeteor(casterEntity, targetPos) {
+        if (this.game.isServer) return;
+
         // Create falling meteor using only particle effects
         const trailInterval = 0.05; // More frequent for smoother descent
         const trailCount = Math.floor(this.delay / trailInterval);
@@ -183,48 +85,19 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
             };
 
             this.game.schedulingSystem.scheduleAction(() => {
-                this.createMeteorTrail(trailPos);
-
-                // Create the meteor "body" using preset effects
-                if (!this.game.isServer) {
-                    const position = new THREE.Vector3(trailPos.x, trailPos.y, trailPos.z);
-                    this.game.call('playEffect', 'meteor_core', position);
-                    this.game.call('playEffect', 'meteor_flame', position);
-                }
+                this.playConfiguredEffects('trail', trailPos);
+                this.playConfiguredEffects('meteor', trailPos);
             }, i * trailInterval, null);
-        }
-    }
-
-    createMeteorTrail(currentPos) {
-        // Fire trail
-        this.createVisualEffect(currentPos, 'trail_fire', { heightOffset: 0 });
-
-        // Smoke trail
-        this.createVisualEffect(currentPos, 'trail_smoke', { heightOffset: 0 });
-
-        // Use preset meteor trail effect
-        if (!this.game.isServer) {
-            this.game.call('playEffect', 'meteor_trail',
-                new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z));
         }
     }
 
     meteorImpact(casterEntity, position) {
         // Create massive multi-layered explosion effect
-        this.createVisualEffect(position, 'explosion_core');
-        this.createVisualEffect(position, 'explosion_fire');
-        this.createVisualEffect(position, 'explosion_debris');
-        this.createVisualEffect(position, 'explosion_embers');
+        this.playConfiguredEffects('impact', position);
 
         // Screen effects for dramatic impact
         if (this.game.effectsSystem) {
             this.game.effectsSystem.playScreenFlash('#ff4400', 0.5);
-        }
-
-        // Use preset meteor_impact effect system
-        if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'meteor_impact',
-                new THREE.Vector3(position.x, position.y + 50, position.z));
         }
 
         // Apply splash damage
@@ -288,8 +161,8 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
                 isSplash: true
             });
 
-            // Impact effect on each target
-            this.createVisualEffect(target.position, 'impact');
+            // Target impact effect
+            this.playConfiguredEffects('target', target.position);
         });
     }
 

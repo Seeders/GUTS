@@ -211,7 +211,7 @@ Physics and movement processing:
    `scripts/Scripts/abilities/js/MyAbility.js`
    ```javascript
    class MyAbility extends GUTS.BaseAbility {
-     constructor(game, params = {}) {
+     constructor(game, abilityData = {}) {
        super(game, {
          id: 'my_ability',
          name: 'My Ability',

@@ -1,4 +1,8 @@
 {
+  "fileName": "DisruptionBombAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/DisruptionBombAbility.js",
-  "fileName": "DisruptionBombAbility"
+  "castParticleEffectSystems": ["fire_burst_core"],
+  "impactParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary", "smoke_burst"],
+  "debuffParticleEffectSystems": ["lightning_sparks"],
+  "expirationParticleEffectSystems": ["holy_sparkles"]
 }

@@ -1,5 +1,5 @@
 class MassHealAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'mass_heal',
             name: 'Mass Heal',
@@ -12,47 +12,14 @@ class MassHealAbility extends GUTS.BaseAbility {
             priority: 9,
             castTime: 2.0,
             autoTrigger: 'low_team_health',
-            ...params
+            ...abilityData
         });
         
         this.healPercent = 0.4; // 40% of max health
         this.minInjuredAllies = 3;
         this.element = 'holy';
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x88ff88,
-                    colorRange: { start: 0x88ff88, end: 0xffffaa },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            heal: {
-                type: 'heal',
-                options: {
-                    count: 3,
-                    color: 0x88ffaa,
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 0.8
-                }
-            },
-            mass_heal: {
-                type: 'heal',
-                options: {
-                    count: 3,
-                    color: 0xaaffaa,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 0.6
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         const allies = this.getAlliesInRange(casterEntity);
         const injuredAllies = this.getInjuredAllies(allies);
@@ -70,7 +37,7 @@ class MassHealAbility extends GUTS.BaseAbility {
         if (injuredAllies.length < this.minInjuredAllies) return null;
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Holy energy gathers to heal the wounded!`);
         
         // Schedule the mass heal to trigger after cast time
@@ -88,14 +55,13 @@ class MassHealAbility extends GUTS.BaseAbility {
         // Sort allies deterministically for consistent processing order
         const sortedAllies = targetAllies.slice().sort((a, b) => String(a).localeCompare(String(b)));
 
-        // Create central holy burst at caster using preset effect system
-        if (!this.game.isServer && casterPos) {
-            this.game.call('playEffectSystem', 'heal_burst',
-                new THREE.Vector3(casterPos.x, casterPos.y + 40, casterPos.z));
+        // Create central holy burst at caster
+        if (casterPos) {
+            this.playConfiguredEffects('burst', casterPos);
         }
 
         // Process each ally deterministically
-        sortedAllies.forEach((allyId, index) => {
+        sortedAllies.forEach((allyId) => {
             const health = this.game.getComponent(allyId, "health");
             const transform = this.game.getComponent(allyId, "transform");
             const allyPos = transform?.position;
@@ -114,19 +80,7 @@ class MassHealAbility extends GUTS.BaseAbility {
                     totalHealing += actualHeal;
 
                     // Create heal effect on each ally
-                    this.createVisualEffect(allyPos, 'heal');
-
-                    // Enhanced individual healing effect with delay for cascade
-                    if (!this.game.isServer) {
-                        const delay = index * 0.1;
-                        this.game.schedulingSystem.scheduleAction(() => {
-                            // Use preset heal effects
-                            this.game.call('playEffect', 'heal_glow',
-                                new THREE.Vector3(allyPos.x, allyPos.y + 20, allyPos.z));
-                            this.game.call('playEffect', 'heal_sparkles',
-                                new THREE.Vector3(allyPos.x, allyPos.y + 20, allyPos.z));
-                        }, delay, allyId);
-                    }
+                    this.playConfiguredEffects('impact', allyPos);
 
                     // Show heal number
                     if (!this.game.isServer && this.game.hasService('showDamageNumber')) {
@@ -138,11 +92,6 @@ class MassHealAbility extends GUTS.BaseAbility {
                 }
             }
         });
-
-        // Create major healing effect at caster position
-        if (casterPos && healedCount > 0) {
-            this.createVisualEffect(casterPos, 'mass_heal');
-        }
 
         // Screen effect for dramatic impact
         if (this.game.effectsSystem && healedCount > 0) {

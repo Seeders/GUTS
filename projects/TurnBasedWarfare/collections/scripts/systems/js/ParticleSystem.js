@@ -574,7 +574,7 @@ class ParticleSystem extends GUTS.BaseSystem {
   }
 
   _now() {
-    if (this.game?.state?.simTime != null) return this.game.state.simTime;
+    if (this.game?.state?.now != null && this.game.state.now > 0) return this.game.state.now;
     return performance.now() / 1000;
   }
 

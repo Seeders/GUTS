@@ -1,5 +1,5 @@
 class MirrorImagesAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'mirror_images',
             name: 'Mirror Images',
@@ -12,46 +12,13 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
             priority: 6,
             castTime: 1.5,
             autoTrigger: 'low_health',
-            ...params
+            ...abilityData
         });
         
         this.imageCount = 2;
         this.imageDuration = 5.0;
         this.imageHealthRatio = 0.4; // 40% of original health
         this.imageDamageRatio = 0.6; // 60% of original damage
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4169E1,
-                    colorRange: { start: 0x4169E1, end: 0x87CEEB },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 2.0
-                }
-            },
-            mirror: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x6495ED,
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 1.5
-                }
-            },
-            illusion: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xB0C4DE,
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 3.0
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -71,7 +38,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
         if (!casterPos) return null;
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Reality fractures as mirror images appear!`);
         
         // Schedule mirror image creation after cast time
@@ -91,7 +58,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
         if (!casterTeam || !casterUnitType || !casterCombat || !casterHealth) return;
         
         // Mirror effect at caster
-        this.createVisualEffect(casterPos, 'mirror');
+        this.playConfiguredEffects('burst', casterPos);
         
         const createdImages = [];
         
@@ -107,7 +74,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
             if (imageId !== null) {
                 createdImages.push(imageId);
                 // Illusion creation effect
-                this.createVisualEffect(imagePos, 'illusion');
+                this.playConfiguredEffects('summon', imagePos);
                 
                 // Schedule image removal deterministically
                 this.game.schedulingSystem.scheduleAction(() => {
@@ -251,7 +218,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
         
         // Create disappearance effect
         if (imagePos) {
-            this.createVisualEffect(imagePos, 'illusion');
+            this.playConfiguredEffects('expiration', imagePos);
         }
         
         // Remove the entity

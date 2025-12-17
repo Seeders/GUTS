@@ -1,5 +1,5 @@
 class ShadowStrikeAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'shadow_strike',
             name: 'Shadow Strike',
@@ -11,42 +11,9 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
             animation: 'attack',
             priority: 8,
             castTime: 0.5,
-            ...params
+            ...abilityData
         });
         this.backstabDamage = 65;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x2F2F2F,
-                    colorRange: { start: 0x2F2F2F, end: 0x000000 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 2.0
-                }
-            },
-            teleport: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B0000,
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 3.0
-                }
-            },
-            backstab: {
-                type: 'damage',
-                options: {
-                    count: 3,
-                    color: 0xFF0000,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -72,7 +39,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         if (!targetPos) return;
         
         // Immediate cast effect
-        this.createVisualEffect(pos, 'cast');
+        this.playConfiguredEffects('cast', pos);
         this.logAbilityUsage(casterEntity, "Rogue strikes from the shadows!");
         
         // DESYNC SAFE: Use scheduling system for teleport and attack
@@ -124,7 +91,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         const teleportPos = this.calculateTeleportPosition(targetPos);
 
         // Visual effect at original position before teleport
-        this.createVisualEffect(casterPos, 'teleport');
+        this.playConfiguredEffects('launch', casterPos);
 
         // Use preset shadow_teleport effect system at departure (client only)
         if (!this.game.isServer) {
@@ -137,7 +104,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         casterPos.z = teleportPos.z;
 
         // Visual effect at new position after teleport
-        this.createVisualEffect(teleportPos, 'teleport');
+        this.playConfiguredEffects('target', teleportPos);
 
         // Use preset shadow_arrive effect system at arrival (client only)
         if (!this.game.isServer) {
@@ -153,7 +120,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         });
 
         // Backstab effect
-        this.createVisualEffect(targetPos, 'backstab');
+        this.playConfiguredEffects('impact', targetPos);
 
         // Use preset backstab effect system (client only)
         if (!this.game.isServer) {

@@ -1,5 +1,5 @@
 class CorruptingAuraAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'corrupting_aura',
             name: 'Corrupting Aura',
@@ -11,47 +11,14 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 6,
             castTime: 0,
-            ...params
+            ...abilityData
         });
         this.drainPerSecond = 8;
         this.duration = 12.0; // 12 seconds instead of 1200 seconds
         this.tickInterval = 1.0; // 1 second between ticks
         this.hasActiveAura = false;
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4B0082,
-                    colorRange: { start: 0x4B0082, end: 0x000000 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.8
-                }
-            },
-            corruption: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x2F4F4F,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            empowerment: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B0000,
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         // Only allow one active aura per caster
         return !this.hasActiveAura;
@@ -62,7 +29,7 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
         const pos = transform?.position;
         if (!pos) return;
         
-        this.createVisualEffect(pos, 'cast');
+        this.playConfiguredEffects('cast', pos);
         this.logAbilityUsage(casterEntity, "Oathbreaker spreads corrupting darkness!");
         
         // Mark aura as active
@@ -125,9 +92,9 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
                     isCorruption: true,
                     tickIndex: tickIndex
                 });
-                
+
                 // Visual corruption effect
-                this.createVisualEffect(enemyPos, 'corruption', { heightOffset: 10 });
+                this.playConfiguredEffects('tick', enemyPos);
             }
         });
         
@@ -162,19 +129,15 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
                         });
 
                         // Visual empowerment effect
-                        this.createVisualEffect(allyPos, 'empowerment', { heightOffset: 5 });
+                        this.playConfiguredEffects('buff', allyPos);
                     }
                 }
             }
         });
-        
+
         // Additional visual effects every few ticks
         if (tickIndex % 3 === 0) {
-            this.createVisualEffect(casterPos, 'corruption', { 
-                count: 6, 
-                scaleMultiplier: 2.5,
-                heightOffset: 15 
-            });
+            this.playConfiguredEffects('aura', casterPos);
         }
     }
 }

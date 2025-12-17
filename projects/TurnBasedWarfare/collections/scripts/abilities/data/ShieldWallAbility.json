@@ -1,4 +1,10 @@
 {
+  "fileName": "ShieldWallAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/ShieldWallAbility.js",
-  "fileName": "ShieldWallAbility"
+  "castParticleEffectSystems": ["holy_light"],
+  "burstParticleEffectSystems": ["holy_explosion", "holy_ring"],
+  "buffParticleEffectSystems": ["holy_sparkles"],
+  "debuffParticleEffectSystems": ["fire_burst_core"],
+  "sustainedParticleEffectSystems": ["holy_sparkles"],
+  "expirationParticleEffectSystems": ["holy_sparkles"]
 }

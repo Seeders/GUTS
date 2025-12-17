@@ -1,5 +1,5 @@
 class ExplosiveTrapAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'explosive_trap',
             name: 'Explosive Trap',
@@ -11,7 +11,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 6,
             castTime: 1.5,
-            ...params
+            ...abilityData
         });
         
         this.maxTrapsPerTrapper = 2;
@@ -19,40 +19,6 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         this.explosionRadius = 100;
         this.triggerRadius = 40;
         this.trapPlacementDistance = 60;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B4513,
-                    colorRange: { start: 0x8B4513, end: 0xA0522D },
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 1.5
-                }
-            },
-            trap_place: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x696969,
-                    scaleMultiplier: 0.8,
-                    speedMultiplier: 1.0
-                }
-            },
-            trap_explosion: {
-                type: 'explosion',
-                options: {
-                    count: 3,
-                    color: 0xFF4500,
-                    colorRange: { start: 0xFF4500, end: 0xFF8C00 },
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 2.0
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -79,7 +45,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         if (!pos) return;
         
         // Immediate cast effect
-        this.createVisualEffect(pos, 'cast');
+        this.playConfiguredEffects('cast', pos);
         this.logAbilityUsage(casterEntity, "Trapper prepares an explosive surprise!");
         
         // DESYNC SAFE: Use scheduling system for trap placement
@@ -139,7 +105,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         });
         
         // Visual trap placement effect
-        this.createVisualEffect(trapPos, 'trap_place');
+        this.playConfiguredEffects('target', trapPos);
         
       
         // DESYNC SAFE: Schedule trap cleanup after lifetime
@@ -215,7 +181,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
         trapComponent.triggerCount++;
         
         // Visual explosion effect
-        this.createVisualEffect(trapPos, 'trap_explosion');
+        this.playConfiguredEffects('impact', trapPos);
 
         // Enhanced massive trap explosion using preset effect (client only)
         if (!this.game.isServer) {
@@ -307,10 +273,7 @@ class ExplosiveTrapAbility extends GUTS.BaseAbility {
             const transform = this.game.getComponent(trapId, "transform");
             const trapPos = transform?.position;
             if (trapPos) {
-                this.createVisualEffect(trapPos, 'trap_place', { 
-                    count: 2, 
-                    scaleMultiplier: 0.5 
-                });
+                this.playConfiguredEffects('expiration', trapPos);
             }
             
             this.game.destroyEntity(trapId);

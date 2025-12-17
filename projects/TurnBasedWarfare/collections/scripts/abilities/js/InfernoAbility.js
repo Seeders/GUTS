@@ -1,5 +1,5 @@
 class InfernoAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'inferno',
             name: 'Inferno',
@@ -12,7 +12,7 @@ class InfernoAbility extends GUTS.BaseAbility {
             priority: 9,
             castTime: 2.0,
             autoTrigger: 'multiple_enemies',
-            ...params
+            ...abilityData
         });
         
         this.damage = 35;
@@ -20,39 +20,6 @@ class InfernoAbility extends GUTS.BaseAbility {
         this.duration = 4.0;
         this.tickInterval = 0.5;
         this.element = this.enums.element.fire;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xff2200,
-                    colorRange: { start: 0xff2200, end: 0xffaa00 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            inferno: {
-                type: 'explosion',
-                options: {
-                    count: 3,
-                    color: 0xff4400,
-                    scaleMultiplier: 3.0,
-                    speedMultiplier: 0.8
-                }
-            },
-            tick: {
-                type: 'explosion',
-                options: {
-                    count: 3,
-                    color: 0xff3300,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.6
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -73,7 +40,7 @@ class InfernoAbility extends GUTS.BaseAbility {
         const infernoCenter = clusterPos || this.getDefaultTargetPosition(casterPos, enemies);
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `The battlefield prepares for an unstoppable inferno!`);
         
         // Schedule the inferno to start after cast time
@@ -84,7 +51,7 @@ class InfernoAbility extends GUTS.BaseAbility {
     
     createInferno(casterEntity, centerPos) {
         // Create initial inferno effect
-        this.createVisualEffect(centerPos, 'inferno');
+        this.playConfiguredEffects('impact', centerPos);
 
         // Enhanced massive inferno explosion using preset effect system
         if (!this.game.isServer) {
@@ -136,7 +103,7 @@ class InfernoAbility extends GUTS.BaseAbility {
         
         // Visual tick effect (except on last tick to avoid overlap)
         if (tickNumber < totalTicks - 1) {
-            this.createVisualEffect(centerPos, 'tick');
+            this.playConfiguredEffects('tick', centerPos);
         }
     }
     

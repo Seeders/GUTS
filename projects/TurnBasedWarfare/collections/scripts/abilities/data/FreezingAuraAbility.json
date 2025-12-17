@@ -1,4 +1,6 @@
 {
+  "fileName": "FreezingAuraAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/FreezingAuraAbility.js",
-  "fileName": "FreezingAuraAbility"
+  "auraParticleEffectSystems": ["ice_mist", "frost_aura"],
+  "buffParticleEffectSystems": ["ice_shard_sparkles"]
 }

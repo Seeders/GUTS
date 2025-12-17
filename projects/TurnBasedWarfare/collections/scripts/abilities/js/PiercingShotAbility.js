@@ -1,5 +1,5 @@
 class PiercingShotAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'piercing_shot',
             name: 'Piercing Shot',
@@ -11,54 +11,12 @@ class PiercingShotAbility extends GUTS.BaseAbility {
             animation: 'attack',
             priority: 6,
             castTime: 1.5,
-            ...params
+            ...abilityData
         });
         
         this.piercingDamage = 45;
         this.lineWidth = 20; // Width of the piercing line
         this.element = this.enums.element.physical;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4682B4,
-                    colorRange: { start: 0x4682B4, end: 0x87CEEB },
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 1.5
-                }
-            },
-            beam_charge: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x6495ED,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 0.8
-                }
-            },
-            piercing_beam: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xB0C4DE,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 2.5
-                }
-            },
-            impact: {
-                type: 'damage',
-                options: {
-                    count: 3,
-                    color: 0x4169E1,
-                    scaleMultiplier: 1.0,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -75,7 +33,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
         if (!casterPos) return null;
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Crossbow charges a piercing bolt...`);
         
         // Schedule the piercing shot after cast time
@@ -89,7 +47,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
         const endPos = this.calculateLineEndPosition(casterPos, casterFacing);
         
         // Create beam charging effect
-        this.createVisualEffect(casterPos, 'beam_charge');
+        this.playConfiguredEffects('launch', casterPos);
         
         // Schedule visual beam effect slightly before damage
         this.game.schedulingSystem.scheduleAction(() => {
@@ -104,11 +62,8 @@ class PiercingShotAbility extends GUTS.BaseAbility {
     
     createPiercingBeamEffect(startPos, endPos) {
         // Create piercing beam visual effect
-        this.createVisualEffect(startPos, 'piercing_beam');
-        this.createVisualEffect(endPos, 'piercing_beam', {
-            count: 6,
-            scaleMultiplier: 1.5
-        });
+        this.playConfiguredEffects('trail', startPos);
+        this.playConfiguredEffects('trail', endPos);
 
         // Enhanced beam trail particles using preset effects
         if (!this.game.isServer) {
@@ -166,7 +121,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
             });
             
             // Create impact effect at each enemy position
-            this.createVisualEffect(position, 'impact');
+            this.playConfiguredEffects('impact', position);
             
          
         });

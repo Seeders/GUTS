@@ -1,5 +1,5 @@
 class RageAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'raging_strike',
             name: 'Raging Strike',
@@ -11,7 +11,7 @@ class RageAbility extends GUTS.BaseAbility {
             animation: 'attack',
             priority: 6,
             castTime: 0.8,
-            ...params
+            ...abilityData
         });
         
         this.rageDuration = 8.0;
@@ -19,40 +19,7 @@ class RageAbility extends GUTS.BaseAbility {
         this.attackSpeedMultiplier = 1.3;
         this.element = this.enums.element.physical;
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: { 
-                    count: 3, 
-                    color: 0xff4444, 
-                    colorRange: { start: 0xff4444, end: 0xff8800 },
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.5
-                }
-            },
-            rage: {
-                type: 'magic',
-                options: { 
-                    count: 3, 
-                    color: 0xff0000, 
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 2.0
-                }
-            },
-            fury: {
-                type: 'magic',
-                options: { 
-                    count: 3, 
-                    color: 0xcc0000, 
-                    scaleMultiplier: 2.2,
-                    speedMultiplier: 0.8
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         // Check if there are enemies nearby to rage against
         const enemies = this.getEnemiesInRange(casterEntity, 100);
@@ -72,7 +39,7 @@ class RageAbility extends GUTS.BaseAbility {
         if (!casterPos) return null;
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Primal fury begins to build...`);
         
         // Schedule the rage activation after cast time
@@ -87,29 +54,8 @@ class RageAbility extends GUTS.BaseAbility {
         if (!casterPos) return;
 
         // Create dramatic rage effects
-        this.createVisualEffect(casterPos, 'rage');
+        this.playConfiguredEffects('buff', casterPos);
 
-        // Enhanced rage activation with fiery burst using preset effect system
-        if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'rage_buff',
-                new THREE.Vector3(casterPos.x, casterPos.y + 30, casterPos.z));
-
-            // Anger aura ring
-            this.game.call('playEffect', 'rage_aura',
-                new THREE.Vector3(casterPos.x, casterPos.y + 5, casterPos.z));
-        }
-
-        // Schedule a secondary fury effect for visual impact
-        this.game.schedulingSystem.scheduleAction(() => {
-            if (this.game.hasComponent && this.game.hasComponent(casterEntity, "position")) {
-                const transform = this.game.getComponent(casterEntity, "transform");
-                const pos = transform?.position;
-                if (pos) {
-                    this.createVisualEffect(pos, 'fury');
-                }
-            }
-        }, 0.5, casterEntity);
-        
         // Apply rage buff with proper timing
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.rageDuration;
@@ -145,15 +91,10 @@ class RageAbility extends GUTS.BaseAbility {
         const buff = this.game.getComponent(casterEntity, "buff");
         const enums = this.game.getEnums();
         if (!buff || buff.buffType !== enums.buffTypes.rage) return;
-        
+
         if (casterPos) {
             // Create fading effect
-            this.createVisualEffect(casterPos, 'cast', { 
-                count: 5, 
-                color: 0x884444,
-                scaleMultiplier: 0.8 
-            });
+            this.playConfiguredEffects('expiration', casterPos);
         }
-       
     }
 }

@@ -1,5 +1,5 @@
 class ChargeAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'charge',
             name: 'Charge',
@@ -11,7 +11,7 @@ class ChargeAbility extends GUTS.BaseAbility {
             animation: 'attack',
             priority: 8,
             castTime: 0.5,
-            ...params
+            ...abilityData
         });
         
         this.chargeDamage = 55;
@@ -19,40 +19,7 @@ class ChargeAbility extends GUTS.BaseAbility {
         this.chargeDuration = 0.8; // How long the charge takes
         this.stunDuration = 2.0; // How long enemies are stunned
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xC0C0C0,
-                    colorRange: { start: 0xC0C0C0, end: 0xFFFFFF },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 2.0
-                }
-            },
-            charge: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B4513,
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 3.0
-                }
-            },
-            impact: {
-                type: 'damage',
-                options: {
-                    count: 3,
-                    color: 0xFF4500,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 1.5
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         const enemies = this.getEnemiesInRange(casterEntity);
         
@@ -77,7 +44,7 @@ class ChargeAbility extends GUTS.BaseAbility {
         if (!target) return;
         
         // Immediate cast effect
-        this.createVisualEffect(pos, 'cast');
+        this.playConfiguredEffects('cast', pos);
         this.logAbilityUsage(casterEntity, "Knight charges into battle!", true);
         
         // DESYNC SAFE: Use scheduling system for charge execution
@@ -149,27 +116,7 @@ class ChargeAbility extends GUTS.BaseAbility {
         velocity.vz = (dz / distance) * this.chargeSpeed;
         
         // Visual charge effect
-        this.createVisualEffect(pos, 'charge');
-
-        // Enhanced charge initiation - dust burst and battle cry using preset effect
-        if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'charge_initiate',
-                new THREE.Vector3(pos.x, pos.y + 10, pos.z));
-
-            // Create dust trail during charge using preset effects
-            const trailSteps = 6;
-            for (let i = 1; i <= trailSteps; i++) {
-                const delay = (this.chargeDuration / trailSteps) * i * 0.5;
-                const progress = i / trailSteps;
-                const trailX = pos.x + (targetPos.x - pos.x) * progress;
-                const trailZ = pos.z + (targetPos.z - pos.z) * progress;
-
-                this.game.schedulingSystem.scheduleAction(() => {
-                    this.game.call('playEffect', 'charge_dust_trail',
-                        new THREE.Vector3(trailX, pos.y + 5, trailZ));
-                }, delay, casterEntity);
-            }
-        }
+        this.playConfiguredEffects('trail', pos);
 
         // Screen effect for dramatic charge
         if (this.game.effectsSystem) {
@@ -212,17 +159,7 @@ class ChargeAbility extends GUTS.BaseAbility {
         
         if (distance <= 50) { // Hit range
             // Visual impact effect
-            this.createVisualEffect(targetPos, 'impact');
-
-            // Enhanced massive impact explosion using preset effect
-            if (!this.game.isServer) {
-                this.game.call('playEffectSystem', 'charge_impact',
-                    new THREE.Vector3(targetPos.x, targetPos.y + 20, targetPos.z));
-
-                // Ground crack ring using preset effect
-                this.game.call('playEffect', 'ground_crack_ring',
-                    new THREE.Vector3(targetPos.x, targetPos.y + 3, targetPos.z));
-            }
+            this.playConfiguredEffects('impact', targetPos);
 
             // Deal damage
             this.dealDamageWithEffects(casterEntity, targetId, this.chargeDamage, this.enums.element.physical, {
@@ -265,13 +202,8 @@ class ChargeAbility extends GUTS.BaseAbility {
                 const transform = this.game.getComponent(targetId, "transform");
                 const targetPos = transform?.position;
                 if (targetPos) {
-                    this.createVisualEffect(targetPos, 'cast', { 
-                        count: 3, 
-                        scaleMultiplier: 0.8,
-                        color: 0x87CEEB 
-                    });
+                    this.playConfiguredEffects('expiration', targetPos);
                 }
-          
             }
         }
     }

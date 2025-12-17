@@ -1,5 +1,5 @@
 class WindShieldAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'wind_shield',
             name: 'Wind Shield',
@@ -12,27 +12,12 @@ class WindShieldAbility extends GUTS.BaseAbility {
             priority: 4,
             castTime: 1.2,
             autoTrigger: 'projectiles_incoming',
-            ...params
+            ...abilityData
         });
 
         this.shieldDuration = 15.0;
         // Track active tornado effects per entity for cleanup
         this.activeTornadoEffects = new Map();
-    }
-
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 12,
-                    color: 0xE0FFFF,
-                    colorRange: { start: 0xE0FFFF, end: 0x87CEEB },
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 3.0
-                }
-            }
-        };
     }
 
     canExecute(casterEntity) {
@@ -48,7 +33,7 @@ class WindShieldAbility extends GUTS.BaseAbility {
         if (!casterPos) return;
 
         // Immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Protective winds swirl around allies!`);
 
         this.game.schedulingSystem.scheduleAction(() => {
@@ -95,9 +80,8 @@ class WindShieldAbility extends GUTS.BaseAbility {
                         // Play disperse effect at current position
                         const transform = this.game.getComponent(allyId, "transform");
                         const currentPos = transform?.position;
-                        if (currentPos && !this.game.isServer) {
-                            this.game.call('playEffectSystem', 'tornado_disperse',
-                                new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z));
+                        if (currentPos) {
+                            this.playConfiguredEffects('expiration', currentPos);
                         }
                     }
                 }

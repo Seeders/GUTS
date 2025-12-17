@@ -1,4 +1,7 @@
 {
+  "fileName": "RageAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/RageAbility.js",
-  "fileName": "RageAbility"
+  "castParticleEffectSystems": ["fire_embers"],
+  "buffParticleEffectSystems": ["fire_burst_core", "fire_embers"],
+  "expirationParticleEffectSystems": ["fire_trail"]
 }

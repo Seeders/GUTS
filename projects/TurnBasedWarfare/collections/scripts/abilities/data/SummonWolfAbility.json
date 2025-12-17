@@ -1,4 +1,6 @@
 {
+  "fileName": "SummonWolfAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/SummonWolfAbility.js",
-  "fileName": "SummonWolfAbility"
+  "castParticleEffectSystems": ["holy_light", "holy_sparkles"],
+  "summonParticleEffectSystems": ["holy_explosion", "holy_sparkles"]
 }

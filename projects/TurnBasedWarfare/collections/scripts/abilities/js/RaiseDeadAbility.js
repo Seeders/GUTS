@@ -1,5 +1,5 @@
 class RaiseDeadAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'raise_dead',
             name: 'Raise Dead',
@@ -12,46 +12,12 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
             priority: 1,
             castTime: 1.0,
             autoTrigger: 'corpses_available',
-            ...params
+            ...abilityData
         });
         
         this.maxCorpsesToRaise = 4;
         this.raisedUnitType = '0_skeleton';
         this.element = 'dark';
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x4B0082,
-                    colorRange: { start: 0x4B0082, end: 0x8B008B },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            raise_dead: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B008B,
-                    colorRange: { start: 0x8B008B, end: 0x32CD32 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.5
-                }
-            },
-            necromancy: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x228B22,
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -76,7 +42,7 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
         if (validCorpses.length === 0) return null;
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Dark magic stirs the dead...`);
         
         // Schedule the necromancy after cast time
@@ -118,7 +84,7 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
                 raisedSkeletons.push(skeletonId);
 
                 // Create raising effect
-                this.createVisualEffect(corpseData.position, 'raise_dead');
+                this.playConfiguredEffects('summon', corpseData.position);
                 this.logCorpseRaising(consumedCorpse, team);
 
                 // Enhanced necromantic rising effect (client only) using preset effect system
@@ -133,7 +99,7 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
 
                 // Schedule a delayed necromancy effect for dramatic flair
                 this.game.schedulingSystem.scheduleAction(() => {
-                    this.createVisualEffect(corpseData.position, 'necromancy');
+                    this.playConfiguredEffects('impact', corpseData.position);
                 }, 0.5, skeletonId);
             }
         });

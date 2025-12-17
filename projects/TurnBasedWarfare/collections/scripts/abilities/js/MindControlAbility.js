@@ -1,5 +1,5 @@
 class MindControlAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'mind_control',
             name: 'Mind Control',
@@ -11,7 +11,7 @@ class MindControlAbility extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 8,
             castTime: 3.0,
-            ...params
+            ...abilityData
         });
 
         // How long control lasts once applied
@@ -24,39 +24,6 @@ class MindControlAbility extends GUTS.BaseAbility {
         // DESYNC SAFE: Track active beams for cleanup
         // Map<targetId, { team, beams: Map<casterId, effectData> }>
         this.beamRegistry = new Map();
-    }
-
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8A2BE2,
-                    colorRange: { start: 0x8A2BE2, end: 0xDDA0DD },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.8
-                }
-            },
-            control: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x9932CC,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 2.0
-                }
-            },
-            charm: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xDA70D6,
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 1.5
-                }
-            }
-        };
     }
 
     canExecute(casterEntity) {
@@ -100,7 +67,7 @@ class MindControlAbility extends GUTS.BaseAbility {
         if (!target) return;
 
         // Immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `${this.name} begins to dominate an enemy mind!`);
 
         // DESYNC SAFE: Use scheduling system for mind control process
@@ -173,7 +140,7 @@ class MindControlAbility extends GUTS.BaseAbility {
         this.createBeam(casterId, targetId);
 
         // Visual effect on target
-        this.createVisualEffect(targetPos, 'control');
+        this.playConfiguredEffects('target', targetPos);
 
         // DESYNC SAFE: Schedule the mind control completion check
         const completionTime = 2.0; // 2 seconds to complete mind control
@@ -235,7 +202,7 @@ class MindControlAbility extends GUTS.BaseAbility {
         targetTeam.team = controlData.team;
 
         // Visual charm effect
-        this.createVisualEffect(targetPos, 'charm');
+        this.playConfiguredEffects('buff', targetPos);
 
         // Enhanced mind control success burst (client only) using preset effects
         if (!this.game.isServer) {
@@ -289,7 +256,7 @@ class MindControlAbility extends GUTS.BaseAbility {
 
         // Visual effect for mind control ending
         if (targetPos) {
-            this.createVisualEffect(targetPos, 'control', { count: 2 });
+            this.playConfiguredEffects('expiration', targetPos);
         }
 
     

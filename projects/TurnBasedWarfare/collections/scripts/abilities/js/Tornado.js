@@ -1,5 +1,5 @@
 class Tornado extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'curse',
             name: 'Curse',
@@ -12,37 +12,13 @@ class Tornado extends GUTS.BaseAbility {
             priority: 5,
             castTime: 1.5,
             autoTrigger: 'strong_enemies',
-            ...params
+            ...abilityData
         });
         
         this.curseRadius = 100;
         this.damageReduction = 0.5; // Reduce enemy damage by 50%
         this.vulnerabilityIncrease = 1.3; // 30% more damage taken
         this.duration = 20.0;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x2F4F4F,
-                    colorRange: { start: 0x2F4F4F, end: 0x000000 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 0.8
-                }
-            },
-            curse: {
-                type: 'magic',
-                options: {
-                    count: 2,
-                    color: 0x696969,
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.5
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -59,7 +35,7 @@ class Tornado extends GUTS.BaseAbility {
         if (enemies.length === 0) return;
         
         // Cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         
         this.game.schedulingSystem.scheduleAction(() => {
             this.applyCurses(casterEntity, enemies);
@@ -86,7 +62,7 @@ class Tornado extends GUTS.BaseAbility {
             
             if (distance <= this.curseRadius) {
                 // Apply curse effect
-                this.createVisualEffect(enemyPos, 'curse');
+                this.playConfiguredEffects('debuff', enemyPos);
 
                 // Enhanced dark curse visual using preset effects
                 if (!this.game.isServer) {

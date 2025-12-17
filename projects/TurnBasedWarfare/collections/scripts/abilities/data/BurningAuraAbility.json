@@ -1,4 +1,6 @@
 {
+  "fileName": "BurningAuraAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/BurningAuraAbility.js",
-  "fileName": "BurningAuraAbility"
+  "auraParticleEffectSystems": ["fire_burst_core", "fire_embers"],
+  "tickParticleEffectSystems": ["fire_trail"]
 }

@@ -1,5 +1,5 @@
 class TrackingMark extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'tracking_mark',
             name: 'Tracking Mark',
@@ -11,55 +11,13 @@ class TrackingMark extends GUTS.BaseAbility {
             animation: 'cast',
             priority: 7,
             castTime: 1.0,
-            ...params
+            ...abilityData
         });
         
         this.markDamageIncrease = 0.25; // 25% per mark
         this.maxMarks = 4; // Cap at 4 marks (100% bonus)
         this.markDuration = 15.0;
         this.element = this.enums.element.physical;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFF6347,
-                    colorRange: { start: 0xFF6347, end: 0xFF4500 },
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 1.5
-                }
-            },
-            mark_target: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xDC143C,
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 2.0
-                }
-            },
-            tracking_beam: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xFF0000,
-                    scaleMultiplier: 1.0,
-                    speedMultiplier: 3.0
-                }
-            },
-            mark_stack: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B0000,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.8
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -81,7 +39,7 @@ class TrackingMark extends GUTS.BaseAbility {
         if (!target) return null;
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, `Ranger takes aim at their prey...`);
         
         // Schedule the mark application after cast time
@@ -113,12 +71,12 @@ class TrackingMark extends GUTS.BaseAbility {
         
         // Create appropriate visual effect based on result
         if (markResult.isNewMark) {
-            this.createVisualEffect(targetPos, 'mark_target');
+            this.playConfiguredEffects('debuff', targetPos);
         } else if (markResult.wasStacked) {
-            this.createVisualEffect(targetPos, 'mark_stack');
+            this.playConfiguredEffects('stack', targetPos);
         } else {
             // Mark refreshed
-            this.createVisualEffect(targetPos, 'tracking_beam');
+            this.playConfiguredEffects('trail', targetPos);
         }
         
         // Enhanced logging
@@ -186,8 +144,8 @@ class TrackingMark extends GUTS.BaseAbility {
     
     createTrackingBeamEffect(casterPos, targetPos) {
         // Create a visual connection between ranger and target
-        this.createVisualEffect(casterPos, 'tracking_beam');
-        this.createVisualEffect(targetPos, 'tracking_beam');
+        this.playConfiguredEffects('trail', casterPos);
+        this.playConfiguredEffects('trail', targetPos);
         
         // Create energy beam if effects system supports it (client only)
         if (!this.game.isServer && this.game.effectsSystem && this.game.effectsSystem.createEnergyBeam) {

@@ -1,5 +1,5 @@
 class LeapSlamAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'leap_slam',
             name: 'Leap Slam',
@@ -11,47 +11,12 @@ class LeapSlamAbility extends GUTS.BaseAbility {
             animation: 'attack',
             priority: 7,
             castTime: 0.3,
-            ...params
+            ...abilityData
         });
 
         this.leapDamage = 40;
         this.splashRadius = 60;
         this.leapHeight = 300;
-    }
-
-    defineEffects() {
-        return {
-            launch: {
-                type: 'magic',
-                options: {
-                    count: 8,
-                    color: 0x8B4513,
-                    colorRange: { start: 0xa08060, end: 0x665544 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 1.5
-                }
-            },
-            impact: {
-                type: 'explosion',
-                options: {
-                    count: 15,
-                    color: 0x8B4513,
-                    colorRange: { start: 0xa08060, end: 0x443322 },
-                    scaleMultiplier: 2.5,
-                    speedMultiplier: 1.8
-                }
-            },
-            shockwave: {
-                type: 'damage',
-                options: {
-                    count: 12,
-                    color: 0xCC6600,
-                    colorRange: { start: 0xFF8800, end: 0x884400 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 2.0
-                }
-            }
-        };
     }
 
     canExecute(casterEntity) {
@@ -83,7 +48,7 @@ class LeapSlamAbility extends GUTS.BaseAbility {
         const landingPos = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
 
         // Launch effect
-        this.createVisualEffect(pos, 'launch');
+        this.playConfiguredEffects('launch', pos);
         this.logAbilityUsage(casterEntity, "Barbarian leaps into battle!", true);
 
         // Start the leap
@@ -161,12 +126,6 @@ class LeapSlamAbility extends GUTS.BaseAbility {
             this.game.call('triggerSinglePlayAnimation', casterEntity, this.enums.animationType.attack, 1.0, leapDuration);
         }
 
-        // Dust burst at launch (client only)
-        if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'leap_slam_launch',
-                new THREE.Vector3(pos.x, pos.y + 10, pos.z));
-        }
-
         // Complete the leap after duration
         this.game.schedulingSystem.scheduleAction(() => {
             this.completeLeap(casterEntity);
@@ -209,14 +168,7 @@ class LeapSlamAbility extends GUTS.BaseAbility {
         }
 
         // Impact effects
-        this.createVisualEffect(landingPos, 'impact');
-        this.createVisualEffect(landingPos, 'shockwave');
-
-        // Epic ground slam effect (client only)
-        if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'leap_slam_impact',
-                new THREE.Vector3(landingPos.x, landingPos.y + 10, landingPos.z));
-        }
+        this.playConfiguredEffects('impact', landingPos);
 
         // Screen shake
         if (this.game.effectsSystem) {

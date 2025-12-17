@@ -1,5 +1,5 @@
 class DrainLifeAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'drain_life',
             name: 'Drain Life',
@@ -12,59 +12,14 @@ class DrainLifeAbility extends GUTS.BaseAbility {
             priority: 7,
             castTime: 1.2,
             autoTrigger: 'low_health',
-            ...params
+            ...abilityData
         });
         
         this.drainAmount = 60;
         this.healRatio = 0.8; // Heal 80% of drained health
         this.element = this.enums.element.physical;
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 15,
-                    color: 0x9900cc,
-                    colorRange: { start: 0xcc44ff, end: 0x4B0082 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 1.5
-                }
-            },
-            drain: {
-                type: 'damage',
-                options: {
-                    count: 18,
-                    color: 0x8B008B,
-                    colorRange: { start: 0xcc00ff, end: 0x440066 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 2.5
-                }
-            },
-            heal: {
-                type: 'heal',
-                options: {
-                    count: 15,
-                    color: 0xaa44ff,
-                    colorRange: { start: 0xcc88ff, end: 0x9900cc },
-                    scaleMultiplier: 1.8,
-                    speedMultiplier: 0.8
-                }
-            },
-            dark_energy: {
-                type: 'magic',
-                options: {
-                    count: 10,
-                    color: 0x660099,
-                    colorRange: { start: 0x9900cc, end: 0x330066 },
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 2.0
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         const casterHealth = this.game.getComponent(casterEntity, "health");
         const enemies = this.getEnemiesInRange(casterEntity);
@@ -92,8 +47,8 @@ class DrainLifeAbility extends GUTS.BaseAbility {
         if (!targetPos) return;
         
         // Immediate effects (visual, audio, logging)
-        this.createVisualEffect(casterPos, 'cast');
-        
+        this.playConfiguredEffects('cast', casterPos);
+
         // Create drain beam effect immediately (client only)
         if (!this.game.isServer && this.game.effectsSystem) {
             this.game.effectsSystem.createEnergyBeam(
@@ -105,7 +60,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
                 }
             );
         }
-        
+
         this.logAbilityUsage(casterEntity, `Dark energy siphons life force!`);
         
         // DESYNC SAFE: Use scheduling system for delayed effect
@@ -137,40 +92,11 @@ class DrainLifeAbility extends GUTS.BaseAbility {
             casterHealth.current += actualHeal;
 
             // Dark energy burst at target
-            this.createVisualEffect(targetPos, 'drain');
-            this.createVisualEffect(targetPos, 'dark_energy');
-
-            // Create flowing dark energy particles from target to caster (client only)
-            if (!this.game.isServer) {
-                // Dark energy extraction at target using preset effect system
-                const targetEffectPos = new THREE.Vector3(targetPos.x, targetPos.y + 50, targetPos.z);
-                this.game.call('playEffectSystem', 'drain_life_target', targetEffectPos);
-
-                // Flowing energy stream from target to caster using preset effect
-                const streamCount = 8;
-                for (let i = 0; i < streamCount; i++) {
-                    this.game.schedulingSystem.scheduleAction(() => {
-                        // Calculate position along path
-                        const progress = i / streamCount;
-                        const streamX = targetPos.x + (casterPos.x - targetPos.x) * progress;
-                        const streamY = targetPos.y + (casterPos.y - targetPos.y) * progress + 50 + Math.sin(progress * Math.PI) * 30;
-                        const streamZ = targetPos.z + (casterPos.z - targetPos.z) * progress;
-
-                        this.game.call('playEffect', 'drain_stream',
-                            new THREE.Vector3(streamX, streamY, streamZ));
-                    }, i * 0.05, null);
-                }
-            }
+            this.playConfiguredEffects('drain', targetPos);
 
             // Heal effect on caster
             if (actualHeal > 0) {
-                this.createVisualEffect(casterPos, 'heal');
-
-                // Enhanced heal absorption effect (client only) using preset effect system
-                if (!this.game.isServer) {
-                    const casterEffectPos = new THREE.Vector3(casterPos.x, casterPos.y + 50, casterPos.z);
-                    this.game.call('playEffectSystem', 'drain_life_absorb', casterEffectPos);
-                }
+                this.playConfiguredEffects('heal', casterPos);
 
                 if (!this.game.isServer && this.game.hasService('showDamageNumber')) {
                     this.game.call('showDamageNumber',

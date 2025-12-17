@@ -1,5 +1,5 @@
 class MultiShotAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'multi_shot',
             name: 'Multi Shot',
@@ -11,46 +11,13 @@ class MultiShotAbility extends GUTS.BaseAbility {
             animation: 'attack',
             priority: 6,
             castTime: 1.0,
-            ...params
+            ...abilityData
         });
         
         this.maxTargets = 3;
         this.arrowDamage = 35;
         this.shotInterval = 0.2; // Time between each arrow
         this.element = this.enums.element.physical;
-    }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0x8B4513,
-                    colorRange: { start: 0x8B4513, end: 0xDEB887 },
-                    scaleMultiplier: 1.2,
-                    speedMultiplier: 1.5
-                }
-            },
-            arrow_launch: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xCD853F,
-                    scaleMultiplier: 1.0,
-                    speedMultiplier: 2.0
-                }
-            },
-            volley: {
-                type: 'magic',
-                options: {
-                    count: 3,
-                    color: 0xF4A460,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
     }
     
     canExecute(casterEntity) {
@@ -72,7 +39,7 @@ class MultiShotAbility extends GUTS.BaseAbility {
         if (targets.length === 0) return null;
         
         // Show immediate cast effect
-        this.createVisualEffect(casterPos, 'cast');
+        this.playConfiguredEffects('cast', casterPos);
         this.logAbilityUsage(casterEntity, 
             `Archer prepares to fire ${targets.length} arrows...`);
         
@@ -88,7 +55,7 @@ class MultiShotAbility extends GUTS.BaseAbility {
         if (!casterPos) return;
 
         // Create volley effect
-        this.createVisualEffect(casterPos, 'volley');
+        this.playConfiguredEffects('burst', casterPos);
 
         // Enhanced volley launch burst using preset effect system
         if (!this.game.isServer) {
@@ -119,7 +86,7 @@ class MultiShotAbility extends GUTS.BaseAbility {
         if (!casterPos || !targetPos) return;
         
         // Create arrow launch effect
-        this.createVisualEffect(casterPos, 'arrow_launch');
+        this.playConfiguredEffects('launch', casterPos);
         
         // Fire projectile if system is available
         if (this.game.projectileSystem) {
@@ -132,19 +99,12 @@ class MultiShotAbility extends GUTS.BaseAbility {
                 ballistic: true,
                 onHit: (hitPos) => {
                     // Impact effect
-                    this.createVisualEffect(hitPos, 'arrow_launch', { 
-                        count: 3, 
-                        scaleMultiplier: 0.8 
-                    });
+                    this.playConfiguredEffects('impact', hitPos);
                 },
                 onTravel: (currentPos) => {
                     // Optional: trail effect during flight
                     if (shotIndex === 0) { // Only show trail on first arrow to avoid spam
-                        this.createVisualEffect(currentPos, 'cast', { 
-                            count: 1, 
-                            scaleMultiplier: 0.5,
-                            heightOffset: 0 
-                        });
+                        this.playConfiguredEffects('trail', currentPos);
                     }
                 }
             };

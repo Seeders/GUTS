@@ -1,4 +1,8 @@
 {
   "fileName": "BattleCryAbility",
-  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/BattleCryAbility.js"
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/BattleCryAbility.js",
+  "castParticleEffectSystems": ["holy_light"],
+  "buffParticleEffectSystems": ["holy_sparkles"],
+  "burstParticleEffectSystems": ["holy_explosion", "holy_ring"],
+  "expirationParticleEffectSystems": ["holy_sparkles"]
 }

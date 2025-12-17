@@ -1,4 +1,9 @@
 {
+  "fileName": "BlizzardAbility",
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/BlizzardAbility.js",
-  "fileName": "BlizzardAbility"
+  "castParticleEffectSystems": ["ice_shard_core", "ice_shard_glow"],
+  "ambientParticleEffectSystems": ["ice_mist", "frost_aura"],
+  "shardParticleEffectSystems": ["ice_shard_core", "ice_shard_glow", "ice_shard_sparkles"],
+  "impactParticleEffectSystems": ["ice_shatter", "frost_ring"],
+  "burstParticleEffectSystems": ["ice_shatter", "frost_ring", "ice_mist"]
 }

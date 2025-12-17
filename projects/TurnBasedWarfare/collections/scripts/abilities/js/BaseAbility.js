@@ -1,24 +1,24 @@
 class BaseAbility {
-    constructor(game, config = {}) {
+    constructor(game, abilityData = {}) {
         this.game = game;
-        this.config = config;
+        this.abilityData = abilityData;
 
         // Initialize enums
         this.enums = this.game.getEnums();
 
-        this.id = config.id || 'unknown';
-        this.name = config.name || 'Unknown Ability';
-        this.description = config.description || '';
-        this.cooldown = config.cooldown || 10.0;
-        this.range = config.range || 100;
-        this.manaCost = config.manaCost || 0;
+        this.id = abilityData.id || 'unknown';
+        this.name = abilityData.name || 'Unknown Ability';
+        this.description = abilityData.description || '';
+        this.cooldown = abilityData.cooldown || 10.0;
+        this.range = abilityData.range || 100;
+        this.manaCost = abilityData.manaCost || 0;
         // Convert string targetType to numeric enum value
-        this.targetType = this._resolveTargetType(config.targetType);
+        this.targetType = this._resolveTargetType(abilityData.targetType);
         // Convert string animation to numeric enum value
-        this.animation = this._resolveAnimationType(config.animation);
-        this.priority = config.priority || 5;
-        this.castTime = config.castTime || 1.5;
-        this.autoTrigger = config.autoTrigger || 'combat';
+        this.animation = this._resolveAnimationType(abilityData.animation);
+        this.priority = abilityData.priority || 5;
+        this.castTime = abilityData.castTime || 1.5;
+        this.autoTrigger = abilityData.autoTrigger || 'combat';
 
         this.effects = this.defineEffects();
     }
@@ -49,13 +49,13 @@ class BaseAbility {
         return this.enums.animationType.cast;
     }
     getBehaviorAction(entityId, game) {
-        if(this.config.behaviorAction){
-            return game.getCollections().behaviorNodes[this.config.behaviorAction];
+        if(this.abilityData.behaviorAction){
+            return game.getCollections().behaviorNodes[this.abilityData.behaviorAction];
         }
         return null;
     }
     getBehaviorActionType(entityId, game) {
-        return this.config.behaviorAction;
+        return this.abilityData.behaviorAction;
     }
     defineEffects() {
         return {
@@ -79,7 +79,21 @@ class BaseAbility {
     }
     
     logAbilityUsage(casterEntity, message = null, showScreenEffect = false) {
-      
+
+    }
+
+    // Play particle effects configured in the ability JSON
+    // effectType is the prefix (e.g., 'cast', 'trail', 'impact')
+    // Reads from config[effectType + 'ParticleEffectSystems'] array
+    playConfiguredEffects(effectType, position) {
+        if (this.game.isServer) return;
+        const effects = this.abilityData[effectType + 'ParticleEffectSystems'];
+        if (!effects || !Array.isArray(effects) || effects.length === 0) return;
+
+        const pos = new THREE.Vector3(position.x, position.y, position.z);
+        effects.forEach(effectName => {
+            this.game.call('playEffect', effectName, pos);
+        });
     }
     
     dealDamageWithEffects(sourceId, targetId, damage, element = null, options = {}) {

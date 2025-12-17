@@ -1,5 +1,5 @@
 class BurningAuraAbility extends GUTS.BaseAbility {
-    constructor(game, params = {}) {
+    constructor(game, abilityData = {}) {
         super(game, {
             id: 'burning_aura',
             name: 'Burning Aura',
@@ -12,7 +12,7 @@ class BurningAuraAbility extends GUTS.BaseAbility {
             priority: 6,
             castTime: 0,
             passive: true,
-            ...params
+            ...abilityData
         });
         this.drainPerSecond = 8;
         this.cycleDuration = 12.0; // Duration of each cycle
@@ -52,40 +52,7 @@ class BurningAuraAbility extends GUTS.BaseAbility {
             this.startAuraCycle(casterEntity);
         }, this.cycleDuration, casterEntity);
     }
-    
-    defineEffects() {
-        return {
-            cast: {
-                type: 'fire',
-                options: {
-                    count: 3,
-                    color: 0x4B0082,
-                    colorRange: { start: 0x4B0082, end: 0x000000 },
-                    scaleMultiplier: 2.0,
-                    speedMultiplier: 0.8
-                }
-            },
-            burning: {
-                type: 'fire',
-                options: {
-                    count: 3,
-                    color: 0x2F4F4F,
-                    scaleMultiplier: 1.5,
-                    speedMultiplier: 1.0
-                }
-            },
-            empowerment: {
-                type: 'fire',
-                options: {
-                    count: 3,
-                    color: 0x8B0000,
-                    scaleMultiplier: 1.3,
-                    speedMultiplier: 1.2
-                }
-            }
-        };
-    }
-    
+
     canExecute(casterEntity) {
         // Passive ability - cannot be manually executed
         return false;
@@ -134,24 +101,15 @@ class BurningAuraAbility extends GUTS.BaseAbility {
                 this.dealDamageWithEffects(casterEntity, enemyId, this.drainPerSecond, this.enums.element.fire, {
                     tickIndex: tickIndex
                 });
-                
-                // Visual corruption effect
-                this.createVisualEffect(enemyPos, 'burning', { heightOffset: 10 });
+
+                // Visual tick effect on enemy
+                this.playConfiguredEffects('tick', enemyPos);
             }
         });
-        // Additional visual effects every few ticks
-        if (tickIndex % 3 === 0) {
-            this.createVisualEffect(casterPos, 'burning', {
-                count: 6,
-                scaleMultiplier: 2.5,
-                heightOffset: 15
-            });
 
-            // Enhanced burning aura pulse using preset effect system
-            if (!this.game.isServer) {
-                this.game.call('playEffectSystem', 'burning_aura',
-                    new THREE.Vector3(casterPos.x, casterPos.y + 20, casterPos.z));
-            }
+        // Aura pulse effect every few ticks
+        if (tickIndex % 3 === 0) {
+            this.playConfiguredEffects('aura', casterPos);
         }
     }
 }
