@@ -1,4 +1,20 @@
 class SquadExperienceSystem extends GUTS.BaseSystem {
+    static services = [
+        'canAffordLevelUp',
+        'applySpecialization',
+        'levelUpSquad',
+        'getLevelUpCost',
+        'initializeSquad',
+        'removeSquad',
+        'getSquadsReadyToLevelUp',
+        'showSpecializationSelection',
+        'findSquadByUnitId',
+        'getCurrentUnitType',
+        'getSquadInfo',
+        'setSquadInfo',
+        'resetSquadExperience'
+    ];
+
     constructor(game) {
         super(game);
         this.game.squadExperienceSystem = this;
@@ -34,19 +50,11 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.register('canAffordLevelUp', this.canAffordLevelUp.bind(this));
-        this.game.register('applySpecialization', this.applySpecialization.bind(this));
-        this.game.register('levelUpSquad', this.levelUpSquad.bind(this));
-        this.game.register('getLevelUpCost', this.getLevelUpCost.bind(this));
-        this.game.register('initializeSquad', this.initializeSquad.bind(this));
-        this.game.register('removeSquad', this.removeSquad.bind(this));
-        this.game.register('getSquadsReadyToLevelUp', this.getSquadsReadyToLevelUp.bind(this));
-        this.game.register('showSpecializationSelection', this.showSpecializationSelection.bind(this));
-        this.game.register('findSquadByUnitId', this.findSquadByUnitId.bind(this));
-        this.game.register('getCurrentUnitType', this.getCurrentUnitType.bind(this));
-        this.game.register('getSquadInfo', this.getSquadInfo.bind(this));
-        this.game.register('setSquadInfo', this.setSquadInfo.bind(this));
-        this.game.register('resetSquadExperience', this.reset.bind(this));
+    }
+
+    // Alias for service name
+    resetSquadExperience() {
+        return this.reset();
     }
 
     /**

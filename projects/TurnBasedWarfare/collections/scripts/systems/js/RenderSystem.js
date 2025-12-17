@@ -1,4 +1,17 @@
 class RenderSystem extends GUTS.BaseSystem {
+    static services = [
+        'setInstanceClip',
+        'setInstanceSpeed',
+        'isInstanced',
+        'getEntityAnimationState',
+        'setInstanceAnimationTime',
+        'getBatchInfo',
+        'removeInstance',
+        'isBillboardWithAnimations',
+        'getEntityRenderer',
+        'updateInstanceCapacities'
+    ];
+
     constructor(game) {
         super(game);
         this.game.renderSystem = this;
@@ -27,24 +40,11 @@ class RenderSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        // Register gameManager methods that delegate to EntityRenderer
-        this.game.register('setInstanceClip', this.setInstanceClip.bind(this));
-        this.game.register('setInstanceSpeed', this.setInstanceSpeed.bind(this));
-        this.game.register('isInstanced', this.isInstanced.bind(this));
-        this.game.register('getEntityAnimationState', this.getEntityAnimationState.bind(this));
-        this.game.register('setInstanceAnimationTime', this.setInstanceAnimationTime.bind(this));
-        this.game.register('getBatchInfo', this.getBatchInfo.bind(this));
-        this.game.register('removeInstance', this.removeInstance.bind(this));
+    }
 
-        // Billboard/sprite low-level rendering methods (EntityRenderer)
-        this.game.register('isBillboardWithAnimations', this.isBillboardWithAnimations.bind(this));
-
-        // EntityRenderer will be created in onSceneLoad when scene is available
-        // Register getter that returns current entityRenderer (may be null initially)
-        this.game.register('getEntityRenderer', () => this.entityRenderer);
-
-        // Register method to update capacities after terrain loads
-        this.game.register('updateInstanceCapacities', this.updateInstanceCapacities.bind(this));
+    // Service getter
+    getEntityRenderer() {
+        return this.entityRenderer;
     }
 
     /**

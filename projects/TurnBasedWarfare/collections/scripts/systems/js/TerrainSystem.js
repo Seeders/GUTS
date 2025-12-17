@@ -1,4 +1,21 @@
 class TerrainSystem extends GUTS.BaseSystem {
+    static services = [
+        'getTerrainHeightAtPosition',
+        'getTerrainTypeAtPosition',
+        'getTerrainHeightAtPositionSmooth',
+        'getTileMapTerrainType',
+        'getTerrainTypeAtGridPosition',
+        'getHeightLevelAtGridPosition',
+        'getTileMap',
+        'getTerrainSize',
+        'getTerrainExtensionSize',
+        'getTerrainExtendedSize',
+        'initTerrainFromComponent',
+        'hasTerrain',
+        'getLevel',
+        'isTerrainInitialized'
+    ];
+
     constructor(game) {
         super(game);
         this.game.terrainSystem = this;
@@ -16,26 +33,39 @@ class TerrainSystem extends GUTS.BaseSystem {
     init() {
         if (this.initialized) return;
 
-        // Register terrain query methods with gameManager (even before terrain is loaded)
-        this.game.register('getTerrainHeightAtPosition', this.getTerrainHeightAtPosition.bind(this));
-        this.game.register('getTerrainTypeAtPosition', this.getTerrainTypeAtPosition.bind(this));
-        this.game.register('getTerrainHeightAtPositionSmooth', this.getTerrainHeightAtPositionSmooth.bind(this));
-        this.game.register('getTileMapTerrainType', this.getTileMapTerrainType.bind(this));
-        this.game.register('getTerrainTypeAtGridPosition', this.getTerrainTypeAtGridPosition.bind(this));
-        this.game.register('getHeightLevelAtGridPosition', this.getHeightLevelAtGridPosition.bind(this));
-        this.game.register('getTileMap', () => this.terrainDataManager?.tileMap);
-        this.game.register('getTerrainSize', () => this.terrainDataManager?.terrainSize);
-        this.game.register('getTerrainExtensionSize', () => this.terrainDataManager?.extensionSize);
-        this.game.register('getTerrainExtendedSize', () => this.terrainDataManager?.extendedSize);
-        this.game.register('initTerrainFromComponent', this.initTerrainFromComponent.bind(this));
-        this.game.register('hasTerrain', () => this.terrainDataManager !== null);
-        this.game.register('getLevel', () => this.currentLevel);
-        this.game.register('isTerrainInitialized', () => this.initialized && this.terrainDataManager !== null);
-
         // TerrainSystem waits for scene to load via onSceneLoad()
         // Terrain entity in scene triggers terrain initialization
 
         this.initialized = true;
+    }
+
+    // Service methods for static services registration
+    getTileMap() {
+        return this.terrainDataManager?.tileMap;
+    }
+
+    getTerrainSize() {
+        return this.terrainDataManager?.terrainSize;
+    }
+
+    getTerrainExtensionSize() {
+        return this.terrainDataManager?.extensionSize;
+    }
+
+    getTerrainExtendedSize() {
+        return this.terrainDataManager?.extendedSize;
+    }
+
+    hasTerrain() {
+        return this.terrainDataManager !== null;
+    }
+
+    getLevel() {
+        return this.currentLevel;
+    }
+
+    isTerrainInitialized() {
+        return this.initialized && this.terrainDataManager !== null;
     }
 
     /**

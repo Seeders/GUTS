@@ -1,4 +1,9 @@
 class SelectedUnitSystem extends GUTS.BaseSystem {
+    static services = [
+        'getSelectedSquads',
+        'deselectAllUnits'
+    ];
+
     constructor(game) {
         super(game);
         this.game.selectedUnitSystem = this;
@@ -13,13 +18,13 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         this.CIRCLE_THICKNESS = 2;
         this.CIRCLE_COLOR = 0x00ff00; // Green selection color
         this.CIRCLE_OFFSET_Y = 1;   // Slightly above ground to prevent z-fighting
-        
+
         // Track selection circles
         this.selectionCircles = new Map(); // entityId -> { circle, group, lastPosition }
-        
+
         // Currently highlighted units
         this.highlightedUnits = new Set();
-        
+
         // Box selection state
         this.boxSelection = {
             active: false,
@@ -29,18 +34,21 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             currentY: 0,
             element: null
         };
-        
+
         // Selection mode tracking
         this.selectedUnitIds = new Set(); // Track multiple selected squads
-        
+
         this.currentSelectedIndex = 0;
         // Initialize flag
         this.initialized = false;
     }
 
     init() {
-        this.game.register('getSelectedSquads', this.getSelectedSquads.bind(this));
-        this.game.register('deselectAllUnits', this.deselectAll.bind(this));
+    }
+
+    // Alias for service name
+    deselectAllUnits() {
+        return this.deselectAll();
     }
 
     initialize() {

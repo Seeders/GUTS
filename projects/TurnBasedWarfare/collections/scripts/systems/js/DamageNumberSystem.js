@@ -1,20 +1,22 @@
 class DamageNumberSystem extends GUTS.BaseSystem {
+    static services = ['showDamageNumber'];
+
     constructor(game) {
-        super(game); 
+        super(game);
         this.game.damageNumberSystem = this;
-              
+
         // Damage number system
         this.damageNumbers = [];
         this.damageNumberPool = [];
         this.maxDamageNumbers = 20;
-        
+
         // Text atlas/sprite approach for damage numbers
         this.damageTextMaterial = null;
         this.damageTextGeometry = null;
         this.damageNumberMesh = null;
         this.activeCharInstances = 0;
         this.VERTICAL_SPEED = 48;
-        this.CHAR_SIZE = 12;      
+        this.CHAR_SIZE = 12;
         // Performance tracking
         this.stats = {
             activeDamageNumbers: 0
@@ -22,7 +24,6 @@ class DamageNumberSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.register('showDamageNumber', this.showDamageNumber.bind(this));
         // Scene-dependent initialization deferred to onSceneLoad()
     }
 

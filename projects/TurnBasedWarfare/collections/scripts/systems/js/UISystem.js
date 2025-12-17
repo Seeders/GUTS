@@ -1,14 +1,15 @@
 class UISystem extends GUTS.BaseSystem {
+    static services = ['showNotification'];
+
     constructor(game) {
         super(game);
-        this.game.uiSystem = this;        
+        this.game.uiSystem = this;
         // Initialize subsystems
         GUTS.NotificationSystem.initialize();
         this.setupEventListeners();
     }
 
     init() {
-        this.game.register('showNotification', this.showNotification.bind(this));
     }
 
     setupEventListeners() {

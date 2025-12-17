@@ -13,6 +13,16 @@
  * Network communication is handled by ClientNetworkSystem.
  */
 class PlacementUISystem extends GUTS.BaseSystem {
+    static services = [
+        'createNetworkUnitData',
+        'getWorldPositionFromMouse',
+        'undoLastPlacement',
+        'getUndoStatus',
+        'handleCanvasClick',
+        'setBattlePaused',
+        'handleReadyForBattleUpdate',
+        'handleUnitSelectionChange'
+    ];
     constructor(game) {
         super(game);
         this.game.placementUISystem = this;
@@ -72,41 +82,42 @@ class PlacementUISystem extends GUTS.BaseSystem {
     init(params) {
         this.params = params || {};
 
-        // Register client-side services
-        this.game.register('createNetworkUnitData', this.createNetworkUnitData.bind(this));
-        this.game.register('getWorldPositionFromMouse', () => this.mouseWorldPos);
-        this.game.register('undoLastPlacement', this.undoLastPlacement.bind(this));
-        this.game.register('getUndoStatus', this.getUndoStatus.bind(this));
-        this.game.register('handleCanvasClick', this.handleCanvasClick.bind(this));
-        this.game.register('setBattlePaused', (paused) => { this.isBattlePaused = paused; });
-        this.game.register('handleReadyForBattleUpdate', this.handleReadyForBattleUpdate.bind(this));
-        this.game.register('handleUnitSelectionChange', () => {
-            this.cachedValidation = null;
-            this.cachedGridPos = null;
-            this.cachedWorldPos = null;
-            this.lastMouseX = null;
-            this.lastMouseY = null;
-            this.lastRaycastTime = null;
-            this.lastRaycastMouseX = null;
-            this.lastRaycastMouseY = null;
-            this.approximateWorldScale = null;
-            this.previousWorldPos = null;
-            this.previousMouseX = null;
-            this.previousMouseY = null;
-
-            if (this.squadValidationCache) {
-                this.squadValidationCache.clear();
-            }
-
-            this.placementPreview?.clear();
-            document.body.style.cursor = 'default';
-        });
-
         this.mouseWorldOffset = {
             x: this.game.call('getPlacementGridSize') / 2,
             z: this.game.call('getPlacementGridSize') / 2
         };
 
+    }
+
+    // Service alias methods
+    getWorldPositionFromMouse() {
+        return this.mouseWorldPos;
+    }
+
+    setBattlePaused(paused) {
+        this.isBattlePaused = paused;
+    }
+
+    handleUnitSelectionChange() {
+        this.cachedValidation = null;
+        this.cachedGridPos = null;
+        this.cachedWorldPos = null;
+        this.lastMouseX = null;
+        this.lastMouseY = null;
+        this.lastRaycastTime = null;
+        this.lastRaycastMouseX = null;
+        this.lastRaycastMouseY = null;
+        this.approximateWorldScale = null;
+        this.previousWorldPos = null;
+        this.previousMouseX = null;
+        this.previousMouseY = null;
+
+        if (this.squadValidationCache) {
+            this.squadValidationCache.clear();
+        }
+
+        this.placementPreview?.clear();
+        document.body.style.cursor = 'default';
     }
 
     onSceneLoad(sceneData) {

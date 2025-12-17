@@ -1,18 +1,30 @@
 class ScreenSystem extends GUTS.BaseSystem {
+    static services = [
+        'showLoadingScreen',
+        'showGameScreen',
+        'showMainMenu',
+        'showVictoryScreen',
+        'showDefeatScreen',
+        'showGameModeSelect',
+        'pauseScreen',
+        'resumeScreen'
+    ];
+
     constructor(game) {
         super(game);
         this.game.screenSystem = this;
     }
 
     init() {
-        this.game.register('showLoadingScreen', this.showLoadingScreen.bind(this));
-        this.game.register('showGameScreen', this.showGameScreen.bind(this));
-        this.game.register('showMainMenu', this.showMainMenu.bind(this));
-        this.game.register('showVictoryScreen', this.showVictoryScreen.bind(this));
-        this.game.register('showDefeatScreen', this.showDefeatScreen.bind(this));
-        this.game.register('showGameModeSelect', this.showGameModeSelect.bind(this));
-        this.game.register('pauseScreen', this.pause.bind(this));
-        this.game.register('resumeScreen', this.resume.bind(this));
+    }
+
+    // Alias methods for service names
+    pauseScreen() {
+        return this.pause();
+    }
+
+    resumeScreen() {
+        return this.resume();
     }
 
     showScreen(screenId) {

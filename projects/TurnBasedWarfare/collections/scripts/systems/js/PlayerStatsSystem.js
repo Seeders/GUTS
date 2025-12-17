@@ -1,23 +1,24 @@
 class PlayerStatsSystem extends GUTS.BaseSystem {
+    static services = [
+        'getPlayerEntityId',
+        'getPlayerStats',
+        'getLocalPlayerStats',
+        'getPlayerStatsByTeam',
+        'getPlayerEntities',
+        'getSerializedPlayerEntities',
+        'getPlayerGold',
+        'addPlayerGold',
+        'deductPlayerGold',
+        'canAffordCost',
+        'createPlayerEntity'
+    ];
+
     constructor(game) {
         super(game);
         this.game.playerStatsSystem = this;
     }
 
     init() {
-        // Initialize enums
-        // Register service functions
-        this.game.register('getPlayerEntityId', this.getPlayerEntityId.bind(this));
-        this.game.register('getPlayerStats', this.getPlayerStats.bind(this));
-        this.game.register('getLocalPlayerStats', this.getLocalPlayerStats.bind(this));
-        this.game.register('getPlayerStatsByTeam', this.getPlayerStatsByTeam.bind(this));
-        this.game.register('getPlayerEntities', this.getPlayerEntities.bind(this));
-        this.game.register('getSerializedPlayerEntities', this.getSerializedPlayerEntities.bind(this));
-        this.game.register('getPlayerGold', this.getPlayerGold.bind(this));
-        this.game.register('addPlayerGold', this.addPlayerGold.bind(this));
-        this.game.register('deductPlayerGold', this.deductPlayerGold.bind(this));
-        this.game.register('canAffordCost', this.canAffordCost.bind(this));
-        this.game.register('createPlayerEntity', this.createPlayerEntity.bind(this));
     }
 
     /**

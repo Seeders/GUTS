@@ -1,4 +1,14 @@
 class BehaviorSystem extends GUTS.BaseSystem {
+    static services = [
+        'getBehaviorMeta',
+        'getBehaviorShared',
+        'setBehaviorMeta',
+        'clearBehaviorState',
+        'getBehaviorNodeId',
+        'getNodeByType',
+        'getDebugger'
+    ];
+
     constructor(game) {
         super(game);
         this.game.behaviorSystem = this;
@@ -25,18 +35,21 @@ class BehaviorSystem extends GUTS.BaseSystem {
             this.behaviorCollectionMaps[collectionName] = this.game.call('getEnumMap', collectionName);
         }
 
-        // Unified node lookup (supports string IDs)
-        this.game.register('getNodeByType', this.processor.getNodeByType.bind(this.processor));
-        this.game.register('getDebugger', this.processor.getDebugger.bind(this.processor));
-
-        // Register behavior state accessors
-        this.game.register('getBehaviorMeta', this.getBehaviorMeta.bind(this));
-        this.game.register('getBehaviorShared', this.getBehaviorShared.bind(this));
-        this.game.register('setBehaviorMeta', this.setBehaviorMeta.bind(this));
-        this.game.register('clearBehaviorState', this.clearBehaviorState.bind(this));
-        this.game.register('getBehaviorNodeId', this.getNodeId.bind(this));
-
         this.processor.initializeFromCollections(this.collections);
+    }
+
+    // Delegates to processor for static services registration
+    getNodeByType(nodeId) {
+        return this.processor.getNodeByType(nodeId);
+    }
+
+    getDebugger() {
+        return this.processor.getDebugger();
+    }
+
+    // Alias for static services registration
+    getBehaviorNodeId(entityId) {
+        return this.getNodeId(entityId);
     }
 
     // ==================== Behavior State Accessors ====================

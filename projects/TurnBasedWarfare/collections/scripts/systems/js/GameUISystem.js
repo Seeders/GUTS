@@ -1,4 +1,9 @@
 class GameUISystem extends GUTS.BaseSystem {
+    static services = [
+        'leaveGame',
+        'updateGoldDisplay'
+    ];
+
     constructor(game) {
         super(game);
         this.game.gameUISystem = this;
@@ -10,8 +15,6 @@ class GameUISystem extends GUTS.BaseSystem {
 
     init(params) {
         this.params = params || {};
-        this.game.register('leaveGame', this.leaveGame.bind(this));
-        this.game.register('updateGoldDisplay', this.updateGoldDisplay.bind(this));
         this.initializeUI();
     }
 

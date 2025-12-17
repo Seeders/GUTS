@@ -1,4 +1,11 @@
 class SupplySystem extends GUTS.BaseSystem {
+    static services = [
+        'getCurrentSupply',
+        'getCurrentPopulation',
+        'canAffordSupply',
+        'invalidateSupplyCache'
+    ];
+
     constructor(game) {
         super(game);
         this.game.supplySystem = this;
@@ -10,12 +17,6 @@ class SupplySystem extends GUTS.BaseSystem {
     }
 
     init() {
-        // Initialize enums
-        this.game.register('getCurrentSupply', this.getCurrentSupply.bind(this));
-        this.game.register('getCurrentPopulation', this.getCurrentPopulation.bind(this));
-        this.game.register('canAffordSupply', this.canAffordSupply.bind(this));
-        this.game.register('invalidateSupplyCache', this.invalidateSupplyCache.bind(this));
-
         if (!this.game.isServer) {
             this.supplyElement = document.getElementById('playerSupplies');
         }

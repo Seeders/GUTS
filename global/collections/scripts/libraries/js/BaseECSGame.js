@@ -870,6 +870,18 @@ class BaseECSGame {
         const systemInst = new GUTS[systemName](this);
         systemInst.enabled = false;
 
+        // Auto-register services from static services array
+        const SystemClass = GUTS[systemName];
+        if (SystemClass.services && Array.isArray(SystemClass.services)) {
+            for (const serviceName of SystemClass.services) {
+                if (typeof systemInst[serviceName] === 'function') {
+                    this.register(serviceName, systemInst[serviceName].bind(systemInst));
+                } else {
+                    console.warn(`[BaseECSGame] Service '${serviceName}' not found on ${systemName}`);
+                }
+            }
+        }
+
         if (systemInst.init) {
             systemInst.init(params);
         }

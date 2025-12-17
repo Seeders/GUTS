@@ -1,4 +1,17 @@
 class GoldMineSystem extends GUTS.BaseSystem {
+    static services = [
+        'buildGoldMine',
+        'isValidGoldMinePlacement',
+        'getGoldVeinLocations',
+        'findNearestGoldVein',
+        'processNextMinerInQueue',
+        'isMineOccupied',
+        'isNextInMinerQueue',
+        'addMinerToQueue',
+        'getMinerQueuePosition',
+        'destroyGoldMine'
+    ];
+
     constructor(game) {
         super(game);
         this.game.goldMineSystem = this;
@@ -6,17 +19,15 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     init(params) {
         this.params = params || {};
+    }
 
-        this.game.register('buildGoldMine', this.buildGoldMine.bind(this));
-        this.game.register('isValidGoldMinePlacement', this.isValidGoldMinePlacement.bind(this));
-        this.game.register('getGoldVeinLocations', this.getGoldVeinLocations.bind(this));
-        this.game.register('findNearestGoldVein', this.findNearestGoldVein.bind(this));
-        this.game.register('processNextMinerInQueue', this.processNextMinerInQueue.bind(this));
-        this.game.register('isMineOccupied', this.isMineOccupied.bind(this));
-        this.game.register('isNextInMinerQueue', this.isNextInQueue.bind(this));
-        this.game.register('addMinerToQueue', this.addMinerToQueue.bind(this));
-        this.game.register('getMinerQueuePosition', this.getQueuePosition.bind(this));
-        this.game.register('destroyGoldMine', this.destroyGoldMine.bind(this));
+    // Alias methods for service names that differ from method names
+    isNextInMinerQueue(entityId, mineId) {
+        return this.isNextInQueue(entityId, mineId);
+    }
+
+    getMinerQueuePosition(entityId, mineId) {
+        return this.getQueuePosition(entityId, mineId);
     }
 
     /**

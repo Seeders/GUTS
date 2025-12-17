@@ -1,4 +1,10 @@
 class AbilitySystem extends GUTS.BaseSystem {
+    static services = [
+        'getEntityAbilities',
+        'removeEntityAbilities',
+        'addAbilitiesToUnit'
+    ];
+
     constructor(game) {
         super(game);
         this.game.abilitySystem = this;
@@ -10,10 +16,6 @@ class AbilitySystem extends GUTS.BaseSystem {
     }
 
     init() {
-        // Initialize enums
-        this.game.register('getEntityAbilities', this.getEntityAbilities.bind(this));
-        this.game.register('removeEntityAbilities', this.removeEntityAbilities.bind(this));
-        this.game.register('addAbilitiesToUnit', this.addAbilitiesToUnit.bind(this));
     }
 
     addAbilitiesToUnit(entityId, abilityIds) {

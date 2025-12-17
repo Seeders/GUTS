@@ -1,4 +1,9 @@
 class EquipmentSystem extends GUTS.BaseSystem {
+    static services = [
+        'getItemData',
+        'equipItem'
+    ];
+
     constructor(game) {
         super(game);
         this.game.equipmentSystem = this;
@@ -9,11 +14,11 @@ class EquipmentSystem extends GUTS.BaseSystem {
         this.equipmentBatches = new Map();
         // Rendering instance data per entity/slot (transient render state)
         this.equipmentInstances = new Map();
-        
+
         this.scaleFactor = 32;
         this.DEFAULT_CAPACITY = 128;
         this.bonePrefix = 'mixamorig';
-        
+
         this.boneNameMappings = {
             default: {
                 mainHand: ['RightHand', 'Hand_R', 'hand_R', 'R_Hand'],
@@ -23,7 +28,7 @@ class EquipmentSystem extends GUTS.BaseSystem {
                 back: ['Spine', 'spine', 'Back', 'back']
             }
         };
-        
+
         this.slotDefaultOffsets = {
             mainHand: { x: 0, y: 0, z: 0 },
             offHand: { x: 0, y: 0, z: 0 },
@@ -31,12 +36,10 @@ class EquipmentSystem extends GUTS.BaseSystem {
             chest: { x: 0, y: 0, z: 0 },
             back: { x: 0, y: 0, z: -0.2 }
         };
-        
+
     }
 
     init() {
-        this.game.register('getItemData', this.getItemData.bind(this));
-        this.game.register('equipItem', this.equipItem.bind(this));
     }
 
     getItemData(itemId) {

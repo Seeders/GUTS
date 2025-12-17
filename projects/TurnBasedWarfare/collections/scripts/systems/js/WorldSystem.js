@@ -1,4 +1,15 @@
 class WorldSystem extends GUTS.BaseSystem {
+    static services = [
+        'getWorldScene',
+        'getCamera',
+        'getWorldExtendedSize',
+        'getGroundTexture',
+        'getGroundMesh',
+        'getHeightStep',
+        'getBaseTerrainHeight',
+        'initWorldFromTerrain'
+    ];
+
     constructor(game) {
         super(game);
         this.game.worldSystem = this;
@@ -22,20 +33,6 @@ class WorldSystem extends GUTS.BaseSystem {
 
     init() {
         if (this.initialized) return;
-
-        // Register gameManager methods - delegate to WorldRenderer and TerrainDataManager
-        this.game.register('getWorldScene', () => this.worldRenderer?.getScene());
-        this.game.register('getCamera', () => this.worldRenderer?.camera);
-        this.game.register('getWorldExtendedSize', () => this.game.terrainSystem?.terrainDataManager?.extendedSize);
-        this.game.register('getGroundTexture', () => this.worldRenderer?.getGroundTexture());
-        this.game.register('getGroundMesh', () => this.worldRenderer?.getGroundMesh());
-        this.game.register('getHeightStep', () => this.game.terrainSystem?.terrainDataManager?.heightStep);
-        this.game.register('getBaseTerrainHeight', () => {
-            const tdm = this.game.terrainSystem?.terrainDataManager;
-            if (!tdm) return 0;
-            return tdm.heightStep * (tdm.tileMap?.extensionHeight || 0);
-        });
-        this.game.register('initWorldFromTerrain', this.initWorldFromTerrain.bind(this));
 
         // Add BVH extension functions for Three.js
         // Note: MeshBVH exports are flattened onto THREE namespace
@@ -149,6 +146,37 @@ class WorldSystem extends GUTS.BaseSystem {
 
     getScene() {
         return this.worldRenderer?.getScene();
+    }
+
+    // Service methods for static services registration
+    getWorldScene() {
+        return this.worldRenderer?.getScene();
+    }
+
+    getCamera() {
+        return this.worldRenderer?.camera;
+    }
+
+    getWorldExtendedSize() {
+        return this.game.terrainSystem?.terrainDataManager?.extendedSize;
+    }
+
+    getGroundTexture() {
+        return this.worldRenderer?.getGroundTexture();
+    }
+
+    getGroundMesh() {
+        return this.worldRenderer?.getGroundMesh();
+    }
+
+    getHeightStep() {
+        return this.game.terrainSystem?.terrainDataManager?.heightStep;
+    }
+
+    getBaseTerrainHeight() {
+        const tdm = this.game.terrainSystem?.terrainDataManager;
+        if (!tdm) return 0;
+        return tdm.heightStep * (tdm.tileMap?.extensionHeight || 0);
     }
 
     /**

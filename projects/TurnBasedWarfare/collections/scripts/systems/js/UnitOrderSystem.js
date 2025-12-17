@@ -7,6 +7,11 @@
  * UI interactions are handled separately by UnitOrderUISystem (client-only).
  */
 class UnitOrderSystem extends GUTS.BaseSystem {
+    static services = [
+        'applySquadTargetPosition',
+        'applySquadsTargetPositions'
+    ];
+
     constructor(game) {
         super(game);
         this.game = game;
@@ -14,11 +19,6 @@ class UnitOrderSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.register('applySquadTargetPosition', this.applySquadTargetPosition.bind(this));
-        this.game.register('applySquadsTargetPositions', this.applySquadsTargetPositions.bind(this));
-
-        // Debug: Log the playerOrder type ID
-        const playerOrderTypeId = this.game._componentTypeId?.get('playerOrder');
     }
 
     /**

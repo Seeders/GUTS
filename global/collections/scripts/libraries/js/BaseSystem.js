@@ -1,4 +1,9 @@
 class BaseSystem {
+    // Static property that subclasses can override to define services to register
+    // Format: ['methodName1', 'methodName2', ...]
+    // Each method will be auto-registered as game.register('methodName', this.methodName.bind(this))
+    static services = [];
+
     constructor(game) {
         this.game = game;
         this.engine = game.app;

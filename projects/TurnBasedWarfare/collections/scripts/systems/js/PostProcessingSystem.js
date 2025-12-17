@@ -1,8 +1,15 @@
 class PostProcessingSystem extends GUTS.BaseSystem {
+    static services = [
+        'registerPostProcessingPass',
+        'removePostProcessingPass',
+        'renderPostProcessing',
+        'getPostProcessingComposer'
+    ];
+
     constructor(game) {
         super(game);
         this.game.postProcessingSystem = this;
-        
+
         this.composer = null;
         this.passes = new Map();
         this.passOrder = ['render', 'pixel', 'fog', 'output'];
@@ -10,11 +17,19 @@ class PostProcessingSystem extends GUTS.BaseSystem {
 
     init(params = {}) {
         this.params = params;
+    }
 
-        this.game.register('registerPostProcessingPass', this.registerPass.bind(this));
-        this.game.register('removePostProcessingPass', this.removePass.bind(this));
-        this.game.register('renderPostProcessing', this.render.bind(this));
-        this.game.register('getPostProcessingComposer', this.getPostProcessingComposer.bind(this));
+    // Alias methods for service names
+    registerPostProcessingPass(name, pass, priority) {
+        return this.registerPass(name, pass, priority);
+    }
+
+    removePostProcessingPass(name) {
+        return this.removePass(name);
+    }
+
+    renderPostProcessing() {
+        return this.render();
     }
 
     postAllInit() {

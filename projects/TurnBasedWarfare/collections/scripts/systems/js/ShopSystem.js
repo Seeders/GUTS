@@ -1,4 +1,9 @@
 class ShopSystem extends GUTS.BaseSystem {
+    static services = [
+        'resetShop',
+        'updateSquadExperience'
+    ];
+
     constructor(game) {
         super(game);
         this.game.shopSystem = this;
@@ -14,8 +19,11 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.register('resetShop', this.reset.bind(this));
-        this.game.register('updateSquadExperience', this.updateSquadExperience.bind(this));
+    }
+
+    // Alias for service name
+    resetShop() {
+        return this.reset();
     }
 
     /**

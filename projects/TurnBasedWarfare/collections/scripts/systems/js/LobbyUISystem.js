@@ -1,4 +1,11 @@
 class LobbyUISystem extends GUTS.BaseSystem {
+    static services = [
+        'showLobby',
+        'updateLobby',
+        'getSelectedLevel',
+        'handleMultiplayerModeSelection'
+    ];
+
     constructor(game) {
         super(game);
         this.game.lobbyUISystem = this;
@@ -15,10 +22,6 @@ class LobbyUISystem extends GUTS.BaseSystem {
 
     init(params) {
         this.params = params || {};
-        this.game.register('showLobby', this.showLobby.bind(this));
-        this.game.register('updateLobby', this.updateLobby.bind(this));
-        this.game.register('getSelectedLevel', this.getSelectedLevel.bind(this));
-        this.game.register('handleMultiplayerModeSelection', this.handleMultiplayerModeSelection.bind(this));
         this.initializeUI();
     }
 

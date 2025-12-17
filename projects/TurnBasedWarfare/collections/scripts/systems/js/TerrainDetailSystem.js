@@ -8,6 +8,11 @@
  * to spawn random detail sprites across tiles of that type.
  */
 class TerrainDetailSystem extends GUTS.BaseSystem {
+    static services = [
+        'spawnTerrainDetails',
+        'setTerrainDetailLighting'
+    ];
+
     constructor(game) {
         super(game);
         this.game.terrainDetailSystem = this;
@@ -98,11 +103,11 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        // Register for terrain ready event
-        this.game.register('spawnTerrainDetails', this.spawnTerrainDetails.bind(this));
+    }
 
-        // Register lighting update service
-        this.game.register('setTerrainDetailLighting', this.setAmbientLightColor.bind(this));
+    // Alias for service name
+    setTerrainDetailLighting(color) {
+        return this.setAmbientLightColor(color);
     }
 
     /**

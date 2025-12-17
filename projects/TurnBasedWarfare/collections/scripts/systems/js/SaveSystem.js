@@ -1,4 +1,14 @@
 class SaveSystem extends GUTS.BaseSystem {
+    static services = [
+        'saveGame',
+        'getSaveData',
+        'loadSaveData',
+        'listSavedGames',
+        'deleteSavedGame',
+        'exportSaveFile',
+        'importSaveFile'
+    ];
+
     constructor(game) {
         super(game);
         this.game.saveSystem = this;
@@ -19,15 +29,6 @@ class SaveSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        // Initialize enums
-        // Register save/load methods with GameManager
-        this.game.register('saveGame', this.saveGame.bind(this));
-        this.game.register('getSaveData', this.getSaveData.bind(this));
-        this.game.register('loadSaveData', this.loadSaveData.bind(this));
-        this.game.register('listSavedGames', this.listSavedGames.bind(this));
-        this.game.register('deleteSavedGame', this.deleteSavedGame.bind(this));
-        this.game.register('exportSaveFile', this.exportSaveFile.bind(this));
-        this.game.register('importSaveFile', this.importSaveFile.bind(this));
     }
 
     /**

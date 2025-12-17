@@ -1,10 +1,15 @@
 class ServerBattlePhaseSystem extends GUTS.BaseSystem {
+    static services = [
+        'startBattle',
+        'serializeAllEntities'
+    ];
+
     constructor(game) {
         super(game);
-        this.engine = this.game.app;    
+        this.engine = this.game.app;
         this.game.serverBattlePhaseSystem = this;
         this.serverNetworkManager = this.engine.serverNetworkManager;
-        
+
         // Battle configuration
         this.battleDuration = 30; // 30 seconds max
         this.battleStartTime = 0;
@@ -17,10 +22,6 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
     init(params) {
         this.params = params || {};
-
-        // Initialize enums
-        this.game.register('startBattle', this.startBattle.bind(this));
-        this.game.register('serializeAllEntities', this.serializeAllEntities.bind(this));
     }
 
     startBattle(room) {

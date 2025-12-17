@@ -1,4 +1,14 @@
 class ParticleSystem extends GUTS.BaseSystem {
+  static services = [
+    'createParticles',
+    'clearAllParticles',
+    'initializeParticleSystem',
+    'createLayeredEffect',
+    'createParticlesWithEmitter',
+    'playEffect',
+    'playEffectSystem'
+  ];
+
   constructor(game) {
     super(game);
     this.game.particleSystem = this;
@@ -27,14 +37,11 @@ class ParticleSystem extends GUTS.BaseSystem {
   }
 
   init() {
-    // Register methods with GameManager
-    this.game.register('createParticles', this.createParticles.bind(this));
-    this.game.register('clearAllParticles', this.clearAllParticles.bind(this));
-    this.game.register('initializeParticleSystem', this.initialize.bind(this));
-    this.game.register('createLayeredEffect', this.createLayeredEffect.bind(this));
-    this.game.register('createParticlesWithEmitter', this.createParticlesWithEmitter.bind(this));
-    this.game.register('playEffect', this.playEffect.bind(this));
-    this.game.register('playEffectSystem', this.playEffectSystem.bind(this));
+  }
+
+  // Alias for service name
+  initializeParticleSystem() {
+    return this.initialize();
   }
 
   initialize() {

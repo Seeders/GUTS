@@ -1,4 +1,9 @@
 class VisionSystem extends GUTS.BaseSystem {
+    static services = [
+        'hasLineOfSight',
+        'canSeePosition'
+    ];
+
     constructor(game) {
         super(game);
         this.game.visionSystem = this;
@@ -19,8 +24,6 @@ class VisionSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.register('hasLineOfSight', this.hasLineOfSight.bind(this));
-        this.game.register('canSeePosition', this.canSeePosition.bind(this));
     }
 
     /**

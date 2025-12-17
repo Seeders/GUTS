@@ -1,28 +1,40 @@
 class EffectsSystem extends GUTS.BaseSystem {
+    static services = [
+        'createParticleEffect',
+        'clearAllEffects',
+        'showNotification',
+        'createLineEffect',
+        'createLightningBolt',
+        'createEnergyBeam',
+        'playScreenShake',
+        'playScreenFlash',
+        'initializeEffectsSystem'
+    ];
+
     constructor(game) {
-        super(game); 
+        super(game);
         this.game.effectsSystem = this;
-        
+
         // Screen effect tracking
         this.screenEffects = [];
         this.shakeActive = false;
         this.flashActive = false;
-        
+
         // UI notifications
         this.notifications = [];
-        
+
         // Single array for all active effects with unified update loop
         this.activeEffects = [];
-        
+
         // Object pools for reuse
         this.geometryPool = new Map(); // type -> geometry[]
         this.materialPool = new Map(); // key -> material[]
-        this.effectPool = []; // Reusable effect objects        
+        this.effectPool = []; // Reusable effect objects
         this.activeAuras = new Map();
-        
+
         // Batching system
         this.batchedEffects = new Map(); // type -> effects[]
-        
+
         this.shakeData = null;
         this.flashData = null;
         // Performance tracking
@@ -33,16 +45,11 @@ class EffectsSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        // Register methods with GameManager
-        this.game.register('createParticleEffect', this.createParticleEffect.bind(this));
-        this.game.register('clearAllEffects', this.clearAllEffects.bind(this));
-        this.game.register('showNotification', this.showNotification.bind(this));
-        this.game.register('createLineEffect', this.createLineEffect.bind(this));
-        this.game.register('createLightningBolt', this.createLightningBolt.bind(this));
-        this.game.register('createEnergyBeam', this.createEnergyBeam.bind(this));
-        this.game.register('playScreenShake', this.playScreenShake.bind(this));
-        this.game.register('playScreenFlash', this.playScreenFlash.bind(this));
-        this.game.register('initializeEffectsSystem', this.initialize.bind(this));
+    }
+
+    // Note: 'initializeEffectsSystem' maps to this.initialize method
+    initializeEffectsSystem() {
+        return this.initialize();
     }
 
     initialize() {

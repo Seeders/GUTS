@@ -1,4 +1,9 @@
 class ProjectileSystem extends GUTS.BaseSystem {
+    static services = [
+        'deleteProjectileTrail',
+        'fireProjectile'
+    ];
+
     constructor(game) {
         super(game);
         this.game.projectileSystem = this;
@@ -6,33 +11,30 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Configuration
         this.HIT_DETECTION_RADIUS = 24;
         this.TRAIL_UPDATE_INTERVAL = 0.05;
-        
+
         // Ballistic configuration
         this.DEFAULT_LAUNCH_ANGLE = Math.PI / 4; // 45 degrees
         this.MIN_LAUNCH_ANGLE = Math.PI / 6; // 30 degrees
         this.MAX_LAUNCH_ANGLE = Math.PI / 3; // 60 degrees
         this.BALLISTIC_HEIGHT_MULTIPLIER = 0.3; // How high the arc goes relative to distance
         this.PROJECTILE_LIFETIME = 200;
-        
+
         // Ground impact detection
         this.GROUND_IMPACT_THRESHOLD = 0; // Distance from ground to trigger impact
-        
+
         // Trail tracking for visual effects
         this.projectileTrails = new Map();
-        
+
         // Get gravity from movement system
         this.GRAVITY = this.game.movementSystem?.GRAVITY;
     }
-    
+
     // Deterministic rounding helper
     roundForDeterminism(value, precision = 6) {
         return Math.round(value * Math.pow(10, precision)) / Math.pow(10, precision);
     }
 
     init() {
-        // Initialize enums
-        this.game.register('deleteProjectileTrail', this.deleteProjectileTrail.bind(this));
-        this.game.register('fireProjectile', this.fireProjectile.bind(this));
     }
 
     deleteProjectileTrail(entityId) {

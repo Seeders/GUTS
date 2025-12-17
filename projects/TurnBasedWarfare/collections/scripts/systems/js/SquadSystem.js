@@ -1,4 +1,13 @@
 class SquadSystem extends GUTS.BaseSystem {
+    static services = [
+        'getSquadData',
+        'getSquadCells',
+        'validateSquadConfig',
+        'calculateUnitPositions',
+        'getSquadSize',
+        'getSquadInfoFromType'
+    ];
+
     constructor(game) {
         super(game);
         this.game.squadSystem = this;
@@ -12,12 +21,11 @@ class SquadSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.register('getSquadData', this.getSquadData.bind(this));
-        this.game.register('getSquadCells', this.getSquadCells.bind(this));
-        this.game.register('validateSquadConfig', this.validateSquadConfig.bind(this));
-        this.game.register('calculateUnitPositions', this.calculateUnitPositions.bind(this));
-        this.game.register('getSquadSize', this.getSquadSize.bind(this));
-        this.game.register('getSquadInfoFromType', this.getSquadInfo.bind(this));
+    }
+
+    // Alias for service name
+    getSquadInfoFromType(unitType) {
+        return this.getSquadInfo(unitType);
     }
 
     /**

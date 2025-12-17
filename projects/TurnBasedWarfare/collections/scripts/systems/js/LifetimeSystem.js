@@ -1,4 +1,10 @@
 class LifetimeSystem extends GUTS.BaseSystem {
+    static services = [
+        'addLifetime',
+        'destroyEntityImmediately',
+        'extendLifetime'
+    ];
+
     constructor(game) {
         super(game);
         this.game.lifetimeSystem = this;
@@ -6,13 +12,13 @@ class LifetimeSystem extends GUTS.BaseSystem {
         // Configuration
         this.CHECK_INTERVAL = 0.1; // Check lifetimes every 100ms for performance
         this.lastCheck = 0;
-        
+
         // Track entities with custom destruction callbacks
         this.destructionCallbacks = new Map(); // entityId -> callback function
-        
+
         // Track entities that should fade out before destruction
         this.fadeOutEntities = new Map(); // entityId -> fade data
-        
+
         // Statistics
         this.stats = {
             entitiesDestroyed: 0,
@@ -22,10 +28,6 @@ class LifetimeSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        // Register methods with GameManager
-        this.game.register('addLifetime', this.addLifetime.bind(this));
-        this.game.register('destroyEntityImmediately', this.destroyEntityImmediately.bind(this));
-        this.game.register('extendLifetime', this.extendLifetime.bind(this));
     }
 
     update() {

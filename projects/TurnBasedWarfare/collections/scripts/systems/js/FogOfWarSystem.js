@@ -1,4 +1,10 @@
 class FogOfWarSystem extends GUTS.BaseSystem {
+    static services = [
+        'getExplorationTexture',
+        'getFogTexture',
+        'invalidateLOSCache'
+    ];
+
     constructor(game) {
         super(game);
         this.game.fogOfWarSystem = this;
@@ -66,14 +72,6 @@ class FogOfWarSystem extends GUTS.BaseSystem {
 
     init(params = {}) {
         this.params = params;
-
-        // Register getter methods
-        this.game.register('getExplorationTexture', this.getExplorationTexture.bind(this));
-        this.game.register('getFogTexture', this.getFogTexture.bind(this));
-
-        // Register cache invalidation for when worldObjects are destroyed
-        this.game.register('invalidateLOSCache', this.invalidateLOSCache.bind(this));
-
         // Rendering initialized in onSceneLoad when world size is available
     }
 

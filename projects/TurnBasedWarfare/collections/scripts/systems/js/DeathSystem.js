@@ -1,12 +1,12 @@
 class DeathSystem extends GUTS.BaseSystem {
+    static services = ['startDeathProcess'];
+
     constructor(game) {
         super(game);
         this.game.deathSystem = this;
     }
 
     init() {
-        // Initialize enums
-        this.game.register("startDeathProcess", this.startDeathProcess.bind(this));
     }
 
     update() {

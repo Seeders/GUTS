@@ -1,4 +1,16 @@
 class PathfindingSystem extends GUTS.BaseSystem {
+    static services = [
+        'isPositionWalkable',
+        'isGridPositionWalkable',
+        'requestPath',
+        'hasRampAt',
+        'hasDirectWalkablePath',
+        'togglePathfindingDebug',
+        'getEntityPath',
+        'setEntityPath',
+        'clearEntityPath'
+    ];
+
     constructor(game) {
         super(game);
         this.game.pathfindingSystem = this;
@@ -7,7 +19,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.navGridSize = null; // Will be set from config
         this.navGridWidth = 0;
         this.navGridHeight = 0;
-        
+
         this.terrainTypes = null;
         this.walkabilityCache = new Map();
         this.ramps = new Set(); // Stores ramp locations in "x,z" format (terrain grid coords)
@@ -35,16 +47,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        // Only register gameManager methods in init - actual initialization happens in onSceneLoad
-        this.game.register('isPositionWalkable', this.isPositionWalkable.bind(this));
-        this.game.register('isGridPositionWalkable', this.isGridPositionWalkable.bind(this));
-        this.game.register('requestPath', this.requestPath.bind(this));
-        this.game.register('hasRampAt', this.hasRampAt.bind(this));
-        this.game.register('hasDirectWalkablePath', this.hasDirectWalkablePath.bind(this));
-        this.game.register('togglePathfindingDebug', this.toggleDebugVisualization.bind(this));
-        this.game.register('getEntityPath', this.getEntityPath.bind(this));
-        this.game.register('setEntityPath', this.setEntityPath.bind(this));
-        this.game.register('clearEntityPath', this.clearEntityPath.bind(this));
+    }
+
+    // Alias for service name
+    togglePathfindingDebug() {
+        return this.toggleDebugVisualization();
     }
 
     // Path accessor methods - paths stored in system Map, not on component

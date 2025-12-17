@@ -1,20 +1,27 @@
 class SchedulingSystem extends GUTS.BaseSystem {
-   constructor(game) {
+    static services = [
+        'scheduleAction',
+        'cancelScheduledAction'
+    ];
+
+    constructor(game) {
         super(game);
         this.game.schedulingSystem = this;
-        
+
         // Scheduled actions storage
         this.scheduledActions = new Map();
         this.actionIdCounter = 0;
-        
+
         // Entity tracking for cleanup
         this.entityActions = new Map(); // entityId -> Set of actionIds
     }
 
     init() {
-        // Register methods with GameManager
-        this.game.register('scheduleAction', this.scheduleAction.bind(this));
-        this.game.register('cancelScheduledAction', this.cancelAction.bind(this));
+    }
+
+    // Alias for service name
+    cancelScheduledAction(actionId) {
+        return this.cancelAction(actionId);
     }
 
     update() {

@@ -1,4 +1,37 @@
 class GridSystem extends GUTS.BaseSystem {
+    static services = [
+        // Grid state management
+        'getNearbyUnits',
+        'isValidGridPlacement',
+        'reserveGridCells',
+        'releaseGridCells',
+        'getUnitGridCells',
+        'toggleSpatialGridDebug',
+        // Grid configuration
+        'getGridSize',
+        'getPlacementGridSize',
+        // Placement Grid ↔ World coordinate transformations
+        'placementGridToWorld',
+        'worldToPlacementGrid',
+        // Tile ↔ World coordinate transformations
+        'tileToWorld',
+        'worldToTile',
+        'tileToWorldCorner',
+        // Quadrant positioning
+        'applyQuadrantOffset',
+        // Tile ↔ Pixel coordinate transformations
+        'tileToPixel',
+        'pixelToTile',
+        // Pixel ↔ World coordinate transformations
+        'pixelToWorld',
+        'worldToPixel',
+        // Coordinate validation
+        'isValidTile',
+        'isValidWorldPosition',
+        // Configuration updates
+        'updateCoordinateConfig'
+    ];
+
     constructor(game) {
         super(game);
         this.game.gridSystem = this;
@@ -24,82 +57,6 @@ class GridSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        // Grid state management
-        this.game.register('getNearbyUnits', this.getNearbyUnits.bind(this));
-        this.game.register('isValidGridPlacement', this.isValidGridPlacement.bind(this));
-        this.game.register('reserveGridCells', this.occupyCells.bind(this));
-        this.game.register('releaseGridCells', this.freeCells.bind(this));
-        this.game.register('getUnitGridCells', this.getUnitCells.bind(this));
-        this.game.register('toggleSpatialGridDebug', this.toggleDebugVisualization.bind(this));
-
-        // Grid configuration
-        this.game.register('getGridSize', () => this.terrainGridSize);
-        this.game.register('getPlacementGridSize', () => this.cellSize);
-
-        // Placement Grid ↔ World coordinate transformations
-        // Use these for placement grid coordinates (2x terrain tile grid, used for unit/building placement)
-        this.game.register('placementGridToWorld', this.gridToWorld.bind(this));
-        this.game.register('worldToPlacementGrid', this.worldToGrid.bind(this));
-
-        // Tile ↔ World coordinate transformations (3D terrain grid)
-        this.game.register('tileToWorld', (tileX, tileZ, useExtension = false) => {
-            if (!this.coordinateTranslator) {
-                console.error('[GridSystem] tileToWorld called before CoordinateTranslator initialized!');
-                return { x: 0, z: 0 };
-            }
-            return this.coordinateTranslator.tileToWorld(tileX, tileZ, useExtension);
-        });
-        this.game.register('worldToTile', (worldX, worldZ, useExtension = false) => {
-            if (!this.coordinateTranslator) {
-                console.error('[GridSystem] worldToTile called before CoordinateTranslator initialized!');
-                return { x: 0, z: 0 };
-            }
-            return this.coordinateTranslator.worldToTile(worldX, worldZ, useExtension);
-        });
-        this.game.register('tileToWorldCorner', (tileX, tileZ, useExtension = false) => {
-            if (!this.coordinateTranslator) {
-                console.error('[GridSystem] tileToWorldCorner called before CoordinateTranslator initialized!');
-                return { x: 0, z: 0 };
-            }
-            return this.coordinateTranslator.tileToWorldCorner(tileX, tileZ, useExtension);
-        });
-
-        // Quadrant positioning (for sub-tile positioning like cliffs)
-        this.game.register('applyQuadrantOffset', (tileWorldX, tileWorldZ, quadrant) =>
-            this.coordinateTranslator.applyQuadrantOffset(tileWorldX, tileWorldZ, quadrant));
-
-        // Tile ↔ Pixel coordinate transformations (for heightmap access)
-        this.game.register('tileToPixel', (tileX, tileZ) =>
-            this.coordinateTranslator.tileToPixel(tileX, tileZ));
-        this.game.register('pixelToTile', (pixelX, pixelZ) =>
-            this.coordinateTranslator.pixelToTile(pixelX, pixelZ));
-
-        // Pixel ↔ World coordinate transformations (for worldObjects)
-        this.game.register('pixelToWorld', (pixelX, pixelZ) => {
-            if (!this.coordinateTranslator) {
-                console.error('[GridSystem] pixelToWorld called before CoordinateTranslator initialized!');
-                return { x: 0, z: 0 };
-            }
-            return this.coordinateTranslator.pixelToWorld(pixelX, pixelZ);
-        });
-        this.game.register('worldToPixel', (worldX, worldZ) => {
-            if (!this.coordinateTranslator) {
-                console.error('[GridSystem] worldToPixel called before CoordinateTranslator initialized!');
-                return { x: 0, z: 0 };
-            }
-            return this.coordinateTranslator.worldToPixel(worldX, worldZ);
-        });
-
-        // Coordinate validation
-        this.game.register('isValidTile', (tileX, tileZ) =>
-            this.coordinateTranslator.isValidTile(tileX, tileZ));
-        this.game.register('isValidWorldPosition', (worldX, worldZ) =>
-            this.coordinateTranslator.isValidWorldPosition(worldX, worldZ));
-
-        // Configuration updates (for dynamic changes like extension size)
-        this.game.register('updateCoordinateConfig', (config) =>
-            this.coordinateTranslator.updateConfig(config));
-
         const collections = this.collections;
 
         const terrainGridSize = collections.configs.game.gridSize;
@@ -165,6 +122,116 @@ class GridSystem extends GUTS.BaseSystem {
             maxZ: this.dimensions.startZ + (this.dimensions.height * placementGridSize)
         };
     }
+
+    // ==================== Service Alias Methods ====================
+    // These methods map service names to their implementations
+
+    // Grid state aliases
+    reserveGridCells(cells, entityId) {
+        return this.occupyCells(cells, entityId);
+    }
+
+    releaseGridCells(entityId) {
+        return this.freeCells(entityId);
+    }
+
+    getUnitGridCells(entityId) {
+        return this.getUnitCells(entityId);
+    }
+
+    toggleSpatialGridDebug() {
+        return this.toggleDebugVisualization();
+    }
+
+    // Grid configuration getters
+    getGridSize() {
+        return this.terrainGridSize;
+    }
+
+    getPlacementGridSize() {
+        return this.cellSize;
+    }
+
+    // Placement Grid ↔ World coordinate transformations
+    placementGridToWorld(gridX, gridZ) {
+        return this.gridToWorld(gridX, gridZ);
+    }
+
+    worldToPlacementGrid(worldX, worldZ) {
+        return this.worldToGrid(worldX, worldZ);
+    }
+
+    // Tile ↔ World coordinate transformations
+    tileToWorld(tileX, tileZ, useExtension = false) {
+        if (!this.coordinateTranslator) {
+            console.error('[GridSystem] tileToWorld called before CoordinateTranslator initialized!');
+            return { x: 0, z: 0 };
+        }
+        return this.coordinateTranslator.tileToWorld(tileX, tileZ, useExtension);
+    }
+
+    worldToTile(worldX, worldZ, useExtension = false) {
+        if (!this.coordinateTranslator) {
+            console.error('[GridSystem] worldToTile called before CoordinateTranslator initialized!');
+            return { x: 0, z: 0 };
+        }
+        return this.coordinateTranslator.worldToTile(worldX, worldZ, useExtension);
+    }
+
+    tileToWorldCorner(tileX, tileZ, useExtension = false) {
+        if (!this.coordinateTranslator) {
+            console.error('[GridSystem] tileToWorldCorner called before CoordinateTranslator initialized!');
+            return { x: 0, z: 0 };
+        }
+        return this.coordinateTranslator.tileToWorldCorner(tileX, tileZ, useExtension);
+    }
+
+    // Quadrant positioning
+    applyQuadrantOffset(tileWorldX, tileWorldZ, quadrant) {
+        return this.coordinateTranslator.applyQuadrantOffset(tileWorldX, tileWorldZ, quadrant);
+    }
+
+    // Tile ↔ Pixel coordinate transformations
+    tileToPixel(tileX, tileZ) {
+        return this.coordinateTranslator.tileToPixel(tileX, tileZ);
+    }
+
+    pixelToTile(pixelX, pixelZ) {
+        return this.coordinateTranslator.pixelToTile(pixelX, pixelZ);
+    }
+
+    // Pixel ↔ World coordinate transformations
+    pixelToWorld(pixelX, pixelZ) {
+        if (!this.coordinateTranslator) {
+            console.error('[GridSystem] pixelToWorld called before CoordinateTranslator initialized!');
+            return { x: 0, z: 0 };
+        }
+        return this.coordinateTranslator.pixelToWorld(pixelX, pixelZ);
+    }
+
+    worldToPixel(worldX, worldZ) {
+        if (!this.coordinateTranslator) {
+            console.error('[GridSystem] worldToPixel called before CoordinateTranslator initialized!');
+            return { x: 0, z: 0 };
+        }
+        return this.coordinateTranslator.worldToPixel(worldX, worldZ);
+    }
+
+    // Coordinate validation
+    isValidTile(tileX, tileZ) {
+        return this.coordinateTranslator.isValidTile(tileX, tileZ);
+    }
+
+    isValidWorldPosition(worldX, worldZ) {
+        return this.coordinateTranslator.isValidWorldPosition(worldX, worldZ);
+    }
+
+    // Configuration updates
+    updateCoordinateConfig(config) {
+        return this.coordinateTranslator.updateConfig(config);
+    }
+
+    // ==================== End Service Alias Methods ====================
 
     /**
      * Set which bounds each team uses

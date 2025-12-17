@@ -15,37 +15,50 @@
  *   game.call('cheat', 'spawnUnits', { collection: 'units', type: 'footman', amount: 5, x: 100, z: 100, team: 2 })
  */
 class CheatCodeSystem extends GUTS.BaseSystem {
+    static services = [
+        'executeCheat',
+        'validateCheat',
+        'listCheats',
+        'cheat',
+        'cheats'
+    ];
+
     constructor(game) {
         super(game);
         this.game.cheatCodeSystem = this;
 
         // Available cheat commands
-        this.cheats = new Map();
+        this.cheatRegistry = new Map();
     }
 
     init() {
-        // Register cheat execution (called by network layer after validation)
-        this.game.register('executeCheat', this.executeCheat.bind(this));
-        this.game.register('validateCheat', this.validateCheat.bind(this));
-        this.game.register('listCheats', this.listCheats.bind(this));
-
-        // Client-side convenience method that routes through network
-        if (!this.game.isServer) {
-            this.game.register('cheat', this.requestCheat.bind(this));
-            this.game.register('cheats', this.listCheats.bind(this));
-        } else {
-            // Server-side: execute cheats directly (no network round-trip needed)
-            this.game.register('cheat', (cheatName, params) => this.executeCheat(cheatName, params));
-            this.game.register('cheats', this.listCheats.bind(this));
-        }
-
         // Register cheat handlers
         this.registerCheats();
     }
 
+    /**
+     * Main cheat entry point - routes to network or executes directly based on server/client
+     */
+    cheat(cheatName, params = {}, callback = null) {
+        if (this.game.isServer) {
+            // Server-side: execute cheats directly (no network round-trip needed)
+            return this.executeCheat(cheatName, params);
+        } else {
+            // Client-side: route through network
+            return this.requestCheat(cheatName, params, callback);
+        }
+    }
+
+    /**
+     * Alias for listCheats
+     */
+    cheats() {
+        return this.listCheats();
+    }
+
     registerCheats() {
         // Spawn units cheat
-        this.cheats.set('spawnUnits', {
+        this.cheatRegistry.set('spawnUnits', {
             description: 'Spawn units at a position',
             usage: 'spawnUnits { collection, type, amount, x, z, team }',
             example: 'game.call("cheat", "spawnUnits", { collection: "units", type: "footman", amount: 5, x: 100, z: 100, team: 2 })',
@@ -54,7 +67,7 @@ class CheatCodeSystem extends GUTS.BaseSystem {
         });
 
         // Add gold cheat
-        this.cheats.set('addGold', {
+        this.cheatRegistry.set('addGold', {
             description: 'Add gold to a team',
             usage: 'addGold { amount, team }',
             example: 'game.call("cheat", "addGold", { amount: 1000, team: 2 })',
@@ -63,7 +76,7 @@ class CheatCodeSystem extends GUTS.BaseSystem {
         });
 
         // Kill all enemies cheat
-        this.cheats.set('killEnemies', {
+        this.cheatRegistry.set('killEnemies', {
             description: 'Kill all enemy units',
             usage: 'killEnemies { team }',
             example: 'game.call("cheat", "killEnemies", { team: 3 })',
@@ -76,7 +89,7 @@ class CheatCodeSystem extends GUTS.BaseSystem {
      * Client-side: Request a cheat (sends to server)
      */
     requestCheat(cheatName, params = {}, callback = null) {
-        const cheat = this.cheats.get(cheatName);
+        const cheat = this.cheatRegistry.get(cheatName);
         if (!cheat) {
             this.listCheats();
             return false;
@@ -91,7 +104,7 @@ class CheatCodeSystem extends GUTS.BaseSystem {
      * Validate cheat parameters (called by server before execution)
      */
     validateCheat(cheatName, params) {
-        const cheat = this.cheats.get(cheatName);
+        const cheat = this.cheatRegistry.get(cheatName);
         if (!cheat) {
             return { valid: false, error: `Unknown cheat: ${cheatName}` };
         }
@@ -105,7 +118,7 @@ class CheatCodeSystem extends GUTS.BaseSystem {
      * @returns {object} Result of cheat execution
      */
     executeCheat(cheatName, params = {}) {
-        const cheat = this.cheats.get(cheatName);
+        const cheat = this.cheatRegistry.get(cheatName);
         if (!cheat) {
             return { error: `Unknown cheat: ${cheatName}` };
         }
@@ -117,7 +130,7 @@ class CheatCodeSystem extends GUTS.BaseSystem {
      * List all available cheats
      */
     listCheats() {
-        return Array.from(this.cheats.keys());
+        return Array.from(this.cheatRegistry.keys());
     }
 
     /**
@@ -137,7 +150,7 @@ USAGE
 AVAILABLE CHEATS
 ────────────────
 `);
-        for (const [name, cheat] of this.cheats) {
+        for (const [name, cheat] of this.cheatRegistry) {
             console.log(`  ${name}`);
             console.log(`    ${cheat.description}`);
             console.log(`    Usage: ${cheat.usage}`);

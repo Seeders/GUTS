@@ -1,4 +1,11 @@
 class CameraControlSystem extends GUTS.BaseSystem {
+  static services = [
+    'cameraLookAt',
+    'toggleCameraFollow',
+    'getCameraFollowTarget',
+    'rotateCamera'
+  ];
+
   constructor(game) {
     super(game);
     this.game.cameraControlSystem = this;
@@ -29,11 +36,6 @@ class CameraControlSystem extends GUTS.BaseSystem {
   }
 
   init() {
-    this.game.register('cameraLookAt', this.lookAtRequest.bind(this));
-    this.game.register('toggleCameraFollow', this.toggleFollow.bind(this));
-    this.game.register('getCameraFollowTarget', () => this.followingEntityId);
-    this.game.register('rotateCamera', this.rotateCamera.bind(this));
-
     this.onMove  = (e)=>this.onMouseMove(e);
     this.onEnter = ()=>{ this.inside = true; this.holdDirX = 0; this.holdDirZ = 0; };
     this.onLeave = ()=>this.onMouseLeave();
@@ -45,6 +47,19 @@ class CameraControlSystem extends GUTS.BaseSystem {
     window.addEventListener('mouseleave', this.onLeave);
     window.addEventListener('blur',      this.onBlur);
     window.addEventListener('wheel', this.onWheel);
+  }
+
+  // Alias methods for service names
+  cameraLookAt(worldX, worldZ) {
+    return this.lookAtRequest(worldX, worldZ);
+  }
+
+  toggleCameraFollow(entityId) {
+    return this.toggleFollow(entityId);
+  }
+
+  getCameraFollowTarget() {
+    return this.followingEntityId;
   }
 
   lookAtRequest(worldX, worldZ){

@@ -1,4 +1,20 @@
 class AnimationSystem extends GUTS.BaseSystem {
+    static services = [
+        'triggerSinglePlayAnimation',
+        'isAnimationFinished',
+        'setCorpseAnimation',
+        'startCelebration',
+        'stopCelebration',
+        'playDeathAnimation',
+        'calculateAnimationSpeed',
+        'getEntityAnimations',
+        'setBillboardAnimation',
+        'setBillboardAnimationDirection',
+        'getBillboardCurrentAnimation',
+        'getBillboardAnimationState',
+        'getSpriteAnimationData'
+    ];
+
     constructor(game) {
         super(game);
         this.game.animationSystem = this;
@@ -13,7 +29,6 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        // Get enums
         // Cache direction names array for fast index->string lookup
         this.directionEnumMap = this.game.call('getEnumMap', 'direction');
         this.directionNames = this.directionEnumMap.toValue;
@@ -36,23 +51,6 @@ class AnimationSystem extends GUTS.BaseSystem {
             this.enums.animationType.cast,
             this.enums.animationType.death
         ]);
-
-        // Register methods with GameManager
-        this.game.register('triggerSinglePlayAnimation', this.triggerSinglePlayAnimation.bind(this));
-        this.game.register('isAnimationFinished', this.isAnimationFinished.bind(this));
-        this.game.register('setCorpseAnimation', this.setCorpseAnimation.bind(this));
-        this.game.register('startCelebration', this.startCelebration.bind(this));
-        this.game.register('stopCelebration', this.stopCelebration.bind(this));
-        this.game.register('playDeathAnimation', this.playDeathAnimation.bind(this));
-        this.game.register('calculateAnimationSpeed', this.calculateAnimationSpeed.bind(this));
-        this.game.register('getEntityAnimations', this.getEntityAnimations.bind(this));
-
-        // Billboard animation management (AnimationSystem owns animation decisions)
-        this.game.register('setBillboardAnimation', this.setBillboardAnimation.bind(this));
-        this.game.register('setBillboardAnimationDirection', this.setBillboardAnimationDirection.bind(this));
-        this.game.register('getBillboardCurrentAnimation', this.getBillboardCurrentAnimation.bind(this));
-        this.game.register('getBillboardAnimationState', this.getBillboardAnimationState.bind(this));
-        this.game.register('getSpriteAnimationData', this.getSpriteAnimationData.bind(this));
     }
 
     /**

@@ -1,4 +1,16 @@
 class DamageSystem extends GUTS.BaseSystem {
+    static services = [
+        'applyDamage',
+        'applySplashDamage',
+        'scheduleDamage',
+        'curePoison',
+        'getPoisonStacks',
+        'clearAllDamageEffects',
+        'clearAllStatusEffects',
+        'getAttackerModifiers',
+        'getBuffTypeDef'
+    ];
+
     constructor(game) {
         super(game);
         this.game.damageSystem = this;
@@ -23,23 +35,9 @@ class DamageSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        // Initialize enums
-
-
         // Cache buffTypes collection for modifier lookups
         this.buffTypes = this.collections.buffTypes;
         this.buffTypeKeys = Object.keys(this.buffTypes).sort();
-
-        // Register methods with GameManager
-        this.game.register('applyDamage', this.applyDamage.bind(this));
-        this.game.register('applySplashDamage', this.applySplashDamage.bind(this));
-        this.game.register('scheduleDamage', this.scheduleDamage.bind(this));
-        this.game.register('curePoison', this.curePoison.bind(this));
-        this.game.register('getPoisonStacks', this.getPoisonStacks.bind(this));
-        this.game.register('clearAllDamageEffects', this.clearAllDamageEffects.bind(this));
-        this.game.register('clearAllStatusEffects', this.clearAllStatusEffects.bind(this));
-        this.game.register('getAttackerModifiers', this.getAttackerModifiers.bind(this));
-        this.game.register('getBuffTypeDef', this.getBuffTypeDef.bind(this));
     }
 
     /**

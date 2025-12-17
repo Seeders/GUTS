@@ -11,6 +11,20 @@
  * Placements are stored as components on entities - no cached arrays.
  */
 class PlacementSystem extends GUTS.BaseSystem {
+    static services = [
+        'getPlacementsForSide',
+        'getPlacementById',
+        'placePlacement',
+        'validatePlacement',
+        'spawnSquad',
+        'resetAI',
+        'clearPlayerPlacements',
+        'clearAllPlacements',
+        'getCameraPositionForTeam',
+        'applyNetworkUnitData',
+        'findBuildingSpawnPosition'
+    ];
+
     constructor(game) {
         super(game);
         this.game.placementSystem = this;
@@ -26,19 +40,6 @@ class PlacementSystem extends GUTS.BaseSystem {
 
     init(params) {
         this.params = params || {};
-
-        // Register services that both client and server use
-        this.game.register('getPlacementsForSide', this.getPlacementsForSide.bind(this));
-        this.game.register('getPlacementById', this.getPlacementById.bind(this));
-        this.game.register('placePlacement', this.placePlacement.bind(this));
-        this.game.register('validatePlacement', this.validatePlacement.bind(this));
-        this.game.register('spawnSquad', this.spawnSquad.bind(this));
-        this.game.register('resetAI', this.resetAI.bind(this));
-        this.game.register('clearPlayerPlacements', this.clearPlayerPlacements.bind(this));
-        this.game.register('clearAllPlacements', this.clearAllPlacements.bind(this));
-        this.game.register('getCameraPositionForTeam', this.getCameraPositionForTeam.bind(this));
-        this.game.register('applyNetworkUnitData', this.applyNetworkUnitData.bind(this));
-        this.game.register('findBuildingSpawnPosition', this.findBuildingSpawnPosition.bind(this));
     }
 
     /**

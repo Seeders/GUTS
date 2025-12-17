@@ -1,15 +1,18 @@
 class GameSystem extends GUTS.BaseSystem {
+    static services = [
+        'initializeGame',
+        'pauseGame',
+        'resumeGame',
+        'restartGame',
+        'exitToMenu'
+    ];
+
     constructor(game) {
         super(game);
         this.game.gameSystem = this;
     }
 
     init() {
-        this.game.register('initializeGame', this.initializeGame.bind(this));
-        this.game.register('pauseGame', this.pauseGame.bind(this));
-        this.game.register('resumeGame', this.resumeGame.bind(this));
-        this.game.register('restartGame', this.restartGame.bind(this));
-        this.game.register('exitToMenu', this.exitToMenu.bind(this));
     }
 
     initializeGame(multiplayerData = null){

@@ -1,8 +1,29 @@
 class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
+    static services = [
+        'createRoom',
+        'joinRoom',
+        'startQuickMatch',
+        'leaveRoom',
+        'toggleReady',
+        'startGame',
+        'getStartingState',
+        'submitPlacementToServer',
+        'purchaseUpgrade',
+        'toggleReadyForBattle',
+        'setSquadTarget',
+        'setSquadTargets',
+        'cancelBuilding',
+        'upgradeBuildingRequest',
+        'uploadSaveData',
+        'resyncEntities',
+        'sendCheatRequest',
+        'sendPlacementRequest'
+    ];
+
     constructor(game) {
         super(game);
         this.game.clientNetworkSystem = this;
-        
+
         // State tracking
         this.roomId = null;
         this.isHost = false;
@@ -14,30 +35,8 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     // GUTS Manager Interface
     init(params) {
         this.params = params || {};
-        this.registerServices();
         this.connectToServer();
         this.setupNetworkListeners();
-    }
-
-    registerServices() {
-        this.game.register('createRoom', this.createRoom.bind(this));
-        this.game.register('joinRoom', this.joinRoom.bind(this));
-        this.game.register('startQuickMatch', this.startQuickMatch.bind(this));
-        this.game.register('leaveRoom', this.leaveRoom.bind(this));
-        this.game.register('toggleReady', this.toggleReady.bind(this));
-        this.game.register('startGame', this.startGame.bind(this));
-        this.game.register('getStartingState', this.getStartingState.bind(this));
-        this.game.register('submitPlacementToServer', this.submitPlacementToServer.bind(this));
-        this.game.register('purchaseUpgrade', this.purchaseUpgrade.bind(this));
-        this.game.register('toggleReadyForBattle', this.toggleReadyForBattle.bind(this));
-        this.game.register('setSquadTarget', this.setSquadTarget.bind(this));
-        this.game.register('setSquadTargets', this.setSquadTargets.bind(this));
-        this.game.register('cancelBuilding', this.cancelBuilding.bind(this));
-        this.game.register('upgradeBuildingRequest', this.upgradeBuildingRequest.bind(this));
-        this.game.register('uploadSaveData', this.uploadSaveData.bind(this));
-        this.game.register('resyncEntities', this.resyncEntities.bind(this));
-        this.game.register('sendCheatRequest', this.sendCheatRequest.bind(this));
-        this.game.register('sendPlacementRequest', this.sendPlacementRequest.bind(this));
     }
 
     async connectToServer() {

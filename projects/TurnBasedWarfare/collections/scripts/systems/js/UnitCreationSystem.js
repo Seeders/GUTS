@@ -1,4 +1,11 @@
 class UnitCreationSystem extends GUTS.BaseSystem {
+    static services = [
+        'createPlacement',
+        'createUnit',
+        'getTerrainHeight',
+        'incrementSquadsCreated'
+    ];
+
     constructor(game) {
         super(game);
         this.game.unitCreationSystem = this;
@@ -69,10 +76,11 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             projectile: null,
             value: 50
         };
-        this.game.register('createPlacement', this.createPlacement.bind(this));
-        this.game.register('createUnit', this.createUnit.bind(this));
-        this.game.register('getTerrainHeight', this.getTerrainHeight.bind(this));
-        this.game.register('incrementSquadsCreated', () => { this.stats.squadsCreated++; });
+    }
+
+    // Alias for service
+    incrementSquadsCreated() {
+        this.stats.squadsCreated++;
     }
     /**
      * Create a new unit entity with all required components from a placement

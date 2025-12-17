@@ -1,4 +1,9 @@
 class GameModeSystem extends GUTS.BaseSystem {
+    static services = [
+        'getSelectedMode',
+        'setGameMode'
+    ];
+
     constructor(game) {
         super(game);
         this.game.gameModeSystem = this;
@@ -7,8 +12,6 @@ class GameModeSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        this.game.register('getSelectedMode', this.getSelectedMode.bind(this));
-        this.game.register('setGameMode', this.setGameMode.bind(this));
     }
 
     onSceneLoad() {
