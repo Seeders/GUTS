@@ -2,6 +2,7 @@
   "title": "THREE SkeletonUtils",
   "isModule": true,
   "windowContext": "THREE_",
+  "exportNamespace": true,
   "requireName": "SkeletonUtils",
   "importName": "SkeletonUtils",
   "fileName": "three_SkeletonUtils",
