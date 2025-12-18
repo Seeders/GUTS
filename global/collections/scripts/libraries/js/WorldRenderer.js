@@ -495,64 +495,13 @@ class WorldRenderer {
 
         this.groundVertices = groundGeometry.attributes.position;
 
-        // Try to load terrain shader from collections, fallback to default
-        const level = this.terrainDataManager?.level;
-        const terrainShaderName = level?.terrainShader || 'terrain';
-        const collections = this.game?.getCollections?.() || {};
-        const shaderDef = collections.shaders?.[terrainShaderName];
+        // Use MeshLambertMaterial for terrain - supports shadows and lighting natively
+        const groundMaterial = new THREE.MeshLambertMaterial({
+            map: this.groundTexture,
+            side: THREE.DoubleSide
+        });
 
-        let groundMaterial;
-
-        if (shaderDef && shaderDef.fragmentScript && shaderDef.vertexScript) {
-            // Build uniforms from shader definition
-            const shaderUniforms = THREE.UniformsUtils.merge([
-                THREE.UniformsLib.fog,
-                { map: { value: this.groundTexture } }
-            ]);
-
-            if (shaderDef.uniforms) {
-                for (const [key, uniformDef] of Object.entries(shaderDef.uniforms)) {
-                    const isVector = shaderDef.vectors?.includes(key);
-                    let value = uniformDef.value;
-
-                    if (isVector) {
-                        if (Array.isArray(value)) {
-                            value = new THREE.Vector3(value[0], value[1], value[2]);
-                        } else if (typeof value === 'string' && value.startsWith('#')) {
-                            const color = new THREE.Color(value);
-                            value = new THREE.Vector3(color.r, color.g, color.b);
-                        } else {
-                            value = new THREE.Vector3(1, 1, 1);
-                        }
-                    }
-
-                    shaderUniforms[key] = { value };
-                }
-            }
-
-            // Add fog uniforms
-            shaderUniforms.fogColor = { value: this.scene?.fog?.color || new THREE.Color(0xffffff) };
-            shaderUniforms.fogDensity = { value: this.scene?.fog?.density || 0.01 };
-
-            groundMaterial = new THREE.ShaderMaterial({
-                uniforms: shaderUniforms,
-                vertexShader: shaderDef.vertexScript,
-                fragmentShader: shaderDef.fragmentScript,
-                fog: true,
-                side: THREE.DoubleSide
-            });
-        } else {
-            // Fallback to MeshStandardMaterial if no shader defined
-            groundMaterial = new THREE.MeshStandardMaterial({
-                map: this.groundTexture,
-                side: THREE.DoubleSide,
-                metalness: 0.0,
-                roughness: 1,
-                flatShading: true
-            });
-        }
-
-        // Store reference to update ambient light later
+        // Store reference
         this.groundMaterial = groundMaterial;
 
         // Create ground mesh
@@ -1881,7 +1830,8 @@ class WorldRenderer {
     }
 
     /**
-     * Set the ambient light color for terrain and liquid shaders (matches sprite lighting)
+     * Set the ambient light color for liquid shaders (water, lava with custom animation shaders)
+     * Note: Terrain now uses MeshLambertMaterial which responds to scene lights automatically
      * @param {THREE.Color|number|string} color - The ambient light color
      * @param {number} intensity - The ambient light intensity (multiplied with color)
      */
@@ -1889,12 +1839,7 @@ class WorldRenderer {
         const lightColor = new THREE.Color(color);
         lightColor.multiplyScalar(intensity);
 
-        // Update ground/terrain material
-        if (this.groundMaterial?.uniforms?.ambientLightColor) {
-            this.groundMaterial.uniforms.ambientLightColor.value.set(lightColor.r, lightColor.g, lightColor.b);
-        }
-
-        // Update liquid surface materials (water, lava, etc.)
+        // Update liquid surface materials (water, lava use custom shaders for animation)
         for (const mesh of this.liquidMeshes) {
             if (mesh.material?.uniforms?.ambientLightColor) {
                 mesh.material.uniforms.ambientLightColor.value.set(lightColor.r, lightColor.g, lightColor.b);

@@ -248,8 +248,7 @@ class RenderSystem extends GUTS.BaseSystem {
             // Check if entity already spawned or currently spawning
             if (!this.spawnedEntities.has(entityId)) {
                 // DEBUG: Log when spawning new entity
-                console.log('[RenderSystem] Spawning entity:', entityId, 'renderable:', { objectType, spawnType });
-
+           
                 // Mark as spawned immediately to prevent race condition with async spawn
                 this.spawnedEntities.add(entityId);
 
@@ -429,43 +428,45 @@ class RenderSystem extends GUTS.BaseSystem {
 
     /**
      * Apply lighting settings to sprites/billboards
-     * Combines ambient, hemisphere sky, and a portion of directional light
-     * for overall scene illumination on flat billboards
+     * Matches MeshLambertMaterial lighting for an upward-facing surface
+     * so sprites appear consistent with terrain/cliffs
      * @param {WorldRenderer} worldRenderer - The world renderer with lighting
      */
     applySpriteLighting(worldRenderer) {
         if (!this.entityRenderer) return;
 
-        // Start with ambient light as base
+        // Start with ambient light as base (same as MeshLambertMaterial)
         const combinedColor = new THREE.Color(0x000000);
 
-        // Add ambient light contribution
+        // Add ambient light contribution (full, same as Lambert)
         if (worldRenderer.ambientLight) {
             const ambientContrib = worldRenderer.ambientLight.color.clone();
             ambientContrib.multiplyScalar(worldRenderer.ambientLight.intensity);
             combinedColor.add(ambientContrib);
         }
 
-        // Add hemisphere light sky color contribution (top-down illumination)
-        // Use a blend of sky and ground colors weighted towards sky since sprites face camera
+        // Add hemisphere light contribution
+        // For an upward-facing normal (0,1,0), MeshLambertMaterial uses 100% sky color
         if (worldRenderer.hemisphereLight) {
             const skyContrib = worldRenderer.hemisphereLight.color.clone();
-            const groundContrib = worldRenderer.hemisphereLight.groundColor.clone();
-
-            // Blend 70% sky, 30% ground for sprites that mostly face up/camera
-            skyContrib.multiplyScalar(0.7 * worldRenderer.hemisphereLight.intensity);
-            groundContrib.multiplyScalar(0.3 * worldRenderer.hemisphereLight.intensity);
-
+            skyContrib.multiplyScalar(worldRenderer.hemisphereLight.intensity);
             combinedColor.add(skyContrib);
-            combinedColor.add(groundContrib);
         }
 
-        // Add a portion of directional light (simulating average illumination)
-        // Billboards don't have proper normals so we use a fixed factor
+        // Add directional light contribution using N·L for upward-facing surface
+        // This matches what MeshLambertMaterial computes for the terrain
         if (worldRenderer.directionalLight) {
-            const directionalContrib = worldRenderer.directionalLight.color.clone();
-            // Use 50% of directional intensity as average illumination on a flat surface
-            directionalContrib.multiplyScalar(0.5 * worldRenderer.directionalLight.intensity);
+            const light = worldRenderer.directionalLight;
+
+            // Get normalized light direction (from light position to origin)
+            const lightDir = light.position.clone().normalize();
+
+            // For upward-facing surface, normal is (0, 1, 0)
+            // N·L = lightDir.y (the Y component of the normalized direction)
+            const NdotL = Math.max(0, lightDir.y);
+
+            const directionalContrib = light.color.clone();
+            directionalContrib.multiplyScalar(light.intensity * NdotL);
             combinedColor.add(directionalContrib);
         }
 
@@ -474,15 +475,14 @@ class RenderSystem extends GUTS.BaseSystem {
         combinedColor.g = Math.min(1.0, combinedColor.g);
         combinedColor.b = Math.min(1.0, combinedColor.b);
 
-
         // Apply combined lighting (intensity 1.0 since we pre-multiplied)
         this.entityRenderer.setAmbientLightColor(combinedColor, 1.0);
 
         // Also apply to TerrainDetailSystem (static terrain sprites like grass/trees)
         this.game.call('setTerrainDetailLighting', combinedColor);
 
-        // Trigger event for terrain ground shader (WorldRenderer listens)
-        this.game.triggerEvent('ambientLightChanged', { color: combinedColor, intensity: 1.0 });
+        // Apply to liquid surfaces (water, lava) in WorldRenderer
+        worldRenderer.setAmbientLightColor(combinedColor, 1.0);
     }
 
     getEntityAnimationState(entityId) {
