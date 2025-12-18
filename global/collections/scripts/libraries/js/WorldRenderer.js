@@ -1881,17 +1881,25 @@ class WorldRenderer {
     }
 
     /**
-     * Set the ambient light color for terrain shader (matches sprite lighting)
+     * Set the ambient light color for terrain and liquid shaders (matches sprite lighting)
      * @param {THREE.Color|number|string} color - The ambient light color
      * @param {number} intensity - The ambient light intensity (multiplied with color)
      */
     setAmbientLightColor(color, intensity = 1.0) {
-        if (!this.groundMaterial?.uniforms?.ambientLightColor) return;
-
         const lightColor = new THREE.Color(color);
         lightColor.multiplyScalar(intensity);
 
-        this.groundMaterial.uniforms.ambientLightColor.value.set(lightColor.r, lightColor.g, lightColor.b);
+        // Update ground/terrain material
+        if (this.groundMaterial?.uniforms?.ambientLightColor) {
+            this.groundMaterial.uniforms.ambientLightColor.value.set(lightColor.r, lightColor.g, lightColor.b);
+        }
+
+        // Update liquid surface materials (water, lava, etc.)
+        for (const mesh of this.liquidMeshes) {
+            if (mesh.material?.uniforms?.ambientLightColor) {
+                mesh.material.uniforms.ambientLightColor.value.set(lightColor.r, lightColor.g, lightColor.b);
+            }
+        }
     }
 
     /**
