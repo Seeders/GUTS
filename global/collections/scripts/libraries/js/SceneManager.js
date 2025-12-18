@@ -240,12 +240,15 @@ class SceneManager {
 
             // Raw components format: { id, components: [...] }
             if (entityDef.components && Array.isArray(entityDef.components)) {
-                this.game.createEntity(entityId);
-                this.spawnedEntityIds.add(entityId);
+                // Ensure entityId is numeric - string IDs break TypedArray indexing
+                const numericEntityId = typeof entityId === 'string' ? this.game.getEntityId() : entityId;
+
+                this.game.createEntity(numericEntityId);
+                this.spawnedEntityIds.add(numericEntityId);
 
                 for (const componentObj of entityDef.components) {
                     for (const [componentType, componentData] of Object.entries(componentObj)) {
-                        this.game.addComponent(entityId, componentType, componentData);
+                        this.game.addComponent(numericEntityId, componentType, componentData);
                     }
                 }
                 continue;

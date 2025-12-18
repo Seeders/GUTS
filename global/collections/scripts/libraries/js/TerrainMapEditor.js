@@ -1688,6 +1688,11 @@ class TerrainMapEditor {
             levelName: levelName
         });
 
+        // Get enum indices for level and world (WorldSystem expects numeric indices)
+        const enums = this.editorContext.getEnums();
+        const levelIndex = enums.levels?.[levelName] ?? 0;
+        const worldIndex = enums.worlds?.[this.objectData.world] ?? 0;
+
         // Load scene with terrain entity (components must be array format)
         await this.editorContext.loadScene({
             systems: editorSystems,
@@ -1695,8 +1700,8 @@ class TerrainMapEditor {
                 id: 'terrain_entity',
                 components: [{
                     terrain: {
-                        level: levelName,
-                        world: this.objectData.world,
+                        level: levelIndex,
+                        world: worldIndex,
                         shadowsEnabled: true,
                         fogEnabled: false,
                         grassEnabled: false,
