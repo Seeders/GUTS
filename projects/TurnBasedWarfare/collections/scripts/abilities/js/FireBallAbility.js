@@ -175,8 +175,8 @@ class FireBallAbility extends GUTS.BaseAbility {
 
         // Apply splash damage to all targets
         splashTargets.forEach(target => {
-            // Calculate damage falloff based on distance
-            const damageMultiplier = Math.max(0.3, 1.0 - (target.distance / this.splashRadius));
+            // Calculate damage falloff based on distance (100% at center, 50% at edge)
+            const damageMultiplier = Math.max(0.5, 1.0 - (target.distance / this.splashRadius) * 0.5);
             const splashDamage = Math.floor(this.damage * damageMultiplier);
 
             // Apply damage

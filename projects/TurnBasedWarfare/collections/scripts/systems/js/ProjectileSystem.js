@@ -25,6 +25,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Trail tracking for visual effects
         this.projectileTrails = new Map();
 
+        // Callback storage for onHit and onTravel (functions can't be serialized in components)
+        this.projectileCallbacks = new Map();
+
         // Get gravity from movement system
         this.GRAVITY = this.game.movementSystem?.GRAVITY;
     }
@@ -94,22 +97,25 @@ class ProjectileSystem extends GUTS.BaseSystem {
             target: targetId,
             source: sourceId,
             startTime: this.game.state.now,
-            startX: sourcePos.x,
-            startY: spawnHeight,
-            startZ: sourcePos.z,
             isBallistic: projectileData.ballistic || false,
-            targetX: targetPos.x,
-            targetY: targetPos.y + 20,
-            targetZ: targetPos.z,
             launchAngle: trajectory.launchAngle,
             timeToTarget: trajectory.timeToTarget,
             weaponRange: trajectory.weaponRange || sourceCombat.range,
             element: projectileElement,
             splashRadius: projectileData.splashRadius || 80,
-            onHit: projectileData.onHit || null,
-            onTravel: projectileData.onTravel || null,
+            sticksInGround: projectileData.sticksInGround || false,
+            stickDuration: projectileData.stickDuration || 3,
+            isStuck: false,
             lastTrailTime: this.game.state.now
         });
+
+        // Store callbacks in Map (functions can't be serialized in components)
+        if (projectileData.onHit || projectileData.onTravel) {
+            this.projectileCallbacks.set(projectileId, {
+                onHit: projectileData.onHit || null,
+                onTravel: projectileData.onTravel || null
+            });
+        }
 
         const sourceTeam = this.game.getComponent(sourceId, "team");
    
@@ -160,6 +166,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
     cleanupProjectileData(projectileId) {
         // Clean up trail data
         this.projectileTrails.delete(projectileId);
+        // Clean up callbacks
+        this.projectileCallbacks.delete(projectileId);
     }
 
     /**
@@ -309,10 +317,11 @@ class ProjectileSystem extends GUTS.BaseSystem {
             }
 
             // Call onTravel callback for trail effects (throttled)
-            if (projectile.onTravel && typeof projectile.onTravel === 'function') {
+            const callbacks = this.projectileCallbacks.get(projectileId);
+            if (callbacks?.onTravel && typeof callbacks.onTravel === 'function') {
                 const timeSinceLastTrail = this.game.state.now - (projectile.lastTrailTime || 0);
                 if (timeSinceLastTrail >= this.TRAIL_UPDATE_INTERVAL) {
-                    projectile.onTravel(pos);
+                    callbacks.onTravel(pos);
                     projectile.lastTrailTime = this.game.state.now;
                 }
             }
@@ -655,9 +664,10 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
 
     triggerBallisticExplosion(entityId, pos, projectile, groundLevel) {
-        // Call custom onHit callback if provided
-        if (projectile.onHit && typeof projectile.onHit === 'function') {
-            projectile.onHit(pos);
+        // Call custom onHit callback if provided (stored in Map, not component)
+        const callbacks = this.projectileCallbacks.get(entityId);
+        if (callbacks?.onHit && typeof callbacks.onHit === 'function') {
+            callbacks.onHit(pos);
             this.destroyProjectile(entityId);
             return;
         }
@@ -875,6 +885,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
     onSceneUnload() {
         // Clear all projectile trails
         this.projectileTrails.clear();
+
+        // Clear all projectile callbacks
+        this.projectileCallbacks.clear();
 
         // Clear active projectiles if tracked
         if (this.activeProjectiles) {

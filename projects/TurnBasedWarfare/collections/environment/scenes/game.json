@@ -47,7 +47,8 @@
     "UnitOrderUISystem",
     "MiniMapSystem",
     "CameraControlSystem",
-    "DamageNumberSystem"
+    "DamageNumberSystem",
+    "SaveSystem"
   ],
   "serverSystems": [
     "ServerBattlePhaseSystem",
