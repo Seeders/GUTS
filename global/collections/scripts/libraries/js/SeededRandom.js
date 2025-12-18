@@ -16,6 +16,11 @@ class SeededRandom {
     int(min, max) {
         return Math.floor(this.range(min, max + 1));
     }
+
+    reseed(seed) {
+        this.seed = seed;
+        this.current = seed;
+    }
 }
 
 if(typeof SeededRandom != 'undefined'){

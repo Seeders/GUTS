@@ -74,7 +74,7 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
         const playerEntities = this.game.getEntitiesWith('playerStats');
         for (const entityId of playerEntities) {
             const stats = this.game.getComponent(entityId, 'playerStats');
-            if (stats && stats.side === team) {
+            if (stats && stats.team === team) {
                 return stats;
             }
         }
@@ -178,14 +178,14 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
         if (!this.game.hasComponent(entityId, 'playerStats')) {
             this.game.addComponent(entityId, 'playerStats', {
                 playerId: numericId,
-                side: statsData.team ?? this.enums.team.left,
+                team: statsData.team ?? this.enums.team.left,
                 gold: statsData.gold || 0,
                 upgrades: statsData.upgrades || []
             });
         } else {
             // Update existing stats
             const stats = this.game.getComponent(entityId, 'playerStats');
-            stats.side = statsData.team ?? stats.side;
+            stats.team = statsData.team ?? stats.team;
             stats.gold = statsData.gold ?? stats.gold;
             stats.upgrades = statsData.upgrades || stats.upgrades;
         }

@@ -144,9 +144,15 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @returns {number} Entity ID
      */
     createUnit(collectionIndex, spawnTypeIndex, transform, team, entityId = null) {
+        // DEBUG: Log incoming indices
+        console.log('[UnitCreationSystem.createUnit] indices:', { collectionIndex, spawnTypeIndex });
+
         // Convert numeric indices to strings for collection lookup
         const collection = this.reverseEnums.objectTypeDefinitions?.[collectionIndex];
         const spawnType = collection ? this.reverseEnums[collection]?.[spawnTypeIndex] : null;
+
+        // DEBUG: Log resolved names
+        console.log('[UnitCreationSystem.createUnit] resolved:', { collection, spawnType });
 
         if (!collection || !spawnType) {
             throw new Error(`Invalid unit indices: collection=${collectionIndex}, spawnType=${spawnTypeIndex}`);
@@ -383,11 +389,15 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             },
 
             // Visual components
-            renderable: {
-                objectType: collectionIndex,
-                spawnType: spawnTypeIndex,
-                capacity: 128
-            },
+            // DEBUG: Log renderable values being set
+            renderable: (() => {
+                console.log('[UnitCreationSystem.addAllComponents] renderable:', { objectType: collectionIndex, spawnType: spawnTypeIndex });
+                return {
+                    objectType: collectionIndex,
+                    spawnType: spawnTypeIndex,
+                    capacity: 128
+                };
+            })(),
 
             // Experience component
             experience: {

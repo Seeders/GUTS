@@ -2,7 +2,7 @@
   "title": "playerStats",
   "schema": {
     "playerId": null,
-    "side": 2,
+    "team": 2,
     "gold": 100,
     "upgrades": {
       "$bitmask": {

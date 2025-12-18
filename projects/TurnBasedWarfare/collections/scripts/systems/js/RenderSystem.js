@@ -247,6 +247,9 @@ class RenderSystem extends GUTS.BaseSystem {
 
             // Check if entity already spawned or currently spawning
             if (!this.spawnedEntities.has(entityId)) {
+                // DEBUG: Log when spawning new entity
+                console.log('[RenderSystem] Spawning entity:', entityId, 'renderable:', { objectType, spawnType });
+
                 // Mark as spawned immediately to prevent race condition with async spawn
                 this.spawnedEntities.add(entityId);
 

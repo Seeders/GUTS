@@ -23,7 +23,7 @@ export default class ServerEngine extends BaseEngine {
         // Initialize network manager
         this.serverNetworkManager = new ServerNetworkManager(this);
         await this.serverNetworkManager.init();
-        
+
         this.start();
     }
 
@@ -92,18 +92,18 @@ export default class ServerEngine extends BaseEngine {
 
     gameLoop() {
         if (!this.running) return;
-        
+
         const now = this.getCurrentTime();
         const deltaTime = (now - this.lastTick) / 1000;
 
         this.lastTick = now;
-        
+
         this.accumulator += deltaTime;
-        while (this.accumulator >= this.tickRate) {        
+        while (this.accumulator >= this.tickRate) {
             this.tick();
             this.accumulator -= this.tickRate;
         }
-        
+
         // Use setImmediate for next tick (Node.js specific)
         setImmediate(() => this.gameLoop());
     }
@@ -115,9 +115,6 @@ export default class ServerEngine extends BaseEngine {
                 room.update(this.tickRate);
             }
         }
-        
-        // Send updates to clients
-        this.serverNetworkManager.broadcastGameStates();
     }
 
     start() {

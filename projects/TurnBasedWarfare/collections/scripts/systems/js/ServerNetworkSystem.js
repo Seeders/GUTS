@@ -1,31 +1,138 @@
 /**
  * ServerNetworkSystem - Server-side network event handlers
  *
- * Mirrors ClientNetworkSystem on the client. This system handles all
- * server-side network events: receives requests, validates, calls domain
- * systems (PlacementSystem, CheatCodeSystem, etc.), and sends responses.
+ * This system handles:
+ * 1. Event subscriptions via serverEventManager (on actual server)
+ * 2. Event handlers (handle* methods) for game events
+ * 3. Broadcasting to players via sendToPlayer/broadcastToRoom
  *
- * Domain systems contain the actual logic and run identically on client/server.
- * This system is purely a network adapter layer.
+ * In multiplayer: routes through ServerNetworkManager to Socket.IO
+ * In local game: checks isLocalGame() and routes directly to ClientNetworkSystem handlers
+ *
+ * Handler methods are exposed as services so they can be called via game.call()
+ * in local game mode (ClientNetworkSystem calls them directly with callbacks).
  */
 class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
+    static services = [
+        // Broadcast services
+        'sendToPlayer',
+        'broadcastToRoom',
+        // Handler services (for local game mode game.call() access)
+        'handleSubmitPlacement',
+        'handleSetSquadTarget',
+        'handleSetSquadTargets',
+        'handleCancelBuilding',
+        'handleUpgradeBuilding',
+        'handlePurchaseUpgrade',
+        'handleReadyForBattle',
+        'handleGetStartingState',
+        'handleLevelSquad',
+        'handleExecuteCheat'
+    ];
+
     constructor(game) {
         super(game);
         this.game.serverNetworkSystem = this;
-        this.serverNetworkManager = this.engine?.serverNetworkManager;
         this.placementReadyStates = new Map();
         this.numPlayers = 2;
+        // Queue networkUnitData per player for battle start sync
+        // Map<playerId, Array<networkUnitData>>
+        this.pendingNetworkUnitData = new Map();
     }
 
     init(params) {
         this.params = params || {};
 
-        if (!this.serverNetworkManager) {
-            return;
+        // Subscribe to events only on actual server (not in local game mode on client)
+        if (this.engine?.isServer && this.game.serverEventManager) {
+            this.subscribeToEvents();
         }
-
-        this.subscribeToEvents();
     }
+
+    // ==================== NETWORK HELPERS ====================
+
+    /**
+     * Check if player exists (has player entity)
+     */
+    playerExists(playerId) {
+        return this.game.call('getPlayerStats', playerId) !== null;
+    }
+
+    /**
+     * Send response to a player (multiplayer only - local game uses callbacks)
+     */
+    sendToPlayer(playerId, eventName, data) {
+        // In local game mode, responses go through callbacks, not events
+        if (this.game.state.isLocalGame) return;
+        this.engine?.serverNetworkManager?.sendToPlayer(playerId, eventName, data);
+    }
+
+    /**
+     * Unified response helper - sends result via callback (local) or sendToPlayer (multiplayer)
+     * @param {string} playerId - Player to respond to
+     * @param {string} responseName - Event name for multiplayer response
+     * @param {Object} result - Result data to send
+     * @param {Function} callback - Callback for local mode
+     * @returns {*} Returns callback result if callback exists
+     */
+    respond(playerId, responseName, result, callback) {
+        if (callback) return callback(result);
+        this.sendToPlayer(playerId, responseName, result);
+    }
+
+    /**
+     * Create and send an error response
+     * @param {string} playerId - Player to respond to
+     * @param {string} responseName - Event name for multiplayer response
+     * @param {string} error - Error message
+     * @param {Function} callback - Callback for local mode
+     * @returns {*} Returns callback result if callback exists
+     */
+    respondError(playerId, responseName, error, callback) {
+        return this.respond(playerId, responseName, { error, success: false }, callback);
+    }
+
+    /**
+     * Broadcast to all players in a room
+     * In multiplayer: routes through ServerNetworkManager to Socket.IO
+     * In local game: calls ClientNetworkSystem handlers directly (only one player)
+     */
+    broadcastToRoom(roomId, eventName, data) {
+        const isLocal = this.game.state.isLocalGame;
+
+        if (isLocal) {
+            // In local game, route directly to client handlers
+            const clientNet = this.game.clientNetworkSystem;
+            if (eventName === 'BATTLE_END') {
+                clientNet?.handleBattleEnd(data);
+            } else if (eventName === 'GAME_END') {
+                clientNet?.handleGameEnd(data);
+            } else if (eventName === 'READY_FOR_BATTLE_UPDATE') {
+                clientNet?.handleReadyForBattleUpdate(data);
+            }
+            // Other broadcasts are no-ops in single player
+        } else {
+            // Multiplayer - use ServerNetworkManager
+            const actualRoomId = roomId || this.game.room?.id;
+            this.engine?.serverNetworkManager?.broadcastToRoom(actualRoomId, eventName, data);
+        }
+    }
+
+    /**
+     * Send to all other players (multiplayer only - no-op in local game)
+     */
+    notifyOtherPlayers(excludePlayerId, eventName, data) {
+        if (!this.engine?.isServer) return; // Skip in local game
+        const playerEntities = this.game.call('getPlayerEntities');
+        for (const entityId of playerEntities) {
+            const stats = this.game.getComponent(entityId, 'playerStats');
+            if (stats && stats.playerId !== excludePlayerId) {
+                this.sendToPlayer(stats.playerId, eventName, data);
+            }
+        }
+    }
+
+    // ==================== EVENT SUBSCRIPTIONS ====================
 
     subscribeToEvents() {
         if (!this.game.serverEventManager) {
@@ -50,130 +157,130 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
     // ==================== PLACEMENT HANDLERS ====================
 
-    handleGetStartingState(eventData) {
+    handleGetStartingState(eventData, callback) {
+        const { playerId } = eventData;
+        const responseName = 'GOT_STARTING_STATE';
+
         try {
-            const { playerId } = eventData;
-
-            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-            if (!roomId) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'GOT_STARTING_STATE', {
-                    error: 'Room not found'
-                });
-                return;
+            if (!this.playerExists(playerId)) {
+                return this.respondError(playerId, responseName, 'Player not found', callback);
             }
 
-            const room = this.engine.getRoom(roomId);
-            const player = room.getPlayer(playerId);
-
-            if (player) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'GOT_STARTING_STATE', this.getStartingStateResponse(player));
-            }
+            const result = this.getStartingStateResponse();
+            return this.respond(playerId, responseName, result, callback);
 
         } catch (error) {
             console.error('Error getting starting state:', error);
-            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'GOT_STARTING_STATE', {
-                error: 'Server error while getting starting state',
-                playerId: eventData.playerId,
-                ready: false,
-                success: false
-            });
+            return this.respondError(playerId, responseName, 'Server error while getting starting state', callback);
         }
     }
 
-    handleSubmitPlacement(eventData) {
+    handleSubmitPlacement(eventData, callback) {
+        const { playerId, numericPlayerId, data } = eventData;
+        const responseName = 'SUBMITTED_PLACEMENT';
+
         try {
-            const { playerId, numericPlayerId, data } = eventData;
             const { placement } = data;
 
-            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-            if (!roomId) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SUBMITTED_PLACEMENT', {
-                    error: 'Room not found'
-                });
-                return;
+            const playerStats = this.game.call('getPlayerStats', playerId);
+            if (!playerStats) {
+                return this.respondError(playerId, responseName, 'Player not found', callback);
             }
 
-            const room = this.engine.getRoom(roomId);
-            const player = room.getPlayer(playerId);
+            const result = this.processPlacement(playerId, numericPlayerId, playerStats, placement, null);
 
-            // Call shared processPlacement (server passes null for serverEntityIds to generate new IDs)
-            const result = this.processPlacement(playerId, numericPlayerId, player, placement, null);
-            this.serverNetworkManager.sendToPlayer(playerId, 'SUBMITTED_PLACEMENT', result);
+            if (result.success) {
+                // Queue networkUnitData for battle start sync
+                this.queueNetworkUnitData(playerId, numericPlayerId, playerStats.team, placement, result);
+            }
+
+            return this.respond(playerId, responseName, result, callback);
 
         } catch (error) {
             console.error('Error submitting placements:', error);
-            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'SUBMITTED_PLACEMENT', {
-                error: 'Server error while submitting placements',
-                success: false
-            });
+            return this.respondError(playerId, responseName, 'Server error while submitting placements', callback);
         }
     }
 
-    handlePurchaseUpgrade(eventData) {
-        try {
-            const { playerId, data } = eventData;
+    /**
+     * Queue networkUnitData for a placement to be sent at battle start
+     */
+    queueNetworkUnitData(playerId, numericPlayerId, team, placement, result) {
+        if (!this.pendingNetworkUnitData.has(playerId)) {
+            this.pendingNetworkUnitData.set(playerId, { team, numericPlayerId, placements: [] });
+        }
 
-            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-            if (!roomId) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_UPGRADE', {
-                    error: 'Room not found'
-                });
-                return;
+        this.pendingNetworkUnitData.get(playerId).placements.push({
+            placementId: result.placementId,
+            gridPosition: placement.gridPosition,
+            unitTypeId: placement.unitTypeId,
+            collection: placement.collection,
+            team: team,
+            playerId: numericPlayerId,
+            squadUnits: result.squadUnits || [],
+            roundPlaced: placement.roundPlaced || this.game.state.round || 1
+        });
+    }
+
+    /**
+     * Build players array with networkUnitData for battle start
+     */
+    buildPlayersForBattleStart() {
+        const players = [];
+        for (const [socketPlayerId, data] of this.pendingNetworkUnitData) {
+            players.push({
+                id: socketPlayerId,
+                team: data.team,
+                networkUnitData: data.placements
+            });
+        }
+        return players;
+    }
+
+    handlePurchaseUpgrade(eventData, callback) {
+        const { playerId, data } = eventData;
+        const responseName = 'PURCHASED_UPGRADE';
+
+        try {
+            if (!this.playerExists(playerId)) {
+                return this.respondError(playerId, responseName, 'Player not found', callback);
             }
 
-            // Call shared processPurchaseUpgrade
-            const upgrade = this.collections.upgrades[data.data.upgradeId];
+            const upgradeId = data?.data?.upgradeId || data?.upgradeId;
+            const upgrade = this.collections.upgrades[upgradeId];
             if (!upgrade) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_UPGRADE', {
-                    success: false,
-                    error: `Unknown upgrade: ${data.data.upgradeId}`
-                });
-                return;
+                return this.respondError(playerId, responseName, `Unknown upgrade: ${upgradeId}`, callback);
             }
 
             if (this.game.state.phase !== this.enums.gamePhase.placement) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_UPGRADE', {
-                    success: false,
-                    error: `Not in placement phase (${this.game.state.phase})`
-                });
-                return;
+                return this.respondError(playerId, responseName, `Not in placement phase (${this.game.state.phase})`, callback);
             }
 
-            const result = this.processPurchaseUpgrade(playerId, data.data.upgradeId, upgrade);
-            this.serverNetworkManager.sendToPlayer(playerId, 'PURCHASED_UPGRADE', result);
+            const result = this.processPurchaseUpgrade(playerId, upgradeId, upgrade);
+            return this.respond(playerId, responseName, result, callback);
 
         } catch (error) {
             console.error('Error purchasing upgrades:', error);
-            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'PURCHASED_UPGRADE', {
-                error: 'Server error while purchasing upgrades',
-                playerId: eventData.playerId,
-                ready: false
-            });
+            return this.respondError(playerId, responseName, 'Server error while purchasing upgrades', callback);
         }
     }
 
-    async handleLevelSquad(eventData) {
+    async handleLevelSquad(eventData, callback) {
         const { playerId, data } = eventData;
+        const responseName = 'SQUAD_LEVELED';
         const { placementId, specializationId } = data;
 
         if (!playerId) return;
 
-        const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-        if (!roomId) return;
-
-        const room = this.engine.getRoom(roomId);
-        if (!room) return;
-
         const playerStats = this.game.call('getPlayerStats', playerId);
-        const playerGold = playerStats?.gold || 0;
+        if (!playerStats) {
+            return this.respondError(playerId, responseName, 'Player not found', callback);
+        }
+
+        const playerGold = playerStats.gold || 0;
 
         if (!this.game.call('canAffordLevelUp', placementId, playerGold)) {
-            this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
-                playerId: playerId,
-                error: "gold_low_error",
-                success: false
-            });
-            return false;
+            return this.respondError(playerId, responseName, 'gold_low_error', callback);
         }
 
         const success1 = specializationId ? this.game.call('applySpecialization', placementId, specializationId, playerId) : true;
@@ -183,179 +290,148 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
                 const levelUpCost = this.game.call('getLevelUpCost', placementId);
                 playerStats.gold -= levelUpCost;
 
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_LEVELED', {
+                const result = {
                     playerId: playerId,
                     currentGold: playerStats.gold,
                     success: true
-                });
+                };
+                this.respond(playerId, responseName, result, callback);
             }
         });
     }
 
-    handleSetSquadTarget(eventData) {
+    handleSetSquadTarget(eventData, callback) {
+        const { playerId, data } = eventData;
+        const responseName = 'SQUAD_TARGET_SET';
+
         try {
-            const { playerId, data } = eventData;
             const { placementId, targetPosition, meta } = data;
 
             if (this.game.state.phase !== this.enums.gamePhase.placement) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { success: false });
-                return;
+                return this.respondError(playerId, responseName, 'Not in placement phase', callback);
             }
 
-            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-            if (!roomId) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { error: 'Room not found' });
-                return;
+            if (!this.playerExists(playerId)) {
+                return this.respondError(playerId, responseName, 'Player not found', callback);
             }
 
-            const room = this.engine.getRoom(roomId);
-            const player = room.getPlayer(playerId);
-
-            if (!player) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { error: 'Player not found' });
-                return;
-            }
-
-            // Validate placement belongs to player
             const placement = this.game.call('getPlacementById', placementId);
             if (!placement) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', { error: 'Placement not found' });
-                return;
+                return this.respondError(playerId, responseName, 'Placement not found', callback);
             }
 
-            // Server is authoritative for issuedTime
             const serverIssuedTime = this.game.state.now;
-
-            // Call shared processSquadTarget (handles build orders and applies target)
             this.processSquadTarget(placementId, targetPosition, meta, serverIssuedTime);
 
-            // Send success response
-            this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGET_SET', {
+            const result = {
                 success: true,
+                placementId,
+                targetPosition,
+                meta,
+                issuedTime: serverIssuedTime
+            };
+
+            this.respond(playerId, responseName, result, callback);
+
+            // Notify other players (multiplayer only)
+            this.notifyOtherPlayers(playerId, 'OPPONENT_SQUAD_TARGET_SET', {
                 placementId,
                 targetPosition,
                 meta,
                 issuedTime: serverIssuedTime
             });
 
-            // Broadcast to other players
-            for (const [otherPlayerId] of room.players) {
-                if (otherPlayerId !== playerId) {
-                    this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGET_SET', {
-                        placementId,
-                        targetPosition,
-                        meta,
-                        issuedTime: serverIssuedTime
-                    });
-                }
-            }
-
         } catch (error) {
             console.error('Error setting squad target:', error);
-            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'SQUAD_TARGET_SET', {
-                error: 'Server error while setting squad target'
-            });
+            return this.respondError(playerId, responseName, 'Server error while setting squad target', callback);
         }
     }
 
-    handleSetSquadTargets(eventData) {
+    handleSetSquadTargets(eventData, callback) {
+        const { playerId, data } = eventData;
+        const responseName = 'SQUAD_TARGETS_SET';
+
         try {
-            const { playerId, data } = eventData;
             const { placementIds, targetPositions, meta } = data;
 
             if (this.game.state.phase !== this.enums.gamePhase.placement) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { success: false });
-                return;
+                return this.respondError(playerId, responseName, 'Not in placement phase', callback);
             }
 
-            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-            if (!roomId) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { error: 'Room not found' });
-                return;
-            }
-
-            const room = this.engine.getRoom(roomId);
-            const player = room.getPlayer(playerId);
-
-            if (!player) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { error: 'Player not found' });
-                return;
+            if (!this.playerExists(playerId)) {
+                return this.respondError(playerId, responseName, 'Player not found', callback);
             }
 
             const serverIssuedTime = this.game.state.now;
 
-            // Validate all placements first
             for (let i = 0; i < placementIds.length; i++) {
                 const placement = this.game.call('getPlacementById', placementIds[i]);
                 if (!placement) {
-                    this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', { error: 'Placement not found' });
-                    return;
+                    return this.respondError(playerId, responseName, 'Placement not found', callback);
                 }
             }
 
-            // Call shared processSquadTargets
             this.processSquadTargets(placementIds, targetPositions, meta, serverIssuedTime);
 
-            this.serverNetworkManager.sendToPlayer(playerId, 'SQUAD_TARGETS_SET', {
+            const result = {
                 success: true,
+                placementIds,
+                targetPositions,
+                meta,
+                issuedTime: serverIssuedTime
+            };
+
+            this.respond(playerId, responseName, result, callback);
+
+            // Notify other players (multiplayer only)
+            this.notifyOtherPlayers(playerId, 'OPPONENT_SQUAD_TARGETS_SET', {
                 placementIds,
                 targetPositions,
                 meta,
                 issuedTime: serverIssuedTime
             });
 
-            for (const [otherPlayerId] of room.players) {
-                if (otherPlayerId !== playerId) {
-                    this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_SQUAD_TARGETS_SET', {
-                        placementIds,
-                        targetPositions,
-                        meta,
-                        issuedTime: serverIssuedTime
-                    });
-                }
-            }
-
         } catch (error) {
             console.error('Error setting squad targets:', error);
-            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'SQUAD_TARGETS_SET', {
-                error: 'Server error while setting squad targets'
-            });
+            return this.respondError(playerId, responseName, 'Server error while setting squad targets', callback);
         }
     }
 
-    handleReadyForBattle(eventData) {
+    handleReadyForBattle(eventData, callback) {
         const { playerId } = eventData;
+        const responseName = 'READY_FOR_BATTLE_RESPONSE';
 
-        const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-        if (!roomId) {
-            this.serverNetworkManager.sendToPlayer(playerId, 'READY_FOR_BATTLE_RESPONSE', { error: 'Room not found' });
-            return;
+        if (!this.playerExists(playerId)) {
+            return this.respondError(playerId, responseName, 'Player not found', callback);
         }
 
-        const room = this.engine.getRoom(roomId);
-        const player = room.getPlayer(playerId);
-
-        // Update ready state
-        player.ready = true;
         this.placementReadyStates.set(playerId, true);
 
-        this.serverNetworkManager.sendToPlayer(playerId, 'READY_FOR_BATTLE_RESPONSE', { success: true });
+        this.respond(playerId, responseName, { success: true }, callback);
 
-        // Check if all players are ready
-        if (this.areAllPlayersReady() && this.game.state.phase === this.enums.gamePhase.placement) {
-            const gameState = room.getGameState();
+        // Check if ready to start battle
+        // In local game: start immediately (AI is always ready)
+        // In multiplayer: wait for all players to be ready
+        const isLocal = this.game.state.isLocalGame;
+        const allReady = isLocal || this.areAllPlayersReady();
 
-            // Reset time before serializing
+        if (allReady && this.game.state.phase === this.enums.gamePhase.placement) {
             this.game.resetCurrentTime();
-            this.game.desyncDebugger.enabled = true;
-            this.game.desyncDebugger.displaySync(true);
+            if (this.game.desyncDebugger) {
+                this.game.desyncDebugger.enabled = true;
+                this.game.desyncDebugger.displaySync(true);
+            }
             this.game.call('resetAI');
             this.game.triggerEvent("onBattleStart");
 
-            // Serialize all entities for client sync
             const entitySync = this.game.call('serializeAllEntities');
+            // Build gameState with players array containing networkUnitData
+            const gameState = {
+                ...this.game.state,
+                players: this.buildPlayersForBattleStart()
+            };
 
-            this.serverNetworkManager.broadcastToRoom(roomId, 'READY_FOR_BATTLE_UPDATE', {
+            this.broadcastToRoom(null, 'READY_FOR_BATTLE_UPDATE', {
                 gameState: gameState,
                 allReady: true,
                 entitySync: entitySync,
@@ -363,188 +439,149 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
                 nextEntityId: this.game.nextEntityId
             });
 
+            // Clear queued data after sending
+            this.pendingNetworkUnitData.clear();
             this.placementReadyStates.clear();
-            this.game.call('startBattle', room);
+            this.game.call('startBattle');
 
-        } else {
-            const gameState = room.getGameState();
-            this.serverNetworkManager.broadcastToRoom(roomId, 'READY_FOR_BATTLE_UPDATE', {
-                gameState: gameState,
+        } else if (this.engine?.isServer) {
+            // Multiplayer only - notify that not all players are ready yet
+            this.broadcastToRoom(null, 'READY_FOR_BATTLE_UPDATE', {
+                gameState: this.game.state,
                 allReady: false
             });
         }
     }
 
-    handleCancelBuilding(eventData) {
+    handleCancelBuilding(eventData, callback) {
+        const { playerId, numericPlayerId, data } = eventData;
+        const responseName = 'BUILDING_CANCELLED';
+
         try {
-            const { playerId, numericPlayerId, data } = eventData;
             const { buildingEntityId } = data;
 
-            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-            if (!roomId) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { error: 'Room not found' });
-                return;
-            }
-
-            const room = this.engine.getRoom(roomId);
-            const player = room.getPlayer(playerId);
-
-            if (!player) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', { error: 'Player not found' });
-                return;
-            }
-
-            // Call shared processCancelBuilding (validates, refunds gold, cleans up, destroys)
-            const result = this.processCancelBuilding(buildingEntityId, numericPlayerId);
-
-            if (!result.success) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', result);
-                return;
-            }
-
-            // Get current gold for response
             const playerStats = this.game.call('getPlayerStats', playerId);
-
-            this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_CANCELLED', {
-                success: true,
-                placementId: result.placementId,
-                refundAmount: result.refundAmount,
-                gold: playerStats?.gold ?? 0
-            });
-
-            // Broadcast to other players
-            for (const [otherPlayerId] of room.players) {
-                if (otherPlayerId !== playerId) {
-                    this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_BUILDING_CANCELLED', {
-                        placementId: result.placementId,
-                        team: playerStats?.side
-                    });
-                }
+            if (!playerStats) {
+                return this.respondError(playerId, responseName, 'Player not found', callback);
             }
+
+            const procResult = this.processCancelBuilding(buildingEntityId, numericPlayerId);
+
+            if (!procResult.success) {
+                return this.respond(playerId, responseName, procResult, callback);
+            }
+
+            const result = {
+                success: true,
+                placementId: procResult.placementId,
+                refundAmount: procResult.refundAmount,
+                gold: playerStats.gold ?? 0
+            };
+
+            this.respond(playerId, responseName, result, callback);
+
+            // Notify other players (multiplayer only)
+            this.notifyOtherPlayers(playerId, 'OPPONENT_BUILDING_CANCELLED', {
+                placementId: procResult.placementId,
+                team: playerStats.team
+            });
 
         } catch (error) {
             console.error('Error cancelling building:', error);
-            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'BUILDING_CANCELLED', {
-                error: 'Server error while cancelling building'
-            });
+            return this.respondError(playerId, responseName, 'Server error while cancelling building', callback);
         }
     }
 
-    handleUpgradeBuilding(eventData) {
+    handleUpgradeBuilding(eventData, callback) {
+        const { playerId, numericPlayerId, data } = eventData;
+        const responseName = 'BUILDING_UPGRADED';
+
         try {
-            const { playerId, numericPlayerId, data } = eventData;
             const { buildingEntityId, placementId, targetBuildingId } = data;
 
-            const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-            if (!roomId) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: 'Room not found' });
-                return;
+            const playerStats = this.game.call('getPlayerStats', playerId);
+            if (!playerStats) {
+                return this.respondError(playerId, responseName, 'Player not found', callback);
             }
 
-            const room = this.engine.getRoom(roomId);
-            const player = room.getPlayer(playerId);
-
-            if (!player) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: 'Player not found' });
-                return;
-            }
-
-            // Validate phase
             if (this.game.state.phase !== this.enums.gamePhase.placement) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: 'Not in placement phase' });
-                return;
+                return this.respondError(playerId, responseName, 'Not in placement phase', callback);
             }
 
-            // Validate target building exists
             const targetBuilding = this.collections.buildings[targetBuildingId];
             if (!targetBuilding) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: 'Invalid target building' });
-                return;
+                return this.respondError(playerId, responseName, 'Invalid target building', callback);
             }
 
-            // Validate gold (use target building's value as cost)
             const upgradeCost = targetBuilding.value || 0;
-            const playerStats = this.game.call('getPlayerStats', playerId);
-            if (!playerStats || playerStats.gold < upgradeCost) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: 'Not enough gold' });
-                return;
+            if (playerStats.gold < upgradeCost) {
+                return this.respondError(playerId, responseName, 'Not enough gold', callback);
             }
 
-            // Validate old building exists
             const oldTransform = this.game.getComponent(buildingEntityId, 'transform');
             if (!oldTransform?.position) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: 'Building not found' });
-                return;
+                return this.respondError(playerId, responseName, 'Building not found', callback);
             }
 
-            // Call shared processUpgradeBuilding (server generates new entity IDs)
-            const result = this.processUpgradeBuilding(playerId, numericPlayerId, player, buildingEntityId, placementId, targetBuildingId, null);
+            const procResult = this.processUpgradeBuilding(playerId, numericPlayerId, playerStats, buildingEntityId, placementId, targetBuildingId, null);
 
-            if (!result.success) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', { error: result.error });
-                return;
+            if (!procResult.success) {
+                return this.respondError(playerId, responseName, procResult.error, callback);
             }
 
-            this.serverNetworkManager.sendToPlayer(playerId, 'BUILDING_UPGRADED', {
+            const result = {
                 success: true,
-                newEntityId: result.newEntityId,
-                newPlacementId: result.newPlacementId,
-                gridPosition: result.gridPosition,
+                newEntityId: procResult.newEntityId,
+                newPlacementId: procResult.newPlacementId,
+                gridPosition: procResult.gridPosition,
                 gold: playerStats.gold
-            });
+            };
 
-            // Broadcast to other players
-            for (const [otherPlayerId] of room.players) {
-                if (otherPlayerId !== playerId) {
-                    this.serverNetworkManager.sendToPlayer(otherPlayerId, 'OPPONENT_BUILDING_UPGRADED', {
-                        buildingEntityId: buildingEntityId,
-                        placementId: placementId,
-                        targetBuildingId: targetBuildingId,
-                        newEntityId: result.newEntityId,
-                        newPlacementId: result.newPlacementId,
-                        gridPosition: result.gridPosition
-                    });
-                }
-            }
+            this.respond(playerId, responseName, result, callback);
+
+            // Notify other players (multiplayer only)
+            this.notifyOtherPlayers(playerId, 'OPPONENT_BUILDING_UPGRADED', {
+                buildingEntityId: buildingEntityId,
+                placementId: placementId,
+                targetBuildingId: targetBuildingId,
+                newEntityId: procResult.newEntityId,
+                newPlacementId: procResult.newPlacementId,
+                gridPosition: procResult.gridPosition
+            });
 
         } catch (error) {
             console.error('Error upgrading building:', error);
-            this.serverNetworkManager.sendToPlayer(eventData.playerId, 'BUILDING_UPGRADED', {
-                error: 'Server error while upgrading building'
-            });
+            return this.respondError(playerId, responseName, 'Server error while upgrading building', callback);
         }
     }
 
     // ==================== CHEAT HANDLERS ====================
 
-    handleExecuteCheat(eventData) {
+    handleExecuteCheat(eventData, callback) {
         const { playerId, data } = eventData;
+        const responseName = 'CHEAT_EXECUTED';
         const { cheatName, params } = data;
 
-        const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-        if (!roomId) {
-            this.serverNetworkManager.sendToPlayer(playerId, 'CHEAT_EXECUTED', { error: 'Room not found' });
-            return;
+        if (!this.playerExists(playerId)) {
+            return this.respondError(playerId, responseName, 'Player not found', callback);
         }
 
-        // Call shared processCheat (validates and executes)
         const cheatResult = this.processCheat(cheatName, params);
 
         if (!cheatResult.success) {
-            this.serverNetworkManager.sendToPlayer(playerId, 'CHEAT_EXECUTED', { error: cheatResult.error });
-            return;
+            return this.respondError(playerId, responseName, cheatResult.error, callback);
         }
 
-        // Send success response
-        this.serverNetworkManager.sendToPlayer(playerId, 'CHEAT_EXECUTED', {
+        const result = {
             success: true,
             cheatName,
             params,
             result: cheatResult.result
-        });
+        };
 
-        // Broadcast to all players
-        this.serverNetworkManager.broadcastToRoom(roomId, 'CHEAT_BROADCAST', {
+        this.respond(playerId, responseName, result, callback);
+
+        this.broadcastToRoom(null, 'CHEAT_BROADCAST', {
             cheatName,
             params,
             result: cheatResult.result,
@@ -559,7 +596,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         return states.length === this.numPlayers && states.every(ready => ready === true);
     }
 
-    getStartingStateResponse(player) {
+    getStartingStateResponse() {
         const playerEntities = this.game.call('getSerializedPlayerEntities') || [];
         return {
             success: true,
@@ -570,11 +607,18 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
     // ==================== LIFECYCLE ====================
 
     onBattleEnd() {
-        this.game.desyncDebugger.displaySync(true);
-        this.game.desyncDebugger.enabled = false;
+        if (this.game.desyncDebugger) {
+            this.game.desyncDebugger.displaySync(true);
+            this.game.desyncDebugger.enabled = false;
+        }
     }
 
     clearAllPlacements() {
         this.placementReadyStates = new Map();
+        this.pendingNetworkUnitData.clear();
+    }
+
+    cleanup() {
+        console.log('ServerNetworkSystem cleaned up');
     }
 }

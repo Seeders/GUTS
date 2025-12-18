@@ -21,6 +21,21 @@ class GameModeSystem extends GUTS.BaseSystem {
 
     initializeGameModes() {
         return {
+            skirmish: {
+                id: 'skirmish',
+                title: 'Skirmish',
+                icon: '🤖',
+                interfaceId: 'skirmishLobby',
+                description: 'Battle against an AI opponent',
+                difficulty: 'vs AI',
+                difficultyClass: 'pve',
+                isMultiplayer: false,
+                maxPlayers: 1,
+                startingGold: 100,
+                onStart: (mode) => {
+                    this.game.call('showSkirmishLobby', mode);
+                }
+            },
             arena: {
                 id: 'arena',
                 title: 'Arena',

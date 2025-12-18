@@ -332,31 +332,42 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
 
         if (data.allReady) {
-            // Apply network unit data for each team from server data
-            data.gameState.players.forEach((player) => {
-                if (player.id !== myPlayerId) {
-                    // Apply opponent's network unit data (spawns their units)
-                    this.game.call('applyNetworkUnitData', player.networkUnitData, player.team, player.id);
-                }
-            });
+            // Sync round from server if available
+            if (data.gameState?.round !== undefined) {
+                this.game.state.round = data.gameState.round;
+            }
+            // Always set phase to battle when allReady (server may send stale phase)
             this.game.state.phase = this.enums.gamePhase.battle;
+
+            // Apply network unit data for each opponent (spawns their units with proper renderable)
+            // This must happen before entitySync so client-only components are set correctly
+            if (data.gameState?.players) {
+                data.gameState.players.forEach((player) => {
+                    if (player.id !== myPlayerId) {
+                        this.game.call('applyNetworkUnitData', player.networkUnitData, player.team, player.id);
+                    }
+                });
+            }
 
             // Initialize deterministic RNG for this battle (must match server seed)
             const roomId = this.game.clientNetworkManager?.roomId || 'default';
             const roomIdHash = GUTS.SeededRandom.hashString(roomId);
             const battleSeed = GUTS.SeededRandom.combineSeed(roomIdHash, this.game.state.round || 1);
-            this.game.rng = new GUTS.SeededRandom(battleSeed);
+            this.game.rng.strand('battle').reseed(battleSeed);
 
             // Track battle start time for duration limiting
             this.battleStartTime = 0; // Will be set after resetCurrentTime
             this.isBattlePaused = false;
+
+            // Unpause game to allow updates during battle
+            this.game.state.isPaused = false;
 
             this.game.resetCurrentTime();
             this.battleStartTime = this.game.state.now || 0;
             this.game.call('resetAI');
             this.game.triggerEvent('onBattleStart');
 
-            // Resync entities with server state to ensure both clients are in sync
+            // Resync entities with server state (includes opponent units)
             if (data.entitySync) {
                 this.game.call('resyncEntities', data);
             }
@@ -369,11 +380,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
             if (this.elements.readyButton) {
                 this.elements.readyButton.disabled = true;
                 this.elements.readyButton.textContent = 'Battling!';
-            }
-        } else {
-            const opponentReady = data.gameState?.players?.find(p => p.id !== myPlayerId)?.ready;
-            if (opponentReady) {
-                this.game.call('showNotification', 'Opponent is ready for battle!', 'info');
             }
         }
     }

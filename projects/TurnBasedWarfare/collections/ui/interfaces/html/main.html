@@ -109,6 +109,76 @@
     </div>
 </div>
 
+<!-- Skirmish Lobby -->
+<div id="skirmishLobby" class="screen">
+    <div class="multiplayer-lobby-container">
+        <div class="lobby-header">
+            <h1 class="lobby-title">🤖 SKIRMISH SETUP</h1>
+            <div class="room-info">
+                <div class="room-id-display">
+                    <span class="room-label">Single Player vs AI</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="lobby-content">
+            <div class="players-section">
+                <h2>⚔️ Choose Your Team</h2>
+                <div class="team-selector">
+                    <div class="team-card selected" id="teamLeftCard" data-team="left">
+                        <div class="team-icon">🔵</div>
+                        <div class="team-name">Left Team</div>
+                        <div class="team-player" id="teamLeftPlayer">🎮 You</div>
+                    </div>
+                    <div class="team-vs">VS</div>
+                    <div class="team-card" id="teamRightCard" data-team="right">
+                        <div class="team-icon">🔴</div>
+                        <div class="team-name">Right Team</div>
+                        <div class="team-player" id="teamRightPlayer">🤖 AI</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-info">
+                <h3>Battle Configuration</h3>
+                <div class="game-settings">
+                    <div class="setting">
+                        <span class="setting-label">Map</span>
+                        <select id="skirmishLevelSelect" class="setting-select">
+                            <!-- Populated dynamically from levels collection -->
+                        </select>
+                    </div>
+                    <div class="setting">
+                        <span class="setting-label">Starting Gold</span>
+                        <span class="setting-value">100 coins</span>
+                    </div>
+                    <div class="setting">
+                        <span class="setting-label">AI Difficulty</span>
+                        <span class="setting-value">Normal</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-footer">
+                <div class="lobby-controls">
+                    <div class="lobby-controls-left">
+                        <button id="skirmishBackBtn" class="btn btn-secondary">← Back</button>
+                    </div>
+                    <div class="lobby-controls-right">
+                        <button id="skirmishStartBtn" class="btn btn-primary">⚔️ START BATTLE</button>
+                    </div>
+                </div>
+
+                <div class="lobby-tips">
+                    <p>🤖 Face off against the AI commander</p>
+                    <p>🏗️ Build anywhere on the map</p>
+                    <p>⚡ The AI will dynamically build its army to challenge you</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Game Screen -->
 <div id="gameScreen" class="screen">
     <div id="gameContainer">

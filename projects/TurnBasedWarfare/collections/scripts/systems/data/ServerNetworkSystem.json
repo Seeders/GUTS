@@ -1,4 +1,11 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/ServerNetworkSystem.js",
-  "fileName": "ServerNetworkSystem"
+  "fileName": "ServerNetworkSystem",
+  "services": [
+    "sendToPlayer",
+    "broadcastToRoom",
+    "getPlayerRoom",
+    "joinRoom",
+    "leaveRoom"
+  ]
 }

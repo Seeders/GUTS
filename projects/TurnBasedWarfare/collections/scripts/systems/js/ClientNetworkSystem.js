@@ -17,7 +17,10 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'uploadSaveData',
         'resyncEntities',
         'sendCheatRequest',
-        'sendPlacementRequest'
+        'sendPlacementRequest',
+        // Local game mode services (set by SkirmishGameSystem or other local modes)
+        'getLocalPlayerId',
+        'setLocalGame'
     ];
 
     constructor(game) {
@@ -30,6 +33,68 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.gameState = null;
         // Store unsubscribe functions
         this.networkUnsubscribers = [];
+        // Local game mode flag (set by SkirmishGameSystem or other local modes)
+        this._localPlayerId = 0;
+    }
+
+    // ==================== LOCAL GAME MODE ====================
+
+    /**
+     * Get the local player ID (used when running without server)
+     */
+    getLocalPlayerId() {
+        return this._localPlayerId;
+    }
+
+    /**
+     * Set local game mode (called by SkirmishGameSystem or other local modes)
+     */
+    setLocalGame(isLocal, playerId = 0) {
+        this.game.state.isLocalGame = isLocal;
+        this._localPlayerId = playerId;
+    }
+
+    /**
+     * Unified network request handler for local and multiplayer modes
+     * Abstracts the branching between local game (direct handler call) and multiplayer (network call)
+     * @param {Object} options
+     * @param {string} options.localHandler - Service name to call in local mode (e.g., 'handleSubmitPlacement')
+     * @param {string} options.eventName - Network event name for multiplayer (e.g., 'SUBMIT_PLACEMENT')
+     * @param {string} options.responseName - Network response name (e.g., 'SUBMITTED_PLACEMENT')
+     * @param {Object} options.data - Request data to send (wrapped in eventData.data for handlers)
+     * @param {Function} options.onSuccess - Called with response data on success (before final callback)
+     * @param {Function} callback - Final callback(success, result)
+     */
+    networkRequest(options, callback) {
+        const { localHandler, eventName, responseName, data, onSuccess } = options;
+
+        if (this.game.state.isLocalGame) {
+            const playerId = this.game.call('getLocalPlayerId');
+            // Handlers expect { playerId, numericPlayerId, data: {...} } format
+            const eventData = { playerId, numericPlayerId: playerId, data };
+            this.game.call(localHandler, eventData, (result) => {
+                if (result?.success !== false) {
+                    if (onSuccess) onSuccess(result);
+                    callback(true, result || {});
+                } else {
+                    callback(false, result?.error || 'Local handler failed');
+                }
+            });
+        } else {
+            this.game.clientNetworkManager.call(
+                eventName,
+                data,
+                responseName,
+                (responseData, error) => {
+                    if (error || responseData?.error) {
+                        callback(false, error || responseData?.error);
+                    } else {
+                        if (onSuccess) onSuccess(responseData);
+                        callback(true, responseData);
+                    }
+                }
+            );
+        }
     }
 
     // GUTS Manager Interface
@@ -259,14 +324,13 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.submitPlacementToServer(placement, callback);
     }
 
-    submitPlacementToServer(networkUnitData, callback){
-        if(this.game.state.phase !== this.enums.gamePhase.placement) {
+    submitPlacementToServer(networkUnitData, callback) {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
             return;
         }
 
         // Send only minimal placement data - server resolves unitType from numeric indices
-        // No targetPosition - that's handled by aiState/behaviors via SET_SQUAD_TARGET
         const minimalPlacement = {
             placementId: networkUnitData.placementId,
             gridPosition: networkUnitData.gridPosition,
@@ -280,24 +344,22 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             isStartingState: networkUnitData.isStartingState
         };
 
-        this.game.clientNetworkManager.call(
-            'SUBMIT_PLACEMENT',
-            { placement: minimalPlacement },
-            'SUBMITTED_PLACEMENT',
-            (data, error) => {
-                if (data.error) {
-                    callback(false, error);
-                } else {
-                    // Call shared processPlacement with server-provided entity IDs
-                    networkUnitData.placementId = data.placementId;
+        this.networkRequest({
+            localHandler: 'handleSubmitPlacement',
+            eventName: 'SUBMIT_PLACEMENT',
+            responseName: 'SUBMITTED_PLACEMENT',
+            data: { placement: minimalPlacement },
+            onSuccess: (result) => {
+                // Update placementId from server/handler response
+                networkUnitData.placementId = result.placementId;
+                // In multiplayer, also need to call processPlacement on client to sync state
+                if (!this.game.state.isLocalGame) {
                     const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
                     const player = { team: this.game.state.myTeam };
-                    this.processPlacement(numericPlayerId, numericPlayerId, player, networkUnitData, data.squadUnits);
-
-                    callback(true, data);
+                    this.processPlacement(numericPlayerId, numericPlayerId, player, networkUnitData, result.squadUnits);
                 }
             }
-        );
+        }, callback);
     }
 
     cancelBuilding(requestData, callback) {
@@ -308,22 +370,19 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
         const { buildingEntityId } = requestData;
 
-        this.game.clientNetworkManager.call(
-            'CANCEL_BUILDING',
-            requestData,
-            'BUILDING_CANCELLED',
-            (data, error) => {
-                if (error || data.error) {
-                    callback(false, error || data.error);
-                } else {
-                    // Call shared processCancelBuilding to do the same cleanup as server
+        this.networkRequest({
+            localHandler: 'handleCancelBuilding',
+            eventName: 'CANCEL_BUILDING',
+            responseName: 'BUILDING_CANCELLED',
+            data: requestData,
+            onSuccess: () => {
+                // In multiplayer, also need to call processCancelBuilding on client to sync state
+                if (!this.game.state.isLocalGame) {
                     const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
                     this.processCancelBuilding(buildingEntityId, numericPlayerId);
-
-                    callback(true, data);
                 }
             }
-        );
+        }, callback);
     }
 
     handleOpponentBuildingCancelled(data) {
@@ -367,19 +426,18 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             return;
         }
 
-        this.game.clientNetworkManager.call(
-            'UPGRADE_BUILDING',
-            requestData,
-            'BUILDING_UPGRADED',
-            (data, error) => {
-                if (error || data.error) {
-                    callback(false, { error: error || data.error });
-                } else {
-                    // Call shared processUpgradeBuilding with server-provided entity IDs
-                    const { buildingEntityId, placementId, targetBuildingId } = requestData;
+        const { buildingEntityId, placementId, targetBuildingId } = requestData;
+
+        this.networkRequest({
+            localHandler: 'handleUpgradeBuilding',
+            eventName: 'UPGRADE_BUILDING',
+            responseName: 'BUILDING_UPGRADED',
+            data: requestData,
+            onSuccess: (result) => {
+                // In multiplayer, also need to call processUpgradeBuilding on client to sync state
+                if (!this.game.state.isLocalGame) {
                     const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
                     const player = { team: this.game.state.myTeam };
-
                     this.processUpgradeBuilding(
                         numericPlayerId,
                         numericPlayerId,
@@ -387,107 +445,92 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                         buildingEntityId,
                         placementId,
                         targetBuildingId,
-                        [data.newEntityId],
-                        data.newPlacementId
+                        [result.newEntityId],
+                        result.newPlacementId
                     );
-
-                    callback(true, data);
                 }
             }
-        );
+        }, callback);
     }
 
-    purchaseUpgrade(requestData, callback){
-        if(this.game.state.phase !== this.enums.gamePhase.placement) {
+    purchaseUpgrade(requestData, callback) {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
             return;
         }
 
         const { upgradeId } = requestData;
 
-        this.game.clientNetworkManager.call(
-            'PURCHASE_UPGRADE',
-            { data: requestData },
-            'PURCHASED_UPGRADE',
-            (data, error) => {
-                if (data.error) {
-                    callback(false, error);
-                } else {
-                    // Call shared processPurchaseUpgrade to do the same as server
+        this.networkRequest({
+            localHandler: 'handlePurchaseUpgrade',
+            eventName: 'PURCHASE_UPGRADE',
+            responseName: 'PURCHASED_UPGRADE',
+            data: { data: requestData }, // Server expects data.data.upgradeId
+            onSuccess: () => {
+                // In multiplayer, also need to call processPurchaseUpgrade on client to sync state
+                if (!this.game.state.isLocalGame) {
                     const numericPlayerId = this.game.clientNetworkManager?.numericPlayerId;
                     const upgrade = this.collections.upgrades[upgradeId];
                     if (upgrade) {
                         this.processPurchaseUpgrade(numericPlayerId, upgradeId, upgrade);
                     }
-
-                    callback(true, data);
                 }
             }
-        );
+        }, callback);
     }
 
     setSquadTarget(requestData, callback) {
-        if(this.game.state.phase !== this.enums.gamePhase.placement) {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
             return;
         }
 
-        this.game.clientNetworkManager.call(
-            'SET_SQUAD_TARGET',
-            requestData,
-            'SQUAD_TARGET_SET',
-            (data, error) => {
-                if (error || data.error) {
-                    callback(false, error || data.error);
-                } else {
-                    // Call shared processSquadTarget with server's authoritative issuedTime
-                    this.processSquadTarget(data.placementId, data.targetPosition, data.meta, data.issuedTime);
-
-                    callback(true, data);
+        this.networkRequest({
+            localHandler: 'handleSetSquadTarget',
+            eventName: 'SET_SQUAD_TARGET',
+            responseName: 'SQUAD_TARGET_SET',
+            data: requestData,
+            onSuccess: (result) => {
+                // In multiplayer, call processSquadTarget with server's authoritative issuedTime
+                if (!this.game.state.isLocalGame) {
+                    this.processSquadTarget(result.placementId, result.targetPosition, result.meta, result.issuedTime);
                 }
             }
-        );
+        }, callback);
     }
 
     setSquadTargets(requestData, callback) {
-        if(this.game.state.phase !== this.enums.gamePhase.placement) {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
             callback(false, 'Not in placement phase.');
             return;
         }
 
-        this.game.clientNetworkManager.call(
-            'SET_SQUAD_TARGETS',
-            requestData,
-            'SQUAD_TARGETS_SET',
-            (data, error) => {
-                if (error || data.error) {
-                    callback(false, error || data.error);
-                } else {
-                    // Call shared processSquadTargets with server's authoritative issuedTime
-                    this.processSquadTargets(data.placementIds, data.targetPositions, data.meta, data.issuedTime);
-
-                    callback(true, data);
+        this.networkRequest({
+            localHandler: 'handleSetSquadTargets',
+            eventName: 'SET_SQUAD_TARGETS',
+            responseName: 'SQUAD_TARGETS_SET',
+            data: requestData,
+            onSuccess: (result) => {
+                // In multiplayer, call processSquadTargets with server's authoritative issuedTime
+                if (!this.game.state.isLocalGame) {
+                    this.processSquadTargets(result.placementIds, result.targetPositions, result.meta, result.issuedTime);
                 }
             }
-        );
+        }, callback);
     }
 
     toggleReadyForBattle(callback) {
-        if(this.game.state.phase !== this.enums.gamePhase.placement) {
-            callback(false, 'Not in placement phase.');
-        };
-        this.game.clientNetworkManager.call(
-            'READY_FOR_BATTLE',
-            {},
-            'READY_FOR_BATTLE_RESPONSE',
-            (data, error) => {
-                if (data.error) {
-                    callback(false, data.error);
-                } else {
-                    callback(true, data);
-                }
-            }
-        );
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            if (callback) callback(false, 'Not in placement phase.');
+            return;
+        }
+
+        this.networkRequest({
+            localHandler: 'handleReadyForBattle',
+            eventName: 'READY_FOR_BATTLE',
+            responseName: 'READY_FOR_BATTLE_RESPONSE',
+            data: {} // Handler just needs playerId which is added by networkRequest
+        }, callback || (() => {}));
     }
 
     toggleReady() {
@@ -896,50 +939,60 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     syncWithServerState(data) {
-        if(!data.gameState) return;
+        if (!data.gameState) return;
         const gameState = data.gameState;
-        if (!gameState.players) return;
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        const myPlayer = gameState.players.find(p => p.id === myPlayerId);
 
-        // Only update player entities if PlayerStatsSystem is loaded (in game scene, not lobby)
-        if (this.game.hasService('getPlayerEntityId')) {
-            for (const playerData of gameState.players) {
-                const playerEntityId = this.game.call('getPlayerEntityId', playerData.id);
+        // Sync basic game state
+        if (gameState.round !== undefined) {
+            this.game.state.round = gameState.round;
+        }
+        if (gameState.phase !== undefined) {
+            this.game.state.phase = gameState.phase;
+        }
 
-                if (this.game.entityExists(playerEntityId)) {
-                    // Update existing player entity
-                    const stats = this.game.getComponent(playerEntityId, 'playerStats');
-                    if (stats && playerData.stats) {
-                        stats.gold = playerData.stats.gold;
-                        stats.side = playerData.stats.team;  // side field stores numeric team
+        // Legacy multiplayer sync (when server sends players array from room)
+        // This is used in lobby/multiplayer - local game uses ECS entities directly
+        if (gameState.players) {
+            const myPlayerId = this.game.clientNetworkManager.playerId;
+            const myPlayer = gameState.players.find(p => p.id === myPlayerId);
+
+            // Only update player entities if PlayerStatsSystem is loaded (in game scene, not lobby)
+            if (this.game.hasService('getPlayerEntityId')) {
+                for (const playerData of gameState.players) {
+                    const playerEntityId = this.game.call('getPlayerEntityId', playerData.id);
+
+                    if (this.game.entityExists(playerEntityId)) {
+                        // Update existing player entity
+                        const stats = this.game.getComponent(playerEntityId, 'playerStats');
+                        if (stats && playerData.stats) {
+                            stats.gold = playerData.stats.gold;
+                            stats.side = playerData.stats.team;
+                        }
                     }
+                }
+            }
+
+            if (myPlayer) {
+                // Sync team
+                if (this.game.state && myPlayer.stats?.team !== undefined) {
+                    this.game.state.myTeam = myPlayer.stats.team;
+                }
+
+                const opponent = gameState.players.find(p => p.id !== myPlayerId);
+
+                // Sync experience for both player and opponent network unit data
+                if (myPlayer.networkUnitData) {
+                    this.syncNetworkUnitDataExperience(myPlayer.networkUnitData);
+                }
+                if (opponent?.networkUnitData) {
+                    this.syncNetworkUnitDataExperience(opponent.networkUnitData);
                 }
             }
         }
 
-        if (myPlayer) {
-            // Sync squad count and team
-            if (this.game.state) {
-                // Server sends numeric team directly
-                this.game.state.myTeam = myPlayer.stats.team;
-                this.game.state.round = gameState.round;
-                this.game.state.serverGameState = gameState;
-            }
-
-            const opponent = gameState.players.find(p => p.id !== myPlayerId);
-
-            // Sync experience for both player and opponent network unit data
-            this.syncNetworkUnitDataExperience(myPlayer.networkUnitData);
-            if (opponent && opponent.networkUnitData) {
-                this.syncNetworkUnitDataExperience(opponent.networkUnitData);
-            }
-
-            // Update UI to reflect synced experience data
-            if (this.game.hasService('updateGoldDisplay')) {
-                this.game.call('updateGoldDisplay');
-            }
-
+        // Update UI
+        if (this.game.hasService('updateGoldDisplay')) {
+            this.game.call('updateGoldDisplay');
         }
     }
 

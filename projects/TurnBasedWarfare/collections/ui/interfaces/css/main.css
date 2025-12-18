@@ -263,10 +263,78 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     box-shadow: 0 0 10px rgba(183, 28, 28, 0.3);
 }
 
-.expert { 
+.expert {
     background: linear-gradient(135deg, var(--rich-purple), #6a1b9a);
     color: var(--parchment);
     box-shadow: 0 0 10px rgba(74, 20, 140, 0.3);
+}
+
+.pve {
+    background: linear-gradient(135deg, #00897b, #26a69a);
+    color: var(--parchment);
+    box-shadow: 0 0 10px rgba(0, 137, 123, 0.3);
+}
+
+.pvp {
+    background: linear-gradient(135deg, #e53935, #ff5722);
+    color: var(--parchment);
+    box-shadow: 0 0 10px rgba(229, 57, 53, 0.3);
+}
+
+/* Team Selector */
+.team-selector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin: 1.5rem 0;
+}
+
+.team-card {
+    background: var(--earth-gradient);
+    border: 3px solid var(--stone-gray);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 150px;
+}
+
+.team-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary-gold);
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
+.team-card.selected {
+    border-color: var(--primary-gold);
+    background: linear-gradient(135deg, var(--medium-brown), var(--forest-brown));
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}
+
+.team-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.team-name {
+    font-family: var(--font-title);
+    font-size: 1.2rem;
+    color: var(--primary-gold);
+    margin-bottom: 0.5rem;
+}
+
+.team-player {
+    font-size: 1rem;
+    color: var(--cream);
+}
+
+.team-vs {
+    font-family: var(--font-decorative);
+    font-size: 1.5rem;
+    color: var(--primary-gold);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
 }
 
 /* Game Screen */
@@ -1006,6 +1074,25 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 .player-stats {
     font-size: 0.9rem;
     color: var(--stone-gray);
+}
+
+/* Side selector for skirmish mode */
+.side-selector {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.side-selector:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(212, 175, 55, 0.3);
+}
+
+.side-selector.selected {
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+    background:
+        linear-gradient(145deg, rgba(212, 175, 55, 0.2), rgba(114, 47, 55, 0.2)),
+        radial-gradient(circle at center, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
 }
 
 .lobby-status {

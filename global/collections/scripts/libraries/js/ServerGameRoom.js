@@ -413,6 +413,9 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         const level = this.selectedLevel;
         this.game.state.level = level;
 
+        // Generate game seed for deterministic RNG (based on room ID)
+        this.game.state.gameSeed = GUTS.SeededRandom.hashString(this.id);
+
         // Update game scene's terrain entity to use the selected level
         const collections = this.game.getCollections();
         const gameScene = collections?.scenes?.game;
@@ -515,10 +518,10 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 name: p.name,
                 ready: p.ready || false,
                 isHost: p.isHost || false,
-                team: playerStats?.side ?? p.team,  // Team at top level for easy access
+                team: playerStats?.team ?? p.team,  // Team at top level for easy access
                 stats: {
                     gold: playerStats?.gold ?? this.game.state.startingGold,
-                    team: playerStats?.side ?? p.team  // side field in playerStats component stores numeric team
+                    team: playerStats?.team ?? p.team  // team field in playerStats component stores numeric team
                 },
                 networkUnitData: networkUnitData
             });

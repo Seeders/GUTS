@@ -47,6 +47,14 @@ class GameModeConfigs {
                 goldProgression: (round) => 120 + (round * 30),
                 enemyScaling: (round) => 2 + Math.floor(round / 2),
                 specialRules: ['bracket_progression', 'ai_personalities']
+            },
+
+            skirmish: {
+                name: 'Skirmish',
+                rounds: 1,
+                goldProgression: () => 100,
+                enemyScaling: () => 1,
+                specialRules: ['single_player', 'ai_opponent', 'balanced_armies']
             }
         };
     }

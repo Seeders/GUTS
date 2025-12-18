@@ -35,7 +35,6 @@
     "GameLoader",
     "GameUtils",
     "PlacementPreview",
-    "EnemyStrategy",
     "MultiplayerECSGame",
     "ClientNetworkManager",
     "socket.io.min.js",
@@ -68,7 +67,9 @@
     "UnitCreationSystem",
     "SquadSystem",
     "PlacementSystem",
+    "ServerBattlePhaseSystem",
     "BaseNetworkSystem",
+    "ServerNetworkSystem",
     "ClientNetworkSystem",
     "InputSystem",
     "GridSystem",
@@ -109,7 +110,9 @@
     "DamageNumberSystem",
     "VisionSystem",
     "SupplySystem",
-    "CheatCodeSystem"
+    "CheatCodeSystem",
+    "SkirmishGameSystem",
+    "AIPlacementSystem"
   ],
   "classes": [
     {

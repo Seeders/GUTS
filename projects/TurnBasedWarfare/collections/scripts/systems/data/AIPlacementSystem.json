@@ -1,0 +1,7 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/AIPlacementSystem.js",
+  "fileName": "AIPlacementSystem",
+  "services": [
+    "generateAIPlacement"
+  ]
+}

@@ -9,7 +9,6 @@ import vm from 'vm';
 
 // Import server-specific classes (these are not in compiled game.js)
 import ServerEngine from '../../engine/ServerEngine.js';
-import ServerMatchmakingService from '../../global/collections/scripts/libraries/js/ServerMatchmakingService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,9 +37,6 @@ function loadCompiledGame() {
     Object.assign(global.GUTS, {
         // Server infrastructure classes
         ServerEngine,
-        // Don't override classes that came from the bundle (BaseECSGame, etc.)
-        // Only add infrastructure that's not in the bundle
-        ServerMatchmakingService,
         // Collections available from compiled game
         getCollections: () => global.COMPILED_GAME?.collections
     });

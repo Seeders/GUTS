@@ -8,7 +8,6 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         super(game);
         this.engine = this.game.app;
         this.game.serverBattlePhaseSystem = this;
-        this.serverNetworkManager = this.engine.serverNetworkManager;
 
         // Battle configuration
         this.battleDuration = 30; // 30 seconds max
@@ -24,11 +23,9 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         this.params = params || {};
     }
 
-    startBattle(room) {
+    startBattle() {
         try {
-
             this.game.state.isPaused = false;
-            // Change room phase
             this.game.state.phase = this.enums.gamePhase.battle;
 
             // Reset game time to sync with client (client also calls resetCurrentTime)
@@ -38,10 +35,10 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             this.battleStartTime = this.game.state.now || 0;
 
             // Initialize deterministic RNG for this battle
-            // Seed based on room ID and round number for reproducibility
-            const roomIdHash = room.id ? GUTS.SeededRandom.hashString(room.id) : 1;
-            const battleSeed = GUTS.SeededRandom.combineSeed(roomIdHash, this.game.state.round || 1);
-            this.game.rng = new GUTS.SeededRandom(battleSeed);
+            // Seed based on game seed and round number for reproducibility
+            const gameSeed = this.game.state.gameSeed || 1;
+            const battleSeed = GUTS.SeededRandom.combineSeed(gameSeed, this.game.state.round || 1);
+            this.game.rng.strand('battle').reseed(battleSeed);
 
             return { success: true };
 
@@ -66,7 +63,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         // Check if any team has lost all buildings
         const buildingVictory = this.checkBuildingVictoryCondition();
         if (buildingVictory) {
-            this.endBattle(this.game.room, buildingVictory.winner, buildingVictory.reason);
+            this.endBattle(buildingVictory.winner, buildingVictory.reason);
             return;
         }
 
@@ -75,7 +72,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
         // Battle always lasts exactly battleDuration seconds
         if (battleDuration >= this.battleDuration) {
-            this.endBattle(this.game.room, null, 'timeout');
+            this.endBattle(null, 'timeout');
         }
     }
 
@@ -84,9 +81,6 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
      * Returns { winner: playerId, reason: string } or null
      */
     checkBuildingVictoryCondition() {
-        const room = this.game.room;
-        if (!room) return null;
-
         // Get all alive buildings grouped by team (using numeric team keys)
         const buildingsByTeam = {};
         buildingsByTeam[this.enums.team.left] = [];
@@ -119,11 +113,13 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         }
 
         if (losingTeam !== null) {
-            // Find the winner (player on the opposite team)
-            for (const [playerId, player] of room.players) {
-                if (player.team !== losingTeam) {
+            // Find the winner (player on the opposite team) using player entities
+            const playerEntities = this.game.call('getPlayerEntities');
+            for (const entityId of playerEntities) {
+                const stats = this.game.getComponent(entityId, 'playerStats');
+                if (stats && stats.team !== losingTeam) {
                     return {
-                        winner: playerId,
+                        winner: stats.playerId,
                         reason: 'buildings_destroyed'
                     };
                 }
@@ -170,10 +166,9 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         return true;
     }
 
-    endBattle(room, winner = null, reason = 'unknown') {
-
+    endBattle(winner = null, reason = 'unknown') {
         this.game.triggerEvent('onBattleEnd');
-        const playerStats = this.getPlayerStatsForBroadcast(room);
+        const playerStats = this.getPlayerStatsForBroadcast();
         let battleResult = {
             winner: winner,
             reason: reason,
@@ -181,29 +176,26 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             survivingUnits: this.getSurvivingUnits(),
             playerStats: playerStats
         };
-        
+
         const entitySync = this.serializeAllEntities(false); // Delta sync at battle end
         // Broadcast with updated health values
         // Include server simulation time so clients can wait until they've caught up
         // Include nextEntityId so clients can sync their entity ID counters
-        this.serverNetworkManager.broadcastToRoom(room.id, 'BATTLE_END', {
+        this.game.call('broadcastToRoom', null, 'BATTLE_END', {
             result: battleResult,
-            gameState: room.getGameState(), // This will also have updated player health
+            gameState: this.game.state,
             entitySync: entitySync,
-            serverTime: this.game.state.now, // Server's global game time when battle ended
-            nextEntityId: this.game.nextEntityId // Sync entity ID counter
+            serverTime: this.game.state.now,
+            nextEntityId: this.game.nextEntityId
         });
+
         // Check for game end or continue to next round
-        if (this.shouldEndGame(room)) {
-            this.endGame(room);
+        if (this.shouldEndGame()) {
+            this.endGame();
         } else {
             this.game.state.round += 1;
             // Transition back to placement phase
             this.game.state.phase = this.enums.gamePhase.placement;
-            // Reset placement ready states
-            for (const [playerId, player] of room.players) {
-                player.placementReady = false;
-            }
             this.game.triggerEvent('onPlacementPhaseStart');
         }
     }
@@ -245,23 +237,26 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         return survivors;
     }
 
-    getPlayerStatsForBroadcast(room) {
+    getPlayerStatsForBroadcast() {
         const stats = {};
-        for (const [playerId, player] of room.players) {
-            const playerStats = this.game.call('getPlayerStats', playerId);
-            stats[playerId] = {
-                name: player.name,
-                stats: playerStats ? {
-                    side: playerStats.side,
-                    gold: playerStats.gold,
-                    upgrades: playerStats.upgrades
-                } : null
-            };
+        const playerEntities = this.game.call('getPlayerEntities');
+        for (const entityId of playerEntities) {
+            const playerStats = this.game.getComponent(entityId, 'playerStats');
+            if (playerStats) {
+                stats[playerStats.playerId] = {
+                    name: playerStats.playerId === 0 ? 'Player' : 'Opponent',
+                    stats: {
+                        team: playerStats.team,
+                        gold: playerStats.gold,
+                        upgrades: playerStats.upgrades
+                    }
+                };
+            }
         }
         return stats;
     }
 
-    shouldEndGame(room) {
+    shouldEndGame() {
         // RTS-style: game ends when a team loses all buildings (checked in checkBuildingVictoryCondition)
         // This is called after battle ends - check if any team has no buildings
         const buildingVictory = this.checkBuildingVictoryCondition();
@@ -273,7 +268,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         this.game.call('addPlayerGold', team, goldAmt);
     }
 
-    endGame(room, reason = 'buildings_destroyed') {
+    endGame(reason = 'buildings_destroyed') {
         this.game.state.phase = this.enums.gamePhase.ended;
 
         // Determine final winner based on building victory condition
@@ -282,50 +277,52 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
         // If no building victory (e.g., disconnect), find remaining player
         if (!finalWinner && reason === 'opponent_disconnected') {
-            for (const [playerId] of room.players) {
-                finalWinner = playerId;
-                break;
+            const playerEntities = this.game.call('getPlayerEntities');
+            if (playerEntities.length > 0) {
+                const stats = this.game.getComponent(playerEntities[0], 'playerStats');
+                finalWinner = stats?.playerId ?? null;
             }
         }
 
         const gameResult = {
             winner: finalWinner,
             reason: reason,
-            finalStats: this.getPlayerStatsForBroadcast(room),
+            finalStats: this.getPlayerStatsForBroadcast(),
             totalRounds: this.game.state.round
         };
 
-        this.serverNetworkManager.broadcastToRoom(room.id, 'GAME_END', {
+        this.game.call('broadcastToRoom', null, 'GAME_END', {
             result: gameResult,
-            gameState: room.getGameState()
+            gameState: this.game.state
         });
 
-        // Mark room as inactive after delay
-        setTimeout(() => {
-            room.isActive = false;
-        }, 10000);
+        // Mark room as inactive after delay (multiplayer only)
+        if (this.game.room) {
+            setTimeout(() => {
+                this.game.room.isActive = false;
+            }, 10000);
+        }
     }
 
     /**
      * Called when a player disconnects/leaves during an active game
      */
     handlePlayerDisconnect(playerId) {
-        const room = this.game.room;
-        if (!room) return;
-
         // If game is in battle or placement phase, the remaining player wins
         if (this.game.state.phase === this.enums.gamePhase.battle || this.game.state.phase === this.enums.gamePhase.placement) {
-            // Find the remaining player
+            // Find the remaining player using player entities
+            const playerEntities = this.game.call('getPlayerEntities');
             let remainingPlayer = null;
-            for (const [id, player] of room.players) {
-                if (id !== playerId) {
-                    remainingPlayer = id;
+            for (const entityId of playerEntities) {
+                const stats = this.game.getComponent(entityId, 'playerStats');
+                if (stats && stats.playerId !== playerId) {
+                    remainingPlayer = stats.playerId;
                     break;
                 }
             }
 
-            if (remainingPlayer) {
-                this.endGame(room, 'opponent_disconnected');
+            if (remainingPlayer !== null) {
+                this.endGame('opponent_disconnected');
             }
         }
     }

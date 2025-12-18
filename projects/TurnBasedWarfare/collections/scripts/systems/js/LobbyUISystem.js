@@ -3,7 +3,8 @@ class LobbyUISystem extends GUTS.BaseSystem {
         'showLobby',
         'updateLobby',
         'getSelectedLevel',
-        'handleMultiplayerModeSelection'
+        'handleMultiplayerModeSelection',
+        'showSkirmishLobby'
     ];
 
     constructor(game) {
@@ -345,11 +346,19 @@ class LobbyUISystem extends GUTS.BaseSystem {
     }
 
     populateLevelSelector() {
-        const levelSelect = document.getElementById('levelSelect');
+        this._populateLevelSelect('levelSelect', (value) => {
+            this.selectedLevel = value;
+        });
+    }
+
+    /**
+     * Shared level selector population
+     */
+    _populateLevelSelect(elementId, onChange) {
+        const levelSelect = document.getElementById(elementId);
         if (!levelSelect) return;
 
-        const collections = this.collections;
-        const levels = collections?.levels || {};
+        const levels = this.collections?.levels || {};
 
         levelSelect.innerHTML = '';
 
@@ -360,9 +369,9 @@ class LobbyUISystem extends GUTS.BaseSystem {
             levelSelect.appendChild(option);
         }
 
-        this.selectedLevel = levelSelect.value;
+        onChange(levelSelect.value);
         levelSelect.addEventListener('change', (e) => {
-            this.selectedLevel = e.target.value;
+            onChange(e.target.value);
         });
     }
 
@@ -504,6 +513,120 @@ class LobbyUISystem extends GUTS.BaseSystem {
         if (!this.game.hasService('showMainMenu')) {
             window.location.reload();
         }
+    }
+
+    // ==================== SKIRMISH LOBBY ====================
+
+    showSkirmishLobby(mode) {
+        this.currentScreen = 'skirmishLobby';
+        this.skirmishMode = mode;
+        this.skirmishSelectedTeam = 'left'; // Default to left team
+
+        // Hide all screens and show skirmish lobby
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        document.getElementById('skirmishLobby').classList.add('active');
+
+        // Populate level selector
+        this.populateSkirmishLevelSelector();
+
+        // Setup team selector
+        this.setupTeamSelector();
+
+        // Setup event listeners
+        this.setupSkirmishEventListeners();
+    }
+
+    setupTeamSelector() {
+        const leftCard = document.getElementById('teamLeftCard');
+        const rightCard = document.getElementById('teamRightCard');
+        const leftPlayer = document.getElementById('teamLeftPlayer');
+        const rightPlayer = document.getElementById('teamRightPlayer');
+
+        if (!leftCard || !rightCard) return;
+
+        // Initialize with default selection (left)
+        this.updateTeamSelection('left', leftCard, rightCard, leftPlayer, rightPlayer);
+
+        leftCard.onclick = () => {
+            this.skirmishSelectedTeam = 'left';
+            this.updateTeamSelection('left', leftCard, rightCard, leftPlayer, rightPlayer);
+        };
+
+        rightCard.onclick = () => {
+            this.skirmishSelectedTeam = 'right';
+            this.updateTeamSelection('right', leftCard, rightCard, leftPlayer, rightPlayer);
+        };
+    }
+
+    updateTeamSelection(selectedTeam, leftCard, rightCard, leftPlayer, rightPlayer) {
+        if (selectedTeam === 'left') {
+            leftCard.classList.add('selected');
+            rightCard.classList.remove('selected');
+            leftPlayer.textContent = '🎮 You';
+            rightPlayer.textContent = '🤖 AI';
+        } else {
+            leftCard.classList.remove('selected');
+            rightCard.classList.add('selected');
+            leftPlayer.textContent = '🤖 AI';
+            rightPlayer.textContent = '🎮 You';
+        }
+    }
+
+    populateSkirmishLevelSelector() {
+        this._populateLevelSelect('skirmishLevelSelect', (value) => {
+            this.skirmishSelectedLevel = value;
+        });
+    }
+
+    setupSkirmishEventListeners() {
+        const backBtn = document.getElementById('skirmishBackBtn');
+        const startBtn = document.getElementById('skirmishStartBtn');
+
+        if (backBtn) {
+            backBtn.onclick = () => {
+                this.exitSkirmishLobby();
+            };
+        }
+
+        if (startBtn) {
+            startBtn.onclick = () => {
+                this.startSkirmishGame();
+            };
+        }
+    }
+
+    exitSkirmishLobby() {
+        this.currentScreen = null;
+        // Go back to mode selection
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        document.getElementById('gameModeSelect').classList.add('active');
+    }
+
+    startSkirmishGame() {
+        // Store skirmish configuration in game state
+        this.game.state.skirmishConfig = {
+            isSkirmish: true,
+            selectedLevel: this.skirmishSelectedLevel || 'level1',
+            selectedTeam: this.skirmishSelectedTeam || 'left',
+            startingGold: this.skirmishMode?.startingGold || 100
+        };
+
+        // Store game mode
+        this.game.state.gameMode = {
+            id: 'skirmish',
+            title: 'Skirmish',
+            description: 'Battle against an AI opponent',
+            isMultiplayer: false,
+            maxPlayers: 1,
+            startingGold: this.skirmishMode?.startingGold || 100
+        };
+
+        // Start the skirmish game via LocalGameController
+        this.game.call('startSkirmishGame');
     }
 
     dispose() {

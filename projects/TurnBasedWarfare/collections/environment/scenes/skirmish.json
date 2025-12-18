@@ -1,0 +1,63 @@
+{
+  "title": "Skirmish Scene",
+  "systems": [
+    "ComponentSystem",
+    "BaseNetworkSystem",
+    "ServerNetworkSystem",
+    "ServerBattlePhaseSystem",
+    "GridSystem",
+    "TerrainSystem",
+    "RoundSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "SquadSystem",
+    "UnitCreationSystem",
+    "PlayerStatsSystem",
+    "TeamHealthSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "SquadExperienceSystem",
+    "LifetimeSystem",
+    "SchedulingSystem",
+    "GoldMineSystem",
+    "PathfindingSystem",
+    "VisionSystem",
+    "SupplySystem",
+    "PlacementSystem",
+    "UnitOrderSystem",
+    "CheatCodeSystem",
+    "SkirmishGameSystem",
+    "AIPlacementSystem"
+  ],
+  "clientSystems": [
+    "RenderSystem",
+    "WorldSystem",
+    "TerrainDetailSystem",
+    "PostProcessingSystem",
+    "AnimationSystem",
+    "ArmyDisplaySystem",
+    "EffectsSystem",
+    "ClientNetworkSystem",
+    "PlacementUISystem",
+    "GameUISystem",
+    "ShopSystem",
+    "HealthBarSystem",
+    "EquipmentSystem",
+    "ParticleSystem",
+    "FogOfWarSystem",
+    "SelectedUnitSystem",
+    "UnitOrderUISystem",
+    "MiniMapSystem",
+    "CameraControlSystem",
+    "DamageNumberSystem",
+    "SaveSystem"
+  ],
+  "serverSystems": [],
+  "entities": [
+    {
+      "prefab": "terrain"
+    }
+  ]
+}

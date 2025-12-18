@@ -121,6 +121,12 @@ class EntityRenderer {
      * - String names: { collection, type } for backwards compatibility
      */
     async spawnEntity(entityId, data) {
+        // DEBUG: Log incoming spawn data
+        console.log('[EntityRenderer.spawnEntity] entityId:', entityId, 'data:', {
+            objectType: data.objectType,
+            spawnType: data.spawnType
+        });
+
         if (this.entities.has(entityId)) {
             console.warn(`[EntityRenderer] Entity ${entityId} already exists`);
             return false;
@@ -134,6 +140,9 @@ class EntityRenderer {
             entityDef = this.getEntityDefByIndex(data.objectType, data.spawnType);
             collection = this.getCollectionNameByIndex(data.objectType);
             type = this.getTypeNameByIndex(data.objectType, data.spawnType);
+
+            // DEBUG: Log resolved names
+            console.log('[EntityRenderer.spawnEntity] Resolved:', { collection, type, entityDef: !!entityDef });
 
             if (!entityDef || !collection || !type) {
                 console.warn(`[EntityRenderer] No definition found for objectType=${data.objectType}, spawnType=${data.spawnType} (entityDef=${!!entityDef}, collection=${collection}, type=${type})`);
@@ -1117,6 +1126,14 @@ class EntityRenderer {
      * Spawn entity using direct GLTF mesh
      */
     async spawnStaticEntity(entityId, data, entityDef) {
+        // DEBUG: Log incoming static entity data
+        console.log('[EntityRenderer.spawnStaticEntity] entityId:', entityId, 'data:', {
+            collection: data.collection,
+            type: data.type,
+            objectType: data.objectType,
+            spawnType: data.spawnType
+        });
+
         // Request model from ModelManager
         const modelKey = `${data.collection}_${data.type}`;
 
