@@ -62,22 +62,16 @@ class EntryGenerator {
             else if (moduleName === 'THREE' || mod.name === 'threejs') {
                 importStatement = `import * as ${varName} from '${importPath}';`;
             }
-            // Three.js addons (GLTFLoader, OrbitControls, EffectComposer, etc.) export named classes
-            else if (mod.name && (
-                mod.name.startsWith('three_') ||
-                mod.name.includes('GLTF') ||
-                mod.name.includes('Orbit') ||
-                (mod.name.includes('Effect') && !mod.name.includes('System')) ||
-                (mod.name.includes('Pass') && !mod.name.includes('System')) ||
-                mod.name.includes('Skeleton') ||
-                mod.name.includes('MeshBVH') ||
-                importPath.includes('/three/examples/jsm/') ||
-                importPath.includes('three_')
-            )) {
-                // These modules export specific classes, use namespace import
+            // Libraries with exportNamespace=true export multiple symbols, not a single named export
+            // Use the full namespace import without trying to extract a specific export
+            else if (mod.exportNamespace) {
                 importStatement = `import * as ${varName} from '${importPath}';`;
-                // Always try to extract the named export first, with fallback to namespace
-                exportValue = `(${varName}.${moduleName} || ${varName})`;
+                exportValue = varName;
+            }
+            // Three.js addons from node_modules (GLTFLoader, OrbitControls, etc.)
+            else if (importPath.includes('/three/examples/jsm/')) {
+                importStatement = `import * as ${varName} from '${importPath}';`;
+                exportValue = varName;
             }
             // Standard namespace import for other modules
             // Use namespace import because class-export-loader exports both default and named exports
