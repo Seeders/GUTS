@@ -121,12 +121,7 @@ class EntityRenderer {
      * - String names: { collection, type } for backwards compatibility
      */
     async spawnEntity(entityId, data) {
-        // DEBUG: Log incoming spawn data
-        console.log('[EntityRenderer.spawnEntity] entityId:', entityId, 'data:', {
-            objectType: data.objectType,
-            spawnType: data.spawnType
-        });
-
+   
         if (this.entities.has(entityId)) {
             console.warn(`[EntityRenderer] Entity ${entityId} already exists`);
             return false;
@@ -141,9 +136,7 @@ class EntityRenderer {
             collection = this.getCollectionNameByIndex(data.objectType);
             type = this.getTypeNameByIndex(data.objectType, data.spawnType);
 
-            // DEBUG: Log resolved names
-            console.log('[EntityRenderer.spawnEntity] Resolved:', { collection, type, entityDef: !!entityDef });
-
+ 
             if (!entityDef || !collection || !type) {
                 console.warn(`[EntityRenderer] No definition found for objectType=${data.objectType}, spawnType=${data.spawnType} (entityDef=${!!entityDef}, collection=${collection}, type=${type})`);
                 return false;
@@ -379,12 +372,11 @@ class EntityRenderer {
                 geometry = child.geometry;
                 const originalMaterial = child.material;
 
-                // For cliffs, compute smooth vertex normals to remove hard edge lines
+                // For cliffs, compute smooth vertex normals and use standard material for shadow support
                 if (collection === 'cliffs') {
                     geometry = geometry.clone();
                     geometry.computeVertexNormals();
 
-                    // Use custom shader material that matches terrain/sprite lighting
                     const cliffTexture = originalMaterial.map;
                     if (cliffTexture) {
                         cliffTexture.colorSpace = THREE.SRGBColorSpace;
@@ -393,43 +385,12 @@ class EntityRenderer {
                         cliffTexture.magFilter = THREE.NearestFilter;
                     }
 
-                    material = new THREE.ShaderMaterial({
-                        uniforms: THREE.UniformsUtils.merge([
-                            THREE.UniformsLib.fog,
-                            {
-                                map: { value: cliffTexture },
-                                ambientLightColor: { value: this.currentAmbientLight.clone() }
-                            }
-                        ]),
-                        vertexShader: `
-                            varying vec2 vUv;
-                            #include <fog_pars_vertex>
-
-                            void main() {
-                                vUv = uv;
-                                vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
-                                gl_Position = projectionMatrix * mvPosition;
-                                #include <fog_vertex>
-                            }
-                        `,
-                        fragmentShader: `
-                            uniform sampler2D map;
-                            uniform vec3 ambientLightColor;
-                            varying vec2 vUv;
-                            #include <fog_pars_fragment>
-
-                            void main() {
-                                vec4 texColor = texture2D(map, vUv);
-                                if (texColor.a < 0.5) discard;
-                                // Apply ambient lighting the same way sprites do
-                                vec3 litColor = texColor.rgb * ambientLightColor;
-                                gl_FragColor = vec4(litColor, texColor.a);
-                                #include <colorspace_fragment>
-                                #include <fog_fragment>
-                            }
-                        `,
-                        fog: true,
-                        side: THREE.DoubleSide
+                    // Use MeshLambertMaterial for proper lighting and shadow support
+                    material = new THREE.MeshLambertMaterial({
+                        map: cliffTexture,
+                        side: THREE.DoubleSide,
+                        alphaTest: 0.5,
+                        transparent: false
                     });
                 } else {
                     material = originalMaterial.clone();
@@ -1126,13 +1087,7 @@ class EntityRenderer {
      * Spawn entity using direct GLTF mesh
      */
     async spawnStaticEntity(entityId, data, entityDef) {
-        // DEBUG: Log incoming static entity data
-        console.log('[EntityRenderer.spawnStaticEntity] entityId:', entityId, 'data:', {
-            collection: data.collection,
-            type: data.type,
-            objectType: data.objectType,
-            spawnType: data.spawnType
-        });
+
 
         // Request model from ModelManager
         const modelKey = `${data.collection}_${data.type}`;
@@ -1469,11 +1424,6 @@ class EntityRenderer {
             if (!sheetWidth || !sheetHeight) {
                 console.warn(`[EntityRenderer] Sprite sheet dimensions not available for entity ${entityId}`);
                 return;
-            }
-
-            // Debug: Log UV calculation once per batch
-            if (!batch._debugLogged) {
-                batch._debugLogged = true;
             }
 
             const offsetX = frame.x / sheetWidth;
@@ -2079,7 +2029,8 @@ class EntityRenderer {
     }
 
     /**
-     * Update ambient light color for all billboard and static batches
+     * Update ambient light color for billboard batches (sprites with custom shaders)
+     * Note: Cliffs now use MeshLambertMaterial which responds to scene lights automatically
      * @param {THREE.Color|number|string} color - The ambient light color
      * @param {number} intensity - The ambient light intensity (multiplied with color)
      */
@@ -2091,15 +2042,8 @@ class EntityRenderer {
         // Store for future batch creation
         this.currentAmbientLight.copy(lightColor);
 
-        // Update all existing billboard batches
+        // Update all existing billboard batches (sprites use custom shader with ambientLightColor)
         for (const batch of this.billboardBatches.values()) {
-            if (batch.instancedMesh?.material?.uniforms?.ambientLightColor) {
-                batch.instancedMesh.material.uniforms.ambientLightColor.value.copy(lightColor);
-            }
-        }
-
-        // Update all existing static batches (cliffs use ShaderMaterial with ambientLightColor)
-        for (const batch of this.staticBatches.values()) {
             if (batch.instancedMesh?.material?.uniforms?.ambientLightColor) {
                 batch.instancedMesh.material.uniforms.ambientLightColor.value.copy(lightColor);
             }
