@@ -1,4 +1,20 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/TerrainSystem.js",
-  "fileName": "TerrainSystem"
+  "fileName": "TerrainSystem",
+  "services": [
+    "getTerrainHeightAtPosition",
+    "getTerrainTypeAtPosition",
+    "getTerrainHeightAtPositionSmooth",
+    "getTileMapTerrainType",
+    "getTerrainTypeAtGridPosition",
+    "getHeightLevelAtGridPosition",
+    "getTileMap",
+    "getTerrainSize",
+    "getTerrainExtensionSize",
+    "getTerrainExtendedSize",
+    "initTerrainFromComponent",
+    "hasTerrain",
+    "getLevel",
+    "isTerrainInitialized"
+  ]
 }

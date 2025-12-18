@@ -1,4 +1,15 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/PathfindingSystem.js",
-  "fileName": "PathfindingSystem"
+  "fileName": "PathfindingSystem",
+  "services": [
+    "isPositionWalkable",
+    "isGridPositionWalkable",
+    "requestPath",
+    "hasRampAt",
+    "hasDirectWalkablePath",
+    "togglePathfindingDebug",
+    "getEntityPath",
+    "setEntityPath",
+    "clearEntityPath"
+  ]
 }

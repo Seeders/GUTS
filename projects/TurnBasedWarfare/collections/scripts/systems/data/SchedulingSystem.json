@@ -1,4 +1,8 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/SchedulingSystem.js",
-  "fileName": "SchedulingSystem"
+  "fileName": "SchedulingSystem",
+  "services": [
+    "scheduleAction",
+    "cancelScheduledAction"
+  ]
 }

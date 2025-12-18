@@ -1,4 +1,12 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/SquadSystem.js",
-  "fileName": "SquadSystem"
+  "fileName": "SquadSystem",
+  "services": [
+    "getSquadData",
+    "getSquadCells",
+    "validateSquadConfig",
+    "calculateUnitPositions",
+    "getSquadSize",
+    "getSquadInfoFromType"
+  ]
 }

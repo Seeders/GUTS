@@ -1,4 +1,8 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/SelectedUnitSystem.js",
-  "fileName": "SelectedUnitSystem"
+  "fileName": "SelectedUnitSystem",
+  "services": [
+    "getSelectedSquads",
+    "deselectAllUnits"
+  ]
 }

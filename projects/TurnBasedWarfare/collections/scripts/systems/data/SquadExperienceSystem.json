@@ -1,4 +1,19 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/SquadExperienceSystem.js",
-  "fileName": "SquadExperienceSystem"
+  "fileName": "SquadExperienceSystem",
+  "services": [
+    "canAffordLevelUp",
+    "applySpecialization",
+    "levelUpSquad",
+    "getLevelUpCost",
+    "initializeSquad",
+    "removeSquad",
+    "getSquadsReadyToLevelUp",
+    "showSpecializationSelection",
+    "findSquadByUnitId",
+    "getCurrentUnitType",
+    "getSquadInfo",
+    "setSquadInfo",
+    "resetSquadExperience"
+  ]
 }

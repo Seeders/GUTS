@@ -1,4 +1,14 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/WorldSystem.js",
-  "fileName": "WorldSystem"
+  "fileName": "WorldSystem",
+  "services": [
+    "getWorldScene",
+    "getCamera",
+    "getWorldExtendedSize",
+    "getGroundTexture",
+    "getGroundMesh",
+    "getHeightStep",
+    "getBaseTerrainHeight",
+    "initWorldFromTerrain"
+  ]
 }

@@ -1,4 +1,8 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/GameModeSystem.js",
-  "fileName": "GameModeSystem"
+  "fileName": "GameModeSystem",
+  "services": [
+    "getSelectedMode",
+    "setGameMode"
+  ]
 }

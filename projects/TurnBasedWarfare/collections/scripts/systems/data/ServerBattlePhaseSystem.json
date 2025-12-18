@@ -1,4 +1,8 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/ServerBattlePhaseSystem.js",
-  "fileName": "ServerBattlePhaseSystem"
+  "fileName": "ServerBattlePhaseSystem",
+  "services": [
+    "startBattle",
+    "serializeAllEntities"
+  ]
 }

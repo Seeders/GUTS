@@ -1,4 +1,8 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/TerrainDetailSystem.js",
-  "fileName": "TerrainDetailSystem"
+  "fileName": "TerrainDetailSystem",
+  "services": [
+    "spawnTerrainDetails",
+    "setTerrainDetailLighting"
+  ]
 }

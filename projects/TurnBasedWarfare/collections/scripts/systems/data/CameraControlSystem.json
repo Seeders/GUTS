@@ -1,4 +1,10 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/CameraControlSystem.js",
-  "fileName": "CameraControlSystem"
+  "fileName": "CameraControlSystem",
+  "services": [
+    "cameraLookAt",
+    "toggleCameraFollow",
+    "getCameraFollowTarget",
+    "rotateCamera"
+  ]
 }

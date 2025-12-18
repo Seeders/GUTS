@@ -1,4 +1,8 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/EquipmentSystem.js",
-  "fileName": "EquipmentSystem"
+  "fileName": "EquipmentSystem",
+  "services": [
+    "getItemData",
+    "equipItem"
+  ]
 }

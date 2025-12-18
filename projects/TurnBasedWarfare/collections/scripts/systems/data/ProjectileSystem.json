@@ -1,4 +1,8 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/ProjectileSystem.js",
-  "fileName": "ProjectileSystem"
+  "fileName": "ProjectileSystem",
+  "services": [
+    "deleteProjectileTrail",
+    "fireProjectile"
+  ]
 }

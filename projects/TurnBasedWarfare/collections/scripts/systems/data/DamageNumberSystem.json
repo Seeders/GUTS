@@ -1,4 +1,7 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/DamageNumberSystem.js",
-  "fileName": "DamageNumberSystem"
+  "fileName": "DamageNumberSystem",
+  "services": [
+    "showDamageNumber"
+  ]
 }

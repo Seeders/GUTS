@@ -1,4 +1,10 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/UnitCreationSystem.js",
-  "fileName": "UnitCreationSystem"
+  "fileName": "UnitCreationSystem",
+  "services": [
+    "createPlacement",
+    "createUnit",
+    "getTerrainHeight",
+    "incrementSquadsCreated"
+  ]
 }

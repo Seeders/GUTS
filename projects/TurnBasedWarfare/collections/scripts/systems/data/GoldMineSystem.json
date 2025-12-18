@@ -1,4 +1,16 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/GoldMineSystem.js",
-  "fileName": "GoldMineSystem"
+  "fileName": "GoldMineSystem",
+  "services": [
+    "buildGoldMine",
+    "isValidGoldMinePlacement",
+    "getGoldVeinLocations",
+    "findNearestGoldVein",
+    "processNextMinerInQueue",
+    "isMineOccupied",
+    "isNextInMinerQueue",
+    "addMinerToQueue",
+    "getMinerQueuePosition",
+    "destroyGoldMine"
+  ]
 }

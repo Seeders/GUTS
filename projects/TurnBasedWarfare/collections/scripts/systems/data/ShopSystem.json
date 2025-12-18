@@ -1,4 +1,8 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/ShopSystem.js",
-  "fileName": "ShopSystem"
+  "fileName": "ShopSystem",
+  "services": [
+    "resetShop",
+    "updateSquadExperience"
+  ]
 }

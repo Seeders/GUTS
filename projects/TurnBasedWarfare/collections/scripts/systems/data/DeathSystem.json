@@ -1,4 +1,7 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/DeathSystem.js",
-  "fileName": "DeathSystem"
+  "fileName": "DeathSystem",
+  "services": [
+    "startDeathProcess"
+  ]
 }

@@ -1,4 +1,19 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/AnimationSystem.js",
-  "fileName": "AnimationSystem"
+  "fileName": "AnimationSystem",
+  "services": [
+    "triggerSinglePlayAnimation",
+    "isAnimationFinished",
+    "setCorpseAnimation",
+    "startCelebration",
+    "stopCelebration",
+    "playDeathAnimation",
+    "calculateAnimationSpeed",
+    "getEntityAnimations",
+    "setBillboardAnimation",
+    "setBillboardAnimationDirection",
+    "getBillboardCurrentAnimation",
+    "getBillboardAnimationState",
+    "getSpriteAnimationData"
+  ]
 }
