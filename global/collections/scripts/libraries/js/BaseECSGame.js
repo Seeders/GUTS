@@ -50,9 +50,8 @@ class BaseECSGame {
         // Pre-allocated array of objects, indexed by entity ID
         this._objectComponents = new Map(); // componentType -> Array[MAX_ENTITIES]
 
-        // Query cache for getEntitiesWith - invalidated on entity/component changes
+        // Query cache for getEntitiesWith - stores reusable arrays to avoid allocations
         this._queryCache = new Map();
-        this._queryCacheVersion = 0;
 
         // Delta sync tracking - stores last synced state for computing deltas
         this._lastSyncedState = null;
@@ -88,6 +87,11 @@ class BaseECSGame {
         // Call logging for debugging
         if (typeof GUTS !== 'undefined' && typeof GUTS.CallLogger !== 'undefined') {
             this.callLogger = new GUTS.CallLogger();
+        }
+
+        // Global seeded random instance - can be reseeded for deterministic simulation
+        if (typeof GUTS !== 'undefined' && typeof GUTS.SeededRandom !== 'undefined') {
+            this.rng = new GUTS.SeededRandom(Date.now());
         }
 
         // Initialize component type registry with common components
@@ -1043,8 +1047,7 @@ class BaseECSGame {
         if (id >= this.nextEntityId) {
             this.nextEntityId = id + 1;
         }
-        this._invalidateQueryCache();
-        return id;
+                return id;
     }
 
     destroyEntity(entityId) {
@@ -1079,8 +1082,7 @@ class BaseECSGame {
         this.entityComponentMask[entityId * 2 + 1] = 0;
         this.freeEntityIds[this.freeEntityCount++] = entityId;
         this.entityCount--;
-        this._invalidateQueryCache();
-    }
+            }
 
     addComponent(entityId, componentId, data) {
         if (!this.entityAlive[entityId]) {
@@ -1119,8 +1121,7 @@ class BaseECSGame {
             storage[entityId] = componentData;
         }
 
-        this._invalidateQueryCache();
-    }
+            }
 
     /**
      * OPTIMIZATION: Add multiple components at once with single cache invalidation
@@ -1165,8 +1166,7 @@ class BaseECSGame {
         }
 
         // Single cache invalidation for all components
-        this._invalidateQueryCache();
-    }
+            }
 
     removeComponent(entityId, componentType) {
         if (!this.entityAlive[entityId]) return null;
@@ -1192,15 +1192,7 @@ class BaseECSGame {
             componentCache.delete(entityId);
         }
 
-        this._invalidateQueryCache();
-        return component;
-    }
-
-    /**
-     * Invalidate all query caches - called when entities/components change
-     */
-    _invalidateQueryCache() {
-        this._queryCacheVersion++;
+                return component;
     }
 
     getComponent(entityId, componentType) {
@@ -1703,8 +1695,7 @@ class BaseECSGame {
             componentCache.clear();
         }
 
-        this._invalidateQueryCache();
-    }
+            }
 
     /**
      * Update specific fields of a component
@@ -1766,11 +1757,14 @@ class BaseECSGame {
         // Create cache key from component types
         const queryKey = componentTypes.join(',');
 
-        // Check if we have a valid cached result
-        const cached = this._queryCache.get(queryKey);
-        if (cached && cached.version === this._queryCacheVersion) {
-            return cached.result;
+        // Get or create reusable result array for this query
+        // This avoids allocations - each unique query gets one array that's reused forever
+        let result = this._queryCache.get(queryKey);
+        if (!result) {
+            result = [];
+            this._queryCache.set(queryKey, result);
         }
+        result.length = 0;  // Clear without deallocating (keeps underlying buffer)
 
         // Build query bitmask from component types
         let queryMask0 = 0;
@@ -1779,12 +1773,7 @@ class BaseECSGame {
             const typeId = this._componentTypeId.get(componentType);
             if (typeId === undefined) {
                 // Component type doesn't exist yet, no entities can have it
-                const emptyResult = [];
-                this._queryCache.set(queryKey, {
-                    result: emptyResult,
-                    version: this._queryCacheVersion
-                });
-                return emptyResult;
+                return result;  // Return empty reusable array
             }
             if (typeId < 32) {
                 queryMask0 |= (1 << typeId);
@@ -1795,7 +1784,6 @@ class BaseECSGame {
 
         // Scan all entities using bitmask matching
         // This is cache-friendly because we iterate contiguously through TypedArrays
-        const result = [];
         const alive = this.entityAlive;
         const masks = this.entityComponentMask;
         const maxId = this.nextEntityId;
@@ -1813,13 +1801,6 @@ class BaseECSGame {
                 result.push(entityId);
             }
         }
-
-        // Result is already in ascending order (we iterate from 1 to maxId)
-        // Cache the result
-        this._queryCache.set(queryKey, {
-            result,
-            version: this._queryCacheVersion
-        });
 
         return result;
     }
@@ -1942,8 +1923,7 @@ class BaseECSGame {
         this.entityCount = 0;
 
         // Invalidate query cache
-        this._invalidateQueryCache();
-    }
+            }
 
     triggerEvent(eventName, data) {
         for (let i = 0; i < this.systems.length; i++) {
