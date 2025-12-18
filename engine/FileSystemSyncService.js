@@ -358,6 +358,27 @@ class FileSystemSyncService {
         }
     }
 
+    /**
+     * Extract static services array from JavaScript class content
+     * Parses: static services = ['service1', 'service2', ...]
+     * @param {string} jsContent - The JavaScript file content
+     * @returns {string[]} Array of service names, or empty array if not found
+     */
+    extractStaticServices(jsContent) {
+        // Match: static services = ['name1', 'name2', ...]
+        const match = jsContent.match(/static\s+services\s*=\s*\[([\s\S]*?)\]/);
+        if (!match) return [];
+
+        // Extract individual string values from the array content
+        const arrayContent = match[1];
+        const services = [];
+        const stringMatches = arrayContent.matchAll(/['"]([^'"]+)['"]/g);
+        for (const m of stringMatches) {
+            services.push(m[1]);
+        }
+        return services;
+    }
+
     async batchReadFiles(filePaths, isModule) {
         try {
             const response = await fetch('/read-files', {
@@ -434,6 +455,14 @@ class FileSystemSyncService {
                 }
                 objectData['filePath'] = filePath;
                 this.typeHasSpecialProperties[collectionIdFromPath] = true;
+
+                // Extract static services array from JS files
+                if (fileExt === 'js') {
+                    const services = this.extractStaticServices(content);
+                    if (services.length > 0) {
+                        objectData.services = services;
+                    }
+                }
             }
         }
 
@@ -899,14 +928,22 @@ class FileSystemSyncService {
                     // Update the special property
                     currentCollections[collectionId][canonicalId][propertyConfig.propertyName] = content;
                     currentCollections[collectionId][canonicalId]['filePath'] = file.name;
-                    
+
                     // Mark this type as having special properties
                     this.typeHasSpecialProperties[collectionId] = true;
-                    
+
+                    // Extract static services array from JS files
+                    if (fileExt === 'js') {
+                        const services = this.extractStaticServices(content);
+                        if (services.length > 0) {
+                            currentCollections[collectionId][canonicalId].services = services;
+                        }
+                    }
+
                     console.log(`Updated ${propertyConfig.propertyName} content for ${collectionId}/${canonicalId}`);
                 }
             }
-            
+
             // Make sure fileName is set for objects with special properties
             if (this.hasSpecialPropertiesInType(collectionId)) {
                 const obj = currentCollections[collectionId][canonicalId];
