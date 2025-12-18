@@ -1,6 +1,6 @@
 {
   "title": "Water",
-  "fragmentScript": "uniform float time;\nuniform sampler2D overlayTexture;\nuniform float textureScale;\nuniform float textureSpeed;\nuniform float textureAlpha;\nvarying vec2 vUv;\n\nvoid main() {\n    // Two texture layers moving in opposite diagonal directions\n    vec2 texOffset1 = vec2(time * textureSpeed, time * textureSpeed);\n    vec2 texOffset2 = vec2(-time * textureSpeed, -time * textureSpeed) + vec2(0.37, 0.23);\n    vec2 texUv1 = (vUv / textureScale) + texOffset1;\n    vec2 texUv2 = (vUv / textureScale) + texOffset2;\n    vec4 texColor1 = texture2D(overlayTexture, texUv1);\n    vec4 texColor2 = texture2D(overlayTexture, texUv2);\n    \n    // Blend two texture layers\n    vec3 color = (texColor1.rgb + texColor2.rgb) * 0.5;\n\n    gl_FragColor = vec4(color, textureAlpha);\n}",
+  "fragmentScript": "uniform float time;\nuniform sampler2D overlayTexture;\nuniform float textureScale;\nuniform float textureSpeed;\nuniform float textureAlpha;\nuniform vec3 ambientLightColor;\nvarying vec2 vUv;\n\nvoid main() {\n    // Two texture layers moving in opposite diagonal directions\n    vec2 texOffset1 = vec2(time * textureSpeed, time * textureSpeed);\n    vec2 texOffset2 = vec2(-time * textureSpeed, -time * textureSpeed) + vec2(0.37, 0.23);\n    vec2 texUv1 = (vUv / textureScale) + texOffset1;\n    vec2 texUv2 = (vUv / textureScale) + texOffset2;\n    vec4 texColor1 = texture2D(overlayTexture, texUv1);\n    vec4 texColor2 = texture2D(overlayTexture, texUv2);\n    \n    // Blend two texture layers\n    vec3 color = (texColor1.rgb + texColor2.rgb) * 0.5;\n\n    // Apply ambient lighting\n    color *= ambientLightColor;\n\n    gl_FragColor = vec4(color, textureAlpha);\n}",
   "vertexScript": "uniform float time;\nuniform float waveHeight;\nuniform float waveFrequency;\nuniform float waveSpeed;\nvarying vec2 vUv;\n\nvoid main() {\n    vUv = uv;\n\n    float wave1 = sin(uv.x * waveFrequency + time * waveSpeed) * waveHeight;\n    float wave2 = sin(uv.y * waveFrequency * 0.7 + time * waveSpeed * 0.8) * waveHeight * 0.5;\n    float wave3 = cos((uv.x + uv.y) * waveFrequency * 0.5 + time * waveSpeed * 1.2) * waveHeight * 0.3;\n    float displacementY = (wave1 + wave2 + wave3) * 0.5;\n\n    vec3 newPosition = vec3(position.x, position.y + displacementY, position.z);\n\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);\n}",
   "uniforms": {
     "time": {
@@ -23,8 +23,11 @@
     },
     "textureAlpha": {
       "value": 1
+    },
+    "ambientLightColor": {
+      "value": [1, 1, 1]
     }
   },
-  "vectors": [],
+  "vectors": ["ambientLightColor"],
   "texture": "water_overlay"
 }
