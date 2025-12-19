@@ -33,7 +33,6 @@
   "systems": [
     "GameSystem",
     "SaveSystem",
-    "ComponentSystem",
     "PlayerStatsSystem",
     "UnitCreationSystem",
     "SquadSystem",

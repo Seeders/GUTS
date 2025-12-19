@@ -1,7 +1,6 @@
 {
   "title": "Skirmish Scene",
   "systems": [
-    "ComponentSystem",
     "BaseNetworkSystem",
     "ServerNetworkSystem",
     "ServerBattlePhaseSystem",

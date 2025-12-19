@@ -23,7 +23,6 @@
     "ParticleEffectSystemEditor"
   ],
   "systems": [
-    "ComponentSystem",
     "RenderSystem",
     "ParticleSystem"
   ],

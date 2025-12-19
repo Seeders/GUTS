@@ -857,8 +857,7 @@ class PlacementSystem extends GUTS.BaseSystem {
      * Called when battle ends to clean up fully killed squads
      */
     removeDeadSquadsAfterRound() {
-        if (!this.game.componentSystem) return;
-
+   
         const entitiesWithPlacement = this.game.getEntitiesWith('placement');
         const processedPlacements = new Set();
         const placementsToCleanup = [];

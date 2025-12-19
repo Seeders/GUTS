@@ -13,14 +13,6 @@
     // Memory tracking
     this.memorySupported = performance.memory !== undefined;
 
-    // Debug memory support
-    if (typeof window !== 'undefined') {
-      if (this.memorySupported) {
-        console.log('%c✓ Performance Monitor: Memory tracking available', 'color: #00ff00');
-      } else {
-        console.log('%c✗ Performance Monitor: Memory tracking NOT available (Chrome/Edge only, requires --enable-precise-memory-info flag)', 'color: #ffaa00');
-      }
-    }
 
     // UI elements
     this.overlay = null;
@@ -57,8 +49,7 @@
           console.log('%c PerformanceMonitor.isEnabled() %c - Check if enabled', 'color: #00ffff', 'color: #ffffff');
           console.log('%c PerformanceMonitor.memorySupported() %c - Check if memory tracking is available', 'color: #00ffff', 'color: #ffffff');
         }
-      };
-      console.log('%c Performance Monitor loaded! %c Type PerformanceMonitor.help() for commands', 'color: #00ff00; font-weight: bold', 'color: #ffff00');
+      };      
     }
   }
   enable() {

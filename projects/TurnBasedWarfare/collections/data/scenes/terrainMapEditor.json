@@ -1,7 +1,6 @@
 {
   "title": "Terrain Map Editor",
   "systems": [
-    "ComponentSystem",
     "GridSystem",
     "TerrainSystem",
     "UnitCreationSystem"

@@ -58,8 +58,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     checkForBattleEnd() {
-        if (!this.game.componentSystem) return;
-
+     
         // Check if any team has lost all buildings
         const buildingVictory = this.checkBuildingVictoryCondition();
         if (buildingVictory) {
@@ -218,7 +217,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             let survivingCount = 0;
             let sideSurvivors = [];
             for (const squad of squads) {
-                if (squad.squadUnits && this.game.componentSystem) {
+                if (squad.squadUnits) {
                     for (const entityId of squad.squadUnits) {
                         const health = this.game.getComponent(entityId, "health");
                         const deathState = this.game.getComponent(entityId, "deathState");
@@ -329,7 +328,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
     onBattleEnd() {
 
-        if (!this.game.componentSystem) return;
+
 
         this.battleStartTime = 0;
 

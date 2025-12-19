@@ -3,10 +3,7 @@ class GameServices {
         this.services = new Map();
     }
     // Systems call this in constructor or init()
-    register(key, method) {
-        if (this.services.has(key)) {
-            console.warn(`[GameServices] Service ${key} already registered! Overwriting.`);
-        }
+    register(key, method) {  
         this.services.set(key, method);
     }
 

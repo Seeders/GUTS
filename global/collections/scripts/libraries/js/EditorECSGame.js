@@ -30,7 +30,6 @@ class EditorECSGame extends GUTS.BaseECSGame {
         // Game services
         this.gameSystem = new GUTS.GameServices();
 
-        // Register getCollections (ComponentSystem handles getComponents)
         this.register("getCollections", () => this.getCollections());
         this.register("isVisibleAt", () => true);
 

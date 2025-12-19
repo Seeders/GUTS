@@ -1,7 +1,6 @@
 {
   "title": "Game Scene",
   "systems": [
-    "ComponentSystem",
     "BaseNetworkSystem",
     "GridSystem",
     "TerrainSystem",
