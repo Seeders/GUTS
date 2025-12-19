@@ -4,7 +4,7 @@ class ShapeFactory {
         this.gltfLoader = new THREE.GLTFLoader();
         this.palette = palette;
         this.textures = textures;
-        this.skeleUtils = GUTS.SkeletonUtils;
+        this.skeleUtils = THREE.SkeletonUtils;
         this.urlRoot = "/";
         this.resourcesPath = resourcesPath;
         this.gltfModelScale = gltfModelScale;

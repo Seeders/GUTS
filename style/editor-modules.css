@@ -136,6 +136,24 @@
   align-items: center;
 }
 
+/* Canvas Toolbar - positioned over the canvas area */
+.editor-module__canvas-toolbar {
+  display: flex;
+  gap: var(--editor-spacing-md);
+  padding: var(--editor-spacing-sm) var(--editor-spacing-md);
+  background-color: rgba(30, 41, 59, 0.95);
+  border-bottom: 1px solid var(--editor-border-color);
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.editor-module__toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background-color: var(--editor-border-color);
+  margin: 0 var(--editor-spacing-xs);
+}
+
 /* =============================================================================
    SECTIONS & PANELS
    ============================================================================= */

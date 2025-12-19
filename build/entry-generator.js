@@ -314,27 +314,33 @@ class EntryGenerator {
         sections.push('// Register all libraries in window.GUTS');
         sections.push('Object.assign(window.GUTS, Libraries);');
         sections.push('');
+        // Build library metadata mapping for windowContext at build time
+        const clientLibraryWindowContexts = {};
+        if (client.libraries) {
+            client.libraries.forEach(lib => {
+                const libName = lib.requireName || lib.fileName || lib.name;
+                if (lib.windowContext) {
+                    clientLibraryWindowContexts[libName] = lib.windowContext;
+                }
+            });
+        }
+
+        sections.push('// Library windowContext metadata (generated at build time)');
+        sections.push(`const _libraryWindowContexts = ${JSON.stringify(clientLibraryWindowContexts)};`);
+        sections.push('');
         sections.push('// Setup window.THREE if it exists in libraries');
         sections.push('if (Libraries.THREE) {');
         sections.push('  window.THREE = Libraries.THREE;');
         sections.push('  ');
-        sections.push('  // Add Three.js addons to window.THREE namespace');
+        sections.push('  // Add libraries with windowContext="THREE" to window.THREE namespace');
         sections.push('  Object.keys(Libraries).forEach(key => {');
-        sections.push('    if (key.startsWith(\'three_\')) {');
-        sections.push('      // For three_ prefixed libraries, add as both namespaced AND flattened');
-        sections.push('      // e.g., THREE.MeshBVH (namespace) AND THREE.computeBoundsTree (flattened)');
+        sections.push('    const windowContext = _libraryWindowContexts[key];');
+        sections.push('    if (windowContext === \'THREE\' && key !== \'THREE\') {');
         sections.push('      const addon = Libraries[key];');
-        sections.push('      const cleanName = key.replace(\'three_\', \'\');');
-        sections.push('      window.THREE[cleanName] = addon; // Add as namespace');
-        sections.push('      if (typeof addon === \'object\' && addon !== null) {');
-        sections.push('        Object.assign(window.THREE, addon); // Also flatten for direct access');
-        sections.push('      }');
-        sections.push('    } else if ([\'OrbitControls\', \'GLTFLoader\', \'EffectComposer\', \'OutputPass\', \'RenderPixelatedPass\', \'SkeletonUtils\'].includes(key)) {');
-        sections.push('      const addon = Libraries[key];');
+        sections.push('      window.THREE[key] = addon;');
+        sections.push('      // Also flatten exported functions/classes for direct access');
         sections.push('      if (typeof addon === \'object\' && addon !== null) {');
         sections.push('        Object.assign(window.THREE, addon);');
-        sections.push('      } else {');
-        sections.push('        window.THREE[key] = addon;');
         sections.push('      }');
         sections.push('    }');
         sections.push('  });');
@@ -812,30 +818,41 @@ class EntryGenerator {
         sections.push('window.EditorController = EditorController;');
         sections.push('');
 
+        // Build library metadata mapping for windowContext at build time
+        const libraryWindowContexts = {};
+        if (editor.libraries) {
+            editor.libraries.forEach(lib => {
+                const libName = lib.requireName || lib.fileName || lib.name;
+                if (lib.windowContext) {
+                    libraryWindowContexts[libName] = lib.windowContext;
+                }
+            });
+        }
+
         // Set up window.THREE with core library and addons (if libraries exist)
+        sections.push('// Library windowContext metadata (generated at build time)');
+        sections.push(`const _libraryWindowContexts = ${JSON.stringify(libraryWindowContexts)};`);
+        sections.push('');
         sections.push('// Set up window.THREE with core library and addons');
         sections.push('if (window.GUTS.libraries) {');
+        sections.push('  // First pass: set up core THREE.js');
         sections.push('  Object.keys(window.GUTS.libraries).forEach(key => {');
-        sections.push('    // Core THREE.js library');
         sections.push('    if (key === \'threejs\' || key === \'THREE\') {');
         sections.push('      window.THREE = window.GUTS.libraries[key];');
         sections.push('    }');
         sections.push('  });');
-        sections.push('  ');
-        sections.push('  // Add Three.js addons to window.THREE namespace');
         sections.push('  if (!window.THREE) window.THREE = {};');
+        sections.push('  ');
+        sections.push('  // Second pass: add libraries with windowContext="THREE" to window.THREE');
         sections.push('  Object.keys(window.GUTS.libraries).forEach(key => {');
-        sections.push('    if (key.startsWith(\'three_\')) {');
-        sections.push('      // For three_ prefixed libraries, add as both namespaced AND flattened');
+        sections.push('    const windowContext = _libraryWindowContexts[key];');
+        sections.push('    if (windowContext === \'THREE\' && key !== \'threejs\' && key !== \'THREE\') {');
         sections.push('      const addon = window.GUTS.libraries[key];');
-        sections.push('      const cleanName = key.replace(\'three_\', \'\');');
-        sections.push('      window.THREE[cleanName] = addon; // Add as namespace');
+        sections.push('      window.THREE[key] = addon;');
+        sections.push('      // Also flatten exported functions/classes for direct access (e.g., THREE.clone)');
         sections.push('      if (typeof addon === \'object\' && addon !== null) {');
-        sections.push('        Object.assign(window.THREE, addon); // Also flatten for direct access');
+        sections.push('        Object.assign(window.THREE, addon);');
         sections.push('      }');
-        sections.push('    } else if (key === \'GLTFLoader\' || key === \'BufferGeometryUtils\' || key === \'OrbitControls\') {');
-        sections.push('      // Other THREE.js libraries');
-        sections.push('      window.THREE[key] = window.GUTS.libraries[key];');
         sections.push('    }');
         sections.push('  });');
         sections.push('}');

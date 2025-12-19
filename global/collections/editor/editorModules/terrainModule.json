@@ -21,10 +21,11 @@
     "RaycastHelper",
     "PlacementPreview",
     "three_MeshBVH",
+    "three_SkeletonUtils",
     "EntityRenderer",
-    "EnvironmentObjectSpawner",
     "GameServices",
     "ComponentGenerator",
+    "SE_GizmoManager",
     "TerrainMapEditor"
   ],
   "systems": [
@@ -33,7 +34,8 @@
     "TerrainSystem",
     "WorldSystem",
     "RenderSystem",
-    "AnimationSystem"
+    "AnimationSystem",
+    "UnitCreationSystem"
   ],
   "propertyName": "tileMap",
   "interface": "terrainEditor",

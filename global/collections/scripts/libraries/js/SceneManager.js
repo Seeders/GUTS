@@ -200,179 +200,55 @@ class SceneManager {
     }
 
     /**
-     * Spawn all entities defined in the scene
-     * Supports three formats:
-     * 1. Prefab format: { id, prefab }
-     * 2. Raw components format: { id, components: { componentType: data, ... } }
-     * 3. Collection format (SceneEditor): { id, collection, spawnType, name?, transform? }
+     * Spawn all entities defined in the scene (deprecated - entities should be in level data)
+     * Only supports type prefab format: { prefab: "unit", type: "dragon_red", components: {...} }
      * @param {Object} sceneData - The scene configuration
      * @returns {Promise<void>}
      */
     async spawnSceneEntities(sceneData) {
         const entities = sceneData.entities || [];
+        if (entities.length === 0) return;
+
         const collections = this.game.getCollections();
         const prefabs = collections.prefabs || {};
+        const enums = this.game.call?.('getEnums');
 
         for (const entityDef of entities) {
-            const entityId = entityDef.id || this.game.getEntityId();
-
-            // Prefab format: { id, prefab }
-            if (entityDef.prefab) {
-                const prefabData = prefabs[entityDef.prefab];
-                if (!prefabData) {
-                    console.warn(`[SceneManager] Prefab '${entityDef.prefab}' not found`);
-                    continue;
-                }
-
-                const components = JSON.parse(JSON.stringify(prefabData.components || []));
-
-                this.game.createEntity(entityId);
-                this.spawnedEntityIds.add(entityId);
-
-                // Array format: [{ componentType: data }, { componentType: data }, ...]
-                for (const componentObj of components) {
-                    for (const [componentType, componentData] of Object.entries(componentObj)) {
-                        this.game.addComponent(entityId, componentType, componentData);
-                    }
-                }
+            if (!entityDef.prefab || !entityDef.type) {
+                console.warn(`[SceneManager] Entity missing prefab or type:`, entityDef);
                 continue;
             }
 
-            // Raw components format: { id, components: [...] }
-            if (entityDef.components && Array.isArray(entityDef.components)) {
-                // Ensure entityId is numeric - string IDs break TypedArray indexing
-                const numericEntityId = typeof entityId === 'string' ? this.game.getEntityId() : entityId;
-
-                this.game.createEntity(numericEntityId);
-                this.spawnedEntityIds.add(numericEntityId);
-
-                for (const componentObj of entityDef.components) {
-                    for (const [componentType, componentData] of Object.entries(componentObj)) {
-                        this.game.addComponent(numericEntityId, componentType, componentData);
-                    }
-                }
+            const prefabData = prefabs[entityDef.prefab];
+            if (!prefabData) {
+                console.warn(`[SceneManager] Prefab '${entityDef.prefab}' not found`);
                 continue;
             }
 
-            // Collection format: { id, collection, spawnType, name?, components?: { transform? } }
-            if (!entityDef.collection || !entityDef.spawnType) {
-                console.warn(`[SceneManager] Entity missing collection/spawnType or prefab:`, entityDef);
+            const collection = prefabData.collection;
+            if (!collection) {
+                console.warn(`[SceneManager] Prefab '${entityDef.prefab}' missing collection`);
                 continue;
             }
 
-            const { collection, spawnType, components } = entityDef;
-            const transform = components?.transform;
-            // Team should be numeric; fallback to hostile team (1) for scene entities if not specified
-            const enums = this.game.call?.('getEnums');
-            const defaultTeam = enums?.team?.hostile ?? 1;
-            const team = components?.team?.team ?? defaultTeam;
+            // Get team from components or default to neutral
+            const team = entityDef.components?.team?.team ?? enums?.team?.neutral ?? 0;
 
-            // Use UnitCreationSystem for consistent entity creation
-            const unitCreationSystem = this.game.unitCreationSystem || this.game.systemsByName?.get('UnitCreationSystem');
-
-            if (unitCreationSystem) {
-                // Calculate grid position from world position for placement component
-                const position = transform?.position || { x: 0, y: 0, z: 0 };
-                let gridPosition = { x: 0, z: 0 };
-                if (this.game.call) {
-                    const gridPos = this.game.call('worldToPlacementGrid', position.x, position.z);
-                    if (gridPos) {
-                        gridPosition = gridPos;
-                    }
-                }
-
-                // Generate a numeric placement ID for scene entities
-                // Use placementSystem's auto-incrementing ID (server-authoritative)
-                const placementId = this.game.placementSystem?._getNextPlacementId() ?? -1;
-
-                // Determine playerId based on team (numeric ID for ECS)
-                // Server: look up player for this team from room
-                // Client: use local numericPlayerId if entity is on player's team
-                let playerId = -1;
-                if (this.game.isServer) {
-                    // Server knows which player owns each team from the room
-                    const room = this.game.room;
-                    if (room?.players) {
-                        for (const [pid, player] of room.players) {
-                            if (player.team === team) {
-                                playerId = player.numericId !== undefined ? player.numericId : -1;
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    // Client: assign own numericPlayerId to entities on player's team
-                    const myTeam = this.game.state?.myTeam;
-                    if (myTeam !== undefined && team === myTeam) {
-                        playerId = this.game.clientNetworkManager?.numericPlayerId ?? -1;
-                    }
-                }
-
-                // Convert string collection/spawnType to numeric indices
-                if (!enums) {
-                    console.error(`[SceneManager] Enums not available for entity ${entityId}`);
-                    continue;
-                }
-                const collectionIndex = enums.objectTypeDefinitions?.[collection] ?? -1;
-                const spawnTypeIndex = enums[collection]?.[spawnType] ?? -1;
-
-                if (collectionIndex < 0 || spawnTypeIndex < 0) {
-                    console.warn(`[SceneManager] Invalid collection/spawnType: ${collection}/${spawnType} (indices: ${collectionIndex}/${spawnTypeIndex})`);
-                    continue;
-                }
-
-                // Build networkUnitData data to create entity with full placement component
-                // This makes scene entities behave like player-placed units
-                const networkUnitData = {
-                    placementId,
-                    gridPosition,
-                    unitTypeId: spawnTypeIndex,
-                    collection: collectionIndex,
-                    team,
-                    playerId,
-                    roundPlaced: 0
-                };
-
-                // Use createPlacement so entity gets placement component and is fully controllable
-                const createdId = unitCreationSystem.createPlacement(
-                    networkUnitData,
-                    transform || {},
-                    team,
-                    entityId
-                );
+            // Use createEntityFromPrefab service
+            if (this.game.hasService?.('createEntityFromPrefab')) {
+                const createdId = this.game.call('createEntityFromPrefab', {
+                    prefab: entityDef.prefab,
+                    type: entityDef.type,
+                    collection: collection,
+                    team: team,
+                    componentOverrides: entityDef.components || {}
+                });
 
                 if (createdId) {
                     this.spawnedEntityIds.add(createdId);
                 }
             } else {
-                // Fallback: Create entity manually
-                const itemData = collections[collection]?.[spawnType];
-
-                if (!itemData) {
-                    console.warn(`[SceneManager] Item '${spawnType}' not found in collection '${collection}'`);
-                    continue;
-                }
-
-                this.game.createEntity(entityId);
-                this.spawnedEntityIds.add(entityId);
-
-                const position = transform?.position;
-                if (position) {
-                    this.game.addComponent(entityId, 'transform', {
-                        position: {
-                            x: position.x ?? 0,
-                            y: position.y ?? 0,
-                            z: position.z ?? 0
-                        },
-                        rotation: transform?.rotation || { x: 0, y: 0, z: 0 },
-                        scale: transform?.scale || { x: 1, y: 1, z: 1 }
-                    });
-                }
-
-                this.game.addComponent(entityId, 'renderable', {
-                    collection,
-                    type: spawnType
-                });
+                console.warn(`[SceneManager] createEntityFromPrefab service not available`);
             }
         }
     }

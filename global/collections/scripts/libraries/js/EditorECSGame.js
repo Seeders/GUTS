@@ -1,7 +1,7 @@
 /**
  * EditorECSGame - ECS game context for editors
  * Extends BaseECSGame similar to how ECSGame extends it for runtime
- * Used by TerrainMapEditor, SceneEditor, and any other editors
+ * Used by TerrainMapEditor and any other editors
  */
 class EditorECSGame extends GUTS.BaseECSGame {
     constructor(app, canvas) {

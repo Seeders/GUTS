@@ -1,6 +1,6 @@
 /**
  * EditorLoader - Handles loading and setup for editor contexts
- * Mirrors GameLoader pattern for editors (TerrainMapEditor, SceneEditor, etc.)
+ * Mirrors GameLoader pattern for editors (TerrainMapEditor, etc.)
  */
 class EditorLoader {
     constructor(game) {
