@@ -2,5 +2,5 @@
   "id": "scenes",
   "name": "Scenes",
   "singular": "scene",
-  "objectTypeCategory": "environment"
+  "objectTypeCategory": "data"
 }
