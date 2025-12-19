@@ -30,7 +30,7 @@ class EditorLoader {
         }
 
         // Initialize game with systems
-        this.game.init(false, {
+        await this.game.init(false, {
             systems,
             managers: []
         });

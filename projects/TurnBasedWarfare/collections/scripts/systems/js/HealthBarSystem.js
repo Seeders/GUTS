@@ -319,9 +319,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
     }
 
     isVisibleAt(pos) {
-        const fow = this.game?.fogOfWarSystem;
-        if (!fow || !pos) return true; // if no FOW, default to visible
-        return fow.isVisibleAt(pos.x, pos.z);
+        return this.game.call('isVisibleAt', pos.x, pos.z);
     }
 
     toggleHealthBars(visible = true) {

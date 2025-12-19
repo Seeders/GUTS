@@ -60,7 +60,7 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         }
 
         // Set level
-        const levelName = config.selectedLevel || 'level1';
+        const levelName = config.selectedLevel;
         const levelIndex = this.enums.levels?.[levelName] ?? 0;
         this.game.state.level = levelIndex;
 

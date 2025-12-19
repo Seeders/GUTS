@@ -366,7 +366,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
             if (!pos || !team || projectile || !unitType) continue;
 
             const isMyUnit = team.team === myTeam;
-            const visible = this.game.fogOfWarSystem?.isVisibleAt(pos.x, pos.z);
+            const visible = this.game.call('isVisibleAt', pos.x, pos.z);
 
             if (!isMyUnit && !visible) continue;
 

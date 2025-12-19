@@ -21,6 +21,37 @@ class GoldMineSystem extends GUTS.BaseSystem {
         this.params = params || {};
     }
 
+    /**
+     * Per-frame update to manage gold vein visibility based on fog of war.
+     * Veins with mines are hidden when visible to the player (mine shows instead),
+     * but shown in fog areas to prevent information leaks.
+     */
+    update() {
+        const goldMines = this.game.getEntitiesWith('goldMine');
+
+        for (const mineId of goldMines) {
+            const goldMine = this.game.getComponent(mineId, 'goldMine');
+            if (goldMine?.veinEntityId == null) continue;
+
+            const veinTransform = this.game.getComponent(goldMine.veinEntityId, 'transform');
+            if (!veinTransform?.scale) continue;
+
+            // Check if vein position is visible to local player
+            const pos = veinTransform.position;
+            const isVisible = this.game.call('isVisibleAt', pos.x, pos.z);
+
+            // Hide vein when visible (mine is shown), show when in fog
+            // Default to hidden if isVisibleAt service isn't available
+            const targetScale = (isVisible === true || isVisible === undefined) ? 0 : 1;
+
+            if (veinTransform.scale.x !== targetScale) {
+                veinTransform.scale.x = targetScale;
+                veinTransform.scale.y = targetScale;
+                veinTransform.scale.z = targetScale;
+            }
+        }
+    }
+
     // Alias methods for service names that differ from method names
     isNextInMinerQueue(entityId, mineId) {
         return this.isNextInQueue(entityId, mineId);
@@ -200,6 +231,23 @@ class GoldMineSystem extends GUTS.BaseSystem {
             // minerQueue is initialized by the schema's $fixedArray definition
         });
 
+        // Match the gold mine rotation to the gold vein rotation
+        if (veinEntityId != null) {
+            const veinTransform = this.game.getComponent(veinEntityId, 'transform');
+            if (veinTransform) {
+                // Copy rotation from vein to mine
+                if (veinTransform.rotation) {
+                    const mineTransform = this.game.getComponent(entityId, 'transform');
+                    if (mineTransform?.rotation) {
+                        mineTransform.rotation.x = veinTransform.rotation.x;
+                        mineTransform.rotation.y = veinTransform.rotation.y;
+                        mineTransform.rotation.z = veinTransform.rotation.z;
+                    }
+                }
+                // Note: Vein visibility is managed per-frame in update() based on fog of war
+            }
+        }
+
         return { success: true };
     }
 
@@ -207,6 +255,17 @@ class GoldMineSystem extends GUTS.BaseSystem {
         const goldMine = this.game.getComponent(entityId, "goldMine");
         if (!goldMine) {
             return { success: false, error: 'No gold mine component found' };
+        }
+
+        // Restore vein visibility - it won't be managed by update() anymore after mine is destroyed
+        const veinEntityId = goldMine.veinEntityId;
+        if (veinEntityId != null) {
+            const veinTransform = this.game.getComponent(veinEntityId, 'transform');
+            if (veinTransform?.scale) {
+                veinTransform.scale.x = 1;
+                veinTransform.scale.y = 1;
+                veinTransform.scale.z = 1;
+            }
         }
 
         // Clear any miners targeting this mine

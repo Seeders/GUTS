@@ -2,7 +2,8 @@ class FogOfWarSystem extends GUTS.BaseSystem {
     static services = [
         'getExplorationTexture',
         'getFogTexture',
-        'invalidateLOSCache'
+        'invalidateLOSCache',
+        'isVisibleAt'
     ];
 
     constructor(game) {

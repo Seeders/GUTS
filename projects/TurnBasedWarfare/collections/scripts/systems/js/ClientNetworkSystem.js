@@ -535,14 +535,14 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
     toggleReady() {
         // Include selected level from UI (host's selection will be used) as numeric index
-        const selectedLevelName = this.game.call('getSelectedLevel') || 'level1';
+        const selectedLevelName = this.game.call('getSelectedLevel');
         const levelIndex = this.enums.levels?.[selectedLevelName] ?? 1;
         this.game.clientNetworkManager.call('TOGGLE_READY', { level: levelIndex });
     }
 
     startGame() {
         if (!this.isHost) return;
-        const selectedLevelName = this.game.call('getSelectedLevel') || 'level1';
+        const selectedLevelName = this.game.call('getSelectedLevel');
         const levelIndex = this.enums.levels?.[selectedLevelName] ?? 1;
         this.game.clientNetworkManager.call('START_GAME', { level: levelIndex });
     }

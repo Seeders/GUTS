@@ -376,7 +376,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
     }
 
     getSelectedLevel() {
-        return this.selectedLevel || 'level1';
+        return this.selectedLevel;
     }
 
     updateLobby(gameState) {
@@ -610,7 +610,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
         // Store skirmish configuration in game state
         this.game.state.skirmishConfig = {
             isSkirmish: true,
-            selectedLevel: this.skirmishSelectedLevel || 'level1',
+            selectedLevel: this.skirmishSelectedLevel,
             selectedTeam: this.skirmishSelectedTeam || 'left',
             startingGold: this.skirmishMode?.startingGold || 100
         };

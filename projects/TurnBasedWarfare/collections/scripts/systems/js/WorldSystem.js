@@ -402,10 +402,14 @@ class WorldSystem extends GUTS.BaseSystem {
         if (this.game.hasService('getPostProcessingComposer')) {
             const composer = this.game.call('getPostProcessingComposer');
             if (composer) {
+                // When using post-processing, worldRenderer.render() is bypassed,
+                // so we need to update liquid shaders manually
+                this.worldRenderer.updateLiquidShaders(this.game.state?.deltaTime || 0);
                 this.game.call('renderPostProcessing');
                 return;
             }
         }
+        // worldRenderer.render() handles updateLiquidShaders() internally
         this.worldRenderer.render();
     }
 

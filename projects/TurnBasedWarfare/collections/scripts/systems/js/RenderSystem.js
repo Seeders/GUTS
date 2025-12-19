@@ -239,8 +239,7 @@ class RenderSystem extends GUTS.BaseSystem {
             const angle = transform.rotation?.y || 0;
 
             // Check fog of war visibility (cliffs and worldObjects always visible)
-            const fow = this.game.fogOfWarSystem;
-            const isVisible = fow ? fow.isVisibleAt(pos.x, pos.z) : true;
+            const isVisible = this.game.call('isVisibleAt', pos.x, pos.z);
             const isAlwaysVisible = unitType.collection === "worldObjects" || unitType.collection === "cliffs";
 
             if (!isAlwaysVisible && !isVisible) {
@@ -279,8 +278,10 @@ class RenderSystem extends GUTS.BaseSystem {
                     angle: angle
                 });
             } else {
-                // Check if position/rotation has actually changed
+                // Check if position/rotation/scale has actually changed
                 const cached = this._entityPositionCache.get(entityId);
+                const scale = transform.scale;
+                const scaleX = scale?.x ?? 1;
 
                 if (cached) {
                     const dx = pos.x - cached.x;
@@ -288,9 +289,10 @@ class RenderSystem extends GUTS.BaseSystem {
                     const dz = pos.z - cached.z;
                     const distSq = dx*dx + dy*dy + dz*dz;
                     const angleDiff = Math.abs(angle - cached.angle);
+                    const scaleChanged = (cached.scaleX ?? 1) !== scaleX;
 
-                    // Skip update if position hasn't changed significantly
-                    if (distSq < this._positionThreshold && angleDiff < 0.01) {
+                    // Skip update if position/rotation/scale hasn't changed significantly
+                    if (distSq < this._positionThreshold && angleDiff < 0.01 && !scaleChanged) {
                         continue;
                     }
 
@@ -299,6 +301,7 @@ class RenderSystem extends GUTS.BaseSystem {
                     cached.y = pos.y;
                     cached.z = pos.z;
                     cached.angle = angle;
+                    cached.scaleX = scaleX;
                 }
 
                 // Update existing entity
