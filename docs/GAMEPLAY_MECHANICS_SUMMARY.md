@@ -161,6 +161,9 @@ Units are classified by primary stat and tier:
 - **Starting Gold**: 100 per player
 - **Round Progression**: Base 50 + 50 per round
 - **Gold Mines**: Peasants build on gold veins for passive income
+  - Gold mines inherit rotation from the gold vein
+  - Building a mine hides the underlying gold vein
+  - Destroying a mine reveals the gold vein again
 
 ### Unit Purchasing
 - Buy units during placement phase

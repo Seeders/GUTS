@@ -1493,13 +1493,12 @@ class TerrainMapEditor {
         // Create editor context (like ECSGame)
         this.editorContext = new GUTS.EditorECSGame(this.gameEditor, this.canvasEl);
 
-        // Get editor-specific systems from terrainModule.json
-        const editorSystems = this.editorSettings.systems;
-
-        // Use EditorLoader to load assets and initialize (like GameLoader)
+        // Use EditorLoader to load assets and initialize
+        // Pass empty systems - scene will define which systems to load
+        // BaseECSGame allows any system when availableSystemTypes is empty
         this.editorLoader = new GUTS.EditorLoader(this.editorContext);
         await this.editorLoader.load({
-            systems: editorSystems,
+            systems: [],
             levelName: levelName
         });
 
@@ -1511,11 +1510,13 @@ class TerrainMapEditor {
         // TerrainSystem will read this and create the terrain entity
         this.editorContext.state.level = levelIndex;
 
-        // Load scene - TerrainSystem will create terrain entity from game.state.level
-        await this.editorContext.loadScene({
-            systems: editorSystems,
-            entities: []
-        });
+        // Load scene configured in editorModule (e.g., terrainModule.json)
+        const sceneName = this.editorSettings.scene;
+        if (!sceneName) {
+            console.error('[TerrainMapEditor] No scene configured in editorModule');
+            return;
+        }
+        await this.editorContext.sceneManager.loadScene(sceneName);
 
         // Get references from systems for editor functionality
         this.worldRenderer = this.editorContext.worldSystem?.worldRenderer;

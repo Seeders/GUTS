@@ -32,12 +32,15 @@ class EditorECSGame extends GUTS.BaseECSGame {
 
         // Register getCollections (ComponentSystem handles getComponents)
         this.register("getCollections", () => this.getCollections());
+        this.register("isVisibleAt", () => true);
 
-        // Animation loop
+        // Animation loop - matches Engine tick rate
         this.animationFrameId = null;
-        this.clock = new THREE.Clock();
+        this.tickRate = 1 / 20; // 20 TPS - same as Engine
+        this.accumulator = 0;
+        this.lastTick = 0;
 
-        // Event listeners for editor callbacks
+        // Event listeners for editor UI callbacks
         this.eventListeners = new Map();
     }
 
@@ -45,89 +48,21 @@ class EditorECSGame extends GUTS.BaseECSGame {
      * Initialize - called by EditorLoader after assets are loaded
      * Mirrors ECSGame.init() pattern
      */
-    init(isServer = false, config = {}) {
+    async init(isServer = false, config = {}) {
         this.isServer = isServer;
 
         // Load game scripts (sets up SceneManager, systems)
-        this.loadGameScripts(config);
+        await this.loadGameScripts(config);
     }
 
     /**
      * Override loadGameScripts to use ONLY the passed config (not game config)
      * and skip loading initial scene (editors handle scene loading explicitly)
      */
-    loadGameScripts(config) {
-        this.collections = this.getCollections();
+    async loadGameScripts(config) {
         // Use ONLY the passed config - don't fall back to game config
-        this.gameConfig = config;
-
-        // Initialize SceneManager
-        this.sceneManager = new GUTS.SceneManager(this);
-
-        // Store available system types for lazy instantiation
-        this.availableSystemTypes = this.gameConfig.systems || [];
-        this.systemsByName = new Map();
-
-        // NOTE: Don't call loadInitialScene() - editors handle scene loading explicitly
-    }
-
-    /**
-     * Load a scene - uses SceneManager like the game does
-     * @param {Object} sceneData - Scene data for systems (can include entities array)
-     */
-    async loadScene(sceneData = {}) {
-        // Use SceneManager's methods directly (same pattern as runtime)
-        this.sceneManager.currentScene = sceneData;
-        this.sceneManager.currentSceneName = sceneData.title || 'editor_scene';
-
-        // Enable systems for this scene
-        this.sceneManager.configureSystems(sceneData);
-
-        // Spawn entities using SceneManager
-        await this.sceneManager.spawnSceneEntities(sceneData);
-
-        // Notify systems using SceneManager (must await async notifySceneLoaded)
-        await this.sceneManager.notifySceneLoaded(sceneData);
-        this.sceneManager.notifyPostSceneLoad(sceneData);
-
-        console.log('[EditorECSGame] Scene loaded with', this.getEntityCount(), 'entities');
-    }
-
-    /**
-     * Add a new entity from a prefab (uses SceneManager's utility methods)
-     */
-    addEntityFromPrefab(prefabName, overrides = {}) {
-        const prefabs = this.getCollections().prefabs || {};
-        const prefabData = prefabs[prefabName];
-
-        if (!prefabData) {
-            console.error(`[EditorECSGame] Prefab '${prefabName}' not found`);
-            return null;
-        }
-
-        const entityId = overrides.id || `entity_${this.nextEntityId++}`;
-
-        // Use SceneManager's utility methods
-        let components = this.sceneManager.deepClone(prefabData.components || {});
-
-        if (overrides.components) {
-            this.sceneManager.mergeComponents(components, overrides.components);
-        }
-
-        this.createEntity(entityId);
-        this.entityLabels.set(entityId, overrides.name || prefabData.title || prefabName);
-
-        for (const [componentType, componentData] of Object.entries(components)) {
-            this.addComponent(entityId, componentType, componentData);
-        }
-
-        // Track entity in SceneManager
-        this.sceneManager.spawnedEntityIds.add(entityId);
-
-        // Trigger systems to detect the new entity
-        this.triggerEvent('onEntityCreated', entityId);
-
-        return entityId;
+        // Pass skipInitialScene since editors handle scene loading explicitly
+        await super.loadGameScripts(config, { skipInitialScene: true });
     }
 
     /**
@@ -150,26 +85,28 @@ class EditorECSGame extends GUTS.BaseECSGame {
     }
 
     /**
-     * Start the render/update loop
+     * Start the render/update loop with fixed tick rate (matches Engine)
      */
     startRenderLoop() {
-        const loop = () => {
-            const deltaTime = this.clock.getDelta();
-            this.state.deltaTime = deltaTime;
-            this.state.now += deltaTime;
+        this.lastTick = performance.now();
+        this.accumulator = 0;
 
-            // Update enabled systems
-            for (const system of this.systems) {
-                if (!system.enabled) continue;
-                if (system.update) {
-                    system.update();
-                }
-            }
+        const loop = async () => {
+            const now = performance.now();
+            const deltaTime = (now - this.lastTick) / 1000;
+            this.lastTick = now;
 
-            // Update and render via WorldSystem's worldRenderer
-            if (this.worldSystem?.worldRenderer) {
-                this.worldSystem.worldRenderer.update(deltaTime);
-                this.worldSystem.worldRenderer.render();
+            // Accumulate time for fixed timestep
+            this.accumulator += deltaTime;
+
+            // Process ticks at fixed rate (same as Engine)
+            const maxTicksPerFrame = 3;
+            let ticksProcessed = 0;
+
+            while (this.accumulator >= this.tickRate && ticksProcessed < maxTicksPerFrame) {
+                await this.update(this.tickRate);
+                this.accumulator -= this.tickRate;
+                ticksProcessed++;
             }
 
             this.animationFrameId = requestAnimationFrame(loop);
@@ -200,8 +137,6 @@ class EditorECSGame extends GUTS.BaseECSGame {
 
     /**
      * Register an event listener callback
-     * @param {string} eventName - Event name to listen for
-     * @param {Function} callback - Callback function
      */
     on(eventName, callback) {
         if (!this.eventListeners.has(eventName)) {
@@ -212,8 +147,6 @@ class EditorECSGame extends GUTS.BaseECSGame {
 
     /**
      * Remove an event listener
-     * @param {string} eventName - Event name
-     * @param {Function} callback - Callback to remove
      */
     off(eventName, callback) {
         const listeners = this.eventListeners.get(eventName);
@@ -221,22 +154,6 @@ class EditorECSGame extends GUTS.BaseECSGame {
             const index = listeners.indexOf(callback);
             if (index !== -1) {
                 listeners.splice(index, 1);
-            }
-        }
-    }
-
-    /**
-     * Override triggerEvent to also call registered listeners
-     */
-    triggerEvent(eventName, data) {
-        // Call parent implementation (notifies systems)
-        super.triggerEvent(eventName, data);
-
-        // Also call registered listeners
-        const listeners = this.eventListeners.get(eventName);
-        if (listeners) {
-            for (const callback of listeners) {
-                callback(data);
             }
         }
     }

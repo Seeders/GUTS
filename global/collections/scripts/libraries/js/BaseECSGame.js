@@ -13,6 +13,7 @@ class BaseECSGame {
         // Service registry
         this._services = new GUTS.GameServices();
 
+
         // ============================================
         // HIGH-PERFORMANCE ECS STORAGE (10k+ entities)
         // ============================================
@@ -816,7 +817,7 @@ class BaseECSGame {
         await this.loadGameScripts(config);
     }
 
-    async loadGameScripts(config) {
+    async loadGameScripts(config, options = {}) {
         this.collections = this.getCollections();
         this.gameConfig = config ? config : (this.isServer ? this.collections.configs.server : this.collections.configs.game);
 
@@ -828,9 +829,10 @@ class BaseECSGame {
         // Map to track instantiated systems by name
         this.systemsByName = new Map();
 
-        // Load initial scene if configured
-        // This enables systems and triggers onSceneLoad() callbacks
-        await this.loadInitialScene();
+        // Load initial scene if configured (skip for editors that manage scene loading explicitly)
+        if (!options.skipInitialScene) {
+            await this.loadInitialScene();
+        }
     }
 
     /**
@@ -857,8 +859,8 @@ class BaseECSGame {
             return this.systemsByName.get(systemName);
         }
 
-        // Check if this system type is available
-        if (!this.availableSystemTypes.includes(systemName)) {
+        // Check if this system type is available (skip check if no whitelist defined)
+        if (this.availableSystemTypes.length > 0 && !this.availableSystemTypes.includes(systemName)) {
             console.warn(`[BaseECSGame] System '${systemName}' not in available systems list`);
             return null;
         }
@@ -2010,7 +2012,7 @@ class BaseECSGame {
      * Get reverse enum lookup (index → key)
      * Usage: const reverseEnums = game.getReverseEnums();
      *        const levelName = reverseEnums.levels[levelIndex];
-     * @returns {Object} { levels: { 0: 'hell', 1: 'level1' }, ... }
+     * @returns {Object} { levels: { 0: 'level_1', 1: 'level_2' }, ... }
      */
     getReverseEnums() {
         if (!this._reverseEnums) {

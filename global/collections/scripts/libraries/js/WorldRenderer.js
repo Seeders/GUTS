@@ -1760,12 +1760,17 @@ class WorldRenderer {
 
     /**
      * Update liquid surface shader uniforms (for animation)
+     * @param {number} [deltaTime] - Optional delta time. If not provided, uses clock.getDelta()
      */
-    updateLiquidShaders() {
+    updateLiquidShaders(deltaTime) {
         if (this.liquidMeshes.length === 0) return;
 
-        // Update timer
-        this.timer += this.clock.getDelta();
+        // Update timer - use provided deltaTime or fall back to clock
+        if (deltaTime !== undefined) {
+            this.timer += deltaTime;
+        } else {
+            this.timer += this.clock.getDelta();
+        }
 
         // Update time uniform for each liquid mesh
         this.liquidMeshes.forEach(mesh => {

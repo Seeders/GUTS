@@ -37,7 +37,7 @@ class TerrainDataManager {
         if (typeof levelIdOrData === 'object' && levelIdOrData !== null) {
             this.loadLevelFromData(levelIdOrData);
         } else {
-            const currentLevel = levelIdOrData || 'level1';
+            const currentLevel = levelIdOrData;
             this.loadLevelData(currentLevel);
         }
 

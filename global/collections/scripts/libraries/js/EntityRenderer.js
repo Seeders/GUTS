@@ -1243,10 +1243,16 @@ class EntityRenderer {
             quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -rotationY + Math.PI / 2);
         }
 
+        // Apply transform.scale as a multiplier (allows hiding entities by setting scale to 0)
+        const transformScale = data.transform?.scale;
+        const scaleMultiplierX = transformScale?.x ?? 1;
+        const scaleMultiplierY = transformScale?.y ?? 1;
+        const scaleMultiplierZ = transformScale?.z ?? 1;
+
         const scale = new THREE.Vector3(
-            this.modelScale * baseScale.x,
-            this.modelScale * baseScale.y,
-            this.modelScale * baseScale.z
+            this.modelScale * baseScale.x * scaleMultiplierX,
+            this.modelScale * baseScale.y * scaleMultiplierY,
+            this.modelScale * baseScale.z * scaleMultiplierZ
         );
 
         matrix.compose(position, quaternion, scale);
@@ -1317,7 +1323,11 @@ class EntityRenderer {
 
         // Billboards don't rotate - they face the camera via shader
         const quaternion = new THREE.Quaternion();
-        const scale = new THREE.Vector3(width, spriteScale, 1);
+
+        // Apply transform.scale as a multiplier (allows hiding entities by setting scale to 0)
+        const transformScale = data.transform?.scale;
+        const scaleMultiplier = transformScale ? Math.min(transformScale.x, transformScale.y, transformScale.z) : 1;
+        const scale = new THREE.Vector3(width * scaleMultiplier, spriteScale * scaleMultiplier, 1);
 
         matrix.compose(position, quaternion, scale);
         batch.instancedMesh.setMatrixAt(entity.instanceIndex, matrix);
@@ -1338,6 +1348,12 @@ class EntityRenderer {
         // Use transform.rotation.y for facing direction
         const rotationY = data.transform?.rotation?.y ?? data.rotation ?? 0;
         entity.mesh.rotation.y = rotationY;
+
+        // Apply transform.scale (allows hiding entities by setting scale to 0)
+        const transformScale = data.transform?.scale;
+        if (transformScale) {
+            entity.mesh.scale.set(transformScale.x, transformScale.y, transformScale.z);
+        }
 
         return true;
     }
