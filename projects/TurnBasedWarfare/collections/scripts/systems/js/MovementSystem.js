@@ -147,8 +147,6 @@ class MovementSystem extends GUTS.BaseSystem {
                 if(!vel.anchored){
                     this.enforceBoundaries(pos, collision);
                 }
-
-                this.game.triggerEvent("onEntityPositionUpdated", entityId);
             }
         });
     }

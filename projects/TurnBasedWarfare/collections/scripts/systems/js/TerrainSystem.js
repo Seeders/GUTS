@@ -10,7 +10,6 @@ class TerrainSystem extends GUTS.BaseSystem {
         'getTerrainSize',
         'getTerrainExtensionSize',
         'getTerrainExtendedSize',
-        'initTerrainFromComponent',
         'hasTerrain',
         'getLevel',
         'isTerrainInitialized'
@@ -24,10 +23,7 @@ class TerrainSystem extends GUTS.BaseSystem {
         this.terrainEntityId = null;
         this.terrainDataManager = null;
         this.currentLevel = null;
-
-        // Use global TerrainDataManager for all terrain data operations
-        // Environment object spawner for consistent spawning
-        this.environmentObjectSpawner = null;
+        this.currentLevelData = null;
     }
 
     init() {
@@ -69,38 +65,14 @@ class TerrainSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Called when a scene is loaded - initializes terrain if the scene has a terrain entity
+     * Called when a scene is loaded - initializes terrain from game.state.level
      * @param {Object} sceneData - The scene configuration data
      */
     async onSceneLoad(sceneData) {
-        // Look for a terrain entity in the scene
-        const terrainEntities = this.game.getEntitiesWith('terrain');
-
-        if (terrainEntities.length > 0) {
-            const terrainEntityId = terrainEntities[0];
-            const terrainComponent = this.game.getComponent(terrainEntityId, 'terrain');
-            await this.initTerrainFromComponent(terrainComponent, terrainEntityId);
-        }
-        // If no terrain entity, terrain system won't initialize (no terrain in this scene)
-    }
-
-    /**
-     * Called when a scene is unloaded - cleanup terrain
-     */
-    onSceneUnload() {
-        this.cleanupTerrain();
-    }
-
-    /**
-     * Initialize terrain from a terrain component
-     * @param {Object} terrainComponent - The terrain component data
-     * @param {string} entityId - The entity ID that has the terrain component
-     */
-    async initTerrainFromComponent(terrainComponent, entityId) {
-        // Level is stored as numeric enum index
-        const levelIndex = terrainComponent?.level;
+        // Get level from game state (set by lobby/skirmish before scene switch)
+        const levelIndex = this.game.state?.level;
         if (levelIndex === undefined || levelIndex < 0) {
-            console.warn('[TerrainSystem] Terrain component missing level reference');
+            // No level selected - terrain system won't initialize (e.g., lobby scene)
             return;
         }
 
@@ -111,16 +83,21 @@ class TerrainSystem extends GUTS.BaseSystem {
             return;
         }
 
-        this.terrainEntityId = entityId;
-        await this.initTerrainFromLevel(levelName, terrainComponent);
+        await this.initTerrainFromLevel(levelName);
+    }
+
+    /**
+     * Called when a scene is unloaded - cleanup terrain
+     */
+    onSceneUnload() {
+        this.cleanupTerrain();
     }
 
     /**
      * Initialize terrain from a level reference
      * @param {string} levelName - The level name to load
-     * @param {Object} terrainConfig - Optional terrain component config for overrides
      */
-    async initTerrainFromLevel(levelName, terrainConfig = {}) {
+    async initTerrainFromLevel(levelName) {
         // Clean up existing terrain first
         this.cleanupTerrain();
 
@@ -132,54 +109,166 @@ class TerrainSystem extends GUTS.BaseSystem {
         this.terrainDataManager = new GUTS.TerrainDataManager();
         this.terrainDataManager.init(this.collections, gameConfig, levelName);
 
-        // Initialize EnvironmentObjectSpawner in runtime mode
-        this.environmentObjectSpawner = new GUTS.EnvironmentObjectSpawner({
-            mode: 'runtime',
-            game: this.game,
-            collections: this.collections
+        // Store level data for entity loading
+        this.currentLevelData = this.collections.levels?.[levelName];
+
+        // Create the terrain entity with component data from level
+        this.createTerrainEntity(levelName);
+
+        // Skip spawning level entities if loading from a save (save contains all entities)
+        if (!this.game.state.isLoadingSave) {
+            await this.loadLevelEntities();
+        }
+    }
+
+    /**
+     * Create the terrain entity using prefab system
+     * @param {string} levelName - The level name
+     */
+    createTerrainEntity(levelName) {
+        const levelData = this.currentLevelData;
+        if (!levelData) return;
+
+        // Use createEntityFromPrefab for consistent entity creation
+        const entityId = this.game.call('createEntityFromPrefab', {
+            prefab: 'terrain',
+            type: levelName,
+            collection: 'levels',
+            team: this.enums.team?.neutral ?? 0,
+            componentOverrides: {}
         });
 
-        // Skip spawning world objects if loading from a save (save contains all entities)
-        if (!this.game.state.isLoadingSave) {
-            await this.spawnWorldObjects();
-        } else {
-        }
-
+        this.terrainEntityId = entityId;
     }
 
     /**
      * Clean up terrain resources
      */
     cleanupTerrain() {
-        if (this.environmentObjectSpawner) {
-            this.environmentObjectSpawner.destroy();
-            this.environmentObjectSpawner = null;
-        }
-
         if (this.terrainDataManager) {
             this.terrainDataManager.dispose();
             this.terrainDataManager = null;
         }
 
-        this.terrainEntityId = null;
+        this.currentLevelData = null;
     }
 
     /**
-     * Spawn world objects from level data
-     * Uses shared EnvironmentObjectSpawner library
-     * Creates entities with gameplay components (POSITION, COLLISION, TEAM, UNIT_TYPE)
-     * Visual components (RENDERABLE, ANIMATION) are added by WorldSystem on client
+     * Load level entities from level data
+     * Uses prefab-driven entity creation for proper component configuration
+     * Supports prefab format: { prefab: "worldObject", type: "tree_sprite", components: { transform } }
      */
-    async spawnWorldObjects() {
-        if (!this.environmentObjectSpawner || !this.terrainDataManager) {
-            console.warn('[TerrainSystem] Cannot spawn world objects: missing dependencies');
+    async loadLevelEntities() {
+        if (!this.currentLevelData) {
+            console.log('[TerrainSystem] No level data available for entity loading');
             return;
         }
 
-        await this.environmentObjectSpawner.spawnWorldObjects(
-            this.terrainDataManager.tileMap,
-            this.terrainDataManager
-        );
+        const levelEntities = this.currentLevelData.tileMap?.levelEntities || [];
+        if (levelEntities.length === 0) {
+            console.log('[TerrainSystem] No level entities to spawn');
+            return;
+        }
+
+        console.log(`[TerrainSystem] Loading ${levelEntities.length} level entities...`);
+
+        const enums = this.game.call('getEnums');
+        const prefabs = this.collections.prefabs || {};
+        const objectTypeDefinitions = this.collections.objectTypeDefinitions || {};
+
+        // Build reverse mapping: prefab singular name -> collection id
+        // e.g., "worldObject" -> "worldObjects", "unit" -> "units"
+        const prefabToCollection = {};
+        for (const [collectionId, typeDef] of Object.entries(objectTypeDefinitions)) {
+            if (typeDef.singular) {
+                prefabToCollection[typeDef.singular] = collectionId;
+            }
+        }
+
+        for (const entityDef of levelEntities) {
+            try {
+                if (!entityDef.prefab) {
+                    console.warn(`[TerrainSystem] Entity missing prefab:`, entityDef);
+                    continue;
+                }
+
+                const prefabData = prefabs[entityDef.prefab];
+                if (!prefabData) {
+                    console.warn(`[TerrainSystem] Unknown prefab: ${entityDef.prefab}`);
+                    continue;
+                }
+
+                const prefabName = entityDef.prefab;
+                // Get collection from objectTypeDefinitions mapping (singular -> id)
+                const collection = prefabToCollection[prefabName];
+                if (!collection) {
+                    console.warn(`[TerrainSystem] No collection mapping for prefab: ${prefabName}`);
+                    continue;
+                }
+                const type = entityDef.type;
+                const componentOverrides = entityDef.components || {};
+
+                // Adjust terrain height if Y is 0 or undefined
+                if (componentOverrides.transform?.position) {
+                    const pos = componentOverrides.transform.position;
+                    if (pos.y === undefined || pos.y === 0) {
+                        const terrainHeight = this.getTerrainHeightAtPosition(pos.x, pos.z);
+                        componentOverrides.transform.position = { ...pos, y: terrainHeight };
+                    }
+                }
+
+                // Create entity using prefab-driven system
+                this.game.call('createEntityFromPrefab', {
+                    prefab: prefabName,
+                    type: type,
+                    collection: collection,
+                    team: enums.team.neutral,
+                    componentOverrides: componentOverrides
+                });
+            } catch (error) {
+                console.error(`[TerrainSystem] Failed to create level entity:`, entityDef, error);
+            }
+        }
+
+        console.log(`[TerrainSystem] Loaded ${levelEntities.length} level entities`);
+    }
+
+    /**
+     * Deep merge components, with entity-specific values overriding prefab defaults
+     * @deprecated No longer needed with prefab-driven system
+     */
+    mergeComponents(prefabComponents, entityComponents) {
+        if (!prefabComponents) return entityComponents || {};
+        if (!entityComponents) return { ...prefabComponents };
+
+        const result = {};
+
+        // Copy all prefab components
+        for (const key of Object.keys(prefabComponents)) {
+            const prefabValue = prefabComponents[key];
+            const entityValue = entityComponents[key];
+
+            if (entityValue === undefined) {
+                result[key] = prefabValue;
+            } else if (typeof prefabValue === 'object' && typeof entityValue === 'object' &&
+                       prefabValue !== null && entityValue !== null &&
+                       !Array.isArray(prefabValue) && !Array.isArray(entityValue)) {
+                // Deep merge objects
+                result[key] = { ...prefabValue, ...entityValue };
+            } else {
+                // Entity value overrides prefab value
+                result[key] = entityValue;
+            }
+        }
+
+        // Add any entity-only components
+        for (const key of Object.keys(entityComponents)) {
+            if (!(key in result)) {
+                result[key] = entityComponents[key];
+            }
+        }
+
+        return result;
     }
 
 

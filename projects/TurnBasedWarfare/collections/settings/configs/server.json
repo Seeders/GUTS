@@ -24,7 +24,6 @@
     "MinHeap",
     "DesyncDebugger",
     "TerrainDataManager",
-    "EnvironmentObjectSpawner",
     "CoordinateTranslator",
     "ComponentGenerator",
     "BehaviorTreeProcessor",

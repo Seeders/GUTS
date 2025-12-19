@@ -54,10 +54,5 @@
     "DamageNumberSystem",
     "SaveSystem"
   ],
-  "serverSystems": [],
-  "entities": [
-    {
-      "prefab": "terrain"
-    }
-  ]
+  "serverSystems": []
 }

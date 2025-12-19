@@ -1,108 +1,139 @@
 <div id="level-editor-container" class="editor-module">
    <div class="editor-module__sidebar editor-module__sidebar--left">
-     <div class="editor-module__toolbar">
-       <button id="terrainsBtn" class="editor-module__btn editor-module__btn--active">Tiles</button>
-       <button id="heightsBtn" class="editor-module__btn">Heights</button>
-       <button id="environmentBtn" class="editor-module__btn">Env</button>
-       <button id="rampsBtn" class="editor-module__btn">Ramps</button>
-       <button id="placementsBtn" class="editor-module__btn">Entities</button>
-     </div>
-
-     <div class="editor-module__section" style="padding: 10px; border-bottom: 1px solid #444;">
-       <div class="editor-module__form-row">
-         <label class="editor-module__label">Tool:</label>
-         <div class="terrain-editor__tool-buttons">
-           <button id="globalBrushBtn" class="editor-module__btn editor-module__btn--small editor-module__btn--active">Brush</button>
-           <button id="globalFillBtn" class="editor-module__btn editor-module__btn--small">Fill</button>
+     <div class="te-header">
+       <div class="te-header__row">
+         <label class="te-header__label">Mode:</label>
+         <select id="te-mode-select" class="te-header__select">
+           <option value="terrains">Terrains</option>
+           <option value="heights">Heights</option>
+           <option value="ramps">Ramps</option>
+           <option value="entities">Entities</option>
+         </select>
+       </div>
+       <div id="te-tool-section">
+         <div class="te-header__row">
+           <label class="te-header__label">Tool:</label>
+           <div class="terrain-editor__tool-buttons">
+             <button id="globalBrushBtn" class="editor-module__btn editor-module__btn--small editor-module__btn--active">Brush</button>
+             <button id="globalFillBtn" class="editor-module__btn editor-module__btn--small">Fill</button>
+           </div>
+         </div>
+         <div class="te-header__row">
+           <label for="globalBrushSize" class="te-header__label">Brush:</label>
+           <input type="range" id="globalBrushSize" class="editor-module__slider" value="1" step="1" min="1" max="5">
+           <span id="globalBrushSizeValue" class="editor-module__value-display">1</span>
          </div>
        </div>
-       <div class="editor-module__form-row">
-         <label for="globalBrushSize" class="editor-module__label">Brush Size:</label>
-         <input type="range" id="globalBrushSize" class="editor-module__slider" value="1" step="1" min="1" max="5">
-         <span id="globalBrushSizeValue" class="editor-module__value-display">1</span>
-       </div>
+       <button id="saveMapBtn" class="editor-module__btn editor-module__btn--success" style="width: 100%; margin-top: 8px;">Save Map</button>
      </div>
 
      <div class="editor-module__scroll-y">
-       <div id="terrainsPanel">
-         <div class="editor-module__section">
-           <h3 class="editor-module__section-title">Map Settings</h3>
-           <div class="editor-module__form-row">
-             <label for="terrainMapSize" class="editor-module__label">Map Size:</label>
-             <input type="number" id="terrainMapSize" class="editor-module__input" value="48" step="1" min="1">
+       <!-- TERRAINS PANEL -->
+       <div id="terrainsPanel" class="te-panel">
+         <div class="te-panel__section">
+           <h3 class="te-panel__title">Map Settings</h3>
+           <div class="te-panel__row">
+             <label for="terrainMapSize" class="te-header__label">Size:</label>
+             <input type="number" id="terrainMapSize" class="te-input--small" value="48" step="1" min="1">
            </div>
-           <div class="editor-module__form-row">
-              <label for="extensionTerrainType" class="editor-module__label">Surrounding Type:</label>
-              <select id="extensionTerrainType" class="editor-module__select extensionTerrainType"></select>
-            </div>
-            <div class="editor-module__form-row">
-              <button id="saveMapBtn" class="editor-module__btn editor-module__btn--success terrain-editor__save-btn">💾 Save Map</button>
-            </div>
+           <div class="te-panel__row">
+             <label for="extensionTerrainType" class="te-header__label">Surround:</label>
+             <select id="extensionTerrainType" class="te-select"></select>
+           </div>
          </div>
-
-         <div class="editor-module__section">
-           <h3 class="editor-module__section-title">Terrain Types</h3>
-           <div class="terrain-editor__terrain-list">
+         <div class="te-panel__section">
+           <h3 class="te-panel__title">Terrain Types</h3>
+           <div class="terrain-editor__terrain-list te-terrain-list">
              <!-- Terrain items will be dynamically populated here -->
            </div>
          </div>
        </div>
 
-       <div id="environmentPanel" style="display: none;">
-         <div class="editor-module__section">
-           <h3 class="editor-module__section-title">Environment Objects</h3>
-           <div class="terrain-editor__object-controls">
-             <button class="editor-module__btn editor-module__btn--small" id="clear-selection-btn">Clear Selection</button>
-             <button class="editor-module__btn editor-module__btn--small editor-module__btn--danger" id="delete-mode-btn">Delete Mode</button>
-           </div>
-           <div class="terrain-editor__environment-objects"></div>
+       <!-- RAMPS PANEL -->
+       <div id="rampsPanel" class="te-panel" style="display: none;">
+         <div class="te-panel__section">
+           <h3 class="te-panel__title">Ramps <span id="rampCount" class="te-badge">0</span></h3>
+           <p class="te-hint">Click tiles to place/remove ramps</p>
+           <button class="editor-module__btn editor-module__btn--small editor-module__btn--danger" id="clear-all-ramps-btn">Clear All</button>
          </div>
        </div>
 
-       <div id="rampsPanel" style="display: none;">
-         <div class="editor-module__section">
-           <h3 class="editor-module__section-title">Ramp Placement</h3>
-           <div class="editor-module__info-box">
-             <p>Click on tiles to place/remove ramps. Ramps allow units to walk between different terrain heights.</p>
-             <p><strong>Current ramps:</strong> <span id="rampCount">0</span></p>
+       <!-- HEIGHTS PANEL -->
+       <div id="heightsPanel" class="te-panel" style="display: none;">
+         <div class="te-panel__section">
+           <h3 class="te-panel__title">Height Level</h3>
+           <div class="te-panel__row">
+             <label for="heightLevel" class="te-header__label">Level:</label>
+             <input type="number" id="heightLevel" class="te-input--small" value="0" step="1" min="0" max="10">
            </div>
-           <div class="terrain-editor__object-controls">
-             <button class="editor-module__btn editor-module__btn--small editor-module__btn--danger" id="clear-all-ramps-btn">Clear All Ramps</button>
-           </div>
-         </div>
-       </div>
-
-       <div id="heightsPanel" style="display: none;">
-         <div class="editor-module__section">
-           <h3 class="editor-module__section-title">Height Map Editor</h3>
-           <div class="editor-module__info-box">
-             <p>Paint height levels on the map. Heights are independent of terrain types.</p>
-             <p>Click on tiles to paint the selected height level.</p>
-           </div>
-           <div class="editor-module__form-row">
-             <label for="heightLevel" class="editor-module__label">Height Level:</label>
-             <input type="number" id="heightLevel" class="editor-module__input" value="0" step="1" min="0" max="10">
-           </div>
-           <div class="editor-module__section">
-             <h4 class="editor-module__section-title">Quick Select</h4>
-             <div class="terrain-editor__height-levels" id="heightLevelButtons">
-               <!-- Height level buttons will be dynamically populated here -->
-             </div>
+           <div class="terrain-editor__height-levels" id="heightLevelButtons">
+             <!-- Height level buttons will be dynamically populated here -->
            </div>
          </div>
        </div>
 
-       <div id="placementsPanel" style="display: none;">
-         <!-- Panel content will be dynamically generated by setupPlacementsPanel() -->
+       <!-- ENTITIES PANEL -->
+       <div id="placementsPanel" class="te-panel" style="display: none;">
+         <div class="te-panel__section te-panel__section--fixed">
+           <h3 class="te-panel__title">Add Entity</h3>
+           <select id="te-collection-select" class="te-select"></select>
+           <div id="te-spawn-type-grid" class="te-grid--spawn">
+             <!-- Spawn types will be populated here as icon grid -->
+           </div>
+         </div>
+         <div class="te-panel__section te-panel__section--flex">
+           <h3 class="te-panel__title">Placed Entities <span id="te-entity-count" class="te-badge"></span></h3>
+           <div id="te-entity-hierarchy" class="te-list--compact">
+             <!-- Placed entities will be populated here -->
+           </div>
+         </div>
        </div>
      </div>
    </div>
 
    <div class="editor-module__canvas-area editor-module__grid-background">
+     <!-- Canvas Toolbar -->
+     <div class="editor-module__canvas-toolbar">
+       <div class="editor-module__toolbar-group">
+         <button id="te-translate-tool" class="editor-module__btn editor-module__btn--small editor-module__btn--active" title="Move (W)">
+           <span>Move</span>
+         </button>
+         <button id="te-rotate-tool" class="editor-module__btn editor-module__btn--small" title="Rotate (E)">
+           <span>Rotate</span>
+         </button>
+         <button id="te-scale-tool" class="editor-module__btn editor-module__btn--small" title="Scale (R)">
+           <span>Scale</span>
+         </button>
+       </div>
+       <div class="editor-module__toolbar-separator"></div>
+       <div class="editor-module__toolbar-group">
+         <button id="te-camera-toggle" class="editor-module__btn editor-module__btn--small" title="Toggle Camera Mode">
+           <span>Scene Cam</span>
+         </button>
+         <button id="te-camera-rotate-left" class="editor-module__btn editor-module__btn--small" title="Rotate Camera Left" style="display: none;">
+           <span>&#9664;</span>
+         </button>
+         <button id="te-camera-rotate-right" class="editor-module__btn editor-module__btn--small" title="Rotate Camera Right" style="display: none;">
+           <span>&#9654;</span>
+         </button>
+       </div>
+     </div>
+
      <canvas id="grid" class="editor-module__canvas"></canvas>
 
      <div class="editor-module__status-bar">
        Cursor: x: 0, y: 0 | Zoom: 100% | Selected: Grass
+     </div>
+   </div>
+
+   <!-- Right Sidebar - Inspector (hidden when no entity selected) -->
+   <div id="te-inspector-sidebar" class="editor-module__sidebar editor-module__sidebar--right" style="display: none;">
+     <div class="te-panel__section">
+       <h3 class="te-panel__title">Inspector</h3>
+       <div id="te-inspector-content">
+         <!-- Inspector content dynamically populated -->
+       </div>
+       <button id="te-remove-entity-btn" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" style="margin-top: 8px;">Remove Entity</button>
      </div>
    </div>
  </div>

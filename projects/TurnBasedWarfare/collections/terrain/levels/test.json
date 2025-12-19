@@ -607,22 +607,46 @@
         "gridZ": 13
       }
     ],
-    "worldObjects": [
-      {
-        "type": "tree_sprite",
-        "gridX": 8,
-        "gridZ": 8
-      },
-      {
-        "type": "goldVein",
-        "gridX": 4,
-        "gridZ": 4
-      },
-      {
-        "type": "goldVein",
-        "gridX": 11,
-        "gridZ": 11
+    "levelEntities": [
+    {
+      "prefab": "worldObject",
+      "type": "tree_sprite",
+      "components": {
+        "transform": {
+          "position": {
+            "x": 37.34,
+            "y": 0,
+            "z": 32.62
+          }
+        }
       }
+    },
+    {
+      "prefab": "worldObject",
+      "type": "goldVein",
+      "components": {
+        "transform": {
+          "position": {
+            "x": -166.44,
+            "y": 0,
+            "z": -171.49
+          }
+        }
+      }
+    },
+    {
+      "prefab": "worldObject",
+      "type": "goldVein",
+      "components": {
+        "transform": {
+          "position": {
+            "x": 177.75,
+            "y": 0,
+            "z": 153.43
+          }
+        }
+      }
+    }
     ]
   }
 }

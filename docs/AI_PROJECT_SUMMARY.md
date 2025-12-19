@@ -49,12 +49,12 @@ GUTS/
 │       ├── ImageManager.js         # Sprite generation from 3D models
 │       ├── EntityRenderer.js       # 3D rendering (GLTF, VAT, billboards)
 │       ├── GameLoader.js           # Asset loading pipeline
-│       └── [50+ utility libraries]
+│       └── [80+ utility libraries]
 │
 ├── projects/TurnBasedWarfare/      # Current game project
 │   ├── collections/
 │   │   ├── settings/configs/game.json  # Main game configuration
-│   │   ├── scripts/systems/js/     # 61 game systems
+│   │   ├── scripts/systems/js/     # 59 game systems (registered in game.json)
 │   │   ├── scripts/abilities/js/   # 40+ ability implementations
 │   │   ├── scripts/libraries/js/   # Game-specific utilities
 │   │   ├── data/                   # Component/ability/enum definitions
@@ -117,7 +117,6 @@ class MySystem extends BaseSystem {
   // Auto-registered to GameServices
   static services = ['myPublicMethod', 'anotherMethod'];
 
-  init() { }                    // Called after instantiation
   postAllInit() { }             // Called after ALL systems initialized
   onSceneLoad(sceneData) { }    // Scene-specific setup
   onSceneUnload() { }           // Cleanup when leaving scene
@@ -228,7 +227,7 @@ Gameplay:
 ```
 LobbyUISystem.showSkirmishLobby()
     ↓ Player selects team + level
-LocalGameController.startSkirmishGame()
+SkirmishGameSystem.startSkirmishGame()
     ↓ Creates game scene, spawns players
 AIPlacementSystem.generateAIPlacement()
     ↓ AI builds balanced army within budget
@@ -254,7 +253,7 @@ Server checks victory → BATTLE_END with entity sync
 Victory/Defeat OR next round
 ```
 
-### Key Systems (61 total)
+### Key Systems (59 registered in game.json)
 
 **Core Game:**
 | System | Purpose |
@@ -264,7 +263,7 @@ Victory/Defeat OR next round
 | `RoundSystem` | Round transitions, order resets |
 | `PlacementSystem` | Unit placement validation |
 | `SquadSystem` | Squad formations, grid positioning |
-| `LocalGameController` | Single-player game controller |
+| `SkirmishGameSystem` | Single-player game controller |
 
 **Client-Specific:**
 | System | Purpose |
@@ -298,7 +297,7 @@ Victory/Defeat OR next round
 | `AIPlacementSystem` | AI army generation |
 | `BehaviorSystem` | Behavior tree execution |
 | `MovementSystem` | Pathfinding, steering |
-| `EnemyStrategy` | Strategic AI decisions |
+| `PathfindingSystem` | A* pathfinding |
 
 ### Important Files
 
@@ -306,7 +305,7 @@ Victory/Defeat OR next round
 |------|---------|
 | `settings/configs/game.json` | Main config (libraries, systems, settings) |
 | `scripts/libraries/js/GameModeConfigs.js` | Game mode definitions |
-| `scripts/systems/js/LocalGameController.js` | Single-player controller |
+| `scripts/systems/js/SkirmishGameSystem.js` | Single-player controller |
 | `scripts/systems/js/ClientNetworkSystem.js` | Multiplayer client |
 | `scripts/systems/js/LobbyUISystem.js` | Lobby UI logic |
 | `ui/interfaces/html/main.html` | Game UI structure |
@@ -316,7 +315,7 @@ Victory/Defeat OR next round
 
 ```javascript
 // Game state access (via this.game.state)
-this.game.state.phase      // 'placement' | 'battle' | 'ended'
+this.game.state.phase      // 'lobby' | 'placement' | 'battle' | 'ended'
 this.game.state.myTeam     // 2 (left) | 3 (right)
 this.game.state.round      // Current round number (1-based)
 this.game.state.now        // Game time in seconds (deterministic)
@@ -355,7 +354,7 @@ const buildings = collections.buildings;
 
 // Get enums
 const enums = this.game.getEnums();
-const phases = enums.gamePhase;  // { placement: 0, battle: 1, ended: 2 }
+const phases = enums.gamePhase;  // { lobby: 0, placement: 1, battle: 2, ended: 3 }
 ```
 
 **Collection Types:**

@@ -15,6 +15,7 @@
 5. **Victory** → Destroy all enemy buildings
 
 ### Phase System
+- **Lobby Phase**: Main menu, room creation/joining, game mode selection
 - **Placement Phase**: Unlimited time to buy/place units and set targets
 - **Battle Phase**: 30-second real-time combat where units act autonomously
 - **Ended Phase**: Game over, display results
@@ -253,7 +254,7 @@ Units are classified by primary stat and tier:
 - Incremental grid updates
 - Seeded deterministic RNG for sync
 
-### Systems (50+ Systems)
+### Systems (59 Systems)
 Key systems include: GameModeSystem, BehaviorSystem, MovementSystem, DamageSystem, AbilitySystem, GridSystem, PlacementSystem, ClientNetworkSystem, DeathSystem, ProjectileSystem, AnimationSystem, ParticleSystem, FogOfWarSystem, VisionSystem, and many more.
 
 ---

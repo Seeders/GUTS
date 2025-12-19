@@ -54,58 +54,5 @@
     "ServerBattlePhaseSystem",
     "ServerNetworkSystem",
     "SaveSystem"
-  ],
-  "entities": [
-    {
-      "prefab": "terrain"
-    },
-    {
-      "collection": "units",
-      "spawnType": "dragon_red",
-      "name": "Dragon Red",
-      "components": {
-        "transform": {
-          "position": {
-            "x": 1195.62,
-            "y": 15,
-            "z": -1234.59
-          },
-          "rotation": {
-            "x": 0,
-            "y": 2.67,
-            "z": 0
-          },
-          "scale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
-          }
-        }
-      }
-    },
-    {
-      "collection": "units",
-      "spawnType": "dragon_red",
-      "name": "Dragon Red",
-      "components": {
-        "transform": {
-          "position": {
-            "x": -1191.2,
-            "y": 15,
-            "z": 1197.13
-          },
-          "rotation": {
-            "x": 0,
-            "y": -0.95,
-            "z": 0
-          },
-          "scale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
-          }
-        }
-      }
-    }
   ]
 }

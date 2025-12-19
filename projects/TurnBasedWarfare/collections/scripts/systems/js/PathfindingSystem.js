@@ -248,19 +248,37 @@ class PathfindingSystem extends GUTS.BaseSystem {
             }
         }
         
-        // Second pass: mark cells occupied by impassable worldObjects as impassable
+        // Second pass: mark cells occupied by impassable entities as impassable
+        // Supports new levelEntities format: { prefab, type, components: { transform } }
         const collections = this.collections;
         const levelId = this.game.call('getLevel');
         const level = collections.levels?.[levelId];
         const tileMap = level?.tileMap;
+        const levelEntities = tileMap?.levelEntities || [];
 
-        if (tileMap?.worldObjects) {
+        if (levelEntities.length > 0) {
             let markedCells = 0;
             let skippedObjects = 0;
 
-            for (const worldObj of tileMap.worldObjects) {
+            // Build prefab to collection mapping from objectTypeDefinitions
+            const objectTypeDefinitions = collections.objectTypeDefinitions || {};
+            const prefabToCollection = {};
+            for (const [collectionId, typeDef] of Object.entries(objectTypeDefinitions)) {
+                if (typeDef.singular) {
+                    prefabToCollection[typeDef.singular] = collectionId;
+                }
+            }
+
+            for (const entityDef of levelEntities) {
+                // Get collection from prefab name
+                const collectionId = prefabToCollection[entityDef.prefab];
+                if (!collectionId) {
+                    skippedObjects++;
+                    continue;
+                }
+
                 // Get unit type definition to check if object blocks movement
-                const unitType = collections.worldObjects?.[worldObj.type];
+                const unitType = collections[collectionId]?.[entityDef.type];
 
                 // Skip if object doesn't block movement (impassable === false) or has no size
                 if (!unitType || unitType.impassable === false || !unitType.size) {
@@ -268,13 +286,15 @@ class PathfindingSystem extends GUTS.BaseSystem {
                     continue;
                 }
 
-                // worldObj.gridX/gridZ are TILE grid coordinates (terrain grid)
-                // Use tileToWorld to convert tile coordinates to world position
-                const worldPosCentered = this.game.call('tileToWorld', worldObj.gridX, worldObj.gridZ);
+                // Get world position from entity's transform component
+                const transform = entityDef.components?.transform;
+                if (!transform?.position) {
+                    skippedObjects++;
+                    continue;
+                }
 
                 // Convert world position to nav grid coordinates
-                // The nav grid is 2x the resolution of the terrain grid (same as placement grid)
-                const navGrid = this.worldToNavGrid(worldPosCentered.x, worldPosCentered.z);
+                const navGrid = this.worldToNavGrid(transform.position.x, transform.position.z);
 
                 // Get the object's size in tiles (default to 1x1)
                 const sizeX = unitType.size?.x || 1;
@@ -303,8 +323,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
                     }
                 }
             }
-        } else {
-            console.warn(`[PathfindingSystem] No worldObjects found in tileMap. Level: ${levelId}, tileMap exists: ${!!tileMap}`);
         }
 
     }

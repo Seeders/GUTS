@@ -95,16 +95,28 @@ class RenderSystem extends GUTS.BaseSystem {
 
         // Get tile map from TerrainSystem via gameManager
         const tileMap = this.game.call('getTileMap');
-        if (!tileMap?.worldObjects) {
+        if (!tileMap) {
             return capacities;
         }
 
-        // Count each type of worldObject object
+        // Build prefab to collection mapping from objectTypeDefinitions
+        const objectTypeDefinitions = this.collections.objectTypeDefinitions || {};
+        const prefabToCollection = {};
+        for (const [collectionId, typeDef] of Object.entries(objectTypeDefinitions)) {
+            if (typeDef.singular) {
+                prefabToCollection[typeDef.singular] = collectionId;
+            }
+        }
+
+        // Count each type of entity from levelEntities
+        const levelEntities = tileMap.levelEntities || [];
         const counts = {};
-        tileMap.worldObjects.forEach(obj => {
-            const key = `worldObjects_${obj.type}`;
+        for (const entityDef of levelEntities) {
+            const collectionId = prefabToCollection[entityDef.prefab];
+            if (!collectionId) continue;
+            const key = `${collectionId}_${entityDef.type}`;
             counts[key] = (counts[key] || 0) + 1;
-        });
+        }
 
         // Set capacity with some buffer (20% extra for dynamic spawning)
         for (const [key, count] of Object.entries(counts)) {

@@ -2,6 +2,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
     static services = [
         'createPlacement',
         'createUnit',
+        'createEntityFromPrefab',
         'getTerrainHeight',
         'incrementSquadsCreated'
     ];
@@ -144,16 +145,12 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @returns {number} Entity ID
      */
     createUnit(collectionIndex, spawnTypeIndex, transform, team, entityId = null) {
-        // DEBUG: Log incoming indices
-        console.log('[UnitCreationSystem.createUnit] indices:', { collectionIndex, spawnTypeIndex });
-
+      
         // Convert numeric indices to strings for collection lookup
         const collection = this.reverseEnums.objectTypeDefinitions?.[collectionIndex];
         const spawnType = collection ? this.reverseEnums[collection]?.[spawnTypeIndex] : null;
 
-        // DEBUG: Log resolved names
-        console.log('[UnitCreationSystem.createUnit] resolved:', { collection, spawnType });
-
+    
         if (!collection || !spawnType) {
             throw new Error(`Invalid unit indices: collection=${collectionIndex}, spawnType=${spawnTypeIndex}`);
         }
@@ -194,6 +191,244 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         } catch (error) {
             console.error('Failed to create unit:', error);
             throw new Error(`Unit creation failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Create an entity from a prefab definition
+     * Only adds the components specified in the prefab's components array
+     * @param {Object} params - Entity creation parameters
+     * @param {string} params.prefab - Prefab name (e.g., 'worldObject', 'unit', 'building')
+     * @param {string} params.type - Entity type within collection (e.g., 'tree_sprite', 'soldier')
+     * @param {string} params.collection - Collection name (e.g., 'worldObjects', 'units')
+     * @param {number} params.team - Team enum value (default: neutral)
+     * @param {Object} params.componentOverrides - Component overrides (e.g., { transform: { position } })
+     * @returns {number} Entity ID
+     */
+    createEntityFromPrefab({ prefab, type, collection, team, componentOverrides }) {
+        const prefabData = this.collections.prefabs?.[prefab];
+        if (!prefabData) {
+            console.error(`[UnitCreationSystem] Unknown prefab: ${prefab}`);
+            return null;
+        }
+
+        const typeData = this.collections[collection]?.[type];
+        if (!typeData) {
+            console.error(`[UnitCreationSystem] Unknown type: ${collection}/${type}`);
+            return null;
+        }
+
+        // Get numeric indices for collection and type
+        const collectionIndex = this.enums.objectTypeDefinitions?.[collection];
+        const typeIndex = this.enums[collection]?.[type];
+
+        if (collectionIndex === undefined || typeIndex === undefined) {
+            console.error(`[UnitCreationSystem] Invalid enum indices for: ${collection}/${type}`);
+            return null;
+        }
+
+        // Create entity
+        const entity = this.game.createEntity();
+
+        // Get team config
+        const teamValue = team ?? this.enums.team.neutral;
+        const teamConfig = this.teamConfigs[teamValue] || this.teamConfigs[this.enums.team.neutral];
+
+        // Build only the components listed in the prefab
+        const componentsToAdd = {};
+        const prefabComponents = prefabData.components || [];
+
+        for (const componentName of prefabComponents) {
+            const componentData = this.buildComponentFromPrefab(
+                componentName,
+                typeData,
+                teamValue,
+                teamConfig,
+                collectionIndex,
+                typeIndex,
+                collection,
+                componentOverrides
+            );
+            if (componentData !== null) {
+                componentsToAdd[componentName] = componentData;
+            }
+        }
+
+        // Add all components in one batch
+        this.game.addComponents(entity, componentsToAdd);
+
+       
+        return entity;
+    }
+
+    /**
+     * Build a single component based on typeData and overrides
+     * @param {string} name - Component name
+     * @param {Object} typeData - Type definition data
+     * @param {number} team - Team enum value
+     * @param {Object} teamConfig - Team configuration
+     * @param {number} collectionIndex - Collection enum index
+     * @param {number} typeIndex - Type enum index
+     * @param {string} collectionName - Collection name string
+     * @param {Object} overrides - Component overrides from entity definition
+     * @returns {Object} Component data
+     */
+    buildComponentFromPrefab(name, typeData, team, teamConfig, collectionIndex, typeIndex, collectionName, overrides) {
+        const transform = overrides?.transform || {};
+        const position = transform.position || { x: 0, y: 0, z: 0 };
+        const scale = transform.scale || { x: 1, y: 1, z: 1 };
+
+        // Determine rotation - buildings face Math.PI, others use team or override
+        const isBuilding = collectionName === 'buildings';
+        const defaultFacing = isBuilding ? Math.PI : (teamConfig?.initialFacing || 0);
+        const hasExplicitRotation = transform.rotation != null;
+        const rotationY = hasExplicitRotation ? (transform.rotation.y ?? defaultFacing) : defaultFacing;
+        const rotationX = hasExplicitRotation ? (transform.rotation.x ?? 0) : 0;
+        const rotationZ = hasExplicitRotation ? (transform.rotation.z ?? 0) : 0;
+
+        switch (name) {
+            case 'transform':
+                return {
+                    position: { x: position.x ?? 0, y: position.y ?? 0, z: position.z ?? 0 },
+                    rotation: { x: rotationX, y: rotationY, z: rotationZ },
+                    scale: { x: scale.x ?? 1, y: scale.y ?? 1, z: scale.z ?? 1 }
+                };
+
+            case 'velocity':
+                return {
+                    vx: 0,
+                    vy: 0,
+                    vz: 0,
+                    maxSpeed: (typeData.speed || 0) * this.SPEED_MODIFIER,
+                    affectedByGravity: true,
+                    anchored: collectionName === 'buildings' || collectionName === 'worldObjects'
+                };
+
+            case 'team':
+                return { team: team };
+
+            case 'unitType':
+                return {
+                    collection: collectionIndex,
+                    type: typeIndex
+                };
+
+            case 'health':
+                const maxHP = typeData.hp || this.defaults?.hp || 100;
+                return { max: maxHP, current: maxHP };
+
+            case 'combat':
+                return {
+                    damage: typeData.damage || 0,
+                    range: typeData.range || 0,
+                    attackSpeed: typeData.attackSpeed || 0,
+                    projectile: typeData.projectile,
+                    lastAttack: 0,
+                    element: typeData.element,
+                    armor: typeData.armor || 0,
+                    fireResistance: typeData.fireResistance || 0,
+                    coldResistance: typeData.coldResistance || 0,
+                    lightningResistance: typeData.lightningResistance || 0,
+                    poisonResistance: 0,
+                    visionRange: typeData.visionRange || 0
+                };
+
+            case 'collision':
+                return {
+                    radius: typeData.size || this.defaults?.size || 16,
+                    height: typeData.height || 32
+                };
+
+            case 'aiState':
+                return {
+                    currentAction: null,
+                    currentActionCollection: null,
+                    rootBehaviorTree: this.enums.behaviorTrees?.UnitBattleBehaviorTree,
+                    rootBehaviorTreeCollection: this.enums.behaviorCollection?.behaviorTrees
+                };
+
+            case 'pathfinding':
+                return {
+                    path: null,
+                    pathIndex: 0,
+                    lastPathRequest: 0,
+                    useDirectMovement: false
+                };
+
+            case 'combatState':
+                return {
+                    lastAttacker: null,
+                    lastAttackTime: 0
+                };
+
+            case 'animation':
+                return {
+                    scale: 1,
+                    rotation: 0,
+                    flash: 0
+                };
+
+            case 'equipment':
+                return {
+                    slots: {
+                        mainHand: null,
+                        offHand: null,
+                        helmet: null,
+                        chest: null,
+                        legs: null,
+                        feet: null,
+                        back: null
+                    }
+                };
+
+            case 'experience':
+                return {
+                    level: 1,
+                    experience: 0,
+                    experienceToNextLevel: 15,
+                    squadValue: 0,
+                    canLevelUp: false,
+                    totalUnitsInSquad: 1,
+                    lastExperienceGain: 0
+                };
+
+            case 'deathState':
+                return {
+                    state: this.enums.deathState?.alive || 0,
+                    deathStartTime: 0,
+                    deathAnimationDuration: 2,
+                    corpseTime: 0,
+                    teamAtDeath: 0
+                };
+
+            case 'renderable':
+                return {
+                    objectType: collectionIndex,
+                    spawnType: typeIndex,
+                    capacity: 128
+                };
+
+            // Collection-specific marker components
+            case 'unit':
+            case 'building':
+            case 'worldObject':
+                return { type: typeIndex };
+
+            // Terrain component - level data provides world, feature flags, etc.
+            case 'terrain':
+                return {
+                    level: typeIndex,
+                    world: typeData.world,
+                    cliffsEnabled: typeData.cliffsEnabled ?? true,
+                    liquidsEnabled: typeData.liquidsEnabled ?? true,
+                    grassEnabled: typeData.grassEnabled ?? false,
+                    fogEnabled: typeData.fogEnabled ?? true,
+                    shadowsEnabled: typeData.shadowsEnabled ?? true
+                };
+
+            default:
+                console.warn(`[UnitCreationSystem] Unknown component in prefab: ${name}`);
+                return null;
         }
     }
 
@@ -389,15 +624,11 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             },
 
             // Visual components
-            // DEBUG: Log renderable values being set
-            renderable: (() => {
-                console.log('[UnitCreationSystem.addAllComponents] renderable:', { objectType: collectionIndex, spawnType: spawnTypeIndex });
-                return {
-                    objectType: collectionIndex,
-                    spawnType: spawnTypeIndex,
-                    capacity: 128
-                };
-            })(),
+            renderable: {
+                objectType: collectionIndex,
+                spawnType: spawnTypeIndex,
+                capacity: 128
+            },
 
             // Experience component
             experience: {
@@ -449,139 +680,6 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         return collectionToComponent[collection] || null;
     }
 
-    /**
-     * Add core position and identity components
-     * @deprecated Use addAllComponents() for better performance
-     */
-    addCoreComponents(entity, transform, unitType, team, teamConfig) {
-        const position = transform.position || { x: 0, y: 0, z: 0 };
-        const scale = transform.scale || { x: 1, y: 1, z: 1 };
-
-        // Buildings always face -X direction (Math.PI), units face based on team
-        const isBuilding = unitType.collection === 'buildings';
-        const defaultFacing = isBuilding ? Math.PI : teamConfig.initialFacing;
-        // Only use transform.rotation if explicitly provided, otherwise use default facing
-        const hasExplicitRotation = transform.rotation != null;
-        const rotationY = hasExplicitRotation ? (transform.rotation.y ?? defaultFacing) : defaultFacing;
-        const rotationX = hasExplicitRotation ? (transform.rotation.x ?? 0) : 0;
-        const rotationZ = hasExplicitRotation ? (transform.rotation.z ?? 0) : 0;
-
-        this.game.addComponent(entity, "transform", {
-            position: { x: position.x ?? 0, y: position.y ?? 0, z: position.z ?? 0 },
-            rotation: { x: rotationX, y: rotationY, z: rotationZ },
-            scale: { x: scale.x ?? 1, y: scale.y ?? 1, z: scale.z ?? 1 }
-        });
-
-        const maxSpeed = (unitType.speed) * this.SPEED_MODIFIER;
-        this.game.addComponent(entity, "velocity", {
-            vx: 0,
-            vy: 0,
-            vz: 0,
-            maxSpeed: maxSpeed,
-            affectedByGravity: true,
-            anchored: unitType.collection == 'buildings'
-        });
-
-        // team can be either a string ('left'/'right') or numeric enum value
-        const teamValue = typeof team === 'number' ? team : (this.enums.team?.[team] ?? 0);
-        this.game.addComponent(entity, "team", { team: teamValue });
-        // Store numeric indices for collection and type
-        const collection = unitType.collection || 'units';
-        const spawnType = unitType.id || unitType.title;
-        this.game.addComponent(entity, "unitType", {
-            collection: this.enums.objectTypeDefinitions[collection] ?? -1,
-            type: this.enums[collection]?.[spawnType] ?? -1
-        });
-    }
-
-    /**
-     * Add combat-related components
-     * @deprecated Use addAllComponents() for better performance
-     */
-    addCombatComponents(entity, unitType) {
-        const maxHP = unitType.hp || this.defaults.hp;
-        this.game.addComponent(entity, "health", { max: maxHP, current: maxHP });
-
-        this.game.addComponent(entity, "combat", {
-            damage: unitType.damage,
-            range: unitType.range,
-            attackSpeed: unitType.attackSpeed,
-            projectile: unitType.projectile,
-            lastAttack: 0,
-            element: unitType.element,
-            armor: unitType.armor,
-            fireResistance: unitType.fireResistance,
-            coldResistance: unitType.coldResistance,
-            lightningResistance: unitType.lightningResistance,
-            poisonResistance: 0,
-            visionRange: unitType.visionRange
-        });
-
-        this.game.addComponent(entity, "collision", {
-            radius: unitType.size || this.defaults.size,
-            height: unitType.height
-        });
-    }
-
-    /**
-     * Add AI and behavior components
-     * @deprecated Use addAllComponents() for better performance
-     */
-    addBehaviorComponents(entity) {
-        this.game.addComponent(entity, "aiState", {
-            currentAction: null,
-            currentActionCollection: null,
-            rootBehaviorTree: this.enums.behaviorTrees.UnitBattleBehaviorTree,
-            rootBehaviorTreeCollection: this.enums.behaviorCollection.behaviorTrees
-        });
-
-        this.game.addComponent(entity, "pathfinding", {
-            path: null,
-            pathIndex: 0,
-            lastPathRequest: 0,
-            useDirectMovement: false
-        });
-
-        this.game.addComponent(entity, "combatState", {
-            lastAttacker: null,
-            lastAttackTime: 0
-        });
-
-        this.game.addComponent(entity, "animation", {
-            scale: 1,
-            rotation: 0,
-            flash: 0
-        });
-
-        this.game.addComponent(entity, "equipment", {
-            slots: {
-                mainHand: null,
-                offHand: null,
-                helmet: null,
-                chest: null,
-                legs: null,
-                feet: null,
-                back: null
-            }
-        });
-    }
-
-    /**
-     * Add visual and rendering components
-     * @deprecated Use addAllComponents() for better performance
-     */
-    addVisualComponents(entity, unitType, teamConfig, collection, spawnType) {
-        const collectionName = unitType.collection || collection;
-        const typeName = unitType.id || spawnType;
-        const objectTypeIndex = this.enums.objectTypeDefinitions?.[collectionName] ?? -1;
-        const spawnTypeIndex = this.enums[collectionName]?.[typeName] ?? -1;
-        this.game.addComponent(entity, "renderable", {
-            objectType: objectTypeIndex,
-            spawnType: spawnTypeIndex,
-            capacity: 128
-        });
-    }
-    
     /**
      * Schedule post-creation setup (equipment and abilities)
      * @param {number} entityId - Entity ID

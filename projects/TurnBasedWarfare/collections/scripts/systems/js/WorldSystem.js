@@ -278,11 +278,6 @@ class WorldSystem extends GUTS.BaseSystem {
         this.worldRenderer.createExtensionPlanes();
 
         // Note: updateInstanceCapacities moved to postSceneLoad (RenderSystem needs to init first)
-
-        // Add environment entity visuals to all world object entities
-        // Query entities with unitType component where collection is "worldObjects"
-        this.addWorldObjectVisuals();
-
         // Note: Cliff spawning moved to postSceneLoad to ensure EntityRenderer is available
 
         this.initialized = true;
@@ -372,34 +367,6 @@ class WorldSystem extends GUTS.BaseSystem {
             }
         });
 
-    }
-
-    /**
-     * Add visual components (RENDERABLE) to all world object entities
-     * Entities are created by TerrainSystem/EnvironmentObjectSpawner with gameplay components
-     * WorldSystem only adds the visual representation on the client
-     */
-    addWorldObjectVisuals() {
-        // Query all entities with worldObject component
-        const worldObjectEntities = this.game.getEntitiesWith('worldObject');
-
-        for (const entityId of worldObjectEntities) {
-            const worldObject = this.game.getComponent(entityId, 'worldObject');
-
-            // Add Renderable component for visual representation
-            // Store numeric indices: objectType = collection index, spawnType = item index within collection
-            // worldObject.type is already a numeric index (converted from string when component was created)
-            if (!this.game.hasComponent(entityId, "renderable")) {
-                const objectTypeIndex = this.enums.objectTypeDefinitions?.worldObjects ?? -1;
-                this.game.addComponent(entityId, "renderable", {
-                    objectType: objectTypeIndex,
-                    spawnType: worldObject.type,
-                    capacity: 1024
-                });
-            }
-
-            this.game.triggerEvent('onEntityPositionUpdated', entityId);
-        }
     }
 
     onWindowResize() {

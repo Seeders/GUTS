@@ -12,7 +12,6 @@
     "getTerrainSize",
     "getTerrainExtensionSize",
     "getTerrainExtendedSize",
-    "initTerrainFromComponent",
     "hasTerrain",
     "getLevel",
     "isTerrainInitialized"
