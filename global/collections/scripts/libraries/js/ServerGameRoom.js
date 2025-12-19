@@ -315,7 +315,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         }
 
         // Clear any entities owned by this player
-        if (room.game && room.game.componentSystem) {
+        if (room.game) {
             const playerEntities = room.game.getEntitiesWith("playerOwned")
                 .filter(entityId => {
                     const ownerComp = room.game.getComponent(entityId, "playerOwned");
@@ -548,7 +548,6 @@ class ServerGameRoom extends global.GUTS.GameRoom {
      * @returns {Array} Array of network unit data objects
      */
     getNetworkUnitDataForPlayer(socketPlayerId) {
-        if (!this.game.componentSystem) return [];
 
         // Convert string playerId to numeric for comparison with ECS storage
         const playerId = this.getNumericPlayerId(socketPlayerId);

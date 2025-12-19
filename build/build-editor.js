@@ -91,7 +91,8 @@ const editorConfig = {
     output: {
         path: editorOutput,
         filename: '[name].js',
-        globalObject: 'window'
+        globalObject: 'window',
+        publicPath: '/dist/'
     },
     module: {
         rules: [
