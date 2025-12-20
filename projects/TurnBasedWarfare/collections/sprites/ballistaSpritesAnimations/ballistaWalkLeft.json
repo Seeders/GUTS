@@ -4,9 +4,7 @@
   "sprites": [
     "ballistaWalkLeft_0",
     "ballistaWalkLeft_1",
-    "ballistaWalkLeft_2",
-    "ballistaWalkLeft_3",
-    "ballistaWalkLeft_4"
+    "ballistaWalkLeft_2"
   ],
   "fps": 4
 }
