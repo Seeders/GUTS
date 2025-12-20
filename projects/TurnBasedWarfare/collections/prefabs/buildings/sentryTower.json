@@ -31,7 +31,7 @@
             "metalness": 0,
             "roughness": 1,
             "name": "foundation",
-            "model": "mage_tower"
+            "model": "sentry_tower"
           }
         ],
         "position": {
@@ -56,7 +56,7 @@
   "footprintHeight": 2,
   "height": 100,
   "size": 50,
-  "icon": "rain_of_arrows",
+  "icon": "sentry_tower",
   "damage": 20,
   "attackSpeed": 1,
   "range": 300,
@@ -64,5 +64,6 @@
   "element": "physical",
   "hp": 500,
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "spriteAnimationSet": "sentrytower"
 }

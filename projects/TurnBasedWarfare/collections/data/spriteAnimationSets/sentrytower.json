@@ -15,9 +15,9 @@
   "generatorSettings": {
     "frustumSize": 96,
     "cameraDistance": 100,
-    "spriteSize": 128,
+    "spriteSize": 96,
     "fps": 4,
-    "brightness": 9,
+    "brightness": 4.2,
     "palette": "main",
     "borderSize": 1,
     "outlineColor": "#170F13",
