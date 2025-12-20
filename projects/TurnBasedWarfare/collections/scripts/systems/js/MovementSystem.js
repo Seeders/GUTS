@@ -48,9 +48,78 @@ class MovementSystem extends GUTS.BaseSystem {
         this.pathfindingQueue = [];
         this.pathfindingQueueIndex = 0;
 
+        // Flow field integration for group movement
+        this.FLOW_FIELD_GROUP_THRESHOLD = 5;  // Minimum units to trigger flow field
+        this.FLOW_FIELD_DESTINATION_QUANTIZATION = 64; // Group destinations within this radius
+        this.destinationGroups = new Map(); // destinationKey -> Set of entityIds
+        this.entityDestinations = new Map(); // entityId -> destinationKey
     }
 
     init() {
+    }
+
+    // Flow field group management
+    getDestinationKey(worldX, worldZ) {
+        const qx = Math.floor(worldX / this.FLOW_FIELD_DESTINATION_QUANTIZATION);
+        const qz = Math.floor(worldZ / this.FLOW_FIELD_DESTINATION_QUANTIZATION);
+        return (qz << 16) | (qx & 0xFFFF);
+    }
+
+    trackEntityDestination(entityId, targetX, targetZ) {
+        const newKey = this.getDestinationKey(targetX, targetZ);
+        const oldKey = this.entityDestinations.get(entityId);
+
+        // Remove from old group if destination changed
+        if (oldKey !== undefined && oldKey !== newKey) {
+            const oldGroup = this.destinationGroups.get(oldKey);
+            if (oldGroup) {
+                oldGroup.delete(entityId);
+                if (oldGroup.size === 0) {
+                    this.destinationGroups.delete(oldKey);
+                }
+            }
+        }
+
+        // Add to new group
+        if (oldKey !== newKey) {
+            this.entityDestinations.set(entityId, newKey);
+            let group = this.destinationGroups.get(newKey);
+            if (!group) {
+                group = new Set();
+                this.destinationGroups.set(newKey, group);
+            }
+            group.add(entityId);
+        }
+
+        return newKey;
+    }
+
+    clearEntityDestination(entityId) {
+        const key = this.entityDestinations.get(entityId);
+        if (key !== undefined) {
+            const group = this.destinationGroups.get(key);
+            if (group) {
+                group.delete(entityId);
+                if (group.size === 0) {
+                    this.destinationGroups.delete(key);
+                }
+            }
+            this.entityDestinations.delete(entityId);
+        }
+
+        // Also clear flow field assignment (safely handle if FlowFieldSystem not loaded)
+        if (this.game.flowFieldSystem) {
+            this.game.flowFieldSystem.clearEntityFlowField(entityId);
+        }
+    }
+
+    getDestinationGroupSize(destinationKey) {
+        const group = this.destinationGroups.get(destinationKey);
+        return group ? group.size : 0;
+    }
+
+    shouldUseFlowField(destinationKey) {
+        return this.getDestinationGroupSize(destinationKey) >= this.FLOW_FIELD_GROUP_THRESHOLD;
     }
 
     update() {
@@ -552,6 +621,7 @@ class MovementSystem extends GUTS.BaseSystem {
 
         const behaviorMeta = aiState ? this.game.call('getBehaviorMeta', entityId) : null;
         if (isAnchored || behaviorMeta?.reachedTarget) {
+            this.clearEntityDestination(entityId);
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
             data.desiredVelocity.vz = 0;
@@ -567,11 +637,23 @@ class MovementSystem extends GUTS.BaseSystem {
         }
 
         if (targetPos) {
+            // Track destination for flow field grouping
+            const destinationKey = this.trackEntityDestination(entityId, targetPos.x, targetPos.z);
+
             // Get pathfinding component
             const pathfinding = this.game.getComponent(entityId, "pathfinding");
 
             // Use pathfinding if available and useDirectMovement not set
             if (pathfinding && !pathfinding.useDirectMovement) {
+                // OPTIMIZATION: Check if we should use flow field for group movement
+                if (this.shouldUseFlowField(destinationKey)) {
+                    const moved = this.followFlowField(entityId, data, targetPos);
+                    if (moved) {
+                        return;
+                    }
+                    // Fall through to regular pathfinding if flow field unavailable
+                }
+
                 // Check if we have a path to follow (paths stored in PathfindingSystem)
                 let path = this.game.call('getEntityPath', entityId);
 
@@ -625,10 +707,69 @@ class MovementSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // No velocity target, don't move
+        // No velocity target - clear destination tracking and don't move
+        this.clearEntityDestination(entityId);
         data.desiredVelocity.vx = 0;
         data.desiredVelocity.vy = 0;
         data.desiredVelocity.vz = 0;
+    }
+
+    /**
+     * Follow a flow field toward the target
+     * Returns true if successfully following flow field, false to fall back to regular path
+     */
+    followFlowField(entityId, data, targetPos) {
+        const { pos, vel } = data;
+
+        // Get or create flow field for this destination
+        const flowField = this.game.call('getOrCreateFlowField', targetPos.x, targetPos.z);
+        if (!flowField) {
+            return false;
+        }
+
+        // Check if we're close enough to the goal to stop using flow field
+        const dx = targetPos.x - pos.x;
+        const dz = targetPos.z - pos.z;
+        const distToTarget = Math.sqrt(dx * dx + dz * dz);
+
+        // If very close to target, move directly
+        if (distToTarget < this.PATH_REACHED_DISTANCE * 2) {
+            if (distToTarget < 0.1) {
+                data.desiredVelocity.vx = 0;
+                data.desiredVelocity.vz = 0;
+                data.desiredVelocity.vy = 0;
+            } else {
+                const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
+                data.desiredVelocity.vx = (dx / distToTarget) * moveSpeed;
+                data.desiredVelocity.vz = (dz / distToTarget) * moveSpeed;
+                data.desiredVelocity.vy = 0;
+            }
+            return true;
+        }
+
+        // Get flow direction at current position
+        const flowDirection = this.game.call('getFlowDirection', pos.x, pos.z, flowField);
+
+        if (!flowDirection) {
+            // Position is impassable or outside flow field - fall back to regular pathfinding
+            return false;
+        }
+
+        // Check if we're at the goal (direction is zero)
+        if (flowDirection.x === 0 && flowDirection.z === 0) {
+            data.desiredVelocity.vx = 0;
+            data.desiredVelocity.vz = 0;
+            data.desiredVelocity.vy = 0;
+            return true;
+        }
+
+        // Move in flow direction
+        const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
+        data.desiredVelocity.vx = flowDirection.x * moveSpeed;
+        data.desiredVelocity.vz = flowDirection.z * moveSpeed;
+        data.desiredVelocity.vy = 0;
+
+        return true;
     }
     
     moveDirectlyToTarget(entityId, data) {
@@ -960,6 +1101,9 @@ class MovementSystem extends GUTS.BaseSystem {
     
     entityDestroyed(entityId) {
         // movementState component is automatically cleaned up by ECS when entity is destroyed
+
+        // Clean up flow field destination tracking
+        this.clearEntityDestination(entityId);
     }
 
     isInAttackRange(targetEntityId, entityId) {

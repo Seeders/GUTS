@@ -55,6 +55,7 @@
     "LifetimeSystem",
     "SchedulingSystem",
     "PathfindingSystem",
+    "FlowFieldSystem",
     "GoldMineSystem",
     "VisionSystem",
     "SupplySystem",

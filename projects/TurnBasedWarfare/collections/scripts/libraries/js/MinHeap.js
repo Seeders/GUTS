@@ -52,6 +52,14 @@ class MinHeap {
     isEmpty() {
         return this.heap.length === 0;
     }
+
+    clear() {
+        this.heap.length = 0;
+    }
+
+    size() {
+        return this.heap.length;
+    }
 }
 
 

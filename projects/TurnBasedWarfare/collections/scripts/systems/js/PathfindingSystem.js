@@ -44,6 +44,23 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.debugEnabled = true;
 
         this.initialized = false;
+
+        // OPTIMIZATION: Pre-allocated A* data structures (reused between calls)
+        this._openSet = new GUTS.MinHeap();
+        this._closedSet = new Set();
+        this._cameFrom = new Map();
+        this._gScore = new Map();
+        this._fScore = new Map();
+    }
+
+    // OPTIMIZATION: Encode grid coordinates as single numeric key (faster than string)
+    // Supports grids up to 65535x65535
+    encodeGridKey(x, z) {
+        return (z << 16) | (x & 0xFFFF);
+    }
+
+    decodeGridKey(key) {
+        return { x: key & 0xFFFF, z: key >> 16 };
     }
 
     init() {
@@ -388,79 +405,89 @@ class PathfindingSystem extends GUTS.BaseSystem {
     findPath(startX, startZ, endX, endZ, cacheKey = null) {
         const startGrid = this.worldToNavGrid(startX, startZ);
         const endGrid = this.worldToNavGrid(endX, endZ);
-        
+
         if (startGrid.x === endGrid.x && startGrid.z === endGrid.z) {
             return [{ x: endX, z: endZ }];
         }
-        
-        const openSet = new GUTS.MinHeap();
-        const closedSet = new Set();
-        const cameFrom = new Map();
-        const gScore = new Map();
-        const fScore = new Map();
-        
-        const startKey = `${startGrid.x},${startGrid.z}`;
-        const endKey = `${endGrid.x},${endGrid.z}`;
-        
+
+        // OPTIMIZATION: Reuse pre-allocated data structures instead of creating new ones
+        const openSet = this._openSet;
+        const closedSet = this._closedSet;
+        const cameFrom = this._cameFrom;
+        const gScore = this._gScore;
+        const fScore = this._fScore;
+
+        // Clear for reuse
+        openSet.clear();
+        closedSet.clear();
+        cameFrom.clear();
+        gScore.clear();
+        fScore.clear();
+
+        // OPTIMIZATION: Use numeric keys instead of strings
+        const startKey = this.encodeGridKey(startGrid.x, startGrid.z);
+        const endKey = this.encodeGridKey(endGrid.x, endGrid.z);
+
         gScore.set(startKey, 0);
-        fScore.set(startKey, this.heuristic(startGrid, endGrid));
-        openSet.push({ key: startKey, x: startGrid.x, z: startGrid.z, f: fScore.get(startKey) });
-        
+        const startH = this.heuristic(startGrid, endGrid);
+        fScore.set(startKey, startH);
+        openSet.push({ key: startKey, x: startGrid.x, z: startGrid.z, f: startH });
+
         const directions = [
             {dx: 1, dz: 0}, {dx: -1, dz: 0}, {dx: 0, dz: 1}, {dx: 0, dz: -1},
             {dx: 1, dz: 1}, {dx: -1, dz: 1}, {dx: 1, dz: -1}, {dx: -1, dz: -1}
         ];
-        
+
         let iterations = 0;
         const maxIterations = this.navGridWidth * this.navGridHeight;
-        
+
         // Track the closest point we've found to the destination
         let closestNode = { key: startKey, x: startGrid.x, z: startGrid.z };
-        let closestDistance = this.heuristic(startGrid, endGrid);
-        
+        let closestDistance = startH;
+
         while (!openSet.isEmpty() && iterations < maxIterations) {
             iterations++;
-            
+
             const current = openSet.pop();
             const currentKey = current.key;
-            
+
             if (currentKey === endKey) {
-                const path = this.reconstructPath(cameFrom, currentKey, endX, endZ);
-                
+                const path = this.reconstructPath(cameFrom, current.x, current.z, endX, endZ);
+
                 if (cacheKey) {
                     this.addToCache(cacheKey, path);
                 }
-                
+
                 return path;
             }
-            
+
             closedSet.add(currentKey);
-            
+
             // Check if this is closer to the destination than previous closest
             const distToEnd = this.heuristic({ x: current.x, z: current.z }, endGrid);
             if (distToEnd < closestDistance) {
                 closestDistance = distToEnd;
                 closestNode = current;
             }
-            
+
             const currentTerrain = this.getTerrainAtNavGrid(current.x, current.z);
-            
+
             for (const dir of directions) {
                 const neighborX = current.x + dir.dx;
                 const neighborZ = current.z + dir.dz;
-                const neighborKey = `${neighborX},${neighborZ}`;
-                
+                const neighborKey = this.encodeGridKey(neighborX, neighborZ);
+
                 if (closedSet.has(neighborKey)) continue;
-                
+
                 const neighborTerrain = this.getTerrainAtNavGrid(neighborX, neighborZ);
                 if (neighborTerrain === null || neighborTerrain === 255) continue;
 
                 if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, neighborTerrain, current.x, current.z, neighborX, neighborZ)) {
                     continue;
                 }
-                
+
                 const isDiagonal = dir.dx !== 0 && dir.dz !== 0;
-                
+
                 // For diagonal moves, check both adjacent cells to prevent corner cutting
                 if (isDiagonal) {
                     const terrainX = this.getTerrainAtNavGrid(current.x + dir.dx, current.z);
@@ -477,58 +504,68 @@ class PathfindingSystem extends GUTS.BaseSystem {
                         continue;
                     }
                 }
-                
+
                 const moveCost = isDiagonal ? 1.414 : 1;
                 const tentativeGScore = gScore.get(currentKey) + moveCost;
-                
+
                 if (!gScore.has(neighborKey) || tentativeGScore < gScore.get(neighborKey)) {
-                    cameFrom.set(neighborKey, currentKey);
+                    cameFrom.set(neighborKey, { x: current.x, z: current.z });
                     gScore.set(neighborKey, tentativeGScore);
-                    
+
                     const h = this.heuristic({x: neighborX, z: neighborZ}, endGrid);
                     const f = tentativeGScore + h;
                     fScore.set(neighborKey, f);
-                    
+
                     openSet.push({ key: neighborKey, x: neighborX, z: neighborZ, f });
                 }
             }
         }
-        
+
         // No path found to exact destination - return path to closest reachable point
         if (closestNode.key !== startKey) {
             const closestWorld = this.navGridToWorld(closestNode.x, closestNode.z);
-            const path = this.reconstructPath(cameFrom, closestNode.key, closestWorld.x, closestWorld.z);
-            
+            const path = this.reconstructPath(cameFrom, closestNode.x, closestNode.z, closestWorld.x, closestWorld.z);
+
             if (cacheKey) {
                 this.addToCache(cacheKey, path);
             }
-            
+
             return path;
         }
-        
+
         return null;
     }
 
-    reconstructPath(cameFrom, currentKey, endX, endZ) {
+    // OPTIMIZATION: Updated to work with numeric keys and coordinate-based cameFrom
+    reconstructPath(cameFrom, endGridX, endGridZ, endX, endZ) {
         const path = [];
         const gridPath = [];
-        
-        let current = currentKey;
-        while (current) {
-            const [x, z] = current.split(',').map(Number);
-            gridPath.unshift({ x, z });
-            current = cameFrom.get(current);
+
+        // Start from end and walk backwards using cameFrom map
+        let currentX = endGridX;
+        let currentZ = endGridZ;
+
+        while (currentX !== undefined && currentZ !== undefined) {
+            gridPath.unshift({ x: currentX, z: currentZ });
+            const key = this.encodeGridKey(currentX, currentZ);
+            const prev = cameFrom.get(key);
+            if (prev) {
+                currentX = prev.x;
+                currentZ = prev.z;
+            } else {
+                break;
+            }
         }
-        
+
         for (const gridPoint of gridPath) {
             const worldPos = this.navGridToWorld(gridPoint.x, gridPoint.z);
             path.push(worldPos);
         }
-        
+
         if (path.length > 0) {
             path[path.length - 1] = { x: endX, z: endZ };
         }
-        
+
         return this.smoothPath(path);
     }
 
@@ -724,23 +761,24 @@ class PathfindingSystem extends GUTS.BaseSystem {
         return Math.sqrt(dx * dx + dz * dz);
     }
 
+    // OPTIMIZATION: Fixed LRU eviction bug (was using const for reassigned variable)
     addToCache(key, path) {
         if (this.pathCache.size >= this.MAX_CACHE_SIZE) {
-            const oldestKey = null;
+            let oldestKey = null;
             let oldestTime = Infinity;
-            
+
             for (const [k, v] of this.pathCache.entries()) {
                 if (v.timestamp < oldestTime) {
                     oldestTime = v.timestamp;
                     oldestKey = k;
                 }
             }
-            
+
             if (oldestKey) {
                 this.pathCache.delete(oldestKey);
             }
         }
-        
+
         this.pathCache.set(key, {
             path: path,
             timestamp: this.game.state.now
@@ -756,21 +794,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
         if (!this.initialized) {
             return;
         }
-        
-        const now = this.game.state.now;
-        const keysToDelete = [];
-        
-        for (const [key, data] of this.pathCache.entries()) {
-            if (now - data.timestamp > this.CACHE_EXPIRY_TIME) {
-                keysToDelete.push(key);
-            }
-        }
-        
-        keysToDelete.sort();
-        for (const key of keysToDelete) {
-            this.pathCache.delete(key);
-        }
-        
+
+        // OPTIMIZATION: Removed per-frame cache expiry loop
+        // Cache expiry now happens lazily when entries are accessed in requestPath()
+        // Stale entries are simply overwritten when a new path is computed
+
         if (this.pathRequests.length === 0) return;
 
         // OPTIMIZATION: Use numeric sort for entity IDs (still deterministic, much faster)

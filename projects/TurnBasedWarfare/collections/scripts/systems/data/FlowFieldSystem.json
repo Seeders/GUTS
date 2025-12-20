@@ -1,0 +1,12 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/FlowFieldSystem.js",
+  "fileName": "FlowFieldSystem",
+  "services": [
+    "getFlowDirection",
+    "getOrCreateFlowField",
+    "hasFlowField",
+    "clearFlowFields",
+    "getFlowFieldForDestination",
+    "removeFlowField"
+  ]
+}
