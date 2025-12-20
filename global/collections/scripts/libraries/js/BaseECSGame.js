@@ -19,7 +19,7 @@ class BaseECSGame {
         // ============================================
 
         // Maximum entities - pre-allocate for performance
-        this.MAX_ENTITIES = 16384; // Power of 2 for fast modulo
+        this.MAX_ENTITIES = 65536; // Power of 2 for fast modulo
 
         // Entity management with TypedArrays
         // entityAlive[i] = 1 if entity i exists, 0 if free slot
@@ -1123,7 +1123,7 @@ class BaseECSGame {
             storage[entityId] = componentData;
         }
 
-            }
+    }
 
     /**
      * OPTIMIZATION: Add multiple components at once with single cache invalidation
@@ -1168,7 +1168,7 @@ class BaseECSGame {
         }
 
         // Single cache invalidation for all components
-            }
+    }
 
     removeComponent(entityId, componentType) {
         if (!this.entityAlive[entityId]) return null;
@@ -1194,7 +1194,7 @@ class BaseECSGame {
             componentCache.delete(entityId);
         }
 
-                return component;
+        return component;
     }
 
     getComponent(entityId, componentType) {

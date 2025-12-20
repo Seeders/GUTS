@@ -574,7 +574,7 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
         const spritesFolder = path.join(PROJS_DIR, projectName, 'resources', 'sprites', collectionName);
         const scriptsSpritesFolder = path.join(PROJS_DIR, projectName, 'collections', 'sprites', collectionName);
         const scriptsSpriteAnimationsFolder = path.join(PROJS_DIR, projectName, 'collections', 'sprites', collectionName + 'Animations');
-        const scriptsSpriteAnimationSetsFolder = path.join(PROJS_DIR, projectName, 'collections', 'sprites', 'spriteAnimationSets');
+        const scriptsSpriteAnimationSetsFolder = path.join(PROJS_DIR, projectName, 'collections', 'data', 'spriteAnimationSets');
         const settingsFolder = path.join(PROJS_DIR, projectName, 'collections', 'settings', 'objectTypeDefinitions');
 
         await fs.mkdir(spritesFolder, { recursive: true });

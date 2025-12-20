@@ -72,16 +72,13 @@ class TerrainMapEditor {
         };
 
         // Box selection state for entity selection
-        this.boxSelection = {
-            active: false,
-            startX: 0,
-            startY: 0,
-            currentX: 0,
-            currentY: 0,
-            element: null,
-            useCanvasRelative: false
-        };
+        // Box selection is handled by SelectedUnitSystem
         this.selectedEntities = []; // Array of selected entity IDs for multi-select
+        this.multiSelectOffsets = new Map(); // Map<entityId, {x, y, z}> - relative offsets from center
+        this.multiSelectCenter = null; // {x, y, z} - center point of all selected entities
+        this.selectionIndicators = new Map(); // Map<entityId, THREE.Mesh> - selection circle meshes
+        this.selectionIndicatorGeometry = null; // Shared geometry for selection circles
+        this.selectionIndicatorMaterial = null; // Shared material for selection circles
 
         this.entityPlacements = [];
         this.selectedPlacementType = null; // 'startingLocation', 'unit', 'building'
@@ -259,9 +256,10 @@ class TerrainMapEditor {
                     return;
                 }
 
-                // In placements mode without active placement, start box selection
+                // In placements mode without active placement, let SelectedUnitSystem handle selection
+                // (SelectedUnitSystem has its own mouse handlers for box selection)
                 if (this.placementMode === 'placements') {
-                    this.startBoxSelection(e);
+                    // Don't start our own box selection - SelectedUnitSystem handles it
                     return;
                 }
 
@@ -286,17 +284,7 @@ class TerrainMapEditor {
             this.mouseNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
             this.mouseOverCanvas = true;
 
-            // Update box selection if active
-            if (this.boxSelection.active) {
-                this.updateBoxSelection(e);
-            }
-        });
-
-        // Add mouse up event to complete box selection
-        this.canvasEl.addEventListener('mouseup', (e) => {
-            if (e.button === 0 && this.boxSelection.active) {
-                this.completeBoxSelection(e);
-            }
+            // Box selection is handled by SelectedUnitSystem
         });
 
         // Add mouse leave event to clear placement preview
@@ -311,11 +299,9 @@ class TerrainMapEditor {
 
         // Add keyboard shortcuts for undo/redo and escape
         document.addEventListener('keydown', (event) => {
-            // Escape - cancel box selection or entity placement
+            // Escape - cancel entity placement or deselect
             if (event.key === 'Escape') {
-                if (this.boxSelection.active) {
-                    this.cancelBoxSelection();
-                } else if (this.entityPlacementMode?.active) {
+                if (this.entityPlacementMode?.active) {
                     this.cancelEntityPlacementMode();
                 } else if (this.selectedEntityId) {
                     this.deselectEntity();
@@ -330,6 +316,13 @@ class TerrainMapEditor {
             else if ((event.ctrlKey || event.metaKey) && (event.shiftKey && event.key === 'z' || event.key === 'y')) {
                 event.preventDefault();
                 this.redo();
+            }
+            // Delete: Remove selected entities
+            else if (event.key === 'Delete' || event.key === 'Backspace') {
+                if (this.getSelectedEntityIds().length > 0 && this.placementMode === 'placements') {
+                    event.preventDefault();
+                    this.removeSelectedEntity();
+                }
             }
         });
 
@@ -942,8 +935,10 @@ class TerrainMapEditor {
                     item.className = 'editor-module__item te-entity-item';
                     item.dataset.entityId = entity.id;
 
-                    // Highlight if selected
-                    if (this.selectedLevelEntity && this.selectedLevelEntity.id === entity.id) {
+                    // Highlight if selected (single or multi-select)
+                    const isSelected = this.selectedEntities.includes(entity.id) ||
+                                      (this.selectedLevelEntity && this.selectedLevelEntity.id === entity.id);
+                    if (isSelected) {
                         item.classList.add('editor-module__item--selected');
                     }
 
@@ -1523,6 +1518,12 @@ class TerrainMapEditor {
         this.entityRenderer = this.editorContext.renderSystem?.entityRenderer;
         this.terrainDataManager = this.editorContext.terrainSystem?.terrainDataManager;
 
+        // Set scene/camera on editorContext for systems that need them (e.g., SelectedUnitSystem)
+        if (this.worldRenderer) {
+            this.editorContext.scene = this.worldRenderer.getScene();
+            this.editorContext.camera = this.worldRenderer.getCamera();
+        }
+
         // Setup scene camera (perspective) for editor - default mode
         if (this.worldRenderer) {
             const canvas = this.canvasEl;
@@ -1576,7 +1577,106 @@ class TerrainMapEditor {
         // Sync with existing ECS entities (spawned by TerrainSystem)
         this.syncLevelEntitiesFromECS();
 
+        // Setup SelectedUnitSystem for entity selection
+        this.setupSelectionSystem();
+
         console.log('3D terrain editor initialized with ECS systems');
+    }
+
+    /**
+     * Configure SelectedUnitSystem for terrain editor mode via services
+     * Disables team filter and allows selecting any entity type
+     */
+    setupSelectionSystem() {
+        if (!this.editorContext?.hasService?.('configureSelectionSystem')) {
+            console.warn('[TerrainMapEditor] SelectedUnitSystem not available');
+            return;
+        }
+
+        // Register getWorldPositionFromMouse service (required by SelectedUnitSystem)
+        // Accepts optional screen coordinates for box selection, or uses current mouse position
+        this.editorContext.register('getWorldPositionFromMouse', (screenX, screenY) => {
+            if (!this.raycastHelper || !this.worldRenderer) return null;
+            const groundMesh = this.worldRenderer.getGroundMesh();
+
+            let ndcX, ndcY;
+            if (screenX !== undefined && screenY !== undefined) {
+                // Convert screen coordinates to NDC (-1 to 1)
+                const rect = this.canvasEl.getBoundingClientRect();
+                ndcX = ((screenX - rect.left) / rect.width) * 2 - 1;
+                ndcY = -((screenY - rect.top) / rect.height) * 2 + 1;
+            } else {
+                // Use current mouse position
+                ndcX = this.mouseNDC.x;
+                ndcY = this.mouseNDC.y;
+            }
+
+            return this.raycastHelper.getWorldPositionFromMouse(
+                ndcX,
+                ndcY,
+                0,
+                groundMesh
+            );
+        });
+
+        // Configure for terrain editor: no team filter, all collections allowed
+        // Pass camera reference for proper box selection projection (supports both perspective and orthographic)
+        this.editorContext.call('configureSelectionSystem', {
+            enableTeamFilter: false,
+            excludeCollections: [],
+            includeCollections: null,
+            prioritizeUnitsOverBuildings: false,
+            showGameUI: false,
+            camera: this.worldRenderer?.getCamera() || null
+        });
+
+        // Wire up events from SelectedUnitSystem - single event pipeline
+        this.editorContext.on('onMultipleUnitsSelected', (unitIds) => {
+            this.onSelectionChanged(unitIds);
+        });
+        this.editorContext.on('onDeSelectAll', () => {
+            this.onSelectionSystemDeselect();
+        });
+
+        console.log('[TerrainMapEditor] SelectedUnitSystem configured for editor mode');
+    }
+
+    /**
+     * Handle selection change from SelectedUnitSystem (single event pipeline)
+     * Handles both single and multi-select through the same path
+     */
+    onSelectionChanged(unitIds) {
+        this.selectedEntities = Array.from(unitIds);
+        this.selectedEntityId = this.selectedEntities[0] || null;
+        this.selectedLevelEntity = this.selectedEntityId
+            ? this.levelEntities.find(e => e.id === this.selectedEntityId)
+            : null;
+
+        // Calculate offsets for multi-select (also handles single select case)
+        this.calculateMultiSelectOffsets();
+
+        // Attach gizmo - to center for multi-select, to entity for single
+        if (this.selectedEntities.length > 1) {
+            this.attachGizmoToEntity(null); // Gizmo at center
+        } else if (this.selectedEntityId) {
+            this.attachGizmoToEntity(this.selectedEntityId);
+        }
+        this.updateInspector();
+        this.updateHierarchy();
+    }
+
+    /**
+     * Handle deselection from SelectedUnitSystem
+     */
+    onSelectionSystemDeselect() {
+        this.selectedEntityId = null;
+        this.selectedLevelEntity = null;
+        this.selectedEntities = [];
+        this.multiSelectOffsets.clear();
+        this.multiSelectCenter = null;
+        this.gizmoManager?.detach();
+        this.updateInspector();
+        this.updateHierarchy();
     }
 
     /**
@@ -1762,6 +1862,18 @@ class TerrainMapEditor {
                 this.worldRenderer.getCamera(),
                 this.worldRenderer.getScene()
             );
+        }
+
+        // Update editorContext camera reference for systems
+        if (this.editorContext) {
+            this.editorContext.camera = this.worldRenderer.getCamera();
+
+            // Update SelectedUnitSystem with new camera reference for box selection
+            if (this.editorContext.hasService?.('configureSelectionSystem')) {
+                this.editorContext.call('configureSelectionSystem', {
+                    camera: this.worldRenderer.getCamera()
+                });
+            }
         }
 
         // Reinitialize gizmo manager with new camera
@@ -2150,12 +2262,38 @@ class TerrainMapEditor {
 
     /**
      * Attach gizmo to selected entity by positioning helper at entity location
+     * For multi-select, positions gizmo at center of all selected entities
      */
     attachGizmoToEntity(entityId) {
         if (!this.gizmoManager || !this.gizmoHelper || !this.editorContext) {
             return;
         }
 
+        // Multi-select mode: position gizmo at center of all selected entities
+        if (this.isMultiSelect()) {
+            this.calculateMultiSelectOffsets();
+
+            if (!this.multiSelectCenter) {
+                console.warn('[TerrainMapEditor] No valid center for multi-select');
+                this.gizmoManager.detach();
+                return;
+            }
+
+            // Position helper at center
+            this.gizmoHelper.position.set(
+                this.multiSelectCenter.x,
+                this.multiSelectCenter.y,
+                this.multiSelectCenter.z
+            );
+            this.gizmoHelper.rotation.set(0, 0, 0); // Reset rotation for multi-select
+            this.gizmoHelper.scale.set(1, 1, 1); // Reset scale for multi-select
+
+            this.gizmoManager.attach(this.gizmoHelper);
+            console.log('[TerrainMapEditor] Gizmo attached to multi-select center:', this.multiSelectCenter);
+            return;
+        }
+
+        // Single select mode: existing logic
         // Get entity's transform component
         const transform = this.editorContext.getComponent(entityId, 'transform');
         if (!transform) {
@@ -2181,8 +2319,16 @@ class TerrainMapEditor {
 
     /**
      * Sync gizmo helper transform back to entity component
+     * Routes to multi-select handler if multiple entities selected
      */
     syncGizmoToEntity(position, rotation, scale) {
+        // Route to multi-select handler if multiple entities selected
+        if (this.isMultiSelect()) {
+            this.syncGizmoToMultipleEntities(position, rotation, scale);
+            this.updateInspector();
+            return;
+        }
+
         if (!this.selectedEntityId || !this.editorContext) return;
 
         const entityId = this.selectedEntityId;
@@ -2250,37 +2396,340 @@ class TerrainMapEditor {
             }
         }
 
+        // Update selection indicator position
+        this.updateSelectionIndicators();
+
         // Update inspector if visible
         this.updateInspector();
     }
 
     /**
-     * Select an entity and attach gizmo
+     * Sync gizmo helper transform to all selected entities
+     * For translation: apply delta to all entities (maintains relative positions)
+     * For rotation: set all entities to the same rotation angle (each rotates in place)
+     * For scale: scale each entity uniformly in place
      */
-    selectEntity(entityId) {
-        this.selectedEntityId = entityId;
-        if (entityId) {
-            this.attachGizmoToEntity(entityId);
-        } else {
-            this.gizmoManager?.detach();
+    syncGizmoToMultipleEntities(position, rotation, scale) {
+        if (!this.isMultiSelect() || !this.editorContext) return;
+        if (!this.multiSelectCenter) return;
+
+        // Calculate the delta from the original center
+        const deltaX = position.x - this.multiSelectCenter.x;
+        const deltaY = position.y - this.multiSelectCenter.y;
+        const deltaZ = position.z - this.multiSelectCenter.z;
+
+        const renderSystem = this.editorContext.renderSystem;
+
+        for (const entityId of this.selectedEntities) {
+            const offset = this.multiSelectOffsets.get(entityId);
+            if (!offset) continue;
+
+            const transform = this.editorContext.getComponent(entityId, 'transform');
+            if (!transform) continue;
+
+            // Calculate new position: original position + delta
+            // (original position = center + offset)
+            const newX = this.multiSelectCenter.x + offset.x + deltaX;
+            const newY = this.multiSelectCenter.y + offset.y + deltaY;
+            const newZ = this.multiSelectCenter.z + offset.z + deltaZ;
+
+            // Update position
+            if (!transform.position) transform.position = { x: 0, y: 0, z: 0 };
+            transform.position.x = newX;
+            transform.position.y = newY;
+            transform.position.z = newZ;
+
+            // Apply rotation to each entity individually (same angle for all)
+            if (rotation) {
+                if (!transform.rotation) transform.rotation = { x: 0, y: 0, z: 0 };
+                transform.rotation.x = rotation.x;
+                transform.rotation.y = rotation.y;
+                transform.rotation.z = rotation.z;
+            }
+
+            // Apply scale to each entity individually (same scale for all)
+            if (scale) {
+                if (!transform.scale) transform.scale = { x: 1, y: 1, z: 1 };
+                transform.scale.x = scale.x;
+                transform.scale.y = scale.y;
+                transform.scale.z = scale.z;
+            }
+
+            // Update visual via RenderSystem
+            if (renderSystem) {
+                renderSystem.updateEntity(entityId, {
+                    position: transform.position,
+                    rotation: transform.rotation?.y || 0,
+                    transform: transform
+                });
+            }
+
+            // Update levelEntity data
+            const levelEntity = this.levelEntities.find(e => e.id === entityId);
+            if (levelEntity) {
+                if (!levelEntity.components) levelEntity.components = {};
+                if (!levelEntity.components.transform) levelEntity.components.transform = {};
+                levelEntity.components.transform.position = { ...transform.position };
+                if (transform.rotation) {
+                    levelEntity.components.transform.rotation = { ...transform.rotation };
+                }
+                if (transform.scale) {
+                    levelEntity.components.transform.scale = { ...transform.scale };
+                }
+            }
         }
-        this.updateInspector();
-        this.updateHierarchy();
+
+        // Update the stored center after transform
+        this.multiSelectCenter = {
+            x: this.multiSelectCenter.x + deltaX,
+            y: this.multiSelectCenter.y + deltaY,
+            z: this.multiSelectCenter.z + deltaZ
+        };
+
+        // Update selection indicators to match new positions
+        this.updateSelectionIndicators();
     }
 
     /**
-     * Deselect current entity
+     * Select an entity via SelectedUnitSystem service
+     * The system will trigger events that update gizmo, inspector, etc.
+     */
+    selectEntity(entityId) {
+        if (this.editorContext?.hasService?.('selectEntity')) {
+            this.editorContext.call('selectEntity', entityId);
+        } else {
+            // Fallback if SelectedUnitSystem not available
+            this.selectedEntityId = entityId;
+            if (entityId) {
+                this.attachGizmoToEntity(entityId);
+            } else {
+                this.gizmoManager?.detach();
+            }
+            this.updateInspector();
+            this.updateHierarchy();
+        }
+    }
+
+    /**
+     * Deselect current entity via SelectedUnitSystem service
      */
     deselectEntity() {
-        this.selectedEntityId = null;
-        this.selectedLevelEntity = null;
-        this.gizmoManager?.detach();
-        this.updateInspector();
-        this.updateHierarchy();
+        if (this.editorContext?.hasService?.('deselectAllUnits')) {
+            this.editorContext.call('deselectAllUnits');
+        } else {
+            // Fallback if SelectedUnitSystem not available
+            this.selectedEntityId = null;
+            this.selectedLevelEntity = null;
+            this.selectedEntities = [];
+            this.multiSelectOffsets.clear();
+            this.multiSelectCenter = null;
+            this.gizmoManager?.detach();
+            this.updateInspector();
+            this.updateHierarchy();
+        }
+    }
+
+    /**
+     * Check if multiple entities are selected
+     * @returns {boolean} True if more than one entity is selected
+     */
+    isMultiSelect() {
+        return this.selectedEntities.length > 1;
+    }
+
+    /**
+     * Get all selected entity IDs (works for both single and multi-select)
+     * @returns {number[]} Array of selected entity IDs
+     */
+    getSelectedEntityIds() {
+        if (this.selectedEntities.length > 0) {
+            return [...this.selectedEntities];
+        }
+        return this.selectedEntityId ? [this.selectedEntityId] : [];
+    }
+
+    /**
+     * Calculate the center point of all selected entities
+     * @returns {{x: number, y: number, z: number}|null} Center position or null
+     */
+    calculateMultiSelectCenter() {
+        const entityIds = this.getSelectedEntityIds();
+        if (entityIds.length === 0) return null;
+
+        let sumX = 0, sumY = 0, sumZ = 0;
+        let count = 0;
+
+        for (const entityId of entityIds) {
+            const transform = this.editorContext?.getComponent(entityId, 'transform');
+            if (transform?.position) {
+                sumX += transform.position.x;
+                sumY += transform.position.y;
+                sumZ += transform.position.z;
+                count++;
+            }
+        }
+
+        if (count === 0) return null;
+
+        return {
+            x: sumX / count,
+            y: sumY / count,
+            z: sumZ / count
+        };
+    }
+
+    /**
+     * Calculate relative offsets of each entity from the multi-select center
+     * Must be called when multi-select begins, before any transforms
+     */
+    calculateMultiSelectOffsets() {
+        this.multiSelectOffsets.clear();
+        this.multiSelectCenter = this.calculateMultiSelectCenter();
+
+        if (!this.multiSelectCenter) return;
+
+        for (const entityId of this.selectedEntities) {
+            const transform = this.editorContext?.getComponent(entityId, 'transform');
+            if (transform?.position) {
+                this.multiSelectOffsets.set(entityId, {
+                    x: transform.position.x - this.multiSelectCenter.x,
+                    y: transform.position.y - this.multiSelectCenter.y,
+                    z: transform.position.z - this.multiSelectCenter.z
+                });
+            }
+        }
+    }
+
+    /**
+     * Get common value across multiple entities for a property path
+     * @param {string} propPath - Property path like "position.x" or "collection"
+     * @returns {any} Common value or "--" if values differ
+     */
+    getCommonValueForSelectedEntities(propPath) {
+        const entityIds = this.getSelectedEntityIds();
+        if (entityIds.length === 0) return "--";
+
+        let commonValue = undefined;
+        let isFirst = true;
+
+        for (const entityId of entityIds) {
+            let value;
+
+            if (propPath === 'collection' || propPath === 'spawnType') {
+                const levelEntity = this.levelEntities.find(e => e.id === entityId);
+                value = levelEntity?.[propPath];
+            } else {
+                const transform = this.editorContext?.getComponent(entityId, 'transform');
+                const [component, axis] = propPath.split('.');
+                value = transform?.[component]?.[axis];
+            }
+
+            if (isFirst) {
+                commonValue = value;
+                isFirst = false;
+            } else if (value !== commonValue) {
+                return "--"; // Values differ
+            }
+        }
+
+        return commonValue !== undefined ? commonValue : "--";
+    }
+
+    // ============ SELECTION INDICATORS ============
+
+    /**
+     * Create or get the shared geometry and material for selection indicators
+     * @deprecated Selection indicators are now handled by SelectedUnitSystem
+     */
+    initSelectionIndicatorResources() {
+        // SelectedUnitSystem now handles selection indicators
+        if (this.editorContext?.selectedUnitSystem) return;
+
+        if (!this.selectionIndicatorGeometry) {
+            // Create a ring geometry for selection circles
+            this.selectionIndicatorGeometry = new THREE.RingGeometry(0.4, 0.5, 32);
+            // Rotate to lay flat on the ground (XZ plane)
+            this.selectionIndicatorGeometry.rotateX(-Math.PI / 2);
+        }
+        if (!this.selectionIndicatorMaterial) {
+            this.selectionIndicatorMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ff00, // Green selection color
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.8,
+                depthTest: false // Render on top
+            });
+        }
+    }
+
+    /**
+     * Update selection indicators for all selected entities
+     * @deprecated Selection indicators are now handled by SelectedUnitSystem
+     */
+    updateSelectionIndicators() {
+        // SelectedUnitSystem now handles selection indicators via highlightUnits()
+        if (this.editorContext?.selectedUnitSystem) return;
+
+        const scene = this.worldRenderer?.getScene();
+        if (!scene) return;
+
+        this.initSelectionIndicatorResources();
+
+        const selectedIds = new Set(this.getSelectedEntityIds());
+
+        // Remove indicators for entities no longer selected
+        for (const [entityId, mesh] of this.selectionIndicators) {
+            if (!selectedIds.has(entityId)) {
+                scene.remove(mesh);
+                mesh.geometry?.dispose(); // Dispose if not using shared geometry
+                this.selectionIndicators.delete(entityId);
+            }
+        }
+
+        // Add or update indicators for selected entities
+        for (const entityId of selectedIds) {
+            const transform = this.editorContext?.getComponent(entityId, 'transform');
+            if (!transform?.position) continue;
+
+            let indicator = this.selectionIndicators.get(entityId);
+
+            if (!indicator) {
+                // Create new indicator
+                indicator = new THREE.Mesh(
+                    this.selectionIndicatorGeometry,
+                    this.selectionIndicatorMaterial
+                );
+                indicator.name = `selectionIndicator_${entityId}`;
+                indicator.renderOrder = 999; // Render on top
+                scene.add(indicator);
+                this.selectionIndicators.set(entityId, indicator);
+            }
+
+            // Update position (slightly above ground to avoid z-fighting)
+            indicator.position.set(
+                transform.position.x,
+                transform.position.y + 0.05,
+                transform.position.z
+            );
+        }
+    }
+
+    /**
+     * Clear all selection indicators from the scene
+     */
+    clearSelectionIndicators() {
+        const scene = this.worldRenderer?.getScene();
+        if (!scene) return;
+
+        for (const [entityId, mesh] of this.selectionIndicators) {
+            scene.remove(mesh);
+        }
+        this.selectionIndicators.clear();
     }
 
     /**
      * Update inspector panel - shows selected entity's transform
+     * Supports multi-select: shows "--" for differing values
      */
     updateInspector() {
         const sidebar = document.getElementById('te-inspector-sidebar');
@@ -2288,7 +2737,9 @@ class TerrainMapEditor {
 
         if (!sidebar || !content) return;
 
-        if (!this.selectedEntityId) {
+        const entityIds = this.getSelectedEntityIds();
+
+        if (entityIds.length === 0) {
             // Hide inspector when nothing selected
             sidebar.style.display = 'none';
             return;
@@ -2297,46 +2748,106 @@ class TerrainMapEditor {
         // Show inspector
         sidebar.style.display = 'block';
 
-        // Find the selected entity data
-        const levelEntity = this.levelEntities.find(e => e.id === this.selectedEntityId);
-        if (!levelEntity) {
-            content.innerHTML = '<p class="editor-module__info-text">Entity not found</p>';
-            return;
+        // Multi-select mode
+        if (this.isMultiSelect()) {
+            const collection = this.getCommonValueForSelectedEntities('collection');
+            const spawnType = this.getCommonValueForSelectedEntities('spawnType');
+
+            // Get common or mixed values for transform
+            const posX = this.getCommonValueForSelectedEntities('position.x');
+            const posY = this.getCommonValueForSelectedEntities('position.y');
+            const posZ = this.getCommonValueForSelectedEntities('position.z');
+            const rotY = this.getCommonValueForSelectedEntities('rotation.y');
+
+            const formatValue = (val) => {
+                if (val === "--") return "";
+                return typeof val === 'number' ? val.toFixed(2) : val;
+            };
+
+            const formatRotation = (val) => {
+                if (val === "--") return "";
+                return typeof val === 'number' ? (val * 180 / Math.PI).toFixed(1) : val;
+            };
+
+            const getPlaceholder = (val) => val === "--" ? 'placeholder="--"' : '';
+
+            content.innerHTML = `
+                <div class="editor-module__info-box" style="margin-bottom: 10px;">
+                    <strong>${entityIds.length} entities selected</strong><br>
+                    <span style="font-size: 0.85em; color: #888;">${collection} / ${spawnType}</span>
+                </div>
+                <div class="editor-module__section">
+                    <h4 class="editor-module__section-title">Position</h4>
+                    <div class="editor-module__form-row">
+                        <label class="editor-module__label">X:</label>
+                        <input type="number" class="editor-module__input te-transform-input"
+                               data-prop="position.x" value="${formatValue(posX)}" step="1"
+                               ${getPlaceholder(posX)}>
+                    </div>
+                    <div class="editor-module__form-row">
+                        <label class="editor-module__label">Y:</label>
+                        <input type="number" class="editor-module__input te-transform-input"
+                               data-prop="position.y" value="${formatValue(posY)}" step="1"
+                               ${getPlaceholder(posY)}>
+                    </div>
+                    <div class="editor-module__form-row">
+                        <label class="editor-module__label">Z:</label>
+                        <input type="number" class="editor-module__input te-transform-input"
+                               data-prop="position.z" value="${formatValue(posZ)}" step="1"
+                               ${getPlaceholder(posZ)}>
+                    </div>
+                </div>
+                <div class="editor-module__section">
+                    <h4 class="editor-module__section-title">Rotation (Y)</h4>
+                    <div class="editor-module__form-row">
+                        <label class="editor-module__label">Y:</label>
+                        <input type="number" class="editor-module__input te-transform-input"
+                               data-prop="rotation.y" value="${formatRotation(rotY)}" step="15"
+                               ${getPlaceholder(rotY)}>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Single entity mode - existing logic
+            const levelEntity = this.levelEntities.find(e => e.id === this.selectedEntityId);
+            if (!levelEntity) {
+                content.innerHTML = '<p class="editor-module__info-text">Entity not found</p>';
+                return;
+            }
+
+            // Get current transform from ECS
+            const transform = this.editorContext?.getComponent(this.selectedEntityId, 'transform') || {};
+            const pos = transform.position || { x: 0, y: 0, z: 0 };
+            const rot = transform.rotation || { x: 0, y: 0, z: 0 };
+
+            content.innerHTML = `
+                <div class="editor-module__info-box" style="margin-bottom: 10px;">
+                    <strong>${levelEntity.collection}</strong> / ${levelEntity.spawnType}
+                </div>
+                <div class="editor-module__section">
+                    <h4 class="editor-module__section-title">Position</h4>
+                    <div class="editor-module__form-row">
+                        <label class="editor-module__label">X:</label>
+                        <input type="number" class="editor-module__input te-transform-input" data-prop="position.x" value="${pos.x.toFixed(2)}" step="1">
+                    </div>
+                    <div class="editor-module__form-row">
+                        <label class="editor-module__label">Y:</label>
+                        <input type="number" class="editor-module__input te-transform-input" data-prop="position.y" value="${pos.y.toFixed(2)}" step="1">
+                    </div>
+                    <div class="editor-module__form-row">
+                        <label class="editor-module__label">Z:</label>
+                        <input type="number" class="editor-module__input te-transform-input" data-prop="position.z" value="${pos.z.toFixed(2)}" step="1">
+                    </div>
+                </div>
+                <div class="editor-module__section">
+                    <h4 class="editor-module__section-title">Rotation (Y)</h4>
+                    <div class="editor-module__form-row">
+                        <label class="editor-module__label">Y:</label>
+                        <input type="number" class="editor-module__input te-transform-input" data-prop="rotation.y" value="${(rot.y * 180 / Math.PI).toFixed(1)}" step="15">
+                    </div>
+                </div>
+            `;
         }
-
-        // Get current transform from ECS
-        const transform = this.editorContext?.getComponent(this.selectedEntityId, 'transform') || {};
-        const pos = transform.position || { x: 0, y: 0, z: 0 };
-        const rot = transform.rotation || { x: 0, y: 0, z: 0 };
-        const scl = transform.scale || { x: 1, y: 1, z: 1 };
-
-        content.innerHTML = `
-            <div class="editor-module__info-box" style="margin-bottom: 10px;">
-                <strong>${levelEntity.collection}</strong> / ${levelEntity.spawnType}
-            </div>
-            <div class="editor-module__section">
-                <h4 class="editor-module__section-title">Position</h4>
-                <div class="editor-module__form-row">
-                    <label class="editor-module__label">X:</label>
-                    <input type="number" class="editor-module__input te-transform-input" data-prop="position.x" value="${pos.x.toFixed(2)}" step="1">
-                </div>
-                <div class="editor-module__form-row">
-                    <label class="editor-module__label">Y:</label>
-                    <input type="number" class="editor-module__input te-transform-input" data-prop="position.y" value="${pos.y.toFixed(2)}" step="1">
-                </div>
-                <div class="editor-module__form-row">
-                    <label class="editor-module__label">Z:</label>
-                    <input type="number" class="editor-module__input te-transform-input" data-prop="position.z" value="${pos.z.toFixed(2)}" step="1">
-                </div>
-            </div>
-            <div class="editor-module__section">
-                <h4 class="editor-module__section-title">Rotation (Y)</h4>
-                <div class="editor-module__form-row">
-                    <label class="editor-module__label">Y:</label>
-                    <input type="number" class="editor-module__input te-transform-input" data-prop="rotation.y" value="${(rot.y * 180 / Math.PI).toFixed(1)}" step="15">
-                </div>
-            </div>
-        `;
 
         // Add input listeners for transform editing
         content.querySelectorAll('.te-transform-input').forEach(input => {
@@ -2348,69 +2859,93 @@ class TerrainMapEditor {
 
     /**
      * Handle transform input change from inspector
+     * Supports multi-select: applies value to all selected entities
      */
     handleInspectorInputChange(prop, value) {
-        if (!this.selectedEntityId || !this.editorContext) return;
+        if (!this.editorContext) return;
+        // Skip if value is NaN (e.g., from empty input or "--" placeholder)
+        // "--" is display-only for multi-select when values differ
+        if (isNaN(value)) return;
 
-        const transform = this.editorContext.getComponent(this.selectedEntityId, 'transform');
-        if (!transform) return;
+        const entityIds = this.getSelectedEntityIds();
+        if (entityIds.length === 0) return;
 
         // Parse property path (e.g., "position.x")
         const [component, axis] = prop.split('.');
 
-        if (component === 'position') {
-            if (!transform.position) transform.position = { x: 0, y: 0, z: 0 };
-            transform.position[axis] = value;
-        } else if (component === 'rotation') {
-            if (!transform.rotation) transform.rotation = { x: 0, y: 0, z: 0 };
-            // Convert degrees to radians for Y rotation
-            transform.rotation[axis] = value * Math.PI / 180;
-        }
-
-        // Update visual representation
         const renderSystem = this.editorContext.renderSystem;
-        if (renderSystem) {
-            renderSystem.updateEntity(this.selectedEntityId, {
-                position: transform.position,
-                rotation: transform.rotation?.y || 0,
-                transform: transform
-            });
+
+        // Apply to all selected entities
+        for (const entityId of entityIds) {
+            const transform = this.editorContext.getComponent(entityId, 'transform');
+            if (!transform) continue;
+
+            if (component === 'position') {
+                if (!transform.position) transform.position = { x: 0, y: 0, z: 0 };
+                transform.position[axis] = value;
+            } else if (component === 'rotation') {
+                if (!transform.rotation) transform.rotation = { x: 0, y: 0, z: 0 };
+                // Convert degrees to radians for Y rotation
+                transform.rotation[axis] = value * Math.PI / 180;
+            }
+
+            // Update visual representation
+            if (renderSystem) {
+                renderSystem.updateEntity(entityId, {
+                    position: transform.position,
+                    rotation: transform.rotation?.y || 0,
+                    transform: transform
+                });
+            }
+
+            // Update levelEntity data
+            const levelEntity = this.levelEntities.find(e => e.id === entityId);
+            if (levelEntity) {
+                if (!levelEntity.components) levelEntity.components = {};
+                if (!levelEntity.components.transform) levelEntity.components.transform = {};
+                // Deep copy position/rotation/scale
+                if (transform.position) {
+                    levelEntity.components.transform.position = {
+                        x: transform.position.x,
+                        y: transform.position.y,
+                        z: transform.position.z
+                    };
+                }
+                if (transform.rotation) {
+                    levelEntity.components.transform.rotation = {
+                        x: transform.rotation.x,
+                        y: transform.rotation.y,
+                        z: transform.rotation.z
+                    };
+                }
+                if (transform.scale) {
+                    levelEntity.components.transform.scale = {
+                        x: transform.scale.x,
+                        y: transform.scale.y,
+                        z: transform.scale.z
+                    };
+                }
+            }
         }
 
         // Update gizmo helper position
-        if (this.gizmoHelper) {
-            const pos = transform.position;
-            const rot = transform.rotation;
-            this.gizmoHelper.position.set(pos.x, pos.y, pos.z);
-            if (rot) this.gizmoHelper.rotation.set(rot.x, rot.y, rot.z);
-        }
-
-        // Update levelEntity data
-        const levelEntity = this.levelEntities.find(e => e.id === this.selectedEntityId);
-        if (levelEntity) {
-            if (!levelEntity.components) levelEntity.components = {};
-            if (!levelEntity.components.transform) levelEntity.components.transform = {};
-            // Deep copy position/rotation/scale
-            if (transform.position) {
-                levelEntity.components.transform.position = {
-                    x: transform.position.x,
-                    y: transform.position.y,
-                    z: transform.position.z
-                };
+        if (!this.isMultiSelect() && this.gizmoHelper && this.selectedEntityId) {
+            const transform = this.editorContext.getComponent(this.selectedEntityId, 'transform');
+            if (transform) {
+                const pos = transform.position;
+                const rot = transform.rotation;
+                this.gizmoHelper.position.set(pos.x, pos.y, pos.z);
+                if (rot) this.gizmoHelper.rotation.set(rot.x, rot.y, rot.z);
             }
-            if (transform.rotation) {
-                levelEntity.components.transform.rotation = {
-                    x: transform.rotation.x,
-                    y: transform.rotation.y,
-                    z: transform.rotation.z
-                };
-            }
-            if (transform.scale) {
-                levelEntity.components.transform.scale = {
-                    x: transform.scale.x,
-                    y: transform.scale.y,
-                    z: transform.scale.z
-                };
+        } else if (this.isMultiSelect()) {
+            // Recalculate center and update gizmo
+            this.calculateMultiSelectOffsets();
+            if (this.multiSelectCenter && this.gizmoHelper) {
+                this.gizmoHelper.position.set(
+                    this.multiSelectCenter.x,
+                    this.multiSelectCenter.y,
+                    this.multiSelectCenter.z
+                );
             }
         }
     }
@@ -2547,18 +3082,24 @@ class TerrainMapEditor {
     }
 
     /**
-     * Remove the currently selected entity
+     * Remove all selected entities (supports both single and multi-select)
      */
     removeSelectedEntity() {
-        if (!this.selectedEntityId || !this.editorContext) return;
+        if (!this.editorContext) return;
 
-        // Remove from ECS context
-        this.editorContext.removeEntity(this.selectedEntityId);
+        const entityIds = this.getSelectedEntityIds();
+        if (entityIds.length === 0) return;
 
-        // Remove from levelEntities array
-        const index = this.levelEntities.findIndex(e => e.id === this.selectedEntityId);
-        if (index !== -1) {
-            this.levelEntities.splice(index, 1);
+        // Remove all selected entities
+        for (const entityId of entityIds) {
+            // Remove from ECS context
+            this.editorContext.removeEntity(entityId);
+
+            // Remove from levelEntities array
+            const index = this.levelEntities.findIndex(e => e.id === entityId);
+            if (index !== -1) {
+                this.levelEntities.splice(index, 1);
+            }
         }
 
         // Clear selection
@@ -2566,8 +3107,6 @@ class TerrainMapEditor {
 
         // Update hierarchy list
         this.updateEntityHierarchy();
-
-        console.log('[TerrainMapEditor] Removed entity:', this.selectedEntityId);
     }
 
     /**
@@ -2640,206 +3179,8 @@ class TerrainMapEditor {
         return closestEntity?.id || null;
     }
 
-    /**
-     * Create the visual box selection element
-     */
-    createBoxSelectionElement() {
-        if (this.boxSelection.element) return;
-
-        const boxElement = document.createElement('div');
-        boxElement.id = 'te-selection-box';
-        boxElement.style.cssText = `
-            position: absolute;
-            border: 2px solid rgba(99, 102, 241, 0.8);
-            background: rgba(99, 102, 241, 0.15);
-            pointer-events: none;
-            display: none;
-            z-index: 10000;
-        `;
-
-        // Append to canvas parent
-        const canvasParent = this.canvasEl?.parentElement;
-        if (canvasParent) {
-            const parentStyle = window.getComputedStyle(canvasParent);
-            if (parentStyle.position === 'static') {
-                canvasParent.style.position = 'relative';
-            }
-            canvasParent.appendChild(boxElement);
-            this.boxSelection.useCanvasRelative = true;
-        } else {
-            document.body.appendChild(boxElement);
-            this.boxSelection.useCanvasRelative = false;
-        }
-        this.boxSelection.element = boxElement;
-    }
-
-    /**
-     * Start box selection on mouse down
-     */
-    startBoxSelection(e) {
-        this.createBoxSelectionElement();
-
-        this.boxSelection.startX = e.clientX;
-        this.boxSelection.startY = e.clientY;
-        this.boxSelection.currentX = e.clientX;
-        this.boxSelection.currentY = e.clientY;
-        this.boxSelection.active = true;
-    }
-
-    /**
-     * Update box selection visual during mouse move
-     */
-    updateBoxSelection(e) {
-        this.boxSelection.currentX = e.clientX;
-        this.boxSelection.currentY = e.clientY;
-
-        const dx = this.boxSelection.currentX - this.boxSelection.startX;
-        const dy = this.boxSelection.currentY - this.boxSelection.startY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        // Only show box if dragged more than 5 pixels
-        if (distance > 5) {
-            this.updateBoxSelectionVisual();
-        }
-    }
-
-    /**
-     * Update the visual appearance of the selection box
-     */
-    updateBoxSelectionVisual() {
-        const box = this.boxSelection;
-        const element = box.element;
-        if (!element) return;
-
-        let left = Math.min(box.startX, box.currentX);
-        let top = Math.min(box.startY, box.currentY);
-        const width = Math.abs(box.currentX - box.startX);
-        const height = Math.abs(box.currentY - box.startY);
-
-        // Convert to canvas-relative coordinates
-        if (box.useCanvasRelative && this.canvasEl?.parentElement) {
-            const parentRect = this.canvasEl.parentElement.getBoundingClientRect();
-            left -= parentRect.left;
-            top -= parentRect.top;
-        }
-
-        element.style.left = `${left}px`;
-        element.style.top = `${top}px`;
-        element.style.width = `${width}px`;
-        element.style.height = `${height}px`;
-        element.style.display = 'block';
-    }
-
-    /**
-     * Complete box selection on mouse up
-     */
-    completeBoxSelection(e) {
-        const box = this.boxSelection;
-        const dx = box.currentX - box.startX;
-        const dy = box.currentY - box.startY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance > 5) {
-            // Box selection - select all entities in box
-            this.selectEntitiesInBox();
-        } else {
-            // Single click - select one entity
-            this.handleEntityClick(e);
-        }
-
-        // Reset box selection state
-        box.active = false;
-        if (box.element) {
-            box.element.style.display = 'none';
-        }
-    }
-
-    /**
-     * Select all entities within the selection box
-     */
-    selectEntitiesInBox() {
-        const box = this.boxSelection;
-        const canvasRect = this.canvasEl.getBoundingClientRect();
-
-        // Get box bounds in client coordinates
-        const boxLeft = Math.min(box.startX, box.currentX);
-        const boxRight = Math.max(box.startX, box.currentX);
-        const boxTop = Math.min(box.startY, box.currentY);
-        const boxBottom = Math.max(box.startY, box.currentY);
-
-        // Get the currently selected prefab's collection to filter by
-        const collectionSelect = document.getElementById('te-collection-select');
-        const selectedPrefabId = collectionSelect?.value;
-        const filterCollection = this.getCollectionFromPrefab(selectedPrefabId);
-
-        const selectedIds = [];
-
-        for (const levelEntity of this.levelEntities) {
-            // Filter by collection
-            if (filterCollection && levelEntity.collection !== filterCollection) {
-                continue;
-            }
-
-            const transform = this.editorContext.getComponent(levelEntity.id, 'transform');
-            if (!transform) continue;
-
-            // Project entity world position to screen coordinates
-            const pos = transform.position;
-            const screenPos = this.worldToScreen(pos.x, pos.y, pos.z);
-            if (!screenPos) continue;
-
-            // Convert to client coordinates
-            const clientX = canvasRect.left + screenPos.x;
-            const clientY = canvasRect.top + screenPos.y;
-
-            // Check if within box
-            if (clientX >= boxLeft && clientX <= boxRight &&
-                clientY >= boxTop && clientY <= boxBottom) {
-                selectedIds.push(levelEntity.id);
-            }
-        }
-
-        // Update selection
-        this.selectedEntities = selectedIds;
-
-        if (selectedIds.length === 1) {
-            // Single entity - use normal selection with gizmo
-            this.selectEntity(selectedIds[0]);
-        } else if (selectedIds.length > 1) {
-            // Multiple entities - just track selection (no gizmo for now)
-            this.deselectEntity();
-            console.log(`[TerrainMapEditor] Selected ${selectedIds.length} entities`);
-        } else {
-            this.deselectEntity();
-        }
-    }
-
-    /**
-     * Convert world coordinates to screen coordinates
-     */
-    worldToScreen(x, y, z) {
-        if (!this.worldRenderer?.camera) return null;
-
-        const camera = this.worldRenderer.camera;
-        const vector = new THREE.Vector3(x, y, z);
-        vector.project(camera);
-
-        const canvasRect = this.canvasEl.getBoundingClientRect();
-        return {
-            x: (vector.x * 0.5 + 0.5) * canvasRect.width,
-            y: (-vector.y * 0.5 + 0.5) * canvasRect.height
-        };
-    }
-
-    /**
-     * Cancel box selection
-     */
-    cancelBoxSelection() {
-        this.boxSelection.active = false;
-        if (this.boxSelection.element) {
-            this.boxSelection.element.style.display = 'none';
-        }
-    }
+    // Box selection is handled by SelectedUnitSystem
+    // TerrainMapEditor receives selection events via onSelectionChanged (single event pipeline)
 
     /**
      * Update cached grid position from raycast

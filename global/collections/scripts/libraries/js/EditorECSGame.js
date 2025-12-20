@@ -158,6 +158,26 @@ class EditorECSGame extends GUTS.BaseECSGame {
     }
 
     /**
+     * Override triggerEvent to also call custom event listeners
+     */
+    triggerEvent(eventName, data) {
+        // Call parent (notifies systems)
+        super.triggerEvent(eventName, data);
+
+        // Also notify custom event listeners
+        const listeners = this.eventListeners.get(eventName);
+        if (listeners) {
+            for (const callback of listeners) {
+                try {
+                    callback(data);
+                } catch (err) {
+                    console.error(`[EditorECSGame] Error in event listener for ${eventName}:`, err);
+                }
+            }
+        }
+    }
+
+    /**
      * Export scene to JSON format
      */
     exportScene() {
