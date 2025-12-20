@@ -568,7 +568,9 @@ app.post('/api/save-texture', async (req, res) => {
 // Save isometric sprites with all data files
 app.post('/api/save-isometric-sprites', async (req, res) => {
     try {
-        const { projectName, baseName, collectionName, spriteSheet, spriteMetadata, directionNames, animationFPS = 4, generatorSettings } = req.body;
+        const { projectName, baseName, collectionName, spriteSheet, spriteMetadata,
+                ballisticSpriteMetadata, ballisticAngleNames,
+                directionNames, animationFPS = 4, generatorSettings } = req.body;
 
         // Create directories
         const spritesFolder = path.join(PROJS_DIR, projectName, 'resources', 'sprites', collectionName);
@@ -657,6 +659,73 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
             animationSetJson.generatorSettings = generatorSettings;
         }
 
+        // Process ballistic sprites if present (now on same sheet as regular sprites)
+        let ballisticSpriteCount = 0;
+        if (ballisticSpriteMetadata && ballisticAngleNames) {
+            // Ballistic sprites are now included in the main spriteSheet
+            // No separate ballisticSpriteSheet property needed
+
+            // Process each ballistic angle
+            for (const angleName of ballisticAngleNames) {
+                const angleData = ballisticSpriteMetadata[angleName];
+                if (!angleData) continue;
+
+                // Process each animation type within this angle
+                for (const animType in angleData) {
+                    const metadata = angleData[animType];
+                    const ballisticAnimationNames = [];
+
+                    // Create sprite JSONs and animation JSONs for each direction
+                    for (const animationName in metadata.animations) {
+                        const frames = metadata.animations[animationName];
+                        ballisticAnimationNames.push(animationName);
+
+                        const spriteNames = [];
+
+                        // Create individual sprite JSON files
+                        for (let i = 0; i < frames.length; i++) {
+                            const frame = frames[i];
+                            const spriteName = `${animationName}_${i}`;
+
+                            const spriteJson = {
+                                title: `${animationName} ${i}`,
+                                x: frame.x,
+                                y: frame.y,
+                                width: frame.width,
+                                height: frame.height
+                            };
+
+                            await fs.writeFile(
+                                path.join(scriptsSpritesFolder, `${spriteName}.json`),
+                                JSON.stringify(spriteJson, null, 2)
+                            );
+
+                            spriteNames.push(spriteName);
+                            ballisticSpriteCount++;
+                        }
+
+                        // Create sprite animation JSON
+                        const spriteAnimationJson = {
+                            title: animationName.replace(/([A-Z])/g, ' $1').trim(),
+                            spriteCollection: collectionName,
+                            sprites: spriteNames,
+                            fps: animationFPS,
+                            ballisticAngle: angleName
+                        };
+                        await fs.writeFile(
+                            path.join(scriptsSpriteAnimationsFolder, `${animationName}.json`),
+                            JSON.stringify(spriteAnimationJson, null, 2)
+                        );
+                    }
+
+                    // Add ballistic animation array to animation set JSON
+                    // Property name format: ballisticIdleSpriteAnimationsUp90
+                    const propertyName = `ballistic${animType.charAt(0).toUpperCase() + animType.slice(1)}SpriteAnimations${angleName}`;
+                    animationSetJson[propertyName] = ballisticAnimationNames;
+                }
+            }
+        }
+
         await fs.writeFile(
             path.join(scriptsSpriteAnimationSetsFolder, `${baseName}.json`),
             JSON.stringify(animationSetJson, null, 2)
@@ -685,7 +754,7 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
             JSON.stringify(spriteAnimationCollectionDef, null, 2)
         );
 
-        res.json({ success: true, spriteCount: 1 });
+        res.json({ success: true, spriteCount: 1, ballisticSpriteCount });
     } catch (error) {
         console.error('Error saving isometric sprites:', error);
         res.status(500).json({ error: error.message });
