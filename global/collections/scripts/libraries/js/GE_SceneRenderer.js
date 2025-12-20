@@ -370,6 +370,19 @@ class GE_SceneRenderer {
         const outlinePosition = 'outset'; // Always use outside outline
         const outlineConnectivity = parseInt(document.getElementById('iso-outline-connectivity').value) || 8;
 
+        // Get projectile flag for ballistic angle generation
+        const isProjectile = document.getElementById('iso-is-projectile')?.checked || false;
+
+        // Ballistic pitch angles for projectiles (model rotation on X-axis)
+        // Negative degrees = pointing up, positive = pointing down
+        const ballisticAngles = [
+            { name: 'Up90', pitchDegrees: -90 },    // Pointing straight up
+            { name: 'Up45', pitchDegrees: -45 },    // Ascending trajectory
+            { name: 'Level', pitchDegrees: 0 },      // Horizontal/apex
+            { name: 'Down45', pitchDegrees: 45 },    // Descending trajectory
+            { name: 'Down90', pitchDegrees: 90 }     // Pointing straight down
+        ];
+
         const aspect = 1;
         const tempRenderer = new window.THREE.WebGLRenderer({ antialias: false, alpha: true });
         tempRenderer.setSize(size, size);
@@ -480,6 +493,18 @@ class GE_SceneRenderer {
         });
 
         const sprites = {};
+        const ballisticSprites = {};  // For projectile ballistic angle sprites
+
+        // Store original model rotation for restoration after ballistic angle generation
+        let originalModelRotation = null;
+        if (characterModel && isProjectile) {
+            originalModelRotation = {
+                x: characterModel.rotation.x,
+                y: characterModel.rotation.y,
+                z: characterModel.rotation.z
+            };
+            console.log('[SpriteGen] Stored original model rotation for projectile:', originalModelRotation);
+        }
 
         // For static buildings with no animations, generate a single sprite
         const animations = this.graphicsEditor.state.renderData.animations || {};
@@ -533,6 +558,61 @@ class GE_SceneRenderer {
                 }
 
                 sprites['idle'][0].push(canvas.toDataURL('image/png'));
+            }
+
+            // Generate ballistic angle sprites for projectiles (static models)
+            if (isProjectile && characterModel) {
+                console.log('[SpriteGen] Generating ballistic angle sprites for static projectile...');
+
+                for (const angle of ballisticAngles) {
+                    ballisticSprites[angle.name] = [[]];
+
+                    // Rotate model to ballistic pitch angle
+                    characterModel.rotation.x = THREE.MathUtils.degToRad(angle.pitchDegrees);
+
+                    for (const camera of cameras) {
+                        const buffer = new Uint8Array(size * size * 4);
+                        tempRenderer.setRenderTarget(renderTarget);
+                        tempRenderer.render(scene, camera);
+                        tempRenderer.setRenderTarget(null);
+                        tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
+
+                        const flippedBuffer = new Uint8Array(size * size * 4);
+                        for (let y = 0; y < size; y++) {
+                            const srcRowStart = y * size * 4;
+                            const destRowStart = (size - 1 - y) * size * 4;
+                            flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = size;
+                        canvas.height = size;
+                        const ctx = canvas.getContext('2d');
+                        const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);
+                        ctx.putImageData(imageData, 0, 0);
+
+                        // Apply palette if selected
+                        if (finalPaletteColors && finalPaletteColors.length > 0) {
+                            this.applyPaletteToCanvas(canvas, finalPaletteColors);
+                        }
+
+                        // Apply outline if selected
+                        if (outlineColor && outlineColor !== '') {
+                            this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
+                        }
+
+                        ballisticSprites[angle.name][0].push(canvas.toDataURL('image/png'));
+                    }
+
+                    console.log(`[SpriteGen] Generated ${angle.name} angle sprites (8 directions)`);
+                }
+
+                // Restore original model rotation
+                if (originalModelRotation) {
+                    characterModel.rotation.x = originalModelRotation.x;
+                    characterModel.rotation.y = originalModelRotation.y;
+                    characterModel.rotation.z = originalModelRotation.z;
+                }
             }
         } else {
             // Only process animation loop if we didn't generate static building sprites
@@ -656,12 +736,77 @@ class GE_SceneRenderer {
                                     frameSprites.push(canvas.toDataURL());
                                 }
                                 sprites[animType].push(frameSprites);
+
+                                // Generate ballistic angle sprites for this frame if projectile
+                                if (isProjectile && characterModel) {
+                                    for (const angle of ballisticAngles) {
+                                        // Initialize ballistic sprite structure for this animation type and angle
+                                        if (!ballisticSprites[angle.name]) {
+                                            ballisticSprites[angle.name] = {};
+                                        }
+                                        if (!ballisticSprites[angle.name][animType]) {
+                                            ballisticSprites[angle.name][animType] = [];
+                                        }
+
+                                        // Rotate model to ballistic pitch angle
+                                        characterModel.rotation.x = THREE.MathUtils.degToRad(angle.pitchDegrees);
+
+                                        // Render from all camera angles for this ballistic angle
+                                        const ballisticFrameSprites = [];
+                                        for (const camera of cameras) {
+                                            const buffer = new Uint8Array(size * size * 4);
+                                            tempRenderer.setRenderTarget(renderTarget);
+                                            tempRenderer.render(scene, camera);
+                                            tempRenderer.setRenderTarget(null);
+                                            tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
+
+                                            const flippedBuffer = new Uint8Array(size * size * 4);
+                                            for (let y = 0; y < size; y++) {
+                                                const srcRowStart = y * size * 4;
+                                                const destRowStart = (size - 1 - y) * size * 4;
+                                                flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);
+                                            }
+                                            const canvas = document.createElement('canvas');
+                                            canvas.width = size;
+                                            canvas.height = size;
+                                            const ctx = canvas.getContext('2d');
+                                            const imageData = ctx.createImageData(size, size);
+                                            imageData.data.set(flippedBuffer);
+                                            ctx.putImageData(imageData, 0, 0);
+
+                                            // Apply palette if selected
+                                            if (finalPaletteColors && finalPaletteColors.length > 0) {
+                                                this.applyPaletteToCanvas(canvas, finalPaletteColors);
+                                            }
+
+                                            // Apply outline if selected
+                                            if (outlineColor && outlineColor !== '') {
+                                                this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
+                                            }
+
+                                            ballisticFrameSprites.push(canvas.toDataURL());
+                                        }
+                                        ballisticSprites[angle.name][animType].push(ballisticFrameSprites);
+                                    }
+
+                                    // Restore model rotation for next frame
+                                    if (originalModelRotation) {
+                                        characterModel.rotation.x = originalModelRotation.x;
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
         }
+
+            // Restore model rotation after all animations
+            if (isProjectile && originalModelRotation && characterModel) {
+                characterModel.rotation.x = originalModelRotation.x;
+                characterModel.rotation.y = originalModelRotation.y;
+                characterModel.rotation.z = originalModelRotation.z;
+            }
         } // End else block for animation processing
         tempRenderer.setRenderTarget(null);
         tempRenderer.dispose();
@@ -682,6 +827,11 @@ class GE_SceneRenderer {
             gizmoGroup.visible = true;
         }
 
-        this.graphicsEditor.displayIsometricSprites(sprites);
+        // Log ballistic sprite generation summary
+        if (isProjectile && Object.keys(ballisticSprites).length > 0) {
+            console.log('[SpriteGen] Ballistic sprites generated:', Object.keys(ballisticSprites));
+        }
+
+        this.graphicsEditor.displayIsometricSprites(sprites, isProjectile ? ballisticSprites : null);
     }
 }

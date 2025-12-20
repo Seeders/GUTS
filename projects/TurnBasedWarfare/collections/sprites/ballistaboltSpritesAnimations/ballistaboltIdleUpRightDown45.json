@@ -1,0 +1,9 @@
+{
+  "title": "ballistabolt Idle Up Right Down45",
+  "spriteCollection": "ballistaboltSprites",
+  "sprites": [
+    "ballistaboltIdleUpRightDown45_0"
+  ],
+  "fps": 4,
+  "ballisticAngle": "Down45"
+}

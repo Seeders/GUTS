@@ -19,9 +19,60 @@
     "fps": 4,
     "brightness": 10,
     "palette": "main",
+    "borderSize": 1,
     "outlineColor": "#000000",
     "outlineConnectivity": 4,
     "cameraHeight": 1,
-    "borderSize": 1
-  }
+    "isProjectile": true
+  },
+  "ballisticIdleSpriteAnimationsUp90": [
+    "arrowIdleDownUp90",
+    "arrowIdleDownLeftUp90",
+    "arrowIdleLeftUp90",
+    "arrowIdleUpLeftUp90",
+    "arrowIdleUpUp90",
+    "arrowIdleUpRightUp90",
+    "arrowIdleRightUp90",
+    "arrowIdleDownRightUp90"
+  ],
+  "ballisticIdleSpriteAnimationsUp45": [
+    "arrowIdleDownUp45",
+    "arrowIdleDownLeftUp45",
+    "arrowIdleLeftUp45",
+    "arrowIdleUpLeftUp45",
+    "arrowIdleUpUp45",
+    "arrowIdleUpRightUp45",
+    "arrowIdleRightUp45",
+    "arrowIdleDownRightUp45"
+  ],
+  "ballisticIdleSpriteAnimationsLevel": [
+    "arrowIdleDownLevel",
+    "arrowIdleDownLeftLevel",
+    "arrowIdleLeftLevel",
+    "arrowIdleUpLeftLevel",
+    "arrowIdleUpLevel",
+    "arrowIdleUpRightLevel",
+    "arrowIdleRightLevel",
+    "arrowIdleDownRightLevel"
+  ],
+  "ballisticIdleSpriteAnimationsDown45": [
+    "arrowIdleDownDown45",
+    "arrowIdleDownLeftDown45",
+    "arrowIdleLeftDown45",
+    "arrowIdleUpLeftDown45",
+    "arrowIdleUpDown45",
+    "arrowIdleUpRightDown45",
+    "arrowIdleRightDown45",
+    "arrowIdleDownRightDown45"
+  ],
+  "ballisticIdleSpriteAnimationsDown90": [
+    "arrowIdleDownDown90",
+    "arrowIdleDownLeftDown90",
+    "arrowIdleLeftDown90",
+    "arrowIdleUpLeftDown90",
+    "arrowIdleUpDown90",
+    "arrowIdleUpRightDown90",
+    "arrowIdleRightDown90",
+    "arrowIdleDownRightDown90"
+  ]
 }

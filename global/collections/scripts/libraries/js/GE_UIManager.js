@@ -106,7 +106,8 @@ class GE_UIManager {
             borderSize: savedSettings.borderSize ?? 1,
             outlineColor: savedSettings.outlineColor ?? '',
             outlineConnectivity: savedSettings.outlineConnectivity ?? 4,
-            cameraHeight: savedSettings.cameraHeight ?? 1.5
+            cameraHeight: savedSettings.cameraHeight ?? 1.5,
+            isProjectile: savedSettings.isProjectile ?? false
         };
 
         // Populate palette dropdown
@@ -183,6 +184,9 @@ class GE_UIManager {
         if (config.cameraHeight !== undefined) {
             document.getElementById('iso-camera-height').value = config.cameraHeight;
         }
+        if (config.isProjectile !== undefined) {
+            document.getElementById('iso-is-projectile').checked = config.isProjectile;
+        }
 
         // Setup save button (disabled initially, enabled after generation)
         const saveButton = document.getElementById('iso-save');
@@ -232,9 +236,21 @@ class GE_UIManager {
         // Total height = spriteHeight * numDirections * numAnimTypes
         // Total width = spriteWidth * maxFrames
         const sheetWidth = spriteWidth * maxFrames;
-        const sheetHeight = spriteHeight * numDirections * animTypes.length;
+        let sheetHeight = spriteHeight * numDirections * animTypes.length;
 
-        // Create single canvas for all sprites
+        // Calculate additional height for ballistic sprites if present
+        const ballisticAngleNames = ['Up90', 'Up45', 'Level', 'Down45', 'Down90'];
+        let ballisticRowOffset = numDirections * animTypes.length; // Starting row for ballistic sprites
+
+        if (this.generatedBallisticSprites && Object.keys(this.generatedBallisticSprites).length > 0) {
+            // Add space for ballistic sprites: 8 directions * 5 angles * numAnimTypes
+            const firstAngleData = this.generatedBallisticSprites[ballisticAngleNames[0]];
+            const isBallisticStatic = Array.isArray(firstAngleData);
+            const numBallisticAnimTypes = isBallisticStatic ? 1 : Object.keys(firstAngleData).length;
+            sheetHeight += spriteHeight * numDirections * ballisticAngleNames.length * numBallisticAnimTypes;
+        }
+
+        // Create single canvas for all sprites (including ballistic)
         const canvas = document.createElement('canvas');
         canvas.width = sheetWidth;
         canvas.height = sheetHeight;
@@ -289,11 +305,97 @@ class GE_UIManager {
             borderSize: parseInt(document.getElementById('iso-pixel-size').value) || 1,
             outlineColor: document.getElementById('iso-outline').value || '',
             outlineConnectivity: parseInt(document.getElementById('iso-outline-connectivity').value) || 8,
-            cameraHeight: parseFloat(document.getElementById('iso-camera-height').value) || 1.5
+            cameraHeight: parseFloat(document.getElementById('iso-camera-height').value) || 1.5,
+            isProjectile: document.getElementById('iso-is-projectile')?.checked || false
         };
 
+        // Build ballistic sprite metadata and draw onto main canvas if projectile
+        let ballisticSpriteMetadata = null;
+
+        if (this.generatedBallisticSprites && Object.keys(this.generatedBallisticSprites).length > 0) {
+            ballisticSpriteMetadata = {};
+
+            // Determine if static (array) or animated (object with animTypes)
+            const firstAngleData = this.generatedBallisticSprites[ballisticAngleNames[0]];
+            const isStatic = Array.isArray(firstAngleData);
+
+            // Use ballisticRowOffset calculated earlier for y position
+            let rowIndex = ballisticRowOffset;
+
+            for (const angleName of ballisticAngleNames) {
+                const angleData = this.generatedBallisticSprites[angleName];
+                if (!angleData) continue;
+
+                ballisticSpriteMetadata[angleName] = {};
+
+                if (isStatic) {
+                    // Static projectile: treat as 'idle' animation
+                    const animType = 'idle';
+                    ballisticSpriteMetadata[angleName][animType] = { animations: {} };
+
+                    for (let dirIndex = 0; dirIndex < numDirections; dirIndex++) {
+                        const dirName = directionNames[dirIndex];
+                        const animationName = `${baseName}${animType.charAt(0).toUpperCase() + animType.slice(1)}${dirName}${angleName}`;
+                        ballisticSpriteMetadata[angleName][animType].animations[animationName] = [];
+
+                        const frames = angleData;
+                        for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+                            const spriteData = frames[frameIndex][dirIndex];
+                            const img = await this.loadImage(spriteData);
+
+                            const x = frameIndex * spriteWidth;
+                            const y = rowIndex * spriteHeight;
+                            // Draw onto main canvas (not separate ballistic canvas)
+                            ctx.drawImage(img, x, y);
+
+                            ballisticSpriteMetadata[angleName][animType].animations[animationName].push({
+                                x,
+                                y,
+                                width: spriteWidth,
+                                height: spriteHeight,
+                                frameIndex
+                            });
+                        }
+                        rowIndex++;
+                    }
+                } else {
+                    // Animated projectile
+                    for (const animType in angleData) {
+                        ballisticSpriteMetadata[angleName][animType] = { animations: {} };
+
+                        for (let dirIndex = 0; dirIndex < numDirections; dirIndex++) {
+                            const dirName = directionNames[dirIndex];
+                            const animationName = `${baseName}${animType.charAt(0).toUpperCase() + animType.slice(1)}${dirName}${angleName}`;
+                            ballisticSpriteMetadata[angleName][animType].animations[animationName] = [];
+
+                            const frames = angleData[animType];
+                            for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+                                const spriteData = frames[frameIndex][dirIndex];
+                                const img = await this.loadImage(spriteData);
+
+                                const x = frameIndex * spriteWidth;
+                                const y = rowIndex * spriteHeight;
+                                // Draw onto main canvas (not separate ballistic canvas)
+                                ctx.drawImage(img, x, y);
+
+                                ballisticSpriteMetadata[angleName][animType].animations[animationName].push({
+                                    x,
+                                    y,
+                                    width: spriteWidth,
+                                    height: spriteHeight,
+                                    frameIndex
+                                });
+                            }
+                            rowIndex++;
+                        }
+                    }
+                }
+            }
+        }
+
         try {
-            // Send single sprite sheet and metadata to server
+            // Send single combined sprite sheet and metadata to server
+            // Ballistic sprites are now included in the main spriteSheet canvas
             const response = await fetch('/api/save-isometric-sprites', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -303,6 +405,8 @@ class GE_UIManager {
                     collectionName,
                     spriteSheet: canvas.toDataURL(),
                     spriteMetadata,
+                    ballisticSpriteMetadata,
+                    ballisticAngleNames,
                     directionNames,
                     animationFPS: generatorSettings.fps,
                     generatorSettings
@@ -311,7 +415,11 @@ class GE_UIManager {
 
             const result = await response.json();
             if (result.success) {
-                alert(`Successfully saved ${result.spriteCount} sprites and created all data files!`);
+                const ballisticCount = result.ballisticSpriteCount || 0;
+                const message = ballisticCount > 0
+                    ? `Successfully saved ${result.spriteCount} sprites + ${ballisticCount} ballistic sprites!`
+                    : `Successfully saved ${result.spriteCount} sprites and created all data files!`;
+                alert(message);
                 // Reload collections to show new sprites
                 await this.graphicsEditor.gameEditor.fs.syncFromFilesystem();
             } else {
@@ -332,9 +440,10 @@ class GE_UIManager {
         });
     }
 
-    displayIsometricSprites(sprites) {
+    displayIsometricSprites(sprites, ballisticSprites = null) {
         // Store sprites for saving later
         this.generatedSprites = sprites;
+        this.generatedBallisticSprites = ballisticSprites;
 
         // Find or create results container in the modal
         const modal = document.getElementById('modal-generateIsoSprites');
@@ -399,6 +508,91 @@ class GE_UIManager {
 
             animSection.appendChild(anglesContainer);
             resultsContainer.appendChild(animSection);
+        }
+
+        // Display ballistic sprites if present
+        if (ballisticSprites && Object.keys(ballisticSprites).length > 0) {
+            const ballisticHeader = document.createElement('h3');
+            ballisticHeader.textContent = 'Ballistic Angle Sprites';
+            ballisticHeader.style.cssText = 'color: #e0e0e0; margin-top: 30px; margin-bottom: 15px; border-top: 2px solid #666; padding-top: 20px;';
+            resultsContainer.appendChild(ballisticHeader);
+
+            // For each ballistic angle (Up90, Up45, Level, Down45, Down90)
+            for (const ballisticAngle in ballisticSprites) {
+                const ballisticAngleSection = document.createElement('div');
+                const ballisticAngleTitle = document.createElement('h4');
+                ballisticAngleTitle.textContent = `Ballistic Angle: ${ballisticAngle}`;
+                ballisticAngleTitle.style.cssText = 'color: #88ccff; margin: 15px 0 10px 0;';
+                ballisticAngleSection.appendChild(ballisticAngleTitle);
+
+                const ballisticAngleData = ballisticSprites[ballisticAngle];
+
+                // Check if ballisticAngleData is an array (static projectile) or object (animated)
+                if (Array.isArray(ballisticAngleData)) {
+                    // Static projectile: ballisticAngleData is an array of frames
+                    const directionsContainer = document.createElement('div');
+                    directionsContainer.style.cssText = 'margin-left: 20px;';
+
+                    for (let dirIndex = 0; dirIndex < 8; dirIndex++) {
+                        const dirSection = document.createElement('div');
+                        const dirLabel = document.createElement('h5');
+                        dirLabel.textContent = angleLabels[dirIndex];
+                        dirLabel.style.cssText = 'color: #ccc; margin: 5px 0;';
+                        dirSection.appendChild(dirLabel);
+
+                        const grid = document.createElement('div');
+                        grid.style.cssText = 'display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;';
+
+                        ballisticAngleData.forEach(frame => {
+                            const img = document.createElement('img');
+                            img.src = frame[dirIndex];
+                            img.style.imageRendering = 'pixelated';
+                            grid.appendChild(img);
+                        });
+
+                        dirSection.appendChild(grid);
+                        directionsContainer.appendChild(dirSection);
+                    }
+
+                    ballisticAngleSection.appendChild(directionsContainer);
+                } else {
+                    // Animated projectile: ballisticAngleData is an object with animation types
+                    for (const animType in ballisticAngleData) {
+                        const animTypeSection = document.createElement('div');
+                        animTypeSection.style.cssText = 'margin-left: 20px;';
+
+                        const animTypeLabel = document.createElement('h5');
+                        animTypeLabel.textContent = `${animType}`;
+                        animTypeLabel.style.cssText = 'color: #aaccff; margin: 10px 0 5px 0;';
+                        animTypeSection.appendChild(animTypeLabel);
+
+                        for (let dirIndex = 0; dirIndex < 8; dirIndex++) {
+                            const dirSection = document.createElement('div');
+                            const dirLabel = document.createElement('h6');
+                            dirLabel.textContent = angleLabels[dirIndex];
+                            dirLabel.style.cssText = 'color: #ccc; margin: 5px 0; font-weight: normal;';
+                            dirSection.appendChild(dirLabel);
+
+                            const grid = document.createElement('div');
+                            grid.style.cssText = 'display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;';
+
+                            ballisticAngleData[animType].forEach(frame => {
+                                const img = document.createElement('img');
+                                img.src = frame[dirIndex];
+                                img.style.imageRendering = 'pixelated';
+                                grid.appendChild(img);
+                            });
+
+                            dirSection.appendChild(grid);
+                            animTypeSection.appendChild(dirSection);
+                        }
+
+                        ballisticAngleSection.appendChild(animTypeSection);
+                    }
+                }
+
+                resultsContainer.appendChild(ballisticAngleSection);
+            }
         }
 
         // Enable the save button in the modal

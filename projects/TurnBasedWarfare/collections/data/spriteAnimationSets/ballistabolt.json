@@ -22,6 +22,57 @@
     "borderSize": 1,
     "outlineColor": "#000000",
     "outlineConnectivity": 4,
-    "cameraHeight": 1
-  }
+    "cameraHeight": 1,
+    "isProjectile": true
+  },
+  "ballisticIdleSpriteAnimationsUp90": [
+    "ballistaboltIdleDownUp90",
+    "ballistaboltIdleDownLeftUp90",
+    "ballistaboltIdleLeftUp90",
+    "ballistaboltIdleUpLeftUp90",
+    "ballistaboltIdleUpUp90",
+    "ballistaboltIdleUpRightUp90",
+    "ballistaboltIdleRightUp90",
+    "ballistaboltIdleDownRightUp90"
+  ],
+  "ballisticIdleSpriteAnimationsUp45": [
+    "ballistaboltIdleDownUp45",
+    "ballistaboltIdleDownLeftUp45",
+    "ballistaboltIdleLeftUp45",
+    "ballistaboltIdleUpLeftUp45",
+    "ballistaboltIdleUpUp45",
+    "ballistaboltIdleUpRightUp45",
+    "ballistaboltIdleRightUp45",
+    "ballistaboltIdleDownRightUp45"
+  ],
+  "ballisticIdleSpriteAnimationsLevel": [
+    "ballistaboltIdleDownLevel",
+    "ballistaboltIdleDownLeftLevel",
+    "ballistaboltIdleLeftLevel",
+    "ballistaboltIdleUpLeftLevel",
+    "ballistaboltIdleUpLevel",
+    "ballistaboltIdleUpRightLevel",
+    "ballistaboltIdleRightLevel",
+    "ballistaboltIdleDownRightLevel"
+  ],
+  "ballisticIdleSpriteAnimationsDown45": [
+    "ballistaboltIdleDownDown45",
+    "ballistaboltIdleDownLeftDown45",
+    "ballistaboltIdleLeftDown45",
+    "ballistaboltIdleUpLeftDown45",
+    "ballistaboltIdleUpDown45",
+    "ballistaboltIdleUpRightDown45",
+    "ballistaboltIdleRightDown45",
+    "ballistaboltIdleDownRightDown45"
+  ],
+  "ballisticIdleSpriteAnimationsDown90": [
+    "ballistaboltIdleDownDown90",
+    "ballistaboltIdleDownLeftDown90",
+    "ballistaboltIdleLeftDown90",
+    "ballistaboltIdleUpLeftDown90",
+    "ballistaboltIdleUpDown90",
+    "ballistaboltIdleUpRightDown90",
+    "ballistaboltIdleRightDown90",
+    "ballistaboltIdleDownRightDown90"
+  ]
 }

@@ -1,0 +1,9 @@
+{
+  "title": "arrow Idle Left Up90",
+  "spriteCollection": "arrowSprites",
+  "sprites": [
+    "arrowIdleLeftUp90_0"
+  ],
+  "fps": 4,
+  "ballisticAngle": "Up90"
+}

@@ -21,6 +21,8 @@
     "customDuration": null,
     "lastRequestedClip": null,
     "lastResolvedClip": null,
-    "fallbackCooldown": 0
+    "fallbackCooldown": 0,
+    "ballisticAngle": -1,
+    "lastBallisticDirection": null
   }
 }

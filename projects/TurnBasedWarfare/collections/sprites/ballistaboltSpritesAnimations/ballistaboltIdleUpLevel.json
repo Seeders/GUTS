@@ -1,0 +1,9 @@
+{
+  "title": "ballistabolt Idle Up Level",
+  "spriteCollection": "ballistaboltSprites",
+  "sprites": [
+    "ballistaboltIdleUpLevel_0"
+  ],
+  "fps": 4,
+  "ballisticAngle": "Level"
+}

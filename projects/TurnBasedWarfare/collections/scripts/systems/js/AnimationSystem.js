@@ -29,13 +29,10 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        // Cache direction names array for fast index->string lookup
-        this.directionEnumMap = this.game.call('getEnumMap', 'direction');
-        this.directionNames = this.directionEnumMap.toValue;
-
-        // Cache animation type names array for fast index->string lookup
-        this.animationTypeEnumMap = this.game.call('getEnumMap', 'animationType');
-        this.animationTypeNames = this.animationTypeEnumMap.toValue;
+        // Use built-in reverseEnums from BaseSystem for index->string conversion
+        this.directionNames = this.reverseEnums.direction;
+        this.animationTypeNames = this.reverseEnums.animationType;
+        this.ballisticAngleNames = this.reverseEnums.ballisticAngle;
 
         // Shared cache for sprite animation data (keyed by spriteAnimationSet index)
         // This avoids storing complex objects per-entity
@@ -251,9 +248,11 @@ class AnimationSystem extends GUTS.BaseSystem {
      * - When attacking, rotation is set by attack behavior to face target
      */
     updateBillboardAnimationLogic(entityId, animState, velocity) {
-        // Projectiles only need direction updates - they don't have walk/idle animations
+        // Projectiles need direction updates and potentially ballistic angle updates
         if (this.game.hasComponent(entityId, 'projectile')) {
             this.updateSpriteDirectionFromRotation(entityId, animState);
+            // Update ballistic angle if projectile has ballistic sprite animations
+            this.updateProjectileBallisticAngle(entityId, animState, velocity);
             return;
         }
 
@@ -388,6 +387,203 @@ class AnimationSystem extends GUTS.BaseSystem {
         if (newDirection !== animState.spriteDirection) {
             // Let setBillboardAnimationDirection handle setting the direction and applying the frame
             this.game.call('setBillboardAnimationDirection', entityId, newDirection);
+        }
+    }
+
+    /**
+     * Calculate ballistic angle index based on projectile velocity
+     * Maps vertical velocity to one of 5 discrete angle states (0-4)
+     * Uses ballisticAngle enum: up90=0, up45=1, level=2, down45=3, down90=4
+     * @param {number} vy - Vertical velocity component
+     * @param {number} vx - Horizontal X velocity component
+     * @param {number} vz - Horizontal Z velocity component
+     * @returns {number} Angle enum index
+     */
+    getBallisticAngleIndex(vy, vx, vz) {
+        // Calculate pitch angle from velocity
+        const horizontalSpeed = Math.sqrt(vx * vx + vz * vz);
+
+        // Handle edge case of no horizontal movement
+        if (horizontalSpeed < 0.001) {
+            // Nearly vertical movement - determine direction by vy
+            // up90=0, down90=4, level=2
+            return vy > 0 ? this.enums.ballisticAngle.up90 : (vy < 0 ? this.enums.ballisticAngle.down90 : this.enums.ballisticAngle.level);
+        }
+
+        const pitchRadians = Math.atan2(vy, horizontalSpeed);
+        const pitchDegrees = pitchRadians * (180 / Math.PI);
+
+        // Map to discrete angles with threshold boundaries
+        if (pitchDegrees >= 67.5) return this.enums.ballisticAngle.up90;    // Nearly vertical up (67.5° to 90°)
+        if (pitchDegrees >= 22.5) return this.enums.ballisticAngle.up45;    // Ascending (22.5° to 67.5°)
+        if (pitchDegrees >= -22.5) return this.enums.ballisticAngle.level;  // Horizontal (-22.5° to 22.5°)
+        if (pitchDegrees >= -67.5) return this.enums.ballisticAngle.down45; // Descending (-67.5° to -22.5°)
+        return this.enums.ballisticAngle.down90;                             // Nearly vertical down (-90° to -67.5°)
+    }
+
+    /**
+     * Get ballistic angle name from velocity (for property name lookup)
+     * Returns PascalCase name like 'Up90', 'Up45', 'Level', 'Down45', 'Down90'
+     */
+    getBallisticAngleName(vy, vx, vz) {
+        const index = this.getBallisticAngleIndex(vy, vx, vz);
+        // Convert enum name (lowercase) to PascalCase for property name matching
+        const enumName = this.ballisticAngleNames[index];
+        return enumName.charAt(0).toUpperCase() + enumName.slice(1);
+    }
+
+    /**
+     * Update projectile sprite to show correct ballistic angle based on velocity
+     * @param {number} entityId - The projectile entity ID
+     * @param {object} animState - The entity's animationState component
+     * @param {object} velocity - The entity's velocity component
+     */
+    updateProjectileBallisticAngle(entityId, animState, velocity) {
+        if (!velocity || !animState) {
+            console.log('[Ballistic] Early exit: no velocity or animState', { velocity: !!velocity, animState: !!animState });
+            return;
+        }
+
+        // Get the sprite animation data to check if ballistic animations exist
+        const animSetData = this.spriteAnimationCache.get(animState.spriteAnimationSet);
+        if (!animSetData?.rawAnimSetData) {
+            console.log('[Ballistic] No animSetData or rawAnimSetData for set:', animState.spriteAnimationSet);
+            return;
+        }
+
+        const rawData = animSetData.rawAnimSetData;
+        const hasBallisticAnimations = Object.keys(rawData).some(key =>
+            key.startsWith('ballisticIdleSpriteAnimations')
+        );
+
+        if (!hasBallisticAnimations) {
+            console.log('[Ballistic] No ballistic animations found. Keys:', Object.keys(rawData).filter(k => k.includes('ballistic')));
+            return;
+        }
+
+        // Calculate the ballistic angle index from velocity (0-4)
+        const angleIndex = this.getBallisticAngleIndex(
+            velocity.vy || 0,
+            velocity.vx || 0,
+            velocity.vz || 0
+        );
+        // Convert enum name (e.g., 'up90') to PascalCase (e.g., 'Up90') for property lookup
+        const enumName = this.ballisticAngleNames[angleIndex];
+        const angleName = enumName.charAt(0).toUpperCase() + enumName.slice(1);
+
+        console.log('[Ballistic] Velocity:', { vx: velocity.vx, vy: velocity.vy, vz: velocity.vz }, 'AngleIndex:', angleIndex, 'Current:', animState.ballisticAngle);
+
+        // Check if both angle and direction are unchanged
+        const directionChanged = animState.lastBallisticDirection !== animState.spriteDirection;
+        const angleChanged = animState.ballisticAngle !== angleIndex;
+
+        if (!angleChanged && !directionChanged) {
+            return;
+        }
+
+        console.log('[Ballistic] Angle changed:', angleChanged, '(', animState.ballisticAngle, '->', angleIndex, ') Direction changed:', directionChanged);
+
+        // Store the new angle index and direction
+        animState.ballisticAngle = angleIndex;
+        animState.lastBallisticDirection = animState.spriteDirection;
+
+        // Get the correct animation array for this angle
+        const animType = this.animationTypeNames[animState.spriteAnimationType] || 'idle';
+        const ballisticPropertyName = `ballistic${animType.charAt(0).toUpperCase() + animType.slice(1)}SpriteAnimations${angleName}`;
+
+        console.log('[Ballistic] Looking for property:', ballisticPropertyName);
+
+        const ballisticAnimationNames = rawData[ballisticPropertyName];
+        if (!ballisticAnimationNames || !Array.isArray(ballisticAnimationNames)) {
+            console.log('[Ballistic] No animation names array for:', ballisticPropertyName, 'Available:', Object.keys(rawData).filter(k => k.includes('ballistic')));
+            return;
+        }
+
+        // Get current direction index
+        const directionIndex = animState.spriteDirection;
+        if (directionIndex < 0 || directionIndex >= ballisticAnimationNames.length) {
+            console.log('[Ballistic] Direction index out of range:', directionIndex, 'Array length:', ballisticAnimationNames.length);
+            return;
+        }
+
+        // Get the animation name for this direction and angle
+        const animationName = ballisticAnimationNames[directionIndex];
+        if (!animationName) {
+            console.log('[Ballistic] No animation name at direction index:', directionIndex);
+            return;
+        }
+
+        console.log('[Ballistic] Loading animation:', animationName);
+
+        // Load ballistic animation if not already cached
+        if (!animSetData.ballisticAnimations) {
+            animSetData.ballisticAnimations = {};
+        }
+
+        // Cache key is the property name (includes angle)
+        if (!animSetData.ballisticAnimations[ballisticPropertyName]) {
+            const spriteAnimationCollection = rawData.animationCollection;
+            console.log('[Ballistic] Loading animations from collection:', spriteAnimationCollection);
+            animSetData.ballisticAnimations[ballisticPropertyName] =
+                this.loadAnimationsFromCollections(ballisticAnimationNames, spriteAnimationCollection);
+        }
+
+        const ballisticAnimData = animSetData.ballisticAnimations[ballisticPropertyName];
+        if (!ballisticAnimData) {
+            console.log('[Ballistic] Failed to load ballistic animation data');
+            return;
+        }
+
+        // Get direction name for lookup
+        const directionName = this.directionNames[directionIndex];
+        const directionData = ballisticAnimData[directionName];
+        if (!directionData?.frames?.[0]) {
+            console.log('[Ballistic] No direction data or frames for:', directionName, 'Available directions:', Object.keys(ballisticAnimData));
+            return;
+        }
+
+        // Apply the ballistic frame directly using the same logic as applyBillboardAnimationFrame
+        const entityRenderer = this.game.call('getEntityRenderer');
+        if (!entityRenderer) {
+            console.log('[Ballistic] No entity renderer');
+            return;
+        }
+
+        const renderData = entityRenderer.billboardAnimations?.get(entityId);
+        if (!renderData) {
+            console.log('[Ballistic] No render data for entity:', entityId);
+            return;
+        }
+
+        const frame = directionData.frames[animState.spriteFrameIndex % directionData.frames.length];
+        if (!frame) {
+            console.log('[Ballistic] No frame at index:', animState.spriteFrameIndex);
+            return;
+        }
+
+        console.log('[Ballistic] Applying frame:', frame, 'for angle:', angleName, 'direction:', directionName);
+
+        const batch = renderData.batch;
+        const instanceIndex = renderData.instanceIndex;
+
+        // Ballistic sprites are on the same sheet as regular sprites
+        if (batch?.spriteSheetTexture) {
+            const sheetWidth = batch.textureWidth || batch.spriteSheetTexture.image?.width;
+            const sheetHeight = batch.textureHeight || batch.spriteSheetTexture.image?.height;
+
+            if (sheetWidth && sheetHeight) {
+                const offsetX = frame.x / sheetWidth;
+                const offsetY = frame.y / sheetHeight;
+                const scaleX = frame.width / sheetWidth;
+                const scaleY = frame.height / sheetHeight;
+
+                console.log('[Ballistic] Applying UV:', { offsetX, offsetY, scaleX, scaleY, sheetWidth, sheetHeight, frame });
+
+                batch.attributes.uvOffset.setXY(instanceIndex, offsetX, offsetY);
+                batch.attributes.uvScale.setXY(instanceIndex, scaleX, scaleY);
+                batch.attributes.uvOffset.needsUpdate = true;
+                batch.attributes.uvScale.needsUpdate = true;
+            }
         }
     }
 
@@ -968,7 +1164,8 @@ class AnimationSystem extends GUTS.BaseSystem {
                 }
             }
             // Tell EntityRenderer to apply new frame if it changed
-            if (frameChanged) {
+            // Skip if this is a projectile with active ballistic angle - ballistic update handles rendering
+            if (frameChanged && animState.ballisticAngle < 0) {
                 entityRenderer.applyBillboardAnimationFrame(entityId, animState);
             }
         }
@@ -1016,9 +1213,11 @@ class AnimationSystem extends GUTS.BaseSystem {
             const animationFps = animSetData.generatorSettings?.fps || -1;
 
             // Cache the shared animation data
+            // Include rawAnimSetData for accessing ballistic animation properties at runtime
             cachedData = {
                 animations,
-                fps: animationFps
+                fps: animationFps,
+                rawAnimSetData: animSetData  // For ballistic angle sprite lookup
             };
             this.spriteAnimationCache.set(spriteAnimationSetIndex, cachedData);
         }
@@ -1124,14 +1323,26 @@ class AnimationSystem extends GUTS.BaseSystem {
 
     /**
      * Extract direction from animation name (e.g., "peasantIdleDown" -> "down")
+     * Handles ballistic angle suffixes like "Up45", "Down90", "Level"
      */
     extractDirectionFromName(animName) {
-        const lowerName = animName.toLowerCase();
+        // Remove ballistic angle suffixes before extracting direction
+        // Order matters: check longer patterns first
+        const ballisticSuffixes = ['up90', 'up45', 'down90', 'down45', 'level'];
+        let lowerName = animName.toLowerCase();
+
+        for (const suffix of ballisticSuffixes) {
+            if (lowerName.endsWith(suffix)) {
+                lowerName = lowerName.slice(0, -suffix.length);
+                break;
+            }
+        }
+
         // Check compound directions first (longest to shortest) to avoid false matches
         const directions = ['downleft', 'downright', 'upleft', 'upright', 'down', 'up', 'left', 'right'];
 
         for (const dir of directions) {
-            if (lowerName.includes(dir)) {
+            if (lowerName.endsWith(dir)) {
                 return dir;
             }
         }
