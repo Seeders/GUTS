@@ -2106,6 +2106,10 @@ class TerrainMapEditor {
         this.gameCameraMouseDownHandler = (e) => {
             if (this.cameraMode !== 'game') return;
             if (e.button === 2) {
+                // Don't start panning if mouse is over the gizmo (gizmo uses right-click for dragging)
+                if (this.gizmoManager?.isMouseOverGizmo(e)) {
+                    return;
+                }
                 isPanning = true;
                 lastMouseX = e.clientX;
                 lastMouseY = e.clientY;
@@ -2115,6 +2119,8 @@ class TerrainMapEditor {
 
         this.gameCameraMouseMoveHandler = (e) => {
             if (!isPanning || this.cameraMode !== 'game') return;
+            // Don't pan if gizmo is being dragged
+            if (this.gizmoManager?.isDraggingGizmo()) return;
 
             const deltaX = e.clientX - lastMouseX;
             const deltaY = e.clientY - lastMouseY;
