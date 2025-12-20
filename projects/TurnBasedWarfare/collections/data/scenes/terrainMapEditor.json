@@ -8,6 +8,7 @@
   "clientSystems": [
     "RenderSystem",
     "WorldSystem",
-    "AnimationSystem"
+    "AnimationSystem",
+    "SelectedUnitSystem"
   ]
 }

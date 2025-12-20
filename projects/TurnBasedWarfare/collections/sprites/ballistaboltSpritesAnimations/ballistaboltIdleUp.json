@@ -1,0 +1,8 @@
+{
+  "title": "ballistabolt Idle Up",
+  "spriteCollection": "ballistaboltSprites",
+  "sprites": [
+    "ballistaboltIdleUp_0"
+  ],
+  "fps": 4
+}

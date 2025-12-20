@@ -51,23 +51,29 @@ export class TestGameContext extends BaseGameClass {
 
     /**
      * Register mock services that systems commonly depend on
+     * Only registers services that don't already exist in the base game
      * Override these in tests if you need specific behavior
      */
     registerMockServices() {
-        // Visual feedback - no-op in tests
-        this.register('showDamageNumber', () => {});
-        this.register('playEffect', () => {});
+        // Visual feedback - no-op in tests (only if not already registered)
+        if (!this.hasService('showDamageNumber')) {
+            this.register('showDamageNumber', () => {});
+        }
+        if (!this.hasService('playEffect')) {
+            this.register('playEffect', () => {});
+        }
 
         // Death handling - mark as dead but don't do full processing
-        this.register('startDeathProcess', (entityId) => {
-            const deathState = this.getComponent(entityId, 'deathState');
-            if (deathState) {
-                deathState.state = this.getEnums().deathState.dying;
-            }
-        });
+        if (!this.hasService('startDeathProcess')) {
+            this.register('startDeathProcess', (entityId) => {
+                const deathState = this.getComponent(entityId, 'deathState');
+                if (deathState) {
+                    deathState.state = this.getEnums().deathState.dying;
+                }
+            });
+        }
 
-        // Unit type lookup - return null by default
-        // Override in tests that need specific unit types
+        // Unit type lookup - only mock if not already provided by the game
         if (!this.hasService('getUnitTypeDef')) {
             this.register('getUnitTypeDef', () => null);
         }

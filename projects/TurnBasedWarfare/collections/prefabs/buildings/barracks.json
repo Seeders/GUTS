@@ -57,7 +57,8 @@
   },
   "units": [
     "1_s_barbarian",
-    "1_sd_soldier"
+    "1_sd_soldier",
+    "ballista"
   ],
   "footprintWidth": 2,
   "footprintHeight": 3,

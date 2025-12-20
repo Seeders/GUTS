@@ -1,0 +1,9 @@
+{
+  "title": "ballista Death Down",
+  "spriteCollection": "ballistaSprites",
+  "sprites": [
+    "ballistaDeathDown_0",
+    "ballistaDeathDown_1"
+  ],
+  "fps": 4
+}

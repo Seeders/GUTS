@@ -51,7 +51,29 @@ describe('TerrainMapEditor', () => {
                 heightMap: [],
                 terrainBGColor: '#7aad7b'
             },
-            worldRenderer: null
+            worldRenderer: null,
+            // Multi-select properties
+            selectedEntityId: null,
+            selectedEntities: [],
+            multiSelectOffsets: new Map(),
+            multiSelectCenter: null,
+            levelEntities: [],
+            editorContext: {
+                getComponent: (id, type) => {
+                    const entity = testEditor.levelEntities.find(e => e.id === id);
+                    return entity?.components?.[type];
+                },
+                removeEntity: vi.fn(),
+                renderSystem: {
+                    updateEntity: vi.fn()
+                }
+            },
+            gizmoManager: { attach: vi.fn(), detach: vi.fn() },
+            gizmoHelper: {
+                position: { set: vi.fn(), x: 0, y: 0, z: 0 },
+                rotation: { set: vi.fn(), x: 0, y: 0, z: 0 },
+                scale: { set: vi.fn(), x: 1, y: 1, z: 1 }
+            }
         };
 
         // Initialize maps
@@ -75,9 +97,27 @@ describe('TerrainMapEditor', () => {
         testEditor.saveUndoState = proto.saveUndoState.bind(testEditor);
         testEditor.adjustWaterTileHeights = proto.adjustWaterTileHeights.bind(testEditor);
 
+        // Multi-select methods
+        testEditor.isMultiSelect = proto.isMultiSelect.bind(testEditor);
+        testEditor.getSelectedEntityIds = proto.getSelectedEntityIds.bind(testEditor);
+        testEditor.calculateMultiSelectCenter = proto.calculateMultiSelectCenter.bind(testEditor);
+        testEditor.calculateMultiSelectOffsets = proto.calculateMultiSelectOffsets.bind(testEditor);
+        testEditor.getCommonValueForSelectedEntities = proto.getCommonValueForSelectedEntities.bind(testEditor);
+        testEditor.removeSelectedEntity = proto.removeSelectedEntity.bind(testEditor);
+
+        // Selection indicator properties and methods
+        testEditor.selectionIndicators = new Map();
+        testEditor.selectionIndicatorGeometry = null;
+        testEditor.selectionIndicatorMaterial = null;
+        testEditor.initSelectionIndicatorResources = proto.initSelectionIndicatorResources.bind(testEditor);
+        testEditor.updateSelectionIndicators = proto.updateSelectionIndicators.bind(testEditor);
+        testEditor.clearSelectionIndicators = proto.clearSelectionIndicators.bind(testEditor);
+
         // Stub methods that interact with 3D rendering
         testEditor.update3DHeightRegion = () => {};
         testEditor.update3DTerrainRegion = () => {};
+        testEditor.updateEntityHierarchy = () => {};
+        testEditor.deselectEntity = vi.fn();
 
         return testEditor;
     }
@@ -555,6 +595,406 @@ describe('TerrainMapEditor', () => {
 
             expect(adjusted.length).toBe(0);
             expect(editor.tileMap.heightMap[5][5]).toBe(0);
+        });
+    });
+
+    describe('multi-select', () => {
+        describe('isMultiSelect', () => {
+            it('should return false when no entities selected', () => {
+                editor.selectedEntities = [];
+                expect(editor.isMultiSelect()).toBe(false);
+            });
+
+            it('should return false when one entity selected', () => {
+                editor.selectedEntities = [1];
+                expect(editor.isMultiSelect()).toBe(false);
+            });
+
+            it('should return true when multiple entities selected', () => {
+                editor.selectedEntities = [1, 2, 3];
+                expect(editor.isMultiSelect()).toBe(true);
+            });
+        });
+
+        describe('getSelectedEntityIds', () => {
+            it('should return selectedEntities when populated', () => {
+                editor.selectedEntities = [1, 2, 3];
+                expect(editor.getSelectedEntityIds()).toEqual([1, 2, 3]);
+            });
+
+            it('should return single selectedEntityId when selectedEntities empty', () => {
+                editor.selectedEntities = [];
+                editor.selectedEntityId = 5;
+                expect(editor.getSelectedEntityIds()).toEqual([5]);
+            });
+
+            it('should return empty array when nothing selected', () => {
+                editor.selectedEntities = [];
+                editor.selectedEntityId = null;
+                expect(editor.getSelectedEntityIds()).toEqual([]);
+            });
+        });
+
+        describe('calculateMultiSelectCenter', () => {
+            it('should return null when no entities selected', () => {
+                editor.selectedEntities = [];
+                expect(editor.calculateMultiSelectCenter()).toBeNull();
+            });
+
+            it('should return entity position for single entity', () => {
+                editor.levelEntities = [
+                    { id: 1, components: { transform: { position: { x: 10, y: 0, z: 20 } } } }
+                ];
+                editor.selectedEntities = [1];
+                const center = editor.calculateMultiSelectCenter();
+                expect(center).toEqual({ x: 10, y: 0, z: 20 });
+            });
+
+            it('should return average position for multiple entities', () => {
+                editor.levelEntities = [
+                    { id: 1, components: { transform: { position: { x: 0, y: 0, z: 0 } } } },
+                    { id: 2, components: { transform: { position: { x: 10, y: 0, z: 10 } } } }
+                ];
+                editor.selectedEntities = [1, 2];
+                const center = editor.calculateMultiSelectCenter();
+                expect(center).toEqual({ x: 5, y: 0, z: 5 });
+            });
+
+            it('should handle three entities correctly', () => {
+                editor.levelEntities = [
+                    { id: 1, components: { transform: { position: { x: 0, y: 0, z: 0 } } } },
+                    { id: 2, components: { transform: { position: { x: 10, y: 3, z: 10 } } } },
+                    { id: 3, components: { transform: { position: { x: 20, y: 6, z: 20 } } } }
+                ];
+                editor.selectedEntities = [1, 2, 3];
+                const center = editor.calculateMultiSelectCenter();
+                expect(center).toEqual({ x: 10, y: 3, z: 10 });
+            });
+        });
+
+        describe('calculateMultiSelectOffsets', () => {
+            it('should calculate offsets from center for each entity', () => {
+                editor.levelEntities = [
+                    { id: 1, components: { transform: { position: { x: 0, y: 0, z: 0 } } } },
+                    { id: 2, components: { transform: { position: { x: 10, y: 0, z: 10 } } } }
+                ];
+                editor.selectedEntities = [1, 2];
+                editor.calculateMultiSelectOffsets();
+
+                expect(editor.multiSelectCenter).toEqual({ x: 5, y: 0, z: 5 });
+                expect(editor.multiSelectOffsets.get(1)).toEqual({ x: -5, y: 0, z: -5 });
+                expect(editor.multiSelectOffsets.get(2)).toEqual({ x: 5, y: 0, z: 5 });
+            });
+
+            it('should clear previous offsets', () => {
+                editor.multiSelectOffsets.set(99, { x: 1, y: 1, z: 1 });
+                editor.levelEntities = [
+                    { id: 1, components: { transform: { position: { x: 0, y: 0, z: 0 } } } }
+                ];
+                editor.selectedEntities = [1];
+                editor.calculateMultiSelectOffsets();
+
+                expect(editor.multiSelectOffsets.has(99)).toBe(false);
+                expect(editor.multiSelectOffsets.size).toBe(1);
+            });
+        });
+
+        describe('getCommonValueForSelectedEntities', () => {
+            beforeEach(() => {
+                editor.levelEntities = [
+                    { id: 1, collection: 'units', spawnType: 'archer', components: { transform: { position: { x: 10, y: 0, z: 0 } } } },
+                    { id: 2, collection: 'units', spawnType: 'archer', components: { transform: { position: { x: 20, y: 0, z: 0 } } } }
+                ];
+                editor.selectedEntities = [1, 2];
+            });
+
+            it('should return common value when all entities match', () => {
+                expect(editor.getCommonValueForSelectedEntities('collection')).toBe('units');
+                expect(editor.getCommonValueForSelectedEntities('spawnType')).toBe('archer');
+            });
+
+            it('should return "--" when values differ', () => {
+                editor.levelEntities[1].spawnType = 'knight';
+                expect(editor.getCommonValueForSelectedEntities('spawnType')).toBe('--');
+            });
+
+            it('should return "--" for differing position values', () => {
+                expect(editor.getCommonValueForSelectedEntities('position.x')).toBe('--');
+            });
+
+            it('should return common position value when matching', () => {
+                editor.levelEntities[1].components.transform.position.x = 10;
+                expect(editor.getCommonValueForSelectedEntities('position.x')).toBe(10);
+            });
+
+            it('should return "--" when no entities selected', () => {
+                editor.selectedEntities = [];
+                expect(editor.getCommonValueForSelectedEntities('collection')).toBe('--');
+            });
+        });
+
+        describe('removeSelectedEntity (multi-select)', () => {
+            beforeEach(() => {
+                editor.levelEntities = [
+                    { id: 1, collection: 'units', spawnType: 'archer' },
+                    { id: 2, collection: 'units', spawnType: 'knight' },
+                    { id: 3, collection: 'units', spawnType: 'mage' }
+                ];
+                editor.selectedEntities = [1, 2];
+                editor.editorContext.removeEntity = vi.fn();
+                editor.updateEntityHierarchy = vi.fn();
+                editor.deselectEntity = vi.fn();
+            });
+
+            it('should remove all selected entities from levelEntities', () => {
+                editor.removeSelectedEntity();
+                expect(editor.levelEntities.length).toBe(1);
+                expect(editor.levelEntities[0].id).toBe(3);
+            });
+
+            it('should call removeEntity for each selected entity', () => {
+                editor.removeSelectedEntity();
+                expect(editor.editorContext.removeEntity).toHaveBeenCalledWith(1);
+                expect(editor.editorContext.removeEntity).toHaveBeenCalledWith(2);
+                expect(editor.editorContext.removeEntity).toHaveBeenCalledTimes(2);
+            });
+
+            it('should call deselectEntity after removal', () => {
+                editor.removeSelectedEntity();
+                expect(editor.deselectEntity).toHaveBeenCalled();
+            });
+
+            it('should call updateEntityHierarchy after removal', () => {
+                editor.removeSelectedEntity();
+                expect(editor.updateEntityHierarchy).toHaveBeenCalled();
+            });
+
+            it('should handle single entity selection', () => {
+                editor.selectedEntities = [];
+                editor.selectedEntityId = 3;
+                editor.removeSelectedEntity();
+                expect(editor.levelEntities.length).toBe(2);
+                expect(editor.editorContext.removeEntity).toHaveBeenCalledWith(3);
+            });
+
+            it('should do nothing when no entities selected', () => {
+                editor.selectedEntities = [];
+                editor.selectedEntityId = null;
+                editor.removeSelectedEntity();
+                expect(editor.levelEntities.length).toBe(3);
+                expect(editor.editorContext.removeEntity).not.toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe('SelectedUnitSystem integration', () => {
+        let selectionEditor;
+        let mockEditorContext;
+        let registeredServices;
+        let eventListeners;
+
+        beforeEach(() => {
+            registeredServices = {};
+            eventListeners = {};
+
+            mockEditorContext = {
+                hasService: vi.fn((name) => name === 'configureSelectionSystem'),
+                call: vi.fn((serviceName, ...args) => {
+                    if (registeredServices[serviceName]) {
+                        return registeredServices[serviceName](...args);
+                    }
+                    return null;
+                }),
+                register: vi.fn((name, fn) => {
+                    registeredServices[name] = fn;
+                }),
+                on: vi.fn((event, callback) => {
+                    if (!eventListeners[event]) {
+                        eventListeners[event] = [];
+                    }
+                    eventListeners[event].push(callback);
+                })
+            };
+
+            // Create a minimal editor with selection system support
+            const proto = GUTS.TerrainMapEditor.prototype;
+            selectionEditor = {
+                editorContext: mockEditorContext,
+                raycastHelper: {
+                    getWorldPositionFromMouse: vi.fn(() => ({ x: 100, y: 0, z: 100 }))
+                },
+                worldRenderer: {
+                    getGroundMesh: vi.fn(() => ({}))
+                },
+                mouseNDC: { x: 0.5, y: 0.5 },
+                selectedEntityId: null,
+                selectedEntities: [],
+                selectedLevelEntity: null,
+                levelEntities: [],
+                multiSelectOffsets: new Map(),
+                multiSelectCenter: null,
+                gizmoManager: { detach: vi.fn() },
+                attachGizmoToEntity: vi.fn(),
+                updateInspector: vi.fn(),
+                updateHierarchy: vi.fn(),
+                calculateMultiSelectOffsets: vi.fn()
+            };
+
+            // Bind methods from prototype
+            selectionEditor.setupSelectionSystem = proto.setupSelectionSystem.bind(selectionEditor);
+            selectionEditor.onSelectionSystemUnitSelected = proto.onSelectionSystemUnitSelected.bind(selectionEditor);
+            selectionEditor.onSelectionSystemMultipleUnitsSelected = proto.onSelectionSystemMultipleUnitsSelected.bind(selectionEditor);
+            selectionEditor.onSelectionSystemDeselect = proto.onSelectionSystemDeselect.bind(selectionEditor);
+        });
+
+        describe('setupSelectionSystem', () => {
+            it('should register getWorldPositionFromMouse service', () => {
+                selectionEditor.setupSelectionSystem();
+
+                expect(mockEditorContext.register).toHaveBeenCalledWith(
+                    'getWorldPositionFromMouse',
+                    expect.any(Function)
+                );
+            });
+
+            it('should configure selection system for editor mode', () => {
+                selectionEditor.setupSelectionSystem();
+
+                expect(mockEditorContext.call).toHaveBeenCalledWith('configureSelectionSystem', {
+                    enableTeamFilter: false,
+                    excludeCollections: [],
+                    includeCollections: null,
+                    prioritizeUnitsOverBuildings: false,
+                    showGameUI: false
+                });
+            });
+
+            it('should wire up onUnitSelected event', () => {
+                selectionEditor.setupSelectionSystem();
+
+                expect(mockEditorContext.on).toHaveBeenCalledWith(
+                    'onUnitSelected',
+                    expect.any(Function)
+                );
+            });
+
+            it('should wire up onMultipleUnitsSelected event', () => {
+                selectionEditor.setupSelectionSystem();
+
+                expect(mockEditorContext.on).toHaveBeenCalledWith(
+                    'onMultipleUnitsSelected',
+                    expect.any(Function)
+                );
+            });
+
+            it('should wire up onDeSelectAll event', () => {
+                selectionEditor.setupSelectionSystem();
+
+                expect(mockEditorContext.on).toHaveBeenCalledWith(
+                    'onDeSelectAll',
+                    expect.any(Function)
+                );
+            });
+
+            it('should not throw when SelectedUnitSystem not available', () => {
+                mockEditorContext.hasService = vi.fn(() => false);
+                expect(() => selectionEditor.setupSelectionSystem()).not.toThrow();
+            });
+        });
+
+        describe('getWorldPositionFromMouse service', () => {
+            it('should return world position from raycast helper', () => {
+                selectionEditor.setupSelectionSystem();
+
+                // Get the registered service
+                const getWorldPos = registeredServices['getWorldPositionFromMouse'];
+                expect(getWorldPos).toBeDefined();
+
+                const result = getWorldPos();
+                expect(result).toEqual({ x: 100, y: 0, z: 100 });
+                expect(selectionEditor.raycastHelper.getWorldPositionFromMouse).toHaveBeenCalledWith(
+                    0.5, 0.5, 0, expect.any(Object)
+                );
+            });
+
+            it('should return null when raycastHelper not available', () => {
+                selectionEditor.raycastHelper = null;
+                selectionEditor.setupSelectionSystem();
+
+                const getWorldPos = registeredServices['getWorldPositionFromMouse'];
+                expect(getWorldPos()).toBeNull();
+            });
+
+            it('should return null when worldRenderer not available', () => {
+                selectionEditor.worldRenderer = null;
+                selectionEditor.setupSelectionSystem();
+
+                const getWorldPos = registeredServices['getWorldPositionFromMouse'];
+                expect(getWorldPos()).toBeNull();
+            });
+        });
+
+        describe('selection event handlers', () => {
+            beforeEach(() => {
+                selectionEditor.levelEntities = [
+                    { id: 1, collection: 'units', spawnType: 'archer' },
+                    { id: 2, collection: 'units', spawnType: 'knight' }
+                ];
+                selectionEditor.setupSelectionSystem();
+            });
+
+            it('should update selection state on single unit selected', () => {
+                // Trigger the event
+                const onUnitSelected = eventListeners['onUnitSelected'][0];
+                onUnitSelected(1);
+
+                expect(selectionEditor.selectedEntityId).toBe(1);
+                expect(selectionEditor.selectedEntities).toEqual([1]);
+                expect(selectionEditor.attachGizmoToEntity).toHaveBeenCalledWith(1);
+                expect(selectionEditor.updateInspector).toHaveBeenCalled();
+                expect(selectionEditor.updateHierarchy).toHaveBeenCalled();
+            });
+
+            it('should update selection state on multiple units selected', () => {
+                const unitIds = new Set([1, 2]);
+
+                // Trigger the event
+                const onMultipleUnitsSelected = eventListeners['onMultipleUnitsSelected'][0];
+                onMultipleUnitsSelected(unitIds);
+
+                expect(selectionEditor.selectedEntities).toEqual([1, 2]);
+                expect(selectionEditor.selectedEntityId).toBe(1);
+                expect(selectionEditor.calculateMultiSelectOffsets).toHaveBeenCalled();
+                expect(selectionEditor.updateInspector).toHaveBeenCalled();
+                expect(selectionEditor.updateHierarchy).toHaveBeenCalled();
+            });
+
+            it('should clear selection state on deselect all', () => {
+                // Set initial selection
+                selectionEditor.selectedEntityId = 1;
+                selectionEditor.selectedEntities = [1, 2];
+                selectionEditor.selectedLevelEntity = { id: 1 };
+
+                // Trigger the event
+                const onDeSelectAll = eventListeners['onDeSelectAll'][0];
+                onDeSelectAll();
+
+                expect(selectionEditor.selectedEntityId).toBeNull();
+                expect(selectionEditor.selectedLevelEntity).toBeNull();
+                expect(selectionEditor.selectedEntities).toEqual([]);
+                expect(selectionEditor.gizmoManager.detach).toHaveBeenCalled();
+                expect(selectionEditor.updateInspector).toHaveBeenCalled();
+                expect(selectionEditor.updateHierarchy).toHaveBeenCalled();
+            });
+
+            it('should find levelEntity for selected entityId', () => {
+                const onUnitSelected = eventListeners['onUnitSelected'][0];
+                onUnitSelected(1);
+
+                expect(selectionEditor.selectedLevelEntity).toEqual(
+                    { id: 1, collection: 'units', spawnType: 'archer' }
+                );
+            });
         });
     });
 });

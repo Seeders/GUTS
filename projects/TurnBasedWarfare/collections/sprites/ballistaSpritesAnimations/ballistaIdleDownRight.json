@@ -1,0 +1,9 @@
+{
+  "title": "ballista Idle Down Right",
+  "spriteCollection": "ballistaSprites",
+  "sprites": [
+    "ballistaIdleDownRight_0",
+    "ballistaIdleDownRight_1"
+  ],
+  "fps": 4
+}

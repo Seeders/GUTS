@@ -1,0 +1,44 @@
+{
+  "title": "Ballista_bolt",
+  "damageType": "physical",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "model": "ballista_bolt"
+          }
+        ]
+      }
+    }
+  },
+  "speed": 600,
+  "attackSound": "",
+  "hitSound": "",
+  "homing": false,
+  "homingStrength": 0,
+  "ballistic": true,
+  "sticksInGround": true,
+  "stickDuration": 3,
+  "spriteAnimationSet": "ballistabolt"
+}

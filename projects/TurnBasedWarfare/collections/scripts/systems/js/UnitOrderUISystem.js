@@ -301,14 +301,23 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         }
     }
 
-    onUnitSelected(entityId) {
+    onMultipleUnitsSelected(unitIds) {
+        // Get the first selected entity to display its action panel
+        const entityId = unitIds.size > 0 ? Array.from(unitIds)[0] : null;
+        if (!entityId) {
+            this.stopTargeting();
+            return;
+        }
+
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
         const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
         if (unitType && unitType.collection === "units") {
             const placement = this.game.getComponent(entityId, "placement");
-            const placementId = placement.placementId;
-            this.showSquadActionPanel(placementId);
-            this.startTargeting();
+            const placementId = placement?.placementId;
+            if (placementId) {
+                this.showSquadActionPanel(placementId);
+                this.startTargeting();
+            }
         } else {
             this.stopTargeting();
         }

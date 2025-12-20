@@ -1,0 +1,9 @@
+{
+  "title": "ballista Celebrate Up Left",
+  "spriteCollection": "ballistaSprites",
+  "sprites": [
+    "ballistaCelebrateUpLeft_0",
+    "ballistaCelebrateUpLeft_1"
+  ],
+  "fps": 4
+}

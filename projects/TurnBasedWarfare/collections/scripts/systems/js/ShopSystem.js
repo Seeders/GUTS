@@ -160,14 +160,18 @@ class ShopSystem extends GUTS.BaseSystem {
     refreshShopUI() {
         const entityId = this.game.state.selectedEntity?.entityId;
         if (entityId) {
-            this.onUnitSelected(entityId);
+            this.onMultipleUnitsSelected(new Set([entityId]));
         }
     }
 
-    onUnitSelected(entityId){
+    onMultipleUnitsSelected(unitIds) {
+        // Get the first selected entity to display its action panel
+        const entityId = unitIds.size > 0 ? Array.from(unitIds)[0] : null;
+        if (!entityId) return;
+
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
         const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
-        if(unitType && unitType.collection === "buildings") {
+        if (unitType && unitType.collection === "buildings") {
             const placement = this.game.getComponent(entityId, "placement");
             this.renderBuildingActions(placement);
         }

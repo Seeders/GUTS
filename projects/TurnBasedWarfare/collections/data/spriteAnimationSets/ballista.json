@@ -1,0 +1,68 @@
+{
+  "title": "Ballista",
+  "animationCollection": "ballistaSpritesAnimations",
+  "spriteSheet": "sprites/ballistaSprites/ballistaSheet.png",
+  "idleSpriteAnimations": [
+    "ballistaIdleDown",
+    "ballistaIdleDownLeft",
+    "ballistaIdleLeft",
+    "ballistaIdleUpLeft",
+    "ballistaIdleUp",
+    "ballistaIdleUpRight",
+    "ballistaIdleRight",
+    "ballistaIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "ballistaWalkDown",
+    "ballistaWalkDownLeft",
+    "ballistaWalkLeft",
+    "ballistaWalkUpLeft",
+    "ballistaWalkUp",
+    "ballistaWalkUpRight",
+    "ballistaWalkRight",
+    "ballistaWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "ballistaAttackDown",
+    "ballistaAttackDownLeft",
+    "ballistaAttackLeft",
+    "ballistaAttackUpLeft",
+    "ballistaAttackUp",
+    "ballistaAttackUpRight",
+    "ballistaAttackRight",
+    "ballistaAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "ballistaDeathDown",
+    "ballistaDeathDownLeft",
+    "ballistaDeathLeft",
+    "ballistaDeathUpLeft",
+    "ballistaDeathUp",
+    "ballistaDeathUpRight",
+    "ballistaDeathRight",
+    "ballistaDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "ballistaCelebrateDown",
+    "ballistaCelebrateDownLeft",
+    "ballistaCelebrateLeft",
+    "ballistaCelebrateUpLeft",
+    "ballistaCelebrateUp",
+    "ballistaCelebrateUpRight",
+    "ballistaCelebrateRight",
+    "ballistaCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 192,
+    "cameraDistance": 100,
+    "spriteSize": 96,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2
+  },
+  "spriteOffset": 20
+}

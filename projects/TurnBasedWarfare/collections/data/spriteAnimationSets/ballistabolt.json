@@ -1,0 +1,27 @@
+{
+  "title": "Ballistabolt",
+  "animationCollection": "ballistaboltSpritesAnimations",
+  "spriteSheet": "sprites/ballistaboltSprites/ballistaboltSheet.png",
+  "idleSpriteAnimations": [
+    "ballistaboltIdleDown",
+    "ballistaboltIdleDownLeft",
+    "ballistaboltIdleLeft",
+    "ballistaboltIdleUpLeft",
+    "ballistaboltIdleUp",
+    "ballistaboltIdleUpRight",
+    "ballistaboltIdleRight",
+    "ballistaboltIdleDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#000000",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1
+  }
+}

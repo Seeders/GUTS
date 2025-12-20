@@ -1,7 +1,10 @@
 class SelectedUnitSystem extends GUTS.BaseSystem {
     static services = [
         'getSelectedSquads',
-        'deselectAllUnits'
+        'deselectAllUnits',
+        'selectEntity',
+        'selectMultipleEntities',
+        'configureSelectionSystem'
     ];
 
     constructor(game) {
@@ -9,8 +12,17 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         this.game.selectedUnitSystem = this;
         this.canvas = this.game.canvas;
 
-        // Editor mode flag - skip game-specific UI features
-        this.isEditorMode = this.game.isEditor || false;
+        // Selection configuration - can be overridden via configure()
+        // Defaults are for game mode; terrain editor will override
+        this.config = {
+            enableTeamFilter: true,                     // Only select player's team
+            excludeCollections: ['worldObjects'],       // Collections to exclude
+            includeCollections: null,                   // null = allow all (minus excludes)
+            showSelectionIndicators: true,
+            prioritizeUnitsOverBuildings: true,         // In box selection, return only units if any found
+            showGameUI: true,                           // Show game-specific UI (portrait, action panel)
+            camera: null                                // Optional camera override (uses game.camera if null)
+        };
 
         // Selection circle configuration
         this.CIRCLE_RADIUS = 25;
@@ -46,9 +58,128 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     init() {
     }
 
+    /**
+     * Configure the selection system behavior
+     * Call this after the system is instantiated to override defaults
+     * @param {Object} options - Configuration options
+     */
+    configure(options = {}) {
+        this.config = { ...this.config, ...options };
+        if (options.circleColor !== undefined) {
+            this.CIRCLE_COLOR = options.circleColor;
+        }
+    }
+
+    /**
+     * Determine the collection for an entity by checking marker components
+     * @param {number} entityId - The entity ID
+     * @returns {string|null} The collection name or null
+     */
+    getEntityCollection(entityId) {
+        // Check marker components first (most reliable)
+        const hasWorldObject = this.game.getComponent(entityId, 'worldObject');
+        if (hasWorldObject !== undefined && hasWorldObject !== null) {
+            return 'worldObjects';
+        }
+
+        const hasBuilding = this.game.getComponent(entityId, 'building');
+        if (hasBuilding !== undefined && hasBuilding !== null) {
+            return 'buildings';
+        }
+
+        const hasUnit = this.game.getComponent(entityId, 'unit');
+        if (hasUnit !== undefined && hasUnit !== null) {
+            return 'units';
+        }
+
+        // Fallback: check unitType component
+        const unitTypeComp = this.game.getComponent(entityId, "unitType");
+        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        if (unitType?.collection) {
+            return unitType.collection;
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if an entity's collection is selectable based on config
+     * @param {string|null} collection - The collection name (null if entity has no marker component)
+     * @returns {boolean} True if selectable
+     */
+    isEntitySelectableByCollection(collection) {
+        // If collection is null (entity has no marker), allow it only if no filters are set
+        if (collection === null) {
+            const hasExcludes = this.config.excludeCollections?.length > 0;
+            const hasIncludes = this.config.includeCollections?.length > 0;
+            // If no filters are configured, allow entities without markers
+            return !hasExcludes && !hasIncludes;
+        }
+
+        // Exclude takes precedence
+        if (this.config.excludeCollections?.includes(collection)) {
+            return false;
+        }
+
+        // If include list specified, only those collections are allowed
+        if (this.config.includeCollections && this.config.includeCollections.length > 0) {
+            return this.config.includeCollections.includes(collection);
+        }
+
+        return true;
+    }
+
     // Alias for service name
     deselectAllUnits() {
         return this.deselectAll();
+    }
+
+    /**
+     * Service method to select a single entity
+     * Clears existing selection and selects the specified entity
+     */
+    selectEntity(entityId) {
+        this.deselectAll();
+        if (entityId) {
+            this.selectedUnitIds.add(entityId);
+            this.selectEntityDirectly(entityId);
+        }
+    }
+
+    /**
+     * Service method to select multiple entities
+     * Clears existing selection and selects all specified entities
+     * @param {Array|Set} entityIds - Array or Set of entity IDs to select
+     */
+    selectMultipleEntities(entityIds) {
+        this.deselectAll();
+
+        const ids = Array.isArray(entityIds) ? entityIds : Array.from(entityIds);
+        if (!ids || ids.length === 0) return;
+
+        // Add all entities to selection
+        for (const entityId of ids) {
+            this.selectedUnitIds.add(entityId);
+        }
+
+        // Set the first entity as the "current" selected entity
+        this.currentSelectedIndex = 0;
+        const primaryId = ids[0];
+        this.setSelectedEntity(primaryId);
+
+        // Create selection circles for all selected entities
+        this.highlightUnits(ids);
+
+        // Single event pipeline - always use onMultipleUnitsSelected for all selection cases
+        this.game.triggerEvent("onMultipleUnitsSelected", this.selectedUnitIds);
+    }
+
+    /**
+     * Service method to configure selection system behavior
+     * Alias for configure() to expose as a service
+     */
+    configureSelectionSystem(options) {
+        return this.configure(options);
     }
 
     initialize() {
@@ -58,8 +189,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         this.setupBoxSelectionListeners();
         this.createBoxSelectionElement();
 
-        // Skip game-specific UI setup in editor mode
-        if (this.isEditorMode) return;
+        // Skip game-specific UI setup when showGameUI is disabled
+        if (!this.config.showGameUI) return;
 
         const unitPortrait = document.getElementById('unitPortrait');
         if(unitPortrait){
@@ -78,7 +209,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
     
     onUnFollowEntity(){
-        if (this.isEditorMode) return;
+        if (!this.config.showGameUI) return;
         const unitPortrait = document.getElementById('unitPortrait');
         if (unitPortrait) {
             unitPortrait.classList.remove('following');
@@ -121,14 +252,14 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         this.canvas.addEventListener('mousedown', (event) => {
             // Only left click, and not clicking on UI elements
             if (event.button !== 0) return;
-            
+
             const rect = this.canvas.getBoundingClientRect();
             this.boxSelection.startX = event.clientX;
             this.boxSelection.startY = event.clientY;
             this.boxSelection.currentX = event.clientX;
             this.boxSelection.currentY = event.clientY;
             this.boxSelection.active = true;
-            
+
             // Don't show box immediately - wait for drag
         });
         
@@ -221,13 +352,13 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         
     completeBoxSelection(event) {
         const box = this.boxSelection;
-        
+
         // Get box boundaries in screen space (client coordinates)
         const left = Math.min(box.startX, box.currentX);
         const right = Math.max(box.startX, box.currentX);
         const top = Math.min(box.startY, box.currentY);
         const bottom = Math.max(box.startY, box.currentY);
-        
+
         // Find all units within the selection box
         const selectedUnits = this.getUnitsInScreenBox(left, top, right, bottom);
         
@@ -259,38 +390,33 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const entities = this.game.getEntitiesWith("transform");
 
         entities.forEach(entityId => {
-            // In editor mode, select any entity with transform and unitType/renderable
-            // In game mode, only select units on player's team
-            if (!this.isEditorMode) {
+            // Apply team filter if enabled
+            if (this.config.enableTeamFilter) {
                 const team = this.game.getComponent(entityId, "team");
                 if (!team) return;
 
-                // Try multiple ways to check team
                 const unitTeam = team.team || team.side || team.teamId;
                 const myTeam = this.game.state.myTeam || this.game.state.playerSide || this.game.state.team;
 
-                if (unitTeam !== myTeam) {
-                    return;
-                }
+                if (unitTeam !== myTeam) return;
             }
 
             // Get position component
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
-            const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             const renderable = this.game.getComponent(entityId, "renderable");
 
-            // In editor mode, allow selection of any entity with position and renderable
+            // Must have position and be renderable
             if (!pos) return;
-            if (!unitType && !renderable) return;
+            if (!renderable) return;
 
-            // Skip world objects (environment objects from level data) in scene editor
-            // These should only be editable in terrain map editor
-            // Get collection name from unitType or renderable's objectType
-            const renderableCollection = renderable ? this.reverseEnums.objectTypeDefinitions?.[renderable.objectType] : null;
-            const collection = unitType?.collection || renderableCollection;
-            if (this.isEditorMode && collection === 'worldObjects') return;
+            // Use consistent collection detection via marker components
+            const collection = this.getEntityCollection(entityId);
+
+            // Apply collection filter
+            if (!this.isEntitySelectableByCollection(collection)) {
+                return;
+            }
 
             // Convert world position to screen position
             const screenPos = this.worldToScreen(pos.x, pos.y, pos.z);
@@ -301,9 +427,12 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             const screenY = screenPos.y * rect.height + rect.top;
 
             // Check if within selection box (in client coordinates)
-            if (screenX >= left && screenX <= right &&
-                screenY >= top && screenY <= bottom) {
-                if(collection == 'units'){
+            if (screenX >= left && screenX <= right && screenY >= top && screenY <= bottom) {
+                // When prioritizeUnitsOverBuildings is false, all entities go to selectedUnits
+                // When true (default), separate units from buildings to prioritize units
+                if (!this.config.prioritizeUnitsOverBuildings) {
+                    selectedUnits.push(entityId);
+                } else if (collection == 'units') {
                     selectedUnits.push(entityId);
                 } else {
                     selectedBuildings.push(entityId);
@@ -311,21 +440,37 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             }
         });
 
+        // When prioritizing, return units if any, otherwise buildings
+        // When not prioritizing, all entities are in selectedUnits
         return selectedUnits.length > 0 ? selectedUnits : selectedBuildings;
     }
+    /**
+     * Get the camera to use for projections
+     * Uses config.camera if provided, falls back to game.camera
+     */
+    getCamera() {
+        return this.config.camera || this.game.camera;
+    }
+
     worldToScreen(x, y, z) {
-        if (!this.game.camera || !this.game.canvas) return null;
-        
+        const camera = this.getCamera();
+        if (!camera || !this.game.canvas) return null;
+
         try {
+            // Ensure camera matrices are up to date before projection
+            // This is critical for perspective cameras where the matrices may not be auto-updated
+            camera.updateMatrixWorld();
+            camera.updateProjectionMatrix();
+
             // Create a 3D vector
             const vector = new THREE.Vector3(x, y, z);
-            
+
             // Project to screen space
-            vector.project(this.game.camera);
-            
+            vector.project(camera);
+
             // Check if behind camera
             if (vector.z > 1) return null;
-            
+
             // Convert to screen coordinates (0 to 1 range)
             // (0,0) is top-left, (1,1) is bottom-right
             return {
@@ -341,17 +486,14 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const placement = this.game.getComponent(entityId, "placement");
         return placement?.placementId || null;
     }
-    updateMultipleSquadSelection() {        
+    updateMultipleSquadSelection() {
         this.currentSelectedIndex = 0;
         const unitId = Array.from(this.selectedUnitIds)[this.currentSelectedIndex];
-    
-        this.setSelectedEntity(unitId);         
-        this.highlightUnits(Array.from(this.selectedUnitIds)); 
+
+        this.setSelectedEntity(unitId);
+        this.highlightUnits(Array.from(this.selectedUnitIds));
+        // Single event pipeline - always use onMultipleUnitsSelected for all selection cases
         this.game.triggerEvent("onMultipleUnitsSelected", this.selectedUnitIds);
-        if(this.selectedUnitIds.size > 0){
-            let unitId = Array.from(this.selectedUnitIds)[this.currentSelectedIndex];
-            this.game.triggerEvent("onUnitSelected", unitId);
-        }
     }
     
     
@@ -364,7 +506,6 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
     checkUnitSelectionClick(event) {
         const worldPos = this.game.call('getWorldPositionFromMouse');
-
         if (!worldPos) return;
 
         // Use direct entity selection based on team component (works for both editor and game mode)
@@ -392,8 +533,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
     /**
      * Get entity at world position
-     * In game mode, only returns entities on player's team
-     * In editor mode, returns any selectable entity
+     * Respects config.enableTeamFilter and config.excludeCollections/includeCollections
      */
     getEntityAtWorldPosition(worldPos) {
         const clickRadius = 50;
@@ -405,21 +545,18 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         entities.forEach(entityId => {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
-            const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             const renderable = this.game.getComponent(entityId, "renderable");
 
             // Must have position and be renderable
             if (!pos) return;
-            if (!unitType && !renderable) return;
+            if (!renderable) return;
 
-            // Skip world objects (environment objects from level data)
-            const renderableCollection = renderable ? this.reverseEnums.objectTypeDefinitions?.[renderable.objectType] : null;
-            const collection = unitType?.collection || renderableCollection;
-            if (collection === 'worldObjects') return;
+            // Get collection using marker components (may be null if entity has no marker)
+            const collection = this.getEntityCollection(entityId);
+            if (!this.isEntitySelectableByCollection(collection)) return;
 
-            // In game mode, only select units on player's team
-            if (!this.isEditorMode) {
+            // Apply team filter if enabled
+            if (this.config.enableTeamFilter) {
                 const team = this.game.getComponent(entityId, "team");
                 if (!team) return;
 
@@ -434,6 +571,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             let distance = Math.sqrt(dx * dx + dz * dz);
 
             // Adjust distance based on unit/building size
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
             const size = unitType?.size || 20;
             distance -= size;
 
@@ -454,7 +593,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
         this.setSelectedEntity(entityId);
         this.highlightUnits([entityId]);
-        this.game.triggerEvent("onUnitSelected", entityId);
+        // Single event pipeline - always use onMultipleUnitsSelected for all selection cases
+        this.game.triggerEvent("onMultipleUnitsSelected", this.selectedUnitIds);
     }
     
     deselectAll() {
@@ -466,8 +606,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             this.game.state.selectedEntity.collection = null;
         }
 
-        // Skip game UI updates in editor mode
-        if (!this.isEditorMode) {
+        // Update game UI when enabled
+        if (this.config.showGameUI) {
             const actionPanel = document.getElementById('actionPanel');
             if(actionPanel) {
                 actionPanel.innerHTML = "";
@@ -546,28 +686,34 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
     selectUnit(entityId, placementId) {
         if (!entityId) return;
-        
+
         const squadData = this.game.call('getSquadInfo', placementId);
-        
+
         if (squadData) {
             const placement = this.game.call('getPlacementById', placementId);
             squadData.unitIds = placement.squadUnits;
+
+            // Populate selectedUnitIds with the squad units
+            this.selectedUnitIds.clear();
+            if (placement.squadUnits) {
+                for (const unitId of placement.squadUnits) {
+                    this.selectedUnitIds.add(unitId);
+                }
+            } else {
+                this.selectedUnitIds.add(entityId);
+            }
+
             this.setSelectedEntity(entityId);
-            this.highlightUnits(placement.squadUnits);              
-            this.game.triggerEvent("onUnitSelected", entityId)
+            this.highlightUnits(placement.squadUnits);
+            // Single event pipeline - always use onMultipleUnitsSelected for all selection cases
+            this.game.triggerEvent("onMultipleUnitsSelected", this.selectedUnitIds);
         }
     }
 
     setSelectedEntity(entityId){
-        const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
-        const renderable = this.game.getComponent(entityId, "renderable");
-        // Convert renderable's objectType index to collection name
-        const renderableCollection = renderable ? this.reverseEnums.objectTypeDefinitions?.[renderable.objectType] : null;
-
         if (this.game.state.selectedEntity) {
             this.game.state.selectedEntity.entityId = entityId;
-            this.game.state.selectedEntity.collection = unitType?.collection || renderableCollection || null;
+            this.game.state.selectedEntity.collection = this.getEntityCollection(entityId);
         }
     }
 
@@ -596,6 +742,12 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             return;
         }
 
+        // Wait for scene before creating visual elements
+        if (!this.game.scene) {
+            console.warn('[SelectedUnitSystem] highlightUnits called before scene ready, deferring...');
+            return;
+        }
+
         // Convert to Set for easy comparison
         const newHighlightSet = new Set(unitIds);
 
@@ -613,8 +765,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Skip game UI updates in editor mode
-        if (!this.isEditorMode && document) {
+        // Update game UI when enabled
+        if (this.config.showGameUI && document) {
             const container = document.getElementById('unitPortrait');
             if (container) {
                 container.innerHTML = ``;
@@ -685,6 +837,12 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     createSelectionCircle(entityId) {
         // Don't create if already exists
         if (this.selectionCircles.has(entityId)) return;
+
+        // Need scene to add circles
+        if (!this.game.scene) {
+            console.warn('[SelectedUnitSystem] Cannot create selection circle - scene not available');
+            return;
+        }
 
         // Get entity position to determine size
         const transform = this.game.getComponent(entityId, "transform");

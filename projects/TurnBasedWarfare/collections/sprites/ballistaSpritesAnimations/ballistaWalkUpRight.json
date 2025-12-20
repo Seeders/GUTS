@@ -1,0 +1,12 @@
+{
+  "title": "ballista Walk Up Right",
+  "spriteCollection": "ballistaSprites",
+  "sprites": [
+    "ballistaWalkUpRight_0",
+    "ballistaWalkUpRight_1",
+    "ballistaWalkUpRight_2",
+    "ballistaWalkUpRight_3",
+    "ballistaWalkUpRight_4"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,12 @@
+{
+  "title": "ballista Attack Down Left",
+  "spriteCollection": "ballistaSprites",
+  "sprites": [
+    "ballistaAttackDownLeft_0",
+    "ballistaAttackDownLeft_1",
+    "ballistaAttackDownLeft_2",
+    "ballistaAttackDownLeft_3",
+    "ballistaAttackDownLeft_4"
+  ],
+  "fps": 4
+}

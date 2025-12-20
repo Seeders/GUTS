@@ -34,7 +34,8 @@
     "WorldSystem",
     "RenderSystem",
     "AnimationSystem",
-    "UnitCreationSystem"
+    "UnitCreationSystem",
+    "SelectedUnitSystem"
   ],
   "propertyName": "tileMap",
   "interface": "terrainEditor",

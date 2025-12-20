@@ -90,7 +90,27 @@ class PlacementUISystem extends GUTS.BaseSystem {
     }
 
     // Service alias methods
-    getWorldPositionFromMouse() {
+    /**
+     * Get world position from mouse. If screenX/screenY are provided, raycast at those
+     * screen coordinates. Otherwise return the cached mouseWorldPos.
+     * @param {number} [screenX] - Screen X coordinate (client coords)
+     * @param {number} [screenY] - Screen Y coordinate (client coords)
+     * @returns {Object|null} World position {x, y, z}
+     */
+    getWorldPositionFromMouse(screenX, screenY) {
+        // If screen coordinates provided, do a fresh raycast at that position
+        if (screenX !== undefined && screenY !== undefined) {
+            if (!this.raycastHelper || !this.canvas) return null;
+
+            // Convert screen (client) coords to NDC
+            const rect = this.canvas.getBoundingClientRect();
+            const ndcX = ((screenX - rect.left) / rect.width) * 2 - 1;
+            const ndcY = -((screenY - rect.top) / rect.height) * 2 + 1;
+
+            return this.rayCastGround(ndcX, ndcY);
+        }
+
+        // Otherwise return cached mouse position
         return this.mouseWorldPos;
     }
 
