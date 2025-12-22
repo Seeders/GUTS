@@ -1,0 +1,47 @@
+{
+  "name": "Archers vs Barbarians Multi-Round Battle",
+  "description": "Test scenario: Left team builds Fletcher's Hall and trains archers, Right team builds Barracks and trains barbarians. Respects production capacity (1 unit per building per round).",
+  "seed": 42,
+  "level": "level_1",
+  "startingGold": 500,
+  "instructions": [
+    {"_comment": "=== ROUND 1: Place production buildings ==="},
+
+    {"type": "PLACE_BUILDING", "team": "left", "buildingId": "fletchersHall", "x": 8, "z": 10},
+    {"type": "PLACE_BUILDING", "team": "right", "buildingId": "barracks", "x": 24, "z": 10},
+
+    {"_comment": "Submit placements to end round 1"},
+    {"type": "SUBMIT_PLACEMENT", "team": "left"},
+    {"type": "SUBMIT_PLACEMENT", "team": "right"},
+
+    {"_comment": "Wait for placement phase (buildings are now under construction)"},
+    {"type": "WAIT", "trigger": "phase", "phase": "placement"},
+
+    {"_comment": "=== ROUND 2: Buildings complete, train first units ==="},
+    {"_comment": "Note: PURCHASE_UNIT uses GameActionsInterface.purchaseUnit which respects production capacity"},
+
+    {"type": "PURCHASE_UNIT", "team": "left", "unitId": "1_d_archer", "buildingEntityId": "auto:fletchersHall:left"},
+    {"type": "PURCHASE_UNIT", "team": "right", "unitId": "1_s_barbarian", "buildingEntityId": "auto:barracks:right"},
+
+    {"type": "SUBMIT_PLACEMENT", "team": "left"},
+    {"type": "SUBMIT_PLACEMENT", "team": "right"},
+
+    {"type": "WAIT", "trigger": "phase", "phase": "placement"},
+
+    {"_comment": "=== ROUND 3: Train more units ==="},
+    {"type": "PURCHASE_UNIT", "team": "left", "unitId": "1_d_archer", "buildingEntityId": "auto:fletchersHall:left"},
+    {"type": "PURCHASE_UNIT", "team": "right", "unitId": "1_s_barbarian", "buildingEntityId": "auto:barracks:right"},
+
+    {"type": "SUBMIT_PLACEMENT", "team": "left"},
+    {"type": "SUBMIT_PLACEMENT", "team": "right"},
+
+    {"type": "WAIT", "trigger": "phase", "phase": "placement"},
+
+    {"_comment": "=== ROUND 4: Train final units ==="},
+    {"type": "PURCHASE_UNIT", "team": "left", "unitId": "1_d_archer", "buildingEntityId": "auto:fletchersHall:left"},
+    {"type": "PURCHASE_UNIT", "team": "right", "unitId": "1_s_barbarian", "buildingEntityId": "auto:barracks:right"},
+
+    {"_comment": "=== Start final battle ==="},
+    {"type": "START_BATTLE"}
+  ]
+}
