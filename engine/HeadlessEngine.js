@@ -14,6 +14,7 @@ import BaseEngine from './BaseEngine.js';
  * - Can step through ticks manually
  * - Can process instruction sequences
  * - No dependencies on DOM, Canvas, or Network
+ * - Uses GameActionsInterface for all game interactions (same as GUI)
  */
 export default class HeadlessEngine extends BaseEngine {
     constructor() {
@@ -46,6 +47,9 @@ export default class HeadlessEngine extends BaseEngine {
 
         // Auto-continue battles across rounds (enabled during simulation)
         this.autoContinueBattle = false;
+
+        // GameActionsInterface instance - initialized after game instance is created
+        this.actions = null;
     }
 
     async init(projectName) {
@@ -66,6 +70,13 @@ export default class HeadlessEngine extends BaseEngine {
         const loaderLibrary = config.appLoaderLibrary || 'HeadlessGameLoader';
         this.loader = new global.GUTS[loaderLibrary](this.gameInstance);
         await this.loader.load();
+
+        // Initialize GameActionsInterface for unified game interactions
+        if (global.GUTS.GameActionsInterface) {
+            this.actions = new global.GUTS.GameActionsInterface(this.gameInstance);
+        } else {
+            console.warn('[HeadlessEngine] GameActionsInterface not available');
+        }
 
         console.log('[HeadlessEngine] Initialized successfully');
     }
@@ -321,7 +332,31 @@ export default class HeadlessEngine extends BaseEngine {
                 break;
 
             case 'ISSUE_ORDER':
-                this.handleIssueOrder(instruction);
+                await this.handleIssueOrder(instruction);
+                break;
+
+            case 'BUILD_UNIT':
+                await this.handleBuildUnit(instruction);
+                break;
+
+            case 'BUILD_BUILDING':
+                await this.handleBuildBuilding(instruction);
+                break;
+
+            case 'READY_FOR_BATTLE':
+                await this.handleReadyForBattle(instruction);
+                break;
+
+            case 'SELECT_UNIT':
+                this.handleSelectUnit(instruction);
+                break;
+
+            case 'DESELECT_ALL':
+                this.handleDeselectAll(instruction);
+                break;
+
+            case 'PURCHASE_UPGRADE':
+                await this.handlePurchaseUpgrade(instruction);
                 break;
 
             default:
@@ -494,10 +529,10 @@ export default class HeadlessEngine extends BaseEngine {
 
     /**
      * Handle ISSUE_ORDER instruction
-     * Issues move/attack orders to units of a team
+     * Issues move/attack orders to units of a team using GameActionsInterface
      * @private
      */
-    handleIssueOrder(instruction) {
+    async handleIssueOrder(instruction) {
         const { team, targetX, targetY, orderType = 'move' } = instruction;
         const game = this.gameInstance;
         const enums = game.call('getEnums');
@@ -505,31 +540,29 @@ export default class HeadlessEngine extends BaseEngine {
         // Convert team name to enum if needed
         const teamEnum = typeof team === 'string' ? enums.team[team] : team;
 
-        // Convert grid coordinates to world coordinates
+        // Use GameActionsInterface if available
+        if (this.actions) {
+            return new Promise((resolve) => {
+                this.actions.issueMoveOrderToTeam(teamEnum, { x: targetX, z: targetY }, orderType, (success, result) => {
+                    if (!success) {
+                        console.warn(`[HeadlessEngine] ISSUE_ORDER: Failed - ${result?.error || 'Unknown error'}`);
+                    }
+                    resolve();
+                });
+            });
+        }
+
+        // Fallback: direct implementation
         const worldPos = game.hasService('placementGridToWorld')
             ? game.call('placementGridToWorld', targetX, targetY)
-            : { x: targetX * 10, y: 0, z: targetY * 10 }; // Fallback approximation
+            : { x: targetX * 10, y: 0, z: targetY * 10 };
 
-        const targetPosition = {
-            x: worldPos.x,
-            y: worldPos.y || 0,
-            z: worldPos.z
-        };
+        const targetPosition = { x: worldPos.x, y: worldPos.y || 0, z: worldPos.z };
+        const meta = { isMoveOrder: true, preventEnemiesInRangeCheck: orderType === 'attack' };
 
-
-        // isMoveOrder must be true for MoveBehaviorAction to process
-        // preventEnemiesInRangeCheck makes it a "force move" that ignores enemies in range
-        const meta = {
-            isMoveOrder: true,  // Always true for movement orders
-            preventEnemiesInRangeCheck: orderType === 'attack'  // Attack-move ignores enemies en route
-        };
-
-        // Get all placements for this team and issue orders via ClientNetworkSystem
         if (game.hasService('getPlacementsForSide')) {
             const placements = game.call('getPlacementsForSide', teamEnum);
-
             if (placements && placements.length > 0) {
-                // Collect placement IDs for units (not buildings)
                 const placementIds = [];
                 const targetPositions = [];
                 for (const placement of placements) {
@@ -542,28 +575,175 @@ export default class HeadlessEngine extends BaseEngine {
                 }
 
                 if (placementIds.length > 0 && game.hasService('setSquadTargets')) {
-                    // Use setSquadTargets to batch set orders through the proper network system
-                    game.call('setSquadTargets', {
-                        placementIds,
-                        targetPositions,
-                        meta
-                    }, (success, result) => {
-                        if (!success) {
-                            console.warn(`[HeadlessEngine] ISSUE_ORDER: Failed - ${result}`);
-                        }
-                    });
+                    game.call('setSquadTargets', { placementIds, targetPositions, meta }, () => {});
                 } else if (placementIds.length > 0) {
-                    // Fallback: direct call if setSquadTargets not available
                     for (const placementId of placementIds) {
                         game.call('applySquadTargetPosition', placementId, targetPosition, meta, game.state.now);
                     }
                 }
-            } else {
-                console.warn(`[HeadlessEngine] ISSUE_ORDER: No placements found for team ${team}`);
             }
-        } else {
-            console.warn('[HeadlessEngine] ISSUE_ORDER: getPlacementsForSide service not available');
         }
+    }
+
+    /**
+     * Handle BUILD_UNIT instruction
+     * Builds a unit from a building using GameActionsInterface (respects requirements, gold, supply)
+     * @private
+     */
+    async handleBuildUnit(instruction) {
+        const { unitType, team, buildingType, comment } = instruction;
+        const game = this.gameInstance;
+        const enums = game.call('getEnums');
+
+        // Convert team name to enum if needed
+        const teamEnum = typeof team === 'string' ? enums.team[team] : team;
+        const playerId = teamEnum === enums.team.left ? 0 : 1;
+
+        if (!this.actions) {
+            console.warn('[HeadlessEngine] BUILD_UNIT: GameActionsInterface not available');
+            return;
+        }
+
+        return new Promise((resolve) => {
+            if (buildingType) {
+                // Build from specific building type
+                const buildingEntityId = this.actions.findBuildingOfType(buildingType, teamEnum);
+                if (!buildingEntityId) {
+                    console.warn(`[HeadlessEngine] BUILD_UNIT: No ${buildingType} found for team ${team}`);
+                    resolve();
+                    return;
+                }
+                this.actions.buildUnit(buildingEntityId, unitType, teamEnum, playerId, (success, result) => {
+                    if (!success) {
+                        console.warn(`[HeadlessEngine] BUILD_UNIT: Failed - ${result?.error || 'Unknown error'}`);
+                    } else if (comment) {
+                        console.log(`[HeadlessEngine] BUILD_UNIT: ${comment}`);
+                    }
+                    resolve();
+                });
+            } else {
+                // Auto-find a building that can train this unit
+                this.actions.buildUnitAuto(unitType, teamEnum, playerId, (success, result) => {
+                    if (!success) {
+                        console.warn(`[HeadlessEngine] BUILD_UNIT: Failed - ${result?.error || 'Unknown error'}`);
+                    } else if (comment) {
+                        console.log(`[HeadlessEngine] BUILD_UNIT: ${comment}`);
+                    }
+                    resolve();
+                });
+            }
+        });
+    }
+
+    /**
+     * Handle BUILD_BUILDING instruction
+     * Builds a building using GameActionsInterface (respects requirements, gold)
+     * @private
+     */
+    async handleBuildBuilding(instruction) {
+        const { buildingType, team, x, y, comment } = instruction;
+        const game = this.gameInstance;
+        const enums = game.call('getEnums');
+
+        // Convert team name to enum if needed
+        const teamEnum = typeof team === 'string' ? enums.team[team] : team;
+        const playerId = teamEnum === enums.team.left ? 0 : 1;
+
+        if (!this.actions) {
+            console.warn('[HeadlessEngine] BUILD_BUILDING: GameActionsInterface not available');
+            return;
+        }
+
+        return new Promise((resolve) => {
+            if (x !== undefined && y !== undefined) {
+                // Build at specific position
+                const gridPosition = { x, z: y };
+                this.actions.buildBuilding(buildingType, gridPosition, teamEnum, playerId, null, (success, result) => {
+                    if (!success) {
+                        console.warn(`[HeadlessEngine] BUILD_BUILDING: Failed - ${result?.error || 'Unknown error'}`);
+                    } else if (comment) {
+                        console.log(`[HeadlessEngine] BUILD_BUILDING: ${comment}`);
+                    }
+                    resolve();
+                });
+            } else {
+                // Auto-find valid position
+                this.actions.buildBuildingAuto(buildingType, teamEnum, playerId, (success, result) => {
+                    if (!success) {
+                        console.warn(`[HeadlessEngine] BUILD_BUILDING: Failed - ${result?.error || 'Unknown error'}`);
+                    } else if (comment) {
+                        console.log(`[HeadlessEngine] BUILD_BUILDING: ${comment}`);
+                    }
+                    resolve();
+                });
+            }
+        });
+    }
+
+    /**
+     * Handle READY_FOR_BATTLE instruction
+     * Signals ready for battle using GameActionsInterface
+     * @private
+     */
+    async handleReadyForBattle(instruction) {
+        if (!this.actions) {
+            // Fallback to direct call
+            return this.handleStartBattle(instruction);
+        }
+
+        return new Promise((resolve) => {
+            this.actions.readyForBattle((success, result) => {
+                if (!success) {
+                    console.warn(`[HeadlessEngine] READY_FOR_BATTLE: Failed - ${result?.error || 'Unknown error'}`);
+                }
+                resolve();
+            });
+        });
+    }
+
+    /**
+     * Handle SELECT_UNIT instruction
+     * @private
+     */
+    handleSelectUnit(instruction) {
+        const { entityId } = instruction;
+        if (this.actions) {
+            this.actions.selectUnit(entityId);
+        }
+    }
+
+    /**
+     * Handle DESELECT_ALL instruction
+     * @private
+     */
+    handleDeselectAll(instruction) {
+        if (this.actions) {
+            this.actions.deselectAll();
+        }
+    }
+
+    /**
+     * Handle PURCHASE_UPGRADE instruction
+     * @private
+     */
+    async handlePurchaseUpgrade(instruction) {
+        const { upgradeId, comment } = instruction;
+
+        if (!this.actions) {
+            console.warn('[HeadlessEngine] PURCHASE_UPGRADE: GameActionsInterface not available');
+            return;
+        }
+
+        return new Promise((resolve) => {
+            this.actions.purchaseUpgrade(upgradeId, (success, result) => {
+                if (!success) {
+                    console.warn(`[HeadlessEngine] PURCHASE_UPGRADE: Failed - ${result?.error || 'Unknown error'}`);
+                } else if (comment) {
+                    console.log(`[HeadlessEngine] PURCHASE_UPGRADE: ${comment}`);
+                }
+                resolve();
+            });
+        });
     }
 
     /**

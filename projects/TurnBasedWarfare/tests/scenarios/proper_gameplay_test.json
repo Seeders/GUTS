@@ -1,0 +1,102 @@
+{
+  "name": "Proper Gameplay Test",
+  "description": "Tests that the simulation follows proper gameplay rules. Left team builds archers (requires Fletchers Hall), right team builds barbarians (requires Barracks). Both must build the required buildings first.",
+  "seed": 12345,
+  "level": "level_1",
+  "startingGold": 500,
+  "instructions": [
+    {
+      "type": "CALL_SERVICE",
+      "service": "setLocalGame",
+      "args": [true, 0],
+      "trigger": "immediate",
+      "comment": "Enable local game mode"
+    },
+    {
+      "type": "SET_END_CONDITION",
+      "condition": "unitKilled",
+      "comment": "End simulation when any unit dies"
+    },
+
+    {
+      "type": "BUILD_BUILDING",
+      "team": "left",
+      "buildingType": "fletchersHall",
+      "trigger": "immediate",
+      "comment": "Left team builds Fletchers Hall to train archers"
+    },
+    {
+      "type": "BUILD_BUILDING",
+      "team": "right",
+      "buildingType": "barracks",
+      "trigger": "immediate",
+      "comment": "Right team builds Barracks to train barbarians"
+    },
+
+    {
+      "type": "BUILD_UNIT",
+      "team": "left",
+      "unitType": "1_d_archer",
+      "trigger": "immediate",
+      "comment": "Left team trains an archer from Fletchers Hall"
+    },
+    {
+      "type": "BUILD_UNIT",
+      "team": "left",
+      "unitType": "1_d_archer",
+      "trigger": "immediate",
+      "comment": "Left team trains second archer"
+    },
+    {
+      "type": "BUILD_UNIT",
+      "team": "left",
+      "unitType": "1_d_archer",
+      "trigger": "immediate",
+      "comment": "Left team trains third archer"
+    },
+
+    {
+      "type": "BUILD_UNIT",
+      "team": "right",
+      "unitType": "1_s_barbarian",
+      "trigger": "immediate",
+      "comment": "Right team trains a barbarian from Barracks"
+    },
+    {
+      "type": "BUILD_UNIT",
+      "team": "right",
+      "unitType": "1_s_barbarian",
+      "trigger": "immediate",
+      "comment": "Right team trains second barbarian"
+    },
+    {
+      "type": "BUILD_UNIT",
+      "team": "right",
+      "unitType": "1_s_barbarian",
+      "trigger": "immediate",
+      "comment": "Right team trains third barbarian"
+    },
+
+    {
+      "type": "ISSUE_ORDER",
+      "team": "left",
+      "targetX": 64,
+      "targetY": 60,
+      "orderType": "attack",
+      "comment": "Order archers to attack-move toward center"
+    },
+    {
+      "type": "ISSUE_ORDER",
+      "team": "right",
+      "targetX": 64,
+      "targetY": 60,
+      "orderType": "attack",
+      "comment": "Order barbarians to attack-move toward center"
+    },
+
+    {
+      "type": "START_BATTLE",
+      "comment": "Start the battle - units will fight until one dies"
+    }
+  ]
+}
