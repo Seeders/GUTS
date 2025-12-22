@@ -26,6 +26,7 @@ class HeadlessSkirmishRunner {
         this.game = engine.gameInstance;
         this.config = null;
         this.isSetup = false;
+        this.actions = null; // GameActionsInterface instance
     }
 
     /**
@@ -94,6 +95,13 @@ class HeadlessSkirmishRunner {
         // Initialize game
         if (game.hasService('initializeGame')) {
             game.call('initializeGame', null);
+        }
+
+        // Create GameActionsInterface for all game interactions
+        if (global.GUTS.GameActionsInterface) {
+            this.actions = new global.GUTS.GameActionsInterface(game);
+        } else {
+            console.warn('[HeadlessSkirmishRunner] GameActionsInterface not found - direct service calls will be used');
         }
 
         this.isSetup = true;
@@ -203,40 +211,220 @@ class HeadlessSkirmishRunner {
     }
 
     /**
-     * Place a unit programmatically
+     * Place a building using GameActionsInterface
      * @param {string} team - Team name ('left' or 'right')
-     * @param {string} unitType - Unit type name
+     * @param {string} buildingId - Building type ID (e.g., 'fletchersHall')
      * @param {number} x - Grid X position
-     * @param {number} y - Grid Y position
-     * @param {Object} options - Additional options
-     * @returns {number|null} Entity ID or null if failed
+     * @param {number} z - Grid Z position
+     * @returns {Promise<Object>} Result with success status and placementId
      */
-    placeUnit(team, unitType, x, y, options = {}) {
-        const enums = this.game.call('getEnums');
-        const teamEnum = typeof team === 'string' ? enums.team[team] : team;
-
-        if (this.game.hasService('placeUnit')) {
-            return this.game.call('placeUnit', {
-                unitType,
-                team: teamEnum,
-                position: { x, y },
-                ...options
-            });
+    async placeBuilding(team, buildingId, x, z) {
+        if (!this.actions) {
+            throw new Error('GameActionsInterface not initialized');
         }
 
-        return null;
+        const enums = this.game.call('getEnums');
+        const collections = this.game.getCollections();
+        const teamEnum = typeof team === 'string' ? enums.team[team] : team;
+
+        const buildingDef = collections.buildings[buildingId];
+        if (!buildingDef) {
+            return { success: false, error: `Building ${buildingId} not found` };
+        }
+
+        // Check if can afford
+        if (!this.actions.canAffordCost(buildingDef.value)) {
+            return { success: false, error: `Cannot afford ${buildingId} (cost: ${buildingDef.value})` };
+        }
+
+        // Create unit type object with collection info
+        const unitType = { ...buildingDef, id: buildingId, collection: 'buildings' };
+
+        // Create network unit data
+        const gridPosition = { x, z };
+        const playerId = teamEnum === enums.team.left ? 0 : 1;
+        const networkUnitData = this.actions.createNetworkUnitData(gridPosition, unitType, teamEnum, playerId);
+
+        // Send placement request
+        return new Promise((resolve) => {
+            this.actions.sendPlacementRequest(networkUnitData, (success, response) => {
+                resolve({ success, ...response });
+            });
+        });
     }
 
     /**
-     * Start the battle phase
+     * Place a unit from a building using GameActionsInterface
+     * @param {string} team - Team name ('left' or 'right')
+     * @param {string} unitId - Unit type ID (e.g., 'archer')
+     * @param {string} fromBuildingPlacementId - Placement ID of the building to spawn from
+     * @returns {Promise<Object>} Result with success status
+     */
+    async placeUnit(team, unitId, fromBuildingPlacementId) {
+        if (!this.actions) {
+            throw new Error('GameActionsInterface not initialized');
+        }
+
+        const enums = this.game.call('getEnums');
+        const collections = this.game.getCollections();
+        const teamEnum = typeof team === 'string' ? enums.team[team] : team;
+
+        const unitDef = collections.units[unitId];
+        if (!unitDef) {
+            return { success: false, error: `Unit ${unitId} not found` };
+        }
+
+        // Check if can afford
+        if (!this.actions.canAffordCost(unitDef.value)) {
+            return { success: false, error: `Cannot afford ${unitId} (cost: ${unitDef.value})` };
+        }
+
+        // Check supply
+        if (!this.actions.canAffordSupply(teamEnum, unitDef)) {
+            return { success: false, error: `Not enough supply for ${unitId}` };
+        }
+
+        // Create unit type object
+        const unitType = { ...unitDef, id: unitId, collection: 'units' };
+
+        // Find spawn position near building
+        const spawnPos = this.actions.findBuildingSpawnPosition(fromBuildingPlacementId, unitType);
+        if (!spawnPos) {
+            return { success: false, error: `No valid spawn position near building` };
+        }
+
+        // Create network unit data
+        const playerId = teamEnum === enums.team.left ? 0 : 1;
+        const networkUnitData = this.actions.createNetworkUnitData(spawnPos, unitType, teamEnum, playerId);
+
+        // Send placement request
+        return new Promise((resolve) => {
+            this.actions.sendPlacementRequest(networkUnitData, (success, response) => {
+                resolve({ success, ...response });
+            });
+        });
+    }
+
+    /**
+     * Place a unit at a specific grid position (for units that don't need buildings)
+     * @param {string} team - Team name ('left' or 'right')
+     * @param {string} unitId - Unit type ID
+     * @param {number} x - Grid X position
+     * @param {number} z - Grid Z position
+     * @returns {Promise<Object>} Result with success status
+     */
+    async placeUnitAt(team, unitId, x, z) {
+        if (!this.actions) {
+            throw new Error('GameActionsInterface not initialized');
+        }
+
+        const enums = this.game.call('getEnums');
+        const collections = this.game.getCollections();
+        const teamEnum = typeof team === 'string' ? enums.team[team] : team;
+
+        const unitDef = collections.units[unitId];
+        if (!unitDef) {
+            return { success: false, error: `Unit ${unitId} not found` };
+        }
+
+        // Check if can afford
+        if (!this.actions.canAffordCost(unitDef.value)) {
+            return { success: false, error: `Cannot afford ${unitId} (cost: ${unitDef.value})` };
+        }
+
+        // Create unit type object
+        const unitType = { ...unitDef, id: unitId, collection: 'units' };
+        const gridPosition = { x, z };
+        const playerId = teamEnum === enums.team.left ? 0 : 1;
+
+        // Validate placement
+        const squadData = this.actions.getSquadData(unitType);
+        const cells = this.actions.getSquadCells(gridPosition, squadData);
+        if (!this.actions.isValidGridPlacement(cells, teamEnum)) {
+            return { success: false, error: `Invalid placement at (${x}, ${z})` };
+        }
+
+        // Create network unit data
+        const networkUnitData = this.actions.createNetworkUnitData(gridPosition, unitType, teamEnum, playerId);
+
+        // Send placement request
+        return new Promise((resolve) => {
+            this.actions.sendPlacementRequest(networkUnitData, (success, response) => {
+                resolve({ success, ...response });
+            });
+        });
+    }
+
+    /**
+     * Start the battle phase using GameActionsInterface
      */
     startBattle() {
-        if (this.game.hasService('startBattle')) {
+        if (this.actions) {
+            this.actions.startBattle();
+        } else if (this.game.hasService('startBattle')) {
             this.game.call('startBattle');
         } else {
             const enums = this.game.call('getEnums');
             this.game.state.phase = enums.gamePhase.battle;
         }
+    }
+
+    /**
+     * Toggle ready for battle (triggers battle start when both teams ready)
+     */
+    toggleReadyForBattle(callback) {
+        if (this.actions) {
+            this.actions.toggleReadyForBattle(callback);
+        } else if (this.game.hasService('toggleReadyForBattle')) {
+            this.game.call('toggleReadyForBattle', callback);
+        }
+    }
+
+    /**
+     * Issue a move order to squads
+     */
+    issueMoveOrder(placementIds, targetPosition, callback) {
+        if (this.actions) {
+            this.actions.issueMoveOrder(placementIds, targetPosition, callback);
+        }
+    }
+
+    /**
+     * Issue hold position order
+     */
+    holdPosition(placementIds, callback) {
+        if (this.actions) {
+            this.actions.holdPosition(placementIds, callback);
+        }
+    }
+
+    /**
+     * Get placements for a team
+     */
+    getPlacementsForTeam(team) {
+        const enums = this.game.call('getEnums');
+        const teamEnum = typeof team === 'string' ? enums.team[team] : team;
+
+        if (this.actions) {
+            return this.actions.getPlacementsForSide(teamEnum);
+        }
+        return [];
+    }
+
+    /**
+     * Check if a building has finished construction
+     */
+    isBuildingComplete(placementId) {
+        const placement = this.actions?.getPlacementById(placementId);
+        if (!placement) return false;
+
+        // Check if building entity has construction complete
+        if (placement.squadUnits?.length > 0) {
+            const buildingId = placement.squadUnits[0];
+            const construction = this.game.getComponent(buildingId, 'construction');
+            return !construction || construction.complete;
+        }
+        return false;
     }
 
     /**
