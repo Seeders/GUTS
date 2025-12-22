@@ -20,7 +20,15 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'sendPlacementRequest',
         // Local game mode services (set by SkirmishGameSystem or other local modes)
         'getLocalPlayerId',
-        'setLocalGame'
+        'setLocalGame',
+        // Local game handlers (for offline mode - delegates to BaseNetworkSystem process* methods)
+        'handleSubmitPlacement',
+        'handleSetSquadTarget',
+        'handleSetSquadTargets',
+        'handleCancelBuilding',
+        'handleUpgradeBuilding',
+        'handlePurchaseUpgrade',
+        'handleReadyForBattle'
     ];
 
     constructor(game) {
@@ -52,6 +60,85 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     setLocalGame(isLocal, playerId = 0) {
         this.game.state.isLocalGame = isLocal;
         this._localPlayerId = playerId;
+    }
+
+    // ==================== LOCAL GAME HANDLERS ====================
+    // These handlers are used in offline mode (isLocalGame=true)
+    // They delegate to the process* methods inherited from BaseNetworkSystem
+
+    handleSubmitPlacement(eventData, callback) {
+        const { playerId, numericPlayerId, data } = eventData;
+        const { placement } = data;
+
+        const playerStats = this.game.call('getPlayerStats', playerId);
+        if (!playerStats) {
+            callback({ success: false, error: 'Player not found' });
+            return;
+        }
+
+        const result = this.processPlacement(playerId, numericPlayerId, playerStats, placement, null);
+        callback(result);
+    }
+
+    handleSetSquadTarget(eventData, callback) {
+        const { data } = eventData;
+        const { placementId, targetPosition, meta } = data;
+        const result = this.processSquadTarget(placementId, targetPosition, meta, this.game.state.now);
+        callback(result);
+    }
+
+    handleSetSquadTargets(eventData, callback) {
+        const { data } = eventData;
+        const { placementIds, targetPositions, meta } = data;
+        const result = this.processSquadTargets(placementIds, targetPositions, meta, this.game.state.now);
+        callback(result);
+    }
+
+    handleCancelBuilding(eventData, callback) {
+        const { numericPlayerId, data } = eventData;
+        const { buildingEntityId } = data;
+        const result = this.processCancelBuilding(buildingEntityId, numericPlayerId);
+        callback(result);
+    }
+
+    handleUpgradeBuilding(eventData, callback) {
+        const { playerId, numericPlayerId, data } = eventData;
+        const { buildingEntityId, placementId, targetBuildingId } = data;
+
+        const playerStats = this.game.call('getPlayerStats', playerId);
+        if (!playerStats) {
+            callback({ success: false, error: 'Player not found' });
+            return;
+        }
+
+        const result = this.processUpgradeBuilding(
+            playerId, numericPlayerId, playerStats,
+            buildingEntityId, placementId, targetBuildingId, null, null
+        );
+        callback(result);
+    }
+
+    handlePurchaseUpgrade(eventData, callback) {
+        const { playerId, data } = eventData;
+        const { upgradeId } = data.data || data;
+
+        const upgrade = this.collections.upgrades[upgradeId];
+        if (!upgrade) {
+            callback({ success: false, error: `Unknown upgrade: ${upgradeId}` });
+            return;
+        }
+
+        const result = this.processPurchaseUpgrade(playerId, upgradeId, upgrade);
+        callback(result);
+    }
+
+    handleReadyForBattle(eventData, callback) {
+        // In local game mode, just start battle immediately when both ready
+        // For now, toggle ready state and check if we should start
+        if (this.game.hasService('checkBattleStart')) {
+            this.game.call('checkBattleStart');
+        }
+        callback({ success: true });
     }
 
     /**

@@ -3,6 +3,7 @@
   "description": "Scene for running headless skirmish simulations without rendering",
   "systems": [
     "BaseNetworkSystem",
+    "ClientNetworkSystem",
     "ServerBattlePhaseSystem",
     "GridSystem",
     "TerrainSystem",
