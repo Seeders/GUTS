@@ -956,6 +956,205 @@ class EntryGenerator {
     }
 
     /**
+     * Generate headless entry point (using CommonJS to avoid ES6 import hoisting)
+     * Similar to server entry but configured for headless simulation
+     */
+    generateHeadlessEntry() {
+        const { headless } = this.buildConfig;
+
+        if (!headless) {
+            console.log('⚠️ No headless configuration found, skipping headless entry');
+            return null;
+        }
+
+        const sections = [];
+
+        // Header
+        sections.push(`/**
+ * GUTS Headless Simulation Bundle (CommonJS)
+ * Generated: ${new Date().toISOString()}
+ * Project: ${this.buildConfig.projectName}
+ *
+ * This bundle is designed for running headless game simulations
+ * without rendering, audio, or network dependencies.
+ */
+`);
+
+        // Setup globals FIRST
+        sections.push('// ========== SETUP GLOBALS ==========');
+        sections.push('if (!global.GUTS) global.GUTS = {};');
+        sections.push('if (!global.window) global.window = global;');
+        sections.push('');
+
+        // Require libraries (synchronous, happens in order)
+        if (headless.libraries.length > 0) {
+            sections.push('// ========== LIBRARIES ==========');
+            const { requires, exports } = this.generateCommonJSImports(headless.libraries, 'lib');
+            sections.push(...requires);
+            sections.push('');
+            sections.push('const Libraries = {');
+            sections.push(exports.join(',\n'));
+            sections.push('};');
+            sections.push('');
+        }
+
+        // Require systems
+        sections.push('// ========== SYSTEMS ==========');
+        if (headless.systems.length > 0) {
+            const { requires, exports } = this.generateCommonJSImports(headless.systems, 'sys');
+            sections.push(...requires);
+            sections.push('');
+            sections.push('const Systems = {');
+            sections.push(exports.join(',\n'));
+            sections.push('};');
+        } else {
+            sections.push('const Systems = {};');
+        }
+        sections.push('');
+
+        // Require class collections
+        const classCollectionVars = {};
+        if (headless.classCollections && Object.keys(headless.classCollections).length > 0) {
+            for (const [collectionName, classFiles] of Object.entries(headless.classCollections)) {
+                const capitalized = collectionName.charAt(0).toUpperCase() + collectionName.slice(1);
+                sections.push(`// ========== ${collectionName.toUpperCase()} ==========`);
+
+                const metadata = headless.classMetadata?.find(m => m.collection === collectionName);
+                let baseClassFile = null;
+                let otherFiles = classFiles;
+
+                if (metadata && metadata.baseClass) {
+                    const baseClassInLibraries = headless.libraries.some(lib =>
+                        lib.name === metadata.baseClass || lib.fileName === metadata.baseClass || lib.requireName === metadata.baseClass
+                    );
+
+                    if (!baseClassInLibraries) {
+                        baseClassFile = classFiles.find(f =>
+                            f.name === metadata.baseClass || f.fileName === metadata.baseClass
+                        );
+                        otherFiles = classFiles.filter(f =>
+                            f.name !== metadata.baseClass && f.fileName !== metadata.baseClass
+                        );
+
+                        if (baseClassFile) {
+                            const varName = `${collectionName.toLowerCase()}_${metadata.baseClass}`;
+                            const requirePath = baseClassFile.path.replace(/\\/g, '/');
+                            sections.push(`// Require ${metadata.baseClass} first so other ${collectionName} can extend from it`);
+                            sections.push(`const ${varName}_module = require('${requirePath}');`);
+                            sections.push(`const ${varName} = ${varName}_module.default || ${varName}_module.${metadata.baseClass} || ${varName}_module;`);
+                            sections.push(`global.GUTS.${metadata.baseClass} = ${varName};`);
+                            sections.push('');
+                        }
+                    } else {
+                        sections.push(`// ${metadata.baseClass} is already loaded from libraries`);
+                        sections.push('');
+                    }
+                }
+
+                const { requires, exports } = this.generateCommonJSImports(otherFiles, collectionName.toLowerCase());
+                sections.push(...requires);
+                sections.push('');
+
+                sections.push(`const ${capitalized} = {`);
+                if (baseClassFile && metadata) {
+                    const varName = `${collectionName.toLowerCase()}_${metadata.baseClass}`;
+                    sections.push(`  ${metadata.baseClass}: ${varName},`);
+                } else if (metadata && metadata.baseClass) {
+                    sections.push(`  ${metadata.baseClass}: global.GUTS.${metadata.baseClass},`);
+                }
+                sections.push(exports.join(',\n'));
+                sections.push('};');
+                sections.push('');
+
+                sections.push(`// Make all ${collectionName} available in global.GUTS`);
+                sections.push(`Object.assign(global.GUTS, ${capitalized});`);
+                sections.push('');
+
+                classCollectionVars[collectionName] = capitalized;
+            }
+        }
+
+        // Require data collections
+        const dataCollectionVars = {};
+        if (headless.dataCollections && Object.keys(headless.dataCollections).length > 0) {
+            sections.push('// ========== DATA COLLECTIONS ==========');
+
+            for (const [collectionName, collectionFiles] of Object.entries(headless.dataCollections)) {
+                const { dataFiles } = collectionFiles;
+                if (!dataFiles || dataFiles.length === 0) continue;
+
+                const dataVarName = `${collectionName}Data`;
+                sections.push(`// ${collectionName} data`);
+
+                dataFiles.forEach((file) => {
+                    const varName = `${collectionName}_json_${this.sanitizeVarName(file.fileName)}`;
+                    let requirePath = file.path.replace(/\\/g, '/');
+                    sections.push(`const ${varName} = require('${requirePath}');`);
+                });
+
+                sections.push(`const ${dataVarName} = {`);
+                dataFiles.forEach((file, index) => {
+                    const varName = `${collectionName}_json_${this.sanitizeVarName(file.fileName)}`;
+                    const comma = index < dataFiles.length - 1 ? ',' : '';
+                    sections.push(`  "${file.fileName}": { ...${varName}, id: "${file.fileName}", collection: "${collectionName}" }${comma}`);
+                });
+                sections.push('};');
+                sections.push('');
+
+                dataCollectionVars[collectionName] = dataVarName;
+            }
+        }
+
+        // Build combined data collections
+        sections.push('// ========== COMBINED DATA COLLECTIONS ==========');
+        sections.push('const DataCollections = {');
+        Object.entries(dataCollectionVars).forEach(([collectionName, varName], index, arr) => {
+            const comma = index < arr.length - 1 ? ',' : '';
+            sections.push(`  ${collectionName}: ${varName}${comma}`);
+        });
+        sections.push('};');
+        sections.push('');
+
+        // Setup global namespace
+        sections.push('// ========== GLOBAL SETUP ==========');
+        sections.push('global.COMPILED_GAME = {');
+        sections.push('  ready: Promise.resolve(),');
+        sections.push('  initialized: false,');
+        sections.push('  isHeadless: true,');
+        sections.push('  libraryClasses: Libraries,');
+        sections.push('  systems: Systems,');
+        sections.push('  collections: DataCollections,');
+
+        for (const [collectionName, varName] of Object.entries(classCollectionVars)) {
+            sections.push(`  ${collectionName}: ${varName},`);
+        }
+
+        sections.push('  init: function(gutsEngine) {');
+        sections.push('    if (this.initialized) return;');
+        sections.push('    this.initialized = true;');
+        sections.push('    global.GUTS.engine = gutsEngine;');
+        sections.push('    console.log("✅ COMPILED_GAME initialized for headless mode");');
+        sections.push('  }');
+        sections.push('};');
+        sections.push('');
+        sections.push('// Also expose in global.GUTS for compatibility');
+        sections.push('global.GUTS.systems = Systems;');
+
+        for (const [collectionName, varName] of Object.entries(classCollectionVars)) {
+            sections.push(`global.GUTS.${collectionName} = ${varName};`);
+        }
+
+        sections.push('');
+        sections.push('module.exports = global.COMPILED_GAME;');
+
+        const entryPath = path.join(this.tempDir, 'headless-entry.js');
+        fs.writeFileSync(entryPath, sections.join('\n'), 'utf8');
+        console.log(`✅ Generated headless entry: ${entryPath}`);
+
+        return entryPath;
+    }
+
+    /**
      * Generate all entry points
      */
     generateAll() {
@@ -964,6 +1163,7 @@ class EntryGenerator {
         return {
             client: this.generateClientEntry(),
             server: this.generateServerEntry(),
+            headless: this.generateHeadlessEntry(),
             editor: this.generateEditorEntry(),
             engine: this.generateEngineEntry(),
             combined: this.generateCombinedEntry()

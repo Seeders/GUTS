@@ -1,0 +1,83 @@
+{
+  "title": "Headless Skirmish",
+  "projectName": "TurnBasedWarfare",
+  "tickRate": 20,
+  "seed": "auto",
+  "appLoaderLibrary": "HeadlessGameLoader",
+  "appLibrary": "HeadlessECSGame",
+  "initialScene": "headless",
+  "libraries": [
+    "GameServices",
+    "CallLogger",
+    "BaseSystem",
+    "BaseLoader",
+    "HeadlessGameLoader",
+    "GameState",
+    "BaseECSGame",
+    "GameUtils",
+    "ServerECSGame",
+    "HeadlessECSGame",
+    "HeadlessSkirmishRunner",
+    "ServerEventManager",
+    "SeededRandom",
+    "MinHeap",
+    "DesyncDebugger",
+    "TerrainDataManager",
+    "CoordinateTranslator",
+    "ComponentGenerator",
+    "BehaviorTreeProcessor",
+    "BaseBehaviorNode",
+    "SceneManager"
+  ],
+  "systems": [
+    "GameSystem",
+    "PlayerStatsSystem",
+    "UnitCreationSystem",
+    "SquadSystem",
+    "GridSystem",
+    "TerrainSystem",
+    "RoundSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "TeamHealthSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "SquadExperienceSystem",
+    "ServerBattlePhaseSystem",
+    "PlacementSystem",
+    "UnitOrderSystem",
+    "BaseNetworkSystem",
+    "LifetimeSystem",
+    "SchedulingSystem",
+    "PathfindingSystem",
+    "GoldMineSystem",
+    "VisionSystem",
+    "SupplySystem",
+    "SkirmishGameSystem",
+    "AIPlacementSystem"
+  ],
+  "classes": [
+    {
+      "collection": "abilities",
+      "baseClass": "BaseAbility"
+    },
+    {
+      "collection": "behaviorActions",
+      "baseClass": "BaseBehaviorAction"
+    },
+    {
+      "collection": "behaviorDecorators",
+      "baseClass": "BaseBehaviorDecorator"
+    },
+    {
+      "collection": "behaviorTrees",
+      "baseClass": "BaseBehaviorTree"
+    },
+    {
+      "collection": "sequenceBehaviorTrees",
+      "baseClass": "SequenceBehaviorTree"
+    }
+  ]
+}
