@@ -99,6 +99,198 @@ export default class HeadlessEngine extends BaseEngine {
         return { tickCount };
     }
 
+    /**
+     * Run a simulation with instructions
+     * This is used by HeadlessSkirmishRunner for automated simulations
+     *
+     * @param {Object} options
+     * @param {Array} options.instructions - Array of instruction objects to process
+     * @param {number} options.maxTicks - Maximum ticks before timeout
+     * @param {number} options.seed - Random seed (already applied during setup)
+     * @returns {Promise<Object>} Simulation results
+     */
+    async runSimulation(options = {}) {
+        const {
+            instructions = [],
+            maxTicks = this.maxTicks
+        } = options;
+
+        const game = this.gameInstance;
+        const enums = game.call('getEnums');
+        let instructionIndex = 0;
+        const results = [];
+
+        // Process instructions that should execute immediately
+        const processImmediateInstructions = async () => {
+            while (instructionIndex < instructions.length) {
+                const inst = instructions[instructionIndex];
+
+                // Check trigger condition
+                if (!this.shouldExecuteInstruction(inst, game, enums)) {
+                    break;
+                }
+
+                // Execute the instruction
+                const result = await this.executeInstruction(inst, game, enums);
+                results.push({ instruction: inst, result, tick: game.tickCount });
+                instructionIndex++;
+            }
+        };
+
+        // Run simulation with instruction processing
+        await this.run({
+            maxTicks,
+            shouldStop: (game) => {
+                // Process any ready instructions before checking stop condition
+                processImmediateInstructions();
+
+                // Stop if game is over
+                if (game.state.gameOver) {
+                    return true;
+                }
+
+                // Stop if all instructions processed and we're past battle phase
+                if (instructionIndex >= instructions.length) {
+                    // Continue running until game ends naturally or timeout
+                    return game.state.gameOver;
+                }
+
+                return false;
+            }
+        });
+
+        // Return simulation results
+        return {
+            success: true,
+            tickCount: game.tickCount,
+            instructionsProcessed: instructionIndex,
+            results,
+            gameState: game.getGameSummary?.() || { phase: game.state.phase }
+        };
+    }
+
+    /**
+     * Check if an instruction should execute on this tick
+     * @private
+     */
+    shouldExecuteInstruction(inst, game, enums) {
+        const trigger = inst.trigger || 'immediate';
+
+        switch (trigger) {
+            case 'immediate':
+                return true;
+
+            case 'tick':
+                return game.tickCount >= (inst.tick || 0);
+
+            case 'phase':
+                return game.state.phase === inst.phase;
+
+            case 'round':
+                return game.state.round >= (inst.round || 1);
+
+            default:
+                return true;
+        }
+    }
+
+    /**
+     * Execute a single instruction
+     * @private
+     */
+    async executeInstruction(inst, game, enums) {
+        switch (inst.type) {
+            case 'PLACE_UNIT':
+                // Delegate to game's placement system
+                if (game.hasService('sendPlacementRequest')) {
+                    const collections = game.getCollections();
+                    const unitDef = collections.units[inst.unitId];
+                    if (!unitDef) {
+                        return { success: false, error: `Unit ${inst.unitId} not found` };
+                    }
+
+                    const unitType = { ...unitDef, id: inst.unitId, collection: 'units' };
+                    const playerId = inst.team === enums.team.left ? 0 : 1;
+                    const networkUnitData = game.call('createNetworkUnitData',
+                        { x: inst.x, z: inst.z },
+                        unitType,
+                        inst.team,
+                        playerId
+                    );
+
+                    return new Promise(resolve => {
+                        game.call('sendPlacementRequest', networkUnitData, (success, response) => {
+                            resolve({ success, ...response });
+                        });
+                    });
+                }
+                return { success: false, error: 'sendPlacementRequest service not available' };
+
+            case 'PLACE_BUILDING':
+                // Similar to PLACE_UNIT but for buildings
+                if (game.hasService('sendPlacementRequest')) {
+                    const collections = game.getCollections();
+                    const buildingDef = collections.buildings[inst.buildingId];
+                    if (!buildingDef) {
+                        return { success: false, error: `Building ${inst.buildingId} not found` };
+                    }
+
+                    const buildingType = { ...buildingDef, id: inst.buildingId, collection: 'buildings' };
+                    const playerId = inst.team === enums.team.left ? 0 : 1;
+                    const networkUnitData = game.call('createNetworkUnitData',
+                        { x: inst.x, z: inst.z },
+                        buildingType,
+                        inst.team,
+                        playerId
+                    );
+
+                    return new Promise(resolve => {
+                        game.call('sendPlacementRequest', networkUnitData, (success, response) => {
+                            resolve({ success, ...response });
+                        });
+                    });
+                }
+                return { success: false, error: 'sendPlacementRequest service not available' };
+
+            case 'SUBMIT_PLACEMENT':
+                // Toggle ready for a team
+                if (game.hasService('toggleReadyForBattle')) {
+                    game.call('toggleReadyForBattle', () => {});
+                    return { success: true };
+                }
+                return { success: false, error: 'toggleReadyForBattle not available' };
+
+            case 'START_BATTLE':
+                // Force start battle
+                if (game.hasService('startBattle')) {
+                    game.call('startBattle');
+                    return { success: true };
+                }
+                game.state.phase = enums.gamePhase.battle;
+                return { success: true };
+
+            case 'PURCHASE_UNIT':
+                // Purchase a unit from a building (respects production capacity)
+                // This uses GameActionsInterface.purchaseUnit - same as GUI
+                if (global.GUTS?.GameActionsInterface) {
+                    const actions = new global.GUTS.GameActionsInterface(game);
+                    return new Promise(resolve => {
+                        actions.purchaseUnit(inst.unitId, inst.buildingEntityId, inst.team, (success, response) => {
+                            resolve({ success, ...response });
+                        });
+                    });
+                }
+                return { success: false, error: 'GameActionsInterface not available' };
+
+            case 'WAIT':
+                // Wait instruction - trigger determines when to proceed
+                return { success: true, waited: true };
+
+            default:
+                return { success: false, error: `Unknown instruction type: ${inst.type}` };
+        }
+    }
+
     stop() {
         super.stop();
         this.running = false;
