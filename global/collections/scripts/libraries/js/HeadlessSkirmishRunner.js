@@ -55,9 +55,11 @@ class HeadlessSkirmishRunner {
         game.state.skirmishConfig = this.config;
         game.state.gameSeed = this.config.seed;
 
-        // Set up RNG
+        // Set up RNG - SeededRandom uses initialSeed property, not a seed() method
         if (game.rng) {
-            game.rng.seed(this.config.seed);
+            game.rng.initialSeed = this.config.seed;
+            // Clear existing strands so they use the new seed
+            game.rng.strands.clear();
         }
 
         // Set local game mode

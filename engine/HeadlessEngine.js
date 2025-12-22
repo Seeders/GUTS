@@ -120,7 +120,8 @@ export default class HeadlessEngine extends BaseEngine {
             this.gameInstance.state.gameSeed = seed;
         }
         if (this.gameInstance.rng) {
-            this.gameInstance.rng.seed(seed);
+            this.gameInstance.rng.initialSeed = seed;
+            this.gameInstance.rng.strands.clear();
         }
 
         let tickCount = 0;
