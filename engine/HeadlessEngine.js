@@ -313,6 +313,10 @@ export default class HeadlessEngine extends BaseEngine {
                 this.handleSetEndCondition(instruction);
                 break;
 
+            case 'ISSUE_ORDER':
+                this.handleIssueOrder(instruction);
+                break;
+
             default:
                 console.warn(`[HeadlessEngine] Unknown instruction type: ${instruction.type}`);
         }
@@ -482,6 +486,80 @@ export default class HeadlessEngine extends BaseEngine {
     }
 
     /**
+     * Handle ISSUE_ORDER instruction
+     * Issues move/attack orders to units of a team
+     * @private
+     */
+    handleIssueOrder(instruction) {
+        const { team, targetX, targetY, orderType = 'move' } = instruction;
+        const game = this.gameInstance;
+        const enums = game.call('getEnums');
+
+        // Convert team name to enum if needed
+        const teamEnum = typeof team === 'string' ? enums.team[team] : team;
+
+        // Convert grid coordinates to world coordinates
+        const worldPos = game.hasService('placementGridToWorld')
+            ? game.call('placementGridToWorld', targetX, targetY)
+            : { x: targetX * 10, y: 0, z: targetY * 10 }; // Fallback approximation
+
+        const targetPosition = {
+            x: worldPos.x,
+            y: worldPos.y || 0,
+            z: worldPos.z
+        };
+
+
+        // isMoveOrder must be true for MoveBehaviorAction to process
+        // preventEnemiesInRangeCheck makes it a "force move" that ignores enemies in range
+        const meta = {
+            isMoveOrder: true,  // Always true for movement orders
+            preventEnemiesInRangeCheck: orderType === 'attack'  // Attack-move ignores enemies en route
+        };
+
+        // Get all placements for this team and issue orders via ClientNetworkSystem
+        if (game.hasService('getPlacementsForSide')) {
+            const placements = game.call('getPlacementsForSide', teamEnum);
+
+            if (placements && placements.length > 0) {
+                // Collect placement IDs for units (not buildings)
+                const placementIds = [];
+                const targetPositions = [];
+                for (const placement of placements) {
+                    const unitType = placement.unitType;
+                    const isBuilding = unitType?.collection === 'buildings';
+                    if (!isBuilding && placement.placementId) {
+                        placementIds.push(placement.placementId);
+                        targetPositions.push(targetPosition);
+                    }
+                }
+
+                if (placementIds.length > 0 && game.hasService('setSquadTargets')) {
+                    // Use setSquadTargets to batch set orders through the proper network system
+                    game.call('setSquadTargets', {
+                        placementIds,
+                        targetPositions,
+                        meta
+                    }, (success, result) => {
+                        if (!success) {
+                            console.warn(`[HeadlessEngine] ISSUE_ORDER: Failed - ${result}`);
+                        }
+                    });
+                } else if (placementIds.length > 0) {
+                    // Fallback: direct call if setSquadTargets not available
+                    for (const placementId of placementIds) {
+                        game.call('applySquadTargetPosition', placementId, targetPosition, meta, game.state.now);
+                    }
+                }
+            } else {
+                console.warn(`[HeadlessEngine] ISSUE_ORDER: No placements found for team ${team}`);
+            }
+        } else {
+            console.warn('[HeadlessEngine] ISSUE_ORDER: getPlacementsForSide service not available');
+        }
+    }
+
+    /**
      * Handle SET_END_CONDITION instruction
      * @private
      */
@@ -634,6 +712,7 @@ export default class HeadlessEngine extends BaseEngine {
 
         if (this.gameInstance && this.gameInstance.update) {
             await this.gameInstance.update(this.tickRate);
+
         }
     }
 

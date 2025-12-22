@@ -22,48 +22,66 @@
       "team": "left",
       "unitType": "1_d_archer",
       "collection": "units",
-      "x": 20,
-      "y": 30
+      "x": 50,
+      "y": 60,
+      "comment": "Place archers near center"
     },
     {
       "type": "PLACE_UNIT",
       "team": "left",
       "unitType": "1_d_archer",
       "collection": "units",
-      "x": 22,
-      "y": 30
+      "x": 52,
+      "y": 60
     },
     {
       "type": "PLACE_UNIT",
       "team": "left",
       "unitType": "1_d_archer",
       "collection": "units",
-      "x": 24,
-      "y": 30
+      "x": 54,
+      "y": 60
     },
     {
       "type": "PLACE_UNIT",
       "team": "right",
-      "unitType": "1_b_barbarian",
+      "unitType": "1_s_barbarian",
       "collection": "units",
-      "x": 100,
-      "y": 90
+      "x": 74,
+      "y": 60,
+      "comment": "Place barbarians near center on opposite side"
     },
     {
       "type": "PLACE_UNIT",
       "team": "right",
-      "unitType": "1_b_barbarian",
+      "unitType": "1_s_barbarian",
       "collection": "units",
-      "x": 102,
-      "y": 90
+      "x": 76,
+      "y": 60
     },
     {
       "type": "PLACE_UNIT",
       "team": "right",
-      "unitType": "1_b_barbarian",
+      "unitType": "1_s_barbarian",
       "collection": "units",
-      "x": 104,
-      "y": 90
+      "x": 78,
+      "y": 60
+    },
+    {
+      "type": "ISSUE_ORDER",
+      "team": "left",
+      "targetX": 64,
+      "targetY": 60,
+      "orderType": "attack",
+      "comment": "Order archers to move to center"
+    },
+    {
+      "type": "ISSUE_ORDER",
+      "team": "right",
+      "targetX": 64,
+      "targetY": 60,
+      "orderType": "attack",
+      "comment": "Order barbarians to move to center"
     },
     {
       "type": "START_BATTLE",

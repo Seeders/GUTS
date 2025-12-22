@@ -49,6 +49,7 @@
     "PlacementSystem",
     "UnitOrderSystem",
     "BaseNetworkSystem",
+    "ClientNetworkSystem",
     "LifetimeSystem",
     "SchedulingSystem",
     "PathfindingSystem",
