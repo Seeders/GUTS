@@ -43,6 +43,9 @@ export default class HeadlessEngine extends BaseEngine {
         // Custom end conditions
         this.endConditions = [];
         this.previousUnitCounts = {}; // Track unit counts for death detection
+
+        // Auto-continue battles across rounds (enabled during simulation)
+        this.autoContinueBattle = false;
     }
 
     async init(projectName) {
@@ -109,10 +112,11 @@ export default class HeadlessEngine extends BaseEngine {
      * @param {Array} options.instructions - Array of instruction objects
      * @param {number} options.maxTicks - Maximum ticks before forcing end
      * @param {number} options.seed - Random seed for deterministic simulation
+     * @param {boolean} options.autoContinue - Auto-continue through battle rounds (default: true)
      * @returns {Promise<Object>} Simulation results
      */
     async runSimulation(options = {}) {
-        const { instructions = [], maxTicks = 10000, seed = Date.now() } = options;
+        const { instructions = [], maxTicks = 10000, seed = Date.now(), autoContinue = true } = options;
 
         this.instructionQueue = [...instructions];
         this.currentInstructionIndex = 0;
@@ -120,6 +124,9 @@ export default class HeadlessEngine extends BaseEngine {
         this.paused = false;
         this.endConditions = []; // Reset custom end conditions
         this.previousUnitCounts = {};
+
+        // Enable auto-continue to run through multiple battle rounds
+        this.autoContinueBattle = autoContinue;
 
         // Set seed for deterministic simulation
         if (this.gameInstance.state) {
@@ -713,6 +720,21 @@ export default class HeadlessEngine extends BaseEngine {
         if (this.gameInstance && this.gameInstance.update) {
             await this.gameInstance.update(this.tickRate);
 
+            // Auto-continue: When in placement phase, automatically start the next battle
+            // This allows simulations to run across multiple rounds until end condition is met
+            if (this.autoContinueBattle) {
+                const game = this.gameInstance;
+                const enums = game.call('getEnums');
+
+                if (game.state.phase === enums.gamePhase.placement && game.tickCount > 0) {
+                    // Small delay to let placement phase initialize, then start battle
+                    if (game.tickCount % 20 === 0) { // Check every second (20 ticks)
+                        if (game.hasService('startBattle')) {
+                            game.call('startBattle');
+                        }
+                    }
+                }
+            }
         }
     }
 
