@@ -27,8 +27,7 @@
     "ComponentGenerator",
     "BehaviorTreeProcessor",
     "BaseBehaviorNode",
-    "SceneManager",
-    "GameActionsInterface"
+    "SceneManager"
   ],
   "systems": [
     "GameSystem",
