@@ -10,6 +10,7 @@ projects/**/config/*
 */**/dist/client/cache/**/*
 */**/dist/server/game.js
 */**/dist/server/vendors-node_modules_socket_io_wrapper_mjs.js
+*/**/dist/headless/game.js
 
 build/.temp/**/*
 dist/**/*
