@@ -131,7 +131,9 @@ export default class HeadlessEngine extends BaseEngine {
                 }
 
                 // Execute the instruction
+                console.log(`[HeadlessEngine] Executing instruction ${instructionIndex}: ${inst.type}`, inst);
                 const result = await this.executeInstruction(inst, game, enums);
+                console.log(`[HeadlessEngine] Instruction result:`, result);
                 results.push({ instruction: inst, result, tick: game.tickCount });
                 instructionIndex++;
             }
@@ -159,13 +161,47 @@ export default class HeadlessEngine extends BaseEngine {
             }
         });
 
-        // Return simulation results
+        // Return simulation results with all expected fields
+        const gameSummary = game.getGameSummary?.() || {};
+        const reverseEnums = game.getReverseEnums?.() || {};
+
+        // Count entities by team
+        const entityCounts = { total: 0, byTeam: {} };
+        const entities = game.getEntitiesWith?.('team', 'health') || [];
+        for (const entityId of entities) {
+            const teamComp = game.getComponent(entityId, 'team');
+            const health = game.getComponent(entityId, 'health');
+            if (teamComp && health && health.current > 0) {
+                entityCounts.total++;
+                const teamName = reverseEnums.team?.[teamComp.team] || teamComp.team;
+                entityCounts.byTeam[teamName] = (entityCounts.byTeam[teamName] || 0) + 1;
+            }
+        }
+
+        // Determine winner
+        let winner = null;
+        const leftCount = entityCounts.byTeam.left || 0;
+        const rightCount = entityCounts.byTeam.right || 0;
+        if (game.state.gameOver) {
+            if (leftCount > rightCount) winner = 'left';
+            else if (rightCount > leftCount) winner = 'right';
+            else winner = 'draw';
+        }
+
         return {
             success: true,
-            tickCount: game.tickCount,
+            completed: game.state.gameOver || false,
+            tickCount: game.tickCount || 0,
+            gameTime: game.state.now || 0,
+            realTimeMs: 0, // Not tracked in headless mode
+            ticksPerSecond: 0,
+            round: game.state.round || 1,
+            phase: reverseEnums.gamePhase?.[game.state.phase] || game.state.phase,
+            winner,
+            entityCounts,
             instructionsProcessed: instructionIndex,
-            results,
-            gameState: game.getGameSummary?.() || { phase: game.state.phase }
+            instructionResults: results,
+            gameState: gameSummary
         };
     }
 
@@ -296,6 +332,13 @@ export default class HeadlessEngine extends BaseEngine {
             case 'WAIT':
                 // Wait instruction - trigger determines when to proceed
                 return { success: true, waited: true };
+
+            case undefined:
+                // Skip comment entries (instructions with only _comment field)
+                if (inst._comment) {
+                    return { success: true, skipped: true, reason: 'comment' };
+                }
+                return { success: false, error: 'Instruction missing type field' };
 
             default:
                 return { success: false, error: `Unknown instruction type: ${inst.type}` };
