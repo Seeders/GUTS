@@ -108,6 +108,95 @@ class GameActionsInterface {
     // ==================== SHOP / UPGRADES ====================
 
     /**
+     * Get production progress for a building
+     * Same as ShopSystem.getBuildingProductionProgress
+     */
+    getBuildingProductionProgress(buildingEntityId) {
+        const placement = this.game.getComponent(buildingEntityId, 'placement');
+        return placement?.productionProgress || 0;
+    }
+
+    /**
+     * Set production progress for a building
+     * Same as ShopSystem.setBuildingProductionProgress
+     */
+    setBuildingProductionProgress(buildingEntityId, progress) {
+        const placement = this.game.getComponent(buildingEntityId, 'placement');
+        if (placement) {
+            placement.productionProgress = progress;
+        }
+    }
+
+    /**
+     * Purchase a unit from a building
+     * This is the FULL logic from ShopSystem.purchaseUnit - includes production capacity check
+     *
+     * @param {string} unitId - Unit type ID (e.g., '1_d_archer')
+     * @param {number} buildingEntityId - Entity ID of the building to spawn from
+     * @param {number} team - Team enum value
+     * @param {Function} callback - Called with (success, result)
+     */
+    purchaseUnit(unitId, buildingEntityId, team, callback) {
+        const unitDef = this.collections.units[unitId];
+        if (!unitDef) {
+            callback?.(false, { error: `Unit ${unitId} not found` });
+            return;
+        }
+
+        // Get building's placement ID
+        const buildingPlacement = this.game.getComponent(buildingEntityId, 'placement');
+        const placementId = buildingPlacement?.placementId;
+        if (!placementId) {
+            callback?.(false, { error: 'Building has no placement' });
+            return;
+        }
+
+        // Check production capacity (same logic as ShopSystem)
+        const buildTime = unitDef.buildTime || 1;
+        const productionProgress = this.getBuildingProductionProgress(buildingEntityId);
+        const remainingCapacity = 1 - productionProgress;
+
+        if (buildTime > remainingCapacity + 0.001) {
+            callback?.(false, { error: `Not enough production capacity! Need ${buildTime.toFixed(1)} rounds` });
+            return;
+        }
+
+        // Check gold
+        if (!this.canAffordCost(unitDef.value)) {
+            callback?.(false, { error: `Cannot afford ${unitDef.title || unitId}` });
+            return;
+        }
+
+        // Check supply
+        if (!this.canAffordSupply(team, unitDef)) {
+            callback?.(false, { error: 'Not enough supply' });
+            return;
+        }
+
+        // Find spawn position near building
+        const unitType = { ...unitDef, id: unitId, collection: 'units' };
+        const spawnPos = this.findBuildingSpawnPosition(placementId, unitType);
+        if (!spawnPos) {
+            callback?.(false, { error: 'No valid spawn position near building' });
+            return;
+        }
+
+        // Create network unit data
+        const playerId = team === this.enums.team.left ? 0 : 1;
+        const networkUnitData = this.createNetworkUnitData(spawnPos, unitType, team, playerId);
+
+        // Send placement request
+        this.sendPlacementRequest(networkUnitData, (success, response) => {
+            if (success) {
+                // Update production progress (same as ShopSystem)
+                const newProgress = productionProgress + buildTime;
+                this.setBuildingProductionProgress(buildingEntityId, newProgress);
+            }
+            callback?.(success, response);
+        });
+    }
+
+    /**
      * Purchase an upgrade
      * This is what ShopSystem uses for upgrade buttons
      */

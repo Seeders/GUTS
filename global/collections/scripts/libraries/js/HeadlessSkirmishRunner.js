@@ -254,52 +254,25 @@ class HeadlessSkirmishRunner {
     }
 
     /**
-     * Place a unit from a building using GameActionsInterface
+     * Purchase a unit from a building using GameActionsInterface.purchaseUnit
+     * This uses the FULL game logic including production capacity check
+     *
      * @param {string} team - Team name ('left' or 'right')
-     * @param {string} unitId - Unit type ID (e.g., 'archer')
-     * @param {string} fromBuildingPlacementId - Placement ID of the building to spawn from
+     * @param {string} unitId - Unit type ID (e.g., '1_d_archer')
+     * @param {number} buildingEntityId - Entity ID of the building to spawn from
      * @returns {Promise<Object>} Result with success status
      */
-    async placeUnit(team, unitId, fromBuildingPlacementId) {
+    async placeUnit(team, unitId, buildingEntityId) {
         if (!this.actions) {
             throw new Error('GameActionsInterface not initialized');
         }
 
         const enums = this.game.call('getEnums');
-        const collections = this.game.getCollections();
         const teamEnum = typeof team === 'string' ? enums.team[team] : team;
 
-        const unitDef = collections.units[unitId];
-        if (!unitDef) {
-            return { success: false, error: `Unit ${unitId} not found` };
-        }
-
-        // Check if can afford
-        if (!this.actions.canAffordCost(unitDef.value)) {
-            return { success: false, error: `Cannot afford ${unitId} (cost: ${unitDef.value})` };
-        }
-
-        // Check supply
-        if (!this.actions.canAffordSupply(teamEnum, unitDef)) {
-            return { success: false, error: `Not enough supply for ${unitId}` };
-        }
-
-        // Create unit type object
-        const unitType = { ...unitDef, id: unitId, collection: 'units' };
-
-        // Find spawn position near building
-        const spawnPos = this.actions.findBuildingSpawnPosition(fromBuildingPlacementId, unitType);
-        if (!spawnPos) {
-            return { success: false, error: `No valid spawn position near building` };
-        }
-
-        // Create network unit data
-        const playerId = teamEnum === enums.team.left ? 0 : 1;
-        const networkUnitData = this.actions.createNetworkUnitData(spawnPos, unitType, teamEnum, playerId);
-
-        // Send placement request
+        // Use GameActionsInterface.purchaseUnit which includes production capacity check
         return new Promise((resolve) => {
-            this.actions.sendPlacementRequest(networkUnitData, (success, response) => {
+            this.actions.purchaseUnit(unitId, buildingEntityId, teamEnum, (success, response) => {
                 resolve({ success, ...response });
             });
         });
