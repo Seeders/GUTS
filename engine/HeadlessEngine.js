@@ -274,8 +274,19 @@ export default class HeadlessEngine extends BaseEngine {
                 // This uses GameActionsInterface.purchaseUnit - same as GUI
                 if (global.GUTS?.GameActionsInterface) {
                     const actions = new global.GUTS.GameActionsInterface(game);
+
+                    // Auto-resolve building entity ID if using "auto:" prefix
+                    // Format: "auto:buildingType:team" (e.g., "auto:fletchersHall:left")
+                    let buildingEntityId = inst.buildingEntityId;
+                    if (typeof buildingEntityId === 'string' && buildingEntityId.startsWith('auto:')) {
+                        buildingEntityId = this.findBuildingEntityId(game, buildingEntityId, inst.team, enums);
+                        if (!buildingEntityId) {
+                            return { success: false, error: `Could not find building for ${inst.buildingEntityId}` };
+                        }
+                    }
+
                     return new Promise(resolve => {
-                        actions.purchaseUnit(inst.unitId, inst.buildingEntityId, inst.team, (success, response) => {
+                        actions.purchaseUnit(inst.unitId, buildingEntityId, inst.team, (success, response) => {
                             resolve({ success, ...response });
                         });
                     });
@@ -289,6 +300,45 @@ export default class HeadlessEngine extends BaseEngine {
             default:
                 return { success: false, error: `Unknown instruction type: ${inst.type}` };
         }
+    }
+
+    /**
+     * Find a building entity ID by auto-specifier
+     * Format: "auto:buildingType:team" (e.g., "auto:fletchersHall:left")
+     * @private
+     */
+    findBuildingEntityId(game, autoSpec, fallbackTeam, enums) {
+        const parts = autoSpec.split(':');
+        if (parts.length < 2) return null;
+
+        const buildingType = parts[1];
+        const teamName = parts[2] || (fallbackTeam === enums.team.left ? 'left' : 'right');
+        const targetTeam = enums.team[teamName] ?? fallbackTeam;
+
+        // Find all buildings of this type for this team
+        const entities = game.getEntitiesWith('unitType', 'team', 'placement');
+
+        for (const entityId of entities) {
+            const unitTypeComp = game.getComponent(entityId, 'unitType');
+            const teamComp = game.getComponent(entityId, 'team');
+            const placement = game.getComponent(entityId, 'placement');
+
+            if (!unitTypeComp || !teamComp) continue;
+
+            // Check team matches
+            if (teamComp.team !== targetTeam) continue;
+
+            // Check building type matches
+            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            if (!unitDef || unitDef.id !== buildingType) continue;
+
+            // Check building is complete (not under construction)
+            if (placement?.isUnderConstruction) continue;
+
+            return entityId;
+        }
+
+        return null;
     }
 
     stop() {
