@@ -77,6 +77,20 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         // Intervals
         this.mouseRayCastInterval = null;
+
+        // GameActionsInterface - single source of truth for game interactions
+        this._actions = null;
+    }
+
+    /**
+     * Get the GameActionsInterface instance (lazy initialization)
+     * This is the SAME interface used by headless mode
+     */
+    get actions() {
+        if (!this._actions && GUTS.GameActionsInterface) {
+            this._actions = new GUTS.GameActionsInterface(this.game);
+        }
+        return this._actions;
     }
 
     init(params) {
@@ -329,7 +343,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
             this.elements.readyButton.textContent = 'Updating...';
         }
 
-        this.game.call('toggleReadyForBattle', (success, response) => {
+        // Use GameActionsInterface - SAME code path as headless mode
+        this.actions.toggleReadyForBattle((success, response) => {
             if (success) {
                 this.hasSubmittedPlacements = true;
                 if (this.elements.readyButton) {
@@ -507,24 +522,24 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (!this.game.state.selectedUnitType) return;
 
         const unitType = this.game.state.selectedUnitType;
-        const gridPos = this.game.call('worldToPlacementGrid', this.mouseWorldPos.x, this.mouseWorldPos.z);
+        const gridPos = this.actions.worldToPlacementGrid(this.mouseWorldPos.x, this.mouseWorldPos.z);
 
-        // Validate placement
-        const squadData = this.game.call('getSquadData', unitType);
+        // Validate placement using GameActionsInterface
+        const squadData = this.actions.getSquadData(unitType);
         if (!squadData) return;
 
-        const cells = this.game.call('getSquadCells', gridPos, squadData);
-        const isValid = this.game.call('isValidGridPlacement', cells, this.game.state.myTeam);
+        const cells = this.actions.getSquadCells(gridPos, squadData);
+        const isValid = this.actions.isValidGridPlacement(cells, this.game.state.myTeam);
 
         if (!isValid) {
             this.game.call('showNotification', 'Invalid placement location', 'error', 2000);
             return;
         }
 
-        // Create placement data and submit to server
+        // Create placement data and submit using GameActionsInterface - SAME code path as headless mode
         const networkUnitData = this.createNetworkUnitData(gridPos, unitType);
 
-        this.game.call('sendPlacementRequest', networkUnitData, (success, response) => {
+        this.actions.sendPlacementRequest(networkUnitData, (success, response) => {
             if (success) {
                 // Domain logic (placePlacement, gold deduction, spawn) now handled by ClientNetworkSystem
                 // Here we just handle UI concerns: undo stack, effects, UI updates
@@ -616,16 +631,16 @@ class PlacementUISystem extends GUTS.BaseSystem {
             }
         }
 
-        // Release grid cells (use entityId, not placementId)
+        // Release grid cells using GameActionsInterface
         if (undoInfo.squadUnits) {
             for (const entityId of undoInfo.squadUnits) {
-                this.game.call('releaseGridCells', entityId);
+                this.actions.releaseGridCells(entityId);
             }
         }
 
-        // Refund gold
+        // Refund gold using GameActionsInterface - SAME code path as headless mode
         if (undoInfo.unitType?.value) {
-            this.game.call('addPlayerGold', this.game.state.myTeam, undoInfo.unitType.value);
+            this.actions.addPlayerGold(this.game.state.myTeam, undoInfo.unitType.value);
         }
 
         // Create undo visual effect

@@ -25,6 +25,20 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         this.cursorWhenTargeting = 'crosshair';
         this.pingEffect = { count: 12, color: 0x00ff00 };
         this.targetingPreview = null;
+
+        // GameActionsInterface - single source of truth for game interactions
+        this._actions = null;
+    }
+
+    /**
+     * Get the GameActionsInterface instance (lazy initialization)
+     * This is the SAME interface used by headless mode
+     */
+    get actions() {
+        if (!this._actions && GUTS.GameActionsInterface) {
+            this._actions = new GUTS.GameActionsInterface(this.game);
+        }
+        return this._actions;
     }
 
     init() {
@@ -243,55 +257,36 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
     holdPosition() {
         this.stopTargeting();
 
-        let placementIds = this.game.call('getSelectedSquads') || [];
+        // Use GameActionsInterface - SAME code path as headless mode
+        let placementIds = this.actions.getSelectedSquads();
 
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
             return;
         }
 
-        // Calculate target positions (current positions) for each placement
-        const targetPositions = [];
-        placementIds.forEach((placementId) => {
-            const placement = this.game.call('getPlacementById', placementId);
-            // For hold position, use the first unit's current position as the squad target
-            if (placement.squadUnits.length > 0) {
-                const firstUnitId = placement.squadUnits[0];
-                const transform = this.game.getComponent(firstUnitId, "transform");
-                const position = transform?.position;
-                targetPositions.push(position ? { x: position.x, y: 0, z: position.z } : null);
-            } else {
-                targetPositions.push(null);
+        // Use GameActionsInterface.holdPosition - handles all the logic
+        this.actions.holdPosition(placementIds, (success) => {
+            if (success) {
+                // Domain logic (applySquadsTargetPositions) now handled by ClientNetworkSystem
+                // Here we just handle UI concerns: visual feedback
+
+                // Show visual feedback
+                placementIds.forEach((placementId) => {
+                    const placement = this.actions.getPlacementById(placementId);
+                    placement.squadUnits.forEach((unitId) => {
+                        const transform = this.game.getComponent(unitId, "transform");
+                        const position = transform?.position;
+                        if (this.game.effectsSystem && position) {
+                            this.game.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
+                        }
+
+                        // Clear path in pathfinding system
+                        this.game.call('clearEntityPath', unitId);
+                    });
+                });
             }
         });
-
-        const meta = { isMoveOrder: false };
-
-        // Send to server for authoritative confirmation
-        this.game.call('setSquadTargets',
-            { placementIds, targetPositions, meta },
-            (success) => {
-                if (success) {
-                    // Domain logic (applySquadsTargetPositions) now handled by ClientNetworkSystem
-                    // Here we just handle UI concerns: visual feedback
-
-                    // Show visual feedback
-                    placementIds.forEach((placementId) => {
-                        const placement = this.game.call('getPlacementById', placementId);
-                        placement.squadUnits.forEach((unitId) => {
-                            const transform = this.game.getComponent(unitId, "transform");
-                            const position = transform?.position;
-                            if (this.game.effectsSystem && position) {
-                                this.game.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
-                            }
-
-                            // Clear path in pathfinding system
-                            this.game.call('clearEntityPath', unitId);
-                        });
-                    });
-                }
-            }
-        );
     }
 
     onKeyDown(key) {
@@ -363,7 +358,8 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
             return;
         }
 
-        let placementIds = this.game.call('getSelectedSquads') || [];
+        // Use GameActionsInterface for selection queries
+        let placementIds = this.actions.getSelectedSquads();
 
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
@@ -455,7 +451,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         const buildAbility = abilities.find(a => a.id === 'build');
         if (!buildAbility) return;
 
-        // Send build assignment to server
+        // Send build assignment to server using GameActionsInterface - SAME code path as headless mode
         const targetPosition = { x: buildingPos.x, y: 0, z: buildingPos.z };
         const meta = {
             buildingId: buildingEntityId,
@@ -463,24 +459,21 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
             isMoveOrder: false
         };
 
-        this.game.call('setSquadTarget',
-            { placementId: builderPlacement.placementId, targetPosition, meta },
-            (success) => {
-                if (success) {
-                    // Domain logic (applySquadTargetPosition, buildingState, assignedBuilder) now handled by ClientNetworkSystem
-                    // Here we just handle UI concerns: effects, notifications, ability tracking
+        this.actions.setSquadTarget(builderPlacement.placementId, targetPosition, meta, (success) => {
+            if (success) {
+                // Domain logic (applySquadTargetPosition, buildingState, assignedBuilder) now handled by ClientNetworkSystem
+                // Here we just handle UI concerns: effects, notifications, ability tracking
 
-                    // Store peasantId in ability for completion tracking
-                    buildAbility.peasantId = builderEntityId;
+                // Store peasantId in ability for completion tracking
+                buildAbility.peasantId = builderEntityId;
 
-                    if (this.game.effectsSystem) {
-                        this.game.call('createParticleEffect', buildingPos.x, 0, buildingPos.z, 'magic', { count: 8, color: 0xffaa00 });
-                    }
-
-                    this.game.uiSystem?.showNotification('Peasant assigned to continue construction', 'success', 1000);
+                if (this.game.effectsSystem) {
+                    this.game.call('createParticleEffect', buildingPos.x, 0, buildingPos.z, 'magic', { count: 8, color: 0xffaa00 });
                 }
+
+                this.game.uiSystem?.showNotification('Peasant assigned to continue construction', 'success', 1000);
             }
-        );
+        });
     }
 
     issueMoveOrders(placementIds, targetPosition) {
@@ -494,18 +487,16 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         };
         this.orderMeta = {};
         const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
-        // Send to server - server will set authoritative issuedTime and respond
-        this.game.call('setSquadTargets',
-            { placementIds, targetPositions, meta },
-            (success) => {
-                if (success) {
-                    // Domain logic (applySquadsTargetPositions) now handled by ClientNetworkSystem
-                    // Here we just handle UI concerns: targeting state, visual feedback
-                    this.startTargeting();
-                    this.showMoveTargets();
-                }
+
+        // Use GameActionsInterface - SAME code path as headless mode
+        this.actions.setSquadTargets(placementIds, targetPositions, meta, (success) => {
+            if (success) {
+                // Domain logic (applySquadsTargetPositions) now handled by ClientNetworkSystem
+                // Here we just handle UI concerns: targeting state, visual feedback
+                this.startTargeting();
+                this.showMoveTargets();
             }
-        );
+        });
     }
 
     getFormationTargetPositions(targetPosition, placementIds) {

@@ -397,11 +397,8 @@ class ShopSystem extends GUTS.BaseSystem {
             return;
         }
 
-        this.game.call('upgradeBuildingRequest', {
-            buildingEntityId: buildingId,
-            placementId: placementId,
-            targetBuildingId: targetBuildingId
-        }, (success, response) => {
+        // Use GameActionsInterface - SAME code path as headless mode
+        this.actions.upgradeBuildingRequest(buildingId, placementId, targetBuildingId, (success, response) => {
             if (success) {
                 this.showNotification(`Upgraded to ${this.collections.buildings[targetBuildingId].title}!`, 'success');
                 // Clear selection since the old building is destroyed
@@ -521,9 +518,8 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     purchaseUpgrade(upgradeId, upgrade) {
-        this.game.call('purchaseUpgrade', {
-            upgradeId
-        }, (success, response) => {
+        // Use GameActionsInterface - SAME code path as headless mode
+        this.actions.purchaseUpgrade(upgradeId, (success, response) => {
             if (success) {
                 // Domain logic (gold deduction, bitmask) now handled by ClientNetworkSystem
                 // Here we just handle UI concerns: effects, notifications, UI refresh
@@ -664,6 +660,8 @@ class ShopSystem extends GUTS.BaseSystem {
             specBtn.className = 'btn btn-primary experience-btn';
             specBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
             specBtn.onclick = () => {
+                // showSpecializationSelection is a UI method - it opens the selection dialog
+                // The actual action happens when user selects via actions.selectSpecialization()
                 this.game.call('showSpecializationSelection',
                     squad.placementId,
                     squad,
@@ -676,7 +674,8 @@ class ShopSystem extends GUTS.BaseSystem {
             levelUpBtn.className = 'btn btn-primary experience-btn';
             levelUpBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
             levelUpBtn.onclick = () => {
-                this.game.call('levelUpSquad', squad.placementId, squad.team);
+                // Use GameActionsInterface - SAME code path as headless mode
+                this.actions.levelUpSquad(squad.placementId, squad.team);
             };
             buttonContainer.appendChild(levelUpBtn);
         }
@@ -737,26 +736,18 @@ class ShopSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Send cancel request to server
-        if (this.game.hasService('cancelBuilding')) {
-            this.game.call('cancelBuilding', {
-                placementId: placement.placementId,
-                buildingEntityId: buildingEntityId
-            }, (success, response) => {
-                if (!success) {
-                    this.game.uiSystem?.showNotification('Failed to cancel construction', 'error', 1500);
-                    console.error('Cancel construction failed:', response);
-                    return;
-                }
+        // Use GameActionsInterface - SAME code path as headless mode
+        this.actions.cancelBuilding(placement.placementId, buildingEntityId, (success, response) => {
+            if (!success) {
+                this.game.uiSystem?.showNotification('Failed to cancel construction', 'error', 1500);
+                console.error('Cancel construction failed:', response);
+                return;
+            }
 
-                // Domain logic (refund, cleanup, destroy) now handled by ClientNetworkSystem
-                // Here we just handle UI concerns: notification
-                this.game.uiSystem?.showNotification(`Refunded ${response?.refundAmount || 0} gold`, 'success', 1500);
-            });
-        } else {
-            // Fallback for single-player or when network not available
-            this.performLocalCancelConstruction(buildingEntityId, placement);
-        }
+            // Domain logic (refund, cleanup, destroy) now handled by ClientNetworkSystem
+            // Here we just handle UI concerns: notification
+            this.game.uiSystem?.showNotification(`Refunded ${response?.refundAmount || 0} gold`, 'success', 1500);
+        });
     }
 
     performLocalCancelConstruction(buildingEntityId, placement) {
