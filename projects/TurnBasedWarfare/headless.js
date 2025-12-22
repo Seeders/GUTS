@@ -194,15 +194,30 @@ Examples:
 }
 
 /**
- * Load instructions from a JSON file
+ * Load scenario from a JSON file
+ * Supports both full scenario objects and plain instruction arrays
+ * @returns {{ instructions: Array, config: Object }}
  */
-function loadInstructions(filePath) {
+function loadScenario(filePath) {
     const fullPath = path.resolve(filePath);
     if (!existsSync(fullPath)) {
-        throw new Error(`Instructions file not found: ${fullPath}`);
+        throw new Error(`Scenario file not found: ${fullPath}`);
     }
     const content = readFileSync(fullPath, 'utf8');
-    return JSON.parse(content);
+    const data = JSON.parse(content);
+
+    // If it's an array, treat as raw instructions
+    if (Array.isArray(data)) {
+        return { instructions: data, config: {} };
+    }
+
+    // If it's an object with instructions property, extract both
+    if (data.instructions) {
+        const { instructions, ...config } = data;
+        return { instructions, config };
+    }
+
+    throw new Error('Invalid scenario file: must be an array of instructions or an object with an "instructions" property');
 }
 
 /**
@@ -237,9 +252,29 @@ async function main() {
             });
         } else if (config.instructionsFile) {
             // Load and execute instructions from file
-            const instructions = loadInstructions(config.instructionsFile);
-            console.log(`[Headless] Running with ${instructions.length} instructions from ${config.instructionsFile}...`);
-            results = await runner.runWithInstructions(instructions, {
+            const scenario = loadScenario(config.instructionsFile);
+
+            // Apply scenario config (file settings override CLI defaults)
+            if (scenario.config.seed && config.seed === parseArgs().seed) {
+                config.seed = scenario.config.seed;
+            }
+            if (scenario.config.level) {
+                config.level = scenario.config.level;
+            }
+            if (scenario.config.startingGold) {
+                config.startingGold = scenario.config.startingGold;
+            }
+
+            // Re-setup with scenario config
+            await runner.setup({
+                level: config.level,
+                startingGold: config.startingGold,
+                seed: config.seed
+            });
+
+            console.log(`[Headless] Scenario: ${scenario.config.name || config.instructionsFile}`);
+            console.log(`[Headless] Running with ${scenario.instructions.length} instructions...`);
+            results = await runner.runWithInstructions(scenario.instructions, {
                 maxTicks: config.maxTicks,
                 autoStartBattle: true
             });
