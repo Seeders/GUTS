@@ -39,6 +39,10 @@ export default class HeadlessEngine extends BaseEngine {
         this.onSimulationComplete = null;
         this.onTickComplete = null;
         this.onPhaseChange = null;
+
+        // Custom end conditions
+        this.endConditions = [];
+        this.previousUnitCounts = {}; // Track unit counts for death detection
     }
 
     async init(projectName) {
@@ -114,6 +118,8 @@ export default class HeadlessEngine extends BaseEngine {
         this.currentInstructionIndex = 0;
         this.running = true;
         this.paused = false;
+        this.endConditions = []; // Reset custom end conditions
+        this.previousUnitCounts = {};
 
         // Set seed for deterministic simulation
         if (this.gameInstance.state) {
@@ -303,6 +309,10 @@ export default class HeadlessEngine extends BaseEngine {
                 }
                 break;
 
+            case 'SET_END_CONDITION':
+                this.handleSetEndCondition(instruction);
+                break;
+
             default:
                 console.warn(`[HeadlessEngine] Unknown instruction type: ${instruction.type}`);
         }
@@ -310,19 +320,65 @@ export default class HeadlessEngine extends BaseEngine {
 
     /**
      * Handle PLACE_UNIT instruction
+     * Calls the actual placePlacement service with proper parameters
      * @private
      */
     async handlePlaceUnit(instruction) {
-        const { unitType, team, x, y, options = {} } = instruction;
+        const { unitType, team, x, y, collection = 'units', options = {} } = instruction;
         const game = this.gameInstance;
+        const enums = game.call('getEnums');
 
-        if (game.hasService('placeUnit')) {
-            game.call('placeUnit', {
-                unitType,
-                team,
-                position: { x, y },
-                ...options
-            });
+        // Convert team name to enum if needed
+        const teamEnum = typeof team === 'string' ? enums.team[team] : team;
+
+        // Determine player ID based on team (left=0, right=1)
+        const playerId = teamEnum === enums.team.left ? 0 : 1;
+
+        // Convert collection name to numeric index
+        const collectionIndex = typeof collection === 'string'
+            ? enums.objectTypeDefinitions?.[collection]
+            : collection;
+
+        if (collectionIndex === undefined) {
+            console.warn(`[HeadlessEngine] PLACE_UNIT failed: Unknown collection "${collection}"`);
+            return;
+        }
+
+        // Convert unit type name to numeric index within collection
+        const unitTypeIndex = typeof unitType === 'string'
+            ? enums[collection]?.[unitType]
+            : unitType;
+
+        if (unitTypeIndex === undefined) {
+            console.warn(`[HeadlessEngine] PLACE_UNIT failed: Unknown unit type "${unitType}" in collection "${collection}"`);
+            return;
+        }
+
+        // Get the full unit type definition for the placement
+        const collections = game.getCollections();
+        const unitTypeDef = collections?.[collection]?.[unitType];
+
+        // Build the placement object that placePlacement expects
+        const placement = {
+            collection: collectionIndex,
+            unitTypeId: unitTypeIndex,
+            gridPosition: { x: x, z: y }, // Grid position uses x,z
+            gridPos: { x: x, z: y }, // Some systems use gridPos
+            unitType: unitTypeDef, // Full unit type definition
+            ...options
+        };
+
+        // Build player object
+        const player = { team: teamEnum };
+
+        // Call placePlacement if available
+        if (game.hasService('placePlacement')) {
+            const result = game.call('placePlacement', playerId, playerId, player, placement, null);
+            if (!result?.success) {
+                console.warn(`[HeadlessEngine] PLACE_UNIT failed:`, result?.error || 'Unknown error');
+            }
+        } else {
+            console.warn('[HeadlessEngine] placePlacement service not available');
         }
     }
 
@@ -334,12 +390,19 @@ export default class HeadlessEngine extends BaseEngine {
         const game = this.gameInstance;
         const enums = game.call('getEnums');
 
+        console.log('[HeadlessEngine] START_BATTLE - hasService:', game.hasService('startBattle'));
+        console.log('[HeadlessEngine] Current phase before:', game.state.phase);
+
         if (game.hasService('startBattle')) {
-            game.call('startBattle');
+            const result = game.call('startBattle');
+            console.log('[HeadlessEngine] startBattle result:', result);
         } else {
             // Fallback: directly set phase
+            console.log('[HeadlessEngine] No startBattle service, setting phase directly');
             game.state.phase = enums.gamePhase.battle;
         }
+
+        console.log('[HeadlessEngine] Current phase after:', game.state.phase);
     }
 
     /**
@@ -419,6 +482,69 @@ export default class HeadlessEngine extends BaseEngine {
     }
 
     /**
+     * Handle SET_END_CONDITION instruction
+     * @private
+     */
+    handleSetEndCondition(instruction) {
+        const { condition, team, count, phase } = instruction;
+        this.endConditions.push({ condition, team, count, phase });
+
+        // Initialize unit count tracking if needed for death detection
+        if (condition === 'unitKilled' || condition === 'teamUnitKilled') {
+            this.updateUnitCounts();
+        }
+    }
+
+    /**
+     * Update tracked unit counts by team
+     * @private
+     */
+    updateUnitCounts() {
+        const game = this.gameInstance;
+        const enums = game.call('getEnums');
+        const reverseEnums = game.getReverseEnums();
+
+        this.previousUnitCounts = {};
+
+        const entities = game.getEntitiesWith('team', 'health');
+        for (const entityId of entities) {
+            const teamComp = game.getComponent(entityId, 'team');
+            const healthComp = game.getComponent(entityId, 'health');
+
+            if (!teamComp || !healthComp || healthComp.current <= 0) continue;
+
+            const teamName = reverseEnums.team?.[teamComp.team] || teamComp.team;
+            this.previousUnitCounts[teamName] = (this.previousUnitCounts[teamName] || 0) + 1;
+        }
+        this.previousUnitCounts.total = Object.values(this.previousUnitCounts).reduce((a, b) => a + b, 0);
+    }
+
+    /**
+     * Get current unit counts by team
+     * @private
+     */
+    getCurrentUnitCounts() {
+        const game = this.gameInstance;
+        const reverseEnums = game.getReverseEnums();
+
+        const counts = {};
+
+        const entities = game.getEntitiesWith('team', 'health');
+        for (const entityId of entities) {
+            const teamComp = game.getComponent(entityId, 'team');
+            const healthComp = game.getComponent(entityId, 'health');
+
+            if (!teamComp || !healthComp || healthComp.current <= 0) continue;
+
+            const teamName = reverseEnums.team?.[teamComp.team] || teamComp.team;
+            counts[teamName] = (counts[teamName] || 0) + 1;
+        }
+        counts.total = Object.values(counts).reduce((a, b) => a + b, 0);
+
+        return counts;
+    }
+
+    /**
      * Check if simulation should end
      * @returns {boolean}
      * @private
@@ -437,7 +563,66 @@ export default class HeadlessEngine extends BaseEngine {
             return true;
         }
 
+        // Check custom end conditions
+        if (this.endConditions.length > 0) {
+            const currentCounts = this.getCurrentUnitCounts();
+
+            for (const endCond of this.endConditions) {
+                if (this.checkEndCondition(endCond, currentCounts)) {
+                    console.log(`[HeadlessEngine] End condition met: ${endCond.condition}`);
+                    return true;
+                }
+            }
+
+            // Update previous counts for next check
+            this.previousUnitCounts = currentCounts;
+        }
+
         return false;
+    }
+
+    /**
+     * Check a single end condition
+     * @private
+     */
+    checkEndCondition(endCond, currentCounts) {
+        const game = this.gameInstance;
+        const enums = game.call('getEnums');
+        const reverseEnums = game.getReverseEnums();
+
+        switch (endCond.condition) {
+            case 'unitKilled':
+                // End when any unit dies
+                return currentCounts.total < (this.previousUnitCounts.total || 0);
+
+            case 'teamUnitKilled':
+                // End when a unit from specified team dies
+                const teamName = endCond.team;
+                const prevCount = this.previousUnitCounts[teamName] || 0;
+                const currCount = currentCounts[teamName] || 0;
+                return currCount < prevCount;
+
+            case 'unitsRemaining':
+                // End when team has N or fewer units remaining
+                const remainingTeam = endCond.team;
+                const remainingCount = currentCounts[remainingTeam] || 0;
+                return remainingCount <= (endCond.count || 0);
+
+            case 'phaseReached':
+                // End when a specific phase is reached
+                const targetPhase = typeof endCond.phase === 'string'
+                    ? enums.gamePhase[endCond.phase]
+                    : endCond.phase;
+                return game.state.phase === targetPhase;
+
+            case 'teamEliminated':
+                // End when all units of a team are dead
+                const eliminatedTeam = endCond.team;
+                return (currentCounts[eliminatedTeam] || 0) === 0;
+
+            default:
+                return false;
+        }
     }
 
     /**
