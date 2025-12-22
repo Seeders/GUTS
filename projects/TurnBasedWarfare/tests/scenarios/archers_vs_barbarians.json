@@ -1,6 +1,6 @@
 {
   "name": "Archers vs Barbarians",
-  "description": "3 archers (left team) vs 3 barbarians (right team) - ends when first unit dies",
+  "description": "3 archers (left team) vs 3 barbarians (right team) - ends when first unit dies. Units placed far apart to test multi-round combat.",
   "seed": 12345,
   "level": "level_1",
   "startingGold": 1000,
@@ -22,16 +22,16 @@
       "team": "left",
       "unitType": "1_d_archer",
       "collection": "units",
-      "x": 50,
+      "x": 20,
       "y": 60,
-      "comment": "Place archers near center"
+      "comment": "Place archers on left side"
     },
     {
       "type": "PLACE_UNIT",
       "team": "left",
       "unitType": "1_d_archer",
       "collection": "units",
-      "x": 52,
+      "x": 22,
       "y": 60
     },
     {
@@ -39,7 +39,7 @@
       "team": "left",
       "unitType": "1_d_archer",
       "collection": "units",
-      "x": 54,
+      "x": 24,
       "y": 60
     },
     {
@@ -47,16 +47,16 @@
       "team": "right",
       "unitType": "1_s_barbarian",
       "collection": "units",
-      "x": 74,
+      "x": 100,
       "y": 60,
-      "comment": "Place barbarians near center on opposite side"
+      "comment": "Place barbarians on right side"
     },
     {
       "type": "PLACE_UNIT",
       "team": "right",
       "unitType": "1_s_barbarian",
       "collection": "units",
-      "x": 76,
+      "x": 102,
       "y": 60
     },
     {
@@ -64,7 +64,7 @@
       "team": "right",
       "unitType": "1_s_barbarian",
       "collection": "units",
-      "x": 78,
+      "x": 104,
       "y": 60
     },
     {
@@ -85,7 +85,7 @@
     },
     {
       "type": "START_BATTLE",
-      "comment": "Start the battle between archers and barbarians"
+      "comment": "Start the battle - units will continue moving across multiple rounds until they meet"
     }
   ]
 }
