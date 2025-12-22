@@ -16,6 +16,20 @@ class ShopSystem extends GUTS.BaseSystem {
 
         this.lastExperienceUpdate = 0;
         this.uiEnhancements = new GUTS.FantasyUIEnhancements(game);
+
+        // GameActionsInterface - single source of truth for game interactions
+        this._actions = null;
+    }
+
+    /**
+     * Get the GameActionsInterface instance (lazy initialization)
+     * This is the SAME interface used by headless mode
+     */
+    get actions() {
+        if (!this._actions && GUTS.GameActionsInterface) {
+            this._actions = new GUTS.GameActionsInterface(this.game);
+        }
+        return this._actions;
     }
 
     init() {
@@ -126,16 +140,25 @@ class ShopSystem extends GUTS.BaseSystem {
 
     /**
      * Get production progress for a building from its placement component
+     * Delegates to GameActionsInterface for consistency
      */
     getBuildingProductionProgress(entityId) {
+        if (this.actions) {
+            return this.actions.getBuildingProductionProgress(entityId);
+        }
         const placement = this.game.getComponent(entityId, 'placement');
         return placement?.productionProgress || 0;
     }
 
     /**
      * Set production progress for a building on its placement component
+     * Delegates to GameActionsInterface for consistency
      */
     setBuildingProductionProgress(entityId, progress) {
+        if (this.actions) {
+            this.actions.setBuildingProductionProgress(entityId, progress);
+            return;
+        }
         const placement = this.game.getComponent(entityId, 'placement');
         if (placement) {
             placement.productionProgress = progress;
@@ -450,38 +473,20 @@ class ShopSystem extends GUTS.BaseSystem {
 
     purchaseUnit(unitId, unit) {
         const buildingId = this.game.state.selectedEntity.entityId;
-        const placementId = this.getBuildingPlacementId(buildingId);
 
-        if (!placementId) {
+        if (!buildingId) {
             this.showNotification('No building selected!', 'error');
             return;
         }
 
-        const buildTime = unit.buildTime || 1;
-        const productionProgress = this.getBuildingProductionProgress(buildingId);
-        const remainingCapacity = 1 - productionProgress;
-
-        if (buildTime > remainingCapacity + 0.001) {
-            this.showNotification(`Not enough production capacity! Need ${buildTime.toFixed(1)} rounds`, 'error');
-            return;
-        }
-
-        unit.id = unitId;
-        unit.collection = 'units';
-        const placementPos = this.game.call('findBuildingSpawnPosition', placementId, unit);
-        if (!placementPos) {
-            this.showNotification('No valid placement near building!', 'error');
-            return;
-        }
-        const networkUnitData = this.game.call('createNetworkUnitData', placementPos, unit, this.game.state.myTeam);
-
-        this.game.call('sendPlacementRequest', networkUnitData, (success) => {
-            if(success){
-                // Domain logic (placePlacement, gold deduction, spawn) now handled by ClientNetworkSystem
-                // Here we just handle UI concerns: production progress
-                const newProgress = productionProgress + buildTime;
-                this.setBuildingProductionProgress(buildingId, newProgress);
+        // Use GameActionsInterface.purchaseUnit - SAME code path as headless mode
+        // This is the SINGLE source of truth for unit purchasing
+        this.actions.purchaseUnit(unitId, buildingId, this.game.state.myTeam, (success, response) => {
+            if (!success) {
+                // Show error notification from GameActionsInterface response
+                this.showNotification(response?.error || 'Purchase failed', 'error');
             }
+            // Success: gold deduction, placement, production progress all handled by GameActionsInterface
         });
     }
 
