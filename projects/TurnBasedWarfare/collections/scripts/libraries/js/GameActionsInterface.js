@@ -287,6 +287,101 @@ class GameActionsInterface {
     releaseGridCells(entityId) {
         this.game.call('releaseGridCells', entityId);
     }
+
+    // ==================== UNDO ====================
+
+    /**
+     * Undo the last placement (Ctrl+Z / Undo button)
+     * Only works during placement phase
+     */
+    undoLastPlacement() {
+        if (this.game.hasService('undoLastPlacement')) {
+            return this.game.call('undoLastPlacement');
+        }
+        return false;
+    }
+
+    // ==================== UNIT ORDERS ====================
+
+    /**
+     * Issue hold position order to selected squads
+     * Units stop moving and hold their current position
+     */
+    holdPosition(placementIds, callback) {
+        if (!placementIds || placementIds.length === 0) return;
+
+        const targetPositions = [];
+        for (const placementId of placementIds) {
+            const placement = this.game.call('getPlacementById', placementId);
+            if (placement?.squadUnits?.length > 0) {
+                const firstUnitId = placement.squadUnits[0];
+                const transform = this.game.getComponent(firstUnitId, 'transform');
+                const pos = transform?.position;
+                targetPositions.push(pos ? { x: pos.x, y: 0, z: pos.z } : null);
+            } else {
+                targetPositions.push(null);
+            }
+        }
+
+        const meta = { isMoveOrder: false };
+        this.game.call('setSquadTargets', { placementIds, targetPositions, meta }, callback);
+    }
+
+    /**
+     * Issue move order to squads at a target position
+     */
+    issueMoveOrder(placementIds, targetPosition, callback) {
+        if (!placementIds || placementIds.length === 0) return;
+
+        const meta = { isMoveOrder: true, preventEnemiesInRangeCheck: false };
+        const targetPositions = placementIds.map(() => ({
+            x: targetPosition.x,
+            z: targetPosition.z
+        }));
+
+        this.game.call('setSquadTargets', { placementIds, targetPositions, meta }, callback);
+    }
+
+    // ==================== SELECTION ====================
+
+    /**
+     * Get currently selected squad placement IDs
+     */
+    getSelectedSquads() {
+        if (this.game.hasService('getSelectedSquads')) {
+            return this.game.call('getSelectedSquads') || [];
+        }
+        return [];
+    }
+
+    /**
+     * Select multiple units by entity IDs
+     */
+    selectMultipleUnits(entityIds) {
+        if (this.game.hasService('selectMultipleUnits')) {
+            this.game.call('selectMultipleUnits', entityIds);
+        }
+    }
+
+    // ==================== SPECIALIZATION ====================
+
+    /**
+     * Select a specialization for a squad at level 2+
+     * This is what SquadExperienceSystem uses when player picks a spec
+     */
+    selectSpecialization(placementId, specializationId, team, callback) {
+        this.game.call('levelUpSquad', placementId, team, specializationId, callback);
+    }
+
+    /**
+     * Get squads that are ready to level up
+     */
+    getSquadsReadyToLevelUp() {
+        if (this.game.hasService('getSquadsReadyToLevelUp')) {
+            return this.game.call('getSquadsReadyToLevelUp') || [];
+        }
+        return [];
+    }
 }
 
 GUTS.GameActionsInterface = GameActionsInterface;
