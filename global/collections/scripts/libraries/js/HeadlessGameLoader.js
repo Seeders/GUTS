@@ -7,7 +7,7 @@
  */
 class HeadlessGameLoader extends GUTS.BaseLoader {
     constructor(game) {
-        this.game = game;
+        super(game);
     }
 
     async load() {
