@@ -43,6 +43,8 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.networkUnsubscribers = [];
         // Local game mode flag (set by SkirmishGameSystem or other local modes)
         this._localPlayerId = 0;
+        // Track ready state per team for local mode (both teams must be ready to start battle)
+        this._teamReadyState = { left: false, right: false };
     }
 
     // ==================== LOCAL GAME MODE ====================
@@ -67,8 +69,14 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     // They delegate to the process* methods inherited from BaseNetworkSystem
 
     handleSubmitPlacement(eventData, callback) {
-        const { playerId, numericPlayerId, data } = eventData;
+        const { data } = eventData;
         const { placement } = data;
+
+        // In headless/local mode, determine player from the placement's team
+        // Team left = player 0, Team right = player 1
+        const team = placement.team;
+        const numericPlayerId = team === this.enums.team.left ? 0 : 1;
+        const playerId = numericPlayerId;
 
         const playerStats = this.game.call('getPlayerStats', playerId);
         if (!playerStats) {
@@ -133,12 +141,45 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     handleReadyForBattle(eventData, callback) {
-        // In local game mode, just start battle immediately when both ready
-        // For now, toggle ready state and check if we should start
-        if (this.game.hasService('checkBattleStart')) {
-            this.game.call('checkBattleStart');
+        // Track ready state per team - only start when BOTH teams are ready
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            callback({ success: false, error: 'Not in placement phase.' });
+            return;
         }
-        callback({ success: true });
+
+        // Determine which team is being marked ready
+        const { team } = eventData.data || {};
+        const teamName = team === this.enums.team.left ? 'left' :
+                        team === this.enums.team.right ? 'right' :
+                        (eventData.numericPlayerId === 0 ? 'left' : 'right');
+
+        // Mark this team as ready
+        this._teamReadyState[teamName] = true;
+
+        // Check if both teams are ready
+        const bothReady = this._teamReadyState.left && this._teamReadyState.right;
+
+        if (bothReady) {
+            // Reset ready state for next round
+            this._teamReadyState = { left: false, right: false };
+
+            // Reset time and prepare for battle
+            this.game.resetCurrentTime();
+            this.game.call('resetAI');
+            this.game.triggerEvent('onBattleStart');
+
+            // Start the battle
+            this.game.call('startBattle');
+        }
+
+        callback({ success: true, teamReady: teamName, allReady: bothReady });
+    }
+
+    /**
+     * Reset team ready state (called at start of each placement phase)
+     */
+    resetTeamReadyState() {
+        this._teamReadyState = { left: false, right: false };
     }
 
     /**
@@ -606,7 +647,13 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         }, callback);
     }
 
-    toggleReadyForBattle(callback) {
+    toggleReadyForBattle(team, callback) {
+        // Handle optional team parameter (for backwards compatibility)
+        if (typeof team === 'function') {
+            callback = team;
+            team = this.game.state.myTeam;
+        }
+
         if (this.game.state.phase !== this.enums.gamePhase.placement) {
             if (callback) callback(false, 'Not in placement phase.');
             return;
@@ -616,7 +663,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             localHandler: 'handleReadyForBattle',
             eventName: 'READY_FOR_BATTLE',
             responseName: 'READY_FOR_BATTLE_RESPONSE',
-            data: {} // Handler just needs playerId which is added by networkRequest
+            data: { team } // Pass team to handler for proper ready state tracking
         }, callback || (() => {}));
     }
 

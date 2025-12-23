@@ -25,6 +25,9 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
     startBattle() {
         try {
+            console.log('[ServerBattlePhaseSystem] === STARTING BATTLE ===');
+            console.log(`[ServerBattlePhaseSystem] Before: phase=${this.game.state.phase}, round=${this.game.state.round}`);
+
             this.game.state.isPaused = false;
             this.game.state.phase = this.enums.gamePhase.battle;
 
@@ -39,6 +42,10 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             const gameSeed = this.game.state.gameSeed || 1;
             const battleSeed = GUTS.SeededRandom.combineSeed(gameSeed, this.game.state.round || 1);
             this.game.rng.strand('battle').reseed(battleSeed);
+
+            console.log(`[ServerBattlePhaseSystem] After: phase=${this.game.state.phase}, battleStartTime=${this.battleStartTime}`);
+            console.log(`[ServerBattlePhaseSystem] Triggering onBattleStart event`);
+            this.game.triggerEvent('onBattleStart');
 
             return { success: true };
 

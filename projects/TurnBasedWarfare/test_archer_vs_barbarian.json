@@ -1,0 +1,48 @@
+{
+  "name": "Archer vs Barbarian - Two Round Battle",
+  "description": "Round 1: Both teams order peasants to construct buildings. Round 2: Purchase units from completed buildings and fight.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "level_1",
+  "instructions": [
+    { "_comment": "=== ROUND 1: PLACEMENT PHASE - Order peasants to build ===" },
+
+    { "_comment": "Left team orders a peasant to build Fletcher's Hall" },
+    { "type": "PLACE_BUILDING", "buildingId": "fletchersHall", "team": "left", "x": "auto", "z": "auto" },
+
+    { "_comment": "Right team orders a peasant to build Barracks" },
+    { "type": "PLACE_BUILDING", "buildingId": "barracks", "team": "right", "x": "auto", "z": "auto" },
+
+    { "_comment": "Both teams submit - battle phase starts, peasants construct buildings" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== ROUND 1: BATTLE PHASE - Wait for construction ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+
+    { "_comment": "Wait for round 2 placement phase (buildings should be complete)" },
+    { "type": "WAIT", "trigger": "round", "round": 2 },
+
+    { "_comment": "=== ROUND 2: PLACEMENT PHASE - Purchase units from buildings ===" },
+
+    { "_comment": "Left team purchases an archer from their Fletcher's Hall" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_d_archer", "buildingEntityId": "auto:fletchersHall:left", "team": "left" },
+
+    { "_comment": "Right team purchases a barbarian from their Barracks" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_s_barbarian", "buildingEntityId": "auto:barracks:right", "team": "right" },
+
+    { "_comment": "Both units move toward center to meet" },
+    { "type": "MOVE_ORDER", "team": "left", "target": "center" },
+    { "type": "MOVE_ORDER", "team": "right", "target": "center" },
+
+    { "_comment": "Both teams submit placements - battle starts" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== ROUND 2: BATTLE PHASE ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+
+    { "_comment": "Wait for one unit to die (battle ends)" },
+    { "type": "WAIT", "trigger": "event", "event": "onUnitKilled" }
+  ]
+}

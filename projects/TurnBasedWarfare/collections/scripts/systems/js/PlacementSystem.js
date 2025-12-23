@@ -23,6 +23,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         'getCameraPositionForTeam',
         'applyNetworkUnitData',
         'findBuildingSpawnPosition',
+        'findBuildingAdjacentPosition',
         'getStartingLocationsFromLevel'
     ];
 

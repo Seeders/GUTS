@@ -16,20 +16,6 @@ class ShopSystem extends GUTS.BaseSystem {
 
         this.lastExperienceUpdate = 0;
         this.uiEnhancements = new GUTS.FantasyUIEnhancements(game);
-
-        // GameActionsInterface - single source of truth for game interactions
-        this._actions = null;
-    }
-
-    /**
-     * Get the GameActionsInterface instance (lazy initialization)
-     * This is the SAME interface used by headless mode
-     */
-    get actions() {
-        if (!this._actions && GUTS.GameActionsInterface) {
-            this._actions = new GUTS.GameActionsInterface(this.game);
-        }
-        return this._actions;
     }
 
     init() {
@@ -140,29 +126,16 @@ class ShopSystem extends GUTS.BaseSystem {
 
     /**
      * Get production progress for a building from its placement component
-     * Delegates to GameActionsInterface for consistency
      */
     getBuildingProductionProgress(entityId) {
-        if (this.actions) {
-            return this.actions.getBuildingProductionProgress(entityId);
-        }
-        const placement = this.game.getComponent(entityId, 'placement');
-        return placement?.productionProgress || 0;
+        return this.game.call('ui_getBuildingProductionProgress', entityId);
     }
 
     /**
      * Set production progress for a building on its placement component
-     * Delegates to GameActionsInterface for consistency
      */
     setBuildingProductionProgress(entityId, progress) {
-        if (this.actions) {
-            this.actions.setBuildingProductionProgress(entityId, progress);
-            return;
-        }
-        const placement = this.game.getComponent(entityId, 'placement');
-        if (placement) {
-            placement.productionProgress = progress;
-        }
+        this.game.call('ui_setBuildingProductionProgress', entityId, progress);
     }
 
     updateSquadExperience() {
@@ -397,8 +370,8 @@ class ShopSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Use GameActionsInterface - SAME code path as headless mode
-        this.actions.upgradeBuildingRequest(buildingId, placementId, targetBuildingId, (success, response) => {
+        // Use game.call - SAME code path as headless mode
+        this.game.call('upgradeBuildingRequest', buildingId, placementId, targetBuildingId, (success, response) => {
             if (success) {
                 this.showNotification(`Upgraded to ${this.collections.buildings[targetBuildingId].title}!`, 'success');
                 // Clear selection since the old building is destroyed
@@ -476,9 +449,9 @@ class ShopSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Use GameActionsInterface.purchaseUnit - SAME code path as headless mode
+        // Use game.call - SAME code path as headless mode
         // This is the SINGLE source of truth for unit purchasing
-        this.actions.purchaseUnit(unitId, buildingId, this.game.state.myTeam, (success, response) => {
+        this.game.call('ui_purchaseUnit', unitId, buildingId, this.game.state.myTeam, (success, response) => {
             if (!success) {
                 // Show error notification from GameActionsInterface response
                 this.showNotification(response?.error || 'Purchase failed', 'error');
@@ -518,8 +491,8 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     purchaseUpgrade(upgradeId, upgrade) {
-        // Use GameActionsInterface - SAME code path as headless mode
-        this.actions.purchaseUpgrade(upgradeId, (success, response) => {
+        // Use game.call - SAME code path as headless mode
+        this.game.call('purchaseUpgrade', upgradeId, (success, response) => {
             if (success) {
                 // Domain logic (gold deduction, bitmask) now handled by ClientNetworkSystem
                 // Here we just handle UI concerns: effects, notifications, UI refresh
@@ -674,8 +647,8 @@ class ShopSystem extends GUTS.BaseSystem {
             levelUpBtn.className = 'btn btn-primary experience-btn';
             levelUpBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
             levelUpBtn.onclick = () => {
-                // Use GameActionsInterface - SAME code path as headless mode
-                this.actions.levelUpSquad(squad.placementId, squad.team);
+                // Use game.call - SAME code path as headless mode
+                this.game.call('levelUpSquad', squad.placementId, squad.team);
             };
             buttonContainer.appendChild(levelUpBtn);
         }
@@ -736,8 +709,8 @@ class ShopSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Use GameActionsInterface - SAME code path as headless mode
-        this.actions.cancelBuilding(placement.placementId, buildingEntityId, (success, response) => {
+        // Use game.call - SAME code path as headless mode
+        this.game.call('cancelBuilding', placement.placementId, buildingEntityId, (success, response) => {
             if (!success) {
                 this.game.uiSystem?.showNotification('Failed to cancel construction', 'error', 1500);
                 console.error('Cancel construction failed:', response);

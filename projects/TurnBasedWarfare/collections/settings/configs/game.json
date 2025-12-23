@@ -56,6 +56,7 @@
   ],
   "systems": [
     "GameSystem",
+    "GameInterfaceSystem",
     "PlayerStatsSystem",
     "GameModeSystem",
     "KeyboardSystem",

@@ -72,6 +72,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     onSceneLoad(sceneData) {
+        console.log('[PathfindingSystem] onSceneLoad called, initialized:', this.initialized);
         if (this.initialized) return;
 
         const collections = this.collections;
@@ -82,13 +83,16 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         // Get level from terrain entity instead of game.state.level
         const levelId = this.game.call('getLevel');
+        console.log('[PathfindingSystem] levelId:', levelId);
         const level = collections.levels?.[levelId];
         if (!level || !level.tileMap) {
-            console.warn('PathfindingSystem: Level or tileMap not available');
+            console.warn('PathfindingSystem: Level or tileMap not available, levelId:', levelId, 'level:', !!level);
             return;
         }
 
-        if (!this.game.call('isTerrainInitialized')) {
+        const terrainInitialized = this.game.call('isTerrainInitialized');
+        console.log('[PathfindingSystem] isTerrainInitialized:', terrainInitialized);
+        if (!terrainInitialized) {
             console.warn('PathfindingSystem: Waiting for terrain system...');
             return;
         }

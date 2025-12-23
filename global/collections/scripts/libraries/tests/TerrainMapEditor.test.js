@@ -842,8 +842,7 @@ describe('TerrainMapEditor', () => {
 
             // Bind methods from prototype
             selectionEditor.setupSelectionSystem = proto.setupSelectionSystem.bind(selectionEditor);
-            selectionEditor.onSelectionSystemUnitSelected = proto.onSelectionSystemUnitSelected.bind(selectionEditor);
-            selectionEditor.onSelectionSystemMultipleUnitsSelected = proto.onSelectionSystemMultipleUnitsSelected.bind(selectionEditor);
+            selectionEditor.onSelectionChanged = proto.onSelectionChanged.bind(selectionEditor);
             selectionEditor.onSelectionSystemDeselect = proto.onSelectionSystemDeselect.bind(selectionEditor);
         });
 
@@ -867,15 +866,6 @@ describe('TerrainMapEditor', () => {
                     prioritizeUnitsOverBuildings: false,
                     showGameUI: false
                 });
-            });
-
-            it('should wire up onUnitSelected event', () => {
-                selectionEditor.setupSelectionSystem();
-
-                expect(mockEditorContext.on).toHaveBeenCalledWith(
-                    'onUnitSelected',
-                    expect.any(Function)
-                );
             });
 
             it('should wire up onMultipleUnitsSelected event', () => {

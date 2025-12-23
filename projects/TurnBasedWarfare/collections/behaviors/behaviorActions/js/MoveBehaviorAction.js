@@ -13,7 +13,14 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
             z: playerOrder.targetPositionZ
         };
 
-        if (targetPosition.x !== 0 || targetPosition.z !== 0) {
+        // Debug: Log the target position from playerOrder
+        if (this.game.tickCount % 100 === 0) {
+            console.log(`[MoveBehaviorAction] Entity ${entityId}: playerOrder target = (${playerOrder.targetPositionX}, ${playerOrder.targetPositionZ}), enabled=${playerOrder.enabled}, isMoveOrder=${playerOrder.isMoveOrder}`);
+        }
+
+        // Check if target position is valid (not null/undefined)
+        // Note: (0,0) is a valid position, so we can't just check for non-zero
+        if (targetPosition.x != null && targetPosition.z != null) {
             const isForceMove = playerOrder.preventEnemiesInRangeCheck;
             const transform = game.getComponent(entityId, 'transform');
             const pos = transform?.position;

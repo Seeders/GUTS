@@ -1,0 +1,35 @@
+{
+  "name": "Archer vs Barbarian Battle Test",
+  "description": "Left team places archers, right team places barbarians, both attack center",
+  "seed": 12345,
+  "startingGold": 500,
+  "level": "level_1",
+  "instructions": [
+    { "_comment": "=== PLACEMENT PHASE ===" },
+
+    { "_comment": "Left team places 3 archers near their spawn" },
+    { "type": "PLACE_UNIT", "unitId": "1_d_archer", "team": "left", "x": 20, "z": 60 },
+    { "type": "PLACE_UNIT", "unitId": "1_d_archer", "team": "left", "x": 22, "z": 60 },
+    { "type": "PLACE_UNIT", "unitId": "1_d_archer", "team": "left", "x": 24, "z": 60 },
+
+    { "_comment": "Right team places 3 barbarians near their spawn" },
+    { "type": "PLACE_UNIT", "unitId": "1_s_barbarian", "team": "right", "x": 108, "z": 60 },
+    { "type": "PLACE_UNIT", "unitId": "1_s_barbarian", "team": "right", "x": 106, "z": 60 },
+    { "type": "PLACE_UNIT", "unitId": "1_s_barbarian", "team": "right", "x": 104, "z": 60 },
+
+    { "_comment": "Give move orders DURING placement phase (before battle starts)" },
+    { "type": "MOVE_ORDER", "team": "left", "x": 64, "z": 60 },
+    { "type": "MOVE_ORDER", "team": "right", "x": 64, "z": 60 },
+
+    { "_comment": "Both teams submit placement - battle starts when both are ready" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== BATTLE PHASE ===" },
+    { "_comment": "Wait for battle phase to start" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+
+    { "_comment": "Wait for a unit to die" },
+    { "type": "WAIT", "trigger": "event", "event": "onUnitDeath" }
+  ]
+}

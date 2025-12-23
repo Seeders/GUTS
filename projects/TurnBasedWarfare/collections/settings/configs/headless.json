@@ -8,7 +8,6 @@
   "initialScene": "headless",
   "libraries": [
     "GameServices",
-    "GameActionsInterface",
     "CallLogger",
     "BaseSystem",
     "BaseLoader",
@@ -31,6 +30,8 @@
     "SceneManager"
   ],
   "systems": [
+    "HeadlessSimulationSystem",
+    "GameInterfaceSystem",
     "GameSystem",
     "PlayerStatsSystem",
     "UnitCreationSystem",
