@@ -141,39 +141,6 @@ class HeadlessSkirmishRunner {
     }
 
     /**
-     * Run a quick simulation with AI-controlled placements
-     * @param {Object} options - Simulation options
-     * @returns {Promise<Object>} Simulation results
-     */
-    async runQuickSimulation(options = {}) {
-        if (!this.isSetup) {
-            throw new Error('Must call setup() before running simulation');
-        }
-
-        const enums = this.game.call('getEnums');
-
-        // Generate AI placements for both teams
-        if (this.game.hasService('generateAIPlacement')) {
-            this.game.call('generateAIPlacement', enums.team.left);
-            this.game.call('generateAIPlacement', enums.team.right);
-        }
-
-        // Submit placements
-        const instructions = [
-            { type: 'SUBMIT_PLACEMENT', team: enums.team.left },
-            { type: 'SUBMIT_PLACEMENT', team: enums.team.right },
-            { type: 'WAIT', trigger: 'phase', phase: enums.gamePhase.battle },
-            { type: 'WAIT', trigger: 'tick', tick: this.game.tickCount + 1 }
-        ];
-
-        return await this.engine.runSimulation({
-            instructions,
-            maxTicks: options.maxTicks || 10000,
-            seed: this.config.seed
-        });
-    }
-
-    /**
      * Process instructions to convert team names to enum values
      * @param {Array} instructions - Raw instructions
      * @param {boolean} autoStartBattle - Add START_BATTLE instruction

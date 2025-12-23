@@ -37,24 +37,8 @@ class InputSystem extends GUTS.BaseSystem {
             });
         });
 
-        canvas.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-
-            // Get world position from screen coordinates
-            const worldPos = this.game.call('getWorldPositionFromMouse', event.clientX, event.clientY);
-            if (!worldPos) return;
-
-            const modifiers = {
-                shift: event.shiftKey,
-                ctrl: event.ctrlKey,
-                alt: event.altKey
-            };
-
-            // Forward to GameInterfaceSystem
-            this.game.call('ui_handleCanvasRightClick', worldPos.x, worldPos.z, modifiers, (result) => {
-                this.game.triggerEvent('onInputResult', result);
-            });
-        });
+        // Note: Right-click (contextmenu) is handled by UnitOrderUISystem
+        // which manages its own canvas listener based on isTargeting state
     }
     
     setupButtonEvents() {        

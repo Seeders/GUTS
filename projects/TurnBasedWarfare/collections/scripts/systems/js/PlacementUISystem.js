@@ -446,7 +446,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
 
         const unitType = this.game.state.selectedUnitType;
-        const gridPos = this.game.call('worldToGrid', this.mouseWorldPos.x, this.mouseWorldPos.z);
+        const gridPos = this.game.call('worldToPlacementGrid', this.mouseWorldPos.x, this.mouseWorldPos.z);
 
         // Throttle validation checks
         const now = performance.now();
@@ -460,26 +460,25 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.cachedGridPos = gridPos;
 
         // Check if placement is valid
-        const validation = this.game.call('validatePlacement', gridPos, unitType, this.game.state.myTeam);
-        if (!validation.squadData) return;
+        const squadData = this.game.call('getSquadData', unitType);
+        if (!squadData) return;
 
-        const isValid = validation.isValid;
-        const cells = validation.cells;
+        const cells = this.game.call('getSquadCells', gridPos, squadData);
+        const isValid = this.game.call('isValidGridPlacement', cells, this.game.state.myTeam);
 
         this.cachedValidation = isValid;
 
         // Get world positions for cells (offset by half cell to center on cell)
         const halfCell = this.game.call('getPlacementGridSize') / 2;
         const worldPositions = cells.map(cell => {
-            const pos = this.game.call('gridToWorld', cell.x, cell.z);
+            const pos = this.game.call('placementGridToWorld', cell.x, cell.z);
             return { x: pos.x + halfCell, z: pos.z + halfCell };
         });
 
         // Get unit positions for squad preview
         let unitPositions = null;
-        const layout = this.game.call('getSquadLayout', unitType);
-        if (layout && layout.size > 1) {
-            unitPositions = this.game.call('getUnitPositions', gridPos, unitType);
+        if (this.game.call('getSquadSize', squadData) > 1) {
+            unitPositions = this.game.call('calculateUnitPositions', gridPos, unitType);
         }
 
         // Update preview with correct API
@@ -584,7 +583,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
     // ==================== VISUAL EFFECTS ====================
 
     createPlacementEffects(gridPos, unitType) {
-        const worldPos = this.game.call('gridToWorld', gridPos.x, gridPos.z);
+        const worldPos = this.game.call('placementGridToWorld', gridPos.x, gridPos.z);
         if (worldPos) {
             this.game.call('createParticleEffect',
                 worldPos.x,
@@ -597,7 +596,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
     }
 
     createUndoEffects(gridPos) {
-        const worldPos = this.game.call('gridToWorld', gridPos.x, gridPos.z);
+        const worldPos = this.game.call('placementGridToWorld', gridPos.x, gridPos.z);
         if (worldPos) {
             this.game.call('createParticleEffect',
                 worldPos.x,

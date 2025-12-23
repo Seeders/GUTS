@@ -17,6 +17,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         'ui_undoPlacement',          // Undo last placement
         'ui_holdPosition',           // Order units to hold position
         'ui_issueMoveOrder',         // Order units to move
+        'ui_assignBuilder',          // Assign builder to construction
         'ui_toggleReadyForBattle',   // Toggle ready state
 
         // === Input Handling ===
@@ -182,6 +183,13 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         }));
 
         this.game.call('setSquadTargets', { placementIds, targetPositions, meta }, callback);
+    }
+
+    /**
+     * Assign a builder unit to a building under construction
+     */
+    ui_assignBuilder(builderEntityId, buildingEntityId, callback) {
+        this._assignBuilderToConstruction(builderEntityId, buildingEntityId, callback);
     }
 
     // ==================== PLACEMENT PHASE ====================
@@ -510,7 +518,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
      */
     _handlePlacementClick(worldX, worldZ, callback) {
         const unitType = this.game.state.selectedUnitType;
-        const gridPos = this.game.call('worldToGrid', worldX, worldZ);
+        const gridPos = this.game.call('worldToPlacementGrid', worldX, worldZ);
         const team = this.game.state.myTeam;
         const playerId = this.game.clientNetworkManager?.numericPlayerId ?? (team === this.enums.team.left ? 0 : 1);
         const peasantInfo = this.game.state.peasantBuildingPlacement || null;

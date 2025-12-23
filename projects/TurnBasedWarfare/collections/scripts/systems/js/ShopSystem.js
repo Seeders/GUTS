@@ -128,14 +128,18 @@ class ShopSystem extends GUTS.BaseSystem {
      * Get production progress for a building from its placement component
      */
     getBuildingProductionProgress(entityId) {
-        return this.game.call('ui_getBuildingProductionProgress', entityId);
+        const placement = this.game.getComponent(entityId, 'placement');
+        return placement?.productionProgress || 0;
     }
 
     /**
      * Set production progress for a building on its placement component
      */
     setBuildingProductionProgress(entityId, progress) {
-        this.game.call('ui_setBuildingProductionProgress', entityId, progress);
+        const placement = this.game.getComponent(entityId, 'placement');
+        if (placement) {
+            placement.productionProgress = progress;
+        }
     }
 
     updateSquadExperience() {
@@ -370,8 +374,11 @@ class ShopSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Use game.call - SAME code path as headless mode
-        this.game.call('upgradeBuildingRequest', buildingId, placementId, targetBuildingId, (success, response) => {
+        this.game.call('upgradeBuildingRequest', {
+            buildingEntityId: buildingId,
+            placementId: placementId,
+            targetBuildingId: targetBuildingId
+        }, (success, response) => {
             if (success) {
                 this.showNotification(`Upgraded to ${this.collections.buildings[targetBuildingId].title}!`, 'success');
                 // Clear selection since the old building is destroyed
@@ -491,8 +498,7 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     purchaseUpgrade(upgradeId, upgrade) {
-        // Use game.call - SAME code path as headless mode
-        this.game.call('purchaseUpgrade', upgradeId, (success, response) => {
+        this.game.call('purchaseUpgrade', { upgradeId: upgradeId }, (success, response) => {
             if (success) {
                 // Domain logic (gold deduction, bitmask) now handled by ClientNetworkSystem
                 // Here we just handle UI concerns: effects, notifications, UI refresh
@@ -709,8 +715,10 @@ class ShopSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Use game.call - SAME code path as headless mode
-        this.game.call('cancelBuilding', placement.placementId, buildingEntityId, (success, response) => {
+        this.game.call('cancelBuilding', {
+            placementId: placement.placementId,
+            buildingEntityId: buildingEntityId
+        }, (success, response) => {
             if (!success) {
                 this.game.uiSystem?.showNotification('Failed to cancel construction', 'error', 1500);
                 console.error('Cancel construction failed:', response);

@@ -20,6 +20,8 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         this.pendingCallbacks = 0;
         this.orderMeta = {};
 
+        this._onCanvasClick = this._onCanvasClick.bind(this);
+
         this.cursorWhenTargeting = 'crosshair';
         this.pingEffect = { count: 12, color: 0x00ff00 };
         this.targetingPreview = null;
@@ -212,16 +214,26 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
     }
 
     startTargeting(meta = {}) {
+        this.stopTargeting();
         if (this.game.state.phase !== this.enums.gamePhase.placement) return;
         this.isTargeting = true;
         this.orderMeta = meta;
         this.pendingCallbacks = 0;
+
+        const canvas = this.game.canvas;
+        if (canvas) {
+            canvas.addEventListener('contextmenu', this._onCanvasClick, { once: true });
+        }
     }
 
     stopTargeting() {
         if (!this.isTargeting) return;
         this.isTargeting = false;
-        this.orderMeta = {};
+
+        const canvas = this.game.canvas;
+        if (canvas) {
+            canvas.removeEventListener('contextmenu', this._onCanvasClick, { once: true });
+        }
 
         if (this.targetingPreview) {
             this.targetingPreview.clear();
@@ -316,29 +328,112 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         this.targetingPreview.showAtWorldPositions(targetPositions, true);
     }
 
-    /**
-     * Handle input results from GameInterfaceSystem
-     * Called via game event 'onInputResult'
-     */
-    onInputResult(result) {
-        if (!result) return;
+    // ==================== CANVAS RIGHT-CLICK HANDLING ====================
 
-        if (result.action === 'move_order') {
-            if (result.success) {
-                const { targetPosition } = result.data;
+    _onCanvasClick(event) {
+        if (!this.isTargeting) return;
 
+        const canvas = this.game.canvas;
+        if (!canvas) {
+            this.stopTargeting();
+            return;
+        }
+
+        const worldPos = this.game.call('getWorldPositionFromMouse');
+        if (!worldPos) {
+            this.game.uiSystem?.showNotification('Could not find ground under cursor.', 'error', 1000);
+            this.stopTargeting();
+            return;
+        }
+
+        let placementIds = this.game.call('getSelectedSquads') || [];
+
+        if (!placementIds || placementIds.length === 0) {
+            this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
+            this.stopTargeting();
+            return;
+        }
+
+        // Check if clicking on a building under construction
+        const buildingUnderConstruction = this.getBuildingUnderConstructionAtPosition(worldPos);
+        if (buildingUnderConstruction) {
+            // Check if any selected units have BuildAbility
+            const builderUnit = this.getBuilderUnitFromSelection(placementIds);
+            if (builderUnit) {
+                this.assignBuilderToConstruction(builderUnit, buildingUnderConstruction);
+                return;
+            }
+        }
+
+        const targetPosition = { x: worldPos.x, y: 0, z: worldPos.z };
+
+        // Use GameInterfaceSystem for the actual move order
+        this.game.call('ui_issueMoveOrder', placementIds, targetPosition, (success, response) => {
+            if (success) {
                 // Show visual feedback
-                if (this.game.effectsSystem && targetPosition) {
-                    this.game.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { ...this.pingEffect });
+                if (this.game.effectsSystem) {
+                    this.game.call('createParticleEffect', worldPos.x, 0, worldPos.z, 'magic', { ...this.pingEffect });
                 }
 
                 // Keep targeting active and update preview
                 this.startTargeting();
                 this.showMoveTargets();
             }
-        } else if (result.action === 'assign_builder') {
-            if (result.success) {
-                const { builderEntityId, targetPosition } = result.data;
+        });
+    }
+
+    getBuildingUnderConstructionAtPosition(worldPos) {
+        const buildings = this.game.getEntitiesWith("placement", "transform", "unitType");
+
+        for (const entityId of buildings) {
+            const placement = this.game.getComponent(entityId, "placement");
+            const transform = this.game.getComponent(entityId, "transform");
+            const pos = transform?.position;
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+
+            if (!placement || !pos || !unitType) continue;
+            if (unitType.collection !== 'buildings') continue;
+            if (!placement.isUnderConstruction) continue;
+
+            // Check if click is within building bounds (use collision radius or default)
+            const radius = unitType.collisionRadius || 50;
+            const dx = worldPos.x - pos.x;
+            const dz = worldPos.z - pos.z;
+            const dist = Math.sqrt(dx * dx + dz * dz);
+
+            if (dist <= radius) {
+                return entityId;
+            }
+        }
+
+        return null;
+    }
+
+    getBuilderUnitFromSelection(placementIds) {
+        for (const placementId of placementIds) {
+            const placement = this.game.call('getPlacementById', placementId);
+            if (!placement) continue;
+
+            for (const unitId of placement.squadUnits) {
+                // Check if unit has BuildAbility
+                const abilities = this.game.call('getEntityAbilities', unitId);
+                if (abilities) {
+                    const buildAbility = abilities.find(a => a.id === 'build');
+                    if (buildAbility) {
+                        return unitId;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    assignBuilderToConstruction(builderEntityId, buildingEntityId) {
+        // Use GameInterfaceSystem for the actual builder assignment
+        this.game.call('ui_assignBuilder', builderEntityId, buildingEntityId, (result) => {
+            if (result && result.success) {
+                const { targetPosition } = result.data;
 
                 // Store peasantId in ability for completion tracking
                 const abilities = this.game.call('getEntityAbilities', builderEntityId);
@@ -355,11 +450,11 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
                 }
 
                 this.game.uiSystem?.showNotification('Peasant assigned to continue construction', 'success', 1000);
-
-                // Keep targeting active
-                this.startTargeting();
             }
-        }
+
+            // Keep targeting active
+            this.startTargeting();
+        });
     }
 
     onBattleStart() {

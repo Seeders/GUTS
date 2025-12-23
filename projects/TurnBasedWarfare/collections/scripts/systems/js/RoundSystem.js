@@ -24,19 +24,5 @@ class RoundSystem extends GUTS.BaseSystem {
                 playerOrder.issuedTime = 0;
             }
         });
-
-        // Reset production progress for all buildings at the start of each placement phase
-        // This allows buildings to produce again each round
-        const placementEntities = this.game.getEntitiesWith('placement', 'unitType');
-        placementEntities.forEach((entityId) => {
-            const placement = this.game.getComponent(entityId, 'placement');
-            const unitType = this.game.getComponent(entityId, 'unitType');
-            if (placement && unitType) {
-                const unitDef = this.game.call('getUnitTypeDef', unitType);
-                if (unitDef?.collection === 'buildings') {
-                    placement.productionProgress = 0;
-                }
-            }
-        });
     }
 }

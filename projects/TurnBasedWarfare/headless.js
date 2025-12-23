@@ -13,7 +13,6 @@
  *   node headless.js --level level_2          # Specify level
  *   node headless.js --seed 12345             # Set random seed
  *   node headless.js --instructions file.json # Load instructions from file
- *   node headless.js --quick                  # Quick simulation with AI placements
  *
  * Programmatic usage:
  *   import { createHeadlessRunner } from './headless.js';
@@ -104,7 +103,6 @@ function parseArgs() {
         level: 'level_1',
         seed: Date.now(),
         startingGold: 100,
-        quick: false,
         instructionsFile: null,
         verbose: false,
         maxTicks: 10000
@@ -124,10 +122,6 @@ function parseArgs() {
             case '--gold':
             case '-g':
                 config.startingGold = parseInt(args[++i], 10);
-                break;
-            case '--quick':
-            case '-q':
-                config.quick = true;
                 break;
             case '--instructions':
             case '-i':
@@ -164,7 +158,6 @@ Options:
   --level, -l <name>       Level to simulate (default: level_1)
   --seed, -s <number>      Random seed for deterministic simulation
   --gold, -g <number>      Starting gold for each team (default: 100)
-  --quick, -q              Quick mode: AI places units for both teams
   --instructions, -i <file> Load instructions from JSON file
   --max-ticks, -m <number> Maximum ticks before timeout (default: 10000)
   --verbose, -v            Show detailed output
@@ -187,7 +180,6 @@ Instruction Types:
   CALL_SERVICE     - Call a game service directly
 
 Examples:
-  node headless.js --quick --seed 12345
   node headless.js --instructions battle_test.json
   node headless.js --level level_2 --gold 200 --verbose
 `);
@@ -244,13 +236,7 @@ async function main() {
 
         let results;
 
-        if (config.quick) {
-            // Quick mode: AI controls both teams
-            console.log(`[Headless] Running quick simulation with AI placements...`);
-            results = await runner.runQuickSimulation({
-                maxTicks: config.maxTicks
-            });
-        } else if (config.instructionsFile) {
+        if (config.instructionsFile) {
             // Load and execute instructions from file
             const scenario = loadScenario(config.instructionsFile);
 
