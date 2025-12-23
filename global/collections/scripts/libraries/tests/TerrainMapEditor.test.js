@@ -824,7 +824,8 @@ describe('TerrainMapEditor', () => {
                     getWorldPositionFromMouse: vi.fn(() => ({ x: 100, y: 0, z: 100 }))
                 },
                 worldRenderer: {
-                    getGroundMesh: vi.fn(() => ({}))
+                    getGroundMesh: vi.fn(() => ({})),
+                    getCamera: vi.fn(() => null)
                 },
                 mouseNDC: { x: 0.5, y: 0.5 },
                 selectedEntityId: null,
@@ -842,8 +843,7 @@ describe('TerrainMapEditor', () => {
 
             // Bind methods from prototype
             selectionEditor.setupSelectionSystem = proto.setupSelectionSystem.bind(selectionEditor);
-            selectionEditor.onSelectionSystemUnitSelected = proto.onSelectionSystemUnitSelected.bind(selectionEditor);
-            selectionEditor.onSelectionSystemMultipleUnitsSelected = proto.onSelectionSystemMultipleUnitsSelected.bind(selectionEditor);
+            selectionEditor.onSelectionChanged = proto.onSelectionChanged.bind(selectionEditor);
             selectionEditor.onSelectionSystemDeselect = proto.onSelectionSystemDeselect.bind(selectionEditor);
         });
 
@@ -865,17 +865,9 @@ describe('TerrainMapEditor', () => {
                     excludeCollections: [],
                     includeCollections: null,
                     prioritizeUnitsOverBuildings: false,
-                    showGameUI: false
+                    showGameUI: false,
+                    camera: null
                 });
-            });
-
-            it('should wire up onUnitSelected event', () => {
-                selectionEditor.setupSelectionSystem();
-
-                expect(mockEditorContext.on).toHaveBeenCalledWith(
-                    'onUnitSelected',
-                    expect.any(Function)
-                );
             });
 
             it('should wire up onMultipleUnitsSelected event', () => {
@@ -944,9 +936,9 @@ describe('TerrainMapEditor', () => {
             });
 
             it('should update selection state on single unit selected', () => {
-                // Trigger the event
-                const onUnitSelected = eventListeners['onUnitSelected'][0];
-                onUnitSelected(1);
+                // Trigger the event with a single unit (via onMultipleUnitsSelected)
+                const onMultipleUnitsSelected = eventListeners['onMultipleUnitsSelected'][0];
+                onMultipleUnitsSelected(new Set([1]));
 
                 expect(selectionEditor.selectedEntityId).toBe(1);
                 expect(selectionEditor.selectedEntities).toEqual([1]);
@@ -965,6 +957,7 @@ describe('TerrainMapEditor', () => {
                 expect(selectionEditor.selectedEntities).toEqual([1, 2]);
                 expect(selectionEditor.selectedEntityId).toBe(1);
                 expect(selectionEditor.calculateMultiSelectOffsets).toHaveBeenCalled();
+                expect(selectionEditor.attachGizmoToEntity).toHaveBeenCalledWith(null); // Gizmo at center for multi-select
                 expect(selectionEditor.updateInspector).toHaveBeenCalled();
                 expect(selectionEditor.updateHierarchy).toHaveBeenCalled();
             });
@@ -988,8 +981,8 @@ describe('TerrainMapEditor', () => {
             });
 
             it('should find levelEntity for selected entityId', () => {
-                const onUnitSelected = eventListeners['onUnitSelected'][0];
-                onUnitSelected(1);
+                const onMultipleUnitsSelected = eventListeners['onMultipleUnitsSelected'][0];
+                onMultipleUnitsSelected(new Set([1]));
 
                 expect(selectionEditor.selectedLevelEntity).toEqual(
                     { id: 1, collection: 'units', spawnType: 'archer' }
