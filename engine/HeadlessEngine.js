@@ -20,6 +20,7 @@ export default class HeadlessEngine extends BaseEngine {
         this.paused = false;
         this.running = false;
         this.maxTicks = 10000;
+        this.defaultTimeoutMs = 30000; // 30 second default timeout
     }
 
     async init(projectName) {
@@ -31,6 +32,18 @@ export default class HeadlessEngine extends BaseEngine {
 
         const config = this.collections.configs.headless || this.collections.configs.server;
 
+        // Initialize logger with config level
+        if (global.GUTS?.HeadlessLogger && config.logLevel) {
+            global.GUTS.HeadlessLogger.setLevel(config.logLevel);
+        }
+        this._log = global.GUTS?.HeadlessLogger?.createLogger('HeadlessEngine') || {
+            error: (...args) => console.error('[HeadlessEngine]', ...args),
+            warn: (...args) => console.warn('[HeadlessEngine]', ...args),
+            info: (...args) => console.log('[HeadlessEngine]', ...args),
+            debug: () => {},
+            trace: () => {}
+        };
+
         // Create game instance
         const appLibrary = config.appLibrary || 'HeadlessECSGame';
         this.gameInstance = new global.GUTS[appLibrary](this);
@@ -40,7 +53,7 @@ export default class HeadlessEngine extends BaseEngine {
         this.loader = new global.GUTS[loaderLibrary](this.gameInstance);
         await this.loader.load();
 
-        console.log('[HeadlessEngine] Initialized');
+        this._log.info('Initialized');
     }
 
     async loadCollections(projectName) {
@@ -109,14 +122,65 @@ export default class HeadlessEngine extends BaseEngine {
      * @param {Object} options
      * @param {Array} options.instructions - Array of instruction objects to process
      * @param {number} options.maxTicks - Maximum ticks before timeout
+     * @param {number} options.timeoutMs - Maximum time in milliseconds before timeout (default: 30000)
      * @returns {Promise<Object>} Simulation results
      */
     async runSimulation(options = {}) {
         const {
             instructions = [],
-            maxTicks = this.maxTicks
+            maxTicks = this.maxTicks,
+            timeoutMs = this.defaultTimeoutMs
         } = options;
 
+        const startTime = this.getCurrentTime();
+
+        // Create timeout promise for safety
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+                this.running = false; // Stop the simulation loop
+                reject(new Error(`Simulation timeout after ${timeoutMs}ms`));
+            }, timeoutMs);
+        });
+
+        // Run the actual simulation with timeout protection
+        try {
+            const result = await Promise.race([
+                this._runSimulationInternal(instructions, maxTicks, startTime),
+                timeoutPromise
+            ]);
+            return result;
+        } catch (error) {
+            this.running = false;
+            const elapsedMs = this.getCurrentTime() - startTime;
+
+            // Return partial results on timeout
+            const game = this.gameInstance;
+            const gameSummary = game?.getGameSummary?.() || {};
+            const reverseEnums = game?.getReverseEnums?.() || {};
+
+            return {
+                success: false,
+                completed: false,
+                error: error.message,
+                timedOut: error.message.includes('timeout'),
+                tickCount: game?.tickCount || 0,
+                gameTime: game?.state?.now || 0,
+                realTimeMs: elapsedMs,
+                ticksPerSecond: elapsedMs > 0 ? ((game?.tickCount || 0) / elapsedMs) * 1000 : 0,
+                round: game?.state?.round || 1,
+                phase: reverseEnums.gamePhase?.[game?.state?.phase] || game?.state?.phase,
+                winner: null,
+                entityCounts: { total: 0, byTeam: {} },
+                gameState: gameSummary
+            };
+        }
+    }
+
+    /**
+     * Internal simulation runner (separated for timeout handling)
+     * @private
+     */
+    async _runSimulationInternal(instructions, maxTicks, startTime) {
         const game = this.gameInstance;
 
         // Get or create the HeadlessSimulationSystem
@@ -150,6 +214,7 @@ export default class HeadlessEngine extends BaseEngine {
         }
 
         this.running = false;
+        const elapsedMs = this.getCurrentTime() - startTime;
 
         // Return simulation results with all expected fields
         const gameSummary = game.getGameSummary?.() || {};
@@ -179,17 +244,21 @@ export default class HeadlessEngine extends BaseEngine {
             else winner = 'draw';
         }
 
+        // Get unit statistics from HeadlessSimulationSystem
+        const unitStatistics = simSystem.getUnitStatistics?.() || { livingUnits: [], deadUnits: [] };
+
         return {
             success: true,
             completed: game.state.gameOver || false,
             tickCount: game.tickCount || 0,
             gameTime: game.state.now || 0,
-            realTimeMs: 0,
-            ticksPerSecond: 0,
+            realTimeMs: elapsedMs,
+            ticksPerSecond: elapsedMs > 0 ? ((game.tickCount || 0) / elapsedMs) * 1000 : 0,
             round: game.state.round || 1,
             phase: reverseEnums.gamePhase?.[game.state.phase] || game.state.phase,
             winner,
             entityCounts,
+            unitStatistics,
             ...simResults,
             gameState: gameSummary
         };

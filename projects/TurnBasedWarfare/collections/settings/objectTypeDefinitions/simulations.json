@@ -1,6 +1,6 @@
 {
-  "id": "items",
+  "id": "simulations",
   "name": "Simulations",
   "singular": "simulation",
-  "objectTypeCategory": "prefabs"
+  "objectTypeCategory": "data"
 }

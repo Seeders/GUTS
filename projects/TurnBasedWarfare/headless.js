@@ -300,6 +300,22 @@ async function main() {
         console.log(`  Final Round: ${results.round}`);
         console.log(`  Final Phase: ${results.phase}`);
 
+        // Display unit statistics (always shown)
+        if (results.unitStatistics) {
+            const { livingUnits, deadUnits } = results.unitStatistics;
+
+            console.log(`\n  ===== LIVING UNITS (${livingUnits.length}) =====`);
+            for (const unit of livingUnits) {
+                const hpPercent = unit.health.max > 0 ? Math.round((unit.health.current / unit.health.max) * 100) : 0;
+                console.log(`    [${unit.team}] ${unit.unitName}: ${unit.health.current}/${unit.health.max} HP (${hpPercent}%)`);
+            }
+
+            console.log(`\n  ===== DEAD UNITS (${deadUnits.length}) =====`);
+            for (const unit of deadUnits) {
+                console.log(`    [${unit.team}] ${unit.unitName}: Died round ${unit.round}, tick ${unit.tick}`);
+            }
+        }
+
         if (config.verbose) {
             console.log(`\n  Entity Counts:`);
             console.log(`    Total: ${results.entityCounts.total}`);

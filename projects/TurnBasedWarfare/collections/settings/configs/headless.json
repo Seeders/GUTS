@@ -6,9 +6,12 @@
   "appLoaderLibrary": "HeadlessGameLoader",
   "appLibrary": "HeadlessECSGame",
   "initialScene": "headless",
+  "logLevel": "INFO",
   "libraries": [
     "GameServices",
     "CallLogger",
+    "HeadlessLogger",
+    "InstructionExecutor",
     "BaseSystem",
     "BaseLoader",
     "HeadlessGameLoader",

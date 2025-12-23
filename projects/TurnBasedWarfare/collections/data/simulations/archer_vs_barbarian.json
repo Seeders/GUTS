@@ -1,6 +1,6 @@
 {
   "name": "Archer vs Barbarian - Two Round Battle",
-  "description": "Round 1: Both teams order peasants to construct buildings. Round 2: Purchase units from completed buildings and fight.",
+  "description": "Round 1: Both teams order peasants to construct buildings. Round 2: Purchase units from completed buildings and fight. Only the archer and barbarian move to center - peasants continue their normal behavior.",
   "seed": 42,
   "startingGold": 500,
   "level": "level_1",
@@ -31,9 +31,9 @@
     { "_comment": "Right team purchases a barbarian from their Barracks" },
     { "type": "PURCHASE_UNIT", "unitId": "1_s_barbarian", "buildingEntityId": "auto:barracks:right", "team": "right" },
 
-    { "_comment": "Both units move toward center to meet" },
-    { "type": "MOVE_ORDER", "team": "left", "target": "center" },
-    { "type": "MOVE_ORDER", "team": "right", "target": "center" },
+    { "_comment": "Only the archer and barbarian move toward center - peasants continue mining" },
+    { "type": "MOVE_ORDER", "team": "left", "target": "center", "unitId": "1_d_archer" },
+    { "type": "MOVE_ORDER", "team": "right", "target": "center", "unitId": "1_s_barbarian" },
 
     { "_comment": "Both teams submit placements - battle starts" },
     { "type": "SUBMIT_PLACEMENT", "team": "left" },
@@ -42,7 +42,16 @@
     { "_comment": "=== ROUND 2: BATTLE PHASE ===" },
     { "type": "WAIT", "trigger": "phase", "phase": 2 },
 
-    { "_comment": "Wait for one unit to die (battle ends)" },
-    { "type": "WAIT", "trigger": "event", "event": "onUnitKilled" }
+    { "_comment": "=== ROUNDS 3-5: Auto-submit placements to continue battle ===" },
+    { "type": "WAIT", "trigger": "round", "round": 3 },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "type": "WAIT", "trigger": "round", "round": 4 },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "type": "WAIT", "trigger": "round", "round": 5 },
+    { "type": "END_SIMULATION" }
   ]
 }

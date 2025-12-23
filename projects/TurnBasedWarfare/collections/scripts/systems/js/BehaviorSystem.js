@@ -187,28 +187,14 @@ class BehaviorSystem extends GUTS.BaseSystem {
      * Main update loop - runs for all units with aiState
      */
     update(dt) {
-        // Debug: Log phase check every 100 ticks
-        if (this.game.tickCount % 100 === 0) {
-            const phaseName = this.game.call('getReverseEnums')?.gamePhase?.[this.game.state.phase] || this.game.state.phase;
-            console.log(`[BehaviorSystem] Tick ${this.game.tickCount}: phase=${phaseName}, battlePhase=${this.enums.gamePhase.battle}`);
-        }
-
         if (this.game.state.phase !== this.enums.gamePhase.battle) return;
 
-        // Debug: First battle tick and periodic updates
+        // Track battle ticks for internal use
         if (!this._firstBattleTick) {
             this._firstBattleTick = true;
             this._battleTickCount = 0;
-            console.log('[BehaviorSystem] === FIRST BATTLE TICK ===');
-            const entities = this.getBehaviorEntities();
-            console.log(`[BehaviorSystem] Processing ${entities.length} entities with AI`);
         }
         this._battleTickCount++;
-
-        // Log unit positions every 100 ticks during battle
-        if (this._battleTickCount % 100 === 0) {
-            this._logUnitPositions();
-        }
 
         // Increment debugger tick for this evaluation cycle
         this.processor.debugTick();
@@ -326,42 +312,4 @@ class BehaviorSystem extends GUTS.BaseSystem {
         }
     }
 
-    /**
-     * Debug helper - log unit positions during battle
-     * @private
-     */
-    _logUnitPositions() {
-        // Only log player units (archer and barbarian)
-        const entities = this.game.getEntitiesWith('unit', 'team', 'health');
-        console.log(`[BehaviorSystem] Battle tick ${this._battleTickCount} - Unit positions:`);
-
-        for (const entityId of entities) {
-            const team = this.game.getComponent(entityId, 'team');
-            // Only log left/right teams, not neutral/hostile
-            if (team.team !== this.enums.team.left && team.team !== this.enums.team.right) continue;
-
-            const transform = this.game.getComponent(entityId, 'transform');
-            const health = this.game.getComponent(entityId, 'health');
-            const aiState = this.game.getComponent(entityId, 'aiState');
-            const velocity = this.game.getComponent(entityId, 'velocity');
-
-            const pos = transform?.position;
-            const vel = velocity ? Math.sqrt(velocity.vx * velocity.vx + velocity.vz * velocity.vz) : 0;
-            const teamName = this.reverseEnums?.team?.[team.team] || team.team;
-
-            // Get current action name
-            let actionName = 'none';
-            if (aiState?.currentAction != null) {
-                actionName = this.getNodeId(aiState.currentActionCollection, aiState.currentAction) || 'unknown';
-            }
-
-            // Get behavior meta to see targetPosition
-            const behaviorMeta = this.game.call('getBehaviorMeta', entityId);
-            const targetPosStr = behaviorMeta?.targetPosition
-                ? `(${behaviorMeta.targetPosition.x?.toFixed(0)}, ${behaviorMeta.targetPosition.z?.toFixed(0)})`
-                : 'none';
-
-            console.log(`  Entity ${entityId} (${teamName}): pos=(${pos?.x?.toFixed(0)}, ${pos?.z?.toFixed(0)}), hp=${health?.current}/${health?.max}, vel=${vel.toFixed(1)}, action=${actionName}, targetPos=${targetPosStr}`);
-        }
-    }
 }

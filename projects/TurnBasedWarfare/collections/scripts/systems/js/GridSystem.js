@@ -342,7 +342,6 @@ class GridSystem extends GUTS.BaseSystem {
 
     isValidGridPlacement(cells, team) {
         if (!cells || cells.length === 0) {
-            console.log('[isValidGridPlacement] FAIL: No cells provided');
             return false;
         }
 
@@ -350,7 +349,6 @@ class GridSystem extends GUTS.BaseSystem {
             const key = this._cellKey(cell.x, cell.z);
             const cellState = this.state.get(key);
             if (cellState && cellState.occupied) {
-                console.log('[isValidGridPlacement] FAIL: Cell occupied', { cell, key, entities: cellState.entities });
                 return false;
             }
         }

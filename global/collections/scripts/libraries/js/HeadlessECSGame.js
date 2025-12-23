@@ -11,6 +11,12 @@
  * rendering, audio, or network dependencies.
  */
 class HeadlessECSGame extends global.GUTS.ServerECSGame {
+    /**
+     * Maximum number of events to store in the event log
+     * Prevents unbounded memory growth during long simulations
+     */
+    static MAX_EVENT_LOG_SIZE = 10000;
+
     constructor(app) {
         super(app);
 
@@ -20,6 +26,7 @@ class HeadlessECSGame extends global.GUTS.ServerECSGame {
         // Instruction processing
         this.instructionResults = [];
         this.eventLog = [];
+        this._eventLogOverflowCount = 0;
 
         // Register mock services for visual/audio operations
         this.registerMockServices();
@@ -100,6 +107,24 @@ class HeadlessECSGame extends global.GUTS.ServerECSGame {
             });
         }
 
+        // Entity rendering - no-op in headless mode
+        if (!this.hasService('removeInstance')) {
+            this.register('removeInstance', () => {});
+        }
+
+        if (!this.hasService('getBillboardAnimationState')) {
+            this.register('getBillboardAnimationState', () => null);
+        }
+
+        if (!this.hasService('calculateAnimationSpeed')) {
+            this.register('calculateAnimationSpeed', () => 1);
+        }
+
+        // Networking - no-op in headless mode
+        if (!this.hasService('broadcastToRoom')) {
+            this.register('broadcastToRoom', () => {});
+        }
+
         // Local game mode (for skirmish)
         if (!this.hasService('setLocalGame')) {
             this.register('setLocalGame', (isLocal, playerId) => {
@@ -112,10 +137,19 @@ class HeadlessECSGame extends global.GUTS.ServerECSGame {
 
     /**
      * Log an event for debugging/analysis
+     * Automatically caps the log size to prevent memory issues
      * @param {string} type - Event type
      * @param {Object} data - Event data
      */
     logEvent(type, data) {
+        // Cap event log size to prevent memory issues
+        if (this.eventLog.length >= HeadlessECSGame.MAX_EVENT_LOG_SIZE) {
+            // Remove oldest 10% of events when limit is reached
+            const removeCount = Math.floor(HeadlessECSGame.MAX_EVENT_LOG_SIZE * 0.1);
+            this.eventLog.splice(0, removeCount);
+            this._eventLogOverflowCount += removeCount;
+        }
+
         this.eventLog.push({
             type,
             data,
@@ -126,9 +160,21 @@ class HeadlessECSGame extends global.GUTS.ServerECSGame {
 
     /**
      * Get the event log
-     * @returns {Array}
+     * @returns {Object} { events: Array, overflowCount: number, maxSize: number }
      */
     getEventLog() {
+        return {
+            events: this.eventLog,
+            overflowCount: this._eventLogOverflowCount,
+            maxSize: HeadlessECSGame.MAX_EVENT_LOG_SIZE
+        };
+    }
+
+    /**
+     * Get raw event log array (for backward compatibility)
+     * @returns {Array}
+     */
+    getEventLogArray() {
         return this.eventLog;
     }
 
@@ -137,6 +183,7 @@ class HeadlessECSGame extends global.GUTS.ServerECSGame {
      */
     clearEventLog() {
         this.eventLog = [];
+        this._eventLogOverflowCount = 0;
     }
 
     /**
