@@ -1,0 +1,48 @@
+{
+  "name": "Two Archers vs Barbarian",
+  "description": "Two archers vs one barbarian. Tests ranged advantage with numbers. Archers built in consecutive rounds from same building.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "level_1",
+  "instructions": [
+    { "_comment": "=== ROUND 1: Build production buildings ===" },
+    { "type": "PLACE_BUILDING", "buildingId": "fletchersHall", "team": "left", "x": "auto", "z": "auto" },
+    { "type": "PLACE_BUILDING", "buildingId": "barracks", "team": "right", "x": "auto", "z": "auto" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== Wait for round 2 ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+    { "type": "WAIT", "trigger": "round", "round": 2 },
+
+    { "_comment": "=== ROUND 2: Purchase first archer ===" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_d_archer", "buildingEntityId": "auto:fletchersHall:left", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== Wait for round 3 ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+    { "type": "WAIT", "trigger": "round", "round": 3 },
+
+    { "_comment": "=== ROUND 3: Purchase second archer and barbarian, then move all to fight ===" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_d_archer", "buildingEntityId": "auto:fletchersHall:left", "team": "left" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_s_barbarian", "buildingEntityId": "auto:barracks:right", "team": "right" },
+    { "type": "MOVE_ORDER", "team": "left", "target": "center", "unitId": "1_d_archer" },
+    { "type": "MOVE_ORDER", "team": "right", "target": "center", "unitId": "1_s_barbarian" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== Continue battle ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+    { "type": "WAIT", "trigger": "round", "round": 4 },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "type": "WAIT", "trigger": "round", "round": 5 },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "type": "WAIT", "trigger": "round", "round": 6 },
+    { "type": "END_SIMULATION" }
+  ]
+}

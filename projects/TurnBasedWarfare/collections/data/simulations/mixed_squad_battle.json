@@ -1,0 +1,63 @@
+{
+  "name": "Mixed Squad Battle",
+  "description": "Soldier + Archer vs Barbarian + Scout. Tests mixed team compositions. Buildings are staggered over multiple rounds to ensure all requirements are met.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "level_1",
+  "instructions": [
+    { "_comment": "=== ROUND 1: Build primary production buildings ===" },
+    { "type": "PLACE_BUILDING", "buildingId": "barracks", "team": "left", "x": "auto", "z": "auto" },
+    { "type": "PLACE_BUILDING", "buildingId": "barracks", "team": "right", "x": "auto", "z": "auto" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== Wait for round 2 ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+    { "type": "WAIT", "trigger": "round", "round": 2 },
+
+    { "_comment": "=== ROUND 2: Build fletchers hall (needed by soldier, archer, scout) ===" },
+    { "type": "PLACE_BUILDING", "buildingId": "fletchersHall", "team": "left", "x": "auto", "z": "auto" },
+    { "type": "PLACE_BUILDING", "buildingId": "fletchersHall", "team": "right", "x": "auto", "z": "auto" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== Wait for round 3 ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+    { "type": "WAIT", "trigger": "round", "round": 3 },
+
+    { "_comment": "=== ROUND 3: Build mage tower (needed by scout) ===" },
+    { "type": "PLACE_BUILDING", "buildingId": "mageTower", "team": "right", "x": "auto", "z": "auto" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== Wait for round 4 ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+    { "type": "WAIT", "trigger": "round", "round": 4 },
+
+    { "_comment": "=== ROUND 4: Purchase all units ===" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_sd_soldier", "buildingEntityId": "auto:barracks:left", "team": "left" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_d_archer", "buildingEntityId": "auto:fletchersHall:left", "team": "left" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_s_barbarian", "buildingEntityId": "auto:barracks:right", "team": "right" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_di_scout", "buildingEntityId": "auto:fletchersHall:right", "team": "right" },
+    { "type": "MOVE_ORDER", "team": "left", "target": "center", "unitId": "1_sd_soldier" },
+    { "type": "MOVE_ORDER", "team": "left", "target": "center", "unitId": "1_d_archer" },
+    { "type": "MOVE_ORDER", "team": "right", "target": "center", "unitId": "1_s_barbarian" },
+    { "type": "MOVE_ORDER", "team": "right", "target": "center", "unitId": "1_di_scout" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== ROUND 5: Continue battle ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+    { "type": "WAIT", "trigger": "round", "round": 5 },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== ROUND 6 onwards: Let battle complete ===" },
+    { "type": "WAIT", "trigger": "round", "round": 6 },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "type": "WAIT", "trigger": "round", "round": 7 },
+    { "type": "END_SIMULATION" }
+  ]
+}

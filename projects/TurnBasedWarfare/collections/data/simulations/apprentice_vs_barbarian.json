@@ -1,0 +1,39 @@
+{
+  "name": "Apprentice vs Barbarian",
+  "description": "Apprentice (intelligence caster with fireball) vs Barbarian (pure strength melee). Tests magic vs melee.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "level_1",
+  "instructions": [
+    { "_comment": "=== ROUND 1: Build production buildings ===" },
+    { "type": "PLACE_BUILDING", "buildingId": "mageTower", "team": "left", "x": "auto", "z": "auto" },
+    { "type": "PLACE_BUILDING", "buildingId": "barracks", "team": "right", "x": "auto", "z": "auto" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== Wait for round 2 ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+    { "type": "WAIT", "trigger": "round", "round": 2 },
+
+    { "_comment": "=== ROUND 2: Purchase and deploy units ===" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_i_apprentice", "buildingEntityId": "auto:mageTower:left", "team": "left" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_s_barbarian", "buildingEntityId": "auto:barracks:right", "team": "right" },
+    { "type": "MOVE_ORDER", "team": "left", "target": "center", "unitId": "1_i_apprentice" },
+    { "type": "MOVE_ORDER", "team": "right", "target": "center", "unitId": "1_s_barbarian" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== Continue battle for rounds 3-5 ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+    { "type": "WAIT", "trigger": "round", "round": 3 },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "type": "WAIT", "trigger": "round", "round": 4 },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "type": "WAIT", "trigger": "round", "round": 5 },
+    { "type": "END_SIMULATION" }
+  ]
+}

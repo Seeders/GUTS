@@ -1,0 +1,47 @@
+{
+  "name": "Soldier vs Scout",
+  "description": "Soldier (strength/dex hybrid) vs Scout (dex/intel hybrid). Tests hybrid unit combat. Note: These units require extra buildings so we build them over multiple rounds.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "level_1",
+  "instructions": [
+    { "_comment": "=== ROUND 1: Build first set of buildings ===" },
+    { "_comment": "Left: Barracks (produces soldier, but soldier also needs fletchersHall)" },
+    { "type": "PLACE_BUILDING", "buildingId": "barracks", "team": "left", "x": "auto", "z": "auto" },
+    { "_comment": "Right: FletchersHall (produces scout, but scout also needs mageTower)" },
+    { "type": "PLACE_BUILDING", "buildingId": "fletchersHall", "team": "right", "x": "auto", "z": "auto" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== Wait for round 2 ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+    { "type": "WAIT", "trigger": "round", "round": 2 },
+
+    { "_comment": "=== ROUND 2: Build requirement buildings ===" },
+    { "type": "PLACE_BUILDING", "buildingId": "fletchersHall", "team": "left", "x": "auto", "z": "auto" },
+    { "type": "PLACE_BUILDING", "buildingId": "mageTower", "team": "right", "x": "auto", "z": "auto" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== Wait for round 3 ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+    { "type": "WAIT", "trigger": "round", "round": 3 },
+
+    { "_comment": "=== ROUND 3: Purchase and deploy units ===" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_sd_soldier", "buildingEntityId": "auto:barracks:left", "team": "left" },
+    { "type": "PURCHASE_UNIT", "unitId": "1_di_scout", "buildingEntityId": "auto:fletchersHall:right", "team": "right" },
+    { "type": "MOVE_ORDER", "team": "left", "target": "center", "unitId": "1_sd_soldier" },
+    { "type": "MOVE_ORDER", "team": "right", "target": "center", "unitId": "1_di_scout" },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "_comment": "=== Continue battle for rounds 4-5 ===" },
+    { "type": "WAIT", "trigger": "phase", "phase": 2 },
+    { "type": "WAIT", "trigger": "round", "round": 4 },
+    { "type": "SUBMIT_PLACEMENT", "team": "left" },
+    { "type": "SUBMIT_PLACEMENT", "team": "right" },
+
+    { "type": "WAIT", "trigger": "round", "round": 5 },
+    { "type": "END_SIMULATION" }
+  ]
+}
