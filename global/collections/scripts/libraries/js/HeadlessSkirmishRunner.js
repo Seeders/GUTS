@@ -26,6 +26,15 @@ class HeadlessSkirmishRunner {
         this.game = engine.gameInstance;
         this.config = null;
         this.isSetup = false;
+
+        // Initialize logger
+        this._log = global.GUTS?.HeadlessLogger?.createLogger('SkirmishRunner') || {
+            error: (...args) => console.error('[SkirmishRunner]', ...args),
+            warn: (...args) => console.warn('[SkirmishRunner]', ...args),
+            info: (...args) => console.log('[SkirmishRunner]', ...args),
+            debug: (...args) => console.log('[SkirmishRunner]', ...args),
+            trace: () => {}
+        };
     }
 
     /**
@@ -68,8 +77,8 @@ class HeadlessSkirmishRunner {
 
         // Set level
         const levelIndex = enums.levels?.[this.config.level] ?? 0;
-        console.log(`[HeadlessSkirmishRunner] Setting level: ${this.config.level} -> index ${levelIndex}`);
-        console.log(`[HeadlessSkirmishRunner] Available levels:`, Object.keys(enums.levels || {}));
+        this._log.debug(`Setting level: ${this.config.level} -> index ${levelIndex}`);
+        this._log.trace('Available levels:', Object.keys(enums.levels || {}));
         game.state.level = levelIndex;
 
         // Load the headless scene
@@ -99,7 +108,7 @@ class HeadlessSkirmishRunner {
         }
 
         this.isSetup = true;
-        console.log('[HeadlessSkirmishRunner] Setup complete');
+        this._log.info('Setup complete');
     }
 
     /**
@@ -549,9 +558,23 @@ class HeadlessSkirmishRunner {
 
     /**
      * Get the event log from the simulation
-     * @returns {Array}
+     * @returns {Array} Event log array
      */
     getEventLog() {
+        // Use getEventLogArray for backward compatibility (returns raw array)
+        if (this.game.getEventLogArray) {
+            return this.game.getEventLogArray();
+        }
+        // Fallback for older implementations
+        const result = this.game.getEventLog();
+        return Array.isArray(result) ? result : result.events || [];
+    }
+
+    /**
+     * Get detailed event log info including overflow stats
+     * @returns {Object} { events: Array, overflowCount: number, maxSize: number }
+     */
+    getEventLogDetails() {
         return this.game.getEventLog();
     }
 
