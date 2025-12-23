@@ -336,10 +336,13 @@ class InstructionExecutor {
         const buildingType = parts[1];
         const teamName = parts[2] || (fallbackTeam === this.enums.team.left ? 'left' : 'right');
         const targetTeam = this.enums.team[teamName] ?? fallbackTeam;
+        // Optional index: auto:fletchersHall:left:1 means second building (0-indexed)
+        const targetIndex = parts[3] !== undefined ? parseInt(parts[3], 10) : 0;
 
-        this._log.trace(`Looking for building: type=${buildingType}, team=${teamName} (${targetTeam})`);
+        this._log.trace(`Looking for building: type=${buildingType}, team=${teamName} (${targetTeam}), index=${targetIndex}`);
 
         const entities = this.game.getEntitiesWith('unitType', 'team', 'placement');
+        const matchingBuildings = [];
 
         for (const entityId of entities) {
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
@@ -362,12 +365,21 @@ class InstructionExecutor {
                 continue;
             }
 
-            this._log.debug(`Found matching building: ${entityId}`);
-            return entityId;
+            matchingBuildings.push(entityId);
         }
 
-        this._log.debug(`No matching building found for ${autoSpec}`);
-        return null;
+        if (matchingBuildings.length === 0) {
+            this._log.debug(`No matching building found for ${autoSpec}`);
+            return null;
+        }
+
+        if (targetIndex >= matchingBuildings.length) {
+            this._log.debug(`Building index ${targetIndex} out of range (found ${matchingBuildings.length} buildings)`);
+            return null;
+        }
+
+        this._log.debug(`Found matching building at index ${targetIndex}: ${matchingBuildings[targetIndex]}`);
+        return matchingBuildings[targetIndex];
     }
 
     async executeSkipPlacement(inst) {
