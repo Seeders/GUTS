@@ -20,9 +20,13 @@ class HeadlessGameLoader extends GUTS.BaseLoader {
         this.game.palette = this.collections.palettes?.[config?.palette] || null;
 
         // Set up initial game state
-        const levelIndex = this.game.state?.level || 0;
+        // Default to level_1 if no level is set (index 0 might not be level_1)
+        const enums = this.game.getEnums();
+        const defaultLevelIndex = enums.levels?.level_1 ?? 0;
+        const levelIndex = this.game.state?.level ?? defaultLevelIndex;
         const reverseEnums = this.game.getReverseEnums();
         const levelKey = reverseEnums.levels?.[levelIndex];
+        console.log(`[HeadlessGameLoader] game.state.level=${this.game.state?.level}, defaultLevelIndex=${defaultLevelIndex}, levelIndex=${levelIndex}, levelKey=${levelKey}`);
         const level = this.collections.levels?.[levelKey];
 
         if (level?.tileMap) {

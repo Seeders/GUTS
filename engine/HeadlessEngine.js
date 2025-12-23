@@ -20,18 +20,6 @@ export default class HeadlessEngine extends BaseEngine {
         this.paused = false;
         this.running = false;
         this.maxTicks = 10000;
-        this._actions = null;
-    }
-
-    /**
-     * Get GameActionsInterface instance (lazy-loaded)
-     * Uses the SAME interface as GUI systems
-     */
-    getActions(game) {
-        if (!this._actions && global.GUTS?.GameActionsInterface) {
-            this._actions = new global.GUTS.GameActionsInterface(game);
-        }
-        return this._actions;
     }
 
     async init(projectName) {
@@ -115,10 +103,12 @@ export default class HeadlessEngine extends BaseEngine {
      * Run a simulation with instructions
      * This is used by HeadlessSkirmishRunner for automated simulations
      *
+     * Delegates instruction execution to HeadlessSimulationSystem which is registered
+     * as a game system and can receive game events through triggerEvent.
+     *
      * @param {Object} options
      * @param {Array} options.instructions - Array of instruction objects to process
      * @param {number} options.maxTicks - Maximum ticks before timeout
-     * @param {number} options.seed - Random seed (already applied during setup)
      * @returns {Promise<Object>} Simulation results
      */
     async runSimulation(options = {}) {
@@ -128,37 +118,24 @@ export default class HeadlessEngine extends BaseEngine {
         } = options;
 
         const game = this.gameInstance;
-        const enums = game.call('getEnums');
-        let instructionIndex = 0;
-        const results = [];
 
-        // Process instructions that should execute on this tick
-        const processReadyInstructions = async () => {
-            while (instructionIndex < instructions.length) {
-                const inst = instructions[instructionIndex];
+        // Get or create the HeadlessSimulationSystem
+        const simSystem = game.headlessSimulationSystem;
+        if (!simSystem) {
+            throw new Error('[HeadlessEngine] HeadlessSimulationSystem not found. Ensure it is registered in the headless scene config.');
+        }
 
-                // Check trigger condition
-                if (!this.shouldExecuteInstruction(inst, game, enums)) {
-                    break;
-                }
+        // Set up the simulation with instructions
+        simSystem.setupSimulation(instructions);
 
-                // Execute the instruction
-                console.log(`[HeadlessEngine] Executing instruction ${instructionIndex}: ${inst.type}`, inst);
-                const result = await this.executeInstruction(inst, game, enums);
-                console.log(`[HeadlessEngine] Instruction result:`, result);
-                results.push({ instruction: inst, result, tick: game.tickCount });
-                instructionIndex++;
-            }
-        };
-
-        // Custom simulation loop that properly awaits instruction processing
+        // Run the tick loop
         this.running = true;
         this.paused = false;
         let tickCount = 0;
 
         while (this.running && tickCount < maxTicks) {
-            // Process any ready instructions BEFORE the tick (properly awaited)
-            await processReadyInstructions();
+            // Process any ready instructions BEFORE the tick
+            await simSystem.processInstructions();
 
             // Run one game tick
             if (!this.paused && game?.update) {
@@ -167,12 +144,7 @@ export default class HeadlessEngine extends BaseEngine {
             tickCount++;
 
             // Check stop conditions
-            if (game.state.gameOver) {
-                break;
-            }
-
-            // Continue until game ends naturally when all instructions processed
-            if (instructionIndex >= instructions.length && game.state.gameOver) {
+            if (simSystem.isSimulationComplete()) {
                 break;
             }
         }
@@ -182,6 +154,7 @@ export default class HeadlessEngine extends BaseEngine {
         // Return simulation results with all expected fields
         const gameSummary = game.getGameSummary?.() || {};
         const reverseEnums = game.getReverseEnums?.() || {};
+        const simResults = simSystem.getResults();
 
         // Count entities by team
         const entityCounts = { total: 0, byTeam: {} };
@@ -211,193 +184,15 @@ export default class HeadlessEngine extends BaseEngine {
             completed: game.state.gameOver || false,
             tickCount: game.tickCount || 0,
             gameTime: game.state.now || 0,
-            realTimeMs: 0, // Not tracked in headless mode
+            realTimeMs: 0,
             ticksPerSecond: 0,
             round: game.state.round || 1,
             phase: reverseEnums.gamePhase?.[game.state.phase] || game.state.phase,
             winner,
             entityCounts,
-            instructionsProcessed: instructionIndex,
-            instructionResults: results,
+            ...simResults,
             gameState: gameSummary
         };
-    }
-
-    /**
-     * Check if an instruction should execute on this tick
-     * @private
-     */
-    shouldExecuteInstruction(inst, game, enums) {
-        const trigger = inst.trigger || 'immediate';
-
-        switch (trigger) {
-            case 'immediate':
-                return true;
-
-            case 'tick':
-                return game.tickCount >= (inst.tick || 0);
-
-            case 'phase':
-                return game.state.phase === inst.phase;
-
-            case 'round':
-                return game.state.round >= (inst.round || 1);
-
-            default:
-                return true;
-        }
-    }
-
-    /**
-     * Execute a single instruction
-     * @private
-     */
-    async executeInstruction(inst, game, enums) {
-        // Use GameActionsInterface - SAME code path as GUI systems
-        const actions = this.getActions(game);
-
-        switch (inst.type) {
-            case 'PLACE_UNIT':
-                // Use GameActionsInterface for placement - same as GUI
-                {
-                    const collections = game.getCollections();
-                    const unitDef = collections.units[inst.unitId];
-                    if (!unitDef) {
-                        return { success: false, error: `Unit ${inst.unitId} not found` };
-                    }
-
-                    const unitType = { ...unitDef, id: inst.unitId, collection: 'units' };
-                    const team = typeof inst.team === 'string' ? enums.team[inst.team] : inst.team;
-                    const playerId = team === enums.team.left ? 0 : 1;
-                    const networkUnitData = actions.createNetworkUnitData(
-                        { x: inst.x, z: inst.z },
-                        unitType,
-                        team,
-                        playerId
-                    );
-
-                    return new Promise(resolve => {
-                        actions.sendPlacementRequest(networkUnitData, (success, response) => {
-                            resolve({ success, ...response });
-                        });
-                    });
-                }
-
-            case 'PLACE_BUILDING':
-                // Use GameActionsInterface for placement - same as GUI
-                {
-                    const collections = game.getCollections();
-                    const buildingDef = collections.buildings[inst.buildingId];
-                    if (!buildingDef) {
-                        return { success: false, error: `Building ${inst.buildingId} not found` };
-                    }
-
-                    const buildingType = { ...buildingDef, id: inst.buildingId, collection: 'buildings' };
-                    const team = typeof inst.team === 'string' ? enums.team[inst.team] : inst.team;
-                    const playerId = team === enums.team.left ? 0 : 1;
-                    const networkUnitData = actions.createNetworkUnitData(
-                        { x: inst.x, z: inst.z },
-                        buildingType,
-                        team,
-                        playerId
-                    );
-
-                    return new Promise(resolve => {
-                        actions.sendPlacementRequest(networkUnitData, (success, response) => {
-                            resolve({ success, ...response });
-                        });
-                    });
-                }
-
-            case 'SUBMIT_PLACEMENT':
-                // Toggle ready for battle - uses GameActionsInterface
-                return new Promise(resolve => {
-                    actions.toggleReadyForBattle((success, response) => {
-                        resolve({ success: success !== false, ...response });
-                    });
-                });
-
-            case 'START_BATTLE':
-                // Force start battle - uses GameActionsInterface
-                actions.startBattle();
-                return { success: true };
-
-            case 'PURCHASE_UNIT':
-                // Purchase a unit from a building (respects production capacity)
-                // Uses GameActionsInterface.purchaseUnit - SAME code path as GUI
-                {
-                    // Auto-resolve building entity ID if using "auto:" prefix
-                    // Format: "auto:buildingType:team" (e.g., "auto:fletchersHall:left")
-                    let buildingEntityId = inst.buildingEntityId;
-                    const team = typeof inst.team === 'string' ? enums.team[inst.team] : inst.team;
-
-                    if (typeof buildingEntityId === 'string' && buildingEntityId.startsWith('auto:')) {
-                        buildingEntityId = this.findBuildingEntityId(game, buildingEntityId, team, enums);
-                        if (!buildingEntityId) {
-                            return { success: false, error: `Could not find building for ${inst.buildingEntityId}` };
-                        }
-                    }
-
-                    return new Promise(resolve => {
-                        actions.purchaseUnit(inst.unitId, buildingEntityId, team, (success, response) => {
-                            resolve({ success, ...response });
-                        });
-                    });
-                }
-
-            case 'WAIT':
-                // Wait instruction - trigger determines when to proceed
-                return { success: true, waited: true };
-
-            case undefined:
-                // Skip comment entries (instructions with only _comment field)
-                if (inst._comment) {
-                    return { success: true, skipped: true, reason: 'comment' };
-                }
-                return { success: false, error: 'Instruction missing type field' };
-
-            default:
-                return { success: false, error: `Unknown instruction type: ${inst.type}` };
-        }
-    }
-
-    /**
-     * Find a building entity ID by auto-specifier
-     * Format: "auto:buildingType:team" (e.g., "auto:fletchersHall:left")
-     * @private
-     */
-    findBuildingEntityId(game, autoSpec, fallbackTeam, enums) {
-        const parts = autoSpec.split(':');
-        if (parts.length < 2) return null;
-
-        const buildingType = parts[1];
-        const teamName = parts[2] || (fallbackTeam === enums.team.left ? 'left' : 'right');
-        const targetTeam = enums.team[teamName] ?? fallbackTeam;
-
-        // Find all buildings of this type for this team
-        const entities = game.getEntitiesWith('unitType', 'team', 'placement');
-
-        for (const entityId of entities) {
-            const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const teamComp = game.getComponent(entityId, 'team');
-            const placement = game.getComponent(entityId, 'placement');
-
-            if (!unitTypeComp || !teamComp) continue;
-
-            // Check team matches
-            if (teamComp.team !== targetTeam) continue;
-
-            // Check building type matches
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
-            if (!unitDef || unitDef.id !== buildingType) continue;
-
-            // Check building is complete (not under construction)
-            if (placement?.isUnderConstruction) continue;
-
-            return entityId;
-        }
-
-        return null;
     }
 
     stop() {

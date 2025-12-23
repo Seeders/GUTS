@@ -26,7 +26,6 @@ class HeadlessSkirmishRunner {
         this.game = engine.gameInstance;
         this.config = null;
         this.isSetup = false;
-        this.actions = null; // GameActionsInterface instance
     }
 
     /**
@@ -69,6 +68,8 @@ class HeadlessSkirmishRunner {
 
         // Set level
         const levelIndex = enums.levels?.[this.config.level] ?? 0;
+        console.log(`[HeadlessSkirmishRunner] Setting level: ${this.config.level} -> index ${levelIndex}`);
+        console.log(`[HeadlessSkirmishRunner] Available levels:`, Object.keys(enums.levels || {}));
         game.state.level = levelIndex;
 
         // Load the headless scene
@@ -95,13 +96,6 @@ class HeadlessSkirmishRunner {
         // Initialize game
         if (game.hasService('initializeGame')) {
             game.call('initializeGame', null);
-        }
-
-        // Create GameActionsInterface for all game interactions
-        if (global.GUTS.GameActionsInterface) {
-            this.actions = new global.GUTS.GameActionsInterface(game);
-        } else {
-            console.warn('[HeadlessSkirmishRunner] GameActionsInterface not found - direct service calls will be used');
         }
 
         this.isSetup = true;
@@ -211,7 +205,7 @@ class HeadlessSkirmishRunner {
     }
 
     /**
-     * Place a building using GameActionsInterface
+     * Place a building using ui_placeUnit
      * @param {string} team - Team name ('left' or 'right')
      * @param {string} buildingId - Building type ID (e.g., 'fletchersHall')
      * @param {number} x - Grid X position
@@ -219,10 +213,6 @@ class HeadlessSkirmishRunner {
      * @returns {Promise<Object>} Result with success status and placementId
      */
     async placeBuilding(team, buildingId, x, z) {
-        if (!this.actions) {
-            throw new Error('GameActionsInterface not initialized');
-        }
-
         const enums = this.game.call('getEnums');
         const collections = this.game.getCollections();
         const teamEnum = typeof team === 'string' ? enums.team[team] : team;
@@ -232,29 +222,21 @@ class HeadlessSkirmishRunner {
             return { success: false, error: `Building ${buildingId} not found` };
         }
 
-        // Check if can afford
-        if (!this.actions.canAffordCost(buildingDef.value)) {
-            return { success: false, error: `Cannot afford ${buildingId} (cost: ${buildingDef.value})` };
-        }
-
         // Create unit type object with collection info
-        const unitType = { ...buildingDef, id: buildingId, collection: 'buildings' };
-
-        // Create network unit data
+        const buildingType = { ...buildingDef, id: buildingId, collection: 'buildings' };
         const gridPosition = { x, z };
         const playerId = teamEnum === enums.team.left ? 0 : 1;
-        const networkUnitData = this.actions.createNetworkUnitData(gridPosition, unitType, teamEnum, playerId);
 
-        // Send placement request
+        // Use ui_placeUnit - SAME code path as GUI
         return new Promise((resolve) => {
-            this.actions.sendPlacementRequest(networkUnitData, (success, response) => {
+            this.game.call('ui_placeUnit', gridPosition, buildingType, teamEnum, playerId, (success, response) => {
                 resolve({ success, ...response });
             });
         });
     }
 
     /**
-     * Purchase a unit from a building using GameActionsInterface.purchaseUnit
+     * Purchase a unit from a building using ui_purchaseUnit
      * This uses the FULL game logic including production capacity check
      *
      * @param {string} team - Team name ('left' or 'right')
@@ -263,16 +245,12 @@ class HeadlessSkirmishRunner {
      * @returns {Promise<Object>} Result with success status
      */
     async placeUnit(team, unitId, buildingEntityId) {
-        if (!this.actions) {
-            throw new Error('GameActionsInterface not initialized');
-        }
-
         const enums = this.game.call('getEnums');
         const teamEnum = typeof team === 'string' ? enums.team[team] : team;
 
-        // Use GameActionsInterface.purchaseUnit which includes production capacity check
+        // Use ui_purchaseUnit - SAME code path as GUI
         return new Promise((resolve) => {
-            this.actions.purchaseUnit(unitId, buildingEntityId, teamEnum, (success, response) => {
+            this.game.call('ui_purchaseUnit', unitId, buildingEntityId, teamEnum, (success, response) => {
                 resolve({ success, ...response });
             });
         });
@@ -287,10 +265,6 @@ class HeadlessSkirmishRunner {
      * @returns {Promise<Object>} Result with success status
      */
     async placeUnitAt(team, unitId, x, z) {
-        if (!this.actions) {
-            throw new Error('GameActionsInterface not initialized');
-        }
-
         const enums = this.game.call('getEnums');
         const collections = this.game.getCollections();
         const teamEnum = typeof team === 'string' ? enums.team[team] : team;
@@ -300,41 +274,24 @@ class HeadlessSkirmishRunner {
             return { success: false, error: `Unit ${unitId} not found` };
         }
 
-        // Check if can afford
-        if (!this.actions.canAffordCost(unitDef.value)) {
-            return { success: false, error: `Cannot afford ${unitId} (cost: ${unitDef.value})` };
-        }
-
         // Create unit type object
         const unitType = { ...unitDef, id: unitId, collection: 'units' };
         const gridPosition = { x, z };
         const playerId = teamEnum === enums.team.left ? 0 : 1;
 
-        // Validate placement
-        const squadData = this.actions.getSquadData(unitType);
-        const cells = this.actions.getSquadCells(gridPosition, squadData);
-        if (!this.actions.isValidGridPlacement(cells, teamEnum)) {
-            return { success: false, error: `Invalid placement at (${x}, ${z})` };
-        }
-
-        // Create network unit data
-        const networkUnitData = this.actions.createNetworkUnitData(gridPosition, unitType, teamEnum, playerId);
-
-        // Send placement request
+        // Use ui_placeUnit - SAME code path as GUI
         return new Promise((resolve) => {
-            this.actions.sendPlacementRequest(networkUnitData, (success, response) => {
+            this.game.call('ui_placeUnit', gridPosition, unitType, teamEnum, playerId, (success, response) => {
                 resolve({ success, ...response });
             });
         });
     }
 
     /**
-     * Start the battle phase using GameActionsInterface
+     * Start the battle phase
      */
     startBattle() {
-        if (this.actions) {
-            this.actions.startBattle();
-        } else if (this.game.hasService('startBattle')) {
+        if (this.game.hasService('startBattle')) {
             this.game.call('startBattle');
         } else {
             const enums = this.game.call('getEnums');
@@ -346,29 +303,172 @@ class HeadlessSkirmishRunner {
      * Toggle ready for battle (triggers battle start when both teams ready)
      */
     toggleReadyForBattle(callback) {
-        if (this.actions) {
-            this.actions.toggleReadyForBattle(callback);
-        } else if (this.game.hasService('toggleReadyForBattle')) {
-            this.game.call('toggleReadyForBattle', callback);
-        }
+        this.game.call('ui_toggleReadyForBattle', callback);
     }
 
     /**
      * Issue a move order to squads
      */
     issueMoveOrder(placementIds, targetPosition, callback) {
-        if (this.actions) {
-            this.actions.issueMoveOrder(placementIds, targetPosition, callback);
-        }
+        this.game.call('ui_issueMoveOrder', placementIds, targetPosition, callback);
     }
 
     /**
      * Issue hold position order
      */
     holdPosition(placementIds, callback) {
-        if (this.actions) {
-            this.actions.holdPosition(placementIds, callback);
+        this.game.call('ui_holdPosition', placementIds, callback);
+    }
+
+    // ==================== INPUT SIMULATION ====================
+
+    /**
+     * Simulate a left-click at world coordinates
+     * Uses the same code path as GUI clicks
+     *
+     * @param {number} worldX - World X coordinate
+     * @param {number} worldZ - World Z coordinate
+     * @param {Object} modifiers - { shift: bool, ctrl: bool, alt: bool }
+     * @returns {Promise<Object>} Result { action, success, data }
+     */
+    async simulateClick(worldX, worldZ, modifiers = {}) {
+        return new Promise((resolve) => {
+            this.game.call('ui_handleCanvasClick', worldX, worldZ, modifiers, resolve);
+        });
+    }
+
+    /**
+     * Simulate a right-click at world coordinates
+     * Uses the same code path as GUI right-clicks
+     *
+     * @param {number} worldX - World X coordinate
+     * @param {number} worldZ - World Z coordinate
+     * @param {Object} modifiers - { shift: bool, ctrl: bool, alt: bool }
+     * @returns {Promise<Object>} Result { action, success, data }
+     */
+    async simulateRightClick(worldX, worldZ, modifiers = {}) {
+        return new Promise((resolve) => {
+            this.game.call('ui_handleCanvasRightClick', worldX, worldZ, modifiers, resolve);
+        });
+    }
+
+    /**
+     * Simulate a box selection with world coordinates
+     * Uses the same code path as GUI box selection
+     *
+     * @param {number} worldMinX - Minimum X coordinate
+     * @param {number} worldMinZ - Minimum Z coordinate
+     * @param {number} worldMaxX - Maximum X coordinate
+     * @param {number} worldMaxZ - Maximum Z coordinate
+     * @param {Object} modifiers - { shift: bool, ctrl: bool, alt: bool }
+     * @returns {Promise<Object>} Result { action, success, data: { entityIds, additive } }
+     */
+    async simulateBoxSelection(worldMinX, worldMinZ, worldMaxX, worldMaxZ, modifiers = {}) {
+        return new Promise((resolve) => {
+            this.game.call('ui_handleBoxSelection', worldMinX, worldMinZ, worldMaxX, worldMaxZ, modifiers, resolve);
+        });
+    }
+
+    /**
+     * Get entity at a world position
+     *
+     * @param {number} worldX - World X coordinate
+     * @param {number} worldZ - World Z coordinate
+     * @param {Object} options - { radius, teamFilter }
+     * @returns {number|null} Entity ID or null
+     */
+    getEntityAtPosition(worldX, worldZ, options = {}) {
+        const clickRadius = options.radius || 50;
+        const teamFilter = options.teamFilter;
+
+        let closestEntity = null;
+        let closestDistance = clickRadius;
+
+        const entities = this.game.getEntitiesWith('transform', 'unitType');
+
+        for (const entityId of entities) {
+            // Apply team filter if specified
+            if (teamFilter !== null && teamFilter !== undefined) {
+                const team = this.game.getComponent(entityId, 'team');
+                const unitTeam = team?.team ?? team?.side ?? team?.teamId;
+                if (unitTeam !== teamFilter) continue;
+            }
+
+            const transform = this.game.getComponent(entityId, 'transform');
+            const pos = transform?.position;
+            if (!pos) continue;
+
+            const dx = pos.x - worldX;
+            const dz = pos.z - worldZ;
+            let distance = Math.sqrt(dx * dx + dz * dz);
+
+            // Adjust for unit size
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const size = unitType?.size || 20;
+            distance -= size;
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestEntity = entityId;
+            }
         }
+
+        return closestEntity;
+    }
+
+    /**
+     * Get entities within world bounds
+     *
+     * @param {number} worldMinX - Minimum X coordinate
+     * @param {number} worldMinZ - Minimum Z coordinate
+     * @param {number} worldMaxX - Maximum X coordinate
+     * @param {number} worldMaxZ - Maximum Z coordinate
+     * @param {Object} options - { teamFilter, prioritizeUnits }
+     * @returns {Array} Array of entity IDs
+     */
+    getEntitiesInBounds(worldMinX, worldMinZ, worldMaxX, worldMaxZ, options = {}) {
+        const teamFilter = options.teamFilter;
+        const prioritizeUnits = options.prioritizeUnits ?? true;
+
+        const selectedUnits = [];
+        const selectedBuildings = [];
+
+        const entities = this.game.getEntitiesWith('transform', 'unitType');
+
+        for (const entityId of entities) {
+            // Apply team filter if specified
+            if (teamFilter !== null && teamFilter !== undefined) {
+                const team = this.game.getComponent(entityId, 'team');
+                const unitTeam = team?.team ?? team?.side ?? team?.teamId;
+                if (unitTeam !== teamFilter) continue;
+            }
+
+            const transform = this.game.getComponent(entityId, 'transform');
+            const pos = transform?.position;
+            if (!pos) continue;
+
+            // Check if within bounds
+            if (pos.x >= worldMinX && pos.x <= worldMaxX &&
+                pos.z >= worldMinZ && pos.z <= worldMaxZ) {
+
+                const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+                const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+                const collection = unitType?.collection;
+
+                if (prioritizeUnits) {
+                    if (collection === 'units') {
+                        selectedUnits.push(entityId);
+                    } else {
+                        selectedBuildings.push(entityId);
+                    }
+                } else {
+                    selectedUnits.push(entityId);
+                }
+            }
+        }
+
+        return prioritizeUnits && selectedUnits.length > 0 ? selectedUnits : selectedUnits.concat(selectedBuildings);
     }
 
     /**
@@ -378,8 +478,8 @@ class HeadlessSkirmishRunner {
         const enums = this.game.call('getEnums');
         const teamEnum = typeof team === 'string' ? enums.team[team] : team;
 
-        if (this.actions) {
-            return this.actions.getPlacementsForSide(teamEnum);
+        if (this.game.hasService('getPlacementsForSide')) {
+            return this.game.call('getPlacementsForSide', teamEnum);
         }
         return [];
     }
@@ -388,7 +488,9 @@ class HeadlessSkirmishRunner {
      * Check if a building has finished construction
      */
     isBuildingComplete(placementId) {
-        const placement = this.actions?.getPlacementById(placementId);
+        const placement = this.game.hasService('getPlacementById')
+            ? this.game.call('getPlacementById', placementId)
+            : null;
         if (!placement) return false;
 
         // Check if building entity has construction complete
