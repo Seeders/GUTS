@@ -3,11 +3,14 @@
  *
  * This module is extracted from HeadlessSimulationSystem to provide
  * a reusable instruction execution engine. It handles:
- * - Unit placement
- * - Building placement
- * - Unit purchasing
- * - Move orders
- * - Battle control
+ * - Unit placement (PLACE_UNIT)
+ * - Building placement (PLACE_BUILDING)
+ * - Unit purchasing (PURCHASE_UNIT)
+ * - Move orders (MOVE_ORDER)
+ * - Hold position (HOLD_POSITION)
+ * - Assign builder to construction (ASSIGN_BUILDER)
+ * - Battle control (START_BATTLE, SUBMIT_PLACEMENT, SKIP_PLACEMENT)
+ * - Generic service calls (CALL_SERVICE)
  *
  * By separating this logic, we can:
  * 1. Test instruction execution independently
@@ -60,6 +63,12 @@ class InstructionExecutor {
 
             case 'MOVE_ORDER':
                 return this.executeMoveOrder(inst);
+
+            case 'ASSIGN_BUILDER':
+                return this.executeAssignBuilder(inst);
+
+            case 'HOLD_POSITION':
+                return this.executeHoldPosition(inst);
 
             case 'WAIT':
                 return { success: true, waited: true };
@@ -432,6 +441,115 @@ class InstructionExecutor {
         } catch (error) {
             return { success: false, error: error.message };
         }
+    }
+
+    async executeAssignBuilder(inst) {
+        const team = typeof inst.team === 'string' ? this.enums.team[inst.team] : inst.team;
+
+        // Find builder (peasant) - can be specified by entityId or auto-find
+        let builderEntityId = inst.builderEntityId;
+        if (!builderEntityId || builderEntityId === 'auto') {
+            builderEntityId = this.findAvailablePeasant(team);
+            if (!builderEntityId) {
+                return { success: false, error: `No available peasant found for team ${inst.team}` };
+            }
+        }
+
+        // Find building under construction - can be specified by entityId or auto-find
+        let buildingEntityId = inst.buildingEntityId;
+        if (typeof buildingEntityId === 'string' && buildingEntityId.startsWith('auto:')) {
+            // auto:buildingType[:team] format - find building under construction
+            buildingEntityId = this.findBuildingUnderConstruction(buildingEntityId, team);
+            if (!buildingEntityId) {
+                return { success: false, error: `Could not find building under construction for ${inst.buildingEntityId}` };
+            }
+        }
+
+        if (!buildingEntityId) {
+            return { success: false, error: 'ASSIGN_BUILDER requires buildingEntityId' };
+        }
+
+        this._log.debug(`ASSIGN_BUILDER: peasant ${builderEntityId} -> building ${buildingEntityId}`);
+
+        return new Promise(resolve => {
+            this.game.call('ui_assignBuilder', builderEntityId, buildingEntityId, (result) => {
+                if (result && result.success) {
+                    resolve({ success: true, builderEntityId, buildingEntityId, ...result.data });
+                } else {
+                    resolve({ success: false, error: result?.error || 'Failed to assign builder' });
+                }
+            });
+        });
+    }
+
+    async executeHoldPosition(inst) {
+        const team = typeof inst.team === 'string' ? this.enums.team[inst.team] : inst.team;
+
+        const placements = this.game.call('getPlacementsForSide', team) || [];
+        let filteredPlacements = placements.filter(p => p.squadUnits && p.squadUnits.length > 0);
+
+        // Filter by unitId if specified - only hold specific unit types
+        if (inst.unitId) {
+            filteredPlacements = filteredPlacements.filter(p => {
+                const entityId = p.squadUnits?.[0];
+                if (!entityId) return false;
+
+                const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+                if (!unitTypeComp) return false;
+
+                const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+                return unitDef?.id === inst.unitId;
+            });
+        }
+
+        const placementIds = filteredPlacements.map(p => p.placementId);
+
+        if (placementIds.length === 0) {
+            const filterMsg = inst.unitId ? ` matching unitId '${inst.unitId}'` : '';
+            return { success: false, error: `No units found for team ${inst.team}${filterMsg}` };
+        }
+
+        this._log.debug(`HOLD_POSITION for team ${inst.team}: ${placementIds.length} placements${inst.unitId ? ` (filter: ${inst.unitId})` : ''}`);
+
+        return new Promise(resolve => {
+            this.game.call('ui_holdPosition', placementIds, (success) => {
+                resolve({ success, placementIds });
+            });
+        });
+    }
+
+    findBuildingUnderConstruction(autoSpec, fallbackTeam) {
+        const parts = autoSpec.split(':');
+        if (parts.length < 2) return null;
+
+        const buildingType = parts[1];
+        const teamName = parts[2] || (fallbackTeam === this.enums.team.left ? 'left' : 'right');
+        const targetTeam = this.enums.team[teamName] ?? fallbackTeam;
+
+        this._log.trace(`Looking for building under construction: type=${buildingType}, team=${teamName} (${targetTeam})`);
+
+        const entities = this.game.getEntitiesWith('unitType', 'team', 'placement');
+
+        for (const entityId of entities) {
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const teamComp = this.game.getComponent(entityId, 'team');
+            const placement = this.game.getComponent(entityId, 'placement');
+
+            if (!unitTypeComp || !teamComp) continue;
+            if (teamComp.team !== targetTeam) continue;
+
+            const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+            if (!unitDef || unitDef.id !== buildingType) continue;
+
+            // Only match buildings that ARE under construction
+            if (!placement?.isUnderConstruction) continue;
+
+            this._log.debug(`Found building under construction: ${entityId}`);
+            return entityId;
+        }
+
+        this._log.debug(`No building under construction found for ${autoSpec}`);
+        return null;
     }
 }
 
