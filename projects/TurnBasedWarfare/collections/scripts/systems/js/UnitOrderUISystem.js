@@ -197,12 +197,21 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
     }
 
     activateBuildingPlacement(building, selectedUnitId) {
+        console.log('[UnitOrderUISystem] activateBuildingPlacement called', {
+            buildingId: building.id,
+            buildTime: building.buildTime,
+            selectedUnitId,
+            isTrap: building.isTrap
+        });
+
         this.game.state.selectedUnitType = { ...building };
 
         this.game.state.peasantBuildingPlacement = {
             peasantId: selectedUnitId,
             buildTime: building.buildTime
         };
+
+        console.log('[UnitOrderUISystem] peasantBuildingPlacement set', this.game.state.peasantBuildingPlacement);
 
         this.stopTargeting();
 
@@ -273,6 +282,60 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
                 });
             }
         });
+    }
+
+    placeBearTrap() {
+        // Get selected scouts
+        const placementIds = this.game.call('getSelectedSquads') || [];
+        if (!placementIds || placementIds.length === 0) {
+            this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
+            return;
+        }
+
+        // Find a scout unit with BearTrapAbility
+        let scoutUnit = null;
+        for (const placementId of placementIds) {
+            const placement = this.game.call('getPlacementById', placementId);
+            if (!placement) continue;
+
+            for (const unitId of placement.squadUnits) {
+                const abilities = this.game.call('getEntityAbilities', unitId);
+                if (abilities) {
+                    const bearTrapAbility = abilities.find(a => a.id === 'BearTrapAbility');
+                    if (bearTrapAbility) {
+                        // Check if ability is available (cooldown and max traps)
+                        if (bearTrapAbility.canExecute(unitId)) {
+                            scoutUnit = unitId;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (scoutUnit) break;
+        }
+
+        if (!scoutUnit) {
+            this.game.uiSystem?.showNotification('Cannot place trap (max 2 traps or on cooldown).', 'warning', 800);
+            return;
+        }
+
+        // Get bear trap building definition
+        const bearTrapBuilding = this.collections.buildings?.bearTrap;
+        if (!bearTrapBuilding) {
+            this.game.uiSystem?.showNotification('Bear trap building not found.', 'error', 1000);
+            return;
+        }
+
+        // Use the same pattern as peasant building placement
+        // Scout will walk to position and place trap (uses buildTime from bearTrap.json)
+        const trapDef = {
+            ...bearTrapBuilding,
+            id: 'bearTrap',
+            collection: 'buildings'
+        };
+
+        this.activateBuildingPlacement(trapDef, scoutUnit);
+        this.game.uiSystem?.showNotification('Click to place bear trap', 'info', 2000);
     }
 
     onKeyDown(key) {

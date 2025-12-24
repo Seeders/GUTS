@@ -69,9 +69,80 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
                 return this.executePurchaseUnit(action, aiTeam, game);
             case 'MOVE_ORDER':
                 return this.executeMoveOrder(action, aiTeam, game);
+            case 'PLACE_TRAP':
+                return this.executePlaceTrap(action, aiTeam, playerId, game);
+            case 'SPAWN_UNIT':
+                return this.executeSpawnUnit(action, aiTeam, game);
             default:
                 console.warn('[AIExecuteBuildOrder] Unknown action type:', action.type);
                 return false;
+        }
+    }
+
+    /**
+     * Directly spawn a unit/building at a world position (for testing)
+     * This bypasses normal building/purchase flow
+     */
+    executeSpawnUnit(action, aiTeam, game) {
+        const reverseEnums = game.getReverseEnums();
+        const enums = game.call('getEnums');
+        const collections = game.getCollections();
+        const teamName = reverseEnums.team?.[aiTeam] || 'left';
+        const collection = action.collection || 'units';
+        const position = action.position || { x: 0, z: 0 };
+
+        console.log(`[AIExecuteBuildOrder] SPAWN_UNIT: ${action.unitId} (${collection}) at (${position.x}, ${position.z}) for team ${teamName}`);
+
+        // Get unit definition
+        const unitDef = collections[collection]?.[action.unitId];
+        if (!unitDef) {
+            console.warn(`[AIExecuteBuildOrder] Unit definition not found: ${action.unitId} in ${collection}`);
+            return false;
+        }
+
+        // Build the unitType object like PlacementSystem expects
+        const unitType = {
+            ...unitDef,
+            id: action.unitId,
+            collection: collection,
+            squadWidth: unitDef.squadWidth || 1,
+            squadHeight: unitDef.squadHeight || 1
+        };
+
+        // Get numeric indices for spawnType and collection
+        const spawnTypeIndex = enums[collection]?.[action.unitId] ?? -1;
+        const collectionIndex = enums.objectTypeDefinitions?.[collection] ?? -1;
+
+        if (spawnTypeIndex < 0 || collectionIndex < 0) {
+            console.warn(`[AIExecuteBuildOrder] Invalid enum indices for ${action.unitId}: spawnType=${spawnTypeIndex}, collection=${collectionIndex}`);
+            return false;
+        }
+
+        // Get grid position from world position
+        const gridPos = game.call('worldToPlacementGrid', position.x, position.z);
+
+        // Build placement data like PlacementSystem expects
+        const networkData = {
+            unitType: unitType,
+            collection: collectionIndex,
+            spawnType: spawnTypeIndex,
+            teamName: teamName,
+            squadWidth: unitType.squadWidth,
+            squadHeight: unitType.squadHeight,
+            position: { x: position.x, y: 0, z: position.z },
+            gridPosition: gridPos,
+            isUnderConstruction: false
+        };
+
+        const playerId = aiTeam === enums.team.left ? 0 : 1;
+        const result = game.call('spawnSquad', networkData, aiTeam, playerId);
+
+        if (result && result.success) {
+            console.log(`[AIExecuteBuildOrder] Spawned ${action.unitId} with placement ID ${result.placementId}, entities: ${result.squad?.squadUnits?.join(',')}`);
+            return true;
+        } else {
+            console.warn(`[AIExecuteBuildOrder] Failed to spawn ${action.unitId}:`, result?.error || 'unknown error');
+            return false;
         }
     }
 

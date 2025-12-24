@@ -1,0 +1,8 @@
+{
+  "fileName": "BearTrapAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/BearTrapAbility.js",
+  "castParticleEffectSystems": ["dust_burst"],
+  "targetParticleEffectSystems": ["dust_burst"],
+  "impactParticleEffectSystems": ["dust_burst"],
+  "expirationParticleEffectSystems": ["dust_burst"]
+}

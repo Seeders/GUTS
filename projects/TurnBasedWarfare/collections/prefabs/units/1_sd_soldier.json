@@ -3,15 +3,17 @@
   "size": 25,
   "height": 50,
   "value": 35,
-  "hp": 300,
+  "hp": 160,
   "speed": 45,
-  "damage": 12,
-  "attackSpeed": 0.8,
+  "damage": 18,
+  "attackSpeed": 1.0,
   "element": "physical",
-  "armor": 4,
+  "armor": 6,
   "fireResistance": 0.25,
   "coldResistance": 0.25,
   "lightningResistance": 0.25,
+  "poisonResistance": 0,
+  "holyResistance": 0.6,
   "render": {
     "animations": {
       "idle": [

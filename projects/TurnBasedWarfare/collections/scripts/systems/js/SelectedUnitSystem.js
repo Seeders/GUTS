@@ -354,33 +354,24 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const top = Math.min(box.startY, box.currentY);
         const bottom = Math.max(box.startY, box.currentY);
 
-        // Convert screen corners to world coordinates
-        const worldTopLeft = this.game.call('getWorldPositionFromMouse', left, top);
-        const worldBottomRight = this.game.call('getWorldPositionFromMouse', right, bottom);
+        // Find all units within the selection box (screen-based)
+        const selectedUnits = this.getUnitsInScreenBox(left, top, right, bottom);
 
-        if (!worldTopLeft || !worldBottomRight) {
-            // Fallback to screen-based selection if world conversion fails
-            const selectedUnits = this.getUnitsInScreenBox(left, top, right, bottom);
-            this._applySelection(selectedUnits, event.shiftKey);
-            return;
+        // Check if shift is held for additive selection
+        const isAdditive = event.shiftKey;
+
+        if (!isAdditive) {
+            this.selectedUnitIds.clear();
         }
-
-        // Calculate world bounds
-        const worldMinX = Math.min(worldTopLeft.x, worldBottomRight.x);
-        const worldMaxX = Math.max(worldTopLeft.x, worldBottomRight.x);
-        const worldMinZ = Math.min(worldTopLeft.z, worldBottomRight.z);
-        const worldMaxZ = Math.max(worldTopLeft.z, worldBottomRight.z);
-
-        const modifiers = {
-            shift: event.shiftKey,
-            ctrl: event.ctrlKey,
-            alt: event.altKey
-        };
-
-        // Forward to GameInterfaceSystem
-        this.game.call('ui_handleBoxSelection', worldMinX, worldMinZ, worldMaxX, worldMaxZ, modifiers, (result) => {
-            this.game.triggerEvent('onInputResult', result);
+        selectedUnits.forEach((unitId) => {
+            this.selectedUnitIds.add(unitId);
         });
+        this.currentSelectedIndex = 0;
+        if (this.selectedUnitIds.size > 0) {
+            this.updateMultipleSquadSelection();
+        } else {
+            this.deselectAll();
+        }
     }
 
     /**

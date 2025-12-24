@@ -1,0 +1,68 @@
+{
+  "title": "Bear Trap",
+  "info": "A hidden trap that snares enemies",
+  "value": 0,
+  "category": "trap",
+  "buildTime": 1,
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ],
+      "attack": [
+        {}
+      ],
+      "death": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "sphere",
+            "size": 40,
+            "color": "#cccccc",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "units": [],
+  "footprintWidth": 1,
+  "footprintHeight": 1,
+  "height": 10,
+  "size": 20,
+  "damage": 0,
+  "attackSpeed": 1,
+  "range": 48,
+  "element": "physical",
+  "hp": 10,
+  "abilities": [
+    "SnapTrapAbility"
+  ],
+  "isTrap": true,
+  "isHidden": true,
+  "requiresUnits": [],
+  "requiresBuildings": []
+}

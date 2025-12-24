@@ -18,6 +18,13 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         const meta = this.getMeta(entityId, game);
         const state = meta.buildState || 'traveling_to_building';
 
+        console.log('[BuildBehaviorAction] execute', {
+            entityId,
+            buildingId,
+            state,
+            isUnderConstruction: buildingPlacement.isUnderConstruction
+        });
+
         // State machine - return state objects, don't modify meta directly
         switch (state) {
             case 'traveling_to_building':
@@ -37,12 +44,22 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         const buildingPos = buildingTransform?.position;
 
         if (!buildingPos) {
+            console.log('[BuildBehaviorAction] travelToBuilding - no building position');
             return null;
         }
 
         const transform = game.getComponent(entityId, 'transform');
         const pos = transform?.position;
         const distance = this.distance(pos, buildingPos);
+
+        console.log('[BuildBehaviorAction] travelToBuilding', {
+            entityId,
+            buildingId,
+            distance,
+            buildRange: this.parameters.buildRange,
+            pos,
+            buildingPos
+        });
 
         if (distance < this.parameters.buildRange) {
             // Reached building
@@ -97,7 +114,6 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
     doBuilding(entityId, meta, game) {
         const buildingId = meta.buildingId;
         const buildingPlacement = game.getComponent(buildingId, 'placement');
-        const unitType = game.getComponent(buildingId, 'unitType');
 
         if (!buildingPlacement) {
             return null;
@@ -156,6 +172,15 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             return;
         }
 
+        // Get unit def from collections using numeric indices
+        const unitTypeDef = game.call('getUnitTypeDef', unitTypeComponent);
+
+        // Check if this is a trap - handle differently from regular buildings
+        if (unitTypeDef?.isTrap) {
+            this.completeTrapPlacement(entityId, buildingId, buildingPlacement, unitTypeDef, game);
+            return;
+        }
+
         // 1. Restore renderable component - change from underConstruction to actual building
         // unitTypeComponent.type is the numeric spawnType index
         const renderComponent = game.getComponent(buildingId, 'renderable');
@@ -165,8 +190,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             game.call('removeInstance', buildingId);
         }
 
-        // 2. Restore health to full - get unit def from collections using numeric indices
-        const unitTypeDef = game.call('getUnitTypeDef', unitTypeComponent);
+        // 2. Restore health to full
         const maxHP = unitTypeDef?.hp || 100;
         const health = game.getComponent(buildingId, 'health');
         if (health) {
@@ -186,6 +210,49 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
             game.animationSystem.changeAnimation(buildingId, enums.animationType.idle, 1.0, 0);
         }
 
+    }
+
+    completeTrapPlacement(entityId, buildingId, buildingPlacement, unitTypeDef, game) {
+        console.log('[BuildBehaviorAction] completeTrapPlacement called', {
+            scoutEntityId: entityId,
+            trapBuildingId: buildingId
+        });
+
+        // Call the scout's BearTrapAbility.onTrapPlaced to set up ownership and cooldown
+        const scoutAbilities = game.call('getEntityAbilities', entityId);
+        if (scoutAbilities) {
+            const bearTrapAbility = scoutAbilities.find(a => a.id === 'BearTrapAbility');
+            if (bearTrapAbility) {
+                bearTrapAbility.onTrapPlaced(entityId, buildingId);
+            }
+        }
+
+        // Update placement component - trap is now active
+        buildingPlacement.isUnderConstruction = false;
+        buildingPlacement.assignedBuilder = null;
+
+        // Restore health to full
+        const maxHP = unitTypeDef?.hp || 10;
+        const health = game.getComponent(buildingId, 'health');
+        if (health) {
+            health.max = maxHP;
+            health.current = maxHP;
+        }
+
+        // Update renderable to show actual trap model
+        const unitTypeComponent = game.getComponent(buildingId, 'unitType');
+        const renderComponent = game.getComponent(buildingId, 'renderable');
+        console.log('[BuildBehaviorAction] Trap renderable before update:', {
+            buildingId,
+            renderComponent: renderComponent?.toJSON?.() || renderComponent,
+            unitTypeComponent: unitTypeComponent?.toJSON?.() || unitTypeComponent
+        });
+
+        if (renderComponent && unitTypeComponent) {
+            renderComponent.spawnType = unitTypeComponent.type;
+            console.log('[BuildBehaviorAction] Calling removeInstance for trap', buildingId);
+            game.call('removeInstance', buildingId);
+        }
     }
 
     onEnd(entityId, game) {

@@ -52,7 +52,8 @@
     "ComponentGenerator",
     "BehaviorTreeProcessor",
     "BaseBehaviorNode",
-    "SceneManager"
+    "SceneManager",
+    "HeadlessLogger"
   ],
   "systems": [
     "GameSystem",
