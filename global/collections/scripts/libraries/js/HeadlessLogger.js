@@ -26,6 +26,8 @@ class HeadlessLogger {
     static _level = LOG_LEVELS.INFO;
     static _enabled = true;
     static _timestamps = true;
+    static _captureMode = false;
+    static _capturedLogs = [];
 
     /**
      * Set the log level
@@ -70,6 +72,35 @@ class HeadlessLogger {
     }
 
     /**
+     * Enable capture mode - logs are buffered instead of printed to console
+     * Use this for batch simulations to capture logs to files
+     * @param {boolean} enabled
+     */
+    static setCaptureMode(enabled) {
+        this._captureMode = enabled;
+        if (enabled) {
+            this._capturedLogs = [];
+        }
+    }
+
+    /**
+     * Get captured logs and clear the buffer
+     * @returns {string} All captured log lines joined with newlines
+     */
+    static getCapturedLogs() {
+        const logs = this._capturedLogs.join('\n');
+        this._capturedLogs = [];
+        return logs;
+    }
+
+    /**
+     * Clear captured logs without returning them
+     */
+    static clearCapturedLogs() {
+        this._capturedLogs = [];
+    }
+
+    /**
      * Format a log message
      * @private
      */
@@ -80,6 +111,18 @@ class HeadlessLogger {
     }
 
     /**
+     * Output a formatted message (to console or buffer)
+     * @private
+     */
+    static _output(formattedMessage, consoleMethod = 'log') {
+        if (this._captureMode) {
+            this._capturedLogs.push(formattedMessage);
+        } else {
+            console[consoleMethod](formattedMessage);
+        }
+    }
+
+    /**
      * Log at ERROR level
      * @param {string} tag - Component/system name
      * @param {string} message - Log message
@@ -87,7 +130,7 @@ class HeadlessLogger {
      */
     static error(tag, message, data) {
         if (!this._enabled || this._level < LOG_LEVELS.ERROR) return;
-        console.error(this._format('ERROR', tag, message, data));
+        this._output(this._format('ERROR', tag, message, data), 'error');
     }
 
     /**
@@ -98,7 +141,7 @@ class HeadlessLogger {
      */
     static warn(tag, message, data) {
         if (!this._enabled || this._level < LOG_LEVELS.WARN) return;
-        console.warn(this._format('WARN', tag, message, data));
+        this._output(this._format('WARN', tag, message, data), 'warn');
     }
 
     /**
@@ -109,7 +152,7 @@ class HeadlessLogger {
      */
     static info(tag, message, data) {
         if (!this._enabled || this._level < LOG_LEVELS.INFO) return;
-        console.log(this._format('INFO', tag, message, data));
+        this._output(this._format('INFO', tag, message, data), 'log');
     }
 
     /**
@@ -120,7 +163,7 @@ class HeadlessLogger {
      */
     static debug(tag, message, data) {
         if (!this._enabled || this._level < LOG_LEVELS.DEBUG) return;
-        console.log(this._format('DEBUG', tag, message, data));
+        this._output(this._format('DEBUG', tag, message, data), 'log');
     }
 
     /**
@@ -131,7 +174,7 @@ class HeadlessLogger {
      */
     static trace(tag, message, data) {
         if (!this._enabled || this._level < LOG_LEVELS.TRACE) return;
-        console.log(this._format('TRACE', tag, message, data));
+        this._output(this._format('TRACE', tag, message, data), 'log');
     }
 
     /**
