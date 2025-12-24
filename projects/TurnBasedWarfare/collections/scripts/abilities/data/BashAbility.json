@@ -1,0 +1,8 @@
+{
+  "fileName": "BashAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/BashAbility.js",
+  "castParticleEffectSystems": ["dust_burst"],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": ["rock_debris", "dust_burst"],
+  "expirationParticleEffectSystems": ["holy_sparkles"]
+}

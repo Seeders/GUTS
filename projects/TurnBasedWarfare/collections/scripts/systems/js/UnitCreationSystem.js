@@ -601,7 +601,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 attackSpeed: unitType.attackSpeed,
                 projectile: unitType.projectile,
                 lastAttack: 0,
-                element: unitType.element,
+                // Convert element string to numeric enum value
+                element: typeof unitType.element === 'string'
+                    ? (this.enums.element?.[unitType.element] ?? this.enums.element.physical)
+                    : (unitType.element ?? this.enums.element.physical),
                 armor: unitType.armor,
                 fireResistance: unitType.fireResistance,
                 coldResistance: unitType.coldResistance,

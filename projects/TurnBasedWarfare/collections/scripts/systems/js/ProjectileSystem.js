@@ -196,7 +196,20 @@ class ProjectileSystem extends GUTS.BaseSystem {
             this.game.addComponent(projectileId, "homingTarget",
                 { targetId: targetId, homingStrength: homingStrength, lastKnownPosition: { x: targetPos.x, y: targetPos.y, z: targetPos.z } });
         }
-        
+
+        // Debug: verify projectile entity has all required components
+        if (!projectileData.ballistic) {
+            const hasTransform = this.game.hasComponent(projectileId, "transform");
+            const hasVelocity = this.game.hasComponent(projectileId, "velocity");
+            const hasProjectile = this.game.hasComponent(projectileId, "projectile");
+            log.debug('Projectile', `Created non-ballistic projectile ${projectileId}`, {
+                hasTransform,
+                hasVelocity,
+                hasProjectile,
+                isBallistic: projectileData.ballistic
+            });
+        }
+
         return projectileId;
     }
     
@@ -211,21 +224,31 @@ class ProjectileSystem extends GUTS.BaseSystem {
      * Determine the element of a projectile based on various sources
      */
     determineProjectileElement(sourceId, projectileData) {
-        // Priority order: projectile data > weapon element > combat element > default physical
+        // Priority order: projectile damageType > projectile element > combat element > default physical
 
-        // 1. Check projectile data for explicit element (already numeric)
+        // 1. Check projectile data for explicit damageType (string from JSON)
+        if (projectileData.damageType) {
+            const enumValue = this.enums.element?.[projectileData.damageType];
+            if (enumValue !== undefined) {
+                return enumValue;
+            }
+        }
+
+        // 2. Check projectile data for explicit element (may be string or numeric)
         if (projectileData.element !== undefined && projectileData.element !== null) {
-            // element is already a numeric enum value, return it directly
+            if (typeof projectileData.element === 'string') {
+                return this.enums.element?.[projectileData.element] ?? this.enums.element.physical;
+            }
             return projectileData.element;
         }
-        
-        // 2. Check combat component element
+
+        // 3. Check combat component element (already converted to numeric in UnitCreationSystem)
         const sourceCombat = this.game.getComponent(sourceId, "combat");
-        if (sourceCombat && sourceCombat.element) {
+        if (sourceCombat && sourceCombat.element !== undefined) {
             return sourceCombat.element;
         }
-        
-        // 3. Default to physical
+
+        // 4. Default to physical
         return this.enums.element.physical;
     }
 
@@ -325,15 +348,36 @@ class ProjectileSystem extends GUTS.BaseSystem {
     update() {
         if (this.game.state.phase !== this.enums.gamePhase.battle) return;
 
+        const log = GUTS.HeadlessLogger;
+
+        // Debug: Check if entity 1588 exists and has components (hardcoded for debugging)
+        if (this.game.entityExists(1588)) {
+            const hasT = this.game.hasComponent(1588, "transform");
+            const hasV = this.game.hasComponent(1588, "velocity");
+            const hasP = this.game.hasComponent(1588, "projectile");
+            log.trace('Projectile', `Entity 1588 check: exists=true t=${hasT} v=${hasV} p=${hasP}`);
+        }
+
         const projectiles = this.game.getEntitiesWith(
             "transform",
             "velocity",
             "projectile"
         );
+
+        // Debug: log all projectile entities found
+        if (projectiles.length > 0) {
+            const nonBallistic = projectiles.filter(id => {
+                const p = this.game.getComponent(id, "projectile");
+                return p && !p.isBallistic;
+            });
+            if (nonBallistic.length > 0) {
+                log.trace('Projectile', `Update found ${nonBallistic.length} non-ballistic projectiles: ${nonBallistic.join(', ')}`);
+            }
+        }
+
         // Sort for deterministic processing order (prevents desync)
         // OPTIMIZATION: Numeric IDs allow fast numeric sort instead of localeCompare
         projectiles.sort((a, b) => a - b);
-
         projectiles.forEach(projectileId => {
             const transform = this.game.getComponent(projectileId, "transform");
             const pos = transform?.position;
@@ -346,11 +390,26 @@ class ProjectileSystem extends GUTS.BaseSystem {
                 return;
             }
 
+            // Debug non-ballistic projectiles
+            if (!projectile.isBallistic) {
+                log.trace('Projectile', `Non-ballistic update: id=${projectileId} pos=(${pos.x.toFixed(0)}, ${pos.y.toFixed(0)}, ${pos.z.toFixed(0)}) vel=(${vel.vx.toFixed(0)}, ${vel.vy.toFixed(0)}, ${vel.vz.toFixed(0)}) target=${projectile.target} exists=${this.game.entityExists(projectileId)}`);
+            }
+
             // Update homing behavior (targetId is null when no target)
             if (homing && homing.targetId != null && projectile.isBallistic) {
                 this.updateBallisticHoming(projectileId, pos, vel, projectile, homing);
             } else if (homing && homing.targetId != null) {
                 this.updateHomingProjectile(projectileId, pos, vel, projectile, homing);
+            }
+
+            // Debug: check components after homing update for non-ballistic
+            if (!projectile.isBallistic) {
+                const hasT = this.game.hasComponent(projectileId, "transform");
+                const hasV = this.game.hasComponent(projectileId, "velocity");
+                const hasP = this.game.hasComponent(projectileId, "projectile");
+                if (!hasT || !hasV || !hasP) {
+                    log.warn('Projectile', `Component lost after homing update! id=${projectileId} t=${hasT} v=${hasV} p=${hasP}`);
+                }
             }
 
             // Call onTravel callback for trail effects (throttled)
@@ -370,6 +429,11 @@ class ProjectileSystem extends GUTS.BaseSystem {
             } else {
                 // Non-ballistic projectiles check for direct unit hits during flight
                 this.checkProjectileCollisions(projectileId, pos, projectile);
+
+                // Debug: check if entity still exists after collision check
+                if (!this.game.entityExists(projectileId)) {
+                    log.debug('Projectile', `Non-ballistic projectile ${projectileId} was destroyed during collision check`);
+                }
             }
 
             // Update visual trail
@@ -483,6 +547,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
     
     checkProjectileCollisions(projectileId, pos, projectile) {
+        const log = GUTS.HeadlessLogger;
         // Skip if already destroyed by another check
         if (!this.game.entityExists(projectileId)) return;
 
@@ -516,6 +581,14 @@ class ProjectileSystem extends GUTS.BaseSystem {
             const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
             entitiesWithDistance.push({ entityId, entityPos, distance });
+        }
+
+        // Debug: log closest enemy distance for non-ballistic projectiles
+        if (entitiesWithDistance.length > 0 && !projectile.isBallistic) {
+            const closest = entitiesWithDistance.reduce((a, b) => a.distance < b.distance ? a : b);
+            if (closest.distance < 100) {
+                log.trace('Projectile', `Collision check: projectile at (${pos.x.toFixed(0)}, ${pos.y.toFixed(0)}, ${pos.z.toFixed(0)}) closest enemy ${closest.entityId} at distance ${closest.distance.toFixed(1)}`);
+            }
         }
 
         // Sort by distance (closest first), then by entity ID for deterministic tie-breaking
@@ -690,7 +763,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
     handleProjectileHit(projectileId, targetId, _targetPos, projectile) {
         const log = GUTS.HeadlessLogger;
         const damage = projectile.damage;
-        const element = this.enums.element[projectile.element] || this.enums.element.physical;
+        // projectile.element is already a numeric enum value
+        const element = projectile.element !== undefined ? projectile.element : this.enums.element.physical;
 
         // Get source/target info for logging
         const sourceUnitTypeComp = this.game.getComponent(projectile.source, 'unitType');

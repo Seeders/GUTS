@@ -158,7 +158,7 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "abilities": [
-    "WindShieldAbility"
+    "BashAbility"
   ],
   "icon": "unit_soldier",
   "visionRange": 500,
