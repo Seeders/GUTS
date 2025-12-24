@@ -228,6 +228,14 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     // GUTS Manager Interface
     init(params) {
         this.params = params || {};
+    }
+
+    postInit() {
+        // Skip network connection in local game mode (set by SkirmishGameSystem)
+        if (this.game.state.isLocalGame) {
+            return;
+        }
+
         this.connectToServer();
         this.setupNetworkListeners();
     }
@@ -1197,10 +1205,12 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.gameState = null;
         this.pendingBattleEnd = null;
 
-        // Remove any game ended modals
-        const gameEndedModal = document.getElementById('gameEndedModal');
-        if (gameEndedModal) {
-            gameEndedModal.remove();
+        // Remove any game ended modals (only in browser environment)
+        if (typeof document !== 'undefined') {
+            const gameEndedModal = document.getElementById('gameEndedModal');
+            if (gameEndedModal) {
+                gameEndedModal.remove();
+            }
         }
     }
 }

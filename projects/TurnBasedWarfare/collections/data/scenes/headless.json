@@ -29,8 +29,7 @@
     "SupplySystem",
     "PlacementSystem",
     "UnitOrderSystem",
-    "SkirmishGameSystem",
-    "AIPlacementSystem"
+    "SkirmishGameSystem"
   ],
   "clientSystems": [],
   "serverSystems": []

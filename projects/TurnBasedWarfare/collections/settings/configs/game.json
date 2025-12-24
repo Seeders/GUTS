@@ -111,8 +111,7 @@
     "VisionSystem",
     "SupplySystem",
     "CheatCodeSystem",
-    "SkirmishGameSystem",
-    "AIPlacementSystem"
+    "SkirmishGameSystem"
   ],
   "classes": [
     {

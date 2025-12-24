@@ -1,0 +1,10 @@
+{
+  "title": "AI Execute Build Order",
+  "behaviorNodeType": "action",
+  "type": "AIExecuteBuildOrderBehaviorAction",
+  "priority": 10,
+  "description": "Executes build order actions for AI opponent using GameInterfaceSystem",
+  "parameters": "{}",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/AIExecuteBuildOrderBehaviorAction.js",
+  "fileName": "AIExecuteBuildOrderBehaviorAction"
+}

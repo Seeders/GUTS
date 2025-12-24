@@ -1,0 +1,25 @@
+{
+  "name": "Mixed Soldier + Archer",
+  "description": "Build barracks + fletcher's hall to produce soldier and archer combo",
+  "rounds": {
+    "1": [
+      { "type": "PLACE_BUILDING", "buildingId": "barracks" }
+    ],
+    "2": [
+      { "type": "PLACE_BUILDING", "buildingId": "fletchersHall" }
+    ],
+    "3": [],
+    "4": [
+      { "type": "PURCHASE_UNIT", "unitId": "1_sd_soldier", "building": "barracks" },
+      { "type": "PURCHASE_UNIT", "unitId": "1_d_archer", "building": "fletchersHall" },
+      { "type": "MOVE_ORDER", "unitType": "1_sd_soldier", "target": "center" },
+      { "type": "MOVE_ORDER", "unitType": "1_d_archer", "target": "center" }
+    ],
+    "5": [
+      { "type": "PURCHASE_UNIT", "unitId": "1_sd_soldier", "building": "barracks" },
+      { "type": "PURCHASE_UNIT", "unitId": "1_d_archer", "building": "fletchersHall" },
+      { "type": "MOVE_ORDER", "unitType": "1_sd_soldier", "target": "enemy" },
+      { "type": "MOVE_ORDER", "unitType": "1_d_archer", "target": "enemy" }
+    ]
+  }
+}

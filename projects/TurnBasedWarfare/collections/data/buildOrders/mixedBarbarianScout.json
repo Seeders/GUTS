@@ -1,0 +1,27 @@
+{
+  "name": "Mixed Barbarian + Scout",
+  "description": "Build barracks + fletcher's hall + mage tower to produce barbarian and scout combo",
+  "rounds": {
+    "1": [
+      { "type": "PLACE_BUILDING", "buildingId": "barracks" }
+    ],
+    "2": [
+      { "type": "PLACE_BUILDING", "buildingId": "fletchersHall" }
+    ],
+    "3": [
+      { "type": "PLACE_BUILDING", "buildingId": "mageTower" }
+    ],
+    "4": [
+      { "type": "PURCHASE_UNIT", "unitId": "1_s_barbarian", "building": "barracks" },
+      { "type": "PURCHASE_UNIT", "unitId": "1_di_scout", "building": "fletchersHall" },
+      { "type": "MOVE_ORDER", "unitType": "1_s_barbarian", "target": "center" },
+      { "type": "MOVE_ORDER", "unitType": "1_di_scout", "target": "center" }
+    ],
+    "5": [
+      { "type": "PURCHASE_UNIT", "unitId": "1_s_barbarian", "building": "barracks" },
+      { "type": "PURCHASE_UNIT", "unitId": "1_di_scout", "building": "fletchersHall" },
+      { "type": "MOVE_ORDER", "unitType": "1_s_barbarian", "target": "enemy" },
+      { "type": "MOVE_ORDER", "unitType": "1_di_scout", "target": "enemy" }
+    ]
+  }
+}

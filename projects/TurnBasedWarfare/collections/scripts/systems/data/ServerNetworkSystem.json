@@ -4,8 +4,15 @@
   "services": [
     "sendToPlayer",
     "broadcastToRoom",
-    "getPlayerRoom",
-    "joinRoom",
-    "leaveRoom"
+    "handleSubmitPlacement",
+    "handleSetSquadTarget",
+    "handleSetSquadTargets",
+    "handleCancelBuilding",
+    "handleUpgradeBuilding",
+    "handlePurchaseUpgrade",
+    "handleReadyForBattle",
+    "handleGetStartingState",
+    "handleLevelSquad",
+    "handleExecuteCheat"
   ]
 }

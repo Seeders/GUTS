@@ -1,0 +1,9 @@
+{
+  "name": "Apprentice vs Soldier",
+  "description": "Apprentice (intel/strength magic caster) vs Soldier (strength/dex hybrid melee). Magic vs hybrid melee.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "level_1",
+  "buildOrderA": "apprentice",
+  "buildOrderB": "soldier"
+}

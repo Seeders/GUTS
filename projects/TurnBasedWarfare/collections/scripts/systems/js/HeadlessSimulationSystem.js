@@ -3,80 +3,18 @@
  *
  * This system extends BaseSystem so it can:
  * 1. Receive game events through triggerEvent (e.g., onUnitKilled)
- * 2. Execute simulation instructions using game.call() services
- * 3. Track event triggers for WAIT instructions
+ * 2. Track simulation state and completion
+ * 3. Monitor AI opponent behavior tree execution
  *
- * The HeadlessEngine just runs the tick loop - all game-specific logic is here.
+ * AI opponents run via behavior trees during placement phase, using GameInterfaceSystem.
+ * The HeadlessEngine just runs the tick loop - AI behavior trees handle game logic.
  */
-
-/**
- * Instruction schema definitions for validation
- * Each instruction type has required and optional fields
- */
-const INSTRUCTION_SCHEMAS = {
-    PLACE_UNIT: {
-        required: ['unitId', 'x', 'z'],
-        optional: ['team'],
-        description: 'Place a unit at grid position'
-    },
-    PLACE_BUILDING: {
-        required: ['buildingId'],
-        optional: ['team', 'x', 'z'],
-        description: 'Place a building (x/z can be "auto" for automatic placement)'
-    },
-    SUBMIT_PLACEMENT: {
-        required: [],
-        optional: ['team'],
-        description: 'Submit placement and mark team as ready'
-    },
-    START_BATTLE: {
-        required: [],
-        optional: [],
-        description: 'Start the battle phase'
-    },
-    PURCHASE_UNIT: {
-        required: ['unitId'],
-        optional: ['team', 'buildingEntityId'],
-        description: 'Purchase a unit from a building'
-    },
-    MOVE_ORDER: {
-        required: [],
-        optional: ['team', 'target', 'x', 'z', 'unitId'],
-        description: 'Issue move order (target can be "center" or "enemy", or use x/z coordinates). Use unitId to filter to specific unit types.'
-    },
-    WAIT: {
-        required: [],
-        optional: ['trigger', 'tick', 'phase', 'round', 'event'],
-        description: 'Wait for a condition before continuing'
-    },
-    SKIP_PLACEMENT: {
-        required: [],
-        optional: [],
-        description: 'Skip placement phase and use AI to place units for both teams'
-    },
-    END_SIMULATION: {
-        required: [],
-        optional: [],
-        description: 'End the simulation early'
-    },
-    CALL_SERVICE: {
-        required: ['service'],
-        optional: ['args'],
-        description: 'Call a game service directly'
-    }
-};
-
-/**
- * Valid trigger types for instructions
- */
-const VALID_TRIGGERS = ['immediate', 'tick', 'phase', 'round', 'event'];
 
 class HeadlessSimulationSystem extends GUTS.BaseSystem {
     static services = [
         'runSimulation',
-        'executeInstruction',
-        'validateInstruction',
-        'getInstructionSchemas'
+        'isSimulationComplete',
+        'getSimulationResults'
     ];
 
     constructor(game) {
@@ -92,189 +30,49 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
             trace: () => {}
         };
 
-        // Initialize instruction executor (required module)
-        if (!global.GUTS?.InstructionExecutor) {
-            throw new Error('InstructionExecutor library must be loaded before HeadlessSimulationSystem');
-        }
-        this._executor = new global.GUTS.InstructionExecutor(game, this._log);
-
         // Simulation state
-        this._instructions = [];
-        this._instructionIndex = 0;
-        this._results = [];
         this._simulationComplete = false;
-        this._validationErrors = [];
-
-        // Event trigger tracking
-        this._pendingEventTrigger = null;
-        this._eventTriggered = false;
-        this._eventData = null;
 
         // Unit statistics tracking
         this._unitDeaths = [];
+
+        // Combat log for detailed reporting
+        this._combatLog = [];
+        this._lastAttackState = new Map(); // Track last attack time per entity
+        this._projectilesFired = 0;
+        this._abilitiesUsed = 0;
+        this._damageDealt = { left: 0, right: 0 };
     }
 
     /**
-     * Get instruction schemas for documentation/validation
-     * @returns {Object} Schema definitions
+     * Called when scene loads - reset all state
      */
-    getInstructionSchemas() {
-        return INSTRUCTION_SCHEMAS;
-    }
-
-    /**
-     * Validate a single instruction against its schema
-     * @param {Object} instruction - Instruction to validate
-     * @param {number} index - Index in instruction array (for error messages)
-     * @returns {Object} { valid: boolean, errors: string[] }
-     */
-    validateInstruction(instruction, index = 0) {
-        const errors = [];
-
-        // Allow comment-only instructions
-        if (instruction._comment && !instruction.type) {
-            return { valid: true, errors: [] };
-        }
-
-        // Check for type field
-        if (!instruction.type) {
-            errors.push(`Instruction ${index}: Missing required 'type' field`);
-            return { valid: false, errors };
-        }
-
-        // Check if type is known
-        const schema = INSTRUCTION_SCHEMAS[instruction.type];
-        if (!schema) {
-            errors.push(`Instruction ${index}: Unknown instruction type '${instruction.type}'. Valid types: ${Object.keys(INSTRUCTION_SCHEMAS).join(', ')}`);
-            return { valid: false, errors };
-        }
-
-        // Check required fields
-        for (const field of schema.required) {
-            if (!(field in instruction)) {
-                errors.push(`Instruction ${index} (${instruction.type}): Missing required field '${field}'`);
-            }
-        }
-
-        // Validate trigger if present
-        if (instruction.trigger && !VALID_TRIGGERS.includes(instruction.trigger)) {
-            errors.push(`Instruction ${index} (${instruction.type}): Invalid trigger '${instruction.trigger}'. Valid triggers: ${VALID_TRIGGERS.join(', ')}`);
-        }
-
-        // Type-specific validation
-        switch (instruction.type) {
-            case 'MOVE_ORDER':
-                if (!instruction.target && instruction.x === undefined && instruction.z === undefined) {
-                    errors.push(`Instruction ${index} (MOVE_ORDER): Must specify either 'target' ("center"/"enemy") or 'x'/'z' coordinates`);
-                }
-                if (instruction.target && !['center', 'enemy'].includes(instruction.target)) {
-                    errors.push(`Instruction ${index} (MOVE_ORDER): Invalid target '${instruction.target}'. Valid targets: center, enemy`);
-                }
-                break;
-
-            case 'WAIT':
-                if (instruction.trigger === 'tick' && instruction.tick === undefined) {
-                    errors.push(`Instruction ${index} (WAIT): Trigger 'tick' requires 'tick' field`);
-                }
-                if (instruction.trigger === 'phase' && instruction.phase === undefined) {
-                    errors.push(`Instruction ${index} (WAIT): Trigger 'phase' requires 'phase' field`);
-                }
-                if (instruction.trigger === 'round' && instruction.round === undefined) {
-                    errors.push(`Instruction ${index} (WAIT): Trigger 'round' requires 'round' field`);
-                }
-                if (instruction.trigger === 'event' && instruction.event === undefined) {
-                    errors.push(`Instruction ${index} (WAIT): Trigger 'event' requires 'event' field`);
-                }
-                break;
-        }
-
-        return { valid: errors.length === 0, errors };
-    }
-
-    /**
-     * Validate all instructions before execution
-     * @param {Array} instructions - Array of instructions
-     * @returns {Object} { valid: boolean, errors: string[] }
-     */
-    validateInstructions(instructions) {
-        const allErrors = [];
-
-        if (!Array.isArray(instructions)) {
-            return { valid: false, errors: ['Instructions must be an array'] };
-        }
-
-        for (let i = 0; i < instructions.length; i++) {
-            const result = this.validateInstruction(instructions[i], i);
-            if (!result.valid) {
-                allErrors.push(...result.errors);
-            }
-        }
-
-        return { valid: allErrors.length === 0, errors: allErrors };
-    }
-
-    /**
-     * Set up a simulation with instructions
-     * Called by HeadlessSkirmishRunner before starting the tick loop
-     * @param {Array} instructions - Instructions to execute
-     * @param {Object} options - Setup options
-     * @param {boolean} options.skipValidation - Skip instruction validation (default: false)
-     * @throws {Error} If validation fails and skipValidation is false
-     */
-    setupSimulation(instructions, options = {}) {
-        const { skipValidation = false } = options;
-
-        // Validate instructions unless explicitly skipped
-        if (!skipValidation) {
-            const validation = this.validateInstructions(instructions);
-            if (!validation.valid) {
-                this._validationErrors = validation.errors;
-                this._log.error('Instruction validation failed:');
-                for (const error of validation.errors) {
-                    this._log.error(`  - ${error}`);
-                }
-                throw new Error(`Instruction validation failed: ${validation.errors.join('; ')}`);
-            }
-        }
-
-        this._instructions = instructions;
-        this._instructionIndex = 0;
-        this._results = [];
+    onSceneLoad() {
         this._simulationComplete = false;
-        this._validationErrors = [];
-        this._pendingEventTrigger = null;
-        this._eventTriggered = false;
-        this._eventData = null;
         this._unitDeaths = [];
-
-        this._log.info(`Setup complete with ${instructions.length} instructions`);
+        this._combatLog = [];
+        this._lastAttackState = new Map();
+        this._projectilesFired = 0;
+        this._abilitiesUsed = 0;
+        this._damageDealt = { left: 0, right: 0 };
+        this._log.debug('Scene loaded - simulation state reset');
     }
 
     /**
-     * Process instructions that are ready to execute
-     * Called each tick by the game's update loop
+     * Set up a simulation
+     * Called by HeadlessSkirmishRunner before starting the tick loop
+     * AI opponents run via behavior trees - no instructions needed
      */
-    async processInstructions() {
-        while (this._instructionIndex < this._instructions.length) {
-            const inst = this._instructions[this._instructionIndex];
+    setupSimulation() {
+        this._simulationComplete = false;
+        this._unitDeaths = [];
+        this._combatLog = [];
+        this._lastAttackState = new Map();
+        this._projectilesFired = 0;
+        this._abilitiesUsed = 0;
+        this._damageDealt = { left: 0, right: 0 };
 
-            // Check trigger condition
-            if (!this._shouldExecuteInstruction(inst)) {
-                break;
-            }
-
-            // Execute the instruction
-            this._log.debug(`Executing instruction ${this._instructionIndex}: ${inst.type}`, inst);
-            const result = await this.executeInstruction(inst);
-            this._log.debug('Instruction result:', result);
-            this._results.push({ instruction: inst, result, tick: this.game.tickCount });
-            this._instructionIndex++;
-        }
-
-        // Check if simulation is complete
-        if (this._instructionIndex >= this._instructions.length) {
-            this._simulationComplete = true;
-        }
+        this._log.info('Simulation setup complete - AI opponents will run via behavior trees');
     }
 
     /**
@@ -287,70 +85,77 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
     /**
      * Get simulation results
      */
-    getResults() {
+    getSimulationResults() {
         return {
-            instructionsProcessed: this._instructionIndex,
-            instructionResults: this._results,
-            validationErrors: this._validationErrors
+            gameOver: this.game.state.gameOver,
+            winner: this.game.state.winner,
+            round: this.game.state.round,
+            tickCount: this.game.tickCount,
+            unitStatistics: this.getUnitStatistics()
         };
     }
 
     /**
-     * Check if an instruction should execute on this tick
-     * @private
+     * Alias for getSimulationResults (for backwards compatibility)
      */
-    _shouldExecuteInstruction(inst) {
-        const trigger = inst.trigger || 'immediate';
-
-        switch (trigger) {
-            case 'immediate':
-                return true;
-
-            case 'tick':
-                return this.game.tickCount >= (inst.tick || 0);
-
-            case 'phase':
-                return this.game.state.phase === inst.phase;
-
-            case 'round':
-                return this.game.state.round >= (inst.round || 1);
-
-            case 'event':
-                // Check if event was triggered
-                if (this._pendingEventTrigger === inst.event && this._eventTriggered) {
-                    // Event occurred, clear and proceed
-                    this._pendingEventTrigger = null;
-                    this._eventTriggered = false;
-                    this._eventData = null;
-                    return true;
-                }
-                // Set up event wait if not already waiting
-                if (this._pendingEventTrigger !== inst.event) {
-                    this._pendingEventTrigger = inst.event;
-                    this._eventTriggered = false;
-                    this._log.debug(`Waiting for event: ${inst.event}`);
-                }
-                return false;
-
-            default:
-                return true;
-        }
+    getResults() {
+        return this.getSimulationResults();
     }
 
     /**
-     * Execute a single instruction
-     * Delegates to InstructionExecutor for actual execution.
-     * Uses game.call() - SAME code path as GUI systems via GameInterfaceSystem
+     * Update method - tracks combat activity each tick
      */
-    async executeInstruction(inst) {
-        const result = await this._executor.execute(inst);
+    update() {
+        // Only track during battle phase
+        if (this.game.state.phase !== this.enums.gamePhase.battle) return;
 
-        // Handle END_SIMULATION flag on the system
-        if (inst.type === 'END_SIMULATION' && result.ended) {
-            this._simulationComplete = true;
+        this._trackCombatActivity();
+    }
+
+    /**
+     * Track combat activity by monitoring entity combat components
+     */
+    _trackCombatActivity() {
+        const entities = this.game.getEntitiesWith('combat', 'team', 'unitType');
+        const reverseEnums = this.game.getReverseEnums();
+
+        for (const entityId of entities) {
+            const combat = this.game.getComponent(entityId, 'combat');
+            const teamComp = this.game.getComponent(entityId, 'team');
+            const deathState = this.game.getComponent(entityId, 'deathState');
+
+            // Skip dead/dying units
+            if (deathState && deathState.state !== this.enums.deathState.alive) continue;
+
+            // Track attacks by monitoring lastAttack time changes
+            const lastKnownAttack = this._lastAttackState.get(entityId) || 0;
+            if (combat.lastAttack && combat.lastAttack > lastKnownAttack) {
+                this._lastAttackState.set(entityId, combat.lastAttack);
+
+                // Log the attack
+                const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+                const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+                const teamName = reverseEnums.team?.[teamComp.team] || teamComp.team;
+
+                this._combatLog.push({
+                    type: 'attack',
+                    tick: this.game.tickCount,
+                    time: this.game.state.now,
+                    entityId,
+                    unitType: unitDef?.id || 'unknown',
+                    team: teamName,
+                    damage: combat.damage
+                });
+            }
         }
 
-        return result;
+        // Track projectiles
+        if (this.game.projectileSystem) {
+            const projectileCount = this.game.projectileSystem.projectiles?.size || 0;
+            if (projectileCount > this._projectilesFired) {
+                this._projectilesFired = projectileCount;
+            }
+        }
     }
 
     // ==================== EVENT HANDLERS ====================
@@ -358,10 +163,40 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
 
     onUnitKilled(entityId) {
         this._log.debug('onUnitKilled received:', { entityId });
-        this._checkEventTrigger('onUnitKilled', { entityId });
 
         // Track unit death statistics
         this._trackUnitDeath(entityId);
+
+        // Don't process further deaths once simulation is already complete
+        // This ensures the FIRST death determines the winner (prevents draw scenarios)
+        if (this._simulationComplete) {
+            this._log.debug('Simulation already complete, ignoring additional death');
+            return;
+        }
+
+        // Check if this is a combat unit (not building, peasant, gold mine, dragon)
+        const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+        const teamComp = this.game.getComponent(entityId, 'team');
+        if (!unitTypeComp || !teamComp) return;
+
+        const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitId = unitDef?.id || 'unknown';
+
+        // Non-combat units that don't trigger simulation end
+        const nonCombatUnits = ['townHall', 'barracks', 'fletchersHall', 'mageTower', 'goldMine', 'peasant', 'dragon_red'];
+        if (nonCombatUnits.includes(unitId)) return;
+
+        // A combat unit died - end simulation
+        // The winning team is the opposite of the team that lost a unit
+        const losingTeam = teamComp.team;
+        const winningTeam = losingTeam === this.enums.team.left ? this.enums.team.right : this.enums.team.left;
+        const reverseEnums = this.game.getReverseEnums();
+
+        this.game.state.gameOver = true;
+        this.game.state.winner = reverseEnums.team?.[winningTeam] || winningTeam;
+        this._simulationComplete = true;
+
+        this._log.info(`Combat unit killed: ${unitId} (${reverseEnums.team?.[losingTeam]}) - ${this.game.state.winner} wins!`);
     }
 
     /**
@@ -437,17 +272,50 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
 
     /**
      * Get unit statistics summary
-     * @returns {Object} { livingUnits: Array, deadUnits: Array }
+     * @returns {Object} { livingUnits: Array, deadUnits: Array, combatLog: Array, combatSummary: Object }
      */
     getUnitStatistics() {
         return {
             livingUnits: this.getLivingUnitsWithStats(),
-            deadUnits: this._unitDeaths
+            deadUnits: this._unitDeaths,
+            combatLog: this._combatLog,
+            combatSummary: this._getCombatSummary()
+        };
+    }
+
+    /**
+     * Get combat summary statistics
+     */
+    _getCombatSummary() {
+        const attacksByTeam = { left: 0, right: 0 };
+        const attacksByUnit = {};
+
+        for (const entry of this._combatLog) {
+            if (entry.type === 'attack') {
+                const team = entry.team;
+                if (team === 'left' || team === 'right') {
+                    attacksByTeam[team]++;
+                }
+
+                const key = `${entry.team}_${entry.unitType}`;
+                if (!attacksByUnit[key]) {
+                    attacksByUnit[key] = { team: entry.team, unitType: entry.unitType, attacks: 0, totalDamage: 0 };
+                }
+                attacksByUnit[key].attacks++;
+                attacksByUnit[key].totalDamage += entry.damage || 0;
+            }
+        }
+
+        return {
+            totalAttacks: this._combatLog.filter(e => e.type === 'attack').length,
+            attacksByTeam,
+            attacksByUnit: Object.values(attacksByUnit),
+            projectilesFired: this._projectilesFired
         };
     }
 
     onUnitDeath(data) {
-        this._checkEventTrigger('onUnitDeath', data);
+        this._log.debug('onUnitDeath received:', data);
     }
 
     onBattleStart() {
@@ -455,79 +323,46 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
             phase: this.game.state.phase,
             round: this.game.state.round
         });
-        this._checkEventTrigger('onBattleStart', {});
     }
 
     onBattleEnd(data) {
         this._log.debug('Battle ended', data);
-        this._checkEventTrigger('onBattleEnd', data);
     }
 
     onRoundEnd(data) {
         this._log.debug('Round ended', data);
-        this._checkEventTrigger('onRoundEnd', data);
     }
 
     onPhaseChange(phase) {
         const phaseName = this.game.call('getReverseEnums')?.gamePhase?.[phase] || phase;
         this._log.debug(`Phase change: ${phaseName}`);
-        this._checkEventTrigger('onPhaseChange', { phase });
     }
 
     /**
-     * Log comprehensive state of all units for debugging
-     * @private
+     * Reset production progress for ALL buildings at placement phase start.
+     * In headless mode we need to handle all teams, not just "myTeam" like ShopSystem.
      */
-    _logUnitsState() {
-        const entities = this.game.getEntitiesWith('unitType', 'team', 'health');
-        this._log.trace(`Found ${entities.length} units with health:`);
+    onPlacementPhaseStart() {
+        const entities = this.game.getEntitiesWith('placement', 'unitType');
 
         for (const entityId of entities) {
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
             const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
-            const team = this.game.getComponent(entityId, 'team');
-            const health = this.game.getComponent(entityId, 'health');
-            const transform = this.game.getComponent(entityId, 'transform');
-            const aiState = this.game.getComponent(entityId, 'aiState');
-            const deathState = this.game.getComponent(entityId, 'deathState');
-            const playerOrder = this.game.getComponent(entityId, 'playerOrder');
-            const combat = this.game.getComponent(entityId, 'combat');
 
-            const teamName = this.game.call('getReverseEnums')?.team?.[team?.team] || team?.team;
-            const pos = transform?.position;
+            // Only reset buildings (not units)
+            if (!unitDef?.isBuilding) continue;
 
-            this._log.trace(`Entity ${entityId}: ${unitDef?.id || 'unknown'} (${teamName})`, {
-                position: pos ? { x: pos.x?.toFixed(1), z: pos.z?.toFixed(1) } : null,
-                health: health ? `${health.current}/${health.max}` : null,
-                aiState: aiState ? {
-                    rootBehaviorTree: aiState.rootBehaviorTree,
-                    targetPosition: aiState.targetPosition
-                } : null,
-                playerOrder: playerOrder ? {
-                    target: { x: playerOrder.targetPositionX, z: playerOrder.targetPositionZ },
-                    isMoveOrder: playerOrder.isMoveOrder,
-                    enabled: playerOrder.enabled
-                } : null,
-                combat: combat ? { range: combat.range, damage: combat.damage, attackSpeed: combat.attackSpeed } : null,
-                deathState: deathState?.state
-            });
+            const placement = this.game.getComponent(entityId, 'placement');
+            if (placement && placement.productionProgress !== undefined) {
+                placement.productionProgress = 0;
+            }
         }
+
+        this._log.debug('Reset production progress for all buildings');
     }
 
     onGameOver(data) {
-        this._checkEventTrigger('onGameOver', data);
-    }
-
-    /**
-     * Check if this event matches the pending trigger
-     * @private
-     */
-    _checkEventTrigger(eventName, data) {
-        if (this._pendingEventTrigger === eventName) {
-            this._eventTriggered = true;
-            this._eventData = data;
-            this._log.debug(`Event triggered: ${eventName}`, data);
-        }
+        this._log.debug('Game over', data);
     }
 }
 

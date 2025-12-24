@@ -84,10 +84,39 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
 
         this.game.call('initializeGame', null);
 
-        // Generate AI placements
-        setTimeout(() => {
-            this.game.call('generateAIPlacement', this.aiTeam);
-        }, 100);
+        // Spawn AI opponent entity (uses behavior tree to execute build orders)
+        this.spawnAIOpponent(config);
+    }
+
+    /**
+     * Spawn the AI opponent entity from prefab
+     * This entity has a behavior tree that executes build orders during placement phase
+     */
+    spawnAIOpponent(config) {
+        const aiEntityId = this.game.createEntity();
+
+        // Add team component
+        this.game.addComponent(aiEntityId, 'team', {
+            team: this.aiTeam
+        });
+
+        // Add aiState component pointing to AIOpponentBehaviorTree
+        this.game.addComponent(aiEntityId, 'aiState', {
+            rootBehaviorTree: this.enums.behaviorTrees?.AIOpponentBehaviorTree ?? 0,
+            rootBehaviorTreeCollection: this.enums.behaviorCollection?.behaviorTrees ?? 0,
+            currentAction: 0,
+            currentActionCollection: 0
+        });
+
+        // Add aiOpponent component with build order config
+        this.game.addComponent(aiEntityId, 'aiOpponent', {
+            buildOrderId: config.aiBuildOrder || 'basic',
+            currentRound: 0,
+            actionsExecuted: false,
+            actionIndex: 0
+        });
+
+        console.log('[SkirmishGameSystem] Spawned AI opponent entity:', aiEntityId, 'for team:', this.aiTeam);
     }
 
     createLocalRoom(config) {

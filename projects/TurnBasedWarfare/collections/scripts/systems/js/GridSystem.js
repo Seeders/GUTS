@@ -622,7 +622,6 @@ class GridSystem extends GUTS.BaseSystem {
                 }
             }
         }
-        console.log('[freeCells] Released cells for entityId', entityId, 'count:', freedCount);
     }
 
     clear() {

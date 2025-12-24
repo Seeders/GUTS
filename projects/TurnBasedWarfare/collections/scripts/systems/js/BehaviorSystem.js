@@ -173,6 +173,16 @@ class BehaviorSystem extends GUTS.BaseSystem {
                 rootTree.onPlacementPhaseStart(entityId, this.game);
             }
         }
+
+        // Reset AI opponent state for new round
+        const aiEntities = this.game.getEntitiesWith('aiOpponent');
+        for (const entityId of aiEntities) {
+            const aiOpponent = this.game.getComponent(entityId, 'aiOpponent');
+            if (aiOpponent) {
+                aiOpponent.actionsExecuted = false;
+                aiOpponent.actionIndex = 0;
+            }
+        }
     }
 
     /**
@@ -187,6 +197,12 @@ class BehaviorSystem extends GUTS.BaseSystem {
      * Main update loop - runs for all units with aiState
      */
     update(dt) {
+        // Run AI opponents during placement phase
+        if (this.game.state.phase === this.enums.gamePhase.placement) {
+            this.updateAIOpponents(dt);
+            return;
+        }
+
         if (this.game.state.phase !== this.enums.gamePhase.battle) return;
 
         // Track battle ticks for internal use
@@ -203,6 +219,40 @@ class BehaviorSystem extends GUTS.BaseSystem {
         for (const entityId of entities) {
             this.updateUnit(entityId, dt);
         }
+    }
+
+    /**
+     * Update AI opponent entities during placement phase
+     * These are virtual entities with aiOpponent component that execute build orders
+     */
+    updateAIOpponents(dt) {
+        // Only run for local game (skirmish mode) or headless simulation
+        if (!this.game.state.isLocalGame && !this.game.state.isHeadlessSimulation) return;
+
+        const aiEntities = this.game.getEntitiesWith('aiOpponent', 'aiState');
+        for (const entityId of aiEntities) {
+            this.updateAIOpponent(entityId, dt);
+        }
+    }
+
+    /**
+     * Update a single AI opponent entity
+     */
+    updateAIOpponent(entityId, dt) {
+        const aiState = this.game.getComponent(entityId, 'aiState');
+        if (!aiState) return;
+
+        const rootTreeId = this.getNodeId(aiState.rootBehaviorTreeCollection, aiState.rootBehaviorTree);
+        const rootTree = this.processor.getNodeByType(rootTreeId);
+        if (!rootTree) {
+            return;
+        }
+
+        // Evaluate behavior tree
+        const desiredAction = this.processor.evaluate(rootTreeId, entityId);
+
+        // For AI opponents, we don't use the same action switching logic
+        // The behavior tree handles everything directly
     }
 
     /**

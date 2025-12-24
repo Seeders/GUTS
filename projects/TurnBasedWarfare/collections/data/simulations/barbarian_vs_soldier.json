@@ -1,0 +1,9 @@
+{
+  "name": "Barbarian vs Soldier",
+  "description": "Barbarian (pure strength melee) vs Soldier (strength/dex hybrid melee). Pure vs hybrid melee.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "level_1",
+  "buildOrderA": "barbarian",
+  "buildOrderB": "soldier"
+}
