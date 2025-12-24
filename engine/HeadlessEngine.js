@@ -113,30 +113,34 @@ export default class HeadlessEngine extends BaseEngine {
     }
 
     /**
-     * Run a simulation with instructions
+     * Run a simulation with AI opponents using behavior trees
      * This is used by HeadlessSkirmishRunner for automated simulations
      *
-     * Delegates instruction execution to HeadlessSimulationSystem which is registered
-     * as a game system and can receive game events through triggerEvent.
+     * AI opponents are spawned by HeadlessSkirmishRunner.setup() and execute
+     * build orders via behavior trees during placement phase.
      *
      * @param {Object} options
-     * @param {Array} options.instructions - Array of instruction objects to process
      * @param {number} options.maxTicks - Maximum ticks before timeout
      * @param {number} options.timeoutMs - Maximum time in milliseconds before timeout (default: 30000)
      * @returns {Promise<Object>} Simulation results
      */
     async runSimulation(options = {}) {
         const {
-            instructions = [],
             maxTicks = this.maxTicks,
             timeoutMs = this.defaultTimeoutMs
         } = options;
 
         const startTime = this.getCurrentTime();
 
+        // Cancel any existing timeout from previous simulation
+        if (this._simulationTimeoutId) {
+            clearTimeout(this._simulationTimeoutId);
+            this._simulationTimeoutId = null;
+        }
+
         // Create timeout promise for safety
         const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => {
+            this._simulationTimeoutId = setTimeout(() => {
                 this.running = false; // Stop the simulation loop
                 reject(new Error(`Simulation timeout after ${timeoutMs}ms`));
             }, timeoutMs);
@@ -145,11 +149,21 @@ export default class HeadlessEngine extends BaseEngine {
         // Run the actual simulation with timeout protection
         try {
             const result = await Promise.race([
-                this._runSimulationInternal(instructions, maxTicks, startTime),
+                this._runSimulationInternal(maxTicks, startTime),
                 timeoutPromise
             ]);
+            // Clear timeout on success
+            if (this._simulationTimeoutId) {
+                clearTimeout(this._simulationTimeoutId);
+                this._simulationTimeoutId = null;
+            }
             return result;
         } catch (error) {
+            // Clear timeout on error too
+            if (this._simulationTimeoutId) {
+                clearTimeout(this._simulationTimeoutId);
+                this._simulationTimeoutId = null;
+            }
             this.running = false;
             const elapsedMs = this.getCurrentTime() - startTime;
 
@@ -180,7 +194,7 @@ export default class HeadlessEngine extends BaseEngine {
      * Internal simulation runner (separated for timeout handling)
      * @private
      */
-    async _runSimulationInternal(instructions, maxTicks, startTime) {
+    async _runSimulationInternal(maxTicks, startTime) {
         const game = this.gameInstance;
 
         // Get or create the HeadlessSimulationSystem
@@ -189,29 +203,42 @@ export default class HeadlessEngine extends BaseEngine {
             throw new Error('[HeadlessEngine] HeadlessSimulationSystem not found. Ensure it is registered in the headless scene config.');
         }
 
-        // Set up the simulation with instructions
-        simSystem.setupSimulation(instructions);
+        // Set up the simulation (AI opponents handle everything via behavior trees)
+        simSystem.setupSimulation();
 
         // Run the tick loop
         this.running = true;
         this.paused = false;
         let tickCount = 0;
 
-        while (this.running && tickCount < maxTicks) {
-            // Process any ready instructions BEFORE the tick
-            await simSystem.processInstructions();
+        this._log.debug(`Starting tick loop. running=${this.running}, maxTicks=${maxTicks}`);
 
-            // Run one game tick
-            if (!this.paused && game?.update) {
-                await game.update(this.tickRate);
+        while (this.running && tickCount < maxTicks) {
+            // Run one game tick - use sync update to avoid async overhead
+            if (!this.paused) {
+                // Manual sync update - bypass async game.update()
+                game.tickCount++;
+                game.currentTime = Math.round(game.tickCount * game.FIXED_DELTA_TIME * 100) / 100;
+                game.state.now = game.currentTime;
+                game.state.deltaTime = game.FIXED_DELTA_TIME;
+                game.deltaTime = game.FIXED_DELTA_TIME;
+
+                for (const system of game.systems) {
+                    if (!system.enabled || !system.update) continue;
+                    system.update();
+                }
+                game.postUpdate();
             }
             tickCount++;
 
             // Check stop conditions
             if (simSystem.isSimulationComplete()) {
+                this._log.debug(`Simulation complete at tick ${tickCount}`);
                 break;
             }
         }
+
+        this._log.debug(`Tick loop ended. tickCount=${tickCount}`);
 
         this.running = false;
         const elapsedMs = this.getCurrentTime() - startTime;

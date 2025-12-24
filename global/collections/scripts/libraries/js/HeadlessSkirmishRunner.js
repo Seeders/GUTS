@@ -3,7 +3,7 @@
  *
  * This class provides a convenient interface for:
  * - Setting up skirmish games with custom configurations
- * - Running simulations with instruction sequences
+ * - Running simulations with two AI opponents using behavior trees
  * - Collecting and analyzing results
  *
  * Usage:
@@ -11,14 +11,12 @@
  *   await runner.setup({
  *     level: 'level_1',
  *     startingGold: 100,
- *     seed: 12345
+ *     seed: 12345,
+ *     leftBuildOrder: 'basic',
+ *     rightBuildOrder: 'basic'
  *   });
  *
- *   const results = await runner.runWithInstructions([
- *     { type: 'PLACE_UNIT', team: 'left', unitType: 'soldier', x: 5, y: 5 },
- *     { type: 'PLACE_UNIT', team: 'right', unitType: 'archer', x: 10, y: 5 },
- *     { type: 'START_BATTLE' }
- *   ]);
+ *   const results = await runner.run({ maxTicks: 10000 });
  */
 class HeadlessSkirmishRunner {
     constructor(engine) {
@@ -38,13 +36,13 @@ class HeadlessSkirmishRunner {
     }
 
     /**
-     * Set up a new skirmish game
+     * Set up a new skirmish game with two AI opponents
      * @param {Object} config - Skirmish configuration
      * @param {string} config.level - Level name (e.g., 'level_1')
      * @param {number} config.startingGold - Starting gold for each team
      * @param {number} config.seed - Random seed for deterministic simulation
-     * @param {string} config.leftTeam - Unit composition for left team (optional)
-     * @param {string} config.rightTeam - Unit composition for right team (optional)
+     * @param {string} config.leftBuildOrder - Build order ID for left team (default: 'basic')
+     * @param {string} config.rightBuildOrder - Build order ID for right team (default: 'basic')
      * @returns {Promise<void>}
      */
     async setup(config = {}) {
@@ -53,12 +51,19 @@ class HeadlessSkirmishRunner {
             selectedLevel: config.level || 'level_1',
             startingGold: config.startingGold || 100,
             seed: config.seed || Date.now(),
-            selectedTeam: config.selectedTeam || 'left',
+            leftBuildOrder: config.leftBuildOrder || 'basic',
+            rightBuildOrder: config.rightBuildOrder || 'basic',
             ...config
         };
 
         const game = this.game;
         const enums = game.call('getEnums');
+
+        // Reset game state for new simulation
+        game.state.gameOver = false;
+        game.state.winner = null;
+        game.state.phase = enums.gamePhase.placement;
+        game.state.round = 1;
 
         // Set up game state
         game.state.skirmishConfig = this.config;
@@ -71,7 +76,8 @@ class HeadlessSkirmishRunner {
             game.rng.strands.clear();
         }
 
-        // Set local game mode
+        // Set headless simulation mode (allows AI behavior trees to run)
+        game.state.isHeadlessSimulation = true;
         game.state.isLocalGame = true;
         game.state.localPlayerId = 0;
 
@@ -107,77 +113,69 @@ class HeadlessSkirmishRunner {
             game.call('initializeGame', null);
         }
 
+        // Spawn AI opponent entities for both teams
+        this.spawnAIOpponent(leftTeam, this.config.leftBuildOrder);
+        this.spawnAIOpponent(rightTeam, this.config.rightBuildOrder);
+
         this.isSetup = true;
-        this._log.info('Setup complete');
+        this._log.info('Setup complete with two AI opponents');
     }
 
     /**
-     * Run simulation with a sequence of instructions
-     * @param {Array} instructions - Array of instruction objects
+     * Spawn an AI opponent entity for a team
+     * @param {number} team - Team enum value
+     * @param {string} buildOrderId - Build order ID to use
+     */
+    spawnAIOpponent(team, buildOrderId) {
+        const game = this.game;
+        const enums = game.call('getEnums');
+
+        const aiEntityId = game.createEntity();
+
+        // Add team component
+        game.addComponent(aiEntityId, 'team', {
+            team: team
+        });
+
+        // Add aiState component pointing to AIOpponentBehaviorTree
+        game.addComponent(aiEntityId, 'aiState', {
+            rootBehaviorTree: enums.behaviorTrees?.AIOpponentBehaviorTree ?? 0,
+            rootBehaviorTreeCollection: enums.behaviorCollection?.behaviorTrees ?? 0,
+            currentAction: 0,
+            currentActionCollection: 0
+        });
+
+        // Add aiOpponent component with build order config
+        game.addComponent(aiEntityId, 'aiOpponent', {
+            buildOrderId: buildOrderId,
+            currentRound: 0,
+            actionsExecuted: false,
+            actionIndex: 0
+        });
+
+        const teamName = team === enums.team.left ? 'left' : 'right';
+        this._log.debug(`Spawned AI opponent entity ${aiEntityId} for team ${teamName} with build order: ${buildOrderId}`);
+    }
+
+    /**
+     * Run simulation with AI opponents using behavior trees
+     * The AI opponents handle placement and battle phases automatically
      * @param {Object} options - Simulation options
-     * @param {number} options.maxTicks - Maximum ticks before timeout
-     * @param {boolean} options.autoStartBattle - Automatically start battle after placements
+     * @param {number} options.maxTicks - Maximum ticks before timeout (default: 10000)
      * @returns {Promise<Object>} Simulation results
      */
-    async runWithInstructions(instructions, options = {}) {
+    async run(options = {}) {
         if (!this.isSetup) {
             throw new Error('Must call setup() before running simulation');
         }
 
-        const {
-            maxTicks = 10000,
-            autoStartBattle = false
-        } = options;
+        const { maxTicks = 10000 } = options;
 
-        // Convert team names to enum values in instructions
-        const processedInstructions = this.processInstructions(instructions, autoStartBattle);
-
-        // Run the simulation
+        // Run the simulation - AI opponents handle everything via behavior trees
         return await this.engine.runSimulation({
-            instructions: processedInstructions,
             maxTicks,
             seed: this.config.seed
         });
-    }
-
-    /**
-     * Process instructions to convert team names to enum values
-     * @param {Array} instructions - Raw instructions
-     * @param {boolean} autoStartBattle - Add START_BATTLE instruction
-     * @returns {Array} Processed instructions
-     * @private
-     */
-    processInstructions(instructions, autoStartBattle) {
-        const enums = this.game.call('getEnums');
-        const processed = [];
-
-        for (const inst of instructions) {
-            const processed_inst = { ...inst };
-
-            // Convert team name to enum value
-            if (inst.team && typeof inst.team === 'string') {
-                processed_inst.team = enums.team[inst.team] ?? inst.team;
-            }
-
-            // Convert phase name to enum value
-            if (inst.phase && typeof inst.phase === 'string') {
-                processed_inst.phase = enums.gamePhase[inst.phase] ?? inst.phase;
-            }
-
-            // Set default trigger to immediate if not specified
-            if (!processed_inst.trigger) {
-                processed_inst.trigger = 'immediate';
-            }
-
-            processed.push(processed_inst);
-        }
-
-        // Add START_BATTLE if requested and not already present
-        if (autoStartBattle && !instructions.some(i => i.type === 'START_BATTLE')) {
-            processed.push({ type: 'START_BATTLE', trigger: 'immediate' });
-        }
-
-        return processed;
     }
 
     /**
@@ -557,7 +555,48 @@ class HeadlessSkirmishRunner {
             this.game.clearEventLog();
         }
     }
+
+    /**
+     * Reset completely for a new simulation run
+     * This unloads the scene and prepares for a fresh setup
+     * @returns {Promise<void>}
+     */
+    async resetForNewSimulation() {
+        this._log.debug('Resetting for new simulation...');
+
+        // Reset setup flag
+        this.isSetup = false;
+        this.config = null;
+
+        // Clear event log
+        if (this.game.clearEventLog) {
+            this.game.clearEventLog();
+        }
+
+        // Reset game state
+        this.game.state = {};
+        this.game.state.now = 0;
+
+        // Reset timing
+        this.game.resetCurrentTime();
+
+        // Unload current scene - this destroys all entities and resets entity IDs
+        if (this.game.sceneManager?.currentScene) {
+            await this.game.sceneManager.unloadCurrentScene();
+        }
+
+        // Clear any cached proxies
+        for (const [, componentCache] of this.game._proxyCache) {
+            componentCache.clear();
+        }
+
+        // Reset delta sync state
+        this.game._lastSyncedState = null;
+
+        this._log.debug('Reset complete - ready for new simulation');
+    }
 }
+
 
 // Assign to global.GUTS for server
 if (typeof global !== 'undefined' && global.GUTS) {
