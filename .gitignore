@@ -52,3 +52,4 @@ package-lock.json
 *.sublime-workspace
 *.backup
 .claude/
+simulation_*.txt
