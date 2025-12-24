@@ -868,10 +868,15 @@ async function main() {
             printSimulationResults(result, config.verbose);
         }
 
-        // Write results to a text file
+        // Write results to simulation_results folder
         const simName = config.simulation || `${config.leftBuildOrder}_vs_${config.rightBuildOrder}`;
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const outputPath = path.join(__dirname, `simulation_${simName}_${timestamp}.txt`);
+        const resultsDir = path.join(__dirname, 'simulation_results');
+        if (!existsSync(resultsDir)) {
+            const { mkdirSync } = await import('fs');
+            mkdirSync(resultsDir, { recursive: true });
+        }
+        const outputPath = path.join(resultsDir, `${simName}_${timestamp}.txt`);
         writeFileSync(outputPath, formatResultsAsText(result, config.verbose));
         console.log(`[Headless] Results written to: ${outputPath}`);
 

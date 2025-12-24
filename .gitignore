@@ -52,4 +52,4 @@ package-lock.json
 *.sublime-workspace
 *.backup
 .claude/
-simulation_*.txt
+projects/TurnBasedWarfare/simulation_results/
