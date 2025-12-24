@@ -278,8 +278,21 @@ class BehaviorSystem extends GUTS.BaseSystem {
             return;
         }
 
+        // Debug: Log scout behavior each tick
+        const unitDef = this.game.call('getUnitTypeDef', unitType);
+        const isScout = unitDef?.id === '1_di_scout';
+
         // Evaluate behavior tree to get desired action
         const desiredAction = this.processor.evaluate(rootTreeId, entityId);
+
+        // Debug scout behavior tree result
+        if (isScout && this._battleTickCount <= 50) {
+            const transform = this.game.getComponent(entityId, 'transform');
+            const pos = transform?.position;
+            const shared = this.getBehaviorShared(entityId);
+            const currentActionId = this.getNodeId(aiState.currentActionCollection, aiState.currentAction);
+            console.log(`[BehaviorSystem] Scout tick ${this._battleTickCount}: pos=(${pos?.x?.toFixed(0)}, ${pos?.z?.toFixed(0)}), action=${desiredAction?.action}, status=${desiredAction?.status}, currentAction=${currentActionId}, target=${shared?.target}`);
+        }
 
         // Check if we need to switch actions
         if (this.shouldSwitchAction(aiState, desiredAction)) {

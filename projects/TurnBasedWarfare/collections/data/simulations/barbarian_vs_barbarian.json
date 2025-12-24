@@ -1,0 +1,9 @@
+{
+  "name": "Barbarian vs Barbarian",
+  "description": "Two barbarians fighting. Tests melee combat symmetrically.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "level_1",
+  "buildOrderA": "barbarian",
+  "buildOrderB": "barbarian"
+}

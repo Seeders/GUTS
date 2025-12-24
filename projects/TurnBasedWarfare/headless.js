@@ -26,7 +26,7 @@
  */
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { readFileSync, existsSync, readdirSync } from 'fs';
+import { readFileSync, existsSync, readdirSync, writeFileSync } from 'fs';
 import vm from 'vm';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -197,6 +197,12 @@ function parseArgs() {
             case '-h':
                 printHelp();
                 process.exit(0);
+            default:
+                if (arg.startsWith('-')) {
+                    console.error(`[Headless] Unknown flag: ${arg}`);
+                    console.error(`[Headless] Use --help for available options`);
+                    process.exit(1);
+                }
         }
     }
 
@@ -290,6 +296,119 @@ Examples:
 }
 
 /**
+ * Format simulation results as text for file output
+ */
+function formatResultsAsText(result, verbose = false) {
+    const lines = [];
+
+    lines.push(`════════════════════════════════════════════════════════════`);
+    lines.push(`                    SIMULATION RESULTS                      `);
+    lines.push(`════════════════════════════════════════════════════════════`);
+
+    if (result.simulationName) {
+        lines.push(`  Simulation: ${result.simulationName}`);
+    }
+    lines.push(`  Matchup: ${result.leftBuildOrder} vs ${result.rightBuildOrder}`);
+    lines.push(`────────────────────────────────────────────────────────────`);
+
+    const winnerDisplay = result.winner === 'left' ? `LEFT (${result.leftBuildOrder}) WINS!`
+        : result.winner === 'right' ? `RIGHT (${result.rightBuildOrder}) WINS!`
+        : result.winner === 'draw' ? 'DRAW - Both units died!'
+        : 'NO WINNER (timeout)';
+
+    lines.push(`  Result: ${winnerDisplay}`);
+    lines.push(`  Completed: ${result.completed ? 'Yes' : 'No (timeout)'}`);
+    lines.push(`────────────────────────────────────────────────────────────`);
+    lines.push(`  BATTLE STATISTICS`);
+    lines.push(`────────────────────────────────────────────────────────────`);
+    lines.push(`  Final Round: ${result.round}`);
+    lines.push(`  Final Phase: ${result.phase}`);
+    lines.push(`  Total Ticks: ${result.tickCount}`);
+    lines.push(`  Game Time: ${result.gameTime?.toFixed(2)}s`);
+    lines.push(`  Real Time: ${result.realTimeMs}ms`);
+    lines.push(`  Performance: ${result.ticksPerSecond.toFixed(0)} ticks/sec`);
+
+    if (result.unitStatistics) {
+        const { livingUnits, deadUnits, combatSummary } = result.unitStatistics;
+
+        lines.push(`────────────────────────────────────────────────────────────`);
+        lines.push(`  COMBAT ACTIVITY`);
+        lines.push(`────────────────────────────────────────────────────────────`);
+
+        if (combatSummary) {
+            lines.push(`  Total Attacks: ${combatSummary.totalAttacks}`);
+            lines.push(`    Left Team: ${combatSummary.attacksByTeam?.left || 0}`);
+            lines.push(`    Right Team: ${combatSummary.attacksByTeam?.right || 0}`);
+
+            if (combatSummary.attacksByUnit && combatSummary.attacksByUnit.length > 0) {
+                lines.push(`  Attacks by Unit:`);
+                for (const unitStats of combatSummary.attacksByUnit) {
+                    lines.push(`    [${unitStats.team.toUpperCase()}] ${unitStats.unitType}: ${unitStats.attacks} attacks`);
+                }
+            }
+        } else {
+            lines.push(`  (No combat activity recorded)`);
+        }
+
+        lines.push(`────────────────────────────────────────────────────────────`);
+        lines.push(`  SURVIVING UNITS`);
+        lines.push(`────────────────────────────────────────────────────────────`);
+
+        const skipTypes = ['townHall', 'barracks', 'fletchersHall', 'mageTower', 'goldMine', 'peasant', 'dragon_red'];
+        const combatLivingUnits = livingUnits.filter(u => !skipTypes.includes(u.unitType));
+
+        if (combatLivingUnits.length === 0) {
+            lines.push(`  (No surviving combat units)`);
+        } else {
+            for (const unit of combatLivingUnits) {
+                const hpPercent = unit.health.max > 0 ? Math.round((unit.health.current / unit.health.max) * 100) : 0;
+                lines.push(`  [${unit.team.toUpperCase()}] ${unit.unitName}: ${unit.health.current}/${unit.health.max} HP (${hpPercent}%)`);
+            }
+        }
+
+        lines.push(`────────────────────────────────────────────────────────────`);
+        lines.push(`  CASUALTIES`);
+        lines.push(`────────────────────────────────────────────────────────────`);
+
+        if (deadUnits.length === 0) {
+            lines.push(`  (No casualties)`);
+        } else {
+            for (const unit of deadUnits) {
+                lines.push(`  [${unit.team.toUpperCase()}] ${unit.unitName}: Killed round ${unit.round} (tick ${unit.tick})`);
+            }
+        }
+    }
+
+    if (verbose && result.entityCounts) {
+        lines.push(`────────────────────────────────────────────────────────────`);
+        lines.push(`  ENTITY COUNTS`);
+        lines.push(`────────────────────────────────────────────────────────────`);
+        lines.push(`  Total Entities: ${result.entityCounts.total}`);
+        for (const [team, count] of Object.entries(result.entityCounts.byTeam)) {
+            lines.push(`    ${team}: ${count}`);
+        }
+    }
+
+    lines.push(`════════════════════════════════════════════════════════════`);
+
+    // Include debug log if present
+    if (result.debugLog && result.debugLog.length > 0) {
+        lines.push(``);
+        lines.push(`════════════════════════════════════════════════════════════`);
+        lines.push(`                       DEBUG LOG                            `);
+        lines.push(`════════════════════════════════════════════════════════════`);
+        for (const logLine of result.debugLog) {
+            lines.push(logLine);
+        }
+        lines.push(`════════════════════════════════════════════════════════════`);
+    }
+
+    lines.push(``);
+
+    return lines.join('\n');
+}
+
+/**
  * Run a single simulation and return results
  * @param {Object} runner - HeadlessSkirmishRunner instance
  * @param {Object} simConfig - Simulation configuration
@@ -298,6 +417,28 @@ Examples:
  */
 async function runSingleSimulation(runner, simConfig, options = {}) {
     const { maxTicks = 10000, verbose = false } = options;
+
+    // Capture console output during simulation
+    const consoleLog = [];
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+
+    console.log = (...args) => {
+        const line = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+        consoleLog.push(line);
+        originalLog.apply(console, args);
+    };
+    console.warn = (...args) => {
+        const line = '[WARN] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+        consoleLog.push(line);
+        originalWarn.apply(console, args);
+    };
+    console.error = (...args) => {
+        const line = '[ERROR] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+        consoleLog.push(line);
+        originalError.apply(console, args);
+    };
 
     await runner.setup({
         level: simConfig.level,
@@ -310,6 +451,11 @@ async function runSingleSimulation(runner, simConfig, options = {}) {
     const runStart = Date.now();
     const results = await runner.run({ maxTicks });
     const runTime = Date.now() - runStart;
+
+    // Restore console functions
+    console.log = originalLog;
+    console.warn = originalWarn;
+    console.error = originalError;
 
     return {
         simulationId: simConfig.simulationId,
@@ -325,7 +471,8 @@ async function runSingleSimulation(runner, simConfig, options = {}) {
         round: results.round,
         phase: results.phase,
         unitStatistics: results.unitStatistics,
-        entityCounts: results.entityCounts
+        entityCounts: results.entityCounts,
+        debugLog: consoleLog
     };
 }
 
@@ -438,6 +585,7 @@ async function runBatchSimulations(runner, simulationIds, options = {}) {
     const { maxTicks = 10000, verbose = false, json = false } = options;
     const results = [];
     const batchStart = Date.now();
+    const allResultsText = [];  // Collect all results for file output
 
     console.log(`[Headless] Running ${simulationIds.length} simulations in batch mode...`);
 
@@ -472,6 +620,9 @@ async function runBatchSimulations(runner, simulationIds, options = {}) {
             const result = await runSingleSimulation(runner, simRunConfig, { maxTicks, verbose });
             results.push(result);
 
+            // Collect text result for file output
+            allResultsText.push(formatResultsAsText(result, verbose));
+
             if (!json) {
                 // Print full battle report for each simulation
                 printSimulationResults(result, verbose);
@@ -479,12 +630,54 @@ async function runBatchSimulations(runner, simulationIds, options = {}) {
         } catch (error) {
             console.error(`[Headless] Error running ${simId}:`, error.message);
             results.push({ simulationId: simId, error: error.message });
+            allResultsText.push(`ERROR: ${simId} - ${error.message}\n`);
         }
     }
 
     const batchTime = Date.now() - batchStart;
 
+    // Write all results to a text file
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const outputPath = path.join(__dirname, `simulation_results_${timestamp}.txt`);
+    const summaryText = generateBatchSummaryText(results, batchTime);
+    writeFileSync(outputPath, allResultsText.join('\n') + '\n' + summaryText);
+    console.log(`[Headless] Results written to: ${outputPath}`);
+
     return { results, batchTimeMs: batchTime };
+}
+
+/**
+ * Generate batch summary as text
+ */
+function generateBatchSummaryText(results, batchTimeMs) {
+    const lines = [];
+    lines.push(`════════════════════════════════════════════════════════════`);
+    lines.push(`                      BATCH SUMMARY                         `);
+    lines.push(`════════════════════════════════════════════════════════════`);
+    lines.push(`  Total Simulations: ${results.length}`);
+    lines.push(`  Total Time: ${batchTimeMs}ms`);
+
+    const wins = { left: 0, right: 0, draw: 0, none: 0, error: 0 };
+    for (const r of results) {
+        if (r.error) wins.error++;
+        else if (r.winner === 'left') wins.left++;
+        else if (r.winner === 'right') wins.right++;
+        else if (r.winner === 'draw') wins.draw++;
+        else wins.none++;
+    }
+
+    lines.push(`────────────────────────────────────────────────────────────`);
+    lines.push(`  Win Summary:`);
+    lines.push(`    Left (buildOrderA): ${wins.left}`);
+    lines.push(`    Right (buildOrderB): ${wins.right}`);
+    lines.push(`    Draw: ${wins.draw}`);
+    lines.push(`    No Winner: ${wins.none}`);
+    if (wins.error > 0) {
+        lines.push(`    Errors: ${wins.error}`);
+    }
+    lines.push(`════════════════════════════════════════════════════════════`);
+
+    return lines.join('\n');
 }
 
 /**
@@ -579,6 +772,13 @@ async function main() {
         } else {
             printSimulationResults(result, config.verbose);
         }
+
+        // Write results to a text file
+        const simName = config.simulation || `${config.leftBuildOrder}_vs_${config.rightBuildOrder}`;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const outputPath = path.join(__dirname, `simulation_${simName}_${timestamp}.txt`);
+        writeFileSync(outputPath, formatResultsAsText(result, config.verbose));
+        console.log(`[Headless] Results written to: ${outputPath}`);
 
         process.exit(0);
 

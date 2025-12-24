@@ -162,7 +162,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
     // These receive events via game.triggerEvent()
 
     onUnitKilled(entityId) {
-        this._log.debug('onUnitKilled received:', { entityId });
+        console.log('[HeadlessSimulation] onUnitKilled received:', entityId);
 
         // Track unit death statistics
         this._trackUnitDeath(entityId);
@@ -323,6 +323,28 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
             phase: this.game.state.phase,
             round: this.game.state.round
         });
+
+        // Debug: List all units at battle start (only on round 4 when units should exist)
+        if (this.game.state.round >= 3) {
+            const entities = this.game.getEntitiesWith('unitType', 'team');
+            const reverseEnums = this.game.getReverseEnums();
+            const skipTypes = ['townHall', 'barracks', 'fletchersHall', 'mageTower', 'goldMine'];
+
+            console.log(`[HeadlessSimulation] Battle ${this.game.state.round} starting - All units:`);
+            for (const entityId of entities) {
+                const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+                const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+                if (skipTypes.includes(unitDef?.id)) continue;
+
+                const teamComp = this.game.getComponent(entityId, 'team');
+                const health = this.game.getComponent(entityId, 'health');
+                const deathState = this.game.getComponent(entityId, 'deathState');
+                const placement = this.game.getComponent(entityId, 'placement');
+                const teamName = reverseEnums.team?.[teamComp.team] || teamComp.team;
+
+                console.log(`  [${teamName}] ${unitDef?.id} (entity ${entityId}): HP ${health?.current}/${health?.max}, deathState: ${deathState?.state}, placementId: ${placement?.placementId}`);
+            }
+        }
     }
 
     onBattleEnd(data) {

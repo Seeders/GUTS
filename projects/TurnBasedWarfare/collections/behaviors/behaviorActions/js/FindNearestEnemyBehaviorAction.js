@@ -28,9 +28,19 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         const nearestEnemy = this.findNearestEnemy(entityId, game, pos, team, range);
 
+        // Debug logging
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+        const reverseEnums = game.getReverseEnums();
+        const teamName = reverseEnums.team?.[team.team] || team.team;
+
         if (nearestEnemy) {
             const shared = this.getShared(entityId, game);
             shared[targetKey] = nearestEnemy.id;
+
+            if (unitDef?.id === '1_d_archer' || unitDef?.id === '1_di_scout') {
+                console.log(`[FindNearestEnemy] ${unitDef?.id} (${teamName}) found enemy ${nearestEnemy.id} at distance ${nearestEnemy.distance.toFixed(0)}`);
+            }
 
             return this.success({
                 target: nearestEnemy.id,
@@ -39,37 +49,71 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             });
         }
 
+        if (unitDef?.id === '1_d_archer' || unitDef?.id === '1_di_scout') {
+            console.log(`[FindNearestEnemy] ${unitDef?.id} (${teamName}) found no enemy in range ${range}`);
+        }
         return this.failure();
     }
 
     findNearestEnemy(entityId, game, pos, team, range) {
         // Use spatial grid for efficient lookup - returns array of entityIds
         const nearbyEntityIds = game.call('getNearbyUnits', pos, range, entityId);
+
+        // Debug: Log what getNearbyUnits returns for scout and archer
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+        const reverseEnums = game.getReverseEnums();
+        if (unitDef?.id === '1_di_scout' || unitDef?.id === '1_d_archer') {
+            // Also show what entities are nearby
+            const nearbyInfo = nearbyEntityIds?.map(id => {
+                const utype = game.getComponent(id, 'unitType');
+                const udef = game.call('getUnitTypeDef', utype);
+                const uteam = game.getComponent(id, 'team');
+                const teamStr = reverseEnums.team?.[uteam?.team] || uteam?.team;
+                return `${id}:${udef?.id}(${teamStr})`;
+            });
+            console.log(`[FindNearestEnemy DEBUG] ${unitDef.id} at (${pos.x.toFixed(0)}, ${pos.z.toFixed(0)}) range=${range} nearby: [${nearbyInfo?.join(', ') || 'none'}]`);
+        }
+
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) {
             return null;
         }
 
-        const unitTypeComp = game.getComponent(entityId, 'unitType');
         const unitType = game.call('getUnitTypeDef', unitTypeComp);
         const hasLOSCheck = game.hasService('hasLineOfSight');
 
         // First pass: collect valid enemies with their positions and directions
         const enemies = [];
 
+        const teamName = reverseEnums.team?.[team.team] || team.team;
         for (const targetId of nearbyEntityIds) {
             const targetTeam = game.getComponent(targetId, 'team');
+
+            // Debug: log team comparison for archers
+            if (unitDef?.id === '1_d_archer') {
+                const targetUnitType = game.getComponent(targetId, 'unitType');
+                const targetUnitDef = game.call('getUnitTypeDef', targetUnitType);
+                console.log(`[FindNearestEnemy] ${unitDef.id} (${teamName}) checking target ${targetId}: targetTeam=${targetTeam?.team}, myTeam=${team.team}, targetType=${targetUnitDef?.id}`);
+            }
+
             if (!targetTeam || targetTeam.team === team.team) {
                 continue;
             }
 
             const targetHealth = game.getComponent(targetId, 'health');
             if (!targetHealth || targetHealth.current <= 0) {
+                if (unitDef?.id === '1_d_archer') {
+                    console.log(`[FindNearestEnemy] ${unitDef.id} (${teamName}) target ${targetId} SKIP - health ${targetHealth?.current}/${targetHealth?.max}`);
+                }
                 continue;
             }
 
             const targetDeathState = game.getComponent(targetId, 'deathState');
             // deathState.state: 0=alive, 1=dying, 2=corpse
             if (targetDeathState && targetDeathState.state > 0) {
+                if (unitDef?.id === '1_d_archer') {
+                    console.log(`[FindNearestEnemy] ${unitDef.id} (${teamName}) target ${targetId} SKIP - deathState ${targetDeathState.state}`);
+                }
                 continue;
             }
 

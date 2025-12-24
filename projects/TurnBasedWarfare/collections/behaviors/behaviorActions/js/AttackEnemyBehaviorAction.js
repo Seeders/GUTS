@@ -16,15 +16,26 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const targetId = shared[targetKey];
 
+        // Debug logging - log before any checks
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+        const teamComp = game.getComponent(entityId, 'team');
+        const reverseEnums = game.getReverseEnums();
+        const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;
+
         // targetId is null/undefined when not set, or could be 0 (valid entity ID)
         if (targetId === undefined || targetId === null || targetId < 0) {
+            console.log(`[AttackEnemy] ${unitDef?.id} (${teamName}) FAILURE - no valid target (targetId=${targetId})`);
             return this.failure();
         }
 
         const combat = game.getComponent(entityId, 'combat');
         if (!combat) {
+            console.log(`[AttackEnemy] ${unitDef?.id} (${teamName}) FAILURE - no combat component`);
             return this.failure();
         }
+
+        console.log(`[AttackEnemy] ${unitDef?.id} (${teamName}) attacking target ${targetId}`);
 
         // Stop movement while attacking
         const vel = game.getComponent(entityId, 'velocity');

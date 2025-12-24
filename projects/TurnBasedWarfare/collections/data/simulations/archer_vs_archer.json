@@ -1,0 +1,9 @@
+{
+  "name": "Archer vs Archer",
+  "description": "Two archers facing off. Tests ranged projectile combat symmetrically.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "level_1",
+  "buildOrderA": "archer",
+  "buildOrderB": "archer"
+}

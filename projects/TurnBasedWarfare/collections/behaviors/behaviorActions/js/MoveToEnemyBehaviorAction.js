@@ -34,14 +34,24 @@ class MoveToEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const arrivalRange = params.arrivalRange || GUTS.GameUtils.getEffectiveRange(game, entityId, targetId, baseRange);
         const distance = GUTS.GameUtils.getDistanceBetweenEntities(game, entityId, targetId);
 
+        // Debug logging
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+        const teamComp = game.getComponent(entityId, 'team');
+        const reverseEnums = game.getReverseEnums();
+        const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;
+
         // Check if in range
         if (distance <= arrivalRange) {
+            console.log(`[MoveToEnemy] ${unitDef?.id} (${teamName}) ARRIVED at target ${targetId}, distance: ${distance.toFixed(0)}, range: ${arrivalRange}`);
             return this.success({
                 arrived: true,
                 distance,
                 target: targetId
             });
         }
+
+        console.log(`[MoveToEnemy] ${unitDef?.id} (${teamName}) moving to target ${targetId}, distance: ${distance.toFixed(0)}, range: ${arrivalRange}`);
 
         // Still moving - return running with targetPosition for MovementSystem
         return this.running({

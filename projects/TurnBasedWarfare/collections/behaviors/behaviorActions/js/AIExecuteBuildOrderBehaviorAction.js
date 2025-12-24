@@ -115,17 +115,38 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     executePurchaseUnit(action, aiTeam, game) {
+        const reverseEnums = game.getReverseEnums();
+        const teamName = reverseEnums.team?.[aiTeam] || aiTeam;
+        console.log(`[AIExecuteBuildOrder] Round ${game.state.round}: Attempting to purchase ${action.unitId} from ${action.building} for team ${teamName}`);
+
         // Find the building
         const buildingEntityId = this.findBuildingByType(action.building, aiTeam, game);
         if (!buildingEntityId) {
-            console.warn('[AIExecuteBuildOrder] Building not found for purchase:', action.building, 'team:', aiTeam);
+            console.warn('[AIExecuteBuildOrder] Building not found for purchase:', action.building, 'team:', teamName);
+            // List all buildings for this team
+            const entities = game.getEntitiesWith('unitType', 'team', 'placement');
+            console.log('[AIExecuteBuildOrder] Available buildings for team', teamName + ':');
+            for (const entityId of entities) {
+                const teamComp = game.getComponent(entityId, 'team');
+                if (teamComp.team !== aiTeam) continue;
+                const unitTypeComp = game.getComponent(entityId, 'unitType');
+                const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+                const placement = game.getComponent(entityId, 'placement');
+                if (unitDef?.isBuilding) {
+                    console.log(`  - ${unitDef.id} (entity ${entityId}), underConstruction: ${placement?.isUnderConstruction}`);
+                }
+            }
             return false;
         }
+
+        console.log(`[AIExecuteBuildOrder] Found building entity ${buildingEntityId}, calling ui_purchaseUnit`);
 
         // Call ui_purchaseUnit
         game.call('ui_purchaseUnit', action.unitId, buildingEntityId, aiTeam, (success, response) => {
             if (!success) {
                 console.warn('[AIExecuteBuildOrder] Failed to purchase unit:', response?.error || response);
+            } else {
+                console.log(`[AIExecuteBuildOrder] Successfully purchased ${action.unitId}`);
             }
         });
 
@@ -133,6 +154,9 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     executeMoveOrder(action, aiTeam, game) {
+        const reverseEnums = game.getReverseEnums();
+        const teamName = reverseEnums.team?.[aiTeam] || aiTeam;
+
         // Find units of specified type
         const placementIds = this.findUnitsOfType(action.unitType, aiTeam, game);
         if (placementIds.length === 0) {
@@ -147,10 +171,14 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
             return false;
         }
 
+        console.log(`[AIExecuteBuildOrder] Round ${game.state.round}: Issuing MOVE_ORDER for ${action.unitType} (${teamName}) to ${action.target} = (${targetPos.x?.toFixed(0)}, ${targetPos.z?.toFixed(0)}), placements: ${JSON.stringify(placementIds)}`);
+
         // Call ui_issueMoveOrder
         game.call('ui_issueMoveOrder', placementIds, targetPos, (success, response) => {
             if (!success) {
                 console.warn('[AIExecuteBuildOrder] Failed to issue move order:', response?.error);
+            } else {
+                console.log(`[AIExecuteBuildOrder] Move order issued successfully for ${action.unitType}`);
             }
         });
 
