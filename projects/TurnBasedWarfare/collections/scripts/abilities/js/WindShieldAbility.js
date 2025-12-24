@@ -1,7 +1,6 @@
 class WindShieldAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'wind_shield',
             name: 'Wind Shield',
             description: 'Creates a swirling tornado that reflects projectiles back at attackers',
             cooldown: 8.0,

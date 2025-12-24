@@ -1,7 +1,6 @@
 class InfernoAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'inferno',
             name: 'Inferno',
             description: 'Creates a blazing inferno that damages all enemies in a large area',
             cooldown: 8.0,

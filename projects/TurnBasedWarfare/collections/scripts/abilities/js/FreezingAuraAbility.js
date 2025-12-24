@@ -1,7 +1,6 @@
 class FreezingAuraAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'freezing_aura',
             name: 'Freezing Aura',
             description: 'Emanate freezing cold',
             cooldown: 0,

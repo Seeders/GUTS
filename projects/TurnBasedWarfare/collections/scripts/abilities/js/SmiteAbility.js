@@ -1,7 +1,6 @@
 class SmiteAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'smite',
             name: 'Holy Smite',
             description: 'Calls down holy wrath upon the strongest enemy',
             cooldown: 6.0,

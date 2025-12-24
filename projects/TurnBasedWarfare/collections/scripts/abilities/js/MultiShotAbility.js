@@ -1,7 +1,6 @@
 class MultiShotAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'multi_shot',
             name: 'Multi Shot',
             description: 'Fire multiple arrows at different targets',
             cooldown: 7.0,

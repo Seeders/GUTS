@@ -1,7 +1,6 @@
 class ShieldWallAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'shield_wall',
             name: 'Shield Wall',
             description: 'Form a defensive stance, reducing damage and taunting enemies',
             cooldown: 12.0,

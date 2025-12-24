@@ -1,7 +1,6 @@
 class BashAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'bash',
             name: 'Bash',
             description: 'Slam your shield into the enemy, stunning them',
             cooldown: 6.0,

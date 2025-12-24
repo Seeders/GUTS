@@ -1,7 +1,6 @@
 class SnapTrapAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'snap_trap',
             name: 'Snap Trap',
             description: 'Snaps shut on nearby enemies, dealing damage and stunning them',
             cooldown: 0,
@@ -19,7 +18,9 @@ class SnapTrapAbility extends GUTS.BaseAbility {
     }
 
     canExecute(casterEntity, targetData = null) {
-        return true;
+        // Only trigger when there's an enemy in range
+        const enemy = this.findNearestEnemy(casterEntity);
+        return enemy !== null;
     }
 
     execute(casterEntity, targetData = null) {
@@ -57,12 +58,12 @@ class SnapTrapAbility extends GUTS.BaseAbility {
             }
 
             this.logAbilityUsage(casterEntity, "Bear trap snaps shut!");
-        }
 
-        // Destroy the trap after triggering
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.destroyTrap(casterEntity);
-        }, 0.3, casterEntity);
+            // Only destroy the trap after successfully hitting a target
+            this.game.schedulingSystem.scheduleAction(() => {
+                this.destroyTrap(casterEntity);
+            }, 0.3, casterEntity);
+        }
     }
 
     findNearestEnemy(casterEntity) {

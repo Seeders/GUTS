@@ -1,7 +1,6 @@
 class ChainLightningAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'chain_lightning',
             name: 'Chain Lightning',
             description: 'Lightning that jumps between multiple enemies',
             cooldown: 4.0,

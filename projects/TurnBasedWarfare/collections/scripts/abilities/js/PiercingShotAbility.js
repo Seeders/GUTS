@@ -1,7 +1,6 @@
 class PiercingShotAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'piercing_shot',
             name: 'Piercing Shot',
             description: 'Fire a bolt that pierces through multiple enemies',
             cooldown: 6.0,

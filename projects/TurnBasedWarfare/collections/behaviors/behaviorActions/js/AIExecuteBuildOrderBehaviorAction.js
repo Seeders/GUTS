@@ -25,7 +25,6 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         // Get build order
         const buildOrder = this.getBuildOrder(aiOpponent.buildOrderId, game);
         if (!buildOrder) {
-            console.warn('[AIExecuteBuildOrder] Build order not found:', aiOpponent.buildOrderId);
             return this.failure();
         }
 
@@ -74,7 +73,6 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
             case 'SPAWN_UNIT':
                 return this.executeSpawnUnit(action, aiTeam, game);
             default:
-                console.warn('[AIExecuteBuildOrder] Unknown action type:', action.type);
                 return false;
         }
     }
@@ -91,12 +89,9 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         const collection = action.collection || 'units';
         const position = action.position || { x: 0, z: 0 };
 
-        console.log(`[AIExecuteBuildOrder] SPAWN_UNIT: ${action.unitId} (${collection}) at (${position.x}, ${position.z}) for team ${teamName}`);
-
         // Get unit definition
         const unitDef = collections[collection]?.[action.unitId];
         if (!unitDef) {
-            console.warn(`[AIExecuteBuildOrder] Unit definition not found: ${action.unitId} in ${collection}`);
             return false;
         }
 
@@ -114,7 +109,6 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         const collectionIndex = enums.objectTypeDefinitions?.[collection] ?? -1;
 
         if (spawnTypeIndex < 0 || collectionIndex < 0) {
-            console.warn(`[AIExecuteBuildOrder] Invalid enum indices for ${action.unitId}: spawnType=${spawnTypeIndex}, collection=${collectionIndex}`);
             return false;
         }
 
@@ -122,10 +116,11 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         const gridPos = game.call('worldToPlacementGrid', position.x, position.z);
 
         // Build placement data like PlacementSystem expects
+        // Note: UnitCreationSystem expects 'unitTypeId' not 'spawnType'
         const networkData = {
             unitType: unitType,
             collection: collectionIndex,
-            spawnType: spawnTypeIndex,
+            unitTypeId: spawnTypeIndex,
             teamName: teamName,
             squadWidth: unitType.squadWidth,
             squadHeight: unitType.squadHeight,
@@ -138,10 +133,8 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         const result = game.call('spawnSquad', networkData, aiTeam, playerId);
 
         if (result && result.success) {
-            console.log(`[AIExecuteBuildOrder] Spawned ${action.unitId} with placement ID ${result.placementId}, entities: ${result.squad?.squadUnits?.join(',')}`);
             return true;
         } else {
-            console.warn(`[AIExecuteBuildOrder] Failed to spawn ${action.unitId}:`, result?.error || 'unknown error');
             return false;
         }
     }
@@ -150,21 +143,18 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         const collections = game.getCollections();
         const buildingDef = collections.buildings?.[action.buildingId];
         if (!buildingDef) {
-            console.warn('[AIExecuteBuildOrder] Building not found:', action.buildingId);
             return false;
         }
 
         // Find available peasant
         const peasantId = this.findAvailablePeasant(aiTeam, game);
         if (!peasantId) {
-            console.warn('[AIExecuteBuildOrder] No available peasant for building');
             return false;
         }
 
         // Find position near town hall
         const gridPos = this.findBuildingPosition(aiTeam, buildingDef, game);
         if (!gridPos) {
-            console.warn('[AIExecuteBuildOrder] No valid position for building');
             return false;
         }
 
@@ -177,80 +167,43 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Call ui_placeUnit
         game.call('ui_placeUnit', gridPos, unitType, aiTeam, playerId, peasantInfo, (success, response) => {
-            if (!success) {
-                console.warn('[AIExecuteBuildOrder] Failed to place building:', response?.error);
-            }
+            // Callback handled silently
         });
 
         return true;
     }
 
     executePurchaseUnit(action, aiTeam, game) {
-        const reverseEnums = game.getReverseEnums();
-        const teamName = reverseEnums.team?.[aiTeam] || aiTeam;
-        console.log(`[AIExecuteBuildOrder] Round ${game.state.round}: Attempting to purchase ${action.unitId} from ${action.building} for team ${teamName}`);
-
         // Find the building
         const buildingEntityId = this.findBuildingByType(action.building, aiTeam, game);
         if (!buildingEntityId) {
-            console.warn('[AIExecuteBuildOrder] Building not found for purchase:', action.building, 'team:', teamName);
-            // List all buildings for this team
-            const entities = game.getEntitiesWith('unitType', 'team', 'placement');
-            console.log('[AIExecuteBuildOrder] Available buildings for team', teamName + ':');
-            for (const entityId of entities) {
-                const teamComp = game.getComponent(entityId, 'team');
-                if (teamComp.team !== aiTeam) continue;
-                const unitTypeComp = game.getComponent(entityId, 'unitType');
-                const unitDef = game.call('getUnitTypeDef', unitTypeComp);
-                const placement = game.getComponent(entityId, 'placement');
-                if (unitDef?.isBuilding) {
-                    console.log(`  - ${unitDef.id} (entity ${entityId}), underConstruction: ${placement?.isUnderConstruction}`);
-                }
-            }
             return false;
         }
 
-        console.log(`[AIExecuteBuildOrder] Found building entity ${buildingEntityId}, calling ui_purchaseUnit`);
-
         // Call ui_purchaseUnit
         game.call('ui_purchaseUnit', action.unitId, buildingEntityId, aiTeam, (success, response) => {
-            if (!success) {
-                console.warn('[AIExecuteBuildOrder] Failed to purchase unit:', response?.error || response);
-            } else {
-                console.log(`[AIExecuteBuildOrder] Successfully purchased ${action.unitId}`);
-            }
+            // Callback handled silently
         });
 
         return true;
     }
 
     executeMoveOrder(action, aiTeam, game) {
-        const reverseEnums = game.getReverseEnums();
-        const teamName = reverseEnums.team?.[aiTeam] || aiTeam;
-
         // Find units of specified type
         const placementIds = this.findUnitsOfType(action.unitType, aiTeam, game);
         if (placementIds.length === 0) {
-            console.warn('[AIExecuteBuildOrder] No units found for move order:', action.unitType);
             return false;
         }
 
         // Resolve target position
         const targetPos = this.resolveTarget(action.target, aiTeam, game);
         if (!targetPos) {
-            console.warn('[AIExecuteBuildOrder] Could not resolve target:', action.target);
             return false;
         }
 
-        console.log(`[AIExecuteBuildOrder] Round ${game.state.round}: Issuing MOVE_ORDER for ${action.unitType} (${teamName}) to ${action.target} = (${targetPos.x?.toFixed(0)}, ${targetPos.z?.toFixed(0)}), placements: ${JSON.stringify(placementIds)}`);
-
         // Call ui_issueMoveOrder
         game.call('ui_issueMoveOrder', placementIds, targetPos, (success, response) => {
-            if (!success) {
-                console.warn('[AIExecuteBuildOrder] Failed to issue move order:', response?.error);
-            } else {
-                console.log(`[AIExecuteBuildOrder] Move order issued successfully for ${action.unitType}`);
-            }
+            // Callback handled silently
         });
 
         return true;

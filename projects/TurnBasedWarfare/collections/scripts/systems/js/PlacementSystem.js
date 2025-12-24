@@ -313,13 +313,6 @@ class PlacementSystem extends GUTS.BaseSystem {
             // Handle peasant/builder assignment for buildings
             // Two cases: local placement has peasantInfo, synced placement has assignedBuilder
             // Use unitType.collection (string) since placement.collection may be numeric
-            console.log('[PlacementSystem] Checking building assignment:', {
-                unitTypeCollection: unitType.collection,
-                isTrap: unitType.isTrap,
-                hasPeasantInfo: !!networkUnitData.peasantInfo,
-                hasAssignedBuilder: !!networkUnitData.assignedBuilder
-            });
-
             if (unitType.collection === 'buildings') {
                 const buildingEntityId = squadUnits[0];
                 let peasantId = null;
@@ -329,7 +322,6 @@ class PlacementSystem extends GUTS.BaseSystem {
                     // Local placement - use peasantInfo
                     peasantInfo = networkUnitData.peasantInfo;
                     peasantId = peasantInfo.peasantId;
-                    console.log('[PlacementSystem] Using local peasantInfo:', peasantInfo);
                 } else if (networkUnitData.assignedBuilder && networkUnitData.isUnderConstruction) {
                     // Synced from server - reconstruct peasantInfo from placement data
                     peasantId = networkUnitData.assignedBuilder;
@@ -337,27 +329,18 @@ class PlacementSystem extends GUTS.BaseSystem {
                         peasantId: peasantId,
                         buildTime: networkUnitData.buildTime
                     };
-                    console.log('[PlacementSystem] Using synced assignedBuilder:', peasantInfo);
-                } else {
-                    console.log('[PlacementSystem] No peasant/builder info found');
                 }
 
                 if (peasantId && peasantInfo) {
                     // All buildings (including traps) use the same build flow
                     // Scout walks to position, then places trap when "construction" completes
                     const peasantAbilities = this.game.call('getEntityAbilities', peasantId);
-                    console.log('[PlacementSystem] peasantAbilities for entity', peasantId, ':', peasantAbilities?.map(a => a.id));
                     if (peasantAbilities) {
                         const buildAbility = peasantAbilities.find(a => a.id === 'build');
                         if (buildAbility) {
-                            console.log('[PlacementSystem] Found build ability, calling assignToBuild');
                             // Pass serverTime for issuedTime sync (undefined on server, provided by client)
                             buildAbility.assignToBuild(peasantId, buildingEntityId, peasantInfo, networkUnitData.serverTime);
-                        } else {
-                            console.error('[PlacementSystem] No build ability found on entity', peasantId);
                         }
-                    } else {
-                        console.error('[PlacementSystem] No abilities found for entity', peasantId);
                     }
                 }
 

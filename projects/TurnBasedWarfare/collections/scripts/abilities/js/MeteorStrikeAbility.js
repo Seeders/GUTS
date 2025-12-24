@@ -1,7 +1,6 @@
 class MeteorStrikeAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'meteor_strike',
             name: 'Meteor Strike',
             description: 'Devastating strike on the densest enemy formation',
             cooldown: 5.0,

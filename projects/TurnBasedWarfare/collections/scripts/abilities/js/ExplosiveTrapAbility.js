@@ -1,7 +1,6 @@
 class ExplosiveTrapAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'explosive_trap',
             name: 'Explosive Trap',
             description: 'Place a hidden trap that explodes when enemies approach (max 2 per Trapper)',
             cooldown: 15.0,

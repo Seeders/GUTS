@@ -1,7 +1,6 @@
 class BloodlustAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'bloodlust',
             name: 'Bloodlust',
             description: 'Heal when dealing damage and gain stacking damage bonuses',
             cooldown: 5.0,

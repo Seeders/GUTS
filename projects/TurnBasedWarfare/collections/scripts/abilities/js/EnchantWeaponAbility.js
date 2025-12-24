@@ -1,7 +1,6 @@
 class EnchantWeaponAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'enchant_weapon',
             name: 'Enchant Weapon',
             description: 'Enchant ally weapons with elemental damage (does not stack, refreshes duration)',
             cooldown: 12.0,

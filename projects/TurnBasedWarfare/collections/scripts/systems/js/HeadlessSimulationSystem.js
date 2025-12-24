@@ -21,15 +21,6 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         super(game);
         this.game.headlessSimulationSystem = this;
 
-        // Initialize logger
-        this._log = global.GUTS?.HeadlessLogger?.createLogger('HeadlessSimulation') || {
-            error: (...args) => console.error('[HeadlessSimulation]', ...args),
-            warn: (...args) => console.warn('[HeadlessSimulation]', ...args),
-            info: (...args) => console.log('[HeadlessSimulation]', ...args),
-            debug: (...args) => console.log('[HeadlessSimulation]', ...args),
-            trace: () => {}
-        };
-
         // Simulation state
         this._simulationComplete = false;
 
@@ -55,7 +46,6 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         this._projectilesFired = 0;
         this._abilitiesUsed = 0;
         this._damageDealt = { left: 0, right: 0 };
-        this._log.debug('Scene loaded - simulation state reset');
     }
 
     /**
@@ -71,8 +61,6 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         this._projectilesFired = 0;
         this._abilitiesUsed = 0;
         this._damageDealt = { left: 0, right: 0 };
-
-        this._log.info('Simulation setup complete - AI opponents will run via behavior trees');
     }
 
     /**
@@ -162,15 +150,12 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
     // These receive events via game.triggerEvent()
 
     onUnitKilled(entityId) {
-        console.log('[HeadlessSimulation] onUnitKilled received:', entityId);
-
         // Track unit death statistics
         this._trackUnitDeath(entityId);
 
         // Don't process further deaths once simulation is already complete
         // This ensures the FIRST death determines the winner (prevents draw scenarios)
         if (this._simulationComplete) {
-            this._log.debug('Simulation already complete, ignoring additional death');
             return;
         }
 
@@ -195,8 +180,6 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         this.game.state.gameOver = true;
         this.game.state.winner = reverseEnums.team?.[winningTeam] || winningTeam;
         this._simulationComplete = true;
-
-        this._log.info(`Combat unit killed: ${unitId} (${reverseEnums.team?.[losingTeam]}) - ${this.game.state.winner} wins!`);
     }
 
     /**
@@ -315,49 +298,18 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
     }
 
     onUnitDeath(data) {
-        this._log.debug('onUnitDeath received:', data);
     }
 
     onBattleStart() {
-        this._log.debug('Battle started', {
-            phase: this.game.state.phase,
-            round: this.game.state.round
-        });
-
-        // Debug: List all units at battle start (only on round 4 when units should exist)
-        if (this.game.state.round >= 3) {
-            const entities = this.game.getEntitiesWith('unitType', 'team');
-            const reverseEnums = this.game.getReverseEnums();
-            const skipTypes = ['townHall', 'barracks', 'fletchersHall', 'mageTower', 'goldMine'];
-
-            console.log(`[HeadlessSimulation] Battle ${this.game.state.round} starting - All units:`);
-            for (const entityId of entities) {
-                const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
-                if (skipTypes.includes(unitDef?.id)) continue;
-
-                const teamComp = this.game.getComponent(entityId, 'team');
-                const health = this.game.getComponent(entityId, 'health');
-                const deathState = this.game.getComponent(entityId, 'deathState');
-                const placement = this.game.getComponent(entityId, 'placement');
-                const teamName = reverseEnums.team?.[teamComp.team] || teamComp.team;
-
-                console.log(`  [${teamName}] ${unitDef?.id} (entity ${entityId}): HP ${health?.current}/${health?.max}, deathState: ${deathState?.state}, placementId: ${placement?.placementId}`);
-            }
-        }
     }
 
     onBattleEnd(data) {
-        this._log.debug('Battle ended', data);
     }
 
     onRoundEnd(data) {
-        this._log.debug('Round ended', data);
     }
 
     onPhaseChange(phase) {
-        const phaseName = this.game.call('getReverseEnums')?.gamePhase?.[phase] || phase;
-        this._log.debug(`Phase change: ${phaseName}`);
     }
 
     /**
@@ -379,12 +331,9 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
                 placement.productionProgress = 0;
             }
         }
-
-        this._log.debug('Reset production progress for all buildings');
     }
 
     onGameOver(data) {
-        this._log.debug('Game over', data);
     }
 }
 

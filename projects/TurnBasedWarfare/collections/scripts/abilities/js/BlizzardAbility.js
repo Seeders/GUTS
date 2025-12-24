@@ -1,7 +1,6 @@
 class BlizzardAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'blizzard',
             name: 'Blizzard',
             description: 'Summons a devastating blizzard of ice shards that freezes enemies in an area',
             cooldown: 5.0,

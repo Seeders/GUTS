@@ -1,7 +1,6 @@
 class ArenaPresenceAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'arena_presence',
             name: 'Arena Presence',
             description: 'Intimidate nearby enemies, reducing their damage and accuracy (does not stack)',
             cooldown: 10.0,

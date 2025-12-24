@@ -1,7 +1,6 @@
 class PhalanxFormationAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'phalanx_formation',
             name: 'Phalanx Formation',
             description: 'Link with nearby Hoplites - more Hoplites = stronger formation bonus',
             cooldown: 2.0,

@@ -1,7 +1,6 @@
 class MassHealAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'mass_heal',
             name: 'Mass Heal',
             description: 'Heal all injured allies across the battlefield',
             cooldown: 15.0,

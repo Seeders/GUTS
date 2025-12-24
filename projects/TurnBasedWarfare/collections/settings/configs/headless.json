@@ -6,7 +6,7 @@
   "appLoaderLibrary": "HeadlessGameLoader",
   "appLibrary": "HeadlessECSGame",
   "initialScene": "headless",
-  "logLevel": "TRACE",
+  "logLevel": "WARN",
   "libraries": [
     "GameServices",
     "CallLogger",

@@ -57,7 +57,7 @@
   "attackSpeed": 1,
   "range": 48,
   "element": "physical",
-  "hp": 10,
+  "hp": 1000,
   "abilities": [
     "SnapTrapAbility"
   ],

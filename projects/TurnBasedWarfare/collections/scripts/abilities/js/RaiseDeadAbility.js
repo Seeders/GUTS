@@ -1,7 +1,6 @@
 class RaiseDeadAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'raise_dead',
             name: 'Raise Dead',
             description: 'Convert corpses into skeleton warriors',
             cooldown: 1.0,

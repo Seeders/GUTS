@@ -1,7 +1,6 @@
 class HealAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'heal',
             name: 'Heal',
             description: 'Restores health to the most injured ally',
             cooldown: 30,

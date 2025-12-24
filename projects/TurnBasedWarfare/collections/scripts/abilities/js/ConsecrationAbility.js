@@ -1,7 +1,6 @@
 class ConsecrationAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'consecration',
             name: 'Consecration',
             description: 'Sanctify the ground, creating a zone that damages undead and heals the living',
             cooldown: 18.0,

@@ -1,7 +1,6 @@
 class MirrorImagesAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'mirror_images',
             name: 'Mirror Images',
             description: 'Creates 2 weaker illusions of self',
             cooldown: 10.0,

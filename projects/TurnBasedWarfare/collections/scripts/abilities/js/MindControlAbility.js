@@ -1,7 +1,6 @@
 class MindControlAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'mind_control',
             name: 'Mind Control',
             description: 'Charms enemy to fight for you',
             cooldown: 5.0,
