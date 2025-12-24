@@ -10,32 +10,41 @@
 class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
+        const log = GUTS.HeadlessLogger;
         const params = this.parameters || {};
         const targetKey = params.targetKey || 'target';
 
         const shared = this.getShared(entityId, game);
         const targetId = shared[targetKey];
 
-        // Debug logging - log before any checks
         const unitTypeComp = game.getComponent(entityId, 'unitType');
         const unitDef = game.call('getUnitTypeDef', unitTypeComp);
         const teamComp = game.getComponent(entityId, 'team');
         const reverseEnums = game.getReverseEnums();
         const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;
+        const unitName = unitDef?.id || 'unknown';
 
         // targetId is null/undefined when not set, or could be 0 (valid entity ID)
         if (targetId === undefined || targetId === null || targetId < 0) {
-            console.log(`[AttackEnemy] ${unitDef?.id} (${teamName}) FAILURE - no valid target (targetId=${targetId})`);
+            log.trace('AttackEnemy', `${unitName}(${entityId}) [${teamName}] FAILURE - no valid target`, {
+                targetId
+            });
             return this.failure();
         }
 
         const combat = game.getComponent(entityId, 'combat');
         if (!combat) {
-            console.log(`[AttackEnemy] ${unitDef?.id} (${teamName}) FAILURE - no combat component`);
+            log.trace('AttackEnemy', `${unitName}(${entityId}) [${teamName}] FAILURE - no combat component`);
             return this.failure();
         }
 
-        console.log(`[AttackEnemy] ${unitDef?.id} (${teamName}) attacking target ${targetId}`);
+        log.debug('AttackEnemy', `${unitName}(${entityId}) [${teamName}] ATTACKING target`, {
+            targetId,
+            damage: combat.damage,
+            attackSpeed: combat.attackSpeed,
+            range: combat.range,
+            hasProjectile: combat.projectile !== null && combat.projectile !== -1 && combat.projectile !== undefined
+        });
 
         // Stop movement while attacking
         const vel = game.getComponent(entityId, 'velocity');
@@ -45,7 +54,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Perform attack
-        this.performAttack(entityId, targetId, game, combat);
+        this.performAttack(entityId, targetId, game, combat, log, unitName, teamName);
 
         // Return running - attacking is a continuous action
         return this.running({
@@ -62,7 +71,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         }
     }
 
-    performAttack(attackerId, targetId, game, combat) {
+    performAttack(attackerId, targetId, game, combat, log, unitName, teamName) {
         // Face the target
         const attackerTransform = game.getComponent(attackerId, 'transform');
         const attackerPos = attackerTransform?.position;
@@ -83,6 +92,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         // Ability-only units (damage = 0, no projectile) use abilities for combat
         // Abilities have their own cooldowns managed by AbilitySystem
         if (!hasProjectile && combat.damage <= 0 && game.abilitySystem) {
+            log.trace('AttackEnemy', `${unitName}(${attackerId}) [${teamName}] using offensive ability`);
             this.useOffensiveAbility(attackerId, targetId, game);
             return;
         }
@@ -94,7 +104,10 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         if (effectiveAttackSpeed > 0) {
             const timeSinceLastAttack = game.state.now - combat.lastAttack;
             if (timeSinceLastAttack < 1 / effectiveAttackSpeed) {
-                // Attack on cooldown
+                log.trace('AttackEnemy', `${unitName}(${attackerId}) [${teamName}] attack on cooldown`, {
+                    timeSinceLastAttack: timeSinceLastAttack.toFixed(2),
+                    cooldown: (1 / effectiveAttackSpeed).toFixed(2)
+                });
                 return;
             }
         }
@@ -112,12 +125,18 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         // Handle projectile or melee damage
         // Note: projectile index 0 is valid, only -1 means "no projectile"
         if (hasProjectile) {
+            log.trace('AttackEnemy', `${unitName}(${attackerId}) [${teamName}] firing projectile at target ${targetId}`, {
+                projectileIndex: combat.projectile
+            });
             // Schedule projectile to fire at 50% through the attack animation (release point)
             const projectileDelay = effectiveAttackSpeed > 0 ? (1 / combat.attackSpeed) * 0.5 : 0;
             game.schedulingSystem.scheduleAction(() => {
                 this.fireProjectile(attackerId, targetId, game, combat);
             }, projectileDelay, attackerId);
         } else if (combat.damage > 0) {
+            log.trace('AttackEnemy', `${unitName}(${attackerId}) [${teamName}] melee attack on target ${targetId}`, {
+                damage: combat.damage
+            });
             // Melee attack - schedule damage
             const damageDelay = effectiveAttackSpeed > 0 ? (1 / combat.attackSpeed) * 0.5 : 0;
             const element = this.getDamageElement(attackerId, game, combat);
@@ -153,16 +172,26 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     fireProjectile(attackerId, targetId, game, combat) {
+        const log = GUTS.HeadlessLogger;
         const targetHealth = game.getComponent(targetId, 'health');
-        if (!targetHealth || targetHealth.current <= 0) return;
+        if (!targetHealth || targetHealth.current <= 0) {
+            log.trace('AttackEnemy', `fireProjectile cancelled - target ${targetId} dead`);
+            return;
+        }
 
         // combat.projectile is a numeric index, need to convert to string name
         const reverseEnums = game.getReverseEnums();
         const projectileName = reverseEnums?.projectiles?.[combat.projectile];
-        if (!projectileName) return;
+        if (!projectileName) {
+            log.warn('AttackEnemy', `fireProjectile failed - unknown projectile index`, {
+                projectileIndex: combat.projectile
+            });
+            return;
+        }
 
         const projectileData = game.getCollections().projectiles?.[projectileName];
         if (projectileData) {
+            log.trace('AttackEnemy', `fireProjectile ${projectileName} from ${attackerId} to ${targetId}`);
             game.call('fireProjectile', attackerId, targetId, {
                 id: projectileName,
                 ...projectileData

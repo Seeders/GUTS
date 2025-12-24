@@ -145,12 +145,13 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @returns {number} Entity ID
      */
     createUnit(collectionIndex, spawnTypeIndex, transform, team, entityId = null) {
-      
+        const log = GUTS.HeadlessLogger;
+
         // Convert numeric indices to strings for collection lookup
         const collection = this.reverseEnums.objectTypeDefinitions?.[collectionIndex];
         const spawnType = collection ? this.reverseEnums[collection]?.[spawnTypeIndex] : null;
 
-    
+
         if (!collection || !spawnType) {
             throw new Error(`Invalid unit indices: collection=${collectionIndex}, spawnType=${spawnTypeIndex}`);
         }
@@ -176,11 +177,35 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 entity = this.game.createEntity();
             }
             const teamConfig = this.teamConfigs[team];
+            const teamName = this.reverseEnums.team?.[team] || team;
+
+            // Log unit creation with all component values
+            log.debug('UnitCreation', `Creating ${spawnType}(${entity}) [${teamName}]`, {
+                collection,
+                spawnType,
+                team,
+                teamName,
+                position: safeTransform.position
+            });
 
             // OPTIMIZATION: Add all components in single batch call
             // This reduces cache invalidation from 13+ times to just once
             // Pass numeric indices for renderable component
             this.addAllComponents(entity, safeTransform, unitType, team, teamConfig, collectionIndex, spawnTypeIndex);
+
+            // Log component details after creation
+            log.trace('UnitCreation', `${spawnType}(${entity}) [${teamName}] components`, {
+                health: { max: unitType.hp, current: unitType.hp },
+                combat: {
+                    damage: unitType.damage,
+                    range: unitType.range,
+                    attackSpeed: unitType.attackSpeed,
+                    visionRange: unitType.visionRange,
+                    projectile: unitType.projectile
+                },
+                speed: unitType.speed * this.SPEED_MODIFIER,
+                size: unitType.size
+            });
 
             // Schedule equipment and abilities (async to avoid blocking)
             this.schedulePostCreationSetup(entity, unitType);

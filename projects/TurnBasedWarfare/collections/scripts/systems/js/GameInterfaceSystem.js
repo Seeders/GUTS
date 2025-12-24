@@ -247,8 +247,8 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Refund gold
-        const team = undoInfo.team ?? this.game.state.myTeam;
+        // Refund gold - use active player team if not specified
+        const team = undoInfo.team ?? this.game.call('getActivePlayerTeam') ?? this.game.state.myTeam;
         if (undoInfo.unitType?.value) {
             this.game.call('addPlayerGold', team, undoInfo.unitType.value);
         }
@@ -258,14 +258,14 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
 
     /**
      * Toggle ready for battle state
-     * @param {number} team - Team enum value (optional, defaults to myTeam)
+     * @param {number} team - Team enum value (optional, defaults to active player team)
      * @param {Function} callback - Called with (success, response)
      */
     ui_toggleReadyForBattle(team, callback) {
         // Handle optional team parameter
         if (typeof team === 'function') {
             callback = team;
-            team = this.game.state.myTeam;
+            team = this.game.call('getActivePlayerTeam') ?? this.game.state.myTeam;
         }
         this.game.call('toggleReadyForBattle', team, callback);
     }
@@ -402,7 +402,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
      */
     _getEntityAtPosition(worldPos, options = {}) {
         const clickRadius = options.radius || 50;
-        const teamFilter = options.teamFilter ?? this.game.state.myTeam;
+        const teamFilter = options.teamFilter ?? this.game.call('getActivePlayerTeam') ?? this.game.state.myTeam;
 
         let closestEntity = null;
         let closestDistance = clickRadius;
@@ -451,7 +451,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
      * @returns {Array} Array of entity IDs
      */
     _getEntitiesInBounds(worldMinX, worldMinZ, worldMaxX, worldMaxZ, options = {}) {
-        const teamFilter = options.teamFilter ?? this.game.state.myTeam;
+        const teamFilter = options.teamFilter ?? this.game.call('getActivePlayerTeam') ?? this.game.state.myTeam;
         const prioritizeUnits = options.prioritizeUnits ?? true;
 
         const selectedUnits = [];
@@ -519,7 +519,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
     _handlePlacementClick(worldX, worldZ, callback) {
         const unitType = this.game.state.selectedUnitType;
         const gridPos = this.game.call('worldToPlacementGrid', worldX, worldZ);
-        const team = this.game.state.myTeam;
+        const team = this.game.call('getActivePlayerTeam') ?? this.game.state.myTeam;
         const playerId = this.game.clientNetworkManager?.numericPlayerId ?? (team === this.enums.team.left ? 0 : 1);
         const peasantInfo = this.game.state.peasantBuildingPlacement || null;
 

@@ -582,10 +582,13 @@ function printSimulationResults(result, verbose = false) {
  * Run multiple simulations in batch mode
  */
 async function runBatchSimulations(runner, simulationIds, options = {}) {
-    const { maxTicks = 10000, verbose = false, json = false } = options;
+    const { maxTicks = 10000, verbose = false } = options;
     const results = [];
     const batchStart = Date.now();
-    const allResultsText = [];  // Collect all results for file output
+    const summaryResults = [];  // Collect summary-only results for batch file
+
+    // Get HeadlessLogger for capture mode
+    const HeadlessLogger = global.GUTS?.HeadlessLogger;
 
     console.log(`[Headless] Running ${simulationIds.length} simulations in batch mode...`);
 
@@ -596,6 +599,7 @@ async function runBatchSimulations(runner, simulationIds, options = {}) {
         if (!simConfig) {
             console.error(`[Headless] Simulation '${simId}' not found, skipping`);
             results.push({ simulationId: simId, error: 'not found' });
+            summaryResults.push({ simulationId: simId, error: 'not found' });
             continue;
         }
 
@@ -617,48 +621,118 @@ async function runBatchSimulations(runner, simulationIds, options = {}) {
         };
 
         try {
+            // Enable capture mode to collect logs to buffer instead of console
+            if (HeadlessLogger) {
+                HeadlessLogger.setCaptureMode(true);
+            }
+
+            // Suppress all console output during simulation by redirecting to capture buffer
+            const originalLog = console.log;
+            const originalWarn = console.warn;
+            const originalError = console.error;
+            const consoleBuffer = [];
+
+            console.log = (...args) => consoleBuffer.push('[LOG] ' + args.join(' '));
+            console.warn = (...args) => consoleBuffer.push('[WARN] ' + args.join(' '));
+            console.error = (...args) => consoleBuffer.push('[ERROR] ' + args.join(' '));
+
             const result = await runSingleSimulation(runner, simRunConfig, { maxTicks, verbose });
             results.push(result);
 
-            // Collect text result for file output
-            allResultsText.push(formatResultsAsText(result, verbose));
+            // Restore console
+            console.log = originalLog;
+            console.warn = originalWarn;
+            console.error = originalError;
 
-            if (!json) {
-                // Print full battle report for each simulation
-                printSimulationResults(result, verbose);
+            // Get captured logs (both HeadlessLogger and console)
+            const headlessLogs = HeadlessLogger ? HeadlessLogger.getCapturedLogs() : '';
+            const consoleLogs = consoleBuffer.join('\n');
+            const allLogs = headlessLogs + (consoleLogs ? '\n\n=== Console Output ===\n' + consoleLogs : '');
+
+            // Disable capture mode
+            if (HeadlessLogger) {
+                HeadlessLogger.setCaptureMode(false);
             }
+
+            // Write individual result file with full verbose output AND captured logs
+            const simTimestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const individualPath = path.join(__dirname, `simulation_${simId}_${simTimestamp}.txt`);
+            const fileContent = allLogs + '\n\n' + formatResultsAsText(result, true);
+            writeFileSync(individualPath, fileContent);
+
+            // Print brief summary line in console (not full results)
+            const winnerDisplay = result.winner === 'left' ? `LEFT (${result.leftBuildOrder})`
+                : result.winner === 'right' ? `RIGHT (${result.rightBuildOrder})`
+                : result.winner === 'draw' ? 'DRAW'
+                : 'NO WINNER';
+            console.log(`[Headless]   -> ${simConfig.name || simId}: ${winnerDisplay} wins - ${result.tickCount} ticks`);
+            console.log(`[Headless]      Results: ${individualPath}`);
+
+            // Collect summary for batch file
+            summaryResults.push(formatResultSummary(result));
         } catch (error) {
+            // Disable capture mode on error
+            if (HeadlessLogger) {
+                HeadlessLogger.setCaptureMode(false);
+            }
             console.error(`[Headless] Error running ${simId}:`, error.message);
             results.push({ simulationId: simId, error: error.message });
-            allResultsText.push(`ERROR: ${simId} - ${error.message}\n`);
+            summaryResults.push({ simulationId: simId, error: error.message });
         }
     }
 
     const batchTime = Date.now() - batchStart;
 
-    // Write all results to a text file
+    // Write batch summary file with only summary results (not full debug)
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const outputPath = path.join(__dirname, `simulation_results_${timestamp}.txt`);
-    const summaryText = generateBatchSummaryText(results, batchTime);
-    writeFileSync(outputPath, allResultsText.join('\n') + '\n' + summaryText);
-    console.log(`[Headless] Results written to: ${outputPath}`);
+    const batchPath = path.join(__dirname, `batch_results_${timestamp}.txt`);
+    const batchContent = generateBatchSummaryFile(summaryResults, batchTime);
+    writeFileSync(batchPath, batchContent);
+    console.log(`[Headless] Batch summary written to: ${batchPath}`);
 
     return { results, batchTimeMs: batchTime };
 }
 
 /**
- * Generate batch summary as text
+ * Format a single result as a brief summary (for batch file)
  */
-function generateBatchSummaryText(results, batchTimeMs) {
-    const lines = [];
-    lines.push(`════════════════════════════════════════════════════════════`);
-    lines.push(`                      BATCH SUMMARY                         `);
-    lines.push(`════════════════════════════════════════════════════════════`);
-    lines.push(`  Total Simulations: ${results.length}`);
-    lines.push(`  Total Time: ${batchTimeMs}ms`);
+function formatResultSummary(result) {
+    const winnerDisplay = result.winner === 'left' ? `LEFT (${result.leftBuildOrder})`
+        : result.winner === 'right' ? `RIGHT (${result.rightBuildOrder})`
+        : result.winner === 'draw' ? 'DRAW'
+        : 'NO WINNER (timeout)';
 
+    return {
+        simulationId: result.simulationId,
+        simulationName: result.simulationName,
+        matchup: `${result.leftBuildOrder} vs ${result.rightBuildOrder}`,
+        winner: result.winner,
+        winnerDisplay,
+        completed: result.completed,
+        round: result.round,
+        tickCount: result.tickCount,
+        gameTime: result.gameTime,
+        realTimeMs: result.realTimeMs
+    };
+}
+
+/**
+ * Generate batch summary file content
+ */
+function generateBatchSummaryFile(summaryResults, batchTimeMs) {
+    const lines = [];
+
+    lines.push(`════════════════════════════════════════════════════════════════════════════`);
+    lines.push(`                         BATCH SIMULATION RESULTS                           `);
+    lines.push(`════════════════════════════════════════════════════════════════════════════`);
+    lines.push(`  Generated: ${new Date().toISOString()}`);
+    lines.push(`  Total Simulations: ${summaryResults.length}`);
+    lines.push(`  Total Time: ${batchTimeMs}ms (${(batchTimeMs / 1000).toFixed(1)}s)`);
+    lines.push(``);
+
+    // Win statistics
     const wins = { left: 0, right: 0, draw: 0, none: 0, error: 0 };
-    for (const r of results) {
+    for (const r of summaryResults) {
         if (r.error) wins.error++;
         else if (r.winner === 'left') wins.left++;
         else if (r.winner === 'right') wins.right++;
@@ -666,16 +740,37 @@ function generateBatchSummaryText(results, batchTimeMs) {
         else wins.none++;
     }
 
-    lines.push(`────────────────────────────────────────────────────────────`);
-    lines.push(`  Win Summary:`);
-    lines.push(`    Left (buildOrderA): ${wins.left}`);
-    lines.push(`    Right (buildOrderB): ${wins.right}`);
-    lines.push(`    Draw: ${wins.draw}`);
-    lines.push(`    No Winner: ${wins.none}`);
+    lines.push(`────────────────────────────────────────────────────────────────────────────`);
+    lines.push(`  WIN SUMMARY`);
+    lines.push(`────────────────────────────────────────────────────────────────────────────`);
+    lines.push(`    Left Wins:  ${wins.left}`);
+    lines.push(`    Right Wins: ${wins.right}`);
+    lines.push(`    Draws:      ${wins.draw}`);
+    lines.push(`    Timeouts:   ${wins.none}`);
     if (wins.error > 0) {
-        lines.push(`    Errors: ${wins.error}`);
+        lines.push(`    Errors:     ${wins.error}`);
     }
-    lines.push(`════════════════════════════════════════════════════════════`);
+    lines.push(``);
+
+    // Individual results
+    lines.push(`────────────────────────────────────────────────────────────────────────────`);
+    lines.push(`  INDIVIDUAL RESULTS`);
+    lines.push(`────────────────────────────────────────────────────────────────────────────`);
+
+    for (const r of summaryResults) {
+        if (r.error) {
+            lines.push(`  X ${r.simulationId}: ERROR - ${r.error}`);
+        } else {
+            const status = r.completed ? 'OK' : 'TIMEOUT';
+            lines.push(`  [${status}] ${r.simulationName || r.simulationId}`);
+            lines.push(`      Matchup: ${r.matchup}`);
+            lines.push(`      Result:  ${r.winnerDisplay}`);
+            lines.push(`      Round:   ${r.round}, Ticks: ${r.tickCount}, Time: ${r.gameTime?.toFixed(2)}s`);
+            lines.push(``);
+        }
+    }
+
+    lines.push(`════════════════════════════════════════════════════════════════════════════`);
 
     return lines.join('\n');
 }

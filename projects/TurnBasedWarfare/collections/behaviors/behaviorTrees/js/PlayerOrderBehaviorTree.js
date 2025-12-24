@@ -14,7 +14,15 @@ class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
      * other behaviors (like combat) to take over.
      */
     evaluate(entityId, game) {
+        const log = GUTS.HeadlessLogger;
         const playerOrder = game.getComponent(entityId, 'playerOrder');
+
+        log.trace('PlayerOrderBT', `${entityId} evaluate`, {
+            hasOrder: !!playerOrder,
+            enabled: playerOrder?.enabled,
+            isMoveOrder: playerOrder?.isMoveOrder,
+            completed: playerOrder?.completed
+        });
 
         // No player order component or order not enabled - skip this tree
         if (!playerOrder || !playerOrder.enabled) {
@@ -40,6 +48,20 @@ class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
                     // Enemy found and shared.target is now set - let combat take over
                     // IMPORTANT: Clear our running state so we don't resume MoveBehaviorAction
                     // when we should be yielding to combat
+                    GUTS.HeadlessLogger.debug('PlayerOrderBT', `${entityId} YIELDING - enemy found`, { target: findResult.data?.target });
+                    this.runningState.delete(entityId);
+                    return null;
+                }
+            }
+
+            // If no visible enemy, check if we were recently attacked
+            // This allows ranged units to respond to attackers they can't see
+            const investigateAttacker = game.call('getNodeByType', 'InvestigateAttackerBehaviorAction');
+            if (investigateAttacker) {
+                const investigateResult = investigateAttacker.execute(entityId, game);
+                if (investigateResult && investigateResult.status === 'success') {
+                    // Attacker set as target - yield to combat so we can pursue them
+                    GUTS.HeadlessLogger.debug('PlayerOrderBT', `${entityId} YIELDING - investigating attacker`, { target: investigateResult.data?.target });
                     this.runningState.delete(entityId);
                     return null;
                 }

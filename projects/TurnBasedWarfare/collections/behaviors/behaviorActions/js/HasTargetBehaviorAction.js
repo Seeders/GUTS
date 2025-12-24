@@ -11,6 +11,7 @@
 class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
+        const log = GUTS.HeadlessLogger;
         const params = this.parameters || {};
         const targetKey = params.targetKey || 'target';
         const validateHealth = params.validateHealth !== false;
@@ -18,18 +19,19 @@ class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const targetId = shared[targetKey];
 
-        // Debug logging
         const unitTypeComp = game.getComponent(entityId, 'unitType');
         const unitDef = game.call('getUnitTypeDef', unitTypeComp);
         const teamComp = game.getComponent(entityId, 'team');
         const reverseEnums = game.getReverseEnums();
         const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;
+        const unitName = unitDef?.id || 'unknown';
 
         // targetId is null/undefined when not set, or could be 0 (valid entity ID)
         if (targetId === undefined || targetId === null || targetId < 0) {
-            if (unitDef?.id === '1_d_archer') {
-                console.log(`[HasTarget] ${unitDef.id} (${teamName}) FAILURE - no valid target (targetId=${targetId})`);
-            }
+            log.trace('HasTarget', `${unitName}(${entityId}) [${teamName}] FAILURE - no valid target`, {
+                targetId,
+                targetKey
+            });
             return this.failure();
         }
 
@@ -37,10 +39,11 @@ class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
         if (validateHealth) {
             const targetHealth = game.getComponent(targetId, 'health');
             if (!targetHealth || targetHealth.current <= 0) {
-                // Clear invalid target
-                if (unitDef?.id === '1_d_archer') {
-                    console.log(`[HasTarget] ${unitDef.id} (${teamName}) FAILURE - target ${targetId} has no/zero health`);
-                }
+                log.trace('HasTarget', `${unitName}(${entityId}) [${teamName}] FAILURE - target dead/no health`, {
+                    targetId,
+                    health: targetHealth?.current,
+                    maxHealth: targetHealth?.max
+                });
                 shared[targetKey] = null;
                 return this.failure();
             }
@@ -48,17 +51,18 @@ class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
             const targetDeathState = game.getComponent(targetId, 'deathState');
             const enums = game.call('getEnums');
             if (targetDeathState && targetDeathState.state !== enums?.deathState?.alive) {
-                if (unitDef?.id === '1_d_archer') {
-                    console.log(`[HasTarget] ${unitDef.id} (${teamName}) FAILURE - target ${targetId} is dead/dying`);
-                }
+                log.trace('HasTarget', `${unitName}(${entityId}) [${teamName}] FAILURE - target dying/corpse`, {
+                    targetId,
+                    deathState: targetDeathState.state
+                });
                 shared[targetKey] = null;
                 return this.failure();
             }
         }
 
-        if (unitDef?.id === '1_d_archer') {
-            console.log(`[HasTarget] ${unitDef.id} (${teamName}) SUCCESS - target ${targetId} is valid`);
-        }
+        log.trace('HasTarget', `${unitName}(${entityId}) [${teamName}] SUCCESS - target valid`, {
+            targetId
+        });
         return this.success({ target: targetId });
     }
 }

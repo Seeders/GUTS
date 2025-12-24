@@ -62,6 +62,7 @@ class DamageSystem extends GUTS.BaseSystem {
      * @param {Object} options - Additional options (splash, crit, etc.)
      */
     applyDamage(sourceId, targetId, baseDamage, element = this.enums.element.physical, options = {}) {
+        const log = GUTS.HeadlessLogger;
         const targetHealth = this.game.getComponent(targetId, "health");
         const targetDeathState = this.game.getComponent(targetId, "deathState");
         const targetUnitTypeComp = this.game.getComponent(targetId, "unitType");
@@ -69,7 +70,22 @@ class DamageSystem extends GUTS.BaseSystem {
         const targetTransform = this.game.getComponent(targetId, "transform");
         const targetPos = targetTransform?.position;
 
+        // Get source info for logging
+        const sourceUnitTypeComp = this.game.getComponent(sourceId, "unitType");
+        const sourceUnitType = this.game.call('getUnitTypeDef', sourceUnitTypeComp);
+        const sourceTeamComp = this.game.getComponent(sourceId, "team");
+        const targetTeamComp = this.game.getComponent(targetId, "team");
+        const sourceName = sourceUnitType?.id || 'unknown';
+        const targetName = targetUnitType?.id || 'unknown';
+        const sourceTeam = this.reverseEnums.team?.[sourceTeamComp?.team] || sourceTeamComp?.team;
+        const targetTeam = this.reverseEnums.team?.[targetTeamComp?.team] || targetTeamComp?.team;
+        const elementName = this.reverseEnums.element?.[element] || element;
+
         if (!targetHealth || (targetDeathState && targetDeathState.state !== this.enums.deathState.alive)) {
+            log.trace('Damage', `BLOCKED: ${sourceName}(${sourceId}) -> ${targetName}(${targetId})`, {
+                reason: !targetHealth ? 'no_health' : 'not_alive',
+                deathState: targetDeathState?.state
+            });
             return { damage: 0, prevented: true, reason: 'target_invalid' };
         }
 
@@ -95,8 +111,20 @@ class DamageSystem extends GUTS.BaseSystem {
         // Visual feedback
         this.applyVisualFeedback(targetId, damageResult, element);
 
+        // Log damage application
+        log.debug('Damage', `${sourceName}(${sourceId}) [${sourceTeam}] -> ${targetName}(${targetId}) [${targetTeam}]`, {
+            baseDamage,
+            finalDamage: damageResult.finalDamage,
+            element: elementName,
+            healthBefore: targetHealth.current + damageResult.finalDamage,
+            healthAfter: targetHealth.current,
+            isMelee: options.isMelee,
+            isCritical: options.isCritical
+        });
+
         // Check for death
         if (targetHealth.current <= 0) {
+            log.info('Damage', `FATAL: ${targetName}(${targetId}) [${targetTeam}] killed by ${sourceName}(${sourceId}) [${sourceTeam}]`);
             this.handleEntityDeath(targetId);
         }
 

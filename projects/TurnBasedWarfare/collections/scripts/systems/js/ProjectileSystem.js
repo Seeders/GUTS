@@ -47,15 +47,52 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
 
     fireProjectile(sourceId, targetId, projectileData = {}) {
+        const log = GUTS.HeadlessLogger;
         const sourceTransform = this.game.getComponent(sourceId, "transform");
         const sourcePos = sourceTransform?.position;
         const sourceCombat = this.game.getComponent(sourceId, "combat");
         const targetTransform = this.game.getComponent(targetId, "transform");
         const targetPos = targetTransform?.position;
 
+        // Get source/target info for logging
+        const sourceUnitTypeComp = this.game.getComponent(sourceId, 'unitType');
+        const sourceUnitType = this.game.call('getUnitTypeDef', sourceUnitTypeComp);
+        const targetUnitTypeComp = this.game.getComponent(targetId, 'unitType');
+        const targetUnitType = this.game.call('getUnitTypeDef', targetUnitTypeComp);
+        const sourceTeamComp = this.game.getComponent(sourceId, 'team');
+        const targetTeamComp = this.game.getComponent(targetId, 'team');
+        const reverseEnums = this.game.getReverseEnums();
+        const sourceName = sourceUnitType?.id || 'unknown';
+        const targetName = targetUnitType?.id || 'unknown';
+        const sourceTeamName = reverseEnums.team?.[sourceTeamComp?.team] || sourceTeamComp?.team;
+        const targetTeamName = reverseEnums.team?.[targetTeamComp?.team] || targetTeamComp?.team;
+
         if (!sourcePos || !sourceCombat || !targetPos) {
+            log.warn('Projectile', `fireProjectile FAILED - missing data`, {
+                sourceId,
+                targetId,
+                hasSourcePos: !!sourcePos,
+                hasSourceCombat: !!sourceCombat,
+                hasTargetPos: !!targetPos
+            });
             return null;
         }
+
+        // Calculate distance to target
+        const dx = targetPos.x - sourcePos.x;
+        const dz = targetPos.z - sourcePos.z;
+        const distance = Math.sqrt(dx * dx + dz * dz);
+
+        log.debug('Projectile', `${sourceName}(${sourceId}) [${sourceTeamName}] FIRING at ${targetName}(${targetId}) [${targetTeamName}]`, {
+            projectileType: projectileData.id,
+            damage: projectileData.damage || sourceCombat.damage,
+            speed: projectileData.speed,
+            distance: distance.toFixed(0),
+            range: sourceCombat.range,
+            isBallistic: projectileData.ballistic || false,
+            sourcePos: { x: sourcePos.x.toFixed(0), z: sourcePos.z.toFixed(0) },
+            targetPos: { x: targetPos.x.toFixed(0), z: targetPos.z.toFixed(0) }
+        });
 
         // OPTIMIZATION: Use auto-incrementing numeric ID for better Map performance
         // In deterministic lockstep, both client and server execute attacks at the same tick,
@@ -651,8 +688,25 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
 
     handleProjectileHit(projectileId, targetId, _targetPos, projectile) {
+        const log = GUTS.HeadlessLogger;
         const damage = projectile.damage;
         const element = this.enums.element[projectile.element] || this.enums.element.physical;
+
+        // Get source/target info for logging
+        const sourceUnitTypeComp = this.game.getComponent(projectile.source, 'unitType');
+        const sourceUnitType = this.game.call('getUnitTypeDef', sourceUnitTypeComp);
+        const targetUnitTypeComp = this.game.getComponent(targetId, 'unitType');
+        const targetUnitType = this.game.call('getUnitTypeDef', targetUnitTypeComp);
+        const targetHealth = this.game.getComponent(targetId, 'health');
+        const reverseEnums = this.game.getReverseEnums();
+        const sourceName = sourceUnitType?.id || 'unknown';
+        const targetName = targetUnitType?.id || 'unknown';
+
+        log.info('Projectile', `HIT! ${sourceName}(${projectile.source}) -> ${targetName}(${targetId})`, {
+            damage,
+            element: reverseEnums.element?.[element] || element,
+            targetHealthBefore: targetHealth ? `${targetHealth.current}/${targetHealth.max}` : 'unknown'
+        });
 
         // Apply damage on both client and server for sync
         this.game.call('applyDamage', projectile.source, targetId, damage, element, {

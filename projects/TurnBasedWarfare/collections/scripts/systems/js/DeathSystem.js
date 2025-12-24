@@ -44,6 +44,15 @@ class DeathSystem extends GUTS.BaseSystem {
     }
 
     startDeathProcess(entityId){
+        const log = GUTS.HeadlessLogger;
+        const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const teamComp = this.game.getComponent(entityId, 'team');
+        const unitName = unitType?.id || 'unknown';
+        const teamName = this.reverseEnums.team?.[teamComp?.team] || teamComp?.team;
+
+        log.info('Death', `DYING: ${unitName}(${entityId}) [${teamName}] started death process`);
+
         // Update existing deathState component (always present on units)
         const deathState = this.game.getComponent(entityId, 'deathState');
         if (deathState) {
@@ -61,6 +70,11 @@ class DeathSystem extends GUTS.BaseSystem {
         if(this.game.hasService('playDeathAnimation')){
             this.game.call('playDeathAnimation', entityId);
         }
+
+        // Trigger onUnitKilled event immediately when unit starts dying
+        // This allows simulation to end as soon as a combat unit dies,
+        // rather than waiting for the death animation to complete
+        this.game.triggerEvent('onUnitKilled', entityId);
 
         // Remove health (corpses can't be damaged)
         if (this.game.hasComponent(entityId, "health")) {
@@ -81,14 +95,23 @@ class DeathSystem extends GUTS.BaseSystem {
     }
     
     convertToCorpse(entityId) {
+        const log = GUTS.HeadlessLogger;
 
         // Get current components before conversion
         const transform = this.game.getComponent(entityId, "transform");
         const pos = transform?.position;
         const unitType = this.game.getComponent(entityId, "unitType");
+        const unitTypeDef = this.game.call('getUnitTypeDef', unitType);
         const team = this.game.getComponent(entityId, "team");
+        const unitName = unitTypeDef?.id || 'unknown';
+        const teamName = this.reverseEnums.team?.[team?.team] || team?.team;
 
-        if (!pos || !unitType || !team) return;
+        if (!pos || !unitType || !team) {
+            log.warn('Death', `CORPSE FAILED: ${entityId} missing components`, { hasPos: !!pos, hasUnitType: !!unitType, hasTeam: !!team });
+            return;
+        }
+
+        log.info('Death', `CORPSE: ${unitName}(${entityId}) [${teamName}] converted to corpse`);
 
         // CRITICAL: Notify AnimationSystem FIRST to set corpse state
         if(this.game.hasService('setCorpseAnimation')){
@@ -103,8 +126,6 @@ class DeathSystem extends GUTS.BaseSystem {
             deathState.teamAtDeath = team.team;
         }
 
-        this.game.triggerEvent('onUnitKilled', entityId);
-        
     }
 
     // Rest of your existing methods remain the same...

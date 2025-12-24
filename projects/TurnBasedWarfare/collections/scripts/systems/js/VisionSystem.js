@@ -74,15 +74,31 @@ class VisionSystem extends GUTS.BaseSystem {
 
 
     hasLineOfSight(from, to, unitType, viewerEntityId = null) {
+        const log = GUTS.HeadlessLogger;
         const dx = to.x - from.x;
         const dz = to.z - from.z;
         const distanceSq = dx * dx + dz * dz;
         const distance = Math.sqrt(distanceSq);
         const gridSize = this._getGridSize();
-
-        if (distance < gridSize*2) return true;
-
         const terrainSize = this._getTerrainSize();
+
+        // Get viewer info for logging
+        let viewerName = 'unknown';
+        if (viewerEntityId !== null) {
+            const viewerUnitTypeComp = this.game.getComponent(viewerEntityId, 'unitType');
+            const viewerUnitType = this.game.call('getUnitTypeDef', viewerUnitTypeComp);
+            viewerName = viewerUnitType?.id || viewerEntityId;
+        }
+
+        if (distance < gridSize*2) {
+            log.trace('Vision', `${viewerName} LOS check: PASS (too close)`, {
+                from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
+                to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
+                distance: distance.toFixed(0)
+            });
+            return true;
+        }
+
         // Get discrete heightmap levels for from and to positions
         const fromGridX = Math.floor((from.x + terrainSize / 2) / gridSize);
         const fromGridZ = Math.floor((from.z + terrainSize / 2) / gridSize);
@@ -92,8 +108,20 @@ class VisionSystem extends GUTS.BaseSystem {
         const fromHeightLevel = this.game.call("getHeightLevelAtGridPosition", fromGridX, fromGridZ);
         const toHeightLevel = this.game.call("getHeightLevelAtGridPosition", toGridX, toGridZ);
 
+        // If height data is not available (e.g., headless mode without full terrain),
+        // assume flat terrain and allow LOS
+        if (fromHeightLevel === null || fromHeightLevel === undefined) {
+            return true;
+        }
+
         // Cannot see up to tiles with higher heightmap values
-        if (toHeightLevel > fromHeightLevel) {
+        if (toHeightLevel !== null && toHeightLevel > fromHeightLevel) {
+            log.trace('Vision', `${viewerName} LOS check: BLOCKED (height)`, {
+                from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
+                to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
+                fromHeightLevel,
+                toHeightLevel
+            });
             return false;
         }
 
@@ -108,6 +136,11 @@ class VisionSystem extends GUTS.BaseSystem {
 
         // Check for terrain blocking along the path (for same-level or downward vision)
         if (!this.checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel)) {
+            log.trace('Vision', `${viewerName} LOS check: BLOCKED (terrain)`, {
+                from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
+                to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
+                distance: distance.toFixed(0)
+            });
             return false;
         }
         
@@ -143,6 +176,11 @@ class VisionSystem extends GUTS.BaseSystem {
 
                     if (distSq < treeSize * treeSize) {
                         if (rayHeight < treePos.y + treeHeight) {
+                            log.trace('Vision', `${viewerName} LOS check: BLOCKED (tree)`, {
+                                from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
+                                to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
+                                treePos: { x: treePos.x.toFixed(0), z: treePos.z.toFixed(0) }
+                            });
                             return false;
                         }
                     }
@@ -150,6 +188,11 @@ class VisionSystem extends GUTS.BaseSystem {
             }
         }
 
+        log.trace('Vision', `${viewerName} LOS check: PASS`, {
+            from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
+            to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
+            distance: distance.toFixed(0)
+        });
         return true;
     }
 
@@ -170,8 +213,9 @@ class VisionSystem extends GUTS.BaseSystem {
 
             // Check if this intermediate tile has a higher heightmap level than the viewer
             const tileHeightLevel = this.game.call('getHeightLevelAtGridPosition', tile.x, tile.z);
-            if (tileHeightLevel > fromHeightLevel) {
-                // Cannot see through a tile with higher elevation
+            // Only block LOS if we have valid height data and the tile is higher
+            if (tileHeightLevel !== null && tileHeightLevel !== undefined &&
+                tileHeightLevel > fromHeightLevel) {
                 return false;
             }
 

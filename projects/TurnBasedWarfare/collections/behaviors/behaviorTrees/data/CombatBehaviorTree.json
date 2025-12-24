@@ -1,12 +1,13 @@
 {
   "title": "Combat Behavior Tree",
-  "description": "Orchestrates combat: attack if target in range, chase if out of range, or find new target",
+  "description": "Orchestrates combat: attack if target in range, chase if out of range, investigate attacker, or find new target",
   "behaviorNodeType": "selector",
   "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorTrees/js/CombatBehaviorTree.js",
   "fileName": "CombatBehaviorTree",
   "behaviorActions": [
     "AttackSequence",
     "ChaseSequence",
+    "InvestigateSequence",
     "FindNearestEnemyBehaviorAction"
   ],
   "parameters": {}

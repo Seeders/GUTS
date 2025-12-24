@@ -1,0 +1,11 @@
+{
+  "title": "Investigate Attacker",
+  "description": "When unit has no target but was recently attacked, sets attacker as target to investigate",
+  "behaviorNodeType": "action",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/InvestigateAttackerBehaviorAction.js",
+  "fileName": "InvestigateAttackerBehaviorAction",
+  "parameters": {
+    "targetKey": "target",
+    "maxAge": 5
+  }
+}

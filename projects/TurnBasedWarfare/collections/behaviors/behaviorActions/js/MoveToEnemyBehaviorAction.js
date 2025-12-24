@@ -11,22 +11,39 @@
 class MoveToEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
+        const log = GUTS.HeadlessLogger;
         const params = this.parameters || {};
         const targetKey = params.targetKey || 'target';
 
         const shared = this.getShared(entityId, game);
         const targetId = shared[targetKey];
 
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+        const teamComp = game.getComponent(entityId, 'team');
+        const reverseEnums = game.getReverseEnums();
+        const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;
+        const unitName = unitDef?.id || 'unknown';
+
         // targetId is null/undefined when not set, or could be 0 (valid entity ID)
         if (targetId === undefined || targetId === null || targetId < 0) {
+            log.trace('MoveToEnemy', `${unitName}(${entityId}) [${teamName}] FAILURE - no valid target`, {
+                targetId
+            });
             return this.failure();
         }
 
         const targetTransform = game.getComponent(targetId, 'transform');
         const targetPos = targetTransform?.position;
         const combat = game.getComponent(entityId, 'combat');
+        const transform = game.getComponent(entityId, 'transform');
+        const myPos = transform?.position;
 
         if (!targetPos || !combat) {
+            log.trace('MoveToEnemy', `${unitName}(${entityId}) [${teamName}] FAILURE - missing targetPos or combat`, {
+                hasTargetPos: !!targetPos,
+                hasCombat: !!combat
+            });
             return this.failure();
         }
 
@@ -34,16 +51,13 @@ class MoveToEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const arrivalRange = params.arrivalRange || GUTS.GameUtils.getEffectiveRange(game, entityId, targetId, baseRange);
         const distance = GUTS.GameUtils.getDistanceBetweenEntities(game, entityId, targetId);
 
-        // Debug logging
-        const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
-        const teamComp = game.getComponent(entityId, 'team');
-        const reverseEnums = game.getReverseEnums();
-        const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;
-
         // Check if in range
         if (distance <= arrivalRange) {
-            console.log(`[MoveToEnemy] ${unitDef?.id} (${teamName}) ARRIVED at target ${targetId}, distance: ${distance.toFixed(0)}, range: ${arrivalRange}`);
+            log.debug('MoveToEnemy', `${unitName}(${entityId}) [${teamName}] ARRIVED at target`, {
+                targetId,
+                distance: distance.toFixed(0),
+                arrivalRange
+            });
             return this.success({
                 arrived: true,
                 distance,
@@ -51,7 +65,13 @@ class MoveToEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             });
         }
 
-        console.log(`[MoveToEnemy] ${unitDef?.id} (${teamName}) moving to target ${targetId}, distance: ${distance.toFixed(0)}, range: ${arrivalRange}`);
+        log.trace('MoveToEnemy', `${unitName}(${entityId}) [${teamName}] MOVING to target`, {
+            targetId,
+            myPos: myPos ? { x: myPos.x.toFixed(0), z: myPos.z.toFixed(0) } : null,
+            targetPos: { x: targetPos.x.toFixed(0), z: targetPos.z.toFixed(0) },
+            distance: distance.toFixed(0),
+            arrivalRange
+        });
 
         // Still moving - return running with targetPosition for MovementSystem
         return this.running({
