@@ -26,7 +26,6 @@ class HeadlessGameLoader extends GUTS.BaseLoader {
         const levelIndex = this.game.state?.level ?? defaultLevelIndex;
         const reverseEnums = this.game.getReverseEnums();
         const levelKey = reverseEnums.levels?.[levelIndex];
-        console.log(`[HeadlessGameLoader] game.state.level=${this.game.state?.level}, defaultLevelIndex=${defaultLevelIndex}, levelIndex=${levelIndex}, levelKey=${levelKey}`);
         const level = this.collections.levels?.[levelKey];
 
         if (level?.tileMap) {
@@ -37,8 +36,6 @@ class HeadlessGameLoader extends GUTS.BaseLoader {
 
         // Initialize the game with server=true (no DOM dependencies)
         await this.game.init(true, config);
-
-        console.log('[HeadlessGameLoader] Game loaded successfully');
     }
 }
 

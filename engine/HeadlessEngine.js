@@ -52,8 +52,6 @@ export default class HeadlessEngine extends BaseEngine {
         const loaderLibrary = config.appLoaderLibrary || 'HeadlessGameLoader';
         this.loader = new global.GUTS[loaderLibrary](this.gameInstance);
         await this.loader.load();
-
-        this._log.info('Initialized');
     }
 
     async loadCollections(projectName) {
@@ -211,8 +209,6 @@ export default class HeadlessEngine extends BaseEngine {
         this.paused = false;
         let tickCount = 0;
 
-        this._log.debug(`Starting tick loop. running=${this.running}, maxTicks=${maxTicks}`);
-
         while (this.running && tickCount < maxTicks) {
             // Run one game tick - use sync update to avoid async overhead
             if (!this.paused) {
@@ -233,12 +229,9 @@ export default class HeadlessEngine extends BaseEngine {
 
             // Check stop conditions
             if (simSystem.isSimulationComplete()) {
-                this._log.debug(`Simulation complete at tick ${tickCount}`);
                 break;
             }
         }
-
-        this._log.debug(`Tick loop ended. tickCount=${tickCount}`);
 
         this.running = false;
         const elapsedMs = this.getCurrentTime() - startTime;

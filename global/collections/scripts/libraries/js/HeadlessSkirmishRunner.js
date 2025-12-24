@@ -83,8 +83,6 @@ class HeadlessSkirmishRunner {
 
         // Set level
         const levelIndex = enums.levels?.[this.config.level] ?? 0;
-        this._log.debug(`Setting level: ${this.config.level} -> index ${levelIndex}`);
-        this._log.trace('Available levels:', Object.keys(enums.levels || {}));
         game.state.level = levelIndex;
 
         // Load the headless scene
@@ -118,7 +116,6 @@ class HeadlessSkirmishRunner {
         this.spawnAIOpponent(rightTeam, this.config.rightBuildOrder);
 
         this.isSetup = true;
-        this._log.info('Setup complete with two AI opponents');
     }
 
     /**
@@ -152,9 +149,6 @@ class HeadlessSkirmishRunner {
             actionsExecuted: false,
             actionIndex: 0
         });
-
-        const teamName = team === enums.team.left ? 'left' : 'right';
-        this._log.debug(`Spawned AI opponent entity ${aiEntityId} for team ${teamName} with build order: ${buildOrderId}`);
     }
 
     /**
@@ -562,8 +556,6 @@ class HeadlessSkirmishRunner {
      * @returns {Promise<void>}
      */
     async resetForNewSimulation() {
-        this._log.debug('Resetting for new simulation...');
-
         // Reset setup flag
         this.isSetup = false;
         this.config = null;
@@ -592,8 +584,6 @@ class HeadlessSkirmishRunner {
 
         // Reset delta sync state
         this.game._lastSyncedState = null;
-
-        this._log.debug('Reset complete - ready for new simulation');
     }
 }
 
