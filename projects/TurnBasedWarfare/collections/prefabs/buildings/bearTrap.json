@@ -57,7 +57,8 @@
   "attackSpeed": 1,
   "range": 48,
   "element": "physical",
-  "hp": 1000,
+  "hp": 100,
+  "stealth": 75,
   "abilities": [
     "SnapTrapAbility"
   ],

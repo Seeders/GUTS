@@ -18,12 +18,19 @@ class SnapTrapAbility extends GUTS.BaseAbility {
     }
 
     canExecute(casterEntity, targetData = null) {
+        // Check if trap has already triggered (prevent multiple executions)
+        const trapState = this.game.getComponent(casterEntity, "trapState");
+        if (trapState?.triggered) return false;
+
         // Only trigger when there's an enemy in range
         const enemy = this.findNearestEnemy(casterEntity);
         return enemy !== null;
     }
 
     execute(casterEntity, targetData = null) {
+        // Mark trap as triggered immediately to prevent multiple executions
+        this.game.addComponent(casterEntity, "trapState", { triggered: true });
+
         const transform = this.game.getComponent(casterEntity, "transform");
         const trapPos = transform?.position;
         if (!trapPos) return;

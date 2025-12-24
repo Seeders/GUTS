@@ -355,7 +355,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                     coldResistance: typeData.coldResistance || 0,
                     lightningResistance: typeData.lightningResistance || 0,
                     poisonResistance: 0,
-                    visionRange: typeData.visionRange || 0
+                    visionRange: typeData.visionRange || 0,
+                    // Stealth/awareness system: awareness detects stealth (default 50, range 0-100)
+                    awareness: typeData.awareness ?? 50,
+                    stealth: typeData.stealth ?? 0
                 };
 
             case 'collision':
@@ -610,7 +613,10 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 coldResistance: unitType.coldResistance,
                 lightningResistance: unitType.lightningResistance,
                 poisonResistance: 0,
-                visionRange: unitType.visionRange
+                visionRange: unitType.visionRange,
+                // Stealth/awareness system: awareness detects stealth (default 50, range 0-100)
+                awareness: unitType.awareness ?? 50,
+                stealth: unitType.stealth ?? 0
             },
             collision: {
                 radius: unitType.size || this.defaults.size,

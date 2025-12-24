@@ -25,6 +25,9 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const teamName = reverseEnums.team?.[team?.team] || team?.team;
         const unitName = unitDef?.id || 'unknown';
 
+        // Get searcher's awareness (default 50)
+        const awareness = combat?.awareness ?? 50;
+
         if (!pos || !team) {
             log.trace('FindNearestEnemy', `${unitName}(${entityId}) FAILURE - missing pos or team`, { hasPos: !!pos, hasTeam: !!team });
             return this.failure();
@@ -36,10 +39,11 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         log.trace('FindNearestEnemy', `${unitName}(${entityId}) [${teamName}] searching for enemies`, {
             pos: { x: pos.x.toFixed(0), z: pos.z.toFixed(0) },
             range,
-            myTeam: team.team
+            myTeam: team.team,
+            awareness
         });
 
-        const nearestEnemy = this.findNearestEnemy(entityId, game, pos, team, range, log, unitName, teamName);
+        const nearestEnemy = this.findNearestEnemy(entityId, game, pos, team, range, log, unitName, teamName, awareness);
 
         if (nearestEnemy) {
             const shared = this.getShared(entityId, game);
@@ -61,7 +65,7 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         return this.failure();
     }
 
-    findNearestEnemy(entityId, game, pos, team, range, log, unitName, teamName) {
+    findNearestEnemy(entityId, game, pos, team, range, log, unitName, teamName, awareness = 50) {
         // Use spatial grid for efficient lookup - returns array of entityIds
         const nearbyEntityIds = game.call('getNearbyUnits', pos, range, entityId);
         const reverseEnums = game.getReverseEnums();
@@ -124,6 +128,17 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             if (targetDeathState && targetDeathState.state > 0) {
                 log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - dying/dead`, {
                     deathState: targetDeathState.state
+                });
+                continue;
+            }
+
+            // Stealth check: skip targets with stealth > searcher's awareness
+            const targetCombat = game.getComponent(targetId, 'combat');
+            const targetStealth = targetCombat?.stealth ?? 0;
+            if (targetStealth > awareness) {
+                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - stealthed`, {
+                    targetStealth,
+                    awareness
                 });
                 continue;
             }
