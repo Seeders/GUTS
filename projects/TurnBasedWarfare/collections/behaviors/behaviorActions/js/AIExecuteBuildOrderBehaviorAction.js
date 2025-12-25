@@ -5,6 +5,7 @@
  * - PLACE_BUILDING: Find peasant, find position, call ui_placeUnit
  * - PURCHASE_UNIT: Find building, call ui_purchaseUnit
  * - MOVE_ORDER: Find units, call ui_issueMoveOrder
+ * - HIDE_ORDER: Find units, call ui_hide
  *
  * Uses GameInterfaceSystem services just like a player would.
  */
@@ -68,6 +69,8 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
                 return this.executePurchaseUnit(action, aiTeam, game);
             case 'MOVE_ORDER':
                 return this.executeMoveOrder(action, aiTeam, game);
+            case 'HIDE_ORDER':
+                return this.executeHideOrder(action, aiTeam, game);
             case 'PLACE_TRAP':
                 return this.executePlaceTrap(action, aiTeam, playerId, game);
             case 'SPAWN_UNIT':
@@ -203,6 +206,21 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Call ui_issueMoveOrder
         game.call('ui_issueMoveOrder', placementIds, targetPos, (success, response) => {
+            // Callback handled silently
+        });
+
+        return true;
+    }
+
+    executeHideOrder(action, aiTeam, game) {
+        // Find units of specified type
+        const placementIds = this.findUnitsOfType(action.unitType, aiTeam, game);
+        if (placementIds.length === 0) {
+            return false;
+        }
+
+        // Call ui_hide
+        game.call('ui_hide', placementIds, (success, response) => {
             // Callback handled silently
         });
 

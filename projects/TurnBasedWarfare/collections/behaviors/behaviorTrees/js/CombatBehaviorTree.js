@@ -16,6 +16,13 @@ class CombatBehaviorTree extends GUTS.BaseBehaviorTree {
             return null;
         }
 
+        // Check if unit is hiding - hidden units don't engage in combat
+        if (playerOrder?.isHiding) {
+            log.trace('CombatBT', `${unitName}(${entityId}) [${teamName}] SKIP - unit is hiding`);
+            this.runningState.delete(entityId);
+            return null;
+        }
+
         const combat = game.getComponent(entityId, 'combat');
         const health = game.getComponent(entityId, 'health');
 

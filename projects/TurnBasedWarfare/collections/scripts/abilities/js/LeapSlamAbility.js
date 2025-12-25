@@ -183,6 +183,10 @@ class LeapSlamAbility extends GUTS.BaseAbility {
         const casterTeam = this.game.getComponent(casterEntity, "team");
         if (!casterTeam) return;
 
+        // Get caster's awareness for stealth check
+        const casterCombat = this.game.getComponent(casterEntity, 'combat');
+        const awareness = casterCombat?.awareness ?? 50;
+
         const splashTargets = [];
 
         allEntities.forEach(entityId => {
@@ -191,6 +195,27 @@ class LeapSlamAbility extends GUTS.BaseAbility {
             const entityTeam = this.game.getComponent(entityId, "team");
 
             if (!entityPos || !entityTeam || entityTeam.team === casterTeam.team) return;
+
+            // Stealth check: skip targets with stealth > caster's awareness
+            const targetCombat = this.game.getComponent(entityId, 'combat');
+            let targetStealth = targetCombat?.stealth ?? 0;
+
+            // Apply terrain stealth bonus
+            const terrainTypeIndex = this.game.call('getTerrainTypeAtPosition', entityPos.x, entityPos.z);
+            if (terrainTypeIndex !== null && terrainTypeIndex !== undefined) {
+                const terrainType = this.game.call('getTileMapTerrainType', terrainTypeIndex);
+                if (terrainType?.stealthBonus) {
+                    targetStealth += terrainType.stealthBonus;
+                }
+            }
+
+            // Apply hiding stealth bonus (+20)
+            const targetPlayerOrder = this.game.getComponent(entityId, 'playerOrder');
+            if (targetPlayerOrder?.isHiding) {
+                targetStealth += 20;
+            }
+
+            if (targetStealth > awareness) return; // Skip stealthed targets
 
             const distance = Math.sqrt(
                 Math.pow(entityPos.x - impactPos.x, 2) +

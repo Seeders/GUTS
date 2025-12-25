@@ -1,0 +1,10 @@
+{
+  "name": "Hidden Scout vs Barbarian",
+  "description": "Scout hides in forest, barbarian walks nearby. Tests that hidden scout in forest (40+25+20=85 stealth) is invisible to barbarian (50 awareness). Should see NO combat.",
+  "seed": 42,
+  "startingGold": 0,
+  "level": "forest_meadow",
+  "buildOrderA": "scoutHideInForest",
+  "buildOrderB": "barbarianWalkToScout",
+  "maxTicks": 600
+}

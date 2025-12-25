@@ -81,6 +81,10 @@ class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
         const unitType = game.call('getUnitTypeDef', unitTypeComp);
         const hasLOSCheck = game.hasService('hasLineOfSight');
 
+        // Get searcher's awareness for stealth check
+        const searcherCombat = game.getComponent(entityId, 'combat');
+        const awareness = searcherCombat?.awareness ?? 50;
+
         // First pass: collect valid enemies with positions
         const enemies = [];
         for (const targetId of nearbyEntityIds) {
@@ -97,6 +101,33 @@ class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
             const targetTransform = game.getComponent(targetId, 'transform');
             const targetPos = targetTransform?.position;
             if (!targetPos) continue;
+
+            // Stealth check: skip targets with stealth > searcher's awareness
+            const targetCombat = game.getComponent(targetId, 'combat');
+            let targetStealth = targetCombat?.stealth ?? 0;
+
+            // Apply terrain stealth bonus
+            const terrainTypeIndex = game.call('getTerrainTypeAtPosition', targetPos.x, targetPos.z);
+            if (terrainTypeIndex !== null && terrainTypeIndex !== undefined) {
+                const terrainType = game.call('getTileMapTerrainType', terrainTypeIndex);
+                if (terrainType?.stealthBonus) {
+                    targetStealth += terrainType.stealthBonus;
+                }
+            }
+
+            // Apply hiding stealth bonus (+20)
+            const targetPlayerOrder = game.getComponent(targetId, 'playerOrder');
+            if (targetPlayerOrder?.isHiding) {
+                targetStealth += 20;
+            }
+
+            if (targetStealth > awareness) {
+                log.trace('IsEnemyNearby', `${unitName}(${entityId}) [${teamName}] SKIP target ${targetId} - stealthed`, {
+                    targetStealth,
+                    awareness
+                });
+                continue;
+            }
 
             const dx = targetPos.x - pos.x;
             const dz = targetPos.z - pos.z;

@@ -90,6 +90,10 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
         const nearbyEntityIds = game.call('getNearbyUnits', centerPos, radius, entityId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
+        // Get searcher's awareness for stealth check
+        const searcherCombat = game.getComponent(entityId, 'combat');
+        const awareness = searcherCombat?.awareness ?? 50;
+
         let nearest = null;
         let nearestDistance = Infinity;
 
@@ -107,6 +111,27 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
             const targetTransform = game.getComponent(targetId, 'transform');
             const targetPos = targetTransform?.position;
             if (!targetPos) continue;
+
+            // Stealth check: skip targets with stealth > searcher's awareness
+            const targetCombat = game.getComponent(targetId, 'combat');
+            let targetStealth = targetCombat?.stealth ?? 0;
+
+            // Apply terrain stealth bonus
+            const terrainTypeIndex = game.call('getTerrainTypeAtPosition', targetPos.x, targetPos.z);
+            if (terrainTypeIndex !== null && terrainTypeIndex !== undefined) {
+                const terrainType = game.call('getTileMapTerrainType', terrainTypeIndex);
+                if (terrainType?.stealthBonus) {
+                    targetStealth += terrainType.stealthBonus;
+                }
+            }
+
+            // Apply hiding stealth bonus (+20)
+            const targetPlayerOrder = game.getComponent(targetId, 'playerOrder');
+            if (targetPlayerOrder?.isHiding) {
+                targetStealth += 20;
+            }
+
+            if (targetStealth > awareness) continue;
 
             const dx = targetPos.x - centerPos.x;
             const dz = targetPos.z - centerPos.z;
