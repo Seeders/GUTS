@@ -284,6 +284,42 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         });
     }
 
+    hide() {
+        this.stopTargeting();
+
+        // Use game.call - SAME code path as headless mode
+        let placementIds = this.game.call('getSelectedSquads');
+
+        if (!placementIds || placementIds.length === 0) {
+            this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
+            return;
+        }
+
+        // Use game.call - handles all the logic
+        this.game.call('ui_hide', placementIds, (success) => {
+            if (success) {
+                // Show visual feedback
+                placementIds.forEach((placementId) => {
+                    const placement = this.game.call('getPlacementById', placementId);
+                    placement.squadUnits.forEach((unitId) => {
+                        const transform = this.game.getComponent(unitId, "transform");
+                        const position = transform?.position;
+                        if (this.game.effectsSystem && position) {
+                            // Use a subtle effect for hiding
+                            this.game.call('createParticleEffect', position.x, 0, position.z, 'magic', {
+                                ...this.pingEffect,
+                                color: 0x444444  // Darker color for stealth
+                            });
+                        }
+
+                        // Clear path in pathfinding system
+                        this.game.call('clearEntityPath', unitId);
+                    });
+                });
+            }
+        });
+    }
+
     placeBearTrap() {
         // Get selected scouts
         const placementIds = this.game.call('getSelectedSquads') || [];

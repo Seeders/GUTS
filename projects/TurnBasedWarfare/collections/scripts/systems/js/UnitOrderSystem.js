@@ -53,6 +53,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 playerOrder.targetPositionZ = targetPosition.z || 0;
                 playerOrder.isMoveOrder = !!meta?.isMoveOrder;
                 playerOrder.preventEnemiesInRangeCheck = !!meta?.preventEnemiesInRangeCheck;
+                playerOrder.isHiding = !!meta?.isHiding;
                 playerOrder.completed = false;
                 playerOrder.issuedTime = createdTime;
                 playerOrder.enabled = true;

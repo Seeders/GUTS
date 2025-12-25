@@ -8,6 +8,7 @@
     "preventEnemiesInRangeCheck": false,
     "completed": false,
     "issuedTime": 0,
-    "enabled": false
+    "enabled": false,
+    "isHiding": false
   }
 }

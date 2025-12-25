@@ -28,6 +28,13 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         // Get searcher's awareness (default 50)
         const awareness = combat?.awareness ?? 50;
 
+        // Check if unit is hiding - hidden units don't search for enemies
+        const playerOrder = game.getComponent(entityId, 'playerOrder');
+        if (playerOrder?.isHiding) {
+            log.trace('FindNearestEnemy', `${unitName}(${entityId}) FAILURE - unit is hiding`);
+            return this.failure();
+        }
+
         if (!pos || !team) {
             log.trace('FindNearestEnemy', `${unitName}(${entityId}) FAILURE - missing pos or team`, { hasPos: !!pos, hasTeam: !!team });
             return this.failure();
@@ -155,6 +162,16 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
                         totalStealth: targetStealth
                     });
                 }
+            }
+
+            // Apply hiding stealth bonus (+20 when unit is hiding)
+            const targetPlayerOrder = game.getComponent(targetId, 'playerOrder');
+            if (targetPlayerOrder?.isHiding) {
+                targetStealth += 20;
+                log.trace('FindNearestEnemy', `${unitName}(${entityId}) target ${targetId} hiding stealth bonus`, {
+                    hidingBonus: 20,
+                    totalStealth: targetStealth
+                });
             }
 
             if (targetStealth > awareness) {

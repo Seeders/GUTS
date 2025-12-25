@@ -16,6 +16,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         'ui_placeUnit',              // Place unit/building on grid
         'ui_undoPlacement',          // Undo last placement
         'ui_holdPosition',           // Order units to hold position
+        'ui_hide',                   // Order units to hide (no attacks, +20 stealth)
         'ui_issueMoveOrder',         // Order units to move
         'ui_assignBuilder',          // Assign builder to construction
         'ui_toggleReadyForBattle',   // Toggle ready state
@@ -167,6 +168,30 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         }
 
         const meta = { isMoveOrder: false };
+        this.game.call('setSquadTargets', { placementIds, targetPositions, meta }, callback);
+    }
+
+    /**
+     * Issue hide order to selected squads
+     * Units stop moving, won't attack, and gain +20 stealth
+     */
+    ui_hide(placementIds, callback) {
+        if (!placementIds || placementIds.length === 0) return;
+
+        const targetPositions = [];
+        for (const placementId of placementIds) {
+            const placement = this.game.call('getPlacementById', placementId);
+            if (placement?.squadUnits?.length > 0) {
+                const firstUnitId = placement.squadUnits[0];
+                const transform = this.game.getComponent(firstUnitId, 'transform');
+                const pos = transform?.position;
+                targetPositions.push(pos ? { x: pos.x, y: 0, z: pos.z } : null);
+            } else {
+                targetPositions.push(null);
+            }
+        }
+
+        const meta = { isMoveOrder: false, isHiding: true };
         this.game.call('setSquadTargets', { placementIds, targetPositions, meta }, callback);
     }
 
