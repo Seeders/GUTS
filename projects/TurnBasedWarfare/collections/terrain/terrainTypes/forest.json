@@ -5,6 +5,7 @@
   "color": "#2f4a29",
   "buildable": true,
   "walkable": true,
+  "stealthBonus": 25,
   "detailWorldObjects": [
     "bush_fern_sprite",
     "grass_tuft_small_sprite",

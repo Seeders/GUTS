@@ -134,19 +134,34 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
             // Stealth check: skip targets with stealth > searcher's awareness
             const targetCombat = game.getComponent(targetId, 'combat');
-            const targetStealth = targetCombat?.stealth ?? 0;
-            if (targetStealth > awareness) {
-                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - stealthed`, {
-                    targetStealth,
-                    awareness
-                });
-                continue;
-            }
+            let targetStealth = targetCombat?.stealth ?? 0;
 
             const targetTransform = game.getComponent(targetId, 'transform');
             const targetPos = targetTransform?.position;
             if (!targetPos) {
                 log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - no position`);
+                continue;
+            }
+
+            // Apply terrain stealth bonus (e.g., forest provides cover)
+            const terrainTypeIndex = game.call('getTerrainTypeAtPosition', targetPos.x, targetPos.z);
+            if (terrainTypeIndex !== null && terrainTypeIndex !== undefined) {
+                const terrainType = game.call('getTileMapTerrainType', terrainTypeIndex);
+                if (terrainType?.stealthBonus) {
+                    targetStealth += terrainType.stealthBonus;
+                    log.trace('FindNearestEnemy', `${unitName}(${entityId}) target ${targetId} terrain stealth bonus`, {
+                        terrainType: terrainType.type,
+                        stealthBonus: terrainType.stealthBonus,
+                        totalStealth: targetStealth
+                    });
+                }
+            }
+
+            if (targetStealth > awareness) {
+                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - stealthed`, {
+                    targetStealth,
+                    awareness
+                });
                 continue;
             }
 
