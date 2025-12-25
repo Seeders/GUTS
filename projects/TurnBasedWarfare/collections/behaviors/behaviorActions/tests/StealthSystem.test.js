@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TestGameContext } from '../../../../../../../tests/TestGameContext.js';
+import { TestGameContext } from '../../../../../../tests/TestGameContext.js';
 
 /**
  * Stealth System Unit Tests
@@ -49,7 +49,20 @@ describe('Stealth System', () => {
 
         // Mock hasLineOfSight service
         game.register('hasLineOfSight', () => true);
+
+        // Mock getBehaviorShared service (used by behavior actions to store shared state)
+        const sharedStates = new Map();
+        game.register('getBehaviorShared', (entityId) => {
+            if (!sharedStates.has(entityId)) {
+                sharedStates.set(entityId, {});
+            }
+            return sharedStates.get(entityId);
+        });
     });
+
+    // Helper function to check if result indicates success
+    const isSuccess = (result) => result !== null && result.status === 'success';
+    const isFailure = (result) => result === null;
 
     describe('Base Stealth Values', () => {
         it('should use default awareness of 50 when not specified', () => {
@@ -70,8 +83,8 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(searcherId, game);
 
-            expect(result.status).toBe('success');
-            expect(result.data.target).toBe(targetId);
+            expect(isSuccess(result)).toBe(true);
+            expect(result.meta.target).toBe(targetId);
         });
 
         it('should not detect units with stealth higher than awareness', () => {
@@ -92,7 +105,7 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(searcherId, game);
 
-            expect(result.status).toBe('failure');
+            expect(isFailure(result)).toBe(true);
         });
 
         it('should detect units with stealth equal to awareness', () => {
@@ -113,7 +126,7 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(searcherId, game);
 
-            expect(result.status).toBe('success');
+            expect(isSuccess(result)).toBe(true);
         });
 
         it('should handle units with high awareness detecting stealthy units', () => {
@@ -134,7 +147,7 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(searcherId, game);
 
-            expect(result.status).toBe('success');
+            expect(isSuccess(result)).toBe(true);
         });
     });
 
@@ -169,7 +182,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 30 base + 25 forest = 55 stealth > 50 awareness = not visible
-            expect(result.status).toBe('failure');
+            expect(isFailure(result)).toBe(true);
         });
 
         it('should detect unit in forest with high enough awareness', () => {
@@ -197,7 +210,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 30 base + 25 forest = 55 stealth < 60 awareness = visible
-            expect(result.status).toBe('success');
+            expect(isSuccess(result)).toBe(true);
         });
 
         it('should not apply stealth bonus on non-forest terrain', () => {
@@ -223,7 +236,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 30 stealth < 50 awareness = visible
-            expect(result.status).toBe('success');
+            expect(isSuccess(result)).toBe(true);
         });
     });
 
@@ -249,7 +262,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 35 base + 20 hiding = 55 stealth > 50 awareness = not visible
-            expect(result.status).toBe('failure');
+            expect(isFailure(result)).toBe(true);
         });
 
         it('should not apply hiding bonus when unit is not hiding', () => {
@@ -272,7 +285,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 35 stealth < 50 awareness = visible
-            expect(result.status).toBe('success');
+            expect(isSuccess(result)).toBe(true);
         });
 
         it('should detect hiding unit with high awareness', () => {
@@ -295,7 +308,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 40 base + 20 hiding = 60 stealth < 70 awareness = visible
-            expect(result.status).toBe('success');
+            expect(isSuccess(result)).toBe(true);
         });
     });
 
@@ -328,7 +341,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 40 base + 25 forest + 20 hiding = 85 stealth > 80 awareness = not visible
-            expect(result.status).toBe('failure');
+            expect(isFailure(result)).toBe(true);
         });
 
         it('should be detected with very high awareness even with all bonuses', () => {
@@ -358,7 +371,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 40 base + 25 forest + 20 hiding = 85 stealth < 90 awareness = visible
-            expect(result.status).toBe('success');
+            expect(isSuccess(result)).toBe(true);
         });
 
         it('should handle zero base stealth with bonuses', () => {
@@ -388,7 +401,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 0 base + 25 forest + 20 hiding = 45 stealth > 40 awareness = not visible
-            expect(result.status).toBe('failure');
+            expect(isFailure(result)).toBe(true);
         });
     });
 
@@ -413,7 +426,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(hiddenUnit, game);
 
             // Hidden unit should return failure immediately - won't search
-            expect(result.status).toBe('failure');
+            expect(isFailure(result)).toBe(true);
         });
 
         it('should search for enemies when not hiding', () => {
@@ -435,8 +448,8 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(unit, game);
 
-            expect(result.status).toBe('success');
-            expect(result.data.target).toBe(enemyId);
+            expect(isSuccess(result)).toBe(true);
+            expect(result.meta.target).toBe(enemyId);
         });
 
         it('should search when playerOrder component is missing', () => {
@@ -458,12 +471,12 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(unit, game);
 
-            expect(result.status).toBe('success');
+            expect(isSuccess(result)).toBe(true);
         });
     });
 
     describe('Scout Unit Stealth (40 base)', () => {
-        it('should have scout invisible to default awareness units on grass', () => {
+        it('should have scout visible to default awareness units on grass', () => {
             // Scout has 40 stealth, default awareness is 50
             // On grass (no bonus): 40 < 50 = visible
             const searcherId = game.createEntityWith({
@@ -484,7 +497,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 40 stealth < 50 awareness = visible on grass
-            expect(result.status).toBe('success');
+            expect(isSuccess(result)).toBe(true);
         });
 
         it('should have scout invisible to default awareness units in forest', () => {
@@ -508,7 +521,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 40 + 25 forest = 65 stealth > 50 awareness = invisible
-            expect(result.status).toBe('failure');
+            expect(isFailure(result)).toBe(true);
         });
 
         it('should have hiding scout invisible to most units in forest', () => {
@@ -533,7 +546,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 40 + 25 forest + 20 hiding = 85 stealth > 80 awareness = invisible
-            expect(result.status).toBe('failure');
+            expect(isFailure(result)).toBe(true);
         });
     });
 
@@ -559,7 +572,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // Should still work, just no terrain bonus applied
-            expect(result.status).toBe('success');
+            expect(isSuccess(result)).toBe(true);
         });
 
         it('should handle terrain type without stealthBonus property', () => {
@@ -583,7 +596,7 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // 45 stealth < 50 awareness = visible
-            expect(result.status).toBe('success');
+            expect(isSuccess(result)).toBe(true);
         });
 
         it('should handle very high stealth values', () => {
@@ -604,7 +617,7 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(searcherId, game);
 
-            expect(result.status).toBe('failure');
+            expect(isFailure(result)).toBe(true);
         });
 
         it('should prefer nearest visible enemy among multiple targets', () => {
@@ -635,8 +648,8 @@ describe('Stealth System', () => {
             const result = findNearestEnemyAction.execute(searcherId, game);
 
             // Should find the visible enemy, not the closer stealthed one
-            expect(result.status).toBe('success');
-            expect(result.data.target).toBe(visibleId);
+            expect(isSuccess(result)).toBe(true);
+            expect(result.meta.target).toBe(visibleId);
         });
     });
 });

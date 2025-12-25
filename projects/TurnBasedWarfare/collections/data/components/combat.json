@@ -12,6 +12,8 @@
     "coldResistance": 0,
     "lightningResistance": 0,
     "poisonResistance": 0,
-    "visionRange": 300
+    "visionRange": 300,
+    "stealth": 0,
+    "awareness": 50
   }
 }
