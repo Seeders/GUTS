@@ -672,6 +672,39 @@ class ConfigParser {
     }
 
     /**
+     * Generate headless entry point data
+     * Uses libraries/systems from headless.json config
+     * Auto-discovers all classes from specified collections
+     */
+    getHeadlessEntry() {
+        const headlessConfig = this.configs.headless;
+        if (!headlessConfig) {
+            console.warn('  No headless config found');
+            return null;
+        }
+
+        console.log('\n  Building headless entry...');
+
+        const libraries = this.getLibraryPaths(headlessConfig.libraries || []);
+        const systems = this.getScriptPaths('systems', headlessConfig.systems || []);
+        const { classCollections, classMetadata } = this.getClassCollections(headlessConfig.classes || []);
+        const dataCollections = this.getDataCollections();
+
+        console.log(`    Libraries: ${libraries.length}`);
+        console.log(`    Systems: ${systems.length}`);
+        console.log(`    Class collections: ${Object.keys(classCollections).length}`);
+
+        return {
+            libraries,
+            systems,
+            classCollections,
+            classMetadata,
+            dataCollections,
+            config: headlessConfig
+        };
+    }
+
+    /**
      * Generate editor entry point data
      */
     getEditorEntry() {
@@ -784,6 +817,7 @@ class ConfigParser {
             projectName: this.projectName,
             client: this.getClientEntry(),
             server: this.getServerEntry(),
+            headless: this.getHeadlessEntry(),
             editor: this.getEditorEntry(),
             engine: this.getEnginePaths(),
             objectTypeDefinitions: this.objectTypeDefinitions,
