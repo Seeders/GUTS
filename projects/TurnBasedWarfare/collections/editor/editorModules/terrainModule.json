@@ -8,6 +8,7 @@
     "RaycastHelper",
     "PlacementPreview",
     "SE_GizmoManager",
+    "HeadlessLogger",
     "TerrainMapEditor"
   ],
   "scene": "terrainMapEditor",

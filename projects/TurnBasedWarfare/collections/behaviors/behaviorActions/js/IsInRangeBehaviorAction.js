@@ -13,17 +13,28 @@
 class IsInRangeBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
+        const log = GUTS.HeadlessLogger;
         const params = this.parameters || {};
         const range = params.range !== undefined ? params.range : 100;
         const comparison = params.comparison || 'within';
         const targetKey = params.targetKey || 'target';
         const minRange = params.minRange || 0;
 
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+        const teamComp = game.getComponent(entityId, 'team');
+        const reverseEnums = game.getReverseEnums();
+        const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;
+        const unitName = unitDef?.id || 'unknown';
+
         const shared = this.getShared(entityId, game);
         const targetId = shared[targetKey];
 
         // targetId is null/undefined when not set, or could be 0 (valid entity ID)
         if (targetId === undefined || targetId === null || targetId < 0) {
+            log.trace('IsInRange', `${unitName}(${entityId}) [${teamName}] FAILURE - no valid target`, {
+                targetId
+            });
             return this.failure();
         }
 
@@ -33,6 +44,10 @@ class IsInRangeBehaviorAction extends GUTS.BaseBehaviorAction {
         const targetPos = targetTransform?.position;
 
         if (!pos || !targetPos) {
+            log.trace('IsInRange', `${unitName}(${entityId}) [${teamName}] FAILURE - missing position`, {
+                hasPos: !!pos,
+                hasTargetPos: !!targetPos
+            });
             return this.failure();
         }
 
@@ -54,6 +69,14 @@ class IsInRangeBehaviorAction extends GUTS.BaseBehaviorAction {
                 break;
         }
 
+        log.trace('IsInRange', `${unitName}(${entityId}) [${teamName}] ${conditionMet ? 'SUCCESS' : 'FAILURE'}`, {
+            comparison,
+            distance: distance.toFixed(0),
+            range,
+            minRange,
+            targetId
+        });
+
         if (conditionMet) {
             return this.success({
                 distance,
@@ -73,4 +96,3 @@ class IsInRangeBehaviorAction extends GUTS.BaseBehaviorAction {
         return Math.sqrt(dx * dx + dz * dz);
     }
 }
-

@@ -14,11 +14,9 @@
  */
 class PlacementUISystem extends GUTS.BaseSystem {
     static services = [
-        'createNetworkUnitData',
         'getWorldPositionFromMouse',
         'undoLastPlacement',
         'getUndoStatus',
-        'handleCanvasClick',
         'setBattlePaused',
         'handleReadyForBattleUpdate',
         'handleUnitSelectionChange'
@@ -82,11 +80,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
     init(params) {
         this.params = params || {};
 
+        const gridSize = this.game.call('getPlacementGridSize');
         this.mouseWorldOffset = {
-            x: this.game.call('getPlacementGridSize') / 2,
-            z: this.game.call('getPlacementGridSize') / 2
+            x: gridSize / 2,
+            z: gridSize / 2
         };
-
     }
 
     // Service alias methods
@@ -329,7 +327,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
             this.elements.readyButton.textContent = 'Updating...';
         }
 
-        this.game.call('toggleReadyForBattle', (success, response) => {
+        // Use ui_toggleReadyForBattle - same code path as headless mode
+        this.game.call('ui_toggleReadyForBattle', (success, response) => {
             if (success) {
                 this.hasSubmittedPlacements = true;
                 if (this.elements.readyButton) {
@@ -500,52 +499,34 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
     }
 
-    // ==================== CANVAS CLICK HANDLING ====================
+    // ==================== INPUT RESULT HANDLING ====================
 
-    handleCanvasClick(event) {
-        if (this.game.state.phase !== this.enums.gamePhase.placement) return;
-        if (!this.game.state.selectedUnitType) return;
+    /**
+     * Handle input results from GameInterfaceSystem
+     * Called via game event 'onInputResult'
+     */
+    onInputResult(result) {
+        if (!result) return;
 
-        const unitType = this.game.state.selectedUnitType;
-        const gridPos = this.game.call('worldToPlacementGrid', this.mouseWorldPos.x, this.mouseWorldPos.z);
-
-        // Validate placement
-        const squadData = this.game.call('getSquadData', unitType);
-        if (!squadData) return;
-
-        const cells = this.game.call('getSquadCells', gridPos, squadData);
-        const isValid = this.game.call('isValidGridPlacement', cells, this.game.state.myTeam);
-
-        if (!isValid) {
-            this.game.call('showNotification', 'Invalid placement location', 'error', 2000);
-            return;
-        }
-
-        // Create placement data and submit to server
-        const networkUnitData = this.createNetworkUnitData(gridPos, unitType);
-
-        this.game.call('sendPlacementRequest', networkUnitData, (success, response) => {
-            if (success) {
-                // Domain logic (placePlacement, gold deduction, spawn) now handled by ClientNetworkSystem
-                // Here we just handle UI concerns: undo stack, effects, UI updates
-
+        if (result.action === 'place_unit') {
+            if (result.success) {
                 // Add to undo stack
                 this.addToUndoStack({
-                    placementId: response.placementId,
-                    unitType: unitType,
-                    gridPosition: gridPos,
-                    squadUnits: response.squadUnits
+                    placementId: result.data.placementId,
+                    unitType: result.unitType,
+                    gridPosition: result.gridPosition,
+                    squadUnits: result.data.squadUnits,
+                    team: this.game.state.myTeam
                 });
 
                 // Create visual effects
-                this.createPlacementEffects(gridPos, unitType);
+                this.createPlacementEffects(result.gridPosition, result.unitType);
 
                 // Update UI
                 this.updatePlacementUI();
                 this.game.call('updateGoldDisplay');
 
                 // Clear placement mode after successful placement
-                // This prevents placing multiple buildings in a row without re-selecting
                 this.game.state.selectedUnitType = null;
                 this.game.state.peasantBuildingPlacement = null;
                 if (this.placementPreview) {
@@ -553,30 +534,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 }
                 document.body.style.cursor = 'default';
             } else {
-                this.game.call('showNotification', response.error || 'Placement failed', 'error', 2000);
+                this.game.call('showNotification', result.data?.error || 'Placement failed', 'error', 2000);
             }
-        });
-    }
-
-    // ==================== PLACEMENT DATA ====================
-
-    createNetworkUnitData(gridPosition, unitType) {
-        // Get enum indices for numeric storage
-        const collectionIndex = this.enums.objectTypeDefinitions?.[unitType.collection] ?? null;
-        const typeIndex = this.enums[unitType.collection]?.[unitType.id] ?? null;
-
-        return {
-            gridPosition: gridPosition,
-            unitTypeId: typeIndex,
-            collection: collectionIndex,
-            team: this.game.state.myTeam,
-            playerId: this.game.clientNetworkManager?.numericPlayerId,
-            roundPlaced: this.game.state.round || 1,
-            timestamp: this.game.state.now,
-            unitType: unitType,
-            peasantInfo: this.game.state.peasantBuildingPlacement || null,
-            isStartingState: false
-        };
+        }
     }
 
     // ==================== UNDO ====================
@@ -608,30 +568,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const undoInfo = this.undoStack.pop();
         if (!undoInfo) return false;
 
-        // Destroy the entities
-        if (undoInfo.squadUnits) {
-            for (const entityId of undoInfo.squadUnits) {
-                this.game.call('removeInstance', entityId);
-                this.game.destroyEntity(entityId);
+        // Use ui_undoPlacement - SAME code path as headless mode
+        this.game.call('ui_undoPlacement', undoInfo, (success) => {
+            if (success) {
+                // Create undo visual effect
+                this.createUndoEffects(undoInfo.gridPosition);
+                this.updatePlacementUI();
             }
-        }
+        });
 
-        // Release grid cells (use entityId, not placementId)
-        if (undoInfo.squadUnits) {
-            for (const entityId of undoInfo.squadUnits) {
-                this.game.call('releaseGridCells', entityId);
-            }
-        }
-
-        // Refund gold
-        if (undoInfo.unitType?.value) {
-            this.game.call('addPlayerGold', this.game.state.myTeam, undoInfo.unitType.value);
-        }
-
-        // Create undo visual effect
-        this.createUndoEffects(undoInfo.gridPosition);
-
-        this.updatePlacementUI();
         return true;
     }
 

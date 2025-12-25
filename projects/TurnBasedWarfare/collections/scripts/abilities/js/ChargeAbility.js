@@ -1,7 +1,6 @@
 class ChargeAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'charge',
             name: 'Charge',
             description: 'Rush forward dealing damage and stunning enemies',
             cooldown: 5.0,

@@ -13,6 +13,7 @@
 class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
+        const log = GUTS.HeadlessLogger;
         const params = this.parameters || {};
         const minCount = params.minCount || 1;
         const storeNearest = params.storeNearest || false;
@@ -22,14 +23,20 @@ class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
         const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
         const combat = game.getComponent(entityId, 'combat');
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+        const reverseEnums = game.getReverseEnums();
+        const teamName = reverseEnums.team?.[team?.team] || team?.team;
+        const unitName = unitDef?.id || 'unknown';
 
         if (!pos || !team) {
+            log.trace('IsEnemyNearby', `${unitName}(${entityId}) [${teamName}] FAILURE - missing pos or team`);
             return this.failure();
         }
 
         const range = combat.visionRange;
 
-        const enemies = this.findEnemiesInRange(entityId, game, pos, team, range);
+        const enemies = this.findEnemiesInRange(entityId, game, pos, team, range, log, unitName, teamName);
 
         if (enemies.length >= minCount) {
             const result = {
@@ -44,15 +51,30 @@ class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
                 result.nearestDistance = enemies[0].distance;
             }
 
+            log.trace('IsEnemyNearby', `${unitName}(${entityId}) [${teamName}] SUCCESS - ${enemies.length} enemies found`, {
+                range,
+                enemyCount: enemies.length,
+                nearest: enemies[0]?.id
+            });
+
             return this.success(result);
         }
+
+        log.trace('IsEnemyNearby', `${unitName}(${entityId}) [${teamName}] FAILURE - not enough enemies`, {
+            range,
+            found: enemies.length,
+            required: minCount
+        });
 
         return this.failure();
     }
 
-    findEnemiesInRange(entityId, game, pos, team, range) {
+    findEnemiesInRange(entityId, game, pos, team, range, log, unitName, teamName) {
         // Use spatial grid for efficient lookup - returns array of entityIds
         const nearbyEntityIds = game.call('getNearbyUnits', pos, range, entityId);
+
+        log.trace('IsEnemyNearby', `${unitName}(${entityId}) [${teamName}] getNearbyUnits returned ${nearbyEntityIds?.length || 0} entities`);
+
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
 
         const unitTypeComp = game.getComponent(entityId, 'unitType');

@@ -3,13 +3,16 @@
   "size": 25,
   "height": 50,
   "value": 35,
-  "hp": 150,
+  "hp": 130,
   "speed": 55,
   "damage": 0,
   "attackSpeed": 0,
   "range": 300,
   "element": "fire",
-  "armor": 1,
+  "armor": 0,
+  "fireResistance": 0.5,
+  "coldResistance": 0,
+  "lightningResistance": 0,
   "render": {
     "animations": {
       "idle": [

@@ -1,19 +1,20 @@
 {
-  "title": "Rogue",
+  "title": "Scout",
   "size": 25,
   "height": 50,
   "value": 35,
-  "hp": 150,
-  "speed": 60,
-  "damage": 40,
-  "attackSpeed": 1.2,
-  "range": 100,
-  "projectile": "arrow",
-  "element": "physical",
+  "hp": 120,
+  "speed": 75,
+  "damage": 30,
+  "attackSpeed": 1.4,
+  "range": 170,
+  "projectile": "poisonDagger",
+  "element": "poison",
   "armor": 0,
-  "fireResistance": 0.25,
-  "coldResistance": 0.25,
-  "lightningResistance": 0.25,
+  "fireResistance": 0.2,
+  "coldResistance": 0.2,
+  "lightningResistance": 0.2,
+  "holyResistance": 0,
   "render": {
     "animations": {
       "idle": [
@@ -149,6 +150,7 @@
       }
     ]
   },
+  "abilities": ["BuildAbility", "BearTrapAbility"],
   "buyable": true,
   "specUnits": [
     "2_di_shadowAssassin",
@@ -164,6 +166,7 @@
   "supplyCost": 2,
   "spriteAnimationSet": "rogue",
   "requiresUnits": [],
+  "actionSet": "scout_actions",
   "requiresBuildings": [
     "mageTower"
   ]

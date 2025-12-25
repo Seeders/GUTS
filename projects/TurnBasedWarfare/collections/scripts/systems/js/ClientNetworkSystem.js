@@ -20,7 +20,15 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'sendPlacementRequest',
         // Local game mode services (set by SkirmishGameSystem or other local modes)
         'getLocalPlayerId',
-        'setLocalGame'
+        'setLocalGame',
+        // Local game handlers (for offline mode - delegates to BaseNetworkSystem process* methods)
+        'handleSubmitPlacement',
+        'handleSetSquadTarget',
+        'handleSetSquadTargets',
+        'handleCancelBuilding',
+        'handleUpgradeBuilding',
+        'handlePurchaseUpgrade',
+        'handleReadyForBattle'
     ];
 
     constructor(game) {
@@ -35,6 +43,8 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.networkUnsubscribers = [];
         // Local game mode flag (set by SkirmishGameSystem or other local modes)
         this._localPlayerId = 0;
+        // Track ready state per team for local mode (both teams must be ready to start battle)
+        this._teamReadyState = { left: false, right: false };
     }
 
     // ==================== LOCAL GAME MODE ====================
@@ -52,6 +62,124 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     setLocalGame(isLocal, playerId = 0) {
         this.game.state.isLocalGame = isLocal;
         this._localPlayerId = playerId;
+    }
+
+    // ==================== LOCAL GAME HANDLERS ====================
+    // These handlers are used in offline mode (isLocalGame=true)
+    // They delegate to the process* methods inherited from BaseNetworkSystem
+
+    handleSubmitPlacement(eventData, callback) {
+        const { data } = eventData;
+        const { placement } = data;
+
+        // In headless/local mode, determine player from the placement's team
+        // Team left = player 0, Team right = player 1
+        const team = placement.team;
+        const numericPlayerId = team === this.enums.team.left ? 0 : 1;
+        const playerId = numericPlayerId;
+
+        const playerStats = this.game.call('getPlayerStats', playerId);
+        if (!playerStats) {
+            callback({ success: false, error: 'Player not found' });
+            return;
+        }
+
+        const result = this.processPlacement(playerId, numericPlayerId, playerStats, placement, null);
+        callback(result);
+    }
+
+    handleSetSquadTarget(eventData, callback) {
+        const { data } = eventData;
+        const { placementId, targetPosition, meta } = data;
+        const result = this.processSquadTarget(placementId, targetPosition, meta, this.game.state.now);
+        callback(result);
+    }
+
+    handleSetSquadTargets(eventData, callback) {
+        const { data } = eventData;
+        const { placementIds, targetPositions, meta } = data;
+        const result = this.processSquadTargets(placementIds, targetPositions, meta, this.game.state.now);
+        callback(result);
+    }
+
+    handleCancelBuilding(eventData, callback) {
+        const { numericPlayerId, data } = eventData;
+        const { buildingEntityId } = data;
+        const result = this.processCancelBuilding(buildingEntityId, numericPlayerId);
+        callback(result);
+    }
+
+    handleUpgradeBuilding(eventData, callback) {
+        const { playerId, numericPlayerId, data } = eventData;
+        const { buildingEntityId, placementId, targetBuildingId } = data;
+
+        const playerStats = this.game.call('getPlayerStats', playerId);
+        if (!playerStats) {
+            callback({ success: false, error: 'Player not found' });
+            return;
+        }
+
+        const result = this.processUpgradeBuilding(
+            playerId, numericPlayerId, playerStats,
+            buildingEntityId, placementId, targetBuildingId, null, null
+        );
+        callback(result);
+    }
+
+    handlePurchaseUpgrade(eventData, callback) {
+        const { playerId, data } = eventData;
+        const { upgradeId } = data.data || data;
+
+        const upgrade = this.collections.upgrades[upgradeId];
+        if (!upgrade) {
+            callback({ success: false, error: `Unknown upgrade: ${upgradeId}` });
+            return;
+        }
+
+        const result = this.processPurchaseUpgrade(playerId, upgradeId, upgrade);
+        callback(result);
+    }
+
+    handleReadyForBattle(eventData, callback) {
+        // Track ready state per team - only start when BOTH teams are ready
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            callback({ success: false, error: 'Not in placement phase.' });
+            return;
+        }
+
+        // Determine which team is being marked ready
+        const { team } = eventData.data || {};
+        const teamName = team === this.enums.team.left ? 'left' :
+                        team === this.enums.team.right ? 'right' :
+                        (eventData.numericPlayerId === 0 ? 'left' : 'right');
+
+        // Mark this team as ready
+        this._teamReadyState[teamName] = true;
+
+        // Check if both teams are ready
+        const bothReady = this._teamReadyState.left && this._teamReadyState.right;
+
+        if (bothReady) {
+            // Reset ready state for next round
+            this._teamReadyState = { left: false, right: false };
+
+            // Reset time and prepare for battle
+            this.game.resetCurrentTime();
+            this.game.call('resetAI');
+            this.game.triggerEvent('onBattleStart');
+
+            // Start the battle
+            this.game.call('startBattle');
+        }
+
+        callback({ success: true, teamReady: teamName, allReady: bothReady });
+    }
+
+    /**
+     * Reset team ready state (called at start of each placement phase)
+     */
+    resetTeamReadyState() {
+        this._teamReadyState = { left: false, right: false };
     }
 
     /**
@@ -100,6 +228,14 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     // GUTS Manager Interface
     init(params) {
         this.params = params || {};
+    }
+
+    postInit() {
+        // Skip network connection in local game mode (set by SkirmishGameSystem)
+        if (this.game.state.isLocalGame) {
+            return;
+        }
+
         this.connectToServer();
         this.setupNetworkListeners();
     }
@@ -519,7 +655,13 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         }, callback);
     }
 
-    toggleReadyForBattle(callback) {
+    toggleReadyForBattle(team, callback) {
+        // Handle optional team parameter (for backwards compatibility)
+        if (typeof team === 'function') {
+            callback = team;
+            team = this.game.state.myTeam;
+        }
+
         if (this.game.state.phase !== this.enums.gamePhase.placement) {
             if (callback) callback(false, 'Not in placement phase.');
             return;
@@ -529,7 +671,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             localHandler: 'handleReadyForBattle',
             eventName: 'READY_FOR_BATTLE',
             responseName: 'READY_FOR_BATTLE_RESPONSE',
-            data: {} // Handler just needs playerId which is added by networkRequest
+            data: { team } // Pass team to handler for proper ready state tracking
         }, callback || (() => {}));
     }
 
@@ -1063,10 +1205,12 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.gameState = null;
         this.pendingBattleEnd = null;
 
-        // Remove any game ended modals
-        const gameEndedModal = document.getElementById('gameEndedModal');
-        if (gameEndedModal) {
-            gameEndedModal.remove();
+        // Remove any game ended modals (only in browser environment)
+        if (typeof document !== 'undefined') {
+            const gameEndedModal = document.getElementById('gameEndedModal');
+            if (gameEndedModal) {
+                gameEndedModal.remove();
+            }
         }
     }
 }

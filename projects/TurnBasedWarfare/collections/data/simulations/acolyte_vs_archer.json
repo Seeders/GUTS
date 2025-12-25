@@ -1,0 +1,9 @@
+{
+  "name": "Acolyte vs Archer",
+  "description": "Acolyte (intel/strength hybrid healer) vs Archer (pure dexterity ranged). Tests support vs ranged DPS.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "level_1",
+  "buildOrderA": "acolyte",
+  "buildOrderB": "archer"
+}

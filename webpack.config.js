@@ -33,6 +33,7 @@ const entries = generator.generateAll();
 // Output directories
 const clientOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'client');
 const serverOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'server');
+const headlessOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'headless');
 const editorOutput = path.resolve(__dirname, 'dist');
 
 // Base webpack configuration
@@ -192,6 +193,59 @@ if (typeof global !== 'undefined') {
     }
 } : null;
 
+// Headless configuration (if exists)
+const headlessConfig = entries.headless ? {
+    ...baseConfig,
+    name: 'headless',
+    target: 'node',
+    entry: {
+        game: entries.headless
+    },
+    output: {
+        path: headlessOutput,
+        filename: '[name].js',
+        library: {
+            type: 'commonjs2'
+        }
+    },
+    externals: {
+        // Exclude Node.js built-in modules
+    },
+    plugins: [
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify(mode),
+            'process.env.IS_CLIENT': JSON.stringify(false),
+            'process.env.IS_SERVER': JSON.stringify(false),
+            'process.env.IS_HEADLESS': JSON.stringify(true)
+        }),
+        new webpack.BannerPlugin({
+            banner: `GUTS Game Engine - Headless Simulation Bundle
+Project: ${projectName}
+Built: ${new Date().toISOString()}
+Mode: ${mode}
+
+This bundle is for running headless game simulations without rendering.`,
+            entryOnly: true,
+            raw: false
+        }),
+        new webpack.BannerPlugin({
+            banner: `
+// Setup globals for headless environment
+if (typeof global !== 'undefined') {
+    if (!global.GUTS) global.GUTS = {};
+    if (!global.window) global.window = global;
+}
+`,
+            raw: true,
+            entryOnly: true
+        })
+    ],
+    optimization: {
+        usedExports: true,
+        minimize: isProduction
+    }
+} : null;
+
 // Editor configuration (if exists)
 const editorConfig = entries.editor ? {
     ...baseConfig,
@@ -261,6 +315,9 @@ Mode: ${mode}`,
 const configs = [clientConfig];
 if (serverConfig) {
     configs.push(serverConfig);
+}
+if (headlessConfig) {
+    configs.push(headlessConfig);
 }
 if (editorConfig) {
     configs.push(editorConfig);

@@ -25,8 +25,14 @@ class GoldMineSystem extends GUTS.BaseSystem {
      * Per-frame update to manage gold vein visibility based on fog of war.
      * Veins with mines are hidden when visible to the player (mine shows instead),
      * but shown in fog areas to prevent information leaks.
+     * Only runs on client - server/headless doesn't need visual fog of war logic.
      */
     update() {
+        // Skip visual fog of war logic on server/headless - purely client-side rendering
+        if (this.game.app?.isServer || this.game.isHeadless) {
+            return;
+        }
+
         const goldMines = this.game.getEntitiesWith('goldMine');
 
         for (const mineId of goldMines) {

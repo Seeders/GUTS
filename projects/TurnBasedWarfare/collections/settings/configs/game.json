@@ -52,10 +52,12 @@
     "ComponentGenerator",
     "BehaviorTreeProcessor",
     "BaseBehaviorNode",
-    "SceneManager"
+    "SceneManager",
+    "HeadlessLogger"
   ],
   "systems": [
     "GameSystem",
+    "GameInterfaceSystem",
     "PlayerStatsSystem",
     "GameModeSystem",
     "KeyboardSystem",
@@ -110,8 +112,7 @@
     "VisionSystem",
     "SupplySystem",
     "CheatCodeSystem",
-    "SkirmishGameSystem",
-    "AIPlacementSystem"
+    "SkirmishGameSystem"
   ],
   "classes": [
     {

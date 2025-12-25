@@ -1,0 +1,12 @@
+{
+  "title": "Investigate Sequence",
+  "description": "Sequence: set attacker as target if no target -> move toward them until LOS kicks in",
+  "behaviorNodeType": "sequence",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/sequenceBehaviorTrees/js/InvestigateSequence.js",
+  "fileName": "InvestigateSequence",
+  "behaviorActions": [
+    "InvestigateAttackerBehaviorAction",
+    "MoveToEnemyBehaviorAction"
+  ],
+  "parameters": {}
+}

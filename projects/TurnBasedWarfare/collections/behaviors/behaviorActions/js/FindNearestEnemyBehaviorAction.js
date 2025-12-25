@@ -11,6 +11,7 @@
 class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
+        const log = GUTS.HeadlessLogger;
         const params = this.parameters || {};
         const targetKey = params.targetKey || 'target';
 
@@ -18,19 +19,40 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const pos = transform?.position;
         const team = game.getComponent(entityId, 'team');
         const combat = game.getComponent(entityId, 'combat');
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+        const reverseEnums = game.getReverseEnums();
+        const teamName = reverseEnums.team?.[team?.team] || team?.team;
+        const unitName = unitDef?.id || 'unknown';
+
+        // Get searcher's awareness (default 50)
+        const awareness = combat?.awareness ?? 50;
 
         if (!pos || !team) {
+            log.trace('FindNearestEnemy', `${unitName}(${entityId}) FAILURE - missing pos or team`, { hasPos: !!pos, hasTeam: !!team });
             return this.failure();
         }
 
         // Use unit's visionRange first, then fall back to params.range or default 300
         const range = combat?.visionRange || params.range || 300;
 
-        const nearestEnemy = this.findNearestEnemy(entityId, game, pos, team, range);
+        log.trace('FindNearestEnemy', `${unitName}(${entityId}) [${teamName}] searching for enemies`, {
+            pos: { x: pos.x.toFixed(0), z: pos.z.toFixed(0) },
+            range,
+            myTeam: team.team,
+            awareness
+        });
+
+        const nearestEnemy = this.findNearestEnemy(entityId, game, pos, team, range, log, unitName, teamName, awareness);
 
         if (nearestEnemy) {
             const shared = this.getShared(entityId, game);
             shared[targetKey] = nearestEnemy.id;
+
+            log.debug('FindNearestEnemy', `${unitName}(${entityId}) [${teamName}] FOUND enemy`, {
+                targetId: nearestEnemy.id,
+                distance: nearestEnemy.distance.toFixed(0)
+            });
 
             return this.success({
                 target: nearestEnemy.id,
@@ -39,12 +61,29 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             });
         }
 
+        log.trace('FindNearestEnemy', `${unitName}(${entityId}) [${teamName}] NO enemy found in range ${range}`);
         return this.failure();
     }
 
-    findNearestEnemy(entityId, game, pos, team, range) {
+    findNearestEnemy(entityId, game, pos, team, range, log, unitName, teamName, awareness = 50) {
         // Use spatial grid for efficient lookup - returns array of entityIds
         const nearbyEntityIds = game.call('getNearbyUnits', pos, range, entityId);
+        const reverseEnums = game.getReverseEnums();
+
+        // Log all nearby entities
+        const nearbyInfo = nearbyEntityIds?.map(id => {
+            const utype = game.getComponent(id, 'unitType');
+            const udef = game.call('getUnitTypeDef', utype);
+            const uteam = game.getComponent(id, 'team');
+            const teamStr = reverseEnums.team?.[uteam?.team] || uteam?.team;
+            return { id, type: udef?.id, team: teamStr, teamNum: uteam?.team };
+        }) || [];
+
+        log.trace('FindNearestEnemy', `${unitName}(${entityId}) [${teamName}] getNearbyUnits returned ${nearbyInfo.length} entities`, {
+            myTeam: team.team,
+            nearby: nearbyInfo
+        });
+
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) {
             return null;
         }
@@ -58,24 +97,56 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         for (const targetId of nearbyEntityIds) {
             const targetTeam = game.getComponent(targetId, 'team');
+            const targetUnitType = game.getComponent(targetId, 'unitType');
+            const targetUnitDef = game.call('getUnitTypeDef', targetUnitType);
+            const targetTeamName = reverseEnums.team?.[targetTeam?.team] || targetTeam?.team;
+
+            log.trace('FindNearestEnemy', `${unitName}(${entityId}) checking target ${targetId}`, {
+                targetType: targetUnitDef?.id,
+                targetTeam: targetTeam?.team,
+                targetTeamName,
+                myTeam: team.team,
+                sameTeam: targetTeam?.team === team.team
+            });
+
             if (!targetTeam || targetTeam.team === team.team) {
+                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - same team or no team`);
                 continue;
             }
 
             const targetHealth = game.getComponent(targetId, 'health');
             if (!targetHealth || targetHealth.current <= 0) {
+                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - no health or dead`, {
+                    health: targetHealth?.current,
+                    maxHealth: targetHealth?.max
+                });
                 continue;
             }
 
             const targetDeathState = game.getComponent(targetId, 'deathState');
             // deathState.state: 0=alive, 1=dying, 2=corpse
             if (targetDeathState && targetDeathState.state > 0) {
+                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - dying/dead`, {
+                    deathState: targetDeathState.state
+                });
+                continue;
+            }
+
+            // Stealth check: skip targets with stealth > searcher's awareness
+            const targetCombat = game.getComponent(targetId, 'combat');
+            const targetStealth = targetCombat?.stealth ?? 0;
+            if (targetStealth > awareness) {
+                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - stealthed`, {
+                    targetStealth,
+                    awareness
+                });
                 continue;
             }
 
             const targetTransform = game.getComponent(targetId, 'transform');
             const targetPos = targetTransform?.position;
             if (!targetPos) {
+                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - no position`);
                 continue;
             }
 
@@ -83,8 +154,15 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             const dz = targetPos.z - pos.z;
             const distance = Math.sqrt(dx * dx + dz * dz);
 
+            log.trace('FindNearestEnemy', `${unitName}(${entityId}) VALID enemy ${targetId} (${targetUnitDef?.id})`, {
+                distance: distance.toFixed(0),
+                targetPos: { x: targetPos.x.toFixed(0), z: targetPos.z.toFixed(0) }
+            });
+
             enemies.push({ id: targetId, pos: targetPos, distance, dx, dz });
         }
+
+        log.trace('FindNearestEnemy', `${unitName}(${entityId}) found ${enemies.length} valid enemies after filtering`);
 
         if (enemies.length === 0) {
             return null;
@@ -137,6 +215,14 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
                 unitType,
                 entityId
             );
+
+            log.trace('FindNearestEnemy', `${unitName}(${entityId}) LOS check sector ${i}`, {
+                hasLOS,
+                from: { x: pos.x.toFixed(0), z: pos.z.toFixed(0) },
+                to: { x: targetX.toFixed(0), z: targetZ.toFixed(0) },
+                rayDist: rayDist.toFixed(0),
+                enemyCount: sector.enemies.length
+            });
 
             if (hasLOS) {
                 // Full visibility to max distance

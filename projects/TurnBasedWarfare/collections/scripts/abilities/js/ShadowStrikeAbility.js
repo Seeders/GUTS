@@ -1,7 +1,6 @@
 class ShadowStrikeAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'shadow_strike',
             name: 'Shadow Strike',
             description: 'Teleport behind an enemy and deal critical damage',
             cooldown: 9.0,

@@ -583,6 +583,8 @@ class LobbyUISystem extends GUTS.BaseSystem {
     setupSkirmishEventListeners() {
         const backBtn = document.getElementById('skirmishBackBtn');
         const startBtn = document.getElementById('skirmishStartBtn');
+        const loadBtn = document.getElementById('skirmishLoadBtn');
+        const loadFileInput = document.getElementById('skirmishLoadFileInput');
 
         if (backBtn) {
             backBtn.onclick = () => {
@@ -595,6 +597,59 @@ class LobbyUISystem extends GUTS.BaseSystem {
                 this.startSkirmishGame();
             };
         }
+
+        if (loadBtn) {
+            loadBtn.onclick = () => {
+                this.openSkirmishLoadDialog();
+            };
+        }
+
+        if (loadFileInput) {
+            loadFileInput.onchange = (event) => {
+                this.handleSkirmishLoadFile(event);
+            };
+        }
+    }
+
+    openSkirmishLoadDialog() {
+        const fileInput = document.getElementById('skirmishLoadFileInput');
+        if (fileInput) {
+            fileInput.click();
+        }
+    }
+
+    async handleSkirmishLoadFile(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const saveData = await this.game.call('importSaveFile', file);
+
+            if (!saveData) {
+                this.showNotification('Invalid save file', 'error');
+                return;
+            }
+
+            // Store the save data to be loaded when the game starts
+            this.game.pendingSaveData = saveData;
+
+            // Update level selector to match the save
+            if (saveData.level) {
+                const levelSelect = document.getElementById('skirmishLevelSelect');
+                if (levelSelect) {
+                    levelSelect.value = saveData.level;
+                    this.skirmishSelectedLevel = saveData.level;
+                }
+            }
+
+            this.showNotification(`Save loaded: ${saveData.saveName || file.name}. Click START BATTLE to continue.`, 'success', 5000);
+
+        } catch (error) {
+            console.error('[LobbyUISystem] Error loading save file:', error);
+            this.showNotification('Failed to load save file: ' + error.message, 'error');
+        }
+
+        event.target.value = '';
     }
 
     exitSkirmishLobby() {

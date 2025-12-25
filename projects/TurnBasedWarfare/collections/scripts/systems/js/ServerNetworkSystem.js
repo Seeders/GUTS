@@ -401,7 +401,15 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const { playerId } = eventData;
         const responseName = 'READY_FOR_BATTLE_RESPONSE';
 
+        console.log('[DEBUG] handleReadyForBattle called', {
+            playerId,
+            isLocalGame: this.game.state.isLocalGame,
+            phase: this.game.state.phase,
+            playerExists: this.playerExists(playerId)
+        });
+
         if (!this.playerExists(playerId)) {
+            console.log('[DEBUG] Player not found, returning error');
             return this.respondError(playerId, responseName, 'Player not found', callback);
         }
 
@@ -415,7 +423,16 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const isLocal = this.game.state.isLocalGame;
         const allReady = isLocal || this.areAllPlayersReady();
 
+        console.log('[DEBUG] allReady check', {
+            isLocal,
+            allReady,
+            phase: this.game.state.phase,
+            phaseEnum: this.enums.gamePhase.placement,
+            phaseMatch: this.game.state.phase === this.enums.gamePhase.placement
+        });
+
         if (allReady && this.game.state.phase === this.enums.gamePhase.placement) {
+            console.log('[DEBUG] Starting battle!');
             this.game.resetCurrentTime();
             if (this.game.desyncDebugger) {
                 this.game.desyncDebugger.enabled = true;

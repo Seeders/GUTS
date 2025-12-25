@@ -1,7 +1,6 @@
 class CurseAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'curse',
             name: 'Curse',
             description: 'Curses enemies, reducing their damage and making them vulnerable',
             cooldown: 7.0,

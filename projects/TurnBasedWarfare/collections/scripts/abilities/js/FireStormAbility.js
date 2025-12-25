@@ -1,7 +1,6 @@
 class FireStormAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'fireStorm',
             name: 'Fire Storm',
             description: 'Rain fire on the largest enemy cluster',
             cooldown: 12.0,

@@ -1,7 +1,6 @@
 class CorruptingAuraAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'corrupting_aura',
             name: 'Corrupting Aura',
             description: 'Emanate dark energy that drains enemies and empowers undead (does not stack)',
             cooldown: 0,

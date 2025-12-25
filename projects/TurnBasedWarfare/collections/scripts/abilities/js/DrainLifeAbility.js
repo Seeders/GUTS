@@ -1,7 +1,6 @@
 class DrainLifeAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'drain_life',
             name: 'Drain Life',
             description: 'Drains health from an enemy and heals the caster',
             cooldown: 4.5,

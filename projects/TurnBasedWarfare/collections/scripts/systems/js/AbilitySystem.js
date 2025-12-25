@@ -54,8 +54,8 @@ class AbilitySystem extends GUTS.BaseSystem {
 
         for (const entityId of sortedEntityIds) {
             const queuedAbility = this.game.getComponent(entityId, 'abilityQueue');
-            // abilityId is null when no ability queued
-            if (!queuedAbility || queuedAbility.abilityId == null) continue;
+            // Skip if no ability queued (check both numeric and string ID)
+            if (!queuedAbility || (queuedAbility.abilityId == null && !queuedAbility.abilityStringId)) continue;
 
             if (this.game.state.now >= queuedAbility.executeTime) {
                 // Cancel queued ability if caster died
@@ -68,7 +68,10 @@ class AbilitySystem extends GUTS.BaseSystem {
                 const abilities = this.entityAbilities.get(entityId);
                 if (abilities) {
                     // queuedAbility.abilityId is numeric index, convert to string name
-                    const abilityName = reverseEnums?.abilities?.[queuedAbility.abilityId];
+                    // If numeric index not available, use abilityStringId as fallback
+                    const abilityName = queuedAbility.abilityId != null
+                        ? reverseEnums?.abilities?.[queuedAbility.abilityId]
+                        : queuedAbility.abilityStringId;
                     const ability = abilities.find(a => a.id === abilityName);
                     if (ability) {
                         // targetData is null when no target
@@ -168,10 +171,12 @@ class AbilitySystem extends GUTS.BaseSystem {
             this.startAbilityAnimation(entityId, ability);
         }
         // Convert ability string ID to numeric index for TypedArray storage
-        const abilityIndex = this.enums.abilities[abilityId];
+        // If no numeric index available, store string ID for local execution
+        const abilityIndex = this.enums.abilities?.[abilityId];
         // targetData is typically a target entity ID or null for no target
         this.game.addComponent(entityId, 'abilityQueue', {
             abilityId: abilityIndex !== undefined ? abilityIndex : null,
+            abilityStringId: abilityId, // Store string ID as fallback
             targetData: targetData ?? null,
             executeTime: this.game.state.now + ability.castTime
         });

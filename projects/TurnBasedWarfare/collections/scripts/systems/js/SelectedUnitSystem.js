@@ -253,7 +253,6 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             // Only left click, and not clicking on UI elements
             if (event.button !== 0) return;
 
-            const rect = this.canvas.getBoundingClientRect();
             this.boxSelection.startX = event.clientX;
             this.boxSelection.startY = event.clientY;
             this.boxSelection.currentX = event.clientX;
@@ -290,17 +289,13 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             // If dragged significantly, do box selection
+            // Single clicks are handled by InputSystem -> GameInterfaceSystem -> onInputResult
             if (distance > 5) {
                 requestAnimationFrame(() => {
                     this.completeBoxSelection(event);
                 });
-            } else {
-                // Single click selection
-
-                requestAnimationFrame(() => {
-                    this.checkUnitSelectionClick(event);
-                });
             }
+            // Single clicks (distance <= 5) are handled by InputSystem forwarding to GameInterfaceSystem
 
             // Reset box selection state
             this.boxSelection.active = false;
@@ -359,12 +354,12 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const top = Math.min(box.startY, box.currentY);
         const bottom = Math.max(box.startY, box.currentY);
 
-        // Find all units within the selection box
+        // Find all units within the selection box (screen-based)
         const selectedUnits = this.getUnitsInScreenBox(left, top, right, bottom);
-        
+
         // Check if shift is held for additive selection
         const isAdditive = event.shiftKey;
-        
+
         if (!isAdditive) {
             this.selectedUnitIds.clear();
         }
@@ -374,10 +369,27 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         this.currentSelectedIndex = 0;
         if (this.selectedUnitIds.size > 0) {
             this.updateMultipleSquadSelection();
-        } else {            
+        } else {
             this.deselectAll();
         }
-        
+    }
+
+    /**
+     * Apply selection to entity IDs (internal helper)
+     */
+    _applySelection(entityIds, isAdditive) {
+        if (!isAdditive) {
+            this.selectedUnitIds.clear();
+        }
+        entityIds.forEach((unitId) => {
+            this.selectedUnitIds.add(unitId);
+        });
+        this.currentSelectedIndex = 0;
+        if (this.selectedUnitIds.size > 0) {
+            this.updateMultipleSquadSelection();
+        } else {
+            this.deselectAll();
+        }
     }
 
 
@@ -504,15 +516,18 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         }
     }
 
-    checkUnitSelectionClick(event) {
-        const worldPos = this.game.call('getWorldPositionFromMouse');
-        if (!worldPos) return;
+    /**
+     * Handle input results from GameInterfaceSystem
+     * Called via game event 'onInputResult'
+     */
+    onInputResult(result) {
+        if (!result) return;
 
-        // Use direct entity selection based on team component (works for both editor and game mode)
-        const entityId = this.getEntityAtWorldPosition(worldPos);
+        if (result.action === 'select_entity') {
+            const { entityId, additive } = result.data;
 
-        if (entityId) {
-            if (event.shiftKey) {
+            if (additive) {
+                // Toggle selection
                 if (this.selectedUnitIds.has(entityId)) {
                     this.selectedUnitIds.delete(entityId);
                 } else {
@@ -520,14 +535,30 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                 }
                 this.updateMultipleSquadSelection();
             } else {
+                // Replace selection
                 this.deselectAll();
                 this.selectedUnitIds.add(entityId);
                 this.selectEntityDirectly(entityId);
             }
-        } else {
-            if (!event.shiftKey) {
+        } else if (result.action === 'select_multiple') {
+            const { entityIds, additive } = result.data;
+
+            if (!additive) {
+                this.selectedUnitIds.clear();
+            }
+
+            for (const entityId of entityIds) {
+                this.selectedUnitIds.add(entityId);
+            }
+
+            this.currentSelectedIndex = 0;
+            if (this.selectedUnitIds.size > 0) {
+                this.updateMultipleSquadSelection();
+            } else {
                 this.deselectAll();
             }
+        } else if (result.action === 'deselect') {
+            this.deselectAll();
         }
     }
 

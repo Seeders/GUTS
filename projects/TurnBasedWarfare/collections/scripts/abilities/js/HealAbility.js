@@ -1,7 +1,6 @@
 class HealAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'heal',
             name: 'Heal',
             description: 'Restores health to the most injured ally',
             cooldown: 30,
@@ -23,7 +22,9 @@ class HealAbility extends GUTS.BaseAbility {
         const allies = this.getAlliesInRange(casterEntity);
         return allies.some(allyId => {
             const health = this.game.getComponent(allyId, "health");
-            return health && health.current < health.max; // Ally needs healing
+            const poison = this.game.getComponent(allyId, "poison");
+            // Ally needs healing OR is poisoned
+            return (health && health.current < health.max) || (poison && poison.stacks > 0);
         });
     }
         
@@ -57,6 +58,11 @@ class HealAbility extends GUTS.BaseAbility {
         // Heal effect
         this.playConfiguredEffects('impact', targetPos);
 
+        // Cure poison - holy magic cleanses toxins
+        if (this.game.hasService('curePoison')) {
+            this.game.call('curePoison', targetId);
+        }
+
         // Apply healing
         const actualHeal = Math.min(this.healAmount, targetHealth.max - targetHealth.current);
         targetHealth.current += actualHeal;
@@ -76,13 +82,28 @@ class HealAbility extends GUTS.BaseAbility {
 
         let mostInjured = null;
         let lowestHealthRatio = 1.0;
+        let hasPoisonedTarget = false;
 
         sortedAllies.forEach(allyId => {
             const health = this.game.getComponent(allyId, "health");
+            const poison = this.game.getComponent(allyId, "poison");
+            const isPoisoned = poison && poison.stacks > 0;
+
             if (health && health.max > 0) {
                 const healthRatio = health.current / health.max;
-                // Use < for consistent tie-breaking (first in sorted order wins)
-                if (healthRatio < lowestHealthRatio) {
+
+                // Prioritize poisoned allies, then lowest health
+                if (isPoisoned && !hasPoisonedTarget) {
+                    // First poisoned ally found - prioritize them
+                    hasPoisonedTarget = true;
+                    lowestHealthRatio = healthRatio;
+                    mostInjured = allyId;
+                } else if (isPoisoned && hasPoisonedTarget && healthRatio < lowestHealthRatio) {
+                    // Another poisoned ally with lower health
+                    lowestHealthRatio = healthRatio;
+                    mostInjured = allyId;
+                } else if (!hasPoisonedTarget && healthRatio < lowestHealthRatio) {
+                    // No poisoned allies yet, pick lowest health
                     lowestHealthRatio = healthRatio;
                     mostInjured = allyId;
                 }

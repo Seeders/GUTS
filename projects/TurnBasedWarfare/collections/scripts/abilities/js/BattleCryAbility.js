@@ -1,7 +1,6 @@
 class BattleCryAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'battle_cry',
             name: 'Battle Cry',
             description: 'Rally nearby allies, boosting their damage and morale (does not stack)',
             cooldown: 15.0,

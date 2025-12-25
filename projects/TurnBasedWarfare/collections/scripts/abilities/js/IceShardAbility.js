@@ -1,7 +1,6 @@
 class IceShardAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'ice_shard',
             name: 'Ice Shard',
             description: 'Fires piercing ice shards that slow enemies',
             cooldown: 2.5,

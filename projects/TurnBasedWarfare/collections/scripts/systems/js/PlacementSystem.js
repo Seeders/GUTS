@@ -23,6 +23,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         'getCameraPositionForTeam',
         'applyNetworkUnitData',
         'findBuildingSpawnPosition',
+        'findBuildingAdjacentPosition',
         'getStartingLocationsFromLevel'
     ];
 
@@ -331,6 +332,8 @@ class PlacementSystem extends GUTS.BaseSystem {
                 }
 
                 if (peasantId && peasantInfo) {
+                    // All buildings (including traps) use the same build flow
+                    // Scout walks to position, then places trap when "construction" completes
                     const peasantAbilities = this.game.call('getEntityAbilities', peasantId);
                     if (peasantAbilities) {
                         const buildAbility = peasantAbilities.find(a => a.id === 'build');
@@ -803,18 +806,13 @@ class PlacementSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with success, entityIds, etc.
      */
     placePlacement(socketPlayerId, numericPlayerId, player, placement, serverEntityIds = null) {
-        console.log('[placePlacement] Starting', { socketPlayerId, numericPlayerId, player, placement, serverEntityIds });
-
         if (this.game.state.phase !== this.enums.gamePhase.placement) {
-            console.log('[placePlacement] FAIL: Not in placement phase', this.game.state.phase);
             return { success: false, error: `Not in placement phase (${this.game.state.phase})` };
         }
 
         // Look up full unitType from collections
         const unitType = this.getUnitTypeFromPlacement(placement);
-        console.log('[placePlacement] Resolved unitType', { unitType: unitType?.id, collection: placement.collection, unitTypeId: placement.unitTypeId });
         if (!unitType) {
-            console.log('[placePlacement] FAIL: Unit type not found');
             return { success: false, error: `Unit type not found: collection=${placement.collection}, unitTypeId=${placement.unitTypeId}` };
         }
 
@@ -827,11 +825,9 @@ class PlacementSystem extends GUTS.BaseSystem {
 
         // Get player stats
         const playerStats = this.game.call('getPlayerStats', socketPlayerId);
-        console.log('[placePlacement] Player stats', { gold: playerStats?.gold, team: player?.team });
 
         // Validate placement (skip if upgrading - already validated and grid released)
         if (!placement.skipValidation && !this.validatePlacement(fullPlacement, player, playerStats)) {
-            console.log('[placePlacement] FAIL: validatePlacement returned false');
             return { success: false, error: 'Invalid placement' };
         }
 

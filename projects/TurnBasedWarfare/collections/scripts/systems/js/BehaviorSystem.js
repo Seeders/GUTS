@@ -173,6 +173,16 @@ class BehaviorSystem extends GUTS.BaseSystem {
                 rootTree.onPlacementPhaseStart(entityId, this.game);
             }
         }
+
+        // Reset AI opponent state for new round
+        const aiEntities = this.game.getEntitiesWith('aiOpponent');
+        for (const entityId of aiEntities) {
+            const aiOpponent = this.game.getComponent(entityId, 'aiOpponent');
+            if (aiOpponent) {
+                aiOpponent.actionsExecuted = false;
+                aiOpponent.actionIndex = 0;
+            }
+        }
     }
 
     /**
@@ -187,7 +197,21 @@ class BehaviorSystem extends GUTS.BaseSystem {
      * Main update loop - runs for all units with aiState
      */
     update(dt) {
+        // Run AI opponents during placement phase
+        if (this.game.state.phase === this.enums.gamePhase.placement) {
+            this.updateAIOpponents(dt);
+            return;
+        }
+
         if (this.game.state.phase !== this.enums.gamePhase.battle) return;
+
+        // Track battle ticks for internal use
+        if (!this._firstBattleTick) {
+            this._firstBattleTick = true;
+            this._battleTickCount = 0;
+        }
+        this._battleTickCount++;
+
         // Increment debugger tick for this evaluation cycle
         this.processor.debugTick();
 
@@ -198,9 +222,44 @@ class BehaviorSystem extends GUTS.BaseSystem {
     }
 
     /**
+     * Update AI opponent entities during placement phase
+     * These are virtual entities with aiOpponent component that execute build orders
+     */
+    updateAIOpponents(dt) {
+        // Only run for local game (skirmish mode) or headless simulation
+        if (!this.game.state.isLocalGame && !this.game.state.isHeadlessSimulation) return;
+
+        const aiEntities = this.game.getEntitiesWith('aiOpponent', 'aiState');
+        for (const entityId of aiEntities) {
+            this.updateAIOpponent(entityId, dt);
+        }
+    }
+
+    /**
+     * Update a single AI opponent entity
+     */
+    updateAIOpponent(entityId, dt) {
+        const aiState = this.game.getComponent(entityId, 'aiState');
+        if (!aiState) return;
+
+        const rootTreeId = this.getNodeId(aiState.rootBehaviorTreeCollection, aiState.rootBehaviorTree);
+        const rootTree = this.processor.getNodeByType(rootTreeId);
+        if (!rootTree) {
+            return;
+        }
+
+        // Evaluate behavior tree
+        const desiredAction = this.processor.evaluate(rootTreeId, entityId);
+
+        // For AI opponents, we don't use the same action switching logic
+        // The behavior tree handles everything directly
+    }
+
+    /**
      * Update a single unit's behavior
      */
     updateUnit(entityId, dt) {
+        const log = GUTS.HeadlessLogger;
         const aiState = this.game.getComponent(entityId, "aiState");
         const unitType = this.game.getComponent(entityId, "unitType");
         const deathState = this.game.getComponent(entityId, "deathState");
@@ -220,11 +279,64 @@ class BehaviorSystem extends GUTS.BaseSystem {
             return;
         }
 
+        const unitDef = this.game.call('getUnitTypeDef', unitType);
+        const unitName = unitDef?.id || 'unknown';
+        const teamComp = this.game.getComponent(entityId, 'team');
+        const reverseEnums = this.game.getReverseEnums();
+        const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;
+
         // Evaluate behavior tree to get desired action
         const desiredAction = this.processor.evaluate(rootTreeId, entityId);
 
+        // Log behavior tree evaluation result
+        const transform = this.game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+        const shared = this.getBehaviorShared(entityId);
+        const currentActionId = this.getNodeId(aiState.currentActionCollection, aiState.currentAction);
+        const combat = this.game.getComponent(entityId, 'combat');
+        const health = this.game.getComponent(entityId, 'health');
+
+        // Get target info if we have one
+        let targetInfo = null;
+        if (shared?.target !== undefined && shared?.target !== null) {
+            const targetUnitTypeComp = this.game.getComponent(shared.target, 'unitType');
+            const targetUnitDef = this.game.call('getUnitTypeDef', targetUnitTypeComp);
+            const targetTransform = this.game.getComponent(shared.target, 'transform');
+            const targetHealth = this.game.getComponent(shared.target, 'health');
+            const targetTeamComp = this.game.getComponent(shared.target, 'team');
+            const targetTeamName = reverseEnums.team?.[targetTeamComp?.team] || targetTeamComp?.team;
+            targetInfo = {
+                id: shared.target,
+                type: targetUnitDef?.id,
+                team: targetTeamName,
+                pos: targetTransform?.position ? { x: targetTransform.position.x.toFixed(0), z: targetTransform.position.z.toFixed(0) } : null,
+                health: targetHealth ? `${targetHealth.current}/${targetHealth.max}` : null
+            };
+        }
+
+        log.debug('BehaviorSystem', `${unitName}(${entityId}) [${teamName}] tick ${this._battleTickCount}`, {
+            pos: pos ? { x: pos.x.toFixed(0), z: pos.z.toFixed(0) } : null,
+            health: health ? `${health.current}/${health.max}` : null,
+            desiredAction: desiredAction?.action,
+            status: desiredAction?.status,
+            currentAction: currentActionId,
+            target: shared?.target,
+            targetInfo,
+            combat: combat ? {
+                damage: combat.damage,
+                range: combat.range,
+                visionRange: combat.visionRange,
+                hasProjectile: combat.projectile !== null && combat.projectile !== -1 && combat.projectile !== undefined
+            } : null
+        });
+
         // Check if we need to switch actions
         if (this.shouldSwitchAction(aiState, desiredAction)) {
+            log.debug('BehaviorSystem', `${unitName}(${entityId}) [${teamName}] switching action`, {
+                from: currentActionId,
+                to: desiredAction?.action,
+                status: desiredAction?.status
+            });
             this.switchAction(entityId, aiState, desiredAction);
         }
     }
@@ -303,4 +415,5 @@ class BehaviorSystem extends GUTS.BaseSystem {
             }
         }
     }
+
 }

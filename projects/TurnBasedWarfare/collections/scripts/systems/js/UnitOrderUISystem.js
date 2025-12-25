@@ -197,12 +197,21 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
     }
 
     activateBuildingPlacement(building, selectedUnitId) {
+        console.log('[UnitOrderUISystem] activateBuildingPlacement called', {
+            buildingId: building.id,
+            buildTime: building.buildTime,
+            selectedUnitId,
+            isTrap: building.isTrap
+        });
+
         this.game.state.selectedUnitType = { ...building };
 
         this.game.state.peasantBuildingPlacement = {
             peasantId: selectedUnitId,
             buildTime: building.buildTime
         };
+
+        console.log('[UnitOrderUISystem] peasantBuildingPlacement set', this.game.state.peasantBuildingPlacement);
 
         this.stopTargeting();
 
@@ -243,55 +252,90 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
     holdPosition() {
         this.stopTargeting();
 
-        let placementIds = this.game.call('getSelectedSquads') || [];
+        // Use game.call - SAME code path as headless mode
+        let placementIds = this.game.call('getSelectedSquads');
 
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
             return;
         }
 
-        // Calculate target positions (current positions) for each placement
-        const targetPositions = [];
-        placementIds.forEach((placementId) => {
-            const placement = this.game.call('getPlacementById', placementId);
-            // For hold position, use the first unit's current position as the squad target
-            if (placement.squadUnits.length > 0) {
-                const firstUnitId = placement.squadUnits[0];
-                const transform = this.game.getComponent(firstUnitId, "transform");
-                const position = transform?.position;
-                targetPositions.push(position ? { x: position.x, y: 0, z: position.z } : null);
-            } else {
-                targetPositions.push(null);
+        // Use game.call - handles all the logic
+        this.game.call('ui_holdPosition', placementIds, (success) => {
+            if (success) {
+                // Domain logic (applySquadsTargetPositions) now handled by ClientNetworkSystem
+                // Here we just handle UI concerns: visual feedback
+
+                // Show visual feedback
+                placementIds.forEach((placementId) => {
+                    const placement = this.game.call('getPlacementById', placementId);
+                    placement.squadUnits.forEach((unitId) => {
+                        const transform = this.game.getComponent(unitId, "transform");
+                        const position = transform?.position;
+                        if (this.game.effectsSystem && position) {
+                            this.game.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
+                        }
+
+                        // Clear path in pathfinding system
+                        this.game.call('clearEntityPath', unitId);
+                    });
+                });
             }
         });
+    }
 
-        const meta = { isMoveOrder: false };
+    placeBearTrap() {
+        // Get selected scouts
+        const placementIds = this.game.call('getSelectedSquads') || [];
+        if (!placementIds || placementIds.length === 0) {
+            this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
+            return;
+        }
 
-        // Send to server for authoritative confirmation
-        this.game.call('setSquadTargets',
-            { placementIds, targetPositions, meta },
-            (success) => {
-                if (success) {
-                    // Domain logic (applySquadsTargetPositions) now handled by ClientNetworkSystem
-                    // Here we just handle UI concerns: visual feedback
+        // Find a scout unit with BearTrapAbility
+        let scoutUnit = null;
+        for (const placementId of placementIds) {
+            const placement = this.game.call('getPlacementById', placementId);
+            if (!placement) continue;
 
-                    // Show visual feedback
-                    placementIds.forEach((placementId) => {
-                        const placement = this.game.call('getPlacementById', placementId);
-                        placement.squadUnits.forEach((unitId) => {
-                            const transform = this.game.getComponent(unitId, "transform");
-                            const position = transform?.position;
-                            if (this.game.effectsSystem && position) {
-                                this.game.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
-                            }
-
-                            // Clear path in pathfinding system
-                            this.game.call('clearEntityPath', unitId);
-                        });
-                    });
+            for (const unitId of placement.squadUnits) {
+                const abilities = this.game.call('getEntityAbilities', unitId);
+                if (abilities) {
+                    const bearTrapAbility = abilities.find(a => a.id === 'BearTrapAbility');
+                    if (bearTrapAbility) {
+                        // Check if ability is available (cooldown and max traps)
+                        if (bearTrapAbility.canExecute(unitId)) {
+                            scoutUnit = unitId;
+                            break;
+                        }
+                    }
                 }
             }
-        );
+            if (scoutUnit) break;
+        }
+
+        if (!scoutUnit) {
+            this.game.uiSystem?.showNotification('Cannot place trap (max 2 traps or on cooldown).', 'warning', 800);
+            return;
+        }
+
+        // Get bear trap building definition
+        const bearTrapBuilding = this.collections.buildings?.bearTrap;
+        if (!bearTrapBuilding) {
+            this.game.uiSystem?.showNotification('Bear trap building not found.', 'error', 1000);
+            return;
+        }
+
+        // Use the same pattern as peasant building placement
+        // Scout will walk to position and place trap (uses buildTime from bearTrap.json)
+        const trapDef = {
+            ...bearTrapBuilding,
+            id: 'bearTrap',
+            collection: 'buildings'
+        };
+
+        this.activateBuildingPlacement(trapDef, scoutUnit);
+        this.game.uiSystem?.showNotification('Click to place bear trap', 'info', 2000);
     }
 
     onKeyDown(key) {
@@ -347,6 +391,8 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         this.targetingPreview.showAtWorldPositions(targetPositions, true);
     }
 
+    // ==================== CANVAS RIGHT-CLICK HANDLING ====================
+
     _onCanvasClick(event) {
         if (!this.isTargeting) return;
 
@@ -378,18 +424,25 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
             const builderUnit = this.getBuilderUnitFromSelection(placementIds);
             if (builderUnit) {
                 this.assignBuilderToConstruction(builderUnit, buildingUnderConstruction);
-                this.startTargeting();
                 return;
             }
         }
 
         const targetPosition = { x: worldPos.x, y: 0, z: worldPos.z };
 
-        if (this.game.effectsSystem) {
-            this.game.call('createParticleEffect', worldPos.x, 0, worldPos.z, 'magic', { ...this.pingEffect });
-        }
+        // Use GameInterfaceSystem for the actual move order
+        this.game.call('ui_issueMoveOrder', placementIds, targetPosition, (success, response) => {
+            if (success) {
+                // Show visual feedback
+                if (this.game.effectsSystem) {
+                    this.game.call('createParticleEffect', worldPos.x, 0, worldPos.z, 'magic', { ...this.pingEffect });
+                }
 
-        this.issueMoveOrders(placementIds, targetPosition);
+                // Keep targeting active and update preview
+                this.startTargeting();
+                this.showMoveTargets();
+            }
+        });
     }
 
     getBuildingUnderConstructionAtPosition(worldPos) {
@@ -429,101 +482,42 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
                 // Check if unit has BuildAbility
                 const abilities = this.game.call('getEntityAbilities', unitId);
                 if (abilities) {
-                    for (const ability of abilities) {
-                        if (ability.id === 'build') {
-                            return unitId;
-                        }
+                    const buildAbility = abilities.find(a => a.id === 'build');
+                    if (buildAbility) {
+                        return unitId;
                     }
                 }
             }
         }
-
         return null;
     }
 
     assignBuilderToConstruction(builderEntityId, buildingEntityId) {
-        const buildingTransform = this.game.getComponent(buildingEntityId, "transform");
-        const buildingPos = buildingTransform?.position;
-        const buildingPlacement = this.game.getComponent(buildingEntityId, "placement");
-        const builderPlacement = this.game.getComponent(builderEntityId, "placement");
+        // Use GameInterfaceSystem for the actual builder assignment
+        this.game.call('ui_assignBuilder', builderEntityId, buildingEntityId, (result) => {
+            if (result && result.success) {
+                const { targetPosition } = result.data;
 
-        if (!buildingPos || !buildingPlacement || !builderPlacement) return;
-
-        // Verify the builder has BuildAbility
-        const abilities = this.game.call('getEntityAbilities', builderEntityId);
-        if (!abilities) return;
-        const buildAbility = abilities.find(a => a.id === 'build');
-        if (!buildAbility) return;
-
-        // Send build assignment to server
-        const targetPosition = { x: buildingPos.x, y: 0, z: buildingPos.z };
-        const meta = {
-            buildingId: buildingEntityId,
-            preventEnemiesInRangeCheck: true,
-            isMoveOrder: false
-        };
-
-        this.game.call('setSquadTarget',
-            { placementId: builderPlacement.placementId, targetPosition, meta },
-            (success) => {
-                if (success) {
-                    // Domain logic (applySquadTargetPosition, buildingState, assignedBuilder) now handled by ClientNetworkSystem
-                    // Here we just handle UI concerns: effects, notifications, ability tracking
-
-                    // Store peasantId in ability for completion tracking
-                    buildAbility.peasantId = builderEntityId;
-
-                    if (this.game.effectsSystem) {
-                        this.game.call('createParticleEffect', buildingPos.x, 0, buildingPos.z, 'magic', { count: 8, color: 0xffaa00 });
+                // Store peasantId in ability for completion tracking
+                const abilities = this.game.call('getEntityAbilities', builderEntityId);
+                if (abilities) {
+                    const buildAbility = abilities.find(a => a.id === 'build');
+                    if (buildAbility) {
+                        buildAbility.peasantId = builderEntityId;
                     }
-
-                    this.game.uiSystem?.showNotification('Peasant assigned to continue construction', 'success', 1000);
                 }
-            }
-        );
-    }
 
-    issueMoveOrders(placementIds, targetPosition) {
-        if (this.game.state.phase !== this.enums.gamePhase.placement) {
-            return;
-        }
-        const meta = {
-            ...this.orderMeta,
-            isMoveOrder: true,
-            preventEnemiesInRangeCheck: !!this.orderMeta.preventEnemiesInRangeCheck
-        };
-        this.orderMeta = {};
-        const targetPositions = this.getFormationTargetPositions(targetPosition, placementIds);
-        // Send to server - server will set authoritative issuedTime and respond
-        this.game.call('setSquadTargets',
-            { placementIds, targetPositions, meta },
-            (success) => {
-                if (success) {
-                    // Domain logic (applySquadsTargetPositions) now handled by ClientNetworkSystem
-                    // Here we just handle UI concerns: targeting state, visual feedback
-                    this.startTargeting();
-                    this.showMoveTargets();
+                // Show visual feedback
+                if (this.game.effectsSystem && targetPosition) {
+                    this.game.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { count: 8, color: 0xffaa00 });
                 }
+
+                this.game.uiSystem?.showNotification('Peasant assigned to continue construction', 'success', 1000);
             }
-        );
-    }
 
-    getFormationTargetPositions(targetPosition, placementIds) {
-        let targetPositions = [];
-        // Use placement grid size (half of terrain grid) for unit formation spacing
-        const placementGridSize = this.game.call('getPlacementGridSize');
-        const unitPadding = 1;
-
-        // Round to 2 decimal places to avoid floating-point precision issues that cause desync
-        const roundPos = (val) => Math.round(val * 100) / 100;
-
-        for (let i = 0; i < placementIds.length; i++) {
-            targetPositions.push({
-                x: roundPos(targetPosition.x),
-                z: roundPos(i % 2 == 0 ? targetPosition.z + i * placementGridSize * unitPadding : targetPosition.z - i * placementGridSize * unitPadding)
-            });
-        }
-        return targetPositions;
+            // Keep targeting active
+            this.startTargeting();
+        });
     }
 
     onBattleStart() {

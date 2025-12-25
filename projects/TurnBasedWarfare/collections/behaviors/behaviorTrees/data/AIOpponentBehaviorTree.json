@@ -1,0 +1,12 @@
+{
+  "title": "AI Opponent Behavior Tree",
+  "description": "Sequence tree for AI opponent during placement phase. Executes build orders then signals ready.",
+  "behaviorNodeType": "sequence",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorTrees/js/AIOpponentBehaviorTree.js",
+  "fileName": "AIOpponentBehaviorTree",
+  "behaviorActions": [
+    "AIExecuteBuildOrderBehaviorAction",
+    "AIReadyForBattleBehaviorAction"
+  ],
+  "parameters": {}
+}

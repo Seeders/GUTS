@@ -1,0 +1,8 @@
+{
+  "title": "Scout Actions",
+  "actions": [
+    "move",
+    "hold",
+    "bearTrap"
+  ]
+}

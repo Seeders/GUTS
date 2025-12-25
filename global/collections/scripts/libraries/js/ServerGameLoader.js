@@ -1,5 +1,6 @@
 class ServerGameLoader extends GUTS.BaseLoader {
     constructor(game) {
+        super();
         this.game = game;
     }
     

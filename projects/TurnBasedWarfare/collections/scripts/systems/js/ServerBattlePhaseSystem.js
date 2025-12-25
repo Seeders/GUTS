@@ -40,6 +40,8 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             const battleSeed = GUTS.SeededRandom.combineSeed(gameSeed, this.game.state.round || 1);
             this.game.rng.strand('battle').reseed(battleSeed);
 
+            this.game.triggerEvent('onBattleStart');
+
             return { success: true };
 
         } catch (error) {

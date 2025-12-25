@@ -1,0 +1,19 @@
+{
+  "name": "Scout Build",
+  "description": "Build fletcher's hall + mage tower to unlock scout (dex/intel hybrid) for fair 1v1 combat test",
+  "rounds": {
+    "1": [
+      { "type": "PLACE_BUILDING", "buildingId": "fletchersHall" }
+    ],
+    "2": [
+      { "type": "PLACE_BUILDING", "buildingId": "mageTower" }
+    ],
+    "3": [
+      { "type": "PURCHASE_UNIT", "unitId": "1_di_scout", "building": "fletchersHall" },
+      { "type": "MOVE_ORDER", "unitType": "1_di_scout", "target": "center" }
+    ],
+    "4": [
+      { "type": "MOVE_ORDER", "unitType": "1_di_scout", "target": "enemy" }
+    ]
+  }
+}

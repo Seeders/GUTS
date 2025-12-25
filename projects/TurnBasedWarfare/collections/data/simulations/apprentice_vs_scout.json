@@ -1,0 +1,9 @@
+{
+  "name": "Apprentice vs Scout",
+  "description": "Apprentice (intel/strength magic caster) vs Scout (dex/intel hybrid ranged). Magic caster vs hybrid ranged.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "level_1",
+  "buildOrderA": "apprentice",
+  "buildOrderB": "scout"
+}

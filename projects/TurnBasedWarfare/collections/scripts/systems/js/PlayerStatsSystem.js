@@ -10,15 +10,103 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
         'addPlayerGold',
         'deductPlayerGold',
         'canAffordCost',
-        'createPlayerEntity'
+        'createPlayerEntity',
+        // New services for multi-player support
+        'setActivePlayer',
+        'getActivePlayer',
+        'getActivePlayerTeam',
+        'getActivePlayerStats',
+        'getPlayerEntityByTeam'
     ];
 
     constructor(game) {
         super(game);
         this.game.playerStatsSystem = this;
+        // Active player context - used for multi-player simulations
+        // When null, falls back to game.state.myTeam for backwards compatibility
+        this._activePlayerId = null;
     }
 
     init() {
+    }
+
+    // ==================== ACTIVE PLAYER CONTEXT ====================
+    // These methods manage which player is currently "active" for operations
+    // In single-player/client: typically the local player
+    // In headless simulations: set per-operation to the relevant AI player
+
+    /**
+     * Set the active player context
+     * @param {number|null} playerId - Numeric player ID or null to use legacy myTeam
+     */
+    setActivePlayer(playerId) {
+        this._activePlayerId = playerId;
+    }
+
+    /**
+     * Get the currently active player ID
+     * @returns {number|null} The active player ID or null if using legacy mode
+     */
+    getActivePlayer() {
+        return this._activePlayerId;
+    }
+
+    /**
+     * Get the team of the active player
+     * Falls back to game.state.myTeam for backwards compatibility
+     * @returns {number|null} The team enum value or null if no player context
+     */
+    getActivePlayerTeam() {
+        // If active player is set, use their team
+        if (this._activePlayerId !== null) {
+            const stats = this.getPlayerStats(this._activePlayerId);
+            if (stats) {
+                return stats.team;
+            }
+        }
+
+        // Fallback to legacy game.state.myTeam
+        // Note: myTeam can be 0 (neutral) which is falsy, so check for undefined/null
+        if (this.game.state.myTeam !== undefined && this.game.state.myTeam !== null) {
+            return this.game.state.myTeam;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the playerStats of the active player
+     * Falls back to player matching game.state.myTeam for backwards compatibility
+     * @returns {Object|null} The playerStats component or null
+     */
+    getActivePlayerStats() {
+        // If active player is set, use their stats
+        if (this._activePlayerId !== null) {
+            return this.getPlayerStats(this._activePlayerId);
+        }
+
+        // Fallback: find player matching legacy myTeam
+        if (this.game.state.myTeam !== undefined && this.game.state.myTeam !== null) {
+            return this.getPlayerStatsByTeam(this.game.state.myTeam);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get player entity ID by team
+     * @param {number} team - Numeric team value (from enums.team)
+     * @returns {number|null} The player entity ID or null
+     */
+    getPlayerEntityByTeam(team) {
+        const playerEntities = this.game.getEntitiesWith('playerStats');
+        for (const entityId of playerEntities) {
+            const stats = this.game.getComponent(entityId, 'playerStats');
+            if (stats && stats.team === team) {
+                return entityId;
+            }
+        }
+        return null;
     }
 
     /**

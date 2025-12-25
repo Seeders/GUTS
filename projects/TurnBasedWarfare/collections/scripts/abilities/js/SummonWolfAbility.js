@@ -1,7 +1,6 @@
 class SummonWolfAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'summon_wolf',
             name: 'Summon Wolf',
             description: 'Call forth a loyal wolf companion (max 1 per Beast Master)',
             cooldown: 0.0,

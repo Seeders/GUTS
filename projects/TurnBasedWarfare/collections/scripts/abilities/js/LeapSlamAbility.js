@@ -1,7 +1,6 @@
 class LeapSlamAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'leap_slam',
             name: 'Leap Slam',
             description: 'Leap into the air and slam down, dealing AoE damage',
             cooldown: 8.0,

@@ -1,7 +1,6 @@
 class DisruptionBombAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'disruption_bomb',
             name: 'Disruption Bomb',
             description: 'Throw a bomb that disables enemy abilities and equipment (effects do not stack)',
             cooldown: 16.0,

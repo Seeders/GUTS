@@ -1,7 +1,6 @@
 class TrackingMark extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'tracking_mark',
             name: 'Tracking Mark',
             description: 'Mark an enemy for increased damage - multiple Rangers can mark the same target for stacking effect',
             cooldown: 8.0,

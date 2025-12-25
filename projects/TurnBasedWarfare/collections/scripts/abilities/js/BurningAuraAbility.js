@@ -1,7 +1,6 @@
 class BurningAuraAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'burning_aura',
             name: 'Burning Aura',
             description: 'Emanate heat that burns nearby enemies',
             cooldown: 0,

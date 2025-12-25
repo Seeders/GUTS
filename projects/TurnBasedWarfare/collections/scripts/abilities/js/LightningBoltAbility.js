@@ -1,7 +1,6 @@
 class LightningBoltAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'lightning_bolt',
             name: 'Lightning Bolt',
             description: 'Instantly strikes an enemy with pure lightning',
             cooldown: 2.0,

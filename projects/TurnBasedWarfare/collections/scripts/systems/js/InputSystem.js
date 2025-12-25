@@ -19,15 +19,26 @@ class InputSystem extends GUTS.BaseSystem {
     setupCanvasEvents() {
         const canvas = document.getElementById('gameCanvas');
         if (!canvas) return;
-        
+
         canvas.addEventListener('click', (event) => {
-            this.game.call('handleCanvasClick', event);
+            // Get world position from screen coordinates
+            const worldPos = this.game.call('getWorldPositionFromMouse', event.clientX, event.clientY);
+            if (!worldPos) return;
+
+            const modifiers = {
+                shift: event.shiftKey,
+                ctrl: event.ctrlKey,
+                alt: event.altKey
+            };
+
+            // Forward to GameInterfaceSystem
+            this.game.call('ui_handleCanvasClick', worldPos.x, worldPos.z, modifiers, (result) => {
+                this.game.triggerEvent('onInputResult', result);
+            });
         });
-        
-        canvas.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            this.handleRightClick(event);
-        });
+
+        // Note: Right-click (contextmenu) is handled by UnitOrderUISystem
+        // which manages its own canvas listener based on isTargeting state
     }
     
     setupButtonEvents() {        
@@ -200,10 +211,6 @@ class InputSystem extends GUTS.BaseSystem {
         return false;
     }
     
-    handleRightClick(event) {
-        // Handle right-click on canvas (e.g., cancel selection)
-
-    }
         
     updateMousePosition(event) {
         this.mouseState.x = event.clientX;

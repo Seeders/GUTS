@@ -1,7 +1,6 @@
 class RageAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, {
-            id: 'raging_strike',
             name: 'Raging Strike',
             description: 'Unleash primal fury with increased damage and attack speed',
             cooldown: 5.0,

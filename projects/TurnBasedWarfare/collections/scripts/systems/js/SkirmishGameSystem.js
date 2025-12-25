@@ -36,11 +36,18 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
             return;
         }
 
+        // Check if we're loading from a save file
+        const isLoadingSave = !!this.game.pendingSaveData;
+        const saveData = this.game.pendingSaveData;
+
         // Enable local game mode (sets game.state.isLocalGame and local player ID)
         this.game.call('setLocalGame', true, 0);
 
         // Generate game seed for deterministic RNG (use timestamp-based seed)
-        this.game.state.gameSeed = Date.now() % 1000000;
+        // If loading save, preserve saved seed if available
+        if (!isLoadingSave) {
+            this.game.state.gameSeed = Date.now() % 1000000;
+        }
 
         // Team assignments
         const selectedTeam = config.selectedTeam || 'left';
@@ -59,9 +66,14 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
             this.game.clientNetworkManager.numericPlayerId = 0;
         }
 
-        // Set level
-        const levelName = config.selectedLevel;
-        const levelIndex = this.enums.levels?.[levelName] ?? 0;
+        // Set level - use saved level if loading, otherwise use config
+        let levelIndex;
+        if (isLoadingSave && saveData.level !== undefined) {
+            levelIndex = saveData.level;
+        } else {
+            const levelName = config.selectedLevel;
+            levelIndex = this.enums.levels?.[levelName] ?? 0;
+        }
         this.game.state.level = levelIndex;
 
         this.game.call('showLoadingScreen');
@@ -79,15 +91,48 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
 
         await this.game.switchScene('skirmish');
 
-        // Create player entities (mimics what ServerGameRoom does in multiplayer)
-        this.createLocalRoom(config);
+        // When loading a save, SceneManager automatically restores entities via loadSavedEntities()
+        // We only need to create player/AI entities for new games
+        if (!isLoadingSave) {
+            // Create player entities (mimics what ServerGameRoom does in multiplayer)
+            this.createLocalRoom(config);
+
+            // Spawn AI opponent entity (uses behavior tree to execute build orders)
+            this.spawnAIOpponent(config);
+        }
 
         this.game.call('initializeGame', null);
+    }
 
-        // Generate AI placements
-        setTimeout(() => {
-            this.game.call('generateAIPlacement', this.aiTeam);
-        }, 100);
+    /**
+     * Spawn the AI opponent entity from prefab
+     * This entity has a behavior tree that executes build orders during placement phase
+     */
+    spawnAIOpponent(config) {
+        const aiEntityId = this.game.createEntity();
+
+        // Add team component
+        this.game.addComponent(aiEntityId, 'team', {
+            team: this.aiTeam
+        });
+
+        // Add aiState component pointing to AIOpponentBehaviorTree
+        this.game.addComponent(aiEntityId, 'aiState', {
+            rootBehaviorTree: this.enums.behaviorTrees?.AIOpponentBehaviorTree ?? 0,
+            rootBehaviorTreeCollection: this.enums.behaviorCollection?.behaviorTrees ?? 0,
+            currentAction: 0,
+            currentActionCollection: 0
+        });
+
+        // Add aiOpponent component with build order config
+        this.game.addComponent(aiEntityId, 'aiOpponent', {
+            buildOrderId: config.aiBuildOrder || 'basic',
+            currentRound: 0,
+            actionsExecuted: false,
+            actionIndex: 0
+        });
+
+        console.log('[SkirmishGameSystem] Spawned AI opponent entity:', aiEntityId, 'for team:', this.aiTeam);
     }
 
     createLocalRoom(config) {
