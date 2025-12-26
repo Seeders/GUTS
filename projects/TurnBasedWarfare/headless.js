@@ -656,7 +656,12 @@ async function runBatchSimulations(runner, simulationIds, options = {}) {
 
             // Write individual result file with full verbose output AND captured logs
             const simTimestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const individualPath = path.join(__dirname, `simulation_${simId}_${simTimestamp}.txt`);
+            const resultsDir = path.join(__dirname, 'simulation_results');
+            if (!existsSync(resultsDir)) {
+                const { mkdirSync } = await import('fs');
+                mkdirSync(resultsDir, { recursive: true });
+            }
+            const individualPath = path.join(resultsDir, `simulation_${simId}_${simTimestamp}.txt`);
             const fileContent = allLogs + '\n\n' + formatResultsAsText(result, true);
             writeFileSync(individualPath, fileContent);
 
@@ -685,7 +690,12 @@ async function runBatchSimulations(runner, simulationIds, options = {}) {
 
     // Write batch summary file with only summary results (not full debug)
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const batchPath = path.join(__dirname, `batch_results_${timestamp}.txt`);
+    const resultsDir = path.join(__dirname, 'simulation_results');
+    if (!existsSync(resultsDir)) {
+        const { mkdirSync } = await import('fs');
+        mkdirSync(resultsDir, { recursive: true });
+    }
+    const batchPath = path.join(resultsDir, `batch_results_${timestamp}.txt`);
     const batchContent = generateBatchSummaryFile(summaryResults, batchTime);
     writeFileSync(batchPath, batchContent);
     console.log(`[Headless] Batch summary written to: ${batchPath}`);
