@@ -15,7 +15,7 @@ class LeapSlamAbility extends GUTS.BaseAbility {
 
         this.leapDamage = 40;
         this.splashRadius = 60;
-        this.leapHeight = 300;
+        this.leapHeight = 120;
     }
 
     canExecute(casterEntity) {
