@@ -23,6 +23,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.terrainTypes = null;
         this.walkabilityCache = new Map();
         this.ramps = new Set(); // Stores ramp locations in "x,z" format (terrain grid coords)
+        this.currentLevelId = null; // Track which level we're initialized for
 
         this.pathCache = new Map();
         this.MAX_CACHE_SIZE = 1000;
@@ -73,7 +74,18 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
     onSceneLoad(sceneData) {
         console.log('[PathfindingSystem] onSceneLoad called, initialized:', this.initialized);
-        if (this.initialized) return;
+
+        // Check if level changed - if so, we need to re-initialize
+        const levelId = this.game.call('getLevel');
+        if (this.initialized && this.currentLevelId === levelId) {
+            return; // Same level, already initialized
+        }
+
+        // Level changed or first init - reset and rebuild
+        if (this.initialized && this.currentLevelId !== levelId) {
+            console.log('[PathfindingSystem] Level changed from', this.currentLevelId, 'to', levelId, '- re-initializing');
+            this.onSceneUnload(); // Clean up old navmesh
+        }
 
         const collections = this.collections;
         if (!collections) {
@@ -81,8 +93,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Get level from terrain entity instead of game.state.level
-        const levelId = this.game.call('getLevel');
+        // levelId already obtained at top of function
         console.log('[PathfindingSystem] levelId:', levelId);
         const level = collections.levels?.[levelId];
         if (!level || !level.tileMap) {
@@ -125,6 +136,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         }
 
         this.initialized = true;
+        this.currentLevelId = levelId; // Track which level we initialized for
     }
 
     onPlacementPhaseStart() {
@@ -1007,6 +1019,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.navGridWidth = 0;
         this.navGridHeight = 0;
         this.initialized = false;
+        this.currentLevelId = null;
         this.debugEnabled = false;
     }
 }
