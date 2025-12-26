@@ -346,6 +346,20 @@ function formatResultsAsText(result, verbose = false) {
                     lines.push(`    [${unitStats.team.toUpperCase()}] ${unitStats.unitType}: ${unitStats.attacks} attacks`);
                 }
             }
+
+            lines.push(`  Total Abilities: ${combatSummary.totalAbilities || 0}`);
+            lines.push(`    Left Team: ${combatSummary.abilitiesByTeam?.left || 0}`);
+            lines.push(`    Right Team: ${combatSummary.abilitiesByTeam?.right || 0}`);
+
+            if (combatSummary.abilitiesByUnit && combatSummary.abilitiesByUnit.length > 0) {
+                lines.push(`  Abilities by Unit:`);
+                for (const unitStats of combatSummary.abilitiesByUnit) {
+                    const abilityList = Object.entries(unitStats.abilityNames || {})
+                        .map(([name, count]) => `${name}:${count}`)
+                        .join(', ');
+                    lines.push(`    [${unitStats.team.toUpperCase()}] ${unitStats.unitType}: ${unitStats.abilities} abilities (${abilityList})`);
+                }
+            }
         } else {
             lines.push(`  (No combat activity recorded)`);
         }
@@ -526,6 +540,23 @@ function printSimulationResults(result, verbose = false) {
                 console.log(`║  Attacks by Unit:                                          ║`);
                 for (const unitStats of combatSummary.attacksByUnit) {
                     const line = `    [${unitStats.team.toUpperCase()}] ${unitStats.unitType}: ${unitStats.attacks} attacks`;
+                    console.log(`║${line.padEnd(61)}║`);
+                }
+            }
+
+            console.log(`╟────────────────────────────────────────────────────────────╢`);
+            console.log(`║  Total Abilities: ${String(combatSummary.totalAbilities || 0).padEnd(42)}║`);
+            console.log(`║    Left Team: ${String(combatSummary.abilitiesByTeam?.left || 0).padEnd(46)}║`);
+            console.log(`║    Right Team: ${String(combatSummary.abilitiesByTeam?.right || 0).padEnd(45)}║`);
+
+            if (combatSummary.abilitiesByUnit && combatSummary.abilitiesByUnit.length > 0) {
+                console.log(`╟────────────────────────────────────────────────────────────╢`);
+                console.log(`║  Abilities by Unit:                                        ║`);
+                for (const unitStats of combatSummary.abilitiesByUnit) {
+                    const abilityList = Object.entries(unitStats.abilityNames || {})
+                        .map(([name, count]) => `${name}:${count}`)
+                        .join(', ');
+                    const line = `    [${unitStats.team.toUpperCase()}] ${unitStats.unitType}: ${abilityList}`;
                     console.log(`║${line.padEnd(61)}║`);
                 }
             }

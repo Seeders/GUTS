@@ -258,7 +258,8 @@ class AbilitySystem extends GUTS.BaseSystem {
         const abilityIndex = this.enums.abilities[abilityId];
         if (abilityIndex === undefined) return true;
         const cooldownEnd = cooldowns.cooldowns[abilityIndex];
-        return !cooldownEnd || this.game.state.now >= cooldownEnd;
+        const now = this.game.state.now;
+        return !cooldownEnd || now >= cooldownEnd;
     }
 
     getRemainingCooldown(entityId, abilityId) {

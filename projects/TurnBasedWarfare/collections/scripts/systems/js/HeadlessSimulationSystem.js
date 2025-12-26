@@ -30,8 +30,9 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         // Combat log for detailed reporting
         this._combatLog = [];
         this._lastAttackState = new Map(); // Track last attack time per entity
+        this._lastAbilityState = new Map(); // Track last ability time per entity
         this._projectilesFired = 0;
-        this._abilitiesUsed = 0;
+        this._abilitiesUsed = { left: 0, right: 0 };
         this._damageDealt = { left: 0, right: 0 };
     }
 
@@ -43,8 +44,9 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         this._unitDeaths = [];
         this._combatLog = [];
         this._lastAttackState = new Map();
+        this._lastAbilityState = new Map();
         this._projectilesFired = 0;
-        this._abilitiesUsed = 0;
+        this._abilitiesUsed = { left: 0, right: 0 };
         this._damageDealt = { left: 0, right: 0 };
     }
 
@@ -58,8 +60,9 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         this._unitDeaths = [];
         this._combatLog = [];
         this._lastAttackState = new Map();
+        this._lastAbilityState = new Map();
         this._projectilesFired = 0;
-        this._abilitiesUsed = 0;
+        this._abilitiesUsed = { left: 0, right: 0 };
         this._damageDealt = { left: 0, right: 0 };
     }
 
@@ -142,6 +145,44 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
             const projectileCount = this.game.projectileSystem.projectiles?.size || 0;
             if (projectileCount > this._projectilesFired) {
                 this._projectilesFired = projectileCount;
+            }
+        }
+
+        // Track ability usage by monitoring abilityCooldowns component
+        const entitiesWithCooldowns = this.game.getEntitiesWith('abilityCooldowns', 'team', 'unitType');
+        for (const entityId of entitiesWithCooldowns) {
+            const cooldowns = this.game.getComponent(entityId, 'abilityCooldowns');
+            const teamComp = this.game.getComponent(entityId, 'team');
+            const deathState = this.game.getComponent(entityId, 'deathState');
+
+            // Skip dead/dying units
+            if (deathState && deathState.state !== this.enums.deathState.alive) continue;
+
+            // Track abilities by monitoring lastAbilityTime changes
+            const lastKnownAbilityTime = this._lastAbilityState.get(entityId) || 0;
+            if (cooldowns.lastAbilityTime && cooldowns.lastAbilityTime > lastKnownAbilityTime) {
+                this._lastAbilityState.set(entityId, cooldowns.lastAbilityTime);
+
+                const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+                const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+                const teamName = reverseEnums.team?.[teamComp.team] || teamComp.team;
+
+                // Get ability name from lastAbilityUsed index
+                const abilityName = reverseEnums.abilities?.[cooldowns.lastAbilityUsed] || 'unknown';
+
+                this._combatLog.push({
+                    type: 'ability',
+                    tick: this.game.tickCount,
+                    time: this.game.state.now,
+                    entityId,
+                    unitType: unitDef?.id || 'unknown',
+                    team: teamName,
+                    abilityName
+                });
+
+                if (teamName === 'left' || teamName === 'right') {
+                    this._abilitiesUsed[teamName]++;
+                }
             }
         }
     }
@@ -272,6 +313,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
     _getCombatSummary() {
         const attacksByTeam = { left: 0, right: 0 };
         const attacksByUnit = {};
+        const abilitiesByUnit = {};
 
         for (const entry of this._combatLog) {
             if (entry.type === 'attack') {
@@ -286,13 +328,23 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
                 }
                 attacksByUnit[key].attacks++;
                 attacksByUnit[key].totalDamage += entry.damage || 0;
+            } else if (entry.type === 'ability') {
+                const key = `${entry.team}_${entry.unitType}`;
+                if (!abilitiesByUnit[key]) {
+                    abilitiesByUnit[key] = { team: entry.team, unitType: entry.unitType, abilities: 0, abilityNames: {} };
+                }
+                abilitiesByUnit[key].abilities++;
+                abilitiesByUnit[key].abilityNames[entry.abilityName] = (abilitiesByUnit[key].abilityNames[entry.abilityName] || 0) + 1;
             }
         }
 
         return {
             totalAttacks: this._combatLog.filter(e => e.type === 'attack').length,
+            totalAbilities: this._combatLog.filter(e => e.type === 'ability').length,
             attacksByTeam,
+            abilitiesByTeam: this._abilitiesUsed,
             attacksByUnit: Object.values(attacksByUnit),
+            abilitiesByUnit: Object.values(abilitiesByUnit),
             projectilesFired: this._projectilesFired
         };
     }

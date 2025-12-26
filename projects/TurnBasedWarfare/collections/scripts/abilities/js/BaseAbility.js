@@ -130,6 +130,7 @@ class BaseAbility {
         // Search with extended range to account for target collision radii
         const searchRange = baseRange + casterRadius + 50; // +50 as buffer for large units
         const nearbyEntityIds = this.game.call('getNearbyUnits', casterPos, searchRange, casterEntity);
+
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
 
         return nearbyEntityIds.filter(entityId => {
