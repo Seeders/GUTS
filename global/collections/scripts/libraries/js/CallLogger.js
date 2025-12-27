@@ -110,7 +110,8 @@ class CallLogger {
                 if (Array.isArray(result)) {
                     return `[Array(${result.length})]`;
                 }
-                return '[Object]';
+                // Shallow clone simple objects to preserve result data
+                return { ...result };
             } catch (e) {
                 return '[Object]';
             }
