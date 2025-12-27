@@ -1,8 +1,0 @@
-{
-  "title": "Is Not Force Move Order Check",
-  "description": "Checks if the entity does NOT have an active force move order. Returns SUCCESS if not force moving, FAILURE if force moving.",
-  "behaviorNodeType": "action",
-  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/IsNotForceMoveOrderBehaviorAction.js",
-  "fileName": "IsNotForceMoveOrderBehaviorAction",
-  "parameters": {}
-}
