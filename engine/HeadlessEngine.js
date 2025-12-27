@@ -19,8 +19,7 @@ export default class HeadlessEngine extends BaseEngine {
         this.tickRate = 1 / 20; // 20 TPS
         this.paused = false;
         this.running = false;
-        this.maxTicks = 10000;
-        this.defaultTimeoutMs = 30000; // 30 second default timeout
+        this.defaultTimeoutMs = 300000; // 5 minute default timeout
     }
 
     async init(projectName) {
@@ -85,11 +84,11 @@ export default class HeadlessEngine extends BaseEngine {
     /**
      * Run the simulation loop
      * @param {Object} options
-     * @param {number} options.maxTicks - Maximum ticks to run
      * @param {Function} options.shouldStop - Optional function that returns true to stop
      */
     async run(options = {}) {
-        const { maxTicks = this.maxTicks, shouldStop } = options;
+        const { shouldStop } = options;
+        const maxTicks = 10000;
 
         this.running = true;
         this.paused = false;
@@ -118,15 +117,14 @@ export default class HeadlessEngine extends BaseEngine {
      * build orders via behavior trees during placement phase.
      *
      * @param {Object} options
-     * @param {number} options.maxTicks - Maximum ticks before timeout
-     * @param {number} options.timeoutMs - Maximum time in milliseconds before timeout (default: 30000)
+     * @param {number} options.timeoutMs - Maximum time in milliseconds before timeout (default: 300000)
      * @returns {Promise<Object>} Simulation results
      */
     async runSimulation(options = {}) {
         const {
-            maxTicks = this.maxTicks,
             timeoutMs = this.defaultTimeoutMs
         } = options;
+        const maxTicks = 10000;
 
         const startTime = this.getCurrentTime();
 

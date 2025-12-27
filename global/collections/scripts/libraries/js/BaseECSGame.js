@@ -1291,7 +1291,9 @@ class BaseECSGame {
         }
 
         // Include numeric arrays in sparse format (only non-zero, non-null values)
+        // ALSO include zeros that changed FROM non-zero (to ensure clients reset them)
         // Skip client-only components
+        const lastState = this._lastSyncedState;
         for (const [key, arr] of this._numericArrays) {
             // key format is "componentType.fieldPath" - extract component type
             const componentType = key.split('.')[0];
@@ -1299,12 +1301,16 @@ class BaseECSGame {
                 continue;  // Skip client-only components
             }
 
+            const lastArr = lastState?.numericArrays?.get(key);
+            const lastMaxEntity = lastState?.nextEntityId || 0;
             const sparse = {};
             for (let i = 0; i < maxEntity; i++) {
                 const val = arr[i];
-                // Skip zeros (default value for most fields)
-                // Include -Infinity as null for proper null sentinel sync
-                if (val !== 0) {
+                // Only check lastArr within its bounds
+                const lastVal = (lastArr && i < lastMaxEntity) ? lastArr[i] : 0;
+                // Include non-zero values
+                // Also include zeros if they were previously non-zero (value changed to 0)
+                if (val !== 0 || (lastVal !== 0 && val === 0)) {
                     sparse[i] = this._toSyncValue(val);
                 }
             }

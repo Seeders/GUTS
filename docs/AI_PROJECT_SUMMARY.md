@@ -316,11 +316,13 @@ Victory/Defeat OR next round
 ```javascript
 // Game state access (via this.game.state)
 this.game.state.phase      // 'lobby' | 'placement' | 'battle' | 'ended'
-this.game.state.myTeam     // 2 (left) | 3 (right)
 this.game.state.round      // Current round number (1-based)
 this.game.state.now        // Game time in seconds (deterministic)
 this.game.state.gold       // Player's current gold
 this.game.state.mode       // Current game mode config
+
+// Get player's team via PlayerStatsSystem
+this.game.call('getActivePlayerTeam')  // 2 (left) | 3 (right)
 ```
 
 ### Teams
