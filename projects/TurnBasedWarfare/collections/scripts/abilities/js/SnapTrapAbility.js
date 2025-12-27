@@ -3,11 +3,11 @@ class SnapTrapAbility extends GUTS.BaseAbility {
         super(game, {
             name: 'Snap Trap',
             description: 'Snaps shut on nearby enemies, dealing damage and stunning them',
-            cooldown: 0,
+            cooldown: 9999,
             range: 48,
             manaCost: 0,
             targetType: 'enemy',
-            animation: 'attack',
+            animation: 'idle',
             priority: 10,
             castTime: 0,
             ...abilityData
@@ -15,22 +15,24 @@ class SnapTrapAbility extends GUTS.BaseAbility {
 
         this.trapDamage = 50;
         this.stunDuration = 3.0;
+
+        // Cache for targets found during canExecute
+        this._pendingTargets = new Map();
     }
 
     canExecute(casterEntity, targetData = null) {
-        // Check if trap has already triggered (prevent multiple executions)
-        const trapState = this.game.getComponent(casterEntity, "trapState");
-        if (trapState?.triggered) return false;
-
         // Only trigger when there's an enemy in range
         const enemy = this.findNearestEnemy(casterEntity);
-        return enemy !== null;
+        if (enemy !== null) {
+            // Cache the target for execute() to use
+            this._pendingTargets.set(casterEntity, enemy);
+            return true;
+        }
+        this._pendingTargets.delete(casterEntity);
+        return false;
     }
 
     execute(casterEntity, targetData = null) {
-        // Mark trap as triggered immediately to prevent multiple executions
-        this.game.addComponent(casterEntity, "trapState", { triggered: true });
-
         const transform = this.game.getComponent(casterEntity, "transform");
         const trapPos = transform?.position;
         if (!trapPos) return;
@@ -43,10 +45,17 @@ class SnapTrapAbility extends GUTS.BaseAbility {
             this.game.effectsSystem.playScreenShake(0.15, 1);
         }
 
-        // Find the target - either from targetData or find nearest enemy
+        // Find the target - use cached target from canExecute, or find nearest enemy
         let targetId = targetData?.targetId || targetData;
         if (!targetId || typeof targetId !== 'number') {
-            targetId = this.findNearestEnemy(casterEntity);
+            // First try cached target from canExecute
+            targetId = this._pendingTargets.get(casterEntity);
+            this._pendingTargets.delete(casterEntity);
+
+            // Fallback to finding nearest enemy
+            if (!targetId) {
+                targetId = this.findNearestEnemy(casterEntity);
+            }
         }
 
         if (targetId) {
@@ -66,8 +75,8 @@ class SnapTrapAbility extends GUTS.BaseAbility {
 
             this.logAbilityUsage(casterEntity, "Bear trap snaps shut!");
 
-            // Only destroy the trap after successfully hitting a target
-            this.game.schedulingSystem.scheduleAction(() => {
+            // Destroy the trap after successfully hitting a target
+            this.game.call('scheduleAction', () => {
                 this.destroyTrap(casterEntity);
             }, 0.3, casterEntity);
         }
@@ -101,7 +110,8 @@ class SnapTrapAbility extends GUTS.BaseAbility {
             const dz = entityPos.z - casterPos.z;
             const dist = Math.sqrt(dx * dx + dz * dz);
 
-            if (dist < nearestDist) {
+            // Use <= for inclusive range check
+            if (dist <= nearestDist) {
                 nearestDist = dist;
                 nearestEnemy = entityId;
             }
@@ -118,10 +128,9 @@ class SnapTrapAbility extends GUTS.BaseAbility {
             this.playConfiguredEffects('expiration', trapPos);
         }
 
-        // Kill the trap entity
-        const health = this.game.getComponent(trapEntity, "health");
-        if (health) {
-            health.current = 0;
+        // Kill the trap entity via the death system
+        if (this.game.hasService('startDeathProcess')) {
+            this.game.call('startDeathProcess', trapEntity);
         }
     }
 }

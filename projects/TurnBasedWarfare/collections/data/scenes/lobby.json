@@ -9,6 +9,7 @@
     "LobbyUISystem",
     "BaseNetworkSystem",
     "ClientNetworkSystem",
-    "SkirmishGameSystem"
+    "SkirmishGameSystem",
+    "SaveSystem"
   ]
 }

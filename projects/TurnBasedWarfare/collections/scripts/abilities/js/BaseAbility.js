@@ -17,7 +17,7 @@ class BaseAbility {
         // Convert string animation to numeric enum value
         this.animation = this._resolveAnimationType(abilityData.animation);
         this.priority = abilityData.priority || 5;
-        this.castTime = abilityData.castTime || 1.5;
+        this.castTime = abilityData.castTime ?? 1.5;
         this.autoTrigger = abilityData.autoTrigger || 'combat';
 
         this.effects = this.defineEffects();
@@ -86,13 +86,19 @@ class BaseAbility {
     // effectType is the prefix (e.g., 'cast', 'trail', 'impact')
     // Reads from config[effectType + 'ParticleEffectSystems'] array
     playConfiguredEffects(effectType, position) {
-        if (this.game.isServer) return;
-        const effects = this.abilityData[effectType + 'ParticleEffectSystems'];
+        if (this.game.isServer) {
+            console.log('[BaseAbility] playConfiguredEffects skipped - isServer');
+            return;
+        }
+        const effectKey = effectType + 'ParticleEffectSystems';
+        const effects = this.abilityData[effectKey];
+        console.log('[BaseAbility] playConfiguredEffects', effectType, 'effects:', effects, 'abilityData keys:', Object.keys(this.abilityData));
         if (!effects || !Array.isArray(effects) || effects.length === 0) return;
 
         const pos = new THREE.Vector3(position.x, position.y, position.z);
         effects.forEach(effectName => {
-            this.game.call('playEffect', effectName, pos);
+            console.log('[BaseAbility] Playing effect system:', effectName, 'at', pos.x, pos.y, pos.z);
+            this.game.call('playEffectSystem', effectName, pos);
         });
     }
     
@@ -101,8 +107,9 @@ class BaseAbility {
         if (element === null) {
             element = this.enums.element.physical;
         }
-        if (this.game.damageSystem) {
-            const result = this.game.damageSystem.applyDamage(sourceId, targetId, damage, element, { isSpell: true, ...options });
+        if (this.game.hasService('applyDamage')) {
+            // Use game.call to ensure damage is logged by CallLogger
+            const result = this.game.call('applyDamage', sourceId, targetId, damage, element, { isSpell: true, ...options });
 
             const transform = this.game.getComponent(targetId, "transform");
             const targetPos = transform?.position;
@@ -116,33 +123,11 @@ class BaseAbility {
         return null;
     }
     
-    // Use spatial grid for efficient lookup - returns array of entityIds
-    // Accounts for collision radii when checking if enemies are in range
+    // Get visible enemies in range using VisionSystem service
+    // Handles: spatial lookup, team filtering, health check, stealth/awareness, range checking
     getEnemiesInRange(casterEntity, range = null) {
         const baseRange = range || this.range;
-        const transform = this.game.getComponent(casterEntity, "transform");
-        const casterPos = transform?.position;
-        const casterTeam = this.game.getComponent(casterEntity, "team");
-        const casterRadius = GUTS.GameUtils.getCollisionRadius(this.game, casterEntity);
-
-        if (!casterPos || !casterTeam) return [];
-
-        // Search with extended range to account for target collision radii
-        const searchRange = baseRange + casterRadius + 50; // +50 as buffer for large units
-        const nearbyEntityIds = this.game.call('getNearbyUnits', casterPos, searchRange, casterEntity);
-
-        if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
-
-        return nearbyEntityIds.filter(entityId => {
-            const team = this.game.getComponent(entityId, "team");
-            const health = this.game.getComponent(entityId, "health");
-
-            if (!team || !health || health.current <= 0) return false;
-            if (team.team === casterTeam.team) return false;
-
-            // Use shared utility for consistent range checking
-            return GUTS.GameUtils.isInRange(this.game, casterEntity, entityId, baseRange);
-        });
+        return this.game.call('getVisibleEnemiesInRange', casterEntity, baseRange);
     }
 
     // Use spatial grid for efficient lookup - returns array of entityIds

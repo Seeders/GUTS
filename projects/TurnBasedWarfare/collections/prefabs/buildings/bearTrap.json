@@ -3,7 +3,7 @@
   "info": "A hidden trap that snares enemies",
   "value": 0,
   "category": "trap",
-  "buildTime": 1,
+  "buildTime": 0.1,
   "render": {
     "animations": {
       "idle": [

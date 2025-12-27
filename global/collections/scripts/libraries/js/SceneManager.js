@@ -46,7 +46,7 @@ class SceneManager {
         // Check if we're loading from a save file
         const isLoadingSave = !!this.game.pendingSaveData;
 
-        console.log(`[SceneManager] Loading scene: ${sceneName}, isLoadingSave: ${isLoadingSave}, hasSaveData: ${!!this.game.pendingSaveData}, hasSaveManager: ${!!this.game.saveSystem}, isServer: ${!!this.game.isServer}`);
+        console.log(`[SceneManager] Loading scene: ${sceneName}, isLoadingSave: ${isLoadingSave}, hasSaveData: ${!!this.game.pendingSaveData}, hasSaveSystem: ${!!this.game.saveSystem}, isServer: ${!!this.game.isServer}`);
         if (this.game.pendingSaveData) {
             console.log(`[SceneManager] pendingSaveData has ${this.game.pendingSaveData.entities?.length || 0} entities`);
         }
@@ -65,7 +65,12 @@ class SceneManager {
 
         // Inject saved entities if there's pending save data
         if (isLoadingSave) {
-            this.game.saveSystem.loadSavedEntities();
+            console.log('[SceneManager] Calling saveSystem.loadSavedEntities(), saveSystem:', this.game.saveSystem ? 'exists' : 'null');
+            if (this.game.saveSystem) {
+                this.game.saveSystem.loadSavedEntities();
+            } else {
+                console.error('[SceneManager] SaveSystem not available but pendingSaveData exists!');
+            }
         }
 
         // Notify all systems that scene has loaded (initial setup)

@@ -366,7 +366,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             };
 
         } catch (error) {
-            console.error('[PlacementSystem] Squad spawn failed:', error);
+            console.error('[PlacementSystem] Squad spawn failed:', error.message || error, error.stack);
             return { success: false, error: error.message };
         }
     }

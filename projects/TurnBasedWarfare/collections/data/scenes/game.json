@@ -37,6 +37,8 @@
     "ClientNetworkSystem",
     "PlacementUISystem",
     "GameUISystem",
+    "GameInterfaceSystem",
+    "InputSystem",
     "ShopSystem",
     "HealthBarSystem",
     "EquipmentSystem",

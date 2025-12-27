@@ -1,7 +1,10 @@
 class VisionSystem extends GUTS.BaseSystem {
     static services = [
         'hasLineOfSight',
-        'canSeePosition'
+        'canSeePosition',
+        'getVisibleEnemiesInRange',
+        'findNearestVisibleEnemy',
+        'findWeakestVisibleEnemy'
     ];
 
     constructor(game) {
@@ -273,6 +276,255 @@ class VisionSystem extends GUTS.BaseSystem {
         // Clear cached values
         this._gridSize = null;
         this._terrainSize = null;
+    }
 
+    /**
+     * Calculate total stealth for a target entity (base + terrain + hiding bonuses)
+     * @private
+     */
+    _calculateTargetStealth(targetId) {
+        const targetCombat = this.game.getComponent(targetId, 'combat');
+        let stealth = targetCombat?.stealth ?? 0;
+
+        const targetTransform = this.game.getComponent(targetId, 'transform');
+        const targetPos = targetTransform?.position;
+        if (targetPos) {
+            // Terrain stealth bonus
+            const terrainTypeIndex = this.game.call('getTerrainTypeAtPosition', targetPos.x, targetPos.z);
+            if (terrainTypeIndex !== null && terrainTypeIndex !== undefined) {
+                const terrainType = this.game.call('getTileMapTerrainType', terrainTypeIndex);
+                if (terrainType?.stealthBonus) {
+                    stealth += terrainType.stealthBonus;
+                }
+            }
+
+            // Hiding stealth bonus (+20)
+            const targetPlayerOrder = this.game.getComponent(targetId, 'playerOrder');
+            if (targetPlayerOrder?.isHiding) {
+                stealth += 20;
+            }
+        }
+
+        return stealth;
+    }
+
+    /**
+     * Get all visible enemies within range of an entity
+     * Handles: spatial lookup, team filtering, health check, death state, stealth/awareness, range checking
+     * @param {number} entityId - The entity looking for enemies
+     * @param {number} range - The search range
+     * @returns {number[]} - Array of visible enemy entity IDs
+     */
+    getVisibleEnemiesInRange(entityId, range) {
+        const transform = this.game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+        const team = this.game.getComponent(entityId, 'team');
+
+        if (!pos || !team) return [];
+
+        // Get viewer's awareness (default 50)
+        const combat = this.game.getComponent(entityId, 'combat');
+        const awareness = combat?.awareness ?? 50;
+
+        // Get collision radius for extended search
+        const entityRadius = GUTS.GameUtils.getCollisionRadius(this.game, entityId);
+        const searchRange = range + entityRadius + 50; // +50 buffer for large units
+
+        // Get nearby units via spatial grid
+        const nearbyEntityIds = this.game.call('getNearbyUnits', pos, searchRange, entityId);
+        if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
+
+        const enums = this.game.getEnums();
+        const enemies = [];
+
+        for (const targetId of nearbyEntityIds) {
+            // Team check - must be enemy
+            const targetTeam = this.game.getComponent(targetId, 'team');
+            if (!targetTeam || targetTeam.team === team.team) continue;
+
+            // Health check - must be alive
+            const targetHealth = this.game.getComponent(targetId, 'health');
+            if (!targetHealth || targetHealth.current <= 0) continue;
+
+            // Death state check - must not be dying/dead
+            const targetDeathState = this.game.getComponent(targetId, 'deathState');
+            if (targetDeathState && targetDeathState.state !== enums.deathState?.alive) continue;
+
+            // Stealth check
+            const targetStealth = this._calculateTargetStealth(targetId);
+            if (targetStealth > awareness) continue;
+
+            // Range check (accounts for collision radii)
+            if (!GUTS.GameUtils.isInRange(this.game, entityId, targetId, range)) continue;
+
+            enemies.push(targetId);
+        }
+
+        return enemies;
+    }
+
+    /**
+     * Build enemy list with positions and distances from visible enemy IDs
+     * @private
+     */
+    _buildEnemyList(entityId, visibleEnemyIds, includeHealth = false, maxHealthPercent = 1.0) {
+        const transform = this.game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+        if (!pos) return { pos: null, enemies: [] };
+
+        const enemies = [];
+        for (const targetId of visibleEnemyIds) {
+            const targetTransform = this.game.getComponent(targetId, 'transform');
+            const targetPos = targetTransform?.position;
+            if (!targetPos) continue;
+
+            const dx = targetPos.x - pos.x;
+            const dz = targetPos.z - pos.z;
+            const distance = Math.sqrt(dx * dx + dz * dz);
+
+            const enemy = { id: targetId, pos: targetPos, distance, dx, dz };
+
+            if (includeHealth) {
+                const targetHealth = this.game.getComponent(targetId, 'health');
+                if (!targetHealth) continue;
+                enemy.healthPercent = targetHealth.current / targetHealth.max;
+                enemy.healthCurrent = targetHealth.current;
+                if (enemy.healthPercent > maxHealthPercent) continue;
+            }
+
+            enemies.push(enemy);
+        }
+
+        return { pos, enemies };
+    }
+
+    /**
+     * Filter enemies by line of sight using sector-based raycasting
+     * @private
+     */
+    _filterByLOS(entityId, pos, enemies) {
+        const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+
+        const NUM_SECTORS = 16;
+        const sectorAngle = (Math.PI * 2) / NUM_SECTORS;
+
+        // Group enemies by direction sector
+        const sectors = new Array(NUM_SECTORS);
+        for (let i = 0; i < NUM_SECTORS; i++) {
+            sectors[i] = { enemies: [], maxDistance: 0, visibleDistance: 0 };
+        }
+
+        for (const enemy of enemies) {
+            const angle = Math.atan2(enemy.dz, enemy.dx);
+            const normalizedAngle = angle < 0 ? angle + Math.PI * 2 : angle;
+            const sectorIndex = Math.floor(normalizedAngle / sectorAngle) % NUM_SECTORS;
+
+            sectors[sectorIndex].enemies.push(enemy);
+            if (enemy.distance > sectors[sectorIndex].maxDistance) {
+                sectors[sectorIndex].maxDistance = enemy.distance;
+            }
+        }
+
+        // Raycast for each sector
+        for (let i = 0; i < NUM_SECTORS; i++) {
+            const sector = sectors[i];
+            if (sector.enemies.length === 0) continue;
+
+            const sectorCenterAngle = (i + 0.5) * sectorAngle;
+            const dirX = Math.cos(sectorCenterAngle);
+            const dirZ = Math.sin(sectorCenterAngle);
+            const rayDist = sector.maxDistance;
+
+            const targetX = pos.x + dirX * rayDist;
+            const targetZ = pos.z + dirZ * rayDist;
+
+            if (this.hasLineOfSight({ x: pos.x, z: pos.z }, { x: targetX, z: targetZ }, unitType, entityId)) {
+                sector.visibleDistance = rayDist;
+            } else {
+                // Binary search to find visible distance
+                let minDist = 0;
+                let maxDist = rayDist;
+                for (let iter = 0; iter < 4; iter++) {
+                    const midDist = (minDist + maxDist) / 2;
+                    const midX = pos.x + dirX * midDist;
+                    const midZ = pos.z + dirZ * midDist;
+                    if (this.hasLineOfSight({ x: pos.x, z: pos.z }, { x: midX, z: midZ }, unitType, entityId)) {
+                        minDist = midDist;
+                    } else {
+                        maxDist = midDist;
+                    }
+                }
+                sector.visibleDistance = minDist;
+            }
+        }
+
+        // Collect visible enemies
+        const visibleEnemies = [];
+        for (let i = 0; i < NUM_SECTORS; i++) {
+            const sector = sectors[i];
+            for (const enemy of sector.enemies) {
+                if (enemy.distance <= sector.visibleDistance) {
+                    visibleEnemies.push(enemy);
+                }
+            }
+        }
+
+        return visibleEnemies;
+    }
+
+    /**
+     * Find the nearest visible enemy, with LOS checking
+     * @param {number} entityId - The entity looking for enemies
+     * @param {number} range - The search range
+     * @returns {object|null} - { id, distance } or null if no enemy found
+     */
+    findNearestVisibleEnemy(entityId, range) {
+        const visibleEnemyIds = this.getVisibleEnemiesInRange(entityId, range);
+        if (!visibleEnemyIds || visibleEnemyIds.length === 0) return null;
+
+        const { pos, enemies } = this._buildEnemyList(entityId, visibleEnemyIds);
+        if (!pos || enemies.length === 0) return null;
+
+        const visibleEnemies = this._filterByLOS(entityId, pos, enemies);
+        if (visibleEnemies.length === 0) return null;
+
+        visibleEnemies.sort((a, b) => a.distance - b.distance);
+        return { id: visibleEnemies[0].id, distance: visibleEnemies[0].distance };
+    }
+
+    /**
+     * Find the weakest visible enemy (lowest health), with LOS checking
+     * @param {number} entityId - The entity looking for enemies
+     * @param {number} range - The search range
+     * @param {object} options - { usePercentage: true, maxHealthPercent: 1.0 }
+     * @returns {object|null} - { id, distance, healthPercent } or null if no enemy found
+     */
+    findWeakestVisibleEnemy(entityId, range, options = {}) {
+        const usePercentage = options.usePercentage !== false;
+        const maxHealthPercent = options.maxHealthPercent ?? 1.0;
+
+        const visibleEnemyIds = this.getVisibleEnemiesInRange(entityId, range);
+        if (!visibleEnemyIds || visibleEnemyIds.length === 0) return null;
+
+        const { pos, enemies } = this._buildEnemyList(entityId, visibleEnemyIds, true, maxHealthPercent);
+        if (!pos || enemies.length === 0) return null;
+
+        const visibleEnemies = this._filterByLOS(entityId, pos, enemies);
+        if (visibleEnemies.length === 0) return null;
+
+        visibleEnemies.sort((a, b) => {
+            const healthDiff = usePercentage
+                ? a.healthPercent - b.healthPercent
+                : a.healthCurrent - b.healthCurrent;
+            if (Math.abs(healthDiff) > 0.01) return healthDiff;
+            return a.distance - b.distance;
+        });
+
+        return {
+            id: visibleEnemies[0].id,
+            distance: visibleEnemies[0].distance,
+            healthPercent: visibleEnemies[0].healthPercent
+        };
     }
 }

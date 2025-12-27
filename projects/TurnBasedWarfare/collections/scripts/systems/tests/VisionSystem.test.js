@@ -298,5 +298,310 @@ describe('VisionSystem', () => {
         it('should register canSeePosition service', () => {
             expect(GUTS.VisionSystem.services).toContain('canSeePosition');
         });
+
+        it('should register getVisibleEnemiesInRange service', () => {
+            expect(GUTS.VisionSystem.services).toContain('getVisibleEnemiesInRange');
+        });
+
+        it('should register findNearestVisibleEnemy service', () => {
+            expect(GUTS.VisionSystem.services).toContain('findNearestVisibleEnemy');
+        });
+
+        it('should register findWeakestVisibleEnemy service', () => {
+            expect(GUTS.VisionSystem.services).toContain('findWeakestVisibleEnemy');
+        });
+    });
+
+    describe('_calculateTargetStealth', () => {
+        beforeEach(() => {
+            game.register('getTerrainTypeAtPosition', () => null);
+            game.register('getTileMapTerrainType', () => null);
+        });
+
+        it('should return base stealth from combat component', () => {
+            const entityId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                combat: { stealth: 40 }
+            });
+
+            expect(visionSystem._calculateTargetStealth(entityId)).toBe(40);
+        });
+
+        it('should return 0 when no combat component', () => {
+            const entityId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } }
+            });
+
+            expect(visionSystem._calculateTargetStealth(entityId)).toBe(0);
+        });
+
+        it('should add terrain stealth bonus', () => {
+            game.register('getTerrainTypeAtPosition', () => 5);
+            game.register('getTileMapTerrainType', () => ({ stealthBonus: 25 }));
+
+            const entityId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                combat: { stealth: 30 }
+            });
+
+            expect(visionSystem._calculateTargetStealth(entityId)).toBe(55);
+        });
+
+        it('should add hiding bonus when isHiding is true', () => {
+            const entityId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                combat: { stealth: 30 },
+                playerOrder: { isHiding: true }
+            });
+
+            expect(visionSystem._calculateTargetStealth(entityId)).toBe(50);
+        });
+
+        it('should stack terrain and hiding bonuses', () => {
+            game.register('getTerrainTypeAtPosition', () => 5);
+            game.register('getTileMapTerrainType', () => ({ stealthBonus: 25 }));
+
+            const entityId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                combat: { stealth: 30 },
+                playerOrder: { isHiding: true }
+            });
+
+            // 30 base + 25 terrain + 20 hiding = 75
+            expect(visionSystem._calculateTargetStealth(entityId)).toBe(75);
+        });
+    });
+
+    describe('getVisibleEnemiesInRange', () => {
+        beforeEach(() => {
+            game.register('getTerrainTypeAtPosition', () => null);
+            game.register('getTileMapTerrainType', () => null);
+
+            // Mock GameUtils
+            if (!globalThis.GUTS.GameUtils) {
+                globalThis.GUTS.GameUtils = {};
+            }
+            globalThis.GUTS.GameUtils.isInRange = () => true;
+            globalThis.GUTS.GameUtils.getCollisionRadius = () => 0;
+        });
+
+        it('should return empty array when no position', () => {
+            const entityId = game.createEntityWith({
+                team: { team: enums.team.left }
+            });
+
+            expect(visionSystem.getVisibleEnemiesInRange(entityId, 300)).toEqual([]);
+        });
+
+        it('should return empty array when no team', () => {
+            const entityId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } }
+            });
+
+            expect(visionSystem.getVisibleEnemiesInRange(entityId, 300)).toEqual([]);
+        });
+
+        it('should filter out same team units', () => {
+            const searcherId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                team: { team: enums.team.left },
+                combat: { awareness: 50 }
+            });
+
+            const allyId = game.createEntityWith({
+                transform: { position: { x: 50, y: 0, z: 0 } },
+                team: { team: enums.team.left },
+                health: { current: 100, max: 100 }
+            });
+
+            game.register('getNearbyUnits', () => [allyId]);
+
+            expect(visionSystem.getVisibleEnemiesInRange(searcherId, 300)).toEqual([]);
+        });
+
+        it('should filter out dead units', () => {
+            const searcherId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                team: { team: enums.team.left },
+                combat: { awareness: 50 }
+            });
+
+            const deadEnemyId = game.createEntityWith({
+                transform: { position: { x: 50, y: 0, z: 0 } },
+                team: { team: enums.team.right },
+                health: { current: 0, max: 100 }
+            });
+
+            game.register('getNearbyUnits', () => [deadEnemyId]);
+
+            expect(visionSystem.getVisibleEnemiesInRange(searcherId, 300)).toEqual([]);
+        });
+
+        it('should filter out stealthed units', () => {
+            const searcherId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                team: { team: enums.team.left },
+                combat: { awareness: 50 }
+            });
+
+            const stealthedEnemyId = game.createEntityWith({
+                transform: { position: { x: 50, y: 0, z: 0 } },
+                team: { team: enums.team.right },
+                health: { current: 100, max: 100 },
+                combat: { stealth: 60 }
+            });
+
+            game.register('getNearbyUnits', () => [stealthedEnemyId]);
+
+            expect(visionSystem.getVisibleEnemiesInRange(searcherId, 300)).toEqual([]);
+        });
+
+        it('should return visible enemies', () => {
+            const searcherId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                team: { team: enums.team.left },
+                combat: { awareness: 50 }
+            });
+
+            const visibleEnemyId = game.createEntityWith({
+                transform: { position: { x: 50, y: 0, z: 0 } },
+                team: { team: enums.team.right },
+                health: { current: 100, max: 100 },
+                combat: { stealth: 30 }
+            });
+
+            game.register('getNearbyUnits', () => [visibleEnemyId]);
+
+            expect(visionSystem.getVisibleEnemiesInRange(searcherId, 300)).toEqual([visibleEnemyId]);
+        });
+    });
+
+    describe('findNearestVisibleEnemy', () => {
+        beforeEach(() => {
+            game.register('getTerrainTypeAtPosition', () => null);
+            game.register('getTileMapTerrainType', () => null);
+
+            if (!globalThis.GUTS.GameUtils) {
+                globalThis.GUTS.GameUtils = {};
+            }
+            globalThis.GUTS.GameUtils.isInRange = () => true;
+            globalThis.GUTS.GameUtils.getCollisionRadius = () => 0;
+        });
+
+        it('should return null when no visible enemies', () => {
+            const searcherId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                team: { team: enums.team.left },
+                combat: { awareness: 50 }
+            });
+
+            game.register('getNearbyUnits', () => []);
+
+            expect(visionSystem.findNearestVisibleEnemy(searcherId, 300)).toBeNull();
+        });
+
+        it('should return nearest enemy with distance', () => {
+            const searcherId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                team: { team: enums.team.left },
+                combat: { awareness: 50 }
+            });
+
+            const nearEnemyId = game.createEntityWith({
+                transform: { position: { x: 50, y: 0, z: 0 } },
+                team: { team: enums.team.right },
+                health: { current: 100, max: 100 },
+                combat: { stealth: 0 }
+            });
+
+            const farEnemyId = game.createEntityWith({
+                transform: { position: { x: 100, y: 0, z: 0 } },
+                team: { team: enums.team.right },
+                health: { current: 100, max: 100 },
+                combat: { stealth: 0 }
+            });
+
+            game.register('getNearbyUnits', () => [farEnemyId, nearEnemyId]);
+
+            const result = visionSystem.findNearestVisibleEnemy(searcherId, 300);
+            expect(result).not.toBeNull();
+            expect(result.id).toBe(nearEnemyId);
+            expect(result.distance).toBe(50);
+        });
+    });
+
+    describe('findWeakestVisibleEnemy', () => {
+        beforeEach(() => {
+            game.register('getTerrainTypeAtPosition', () => null);
+            game.register('getTileMapTerrainType', () => null);
+
+            if (!globalThis.GUTS.GameUtils) {
+                globalThis.GUTS.GameUtils = {};
+            }
+            globalThis.GUTS.GameUtils.isInRange = () => true;
+            globalThis.GUTS.GameUtils.getCollisionRadius = () => 0;
+        });
+
+        it('should return null when no visible enemies', () => {
+            const searcherId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                team: { team: enums.team.left },
+                combat: { awareness: 50 }
+            });
+
+            game.register('getNearbyUnits', () => []);
+
+            expect(visionSystem.findWeakestVisibleEnemy(searcherId, 300)).toBeNull();
+        });
+
+        it('should return weakest enemy by health percentage', () => {
+            const searcherId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                team: { team: enums.team.left },
+                combat: { awareness: 50 }
+            });
+
+            const healthyEnemyId = game.createEntityWith({
+                transform: { position: { x: 50, y: 0, z: 0 } },
+                team: { team: enums.team.right },
+                health: { current: 100, max: 100 },
+                combat: { stealth: 0 }
+            });
+
+            const woundedEnemyId = game.createEntityWith({
+                transform: { position: { x: 100, y: 0, z: 0 } },
+                team: { team: enums.team.right },
+                health: { current: 30, max: 100 },
+                combat: { stealth: 0 }
+            });
+
+            game.register('getNearbyUnits', () => [healthyEnemyId, woundedEnemyId]);
+
+            const result = visionSystem.findWeakestVisibleEnemy(searcherId, 300);
+            expect(result).not.toBeNull();
+            expect(result.id).toBe(woundedEnemyId);
+            expect(result.healthPercent).toBe(0.3);
+        });
+
+        it('should respect maxHealthPercent option', () => {
+            const searcherId = game.createEntityWith({
+                transform: { position: { x: 0, y: 0, z: 0 } },
+                team: { team: enums.team.left },
+                combat: { awareness: 50 }
+            });
+
+            const healthyEnemyId = game.createEntityWith({
+                transform: { position: { x: 50, y: 0, z: 0 } },
+                team: { team: enums.team.right },
+                health: { current: 100, max: 100 },
+                combat: { stealth: 0 }
+            });
+
+            game.register('getNearbyUnits', () => [healthyEnemyId]);
+
+            // Only target enemies below 50% health
+            const result = visionSystem.findWeakestVisibleEnemy(searcherId, 300, { maxHealthPercent: 0.5 });
+            expect(result).toBeNull();
+        });
     });
 });

@@ -164,6 +164,27 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     margin-bottom: 2rem;
 }
 
+.mode-section-header {
+    grid-column: 1 / -1;
+    margin-top: 1rem;
+    margin-bottom: -0.5rem;
+}
+
+.mode-section-header:first-child {
+    margin-top: 0;
+}
+
+.mode-section-header h3 {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    color: var(--primary-gold);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 2px solid var(--dark-bronze);
+    padding-bottom: 0.5rem;
+    text-shadow: 2px 2px 3px var(--dark-green);
+}
+
 .mode-card {
     background: linear-gradient(145deg, rgba(26, 13, 26, 0.8), rgba(13, 10, 26, 0.8));
     border: 2px solid var(--dark-bronze);

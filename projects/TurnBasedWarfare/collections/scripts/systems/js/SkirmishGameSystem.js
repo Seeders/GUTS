@@ -39,6 +39,7 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         // Check if we're loading from a save file
         const isLoadingSave = !!this.game.pendingSaveData;
         const saveData = this.game.pendingSaveData;
+        console.log('[SkirmishGameSystem] startSkirmishGame, isLoadingSave:', isLoadingSave, 'pendingSaveData:', saveData ? 'present' : 'null');
 
         // Enable local game mode (sets game.state.isLocalGame and local player ID)
         this.game.call('setLocalGame', true, 0);
@@ -155,11 +156,9 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
     // ==================== LIFECYCLE ====================
 
     onSceneUnload() {
-        if (this.game.sceneManager?.currentScene !== 'skirmish') {
-            // Disable local game mode when leaving skirmish
-            this.game.call('setLocalGame', false, 0);
-            this.playerTeam = null;
-            this.aiTeam = null;
-        }
+        // Always disable local game mode when leaving skirmish scene
+        this.game.call('setLocalGame', false, 0);
+        this.playerTeam = null;
+        this.aiTeam = null;
     }
 }

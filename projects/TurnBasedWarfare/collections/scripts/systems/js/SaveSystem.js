@@ -264,27 +264,32 @@ class SaveSystem extends GUTS.BaseSystem {
      * Injects saved entities into the scene
      */
     loadSavedEntities() {
+        console.log('[SaveSystem] loadSavedEntities called, pendingSaveData:', this.game.pendingSaveData ? 'present' : 'null');
         const saveData = this.game.pendingSaveData;
         if (!saveData) {
+            console.log('[SaveSystem] No pendingSaveData, returning false');
             return false;
         }
+        console.log('[SaveSystem] Loading save, version:', saveData.saveVersion, 'has ecsData:', !!saveData.ecsData);
 
-        // Restore game state (but preserve current player's team and phase)
-        // Phase must stay as 'placement' initially so UI can initialize
+        // Restore game state (but preserve current player's team and playerId)
+        // Phase IS restored from save - if saved during battle, load into battle
         if (saveData.state) {
             const preservedMySide = this.game.state.myTeam;
             const preservedPlayerId = this.game.state.playerId;
-            const preservedPhase = this.game.state.phase;
             Object.assign(this.game.state, saveData.state);
-            // Restore current player info and phase
+            // Restore current player info (team/playerId may differ from when saved)
             this.game.state.myTeam = preservedMySide;
             this.game.state.playerId = preservedPlayerId;
-            this.game.state.phase = preservedPhase;
+            console.log('[SaveSystem] Restored game state, phase:', this.game.state.phase, 'round:', this.game.state.round);
         }
 
         // Load ECS data using new format if available
         if (saveData.ecsData) {
             this.game.applyECSData(saveData.ecsData);
+
+            // Recreate client-only components (renderable, animationState) that aren't saved
+            this.initializeRenderablesForLoadedEntities();
 
             // Initialize abilities for loaded entities
             // AbilitySystem.entityAbilities Map is not saved, so we need to re-register abilities
@@ -469,6 +474,38 @@ class SaveSystem extends GUTS.BaseSystem {
             reader.onerror = () => reject(new Error('Error reading file'));
             reader.readAsText(file);
         });
+    }
+
+    /**
+     * Initialize renderable components for loaded entities
+     * renderable is a client-only component and not saved, so we recreate it from unitType
+     */
+    initializeRenderablesForLoadedEntities() {
+        const entitiesWithUnitType = this.game.getEntitiesWith('unitType');
+        let renderablesInitialized = 0;
+
+        for (const entityId of entitiesWithUnitType) {
+            // Skip if already has renderable
+            if (this.game.hasComponent(entityId, 'renderable')) continue;
+
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            if (!unitTypeComp) continue;
+
+            // Get collection and type indices
+            const collectionIndex = unitTypeComp.collection;
+            const spawnTypeIndex = unitTypeComp.type;
+
+            if (collectionIndex != null && spawnTypeIndex != null) {
+                this.game.addComponent(entityId, 'renderable', {
+                    objectType: collectionIndex,
+                    spawnType: spawnTypeIndex,
+                    capacity: 128
+                });
+                renderablesInitialized++;
+            }
+        }
+
+        console.log('[SaveSystem] Initialized renderables for', renderablesInitialized, 'entities');
     }
 
     /**

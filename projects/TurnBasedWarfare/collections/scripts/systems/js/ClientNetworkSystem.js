@@ -1,5 +1,6 @@
 class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     static services = [
+        'connectToServer',
         'createRoom',
         'joinRoom',
         'startQuickMatch',
@@ -230,13 +231,11 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.params = params || {};
     }
 
-    postInit() {
-        // Skip network connection in local game mode (set by SkirmishGameSystem)
-        if (this.game.state.isLocalGame) {
-            return;
-        }
-
-        this.connectToServer();
+    onSceneLoad() {
+        // Set up network listeners when scene loads
+        // Connection is initiated explicitly when player selects multiplayer mode
+        // via GameModeSystem.showMultiplayerConnect()
+        // Listeners are registered here so they're ready when connection is established
         this.setupNetworkListeners();
     }
 

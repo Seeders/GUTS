@@ -147,7 +147,9 @@ class DamageSystem extends GUTS.BaseSystem {
             buffedDamage: buffedDamage,
             mitigated: damageResult.mitigated,
             element: element,
-            fatal: targetHealth.current <= 0
+            fatal: targetHealth.current <= 0,
+            healthRemaining: targetHealth.current,
+            healthMax: targetHealth.max
         };
     }
     getAttackerModifiers(attackerId) {
@@ -256,8 +258,8 @@ class DamageSystem extends GUTS.BaseSystem {
                 const damageMultiplier = Math.max(0.2, 1 - (distance / radius));
                 const adjustedDamage = Math.floor(baseDamage * damageMultiplier);
 
-                // Apply damage (experience will be awarded inside applyDamage)
-                const result = this.applyDamage(sourceId, entityId, adjustedDamage, element, {
+                // Apply damage via game.call for logging (experience will be awarded inside applyDamage)
+                const result = this.game.call('applyDamage', sourceId, entityId, adjustedDamage, element, {
                     ...options,
                     isSplash: true,
                     splashDistance: distance,
@@ -540,8 +542,8 @@ class DamageSystem extends GUTS.BaseSystem {
                 const targetDeathState = this.game.getComponent(event.targetId, "deathState");
 
                 if (targetHealth && targetHealth.current > 0 && (!targetDeathState || targetDeathState.state === this.enums.deathState.alive)) {
-                    // Apply the delayed damage
-                     this.applyDamage(event.sourceId, event.targetId, event.damage, event.element, {
+                    // Apply the delayed damage via game.call for logging
+                     this.game.call('applyDamage', event.sourceId, event.targetId, event.damage, event.element, {
                         ...event.options,
                         isDelayed: true
                     });

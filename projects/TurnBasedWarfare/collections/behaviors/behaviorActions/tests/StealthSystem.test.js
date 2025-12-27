@@ -50,6 +50,95 @@ describe('Stealth System', () => {
         // Mock hasLineOfSight service
         game.register('hasLineOfSight', () => true);
 
+        // Mock isInRange from GameUtils (VisionSystem uses this)
+        if (!globalThis.GUTS.GameUtils) {
+            globalThis.GUTS.GameUtils = {};
+        }
+        globalThis.GUTS.GameUtils.isInRange = (game, entityId, targetId, range) => {
+            const pos = game.getComponent(entityId, 'transform')?.position;
+            const targetPos = game.getComponent(targetId, 'transform')?.position;
+            if (!pos || !targetPos) return false;
+            const dx = targetPos.x - pos.x;
+            const dz = targetPos.z - pos.z;
+            return Math.sqrt(dx * dx + dz * dz) <= range;
+        };
+        globalThis.GUTS.GameUtils.getCollisionRadius = () => 0;
+
+        // Mock VisionSystem services (findNearestVisibleEnemy delegates to getVisibleEnemiesInRange)
+        game.register('getVisibleEnemiesInRange', (entityId, range) => {
+            const transform = game.getComponent(entityId, 'transform');
+            const pos = transform?.position;
+            const team = game.getComponent(entityId, 'team');
+            const combat = game.getComponent(entityId, 'combat');
+            const awareness = combat?.awareness ?? 50;
+
+            if (!pos || !team) return [];
+
+            const nearbyEntityIds = game.call('getNearbyUnits', pos, range, entityId);
+            if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
+
+            const enemies = [];
+            for (const targetId of nearbyEntityIds) {
+                const targetTeam = game.getComponent(targetId, 'team');
+                if (!targetTeam || targetTeam.team === team.team) continue;
+
+                const targetHealth = game.getComponent(targetId, 'health');
+                if (!targetHealth || targetHealth.current <= 0) continue;
+
+                // Calculate target stealth
+                const targetCombat = game.getComponent(targetId, 'combat');
+                let targetStealth = targetCombat?.stealth ?? 0;
+
+                const targetTransform = game.getComponent(targetId, 'transform');
+                const targetPos = targetTransform?.position;
+                if (!targetPos) continue;
+
+                // Terrain stealth bonus
+                const terrainTypeIndex = game.call('getTerrainTypeAtPosition', targetPos.x, targetPos.z);
+                if (terrainTypeIndex !== null && terrainTypeIndex !== undefined) {
+                    const terrainType = game.call('getTileMapTerrainType', terrainTypeIndex);
+                    if (terrainType?.stealthBonus) {
+                        targetStealth += terrainType.stealthBonus;
+                    }
+                }
+
+                // Hiding stealth bonus
+                const targetPlayerOrder = game.getComponent(targetId, 'playerOrder');
+                if (targetPlayerOrder?.isHiding) {
+                    targetStealth += 20;
+                }
+
+                if (targetStealth > awareness) continue;
+
+                enemies.push(targetId);
+            }
+
+            return enemies;
+        });
+
+        game.register('findNearestVisibleEnemy', (entityId, range) => {
+            const pos = game.getComponent(entityId, 'transform')?.position;
+            if (!pos) return null;
+
+            const visibleEnemyIds = game.call('getVisibleEnemiesInRange', entityId, range);
+            if (!visibleEnemyIds || visibleEnemyIds.length === 0) return null;
+
+            let nearest = null;
+            let minDist = Infinity;
+            for (const targetId of visibleEnemyIds) {
+                const targetPos = game.getComponent(targetId, 'transform')?.position;
+                if (!targetPos) continue;
+                const dx = targetPos.x - pos.x;
+                const dz = targetPos.z - pos.z;
+                const dist = Math.sqrt(dx * dx + dz * dz);
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearest = { id: targetId, distance: dist };
+                }
+            }
+            return nearest;
+        });
+
         // Mock getBehaviorShared service (used by behavior actions to store shared state)
         const sharedStates = new Map();
         game.register('getBehaviorShared', (entityId) => {

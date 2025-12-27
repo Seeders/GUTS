@@ -1384,8 +1384,7 @@ class EntityRenderer {
         // Get GPU rendering data (batch, instanceIndex)
         const renderData = this.billboardAnimations.get(entityId);
         if (!renderData) {
-            console.warn(`[EntityRenderer] No render data for entity ${entityId}`);
-            return;
+           return;
         }
 
         // Get sprite animations from shared cache

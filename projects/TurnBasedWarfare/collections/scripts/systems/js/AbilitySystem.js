@@ -2,7 +2,8 @@ class AbilitySystem extends GUTS.BaseSystem {
     static services = [
         'getEntityAbilities',
         'removeEntityAbilities',
-        'addAbilitiesToUnit'
+        'addAbilitiesToUnit',
+        'useAbility'
     ];
 
     constructor(game) {
@@ -137,9 +138,9 @@ class AbilitySystem extends GUTS.BaseSystem {
         
         // With behavior tree system, AI state transitions are handled automatically
         // through priority evaluation - no need to manually change state
-        
+
         if (availableAbilities.length > 0) {
-            this.useAbility(entityId, availableAbilities[0].id);
+            this.game.call('useAbility', entityId, availableAbilities[0].id);
         }
     }
     
@@ -194,13 +195,13 @@ class AbilitySystem extends GUTS.BaseSystem {
 
         // For abilities, calculate animation speed based on cast time
         let animationSpeed = 1.0;
-        let minAnimationTime = 1.5;
+        // Use ability's castTime for minAnimationTime (0 for instant abilities like traps)
+        let minAnimationTime = ability?.castTime || 0;
 
         if (ability && ability.castTime > 0) {
             // Convert cast time to rate (casts per second)
             const castRate = 1 / ability.castTime;
             animationSpeed = this.game.call('calculateAnimationSpeed', entityId, castRate);
-            minAnimationTime = ability.castTime;
         }
         if (this.game.hasService('triggerSinglePlayAnimation')) {
             this.game.call('triggerSinglePlayAnimation', entityId, anim, animationSpeed, minAnimationTime);

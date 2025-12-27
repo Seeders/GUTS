@@ -15,48 +15,22 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const params = this.parameters || {};
         const targetKey = params.targetKey || 'target';
 
-        const transform = game.getComponent(entityId, 'transform');
-        const pos = transform?.position;
-        const team = game.getComponent(entityId, 'team');
         const combat = game.getComponent(entityId, 'combat');
-        const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
-        const reverseEnums = game.getReverseEnums();
-        const teamName = reverseEnums.team?.[team?.team] || team?.team;
-        const unitName = unitDef?.id || 'unknown';
-
-        // Get searcher's awareness (default 50)
-        const awareness = combat?.awareness ?? 50;
 
         // Check if unit is hiding - hidden units don't search for enemies
         const playerOrder = game.getComponent(entityId, 'playerOrder');
         if (playerOrder?.isHiding) {
-            log.trace('FindNearestEnemy', `${unitName}(${entityId}) FAILURE - unit is hiding`);
             return this.failure();
         }
 
-        if (!pos || !team) {
-            log.trace('FindNearestEnemy', `${unitName}(${entityId}) FAILURE - missing pos or team`, { hasPos: !!pos, hasTeam: !!team });
-            return this.failure();
-        }
-
-        // Use unit's visionRange first, then fall back to params.range or default 300
         const range = combat?.visionRange || params.range || 300;
-
-        log.trace('FindNearestEnemy', `${unitName}(${entityId}) [${teamName}] searching for enemies`, {
-            pos: { x: pos.x.toFixed(0), z: pos.z.toFixed(0) },
-            range,
-            myTeam: team.team,
-            awareness
-        });
-
-        const nearestEnemy = this.findNearestEnemy(entityId, game, pos, team, range, log, unitName, teamName, awareness);
+        const nearestEnemy = game.call('findNearestVisibleEnemy', entityId, range);
 
         if (nearestEnemy) {
             const shared = this.getShared(entityId, game);
             shared[targetKey] = nearestEnemy.id;
 
-            log.debug('FindNearestEnemy', `${unitName}(${entityId}) [${teamName}] FOUND enemy`, {
+            log.debug('FindNearestEnemy', `Entity ${entityId} FOUND enemy`, {
                 targetId: nearestEnemy.id,
                 distance: nearestEnemy.distance.toFixed(0)
             });
@@ -68,237 +42,6 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             });
         }
 
-        log.trace('FindNearestEnemy', `${unitName}(${entityId}) [${teamName}] NO enemy found in range ${range}`);
         return this.failure();
-    }
-
-    findNearestEnemy(entityId, game, pos, team, range, log, unitName, teamName, awareness = 50) {
-        // Use spatial grid for efficient lookup - returns array of entityIds
-        const nearbyEntityIds = game.call('getNearbyUnits', pos, range, entityId);
-        const reverseEnums = game.getReverseEnums();
-
-        // Log all nearby entities
-        const nearbyInfo = nearbyEntityIds?.map(id => {
-            const utype = game.getComponent(id, 'unitType');
-            const udef = game.call('getUnitTypeDef', utype);
-            const uteam = game.getComponent(id, 'team');
-            const teamStr = reverseEnums.team?.[uteam?.team] || uteam?.team;
-            return { id, type: udef?.id, team: teamStr, teamNum: uteam?.team };
-        }) || [];
-
-        log.trace('FindNearestEnemy', `${unitName}(${entityId}) [${teamName}] getNearbyUnits returned ${nearbyInfo.length} entities`, {
-            myTeam: team.team,
-            nearby: nearbyInfo
-        });
-
-        if (!nearbyEntityIds || nearbyEntityIds.length === 0) {
-            return null;
-        }
-
-        const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitType = game.call('getUnitTypeDef', unitTypeComp);
-        const hasLOSCheck = game.hasService('hasLineOfSight');
-
-        // First pass: collect valid enemies with their positions and directions
-        const enemies = [];
-
-        for (const targetId of nearbyEntityIds) {
-            const targetTeam = game.getComponent(targetId, 'team');
-            const targetUnitType = game.getComponent(targetId, 'unitType');
-            const targetUnitDef = game.call('getUnitTypeDef', targetUnitType);
-            const targetTeamName = reverseEnums.team?.[targetTeam?.team] || targetTeam?.team;
-
-            log.trace('FindNearestEnemy', `${unitName}(${entityId}) checking target ${targetId}`, {
-                targetType: targetUnitDef?.id,
-                targetTeam: targetTeam?.team,
-                targetTeamName,
-                myTeam: team.team,
-                sameTeam: targetTeam?.team === team.team
-            });
-
-            if (!targetTeam || targetTeam.team === team.team) {
-                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - same team or no team`);
-                continue;
-            }
-
-            const targetHealth = game.getComponent(targetId, 'health');
-            if (!targetHealth || targetHealth.current <= 0) {
-                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - no health or dead`, {
-                    health: targetHealth?.current,
-                    maxHealth: targetHealth?.max
-                });
-                continue;
-            }
-
-            const targetDeathState = game.getComponent(targetId, 'deathState');
-            // deathState.state: 0=alive, 1=dying, 2=corpse
-            if (targetDeathState && targetDeathState.state > 0) {
-                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - dying/dead`, {
-                    deathState: targetDeathState.state
-                });
-                continue;
-            }
-
-            // Stealth check: skip targets with stealth > searcher's awareness
-            const targetCombat = game.getComponent(targetId, 'combat');
-            let targetStealth = targetCombat?.stealth ?? 0;
-
-            const targetTransform = game.getComponent(targetId, 'transform');
-            const targetPos = targetTransform?.position;
-            if (!targetPos) {
-                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - no position`);
-                continue;
-            }
-
-            // Apply terrain stealth bonus (e.g., forest provides cover)
-            const terrainTypeIndex = game.call('getTerrainTypeAtPosition', targetPos.x, targetPos.z);
-            if (terrainTypeIndex !== null && terrainTypeIndex !== undefined) {
-                const terrainType = game.call('getTileMapTerrainType', terrainTypeIndex);
-                if (terrainType?.stealthBonus) {
-                    targetStealth += terrainType.stealthBonus;
-                    log.trace('FindNearestEnemy', `${unitName}(${entityId}) target ${targetId} terrain stealth bonus`, {
-                        terrainType: terrainType.type,
-                        stealthBonus: terrainType.stealthBonus,
-                        totalStealth: targetStealth
-                    });
-                }
-            }
-
-            // Apply hiding stealth bonus (+20 when unit is hiding)
-            const targetPlayerOrder = game.getComponent(targetId, 'playerOrder');
-            if (targetPlayerOrder?.isHiding) {
-                targetStealth += 20;
-                log.trace('FindNearestEnemy', `${unitName}(${entityId}) target ${targetId} hiding stealth bonus`, {
-                    hidingBonus: 20,
-                    totalStealth: targetStealth
-                });
-            }
-
-            if (targetStealth > awareness) {
-                log.trace('FindNearestEnemy', `${unitName}(${entityId}) SKIP target ${targetId} - stealthed`, {
-                    targetStealth,
-                    awareness
-                });
-                continue;
-            }
-
-            const dx = targetPos.x - pos.x;
-            const dz = targetPos.z - pos.z;
-            const distance = Math.sqrt(dx * dx + dz * dz);
-
-            log.trace('FindNearestEnemy', `${unitName}(${entityId}) VALID enemy ${targetId} (${targetUnitDef?.id})`, {
-                distance: distance.toFixed(0),
-                targetPos: { x: targetPos.x.toFixed(0), z: targetPos.z.toFixed(0) }
-            });
-
-            enemies.push({ id: targetId, pos: targetPos, distance, dx, dz });
-        }
-
-        log.trace('FindNearestEnemy', `${unitName}(${entityId}) found ${enemies.length} valid enemies after filtering`);
-
-        if (enemies.length === 0) {
-            return null;
-        }
-
-        // If no LOS check available, just return nearest
-        if (!hasLOSCheck) {
-            enemies.sort((a, b) => a.distance - b.distance);
-            return { id: enemies[0].id, distance: enemies[0].distance };
-        }
-
-        // Second pass: group enemies by direction sector, raycast once per direction
-        const NUM_SECTORS = 16;
-        const sectorAngle = (Math.PI * 2) / NUM_SECTORS;
-
-        // Group enemies by sector
-        const sectors = new Array(NUM_SECTORS);
-        for (let i = 0; i < NUM_SECTORS; i++) {
-            sectors[i] = { enemies: [], maxDistance: 0, raycastDone: false, visibleDistance: 0 };
-        }
-
-        for (const enemy of enemies) {
-            const angle = Math.atan2(enemy.dz, enemy.dx);
-            const normalizedAngle = angle < 0 ? angle + Math.PI * 2 : angle;
-            const sectorIndex = Math.floor(normalizedAngle / sectorAngle) % NUM_SECTORS;
-
-            sectors[sectorIndex].enemies.push(enemy);
-            if (enemy.distance > sectors[sectorIndex].maxDistance) {
-                sectors[sectorIndex].maxDistance = enemy.distance;
-            }
-        }
-
-        // Raycast only for sectors that have enemies
-        for (let i = 0; i < NUM_SECTORS; i++) {
-            const sector = sectors[i];
-            if (sector.enemies.length === 0) continue;
-
-            // Raycast in this sector's direction to the max enemy distance
-            const sectorCenterAngle = (i + 0.5) * sectorAngle;
-            const dirX = Math.cos(sectorCenterAngle);
-            const dirZ = Math.sin(sectorCenterAngle);
-            const rayDist = sector.maxDistance;
-
-            const targetX = pos.x + dirX * rayDist;
-            const targetZ = pos.z + dirZ * rayDist;
-
-            const hasLOS = game.call('hasLineOfSight',
-                { x: pos.x, z: pos.z },
-                { x: targetX, z: targetZ },
-                unitType,
-                entityId
-            );
-
-            log.trace('FindNearestEnemy', `${unitName}(${entityId}) LOS check sector ${i}`, {
-                hasLOS,
-                from: { x: pos.x.toFixed(0), z: pos.z.toFixed(0) },
-                to: { x: targetX.toFixed(0), z: targetZ.toFixed(0) },
-                rayDist: rayDist.toFixed(0),
-                enemyCount: sector.enemies.length
-            });
-
-            if (hasLOS) {
-                // Full visibility to max distance
-                sector.visibleDistance = rayDist;
-            } else {
-                // Binary search to find visible distance (4 iterations)
-                let minDist = 0;
-                let maxDist = rayDist;
-                for (let iter = 0; iter < 4; iter++) {
-                    const midDist = (minDist + maxDist) / 2;
-                    const midX = pos.x + dirX * midDist;
-                    const midZ = pos.z + dirZ * midDist;
-                    if (game.call('hasLineOfSight',
-                        { x: pos.x, z: pos.z },
-                        { x: midX, z: midZ },
-                        unitType,
-                        entityId
-                    )) {
-                        minDist = midDist;
-                    } else {
-                        maxDist = midDist;
-                    }
-                }
-                sector.visibleDistance = minDist;
-            }
-            sector.raycastDone = true;
-        }
-
-        // Third pass: find nearest visible enemy
-        let nearest = null;
-        let nearestDistance = Infinity;
-
-        for (let i = 0; i < NUM_SECTORS; i++) {
-            const sector = sectors[i];
-            if (!sector.raycastDone) continue;
-
-            for (const enemy of sector.enemies) {
-                if (enemy.distance <= sector.visibleDistance && enemy.distance < nearestDistance) {
-                    nearestDistance = enemy.distance;
-                    nearest = { id: enemy.id, distance: enemy.distance };
-                }
-            }
-        }
-
-        return nearest;
     }
 }

@@ -405,8 +405,20 @@ function formatResultsAsText(result, verbose = false) {
 
     lines.push(`════════════════════════════════════════════════════════════`);
 
-    // Include debug log if present
-    if (result.debugLog && result.debugLog.length > 0) {
+    // Include combat log if present
+    if (result.combatLog && result.combatLog.length > 0) {
+        lines.push(``);
+        lines.push(`════════════════════════════════════════════════════════════`);
+        lines.push(`                       COMBAT LOG                           `);
+        lines.push(`════════════════════════════════════════════════════════════`);
+        for (const logLine of result.combatLog) {
+            lines.push(logLine);
+        }
+        lines.push(`════════════════════════════════════════════════════════════`);
+    }
+
+    // Include debug log if present and verbose
+    if (verbose && result.debugLog && result.debugLog.length > 0) {
         lines.push(``);
         lines.push(`════════════════════════════════════════════════════════════`);
         lines.push(`                       DEBUG LOG                            `);
@@ -462,9 +474,37 @@ async function runSingleSimulation(runner, simConfig, options = {}) {
         rightBuildOrder: simConfig.rightBuildOrder
     });
 
+    // Enable call logging for combat-relevant services
+    const game = runner.engine.gameInstance;
+    if (game && game.callLogger) {
+        // Filter to only log combat-related service calls
+        // Note: useAbility excluded as it floods the buffer with peasant "build" calls
+        // Abilities are already tracked in unitStatistics
+        game.callLogger.setFilter([
+            'applyDamage',
+            'scheduleDamage',
+            'fireProjectile',
+            'applySplashDamage',
+            'applyBuff',
+            'removeBuff',
+            'startDeathProcess',
+            'healEntity'
+        ]);
+        game.callLogger.enable();
+    }
+
     const runStart = Date.now();
     const results = await runner.run({ maxTicks });
     const runTime = Date.now() - runStart;
+
+    // Collect call log entries and format them
+    let combatLog = [];
+    if (game && game.callLogger) {
+        const entries = game.callLogger.all();
+        combatLog = formatCombatLog(entries, game);
+        game.callLogger.disable();
+        game.callLogger.clear();
+    }
 
     // Restore console functions
     console.log = originalLog;
@@ -486,8 +526,145 @@ async function runSingleSimulation(runner, simConfig, options = {}) {
         phase: results.phase,
         unitStatistics: results.unitStatistics,
         entityCounts: results.entityCounts,
+        combatLog,
         debugLog: consoleLog
     };
+}
+
+/**
+ * Format call log entries into human-readable combat log
+ */
+function formatCombatLog(entries, game) {
+    const log = [];
+    const reverseEnums = game.getReverseEnums?.() || {};
+
+    // Helper to get unit name from entity ID
+    const getUnitName = (entityId) => {
+        if (entityId === null || entityId === undefined) return 'unknown';
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        if (!unitTypeComp) return `entity#${entityId}`;
+        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+        return unitDef?.id || `entity#${entityId}`;
+    };
+
+    // Helper to get team name
+    const getTeamName = (entityId) => {
+        if (entityId === null || entityId === undefined) return '';
+        const teamComp = game.getComponent(entityId, 'team');
+        if (!teamComp) return '';
+        return reverseEnums.team?.[teamComp.team] || `team${teamComp.team}`;
+    };
+
+    // Helper to get element name
+    const getElementName = (elementId) => {
+        return reverseEnums.element?.[elementId] || 'physical';
+    };
+
+    for (const entry of entries) {
+        const time = entry.time?.toFixed(2) || '0.00';
+        const args = entry.args || [];
+
+        switch (entry.key) {
+            case 'applyDamage': {
+                // args: [attackerId, targetId, damage, element, options]
+                // result: { damage, healthRemaining, healthMax, fatal, ... }
+                const [attackerId, targetId, damage, element] = args;
+                const result = entry.result || {};
+                const attackerName = getUnitName(attackerId);
+                const attackerTeam = getTeamName(attackerId);
+                const targetName = getUnitName(targetId);
+                const targetTeam = getTeamName(targetId);
+                const elementName = getElementName(element);
+                const finalDamage = result.damage ?? damage;
+                const healthInfo = result.healthRemaining !== undefined
+                    ? ` (${targetName}: ${result.healthRemaining}/${result.healthMax} HP)`
+                    : '';
+                log.push(`[${time}s] DAMAGE: ${attackerName} [${attackerTeam}] deals ${finalDamage} ${elementName} damage to ${targetName} [${targetTeam}]${healthInfo}`);
+                break;
+            }
+            case 'scheduleDamage': {
+                // args: [attackerId, targetId, damage, element, delay, options]
+                const [attackerId, targetId, damage, element, delay, options] = args;
+                const attackerName = getUnitName(attackerId);
+                const attackerTeam = getTeamName(attackerId);
+                const targetName = getUnitName(targetId);
+                const elementName = getElementName(element);
+                const isMelee = options?.isMelee ? ' (melee)' : '';
+                log.push(`[${time}s] ATTACK: ${attackerName} [${attackerTeam}] attacks ${targetName} for ${damage} ${elementName}${isMelee}`);
+                break;
+            }
+            case 'fireProjectile': {
+                // args: [attackerId, targetId, projectileData]
+                const [attackerId, targetId, projectileData] = args;
+                const attackerName = getUnitName(attackerId);
+                const attackerTeam = getTeamName(attackerId);
+                const targetName = getUnitName(targetId);
+                const projName = projectileData?.id || 'projectile';
+                log.push(`[${time}s] PROJECTILE: ${attackerName} [${attackerTeam}] fires ${projName} at ${targetName}`);
+                break;
+            }
+            case 'applySplashDamage': {
+                // args: [attackerId, position, damage, element, radius, options]
+                const [attackerId, , damage, element, radius] = args;
+                const attackerName = getUnitName(attackerId);
+                const attackerTeam = getTeamName(attackerId);
+                const elementName = getElementName(element);
+                log.push(`[${time}s] SPLASH: ${attackerName} [${attackerTeam}] deals ${damage} ${elementName} splash (radius: ${radius})`);
+                break;
+            }
+            case 'applyBuff': {
+                // args: [targetId, buffType, options]
+                const [targetId, buffType, options] = args;
+                const targetName = getUnitName(targetId);
+                const targetTeam = getTeamName(targetId);
+                const buffName = reverseEnums.buffTypes?.[buffType] || `buff#${buffType}`;
+                const duration = options?.duration ? ` for ${options.duration}s` : '';
+                log.push(`[${time}s] BUFF: ${targetName} [${targetTeam}] gains ${buffName}${duration}`);
+                break;
+            }
+            case 'removeBuff': {
+                const [targetId, buffType] = args;
+                const targetName = getUnitName(targetId);
+                const targetTeam = getTeamName(targetId);
+                const buffName = reverseEnums.buffTypes?.[buffType] || `buff#${buffType}`;
+                log.push(`[${time}s] BUFF EXPIRED: ${targetName} [${targetTeam}] loses ${buffName}`);
+                break;
+            }
+            case 'startDeathProcess': {
+                // args: [entityId]
+                const [entityId] = args;
+                const unitName = getUnitName(entityId);
+                const teamName = getTeamName(entityId);
+                log.push(`[${time}s] DEATH: ${unitName} [${teamName}] dies`);
+                break;
+            }
+            case 'healEntity': {
+                // args: [targetId, healAmount, healerId]
+                const [targetId, healAmount, healerId] = args;
+                const targetName = getUnitName(targetId);
+                const targetTeam = getTeamName(targetId);
+                const healerName = healerId ? getUnitName(healerId) : 'unknown';
+                log.push(`[${time}s] HEAL: ${healerName} heals ${targetName} [${targetTeam}] for ${healAmount}`);
+                break;
+            }
+            case 'useAbility': {
+                // args: [entityId, abilityId, targetData]
+                const [entityId, abilityId, targetData] = args;
+                const abilityName = reverseEnums.abilities?.[abilityId] || abilityId || 'unknown';
+                // Skip non-combat abilities (build is used by peasants repeatedly while constructing)
+                if (abilityName === 'build' || abilityName === 'BuildAbility') break;
+                const casterName = getUnitName(entityId);
+                const casterTeam = getTeamName(entityId);
+                const targetInfo = targetData?.targetId ? ` on ${getUnitName(targetData.targetId)}` : '';
+                log.push(`[${time}s] ABILITY: ${casterName} [${casterTeam}] uses ${abilityName}${targetInfo}`);
+                break;
+            }
+            default:
+                log.push(`[${time}s] ${entry.key}: ${JSON.stringify(args)}`);
+        }
+    }
+
+    return log;
 }
 
 /**
@@ -663,9 +840,9 @@ async function runBatchSimulations(runner, simulationIds, options = {}) {
             const originalError = console.error;
             const consoleBuffer = [];
 
-            console.log = (...args) => consoleBuffer.push('[LOG] ' + args.join(' '));
-            console.warn = (...args) => consoleBuffer.push('[WARN] ' + args.join(' '));
-            console.error = (...args) => consoleBuffer.push('[ERROR] ' + args.join(' '));
+            console.log = (...args) => consoleBuffer.push('[LOG] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+            console.warn = (...args) => consoleBuffer.push('[WARN] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+            console.error = (...args) => consoleBuffer.push('[ERROR] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
 
             const result = await runSingleSimulation(runner, simRunConfig, { maxTicks, verbose });
             results.push(result);

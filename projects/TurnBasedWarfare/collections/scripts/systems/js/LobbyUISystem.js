@@ -59,7 +59,18 @@ class LobbyUISystem extends GUTS.BaseSystem {
         const refreshRoomsBtn = dialog.querySelector('#refreshRoomsBtn');
         const cancelBtn = dialog.querySelector('#cancelMultiplayerBtn');
 
-        const getPlayerName = () => playerNameInput.value.trim() || 'Player';
+        // Use the player name from connection dialog (stored in game.state)
+        const storedPlayerName = this.game.state.playerName || 'Player';
+        if (playerNameInput) {
+            playerNameInput.value = storedPlayerName;
+            // Hide the name input section since we already collected it
+            const nameSection = playerNameInput.closest('.player-name-input');
+            if (nameSection) {
+                nameSection.style.display = 'none';
+            }
+        }
+
+        const getPlayerName = () => storedPlayerName;
 
         if (quickMatchBtn) {
             quickMatchBtn.addEventListener('click', () => {
@@ -89,14 +100,12 @@ class LobbyUISystem extends GUTS.BaseSystem {
                 dialog.remove();
             });
         }
-
-        playerNameInput.focus();
-        playerNameInput.select();
     }
 
     startLobbyRefresh(dialog, mode) {
-        const playerNameInput = dialog.querySelector('#playerName');
-        const getPlayerName = () => playerNameInput.value.trim() || 'Player';
+        // Use the stored player name from game.state
+        const storedPlayerName = this.game.state.playerName || 'Player';
+        const getPlayerName = () => storedPlayerName;
 
         this.fetchAndDisplayRooms(dialog, mode, getPlayerName);
 
@@ -624,12 +633,14 @@ class LobbyUISystem extends GUTS.BaseSystem {
 
         try {
             const saveData = await this.game.call('importSaveFile', file);
+            console.log('[LobbyUISystem] Imported save file:', file.name, 'saveData:', saveData ? 'valid' : 'null');
 
             if (!saveData) {
                 this.showNotification('Invalid save file', 'error');
                 return;
             }
 
+            console.log('[LobbyUISystem] Setting pendingSaveData, saveVersion:', saveData.saveVersion, 'level:', saveData.level, 'entities:', saveData.ecsData ? 'ecsData present' : (saveData.entities?.length || 0) + ' entities');
             // Store the save data to be loaded when the game starts
             this.game.pendingSaveData = saveData;
 
@@ -662,6 +673,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
     }
 
     startSkirmishGame() {
+        console.log('[LobbyUISystem] startSkirmishGame called, pendingSaveData:', this.game.pendingSaveData ? 'present' : 'null');
         // Store skirmish configuration in game state
         this.game.state.skirmishConfig = {
             isSkirmish: true,

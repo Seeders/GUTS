@@ -76,6 +76,25 @@ for (const project of projects) {
         failCount++;
         console.error(`❌ ${project} build failed\n`);
     }
+
+    // Also build headless bundle if the project has a headless entry point
+    const headlessConfigPath = path.join(projectsDir, project, 'collections', 'settings', 'configs', 'headless.json');
+    if (fs.existsSync(headlessConfigPath)) {
+        console.log(`\n${'─'.repeat(60)}`);
+        console.log(`Building headless bundle: ${project}`);
+        console.log(`${'─'.repeat(60)}\n`);
+
+        try {
+            const buildArgs = production ? '--production' : '';
+            execSync(`node build/build-headless.js ${project} ${buildArgs}`, {
+                cwd: path.join(__dirname, '..'),
+                stdio: 'inherit'
+            });
+            console.log(`✅ ${project} headless bundle built successfully\n`);
+        } catch (error) {
+            console.error(`❌ ${project} headless build failed\n`);
+        }
+    }
 }
 
 // Summary

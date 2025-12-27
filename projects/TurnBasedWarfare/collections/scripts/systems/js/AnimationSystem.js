@@ -440,14 +440,14 @@ class AnimationSystem extends GUTS.BaseSystem {
      */
     updateProjectileBallisticAngle(entityId, animState, velocity) {
         if (!velocity || !animState) {
-            console.log('[Ballistic] Early exit: no velocity or animState', { velocity: !!velocity, animState: !!animState });
+            console.warn('[Ballistic] Early exit: no velocity or animState', { velocity: !!velocity, animState: !!animState });
             return;
         }
 
         // Get the sprite animation data to check if ballistic animations exist
         const animSetData = this.spriteAnimationCache.get(animState.spriteAnimationSet);
         if (!animSetData?.rawAnimSetData) {
-            console.log('[Ballistic] No animSetData or rawAnimSetData for set:', animState.spriteAnimationSet);
+            console.warn('[Ballistic] No animSetData or rawAnimSetData for set:', animState.spriteAnimationSet);
             return;
         }
 
@@ -457,7 +457,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         );
 
         if (!hasBallisticAnimations) {
-            console.log('[Ballistic] No ballistic animations found. Keys:', Object.keys(rawData).filter(k => k.includes('ballistic')));
+            console.warn('[Ballistic] No ballistic animations found. Keys:', Object.keys(rawData).filter(k => k.includes('ballistic')));
             return;
         }
 
@@ -471,8 +471,6 @@ class AnimationSystem extends GUTS.BaseSystem {
         const enumName = this.ballisticAngleNames[angleIndex];
         const angleName = enumName.charAt(0).toUpperCase() + enumName.slice(1);
 
-        console.log('[Ballistic] Velocity:', { vx: velocity.vx, vy: velocity.vy, vz: velocity.vz }, 'AngleIndex:', angleIndex, 'Current:', animState.ballisticAngle);
-
         // Check if both angle and direction are unchanged
         const directionChanged = animState.lastBallisticDirection !== animState.spriteDirection;
         const angleChanged = animState.ballisticAngle !== angleIndex;
@@ -480,8 +478,6 @@ class AnimationSystem extends GUTS.BaseSystem {
         if (!angleChanged && !directionChanged) {
             return;
         }
-
-        console.log('[Ballistic] Angle changed:', angleChanged, '(', animState.ballisticAngle, '->', angleIndex, ') Direction changed:', directionChanged);
 
         // Store the new angle index and direction
         animState.ballisticAngle = angleIndex;
@@ -491,29 +487,25 @@ class AnimationSystem extends GUTS.BaseSystem {
         const animType = this.animationTypeNames[animState.spriteAnimationType] || 'idle';
         const ballisticPropertyName = `ballistic${animType.charAt(0).toUpperCase() + animType.slice(1)}SpriteAnimations${angleName}`;
 
-        console.log('[Ballistic] Looking for property:', ballisticPropertyName);
-
         const ballisticAnimationNames = rawData[ballisticPropertyName];
         if (!ballisticAnimationNames || !Array.isArray(ballisticAnimationNames)) {
-            console.log('[Ballistic] No animation names array for:', ballisticPropertyName, 'Available:', Object.keys(rawData).filter(k => k.includes('ballistic')));
+            console.warn('[Ballistic] No animation names array for:', ballisticPropertyName, 'Available:', Object.keys(rawData).filter(k => k.includes('ballistic')));
             return;
         }
 
         // Get current direction index
         const directionIndex = animState.spriteDirection;
         if (directionIndex < 0 || directionIndex >= ballisticAnimationNames.length) {
-            console.log('[Ballistic] Direction index out of range:', directionIndex, 'Array length:', ballisticAnimationNames.length);
+            console.warn('[Ballistic] Direction index out of range:', directionIndex, 'Array length:', ballisticAnimationNames.length);
             return;
         }
 
         // Get the animation name for this direction and angle
         const animationName = ballisticAnimationNames[directionIndex];
         if (!animationName) {
-            console.log('[Ballistic] No animation name at direction index:', directionIndex);
+            console.warn('[Ballistic] No animation name at direction index:', directionIndex);
             return;
         }
-
-        console.log('[Ballistic] Loading animation:', animationName);
 
         // Load ballistic animation if not already cached
         if (!animSetData.ballisticAnimations) {
@@ -523,14 +515,14 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Cache key is the property name (includes angle)
         if (!animSetData.ballisticAnimations[ballisticPropertyName]) {
             const spriteAnimationCollection = rawData.animationCollection;
-            console.log('[Ballistic] Loading animations from collection:', spriteAnimationCollection);
+            console.warn('[Ballistic] Loading animations from collection:', spriteAnimationCollection);
             animSetData.ballisticAnimations[ballisticPropertyName] =
                 this.loadAnimationsFromCollections(ballisticAnimationNames, spriteAnimationCollection);
         }
 
         const ballisticAnimData = animSetData.ballisticAnimations[ballisticPropertyName];
         if (!ballisticAnimData) {
-            console.log('[Ballistic] Failed to load ballistic animation data');
+            console.warn('[Ballistic] Failed to load ballistic animation data');
             return;
         }
 
@@ -538,30 +530,28 @@ class AnimationSystem extends GUTS.BaseSystem {
         const directionName = this.directionNames[directionIndex];
         const directionData = ballisticAnimData[directionName];
         if (!directionData?.frames?.[0]) {
-            console.log('[Ballistic] No direction data or frames for:', directionName, 'Available directions:', Object.keys(ballisticAnimData));
+            console.warn('[Ballistic] No direction data or frames for:', directionName, 'Available directions:', Object.keys(ballisticAnimData));
             return;
         }
 
         // Apply the ballistic frame directly using the same logic as applyBillboardAnimationFrame
         const entityRenderer = this.game.call('getEntityRenderer');
         if (!entityRenderer) {
-            console.log('[Ballistic] No entity renderer');
+            console.warn('[Ballistic] No entity renderer');
             return;
         }
 
         const renderData = entityRenderer.billboardAnimations?.get(entityId);
         if (!renderData) {
-            console.log('[Ballistic] No render data for entity:', entityId);
+            console.warn('[Ballistic] No render data for entity:', entityId);
             return;
         }
 
         const frame = directionData.frames[animState.spriteFrameIndex % directionData.frames.length];
         if (!frame) {
-            console.log('[Ballistic] No frame at index:', animState.spriteFrameIndex);
+            console.warn('[Ballistic] No frame at index:', animState.spriteFrameIndex);
             return;
         }
-
-        console.log('[Ballistic] Applying frame:', frame, 'for angle:', angleName, 'direction:', directionName);
 
         const batch = renderData.batch;
         const instanceIndex = renderData.instanceIndex;
@@ -577,8 +567,7 @@ class AnimationSystem extends GUTS.BaseSystem {
                 const scaleX = frame.width / sheetWidth;
                 const scaleY = frame.height / sheetHeight;
 
-                console.log('[Ballistic] Applying UV:', { offsetX, offsetY, scaleX, scaleY, sheetWidth, sheetHeight, frame });
-
+               
                 batch.attributes.uvOffset.setXY(instanceIndex, offsetX, offsetY);
                 batch.attributes.uvScale.setXY(instanceIndex, scaleX, scaleY);
                 batch.attributes.uvOffset.needsUpdate = true;

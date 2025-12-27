@@ -28,6 +28,7 @@ class ClientNetworkManager {
     // =============================================
 
     async connect(serverUrl = null) {
+        console.log('[ClientNetworkManager] connect() called, serverUrl:', serverUrl || this.serverUrl);
         if (serverUrl) {
             this.serverUrl = serverUrl;
         }
@@ -35,9 +36,11 @@ class ClientNetworkManager {
         try {
             // Use socket.io from GUTS.io (bundled by webpack)
             if (typeof GUTS.io === 'undefined') {
+                console.error('[ClientNetworkManager] GUTS.io not available!');
                 throw new Error('socket.io client not available. Make sure it is included in the build.');
             }
 
+            console.log('[ClientNetworkManager] Creating socket connection to:', this.serverUrl);
             this.socket = GUTS.io(this.serverUrl, {
                 transports: ['websocket', 'polling'],
                 autoConnect: true, // Disable auto-connection
@@ -223,8 +226,10 @@ class ClientNetworkManager {
      * @returns {number|null} - Callback ID that can be used to cancel, or null for fire-and-forget
      */
     call(sendEvent, data = {}, responseEvent = null, callback = null, timeout = null) {
+        console.log('[ClientNetworkManager] call:', sendEvent, 'isConnected:', this.isConnected, 'responseEvent:', responseEvent);
         if (!this.isConnected) {
             const error = new Error('Not connected to server');
+            console.error('[ClientNetworkManager] Cannot call - not connected to server');
             if (callback) {
                 setTimeout(() => callback(null, error), 0);
             }
@@ -233,6 +238,7 @@ class ClientNetworkManager {
 
         // If no response event expected, just send (fire and forget)
         if (!responseEvent || !callback) {
+            console.log('[ClientNetworkManager] Emitting (fire and forget):', sendEvent);
             this.socket.emit(sendEvent, data);
             if (callback) {
                 setTimeout(() => callback(true), 0);
