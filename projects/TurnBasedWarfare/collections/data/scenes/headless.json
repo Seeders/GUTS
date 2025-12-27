@@ -5,6 +5,7 @@
     "HeadlessSimulationSystem",
     "BaseNetworkSystem",
     "ClientNetworkSystem",
+    "ServerNetworkSystem",
     "GameInterfaceSystem",
     "ServerBattlePhaseSystem",
     "GridSystem",

@@ -54,6 +54,7 @@
     "UnitOrderSystem",
     "BaseNetworkSystem",
     "ClientNetworkSystem",
+    "ServerNetworkSystem",
     "LifetimeSystem",
     "SchedulingSystem",
     "PathfindingSystem",
