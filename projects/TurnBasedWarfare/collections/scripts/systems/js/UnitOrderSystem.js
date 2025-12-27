@@ -78,6 +78,14 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                     pathfinding.lastTargetX = 0;
                     pathfinding.lastTargetZ = 0;
                 }
+
+                // For force move orders, clear combat target so unit stops fighting
+                if (meta?.preventEnemiesInRangeCheck) {
+                    const aiState = this.game.getComponent(unitId, 'aiState');
+                    if (aiState?.shared) {
+                        aiState.shared.target = null;
+                    }
+                }
             }
         });
     }
