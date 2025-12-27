@@ -9,9 +9,7 @@
   "spriteHeight": 24,
   "detailWorldObjects": [
     "grass_tuft_sprite",
-    "grass_tuft_small_sprite",
-    "bush_sprite",
-    "stone_sprite"
+    "grass_tuft_small_sprite"
   ],
-  "detailDensity": 0.1
+  "detailDensity": 10
 }

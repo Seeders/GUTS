@@ -101,13 +101,24 @@ describe('SkirmishGameSystem', () => {
             expect(skirmishGameSystem.playerTeam).toBe(enums.team.left);
         });
 
-        it('should set game.state.myTeam', async () => {
+        it('should call setActivePlayer with player id and team', async () => {
+            let setActivePlayerCalled = false;
+            let activePlayerId = null;
+            let activePlayerTeam = null;
+            game.register('setActivePlayer', (id, team) => {
+                setActivePlayerCalled = true;
+                activePlayerId = id;
+                activePlayerTeam = team;
+            });
+
             game.state.skirmishConfig = { selectedTeam: 'left', startingGold: 100 };
             game.switchScene = async () => {};
 
             await skirmishGameSystem.startSkirmishGame();
 
-            expect(game.state.myTeam).toBe(enums.team.left);
+            expect(setActivePlayerCalled).toBe(true);
+            expect(activePlayerId).toBe(0);
+            expect(activePlayerTeam).toBe(enums.team.left);
         });
 
         it('should call showLoadingScreen', async () => {

@@ -24,7 +24,8 @@ class TeamHealthSystem extends GUTS.BaseSystem {
     }
 
     getOpponentTeam() {
-        return this.game.state.myTeam === this.enums.team.left ? this.enums.team.right : this.enums.team.left;
+        const myTeam = this.game.call('getActivePlayerTeam');
+        return myTeam === this.enums.team.left ? this.enums.team.right : this.enums.team.left;
     }
 
     initializeUI() {
@@ -40,7 +41,8 @@ class TeamHealthSystem extends GUTS.BaseSystem {
         const opponentFill = document.getElementById('opponentHealthFill');
         const opponentText = document.getElementById('opponentHealthText');
 
-        let myHealth = this.teamHealth[this.game.state.myTeam] || this.MAX_TEAM_HEALTH;
+        const myTeam = this.game.call('getActivePlayerTeam');
+        let myHealth = this.teamHealth[myTeam] || this.MAX_TEAM_HEALTH;
         let opponentHealth = this.teamHealth[this.getOpponentTeam()] || this.MAX_TEAM_HEALTH;
         if (playerFill && playerText) {
             const playerPercent = (myHealth / this.MAX_TEAM_HEALTH) * 100;
@@ -71,7 +73,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
 
         // Return result object
         return {
-            result: winningTeam === this.game.state.myTeam ? 'victory' : 'defeat',
+            result: winningTeam === this.game.call('getActivePlayerTeam') ? 'victory' : 'defeat',
             winningTeam: winningTeam,
             losingTeam: losingTeam,
             damage: damageResult.totalDamage,
@@ -183,7 +185,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
         }
 
         // Fallback: search placement system using numeric team values
-        const playerPlacements = this.game.call('getPlacementsForSide', this.game.state.myTeam) || [];
+        const playerPlacements = this.game.call('getPlacementsForSide', this.game.call('getActivePlayerTeam')) || [];
         const opponentPlacements = this.game.call('getPlacementsForSide', this.getOpponentTeam()) || [];
         const allPlacements = [...playerPlacements, ...opponentPlacements];
 
@@ -227,7 +229,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
         }
 
         // Fallback to placement system - get unitType from entity
-        const playerPlacements = this.game.call('getPlacementsForSide', this.game.state.myTeam) || [];
+        const playerPlacements = this.game.call('getPlacementsForSide', this.game.call('getActivePlayerTeam')) || [];
         const opponentPlacements = this.game.call('getPlacementsForSide', this.getOpponentTeam()) || [];
         const placement = playerPlacements.find(p => p.placementId === placementId) ||
                          opponentPlacements.find(p => p.placementId === placementId);
@@ -250,7 +252,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
         }
 
         // Fallback to placement system
-        const playerPlacements = this.game.call('getPlacementsForSide', this.game.state.myTeam) || [];
+        const playerPlacements = this.game.call('getPlacementsForSide', this.game.call('getActivePlayerTeam')) || [];
         const opponentPlacements = this.game.call('getPlacementsForSide', this.getOpponentTeam()) || [];
         const placement = playerPlacements.find(p => p.placementId === placementId) ||
                          opponentPlacements.find(p => p.placementId === placementId);

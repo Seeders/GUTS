@@ -3,6 +3,7 @@
   "actions": [
     "move",
     "hold",
+    "hide",
     "build"
   ]
 }

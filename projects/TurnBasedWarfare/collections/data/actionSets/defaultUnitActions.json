@@ -2,6 +2,7 @@
   "title": "Default Unit Actions",
   "actions": [
     "move",
-    "hold"
+    "hold",
+    "hide"
   ]
 }

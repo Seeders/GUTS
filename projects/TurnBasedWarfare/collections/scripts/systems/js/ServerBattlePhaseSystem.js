@@ -60,7 +60,6 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     checkForBattleEnd() {
-     
         // Check if any team has lost all buildings
         const buildingVictory = this.checkBuildingVictoryCondition();
         if (buildingVictory) {

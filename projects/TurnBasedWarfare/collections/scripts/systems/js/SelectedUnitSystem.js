@@ -304,10 +304,10 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             }
         });
         
-        // Cancel box selection on context menu or escape
+        // Prevent browser context menu on canvas, cancel box selection if active
         this.canvas.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
             if (this.boxSelection.active) {
-                event.preventDefault();
                 this.cancelBoxSelection();
             }
         });
@@ -408,7 +408,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                 if (!team) return;
 
                 const unitTeam = team.team || team.side || team.teamId;
-                const myTeam = this.game.state.myTeam || this.game.state.playerSide || this.game.state.team;
+                const myTeam = this.game.call('getActivePlayerTeam');
 
                 if (unitTeam !== myTeam) return;
             }
@@ -592,7 +592,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                 if (!team) return;
 
                 const unitTeam = team.team || team.side || team.teamId;
-                const myTeam = this.game.state.myTeam || this.game.state.playerSide || this.game.state.team;
+                const myTeam = this.game.call('getActivePlayerTeam');
 
                 if (unitTeam !== myTeam) return;
             }
@@ -701,7 +701,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
         // If we found an entity but no placementId, try to find it from playerPlacements
         if (closestEntityId && !closestPlacementId) {
-            const placements = this.game.call('getPlacementsForSide', this.game.state.myTeam);
+            const placements = this.game.call('getPlacementsForSide', this.game.call('getActivePlayerTeam'));
             if (placements) {
                 for (const placement of placements) {
                     if (placement.squadUnits && placement.squadUnits.includes(closestEntityId)) {

@@ -3,7 +3,8 @@ class CameraControlSystem extends GUTS.BaseSystem {
     'cameraLookAt',
     'toggleCameraFollow',
     'getCameraFollowTarget',
-    'rotateCamera'
+    'rotateCamera',
+    'positionCameraAtStart'
   ];
 
   constructor(game) {
@@ -89,7 +90,7 @@ class CameraControlSystem extends GUTS.BaseSystem {
       const unitTypeComp = this.game.getComponent(entityId, 'unitType');
       const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
 
-      if (team?.team === this.game.state.myTeam && unitType?.collection === 'buildings') {
+      if (team?.team === this.game.call('getActivePlayerTeam') && unitType?.collection === 'buildings') {
         const transform = this.game.getComponent(entityId, 'transform');
         if (transform?.position) {
           targetPos = transform.position;

@@ -60,8 +60,6 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
             this.aiTeam = this.enums.team.right;
         }
 
-        this.game.state.myTeam = this.playerTeam;
-
         // Set up player ID
         if (this.game.clientNetworkManager) {
             this.game.clientNetworkManager.numericPlayerId = 0;
@@ -100,6 +98,11 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
 
             // Spawn AI opponent entity (uses behavior tree to execute build orders)
             this.spawnAIOpponent(config);
+        }
+
+        // Set active player with team - needed for getActivePlayerTeam() to work
+        if (this.game.hasService('setActivePlayer')) {
+            this.game.call('setActivePlayer', 0, this.playerTeam);
         }
 
         this.game.call('initializeGame', null);

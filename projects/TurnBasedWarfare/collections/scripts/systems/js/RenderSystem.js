@@ -224,6 +224,9 @@ class RenderSystem extends GUTS.BaseSystem {
         const entities = this.game.getEntitiesWith("transform", "renderable");
         this._stats.entitiesProcessed = entities.length;
 
+        // Track which entities should be visible this frame (for cleanup of invisible entities)
+        this._currentEntitiesSet.clear();
+
         for (const entityId of entities) {
             const transform = this.game.getComponent(entityId, "transform");
             const renderable = this.game.getComponent(entityId, "renderable");
@@ -243,9 +246,30 @@ class RenderSystem extends GUTS.BaseSystem {
             const isAlwaysVisible = unitType.collection === "worldObjects" || unitType.collection === "cliffs";
 
             if (!isAlwaysVisible && !isVisible) {
-                // Entity not currently visible - skip entirely (don't spawn or update)
+                // Entity not currently visible in fog of war - skip entirely (don't spawn or update)
                 continue;
             }
+
+            // Check stealth visibility - enemy units with stealth should not render if not detected
+            // Get local player's team from player entity stats
+            if (this.game.hasService('getLocalPlayerStats') && this.game.hasService('isEntityVisibleToTeam')) {
+                const localPlayerStats = this.game.call('getLocalPlayerStats');
+                const myTeam = localPlayerStats?.team;
+                if (myTeam !== undefined) {
+                    const entityTeam = this.game.getComponent(entityId, 'team');
+                    // Only check stealth for enemy units (not buildings/decorations without teams)
+                    if (entityTeam && entityTeam.team !== myTeam) {
+                        const isVisibleToMyTeam = this.game.call('isEntityVisibleToTeam', entityId, myTeam);
+                        if (!isVisibleToMyTeam) {
+                            // Enemy unit is stealthed and we can't see it - skip rendering
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            // Entity passed visibility checks - mark it as visible for cleanup tracking
+            this._currentEntitiesSet.add(entityId);
 
             // Pass numeric indices directly to EntityRenderer (O(1) lookup)
             const objectType = renderable.objectType;
@@ -259,7 +283,7 @@ class RenderSystem extends GUTS.BaseSystem {
             // Check if entity already spawned or currently spawning
             if (!this.spawnedEntities.has(entityId)) {
                 // DEBUG: Log when spawning new entity
-           
+
                 // Mark as spawned immediately to prevent race condition with async spawn
                 this.spawnedEntities.add(entityId);
 
@@ -314,11 +338,7 @@ class RenderSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Cleanup removed entities - reuse set to avoid per-frame allocation
-        this._currentEntitiesSet.clear();
-        for (const entityId of entities) {
-            this._currentEntitiesSet.add(entityId);
-        }
+        // Cleanup entities that are no longer visible (removed, stealthed, or in fog of war)
         this.cleanupRemovedEntities(this._currentEntitiesSet);
     }
 

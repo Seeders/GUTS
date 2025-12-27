@@ -47,8 +47,12 @@ class MoveToEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const baseRange = combat.range || 50;
-        const arrivalRange = params.arrivalRange || GUTS.GameUtils.getEffectiveRange(game, entityId, targetId, baseRange);
+        const baseRange = params.arrivalRange || combat.range || 50;
+        // Melee units (range < 50) need effective range with collision radii
+        // Ranged units use center-to-center to match ability canExecute checks
+        const arrivalRange = baseRange < 50
+            ? GUTS.GameUtils.getEffectiveRange(game, entityId, targetId, baseRange)
+            : baseRange;
         const distance = GUTS.GameUtils.getDistanceBetweenEntities(game, entityId, targetId);
 
         // Check if in range

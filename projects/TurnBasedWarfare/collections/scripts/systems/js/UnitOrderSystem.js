@@ -47,6 +47,12 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                     playerOrder = this.game.getComponent(unitId, "playerOrder");
                 }
 
+                // DEBUG: Log order changes
+                const unitTypeComp = this.game.getComponent(unitId, 'unitType');
+                const unitTypeDef = this.game.call('getUnitTypeDef', unitTypeComp);
+                const unitName = unitTypeDef?.id || unitId;
+                console.log(`[UnitOrderSystem] applySquadTargetPosition entity=${unitId} (${unitName}) placementId=${placementId} isHiding=${!!meta?.isHiding} isMoveOrder=${!!meta?.isMoveOrder} wasHiding=${playerOrder.isHiding}`);
+
                 // Update playerOrder values
                 playerOrder.targetPositionX = targetPosition.x || 0;
                 playerOrder.targetPositionY = targetPosition.y || 0;

@@ -258,7 +258,8 @@ class GameUISystem extends GUTS.BaseSystem {
     updateSideDisplay() {
         const sideDisplay = document.getElementById('playerSide');
         if (sideDisplay) {
-            sideDisplay.textContent = this.game.state.myTeam || 0;
+            const myTeam = this.game.call('getActivePlayerTeam');
+            sideDisplay.textContent = myTeam ?? 0;
         }
     }
 

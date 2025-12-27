@@ -92,7 +92,7 @@ class SaveSystem extends GUTS.BaseSystem {
             now: state.now || 0,
             gameOver: state.gameOver || false,
             victory: state.victory || false,
-            myTeam: state.myTeam,
+            // Note: myTeam is no longer saved - team is derived from player entity
             teamMaxHealth: state.teamMaxHealth,
             startingGold: state.startingGold
         };
@@ -216,7 +216,7 @@ class SaveSystem extends GUTS.BaseSystem {
                     stats: {
                         gold: state.gold || state.startingGold,
                         health: state.health || state.teamMaxHealth,
-                        team: state.myTeam ?? this.enums.team.left
+                        team: this.game.call('getActivePlayerTeam') ?? this.enums.team.left
                     }
                 });
             }
@@ -272,15 +272,15 @@ class SaveSystem extends GUTS.BaseSystem {
         }
         console.log('[SaveSystem] Loading save, version:', saveData.saveVersion, 'has ecsData:', !!saveData.ecsData);
 
-        // Restore game state (but preserve current player's team and playerId)
+        // Restore game state (but preserve current player's playerId)
         // Phase IS restored from save - if saved during battle, load into battle
         if (saveData.state) {
-            const preservedMySide = this.game.state.myTeam;
             const preservedPlayerId = this.game.state.playerId;
             Object.assign(this.game.state, saveData.state);
-            // Restore current player info (team/playerId may differ from when saved)
-            this.game.state.myTeam = preservedMySide;
+            // Restore current player info (playerId may differ from when saved)
             this.game.state.playerId = preservedPlayerId;
+            // Note: myTeam is no longer used - use setActivePlayer instead
+            delete this.game.state.myTeam;
             console.log('[SaveSystem] Restored game state, phase:', this.game.state.phase, 'round:', this.game.state.round);
         }
 

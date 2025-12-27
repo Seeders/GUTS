@@ -4,7 +4,8 @@ class VisionSystem extends GUTS.BaseSystem {
         'canSeePosition',
         'getVisibleEnemiesInRange',
         'findNearestVisibleEnemy',
-        'findWeakestVisibleEnemy'
+        'findWeakestVisibleEnemy',
+        'isEntityVisibleToTeam'
     ];
 
     constructor(game) {
@@ -301,7 +302,7 @@ class VisionSystem extends GUTS.BaseSystem {
             // Hiding stealth bonus (+20)
             const targetPlayerOrder = this.game.getComponent(targetId, 'playerOrder');
             if (targetPlayerOrder?.isHiding) {
-                stealth += 20;
+                stealth += 30;
             }
         }
 
@@ -326,12 +327,9 @@ class VisionSystem extends GUTS.BaseSystem {
         const combat = this.game.getComponent(entityId, 'combat');
         const awareness = combat?.awareness ?? 50;
 
-        // Get collision radius for extended search
-        const entityRadius = GUTS.GameUtils.getCollisionRadius(this.game, entityId);
-        const searchRange = range + entityRadius + 50; // +50 buffer for large units
-
-        // Get nearby units via spatial grid
-        const nearbyEntityIds = this.game.call('getNearbyUnits', pos, searchRange, entityId);
+        // Search with extended range to find all potential targets
+        // The accurate range check happens below with isInRange which accounts for target radius
+        const nearbyEntityIds = this.game.call('getNearbyUnits', pos, range, entityId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
 
         const enums = this.game.getEnums();
@@ -354,9 +352,7 @@ class VisionSystem extends GUTS.BaseSystem {
             const targetStealth = this._calculateTargetStealth(targetId);
             if (targetStealth > awareness) continue;
 
-            // Range check (accounts for collision radii)
-            if (!GUTS.GameUtils.isInRange(this.game, entityId, targetId, range)) continue;
-
+            // Range already checked by getNearbyUnits (center-to-center)
             enemies.push(targetId);
         }
 
@@ -491,6 +487,71 @@ class VisionSystem extends GUTS.BaseSystem {
 
         visibleEnemies.sort((a, b) => a.distance - b.distance);
         return { id: visibleEnemies[0].id, distance: visibleEnemies[0].distance };
+    }
+
+    /**
+     * Check if an entity is visible to a specific team
+     * Used by RenderSystem to hide units that can't be seen by the player
+     * Returns true if ANY unit on the viewing team can see the target entity
+     * @param {number} entityId - The entity to check visibility for
+     * @param {number} viewingTeam - The team trying to see the entity
+     * @returns {boolean} - Whether the entity is visible to the team
+     */
+    isEntityVisibleToTeam(entityId, viewingTeam) {
+        const targetTeam = this.game.getComponent(entityId, 'team');
+
+        // If entity has no team, it's visible (neutral/decorative)
+        if (!targetTeam) return true;
+
+        // Entities on the same team are always visible to themselves
+        if (targetTeam.team === viewingTeam) return true;
+
+        // Get target entity position and stealth
+        const targetTransform = this.game.getComponent(entityId, 'transform');
+        const targetPos = targetTransform?.position;
+        if (!targetPos) return false;
+
+        // Calculate total stealth for the target
+        const targetStealth = this._calculateTargetStealth(entityId);
+
+        // If target has no stealth, it's visible to enemies
+        if (targetStealth <= 0) return true;
+
+        // Check if ANY unit on the viewing team can see this entity
+        // Find all units on the viewing team
+        const viewingTeamEntities = this.game.getEntitiesWith('team', 'transform', 'combat');
+
+        for (const viewerId of viewingTeamEntities) {
+            const viewerTeam = this.game.getComponent(viewerId, 'team');
+            if (viewerTeam?.team !== viewingTeam) continue;
+
+            // Check if this viewer can see the target
+            const viewerCombat = this.game.getComponent(viewerId, 'combat');
+            const viewerAwareness = viewerCombat?.awareness ?? 50;
+
+            // If viewer's awareness >= target's stealth, target is visible
+            if (viewerAwareness >= targetStealth) {
+                // Also check if within vision range
+                const viewerTransform = this.game.getComponent(viewerId, 'transform');
+                const viewerPos = viewerTransform?.position;
+                if (!viewerPos) continue;
+
+                const viewerUnitTypeComp = this.game.getComponent(viewerId, 'unitType');
+                const viewerUnitType = this.game.call('getUnitTypeDef', viewerUnitTypeComp);
+                const visionRange = viewerUnitType?.visionRange || 500;
+
+                const dx = targetPos.x - viewerPos.x;
+                const dz = targetPos.z - viewerPos.z;
+                const distSq = dx * dx + dz * dz;
+
+                if (distSq <= visionRange * visionRange) {
+                    return true;
+                }
+            }
+        }
+
+        // No unit on the viewing team can see this entity
+        return false;
     }
 
     /**

@@ -35,6 +35,7 @@
     "GameLoader",
     "GameUtils",
     "PlacementPreview",
+    "PlayerOrderPreview",
     "MultiplayerECSGame",
     "ClientNetworkManager",
     "socket.io.min.js",

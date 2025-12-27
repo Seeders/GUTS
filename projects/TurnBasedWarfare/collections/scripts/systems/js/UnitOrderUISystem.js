@@ -25,6 +25,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         this.cursorWhenTargeting = 'crosshair';
         this.pingEffect = { count: 12, color: 0x00ff00 };
         this.targetingPreview = null;
+        this.orderPreview = null;
     }
 
     init() {
@@ -32,12 +33,15 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
     }
 
     onGameStarted() {
-        // Create targeting preview after scene is available
+        // Create targeting preview for building placement (squares)
         this.targetingPreview = new GUTS.PlacementPreview(this.game);
         this.targetingPreview.updateConfig({
             cellOpacity: 0.3,
             borderOpacity: 0.6
         });
+
+        // Create order preview for move/hide orders (circles)
+        this.orderPreview = new GUTS.PlayerOrderPreview(this.game);
     }
 
     showSquadActionPanel(placementId) {
@@ -220,6 +224,10 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
     moveOrderAction() {
         this.startTargeting({ preventEnemiesInRangeCheck: true, preventCombat: true });
+    }
+
+    hideOrderAction() {
+        this.startTargeting({ isHideOrder: true });
     }
 
     startTargeting(meta = {}) {
@@ -405,26 +413,30 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
     }
 
     showMoveTargets() {
-        if (!this.targetingPreview) return;
+        if (!this.orderPreview) return;
 
-        this.targetingPreview.clear();
         const placementIds = this.game.call('getSelectedSquads') || [];
-        const targetPositions = [];
+        const orders = [];
+
         placementIds.forEach((placementId) => {
             const placement = this.game.call('getPlacementById', placementId);
             placement.squadUnits.forEach((entityId) => {
                 const playerOrder = this.game.getComponent(entityId, "playerOrder");
                 if (playerOrder && (playerOrder.targetPositionX !== 0 || playerOrder.targetPositionZ !== 0)) {
-                    targetPositions.push({
+                    orders.push({
                         x: playerOrder.targetPositionX,
-                        y: playerOrder.targetPositionY,
-                        z: playerOrder.targetPositionZ
+                        z: playerOrder.targetPositionZ,
+                        isHiding: playerOrder.isHiding
                     });
                 }
             });
         });
 
-        this.targetingPreview.showAtWorldPositions(targetPositions, true);
+        if (orders.length > 0) {
+            this.orderPreview.show(orders);
+        } else {
+            this.orderPreview.hide();
+        }
     }
 
     // ==================== CANVAS RIGHT-CLICK HANDLING ====================
@@ -438,7 +450,9 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
             return;
         }
 
-        const worldPos = this.game.call('getWorldPositionFromMouse');
+        // Get raw world position without grid centering offset
+        // Move/Hide orders should go exactly where clicked, not snapped to grid center
+        const worldPos = this.game.call('getWorldPositionFromMouse', undefined, undefined, false);
         if (!worldPos) {
             this.game.uiSystem?.showNotification('Could not find ground under cursor.', 'error', 1000);
             this.stopTargeting();
@@ -466,16 +480,29 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
         const targetPosition = { x: worldPos.x, y: 0, z: worldPos.z };
 
-        // Use GameInterfaceSystem for the actual move order
-        this.game.call('ui_issueMoveOrder', placementIds, targetPosition, (success, response) => {
+        // Check if this is a hide order
+        const isHideOrder = this.orderMeta?.isHideOrder;
+        const orderMethod = isHideOrder ? 'ui_issueHideOrder' : 'ui_issueMoveOrder';
+        const effectColor = isHideOrder ? 0x8866cc : 0x00ff00;  // Purple for stealth, green for move
+
+        // Use GameInterfaceSystem for the actual order
+        this.game.call(orderMethod, placementIds, targetPosition, (success, response) => {
             if (success) {
                 // Show visual feedback
                 if (this.game.effectsSystem) {
-                    this.game.call('createParticleEffect', worldPos.x, 0, worldPos.z, 'magic', { ...this.pingEffect });
+                    this.game.call('createParticleEffect', worldPos.x, 0, worldPos.z, 'magic', {
+                        ...this.pingEffect,
+                        color: effectColor
+                    });
                 }
 
-                // Keep targeting active and update preview
-                this.startTargeting();
+                // Keep targeting active for move orders, stop for hide orders
+                // Always show the target preview so user sees where unit is going
+                if (!isHideOrder) {
+                    this.startTargeting();
+                } else {
+                    this.stopTargeting();
+                }
                 this.showMoveTargets();
             }
         });
@@ -564,12 +591,18 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         if (this.targetingPreview) {
             this.targetingPreview.clear();
         }
+        if (this.orderPreview) {
+            this.orderPreview.clear();
+        }
     }
 
     destroy() {
         this.stopTargeting();
         if (this.targetingPreview) {
             this.targetingPreview.dispose();
+        }
+        if (this.orderPreview) {
+            this.orderPreview.dispose();
         }
     }
 }

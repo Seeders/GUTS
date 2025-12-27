@@ -8,6 +8,37 @@
  * This ensures identical game state on both sides.
  */
 class BaseNetworkSystem extends GUTS.BaseSystem {
+    static services = [
+        'broadcastToRoom'
+    ];
+
+    // ==================== BROADCAST ====================
+
+    /**
+     * Broadcast to all players in a room
+     * In multiplayer: routes through ServerNetworkManager to Socket.IO
+     * In local game: calls ClientNetworkSystem handlers directly (only one player)
+     */
+    broadcastToRoom(roomId, eventName, data) {
+        const isLocal = this.game.state.isLocalGame;
+
+        if (isLocal) {
+            // In local game, route directly to client handlers
+            const clientNet = this.game.clientNetworkSystem;
+            if (eventName === 'BATTLE_END') {
+                clientNet?.handleBattleEnd(data);
+            } else if (eventName === 'GAME_END') {
+                clientNet?.handleGameEnd(data);
+            } else if (eventName === 'READY_FOR_BATTLE_UPDATE') {
+                clientNet?.handleReadyForBattleUpdate(data);
+            }
+            // Other broadcasts are no-ops in single player
+        } else {
+            // Multiplayer - use ServerNetworkManager
+            const actualRoomId = roomId || this.game.room?.id;
+            this.engine?.serverNetworkManager?.broadcastToRoom(actualRoomId, eventName, data);
+        }
+    }
 
     // ==================== PLACEMENT ====================
 
@@ -189,24 +220,21 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with success, newEntityId, newPlacementId, gridPosition
      */
     processUpgradeBuilding(socketPlayerId, numericPlayerId, player, buildingEntityId, oldPlacementId, targetBuildingId, serverEntityIds = null, newPlacementId = null) {
-        console.log('[processUpgradeBuilding] Starting', { socketPlayerId, numericPlayerId, buildingEntityId, oldPlacementId, targetBuildingId, serverEntityIds, newPlacementId });
-
         // Get grid position from old placement before destroying
         const oldPlacement = this.game.call('getPlacementById', oldPlacementId);
         const gridPosition = oldPlacement?.gridPosition;
-        console.log('[processUpgradeBuilding] Old placement', { oldPlacement, gridPosition });
 
         if (!gridPosition) {
-            console.log('[processUpgradeBuilding] FAIL: Could not get grid position');
             return { success: false, error: 'Could not get grid position' };
         }
 
         // Release grid cells before destroying the old building (use entityId, not placementId)
-        console.log('[processUpgradeBuilding] Releasing grid cells for entityId', buildingEntityId);
         this.game.call('releaseGridCells', buildingEntityId);
 
-        // Remove old building visual representation
-        this.game.call('removeInstance', buildingEntityId);
+        // Remove old building visual representation (client only)
+        if (this.game.hasService('removeInstance')) {
+            this.game.call('removeInstance', buildingEntityId);
+        }
 
         // Destroy old building entity
         this.game.destroyEntity(buildingEntityId);
@@ -215,7 +243,10 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
         const enums = this.game.getEnums();
         const collectionIndex = enums?.objectTypeDefinitions?.buildings ?? -1;
         const spawnTypeIndex = enums?.buildings?.[targetBuildingId] ?? -1;
-        console.log('[processUpgradeBuilding] Resolved enums', { collectionIndex, spawnTypeIndex, targetBuildingId });
+
+        // Get target building definition to check for buildTime
+        const targetBuildingDef = this.collections?.buildings?.[targetBuildingId];
+        const buildTime = targetBuildingDef?.buildTime || 0;
 
         const networkBuildingData = {
             placementId: newPlacementId, // Server generates, client uses server-provided value
@@ -226,14 +257,28 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             playerId: numericPlayerId,
             roundPlaced: this.game.state.round || 1,
             timestamp: this.game.state.now,
-            skipValidation: true // Skip validation for upgrades since we already validated and released the grid
+            skipValidation: true, // Skip validation for upgrades since we already validated and released the grid
+            // If buildTime > 0, spawn in under-construction state
+            isUnderConstruction: buildTime > 0,
+            buildTime: buildTime,
+            assignedBuilder: -1, // No builder for upgrades - auto-completes
+            isUpgrade: true // Flag to indicate this is an upgrade (auto-completion)
         };
-        console.log('[processUpgradeBuilding] networkBuildingData', networkBuildingData);
 
         // Spawn new building
-        console.log('[processUpgradeBuilding] Calling processPlacement with serverEntityIds', serverEntityIds);
         const result = this.processPlacement(socketPlayerId, numericPlayerId, player, networkBuildingData, serverEntityIds);
-        console.log('[processUpgradeBuilding] processPlacement result', result);
+
+        // If building has buildTime and spawned successfully, schedule auto-completion
+        if (result.success && buildTime > 0) {
+            const newBuildingId = result.squadUnits?.[0];
+            if (newBuildingId != null) {
+                // Store upgrade start round for tracking
+                const placement = this.game.getComponent(newBuildingId, 'placement');
+                if (placement) {
+                    placement.upgradeStartRound = this.game.state.round;
+                }
+            }
+        }
 
         return {
             success: result.success,

@@ -141,7 +141,6 @@
     "LeapSlamAbility"
   ],
   "range": 5,
-  "projectile": "arrow",
   "icon": "unit_barbarian",
   "visionRange": 500,
   "supplyCost": 2,

@@ -137,10 +137,10 @@ describe('SaveSystem', () => {
             expect(state.victory).toBe(true);
         });
 
-        it('should include myTeam', () => {
-            game.state.myTeam = 'left';
+        it('should not include myTeam (deprecated)', () => {
+            // myTeam is deprecated - team is now determined via player entities
             const state = saveSystem.serializeGameState();
-            expect(state.myTeam).toBe('left');
+            expect(state.myTeam).toBeUndefined();
         });
     });
 

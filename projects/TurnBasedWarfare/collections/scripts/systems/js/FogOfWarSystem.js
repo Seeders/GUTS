@@ -636,7 +636,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const myTeam = this.game.state.myTeam;
+        const myTeam = this.game.call('getActivePlayerTeam');
         // myTeam can be 0 (neutral) which is falsy, so check for undefined/null explicitly
         if (myTeam === undefined || myTeam === null) return;
 

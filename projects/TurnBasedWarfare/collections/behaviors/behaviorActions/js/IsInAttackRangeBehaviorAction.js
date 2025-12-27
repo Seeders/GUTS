@@ -39,22 +39,25 @@ class IsInAttackRangeBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         const baseRange = combat.range || 50;
+        // Melee units (range < 50) need effective range with collision radii
+        // Ranged units use center-to-center to match ability canExecute checks
+        const effectiveRange = baseRange < 50
+            ? GUTS.GameUtils.getEffectiveRange(game, entityId, targetId, baseRange)
+            : baseRange;
         const distance = GUTS.GameUtils.getDistanceBetweenEntities(game, entityId, targetId);
-        const effectiveRange = GUTS.GameUtils.getEffectiveRange(game, entityId, targetId, baseRange);
 
         const inRange = distance <= effectiveRange;
 
         log.trace('IsInAttackRange', `${unitName}(${entityId}) [${teamName}] ${inRange ? 'SUCCESS' : 'FAILURE'}`, {
             targetId,
             distance: distance.toFixed(0),
-            effectiveRange,
-            baseRange
+            effectiveRange: effectiveRange.toFixed(0)
         });
 
         if (inRange) {
             return this.success({
                 distance,
-                range: effectiveRange,
+                effectiveRange,
                 target: targetId
             });
         }

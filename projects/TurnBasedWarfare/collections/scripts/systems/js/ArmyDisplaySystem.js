@@ -79,8 +79,7 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
                     status: this.getUnitStatus(entityId)
                 };
                 
-                const enums = this.game.getEnums();
-                const myTeamId = enums.team[this.game.state.myTeam];
+                const myTeamId = this.game.call('getActivePlayerTeam');
                 if (team?.team === myTeamId) {
                     playerUnits.push(unitInfo);
                 } else if (team?.team !== myTeamId && team?.team !== undefined) {

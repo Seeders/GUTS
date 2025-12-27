@@ -154,20 +154,15 @@ class HeadlessSkirmishRunner {
     /**
      * Run simulation with AI opponents using behavior trees
      * The AI opponents handle placement and battle phases automatically
-     * @param {Object} options - Simulation options
-     * @param {number} options.maxTicks - Maximum ticks before timeout (default: 10000)
      * @returns {Promise<Object>} Simulation results
      */
-    async run(options = {}) {
+    async run() {
         if (!this.isSetup) {
             throw new Error('Must call setup() before running simulation');
         }
 
-        const { maxTicks = 10000 } = options;
-
         // Run the simulation - AI opponents handle everything via behavior trees
         return await this.engine.runSimulation({
-            maxTicks,
             seed: this.config.seed
         });
     }

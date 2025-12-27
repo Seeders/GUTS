@@ -8466,6 +8466,18 @@
         0
       ]
     ],
-    "levelEntities": []
+    "levelEntities": [],
+    "startingLocations": [
+      {
+        "side": "left",
+        "gridX": 7,
+        "gridZ": 7
+      },
+      {
+        "side": "right",
+        "gridX": 56,
+        "gridZ": 56
+      }
+    ]
   }
 }

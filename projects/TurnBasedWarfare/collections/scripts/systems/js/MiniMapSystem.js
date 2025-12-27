@@ -337,8 +337,8 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
 
     updateUnitIcons() {
-        const myTeam = this.game.state.myTeam;
-        if (!myTeam) return;
+        const myTeam = this.game.call('getActivePlayerTeam');
+        if (myTeam === null || myTeam === undefined) return;
 
         const entities = this.game.getEntitiesWith(
             "transform",

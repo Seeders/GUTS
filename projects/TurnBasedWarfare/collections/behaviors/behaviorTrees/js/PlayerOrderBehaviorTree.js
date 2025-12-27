@@ -36,9 +36,11 @@ class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
         // If enemies are nearby, yield to combat behavior
         const isForceMove = playerOrder.preventEnemiesInRangeCheck;
         const buildingState = game.getComponent(entityId, 'buildingState');
-        const isBuildOrder = buildingState && buildingState.targetBuildingEntityId !== -1;
+        // A build order exists if we have an active building target OR a pending building to spawn
+        const isBuildOrder = buildingState && (buildingState.targetBuildingEntityId !== -1 || buildingState.pendingUnitTypeId != null);
 
-        if (!isForceMove && !isBuildOrder) {
+        // Hidden units should not engage in combat - skip enemy detection entirely
+        if (!isForceMove && !isBuildOrder && !playerOrder.isHiding) {
             // Use FindNearestEnemyBehaviorAction which both checks for enemies AND sets shared.target
             // This ensures CombatBehaviorTree has a target to use
             const findEnemy = game.call('getNodeByType', 'FindNearestEnemyBehaviorAction');

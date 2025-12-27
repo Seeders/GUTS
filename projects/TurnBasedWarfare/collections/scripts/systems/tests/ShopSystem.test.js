@@ -8,12 +8,14 @@ describe('ShopSystem', () => {
 
     beforeEach(() => {
         game = new TestGameContext();
-        game.state.myTeam = 'left';
         enums = game.getEnums();
 
-        // ShopSystem uses string team values from game.state.myTeam
+        // ShopSystem uses getActivePlayerTeam() to determine player team
         // Override enums BEFORE creating the system so it uses correct values
         enums.team = { left: 'left', right: 'right' };
+
+        // Mock getActivePlayerTeam service
+        game.register('getActivePlayerTeam', () => 'left');
 
         // Register mock services
         game.register('getUnitTypeDef', (unitTypeComp) => {

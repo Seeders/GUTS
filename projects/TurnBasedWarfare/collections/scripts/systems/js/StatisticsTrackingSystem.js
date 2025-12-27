@@ -42,8 +42,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     getUnitsDeployed() {
         try {
             const playerUnits = this.game.getEntitiesWith("team", "unitType") || [];
-            const enums = this.game.getEnums();
-            const myTeamId = enums.team[this.game.state.myTeam];
+            const myTeamId = this.game.call('getActivePlayerTeam');
 
             return playerUnits.filter(entityId => {
                 const team = this.game.getComponent(entityId, "team");
@@ -59,8 +58,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
             const alivePlayerUnits = this.game.getEntitiesWith(
                 "team", "health", "unitType"
             ) || [];
-            const enums = this.game.getEnums();
-            const myTeamId = enums.team[this.game.state.myTeam];
+            const myTeamId = this.game.call('getActivePlayerTeam');
 
             return alivePlayerUnits.filter(entityId => {
                 const team = this.game.getComponent(entityId, "team");
@@ -92,8 +90,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     calculateArmyValue() {
         try {
             const playerUnits = this.game.getEntitiesWith("team", "unitType") || [];
-            const enums = this.game.getEnums();
-            const myTeamId = enums.team[this.game.state.myTeam];
+            const myTeamId = this.game.call('getActivePlayerTeam');
 
             return playerUnits.reduce((total, entityId) => {
                 const team = this.game.getComponent(entityId, "team");

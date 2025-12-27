@@ -86,18 +86,14 @@ class BaseAbility {
     // effectType is the prefix (e.g., 'cast', 'trail', 'impact')
     // Reads from config[effectType + 'ParticleEffectSystems'] array
     playConfiguredEffects(effectType, position) {
-        if (this.game.isServer) {
-            console.log('[BaseAbility] playConfiguredEffects skipped - isServer');
-            return;
-        }
+        if (this.game.isServer) return;
+
         const effectKey = effectType + 'ParticleEffectSystems';
         const effects = this.abilityData[effectKey];
-        console.log('[BaseAbility] playConfiguredEffects', effectType, 'effects:', effects, 'abilityData keys:', Object.keys(this.abilityData));
         if (!effects || !Array.isArray(effects) || effects.length === 0) return;
 
         const pos = new THREE.Vector3(position.x, position.y, position.z);
         effects.forEach(effectName => {
-            console.log('[BaseAbility] Playing effect system:', effectName, 'at', pos.x, pos.y, pos.z);
             this.game.call('playEffectSystem', effectName, pos);
         });
     }

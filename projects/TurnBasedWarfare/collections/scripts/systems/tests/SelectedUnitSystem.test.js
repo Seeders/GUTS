@@ -115,7 +115,8 @@ describe('SelectedUnitSystem', () => {
 
     describe('getEntityAtWorldPosition with team filter', () => {
         beforeEach(() => {
-            game.state.myTeam = 1;
+            // Mock getActivePlayerTeam service
+            game.register('getActivePlayerTeam', () => 1);
         });
 
         it('should select entities on player team when filter enabled', () => {
@@ -196,7 +197,8 @@ describe('SelectedUnitSystem', () => {
                 includeCollections: null
             });
 
-            game.state.myTeam = 1;
+            // Mock getActivePlayerTeam service
+            game.register('getActivePlayerTeam', () => 1);
 
             // Create enemy unit
             const enemy = game.createEntityWith({

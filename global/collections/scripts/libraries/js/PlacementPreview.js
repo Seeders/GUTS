@@ -84,6 +84,12 @@ class PlacementPreview {
                 opacity: this.config.cellOpacity,
                 side: THREE.DoubleSide
             }),
+            pendingCell: new THREE.MeshBasicMaterial({
+                color: 0xffcc00,
+                transparent: true,
+                opacity: this.config.cellOpacity,
+                side: THREE.DoubleSide
+            }),
             validBorder: new THREE.LineBasicMaterial({
                 color: 0x00ff00,
                 transparent: true,
@@ -93,6 +99,22 @@ class PlacementPreview {
                 color: 0xff0000,
                 transparent: true,
                 opacity: this.config.borderOpacity
+            }),
+            pendingBorder: new THREE.LineBasicMaterial({
+                color: 0xffcc00,
+                transparent: true,
+                opacity: this.config.borderOpacity
+            }),
+            stealthCell: new THREE.MeshBasicMaterial({
+                color: 0x6644aa,
+                transparent: true,
+                opacity: this.config.cellOpacity * 0.7,
+                side: THREE.DoubleSide
+            }),
+            stealthBorder: new THREE.LineBasicMaterial({
+                color: 0x8866cc,
+                transparent: true,
+                opacity: this.config.borderOpacity * 0.8
             }),
             validUnit: new THREE.MeshBasicMaterial({
                 color: 0x00aa00,
@@ -194,6 +216,76 @@ class PlacementPreview {
         this.startAnimation();
     }
     
+    /**
+     * Show multiple sets of positions with different colors
+     * @param {Array} positionSets - Array of { positions: [{x, z}], state: 'valid'|'invalid'|'pending'|'stealth' }
+     * @param {boolean} isBuilding - Whether these are building footprints
+     * @param {boolean} isCentered - If true, positions are already centered (e.g., from world click). If false, positions are grid corners.
+     */
+    showMultiplePositionSets(positionSets, isBuilding = false, isCentered = false) {
+        // No throttling here - let the caller handle throttling
+        // This prevents flickering when multiple callers use this method
+
+        // Flatten and check if we have any positions
+        const allPositions = positionSets.flatMap(set => set.positions || []);
+        if (allPositions.length === 0) {
+            this.hide();
+            return;
+        }
+
+        this.isActive = true;
+        this.hideAllMeshes();
+
+        const cellMeshPool = isBuilding ? this.footprintCellMeshPool : this.placementCellMeshPool;
+        const borderMeshPool = isBuilding ? this.footprintBorderMeshPool : this.placementBorderMeshPool;
+
+        let meshIndex = 0;
+
+        for (const set of positionSets) {
+            if (!set.positions || set.positions.length === 0) continue;
+
+            // Support both old isValid boolean and new state string
+            let cellMaterial, borderMaterial;
+            if (set.state === 'pending') {
+                cellMaterial = this.materials.pendingCell;
+                borderMaterial = this.materials.pendingBorder;
+            } else if (set.state === 'stealth') {
+                cellMaterial = this.materials.stealthCell;
+                borderMaterial = this.materials.stealthBorder;
+            } else if (set.state === 'valid' || set.isValid === true) {
+                cellMaterial = this.materials.validCell;
+                borderMaterial = this.materials.validBorder;
+            } else {
+                cellMaterial = this.materials.invalidCell;
+                borderMaterial = this.materials.invalidBorder;
+            }
+
+            for (const pos of set.positions) {
+                if (meshIndex >= cellMeshPool.length || meshIndex >= this.config.maxCells) break;
+
+                const terrainHeight = this.getTerrainHeight(pos.x, pos.z);
+                const yPosition = (terrainHeight || 0) + this.config.elevationOffset;
+
+                const cellMesh = cellMeshPool[meshIndex];
+                cellMesh.material = cellMaterial;
+                cellMesh.position.set(pos.x, yPosition, pos.z);
+                cellMesh.visible = true;
+                this.activeMeshes.push(cellMesh);
+
+                const borderMesh = borderMeshPool[meshIndex];
+                borderMesh.material = borderMaterial;
+                borderMesh.position.set(pos.x, yPosition, pos.z);
+                borderMesh.visible = true;
+                this.activeMeshes.push(borderMesh);
+
+                meshIndex++;
+            }
+        }
+
+        this.previewGroup.visible = true;
+        this.startAnimation();
+    }
+
     showAtGridPositions(gridPositions, isValid = true, isBuilding = false) {
         // Convert grid positions to world positions
         // Use GridSystem coordinate transformations via gameManager if available

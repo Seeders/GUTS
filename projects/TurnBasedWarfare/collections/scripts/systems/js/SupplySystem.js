@@ -93,8 +93,8 @@ class SupplySystem extends GUTS.BaseSystem {
     updateSupplyDisplay() {
         if (!this.supplyElement) return;
 
-        const team = this.game.state.myTeam;
-        if (!team) return;
+        const team = this.game.call('getActivePlayerTeam');
+        if (team === null || team === undefined) return;
 
         const currentPop = this.getCurrentPopulation(team);
         const currentSupply = this.getCurrentSupply(team);

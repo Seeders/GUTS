@@ -2,6 +2,7 @@
   "title": "Castle",
   "category": "townhall",
   "value": 100,
+  "buildTime": 1,
   "upgrades": [
     "peasantEfficiency"
   ],

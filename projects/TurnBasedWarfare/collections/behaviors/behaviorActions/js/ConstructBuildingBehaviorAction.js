@@ -14,7 +14,21 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         const shared = this.getShared(entityId, game);
         const memory = this.getMemory(entityId);
 
-        const buildingId = shared.targetBuilding;
+        let buildingId = shared.targetBuilding;
+
+        // Check for pending building that needs to be spawned
+        const buildingState = game.getComponent(entityId, 'buildingState');
+        if (buildingState?.pendingUnitTypeId != null && (buildingId === undefined || buildingId === null || buildingId < 0)) {
+            // Spawn the pending building now that we've arrived
+            buildingId = game.call('spawnPendingBuilding', entityId);
+            if (buildingId != null) {
+                shared.targetBuilding = buildingId;
+                shared.buildTime = buildingState.buildTime;
+            } else {
+                return this.failure();
+            }
+        }
+
         // targetBuilding is null/undefined when not set, or could be 0 (valid entity ID)
         if (buildingId === undefined || buildingId === null || buildingId < 0) {
             return this.failure();
@@ -54,12 +68,7 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
             memory.constructionStartTime = null;
 
             // Clear buildingState so peasant can return to other behaviors (mining)
-            const buildingState = game.getComponent(entityId, 'buildingState');
-            if (buildingState) {
-                buildingState.targetBuildingEntityId = -1;
-                buildingState.buildTime = 0;
-                buildingState.constructionStartTime = 0;
-            }
+            this.clearBuildingState(entityId, game);
 
             // Disable playerOrder so unit returns to normal behaviors (like mining)
             // This allows AbilitiesBehaviorTree to take over since PlayerOrderBehaviorTree
@@ -141,7 +150,9 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         const renderComponent = game.getComponent(buildingId, 'renderable');
         if (renderComponent) {
             renderComponent.spawnType = unitTypeComponent.type;
-            game.call('removeInstance', buildingId);
+            if (game.hasService('removeInstance')) {
+                game.call('removeInstance', buildingId);
+            }
         }
 
         // 2. Restore health to full - get unit def from collections using numeric indices
@@ -163,6 +174,50 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         if (game.animationSystem) {
             const enums = game.call('getEnums');
             game.animationSystem.changeAnimation(buildingId, enums.animationType.idle, 1.0, 0);
+        }
+
+        // 6. Move peasant outside the building footprint
+        this.movePeasantOutsideBuilding(entityId, buildingId, buildingPlacement, game);
+    }
+
+    /**
+     * Move the peasant to a position outside the building footprint
+     */
+    movePeasantOutsideBuilding(entityId, buildingId, buildingPlacement, game) {
+        const buildingGridPos = buildingPlacement.gridPosition;
+        if (!buildingGridPos) return;
+
+        // Get the peasant's unit type for finding adjacent position
+        const peasantUnitTypeComp = game.getComponent(entityId, 'unitType');
+        if (!peasantUnitTypeComp) return;
+
+        const peasantUnitType = game.call('getUnitTypeDef', peasantUnitTypeComp);
+        if (!peasantUnitType) return;
+
+        // Get building cells to avoid
+        const buildingUnitType = game.call('getUnitTypeDef', {
+            collection: buildingPlacement.collection,
+            type: buildingPlacement.unitTypeId
+        });
+        const buildingSquadData = buildingUnitType ? game.call('getSquadData', buildingUnitType) : null;
+        const buildingCells = buildingSquadData ? game.call('getSquadCells', buildingGridPos, buildingSquadData) : [];
+        const buildingCellSet = new Set(buildingCells.map(cell => `${cell.x},${cell.z}`));
+
+        // Find an adjacent position outside the building
+        const adjacentPos = game.call('findBuildingAdjacentPosition', buildingGridPos, buildingCellSet, peasantUnitType, null);
+        if (!adjacentPos) return;
+
+        // Convert grid position to world position
+        const worldPos = game.call('placementGridToWorld', adjacentPos.x, adjacentPos.z);
+        if (!worldPos) return;
+
+        // Teleport the peasant to the new position
+        const transform = game.getComponent(entityId, 'transform');
+        if (transform?.position) {
+            const terrainHeight = game.call('getTerrainHeight', worldPos.x, worldPos.z) || 0;
+            transform.position.x = worldPos.x;
+            transform.position.y = terrainHeight;
+            transform.position.z = worldPos.z;
         }
     }
 
@@ -192,12 +247,7 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
             memory.constructionStartTime = null;
 
             // Clear buildingState so peasant can return to other behaviors (mining)
-            const buildingState = game.getComponent(entityId, 'buildingState');
-            if (buildingState) {
-                buildingState.targetBuildingEntityId = -1;
-                buildingState.buildTime = 0;
-                buildingState.constructionStartTime = 0;
-            }
+            this.clearBuildingState(entityId, game);
 
             // Disable playerOrder so unit returns to normal behaviors (like mining)
             const playerOrder = game.getComponent(entityId, 'playerOrder');
@@ -216,6 +266,20 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
     }
+
+    clearBuildingState(entityId, game) {
+        const buildingState = game.getComponent(entityId, 'buildingState');
+        if (buildingState) {
+            buildingState.targetBuildingEntityId = -1;
+            buildingState.buildTime = 0;
+            buildingState.constructionStartTime = 0;
+            buildingState.pendingGridPosition.x = 0;
+            buildingState.pendingGridPosition.z = 0;
+            buildingState.pendingUnitTypeId = null;
+            buildingState.pendingCollection = null;
+        }
+    }
+
     onEnd(entityId, game) {
         // Clean up animation if action is interrupted
         this.onBuildComplete(entityId, game);

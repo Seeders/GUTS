@@ -16,13 +16,6 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const targetKey = params.targetKey || 'target';
 
         const combat = game.getComponent(entityId, 'combat');
-
-        // Check if unit is hiding - hidden units don't search for enemies
-        const playerOrder = game.getComponent(entityId, 'playerOrder');
-        if (playerOrder?.isHiding) {
-            return this.failure();
-        }
-
         const range = combat?.visionRange || params.range || 300;
         const nearestEnemy = game.call('findNearestVisibleEnemy', entityId, range);
 

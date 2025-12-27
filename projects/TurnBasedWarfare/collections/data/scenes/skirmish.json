@@ -2,6 +2,7 @@
   "title": "Skirmish Scene",
   "systems": [
     "BaseNetworkSystem",
+    "ServerNetworkSystem",
     "ServerBattlePhaseSystem",
     "GridSystem",
     "TerrainSystem",

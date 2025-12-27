@@ -637,7 +637,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      */
     getSquadDisplayName(placementId) {
         // Try to get the name from placement system - get unitType from entity
-        const playerPlacements = this.game.call('getPlacementsForSide', this.game.state.myTeam);
+        const playerPlacements = this.game.call('getPlacementsForSide', this.game.call('getActivePlayerTeam'));
         if (playerPlacements) {
             const placement = playerPlacements.find(p => p.placementId === placementId);
             if (placement && placement.squadUnits && placement.squadUnits.length > 0) {
@@ -692,7 +692,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         for (const squad of this.getAllSquadsWithExperience()) {
             const squadData = squad.experience;
             const team = this.getPlacementTeam(squad.placementId);
-            if (squadData.canLevelUp && team === this.game.state.myTeam) {
+            if (squadData.canLevelUp && team === this.game.call('getActivePlayerTeam')) {
                 readySquads.push({
                     ...squadData,
                     placementId: squad.placementId,

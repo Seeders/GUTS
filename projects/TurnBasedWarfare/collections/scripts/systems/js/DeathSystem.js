@@ -76,6 +76,10 @@ class DeathSystem extends GUTS.BaseSystem {
         // rather than waiting for the death animation to complete
         this.game.triggerEvent('onUnitKilled', entityId);
 
+        // Clear all references to this entity from other units
+        // (prevents stale target issues when entity IDs are reused)
+        this.clearTargetReferences(entityId);
+
         // Remove health (corpses can't be damaged)
         if (this.game.hasComponent(entityId, "health")) {
             this.game.removeComponent(entityId, "health");
@@ -208,6 +212,37 @@ class DeathSystem extends GUTS.BaseSystem {
             const deathState = this.game.getComponent(corpseId, "deathState");
             return deathState && deathState.teamAtDeath === team;
         });
+    }
+
+    /**
+     * Clear all references to a dead entity from other units.
+     * This prevents stale target issues when entity IDs are reused.
+     * @param {number} deadEntityId - The entity that died
+     */
+    clearTargetReferences(deadEntityId) {
+        // Clear shared.target from all behavior states
+        const aiEntities = this.game.getEntitiesWith('aiState');
+        for (const entityId of aiEntities) {
+            const shared = this.game.call('getBehaviorShared', entityId);
+            if (shared) {
+                if (shared.target === deadEntityId) {
+                    shared.target = null;
+                }
+                if (shared.targetBuilding === deadEntityId) {
+                    shared.targetBuilding = null;
+                }
+            }
+        }
+
+        // Clear combatState.lastAttacker references
+        const combatEntities = this.game.getEntitiesWith('combatState');
+        for (const entityId of combatEntities) {
+            const combatState = this.game.getComponent(entityId, 'combatState');
+            if (combatState && combatState.lastAttacker === deadEntityId) {
+                combatState.lastAttacker = null;
+                combatState.lastAttackTime = 0;
+            }
+        }
     }
 
     onBattleEnd() {

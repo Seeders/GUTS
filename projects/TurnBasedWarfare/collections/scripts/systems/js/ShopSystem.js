@@ -89,7 +89,7 @@ class ShopSystem extends GUTS.BaseSystem {
      * @returns {{met: boolean, reason: string|null}}
      */
     checkRequirements(def) {
-        const teamIndex = this.game.state.myTeam;
+        const teamIndex = this.game.call('getActivePlayerTeam');
 
         if (def.requiresBuildings && def.requiresBuildings.length > 0) {
             const ownedBuildings = this.getOwnedBuildings(teamIndex);
@@ -275,7 +275,7 @@ class ShopSystem extends GUTS.BaseSystem {
             const buildTime = unit.buildTime || 1;
             const canAfford = this.game.call('canAffordCost', unit.value);
             const hasCapacity = buildTime <= remainingCapacity + 0.001;
-            const hasSupply = this.game.call('canAffordSupply', this.game.state.myTeam, unit) ?? true;
+            const hasSupply = this.game.call('canAffordSupply', this.game.call('getActivePlayerTeam'), unit) ?? true;
             const requirements = this.checkRequirements(unit);
 
             let locked = !canAfford || !hasCapacity || !hasSupply || !requirements.met;
@@ -458,7 +458,7 @@ class ShopSystem extends GUTS.BaseSystem {
 
         // Use game.call - SAME code path as headless mode
         // This is the SINGLE source of truth for unit purchasing
-        this.game.call('ui_purchaseUnit', unitId, buildingId, this.game.state.myTeam, (success, response) => {
+        this.game.call('ui_purchaseUnit', unitId, buildingId, this.game.call('getActivePlayerTeam'), (success, response) => {
             if (!success) {
                 // Show error notification from GameActionsInterface response
                 this.showNotification(response?.error || 'Purchase failed', 'error');
@@ -504,7 +504,7 @@ class ShopSystem extends GUTS.BaseSystem {
                 // Here we just handle UI concerns: effects, notifications, UI refresh
 
                 // Apply upgrade effects and show notification
-                this.applyUpgradeEffects(this.game.state.myTeam, upgrade);
+                this.applyUpgradeEffects(this.game.call('getActivePlayerTeam'), upgrade);
                 this.showNotification(`${upgrade.title} purchased!`, 'success');
                 // Refresh the UI to show the upgrade as owned
                 this.refreshShopUI();
@@ -541,7 +541,7 @@ class ShopSystem extends GUTS.BaseSystem {
 
     onPlacementPhaseStart() {
         // Reset production progress for all completed buildings on my side
-        const ownedBuildings = this.getOwnedBuildings(this.game.state.myTeam);
+        const ownedBuildings = this.getOwnedBuildings(this.game.call('getActivePlayerTeam'));
         for (const [buildingType, entityIds] of ownedBuildings) {
             for (const entityId of entityIds) {
                 this.setBuildingProductionProgress(entityId, 0);
@@ -737,7 +737,7 @@ class ShopSystem extends GUTS.BaseSystem {
         const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
         const refundAmount = unitType?.value || 0;
         if (refundAmount > 0) {
-            this.game.call('addPlayerGold', this.game.state.myTeam, refundAmount);
+            this.game.call('addPlayerGold', this.game.call('getActivePlayerTeam'), refundAmount);
             this.game.uiSystem?.showNotification(`Refunded ${refundAmount} gold`, 'success', 1500);
         }
 

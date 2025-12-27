@@ -35,6 +35,18 @@ class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
+        // Validate target is still an enemy (entity ID might have been reused after death)
+        const targetTeam = game.getComponent(targetId, 'team');
+        if (!targetTeam || targetTeam.team === teamComp?.team) {
+            log.trace('HasTarget', `${unitName}(${entityId}) [${teamName}] FAILURE - target not enemy (ID reused?)`, {
+                targetId,
+                targetTeam: targetTeam?.team,
+                myTeam: teamComp?.team
+            });
+            shared[targetKey] = null;
+            return this.failure();
+        }
+
         // Optionally validate target is still alive
         if (validateHealth) {
             const targetHealth = game.getComponent(targetId, 'health');

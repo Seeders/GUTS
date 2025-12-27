@@ -22,7 +22,7 @@
  *   import { createHeadlessRunner } from './headless.js';
  *   const { runner, engine } = await createHeadlessRunner();
  *   await runner.setup({ level: 'level_1', seed: 12345, leftBuildOrder: 'basic', rightBuildOrder: 'basic' });
- *   const results = await runner.run({ maxTicks: 10000 });
+ *   const results = await runner.run();
  */
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -145,7 +145,6 @@ function parseArgs() {
         leftBuildOrder: 'basic',
         rightBuildOrder: 'basic',
         verbose: false,
-        maxTicks: 10000,
         json: false       // Output results as JSON
     };
 
@@ -185,10 +184,6 @@ function parseArgs() {
             case '--verbose':
             case '-v':
                 config.verbose = true;
-                break;
-            case '--max-ticks':
-            case '-m':
-                config.maxTicks = parseInt(args[++i], 10);
                 break;
             case '--json':
                 config.json = true;
@@ -438,11 +433,11 @@ function formatResultsAsText(result, verbose = false) {
  * Run a single simulation and return results
  * @param {Object} runner - HeadlessSkirmishRunner instance
  * @param {Object} simConfig - Simulation configuration
- * @param {Object} options - Run options (maxTicks, verbose)
+ * @param {Object} options - Run options (verbose)
  * @returns {Promise<Object>} Simulation results with metadata
  */
 async function runSingleSimulation(runner, simConfig, options = {}) {
-    const { maxTicks = 10000, verbose = false } = options;
+    const { verbose = false } = options;
 
     // Capture console output during simulation
     const consoleLog = [];
@@ -494,7 +489,7 @@ async function runSingleSimulation(runner, simConfig, options = {}) {
     }
 
     const runStart = Date.now();
-    const results = await runner.run({ maxTicks });
+    const results = await runner.run();
     const runTime = Date.now() - runStart;
 
     // Collect call log entries and format them
@@ -790,7 +785,7 @@ function printSimulationResults(result, verbose = false) {
  * Run multiple simulations in batch mode
  */
 async function runBatchSimulations(runner, simulationIds, options = {}) {
-    const { maxTicks = 10000, verbose = false } = options;
+    const { verbose = false } = options;
     const results = [];
     const batchStart = Date.now();
     const summaryResults = [];  // Collect summary-only results for batch file
@@ -844,7 +839,7 @@ async function runBatchSimulations(runner, simulationIds, options = {}) {
             console.warn = (...args) => consoleBuffer.push('[WARN] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
             console.error = (...args) => consoleBuffer.push('[ERROR] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
 
-            const result = await runSingleSimulation(runner, simRunConfig, { maxTicks, verbose });
+            const result = await runSingleSimulation(runner, simRunConfig, { verbose });
             results.push(result);
 
             // Restore console
@@ -1009,7 +1004,6 @@ async function main() {
                 : getAllSimulationIds();
 
             const { results, batchTimeMs } = await runBatchSimulations(runner, simulationIds, {
-                maxTicks: config.maxTicks,
                 verbose: config.verbose,
                 json: config.json
             });
@@ -1076,7 +1070,6 @@ async function main() {
         console.log(`[Headless] Running simulation with AI opponents...`);
 
         const result = await runSingleSimulation(runner, simRunConfig, {
-            maxTicks: config.maxTicks,
             verbose: config.verbose
         });
 

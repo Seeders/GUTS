@@ -43,12 +43,12 @@ describe('TeamHealthSystem', () => {
 
     describe('getOpponentTeam', () => {
         it('should return right when myTeam is left', () => {
-            game.state.myTeam = enums.team.left;
+            game.register('getActivePlayerTeam', () => enums.team.left);
             expect(teamHealthSystem.getOpponentTeam()).toBe(enums.team.right);
         });
 
         it('should return left when myTeam is right', () => {
-            game.state.myTeam = enums.team.right;
+            game.register('getActivePlayerTeam', () => enums.team.right);
             expect(teamHealthSystem.getOpponentTeam()).toBe(enums.team.left);
         });
     });
@@ -186,7 +186,7 @@ describe('TeamHealthSystem', () => {
 
     describe('applyRoundDamage', () => {
         it('should apply damage to losing team', () => {
-            game.state.myTeam = enums.team.left;
+            game.register('getActivePlayerTeam', () => enums.team.left);
 
             // Set up mock for squad-based damage
             const unitId = game.createEntity();
@@ -208,21 +208,21 @@ describe('TeamHealthSystem', () => {
         });
 
         it('should return victory result for player win', () => {
-            game.state.myTeam = enums.team.left;
+            game.register('getActivePlayerTeam', () => enums.team.left);
             const result = teamHealthSystem.applyRoundDamage(enums.team.left, []);
 
             expect(result.result).toBe('victory');
         });
 
         it('should return defeat result for player loss', () => {
-            game.state.myTeam = enums.team.left;
+            game.register('getActivePlayerTeam', () => enums.team.left);
             const result = teamHealthSystem.applyRoundDamage(enums.team.right, []);
 
             expect(result.result).toBe('defeat');
         });
 
         it('should indicate game over when health reaches 0', () => {
-            game.state.myTeam = enums.team.left;
+            game.register('getActivePlayerTeam', () => enums.team.left);
             teamHealthSystem.teamHealth[enums.team.right] = 50;
 
             // Set up high damage

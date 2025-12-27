@@ -24,7 +24,8 @@ class PlacementSystem extends GUTS.BaseSystem {
         'applyNetworkUnitData',
         'findBuildingSpawnPosition',
         'findBuildingAdjacentPosition',
-        'getStartingLocationsFromLevel'
+        'getStartingLocationsFromLevel',
+        'spawnPendingBuilding'
     ];
 
     constructor(game) {
@@ -244,6 +245,41 @@ class PlacementSystem extends GUTS.BaseSystem {
                 return { success: false, error: 'Invalid squad config' };
             }
 
+            // BUILDINGS WITH BUILDERS: Don't spawn entity until builder arrives and starts building
+            // Store building data on the peasant/scout and spawn when construction begins
+            if (unitType.collection === 'buildings' && networkUnitData.peasantInfo) {
+                const peasantId = networkUnitData.peasantInfo.peasantId;
+                const placementId = (networkUnitData.placementId != null) ? networkUnitData.placementId : this._getNextPlacementId();
+
+                // Store pending building data on the builder for later spawning
+                this.setupPendingBuild(peasantId, {
+                    ...networkUnitData,
+                    placementId,
+                    team,
+                    playerId,
+                    unitType,
+                    gridPosition
+                });
+
+                this.game.state.peasantBuildingPlacement = null;
+
+                return {
+                    success: true,
+                    squad: {
+                        placementId,
+                        gridPosition,
+                        unitType,
+                        squadUnits: [], // No entities spawned yet
+                        cells: [],
+                        isSquad: false,
+                        team,
+                        playerId,
+                        timestamp: this.game.state.now,
+                        isPendingBuilding: true
+                    }
+                };
+            }
+
             // Calculate unit positions within the squad
             const unitPositions = this.game.call('calculateUnitPositions',
                 gridPosition,
@@ -368,6 +404,79 @@ class PlacementSystem extends GUTS.BaseSystem {
         } catch (error) {
             console.error('[PlacementSystem] Squad spawn failed:', error.message || error, error.stack);
             return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Register an existing squad that was already created via ECS sync.
+     * This sets up the placement tracking without creating new entities.
+     * @param {Object} unitData - Network unit data from server
+     * @param {number} team - The team this unit belongs to
+     * @param {string} playerId - The player ID
+     */
+    registerExistingSquad(unitData, team, playerId = null) {
+        // Resolve unitType if needed
+        let unitType = unitData.unitType;
+        if (!unitType && unitData.unitTypeId != null) {
+            unitType = this.getUnitTypeFromPlacement(unitData);
+        }
+
+        if (!unitType) {
+            console.warn('[PlacementSystem] registerExistingSquad: could not resolve unitType');
+            return;
+        }
+
+        const squadUnits = unitData.squadUnits || [];
+        const placementId = unitData.placementId;
+        const gridPosition = unitData.gridPosition;
+
+        // Get squad data for cell calculations
+        const squadData = this.game.call('getSquadData', unitType);
+        const cells = this.game.call('getSquadCells', gridPosition, squadData) || [];
+
+        // Reserve grid cells for existing entities
+        for (const entityId of squadUnits) {
+            this.game.call('reserveGridCells', cells, entityId);
+        }
+
+        // Initialize squad in experience system
+        this.game.call('initializeSquad', placementId, unitType, squadUnits);
+
+        // Handle gold mine buildings
+        if (unitType.id === 'goldMine' && squadUnits.length > 0) {
+            const footprintWidth = unitType.footprintWidth || unitType.placementGridWidth || 2;
+            const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 2;
+            const gridWidth = footprintWidth * 2;
+            const gridHeight = footprintHeight * 2;
+
+            this.game.call('buildGoldMine',
+                squadUnits[0],
+                team,
+                gridPosition,
+                gridWidth,
+                gridHeight
+            );
+        }
+
+        // Handle peasant/builder assignment for buildings under construction
+        if (unitType.collection === 'buildings' && squadUnits.length > 0) {
+            const buildingEntityId = squadUnits[0];
+
+            if (unitData.assignedBuilder && unitData.isUnderConstruction) {
+                const peasantId = unitData.assignedBuilder;
+                const peasantInfo = {
+                    peasantId: peasantId,
+                    buildTime: unitData.buildTime
+                };
+
+                const peasantAbilities = this.game.call('getEntityAbilities', peasantId);
+                if (peasantAbilities) {
+                    const buildAbility = peasantAbilities.find(a => a.id === 'build');
+                    if (buildAbility) {
+                        buildAbility.assignToBuild(peasantId, buildingEntityId, peasantInfo, unitData.serverTime);
+                    }
+                }
+            }
         }
     }
 
@@ -517,7 +626,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         const typeIndex = enums.buildings?.goldMine ?? -1;
 
         // Build placement data with numeric indices
-        // team is expected to already be numeric from game.state.myTeam
+        // team is expected to already be numeric (from getActivePlayerTeam)
         const placement = {
             placementId,
             gridPosition: gridPos,
@@ -621,7 +730,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             const placementId = this._getNextPlacementId();
 
             // Build placement data with numeric indices (enums/collectionIndex/typeIndex already computed above)
-            // team is expected to already be numeric from game.state.myTeam
+            // team is expected to already be numeric (from getActivePlayerTeam)
             const placement = {
                 placementId,
                 gridPosition: gridPos,
@@ -733,9 +842,39 @@ class PlacementSystem extends GUTS.BaseSystem {
         const existingPlacements = this.getPlacementsForSide(team) || [];
 
         networkUnitData.forEach(unitData => {
+            console.log(`[applyNetworkUnitData] Processing unitData:`, {
+                placementId: unitData.placementId,
+                squadUnits: unitData.squadUnits,
+                unitTypeId: unitData.unitTypeId,
+                collection: unitData.collection
+            });
+
             // Skip if already placed
             if (existingPlacements.find(p => p.placementId === unitData.placementId)) {
+                console.log(`[applyNetworkUnitData] Skipping - placement ${unitData.placementId} already exists`);
                 return;
+            }
+
+            // Skip if server-provided entity IDs already exist (from ECS sync)
+            // This happens when ECS sync runs before applyNetworkUnitData
+            if (unitData.squadUnits && unitData.squadUnits.length > 0) {
+                const firstEntityId = unitData.squadUnits[0];
+                const entityExists = this.game.entityAlive[firstEntityId] === 1;
+                console.log(`[applyNetworkUnitData] Checking entity ${firstEntityId}: entityAlive=${entityExists}`);
+                if (entityExists) {
+                    // Entity already exists from ECS sync - just register the placement
+                    console.log(`[applyNetworkUnitData] Entity ${firstEntityId} already exists from ECS sync, registering existing squad for placementId=${unitData.placementId}`);
+                    this.registerExistingSquad(unitData, team, playerId);
+                    return;
+                }
+            } else {
+                // Check if this is a pending building (no squadUnits because peasant hasn't built it yet)
+                // These will be spawned by spawnPendingBuilding when the peasant arrives
+                if (unitData.isPendingBuilding || unitData.assignedBuilder) {
+                    console.log(`[applyNetworkUnitData] Skipping pending building placementId=${unitData.placementId} - will be spawned by builder ${unitData.assignedBuilder}`);
+                    return;
+                }
+                console.log(`[applyNetworkUnitData] No squadUnits provided, will spawn new entities`);
             }
 
             // Store playerId on unitData for unit creation
@@ -1157,5 +1296,161 @@ class PlacementSystem extends GUTS.BaseSystem {
                 z: worldPos.z
             }
         };
+    }
+
+    /**
+     * Set up a pending building on a peasant/builder
+     * The building entity won't be created until the builder arrives and starts building
+     * @param {number} builderId - The peasant/builder entity ID
+     * @param {Object} buildingData - Full building placement data
+     */
+    setupPendingBuild(builderId, buildingData) {
+        const buildTime = buildingData.peasantInfo?.buildTime || buildingData.unitType?.buildTime || 1;
+        const gridPosition = buildingData.gridPosition;
+
+        // Calculate world position from grid position
+        const worldPos = this.game.call('placementGridToWorld', gridPosition.x, gridPosition.z);
+        const terrainHeight = this.game.call('getTerrainHeight', worldPos.x, worldPos.z) || 0;
+
+        // Set buildingState for the builder with pending building data
+        let buildingState = this.game.getComponent(builderId, "buildingState");
+        if (!buildingState) {
+            this.game.addComponent(builderId, "buildingState", {
+                targetBuildingEntityId: -1,
+                buildTime: buildTime,
+                constructionStartTime: 0,
+                pendingGridPosition: { x: gridPosition.x, z: gridPosition.z },
+                pendingUnitTypeId: buildingData.unitTypeId,
+                pendingCollection: buildingData.collection
+            });
+        } else {
+            buildingState.targetBuildingEntityId = -1;
+            buildingState.buildTime = buildTime;
+            buildingState.constructionStartTime = 0;
+            buildingState.pendingGridPosition.x = gridPosition.x;
+            buildingState.pendingGridPosition.z = gridPosition.z;
+            buildingState.pendingUnitTypeId = buildingData.unitTypeId;
+            buildingState.pendingCollection = buildingData.collection;
+        }
+
+        // Set playerOrder for movement to the building position
+        let playerOrder = this.game.getComponent(builderId, "playerOrder");
+        if (!playerOrder) {
+            this.game.addComponent(builderId, "playerOrder", {
+                enabled: true,
+                targetPositionX: worldPos.x,
+                targetPositionY: terrainHeight,
+                targetPositionZ: worldPos.z,
+                isMoveOrder: false,
+                preventEnemiesInRangeCheck: true,
+                completed: false,
+                issuedTime: this.game.state.now
+            });
+        } else {
+            playerOrder.enabled = true;
+            playerOrder.targetPositionX = worldPos.x;
+            playerOrder.targetPositionY = terrainHeight;
+            playerOrder.targetPositionZ = worldPos.z;
+            playerOrder.isMoveOrder = false;
+            playerOrder.preventEnemiesInRangeCheck = true;
+            playerOrder.completed = false;
+            playerOrder.issuedTime = this.game.state.now;
+        }
+        this.game.triggerEvent('onIssuedPlayerOrders', builderId);
+
+        const aiState = this.game.getComponent(builderId, "aiState");
+        if (aiState) {
+            aiState.currentAction = null;
+            aiState.currentActionCollection = null;
+            this.game.call('clearBehaviorState', builderId);
+        }
+    }
+
+    /**
+     * Spawn a pending building when the builder arrives and starts construction
+     * Called by ConstructBuildingBehaviorAction when construction begins
+     * @param {number} builderId - The peasant/builder entity ID
+     * @returns {number|null} The spawned building entity ID, or null if failed
+     */
+    spawnPendingBuilding(builderId) {
+        const buildingState = this.game.getComponent(builderId, "buildingState");
+        if (!buildingState || buildingState.pendingUnitTypeId == null) {
+            return null;
+        }
+
+        // Check if building already exists (from ECS sync or previous spawn)
+        if (buildingState.targetBuildingEntityId > 0 && this.game.entityAlive[buildingState.targetBuildingEntityId] === 1) {
+            console.log(`[spawnPendingBuilding] Building entity ${buildingState.targetBuildingEntityId} already exists for builder ${builderId}, skipping spawn`);
+            return buildingState.targetBuildingEntityId;
+        }
+
+        const gridPosition = buildingState.pendingGridPosition;
+        const unitTypeId = buildingState.pendingUnitTypeId;
+        const collection = buildingState.pendingCollection;
+
+        // Get team and playerId from the builder
+        const builderTeam = this.game.getComponent(builderId, "team");
+        const builderPlacement = this.game.getComponent(builderId, "placement");
+        const team = builderTeam?.team;
+        const playerId = builderPlacement?.playerId;
+
+        // Resolve unitType from collections
+        const unitType = this.getUnitTypeFromPlacement({ collection, unitTypeId });
+        if (!unitType) {
+            return null;
+        }
+
+        // Calculate world position
+        const worldPos = this.game.call('placementGridToWorld', gridPosition.x, gridPosition.z);
+        const terrainHeight = this.game.call('getTerrainHeight', worldPos.x, worldPos.z) || 0;
+
+        // Get squad data for grid cells
+        const squadData = this.game.call('getSquadData', unitType);
+        const cells = this.game.call('getSquadCells', gridPosition, squadData);
+
+        // Generate new placementId
+        const placementId = this._getNextPlacementId();
+
+        // Create the building entity
+        const fullNetworkData = {
+            placementId,
+            gridPosition,
+            unitTypeId,
+            collection,
+            unitType,
+            team,
+            playerId,
+            isUnderConstruction: true,
+            buildTime: buildingState.buildTime,
+            assignedBuilder: builderId,
+            roundPlaced: this.game.state.round || 1,
+            timestamp: this.game.state.now
+        };
+
+        const transform = {
+            position: { x: worldPos.x, y: terrainHeight, z: worldPos.z }
+        };
+
+        const buildingEntityId = this.game.call('createPlacement',
+            fullNetworkData,
+            transform,
+            team,
+            null // Let system assign entity ID
+        );
+
+        // Reserve grid cells
+        this.game.call('reserveGridCells', cells, buildingEntityId);
+
+        // Update buildingState to point to the new building entity and clear pending data
+        buildingState.targetBuildingEntityId = buildingEntityId;
+        buildingState.pendingGridPosition.x = 0;
+        buildingState.pendingGridPosition.z = 0;
+        buildingState.pendingUnitTypeId = null;
+        buildingState.pendingCollection = null;
+
+        // Initialize in experience system
+        this.game.call('initializeSquad', placementId, unitType, [buildingEntityId]);
+
+        return buildingEntityId;
     }
 }

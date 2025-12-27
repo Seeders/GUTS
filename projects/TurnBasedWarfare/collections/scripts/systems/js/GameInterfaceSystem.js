@@ -16,7 +16,8 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         'ui_placeUnit',              // Place unit/building on grid
         'ui_undoPlacement',          // Undo last placement
         'ui_holdPosition',           // Order units to hold position
-        'ui_hide',                   // Order units to hide (no attacks, +20 stealth)
+        'ui_hide',                   // Order units to hide at current position
+        'ui_issueHideOrder',         // Order units to move to location then hide
         'ui_issueMoveOrder',         // Order units to move
         'ui_assignBuilder',          // Assign builder to construction
         'ui_toggleReadyForBattle',   // Toggle ready state
@@ -196,12 +197,31 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
     }
 
     /**
+     * Issue hide order to squads at a target position
+     * Units move to the location and then hide (no attacks, +20 stealth)
+     */
+    ui_issueHideOrder(placementIds, targetPosition, callback) {
+        if (!placementIds || placementIds.length === 0) return;
+
+        // Move to target position AND hide when arrived
+        const meta = { isMoveOrder: true, isHiding: true };
+        const targetPositions = placementIds.map(() => ({
+            x: targetPosition.x,
+            z: targetPosition.z
+        }));
+
+        this.game.call('setSquadTargets', { placementIds, targetPositions, meta }, callback);
+    }
+
+    /**
      * Issue move order to squads at a target position
      */
     ui_issueMoveOrder(placementIds, targetPosition, callback) {
         if (!placementIds || placementIds.length === 0) return;
 
-        const meta = { isMoveOrder: true, preventEnemiesInRangeCheck: false };
+        // Explicitly set isHiding: false to ensure it's synced to other clients
+        // This clears the hiding state when a unit moves
+        const meta = { isMoveOrder: true, preventEnemiesInRangeCheck: false, isHiding: false };
         const targetPositions = placementIds.map(() => ({
             x: targetPosition.x,
             z: targetPosition.z
@@ -273,7 +293,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         }
 
         // Refund gold - use active player team if not specified
-        const team = undoInfo.team ?? this.game.call('getActivePlayerTeam') ?? this.game.state.myTeam;
+        const team = undoInfo.team ?? this.game.call('getActivePlayerTeam');
         if (undoInfo.unitType?.value) {
             this.game.call('addPlayerGold', team, undoInfo.unitType.value);
         }
@@ -290,7 +310,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         // Handle optional team parameter
         if (typeof team === 'function') {
             callback = team;
-            team = this.game.call('getActivePlayerTeam') ?? this.game.state.myTeam;
+            team = this.game.call('getActivePlayerTeam');
         }
         this.game.call('toggleReadyForBattle', team, callback);
     }
@@ -427,7 +447,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
      */
     _getEntityAtPosition(worldPos, options = {}) {
         const clickRadius = options.radius || 50;
-        const teamFilter = options.teamFilter ?? this.game.call('getActivePlayerTeam') ?? this.game.state.myTeam;
+        const teamFilter = options.teamFilter ?? this.game.call('getActivePlayerTeam');
 
         let closestEntity = null;
         let closestDistance = clickRadius;
@@ -476,7 +496,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
      * @returns {Array} Array of entity IDs
      */
     _getEntitiesInBounds(worldMinX, worldMinZ, worldMaxX, worldMaxZ, options = {}) {
-        const teamFilter = options.teamFilter ?? this.game.call('getActivePlayerTeam') ?? this.game.state.myTeam;
+        const teamFilter = options.teamFilter ?? this.game.call('getActivePlayerTeam');
         const prioritizeUnits = options.prioritizeUnits ?? true;
 
         const selectedUnits = [];
@@ -544,7 +564,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
     _handlePlacementClick(worldX, worldZ, callback) {
         const unitType = this.game.state.selectedUnitType;
         const gridPos = this.game.call('worldToPlacementGrid', worldX, worldZ);
-        const team = this.game.call('getActivePlayerTeam') ?? this.game.state.myTeam;
+        const team = this.game.call('getActivePlayerTeam');
         const playerId = this.game.clientNetworkManager?.numericPlayerId ?? (team === this.enums.team.left ? 0 : 1);
         const peasantInfo = this.game.state.peasantBuildingPlacement || null;
 

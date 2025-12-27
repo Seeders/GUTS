@@ -10,6 +10,7 @@
     "isUnderConstruction": false,
     "buildTime": 0,
     "assignedBuilder": null,
+    "upgradeStartRound": null,
     "productionProgress": 0,
     "gridPosition": {
       "x": 0,

@@ -8,36 +8,7 @@
   "stealthBonus": 25,
   "detailWorldObjects": [
     "bush_fern_sprite",
-    "grass_tuft_small_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_small_sprite",
-    "grass_tuft_small_sprite",
-    "grass_tuft_small_sprite",
-    "mushroom_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_sprite",
-    "grass_tuft_small_sprite",
-    "grass_tuft_small_sprite",
-    "grass_tuft_small_sprite",
-    "grass_tuft_small_sprite",
-    "grass_tuft_small_sprite",
-    "grass_tuft_small_sprite",
-    "grass_tuft_small_sprite",
-    "grass_tuft_small_sprite",
-    "grass_tuft_small_sprite",
-    "grass_tuft_small_sprite"
+    "bush_sprite"
   ],
-  "detailDensity": 20
+  "detailDensity": 8
 }

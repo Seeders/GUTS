@@ -72,6 +72,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         // Update tracking
         this.lastUpdateTime = 0;
+        this.lastPendingBuildingUpdate = 0;
 
         // Intervals
         this.mouseRayCastInterval = null;
@@ -93,9 +94,10 @@ class PlacementUISystem extends GUTS.BaseSystem {
      * screen coordinates. Otherwise return the cached mouseWorldPos.
      * @param {number} [screenX] - Screen X coordinate (client coords)
      * @param {number} [screenY] - Screen Y coordinate (client coords)
+     * @param {boolean} [applyGridOffset=true] - Whether to apply grid centering offset
      * @returns {Object|null} World position {x, y, z}
      */
-    getWorldPositionFromMouse(screenX, screenY) {
+    getWorldPositionFromMouse(screenX, screenY, applyGridOffset = true) {
         // If screen coordinates provided, do a fresh raycast at that position
         if (screenX !== undefined && screenY !== undefined) {
             if (!this.raycastHelper || !this.canvas) return null;
@@ -105,10 +107,22 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const ndcX = ((screenX - rect.left) / rect.width) * 2 - 1;
             const ndcY = -((screenY - rect.top) / rect.height) * 2 + 1;
 
-            return this.rayCastGround(ndcX, ndcY);
+            const worldPos = this.rayCastGround(ndcX, ndcY);
+            if (worldPos && applyGridOffset) {
+                // Apply offset to center on grid cell (for building placements)
+                worldPos.x += this.mouseWorldOffset.x;
+                worldPos.z += this.mouseWorldOffset.z;
+            }
+            return worldPos;
         }
 
-        // Otherwise return cached mouse position
+        // Otherwise return cached mouse position (always has offset applied)
+        // If caller wants raw position, they need to provide screen coords
+        if (!applyGridOffset) {
+            // Return raw raycast without offset
+            const rawPos = this.rayCastGround(this.mouseScreenPos.x, this.mouseScreenPos.y);
+            return rawPos;
+        }
         return this.mouseWorldPos;
     }
 
@@ -165,9 +179,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
      * Set up camera position based on player's side
      */
     setupCameraForMySide() {
-        const myTeam = this.game.state.myTeam;
-        if (!myTeam) {
-            console.warn('[PlacementUISystem] Cannot setup camera - myTeam not set');
+        const myTeam = this.game.call('getActivePlayerTeam');
+        if (myTeam === null || myTeam === undefined) {
+            console.warn('[PlacementUISystem] Cannot setup camera - active player team not set');
             return;
         }
 
@@ -238,7 +252,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
             });
 
             this.canvas.addEventListener('mouseleave', () => {
-                this.placementPreview.clear();
+                // Don't clear - just show pending buildings if any
+                this.lastPendingBuildingUpdate = 0; // Force refresh
+                this.updatePendingBuildingPreview();
                 this.cachedValidation = null;
                 this.cachedGridPos = null;
                 document.body.style.cursor = 'default';
@@ -273,6 +289,12 @@ class PlacementUISystem extends GUTS.BaseSystem {
             }
         }
 
+        // Show pending building footprints when not actively placing a unit
+        // (updatePlacementPreview handles both pending + current when placing)
+        if (!this.game.state.selectedUnitType) {
+            this.updatePendingBuildingPreview();
+        }
+
         if (this.game.state.phase !== this.enums.gamePhase.placement) {
             this.lastRaycastTime = 0;
             this.lastValidationTime = 0;
@@ -285,6 +307,82 @@ class PlacementUISystem extends GUTS.BaseSystem {
             this.updateCursorState(this.cachedValidation);
             this.updatePlacementUI();
             this.lastValidationTime = this.game.state.now;
+        }
+    }
+
+    /**
+     * Get world positions for all pending building footprints
+     * @returns {Array} Array of world positions for pending building cells
+     */
+    getPendingBuildingPositions() {
+        const buildingStateEntities = this.game.getEntitiesWith('buildingState', 'placement');
+        const myTeam = this.game.call('getActivePlayerTeam');
+        const allFootprintCells = [];
+
+        for (const entityId of buildingStateEntities) {
+            const buildingState = this.game.getComponent(entityId, 'buildingState');
+            if (!buildingState || buildingState.pendingUnitTypeId == null) continue;
+
+            // Only show for my team
+            const placement = this.game.getComponent(entityId, 'placement');
+            if (!placement || placement.team !== myTeam) continue;
+
+            // Get the building definition
+            const buildingUnitType = this.game.call('getUnitTypeDef', {
+                collection: buildingState.pendingCollection,
+                type: buildingState.pendingUnitTypeId
+            });
+
+            if (!buildingUnitType) continue;
+
+            // Calculate footprint cells using grid position
+            const gridPos = buildingState.pendingGridPosition;
+            const footprintWidth = buildingUnitType.footprintWidth || 1;
+            const footprintHeight = buildingUnitType.footprintHeight || 1;
+            const placementWidth = footprintWidth * 2;
+            const placementHeight = footprintHeight * 2;
+
+            const startX = gridPos.x - Math.floor(placementWidth / 2);
+            const startZ = gridPos.z - Math.floor(placementHeight / 2);
+
+            for (let z = 0; z < placementHeight; z++) {
+                for (let x = 0; x < placementWidth; x++) {
+                    allFootprintCells.push({ x: startX + x, z: startZ + z });
+                }
+            }
+        }
+
+        if (allFootprintCells.length === 0) return [];
+
+        // Convert grid cells to world positions
+        const halfCell = this.game.call('getPlacementGridSize') / 2;
+        return allFootprintCells.map(cell => {
+            const pos = this.game.call('placementGridToWorld', cell.x, cell.z);
+            return { x: pos.x + halfCell, z: pos.z + halfCell };
+        });
+    }
+
+    /**
+     * Show footprint preview for pending buildings (buildings not yet spawned)
+     * This provides visual feedback when a builder is ordered to construct a building
+     */
+    updatePendingBuildingPreview() {
+        if (!this.placementPreview) return;
+
+        // Throttle updates
+        const now = performance.now();
+        if (now - this.lastPendingBuildingUpdate < 100) return;
+        this.lastPendingBuildingUpdate = now;
+
+        const pendingPositions = this.getPendingBuildingPositions();
+
+        if (pendingPositions.length > 0) {
+            // Show with yellow color to indicate pending construction
+            this.placementPreview.showMultiplePositionSets([
+                { positions: pendingPositions, state: 'pending' }
+            ], false);
+        } else {
+            this.placementPreview.hide();
         }
     }
 
@@ -383,13 +481,25 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
             this.game.resetCurrentTime();
             this.battleStartTime = this.game.state.now || 0;
-            this.game.call('resetAI');
-            this.game.triggerEvent('onBattleStart');
 
-            // Resync entities with server state (includes opponent units)
+            // CRITICAL: Resync entities with server state BEFORE onBattleStart
+            // This ensures all clients have identical state (including playerOrder.isHiding)
+            // before behavior trees start processing
             if (data.entitySync) {
                 this.game.call('resyncEntities', data);
             }
+
+            // DEBUG: Check playerOrder.isHiding after resync
+            const allPlayerOrders = this.game.getEntitiesWith('playerOrder');
+            for (const entityId of allPlayerOrders) {
+                const po = this.game.getComponent(entityId, 'playerOrder');
+                const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+                const unitTypeDef = this.game.call('getUnitTypeDef', unitTypeComp);
+                console.log(`[PlacementUI] After resync: entity ${entityId} (${unitTypeDef?.id}) playerOrder.isHiding=${po?.isHiding}`);
+            }
+
+            this.game.call('resetAI');
+            this.game.triggerEvent('onBattleStart');
 
             if (this.game.desyncDebugger) {
                 this.game.desyncDebugger.enabled = true;
@@ -440,7 +550,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (!this.placementPreview || !this.game.state.selectedUnitType) return;
 
         if (!this.mouseWorldPos) {
-            this.placementPreview.clear();
+            // No mouse position - show pending buildings instead of clearing
+            this.lastPendingBuildingUpdate = 0; // Force refresh
+            this.updatePendingBuildingPreview();
             document.body.style.cursor = 'not-allowed';
             return;
         }
@@ -464,7 +576,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (!squadData) return;
 
         const cells = this.game.call('getSquadCells', gridPos, squadData);
-        const isValid = this.game.call('isValidGridPlacement', cells, this.game.state.myTeam);
+        const isValid = this.game.call('isValidGridPlacement', cells, this.game.call('getActivePlayerTeam'));
 
         this.cachedValidation = isValid;
 
@@ -481,11 +593,28 @@ class PlacementUISystem extends GUTS.BaseSystem {
             unitPositions = this.game.call('calculateUnitPositions', gridPos, unitType);
         }
 
-        // Update preview with correct API
+        // Get pending building positions to show alongside current placement
+        const pendingPositions = this.getPendingBuildingPositions();
+
+        // Build position sets with different colors
+        const positionSets = [];
+
+        // Pending buildings always show YELLOW
+        if (pendingPositions.length > 0) {
+            positionSets.push({ positions: pendingPositions, state: 'pending' });
+        }
+
+        // Current placement shows GREEN/RED based on validity
+        positionSets.push({ positions: worldPositions, state: isValid ? 'valid' : 'invalid' });
+
+        // Update preview with multiple position sets
         if (unitPositions && unitPositions.length > 0) {
-            this.placementPreview.showWithUnitMarkers(worldPositions, unitPositions, isValid);
+            // For unit markers, we need the original method - show current placement only with markers
+            // and pending buildings separately
+            this.placementPreview.showMultiplePositionSets(positionSets, false);
+            // TODO: Could extend showMultiplePositionSets to support unit markers if needed
         } else {
-            this.placementPreview.showAtWorldPositions(worldPositions, isValid);
+            this.placementPreview.showMultiplePositionSets(positionSets, false);
         }
 
         this.updateCursorState(isValid);
@@ -516,7 +645,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
                     unitType: result.unitType,
                     gridPosition: result.gridPosition,
                     squadUnits: result.data.squadUnits,
-                    team: this.game.state.myTeam
+                    team: this.game.call('getActivePlayerTeam')
                 });
 
                 // Create visual effects
@@ -529,9 +658,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 // Clear placement mode after successful placement
                 this.game.state.selectedUnitType = null;
                 this.game.state.peasantBuildingPlacement = null;
-                if (this.placementPreview) {
-                    this.placementPreview.clear();
-                }
+                // Show pending buildings (which may have just been added)
+                this.lastPendingBuildingUpdate = 0; // Force refresh
+                this.updatePendingBuildingPreview();
                 document.body.style.cursor = 'default';
             } else {
                 this.game.call('showNotification', result.data?.error || 'Placement failed', 'error', 2000);
