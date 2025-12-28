@@ -288,55 +288,17 @@ class BehaviorSystem extends GUTS.BaseSystem {
         // Evaluate behavior tree to get desired action
         const desiredAction = this.processor.evaluate(rootTreeId, entityId);
 
-        // Log behavior tree evaluation result
-        const transform = this.game.getComponent(entityId, 'transform');
-        const pos = transform?.position;
-        const shared = this.getBehaviorShared(entityId);
-        const currentActionId = this.getNodeId(aiState.currentActionCollection, aiState.currentAction);
-        const combat = this.game.getComponent(entityId, 'combat');
-        const health = this.game.getComponent(entityId, 'health');
-
-        // Get target info if we have one
-        let targetInfo = null;
-        if (shared?.target !== undefined && shared?.target !== null) {
-            const targetUnitTypeComp = this.game.getComponent(shared.target, 'unitType');
-            const targetUnitDef = this.game.call('getUnitTypeDef', targetUnitTypeComp);
-            const targetTransform = this.game.getComponent(shared.target, 'transform');
-            const targetHealth = this.game.getComponent(shared.target, 'health');
-            const targetTeamComp = this.game.getComponent(shared.target, 'team');
-            const targetTeamName = reverseEnums.team?.[targetTeamComp?.team] || targetTeamComp?.team;
-            targetInfo = {
-                id: shared.target,
-                type: targetUnitDef?.id,
-                team: targetTeamName,
-                pos: targetTransform?.position ? { x: targetTransform.position.x.toFixed(0), z: targetTransform.position.z.toFixed(0) } : null,
-                health: targetHealth ? `${targetHealth.current}/${targetHealth.max}` : null
-            };
-        }
-
-        log.debug('BehaviorSystem', `${unitName}(${entityId}) [${teamName}] tick ${this._battleTickCount}`, {
-            pos: pos ? { x: pos.x.toFixed(0), z: pos.z.toFixed(0) } : null,
-            health: health ? `${health.current}/${health.max}` : null,
-            desiredAction: desiredAction?.action,
-            status: desiredAction?.status,
-            currentAction: currentActionId,
-            target: shared?.target,
-            targetInfo,
-            combat: combat ? {
-                damage: combat.damage,
-                range: combat.range,
-                visionRange: combat.visionRange,
-                hasProjectile: combat.projectile !== null && combat.projectile !== -1 && combat.projectile !== undefined
-            } : null
-        });
-
         // Check if we need to switch actions
         if (this.shouldSwitchAction(aiState, desiredAction)) {
-            log.debug('BehaviorSystem', `${unitName}(${entityId}) [${teamName}] switching action`, {
-                from: currentActionId,
-                to: desiredAction?.action,
-                status: desiredAction?.status
-            });
+            // Only create log objects if debug logging is enabled
+            if (log._level >= log.LOG_LEVELS?.DEBUG) {
+                const currentActionId = this.getNodeId(aiState.currentActionCollection, aiState.currentAction);
+                log.debug('BehaviorSystem', `${unitName}(${entityId}) [${teamName}] switching action`, {
+                    from: currentActionId,
+                    to: desiredAction?.action,
+                    status: desiredAction?.status
+                });
+            }
             this.switchAction(entityId, aiState, desiredAction);
         }
     }

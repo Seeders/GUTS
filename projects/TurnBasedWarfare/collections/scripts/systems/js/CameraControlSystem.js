@@ -34,6 +34,9 @@ class CameraControlSystem extends GUTS.BaseSystem {
 
     // Camera rotation (yaw angle in radians)
     this.cameraYaw = 135 * Math.PI / 180; // Default isometric angle
+
+    // Reusable vector for lookAt to avoid allocations
+    this._lookAtTarget = new THREE.Vector3();
   }
 
   init() {
@@ -230,11 +233,12 @@ class CameraControlSystem extends GUTS.BaseSystem {
         z: worldZ - cdz * distance
     };
 
-    const lookAtPos = { x: worldX, y: 0, z: worldZ };
-
     this.game.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    this.game.camera.lookAt(lookAtPos.x, lookAtPos.y, lookAtPos.z);
-    this.game.camera.userData.lookAt = new THREE.Vector3(lookAtPos.x, lookAtPos.y, lookAtPos.z);
+    this.game.camera.lookAt(worldX, 0, worldZ);
+
+    // Reuse vector instead of creating new THREE.Vector3 each call
+    this._lookAtTarget.set(worldX, 0, worldZ);
+    this.game.camera.userData.lookAt = this._lookAtTarget;
   }
 
   /**

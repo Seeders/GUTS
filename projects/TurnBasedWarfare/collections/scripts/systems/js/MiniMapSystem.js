@@ -33,6 +33,9 @@ class MiniMapSystem extends GUTS.BaseSystem {
         this.minimapWorldSize = 0;
         this.initialized = false;
         this.MINIMAP_ROTATION = -45;
+
+        // Reusable array to avoid allocations in update loop
+        this._filteredEntities = [];
     }
 
     onGameStarted() {
@@ -241,6 +244,26 @@ class MiniMapSystem extends GUTS.BaseSystem {
         this.tempMatrix = new THREE.Matrix4();
         this.rotationMatrix = new THREE.Matrix4();
         this.rotationMatrix.makeRotationX(-Math.PI / 2);
+
+        // Pre-allocate buffers to avoid per-frame allocations
+        this._pixelBuffer = new Uint8Array(this.MINIMAP_SIZE * this.MINIMAP_SIZE * 4);
+        this._imageData = null; // Created lazily when ctx is available
+
+        // Pre-allocate Vector3 array for camera view (5 points for closed rectangle)
+        this._cameraViewPoints = [
+            new THREE.Vector3(),
+            new THREE.Vector3(),
+            new THREE.Vector3(),
+            new THREE.Vector3(),
+            new THREE.Vector3()
+        ];
+
+        // Pre-allocate vectors for orthoCornerToGround to avoid per-frame allocations
+        this._orthoP = new THREE.Vector3();
+        this._orthoForward = new THREE.Vector3();
+        this._cornerHits = [{x: 0, z: 0}, {x: 0, z: 0}, {x: 0, z: 0}, {x: 0, z: 0}]; // Reusable corner hits
+        this._canvasPts = [{x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}]; // Reusable canvas points
+        this._worldToCanvasResult = { x: 0, y: 0 }; // Reusable result for worldToCanvas
     }
 
     createMinimapUI() {
@@ -340,22 +363,29 @@ class MiniMapSystem extends GUTS.BaseSystem {
         const myTeam = this.game.call('getActivePlayerTeam');
         if (myTeam === null || myTeam === undefined) return;
 
-        const entities = this.game.getEntitiesWith(
+        const allEntities = this.game.getEntitiesWith(
             "transform",
             "team",
             "unitType"
-        ).filter(id => {
+        );
+
+        // Reuse array to avoid allocation
+        this._filteredEntities.length = 0;
+        for (let i = 0; i < allEntities.length; i++) {
+            const id = allEntities[i];
             const unitTypeComp = this.game.getComponent(id, "unitType");
             const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
-            return unitType && (unitType.collection === "units" || unitType.collection === "buildings");
-        });
+            if (unitType && (unitType.collection === "units" || unitType.collection === "buildings")) {
+                this._filteredEntities.push(id);
+            }
+        }
 
         let friendlyUnitIndex = 0;
         let enemyUnitIndex = 0;
         let friendlyBuildingIndex = 0;
         let enemyBuildingIndex = 0;
 
-        for (const entityId of entities) {
+        for (const entityId of this._filteredEntities) {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
             const team = this.game.getComponent(entityId, "team");
@@ -464,18 +494,17 @@ class MiniMapSystem extends GUTS.BaseSystem {
         const halfWidth = viewWidth / 2;
         const halfHeight = viewHeight / 2;
         
-        const points = [
-            new THREE.Vector3(cameraPos.x - halfWidth, 1, cameraPos.z - halfHeight),
-            new THREE.Vector3(cameraPos.x + halfWidth, 1, cameraPos.z - halfHeight),
-            new THREE.Vector3(cameraPos.x + halfWidth, 1, cameraPos.z + halfHeight),
-            new THREE.Vector3(cameraPos.x - halfWidth, 1, cameraPos.z + halfHeight),
-            new THREE.Vector3(cameraPos.x - halfWidth, 1, cameraPos.z - halfHeight)
-        ];
-        
+        // Reuse pre-allocated Vector3 array instead of creating new ones each frame
+        this._cameraViewPoints[0].set(cameraPos.x - halfWidth, 1, cameraPos.z - halfHeight);
+        this._cameraViewPoints[1].set(cameraPos.x + halfWidth, 1, cameraPos.z - halfHeight);
+        this._cameraViewPoints[2].set(cameraPos.x + halfWidth, 1, cameraPos.z + halfHeight);
+        this._cameraViewPoints[3].set(cameraPos.x - halfWidth, 1, cameraPos.z + halfHeight);
+        this._cameraViewPoints[4].set(cameraPos.x - halfWidth, 1, cameraPos.z - halfHeight);
+
         if (this.cameraViewMesh) {
-            this.cameraViewMesh.geometry.setFromPoints(points);
+            this.cameraViewMesh.geometry.setFromPoints(this._cameraViewPoints);
         } else {
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const geometry = new THREE.BufferGeometry().setFromPoints(this._cameraViewPoints);
             const material = new THREE.LineBasicMaterial({
                 color: 0xffffff,
                 linewidth: 3,
@@ -520,33 +549,36 @@ class MiniMapSystem extends GUTS.BaseSystem {
 
         this.game.renderer.setRenderTarget(this.minimapRenderTarget);
         this.game.renderer.render(this.minimapScene, this.minimapCamera);
-        
-        const pixels = new Uint8Array(this.MINIMAP_SIZE * this.MINIMAP_SIZE * 4);
+
+        // Reuse pre-allocated pixel buffer instead of creating new one each frame
         this.game.renderer.readRenderTargetPixels(
             this.minimapRenderTarget,
             0, 0,
             this.MINIMAP_SIZE, this.MINIMAP_SIZE,
-            pixels
+            this._pixelBuffer
         );
-        
+
         this.game.renderer.setRenderTarget(null);
-        
-        const imageData = this.ctx.createImageData(this.MINIMAP_SIZE, this.MINIMAP_SIZE);
-        
+
+        // Lazily create imageData once, then reuse it
+        if (!this._imageData) {
+            this._imageData = this.ctx.createImageData(this.MINIMAP_SIZE, this.MINIMAP_SIZE);
+        }
+
         for (let y = 0; y < this.MINIMAP_SIZE; y++) {
             for (let x = 0; x < this.MINIMAP_SIZE; x++) {
                 const srcIdx = (y * this.MINIMAP_SIZE + x) * 4;
                 const dstIdx = ((this.MINIMAP_SIZE - 1 - y) * this.MINIMAP_SIZE + x) * 4;
-                
-                imageData.data[dstIdx + 0] = pixels[srcIdx + 0];
-                imageData.data[dstIdx + 1] = pixels[srcIdx + 1];
-                imageData.data[dstIdx + 2] = pixels[srcIdx + 2];
-                imageData.data[dstIdx + 3] = pixels[srcIdx + 3];
+
+                this._imageData.data[dstIdx + 0] = this._pixelBuffer[srcIdx + 0];
+                this._imageData.data[dstIdx + 1] = this._pixelBuffer[srcIdx + 1];
+                this._imageData.data[dstIdx + 2] = this._pixelBuffer[srcIdx + 2];
+                this._imageData.data[dstIdx + 3] = this._pixelBuffer[srcIdx + 3];
             }
         }
-        
-        this.ctx.putImageData(imageData, 0, 0);
-        
+
+        this.ctx.putImageData(this._imageData, 0, 0);
+
         this.drawCameraOutline();
     }
         
@@ -563,15 +595,24 @@ class MiniMapSystem extends GUTS.BaseSystem {
         ];
 
         // Intersect each corner "ray" with the ground plane (y=0)
-        const hits = [];
-        for (const c of corners) {
+        // Reuse pre-allocated arrays to avoid per-frame allocations
+        for (let i = 0; i < corners.length; i++) {
+            const c = corners[i];
             const hit = this.orthoCornerToGround(camera, c.x, c.y);
             if (!hit) return; // early out if any corner can't hit the ground
-            hits.push(hit);
+            // Copy values since orthoCornerToGround reuses the same vector
+            this._cornerHits[i].x = hit.x;
+            this._cornerHits[i].z = hit.z;
         }
 
-        // Convert to canvas space
-        const pts = hits.map(h => this.worldToCanvas(h.x, h.z));
+        // Convert to canvas space - reuse pre-allocated points array
+        for (let i = 0; i < this._cornerHits.length; i++) {
+            const h = this._cornerHits[i];
+            const pt = this.worldToCanvas(h.x, h.z);
+            this._canvasPts[i].x = pt.x;
+            this._canvasPts[i].y = pt.y;
+        }
+        const pts = this._canvasPts;
 
         // Draw polygon overlay
         this.ctx.save();
@@ -586,28 +627,30 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
 
     orthoCornerToGround(camera, ndcX, ndcY) {
-        // Point on near plane in world space
-        const p = new THREE.Vector3(ndcX, ndcY, -1).unproject(camera);
+        // Point on near plane in world space - reuse pre-allocated vector
+        this._orthoP.set(ndcX, ndcY, -1).unproject(camera);
 
-        // Camera forward (world)
-        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+        // Camera forward (world) - reuse pre-allocated vector
+        this._orthoForward.set(0, 0, -1).applyQuaternion(camera.quaternion);
 
         const EPS = 1e-6;
-        if (Math.abs(forward.y) < EPS) return null; // looking exactly parallel to ground
+        if (Math.abs(this._orthoForward.y) < EPS) return null; // looking exactly parallel to ground
 
         // Move along forward so y -> 0
-        const t = -p.y / forward.y;
+        const t = -this._orthoP.y / this._orthoForward.y;
         if (t <= 0) return null;                    // corner ray goes upward/behind
-        return p.addScaledVector(forward, t);       // world-space hit (x, 0, z)
+        this._orthoP.addScaledVector(this._orthoForward, t); // world-space hit (x, 0, z)
+        return this._orthoP;
     }
     
     worldToCanvas(x, z) {
         const half = this.minimapWorldSize / 2;
         const nx = (x + half) / this.minimapWorldSize;
         const nz = (z + half) / this.minimapWorldSize;
-        const cx = nx * this.MINIMAP_SIZE;
-        const cy = nz * this.MINIMAP_SIZE;
-        return { x: cx, y: cy };
+        // Reuse pre-allocated result object
+        this._worldToCanvasResult.x = nx * this.MINIMAP_SIZE;
+        this._worldToCanvasResult.y = nz * this.MINIMAP_SIZE;
+        return this._worldToCanvasResult;
     }
     
     onSceneUnload() {

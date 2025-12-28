@@ -11,7 +11,10 @@ class HealthBarSystem extends GUTS.BaseSystem {
         
         // Track health bar meshes
         this.healthBars = new Map(); // entityId -> { background, fill, group, lastHealth }
-        
+
+        // Reusable set for cleanup to avoid per-frame allocation
+        this._currentEntitySet = new Set();
+
         // Initialize only after world system is ready
         this.initialized = false;
     }
@@ -259,10 +262,14 @@ class HealthBarSystem extends GUTS.BaseSystem {
     }
     
     cleanupRemovedHealthBars(currentEntities) {
-        const currentEntitySet = new Set(currentEntities);
-        
+        // Reuse set instead of creating new one each call
+        this._currentEntitySet.clear();
+        for (const id of currentEntities) {
+            this._currentEntitySet.add(id);
+        }
+
         for (const [entityId] of this.healthBars.entries()) {
-            if (!currentEntitySet.has(entityId)) {
+            if (!this._currentEntitySet.has(entityId)) {
                 this.removeHealthBarMesh(entityId);
             }
         }

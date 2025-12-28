@@ -10,6 +10,9 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
         this.ATTACK_CIRCLE_COLOR = 0xff0000;    // Red for attack range
         this.CIRCLE_OPACITY = 0.3;
         this.CIRCLE_LINE_WIDTH = 2;
+
+        // Reusable set to avoid per-frame allocations
+        this._activeEntitySet = new Set();
     }
 
     init() {
@@ -145,11 +148,15 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
     }
     
     cleanupDestroyedEntities(activeEntities) {
-        const activeIds = new Set(activeEntities);
+        // Reuse set to avoid per-frame allocations
+        this._activeEntitySet.clear();
+        for (let i = 0; i < activeEntities.length; i++) {
+            this._activeEntitySet.add(activeEntities[i]);
+        }
         const scene = this.game.call('getWorldScene');
 
         for (const [entityId, circles] of this.debugCircles) {
-            if (!activeIds.has(entityId)) {
+            if (!this._activeEntitySet.has(entityId)) {
                 // Remove from scene
                 if (circles.sizeCircle && scene) {
                     scene.remove(circles.sizeCircle);

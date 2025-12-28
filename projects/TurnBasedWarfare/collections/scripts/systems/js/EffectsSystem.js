@@ -42,6 +42,10 @@ class EffectsSystem extends GUTS.BaseSystem {
             activeEffects: 0,
             pooledObjects: 0
         };
+
+        // Reusable arrays to avoid per-frame allocations
+        this._toRemove = [];
+        this._aurasToRemove = [];
     }
 
     init() {
@@ -59,31 +63,33 @@ class EffectsSystem extends GUTS.BaseSystem {
     // Batch process all effects using game time
     updateAllEffects() {
         if (!this.game.state) return;
-        
+
         const currentTime = this.game.state.now;
         if (!currentTime) return;
-        
-        const toRemove = [];
-        
+
+        // Reuse array instead of creating new one each frame
+        this._toRemove.length = 0;
+
         for (let i = this.activeEffects.length - 1; i >= 0; i--) {
             const effect = this.activeEffects[i];
             const elapsed = currentTime - effect.startTime;
             const progress = elapsed / effect.duration;
-            
+
             if (progress >= 1) {
-                toRemove.push(i);
+                this._toRemove.push(i);
                 continue;
             }
-            
+
             this.updateEffect(effect, elapsed, progress);
         }
-        
+
         // Remove completed effects and return to pool
-        toRemove.forEach(index => {
+        for (let j = 0; j < this._toRemove.length; j++) {
+            const index = this._toRemove[j];
             const effect = this.activeEffects[index];
             this.recycleEffect(effect);
             this.activeEffects.splice(index, 1);
-        });
+        }
         
         this.stats.activeEffects = this.activeEffects.length;
     }
@@ -936,19 +942,21 @@ class EffectsSystem extends GUTS.BaseSystem {
     
     updateAuras() {
         if (!this.activeAuras || !this.game.state) return;
-        
+
         const currentTime = this.game.state.now;
-        const aurasToRemove = [];
-        
+
+        // Reuse array to avoid per-frame allocations
+        this._aurasToRemove.length = 0;
+
         for (const [auraId, auraData] of this.activeAuras) {
             const elapsed = currentTime - auraData.startTime;
-            
+
             // Check if aura has expired
             if (elapsed >= auraData.duration) {
-                aurasToRemove.push(auraId);
+                this._aurasToRemove.push(auraId);
                 continue;
             }
-            
+
             // Check if it's time to create new particles
             const timeSinceLastParticle = currentTime - auraData.lastParticleTime;
             if (timeSinceLastParticle >= auraData.particleInterval) {
@@ -956,11 +964,11 @@ class EffectsSystem extends GUTS.BaseSystem {
                 auraData.lastParticleTime = currentTime;
             }
         }
-        
+
         // Remove expired auras
-        aurasToRemove.forEach(auraId => {
-            this.activeAuras.delete(auraId);
-        });
+        for (let i = 0; i < this._aurasToRemove.length; i++) {
+            this.activeAuras.delete(this._aurasToRemove[i]);
+        }
     }
     
     updateScreenEffects() {

@@ -21,6 +21,9 @@ class BaseAbility {
         this.autoTrigger = abilityData.autoTrigger || 'combat';
 
         this.effects = this.defineEffects();
+
+        // Reusable array to avoid allocations in getTargetForFacing
+        this._sortedCandidates = [];
     }
 
     _resolveTargetType(targetTypeConfig) {
@@ -213,10 +216,14 @@ class BaseAbility {
         let closestTarget = null;
         let closestDistance = Infinity;
 
-        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (still deterministic, much faster)
-        const sortedCandidates = candidates.slice().sort((a, b) => a - b);
+        // OPTIMIZATION: Reuse array to avoid allocations from .slice().sort()
+        this._sortedCandidates.length = 0;
+        for (let i = 0; i < candidates.length; i++) {
+            this._sortedCandidates.push(candidates[i]);
+        }
+        this._sortedCandidates.sort((a, b) => a - b);
 
-        sortedCandidates.forEach(entityId => {
+        this._sortedCandidates.forEach(entityId => {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
             if (!pos) return;

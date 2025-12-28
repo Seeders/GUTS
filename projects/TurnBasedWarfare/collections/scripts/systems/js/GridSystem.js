@@ -531,10 +531,19 @@ class GridSystem extends GUTS.BaseSystem {
             }
 
             // Add to new cells and cache the position
-            const newCellKeys = new Set();
+            // Reuse existing cache object and Set if available
+            let posCache = this._entityPositions.get(entityId);
+            if (!posCache) {
+                posCache = { gridX: 0, gridZ: 0, cellKeys: new Set() };
+                this._entityPositions.set(entityId, posCache);
+            }
+            posCache.gridX = gridPos.x;
+            posCache.gridZ = gridPos.z;
+            posCache.cellKeys.clear();
+
             for (const cell of cells) {
                 const key = this._cellKey(cell.x, cell.z);
-                newCellKeys.add(key);
+                posCache.cellKeys.add(key);
 
                 let cellState = this.state.get(key);
                 if (!cellState) {
@@ -546,13 +555,6 @@ class GridSystem extends GUTS.BaseSystem {
                     cellState.entities.push(entityId);
                 }
             }
-
-            // Update position cache
-            this._entityPositions.set(entityId, {
-                gridX: gridPos.x,
-                gridZ: gridPos.z,
-                cellKeys: newCellKeys
-            });
         }
 
         // Clean up entities that no longer exist

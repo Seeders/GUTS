@@ -4,6 +4,9 @@ class DeathSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.deathSystem = this;
+
+        // Reusable array to avoid per-frame allocations
+        this._dyingEntities = [];
     }
 
     init() {
@@ -13,14 +16,21 @@ class DeathSystem extends GUTS.BaseSystem {
         // Get all entities with death state and filter to only dying entities
         // (deathState is now always present on units, initialized to alive)
         const allEntities = this.game.getEntitiesWith("deathState");
-        const dyingEntities = allEntities.filter(entityId => {
+
+        // Reuse array instead of .filter() which allocates new array
+        this._dyingEntities.length = 0;
+        for (let i = 0; i < allEntities.length; i++) {
+            const entityId = allEntities[i];
             const deathState = this.game.getComponent(entityId, "deathState");
-            return deathState && deathState.state === this.enums.deathState.dying;
-        });
+            if (deathState && deathState.state === this.enums.deathState.dying) {
+                this._dyingEntities.push(entityId);
+            }
+        }
+
         // Sort for deterministic processing order (prevents desync)
         // OPTIMIZATION: Use numeric sort since entity IDs are numbers (still deterministic, much faster)
-        dyingEntities.sort((a, b) => a - b);
-        dyingEntities.forEach(entityId => {
+        this._dyingEntities.sort((a, b) => a - b);
+        this._dyingEntities.forEach(entityId => {
             const deathState = this.game.getComponent(entityId, "deathState");
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
             const unitType = this.game.call('getUnitTypeDef', unitTypeComp);

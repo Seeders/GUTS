@@ -14,6 +14,10 @@ class SupplySystem extends GUTS.BaseSystem {
         // Cached supply values - recalculated on demand
         this.cachedSupply = new Map(); // team -> { supply, population }
         this.isDirty = true; // Flag to trigger recalculation
+
+        // Track last displayed values to avoid unnecessary DOM updates
+        this._lastDisplayedPop = -1;
+        this._lastDisplayedSupply = -1;
     }
 
     init() {
@@ -99,7 +103,12 @@ class SupplySystem extends GUTS.BaseSystem {
         const currentPop = this.getCurrentPopulation(team);
         const currentSupply = this.getCurrentSupply(team);
 
-        this.supplyElement.innerHTML = `${currentPop}/${currentSupply}`;
+        // Only update DOM if values changed
+        if (currentPop !== this._lastDisplayedPop || currentSupply !== this._lastDisplayedSupply) {
+            this._lastDisplayedPop = currentPop;
+            this._lastDisplayedSupply = currentSupply;
+            this.supplyElement.textContent = `${currentPop}/${currentSupply}`;
+        }
     }
 
     update() {

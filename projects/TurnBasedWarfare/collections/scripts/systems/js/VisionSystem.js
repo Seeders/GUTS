@@ -25,6 +25,13 @@ class VisionSystem extends GUTS.BaseSystem {
         for (let i = 0; i < this._maxBresenhamLength; i++) {
             this._bresenhamTiles.push({ x: 0, z: 0 });
         }
+
+        // Pre-allocated sectors array for _filterByLOS to avoid per-call allocation
+        this._sectors = [];
+        this._visibleEnemies = [];
+        for (let i = 0; i < 16; i++) {
+            this._sectors.push({ enemies: [], maxDistance: 0, visibleDistance: 0 });
+        }
     }
 
     init() {
@@ -405,10 +412,11 @@ class VisionSystem extends GUTS.BaseSystem {
         const NUM_SECTORS = 16;
         const sectorAngle = (Math.PI * 2) / NUM_SECTORS;
 
-        // Group enemies by direction sector
-        const sectors = new Array(NUM_SECTORS);
+        // Reuse pre-allocated sectors array - clear previous data
         for (let i = 0; i < NUM_SECTORS; i++) {
-            sectors[i] = { enemies: [], maxDistance: 0, visibleDistance: 0 };
+            this._sectors[i].enemies.length = 0;
+            this._sectors[i].maxDistance = 0;
+            this._sectors[i].visibleDistance = 0;
         }
 
         for (const enemy of enemies) {
@@ -416,15 +424,15 @@ class VisionSystem extends GUTS.BaseSystem {
             const normalizedAngle = angle < 0 ? angle + Math.PI * 2 : angle;
             const sectorIndex = Math.floor(normalizedAngle / sectorAngle) % NUM_SECTORS;
 
-            sectors[sectorIndex].enemies.push(enemy);
-            if (enemy.distance > sectors[sectorIndex].maxDistance) {
-                sectors[sectorIndex].maxDistance = enemy.distance;
+            this._sectors[sectorIndex].enemies.push(enemy);
+            if (enemy.distance > this._sectors[sectorIndex].maxDistance) {
+                this._sectors[sectorIndex].maxDistance = enemy.distance;
             }
         }
 
         // Raycast for each sector
         for (let i = 0; i < NUM_SECTORS; i++) {
-            const sector = sectors[i];
+            const sector = this._sectors[i];
             if (sector.enemies.length === 0) continue;
 
             const sectorCenterAngle = (i + 0.5) * sectorAngle;
@@ -455,18 +463,18 @@ class VisionSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Collect visible enemies
-        const visibleEnemies = [];
+        // Collect visible enemies - reuse array
+        this._visibleEnemies.length = 0;
         for (let i = 0; i < NUM_SECTORS; i++) {
-            const sector = sectors[i];
+            const sector = this._sectors[i];
             for (const enemy of sector.enemies) {
                 if (enemy.distance <= sector.visibleDistance) {
-                    visibleEnemies.push(enemy);
+                    this._visibleEnemies.push(enemy);
                 }
             }
         }
 
-        return visibleEnemies;
+        return this._visibleEnemies;
     }
 
     /**

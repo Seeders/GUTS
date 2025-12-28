@@ -45,6 +45,9 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.debugEnabled = true;
 
         this.initialized = false;
+
+        // Reusable array to avoid per-frame allocations
+        this._keysToDelete = [];
     }
 
     init() {
@@ -772,18 +775,20 @@ class PathfindingSystem extends GUTS.BaseSystem {
         if (!this.initialized) {
             return;
         }
-        
+
         const now = this.game.state.now;
-        const keysToDelete = [];
-        
+
+        // Reuse array to avoid per-frame allocations
+        this._keysToDelete.length = 0;
+
         for (const [key, data] of this.pathCache.entries()) {
             if (now - data.timestamp > this.CACHE_EXPIRY_TIME) {
-                keysToDelete.push(key);
+                this._keysToDelete.push(key);
             }
         }
-        
-        keysToDelete.sort();
-        for (const key of keysToDelete) {
+
+        this._keysToDelete.sort();
+        for (const key of this._keysToDelete) {
             this.pathCache.delete(key);
         }
         

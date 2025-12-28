@@ -37,6 +37,31 @@ class RenderSystem extends GUTS.BaseSystem {
             entitiesUpdated: 0
         };
 
+        // Reusable objects for spawn/update to avoid per-frame allocations
+        this._spawnData = {
+            objectType: 0,
+            spawnType: 0,
+            position: { x: 0, y: 0, z: 0 },
+            rotation: 0,
+            transform: null,
+            velocity: null
+        };
+        this._updateData = {
+            position: { x: 0, y: 0, z: 0 },
+            rotation: 0,
+            transform: null,
+            velocity: null
+        };
+
+        // Pre-allocate Color objects for applySpriteLighting to avoid per-frame allocations
+        this._combinedColor = null; // Created lazily when THREE is available
+        this._ambientContrib = null;
+        this._skyContrib = null;
+        this._directionalContrib = null;
+        this._lightDir = null;
+
+        // Reusable array for cleanup to avoid per-frame allocations
+        this._toRemove = [];
     }
 
     init() {
@@ -287,20 +312,26 @@ class RenderSystem extends GUTS.BaseSystem {
                 // Mark as spawned immediately to prevent race condition with async spawn
                 this.spawnedEntities.add(entityId);
 
-                // Spawn new entity using numeric indices
-                await this.spawnEntity(entityId, {
-                    objectType: objectType,
-                    spawnType: spawnType,
-                    position: { x: pos.x, y: pos.y, z: pos.z },
-                    rotation: angle,
-                    transform: transform,
-                    velocity: velocity
-                });
-                // Cache initial position
-                this._entityPositionCache.set(entityId, {
-                    x: pos.x, y: pos.y, z: pos.z,
-                    angle: angle
-                });
+                // Spawn new entity using numeric indices (reuse object to avoid allocation)
+                this._spawnData.objectType = objectType;
+                this._spawnData.spawnType = spawnType;
+                this._spawnData.position.x = pos.x;
+                this._spawnData.position.y = pos.y;
+                this._spawnData.position.z = pos.z;
+                this._spawnData.rotation = angle;
+                this._spawnData.transform = transform;
+                this._spawnData.velocity = velocity;
+                await this.spawnEntity(entityId, this._spawnData);
+                // Cache initial position - reuse existing cache object if available
+                let posCache = this._entityPositionCache.get(entityId);
+                if (!posCache) {
+                    posCache = { x: 0, y: 0, z: 0, angle: 0, scaleX: 1 };
+                    this._entityPositionCache.set(entityId, posCache);
+                }
+                posCache.x = pos.x;
+                posCache.y = pos.y;
+                posCache.z = pos.z;
+                posCache.angle = angle;
             } else {
                 // Check if position/rotation/scale has actually changed
                 const cached = this._entityPositionCache.get(entityId);
@@ -328,13 +359,14 @@ class RenderSystem extends GUTS.BaseSystem {
                     cached.scaleX = scaleX;
                 }
 
-                // Update existing entity
-                this.updateEntity(entityId, {
-                    position: { x: pos.x, y: pos.y, z: pos.z },
-                    rotation: angle,
-                    transform: transform,
-                    velocity: velocity
-                });
+                // Update existing entity (reuse object to avoid allocation)
+                this._updateData.position.x = pos.x;
+                this._updateData.position.y = pos.y;
+                this._updateData.position.z = pos.z;
+                this._updateData.rotation = angle;
+                this._updateData.transform = transform;
+                this._updateData.velocity = velocity;
+                this.updateEntity(entityId, this._updateData);
             }
         }
 
@@ -385,16 +417,17 @@ class RenderSystem extends GUTS.BaseSystem {
     }
 
     cleanupRemovedEntities(currentEntities) {
-        const toRemove = [];
+        // Reuse array to avoid per-frame allocations
+        this._toRemove.length = 0;
 
         for (const entityId of this.spawnedEntities) {
             if (!currentEntities.has(entityId)) {
-                toRemove.push(entityId);
+                this._toRemove.push(entityId);
             }
         }
 
-        for (const entityId of toRemove) {
-            this.removeEntity(entityId);
+        for (let i = 0; i < this._toRemove.length; i++) {
+            this.removeEntity(this._toRemove[i]);
         }
     }
 
@@ -470,22 +503,31 @@ class RenderSystem extends GUTS.BaseSystem {
     applySpriteLighting(worldRenderer) {
         if (!this.entityRenderer) return;
 
+        // Lazily create reusable Color objects
+        if (!this._combinedColor) {
+            this._combinedColor = new THREE.Color();
+            this._ambientContrib = new THREE.Color();
+            this._skyContrib = new THREE.Color();
+            this._directionalContrib = new THREE.Color();
+            this._lightDir = new THREE.Vector3();
+        }
+
         // Start with ambient light as base (same as MeshLambertMaterial)
-        const combinedColor = new THREE.Color(0x000000);
+        this._combinedColor.setHex(0x000000);
 
         // Add ambient light contribution (full, same as Lambert)
         if (worldRenderer.ambientLight) {
-            const ambientContrib = worldRenderer.ambientLight.color.clone();
-            ambientContrib.multiplyScalar(worldRenderer.ambientLight.intensity);
-            combinedColor.add(ambientContrib);
+            this._ambientContrib.copy(worldRenderer.ambientLight.color);
+            this._ambientContrib.multiplyScalar(worldRenderer.ambientLight.intensity);
+            this._combinedColor.add(this._ambientContrib);
         }
 
         // Add hemisphere light contribution
         // For an upward-facing normal (0,1,0), MeshLambertMaterial uses 100% sky color
         if (worldRenderer.hemisphereLight) {
-            const skyContrib = worldRenderer.hemisphereLight.color.clone();
-            skyContrib.multiplyScalar(worldRenderer.hemisphereLight.intensity);
-            combinedColor.add(skyContrib);
+            this._skyContrib.copy(worldRenderer.hemisphereLight.color);
+            this._skyContrib.multiplyScalar(worldRenderer.hemisphereLight.intensity);
+            this._combinedColor.add(this._skyContrib);
         }
 
         // Add directional light contribution using N·L for upward-facing surface
@@ -494,30 +536,30 @@ class RenderSystem extends GUTS.BaseSystem {
             const light = worldRenderer.directionalLight;
 
             // Get normalized light direction (from light position to origin)
-            const lightDir = light.position.clone().normalize();
+            this._lightDir.copy(light.position).normalize();
 
             // For upward-facing surface, normal is (0, 1, 0)
             // N·L = lightDir.y (the Y component of the normalized direction)
-            const NdotL = Math.max(0, lightDir.y);
+            const NdotL = Math.max(0, this._lightDir.y);
 
-            const directionalContrib = light.color.clone();
-            directionalContrib.multiplyScalar(light.intensity * NdotL);
-            combinedColor.add(directionalContrib);
+            this._directionalContrib.copy(light.color);
+            this._directionalContrib.multiplyScalar(light.intensity * NdotL);
+            this._combinedColor.add(this._directionalContrib);
         }
 
         // Clamp to valid range and apply
-        combinedColor.r = Math.min(1.0, combinedColor.r);
-        combinedColor.g = Math.min(1.0, combinedColor.g);
-        combinedColor.b = Math.min(1.0, combinedColor.b);
+        this._combinedColor.r = Math.min(1.0, this._combinedColor.r);
+        this._combinedColor.g = Math.min(1.0, this._combinedColor.g);
+        this._combinedColor.b = Math.min(1.0, this._combinedColor.b);
 
         // Apply combined lighting (intensity 1.0 since we pre-multiplied)
-        this.entityRenderer.setAmbientLightColor(combinedColor, 1.0);
+        this.entityRenderer.setAmbientLightColor(this._combinedColor, 1.0);
 
         // Also apply to TerrainDetailSystem (static terrain sprites like grass/trees)
-        this.game.call('setTerrainDetailLighting', combinedColor);
+        this.game.call('setTerrainDetailLighting', this._combinedColor);
 
         // Apply to liquid surfaces (water, lava) in WorldRenderer
-        worldRenderer.setAmbientLightColor(combinedColor, 1.0);
+        worldRenderer.setAmbientLightColor(this._combinedColor, 1.0);
     }
 
     getEntityAnimationState(entityId) {

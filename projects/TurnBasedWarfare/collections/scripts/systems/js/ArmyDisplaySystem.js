@@ -4,6 +4,12 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
         this.game.armyDisplaySystem = this;
         this.updateInterval = null;
         this.lastUpdateData = null;
+
+        // Track last displayed values to avoid unnecessary DOM updates
+        this._lastPlayerStrength = -1;
+        this._lastEnemyStrength = -1;
+        this._lastPlayerStrengthClass = '';
+        this._lastEnemyStrengthClass = '';
     }
 
     init() {
@@ -321,19 +327,33 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
         // Update army strength indicators
         const playerStrength = this.calculateArmyStrength(armyData.playerUnits);
         const enemyStrength = this.calculateArmyStrength(armyData.enemyUnits);
-        
-        // Update strength displays if they exist
+
+        // Update strength displays if they exist (only if changed)
         const playerStrengthEl = document.getElementById('playerArmyStrength');
         const enemyStrengthEl = document.getElementById('enemyArmyStrength');
-        
+
         if (playerStrengthEl) {
-            playerStrengthEl.textContent = playerStrength;
-            playerStrengthEl.className = this.getStrengthClass(playerStrength);
+            if (playerStrength !== this._lastPlayerStrength) {
+                this._lastPlayerStrength = playerStrength;
+                playerStrengthEl.textContent = playerStrength;
+            }
+            const playerClass = this.getStrengthClass(playerStrength);
+            if (playerClass !== this._lastPlayerStrengthClass) {
+                this._lastPlayerStrengthClass = playerClass;
+                playerStrengthEl.className = playerClass;
+            }
         }
-        
+
         if (enemyStrengthEl) {
-            enemyStrengthEl.textContent = enemyStrength;
-            enemyStrengthEl.className = this.getStrengthClass(enemyStrength);
+            if (enemyStrength !== this._lastEnemyStrength) {
+                this._lastEnemyStrength = enemyStrength;
+                enemyStrengthEl.textContent = enemyStrength;
+            }
+            const enemyClass = this.getStrengthClass(enemyStrength);
+            if (enemyClass !== this._lastEnemyStrengthClass) {
+                this._lastEnemyStrengthClass = enemyClass;
+                enemyStrengthEl.className = enemyClass;
+            }
         }
     }
     

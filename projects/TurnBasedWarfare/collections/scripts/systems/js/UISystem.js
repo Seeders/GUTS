@@ -7,6 +7,10 @@ class UISystem extends GUTS.BaseSystem {
         // Initialize subsystems
         GUTS.NotificationSystem.initialize();
         this.setupEventListeners();
+
+        // Track last state to avoid unnecessary DOM updates
+        this._lastReadyText = '';
+        this._lastReadyDisabled = null;
     }
 
     init() {
@@ -24,12 +28,24 @@ class UISystem extends GUTS.BaseSystem {
     
     update() {
         const readyButton = document.getElementById('readyButton');
+        if (!readyButton) return;
+
+        let newDisabled, newText;
         if (this.game.state.phase === this.enums.gamePhase.placement) {
-            readyButton.disabled = false;
-            readyButton.textContent = this.game.state.playerReady ? 'Waiting for battle...' : 'Ready for Battle!';
+            newDisabled = false;
+            newText = this.game.state.playerReady ? 'Waiting for battle...' : 'Ready for Battle!';
         } else {
-            readyButton.disabled = true;
-            readyButton.textContent = 'Battle in Progress';
+            newDisabled = true;
+            newText = 'Battle in Progress';
+        }
+
+        if (newDisabled !== this._lastReadyDisabled) {
+            this._lastReadyDisabled = newDisabled;
+            readyButton.disabled = newDisabled;
+        }
+        if (newText !== this._lastReadyText) {
+            this._lastReadyText = newText;
+            readyButton.textContent = newText;
         }
     }    
     // Get reference to game state

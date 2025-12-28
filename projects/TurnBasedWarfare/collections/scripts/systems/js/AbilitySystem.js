@@ -14,13 +14,17 @@ class AbilitySystem extends GUTS.BaseSystem {
         this.entityAbilities = new Map();
         // abilityActions stores transient callbacks - must remain as Map
         this.abilityActions = new Map();
+
+        // Reusable arrays to avoid per-frame allocations
+        this._sortedQueueEntities = [];
+        this._sortedAbilityEntityIds = [];
+        this._availableAbilities = [];
     }
 
     init() {
     }
 
     addAbilitiesToUnit(entityId, abilityIds) {
-        console.log('[AbilitySystem] addAbilitiesToUnit called for entity', entityId, 'abilityIds:', abilityIds);
         if (!Array.isArray(abilityIds)) {
             abilityIds = [abilityIds];
         }
@@ -28,23 +32,19 @@ class AbilitySystem extends GUTS.BaseSystem {
 
         abilityIds.forEach(abilityId => {
             const AbilityClass = GUTS[abilityId];
-            console.log('[AbilitySystem] Looking for ability class:', abilityId, '- found:', !!AbilityClass);
             if (AbilityClass) {
                 // Get ability data from collections, or empty object if not found
                 // Ensure id is set (compiler generates it from filename)
                 const abilityData = this.collections.abilities?.[abilityId] || {};
                 const abilityInstance = new AbilityClass(this.game, { ...abilityData, id: abilityId });
                 unitAbilities.push(abilityInstance);
-                console.log('[AbilitySystem] Created ability instance:', abilityId, 'id:', abilityInstance.id);
             } else {
                 console.warn(`Ability '${abilityId}' not found in GUTS namespace!`);
             }
         });
 
-        console.log('[AbilitySystem] Total abilities created for entity', entityId, ':', unitAbilities.length);
         if (unitAbilities.length > 0) {
             this.entityAbilities.set(entityId, unitAbilities);
-            console.log('[AbilitySystem] Stored abilities for entity', entityId);
         }
     }
 
@@ -58,10 +58,17 @@ class AbilitySystem extends GUTS.BaseSystem {
     processAbilityQueue() {
         // Query all entities with abilityQueue component
         const entitiesWithQueue = this.game.getEntitiesWith('abilityQueue');
-        const sortedEntityIds = Array.from(entitiesWithQueue).sort((a, b) => a - b);
+
+        // Reuse array to avoid per-frame allocations
+        this._sortedQueueEntities.length = 0;
+        for (let i = 0; i < entitiesWithQueue.length; i++) {
+            this._sortedQueueEntities.push(entitiesWithQueue[i]);
+        }
+        this._sortedQueueEntities.sort((a, b) => a - b);
+
         const reverseEnums = this.game.getReverseEnums();
 
-        for (const entityId of sortedEntityIds) {
+        for (const entityId of this._sortedQueueEntities) {
             const queuedAbility = this.game.getComponent(entityId, 'abilityQueue');
             // Skip if no ability queued (check both numeric and string ID)
             if (!queuedAbility || (queuedAbility.abilityId == null && !queuedAbility.abilityStringId)) continue;
@@ -119,13 +126,18 @@ class AbilitySystem extends GUTS.BaseSystem {
         }
     }
     updateAIAbilityUsage() {
-        // OPTIMIZATION: Use numeric sort since entity IDs are numbers (still deterministic, much faster)
-        const sortedEntityIds = Array.from(this.entityAbilities.keys()).sort((a, b) => a - b);
-        
-        sortedEntityIds.forEach(entityId => {
+        // Reuse array to avoid per-frame allocations
+        this._sortedAbilityEntityIds.length = 0;
+        for (const entityId of this.entityAbilities.keys()) {
+            this._sortedAbilityEntityIds.push(entityId);
+        }
+        this._sortedAbilityEntityIds.sort((a, b) => a - b);
+
+        for (let i = 0; i < this._sortedAbilityEntityIds.length; i++) {
+            const entityId = this._sortedAbilityEntityIds[i];
             const abilities = this.entityAbilities.get(entityId);
             this.considerAbilityUsage(entityId, abilities);
-        });
+        }
     }
     
     considerAbilityUsage(entityId, abilities) {
@@ -139,16 +151,21 @@ class AbilitySystem extends GUTS.BaseSystem {
         const deathState = this.game.getComponent(entityId, "deathState");
         if (deathState && deathState.state !== this.enums.deathState.alive) return;
 
-        const availableAbilities = abilities
-            .filter(ability => this.isAbilityOffCooldown(entityId, ability.id))
-            .filter(ability => ability.canExecute(entityId))
-            .sort((a, b) => b.priority - a.priority);
+        // Reuse array to avoid per-frame allocations from .filter().filter().sort()
+        this._availableAbilities.length = 0;
+        for (let i = 0; i < abilities.length; i++) {
+            const ability = abilities[i];
+            if (this.isAbilityOffCooldown(entityId, ability.id) && ability.canExecute(entityId)) {
+                this._availableAbilities.push(ability);
+            }
+        }
+        this._availableAbilities.sort((a, b) => b.priority - a.priority);
 
         // With behavior tree system, AI state transitions are handled automatically
         // through priority evaluation - no need to manually change state
 
-        if (availableAbilities.length > 0) {
-            this.game.call('useAbility', entityId, availableAbilities[0].id);
+        if (this._availableAbilities.length > 0) {
+            this.game.call('useAbility', entityId, this._availableAbilities[0].id);
         }
     }
     

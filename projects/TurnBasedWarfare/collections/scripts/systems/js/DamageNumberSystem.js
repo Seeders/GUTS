@@ -21,6 +21,14 @@ class DamageNumberSystem extends GUTS.BaseSystem {
         this.stats = {
             activeDamageNumbers: 0
         };
+
+        // Pre-allocate reusable vectors to avoid per-frame allocations
+        this._cameraRight = null;  // Created lazily when THREE is available
+        this._cameraUp = null;
+        this._tempVec3 = null;
+        this._charPos = null;
+        this._toRemove = [];  // Reusable array for removal indices
+        this._currentPos = null;  // Reusable vector for position calculation
     }
 
     init() {
@@ -176,8 +184,15 @@ class DamageNumberSystem extends GUTS.BaseSystem {
         
         // Track active character instances
         this.activeCharInstances = 0;
+
+        // Initialize reusable vectors now that THREE is available
+        this._cameraRight = new THREE.Vector3();
+        this._cameraUp = new THREE.Vector3();
+        this._tempVec3 = new THREE.Vector3();
+        this._charPos = new THREE.Vector3();
+        this._currentPos = new THREE.Vector3();
     }
-    
+
     getCharUVOffset(char) {
         const index = this.damageChars.indexOf(char);
         if (index === -1) return { x: 0, y: 0, width: 0, height: 0 }; // Hide unknown chars
@@ -258,9 +273,10 @@ class DamageNumberSystem extends GUTS.BaseSystem {
     
     updateDamageNumberInstance(damageObj, progress) {
         if (!this.game.camera) return;
-        
-        // Calculate position with simple upward motion
-        const pos = damageObj.startPos.clone();
+
+        // Calculate position with simple upward motion - reuse vector instead of clone()
+        const pos = this._currentPos;
+        pos.copy(damageObj.startPos);
         const elapsed = progress * damageObj.duration;
         pos.x += damageObj.velocity.x * elapsed;
         pos.y += damageObj.velocity.y * elapsed;
@@ -286,24 +302,22 @@ class DamageNumberSystem extends GUTS.BaseSystem {
         const scales = this.damageTextGeometry.attributes.instanceScale;
         const uvOffsets = this.damageTextGeometry.attributes.instanceUVOffset;
         
-        // Get camera right vector for horizontal spacing
-        const camera = this.game.camera;
-        const cameraRight = new THREE.Vector3();
-        const cameraUp = new THREE.Vector3();
-        camera.matrixWorld.extractBasis(cameraRight, cameraUp, new THREE.Vector3());
-        
         // Center the entire text string at pos
         const totalWidth = damageObj.charCount * charWidth;
         const startOffset = -totalWidth / 2 + charWidth / 2;
-        
+
         for (let i = 0; i < damageObj.charCount; i++) {
             const instanceIdx = damageObj.charStartIndex + i;
             const char = damageObj.text[i];
-            
+
             // Position each character along camera right vector, centered
+            // Reuse pre-allocated vector instead of cloning
             const offset = startOffset + i * charWidth;
-            const charPos = pos.clone().add(cameraRight.clone().multiplyScalar(offset));
-            positions.setXYZ(instanceIdx, charPos.x, charPos.y, charPos.z);
+            this._charPos.copy(pos);
+            this._charPos.x += this._cameraRight.x * offset;
+            this._charPos.y += this._cameraRight.y * offset;
+            this._charPos.z += this._cameraRight.z * offset;
+            positions.setXYZ(instanceIdx, this._charPos.x, this._charPos.y, this._charPos.z);
             
             // Color
             colors.setXYZ(instanceIdx, damageObj.color.r, damageObj.color.g, damageObj.color.b);
@@ -328,35 +342,34 @@ class DamageNumberSystem extends GUTS.BaseSystem {
 
     updateDamageNumbers() {
         if (!this.game.state || this.damageNumbers.length === 0 || !this.game.camera) return;
-        // Update camera vectors for billboarding
+        // Update camera vectors for billboarding (reuse pre-allocated vectors)
         const camera = this.game.camera;
-        const cameraRight = new THREE.Vector3();
-        const cameraUp = new THREE.Vector3();
-        
-        camera.matrixWorld.extractBasis(cameraRight, cameraUp, new THREE.Vector3());
-        
-        this.damageTextMaterial.uniforms.cameraRight.value.copy(cameraRight);
-        this.damageTextMaterial.uniforms.cameraUp.value.copy(cameraUp);
-        
+
+        camera.matrixWorld.extractBasis(this._cameraRight, this._cameraUp, this._tempVec3);
+
+        this.damageTextMaterial.uniforms.cameraRight.value.copy(this._cameraRight);
+        this.damageTextMaterial.uniforms.cameraUp.value.copy(this._cameraUp);
+
         const currentTime = this.game.state.now;
-        const toRemove = [];
+        // Reuse array instead of creating new one each frame
+        this._toRemove.length = 0;
         
         for (let i = 0; i < this.damageNumbers.length; i++) {
             const damageObj = this.damageNumbers[i];
             const elapsed = currentTime - damageObj.startTime;
             const progress = elapsed / damageObj.duration;
-            
+
             if (progress >= 1) {
-                toRemove.push(i);
+                this._toRemove.push(i);
                 continue;
             }
-            
+
             this.updateDamageNumberInstance(damageObj, progress);
         }
-        
+
         // Remove completed damage numbers (backwards to maintain indices)
-        for (let i = toRemove.length - 1; i >= 0; i--) {
-            const idx = toRemove[i];
+        for (let i = this._toRemove.length - 1; i >= 0; i--) {
+            const idx = this._toRemove[i];
             const damageObj = this.damageNumbers[idx];
             
             // Free up character instances

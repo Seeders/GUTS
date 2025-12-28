@@ -9,7 +9,18 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
             gamesPlayed: 0, totalWins: 0, totalLosses: 0,
             bestRound: 0, totalGoldEarned: 0, totalPlayTime: 0
         };
-        
+
+        // Track last displayed values to avoid unnecessary DOM updates
+        this._lastEfficiency = -1;
+        this._lastEfficiencyClass = '';
+        this._lastArmyValue = -1;
+
+        // Cache calculated values to avoid recalculating every frame
+        this._cachedDeployed = 0;
+        this._cachedRemaining = 0;
+        this._cachedArmyValue = 0;
+        this._statsCacheDirty = true;
+
         this.loadSessionStats();
     }
     
@@ -107,19 +118,70 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
         }
     }
     
+    invalidateStatsCache() {
+        this._statsCacheDirty = true;
+    }
+
+    _recalculateStats() {
+        if (!this._statsCacheDirty) return;
+
+        const playerUnits = this.game.getEntitiesWith("team", "unitType") || [];
+        const myTeamId = this.game.call('getActivePlayerTeam');
+
+        let deployed = 0;
+        let remaining = 0;
+        let armyValue = 0;
+
+        for (let i = 0; i < playerUnits.length; i++) {
+            const entityId = playerUnits[i];
+            const team = this.game.getComponent(entityId, "team");
+            if (team?.team !== myTeamId) continue;
+
+            deployed++;
+
+            const health = this.game.getComponent(entityId, "health");
+            if (health?.current > 0) {
+                remaining++;
+            }
+
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            if (unitType?.value) {
+                armyValue += unitType.value;
+            }
+        }
+
+        this._cachedDeployed = deployed;
+        this._cachedRemaining = remaining;
+        this._cachedArmyValue = armyValue;
+        this._statsCacheDirty = false;
+    }
+
     update() {
-        // Update enhanced stats display
-        const efficiency = this.calculateEfficiency();
-        const armyValue = this.calculateArmyValue();
-        
+        // Recalculate stats only when dirty
+        this._recalculateStats();
+
+        const efficiency = this._cachedDeployed > 0
+            ? Math.round((this._cachedRemaining / this._cachedDeployed) * 100)
+            : 100;
+        const armyValue = this._cachedArmyValue;
+
         const efficiencyElement = document.getElementById('armyEfficiency');
         if (efficiencyElement) {
-            efficiencyElement.textContent = `${efficiency}%`;
-            efficiencyElement.className = efficiency > 80 ? 'stat-good' : efficiency > 60 ? 'stat-ok' : 'stat-poor';
+            const newClass = efficiency > 80 ? 'stat-good' : efficiency > 60 ? 'stat-ok' : 'stat-poor';
+            if (efficiency !== this._lastEfficiency) {
+                this._lastEfficiency = efficiency;
+                efficiencyElement.textContent = `${efficiency}%`;
+            }
+            if (newClass !== this._lastEfficiencyClass) {
+                this._lastEfficiencyClass = newClass;
+                efficiencyElement.className = newClass;
+            }
         }
-        
+
         const valueElement = document.getElementById('armyValue');
-        if (valueElement) {
+        if (valueElement && armyValue !== this._lastArmyValue) {
+            this._lastArmyValue = armyValue;
             valueElement.textContent = `${armyValue}g`;
         }
     }

@@ -495,7 +495,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 const po = this.game.getComponent(entityId, 'playerOrder');
                 const unitTypeComp = this.game.getComponent(entityId, 'unitType');
                 const unitTypeDef = this.game.call('getUnitTypeDef', unitTypeComp);
-                console.log(`[PlacementUI] After resync: entity ${entityId} (${unitTypeDef?.id}) playerOrder.isHiding=${po?.isHiding}`);
             }
 
             this.game.call('resetAI');

@@ -165,11 +165,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             }
 
             const result = this.processPlacement(effectivePlayerId, effectivePlayerId, playerStats, placement, null);
-            console.log('[ServerNetworkSystem] handleSubmitPlacement result:', {
-                success: result.success,
-                squadUnits: result.squadUnits,
-                placementId: result.placementId
-            });
+
 
             if (result.success) {
                 // Queue networkUnitData for battle start sync
@@ -213,10 +209,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
     buildPlayersForBattleStart() {
         const players = [];
         for (const [socketPlayerId, data] of this.pendingNetworkUnitData) {
-            console.log('[ServerNetworkSystem] buildPlayersForBattleStart player:', socketPlayerId, 'placements:', data.placements.map(p => ({
-                placementId: p.placementId,
-                squadUnits: p.squadUnits
-            })));
+
             players.push({
                 id: socketPlayerId,
                 team: data.team,
@@ -397,17 +390,9 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             effectivePlayerId = data.team === this.enums.team.left ? 0 : 1;
         }
 
-        console.log('[DEBUG] handleReadyForBattle called', {
-            playerId,
-            effectivePlayerId,
-            team: data?.team,
-            isLocalGame: this.game.state.isLocalGame,
-            phase: this.game.state.phase,
-            playerExists: this.playerExists(effectivePlayerId)
-        });
+
 
         if (!this.playerExists(effectivePlayerId)) {
-            console.log('[DEBUG] Player not found, returning error');
             return this.respondError(playerId, responseName, 'Player not found', callback);
         }
 
@@ -419,15 +404,9 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         // Both local and multiplayer: wait for all players to be ready
         const allReady = this.areAllPlayersReady();
 
-        console.log('[DEBUG] allReady check', {
-            allReady,
-            phase: this.game.state.phase,
-            phaseEnum: this.enums.gamePhase.placement,
-            phaseMatch: this.game.state.phase === this.enums.gamePhase.placement
-        });
+       
 
         if (allReady && this.game.state.phase === this.enums.gamePhase.placement) {
-            console.log('[DEBUG] Starting battle!');
             this.game.resetCurrentTime();
             if (this.game.desyncDebugger) {
                 this.game.desyncDebugger.enabled = true;

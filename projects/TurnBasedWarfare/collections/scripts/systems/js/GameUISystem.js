@@ -11,6 +11,12 @@ class GameUISystem extends GUTS.BaseSystem {
 
         this.currentScreen = 'game';
         this.networkUnsubscribers = [];
+
+        // Track last displayed values to avoid unnecessary DOM updates
+        this._lastPhaseStatus = '';
+        this._lastGold = -1;
+        this._lastRound = -1;
+        this._lastSide = -1;
     }
 
     init(params) {
@@ -229,14 +235,19 @@ class GameUISystem extends GUTS.BaseSystem {
 
         const phaseStatusEl = document.getElementById('phaseStatus');
         if (phaseStatusEl) {
+            let newStatus = '';
             if (state.phase === this.enums.gamePhase.placement) {
                 if (state.playerReady) {
-                    phaseStatusEl.textContent = 'Army deployed! Waiting for opponent...';
+                    newStatus = 'Army deployed! Waiting for opponent...';
                 } else {
-                    phaseStatusEl.textContent = 'Deploy your units and get ready!';
+                    newStatus = 'Deploy your units and get ready!';
                 }
             } else if (state.phase === this.enums.gamePhase.battle) {
-                phaseStatusEl.textContent = 'Battle in progress! Watch your units fight!';
+                newStatus = 'Battle in progress! Watch your units fight!';
+            }
+            if (newStatus !== this._lastPhaseStatus) {
+                this._lastPhaseStatus = newStatus;
+                phaseStatusEl.textContent = newStatus;
             }
         }
     }
@@ -244,14 +255,22 @@ class GameUISystem extends GUTS.BaseSystem {
     updateGoldDisplay() {
         const goldDisplay = document.getElementById('playerGold');
         if (goldDisplay) {
-            goldDisplay.textContent = this.game.call('getPlayerGold');
+            const gold = this.game.call('getPlayerGold');
+            if (gold !== this._lastGold) {
+                this._lastGold = gold;
+                goldDisplay.textContent = gold;
+            }
         }
     }
 
     updateRoundDisplay() {
         const roundNumberEl = document.getElementById('currentRound');
         if (roundNumberEl) {
-            roundNumberEl.textContent = this.game.state.round || 1;
+            const round = this.game.state.round || 1;
+            if (round !== this._lastRound) {
+                this._lastRound = round;
+                roundNumberEl.textContent = round;
+            }
         }
     }
 
@@ -259,7 +278,11 @@ class GameUISystem extends GUTS.BaseSystem {
         const sideDisplay = document.getElementById('playerSide');
         if (sideDisplay) {
             const myTeam = this.game.call('getActivePlayerTeam');
-            sideDisplay.textContent = myTeam ?? 0;
+            const side = myTeam ?? 0;
+            if (side !== this._lastSide) {
+                this._lastSide = side;
+                sideDisplay.textContent = side;
+            }
         }
     }
 

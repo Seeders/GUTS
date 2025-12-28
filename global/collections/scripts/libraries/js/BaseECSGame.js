@@ -946,6 +946,30 @@ class BaseECSGame {
     }
 
     async update(deltaTime) {
+        // Memory leak debug logging - logs cache sizes every 5 seconds
+        if (!this._memoryDebugLastLog) this._memoryDebugLastLog = 0;
+        if (this.currentTime - this._memoryDebugLastLog >= 5) {
+            this._memoryDebugLastLog = this.currentTime;
+            const stats = {
+                queryCache: this._queryCache?.size || 0,
+                proxyCache: this._proxyCache?.size || 0,
+                entityCount: this.entityCount || 0
+            };
+            // Collect stats from systems
+            for (const system of this.systems) {
+                if (system._entityPositionCache) stats.renderPosCache = system._entityPositionCache.size;
+                if (system._unitPositions) stats.fowUnitPos = system._unitPositions.size;
+                if (system._losCache) stats.losCache = system._losCache.size;
+                if (system.spawnedEntities) stats.spawned = system.spawnedEntities.size;
+                if (system.projectileTrails) stats.trails = system.projectileTrails.size;
+                if (system.healthBars) stats.healthBars = system.healthBars.size;
+                if (system.damageNumbers) stats.dmgNums = system.damageNumbers.length;
+                if (system.activeEffects) stats.effects = system.activeEffects.length;
+                if (system.entityBehaviorState) stats.behaviors = system.entityBehaviorState.size;
+                if (system._unitDataPool) stats.mvmtPool = system._unitDataPool.length;
+            }
+            console.log('[Memory]', Object.entries(stats).map(([k,v]) => `${k}: ${v}`).join(', '));
+        }
 
         if (!this.state.isPaused) {
             // Start performance frame tracking

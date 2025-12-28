@@ -32,6 +32,11 @@ class DamageSystem extends GUTS.BaseSystem {
         // Configuration
         this.RESISTANCE_CAP = 0.9; // Maximum resistance (90%)
         this.MIN_DAMAGE = 1; // Minimum damage that can be dealt
+
+        // Reusable arrays to avoid per-frame allocations
+        this._sortedPoisonedEntities = [];
+        this._eventsToRemove = [];
+        this._sortedEventIds = [];
     }
 
     init() {
@@ -433,10 +438,15 @@ class DamageSystem extends GUTS.BaseSystem {
     processStatusEffects() {
         // Query all entities with poison component
         const poisonedEntities = this.game.getEntitiesWith('poison');
-        // Sort for deterministic processing order
-        const sortedEntityIds = Array.from(poisonedEntities).sort((a, b) => a - b);
 
-        for (const entityId of sortedEntityIds) {
+        // Reuse array for sorted entities
+        this._sortedPoisonedEntities.length = 0;
+        for (let i = 0; i < poisonedEntities.length; i++) {
+            this._sortedPoisonedEntities.push(poisonedEntities[i]);
+        }
+        this._sortedPoisonedEntities.sort((a, b) => a - b);
+
+        for (const entityId of this._sortedPoisonedEntities) {
             const poison = this.game.getComponent(entityId, 'poison');
             if (!poison || poison.stacks === 0) {
                 continue;
@@ -528,12 +538,17 @@ class DamageSystem extends GUTS.BaseSystem {
      * Process pending damage events
      */
     processPendingDamage() {
-        const eventsToRemove = [];
+        // Reuse arrays to avoid allocations
+        this._eventsToRemove.length = 0;
+        this._sortedEventIds.length = 0;
 
-        // Sort event IDs for deterministic processing order (prevents desync)
-        const sortedEventIds = Array.from(this.pendingDamageEvents.keys()).sort((a, b) => a.localeCompare(b));
+        // Copy keys to reusable array and sort for deterministic processing order
+        for (const eventId of this.pendingDamageEvents.keys()) {
+            this._sortedEventIds.push(eventId);
+        }
+        this._sortedEventIds.sort((a, b) => a.localeCompare(b));
 
-        for (const eventId of sortedEventIds) {
+        for (const eventId of this._sortedEventIds) {
             const event = this.pendingDamageEvents.get(eventId);
 
             if (this.game.state.now >= event.triggerTime) {
@@ -549,11 +564,13 @@ class DamageSystem extends GUTS.BaseSystem {
                     });
                 }
 
-                eventsToRemove.push(eventId);
+                this._eventsToRemove.push(eventId);
             }
         }
 
-        eventsToRemove.forEach(id => this.pendingDamageEvents.delete(id));
+        for (let i = 0; i < this._eventsToRemove.length; i++) {
+            this.pendingDamageEvents.delete(this._eventsToRemove[i]);
+        }
     }
 
 

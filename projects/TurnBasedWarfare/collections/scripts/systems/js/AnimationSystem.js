@@ -26,6 +26,9 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Cache for availableClips as Sets (batchKey -> Set)
         this._clipSetCache = new Map();
+
+        // Pre-allocate reusable vector to avoid per-frame allocations
+        this._cameraDirection = null; // Created lazily when THREE is available
     }
 
     init() {
@@ -325,12 +328,14 @@ class AnimationSystem extends GUTS.BaseSystem {
             // Orthographic: use camera's viewing direction (same for all objects due to parallel projection)
             // Panning doesn't change the view angle, only rotating the camera does
             // Get the camera's forward direction in world space (where it's looking)
-            const cameraDirection = new THREE.Vector3(0, 0, -1);
-            cameraDirection.applyQuaternion(cam.quaternion);
+            // Reuse pre-allocated vector instead of creating new one each call
+            if (!this._cameraDirection) this._cameraDirection = new THREE.Vector3();
+            this._cameraDirection.set(0, 0, -1);
+            this._cameraDirection.applyQuaternion(cam.quaternion);
 
             // Calculate angle FROM scene TO camera (opposite of viewing direction)
             // Use same atan2(z, x) order as perspective branch for consistency
-            const cameraAngle = Math.atan2(-cameraDirection.z, -cameraDirection.x);
+            const cameraAngle = Math.atan2(-this._cameraDirection.z, -this._cameraDirection.x);
 
             // Calculate relative angle (entity facing vs camera angle)
             let relativeAngle = rotationY - cameraAngle;

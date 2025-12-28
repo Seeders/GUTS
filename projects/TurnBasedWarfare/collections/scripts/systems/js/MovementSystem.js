@@ -48,9 +48,29 @@ class MovementSystem extends GUTS.BaseSystem {
         this.pathfindingQueue = [];
         this.pathfindingQueueIndex = 0;
 
+        // Pre-allocate reusable structures to avoid per-frame allocations
+        this._unitDataMap = new Map();
+        this._unitDataPool = []; // Pool of reusable unit data objects
+        this._sortedEntityIds = [];
     }
 
     init() {
+    }
+
+    // Get or create a pooled unit data object
+    _getPooledUnitData() {
+        if (this._unitDataPool.length > 0) {
+            return this._unitDataPool.pop();
+        }
+        // Create new object with nested objects pre-allocated
+        return {
+            pos: null, vel: null, unitType: null, collision: null, aiState: null, projectile: null,
+            unitRadius: 0,
+            isAnchored: false,
+            desiredVelocity: { vx: 0, vy: 0, vz: 0 },
+            separationForce: { x: 0, y: 0, z: 0 },
+            avoidanceForce: { x: 0, y: 0, z: 0 }
+        };
     }
 
     update() {
@@ -61,8 +81,13 @@ class MovementSystem extends GUTS.BaseSystem {
         // OPTIMIZATION: Use numeric sort since entity IDs are numbers (much faster than localeCompare)
         entities.sort((a, b) => a - b);
 
-        const unitData = new Map();
+        // Return all current unitData objects to pool and clear map
+        for (const data of this._unitDataMap.values()) {
+            this._unitDataPool.push(data);
+        }
+        this._unitDataMap.clear();
 
+        let poolIdx = 0;
         entities.forEach(entityId => {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
@@ -86,32 +111,50 @@ class MovementSystem extends GUTS.BaseSystem {
                     this.isInAttackRange(behaviorMeta.target, entityId);
                 const isAnchored = vel.anchored || isAttacking;
 
-                unitData.set(entityId, {
-                    pos, vel, unitType, collision, aiState, projectile,
-                    unitRadius,
-                    isAnchored,
-                    desiredVelocity: { vx: 0, vy: 0, vz: 0 },
-                    separationForce: { x: 0, y: 0, z: 0 },
-                    avoidanceForce: { x: 0, y: 0, z: 0 }
-                });
+                // Reuse pooled object instead of creating new one
+                const data = this._getPooledUnitData();
+                data.pos = pos;
+                data.vel = vel;
+                data.unitType = unitType;
+                data.collision = collision;
+                data.aiState = aiState;
+                data.projectile = projectile;
+                data.unitRadius = unitRadius;
+                data.isAnchored = isAnchored;
+                // Reset force values
+                data.desiredVelocity.vx = 0;
+                data.desiredVelocity.vy = 0;
+                data.desiredVelocity.vz = 0;
+                data.separationForce.x = 0;
+                data.separationForce.y = 0;
+                data.separationForce.z = 0;
+                data.avoidanceForce.x = 0;
+                data.avoidanceForce.y = 0;
+                data.avoidanceForce.z = 0;
+
+                this._unitDataMap.set(entityId, data);
 
                 this.updateUnitState(entityId, pos, vel);
                 this.updateMovementHistory(entityId, vel);
             }
         });
-        
-        const sortedEntityIds = Array.from(unitData.keys());
 
-        sortedEntityIds.forEach((entityId) => {
-            this.calculateDesiredVelocity(entityId, unitData.get(entityId));
+        // Reuse sorted array instead of creating new one
+        this._sortedEntityIds.length = 0;
+        for (const key of this._unitDataMap.keys()) {
+            this._sortedEntityIds.push(key);
+        }
+
+        this._sortedEntityIds.forEach((entityId) => {
+            this.calculateDesiredVelocity(entityId, this._unitDataMap.get(entityId));
         });
-        
-        sortedEntityIds.forEach((entityId) => {
-            this.calculateSeparationForceOptimized(entityId, unitData.get(entityId));
+
+        this._sortedEntityIds.forEach((entityId) => {
+            this.calculateSeparationForceOptimized(entityId, this._unitDataMap.get(entityId));
         });
-        
-        this.updatePathfindingStaggered(unitData);
-        
+
+        this.updatePathfindingStaggered(this._unitDataMap);
+
         entities.forEach(entityId => {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
@@ -122,11 +165,11 @@ class MovementSystem extends GUTS.BaseSystem {
             const unitType = this.game.getComponent(entityId, "unitType");
 
             const isAffectedByGravity = vel.affectedByGravity;
-            
-            if (!projectile && unitData.has(entityId)) {
-                let entityData = unitData.get(entityId);
+
+            if (!projectile && this._unitDataMap.has(entityId)) {
+                let entityData = this._unitDataMap.get(entityId);
                 if(vel.vx != 0 || vel.vz != 0 || entityData.desiredVelocity.vx != 0 || entityData.desiredVelocity.vz != 0){
-                    this.applyUnitMovementWithSmoothing(entityId, unitData.get(entityId));
+                    this.applyUnitMovementWithSmoothing(entityId, this._unitDataMap.get(entityId));
                 }
             }
             
@@ -221,9 +264,13 @@ class MovementSystem extends GUTS.BaseSystem {
     
     updatePathfindingStaggered(unitData) {
         if (this.pathfindingQueue.length === 0) {
-            // OPTIMIZATION: Use numeric sort since entity IDs are numbers
-            const sortedEntityIds = Array.from(unitData.keys()).sort((a, b) => a - b);
-            sortedEntityIds.forEach(entityId => {
+            // OPTIMIZATION: Reuse sorted array instead of Array.from() which allocates
+            this._sortedEntityIds.length = 0;
+            for (const entityId of unitData.keys()) {
+                this._sortedEntityIds.push(entityId);
+            }
+            this._sortedEntityIds.sort((a, b) => a - b);
+            this._sortedEntityIds.forEach(entityId => {
                 const data = unitData.get(entityId);
                 // Chasing means: has a target or targetPosition they're moving toward but not in range yet
                 const behaviorShared = data.aiState ? this.game.call('getBehaviorShared', entityId) : null;

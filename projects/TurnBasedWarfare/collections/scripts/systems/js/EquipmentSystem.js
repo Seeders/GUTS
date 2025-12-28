@@ -37,6 +37,8 @@ class EquipmentSystem extends GUTS.BaseSystem {
             back: { x: 0, y: 0, z: -0.2 }
         };
 
+        // Reusable set to avoid per-frame allocations
+        this._activeEntitySet = new Set();
     }
 
     init() {
@@ -49,14 +51,15 @@ class EquipmentSystem extends GUTS.BaseSystem {
     }
 
     update() {
+
         const entities = this.game.getEntitiesWith(
             "equipment",
             "transform"
         );
 
-        entities.forEach(entityId => {
-            this.updateEntityEquipment(entityId);
-        });
+        // entities.forEach(entityId => {
+        //     this.updateEntityEquipment(entityId);
+        // });
 
         this.cleanupRemovedEntities(entities);
     }
@@ -433,10 +436,14 @@ class EquipmentSystem extends GUTS.BaseSystem {
     }
     
     cleanupRemovedEntities(activeEntities) {
-        const activeSet = new Set(activeEntities);
+        // Reuse set to avoid per-frame allocations
+        this._activeEntitySet.clear();
+        for (let i = 0; i < activeEntities.length; i++) {
+            this._activeEntitySet.add(activeEntities[i]);
+        }
 
         for (const [entityId, equipmentMap] of this.equipmentInstances.entries()) {
-            if (!activeSet.has(entityId)) {
+            if (!this._activeEntitySet.has(entityId)) {
                 for (const [slotType, equipInstance] of equipmentMap.entries()) {
                     const batch = this.equipmentBatches.get(equipInstance.batchKey);
                     if (batch) {

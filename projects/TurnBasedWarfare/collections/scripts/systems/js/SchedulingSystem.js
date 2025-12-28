@@ -14,6 +14,9 @@ class SchedulingSystem extends GUTS.BaseSystem {
 
         // Entity tracking for cleanup
         this.entityActions = new Map(); // entityId -> Set of actionIds
+
+        // Reusable array to avoid per-frame allocations
+        this._actionsToExecute = [];
     }
 
     init() {
@@ -60,17 +63,18 @@ class SchedulingSystem extends GUTS.BaseSystem {
      * Process all scheduled actions that are ready to execute
      */
     processScheduledActions() {
-        const actionsToExecute = [];
-        
+        // Reuse array to avoid per-frame allocations
+        this._actionsToExecute.length = 0;
+
         // Find all actions ready to execute
         for (const [actionId, action] of this.scheduledActions.entries()) {
             if (this.game.state.now >= action.executeTime) {
-                actionsToExecute.push({ id: actionId, action: action });
+                this._actionsToExecute.push({ id: actionId, action: action });
             }
         }
-        
+
         // Sort actions for deterministic execution order
-        actionsToExecute.sort((a, b) => {
+        this._actionsToExecute.sort((a, b) => {
             // Primary sort: by execution time
             if (Math.abs(a.action.executeTime - b.action.executeTime) > 0.000001) {
                 return a.action.executeTime - b.action.executeTime;
@@ -78,9 +82,9 @@ class SchedulingSystem extends GUTS.BaseSystem {
             // Secondary sort: by action ID for deterministic tie-breaking
             return a.id.localeCompare(b.id);
         });
-        
+
         // Execute actions in deterministic order
-        actionsToExecute.forEach(({ id, action }) => {
+        this._actionsToExecute.forEach(({ id, action }) => {
             try {
                 action.callback();
             } catch (error) {

@@ -54,6 +54,9 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         this._fowDirty = true;            // Force initial calculation
         this._positionThreshold = 2;      // Minimum movement to trigger recalc (in world units)
 
+        // Reusable array to avoid per-frame allocations from .filter()
+        this._myUnits = [];
+
         // Cached values that don't change per-frame
         this._cachedGridSize = null;
         this._cachedTerrainSize = null;
@@ -562,36 +565,43 @@ class FogOfWarSystem extends GUTS.BaseSystem {
      */
     _checkUnitMovement(myUnits) {
         let hasMoved = false;
-        const currentPositions = new Map();
+
+        // Track which entities are still active (reuse set to avoid allocation)
+        if (!this._activeUnitIds) this._activeUnitIds = new Set();
+        this._activeUnitIds.clear();
 
         for (const entityId of myUnits) {
+            this._activeUnitIds.add(entityId);
+
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
             if (!pos) continue;
 
-            currentPositions.set(entityId, { x: pos.x, z: pos.z });
-
-            const lastPos = this._unitPositions.get(entityId);
+            let lastPos = this._unitPositions.get(entityId);
             if (!lastPos) {
-                // New unit - needs recalc
+                // New unit - create position object and mark as moved
+                this._unitPositions.set(entityId, { x: pos.x, z: pos.z });
                 hasMoved = true;
             } else {
                 const dx = pos.x - lastPos.x;
                 const dz = pos.z - lastPos.z;
                 const distSq = dx * dx + dz * dz;
                 if (distSq > this._positionThreshold * this._positionThreshold) {
+                    // Update position in place (no new object allocation)
+                    lastPos.x = pos.x;
+                    lastPos.z = pos.z;
                     hasMoved = true;
                 }
             }
         }
 
-        // Check for removed units
-        if (this._unitPositions.size !== currentPositions.size) {
-            hasMoved = true;
+        // Check for removed units and clean them up
+        for (const entityId of this._unitPositions.keys()) {
+            if (!this._activeUnitIds.has(entityId)) {
+                this._unitPositions.delete(entityId);
+                hasMoved = true;
+            }
         }
-
-        // Update stored positions
-        this._unitPositions = currentPositions;
 
         return hasMoved;
     }
@@ -646,13 +656,18 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             "health"
         );
 
-        const myUnits = allUnitsWithTeam.filter(id => {
+        // Reuse array instead of .filter() which allocates new array each frame
+        this._myUnits.length = 0;
+        for (let i = 0; i < allUnitsWithTeam.length; i++) {
+            const id = allUnitsWithTeam[i];
             const team = this.game.getComponent(id, "team");
-            return team?.team === myTeam;
-        });
+            if (team?.team === myTeam) {
+                this._myUnits.push(id);
+            }
+        }
 
         // Check if any unit has moved - if not, skip expensive LOS recalculation
-        const needsRecalc = this._fowDirty || this._checkUnitMovement(myUnits);
+        const needsRecalc = this._fowDirty || this._checkUnitMovement(this._myUnits);
 
         if (!needsRecalc) {
             // Still need to increment frame for visibility cache
@@ -667,7 +682,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
 
         let meshIndex = 0;
 
-        for (const entityId of myUnits) {
+        for (const entityId of this._myUnits) {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
             const unitTypeComp = this.game.getComponent(entityId, "unitType");

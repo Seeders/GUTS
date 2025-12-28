@@ -30,6 +30,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Get gravity from movement system
         this.GRAVITY = this.game.movementSystem?.GRAVITY;
+
+        // Reusable arrays to avoid per-frame allocations
+        this._entitiesWithDistance = [];
     }
 
     // Deterministic rounding helper
@@ -562,7 +565,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
         if (!sourceTeam) return;
 
         // Calculate distances and sort by closest first for deterministic collision (prevents desync)
-        const entitiesWithDistance = [];
+        // Reuse array to avoid per-frame allocations
+        this._entitiesWithDistance.length = 0;
         for (const entityId of allEntities) {
             if (entityId === projectile.source) continue; // Don't hit the source
 
@@ -580,12 +584,12 @@ class ProjectileSystem extends GUTS.BaseSystem {
             const dz = Math.round((entityPos.z - pos.z) * 1000) / 1000;
             const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-            entitiesWithDistance.push({ entityId, entityPos, distance });
+            this._entitiesWithDistance.push({ entityId, entityPos, distance });
         }
 
         // Debug: log closest enemy distance for non-ballistic projectiles
-        if (entitiesWithDistance.length > 0 && !projectile.isBallistic) {
-            const closest = entitiesWithDistance.reduce((a, b) => a.distance < b.distance ? a : b);
+        if (this._entitiesWithDistance.length > 0 && !projectile.isBallistic) {
+            const closest = this._entitiesWithDistance.reduce((a, b) => a.distance < b.distance ? a : b);
             if (closest.distance < 100) {
                 log.trace('Projectile', `Collision check: projectile at (${pos.x.toFixed(0)}, ${pos.y.toFixed(0)}, ${pos.z.toFixed(0)}) closest enemy ${closest.entityId} at distance ${closest.distance.toFixed(1)}`);
             }
@@ -593,7 +597,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Sort by distance (closest first), then by entity ID for deterministic tie-breaking
         // OPTIMIZATION: Numeric IDs allow fast numeric sort instead of localeCompare
-        entitiesWithDistance.sort((a, b) => {
+        this._entitiesWithDistance.sort((a, b) => {
             if (Math.abs(a.distance - b.distance) > 0.001) {
                 return a.distance - b.distance;
             }
@@ -601,7 +605,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         });
 
         // Check collision in sorted order - hit closest entity first
-        for (const { entityId, entityPos, distance } of entitiesWithDistance) {
+        for (const { entityId, entityPos, distance } of this._entitiesWithDistance) {
             // Get entity radius for collision detection
             const entityUnitTypeComp = this.game.getComponent(entityId, "unitType");
             const entityUnitType = this.game.call('getUnitTypeDef', entityUnitTypeComp);

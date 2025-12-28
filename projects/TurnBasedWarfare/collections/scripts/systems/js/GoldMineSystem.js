@@ -15,6 +15,9 @@ class GoldMineSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.goldMineSystem = this;
+
+        // Reusable array to avoid per-call allocations
+        this._sortedWorldObjectEntities = [];
     }
 
     init(params) {
@@ -86,10 +89,14 @@ class GoldMineSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Sort for deterministic iteration
-        const sortedEntities = Array.from(worldObjectEntities).sort((a, b) => a - b);
+        // Sort for deterministic iteration - reuse array to avoid allocations
+        this._sortedWorldObjectEntities.length = 0;
+        for (let i = 0; i < worldObjectEntities.length; i++) {
+            this._sortedWorldObjectEntities.push(worldObjectEntities[i]);
+        }
+        this._sortedWorldObjectEntities.sort((a, b) => a - b);
 
-        for (const entityId of sortedEntities) {
+        for (const entityId of this._sortedWorldObjectEntities) {
             const worldObj = this.game.getComponent(entityId, 'worldObject');
             const goldVeinTypeIndex = this.enums.worldObjects?.goldVein ?? -1;
             if (worldObj?.type !== goldVeinTypeIndex) continue;
