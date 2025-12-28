@@ -30,7 +30,10 @@ class AbilitySystem extends GUTS.BaseSystem {
             const AbilityClass = GUTS[abilityId];
             console.log('[AbilitySystem] Looking for ability class:', abilityId, '- found:', !!AbilityClass);
             if (AbilityClass) {
-                const abilityInstance = new AbilityClass(this.game, this.collections.abilities[abilityId]);
+                // Get ability data from collections, or empty object if not found
+                // Ensure id is set (compiler generates it from filename)
+                const abilityData = this.collections.abilities?.[abilityId] || {};
+                const abilityInstance = new AbilityClass(this.game, { ...abilityData, id: abilityId });
                 unitAbilities.push(abilityInstance);
                 console.log('[AbilitySystem] Created ability instance:', abilityId, 'id:', abilityInstance.id);
             } else {
@@ -140,7 +143,7 @@ class AbilitySystem extends GUTS.BaseSystem {
             .filter(ability => this.isAbilityOffCooldown(entityId, ability.id))
             .filter(ability => ability.canExecute(entityId))
             .sort((a, b) => b.priority - a.priority);
-        
+
         // With behavior tree system, AI state transitions are handled automatically
         // through priority evaluation - no need to manually change state
 
