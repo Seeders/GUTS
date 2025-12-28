@@ -38,6 +38,33 @@ class BaseBehaviorNode {
 
         // Running state tracking for composites
         this.runningState = new Map();
+
+        // Reusable result objects to avoid per-evaluation allocations
+        this._successResult = {
+            action: this.constructor.name,
+            status: BaseBehaviorNode.STATUS.SUCCESS,
+            meta: null
+        };
+        this._runningResult = {
+            action: this.constructor.name,
+            status: BaseBehaviorNode.STATUS.RUNNING,
+            meta: null
+        };
+
+        // Reusable running state object per entity
+        this._runningStatePool = new Map();
+    }
+
+    /**
+     * Get or create a reusable running state object for an entity
+     */
+    _getRunningStateObj(entityId) {
+        let obj = this._runningStatePool.get(entityId);
+        if (!obj) {
+            obj = { childIndex: 0, childName: null };
+            this._runningStatePool.set(entityId, obj);
+        }
+        return obj;
     }
 
     // ==================== Core Interface ====================
@@ -113,7 +140,10 @@ class BaseBehaviorNode {
             const result = this.evaluateChildWithTrace(entityId, game, this.children[startIndex], startIndex, trace, debugger_);
             if (result !== null) {
                 if (result.status === 'running') {
-                    this.runningState.set(entityId, { childIndex: startIndex, childName: this.children[startIndex] });
+                    const stateObj = this._getRunningStateObj(entityId);
+                    stateObj.childIndex = startIndex;
+                    stateObj.childName = this.children[startIndex];
+                    this.runningState.set(entityId, stateObj);
                     this.endTrace(debugger_, trace, result, entityId, game);
                     return result;
                 } else {
@@ -130,7 +160,10 @@ class BaseBehaviorNode {
             const result = this.evaluateChildWithTrace(entityId, game, this.children[i], i, trace, debugger_);
             if (result !== null) {
                 if (result.status === 'running') {
-                    this.runningState.set(entityId, { childIndex: i, childName: this.children[i] });
+                    const stateObj = this._getRunningStateObj(entityId);
+                    stateObj.childIndex = i;
+                    stateObj.childName = this.children[i];
+                    this.runningState.set(entityId, stateObj);
                 }
                 this.endTrace(debugger_, trace, result, entityId, game);
                 return result;
@@ -153,9 +186,6 @@ class BaseBehaviorNode {
         const treeId = this.config.id || this.constructor.name;
         const trace = debugger_?.beginEvaluation(entityId, treeId);
 
-        // Check for running state - but we'll still evaluate from the beginning
-        const runningInfo = this.runningState.get(entityId);
-
         let lastResult = null;
 
         // Always evaluate from the beginning to re-check conditions
@@ -171,7 +201,10 @@ class BaseBehaviorNode {
 
             if (result.status === 'running') {
                 // Child still running, save state and return
-                this.runningState.set(entityId, { childIndex: i, childName: this.children[i] });
+                const stateObj = this._getRunningStateObj(entityId);
+                stateObj.childIndex = i;
+                stateObj.childName = this.children[i];
+                this.runningState.set(entityId, stateObj);
                 this.endTrace(debugger_, trace, result, entityId, game);
                 return result;
             }
@@ -204,21 +237,24 @@ class BaseBehaviorNode {
      * Evaluate child with debug tracing
      */
     evaluateChildWithTrace(entityId, game, childName, index, trace, debugger_) {
+        // Skip timing overhead if not debugging
+        if (!debugger_ || !trace) {
+            return this.evaluateChild(entityId, game, childName);
+        }
+
         const nodeStartTime = performance.now();
         const result = this.evaluateChild(entityId, game, childName);
 
-        if (debugger_ && trace) {
-            const node = game.call('getNodeByType', childName);
-            debugger_.recordNode(trace, {
-                name: childName,
-                type: this.getNodeType(node),
-                index: index,
-                status: result?.status || (result ? 'success' : 'failure'),
-                duration: performance.now() - nodeStartTime,
-                meta: result?.meta,
-                memory: node?.getMemory?.(entityId)
-            });
-        }
+        const node = game.call('getNodeByType', childName);
+        debugger_.recordNode(trace, {
+            name: childName,
+            type: this.getNodeType(node),
+            index: index,
+            status: result?.status || (result ? 'success' : 'failure'),
+            duration: performance.now() - nodeStartTime,
+            meta: result?.meta,
+            memory: node?.getMemory?.(entityId)
+        });
 
         return result;
     }
@@ -237,30 +273,27 @@ class BaseBehaviorNode {
      * End debug trace
      */
     endTrace(debugger_, trace, result, entityId, game) {
-        if (debugger_ && trace) {
-            // Get shared state from BehaviorSystem
-            const shared = game.call('getBehaviorShared', entityId);
-            const stateSnapshot = shared ? { shared: { ...shared } } : null;
-            debugger_.endEvaluation(trace, result, stateSnapshot);
-        }
+        if (!debugger_ || !trace) return;
+
+        // Get shared state from BehaviorSystem
+        const shared = game.call('getBehaviorShared', entityId);
+        // Note: We need to spread here because the debugger stores historical state
+        const stateSnapshot = shared ? { shared: { ...shared } } : null;
+        debugger_.endEvaluation(trace, result, stateSnapshot);
     }
 
     // ==================== Response Helpers ====================
 
     success(meta = {}) {
-        return {
-            action: this.constructor.name,
-            status: BaseBehaviorNode.STATUS.SUCCESS,
-            meta: meta
-        };
+        // Reuse result object to avoid allocation
+        this._successResult.meta = meta;
+        return this._successResult;
     }
 
     running(meta = {}) {
-        return {
-            action: this.constructor.name,
-            status: BaseBehaviorNode.STATUS.RUNNING,
-            meta: meta
-        };
+        // Reuse result object to avoid allocation
+        this._runningResult.meta = meta;
+        return this._runningResult;
     }
 
     failure() {
@@ -318,11 +351,12 @@ class BaseBehaviorNode {
             const node = game.call('getNodeByType', childName);
             if(!node.onBattleEnd){
                 console.warn('missing onBattleEnd', childName);
-                return;                
+                return;
             }
             node.onBattleEnd(entityId, game);
         });
         this.runningState.delete(entityId);
+        this._runningStatePool.delete(entityId);
         this.clearMemory(entityId);
     }
 

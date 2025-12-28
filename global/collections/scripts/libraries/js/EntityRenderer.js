@@ -75,6 +75,16 @@ class EntityRenderer {
         // Current ambient light color for billboards (updated by setAmbientLightColor)
         this.currentAmbientLight = new THREE.Color(0xffffff);
 
+        // Pre-allocate reusable THREE objects to avoid per-frame allocations in updateVATTransform
+        this._tempMatrix = new THREE.Matrix4();
+        this._tempPosition = new THREE.Vector3();
+        this._tempQuaternion = new THREE.Quaternion();
+        this._tempScale = new THREE.Vector3();
+        this._tempDirection = new THREE.Vector3();
+        this._defaultForward = new THREE.Vector3(0, 1, 0);
+        this._yAxis = new THREE.Vector3(0, 1, 0);
+        this._defaultBaseScale = new THREE.Vector3(1, 1, 1);
+        this._defaultBasePosition = new THREE.Vector3(0, 0, 0);
     }
 
     /**
@@ -1205,17 +1215,15 @@ class EntityRenderer {
         const batch = entity.batch;
         if (!batch) return false;
 
-        const matrix = new THREE.Matrix4();
-        const baseScale = batch.meta?.baseScale || new THREE.Vector3(1, 1, 1);
-        const basePosition = batch.meta?.basePos || new THREE.Vector3(0, 0, 0);
+        // Reuse pre-allocated objects to avoid per-frame allocations
+        const baseScale = batch.meta?.baseScale || this._defaultBaseScale;
+        const basePosition = batch.meta?.basePos || this._defaultBasePosition;
 
-        const position = new THREE.Vector3(
+        this._tempPosition.set(
             data.position.x + basePosition.x,
             data.position.y + basePosition.y,
             data.position.z + basePosition.z
         );
-
-        const quaternion = new THREE.Quaternion();
 
         // Check if this is a projectile - projectiles use 3D velocity-based rotation
         const isProjectile = entity.collection === 'projectiles';
@@ -1228,19 +1236,20 @@ class EntityRenderer {
                 data.velocity.vz * data.velocity.vz
             );
             if (speed > 0.01) {
-                const direction = new THREE.Vector3(
+                this._tempDirection.set(
                     data.velocity.vx / speed,
                     data.velocity.vy / speed,
                     data.velocity.vz / speed
                 );
-                const defaultForward = new THREE.Vector3(0, 1, 0);
-                quaternion.setFromUnitVectors(defaultForward, direction);
+                this._tempQuaternion.setFromUnitVectors(this._defaultForward, this._tempDirection);
+            } else {
+                this._tempQuaternion.identity();
             }
         } else {
             // Units/buildings: use transform.rotation.y for facing direction
             // This is set by MovementSystem based on velocity or preserved facing
             const rotationY = data.transform?.rotation?.y ?? data.rotation ?? 0;
-            quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -rotationY + Math.PI / 2);
+            this._tempQuaternion.setFromAxisAngle(this._yAxis, -rotationY + Math.PI / 2);
         }
 
         // Apply transform.scale as a multiplier (allows hiding entities by setting scale to 0)
@@ -1249,14 +1258,14 @@ class EntityRenderer {
         const scaleMultiplierY = transformScale?.y ?? 1;
         const scaleMultiplierZ = transformScale?.z ?? 1;
 
-        const scale = new THREE.Vector3(
+        this._tempScale.set(
             this.modelScale * baseScale.x * scaleMultiplierX,
             this.modelScale * baseScale.y * scaleMultiplierY,
             this.modelScale * baseScale.z * scaleMultiplierZ
         );
 
-        matrix.compose(position, quaternion, scale);
-        batch.mesh.setMatrixAt(entity.instanceIndex, matrix);
+        this._tempMatrix.compose(this._tempPosition, this._tempQuaternion, this._tempScale);
+        batch.mesh.setMatrixAt(entity.instanceIndex, this._tempMatrix);
         batch.dirty.matrices = true;
 
         return true;
@@ -1311,26 +1320,26 @@ class EntityRenderer {
         }
 
         const width = spriteScale * aspectRatio;
-        // Create transform matrix
-        const matrix = new THREE.Matrix4();
+
+        // Reuse pre-allocated objects to avoid per-frame allocations
         // Offset by half the sprite height so bottom sits at ground level
         // spriteYOffset adjusts for sprites where feet aren't at the bottom of the frame
-        const position = new THREE.Vector3(
-            data.position.x,// + spriteOffset,
+        this._tempPosition.set(
+            data.position.x,
             data.position.y + spriteOffset,
-            data.position.z// - spriteOffset
+            data.position.z
         );
 
         // Billboards don't rotate - they face the camera via shader
-        const quaternion = new THREE.Quaternion();
+        this._tempQuaternion.identity();
 
         // Apply transform.scale as a multiplier (allows hiding entities by setting scale to 0)
         const transformScale = data.transform?.scale;
         const scaleMultiplier = transformScale ? Math.min(transformScale.x, transformScale.y, transformScale.z) : 1;
-        const scale = new THREE.Vector3(width * scaleMultiplier, spriteScale * scaleMultiplier, 1);
+        this._tempScale.set(width * scaleMultiplier, spriteScale * scaleMultiplier, 1);
 
-        matrix.compose(position, quaternion, scale);
-        batch.instancedMesh.setMatrixAt(entity.instanceIndex, matrix);
+        this._tempMatrix.compose(this._tempPosition, this._tempQuaternion, this._tempScale);
+        batch.instancedMesh.setMatrixAt(entity.instanceIndex, this._tempMatrix);
         batch.instancedMesh.instanceMatrix.needsUpdate = true;
 
         return true;
