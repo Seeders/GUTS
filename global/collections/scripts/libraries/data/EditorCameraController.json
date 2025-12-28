@@ -1,0 +1,4 @@
+{
+  "title": "Editor Camera Controller",
+  "description": "Shared camera controls for editor modules with scene/game modes"
+}
