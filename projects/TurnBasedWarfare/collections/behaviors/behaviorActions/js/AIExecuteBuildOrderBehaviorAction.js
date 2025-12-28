@@ -26,6 +26,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         // Get build order
         const buildOrder = this.getBuildOrder(aiOpponent.buildOrderId, game);
         if (!buildOrder) {
+            console.log('[AIExecuteBuildOrder] Build order not found:', aiOpponent.buildOrderId);
             return this.failure();
         }
 
@@ -33,17 +34,24 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         const round = game.state.round || 1;
         const roundActions = buildOrder.rounds?.[round] || [];
 
+        if (roundActions.length > 0) {
+            console.log('[AIExecuteBuildOrder] Round', round, 'has', roundActions.length, 'actions for build order:', aiOpponent.buildOrderId);
+        }
+
         // Execute all remaining actions for this round
         let actionIndex = aiOpponent.actionIndex || 0;
         while (actionIndex < roundActions.length) {
             const action = roundActions[actionIndex];
+            console.log('[AIExecuteBuildOrder] Executing action', actionIndex, ':', action.type, action);
             const result = this.executeAction(action, aiTeam, game);
+            console.log('[AIExecuteBuildOrder] Action result:', result);
 
             if (result) {
                 actionIndex++;
                 aiOpponent.actionIndex = actionIndex;
             } else {
                 // Action failed, skip it
+                console.log('[AIExecuteBuildOrder] Action failed, skipping');
                 actionIndex++;
                 aiOpponent.actionIndex = actionIndex;
             }
@@ -143,23 +151,30 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     executePlaceBuilding(action, aiTeam, playerId, game) {
+        console.log('[AIExecuteBuildOrder] executePlaceBuilding:', action.buildingId, 'team:', aiTeam);
+
         const collections = game.getCollections();
         const buildingDef = collections.buildings?.[action.buildingId];
         if (!buildingDef) {
+            console.log('[AIExecuteBuildOrder] Building definition not found:', action.buildingId);
             return false;
         }
 
         // Find available peasant
         const peasantId = this.findAvailablePeasant(aiTeam, game);
         if (!peasantId) {
+            console.log('[AIExecuteBuildOrder] No available peasant found for team:', aiTeam);
             return false;
         }
+        console.log('[AIExecuteBuildOrder] Found peasant:', peasantId);
 
         // Find position near town hall
-        const gridPos = this.findBuildingPosition(aiTeam, buildingDef, game);
+        const gridPos = this.findBuildingPosition(aiTeam, buildingDef, action.buildingId, game);
         if (!gridPos) {
+            console.log('[AIExecuteBuildOrder] Could not find building position');
             return false;
         }
+        console.log('[AIExecuteBuildOrder] Found grid position:', gridPos);
 
         // Prepare unit type and peasant info
         const unitType = { ...buildingDef, id: action.buildingId, collection: 'buildings' };
@@ -170,7 +185,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Call ui_placeUnit
         game.call('ui_placeUnit', gridPos, unitType, aiTeam, playerId, peasantInfo, (success, response) => {
-            // Callback handled silently
+            console.log('[AIExecuteBuildOrder] ui_placeUnit callback - success:', success, 'response:', response);
         });
 
         return true;
@@ -231,6 +246,21 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
 
     findAvailablePeasant(aiTeam, game) {
         const entities = game.getEntitiesWith('unitType', 'team', 'placement');
+        console.log('[AIExecuteBuildOrder] findAvailablePeasant - searching for team:', aiTeam, 'total entities with unitType/team/placement:', entities.length);
+
+        // Debug: List all units and their teams
+        const unitsByTeam = {};
+        for (const entityId of entities) {
+            const teamComp = game.getComponent(entityId, 'team');
+            const unitTypeComp = game.getComponent(entityId, 'unitType');
+            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const team = teamComp?.team;
+            const unitId = unitDef?.id || 'unknown';
+
+            if (!unitsByTeam[team]) unitsByTeam[team] = [];
+            unitsByTeam[team].push({ entityId, unitId });
+        }
+        console.log('[AIExecuteBuildOrder] Units by team:', JSON.stringify(unitsByTeam, null, 2));
 
         for (const entityId of entities) {
             const teamComp = game.getComponent(entityId, 'team');
@@ -238,36 +268,51 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
             const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            console.log('[AIExecuteBuildOrder] Checking entity', entityId, 'unitDef.id:', unitDef?.id);
             if (unitDef?.id !== 'peasant') continue;
 
             // Check if peasant has build ability and is not already building
             const abilities = game.call('getEntityAbilities', entityId);
+            console.log('[AIExecuteBuildOrder] Peasant', entityId, 'abilities:', abilities?.map(a => a.id));
             if (!abilities) continue;
 
             const buildAbility = abilities.find(a => a.id === 'build');
-            if (!buildAbility) continue;
+            if (!buildAbility) {
+                console.log('[AIExecuteBuildOrder] Peasant', entityId, 'has no build ability');
+                continue;
+            }
 
             // Skip if already building
-            if (buildAbility.isBuilding || buildAbility.targetBuildingId) continue;
+            if (buildAbility.isBuilding || buildAbility.targetBuildingId) {
+                console.log('[AIExecuteBuildOrder] Peasant', entityId, 'is already building');
+                continue;
+            }
 
+            console.log('[AIExecuteBuildOrder] Found available peasant:', entityId);
             return entityId;
         }
 
         return null;
     }
 
-    findBuildingPosition(aiTeam, buildingDef, game) {
+    findBuildingPosition(aiTeam, buildingDef, buildingId, game) {
+        console.log('[AIExecuteBuildOrder] findBuildingPosition for team:', aiTeam);
+
         // Find town hall for team
         const townHall = this.findTownHall(aiTeam, game);
         if (!townHall) {
+            console.log('[AIExecuteBuildOrder] No town hall found for team:', aiTeam);
             return null;
         }
+        console.log('[AIExecuteBuildOrder] Found town hall entity:', townHall);
 
         const townHallPlacement = game.getComponent(townHall, 'placement');
         const townHallGridPos = townHallPlacement?.gridPosition;
         if (!townHallGridPos) {
+            console.log('[AIExecuteBuildOrder] Town hall has no grid position');
             return null;
         }
+        console.log('[AIExecuteBuildOrder] Town hall grid position:', townHallGridPos);
 
         // Get town hall cells to avoid
         const townHallUnitType = game.getComponent(townHall, 'unitType');
@@ -303,7 +348,10 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
             z: buildingWorldPos.z + preferredDirZ * 1000
         };
 
-        return game.call('findBuildingAdjacentPosition', townHallGridPos, townHallCellSet, buildingDef, targetWorldPos);
+        // IMPORTANT: Add collection and id to buildingDef so getSquadCells knows to use footprintWidth/Height
+        const buildingDefWithCollection = { ...buildingDef, id: buildingId, collection: 'buildings' };
+
+        return game.call('findBuildingAdjacentPosition', townHallGridPos, townHallCellSet, buildingDefWithCollection, targetWorldPos);
     }
 
     findTownHall(aiTeam, game) {

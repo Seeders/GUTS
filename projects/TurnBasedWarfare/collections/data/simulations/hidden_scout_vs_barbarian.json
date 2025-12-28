@@ -4,6 +4,5 @@
   "seed": 42,
   "startingGold": 0,
   "level": "level_forest_meadow",
-  "buildOrderA": "scoutHideInForest",
-  "buildOrderB": "barbarianWalkToScout"
+  "buildOrders": ["scoutHideInForest", "barbarianWalkToScout"]
 }

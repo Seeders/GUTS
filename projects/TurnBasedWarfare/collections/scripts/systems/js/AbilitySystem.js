@@ -20,23 +20,28 @@ class AbilitySystem extends GUTS.BaseSystem {
     }
 
     addAbilitiesToUnit(entityId, abilityIds) {
+        console.log('[AbilitySystem] addAbilitiesToUnit called for entity', entityId, 'abilityIds:', abilityIds);
         if (!Array.isArray(abilityIds)) {
             abilityIds = [abilityIds];
         }
         const unitAbilities = [];
-        
+
         abilityIds.forEach(abilityId => {
             const AbilityClass = GUTS[abilityId];
+            console.log('[AbilitySystem] Looking for ability class:', abilityId, '- found:', !!AbilityClass);
             if (AbilityClass) {
                 const abilityInstance = new AbilityClass(this.game, this.collections.abilities[abilityId]);
                 unitAbilities.push(abilityInstance);
+                console.log('[AbilitySystem] Created ability instance:', abilityId, 'id:', abilityInstance.id);
             } else {
-                console.warn(`Ability '${abilityId}' not found!`);
+                console.warn(`Ability '${abilityId}' not found in GUTS namespace!`);
             }
         });
-        
+
+        console.log('[AbilitySystem] Total abilities created for entity', entityId, ':', unitAbilities.length);
         if (unitAbilities.length > 0) {
             this.entityAbilities.set(entityId, unitAbilities);
+            console.log('[AbilitySystem] Stored abilities for entity', entityId);
         }
     }
 

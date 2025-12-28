@@ -227,9 +227,9 @@ function parseArgs() {
         if (!cliSeed && simConfig.seed) config.seed = simConfig.seed;
         if (!cliGold && simConfig.startingGold) config.startingGold = simConfig.startingGold;
 
-        // Use buildOrderA/buildOrderB - A goes on left, B goes on right
-        config.leftBuildOrder = simConfig.buildOrderA;
-        config.rightBuildOrder = simConfig.buildOrderB;
+        // Use buildOrders array - [0] is left team, [1] is right team
+        config.leftBuildOrder = simConfig.buildOrders[0];
+        config.rightBuildOrder = simConfig.buildOrders[1];
         config.simulationName = simConfig.name;
         config.simulationDescription = simConfig.description;
     }
@@ -816,11 +816,11 @@ async function runBatchSimulations(runner, simulationIds, options = {}) {
         const simRunConfig = {
             simulationId: simId,
             simulationName: simConfig.name,
-            level: simConfig.level || 'level_1',
-            startingGold: simConfig.startingGold || 100,
-            seed: simConfig.seed || Date.now(),
-            leftBuildOrder: simConfig.buildOrderA,
-            rightBuildOrder: simConfig.buildOrderB
+            level: simConfig.level,
+            startingGold: simConfig.startingGold,
+            seed: simConfig.seed,
+            leftBuildOrder: simConfig.buildOrders[0],
+            rightBuildOrder: simConfig.buildOrders[1]
         };
 
         try {
@@ -1030,8 +1030,8 @@ async function main() {
 
                 console.log(`╟────────────────────────────────────────────────────────────╢`);
                 console.log(`║  Win Summary:                                              ║`);
-                console.log(`║    Left (buildOrderA): ${String(wins.left).padEnd(37)}║`);
-                console.log(`║    Right (buildOrderB): ${String(wins.right).padEnd(36)}║`);
+                console.log(`║    Left (buildOrders[0]): ${String(wins.left).padEnd(34)}║`);
+                console.log(`║    Right (buildOrders[1]): ${String(wins.right).padEnd(33)}║`);
                 console.log(`║    Draw: ${String(wins.draw).padEnd(51)}║`);
                 console.log(`║    No Winner: ${String(wins.none).padEnd(46)}║`);
                 if (wins.error > 0) {

@@ -1,0 +1,102 @@
+<div id="simulation-editor-container" class="editor-module">
+  <div class="editor-module__sidebar editor-module__sidebar--left">
+    <div class="editor-module__section">
+      <h3 class="editor-module__section-title">Simulation Controls</h3>
+
+      <div class="editor-module__form-row" style="gap: 8px; margin-bottom: 12px;">
+        <button id="sim-play-btn" class="editor-module__btn editor-module__btn--success" style="flex: 1;">
+          Play
+        </button>
+        <button id="sim-pause-btn" class="editor-module__btn" style="flex: 1; display: none;">
+          Pause
+        </button>
+        <button id="sim-restart-btn" class="editor-module__btn editor-module__btn--secondary" style="flex: 1;">
+          Restart
+        </button>
+      </div>
+
+      <div class="editor-module__form-row">
+        <label for="sim-speed" class="editor-module__label">Speed:</label>
+        <select id="sim-speed" class="editor-module__select">
+          <option value="0.5">0.5x</option>
+          <option value="1" selected>1x</option>
+          <option value="2">2x</option>
+          <option value="4">4x</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="editor-module__section">
+      <h3 class="editor-module__section-title">Simulation Info</h3>
+      <div class="editor-module__info-box">
+        <p><strong>Name:</strong> <span id="sim-name">-</span></p>
+        <p><strong>Level:</strong> <span id="sim-level">-</span></p>
+        <p><strong>Seed:</strong> <span id="sim-seed">-</span></p>
+      </div>
+    </div>
+
+    <div class="editor-module__section">
+      <h3 class="editor-module__section-title">Build Orders</h3>
+      <div class="editor-module__info-box">
+        <p><strong>Left Team:</strong> <span id="sim-build-order-a">-</span></p>
+        <p><strong>Right Team:</strong> <span id="sim-build-order-b">-</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="editor-module__canvas-area editor-module__grid-background">
+    <div class="editor-module__canvas-toolbar">
+      <div class="editor-module__toolbar-group">
+        <span id="sim-status" style="color: #888; font-size: 12px;">Ready</span>
+      </div>
+      <div class="editor-module__toolbar-separator"></div>
+      <div class="editor-module__toolbar-group">
+        <button id="sim-camera-toggle" class="editor-module__btn editor-module__btn--small" title="Toggle Camera Mode">
+          <span>Scene Cam</span>
+        </button>
+        <button id="sim-camera-rotate-left" class="editor-module__btn editor-module__btn--small" title="Rotate Camera Left (Q)">
+          <span>&#9664;</span>
+        </button>
+        <button id="sim-camera-rotate-right" class="editor-module__btn editor-module__btn--small" title="Rotate Camera Right (E)">
+          <span>&#9654;</span>
+        </button>
+      </div>
+    </div>
+
+    <canvas id="simulation-canvas" class="editor-module__canvas"></canvas>
+
+    <div class="editor-module__status-bar">
+      <span id="sim-phase">Phase: -</span> |
+      <span id="sim-round">Round: -</span> |
+      <span id="sim-tick">Tick: 0</span>
+    </div>
+  </div>
+
+  <div class="editor-module__sidebar editor-module__sidebar--right">
+    <div class="editor-module__section">
+      <h3 class="editor-module__section-title">Game State</h3>
+      <div class="editor-module__info-box">
+        <p><strong>Winner:</strong> <span id="sim-winner">-</span></p>
+        <p><strong>Game Over:</strong> <span id="sim-game-over">No</span></p>
+      </div>
+    </div>
+
+    <div class="editor-module__section">
+      <h3 class="editor-module__section-title">Left Team</h3>
+      <div class="editor-module__info-box" id="sim-left-team-stats">
+        <p><strong>Gold:</strong> <span id="sim-left-gold">-</span></p>
+        <p><strong>Units:</strong> <span id="sim-left-units">0</span></p>
+        <p><strong>Buildings:</strong> <span id="sim-left-buildings">0</span></p>
+      </div>
+    </div>
+
+    <div class="editor-module__section">
+      <h3 class="editor-module__section-title">Right Team</h3>
+      <div class="editor-module__info-box" id="sim-right-team-stats">
+        <p><strong>Gold:</strong> <span id="sim-right-gold">-</span></p>
+        <p><strong>Units:</strong> <span id="sim-right-units">0</span></p>
+        <p><strong>Buildings:</strong> <span id="sim-right-buildings">0</span></p>
+      </div>
+    </div>
+  </div>
+</div>

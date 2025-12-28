@@ -4,6 +4,5 @@
   "seed": 42,
   "startingGold": 500,
   "level": "level_1",
-  "buildOrderA": "archer",
-  "buildOrderB": "scout"
+  "buildOrders": ["archer", "scout"]
 }

@@ -69,21 +69,26 @@ class TerrainSystem extends GUTS.BaseSystem {
      * @param {Object} sceneData - The scene configuration data
      */
     async onSceneLoad(sceneData) {
+        console.log('[TerrainSystem] onSceneLoad called, game.state.level:', this.game.state?.level);
         // Get level from game state (set by lobby/skirmish before scene switch)
         const levelIndex = this.game.state?.level;
         if (levelIndex === undefined || levelIndex < 0) {
             // No level selected - terrain system won't initialize (e.g., lobby scene)
+            console.log('[TerrainSystem] No valid level index, skipping terrain init');
             return;
         }
 
         // Get level name from reverse enum
         const levelName = this.reverseEnums.levels[levelIndex];
+        console.log('[TerrainSystem] Level name from index:', levelName);
         if (!levelName) {
             console.warn(`[TerrainSystem] Invalid level index: ${levelIndex}`);
             return;
         }
 
+        console.log('[TerrainSystem] Initializing terrain for level:', levelName);
         await this.initTerrainFromLevel(levelName);
+        console.log('[TerrainSystem] Terrain initialized');
     }
 
     /**

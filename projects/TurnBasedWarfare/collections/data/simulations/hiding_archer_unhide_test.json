@@ -4,6 +4,5 @@
   "seed": 12345,
   "startingGold": 0,
   "level": "level_forest_meadow",
-  "buildOrderA": "archerHideInForest",
-  "buildOrderB": "apprenticeWalkToArcher"
+  "buildOrders": ["archerHideInForest", "apprenticeWalkToArcher"]
 }

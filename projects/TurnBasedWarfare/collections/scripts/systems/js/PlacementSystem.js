@@ -525,15 +525,18 @@ class PlacementSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with spawned units per team
      */
     spawnStartingUnits() {
+        console.log('[PlacementSystem] spawnStartingUnits called');
         const startingUnitsConfig = this.collections.configs.startingUnits;
 
         if (!startingUnitsConfig?.prefabs) {
             console.warn('[PlacementSystem] No startingUnits config found');
             return { success: false, error: 'No startingUnits config' };
         }
+        console.log('[PlacementSystem] startingUnitsConfig:', startingUnitsConfig);
 
         // Get starting locations from level
         const startingLocations = this.getStartingLocationsFromLevel();
+        console.log('[PlacementSystem] startingLocations:', startingLocations);
         if (!startingLocations) {
             console.error('[PlacementSystem] No starting locations found in level');
             return { success: false, error: 'No starting locations in level' };
@@ -775,6 +778,7 @@ class PlacementSystem extends GUTS.BaseSystem {
     getStartingLocationsFromLevel() {
         // Get level name from terrain entity
         const terrainEntities = this.game.getEntitiesWith('terrain');
+        console.log('[PlacementSystem] getStartingLocationsFromLevel - terrain entities:', terrainEntities.length);
         if (terrainEntities.length === 0) {
             console.warn('[PlacementSystem] No terrain entity found');
             return null;
@@ -782,11 +786,13 @@ class PlacementSystem extends GUTS.BaseSystem {
 
         const terrainEntityId = terrainEntities[0];
         const terrainComponent = this.game.getComponent(terrainEntityId, 'terrain');
+        console.log('[PlacementSystem] Terrain component:', terrainComponent);
         const levelIndex = terrainComponent?.level;
         if (levelIndex === undefined || levelIndex < 0) {
             console.warn('[PlacementSystem] Terrain entity missing level');
             return null;
         }
+        console.log('[PlacementSystem] Level index from terrain:', levelIndex);
 
         // Get level data by numeric index
         const levelKey = this.reverseEnums.levels[levelIndex];
@@ -1202,7 +1208,6 @@ class PlacementSystem extends GUTS.BaseSystem {
 
         // Find first valid position (offsets are absolute grid positions)
         for (const testPos of offsets) {
-
             // Skip building cells
             if (buildingCellSet?.has(`${testPos.x},${testPos.z}`)) {
                 continue;
