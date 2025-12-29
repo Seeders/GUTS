@@ -76,6 +76,8 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
                 return this.executePlaceTrap(action, aiTeam, playerId, game);
             case 'SPAWN_UNIT':
                 return this.executeSpawnUnit(action, aiTeam, game);
+            case 'ACTION_ORDER':
+                return this.executeActionOrder(action, aiTeam, game);
             default:
                 return false;
         }
@@ -411,5 +413,41 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         return null;
+    }
+
+    /**
+     * Execute an action order (e.g., transformToFlying, transformToGround)
+     * Handles transform actions by calling ui_transformUnit directly
+     */
+    executeActionOrder(action, aiTeam, game) {
+        // Find units of specified type
+        const placementIds = this.findUnitsOfType(action.unitType, aiTeam, game);
+        if (placementIds.length === 0) {
+            console.warn(`[AIExecuteBuildOrderBehaviorAction] No units of type '${action.unitType}' found`);
+            return false;
+        }
+
+        // Handle transform actions specially
+        if (action.actionId === 'transformToFlying') {
+            // Get entity from placement
+            for (const placementId of placementIds) {
+                const placement = game.call('getPlacementById', placementId);
+                if (placement?.squadUnits?.[0]) {
+                    game.call('ui_transformUnit', placement.squadUnits[0], 'dragon_red_flying', 'takeoff', () => {});
+                }
+            }
+            return true;
+        } else if (action.actionId === 'transformToGround') {
+            for (const placementId of placementIds) {
+                const placement = game.call('getPlacementById', placementId);
+                if (placement?.squadUnits?.[0]) {
+                    game.call('ui_transformUnit', placement.squadUnits[0], 'dragon_red', 'land', () => {});
+                }
+            }
+            return true;
+        }
+
+        console.warn(`[AIExecuteBuildOrderBehaviorAction] Unknown action '${action.actionId}'`);
+        return false;
     }
 }

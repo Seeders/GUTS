@@ -13,6 +13,7 @@
     "handleReadyForBattle",
     "handleGetStartingState",
     "handleLevelSquad",
-    "handleExecuteCheat"
+    "handleExecuteCheat",
+    "handleTransformUnit"
   ]
 }

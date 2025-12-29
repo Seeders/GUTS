@@ -311,22 +311,23 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     
     /**
      * Apply specialization transformation to a squad
+     * Uses the shared replaceUnit pipeline from BaseNetworkSystem
      * @param {string} placementId - Squad placement ID
      * @param {string} specializationId - Specialization unit type ID
      * @returns {boolean} Success status
      */
-    applySpecialization(placementId, specializationId, playerId) {
+    applySpecialization(placementId, specializationId) {
         const squadData = this.getSquadExperience(placementId);
         if (!squadData) return false;
-        
+
         // Get the specialization unit type
-        if (!collections || !this.collections.units || !this.collections.units[specializationId]) {
+        if (!this.collections?.units?.[specializationId]) {
             console.error(`Specialization unit type ${specializationId} not found`);
             return false;
         }
-        
+
         const specializationUnitType = this.collections.units[specializationId];
-        
+
         // Find the placement in PlacementSystem
         const placement = this.game.call('getPlacementById', placementId);
         if (!placement) {
@@ -334,66 +335,22 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             return false;
         }
 
-
-        // specializationUnitType already has id and collection from compiler
-        const newUnitType = specializationUnitType;
-
-        // Convert specializationId to numeric index
-        const enums = this.game.getEnums();
-        const spawnTypeIndex = enums?.units?.[specializationId] ?? -1;
-        const collectionIndex = enums?.objectTypeDefinitions?.units ?? -1;
-
-        if (spawnTypeIndex < 0 || collectionIndex < 0) {
-            console.error(`Cannot find enum for specialization: ${specializationId}`);
+        // Verify replaceUnit service is available
+        if (!this.game.hasService('replaceUnit')) {
+            console.error('replaceUnit service not available');
             return false;
         }
 
-        // Create a modified placement object with the new unitType for unit creation
-        const specializedUnitData = {
-            ...placement,
-            unitTypeId: spawnTypeIndex,
-            collection: collectionIndex
-        };
+        // Replace all units in the squad with the new unit type
+        const oldUnitIds = [...this.getSquadUnits(placementId)];
 
-        // Recreate all units in the squad with the new unit type
-        const oldUnitIds = this.getSquadUnits(placementId);
-        const newUnitIds = [];
-
-        // Store positions of old units
-        const positions = [];
         oldUnitIds.forEach(entityId => {
-            const transform = this.game.getComponent(entityId, "transform");
-            const pos = transform?.position;
-            if (pos) {
-                positions.push({ x: pos.x, y: pos.y, z: pos.z });
-            }
-            // Destroy old unit
-            if (this.game.destroyEntity) {
-                this.game.destroyEntity(entityId);
-            }
-        });
-
-        // Get team from placement
-        const team = this.getPlacementTeam(placementId);
-
-        // Create new specialized units at the same positions
-        positions.forEach(pos => {
-            const terrainHeight = this.game.call('getTerrainHeight', pos.x, pos.z);
-            const unitY = terrainHeight !== null ? terrainHeight : pos.y;
-
-            const transform = {
-                position: { x: pos.x, y: unitY, z: pos.z }
-            };
-            const entityId = this.game.call('createPlacement',
-                specializedUnitData,
-                transform,
-                team
-            );
-            newUnitIds.push(entityId);
+            // Use shared replaceUnit - no animation for specialization
+            this.game.call('replaceUnit', entityId, specializationId);
         });
 
         // Update squad value based on new unit type
-        squadData.squadValue = this.calculateSquadValue(newUnitType);
+        squadData.squadValue = this.calculateSquadValue(specializationUnitType);
 
         return true;
     }

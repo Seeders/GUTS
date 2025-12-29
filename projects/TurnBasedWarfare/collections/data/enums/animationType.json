@@ -8,6 +8,8 @@
     "cast",
     "hit",
     "death",
-    "celebrate"
+    "celebrate",
+    "takeoff",
+    "land"
   ]
 }

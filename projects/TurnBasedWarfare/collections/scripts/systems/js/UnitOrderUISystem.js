@@ -382,6 +382,63 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         this.game.uiSystem?.showNotification('Click to place bear trap', 'info', 2000);
     }
 
+    // ==================== TRANSFORM ACTIONS ====================
+
+    transformToFlying() {
+        this._executeTransform('dragon_red_flying', 'takeoff');
+    }
+
+    transformToGround() {
+        this._executeTransform('dragon_red', 'land');
+    }
+
+    _executeTransform(targetUnitType, animationType) {
+        const placementIds = this.game.call('getSelectedSquads') || [];
+        if (!placementIds || placementIds.length === 0) {
+            this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
+            return;
+        }
+
+        // Find first unit in selection
+        for (const placementId of placementIds) {
+            const placement = this.game.call('getPlacementById', placementId);
+            if (!placement?.squadUnits?.length) continue;
+
+            const entityId = placement.squadUnits[0];
+
+            // Get animation duration from sprite data
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+            const spriteAnimationSet = unitDef?.spriteAnimationSet;
+            let animationDuration = 1000;
+            if (spriteAnimationSet && this.game.hasService('getSpriteAnimationDuration')) {
+                animationDuration = this.game.call('getSpriteAnimationDuration', spriteAnimationSet, animationType);
+            }
+
+            // Call network-synced transform via GameInterfaceSystem
+            this.game.call('ui_transformUnit', entityId, targetUnitType, animationType, (success, response) => {
+                if (success) {
+                    this.game.uiSystem?.showNotification('Transforming...', 'info', animationDuration);
+
+                    // Auto-select the new entity after animation completes
+                    const newEntityId = response?.newEntityId;
+                    if (newEntityId != null && this.game.hasService('selectEntity')) {
+                        setTimeout(() => {
+                            if (this.game.entityExists(newEntityId)) {
+                                this.game.call('selectEntity', newEntityId);
+                            }
+                        }, animationDuration);
+                    }
+                } else {
+                    this.game.uiSystem?.showNotification(response?.error || 'Transform failed', 'error', 1000);
+                }
+            });
+            return;
+        }
+
+        this.game.uiSystem?.showNotification('No valid unit to transform.', 'warning', 800);
+    }
+
     onKeyDown(key) {
         if (key === 'Escape' && this.isTargeting) {
             this.game.uiSystem?.showNotification('Targeting canceled', 'warning', 800);

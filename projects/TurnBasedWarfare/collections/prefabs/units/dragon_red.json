@@ -161,5 +161,6 @@
   "requiresBuildings": [
     "castle"
   ],
-  "icon": "dragon"
+  "icon": "dragon",
+  "actionSet": "dragon_actions"
 }

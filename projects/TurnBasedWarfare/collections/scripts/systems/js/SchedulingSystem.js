@@ -39,15 +39,18 @@ class SchedulingSystem extends GUTS.BaseSystem {
      * @returns {string} actionId - Unique identifier for this action
      */
     scheduleAction(callback, delaySeconds, entityId = null) {
-        const executeTime = this.game.state.now + delaySeconds;
-        const actionId = `action_${this.actionIdCounter++}_${executeTime.toFixed(6)}`;
-        
+        const actionId = `action_${this.actionIdCounter++}_${delaySeconds.toFixed(6)}`;
+
+        // Don't compute executeTime now - store delay and compute on first check
+        // This handles game time resets (e.g., simulation restart)
         this.scheduledActions.set(actionId, {
             callback: callback,
-            executeTime: executeTime,
+            delaySeconds: delaySeconds,
+            startTime: null, // Will be set on first processScheduledActions check
+            executeTime: null, // Will be computed from startTime + delaySeconds
             entityId: entityId
         });
-        
+
         // Track entity associations for cleanup
         if (entityId) {
             if (!this.entityActions.has(entityId)) {
@@ -55,7 +58,7 @@ class SchedulingSystem extends GUTS.BaseSystem {
             }
             this.entityActions.get(entityId).add(actionId);
         }
-        
+
         return actionId;
     }
     
@@ -65,10 +68,17 @@ class SchedulingSystem extends GUTS.BaseSystem {
     processScheduledActions() {
         // Reuse array to avoid per-frame allocations
         this._actionsToExecute.length = 0;
+        const now = this.game.state.now;
 
         // Find all actions ready to execute
         for (const [actionId, action] of this.scheduledActions.entries()) {
-            if (this.game.state.now >= action.executeTime) {
+            // Lazy initialization of startTime/executeTime (handles game time reset)
+            if (action.startTime === null) {
+                action.startTime = now;
+                action.executeTime = now + action.delaySeconds;
+            }
+
+            if (now >= action.executeTime) {
                 this._actionsToExecute.push({ id: actionId, action: action });
             }
         }
@@ -90,7 +100,7 @@ class SchedulingSystem extends GUTS.BaseSystem {
             } catch (error) {
                 console.error(`Error executing scheduled action ${id}:`, error);
             }
-            
+
             // Clean up
             this.removeAction(id, action.entityId);
         });
@@ -118,7 +128,7 @@ class SchedulingSystem extends GUTS.BaseSystem {
     entityDestroyed(entityId) {
         const entityActionIds = this.entityActions.get(entityId);
         if (!entityActionIds) return 0;
-        
+
         let cancelledCount = 0;
         for (const actionId of entityActionIds) {
             if (this.scheduledActions.has(actionId)) {
@@ -126,7 +136,7 @@ class SchedulingSystem extends GUTS.BaseSystem {
                 cancelledCount++;
             }
         }
-        
+
         this.entityActions.delete(entityId);
         return cancelledCount;
     }

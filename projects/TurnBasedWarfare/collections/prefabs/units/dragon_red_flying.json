@@ -168,5 +168,6 @@
   "range": 10,
   "requiresUnits": [],
   "requiresBuildings": [],
-  "icon": "dragon"
+  "icon": "dragon",
+  "actionSet": "dragon_flying_actions"
 }

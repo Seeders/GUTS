@@ -381,9 +381,16 @@ class ShopSystem extends GUTS.BaseSystem {
         }, (success, response) => {
             if (success) {
                 this.showNotification(`Upgraded to ${this.collections.buildings[targetBuildingId].title}!`, 'success');
-                // Clear selection since the old building is destroyed
-                this.clearSelectedEntity();
-                this.clearActionPanel();
+
+                // Auto-select the new building entity
+                const newEntityId = response?.newEntityId;
+                if (newEntityId != null && this.game.hasService('selectEntity')) {
+                    this.game.call('selectEntity', newEntityId);
+                } else {
+                    // Fallback: clear selection if we can't select the new entity
+                    this.clearSelectedEntity();
+                    this.clearActionPanel();
+                }
             } else {
                 this.showNotification(response?.error || 'Upgrade failed', 'error');
             }
@@ -468,8 +475,7 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     getBuildingPlacementId(buildingId) {
-        const state = this.game.state;
-        const myTeam = state.myTeam;
+        const myTeam = this.game.call('getActivePlayerTeam');
         const placements = this.game.call('getPlacementsForSide', myTeam);
         if (!placements) return null;
 

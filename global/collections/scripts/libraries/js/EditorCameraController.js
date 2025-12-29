@@ -130,8 +130,10 @@ class EditorCameraController {
         if (this.sceneCameraState) {
             camera.position.copy(this.sceneCameraState.position);
         } else {
-            // Default: Position above terrain looking down
-            camera.position.set(halfSize, halfSize, halfSize * 2);
+            // Default: Position at reasonable distance from terrain center
+            // Use a fixed reasonable distance rather than scaling with terrain size
+            const cameraDistance = 800;
+            camera.position.set(halfSize + cameraDistance, cameraDistance, halfSize + cameraDistance);
         }
 
         // Set camera in WorldRenderer

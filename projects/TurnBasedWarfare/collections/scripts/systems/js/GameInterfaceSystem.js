@@ -21,6 +21,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         'ui_issueMoveOrder',         // Order units to move
         'ui_assignBuilder',          // Assign builder to construction
         'ui_toggleReadyForBattle',   // Toggle ready state
+        'ui_transformUnit',          // Transform unit to a different type
 
         // === Input Handling ===
         'ui_handleCanvasClick',      // Left-click at world position
@@ -313,6 +314,24 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
             team = this.game.call('getActivePlayerTeam');
         }
         this.game.call('toggleReadyForBattle', team, callback);
+    }
+
+    /**
+     * Transform a unit into a different unit type
+     * Used for abilities like dragon takeoff/landing
+     *
+     * @param {number} entityId - Entity ID to transform
+     * @param {string} targetUnitType - Target unit type ID (e.g., 'dragon_red_flying')
+     * @param {string} animationType - Animation to play ('takeoff', 'land', etc.)
+     * @param {Function} callback - Called with (success, result)
+     */
+    ui_transformUnit(entityId, targetUnitType, animationType, callback) {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            callback?.(false, { error: 'Not in placement phase' });
+            return;
+        }
+
+        this.game.call('transformUnit', { entityId, targetUnitType, animationType }, callback);
     }
 
     /**

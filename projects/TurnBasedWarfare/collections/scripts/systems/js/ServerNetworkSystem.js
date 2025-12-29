@@ -26,7 +26,8 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleReadyForBattle',
         'handleGetStartingState',
         'handleLevelSquad',
-        'handleExecuteCheat'
+        'handleExecuteCheat',
+        'handleTransformUnit'
     ];
 
     constructor(game) {
@@ -126,6 +127,9 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
         // Cheat events
         this.game.serverEventManager.subscribe('EXECUTE_CHEAT', this.handleExecuteCheat.bind(this));
+
+        // Transform events
+        this.game.serverEventManager.subscribe('TRANSFORM_UNIT', this.handleTransformUnit.bind(this));
     }
 
     // ==================== PLACEMENT HANDLERS ====================
@@ -548,6 +552,63 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         } catch (error) {
             console.error('Error upgrading building:', error);
             return this.respondError(playerId, responseName, 'Server error while upgrading building', callback);
+        }
+    }
+
+    // ==================== TRANSFORM HANDLERS ====================
+
+    handleTransformUnit(eventData, callback) {
+        const { playerId, data } = eventData;
+        const responseName = 'UNIT_TRANSFORMED';
+
+        try {
+            const { entityId, targetUnitType, animationType } = data;
+
+            if (this.game.state.phase !== this.enums.gamePhase.placement) {
+                return this.respondError(playerId, responseName, 'Not in placement phase', callback);
+            }
+
+            if (!this.playerExists(playerId)) {
+                return this.respondError(playerId, responseName, 'Player not found', callback);
+            }
+
+            // Verify entity exists
+            if (!this.game.entityExists(entityId)) {
+                return this.respondError(playerId, responseName, 'Entity not found', callback);
+            }
+
+            const serverIssuedTime = this.game.state.now;
+
+            // Process transform and get new entity ID
+            const newEntityId = this.processTransformUnit(entityId, targetUnitType, animationType, null, serverIssuedTime);
+
+            if (newEntityId === null) {
+                return this.respondError(playerId, responseName, 'Transform failed', callback);
+            }
+
+            const result = {
+                success: true,
+                entityId,
+                targetUnitType,
+                animationType,
+                newEntityId,
+                issuedTime: serverIssuedTime
+            };
+
+            this.respond(playerId, responseName, result, callback);
+
+            // Broadcast to other players
+            this.notifyOtherPlayers(playerId, 'OPPONENT_UNIT_TRANSFORMED', {
+                entityId,
+                targetUnitType,
+                animationType,
+                newEntityId,
+                issuedTime: serverIssuedTime
+            });
+
+        } catch (error) {
+            console.error('Error transforming unit:', error);
+            return this.respondError(playerId, responseName, 'Server error while transforming unit', callback);
         }
     }
 

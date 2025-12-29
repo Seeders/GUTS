@@ -12,7 +12,9 @@ class AnimationSystem extends GUTS.BaseSystem {
         'setBillboardAnimationDirection',
         'getBillboardCurrentAnimation',
         'getBillboardAnimationState',
-        'getSpriteAnimationData'
+        'getSpriteAnimationData',
+        'getSpriteAnimationDuration',
+        'startHeightAnimation'
     ];
 
     constructor(game) {
@@ -45,11 +47,17 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Stored here instead of on component since callbacks can't be serialized
         this._animationCallbacks = new Map();
 
+        // Active height animations for transform effects (takeoff/land)
+        // Map of entityId -> { startTime, duration, heightDelta }
+        this._activeHeightAnimations = new Map();
+
         // Single-play animations using enum values
         this.SINGLE_PLAY_ANIMATIONS = new Set([
             this.enums.animationType.attack,
             this.enums.animationType.cast,
-            this.enums.animationType.death
+            this.enums.animationType.death,
+            this.enums.animationType.takeoff,
+            this.enums.animationType.land
         ]);
     }
 
@@ -60,6 +68,52 @@ class AnimationSystem extends GUTS.BaseSystem {
      */
     getSpriteAnimationData(spriteAnimationSetIndex) {
         return this.spriteAnimationCache.get(spriteAnimationSetIndex) || null;
+    }
+
+    /**
+     * Get the duration of a sprite animation in milliseconds
+     * @param {string} spriteAnimationSetName - The sprite animation set name (e.g., 'dragonred')
+     * @param {string} animationType - The animation type (e.g., 'takeoff', 'land')
+     * @returns {number} Duration in milliseconds, or 1000 as fallback
+     */
+    getSpriteAnimationDuration(spriteAnimationSetName, animationType) {
+        // Get the animation set data from collections
+        const animSetData = this.collections?.spriteAnimationSets?.[spriteAnimationSetName];
+        if (!animSetData) {
+            console.warn(`[AnimationSystem] No animation set found for ${spriteAnimationSetName}`);
+            return 1000; // fallback
+        }
+
+        // Get the animation collection name
+        const animationCollection = animSetData.animationCollection;
+        if (!animationCollection) {
+            console.warn(`[AnimationSystem] No animationCollection in ${spriteAnimationSetName}`);
+            return 1000;
+        }
+
+        // Get the animation names for this type (e.g., takeoffSpriteAnimations)
+        const animKey = `${animationType}SpriteAnimations`;
+        const animNames = animSetData[animKey];
+        if (!animNames || animNames.length === 0) {
+            console.warn(`[AnimationSystem] No ${animKey} in ${spriteAnimationSetName}`);
+            return 1000;
+        }
+
+        // Get the first animation data to determine frame count and fps
+        const firstAnimName = animNames[0];
+        const animData = this.collections?.[animationCollection]?.[firstAnimName];
+        if (!animData || !animData.sprites) {
+            console.warn(`[AnimationSystem] No animation data for ${firstAnimName}`);
+            return 1000;
+        }
+
+        // Calculate duration: frameCount / fps * 1000 (convert to ms)
+        const frameCount = animData.sprites.length;
+        const fps = animData.fps || animSetData.generatorSettings?.fps || 4;
+        const durationMs = (frameCount / fps) * 1000;
+
+        console.log(`[AnimationSystem] Animation duration for ${spriteAnimationSetName}/${animationType}: ${frameCount} frames @ ${fps}fps = ${durationMs}ms`);
+        return durationMs;
     }
 
     /**
@@ -83,6 +137,79 @@ class AnimationSystem extends GUTS.BaseSystem {
             return;
         }
         this.updateEntityAnimations();
+        this.updateHeightAnimations();
+    }
+
+    /**
+     * Update active height animations (for transform effects like takeoff/land)
+     * Runs within game loop using game.state.now for timing
+     */
+    updateHeightAnimations() {
+        if (this._activeHeightAnimations.size === 0) return;
+
+        const now = this.game.state.now;
+        const toRemove = [];
+
+        for (const [entityId, anim] of this._activeHeightAnimations) {
+            // Check if entity still exists
+            if (!this.game.entityExists(entityId)) {
+                toRemove.push(entityId);
+                continue;
+            }
+
+            // Capture start time on first update (handles game time reset)
+            if (anim.startTime === null) {
+                anim.startTime = now;
+            }
+
+            const elapsed = now - anim.startTime;
+            const progress = Math.min(elapsed / anim.duration, 1);
+
+            // Ease in-out for smoother motion
+            const eased = progress < 0.5
+                ? 2 * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+            const currentOffset = anim.heightDelta * eased;
+
+            // Update renderOffset.y on the animationState component
+            // RenderSystem will detect this change and update the billboard transform
+            const animState = this.game.getComponent(entityId, 'animationState');
+            if (animState) {
+                const offset = animState.renderOffset;
+                if (offset) {
+                    offset.y = currentOffset;
+                }
+            }
+
+            // Remove completed animations
+            if (progress >= 1) {
+                toRemove.push(entityId);
+            }
+        }
+
+        // Clean up finished animations
+        for (const entityId of toRemove) {
+            this._activeHeightAnimations.delete(entityId);
+        }
+    }
+
+    /**
+     * Start a height animation for an entity (used for transform effects like takeoff/land)
+     * @param {number} entityId - The entity to animate
+     * @param {number} heightDelta - The total height change (positive = rise, negative = descend)
+     * @param {number} duration - Duration in seconds
+     */
+    startHeightAnimation(entityId, heightDelta, duration) {
+        if (heightDelta === 0 || duration <= 0) return;
+
+        // Don't set startTime yet - it will be captured on first update
+        // This handles the case where game.state.now is reset after this call
+        this._activeHeightAnimations.set(entityId, {
+            startTime: null, // Will be set on first update
+            duration: duration,
+            heightDelta: heightDelta
+        });
     }
 
     updateEntityAnimations() {
@@ -266,8 +393,12 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Only animate during battle phase - show idle during placement
         // But only for living entities (dead entities checked above)
+        // Also don't override single-play animations (takeoff/land during transformation)
         if (this.game.state?.phase !== this.enums.gamePhase.battle) {
-            this.game.call('setBillboardAnimation', entityId, this.enums.animationType.idle, true);
+            // Don't override single-play animations even during placement phase
+            if (!this.SINGLE_PLAY_ANIMATIONS.has(animState.spriteAnimationType)) {
+                this.game.call('setBillboardAnimation', entityId, this.enums.animationType.idle, true);
+            }
             // Still update sprite direction based on camera position (important for editor)
             this.updateSpriteDirectionFromRotation(entityId, animState);
             return;
@@ -728,7 +859,15 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Handle billboard entities with sprite animations
         if (animState.isSprite) {
-            if (clipName === this.enums.animationType.attack || clipName === this.enums.animationType.cast) {
+            // Single-play animations: attack, cast, takeoff, land
+            const singlePlayAnimations = [
+                this.enums.animationType.attack,
+                this.enums.animationType.cast,
+                this.enums.animationType.takeoff,
+                this.enums.animationType.land
+            ];
+
+            if (singlePlayAnimations.includes(clipName)) {
                 // Check if already playing this animation - don't restart it
                 const billboardAnim = this.game.getComponent(entityId, 'animationState');
                 if (billboardAnim && billboardAnim.spriteAnimationType === clipName) {
@@ -1001,7 +1140,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Check if animation type is available
         if (!spriteAnimations?.[animationTypeName]) {
-            console.warn(`[AnimationSystem] Animation type '${animationTypeName}' not available for entity ${entityId}`);
+            console.warn(`[AnimationSystem] Animation type '${animationTypeName}' not available for entity ${entityId}. Available:`, spriteAnimations ? Object.keys(spriteAnimations) : 'none');
             return false;
         }
 

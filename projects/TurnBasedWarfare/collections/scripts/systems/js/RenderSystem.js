@@ -333,7 +333,7 @@ class RenderSystem extends GUTS.BaseSystem {
                 posCache.z = pos.z;
                 posCache.angle = angle;
             } else {
-                // Check if position/rotation/scale has actually changed
+                // Check if position/rotation/scale/renderOffset has actually changed
                 const cached = this._entityPositionCache.get(entityId);
                 const scale = transform.scale;
                 const scaleX = scale?.x ?? 1;
@@ -346,8 +346,13 @@ class RenderSystem extends GUTS.BaseSystem {
                     const angleDiff = Math.abs(angle - cached.angle);
                     const scaleChanged = (cached.scaleX ?? 1) !== scaleX;
 
-                    // Skip update if position/rotation/scale hasn't changed significantly
-                    if (distSq < this._positionThreshold && angleDiff < 0.01 && !scaleChanged) {
+                    // Check if renderOffset changed (used for height animations like dragon takeoff/land)
+                    const animState = this.game.getComponent(entityId, 'animationState');
+                    const renderOffsetY = animState?.renderOffset?.y ?? 0;
+                    const renderOffsetChanged = Math.abs((cached.renderOffsetY ?? 0) - renderOffsetY) > 0.001;
+
+                    // Skip update if position/rotation/scale/renderOffset hasn't changed significantly
+                    if (distSq < this._positionThreshold && angleDiff < 0.01 && !scaleChanged && !renderOffsetChanged) {
                         continue;
                     }
 
@@ -357,6 +362,7 @@ class RenderSystem extends GUTS.BaseSystem {
                     cached.z = pos.z;
                     cached.angle = angle;
                     cached.scaleX = scaleX;
+                    cached.renderOffsetY = renderOffsetY;
                 }
 
                 // Update existing entity (reuse object to avoid allocation)

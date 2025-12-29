@@ -9,7 +9,8 @@
  */
 class BaseNetworkSystem extends GUTS.BaseSystem {
     static services = [
-        'broadcastToRoom'
+        'broadcastToRoom',
+        'replaceUnit'
     ];
 
     // ==================== BROADCAST ====================
@@ -287,6 +288,270 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             gridPosition: gridPosition,
             error: result.error
         };
+    }
+
+    // ==================== REPLACE UNIT ====================
+
+    /**
+     * Replace a unit entity with a new one of a different type.
+     * This is the shared pipeline used by:
+     * - Dragon transformation (takeoff/land with animation)
+     * - Unit specialization (upgrade to specialized unit type)
+     * - Any other unit replacement scenarios
+     *
+     * Creates new entity underground, optionally plays animation, then swaps when complete.
+     * Preserves position, team, HP percentage, and placement reference.
+     *
+     * @param {number} entityId - The entity to replace
+     * @param {string} targetUnitTypeId - The target unit type ID (e.g., 'dragon_red_flying')
+     * @param {Object} options - Optional configuration
+     * @param {string} options.animationType - Animation to play on old entity ('takeoff', 'land', etc.)
+     * @param {number} options.providedNewEntityId - Entity ID from server (for network sync)
+     * @param {number} options.swapDelay - Override delay before swap (ms). If not set, uses animation duration or 100ms
+     * @returns {number|null} New entity ID or null on failure
+     */
+    replaceUnit(entityId, targetUnitTypeId, options = {}) {
+        const { animationType = null, providedNewEntityId = null, swapDelay = null } = options;
+
+        // Get current entity state
+        const transform = this.game.getComponent(entityId, 'transform');
+        const health = this.game.getComponent(entityId, 'health');
+        const teamComp = this.game.getComponent(entityId, 'team');
+        const oldPlacement = this.game.getComponent(entityId, 'placement');
+
+        if (!transform || !teamComp) {
+            console.error('[replaceUnit] Missing required components on entity', entityId);
+            return null;
+        }
+
+        const position = { x: transform.position.x, y: transform.position.y, z: transform.position.z };
+        const rotation = transform.rotation;
+        const hpPercent = health ? health.current / health.max : 1;
+        const placementId = oldPlacement?.placementId;
+        const playerId = oldPlacement?.playerId;
+        const gridPosition = oldPlacement?.gridPosition;
+        const team = teamComp.team;
+
+        // Get target unit definition
+        const unitDef = this.collections.units[targetUnitTypeId];
+        if (!unitDef) {
+            console.error('[replaceUnit] Target unit type not found:', targetUnitTypeId);
+            return null;
+        }
+
+        // Determine swap delay - use animation duration if animationType provided
+        let finalSwapDelay = swapDelay ?? 100; // Default small delay for non-animated
+        let heightDelta = 0; // Height change during animation (for takeoff/land)
+
+        if (animationType && swapDelay == null) {
+            const oldUnitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const oldUnitDef = this.game.call('getUnitTypeDef', oldUnitTypeComp);
+            const spriteAnimationSet = oldUnitDef?.spriteAnimationSet;
+
+            if (spriteAnimationSet && this.game.hasService('getSpriteAnimationDuration')) {
+                finalSwapDelay = this.game.call('getSpriteAnimationDuration', spriteAnimationSet, animationType);
+            } else {
+                finalSwapDelay = 1000; // Fallback for animated
+            }
+
+            // Calculate height delta from sprite offset difference for takeoff/land
+            // Takeoff: ground dragon rises to flying height
+            // Land: flying dragon descends to ground height
+            const oldSpriteAnimationSetData = this.collections?.spriteAnimationSets?.[spriteAnimationSet];
+            const newSpriteAnimationSetData = this.collections?.spriteAnimationSets?.[unitDef.spriteAnimationSet];
+
+            console.log('[replaceUnit] spriteAnimationSet lookup:', {
+                oldSet: spriteAnimationSet,
+                newSet: unitDef.spriteAnimationSet,
+                oldData: !!oldSpriteAnimationSetData,
+                newData: !!newSpriteAnimationSetData,
+                oldOffset: oldSpriteAnimationSetData?.spriteOffset,
+                newOffset: newSpriteAnimationSetData?.spriteOffset
+            });
+
+            if (oldSpriteAnimationSetData && newSpriteAnimationSetData) {
+                const oldOffset = oldSpriteAnimationSetData.spriteOffset || 0;
+                const newOffset = newSpriteAnimationSetData.spriteOffset || 0;
+                // Height delta is the difference in sprite offsets
+                // Takeoff: new offset (flying=128) - old offset (ground=20) = +108 (rise)
+                // Land: new offset (ground=20) - old offset (flying=128) = -108 (descend)
+                heightDelta = newOffset - oldOffset;
+                console.log('[replaceUnit] heightDelta calculated:', heightDelta);
+            }
+
+            // Trigger animation on old entity
+            if (this.game.hasService('triggerSinglePlayAnimation')) {
+                const animEnum = this.enums.animationType[animationType];
+                if (animEnum !== undefined) {
+                    this.game.call('triggerSinglePlayAnimation', entityId, animEnum, 1.0, 0);
+                }
+            }
+
+            // Animate vertical render offset during transform (uses animationState.renderOffset)
+            // Duration is in ms but game time is in seconds, so convert
+            if (heightDelta !== 0 && finalSwapDelay > 100) {
+                const durationSeconds = finalSwapDelay / 1000;
+                console.log('[replaceUnit] Calling startHeightAnimation:', { entityId, heightDelta, durationSeconds, hasService: this.game.hasService('startHeightAnimation') });
+                if (this.game.hasService('startHeightAnimation')) {
+                    this.game.call('startHeightAnimation', entityId, heightDelta, durationSeconds);
+                }
+            }
+        }
+
+        // Get enums for unit type
+        const collectionIndex = this.enums?.objectTypeDefinitions?.units ?? 0;
+        const spawnTypeIndex = this.enums?.units?.[targetUnitTypeId] ?? 0;
+
+        // Build network unit data for the standard creation pipeline
+        const networkUnitData = {
+            placementId: placementId,
+            gridPosition: gridPosition,
+            unitTypeId: spawnTypeIndex,
+            collection: collectionIndex,
+            team: team,
+            playerId: playerId ?? -1,
+            roundPlaced: this.game.state.round || 1,
+            timestamp: this.game.state.now,
+            unitType: { ...unitDef, id: targetUnitTypeId, collection: 'units' }
+        };
+
+        // Build transform data for the new entity
+        const transformData = {
+            position: { x: position.x, y: position.y, z: position.z },
+            rotation: rotation ? { x: rotation.x, y: rotation.y, z: rotation.z } : { x: 0, y: 0, z: 0 }
+        };
+
+        // For animated transforms, delay entity creation until animation completes
+        // This prevents the new entity from appearing before the old one finishes its animation
+        if (animationType && finalSwapDelay > 100) {
+            // Store data needed for delayed creation
+            const creationData = {
+                networkUnitData,
+                transformData,
+                team,
+                providedNewEntityId,
+                oldEntityId: entityId,
+                hpPercent,
+                unitDef
+            };
+
+            // Schedule entity creation after animation using game time (not real time)
+            // Convert ms to seconds for scheduleAction
+            const delaySeconds = finalSwapDelay / 1000;
+            if (this.game.hasService('scheduleAction')) {
+                // Don't pass entityId to scheduleAction - we don't want the swap cancelled if something
+                // destroys the old entity early (but we do check entityExists before destroying)
+                this.game.call('scheduleAction', () => {
+                    // Create the new entity
+                    let newEntityId;
+                    if (this.game.hasService('createPlacement')) {
+                        newEntityId = this.game.call('createPlacement', creationData.networkUnitData, creationData.transformData, creationData.team, creationData.providedNewEntityId);
+                    } else {
+                        console.error('[replaceUnit] createPlacement service not available');
+                        return;
+                    }
+
+                    // Adjust HP to preserve percentage
+                    const healthComp = this.game.getComponent(newEntityId, 'health');
+                    if (healthComp) {
+                        const newMaxHp = creationData.unitDef.hp || 100;
+                        const newCurrentHp = Math.round(creationData.hpPercent * newMaxHp);
+                        healthComp.max = newMaxHp;
+                        healthComp.current = newCurrentHp;
+                    }
+
+                    // Destroy old entity
+                    if (this.game.entityExists(creationData.oldEntityId)) {
+                        if (this.game.hasService('removeInstance')) {
+                            this.game.call('removeInstance', creationData.oldEntityId);
+                        }
+                        this.game.destroyEntity(creationData.oldEntityId);
+                    }
+                }, delaySeconds, null);
+            } else {
+                // Fallback to setTimeout if scheduling system not available
+                setTimeout(() => {
+                    let newEntityId;
+                    if (this.game.hasService('createPlacement')) {
+                        newEntityId = this.game.call('createPlacement', creationData.networkUnitData, creationData.transformData, creationData.team, creationData.providedNewEntityId);
+                    } else {
+                        console.error('[replaceUnit] createPlacement service not available');
+                        return;
+                    }
+
+                    const healthComp = this.game.getComponent(newEntityId, 'health');
+                    if (healthComp) {
+                        const newMaxHp = creationData.unitDef.hp || 100;
+                        const newCurrentHp = Math.round(creationData.hpPercent * newMaxHp);
+                        healthComp.max = newMaxHp;
+                        healthComp.current = newCurrentHp;
+                    }
+
+                    if (this.game.entityExists(creationData.oldEntityId)) {
+                        if (this.game.hasService('removeInstance')) {
+                            this.game.call('removeInstance', creationData.oldEntityId);
+                        }
+                        this.game.destroyEntity(creationData.oldEntityId);
+                    }
+                }, finalSwapDelay);
+            }
+
+            // Return null since entity isn't created yet - caller should handle this
+            // For network sync, the providedNewEntityId will be used when entity is created
+            return providedNewEntityId || -1; // Return expected ID for tracking
+        }
+
+        // Non-animated path: create entity immediately
+        let newEntityId;
+        if (this.game.hasService('createPlacement')) {
+            newEntityId = this.game.call('createPlacement', networkUnitData, transformData, team, providedNewEntityId);
+        } else {
+            console.error('[replaceUnit] createPlacement service not available');
+            return null;
+        }
+
+        // Adjust HP to preserve percentage
+        const healthComp = this.game.getComponent(newEntityId, 'health');
+        if (healthComp) {
+            const newMaxHp = unitDef.hp || 100;
+            const newCurrentHp = Math.round(hpPercent * newMaxHp);
+            healthComp.max = newMaxHp;
+            healthComp.current = newCurrentHp;
+        }
+
+        // For non-animated, destroy old entity after small delay using game time
+        const delaySeconds = finalSwapDelay / 1000;
+        if (this.game.hasService('scheduleAction')) {
+            // Don't pass entityId - we just want a delayed cleanup, and we check entityExists anyway
+            this.game.call('scheduleAction', () => {
+                if (this.game.entityExists(entityId)) {
+                    if (this.game.hasService('removeInstance')) {
+                        this.game.call('removeInstance', entityId);
+                    }
+                    this.game.destroyEntity(entityId);
+                }
+            }, delaySeconds, null);
+        } else {
+            // Fallback to setTimeout if scheduling system not available
+            setTimeout(() => {
+                if (this.game.entityExists(entityId)) {
+                    if (this.game.hasService('removeInstance')) {
+                        this.game.call('removeInstance', entityId);
+                    }
+                    this.game.destroyEntity(entityId);
+                }
+            }, finalSwapDelay);
+        }
+
+        return newEntityId;
+    }
+
+    /**
+     * Process unit transformation (dragon takeoff/land) - wrapper around replaceUnit
+     * Kept for API compatibility with network handlers
+     */
+    processTransformUnit(entityId, targetUnitType, animationType, providedNewEntityId, _issuedTime) {
+        return this.replaceUnit(entityId, targetUnitType, { animationType, providedNewEntityId });
     }
 
     // ==================== CHEAT ====================

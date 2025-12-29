@@ -52,6 +52,16 @@
     "dragonredCastRight",
     "dragonredCastDownRight"
   ],
+  "takeoffSpriteAnimations": [
+    "dragonredTakeoffDown",
+    "dragonredTakeoffDownLeft",
+    "dragonredTakeoffLeft",
+    "dragonredTakeoffUpLeft",
+    "dragonredTakeoffUp",
+    "dragonredTakeoffUpRight",
+    "dragonredTakeoffRight",
+    "dragonredTakeoffDownRight"
+  ],
   "celebrateSpriteAnimations": [
     "dragonredCelebrateDown",
     "dragonredCelebrateDownLeft",
@@ -69,10 +79,11 @@
     "fps": 4,
     "brightness": 8,
     "palette": "main",
+    "borderSize": 1,
     "outlineColor": "#170F13",
     "outlineConnectivity": 4,
     "cameraHeight": 1,
-    "borderSize": 1
+    "isProjectile": false
   },
   "spriteOffset": 20
 }

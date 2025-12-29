@@ -19,6 +19,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'resyncEntities',
         'sendCheatRequest',
         'sendPlacementRequest',
+        'transformUnit',
         // Local game mode services (set by SkirmishGameSystem or other local modes)
         'getLocalPlayerId',
         'setLocalGame',
@@ -225,6 +226,10 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
             nm.listen('CHEAT_BROADCAST', (data) => {
                 this.handleCheatBroadcast(data);
+            }),
+
+            nm.listen('OPPONENT_UNIT_TRANSFORMED', (data) => {
+                this.handleOpponentUnitTransformed(data);
             })
         );
     }
@@ -533,6 +538,31 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                 }
             }
         }, callback);
+    }
+
+    transformUnit(requestData, callback) {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            callback(false, 'Not in placement phase.');
+            return;
+        }
+
+        this.networkRequest({
+            eventName: 'TRANSFORM_UNIT',
+            responseName: 'UNIT_TRANSFORMED',
+            data: requestData,
+            onSuccess: (result) => {
+                // In multiplayer, call processTransformUnit with server's authoritative data
+                if (!this.game.state.isLocalGame) {
+                    this.processTransformUnit(result.entityId, result.targetUnitType, result.animationType, result.newEntityId, result.issuedTime);
+                }
+            }
+        }, callback);
+    }
+
+    handleOpponentUnitTransformed(data) {
+        const { entityId, targetUnitType, animationType, newEntityId, issuedTime } = data;
+        // Use shared processTransformUnit for opponent transforms
+        this.processTransformUnit(entityId, targetUnitType, animationType, newEntityId, issuedTime);
     }
 
     toggleReadyForBattle(team, callback) {

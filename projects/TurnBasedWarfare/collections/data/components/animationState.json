@@ -18,6 +18,7 @@
     "spriteFrameIndex": 0,
     "spriteFrameTime": 0,
     "spriteLoopAnimation": true,
+    "renderOffset": { "x": 0, "y": 0, "z": 0 },
     "customDuration": null,
     "lastRequestedClip": null,
     "lastResolvedClip": null,
