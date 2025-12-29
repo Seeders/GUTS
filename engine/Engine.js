@@ -76,12 +76,6 @@ class Engine extends BaseEngine {
     }
 
     async loadCollections() {
-        // First check localStorage (for editor/development)
-        let project = JSON.parse(localStorage.getItem(this.currentProjectName));
-
-        if (project) {
-            return project.objectTypes;
-        }
 
         // Use compiled collections from webpack build
         if (window.COMPILED_GAME?.collections) {
