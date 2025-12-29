@@ -1,0 +1,11 @@
+{
+  "title": "Treasure Chest",
+  "height": 75,
+  "size": 48,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "impassable": true,
+  "spriteScale": 89,
+  "renderTexture": "chest",
+  "spriteOffset": 32
+}
