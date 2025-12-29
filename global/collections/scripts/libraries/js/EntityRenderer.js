@@ -1284,6 +1284,7 @@ class EntityRenderer {
 
         // Get animation state to access sprite animation set
         const animState = this.game.call('getBillboardAnimationState', entityId);
+
         // spriteAnimationSet is stored as a numeric index - convert to string name for collection lookup
         const spriteAnimSetIndex = animState?.spriteAnimationSet;
         let animSetName = null;
@@ -1321,13 +1322,17 @@ class EntityRenderer {
 
         const width = spriteScale * aspectRatio;
 
+        // Get render offset from animation state (used for transform animations like takeoff/land)
+        const renderOffset = animState?.renderOffset || { x: 0, y: 0, z: 0 };
+
         // Reuse pre-allocated objects to avoid per-frame allocations
         // Offset by half the sprite height so bottom sits at ground level
         // spriteYOffset adjusts for sprites where feet aren't at the bottom of the frame
+        // renderOffset is added for animated transitions (e.g., dragon takeoff/land height)
         this._tempPosition.set(
-            data.position.x,
-            data.position.y + spriteOffset,
-            data.position.z
+            data.position.x + (renderOffset.x || 0),
+            data.position.y + spriteOffset + (renderOffset.y || 0),
+            data.position.z + (renderOffset.z || 0)
         );
 
         // Billboards don't rotate - they face the camera via shader
