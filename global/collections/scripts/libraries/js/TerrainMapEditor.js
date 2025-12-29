@@ -1477,6 +1477,26 @@ class TerrainMapEditor {
      * Initialize 3D rendering system using EditorLoader + EditorECSGame
      */
     async init3DRendering() {
+        // Clean up existing 3D rendering context before creating a new one
+        if (this.editorContext) {
+            this.editorContext.destroy();
+            this.editorContext = null;
+        }
+        if (this.placementPreview) {
+            this.placementPreview.dispose();
+            this.placementPreview = null;
+        }
+        if (this.gizmoManager) {
+            this.gizmoManager.detach();
+            this.gizmoManager.dispose();
+            this.gizmoManager = null;
+        }
+        this.worldRenderer = null;
+        this.entityRenderer = null;
+        this.terrainDataManager = null;
+        this.editorLoader = null;
+        this.raycastHelper = null;
+
         const collections = this.gameEditor.getCollections();
         const gameConfig = collections.configs.game;
 

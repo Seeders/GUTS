@@ -1,0 +1,28 @@
+{
+  "title": "Treefir",
+  "animationCollection": "treefirSpritesAnimations",
+  "spriteSheet": "sprites/treefirSprites/treefirSheet.png",
+  "idleSpriteAnimations": [
+    "treefirIdleDown",
+    "treefirIdleDownLeft",
+    "treefirIdleLeft",
+    "treefirIdleUpLeft",
+    "treefirIdleUp",
+    "treefirIdleUpRight",
+    "treefirIdleRight",
+    "treefirIdleDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 42,
+    "cameraDistance": 100,
+    "spriteSize": 96,
+    "fps": 4,
+    "brightness": 7.5,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1.25,
+    "isProjectile": false
+  }
+}

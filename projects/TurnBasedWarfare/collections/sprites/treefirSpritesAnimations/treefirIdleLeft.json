@@ -1,0 +1,8 @@
+{
+  "title": "treefir Idle Left",
+  "spriteCollection": "treefirSprites",
+  "sprites": [
+    "treefirIdleLeft_0"
+  ],
+  "fps": 4
+}

@@ -1563,7 +1563,7 @@ class WorldRenderer {
     createExtensionPlanes() {
         const tileMap = this.terrainDataManager.tileMap;
         const extendedSize = this.terrainDataManager.extendedSize;
-        const heightStep = this.terrainDataManager.heightStep;
+        const gridSize = this.terrainDataManager.gridSize;
 
         if (!tileMap) return;
 
@@ -1574,6 +1574,7 @@ class WorldRenderer {
 
         // Get the sprite texture for the extension terrain type
         let extensionTexture;
+        let tileSize = gridSize; // Default to gridSize, but use sprite size if available
 
         if (this.tileMapper && this.tileMapper.layerSpriteSheets && this.tileMapper.layerSpriteSheets[extensionTerrainType]) {
             const fullSprite = this.tileMapper.layerSpriteSheets[extensionTerrainType].sprites[0];
@@ -1584,6 +1585,8 @@ class WorldRenderer {
                 extensionTexture.wrapT = THREE.RepeatWrapping;
                 extensionTexture.minFilter = THREE.NearestFilter;
                 extensionTexture.magFilter = THREE.NearestFilter;
+                extensionTexture.colorSpace = THREE.SRGBColorSpace;
+                tileSize = fullSprite.width;
             }
         }
 
@@ -1601,6 +1604,7 @@ class WorldRenderer {
             extensionTexture.wrapT = THREE.RepeatWrapping;
             extensionTexture.minFilter = THREE.NearestFilter;
             extensionTexture.magFilter = THREE.NearestFilter;
+            extensionTexture.colorSpace = THREE.SRGBColorSpace;
         }
 
         // Create material for extension planes
@@ -1613,40 +1617,59 @@ class WorldRenderer {
         });
 
         this.extensionPlanes = [];
-        const extensionHeight = extensionTerrainType * heightStep;
 
         // North plane (positive Z)
-        const northGeometry = new THREE.PlaneGeometry(detailedGroundSize + 2 * extensionDistance, extensionDistance);
-        const northPlane = new THREE.Mesh(northGeometry, extensionMaterial.clone());
+        const northWidth = detailedGroundSize + 2 * extensionDistance;
+        const northHeight = extensionDistance;
+        const northGeometry = new THREE.PlaneGeometry(northWidth, northHeight);
+        const northMaterial = extensionMaterial.clone();
+        northMaterial.map = extensionTexture.clone();
+        northMaterial.map.repeat.set(northWidth / tileSize, northHeight / tileSize);
+        const northPlane = new THREE.Mesh(northGeometry, northMaterial);
         northPlane.rotation.x = -Math.PI / 2;
-        northPlane.position.set(0, extensionHeight, halfDetailedSize + extensionDistance / 2);
+        northPlane.position.set(0, 0, halfDetailedSize + extensionDistance / 2);
         northPlane.receiveShadow = this.config.shadowsEnabled;
         this.scene.add(northPlane);
         this.extensionPlanes.push(northPlane);
 
         // South plane (negative Z)
-        const southGeometry = new THREE.PlaneGeometry(detailedGroundSize + 2 * extensionDistance, extensionDistance);
-        const southPlane = new THREE.Mesh(southGeometry, extensionMaterial.clone());
+        const southWidth = detailedGroundSize + 2 * extensionDistance;
+        const southHeight = extensionDistance;
+        const southGeometry = new THREE.PlaneGeometry(southWidth, southHeight);
+        const southMaterial = extensionMaterial.clone();
+        southMaterial.map = extensionTexture.clone();
+        southMaterial.map.repeat.set(southWidth / tileSize, southHeight / tileSize);
+        const southPlane = new THREE.Mesh(southGeometry, southMaterial);
         southPlane.rotation.x = -Math.PI / 2;
-        southPlane.position.set(0, extensionHeight, -halfDetailedSize - extensionDistance / 2);
+        southPlane.position.set(0, 0, -halfDetailedSize - extensionDistance / 2);
         southPlane.receiveShadow = this.config.shadowsEnabled;
         this.scene.add(southPlane);
         this.extensionPlanes.push(southPlane);
 
         // East plane (positive X)
-        const eastGeometry = new THREE.PlaneGeometry(extensionDistance, detailedGroundSize);
-        const eastPlane = new THREE.Mesh(eastGeometry, extensionMaterial.clone());
+        const eastWidth = extensionDistance;
+        const eastHeight = detailedGroundSize;
+        const eastGeometry = new THREE.PlaneGeometry(eastWidth, eastHeight);
+        const eastMaterial = extensionMaterial.clone();
+        eastMaterial.map = extensionTexture.clone();
+        eastMaterial.map.repeat.set(eastWidth / tileSize, eastHeight / tileSize);
+        const eastPlane = new THREE.Mesh(eastGeometry, eastMaterial);
         eastPlane.rotation.x = -Math.PI / 2;
-        eastPlane.position.set(halfDetailedSize + extensionDistance / 2, extensionHeight, 0);
+        eastPlane.position.set(halfDetailedSize + extensionDistance / 2, 0, 0);
         eastPlane.receiveShadow = this.config.shadowsEnabled;
         this.scene.add(eastPlane);
         this.extensionPlanes.push(eastPlane);
 
         // West plane (negative X)
-        const westGeometry = new THREE.PlaneGeometry(extensionDistance, detailedGroundSize);
-        const westPlane = new THREE.Mesh(westGeometry, extensionMaterial.clone());
+        const westWidth = extensionDistance;
+        const westHeight = detailedGroundSize;
+        const westGeometry = new THREE.PlaneGeometry(westWidth, westHeight);
+        const westMaterial = extensionMaterial.clone();
+        westMaterial.map = extensionTexture.clone();
+        westMaterial.map.repeat.set(westWidth / tileSize, westHeight / tileSize);
+        const westPlane = new THREE.Mesh(westGeometry, westMaterial);
         westPlane.rotation.x = -Math.PI / 2;
-        westPlane.position.set(-halfDetailedSize - extensionDistance / 2, extensionHeight, 0);
+        westPlane.position.set(-halfDetailedSize - extensionDistance / 2, 0, 0);
         westPlane.receiveShadow = this.config.shadowsEnabled;
         this.scene.add(westPlane);
         this.extensionPlanes.push(westPlane);

@@ -132,14 +132,11 @@ class TerrainDataManager {
         this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
 
         // Check if we have a separate heightMap in the tileMap
-   
-        // Set extension area height
-        let extensionHeight = (this.tileMap.extensionHeight || 0) * this.heightStep;
 
-        // Initialize all points with extension height
+        // Initialize all points with height 0 (extension area is always at ground level)
         for (let z = 0; z < this.extendedSize; z++) {
             for (let x = 0; x < this.extendedSize; x++) {
-                this.heightMapData[z * this.extendedSize + x] = extensionHeight;
+                this.heightMapData[z * this.extendedSize + x] = 0;
             }
         }
 
