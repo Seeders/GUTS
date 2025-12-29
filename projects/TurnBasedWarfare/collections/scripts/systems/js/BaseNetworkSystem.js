@@ -438,6 +438,16 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             // Schedule entity creation after animation using game time (not real time)
             // Convert ms to seconds for scheduleAction
             const delaySeconds = finalSwapDelay / 1000;
+
+            // For landing animations, play landing particle effect when animation completes
+            if (animationType === 'land' && this.game.hasService('playEffectSystem')) {
+                // Schedule the particle effect to play just before the entity swap
+                const particleDelay = Math.max(0, delaySeconds - 0.1);
+                this.game.call('scheduleAction', () => {
+                    this.game.call('playEffectSystem', 'dragon_landing', position);
+                }, particleDelay, null);
+            }
+
             if (this.game.hasService('scheduleAction')) {
                 // Don't pass entityId to scheduleAction - we don't want the swap cancelled if something
                 // destroys the old entity early (but we do check entityExists before destroying)
