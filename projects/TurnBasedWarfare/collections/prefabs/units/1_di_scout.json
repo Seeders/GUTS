@@ -167,7 +167,6 @@
   "supplyCost": 2,
   "spriteAnimationSet": "rogue",
   "requiresUnits": [],
-  "actionSet": "scout_actions",
   "requiresBuildings": [
     "mageTower"
   ]

@@ -128,13 +128,8 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             return { success: false, error: 'Player not found' };
         }
 
-        const upgradeIndex = this.enums.upgrades?.[upgradeId];
-        if (upgradeIndex === undefined) {
-            return { success: false, error: `Unknown upgrade: ${upgradeId}` };
-        }
-
-        // Check if already purchased (bitmask check)
-        if (playerStats.upgrades & (1 << upgradeIndex)) {
+        // Check if already purchased
+        if (playerStats.upgrades.has(upgradeId)) {
             return { success: false, error: 'Upgrade already purchased' };
         }
 
@@ -143,9 +138,9 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             return { success: false, error: 'Not enough gold' };
         }
 
-        // Deduct gold and set upgrade bit
+        // Deduct gold and add upgrade
         playerStats.gold -= upgrade.value;
-        playerStats.upgrades |= (1 << upgradeIndex);
+        playerStats.upgrades.add(upgradeId);
 
         return { success: true, upgradeId };
     }

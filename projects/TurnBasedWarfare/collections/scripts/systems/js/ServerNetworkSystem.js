@@ -252,38 +252,70 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     async handleLevelSquad(eventData, callback) {
+        console.log('[handleLevelSquad] called with eventData:', eventData);
         const { playerId, data } = eventData;
         const responseName = 'SQUAD_LEVELED';
         const { placementId, specializationId } = data;
 
-        if (!playerId) return;
+        if (playerId === undefined || playerId === null) {
+            console.log('[handleLevelSquad] no playerId, returning');
+            return;
+        }
+
+        // Must be in placement phase to level up
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            console.log('[handleLevelSquad] not in placement phase, phase:', this.game.state.phase);
+            return this.respondError(playerId, responseName, 'Not in placement phase', callback);
+        }
 
         const playerStats = this.game.call('getPlayerStats', playerId);
+        console.log('[handleLevelSquad] playerStats:', playerStats);
         if (!playerStats) {
             return this.respondError(playerId, responseName, 'Player not found', callback);
         }
 
         const playerGold = playerStats.gold || 0;
+        console.log('[handleLevelSquad] playerGold:', playerGold);
 
         if (!this.game.call('canAffordLevelUp', placementId, playerGold)) {
+            console.log('[handleLevelSquad] cannot afford level up');
             return this.respondError(playerId, responseName, 'gold_low_error', callback);
         }
 
-        const success1 = specializationId ? this.game.call('applySpecialization', placementId, specializationId, playerId) : true;
+        // Get squad data and verify it can level up
+        const squadData = this.game.squadExperienceSystem?.getSquadExperience(placementId);
+        console.log('[handleLevelSquad] squadData:', squadData);
+        if (!squadData || !squadData.canLevelUp) {
+            console.log('[handleLevelSquad] squad cannot level up, canLevelUp:', squadData?.canLevelUp);
+            return this.respondError(playerId, responseName, 'Squad cannot level up', callback);
+        }
 
-        await this.game.call('levelUpSquad', placementId, null, playerId, (success) => {
-            if (success1 && success) {
-                const levelUpCost = this.game.call('getLevelUpCost', placementId);
-                playerStats.gold -= levelUpCost;
+        // Get level up cost BEFORE leveling (since cost is based on current squad value)
+        const levelUpCost = this.game.call('getLevelUpCost', placementId);
+        console.log('[handleLevelSquad] levelUpCost:', levelUpCost);
 
-                const result = {
-                    playerId: playerId,
-                    currentGold: playerStats.gold,
-                    success: true
-                };
-                this.respond(playerId, responseName, result, callback);
-            }
-        });
+        // Apply specialization if provided
+        if (specializationId) {
+            this.game.call('applySpecialization', placementId, specializationId, playerId);
+        }
+
+        // Perform the level up directly
+        console.log('[handleLevelSquad] calling finishLevelingSquad');
+        const success = this.game.squadExperienceSystem?.finishLevelingSquad(squadData, placementId, specializationId);
+        console.log('[handleLevelSquad] finishLevelingSquad result:', success);
+
+        if (success) {
+            playerStats.gold -= levelUpCost;
+
+            const result = {
+                playerId: playerId,
+                currentGold: playerStats.gold,
+                success: true
+            };
+            this.respond(playerId, responseName, result, callback);
+        } else {
+            return this.respondError(playerId, responseName, 'Level up failed', callback);
+        }
     }
 
     handleSetSquadTarget(eventData, callback) {

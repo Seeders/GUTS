@@ -700,14 +700,16 @@ class BaseECSGame {
     /**
      * Create a proxy for $bitmask fields
      * Bitmask is stored as individual 32-bit fields (baseName0, baseName1, etc.)
-     * Returns a number representing the combined bitmask value
+     * Returns a proxy object with helper methods: has(id), add(id), remove(id), toArray()
+     * Also supports direct numeric operations for backwards compatibility
      */
     _createBitmaskProxy(componentId, entityId, baseName, config, prefix = '') {
         const game = this;
         let bitCount;
+        let enumMap = null;
 
         if (config.sizeFrom) {
-            const enumMap = this.componentGenerator.getEnumMap(config.sizeFrom);
+            enumMap = this.componentGenerator.getEnumMap(config.sizeFrom);
             bitCount = enumMap?.toValue?.length || 32;
         } else {
             bitCount = config.size || 32;
@@ -716,61 +718,92 @@ class BaseECSGame {
         const fieldCount = Math.ceil(bitCount / 32);
         const fieldPrefix = prefix ? `${prefix}.${baseName}` : baseName;
 
-        // For simplicity, return a simple value for single-field bitmasks
-        // and an array-like proxy for multi-field bitmasks
-        if (fieldCount === 1) {
-            // Single 32-bit field - just return the value with a toJSON
-            const value = game._getNumericField(componentId, entityId, `${fieldPrefix}0`) || 0;
-            return value;
-        }
-
-        // Multi-field bitmask - return array-like proxy
-        return new Proxy({}, {
-            get(target, prop) {
-                if (prop === 'length') return fieldCount;
-                if (prop === 'toJSON') {
-                    return () => {
-                        const arr = [];
-                        for (let i = 0; i < fieldCount; i++) {
-                            arr[i] = game._getNumericField(componentId, entityId, `${fieldPrefix}${i}`) || 0;
-                        }
-                        return arr;
-                    };
-                }
-                const index = parseInt(prop, 10);
-                if (!isNaN(index) && index >= 0 && index < fieldCount) {
-                    return game._getNumericField(componentId, entityId, `${fieldPrefix}${index}`) || 0;
-                }
-                return undefined;
-            },
-            set(target, prop, value) {
-                const index = parseInt(prop, 10);
-                if (!isNaN(index) && index >= 0 && index < fieldCount) {
-                    game._setNumericField(componentId, entityId, `${fieldPrefix}${index}`, game._toStorageValue(value));
-                    return true;
-                }
-                return false;
-            },
-            ownKeys(target) {
-                const keys = [];
-                for (let i = 0; i < fieldCount; i++) {
-                    keys.push(String(i));
-                }
-                return keys;
-            },
-            getOwnPropertyDescriptor(target, prop) {
-                const index = parseInt(prop, 10);
-                if (!isNaN(index) && index >= 0 && index < fieldCount) {
-                    return {
-                        value: game._getNumericField(componentId, entityId, `${fieldPrefix}${index}`) || 0,
-                        writable: true,
-                        enumerable: true,
-                        configurable: true
-                    };
-                }
-                return undefined;
+        // Helper to get index from string ID or number
+        const getIndex = (id) => {
+            if (typeof id === 'number') return id;
+            if (typeof id === 'string' && enumMap) {
+                return enumMap.toIndex[id];
             }
-        });
+            return undefined;
+        };
+
+        // Helper functions for reading/writing individual 32-bit fields
+        const getFieldValue = (fieldIdx) => game._getNumericField(componentId, entityId, `${fieldPrefix}${fieldIdx}`) || 0;
+        const setFieldValue = (fieldIdx, val) => game._setNumericField(componentId, entityId, `${fieldPrefix}${fieldIdx}`, val);
+
+        // Create bitmask object with helper methods (works for both single and multi-field)
+        return {
+            // Check if bitmask has a specific bit set
+            has(id) {
+                const index = getIndex(id);
+                if (index === undefined) return false;
+                const fieldIdx = Math.floor(index / 32);
+                const bitIdx = index % 32;
+                return (getFieldValue(fieldIdx) & (1 << bitIdx)) !== 0;
+            },
+
+            // Add a bit to the bitmask
+            add(id) {
+                const index = getIndex(id);
+                if (index === undefined) return false;
+                const fieldIdx = Math.floor(index / 32);
+                const bitIdx = index % 32;
+                setFieldValue(fieldIdx, getFieldValue(fieldIdx) | (1 << bitIdx));
+                return true;
+            },
+
+            // Remove a bit from the bitmask
+            remove(id) {
+                const index = getIndex(id);
+                if (index === undefined) return false;
+                const fieldIdx = Math.floor(index / 32);
+                const bitIdx = index % 32;
+                setFieldValue(fieldIdx, getFieldValue(fieldIdx) & ~(1 << bitIdx));
+                return true;
+            },
+
+            // Toggle a bit in the bitmask
+            toggle(id) {
+                const index = getIndex(id);
+                if (index === undefined) return false;
+                const fieldIdx = Math.floor(index / 32);
+                const bitIdx = index % 32;
+                setFieldValue(fieldIdx, getFieldValue(fieldIdx) ^ (1 << bitIdx));
+                return true;
+            },
+
+            // Get array of all set IDs (strings if enumMap exists, otherwise indices)
+            toArray() {
+                const result = [];
+                for (let i = 0; i < bitCount; i++) {
+                    const fieldIdx = Math.floor(i / 32);
+                    const bitIdx = i % 32;
+                    if ((getFieldValue(fieldIdx) & (1 << bitIdx)) !== 0) {
+                        result.push(enumMap ? enumMap.toValue[i] : i);
+                    }
+                }
+                return result;
+            },
+
+            // Clear all bits
+            clear() {
+                for (let i = 0; i < fieldCount; i++) {
+                    setFieldValue(i, 0);
+                }
+            },
+
+            // For JSON serialization - returns raw numeric value(s)
+            toJSON() {
+                if (fieldCount === 1) {
+                    return getFieldValue(0);
+                }
+                const arr = [];
+                for (let i = 0; i < fieldCount; i++) {
+                    arr[i] = getFieldValue(i);
+                }
+                return arr;
+            }
+        };
     }
 
     /**

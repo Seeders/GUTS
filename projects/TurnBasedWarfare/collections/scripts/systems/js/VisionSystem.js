@@ -306,7 +306,7 @@ class VisionSystem extends GUTS.BaseSystem {
                 }
             }
 
-            // Hiding stealth bonus (+20)
+            // Hiding stealth bonus (+30)
             const targetPlayerOrder = this.game.getComponent(targetId, 'playerOrder');
             if (targetPlayerOrder?.isHiding) {
                 stealth += 30;

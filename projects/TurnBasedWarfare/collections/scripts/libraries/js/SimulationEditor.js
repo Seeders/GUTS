@@ -379,13 +379,13 @@ class SimulationEditor {
             game.call('createPlayerEntity', 0, {
                 team: leftTeam,
                 gold: config.startingGold,
-                upgrades: []
+                upgrades: 0
             });
 
             game.call('createPlayerEntity', 1, {
                 team: rightTeam,
                 gold: config.startingGold,
-                upgrades: []
+                upgrades: 0
             });
             console.log('[SimulationEditor] Player entities created');
         }

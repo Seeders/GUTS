@@ -12,6 +12,7 @@
   "fireResistance": 1,
   "coldResistance": -0.25,
   "lightningResistance": 0.1,
+  "isFlying": true,
   "render": {
     "animations": {
       "idle": [
@@ -161,13 +162,13 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "abilities": [
-    "FireBallAbility"
+    "FireBallAbility",
+    "LandAbility"
   ],
   "spriteAnimationSet": "dragonredflying",
   "spriteYOffset": -48,
   "range": 10,
   "requiresUnits": [],
   "requiresBuildings": [],
-  "icon": "dragon",
-  "actionSet": "dragon_flying_actions"
+  "icon": "dragon"
 }

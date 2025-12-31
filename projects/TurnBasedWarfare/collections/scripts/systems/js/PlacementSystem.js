@@ -25,7 +25,8 @@ class PlacementSystem extends GUTS.BaseSystem {
         'findBuildingSpawnPosition',
         'findBuildingAdjacentPosition',
         'getStartingLocationsFromLevel',
-        'spawnPendingBuilding'
+        'spawnPendingBuilding',
+        'getSquadUnitsForPlacement'
     ];
 
     constructor(game) {
@@ -372,7 +373,7 @@ class PlacementSystem extends GUTS.BaseSystem {
                     // Scout walks to position, then places trap when "construction" completes
                     const peasantAbilities = this.game.call('getEntityAbilities', peasantId);
                     if (peasantAbilities) {
-                        const buildAbility = peasantAbilities.find(a => a.id === 'build');
+                        const buildAbility = peasantAbilities.find(a => a.id === 'BuildAbility');
                         if (buildAbility) {
                             // Pass serverTime for issuedTime sync (undefined on server, provided by client)
                             buildAbility.assignToBuild(peasantId, buildingEntityId, peasantInfo, networkUnitData.serverTime);
@@ -471,7 +472,7 @@ class PlacementSystem extends GUTS.BaseSystem {
 
                 const peasantAbilities = this.game.call('getEntityAbilities', peasantId);
                 if (peasantAbilities) {
-                    const buildAbility = peasantAbilities.find(a => a.id === 'build');
+                    const buildAbility = peasantAbilities.find(a => a.id === 'BuildAbility');
                     if (buildAbility) {
                         buildAbility.assignToBuild(peasantId, buildingEntityId, peasantInfo, unitData.serverTime);
                     }

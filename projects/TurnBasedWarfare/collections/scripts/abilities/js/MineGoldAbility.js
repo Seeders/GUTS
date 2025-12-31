@@ -1,7 +1,6 @@
 class MineGoldAbility extends GUTS.BaseAbility {
     constructor(game, abilityData) {
         super(game, abilityData);
-        this.id = 'mineGold';
         this.name = 'Mine Gold';
         this.description = 'Automatically mines gold from gold mines';
         this.isPassive = true;

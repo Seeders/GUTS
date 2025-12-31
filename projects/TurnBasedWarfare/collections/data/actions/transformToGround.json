@@ -1,5 +1,6 @@
 {
   "title": "Land",
   "icon": "dragon",
-  "order": "transformToGround"
+  "order": "transformToGround",
+  "ability": "LandAbility"
 }

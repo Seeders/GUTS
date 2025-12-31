@@ -801,13 +801,19 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             const container = document.getElementById('unitPortrait');
             if (container) {
                 container.innerHTML = ``;
-                const portrait = this.createPortrait(unitIds[this.currentSelectedIndex]);
+                const selectedEntityId = unitIds[this.currentSelectedIndex];
+                const portrait = this.createPortrait(selectedEntityId);
                 if(portrait){
                     container.append(portrait);
                 }
+                // Add stats overlay
+                const statsOverlay = this.createUnitStatsOverlay(selectedEntityId);
+                if (statsOverlay) {
+                    container.append(statsOverlay);
+                }
                 // Update follow indicator
                 const followTarget = this.game.call('getCameraFollowTarget');
-                if (followTarget === unitIds[this.currentSelectedIndex]) {
+                if (followTarget === selectedEntityId) {
                     container.classList.add('following');
                 } else {
                     container.classList.remove('following');
@@ -853,6 +859,75 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             }
         }
         return null;
+    }
+
+    createUnitStatsOverlay(entityId) {
+        const container = document.createElement('div');
+        container.className = 'unit-stats-overlay';
+
+        const unitTypeComp = this.game.getComponent(entityId, "unitType");
+        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const health = this.game.getComponent(entityId, "health");
+        const placement = this.game.getComponent(entityId, "placement");
+
+        // Get experience/level data
+        let squadData = null;
+        if (placement?.placementId && this.game.squadExperienceSystem) {
+            squadData = this.game.squadExperienceSystem.getSquadExperience(placement.placementId);
+        }
+
+        // Unit name
+        const nameEl = document.createElement('div');
+        nameEl.className = 'unit-stats-name';
+        nameEl.textContent = unitType?.title || 'Unknown';
+        container.appendChild(nameEl);
+
+        // Level and experience
+        if (squadData) {
+            const levelEl = document.createElement('div');
+            levelEl.className = 'unit-stats-level';
+            levelEl.textContent = `Lv ${squadData.level}`;
+            container.appendChild(levelEl);
+
+            const expEl = document.createElement('div');
+            expEl.className = 'unit-stats-exp';
+            const expPercent = Math.min(100, (squadData.experience / squadData.experienceToNextLevel) * 100);
+            expEl.innerHTML = `<div class="exp-bar"><div class="exp-fill" style="width: ${expPercent}%"></div></div>`;
+            expEl.title = `${squadData.experience}/${squadData.experienceToNextLevel} XP`;
+            container.appendChild(expEl);
+        }
+
+        // Stats row
+        const statsRow = document.createElement('div');
+        statsRow.className = 'unit-stats-row';
+
+        // Health
+        if (health) {
+            const healthEl = document.createElement('span');
+            healthEl.className = 'unit-stat';
+            healthEl.innerHTML = `<span class="stat-icon">❤️</span>${Math.ceil(health.current)}`;
+            statsRow.appendChild(healthEl);
+        }
+
+        // Damage
+        if (unitType?.damage) {
+            const dmgEl = document.createElement('span');
+            dmgEl.className = 'unit-stat';
+            dmgEl.innerHTML = `<span class="stat-icon">⚔️</span>${unitType.damage}`;
+            statsRow.appendChild(dmgEl);
+        }
+
+        // Value (gold cost)
+        if (unitType?.value) {
+            const valueEl = document.createElement('span');
+            valueEl.className = 'unit-stat';
+            valueEl.innerHTML = `<span class="stat-icon">💰</span>${unitType.value}`;
+            statsRow.appendChild(valueEl);
+        }
+
+        container.appendChild(statsRow);
+
+        return container;
     }
     
     clearAllHighlights() {

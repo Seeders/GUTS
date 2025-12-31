@@ -97,7 +97,7 @@ class DamageSystem extends GUTS.BaseSystem {
         const defenderMods = this.getDefenderModifiers(targetId);
         // Get target's defenses
         const defenses = this.getEntityDefenses(targetId, defenderMods);
-        const attackerMods = this.getAttackerModifiers(sourceId);
+        const attackerMods = this.getAttackerModifiers(sourceId, options);
         let buffedDamage = baseDamage * attackerMods.damageMultiplier;
 
         if (options.isCritical) {
@@ -157,31 +157,41 @@ class DamageSystem extends GUTS.BaseSystem {
             healthMax: targetHealth.max
         };
     }
-    getAttackerModifiers(attackerId) {
+    getAttackerModifiers(attackerId, options = {}) {
         const buff = this.game.getComponent(attackerId, "buff");
-        const defaultMods = {
-            damageMultiplier: 1.0,
-            attackSpeedMultiplier: 1.0
-        };
+        let damageMultiplier = 1.0;
+        let attackSpeedMultiplier = 1.0;
 
-        if (!buff) return defaultMods;
+        // Apply buff modifiers
+        if (buff) {
+            const currentTime = this.game.state.now || 0;
+            if (!buff.endTime || currentTime <= buff.endTime) {
+                const buffTypeDef = this.getBuffTypeDef(buff.buffType);
+                if (buffTypeDef) {
+                    damageMultiplier = buffTypeDef.damageMultiplier || 1.0;
+                    if (buffTypeDef.stackable && buffTypeDef.damagePerStack && buff.stacks > 1) {
+                        damageMultiplier = 1 + (buffTypeDef.damagePerStack * buff.stacks);
+                    }
+                    attackSpeedMultiplier = buffTypeDef.attackSpeedMultiplier || 1.0;
+                }
+            }
+        }
 
-        const currentTime = this.game.state.now || 0;
-        if (buff.endTime && currentTime > buff.endTime) return defaultMods;
-
-        // Look up buff type definition from collection
-        const buffTypeDef = this.getBuffTypeDef(buff.buffType);
-        if (!buffTypeDef) return defaultMods;
-
-        // Apply stack multiplier for stackable buffs (e.g., marked damage increase)
-        let damageMultiplier = buffTypeDef.damageMultiplier || 1.0;
-        if (buffTypeDef.stackable && buffTypeDef.damagePerStack && buff.stacks > 1) {
-            damageMultiplier = 1 + (buffTypeDef.damagePerStack * buff.stacks);
+        // Apply player upgrade modifiers for spells
+        if (options.isSpell) {
+            const team = this.game.getComponent(attackerId, "team");
+            if (team) {
+                const playerStats = this.game.call('getPlayerStatsByTeam', team.team);
+                if (playerStats?.upgrades?.has('spellDamage')) {
+                    // Spell damage upgrade gives 25% bonus
+                    damageMultiplier *= 1.25;
+                }
+            }
         }
 
         return {
             damageMultiplier: damageMultiplier,
-            attackSpeedMultiplier: buffTypeDef.attackSpeedMultiplier || 1.0
+            attackSpeedMultiplier: attackSpeedMultiplier
         };
     }
 

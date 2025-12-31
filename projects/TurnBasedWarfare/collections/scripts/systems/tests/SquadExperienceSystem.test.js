@@ -26,7 +26,7 @@ describe('SquadExperienceSystem', () => {
 
     describe('initialization', () => {
         it('should have default configuration values', () => {
-            expect(squadExperienceSystem.config.experiencePerLevel).toBe(15);
+            expect(squadExperienceSystem.config.experiencePerLevel).toBe(10);
             expect(squadExperienceSystem.config.maxLevel).toBe(10);
             expect(squadExperienceSystem.config.levelUpCostRatio).toBe(0.5);
             expect(squadExperienceSystem.config.experienceMultiplier).toBe(1.0);
@@ -54,7 +54,7 @@ describe('SquadExperienceSystem', () => {
     describe('calculateExperienceNeeded', () => {
         it('should calculate experience for level 0 (first level up)', () => {
             const exp = squadExperienceSystem.calculateExperienceNeeded(0);
-            expect(exp).toBe(15); // 15 * 1.5^0 = 15
+            expect(exp).toBe(10); // 10 * 1.5^0 = 10
         });
 
         it('should increase exponentially', () => {
@@ -65,8 +65,8 @@ describe('SquadExperienceSystem', () => {
             expect(level1).toBeGreaterThan(level0);
             expect(level2).toBeGreaterThan(level1);
             // Each level is 1.5x the previous
-            expect(level1).toBe(Math.floor(15 * 1.5));
-            expect(level2).toBe(Math.floor(15 * 1.5 * 1.5));
+            expect(level1).toBe(Math.floor(10 * 1.5));
+            expect(level2).toBe(Math.floor(10 * 1.5 * 1.5));
         });
     });
 
@@ -454,7 +454,6 @@ describe('SquadExperienceSystem', () => {
             const services = GUTS.SquadExperienceSystem.services;
             expect(services).toContain('canAffordLevelUp');
             expect(services).toContain('applySpecialization');
-            expect(services).toContain('levelUpSquad');
             expect(services).toContain('getLevelUpCost');
             expect(services).toContain('initializeSquad');
             expect(services).toContain('removeSquad');

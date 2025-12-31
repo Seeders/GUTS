@@ -460,6 +460,69 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 #unitPortrait:hover {
     cursor: pointer;
 }
+#unitPortrait {
+    position: relative;
+}
+.unit-stats-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 4px 6px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.7) 100%);
+}
+.unit-stats-name {
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 2px #000;
+    text-align: center;
+}
+.unit-stats-level {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 1px 1px 2px #000;
+}
+.unit-stats-exp {
+    margin-top: 2px;
+    flex-grow: 2;
+}
+.exp-bar {
+    height: 3px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.exp-fill {
+    height: 100%;
+    background: linear-gradient(to right, #4a90d9, #67b8f7);
+    transition: width 0.3s ease;
+}
+.unit-stats-row {
+    display: flex;
+    justify-content: space-around;
+    gap: 4px;
+}
+.unit-stat {
+    font-size: 10px;
+    color: #fff;
+    text-shadow: 1px 1px 2px #000;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+.stat-icon {
+    font-size: 9px;
+}
 #gameControls {
     position: absolute;
     bottom: calc(200px + 2em);

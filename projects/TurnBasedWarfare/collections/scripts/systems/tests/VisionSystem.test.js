@@ -354,7 +354,8 @@ describe('VisionSystem', () => {
                 playerOrder: { isHiding: true }
             });
 
-            expect(visionSystem._calculateTargetStealth(entityId)).toBe(50);
+            // 30 base + 30 hiding = 60
+            expect(visionSystem._calculateTargetStealth(entityId)).toBe(60);
         });
 
         it('should stack terrain and hiding bonuses', () => {
@@ -367,8 +368,8 @@ describe('VisionSystem', () => {
                 playerOrder: { isHiding: true }
             });
 
-            // 30 base + 25 terrain + 20 hiding = 75
-            expect(visionSystem._calculateTargetStealth(entityId)).toBe(75);
+            // 30 base + 25 terrain + 30 hiding = 85
+            expect(visionSystem._calculateTargetStealth(entityId)).toBe(85);
         });
     });
 

@@ -262,14 +262,14 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
                 playerId: numericId,
                 team: statsData.team ?? this.enums.team.left,
                 gold: statsData.gold || 0,
-                upgrades: statsData.upgrades || []
+                upgrades: statsData.upgrades || 0
             });
         } else {
             // Update existing stats
             const stats = this.game.getComponent(entityId, 'playerStats');
             stats.team = statsData.team ?? stats.team;
             stats.gold = statsData.gold ?? stats.gold;
-            stats.upgrades = statsData.upgrades || stats.upgrades;
+            stats.upgrades = statsData.upgrades ?? stats.upgrades;
         }
 
         return entityId;

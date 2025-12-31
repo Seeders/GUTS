@@ -146,13 +146,13 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         this.game.call('createPlayerEntity', 0, {
             team: this.playerTeam,
             gold: startingGold,
-            upgrades: []
+            upgrades: 0
         });
 
         this.game.call('createPlayerEntity', 1, {
             team: this.aiTeam,
             gold: startingGold,
-            upgrades: []
+            upgrades: 0
         });
     }
 

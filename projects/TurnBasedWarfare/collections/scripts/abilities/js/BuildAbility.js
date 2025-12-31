@@ -1,7 +1,6 @@
 class BuildAbility extends GUTS.BaseAbility {
     constructor(game, abilityData) {
         super(game, abilityData);
-        this.id = 'build';
         this.name = 'Build';
         this.description = 'Construct buildings';
         this.isPassive = true;

@@ -92,7 +92,28 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
             if (currentActionSet.actions) {
                 actions = currentActionSet.actions;
                 const actionsCollection = this.collections.actions;
-                actions.forEach((actionId) => {
+
+                // Get unit's abilities to check for ability-based actions
+                const unitAbilities = this.game.call('getEntityAbilities', selectedUnitId) || [];
+                const unitAbilityIds = unitAbilities.map(a => a.id);
+
+                // Find all actions that require abilities and add them if the unit has the ability
+                const abilityActions = [];
+                for (const [actionId, action] of Object.entries(actionsCollection)) {
+                    if (action.ability && unitAbilityIds.includes(action.ability)) {
+                        // Unit has this ability, add the action if not already in base actions
+                        if (!actions.includes(actionId)) {
+                            abilityActions.push(actionId);
+                        }
+                    }
+                }
+
+                // Combine base actions with ability-based actions
+                const allActions = [...actions, ...abilityActions];
+
+                allActions.forEach((actionId) => {
+                    // Filter conditional actions like levelUp and specialize
+                    if (!this.shouldShowAction(actionId, selectedUnitId)) return;
                     let action = actionsCollection[actionId];
                     const btn = this.createActionButton(action, panel, selectedUnitId, unitType);
                     grid.appendChild(btn);
@@ -143,7 +164,9 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         btn.append(iconEl);
 
         if (action.order) {
+            console.log('[createActionButton] adding click handler for order:', action.order);
             btn.addEventListener('click', () => {
+                console.log('[createActionButton] button clicked, calling:', action.order);
                 this[action.order]();
             });
         } else if (action.actionSet) {
@@ -602,7 +625,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
                 // Check if unit has BuildAbility
                 const abilities = this.game.call('getEntityAbilities', unitId);
                 if (abilities) {
-                    const buildAbility = abilities.find(a => a.id === 'build');
+                    const buildAbility = abilities.find(a => a.id === 'BuildAbility');
                     if (buildAbility) {
                         return unitId;
                     }
@@ -621,7 +644,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
                 // Store peasantId in ability for completion tracking
                 const abilities = this.game.call('getEntityAbilities', builderEntityId);
                 if (abilities) {
-                    const buildAbility = abilities.find(a => a.id === 'build');
+                    const buildAbility = abilities.find(a => a.id === 'BuildAbility');
                     if (buildAbility) {
                         buildAbility.peasantId = builderEntityId;
                     }
@@ -651,6 +674,108 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         if (this.orderPreview) {
             this.orderPreview.clear();
         }
+    }
+
+    // ==================== EXPERIENCE & LEVELING ACTIONS ====================
+
+    /**
+     * Check if an action should be shown based on squad state
+     * @param {string} actionId - The action ID to check
+     * @param {number} selectedUnitId - The selected unit entity ID
+     * @returns {boolean} Whether the action should be displayed
+     */
+    shouldShowAction(actionId, selectedUnitId) {
+        const placementIds = this.game.call('getSelectedSquads') || [];
+        console.log('[shouldShowAction] actionId:', actionId, 'placementIds:', placementIds);
+        if (!placementIds.length) return actionId !== 'levelUp' && actionId !== 'specialize';
+
+        const placementId = placementIds[0];
+        const squadData = this.game.squadExperienceSystem?.getSquadExperience(placementId);
+        console.log('[shouldShowAction] squadData:', squadData);
+
+        if (actionId === 'levelUp') {
+            const result = squadData?.canLevelUp === true;
+            console.log('[shouldShowAction] levelUp result:', result);
+            return result;
+        }
+        if (actionId === 'specialize') {
+            const unitType = this.game.squadExperienceSystem?.getCurrentUnitType(placementId);
+            return squadData?.level >= 2 && unitType?.specUnits?.length > 0;
+        }
+        return true;
+    }
+
+    /**
+     * Level up the selected squad
+     */
+    levelUpSquadAction() {
+        console.log('[LevelUp] levelUpSquadAction called');
+        const placementIds = this.game.call('getSelectedSquads') || [];
+        console.log('[LevelUp] placementIds:', placementIds);
+        if (!placementIds.length) return;
+
+        const placementId = placementIds[0];
+        const squadData = this.game.squadExperienceSystem?.getSquadExperience(placementId);
+        console.log('[LevelUp] squadData:', squadData);
+        if (!squadData?.canLevelUp) {
+            this.game.uiSystem?.showNotification('Not ready to level up', 'warning', 800);
+            return;
+        }
+
+        const playerGold = this.game.call('getPlayerGold');
+        console.log('[LevelUp] playerGold:', playerGold);
+        if (!this.game.call('canAffordLevelUp', placementId, playerGold)) {
+            const cost = this.game.call('getLevelUpCost', placementId);
+            this.game.uiSystem?.showNotification(`Need ${cost} gold`, 'warning', 800);
+            return;
+        }
+
+        const currentLevel = squadData.level;
+        const unitType = this.game.squadExperienceSystem?.getCurrentUnitType(placementId);
+        const willBeLevel2 = currentLevel + 1 === 2;
+        const hasSpecializations = unitType?.specUnits?.length > 0;
+
+        console.log('[LevelUp] calling levelSquad service');
+        this.game.call('levelSquad', { placementId }, (success) => {
+            console.log('[LevelUp] levelSquad callback, success:', success);
+            if (success) {
+                this.game.uiSystem?.showNotification('Leveled up!', 'success', 1000);
+                this.showSquadActionPanel(placementId);
+                // If unit just reached level 2 and has specializations, show selection
+                if (willBeLevel2 && hasSpecializations) {
+                    const newSquadData = this.game.squadExperienceSystem?.getSquadExperience(placementId);
+                    if (newSquadData) {
+                        this.game.squadExperienceSystem.showSpecializationSelection(placementId, newSquadData, () => {});
+                    }
+                }
+            } else {
+                this.game.uiSystem?.showNotification('Level up failed', 'error', 800);
+            }
+        });
+    }
+
+    /**
+     * Show specialization selection for the selected squad
+     */
+    specializeSquadAction() {
+        const placementIds = this.game.call('getSelectedSquads') || [];
+        if (!placementIds.length) return;
+
+        const placementId = placementIds[0];
+        const squadData = this.game.squadExperienceSystem?.getSquadExperience(placementId);
+        const unitType = this.game.squadExperienceSystem?.getCurrentUnitType(placementId);
+
+        if (!squadData || squadData.level < 2) {
+            this.game.uiSystem?.showNotification('Must be level 2', 'warning', 800);
+            return;
+        }
+
+        if (!unitType?.specUnits?.length) {
+            this.game.uiSystem?.showNotification('No specializations available', 'warning', 800);
+            return;
+        }
+
+        this.game.squadExperienceSystem.showSpecializationSelection(placementId, squadData, () => {});
     }
 
     destroy() {

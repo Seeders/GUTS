@@ -2,7 +2,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     static services = [
         'canAffordLevelUp',
         'applySpecialization',
-        'levelUpSquad',
         'getLevelUpCost',
         'initializeSquad',
         'removeSquad',
@@ -21,7 +20,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
 
         // Experience configuration
         this.config = {
-            experiencePerLevel: 15,     // Base experience needed per level
+            experiencePerLevel: 10,     // Base experience needed per level
             maxLevel: 10,                // Maximum squad level
             levelUpCostRatio: 0.5,       // Cost to level up = squad value * ratio
             experienceMultiplier: 1.0,   // Global experience gain multiplier
@@ -94,11 +93,18 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      */
     getAllSquadsWithExperience() {
         const squads = [];
-        const placements = this.game.getEntitiesWith('placement');
-        for (const entityId of placements) {
+        const seenPlacementIds = new Set();
+        const entitiesWithPlacement = this.game.getEntitiesWith('placement');
+
+        for (const entityId of entitiesWithPlacement) {
             const placement = this.game.getComponent(entityId, 'placement');
-            if (placement && placement.squadUnits?.length > 0) {
-                const experience = this.game.getComponent(placement.squadUnits[0], 'experience');
+            if (!placement || seenPlacementIds.has(placement.placementId)) continue;
+            seenPlacementIds.add(placement.placementId);
+
+            // Get squad units for this placement (dynamically computed)
+            const squadUnits = this.game.call('getSquadUnitsForPlacement', placement.placementId, entitiesWithPlacement);
+            if (squadUnits && squadUnits.length > 0) {
+                const experience = this.game.getComponent(squadUnits[0], 'experience');
                 if (experience) {
                     squads.push({
                         placementId: placement.placementId,
@@ -208,90 +214,25 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
          return true;
     }
     /**
-     * Level up a squad (only during placement phase)
+     * Execute the level up on a squad (called by server handler)
      * @param {string} placementId - Squad placement ID
-     * @param {string} specializationId - Optional specialization unit ID (for level 3+)
+     * @param {string} specializationId - Optional specialization unit type ID
      * @returns {boolean} Success status
      */
-    async levelUpSquad(placementId, specializationId = null, playerId = null, callback) {
-        if (this.game.state.phase !== this.enums.gamePhase.placement) {
-            callback(false);
-            return;
-        }
-
-        const squadData = this.getSquadExperience(placementId);
-        if (!squadData || !squadData.canLevelUp) {
-            callback(false);
-            return;
-        }        
-                        
-        // Check for specialization selection UI (unchanged)
-        const isSpecializationLevel = squadData.level >= 2;
-        const currentUnitType = this.getCurrentUnitType(placementId);
-        const hasSpecializations = currentUnitType && currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
-        if (!this.game.isServer && isSpecializationLevel && hasSpecializations && !specializationId) {
-            this.showSpecializationSelection(placementId, squadData, callback);
-            return;
-        }
-        
-        
-        try {
-            if (!this.game.isServer) {
-                // Handle specialization case
-                if (specializationId && isSpecializationLevel && hasSpecializations) {
-                    const success = await this.makeNetworkCall('LEVEL_SQUAD', 
-                        { placementId, specializationId }, 'SQUAD_LEVELED');
-       
-                    if (!success) {
-                        callback(false);
-                    } 
-                    this.applySpecialization(placementId, specializationId, playerId);
-                } else {
-                    // Handle regular level up
-                    const success = await this.makeNetworkCall('LEVEL_SQUAD', 
-                        { placementId }, 'SQUAD_LEVELED');
-                    
-                    if (!success) {
-                        callback(false);
-                    }
-                }
-            } 
-                
-            // Deduct cost optimistically
-            callback(this.finishLevelingSquad(squadData, placementId, specializationId));
-            
-        } catch (error) {
-            // Refund gold on any error
-            callback(false);
-        }
-    }
-
-    // Helper method to promisify network calls
-    makeNetworkCall(action, data, expectedResponse) {
-        return new Promise((resolve, reject) => {
-            this.game.clientNetworkManager.call(action, data, expectedResponse, (responseData, error) => {
-                if(responseData && responseData.success) {
-                    resolve(responseData);
-                } else {
-                    reject(error);
-                }
-            });
-        });
-    }
-
     finishLevelingSquad(squadData, placementId, specializationId) {
+        if (!squadData) return false;
+
+        const oldLevel = squadData.level;
         // Level up
         squadData.level++;
         squadData.experience = 0;
         squadData.experienceToNextLevel = this.calculateExperienceNeeded(squadData.level);
         squadData.canLevelUp = false;
-        
+        console.log(`[SquadExperience] Squad ${placementId} leveled up from ${oldLevel} to ${squadData.level}`);
+
         // Apply level bonuses to all units in squad
         this.applyLevelBonuses(placementId);
-        
-        const levelUpCost = this.getLevelUpCost(placementId);
-        this.game.call('deductPlayerGold', levelUpCost);
-            
+
         // Visual effects
         const unitIds = this.getSquadUnits(placementId);
         unitIds.forEach(entityId => {
@@ -359,6 +300,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      * Show specialization selection UI
      * @param {string} placementId - Squad placement ID
      * @param {Object} squadData - Squad experience data
+     * @param {Function} callback - Callback when selection is complete
      */
     showSpecializationSelection(placementId, squadData, callback) {
         const currentUnitType = this.getCurrentUnitType(placementId, squadData.team);
@@ -417,7 +359,8 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
                 
                 optionButton.addEventListener('click', () => {
                     document.body.removeChild(modal);
-                    this.levelUpSquad(placementId, specId, null, callback);
+                    this.game.call('applySpecialization', placementId, specId);
+                    if (callback) callback(true);
                 });
                 
                 optionButton.addEventListener('mouseenter', () => {
@@ -457,12 +400,12 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      * @returns {Object|null} Unit type or null if not found
      */
     getCurrentUnitType(placementId) {
-        // Find placement by ID from entity data
+        // Find first entity with this placementId and get its unitType
         const entitiesWithPlacement = this.game.getEntitiesWith('placement');
         for (const entityId of entitiesWithPlacement) {
             const placement = this.game.getComponent(entityId, 'placement');
-            if (placement && placement.placementId === placementId && placement.squadUnits?.length > 0) {
-                const unitTypeComp = this.game.getComponent(placement.squadUnits[0], 'unitType');
+            if (placement && placement.placementId === placementId) {
+                const unitTypeComp = this.game.getComponent(entityId, 'unitType');
                 return this.game.call('getUnitTypeDef', unitTypeComp);
             }
         }

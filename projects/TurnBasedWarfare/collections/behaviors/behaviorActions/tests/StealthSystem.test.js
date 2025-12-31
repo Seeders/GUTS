@@ -7,7 +7,7 @@ import { TestGameContext } from '../../../../../../tests/TestGameContext.js';
  * Tests the stealth/awareness mechanics including:
  * - Base unit stealth values
  * - Terrain-based stealth bonuses (forest +25)
- * - Hide action stealth bonus (+20)
+ * - Hide action stealth bonus (+30)
  * - Combined stealth calculations
  * - Hidden units not searching for enemies
  */
@@ -102,10 +102,10 @@ describe('Stealth System', () => {
                     }
                 }
 
-                // Hiding stealth bonus
+                // Hiding stealth bonus (+30)
                 const targetPlayerOrder = game.getComponent(targetId, 'playerOrder');
                 if (targetPlayerOrder?.isHiding) {
-                    targetStealth += 20;
+                    targetStealth += 30;
                 }
 
                 if (targetStealth > awareness) continue;
@@ -330,19 +330,19 @@ describe('Stealth System', () => {
     });
 
     describe('Hide Action Stealth Bonus', () => {
-        it('should apply +20 stealth bonus when unit is hiding', () => {
+        it('should apply +30 stealth bonus when unit is hiding', () => {
             const searcherId = game.createEntityWith({
                 transform: { position: { x: 0, y: 0, z: 0 } },
                 team: { team: enums.team.left },
                 combat: { visionRange: 300, awareness: 50 }
             });
 
-            // Target with 35 base stealth
+            // Target with 25 base stealth
             const targetId = game.createEntityWith({
                 transform: { position: { x: 50, y: 0, z: 0 } },
                 team: { team: enums.team.right },
                 health: { current: 100, max: 100 },
-                combat: { stealth: 35 },
+                combat: { stealth: 25 },
                 playerOrder: { isHiding: true, enabled: true }
             });
 
@@ -350,7 +350,7 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(searcherId, game);
 
-            // 35 base + 20 hiding = 55 stealth > 50 awareness = not visible
+            // 25 base + 30 hiding = 55 stealth > 50 awareness = not visible
             expect(isFailure(result)).toBe(true);
         });
 
@@ -381,7 +381,7 @@ describe('Stealth System', () => {
             const searcherId = game.createEntityWith({
                 transform: { position: { x: 0, y: 0, z: 0 } },
                 team: { team: enums.team.left },
-                combat: { visionRange: 300, awareness: 70 }
+                combat: { visionRange: 300, awareness: 80 }
             });
 
             const targetId = game.createEntityWith({
@@ -396,7 +396,7 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(searcherId, game);
 
-            // 40 base + 20 hiding = 60 stealth < 70 awareness = visible
+            // 40 base + 30 hiding = 70 stealth < 80 awareness = visible
             expect(isSuccess(result)).toBe(true);
         });
     });
@@ -406,7 +406,7 @@ describe('Stealth System', () => {
             const searcherId = game.createEntityWith({
                 transform: { position: { x: 0, y: 0, z: 0 } },
                 team: { team: enums.team.left },
-                combat: { visionRange: 300, awareness: 80 }
+                combat: { visionRange: 300, awareness: 90 }
             });
 
             // Scout with 40 base stealth, hiding in forest
@@ -429,7 +429,7 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(searcherId, game);
 
-            // 40 base + 25 forest + 20 hiding = 85 stealth > 80 awareness = not visible
+            // 40 base + 25 forest + 30 hiding = 95 stealth > 90 awareness = not visible
             expect(isFailure(result)).toBe(true);
         });
 
@@ -437,7 +437,7 @@ describe('Stealth System', () => {
             const searcherId = game.createEntityWith({
                 transform: { position: { x: 0, y: 0, z: 0 } },
                 team: { team: enums.team.left },
-                combat: { visionRange: 300, awareness: 90 }
+                combat: { visionRange: 300, awareness: 100 }
             });
 
             // Scout with 40 base stealth, hiding in forest
@@ -459,7 +459,7 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(searcherId, game);
 
-            // 40 base + 25 forest + 20 hiding = 85 stealth < 90 awareness = visible
+            // 40 base + 25 forest + 30 hiding = 95 stealth < 100 awareness = visible
             expect(isSuccess(result)).toBe(true);
         });
 
@@ -467,7 +467,7 @@ describe('Stealth System', () => {
             const searcherId = game.createEntityWith({
                 transform: { position: { x: 0, y: 0, z: 0 } },
                 team: { team: enums.team.left },
-                combat: { visionRange: 300, awareness: 40 }
+                combat: { visionRange: 300, awareness: 50 }
             });
 
             // Unit with 0 stealth, hiding in forest
@@ -489,34 +489,16 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(searcherId, game);
 
-            // 0 base + 25 forest + 20 hiding = 45 stealth > 40 awareness = not visible
+            // 0 base + 25 forest + 30 hiding = 55 stealth > 50 awareness = not visible
             expect(isFailure(result)).toBe(true);
         });
     });
 
     describe('Hidden Units Behavior', () => {
-        it('should not search for enemies when hiding', () => {
-            const hiddenUnit = game.createEntityWith({
-                transform: { position: { x: 0, y: 0, z: 0 } },
-                team: { team: enums.team.left },
-                combat: { visionRange: 300, awareness: 100 },
-                playerOrder: { isHiding: true, enabled: true }
-            });
-
-            const enemyId = game.createEntityWith({
-                transform: { position: { x: 50, y: 0, z: 0 } },
-                team: { team: enums.team.right },
-                health: { current: 100, max: 100 },
-                combat: { stealth: 0 }  // No stealth at all
-            });
-
-            game.register('getNearbyUnits', () => [enemyId]);
-
-            const result = findNearestEnemyAction.execute(hiddenUnit, game);
-
-            // Hidden unit should return failure immediately - won't search
-            expect(isFailure(result)).toBe(true);
-        });
+        // Note: The "hidden units don't search for enemies" behavior is implemented
+        // in PlayerOrderBehaviorTree.js, not in FindNearestEnemyBehaviorAction.
+        // When isHiding is true, the behavior tree skips calling FindNearestEnemy entirely.
+        // These tests verify the stealth visibility behavior for hiding units.
 
         it('should search for enemies when not hiding', () => {
             const unit = game.createEntityWith({
@@ -617,7 +599,7 @@ describe('Stealth System', () => {
             const searcherId = game.createEntityWith({
                 transform: { position: { x: 0, y: 0, z: 0 } },
                 team: { team: enums.team.left },
-                combat: { visionRange: 300, awareness: 80 }
+                combat: { visionRange: 300, awareness: 90 }
             });
 
             const scoutId = game.createEntityWith({
@@ -634,7 +616,7 @@ describe('Stealth System', () => {
 
             const result = findNearestEnemyAction.execute(searcherId, game);
 
-            // 40 + 25 forest + 20 hiding = 85 stealth > 80 awareness = invisible
+            // 40 + 25 forest + 30 hiding = 95 stealth > 90 awareness = invisible
             expect(isFailure(result)).toBe(true);
         });
     });

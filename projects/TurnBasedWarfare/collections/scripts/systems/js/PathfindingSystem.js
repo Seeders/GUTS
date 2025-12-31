@@ -805,13 +805,23 @@ class PathfindingSystem extends GUTS.BaseSystem {
         for (let i = 0; i < pathsToProcess; i++) {
             const request = this.pathRequests.shift();
 
-            const path = this.findPath(
-                request.startX,
-                request.startZ,
-                request.endX,
-                request.endZ,
-                request.cacheKey
-            );
+            // Check if entity is a flying unit - flying units get direct paths
+            let path;
+            const unitTypeComp = this.game.getComponent(request.entityId, 'unitType');
+            const unitDef = unitTypeComp ? this.game.call('getUnitTypeDef', unitTypeComp) : null;
+
+            if (unitDef?.isFlying) {
+                // Flying units bypass pathfinding - direct line to target
+                path = [{ x: request.endX, z: request.endZ }];
+            } else {
+                path = this.findPath(
+                    request.startX,
+                    request.startZ,
+                    request.endX,
+                    request.endZ,
+                    request.cacheKey
+                );
+            }
 
             if (path) {
                 // Store path in system Map

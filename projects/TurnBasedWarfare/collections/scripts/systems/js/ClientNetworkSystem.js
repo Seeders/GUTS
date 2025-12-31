@@ -20,6 +20,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'sendCheatRequest',
         'sendPlacementRequest',
         'transformUnit',
+        'levelSquad',
         // Local game mode services (set by SkirmishGameSystem or other local modes)
         'getLocalPlayerId',
         'setLocalGame',
@@ -500,6 +501,25 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                 }
             }
         }, callback);
+    }
+
+    levelSquad(requestData, callback) {
+        console.log('[ClientNetworkSystem.levelSquad] called with requestData:', requestData);
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            console.log('[ClientNetworkSystem.levelSquad] not in placement phase');
+            callback(false, 'Not in placement phase.');
+            return;
+        }
+
+        console.log('[ClientNetworkSystem.levelSquad] calling networkRequest');
+        this.networkRequest({
+            eventName: 'LEVEL_SQUAD',
+            responseName: 'SQUAD_LEVELED',
+            data: requestData
+        }, (success, result) => {
+            console.log('[ClientNetworkSystem.levelSquad] networkRequest callback, success:', success, 'result:', result);
+            callback(success, result);
+        });
     }
 
     setSquadTarget(requestData, callback) {

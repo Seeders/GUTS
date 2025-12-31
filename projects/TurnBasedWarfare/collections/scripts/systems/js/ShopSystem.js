@@ -304,16 +304,15 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     addUpgradeButtons(grid, building) {
-        // Get purchased upgrades from playerStats bitmask
+        // Get local player stats for upgrade checks
         const playerStats = this.game.call('getLocalPlayerStats');
-        const purchasedUpgradesBitmask = playerStats?.upgrades || 0;
 
         building.upgrades.forEach(upgradeId => {
             const upgrade = this.collections.upgrades[upgradeId];
             if (!upgrade) return;
 
-            const upgradeIndex = this.enums.upgrades?.[upgradeId];
-            const isOwned = upgradeIndex !== undefined && (purchasedUpgradesBitmask & (1 << upgradeIndex)) !== 0;
+            // Use bitmask helper to check if upgrade is owned
+            const isOwned = playerStats?.upgrades?.has(upgradeId) || false;
             const canAfford = this.game.call('canAffordCost', upgrade.value);
             const requirements = this.checkRequirements(upgrade);
             const locked = isOwned || !canAfford || !requirements.met;
@@ -577,21 +576,11 @@ class ShopSystem extends GUTS.BaseSystem {
         const currentUnitType = this.getCurrentUnitType(squad.placementId, squad.team);
         if (!currentUnitType) return null;
 
-        const hasSpecializations = currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
-        const isSpecializationLevel = (squad.level) == 2;
-        const canSpecialize = isSpecializationLevel && hasSpecializations;
-        
         const card = document.createElement('div');
         card.className = 'experience-panel';
 
-        if (canSpecialize) {
-            const shimmer = document.createElement('div');
-            shimmer.classList.add("shimmer");
-            card.appendChild(shimmer);
-        }
-
         const currentLevelText = ` (Lvl ${squad.level})`;
-        const nextLevelText = canSpecialize ? '⭐ Ascend!' : ` Level ${squad.level + 1}`;
+        const nextLevelText = `Level ${squad.level + 1}`;
 
         const header = document.createElement('div');
         header.className = 'experience-header';
@@ -640,30 +629,28 @@ class ShopSystem extends GUTS.BaseSystem {
         const buttonContainer = document.createElement('div');
         buttonContainer.className = 'experience-buttons';
 
-        if (canSpecialize) {
-            const specBtn = document.createElement('button');
-            specBtn.className = 'btn btn-primary experience-btn';
-            specBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
-            specBtn.onclick = () => {
-                // showSpecializationSelection is a UI method - it opens the selection dialog
-                // The actual action happens when user selects via actions.selectSpecialization()
-                this.game.call('showSpecializationSelection',
-                    squad.placementId,
-                    squad,
-                    squad.levelUpCost
-                );
-            };
-            buttonContainer.appendChild(specBtn);
-        } else {
-            const levelUpBtn = document.createElement('button');
-            levelUpBtn.className = 'btn btn-primary experience-btn';
-            levelUpBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
-            levelUpBtn.onclick = () => {
-                // Use game.call - SAME code path as headless mode
-                this.game.call('levelUpSquad', squad.placementId, squad.team);
-            };
-            buttonContainer.appendChild(levelUpBtn);
-        }
+        const levelUpBtn = document.createElement('button');
+        levelUpBtn.className = 'btn btn-primary experience-btn';
+        levelUpBtn.innerHTML = `${nextLevelText} (${squad.levelUpCost}g)`;
+        levelUpBtn.onclick = () => {
+            const placementId = squad.placementId;
+            const willBeLevel2 = squad.level + 1 === 2;
+            const hasSpecializations = currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
+
+            this.game.call('levelSquad', { placementId }, (success) => {
+                if (success) {
+                    this.game.uiSystem?.showNotification('Leveled up!', 'success', 1000);
+                    // If unit just reached level 2 and has specializations, show selection
+                    if (willBeLevel2 && hasSpecializations) {
+                        const newSquadData = this.game.squadExperienceSystem?.getSquadExperience(placementId);
+                        if (newSquadData) {
+                            this.game.call('showSpecializationSelection', placementId, newSquadData, () => {});
+                        }
+                    }
+                }
+            });
+        };
+        buttonContainer.appendChild(levelUpBtn);
 
         card.appendChild(buttonContainer);
         return card;

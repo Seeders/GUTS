@@ -152,7 +152,8 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "abilities": [
-    "FireBallAbility"
+    "FireBallAbility",
+    "TakeOffAbility"
   ],
   "spriteAnimationSet": "dragonred",
   "spriteYOffset": -48,
@@ -161,6 +162,5 @@
   "requiresBuildings": [
     "castle"
   ],
-  "icon": "dragon",
-  "actionSet": "dragon_actions"
+  "icon": "dragon"
 }

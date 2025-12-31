@@ -260,7 +260,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
             const abilities = game.call('getEntityAbilities', entityId);
             if (!abilities) continue;
 
-            const buildAbility = abilities.find(a => a.id === 'build');
+            const buildAbility = abilities.find(a => a.id === 'BuildAbility');
             if (!buildAbility) {
                 continue;
             }

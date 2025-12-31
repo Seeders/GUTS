@@ -674,7 +674,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
                 const abilities = this.game.call('getEntityAbilities', unitId);
                 if (abilities) {
                     for (const ability of abilities) {
-                        if (ability.id === 'build') {
+                        if (ability.id === 'BuildAbility') {
                             return unitId;
                         }
                     }

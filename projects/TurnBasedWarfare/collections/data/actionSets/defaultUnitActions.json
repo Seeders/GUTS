@@ -3,6 +3,8 @@
   "actions": [
     "move",
     "hold",
-    "hide"
+    "hide",
+    "levelUp",
+    "specialize"
   ]
 }
