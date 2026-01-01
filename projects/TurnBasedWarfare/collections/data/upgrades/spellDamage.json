@@ -1,9 +1,9 @@
 {
   "title": "Spell Damage",
-  "description": "Increase Spell Damage by 25%",
+  "description": "25% increased Spell Damage",
   "value": 100,
-  "effects": [
-    "spellDamage"
+  "damageModifiers": [
+    { "type": "increased", "tags": ["spell"], "value": 0.25 }
   ],
   "icon": "elemental_damage",
   "requiresBuildings": [

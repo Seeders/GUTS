@@ -216,13 +216,28 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
 
     /**
      * Issue move order to squads at a target position
+     * @param {Array} placementIds - Squad placement IDs to move
+     * @param {Object} targetPosition - Target position {x, z}
+     * @param {Object} orderMeta - Optional order metadata (preventEnemiesInRangeCheck for force move)
+     * @param {Function} callback - Callback function
      */
-    ui_issueMoveOrder(placementIds, targetPosition, callback) {
+    ui_issueMoveOrder(placementIds, targetPosition, orderMeta, callback) {
+        // Support old 3-arg signature: (placementIds, targetPosition, callback)
+        if (typeof orderMeta === 'function') {
+            callback = orderMeta;
+            orderMeta = {};
+        }
+
         if (!placementIds || placementIds.length === 0) return;
 
         // Explicitly set isHiding: false to ensure it's synced to other clients
         // This clears the hiding state when a unit moves
-        const meta = { isMoveOrder: true, preventEnemiesInRangeCheck: false, isHiding: false };
+        // Allow caller to override preventEnemiesInRangeCheck for force move
+        const meta = {
+            isMoveOrder: true,
+            preventEnemiesInRangeCheck: !!orderMeta?.preventEnemiesInRangeCheck,
+            isHiding: false
+        };
         const targetPositions = placementIds.map(() => ({
             x: targetPosition.x,
             z: targetPosition.z

@@ -10,6 +10,7 @@
     "clearAllDamageEffects",
     "clearAllStatusEffects",
     "getAttackerModifiers",
-    "getBuffTypeDef"
+    "getBuffTypeDef",
+    "buildDamageTags"
   ]
 }

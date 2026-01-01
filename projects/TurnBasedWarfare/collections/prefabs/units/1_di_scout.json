@@ -15,6 +15,14 @@
   "coldResistance": 0.2,
   "lightningResistance": 0.2,
   "holyResistance": 0,
+  "accuracy": 100,
+  "evasion": 40,
+  "criticalChance": 0.15,
+  "criticalMultiplier": 2.0,
+  "passives": [
+    { "type": "increased", "tags": ["ranged"], "value": 0.2 },
+    { "type": "more", "tags": [], "value": 0.1, "condition": "critical" }
+  ],
   "render": {
     "animations": {
       "idle": [
@@ -150,7 +158,7 @@
       }
     ]
   },
-  "abilities": ["BuildAbility", "BearTrapAbility"],
+  "abilities": ["BearTrapAbility"],
   "buyable": true,
   "specUnits": [
     "2_di_shadowAssassin",

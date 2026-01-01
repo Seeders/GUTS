@@ -8,7 +8,8 @@ class DamageSystem extends GUTS.BaseSystem {
         'clearAllDamageEffects',
         'clearAllStatusEffects',
         'getAttackerModifiers',
-        'getBuffTypeDef'
+        'getBuffTypeDef',
+        'buildDamageTags'
     ];
 
     constructor(game) {
@@ -59,12 +60,79 @@ class DamageSystem extends GUTS.BaseSystem {
     // =============================================
 
     /**
-     * Main damage application method - handles all damage types and resistances
+     * Build damage tags from element and options for modifier matching
+     * @param {number} element - Damage element (numeric enum)
+     * @param {Object} options - Damage options
+     * @returns {string[]} Array of damage tags
+     */
+    buildDamageTags(element, options) {
+        const tags = [];
+
+        // Source type: attack vs spell
+        if (options.isSpell) {
+            tags.push('spell');
+        } else {
+            tags.push('attack');
+        }
+
+        // Range type: melee vs ranged/projectile
+        if (options.isMelee) {
+            tags.push('melee');
+        } else if (options.isProjectile || options.isRanged) {
+            tags.push('ranged');
+            if (options.isProjectile) {
+                tags.push('projectile');
+            }
+        }
+
+        // Area vs single target
+        if (options.isSplash || options.isArea || options.isAoE) {
+            tags.push('area');
+        } else {
+            tags.push('singleTarget');
+        }
+
+        // Damage over time
+        if (options.isDot) {
+            tags.push('dot');
+        }
+
+        // Element tag
+        const elementName = this.reverseEnums.element?.[element] || 'physical';
+        tags.push(elementName);
+
+        return tags;
+    }
+
+    /**
+     * Show miss/evade effect on target
+     */
+    showMissEffect(targetId) {
+        const transform = this.game.getComponent(targetId, "transform");
+        const pos = transform?.position;
+        if (pos && this.game.hasService('showDamageNumber')) {
+            // Show "MISS" text (element -1 indicates miss)
+            this.game.call('showDamageNumber', pos.x, pos.y + 50, pos.z, 'MISS', -1);
+        }
+    }
+
+    /**
+     * Main damage application method with PoE-style formula
+     *
+     * DAMAGE FORMULA:
+     * 1. Base damage from source
+     * 2. Accuracy check (attacks only, spells always hit)
+     * 3. Apply "increased" modifiers: damage * (1 + sum_of_increased)
+     * 4. Apply "more" modifiers: damage * (1 + more1) * (1 + more2) * ...
+     * 5. Apply critical hit if applicable
+     * 6. Apply armor/resistances
+     * 7. Apply damage taken modifiers
+     *
      * @param {number} sourceId - Entity dealing damage
      * @param {number} targetId - Entity receiving damage
      * @param {number} baseDamage - Base damage amount
      * @param {number} element - Damage element type (numeric enum value)
-     * @param {Object} options - Additional options (splash, crit, etc.)
+     * @param {Object} options - Additional options (isSpell, isMelee, isCritical, etc.)
      */
     applyDamage(sourceId, targetId, baseDamage, element = this.enums.element.physical, options = {}) {
         const log = GUTS.HeadlessLogger;
@@ -86,6 +154,7 @@ class DamageSystem extends GUTS.BaseSystem {
         const targetTeam = this.reverseEnums.team?.[targetTeamComp?.team] || targetTeamComp?.team;
         const elementName = this.reverseEnums.element?.[element] || element;
 
+        // Validate target
         if (!targetHealth || (targetDeathState && targetDeathState.state !== this.enums.deathState.alive)) {
             log.trace('Damage', `BLOCKED: ${sourceName}(${sourceId}) -> ${targetName}(${targetId})`, {
                 reason: !targetHealth ? 'no_health' : 'not_alive',
@@ -94,23 +163,62 @@ class DamageSystem extends GUTS.BaseSystem {
             return { damage: 0, prevented: true, reason: 'target_invalid' };
         }
 
-        const defenderMods = this.getDefenderModifiers(targetId);
-        // Get target's defenses
-        const defenses = this.getEntityDefenses(targetId, defenderMods);
-        const attackerMods = this.getAttackerModifiers(sourceId, options);
-        let buffedDamage = baseDamage * attackerMods.damageMultiplier;
+        // STEP 1: Build damage tags for modifier matching
+        const damageTags = this.buildDamageTags(element, options);
 
-        if (options.isCritical) {
-            buffedDamage *= options.criticalMultiplier || 2.0;
+        // STEP 2: Accuracy check (attacks only, spells always hit)
+        if (!options.isSpell && this.game.hasService('rollHitChance')) {
+            const hitResult = this.game.call('rollHitChance', sourceId, targetId, false);
+            if (!hitResult.hit) {
+                log.debug('Damage', `MISS! ${sourceName}(${sourceId}) -> ${targetName}(${targetId})`, {
+                    accuracy: hitResult.accuracy,
+                    evasion: hitResult.evasion,
+                    hitChance: (hitResult.hitChance * 100).toFixed(1) + '%',
+                    roll: hitResult.roll.toFixed(3)
+                });
+                this.showMissEffect(targetId);
+                return {
+                    damage: 0,
+                    prevented: true,
+                    reason: 'evaded',
+                    hitChance: hitResult.hitChance,
+                    accuracy: hitResult.accuracy,
+                    evasion: hitResult.evasion
+                };
+            }
         }
+
+        // STEP 3: Get aggregated damage modifiers (increased + more)
+        let modifiers = { increased: 0, more: [] };
+        if (this.game.hasService('getAggregatedDamageModifiers')) {
+            modifiers = this.game.call('getAggregatedDamageModifiers', sourceId, damageTags);
+        }
+
+        // STEP 4: Apply "increased" modifiers (additive, then multiply once)
+        let damage = baseDamage * (1 + modifiers.increased);
+
+        // STEP 5: Apply "more" modifiers (each multiplies independently)
+        for (const moreValue of modifiers.more) {
+            damage *= (1 + moreValue);
+        }
+
+        // STEP 6: Apply critical hit multiplier
+        if (options.isCritical) {
+            const critMultiplier = options.criticalMultiplier || 2.0;
+            damage *= critMultiplier;
+        }
+
         // Handle poison as special case (DoT)
         if (element === this.enums.element.poison) {
-            return this.applyPoisonDoT(sourceId, targetId, buffedDamage, options);
+            return this.applyPoisonDoT(sourceId, targetId, damage, options);
         }
-        // Calculate final damage after resistances/armor
-        const damageResult = this.calculateFinalDamage(sourceId, targetId, buffedDamage, element, defenses, defenderMods, options);
 
-        // Apply immediate damage
+        // STEP 7: Get defender modifiers and apply resistances/armor
+        const defenderMods = this.getDefenderModifiers(targetId);
+        const defenses = this.getEntityDefenses(targetId, defenderMods);
+        const damageResult = this.calculateFinalDamage(sourceId, targetId, damage, element, defenses, defenderMods, options);
+
+        // Apply damage to health
         targetHealth.current -= damageResult.finalDamage;
 
         // Visual feedback
@@ -119,11 +227,14 @@ class DamageSystem extends GUTS.BaseSystem {
         // Log damage application
         log.debug('Damage', `${sourceName}(${sourceId}) [${sourceTeam}] -> ${targetName}(${targetId}) [${targetTeam}]`, {
             baseDamage,
+            increased: modifiers.increased,
+            more: modifiers.more,
+            afterModifiers: damage,
             finalDamage: damageResult.finalDamage,
             element: elementName,
+            tags: damageTags,
             healthBefore: targetHealth.current + damageResult.finalDamage,
             healthAfter: targetHealth.current,
-            isMelee: options.isMelee,
             isCritical: options.isCritical
         });
 
@@ -142,6 +253,7 @@ class DamageSystem extends GUTS.BaseSystem {
             }
         }
 
+        // Show damage number
         if (targetPos && targetUnitType) {
             this.game.call('showDamageNumber', targetPos.x, targetPos.y + targetUnitType.height, targetPos.z, damageResult.finalDamage, element);
         }
@@ -149,48 +261,37 @@ class DamageSystem extends GUTS.BaseSystem {
         return {
             damage: damageResult.finalDamage,
             originalDamage: baseDamage,
-            buffedDamage: buffedDamage,
+            afterIncreased: baseDamage * (1 + modifiers.increased),
+            afterMore: damage,
             mitigated: damageResult.mitigated,
             element: element,
+            tags: damageTags,
+            modifiers: modifiers,
             fatal: targetHealth.current <= 0,
             healthRemaining: targetHealth.current,
             healthMax: targetHealth.max
         };
     }
+    /**
+     * Get attacker modifiers from buffs (legacy method, kept for attack speed)
+     * Note: Damage modifiers are now handled by StatAggregationSystem
+     */
     getAttackerModifiers(attackerId, options = {}) {
         const buff = this.game.getComponent(attackerId, "buff");
-        let damageMultiplier = 1.0;
         let attackSpeedMultiplier = 1.0;
 
-        // Apply buff modifiers
+        // Get attack speed from buff
         if (buff) {
             const currentTime = this.game.state.now || 0;
             if (!buff.endTime || currentTime <= buff.endTime) {
                 const buffTypeDef = this.getBuffTypeDef(buff.buffType);
                 if (buffTypeDef) {
-                    damageMultiplier = buffTypeDef.damageMultiplier || 1.0;
-                    if (buffTypeDef.stackable && buffTypeDef.damagePerStack && buff.stacks > 1) {
-                        damageMultiplier = 1 + (buffTypeDef.damagePerStack * buff.stacks);
-                    }
                     attackSpeedMultiplier = buffTypeDef.attackSpeedMultiplier || 1.0;
                 }
             }
         }
 
-        // Apply player upgrade modifiers for spells
-        if (options.isSpell) {
-            const team = this.game.getComponent(attackerId, "team");
-            if (team) {
-                const playerStats = this.game.call('getPlayerStatsByTeam', team.team);
-                if (playerStats?.upgrades?.has('spellDamage')) {
-                    // Spell damage upgrade gives 25% bonus
-                    damageMultiplier *= 1.25;
-                }
-            }
-        }
-
         return {
-            damageMultiplier: damageMultiplier,
             attackSpeedMultiplier: attackSpeedMultiplier
         };
     }

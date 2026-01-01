@@ -12,6 +12,13 @@
   "fireResistance": 0,
   "coldResistance": 0,
   "lightningResistance": 0,
+  "accuracy": 90,
+  "evasion": 10,
+  "criticalChance": 0.05,
+  "criticalMultiplier": 1.5,
+  "passives": [
+    { "type": "increased", "tags": ["melee", "physical"], "value": 0.15 }
+  ],
   "render": {
     "animations": {
       "idle": [

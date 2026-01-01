@@ -276,13 +276,16 @@ describe('SkirmishGameSystem', () => {
             expect(localGameDisabled).toBe(true);
         });
 
-        it('should not reset when staying in skirmish', () => {
+        it('should always reset playerTeam on scene unload', () => {
             skirmishGameSystem.playerTeam = enums.team.left;
+            skirmishGameSystem.aiTeam = enums.team.right;
             game.sceneManager = { currentScene: 'skirmish' };
 
             skirmishGameSystem.onSceneUnload();
 
-            expect(skirmishGameSystem.playerTeam).toBe(enums.team.left);
+            // Scene unload always resets state regardless of current scene
+            expect(skirmishGameSystem.playerTeam).toBeNull();
+            expect(skirmishGameSystem.aiTeam).toBeNull();
         });
     });
 });

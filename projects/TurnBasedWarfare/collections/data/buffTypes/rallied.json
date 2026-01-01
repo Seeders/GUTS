@@ -1,6 +1,8 @@
 {
   "title": "Rallied",
-  "damageMultiplier": 1.15,
+  "damageModifiers": [
+    { "type": "increased", "tags": [], "value": 0.15 }
+  ],
   "attackSpeedMultiplier": 1,
   "armorMultiplier": 1,
   "damageTakenMultiplier": 1,

@@ -13,6 +13,8 @@
     "PlayerStatsSystem",
     "TeamHealthSystem",
     "DeathSystem",
+    "StatAggregationSystem",
+    "AccuracySystem",
     "DamageSystem",
     "AbilitySystem",
     "SquadExperienceSystem",

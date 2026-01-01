@@ -37,29 +37,22 @@ describe('GameModeSystem', () => {
         });
     });
 
-    describe('initializeGameModes', () => {
-        it('should return game modes object', () => {
-            const modes = gameModeSystem.initializeGameModes();
+    describe('initializeSinglePlayerModes', () => {
+        it('should return single player modes object', () => {
+            const modes = gameModeSystem.initializeSinglePlayerModes();
             expect(modes).toBeDefined();
             expect(typeof modes).toBe('object');
         });
 
         it('should include skirmish mode', () => {
-            const modes = gameModeSystem.initializeGameModes();
+            const modes = gameModeSystem.initializeSinglePlayerModes();
             expect(modes.skirmish).toBeDefined();
             expect(modes.skirmish.id).toBe('skirmish');
             expect(modes.skirmish.title).toBe('Skirmish');
         });
 
-        it('should include arena mode', () => {
-            const modes = gameModeSystem.initializeGameModes();
-            expect(modes.arena).toBeDefined();
-            expect(modes.arena.id).toBe('arena');
-            expect(modes.arena.title).toBe('Arena');
-        });
-
         it('should have correct skirmish mode properties', () => {
-            const modes = gameModeSystem.initializeGameModes();
+            const modes = gameModeSystem.initializeSinglePlayerModes();
             const skirmish = modes.skirmish;
 
             expect(skirmish.isMultiplayer).toBe(false);
@@ -67,9 +60,24 @@ describe('GameModeSystem', () => {
             expect(skirmish.startingGold).toBe(100);
             expect(typeof skirmish.onStart).toBe('function');
         });
+    });
+
+    describe('initializeMultiplayerModes', () => {
+        it('should return multiplayer modes object', () => {
+            const modes = gameModeSystem.initializeMultiplayerModes();
+            expect(modes).toBeDefined();
+            expect(typeof modes).toBe('object');
+        });
+
+        it('should include arena mode', () => {
+            const modes = gameModeSystem.initializeMultiplayerModes();
+            expect(modes.arena).toBeDefined();
+            expect(modes.arena.id).toBe('arena');
+            expect(modes.arena.title).toBe('Arena');
+        });
 
         it('should have correct arena mode properties', () => {
-            const modes = gameModeSystem.initializeGameModes();
+            const modes = gameModeSystem.initializeMultiplayerModes();
             const arena = modes.arena;
 
             expect(arena.isMultiplayer).toBe(true);
@@ -81,8 +89,9 @@ describe('GameModeSystem', () => {
 
     describe('setGameMode', () => {
         beforeEach(() => {
-            // Initialize modes first
-            gameModeSystem.modes = gameModeSystem.initializeGameModes();
+            // Initialize modes first (single player modes go in .modes, multiplayer in .multiplayerModes)
+            gameModeSystem.modes = gameModeSystem.initializeSinglePlayerModes();
+            gameModeSystem.multiplayerModes = gameModeSystem.initializeMultiplayerModes();
         });
 
         it('should set selectedGameMode', () => {
@@ -140,11 +149,13 @@ describe('GameModeSystem', () => {
 
         it('should work across scene changes (from game.state)', () => {
             // Set mode
-            gameModeSystem.modes = gameModeSystem.initializeGameModes();
+            gameModeSystem.modes = gameModeSystem.initializeSinglePlayerModes();
+            gameModeSystem.multiplayerModes = gameModeSystem.initializeMultiplayerModes();
             gameModeSystem.setGameMode('arena');
 
             // Simulate scene unload (clears modes)
             gameModeSystem.modes = null;
+            gameModeSystem.multiplayerModes = null;
 
             // getSelectedMode should still work from game.state
             const mode = gameModeSystem.getSelectedMode();
@@ -157,19 +168,30 @@ describe('GameModeSystem', () => {
             expect(gameModeSystem.getModeConfig('skirmish')).toBeNull();
         });
 
-        it('should return mode config when modes initialized', () => {
-            gameModeSystem.modes = gameModeSystem.initializeGameModes();
+        it('should return single player mode config when modes initialized', () => {
+            gameModeSystem.modes = gameModeSystem.initializeSinglePlayerModes();
+            gameModeSystem.multiplayerModes = gameModeSystem.initializeMultiplayerModes();
 
             const config = gameModeSystem.getModeConfig('skirmish');
             expect(config).toBeDefined();
             expect(config.id).toBe('skirmish');
         });
 
-        it('should return undefined for unknown mode', () => {
-            gameModeSystem.modes = gameModeSystem.initializeGameModes();
+        it('should return multiplayer mode config when modes initialized', () => {
+            gameModeSystem.modes = gameModeSystem.initializeSinglePlayerModes();
+            gameModeSystem.multiplayerModes = gameModeSystem.initializeMultiplayerModes();
+
+            const config = gameModeSystem.getModeConfig('arena');
+            expect(config).toBeDefined();
+            expect(config.id).toBe('arena');
+        });
+
+        it('should return null for unknown mode', () => {
+            gameModeSystem.modes = gameModeSystem.initializeSinglePlayerModes();
+            gameModeSystem.multiplayerModes = gameModeSystem.initializeMultiplayerModes();
 
             const config = gameModeSystem.getModeConfig('nonexistent');
-            expect(config).toBeUndefined();
+            expect(config).toBeNull();
         });
     });
 
@@ -179,21 +201,31 @@ describe('GameModeSystem', () => {
             expect(gameModeSystem.modes).not.toBeNull();
         });
 
-        it('should include all expected modes', () => {
+        it('should initialize multiplayerModes', () => {
             gameModeSystem.onSceneLoad();
+            expect(gameModeSystem.multiplayerModes).not.toBeNull();
+        });
 
+        it('should include skirmish in single player modes', () => {
+            gameModeSystem.onSceneLoad();
             expect(gameModeSystem.modes.skirmish).toBeDefined();
-            expect(gameModeSystem.modes.arena).toBeDefined();
+        });
+
+        it('should include arena in multiplayer modes', () => {
+            gameModeSystem.onSceneLoad();
+            expect(gameModeSystem.multiplayerModes.arena).toBeDefined();
         });
     });
 
     describe('onSceneUnload', () => {
         it('should set modes to null', () => {
-            gameModeSystem.modes = gameModeSystem.initializeGameModes();
+            gameModeSystem.modes = gameModeSystem.initializeSinglePlayerModes();
+            gameModeSystem.multiplayerModes = gameModeSystem.initializeMultiplayerModes();
 
             gameModeSystem.onSceneUnload();
 
             expect(gameModeSystem.modes).toBeNull();
+            expect(gameModeSystem.multiplayerModes).toBeNull();
         });
     });
 });

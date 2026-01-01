@@ -562,30 +562,41 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
         // Check if this is a hide order
         const isHideOrder = this.orderMeta?.isHideOrder;
-        const orderMethod = isHideOrder ? 'ui_issueHideOrder' : 'ui_issueMoveOrder';
-        const effectColor = isHideOrder ? 0x8866cc : 0x00ff00;  // Purple for stealth, green for move
+        const isForceMove = this.orderMeta?.preventEnemiesInRangeCheck;
+        const effectColor = isHideOrder ? 0x8866cc : (isForceMove ? 0xffaa00 : 0x00ff00);  // Purple for stealth, orange for force move, green for normal move
 
         // Use GameInterfaceSystem for the actual order
-        this.game.call(orderMethod, placementIds, targetPosition, (success, response) => {
-            if (success) {
-                // Show visual feedback
-                if (this.game.effectsSystem) {
-                    this.game.call('createParticleEffect', worldPos.x, 0, worldPos.z, 'magic', {
-                        ...this.pingEffect,
-                        color: effectColor
-                    });
-                }
+        if (isHideOrder) {
+            this.game.call('ui_issueHideOrder', placementIds, targetPosition, (success, response) => {
+                this._handleMoveOrderResponse(success, worldPos, effectColor, isHideOrder);
+            });
+        } else {
+            // Pass orderMeta to ui_issueMoveOrder for force move support
+            this.game.call('ui_issueMoveOrder', placementIds, targetPosition, this.orderMeta, (success, response) => {
+                this._handleMoveOrderResponse(success, worldPos, effectColor, isHideOrder);
+            });
+        }
+    }
 
-                // Keep targeting active for move orders, stop for hide orders
-                // Always show the target preview so user sees where unit is going
-                if (!isHideOrder) {
-                    this.startTargeting();
-                } else {
-                    this.stopTargeting();
-                }
-                this.showMoveTargets();
+    _handleMoveOrderResponse(success, worldPos, effectColor, isHideOrder) {
+        if (success) {
+            // Show visual feedback
+            if (this.game.effectsSystem) {
+                this.game.call('createParticleEffect', worldPos.x, 0, worldPos.z, 'magic', {
+                    ...this.pingEffect,
+                    color: effectColor
+                });
             }
-        });
+
+            // Keep targeting active for move orders, stop for hide orders
+            // Always show the target preview so user sees where unit is going
+            if (!isHideOrder) {
+                this.startTargeting(this.orderMeta);
+            } else {
+                this.stopTargeting();
+            }
+            this.showMoveTargets();
+        }
     }
 
     getBuildingUnderConstructionAtPosition(worldPos) {

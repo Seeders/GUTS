@@ -48,11 +48,19 @@ describe('SchedulingSystem', () => {
             expect(schedulingSystem.actionIdCounter).toBe(2);
         });
 
-        it('should store action with correct execute time', () => {
+        it('should store action with delay (executeTime is lazy-initialized)', () => {
             game.state.now = 10.0;
             const actionId = schedulingSystem.scheduleAction(() => {}, 5.0);
 
             const action = schedulingSystem.scheduledActions.get(actionId);
+            // executeTime is null until first processScheduledActions call (lazy init)
+            expect(action.delaySeconds).toBe(5.0);
+            expect(action.executeTime).toBeNull();
+            expect(action.startTime).toBeNull();
+
+            // After processing, executeTime should be set
+            schedulingSystem.processScheduledActions();
+            expect(action.startTime).toBe(10.0);
             expect(action.executeTime).toBe(15.0);
         });
 
@@ -117,24 +125,35 @@ describe('SchedulingSystem', () => {
 
     describe('processScheduledActions', () => {
         it('should not execute actions before their time', () => {
+            // Note: executeTime is lazy-initialized on first processScheduledActions call
+            // So we must initialize it first, then advance time partially
             game.state.now = 0;
             let executed = false;
             schedulingSystem.scheduleAction(() => { executed = true; }, 5.0);
 
+            // First call initializes startTime=0, executeTime=5.0
+            schedulingSystem.processScheduledActions();
+            expect(executed).toBe(false);
+
+            // Time advanced but still before executeTime
             game.state.now = 3.0;
             schedulingSystem.processScheduledActions();
-
             expect(executed).toBe(false);
         });
 
         it('should execute actions when time is reached', () => {
+            // Schedule at time 0, delay 5s -> should execute at time 5
             game.state.now = 0;
             let executed = false;
             schedulingSystem.scheduleAction(() => { executed = true; }, 5.0);
 
+            // Initialize the action (startTime=0, executeTime=5)
+            schedulingSystem.processScheduledActions();
+            expect(executed).toBe(false);
+
+            // Now at execute time
             game.state.now = 5.0;
             schedulingSystem.processScheduledActions();
-
             expect(executed).toBe(true);
         });
 
@@ -143,15 +162,22 @@ describe('SchedulingSystem', () => {
             let executed = false;
             schedulingSystem.scheduleAction(() => { executed = true; }, 5.0);
 
+            // Initialize first (startTime=0, executeTime=5)
+            schedulingSystem.processScheduledActions();
+            expect(executed).toBe(false);
+
+            // Now well past execute time
             game.state.now = 10.0;
             schedulingSystem.processScheduledActions();
-
             expect(executed).toBe(true);
         });
 
         it('should remove executed actions', () => {
             game.state.now = 0;
             const actionId = schedulingSystem.scheduleAction(() => {}, 1.0);
+
+            // Initialize first
+            schedulingSystem.processScheduledActions();
 
             game.state.now = 1.0;
             schedulingSystem.processScheduledActions();
@@ -167,6 +193,10 @@ describe('SchedulingSystem', () => {
             schedulingSystem.scheduleAction(() => { executionOrder.push(1); }, 1.0);
             schedulingSystem.scheduleAction(() => { executionOrder.push(3); }, 3.0);
 
+            // Initialize all actions (all get startTime=0)
+            schedulingSystem.processScheduledActions();
+            expect(executionOrder).toEqual([]);
+
             game.state.now = 5.0;
             schedulingSystem.processScheduledActions();
 
@@ -179,6 +209,9 @@ describe('SchedulingSystem', () => {
 
             schedulingSystem.scheduleAction(() => { throw new Error('Test error'); }, 1.0);
             schedulingSystem.scheduleAction(() => { secondExecuted = true; }, 1.0);
+
+            // Initialize actions
+            schedulingSystem.processScheduledActions();
 
             game.state.now = 1.0;
 
@@ -239,6 +272,9 @@ describe('SchedulingSystem', () => {
             schedulingSystem.scheduleAction(() => {}, 5.0, 1);
             schedulingSystem.scheduleAction(() => {}, 3.0, 2);
 
+            // Initialize actions so executeTime is set
+            schedulingSystem.processScheduledActions();
+
             const stats = schedulingSystem.getSchedulingStats();
 
             expect(stats.totalActions).toBe(2);
@@ -257,6 +293,9 @@ describe('SchedulingSystem', () => {
             schedulingSystem.scheduleAction(() => {}, 5.0);
             schedulingSystem.scheduleAction(() => {}, 2.0);
             schedulingSystem.scheduleAction(() => {}, 8.0);
+
+            // Initialize actions so executeTime is set
+            schedulingSystem.processScheduledActions();
 
             expect(schedulingSystem.getNextActionTime()).toBe(2.0);
         });
@@ -301,6 +340,9 @@ describe('SchedulingSystem', () => {
             game.state.now = 0;
             schedulingSystem.scheduleMethodCall(obj, 'testMethod', ['hello'], 1.0);
 
+            // Initialize action
+            schedulingSystem.processScheduledActions();
+
             game.state.now = 1.0;
             schedulingSystem.processScheduledActions();
 
@@ -313,6 +355,9 @@ describe('SchedulingSystem', () => {
             game.state.now = 0;
             schedulingSystem.scheduleMethodCall(obj, 'nonExistentMethod', [], 1.0);
 
+            // Initialize action
+            schedulingSystem.processScheduledActions();
+
             game.state.now = 1.0;
             expect(() => schedulingSystem.processScheduledActions()).not.toThrow();
         });
@@ -320,6 +365,9 @@ describe('SchedulingSystem', () => {
         it('should handle null object gracefully', () => {
             game.state.now = 0;
             schedulingSystem.scheduleMethodCall(null, 'method', [], 1.0);
+
+            // Initialize action
+            schedulingSystem.processScheduledActions();
 
             game.state.now = 1.0;
             expect(() => schedulingSystem.processScheduledActions()).not.toThrow();
@@ -333,6 +381,9 @@ describe('SchedulingSystem', () => {
 
             game.state.now = 0;
             schedulingSystem.scheduleMethodCall(obj, 'testMethod', [1, 2, 3], 1.0);
+
+            // Initialize action
+            schedulingSystem.processScheduledActions();
 
             game.state.now = 1.0;
             schedulingSystem.processScheduledActions();

@@ -8,6 +8,23 @@ describe('DamageSystem', () => {
 
     beforeEach(() => {
         game = new TestGameContext();
+
+        // Mock the services that DamageSystem depends on for PoE-style formula
+        // Default: no modifiers (attacks always hit, no damage bonuses)
+        game.register('getAggregatedDamageModifiers', () => ({
+            increased: 0,
+            more: []
+        }));
+
+        game.register('rollHitChance', (attackerId, defenderId, isSpell) => ({
+            hit: true,
+            hitChance: 1.0,
+            roll: 0,
+            accuracy: 100,
+            evasion: 0,
+            wasSpell: isSpell
+        }));
+
         damageSystem = game.createSystem(GUTS.DamageSystem);
         enums = game.getEnums();
     });
@@ -308,6 +325,277 @@ describe('DamageSystem', () => {
             damageSystem.curePoison(target, 2);
 
             expect(damageSystem.getPoisonStacks(target)).toBe(3);
+        });
+    });
+
+    describe('buildDamageTags', () => {
+        it('should build attack tags for melee physical attack', () => {
+            const tags = damageSystem.buildDamageTags(enums.element.physical, {
+                isMelee: true
+            });
+
+            expect(tags).toContain('attack');
+            expect(tags).toContain('melee');
+            expect(tags).toContain('physical');
+            expect(tags).toContain('singleTarget');
+            expect(tags).not.toContain('spell');
+        });
+
+        it('should build spell tags for fire spell', () => {
+            const tags = damageSystem.buildDamageTags(enums.element.fire, {
+                isSpell: true
+            });
+
+            expect(tags).toContain('spell');
+            expect(tags).toContain('fire');
+            expect(tags).not.toContain('attack');
+        });
+
+        it('should build projectile tags for ranged attack', () => {
+            const tags = damageSystem.buildDamageTags(enums.element.physical, {
+                isProjectile: true
+            });
+
+            expect(tags).toContain('attack');
+            expect(tags).toContain('ranged');
+            expect(tags).toContain('projectile');
+        });
+
+        it('should build area tags for splash damage', () => {
+            const tags = damageSystem.buildDamageTags(enums.element.fire, {
+                isSpell: true,
+                isSplash: true
+            });
+
+            expect(tags).toContain('area');
+            expect(tags).not.toContain('singleTarget');
+        });
+
+        it('should build dot tags for damage over time', () => {
+            const tags = damageSystem.buildDamageTags(enums.element.poison, {
+                isDot: true
+            });
+
+            expect(tags).toContain('dot');
+            expect(tags).toContain('poison');
+        });
+    });
+
+    describe('PoE-style damage modifiers', () => {
+        it('should apply increased modifier from unit passives', () => {
+            const attacker = game.createEntityWith({
+                team: { team: enums.team.left },
+                unitType: { unitType: 0 }
+            });
+
+            // Mock getAggregatedDamageModifiers to return 15% increased for melee physical
+            game.register('getAggregatedDamageModifiers', () => ({
+                increased: 0.15,
+                more: []
+            }));
+
+            const target = game.createEntityWith({
+                health: { current: 100, max: 100 },
+                deathState: { state: enums.deathState.alive }
+            });
+
+            // Apply melee physical damage
+            const result = damageSystem.applyDamage(attacker, target, 100, enums.element.physical, {
+                isMelee: true
+            });
+
+            // 100 * (1 + 0.15) = 115
+            expect(result.damage).toBeCloseTo(115);
+        });
+
+        it('should sum multiple increased modifiers additively', () => {
+            const attacker = game.createEntityWith({
+                team: { team: enums.team.left },
+                unitType: { unitType: 0 }
+            });
+
+            // Mock getAggregatedDamageModifiers to return summed increased modifiers (20% + 10% = 30%)
+            game.register('getAggregatedDamageModifiers', () => ({
+                increased: 0.30,  // 20% spell + 10% fire = 30% total
+                more: []
+            }));
+
+            const target = game.createEntityWith({
+                health: { current: 100, max: 100 },
+                deathState: { state: enums.deathState.alive }
+            });
+
+            // Apply fire spell damage
+            const result = damageSystem.applyDamage(attacker, target, 100, enums.element.fire, {
+                isSpell: true
+            });
+
+            // 100 * (1 + 0.30) = 130
+            expect(result.damage).toBe(130);
+        });
+
+        it('should apply more modifiers multiplicatively', () => {
+            const attacker = game.createEntityWith({
+                team: { team: enums.team.left },
+                unitType: { unitType: 0 }
+            });
+
+            // Mock getAggregatedDamageModifiers with multiple more modifiers
+            game.register('getAggregatedDamageModifiers', () => ({
+                increased: 0,
+                more: [0.20, 0.30]  // Each applied multiplicatively
+            }));
+
+            const target = game.createEntityWith({
+                health: { current: 100, max: 100 },
+                deathState: { state: enums.deathState.alive }
+            });
+
+            const result = damageSystem.applyDamage(attacker, target, 100, enums.element.physical, {
+                isMelee: true
+            });
+
+            // 100 * (1 + 0.20) * (1 + 0.30) = 100 * 1.2 * 1.3 = 156
+            expect(result.damage).toBe(156);
+        });
+
+        it('should combine increased and more modifiers correctly', () => {
+            const attacker = game.createEntityWith({
+                team: { team: enums.team.left },
+                unitType: { unitType: 0 }
+            });
+
+            // Mock getAggregatedDamageModifiers with both increased and more
+            game.register('getAggregatedDamageModifiers', () => ({
+                increased: 0.40,  // 40% increased
+                more: [0.50]      // 50% more
+            }));
+
+            const target = game.createEntityWith({
+                health: { current: 100, max: 100 },
+                deathState: { state: enums.deathState.alive }
+            });
+
+            const result = damageSystem.applyDamage(attacker, target, 100, enums.element.fire, {
+                isSpell: true
+            });
+
+            // 100 * (1 + 0.40) * (1 + 0.50) = 100 * 1.4 * 1.5 = 210
+            expect(result.damage).toBe(210);
+        });
+
+        it('should only apply modifiers with matching tags', () => {
+            const attacker = game.createEntityWith({
+                team: { team: enums.team.left },
+                unitType: { unitType: 0 }
+            });
+
+            // Mock with spell modifier that shouldn't apply to attack
+            game.register('getUnitTypeDef', () => ({
+                id: 'test_unit',
+                passives: [
+                    { type: 'increased', tags: ['spell'], value: 0.50 }  // Only for spells
+                ]
+            }));
+
+            const target = game.createEntityWith({
+                health: { current: 100, max: 100 },
+                deathState: { state: enums.deathState.alive }
+            });
+
+            // Apply attack (not spell)
+            const result = damageSystem.applyDamage(attacker, target, 100, enums.element.physical, {
+                isMelee: true
+            });
+
+            // Spell modifier shouldn't apply to attack
+            expect(result.damage).toBe(100);
+        });
+
+        it('should apply critical hit multiplier', () => {
+            const attacker = game.createEntity();
+            const target = game.createEntityWith({
+                health: { current: 100, max: 100 },
+                deathState: { state: enums.deathState.alive }
+            });
+
+            game.register('getUnitTypeDef', () => null);
+
+            const result = damageSystem.applyDamage(attacker, target, 100, enums.element.physical, {
+                isCritical: true,
+                criticalMultiplier: 2.0
+            });
+
+            // 100 * 2.0 = 200
+            expect(result.damage).toBe(200);
+        });
+    });
+
+    describe('Accuracy and Evasion', () => {
+        it('should allow spells to always hit (bypass accuracy check)', () => {
+            const attacker = game.createEntityWith({
+                combat: { accuracy: 0 }  // Very low accuracy
+            });
+
+            const target = game.createEntityWith({
+                health: { current: 100, max: 100 },
+                combat: { evasion: 1000 },  // Very high evasion
+                deathState: { state: enums.deathState.alive }
+            });
+
+            game.register('getUnitTypeDef', () => null);
+
+            // Spell should always hit regardless of accuracy/evasion
+            const result = damageSystem.applyDamage(attacker, target, 50, enums.element.fire, {
+                isSpell: true
+            });
+
+            expect(result.prevented).toBeFalsy();
+            expect(result.damage).toBe(50);
+        });
+
+        it('should return evaded result when attack misses', () => {
+            // Override rollHitChance to always miss
+            game.register('rollHitChance', () => ({
+                hit: false,
+                hitChance: 0.5,
+                roll: 0.9,
+                accuracy: 100,
+                evasion: 50
+            }));
+
+            const attacker = game.createEntity();
+            const target = game.createEntityWith({
+                health: { current: 100, max: 100 },
+                deathState: { state: enums.deathState.alive }
+            });
+
+            const result = damageSystem.applyDamage(attacker, target, 50, enums.element.physical, {
+                isMelee: true
+            });
+
+            expect(result.prevented).toBe(true);
+            expect(result.reason).toBe('evaded');
+            expect(result.damage).toBe(0);
+        });
+
+        it('should include damage tags in result', () => {
+            const attacker = game.createEntity();
+            const target = game.createEntityWith({
+                health: { current: 100, max: 100 },
+                deathState: { state: enums.deathState.alive }
+            });
+
+            game.register('getUnitTypeDef', () => null);
+
+            const result = damageSystem.applyDamage(attacker, target, 50, enums.element.fire, {
+                isSpell: true,
+                isSplash: true
+            });
+
+            expect(result.tags).toContain('spell');
+            expect(result.tags).toContain('fire');
+            expect(result.tags).toContain('area');
         });
     });
 });

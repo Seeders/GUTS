@@ -4,6 +4,12 @@ class AbilitiesBehaviorTree extends GUTS.BaseBehaviorTree {
             return null;
         }
 
+        // Skip if building is under construction
+        const placement = game.getComponent(entityId, 'placement');
+        if (placement?.isUnderConstruction) {
+            return null;
+        }
+
         const unitTypeComp = game.getComponent(entityId, 'unitType');
         const unitType = game.call('getUnitTypeDef', unitTypeComp);
         const abilities = unitType?.abilities;

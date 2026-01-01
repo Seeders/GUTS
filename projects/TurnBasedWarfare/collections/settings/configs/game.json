@@ -95,6 +95,8 @@
     "HealthBarSystem",
     "EquipmentSystem",
     "DeathSystem",
+    "StatAggregationSystem",
+    "AccuracySystem",
     "DamageSystem",
     "AbilitySystem",
     "ParticleSystem",

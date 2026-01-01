@@ -14,6 +14,10 @@
     "poisonResistance": 0,
     "visionRange": 300,
     "stealth": 0,
-    "awareness": 50
+    "awareness": 50,
+    "accuracy": 100,
+    "evasion": 0,
+    "criticalChance": 0,
+    "criticalMultiplier": 1.5
   }
 }

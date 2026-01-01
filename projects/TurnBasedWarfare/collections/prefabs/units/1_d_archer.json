@@ -14,6 +14,13 @@
   "coldResistance": 0.5,
   "lightningResistance": 0.5,
   "armor": 0,
+  "accuracy": 110,
+  "evasion": 20,
+  "criticalChance": 0.1,
+  "criticalMultiplier": 1.5,
+  "passives": [
+    { "type": "increased", "tags": ["ranged", "projectile"], "value": 0.1 }
+  ],
   "render": {
     "animations": {
       "idle": [
