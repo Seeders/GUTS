@@ -228,10 +228,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const responseName = 'PURCHASED_UPGRADE';
 
         try {
-            if (!this.playerExists(playerId)) {
-                return this.respondError(playerId, responseName, 'Player not found', callback);
-            }
-
             const upgradeId = data?.data?.upgradeId || data?.upgradeId;
             const upgrade = this.collections.upgrades[upgradeId];
             if (!upgrade) {
@@ -242,7 +238,22 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
                 return this.respondError(playerId, responseName, `Not in placement phase (${this.game.state.phase})`, callback);
             }
 
-            const result = this.processPurchaseUpgrade(playerId, upgradeId, upgrade);
+            // If a reference building is provided (from AI), derive the team from it
+            const referenceBuildingId = data?.data?.referenceBuildingId || data?.referenceBuildingId;
+            let effectivePlayerId = playerId;
+
+            if (referenceBuildingId !== undefined) {
+                const buildingTeamComp = this.game.getComponent(referenceBuildingId, 'team');
+                if (buildingTeamComp) {
+                    effectivePlayerId = buildingTeamComp.team === this.enums.team.left ? 0 : 1;
+                }
+            }
+
+            if (!this.playerExists(effectivePlayerId)) {
+                return this.respondError(playerId, responseName, 'Player not found', callback);
+            }
+
+            const result = this.processPurchaseUpgrade(effectivePlayerId, upgradeId, upgrade);
             return this.respond(playerId, responseName, result, callback);
 
         } catch (error) {
@@ -268,8 +279,24 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             return this.respondError(playerId, responseName, 'Not in placement phase', callback);
         }
 
-        const playerStats = this.game.call('getPlayerStats', playerId);
-        console.log('[handleLevelSquad] playerStats:', playerStats);
+        // Get the placement to find the squad's team
+        const placement = this.game.call('getPlacementById', placementId);
+        if (!placement || !placement.squadUnits || placement.squadUnits.length === 0) {
+            return this.respondError(playerId, responseName, 'Placement not found', callback);
+        }
+
+        // Get the team from the first unit in the squad
+        const squadEntityId = placement.squadUnits[0];
+        const teamComp = this.game.getComponent(squadEntityId, 'team');
+        if (!teamComp) {
+            return this.respondError(playerId, responseName, 'Squad has no team', callback);
+        }
+
+        // Determine the correct playerId based on the squad's team
+        const effectivePlayerId = teamComp.team === this.enums.team.left ? 0 : 1;
+
+        const playerStats = this.game.call('getPlayerStats', effectivePlayerId);
+        console.log('[handleLevelSquad] playerStats:', playerStats, 'effectivePlayerId:', effectivePlayerId);
         if (!playerStats) {
             return this.respondError(playerId, responseName, 'Player not found', callback);
         }
@@ -531,11 +558,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         try {
             const { buildingEntityId, placementId, targetBuildingId } = data;
 
-            const playerStats = this.game.call('getPlayerStats', playerId);
-            if (!playerStats) {
-                return this.respondError(playerId, responseName, 'Player not found', callback);
-            }
-
             if (this.game.state.phase !== this.enums.gamePhase.placement) {
                 return this.respondError(playerId, responseName, 'Not in placement phase', callback);
             }
@@ -545,17 +567,32 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
                 return this.respondError(playerId, responseName, 'Invalid target building', callback);
             }
 
-            const upgradeCost = targetBuilding.value || 0;
-            if (playerStats.gold < upgradeCost) {
-                return this.respondError(playerId, responseName, 'Not enough gold', callback);
-            }
-
             const oldTransform = this.game.getComponent(buildingEntityId, 'transform');
             if (!oldTransform?.position) {
                 return this.respondError(playerId, responseName, 'Building not found', callback);
             }
 
-            const procResult = this.processUpgradeBuilding(playerId, numericPlayerId, playerStats, buildingEntityId, placementId, targetBuildingId, null);
+            // Get the team from the building being upgraded (not from playerId)
+            // This ensures the upgraded building keeps the correct team in local games with 2 AIs
+            const buildingTeamComp = this.game.getComponent(buildingEntityId, 'team');
+            if (!buildingTeamComp) {
+                return this.respondError(playerId, responseName, 'Building has no team', callback);
+            }
+            const buildingTeam = buildingTeamComp.team;
+
+            // Find the player entity for the building's team to get correct player stats
+            const effectivePlayerId = buildingTeam === this.enums.team.left ? 0 : 1;
+            const playerStats = this.game.call('getPlayerStats', effectivePlayerId);
+            if (!playerStats) {
+                return this.respondError(playerId, responseName, 'Player not found for building team', callback);
+            }
+
+            const upgradeCost = targetBuilding.value || 0;
+            if (playerStats.gold < upgradeCost) {
+                return this.respondError(playerId, responseName, 'Not enough gold', callback);
+            }
+
+            const procResult = this.processUpgradeBuilding(effectivePlayerId, effectivePlayerId, playerStats, buildingEntityId, placementId, targetBuildingId, null);
 
             if (!procResult.success) {
                 return this.respondError(playerId, responseName, procResult.error, callback);

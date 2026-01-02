@@ -24,6 +24,17 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         // Simulation state
         this._simulationComplete = false;
 
+        // Maximum rounds before forced end (0 = unlimited)
+        this._maxRounds = 50;
+
+        // If true, simulation ends when first combat unit dies (default behavior)
+        // If false, simulation continues until team health reaches 0 or max rounds
+        this._endOnFirstDeath = true;
+
+        // Custom termination event - if set, simulation ends when this event fires
+        // Examples: 'onUnitKilled', 'onBuildingDestroyed', 'onTownHallDestroyed'
+        this._terminationEvent = null;
+
         // Unit statistics tracking
         this._unitDeaths = [];
 
@@ -54,8 +65,11 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
      * Set up a simulation
      * Called by HeadlessSkirmishRunner before starting the tick loop
      * AI opponents run via behavior trees - no instructions needed
+     * @param {Object} options - Optional configuration
+     * @param {boolean} options.endOnFirstDeath - If true (default), end when first combat unit dies
+     * @param {number} options.maxRounds - Maximum rounds before forced end (default: 50)
      */
-    setupSimulation() {
+    setupSimulation(options = {}) {
         this._simulationComplete = false;
         this._unitDeaths = [];
         this._combatLog = [];
@@ -64,25 +78,75 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         this._projectilesFired = 0;
         this._abilitiesUsed = { left: 0, right: 0 };
         this._damageDealt = { left: 0, right: 0 };
+
+        // Configure simulation options
+        this._endOnFirstDeath = options.endOnFirstDeath !== false; // Default: true
+        this._maxRounds = options.maxRounds ?? 50;
+        this._terminationEvent = options.terminationEvent || null;
     }
 
     /**
      * Check if simulation is complete
+     * Ends when: team health reaches 0, or max rounds exceeded
      */
     isSimulationComplete() {
-        return this._simulationComplete || this.game.state.gameOver;
+        if (this._simulationComplete) return true;
+        if (this.game.state.gameOver) return true;
+
+        // Check TeamHealthSystem for victory condition
+        const teamHealthSystem = this.game.teamHealthSystem;
+        if (teamHealthSystem && teamHealthSystem.isGameOver()) {
+            const winningTeam = teamHealthSystem.getWinningTeam();
+            const reverseEnums = this.game.getReverseEnums();
+            this.game.state.gameOver = true;
+            this.game.state.winner = reverseEnums.team?.[winningTeam] || winningTeam;
+            this._simulationComplete = true;
+            return true;
+        }
+
+        // Check max rounds limit (stop when round reaches maxRounds)
+        if (this._maxRounds > 0 && this.game.state.round >= this._maxRounds) {
+            // Determine winner by remaining team health
+            if (teamHealthSystem) {
+                const leftHealth = teamHealthSystem.getLeftHealth();
+                const rightHealth = teamHealthSystem.getRightHealth();
+                const reverseEnums = this.game.getReverseEnums();
+
+                this.game.state.gameOver = true;
+                if (leftHealth > rightHealth) {
+                    this.game.state.winner = reverseEnums.team?.[this.enums.team.left] || 'left';
+                } else if (rightHealth > leftHealth) {
+                    this.game.state.winner = reverseEnums.team?.[this.enums.team.right] || 'right';
+                } else {
+                    this.game.state.winner = 'draw';
+                }
+            } else {
+                this.game.state.gameOver = true;
+                this.game.state.winner = 'timeout';
+            }
+            this._simulationComplete = true;
+            return true;
+        }
+
+        return false;
     }
 
     /**
      * Get simulation results
      */
     getSimulationResults() {
+        const teamHealthSystem = this.game.teamHealthSystem;
         return {
             gameOver: this.game.state.gameOver,
             winner: this.game.state.winner,
             round: this.game.state.round,
             tickCount: this.game.tickCount,
-            unitStatistics: this.getUnitStatistics()
+            unitStatistics: this.getUnitStatistics(),
+            teamHealth: teamHealthSystem ? {
+                left: teamHealthSystem.getLeftHealth(),
+                right: teamHealthSystem.getRightHealth(),
+                maxHealth: teamHealthSystem.MAX_TEAM_HEALTH
+            } : null
         };
     }
 
@@ -194,8 +258,18 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         // Track unit death statistics
         this._trackUnitDeath(entityId);
 
+        // Check for custom termination event
+        if (this._terminationEvent === 'onTownHallDestroyed') {
+            this._checkTownHallDestroyed(entityId);
+            return;
+        }
+
+        // If endOnFirstDeath is false, let TeamHealthSystem handle victory
+        if (!this._endOnFirstDeath) {
+            return;
+        }
+
         // Don't process further deaths once simulation is already complete
-        // This ensures the FIRST death determines the winner (prevents draw scenarios)
         if (this._simulationComplete) {
             return;
         }
@@ -214,6 +288,32 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
 
         // A combat unit died - end simulation
         // The winning team is the opposite of the team that lost a unit
+        const losingTeam = teamComp.team;
+        const winningTeam = losingTeam === this.enums.team.left ? this.enums.team.right : this.enums.team.left;
+        const reverseEnums = this.game.getReverseEnums();
+
+        this.game.state.gameOver = true;
+        this.game.state.winner = reverseEnums.team?.[winningTeam] || winningTeam;
+        this._simulationComplete = true;
+    }
+
+    /**
+     * Check if a town hall was destroyed - ends simulation with that team losing
+     * @private
+     */
+    _checkTownHallDestroyed(entityId) {
+        if (this._simulationComplete) return;
+
+        const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+        const teamComp = this.game.getComponent(entityId, 'team');
+        if (!unitTypeComp || !teamComp) return;
+
+        const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitId = unitDef?.id || 'unknown';
+
+        // Only end if a town hall was destroyed
+        if (unitId !== 'townHall') return;
+
         const losingTeam = teamComp.team;
         const winningTeam = losingTeam === this.enums.team.left ? this.enums.team.right : this.enums.team.left;
         const reverseEnums = this.game.getReverseEnums();

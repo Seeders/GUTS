@@ -132,7 +132,7 @@
   "icon": "ballista",
   "spriteAnimationSet": "ballista",
   "requiresUnits": [],
-  "requiresBuildings": [],
+  "requiresBuildings": ["keep"],
   "projectile": "ballista_bolt",
   "range": 300
 }

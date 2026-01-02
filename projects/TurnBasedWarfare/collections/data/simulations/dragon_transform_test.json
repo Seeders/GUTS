@@ -4,5 +4,7 @@
   "seed": 12345,
   "startingGold": 0,
   "level": "level_1",
-  "buildOrders": ["dragonTransformTest", "emptyBuildOrder"]
+  "buildOrders": ["dragonTransformTest", "emptyBuildOrder"],
+  "maxRounds": 10,
+  "endOnFirstDeath": false
 }

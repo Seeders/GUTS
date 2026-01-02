@@ -4,5 +4,7 @@
   "seed": 42,
   "startingGold": 500,
   "level": "level_1",
-  "buildOrders": ["barbarian", "soldier"]
+  "buildOrders": ["barbarian", "soldier"],
+  "maxRounds": 10,
+  "endOnFirstDeath": false
 }

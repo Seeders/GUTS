@@ -4,5 +4,7 @@
   "seed": 42,
   "startingGold": 500,
   "level": "level_1",
-  "buildOrders": ["apprentice", "archer"]
+  "buildOrders": ["apprentice", "archer"],
+  "maxRounds": 10,
+  "endOnFirstDeath": false
 }

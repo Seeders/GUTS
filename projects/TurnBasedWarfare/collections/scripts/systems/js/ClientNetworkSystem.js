@@ -652,7 +652,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     handlePlayerReadyUpdate(data){
         this.game.call('updateLobby', data.gameState);
         // Show notification for ready state changes
-        const myPlayerId = this.game.clientNetworkManager.playerId;
+        const myPlayerId = this.game.clientNetworkManager?.playerId ?? this.game.state.localPlayerId;
         if (data.playerId === myPlayerId) {
             this.game.call('showNotification',
                 data.ready ? 'You are ready!' : 'Ready status removed',
@@ -843,16 +843,19 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.desyncDebugger.displaySync(true);
         this.game.desyncDebugger.enabled = false;
         // Update player entity gold from server state
-        const myPlayerId = this.game.clientNetworkManager.playerId;
-        data.gameState?.players?.forEach((player) => {
-            if(player.id == myPlayerId) {
-                // Update player entity
-                const playerStats = this.game.call('getPlayerStats', myPlayerId);
-                if (playerStats) {
-                    playerStats.gold = player.stats.gold;
+        // In local/editor mode, clientNetworkManager doesn't exist
+        const myPlayerId = this.game.clientNetworkManager?.playerId ?? this.game.state.localPlayerId;
+        if (myPlayerId) {
+            data.gameState?.players?.forEach((player) => {
+                if(player.id == myPlayerId) {
+                    // Update player entity
+                    const playerStats = this.game.call('getPlayerStats', myPlayerId);
+                    if (playerStats) {
+                        playerStats.gold = player.stats.gold;
+                    }
                 }
-            }
-        })
+            });
+        }
         this.game.state.round += 1;
         // Transition back to placement phase
         this.game.state.phase = this.enums.gamePhase.placement;
@@ -938,7 +941,8 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     handleGameEnd(data) {
-        const myPlayerId = this.game.clientNetworkManager.playerId;
+        // In local/editor mode, clientNetworkManager doesn't exist
+        const myPlayerId = this.game.clientNetworkManager?.playerId ?? this.game.state.localPlayerId;
         const isWinner = data.result.winner === myPlayerId;
         const reason = data.result.reason || 'unknown';
 
@@ -973,7 +977,8 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        const myPlayerId = this.game.clientNetworkManager.playerId;
+        // In local/editor mode, clientNetworkManager doesn't exist
+        const myPlayerId = this.game.clientNetworkManager?.playerId ?? this.game.state.localPlayerId;
         const myStats = result.finalStats?.[myPlayerId];
         const totalRounds = result.totalRounds || this.game.state.round || 1;
 
@@ -1078,7 +1083,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
         // Legacy multiplayer sync (when server sends players array from room)
         // This is used in lobby/multiplayer - local game uses ECS entities directly
-        if (gameState.players) {
+        if (gameState.players && this.game.clientNetworkManager) {
             const myPlayerId = this.game.clientNetworkManager.playerId;
             const myPlayer = gameState.players.find(p => p.id === myPlayerId);
 

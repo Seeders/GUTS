@@ -183,6 +183,15 @@ class BehaviorSystem extends GUTS.BaseSystem {
                 aiOpponent.actionIndex = 0;
             }
         }
+
+        // Reset heuristic AI state for new round
+        const heuristicEntities = this.game.getEntitiesWith('aiHeuristicState');
+        for (const entityId of heuristicEntities) {
+            const aiHeuristicState = this.game.getComponent(entityId, 'aiHeuristicState');
+            if (aiHeuristicState) {
+                aiHeuristicState.actionsExecuted = false;
+            }
+        }
     }
 
     /**
@@ -223,14 +232,21 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
     /**
      * Update AI opponent entities during placement phase
-     * These are virtual entities with aiOpponent component that execute build orders
+     * These are virtual entities with aiOpponent or aiHeuristicState component that execute build orders
      */
     updateAIOpponents(dt) {
         // Only run for local game (skirmish mode) or headless simulation
         if (!this.game.state.isLocalGame && !this.game.state.isHeadlessSimulation) return;
 
-        const aiEntities = this.game.getEntitiesWith('aiOpponent', 'aiState');
-        for (const entityId of aiEntities) {
+        // Update build order AI entities
+        const buildOrderEntities = this.game.getEntitiesWith('aiOpponent', 'aiState');
+        for (const entityId of buildOrderEntities) {
+            this.updateAIOpponent(entityId, dt);
+        }
+
+        // Update heuristic AI entities
+        const heuristicEntities = this.game.getEntitiesWith('aiHeuristicState', 'aiState');
+        for (const entityId of heuristicEntities) {
             this.updateAIOpponent(entityId, dt);
         }
     }

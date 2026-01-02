@@ -1,0 +1,10 @@
+{
+  "title": "AI Plan Strategy",
+  "behaviorNodeType": "action",
+  "type": "AIPlanStrategyBehaviorAction",
+  "priority": 10,
+  "description": "Determines strategic direction and updates plan based on game state analysis",
+  "parameters": "{}",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/AIPlanStrategyBehaviorAction.js",
+  "fileName": "AIPlanStrategyBehaviorAction"
+}

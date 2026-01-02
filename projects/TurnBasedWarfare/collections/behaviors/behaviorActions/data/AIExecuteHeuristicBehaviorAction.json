@@ -1,0 +1,10 @@
+{
+  "title": "AI Execute Heuristic",
+  "behaviorNodeType": "action",
+  "type": "AIExecuteHeuristicBehaviorAction",
+  "priority": 10,
+  "description": "Scores and executes building/unit actions based on heuristics and strategic plan",
+  "parameters": "{}",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/AIExecuteHeuristicBehaviorAction.js",
+  "fileName": "AIExecuteHeuristicBehaviorAction"
+}

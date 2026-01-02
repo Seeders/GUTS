@@ -283,7 +283,73 @@ class SimulationEditor {
         );
         this.cameraController.initialize(terrainSize);
 
+        // Center the camera on the map
+        this.centerCameraOnMap(terrainSize);
+
         console.log('[SimulationEditor] Camera controls set up with terrain size:', terrainSize);
+    }
+
+    /**
+     * Center the camera to look at the middle of the map
+     */
+    centerCameraOnMap(terrainSize) {
+        const worldSystem = this.editorContext?.worldSystem;
+        const worldRenderer = worldSystem?.worldRenderer;
+        const camera = worldRenderer?.camera;
+
+        if (!camera) {
+            console.warn('[SimulationEditor] Cannot center camera - camera not available');
+            return;
+        }
+
+        // Try to get center based on starting locations (actual gameplay area)
+        let centerX = terrainSize / 2;
+        let centerZ = terrainSize / 2;
+
+        const startingLocations = this.editorContext?.call('getStartingLocationsFromLevel');
+        if (startingLocations) {
+            const enums = this.editorContext.call('getEnums');
+            const leftLoc = startingLocations[enums.team.left];
+            const rightLoc = startingLocations[enums.team.right];
+
+            if (leftLoc && rightLoc) {
+                // Convert tile positions to world coordinates
+                const leftWorld = this.editorContext.call('tileToWorld', leftLoc.x, leftLoc.z);
+                const rightWorld = this.editorContext.call('tileToWorld', rightLoc.x, rightLoc.z);
+
+                if (leftWorld && rightWorld) {
+                    centerX = (leftWorld.x + rightWorld.x) / 2;
+                    centerZ = (leftWorld.z + rightWorld.z) / 2;
+                }
+            }
+        }
+
+        const cameraSettings = this.collections?.cameras?.main;
+        const cameraHeight = cameraSettings?.position?.y || 512;
+
+        // Set up isometric camera angle (same as game)
+        const pitch = 35.264 * Math.PI / 180;
+        const yaw = 135 * Math.PI / 180;
+        const distance = cameraHeight;
+
+        // Calculate camera position to look at map center
+        const cdx = Math.sin(yaw) * Math.cos(pitch);
+        const cdz = Math.cos(yaw) * Math.cos(pitch);
+
+        camera.position.set(
+            centerX - cdx * distance,
+            distance,
+            centerZ - cdz * distance
+        );
+
+        // Look at the center of the map
+        const lookAtPoint = new THREE.Vector3(centerX, 0, centerZ);
+        camera.lookAt(lookAtPoint);
+        camera.userData.lookAt = lookAtPoint.clone();
+
+        camera.updateProjectionMatrix();
+
+        console.log('[SimulationEditor] Camera centered on map at:', centerX, centerZ);
     }
 
     /**
@@ -353,7 +419,9 @@ class SimulationEditor {
             startingGold: config.startingGold,
             seed: config.seed,
             leftBuildOrder: leftBuildOrder,
-            rightBuildOrder: rightBuildOrder
+            rightBuildOrder: rightBuildOrder,
+            maxRounds: config.maxRounds || 10,
+            endOnFirstDeath: config.endOnFirstDeath ?? false
         };
         game.state.gameSeed = config.seed;
 
@@ -396,10 +464,23 @@ class SimulationEditor {
             game.call('initializeGame', null);
         }
 
+        // Configure HeadlessSimulationSystem with simulation options
+        const headlessSimSystem = game.headlessSimulationSystem;
+        if (headlessSimSystem && headlessSimSystem.setupSimulation) {
+            console.log('[SimulationEditor] Configuring HeadlessSimulationSystem - maxRounds:', config.maxRounds, 'endOnFirstDeath:', config.endOnFirstDeath);
+            headlessSimSystem.setupSimulation({
+                endOnFirstDeath: config.endOnFirstDeath ?? false,
+                maxRounds: config.maxRounds || 10
+            });
+        }
+
         // Spawn AI opponents for both teams
-        console.log('[SimulationEditor] Spawning AI opponents...');
-        this.spawnAIOpponent(leftTeam, leftBuildOrder);
-        this.spawnAIOpponent(rightTeam, rightBuildOrder);
+        // aiModes[0] is left team, aiModes[1] is right team
+        const leftAiMode = config.aiModes?.[0] || 'buildOrder';
+        const rightAiMode = config.aiModes?.[1] || 'buildOrder';
+        console.log('[SimulationEditor] Spawning AI opponents - Left:', leftAiMode, 'Right:', rightAiMode);
+        this.spawnAIOpponent(leftTeam, leftBuildOrder, leftAiMode);
+        this.spawnAIOpponent(rightTeam, rightBuildOrder, rightAiMode);
 
         this.isRunning = true;
         console.log('[SimulationEditor] Simulation setup complete - isRunning:', this.isRunning);
@@ -407,10 +488,13 @@ class SimulationEditor {
 
     /**
      * Spawn an AI opponent entity for a team
-     * Copied from HeadlessSkirmishRunner
+     * Supports both 'buildOrder' and 'heuristic' AI modes
+     * @param {number} team - Team enum value
+     * @param {string} buildOrderId - Build order ID (for buildOrder mode)
+     * @param {string} aiMode - AI mode: 'buildOrder' or 'heuristic' (default: 'buildOrder')
      */
-    spawnAIOpponent(team, buildOrderId) {
-        console.log('[SimulationEditor] spawnAIOpponent - team:', team, 'buildOrderId:', buildOrderId);
+    spawnAIOpponent(team, buildOrderId, aiMode = 'buildOrder') {
+        console.log('[SimulationEditor] spawnAIOpponent - team:', team, 'buildOrderId:', buildOrderId, 'aiMode:', aiMode);
         const game = this.editorContext;
         const enums = game.getEnums();
 
@@ -422,22 +506,52 @@ class SimulationEditor {
             team: team
         });
 
-        // Add aiState component pointing to AIOpponentBehaviorTree
         console.log('[SimulationEditor] behaviorTrees enum:', enums.behaviorTrees);
-        game.addComponent(aiEntityId, 'aiState', {
-            rootBehaviorTree: enums.behaviorTrees?.AIOpponentBehaviorTree ?? 0,
-            rootBehaviorTreeCollection: enums.behaviorCollection?.behaviorTrees ?? 0,
-            currentAction: 0,
-            currentActionCollection: 0
-        });
 
-        // Add aiOpponent component with build order config
-        game.addComponent(aiEntityId, 'aiOpponent', {
-            buildOrderId: buildOrderId,
-            currentRound: 0,
-            actionsExecuted: false,
-            actionIndex: 0
-        });
+        if (aiMode === 'heuristic') {
+            // Heuristic AI - adapts based on visible game state
+            const behaviorTreeId = enums.behaviorTrees?.AIHeuristicBehaviorTree;
+            console.log('[SimulationEditor] Using AIHeuristicBehaviorTree with ID:', behaviorTreeId);
+
+            game.addComponent(aiEntityId, 'aiState', {
+                rootBehaviorTree: behaviorTreeId,
+                rootBehaviorTreeCollection: enums.behaviorCollection?.behaviorTrees ?? 0,
+                currentAction: 0,
+                currentActionCollection: 0
+            });
+
+            // Add heuristic state component for AI memory
+            game.addComponent(aiEntityId, 'aiHeuristicState', {
+                currentStrategy: 'economy',
+                strategicPlan: { targetBuildings: [], targetUnits: {} },
+                visibleEnemyUnits: {},
+                visibleEnemyBuildings: [],
+                lastAnalyzedRound: 0,
+                executedRound: 0,
+                ownArmyPower: 0,
+                estimatedEnemyPower: 0
+            });
+
+            console.log('[SimulationEditor] Spawned heuristic AI for team', team);
+        } else {
+            // Build order AI - uses predefined build order JSON files
+            game.addComponent(aiEntityId, 'aiState', {
+                rootBehaviorTree: enums.behaviorTrees?.AIOpponentBehaviorTree ?? 0,
+                rootBehaviorTreeCollection: enums.behaviorCollection?.behaviorTrees ?? 0,
+                currentAction: 0,
+                currentActionCollection: 0
+            });
+
+            // Add aiOpponent component with build order config
+            game.addComponent(aiEntityId, 'aiOpponent', {
+                buildOrderId: buildOrderId,
+                currentRound: 0,
+                actionsExecuted: false,
+                actionIndex: 0
+            });
+
+            console.log('[SimulationEditor] Spawned build order AI for team', team);
+        }
     }
 
     /**

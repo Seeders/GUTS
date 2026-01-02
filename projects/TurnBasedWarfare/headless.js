@@ -232,6 +232,23 @@ function parseArgs() {
         config.rightBuildOrder = simConfig.buildOrders[1];
         config.simulationName = simConfig.name;
         config.simulationDescription = simConfig.description;
+
+        // Use aiModes array if present - [0] is left team, [1] is right team
+        if (simConfig.aiModes) {
+            config.leftAiMode = simConfig.aiModes[0] || 'buildOrder';
+            config.rightAiMode = simConfig.aiModes[1] || 'buildOrder';
+        }
+
+        // Termination options
+        if (simConfig.terminationEvent) {
+            config.terminationEvent = simConfig.terminationEvent;
+        }
+        if (simConfig.maxRounds !== undefined) {
+            config.maxRounds = simConfig.maxRounds;
+        }
+        if (simConfig.endOnFirstDeath !== undefined) {
+            config.endOnFirstDeath = simConfig.endOnFirstDeath;
+        }
     }
 
     return config;
@@ -466,7 +483,13 @@ async function runSingleSimulation(runner, simConfig, options = {}) {
         startingGold: simConfig.startingGold,
         seed: simConfig.seed,
         leftBuildOrder: simConfig.leftBuildOrder,
-        rightBuildOrder: simConfig.rightBuildOrder
+        rightBuildOrder: simConfig.rightBuildOrder,
+        leftAiMode: simConfig.leftAiMode || 'buildOrder',
+        rightAiMode: simConfig.rightAiMode || 'buildOrder',
+        // Termination options
+        terminationEvent: simConfig.terminationEvent,
+        maxRounds: simConfig.maxRounds,
+        endOnFirstDeath: simConfig.endOnFirstDeath
     });
 
     // Enable call logging for combat-relevant services
@@ -820,7 +843,13 @@ async function runBatchSimulations(runner, simulationIds, options = {}) {
             startingGold: simConfig.startingGold,
             seed: simConfig.seed,
             leftBuildOrder: simConfig.buildOrders[0],
-            rightBuildOrder: simConfig.buildOrders[1]
+            rightBuildOrder: simConfig.buildOrders[1],
+            leftAiMode: simConfig.aiModes?.[0] || 'buildOrder',
+            rightAiMode: simConfig.aiModes?.[1] || 'buildOrder',
+            // Termination options
+            terminationEvent: simConfig.terminationEvent,
+            maxRounds: simConfig.maxRounds,
+            endOnFirstDeath: simConfig.endOnFirstDeath
         };
 
         try {
@@ -1051,7 +1080,13 @@ async function main() {
             startingGold: config.startingGold,
             seed: config.seed,
             leftBuildOrder: config.leftBuildOrder,
-            rightBuildOrder: config.rightBuildOrder
+            rightBuildOrder: config.rightBuildOrder,
+            leftAiMode: config.leftAiMode || 'buildOrder',
+            rightAiMode: config.rightAiMode || 'buildOrder',
+            // Termination options
+            terminationEvent: config.terminationEvent,
+            maxRounds: config.maxRounds,
+            endOnFirstDeath: config.endOnFirstDeath
         };
 
         console.log(`[Headless] Simulation configured:`);
@@ -1066,6 +1101,8 @@ async function main() {
         console.log(`  Starting Gold: ${config.startingGold}`);
         console.log(`  Left Build Order: ${config.leftBuildOrder}`);
         console.log(`  Right Build Order: ${config.rightBuildOrder}`);
+        console.log(`  Left AI Mode: ${config.leftAiMode || 'buildOrder'}`);
+        console.log(`  Right AI Mode: ${config.rightAiMode || 'buildOrder'}`);
 
         console.log(`[Headless] Running simulation with AI opponents...`);
 

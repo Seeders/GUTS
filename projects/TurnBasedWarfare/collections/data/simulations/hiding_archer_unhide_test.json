@@ -4,5 +4,7 @@
   "seed": 12345,
   "startingGold": 0,
   "level": "level_forest_meadow",
-  "buildOrders": ["archerHideInForest", "apprenticeWalkToArcher"]
+  "buildOrders": ["archerHideInForest", "apprenticeWalkToArcher"],
+  "maxRounds": 10,
+  "endOnFirstDeath": false
 }
