@@ -118,13 +118,16 @@ export default class HeadlessEngine extends BaseEngine {
      *
      * @param {Object} options
      * @param {number} options.timeoutMs - Maximum time in milliseconds before timeout (default: 300000)
+     * @param {boolean} options.endOnFirstDeath - If true (default), end when first combat unit dies
+     * @param {number} options.maxRounds - Maximum rounds before forced end (default: 50)
+     * @param {string} options.terminationEvent - Custom event to end simulation (e.g., 'onTownHallDestroyed')
      * @returns {Promise<Object>} Simulation results
      */
     async runSimulation(options = {}) {
         const {
             timeoutMs = this.defaultTimeoutMs
         } = options;
-        const maxTicks = 10000;
+        const maxTicks = 100000; // Increased for longer simulations
 
         const startTime = this.getCurrentTime();
 
@@ -145,7 +148,7 @@ export default class HeadlessEngine extends BaseEngine {
         // Run the actual simulation with timeout protection
         try {
             const result = await Promise.race([
-                this._runSimulationInternal(maxTicks, startTime),
+                this._runSimulationInternal(maxTicks, startTime, options),
                 timeoutPromise
             ]);
             // Clear timeout on success
@@ -190,7 +193,7 @@ export default class HeadlessEngine extends BaseEngine {
      * Internal simulation runner (separated for timeout handling)
      * @private
      */
-    async _runSimulationInternal(maxTicks, startTime) {
+    async _runSimulationInternal(maxTicks, startTime, options = {}) {
         const game = this.gameInstance;
 
         // Get or create the HeadlessSimulationSystem
@@ -199,8 +202,12 @@ export default class HeadlessEngine extends BaseEngine {
             throw new Error('[HeadlessEngine] HeadlessSimulationSystem not found. Ensure it is registered in the headless scene config.');
         }
 
-        // Set up the simulation (AI opponents handle everything via behavior trees)
-        simSystem.setupSimulation();
+        // Set up the simulation with options (AI opponents handle everything via behavior trees)
+        simSystem.setupSimulation({
+            endOnFirstDeath: options.endOnFirstDeath,
+            maxRounds: options.maxRounds,
+            terminationEvent: options.terminationEvent
+        });
 
         // Run the tick loop
         this.running = true;

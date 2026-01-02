@@ -43,6 +43,8 @@ class HeadlessSkirmishRunner {
      * @param {number} config.seed - Random seed for deterministic simulation
      * @param {string} config.leftBuildOrder - Build order ID for left team (default: 'basic')
      * @param {string} config.rightBuildOrder - Build order ID for right team (default: 'basic')
+     * @param {string} config.leftAiMode - AI mode for left team: 'buildOrder' or 'heuristic' (default: 'buildOrder')
+     * @param {string} config.rightAiMode - AI mode for right team: 'buildOrder' or 'heuristic' (default: 'buildOrder')
      * @returns {Promise<void>}
      */
     async setup(config = {}) {
@@ -53,6 +55,8 @@ class HeadlessSkirmishRunner {
             seed: config.seed || Date.now(),
             leftBuildOrder: config.leftBuildOrder || 'basic',
             rightBuildOrder: config.rightBuildOrder || 'basic',
+            leftAiMode: config.leftAiMode || 'buildOrder',
+            rightAiMode: config.rightAiMode || 'buildOrder',
             ...config
         };
 
@@ -112,8 +116,8 @@ class HeadlessSkirmishRunner {
         }
 
         // Spawn AI opponent entities for both teams
-        this.spawnAIOpponent(leftTeam, this.config.leftBuildOrder);
-        this.spawnAIOpponent(rightTeam, this.config.rightBuildOrder);
+        this.spawnAIOpponent(leftTeam, this.config.leftBuildOrder, this.config.leftAiMode);
+        this.spawnAIOpponent(rightTeam, this.config.rightBuildOrder, this.config.rightAiMode);
 
         this.isSetup = true;
     }
@@ -121,9 +125,10 @@ class HeadlessSkirmishRunner {
     /**
      * Spawn an AI opponent entity for a team
      * @param {number} team - Team enum value
-     * @param {string} buildOrderId - Build order ID to use
+     * @param {string} buildOrderId - Build order ID to use (for buildOrder mode)
+     * @param {string} aiMode - AI mode: 'buildOrder' or 'heuristic' (default: 'buildOrder')
      */
-    spawnAIOpponent(team, buildOrderId) {
+    spawnAIOpponent(team, buildOrderId, aiMode = 'buildOrder') {
         const game = this.game;
         const enums = game.call('getEnums');
 
@@ -134,36 +139,81 @@ class HeadlessSkirmishRunner {
             team: team
         });
 
-        // Add aiState component pointing to AIOpponentBehaviorTree
-        game.addComponent(aiEntityId, 'aiState', {
-            rootBehaviorTree: enums.behaviorTrees?.AIOpponentBehaviorTree ?? 0,
-            rootBehaviorTreeCollection: enums.behaviorCollection?.behaviorTrees ?? 0,
-            currentAction: 0,
-            currentActionCollection: 0
-        });
+        console.log(`[SkirmishRunner] spawnAIOpponent called for team ${team}, aiMode: ${aiMode}`);
 
-        // Add aiOpponent component with build order config
-        game.addComponent(aiEntityId, 'aiOpponent', {
-            buildOrderId: buildOrderId,
-            currentRound: 0,
-            actionsExecuted: false,
-            actionIndex: 0
-        });
+        // Look up behavior tree by name from enums
+        const behaviorTreesEnum = enums.behaviorTrees || {};
+        console.log(`[SkirmishRunner] Available behavior trees:`, Object.keys(behaviorTreesEnum).join(', '));
+        console.log(`[SkirmishRunner] AIHeuristicBehaviorTree enum value:`, behaviorTreesEnum.AIHeuristicBehaviorTree);
+        console.log(`[SkirmishRunner] AIOpponentBehaviorTree enum value:`, behaviorTreesEnum.AIOpponentBehaviorTree);
+
+        if (aiMode === 'heuristic') {
+            // Heuristic AI - adapts based on visible game state
+            // Use the heuristic behavior tree ID (0 is a valid ID!)
+            const behaviorTreeId = behaviorTreesEnum.AIHeuristicBehaviorTree;
+            console.log(`[SkirmishRunner] Using AIHeuristicBehaviorTree with ID: ${behaviorTreeId}`);
+
+            game.addComponent(aiEntityId, 'aiState', {
+                rootBehaviorTree: behaviorTreeId,
+                rootBehaviorTreeCollection: enums.behaviorCollection?.behaviorTrees ?? 0,
+                currentAction: 0,
+                currentActionCollection: 0
+            });
+
+            // Add heuristic state component for AI memory
+            game.addComponent(aiEntityId, 'aiHeuristicState', {
+                currentStrategy: 'economy',
+                strategicPlan: { targetBuildings: [], targetUnits: {} },
+                visibleEnemyUnits: {},
+                visibleEnemyBuildings: [],
+                lastAnalyzedRound: 0,
+                executedRound: 0,
+                ownArmyPower: 0,
+                estimatedEnemyPower: 0
+            });
+
+            this._log.info(`Spawned heuristic AI for team ${team}`);
+        } else {
+            // Build order AI - uses predefined build order JSON files
+            game.addComponent(aiEntityId, 'aiState', {
+                rootBehaviorTree: enums.behaviorTrees?.AIOpponentBehaviorTree ?? 0,
+                rootBehaviorTreeCollection: enums.behaviorCollection?.behaviorTrees ?? 0,
+                currentAction: 0,
+                currentActionCollection: 0
+            });
+
+            // Add aiOpponent component with build order config
+            game.addComponent(aiEntityId, 'aiOpponent', {
+                buildOrderId: buildOrderId,
+                currentRound: 0,
+                actionsExecuted: false,
+                actionIndex: 0
+            });
+
+            this._log.info(`Spawned build order AI (${buildOrderId}) for team ${team}`);
+        }
     }
 
     /**
      * Run simulation with AI opponents using behavior trees
      * The AI opponents handle placement and battle phases automatically
+     * @param {Object} options - Optional run options
+     * @param {boolean} options.endOnFirstDeath - If true (default), end when first combat unit dies
+     * @param {number} options.maxRounds - Maximum rounds before forced end (default: 50)
+     * @param {string} options.terminationEvent - Custom event to end simulation (e.g., 'onTownHallDestroyed')
      * @returns {Promise<Object>} Simulation results
      */
-    async run() {
+    async run(options = {}) {
         if (!this.isSetup) {
             throw new Error('Must call setup() before running simulation');
         }
 
         // Run the simulation - AI opponents handle everything via behavior trees
         return await this.engine.runSimulation({
-            seed: this.config.seed
+            seed: this.config.seed,
+            endOnFirstDeath: options.endOnFirstDeath ?? this.config.endOnFirstDeath,
+            maxRounds: options.maxRounds ?? this.config.maxRounds,
+            terminationEvent: options.terminationEvent ?? this.config.terminationEvent
         });
     }
 
