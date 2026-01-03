@@ -8,7 +8,8 @@ class PathfindingSystem extends GUTS.BaseSystem {
         'togglePathfindingDebug',
         'getEntityPath',
         'setEntityPath',
-        'clearEntityPath'
+        'clearEntityPath',
+        'getRampPositions'
     ];
 
     constructor(game) {
@@ -186,6 +187,26 @@ class PathfindingSystem extends GUTS.BaseSystem {
     
     hasRampAt(gridX, gridZ) {
         return this.ramps.has(`${gridX},${gridZ}`);
+    }
+
+    /**
+     * Get all ramp positions as world coordinates.
+     * Used by AI to find defensive positions near ramps.
+     * @returns {Array<{x: number, z: number}>} Array of world positions
+     */
+    getRampPositions() {
+        const positions = [];
+
+        for (const key of this.ramps) {
+            const [gridX, gridZ] = key.split(',').map(Number);
+            // Use GridSystem's tileToWorld service (via CoordinateTranslator)
+            const worldPos = this.game.call('tileToWorld', gridX, gridZ);
+            if (worldPos) {
+                positions.push(worldPos);
+            }
+        }
+
+        return positions;
     }
 
     // Get height level at nav grid position

@@ -344,7 +344,16 @@ class GoldMineSystem extends GUTS.BaseSystem {
     onIssuedPlayerOrders(entityId) {
         const goldMines = this.game.getEntitiesWith('goldMine');
         goldMines.forEach((mineId) => {
-            this.removeMinerFromQueue(mineId, entityId);
+            const goldMine = this.game.getComponent(mineId, 'goldMine');
+            if (!goldMine) return;
+
+            // If this miner was the current miner, clear them and process next in queue
+            if (goldMine.currentMiner === entityId) {
+                this.processNextMinerInQueue(mineId);
+            } else {
+                // Otherwise just remove from queue if they were waiting
+                this.removeMinerFromQueue(mineId, entityId);
+            }
         });
     }
 

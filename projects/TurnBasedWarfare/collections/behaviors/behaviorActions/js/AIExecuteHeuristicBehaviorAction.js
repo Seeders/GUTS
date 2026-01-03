@@ -1462,11 +1462,12 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
         const round = game.state.round || 1;
         let score = 0;
 
-        // Don't build sentry towers too early - need production first
-        if (round >= 3 && currentSentryCount === 0) {
-            score = 45; // First sentry tower after we have some units
-        } else if (round >= 6 && currentSentryCount === 1) {
-            score = 35; // Second sentry tower later in game
+        // Build first sentry tower early to defend against rushes
+        // Higher priority than most units to ensure defensive coverage
+        if (round >= 2 && currentSentryCount === 0) {
+            score = 65; // First sentry tower - high priority for early defense
+        } else if (round >= 4 && currentSentryCount === 1) {
+            score = 50; // Second sentry tower for better coverage
         }
 
         if (score > 0) {
