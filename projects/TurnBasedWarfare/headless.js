@@ -44,6 +44,20 @@ function loadCompiledGame() {
     // Set up window-like global context for compiled code
     global.window = global;
 
+    // Mock document for browser-dependent code
+    global.document = {
+        getElementById: () => null,
+        querySelector: () => null,
+        createElement: () => ({
+            style: {},
+            appendChild: () => {},
+            classList: { add: () => {}, remove: () => {} }
+        }),
+        head: { appendChild: () => {} },
+        body: { appendChild: () => {} },
+        documentElement: { clientWidth: 1920, clientHeight: 1080 }
+    };
+
     // Set up CommonJS-like environment for webpack bundle
     global.module = { exports: {} };
     global.exports = global.module.exports;
@@ -330,6 +344,30 @@ function formatResultsAsText(result, verbose = false) {
 
     lines.push(`  Result: ${winnerDisplay}`);
     lines.push(`  Completed: ${result.completed ? 'Yes' : 'No (timeout)'}`);
+
+    // Debug info for winner determination
+    if (result.debugInfo) {
+        lines.push(`────────────────────────────────────────────────────────────`);
+        lines.push(`  DEBUG INFO`);
+        lines.push(`────────────────────────────────────────────────────────────`);
+        if (result.debugInfo.errorPath) {
+            lines.push(`  ERROR PATH: ${result.debugInfo.error}`);
+        }
+        lines.push(`  Raw Phase: ${result.debugInfo.rawPhase}`);
+        lines.push(`  Phase Name: ${result.debugInfo.phaseName}`);
+        lines.push(`  game.state.winner: ${result.debugInfo.gameStateWinner}`);
+        lines.push(`  game.state.gameOver: ${result.debugInfo.gameStateGameOver}`);
+        lines.push(`  Entity Counts - Left: ${result.debugInfo.entityCountsLeft}, Right: ${result.debugInfo.entityCountsRight}`);
+        lines.push(`  Final Winner: ${result.debugInfo.finalWinner}`);
+        if (result.debugInfo.phaseCheck) {
+            lines.push(`  Phase Check (SimSystem): currentPhase=${result.debugInfo.phaseCheck.currentPhase}, endedEnum=${result.debugInfo.phaseCheck.endedEnum}, matches=${result.debugInfo.phaseCheck.matches}`);
+        }
+        if (result.debugInfo.phaseCheckEngine) {
+            const pc = result.debugInfo.phaseCheckEngine;
+            lines.push(`  Phase Check (Engine): currentPhase=${pc.currentPhase}, endedEnum=${pc.endedEnum}, matchesEnum=${pc.matchesEnum}, matchesString=${pc.matchesString}`);
+        }
+    }
+
     lines.push(`────────────────────────────────────────────────────────────`);
     lines.push(`  BATTLE STATISTICS`);
     lines.push(`────────────────────────────────────────────────────────────`);
@@ -529,13 +567,34 @@ async function runSingleSimulation(runner, simConfig, options = {}) {
     console.warn = originalWarn;
     console.error = originalError;
 
+    // Determine winner - if phase is 'ended' but winner not set, calculate from entity counts
+    let winner = results.winner;
+    let completed = results.completed;
+    console.log(`[headless.js] Results from runner: winner=${winner}, phase=${results.phase}, completed=${completed}`);
+
+    if (!winner && (results.phase === 'ended' || results.phase === 4)) {
+        // Game ended but winner wasn't determined - calculate from surviving entities
+        const entityCounts = results.entityCounts || {};
+        const leftCount = entityCounts.byTeam?.left || 0;
+        const rightCount = entityCounts.byTeam?.right || 0;
+
+        if (leftCount > rightCount) {
+            winner = 'left';
+        } else if (rightCount > leftCount) {
+            winner = 'right';
+        } else {
+            winner = 'draw';
+        }
+        completed = true; // Phase is ended, so it completed
+    }
+
     return {
         simulationId: simConfig.simulationId,
         simulationName: simConfig.simulationName,
         leftBuildOrder: simConfig.leftBuildOrder,
         rightBuildOrder: simConfig.rightBuildOrder,
-        completed: results.completed,
-        winner: results.winner || 'none',
+        completed: completed,
+        winner: winner || 'none',
         tickCount: results.tickCount,
         gameTime: results.gameTime,
         realTimeMs: runTime,
@@ -545,7 +604,8 @@ async function runSingleSimulation(runner, simConfig, options = {}) {
         unitStatistics: results.unitStatistics,
         entityCounts: results.entityCounts,
         combatLog,
-        debugLog: consoleLog
+        debugLog: consoleLog,
+        debugInfo: results.debugInfo
     };
 }
 

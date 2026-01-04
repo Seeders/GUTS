@@ -87,11 +87,52 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
 
     /**
      * Check if simulation is complete
-     * Ends when: team health reaches 0, or max rounds exceeded
+     * Ends when: team health reaches 0, max rounds exceeded, or phase is 'ended'
      */
     isSimulationComplete() {
         if (this._simulationComplete) return true;
         if (this.game.state.gameOver) return true;
+
+        // Check if game phase has been set to 'ended' by ServerBattlePhaseSystem
+        // This happens when a team loses all buildings
+        const phaseEnded = this.enums.gamePhase.ended;
+        // Store debug info for diagnostics
+        this.game.state._debugPhaseCheck = {
+            currentPhase: this.game.state.phase,
+            endedEnum: phaseEnded,
+            matches: this.game.state.phase === phaseEnded
+        };
+        if (this.game.state.phase === phaseEnded) {
+            this._simulationComplete = true;
+            this.game.state.gameOver = true;
+
+            // Determine winner from remaining buildings if not already set
+            if (!this.game.state.winner) {
+                const reverseEnums = this.game.getReverseEnums();
+                const leftBuildings = this._countTeamBuildings(this.enums.team.left);
+                const rightBuildings = this._countTeamBuildings(this.enums.team.right);
+
+                if (leftBuildings > rightBuildings) {
+                    this.game.state.winner = reverseEnums.team?.[this.enums.team.left] || 'left';
+                } else if (rightBuildings > leftBuildings) {
+                    this.game.state.winner = reverseEnums.team?.[this.enums.team.right] || 'right';
+                } else {
+                    // Buildings are equal (both 0 or tied) - fall back to surviving combat units
+                    const leftUnits = this._countSurvivingCombatUnits(this.enums.team.left);
+                    const rightUnits = this._countSurvivingCombatUnits(this.enums.team.right);
+
+                    if (leftUnits > rightUnits) {
+                        this.game.state.winner = reverseEnums.team?.[this.enums.team.left] || 'left';
+                    } else if (rightUnits > leftUnits) {
+                        this.game.state.winner = reverseEnums.team?.[this.enums.team.right] || 'right';
+                    } else {
+                        // True draw - both buildings and units are equal
+                        this.game.state.winner = 'draw';
+                    }
+                }
+            }
+            return true;
+        }
 
         // Check TeamHealthSystem for victory condition
         const teamHealthSystem = this.game.teamHealthSystem;
@@ -455,13 +496,146 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
     onBattleStart() {
     }
 
+    /**
+     * Handle battle end - apply team health damage for winner
+     * In headless mode, we need to apply the damage that network clients would normally apply
+     */
     onBattleEnd(data) {
+        // Determine round winner based on surviving combat units
+        const roundResult = this._determineRoundWinner();
+
+        if (roundResult.winningTeam !== null) {
+            // Apply damage to losing team via TeamHealthSystem
+            const teamHealthSystem = this.game.teamHealthSystem;
+            if (teamHealthSystem) {
+                const survivingUnits = this._getSurvivingCombatUnits(roundResult.winningTeam);
+                teamHealthSystem.applyRoundDamage(roundResult.winningTeam, survivingUnits);
+            }
+        }
+    }
+
+    /**
+     * Determine round winner based on surviving combat units
+     * @private
+     */
+    _determineRoundWinner() {
+        const reverseEnums = this.game.getReverseEnums();
+        const leftUnits = this._countSurvivingCombatUnits(this.enums.team.left);
+        const rightUnits = this._countSurvivingCombatUnits(this.enums.team.right);
+
+        if (leftUnits > rightUnits) {
+            return { winningTeam: this.enums.team.left, losingTeam: this.enums.team.right };
+        } else if (rightUnits > leftUnits) {
+            return { winningTeam: this.enums.team.right, losingTeam: this.enums.team.left };
+        } else {
+            return { winningTeam: null, losingTeam: null }; // Draw
+        }
+    }
+
+    /**
+     * Count surviving combat units for a team (excludes buildings, peasants, etc.)
+     * @private
+     */
+    _countSurvivingCombatUnits(team) {
+        let count = 0;
+        // Note: dragon_red IS a combat unit for victory purposes - it attacks and can destroy buildings
+        const nonCombatUnits = ['townHall', 'barracks', 'fletchersHall', 'mageTower', 'goldMine', 'peasant', 'sentryTower', 'trebuchet'];
+        const entities = this.game.getEntitiesWith('unitType', 'team', 'health');
+
+        for (const entityId of entities) {
+            const teamComp = this.game.getComponent(entityId, 'team');
+            if (teamComp?.team !== team) continue;
+
+            const health = this.game.getComponent(entityId, 'health');
+            if (!health || health.current <= 0) continue;
+
+            const deathState = this.game.getComponent(entityId, 'deathState');
+            if (deathState && deathState.state !== this.enums.deathState.alive) continue;
+
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitId = unitDef?.id || 'unknown';
+
+            // Skip non-combat units
+            if (nonCombatUnits.includes(unitId)) continue;
+            // Also skip buildings (have footprintWidth)
+            if (unitDef?.footprintWidth !== undefined) continue;
+
+            count++;
+        }
+
+        return count;
+    }
+
+    /**
+     * Get surviving combat unit entity IDs for a team
+     * @private
+     */
+    _getSurvivingCombatUnits(team) {
+        const units = [];
+        // Note: dragon_red IS a combat unit for victory purposes - it attacks and can destroy buildings
+        const nonCombatUnits = ['townHall', 'barracks', 'fletchersHall', 'mageTower', 'goldMine', 'peasant', 'sentryTower', 'trebuchet'];
+        const entities = this.game.getEntitiesWith('unitType', 'team', 'health');
+
+        for (const entityId of entities) {
+            const teamComp = this.game.getComponent(entityId, 'team');
+            if (teamComp?.team !== team) continue;
+
+            const health = this.game.getComponent(entityId, 'health');
+            if (!health || health.current <= 0) continue;
+
+            const deathState = this.game.getComponent(entityId, 'deathState');
+            if (deathState && deathState.state !== this.enums.deathState.alive) continue;
+
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitId = unitDef?.id || 'unknown';
+
+            // Skip non-combat units
+            if (nonCombatUnits.includes(unitId)) continue;
+            // Also skip buildings (have footprintWidth)
+            if (unitDef?.footprintWidth !== undefined) continue;
+
+            units.push(entityId);
+        }
+
+        return units;
     }
 
     onRoundEnd(data) {
     }
 
     onPhaseChange(phase) {
+    }
+
+    /**
+     * Count remaining buildings for a team
+     * @private
+     */
+    _countTeamBuildings(team) {
+        let count = 0;
+        const entities = this.game.getEntitiesWith('unitType', 'team', 'health');
+
+        for (const entityId of entities) {
+            const teamComp = this.game.getComponent(entityId, 'team');
+            if (teamComp?.team !== team) continue;
+
+            const health = this.game.getComponent(entityId, 'health');
+            if (!health || health.current <= 0) continue;
+
+            const deathState = this.game.getComponent(entityId, 'deathState');
+            if (deathState && deathState.state !== this.enums.deathState.alive) continue;
+
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+
+            // Check if it's a building (has footprintWidth)
+            if (unitDef?.footprintWidth !== undefined) {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     /**

@@ -1026,4 +1026,12 @@ class ProjectileSystem extends GUTS.BaseSystem {
             this.activeProjectiles.clear();
         }
     }
+
+    onBattleEnd() {
+        // Clean up all projectiles when battle round ends (including stuck arrows in ground)
+        const projectiles = this.game.getEntitiesWith("projectile");
+        for (const projectileId of projectiles) {
+            this.destroyProjectile(projectileId);
+        }
+    }
 }
