@@ -184,7 +184,15 @@ export default class HeadlessEngine extends BaseEngine {
                 phase: reverseEnums.gamePhase?.[game?.state?.phase] || game?.state?.phase,
                 winner: null,
                 entityCounts: { total: 0, byTeam: {} },
-                gameState: gameSummary
+                gameState: gameSummary,
+                debugInfo: {
+                    errorPath: true,
+                    rawPhase: game?.state?.phase,
+                    phaseName: reverseEnums.gamePhase?.[game?.state?.phase],
+                    gameStateWinner: game?.state?.winner,
+                    gameStateGameOver: game?.state?.gameOver,
+                    error: error.message
+                }
             };
         }
     }
@@ -244,6 +252,24 @@ export default class HeadlessEngine extends BaseEngine {
         // Return simulation results with all expected fields
         const gameSummary = game.getGameSummary?.() || {};
         const reverseEnums = game.getReverseEnums?.() || {};
+
+        // Final check - if phase is 'ended', ensure gameOver is true
+        const phaseName = reverseEnums.gamePhase?.[game.state.phase];
+        const enums = game.call('getEnums');
+        const phaseEndedEnum = enums?.gamePhase?.ended;
+
+        // Store our own debug check
+        game.state._debugPhaseCheckEngine = {
+            currentPhase: game.state.phase,
+            endedEnum: phaseEndedEnum,
+            phaseName: phaseName,
+            matchesEnum: game.state.phase === phaseEndedEnum,
+            matchesString: phaseName === 'ended'
+        };
+
+        if (phaseName === 'ended' || game.state.phase === 'ended') {
+            game.state.gameOver = true;
+        }
         const simResults = simSystem.getResults();
 
         // Count entities by team
@@ -259,11 +285,12 @@ export default class HeadlessEngine extends BaseEngine {
             }
         }
 
-        // Determine winner
-        let winner = null;
-        const leftCount = entityCounts.byTeam.left || 0;
-        const rightCount = entityCounts.byTeam.right || 0;
-        if (game.state.gameOver) {
+        // Determine winner - prioritize game.state.winner if set by HeadlessSimulationSystem
+        let winner = game.state.winner || null;
+        if (!winner && game.state.gameOver) {
+            // Fallback to entity counts if winner wasn't determined
+            const leftCount = entityCounts.byTeam.left || 0;
+            const rightCount = entityCounts.byTeam.right || 0;
             if (leftCount > rightCount) winner = 'left';
             else if (rightCount > leftCount) winner = 'right';
             else winner = 'draw';
@@ -271,6 +298,19 @@ export default class HeadlessEngine extends BaseEngine {
 
         // Get unit statistics from HeadlessSimulationSystem
         const unitStatistics = simSystem.getUnitStatistics?.() || { livingUnits: [], deadUnits: [] };
+
+        // Debug info for winner determination
+        const debugInfo = {
+            rawPhase: game.state.phase,
+            phaseName,
+            gameStateWinner: game.state.winner,
+            gameStateGameOver: game.state.gameOver,
+            entityCountsLeft: entityCounts.byTeam.left || 0,
+            entityCountsRight: entityCounts.byTeam.right || 0,
+            finalWinner: winner,
+            phaseCheck: game.state._debugPhaseCheck,
+            phaseCheckEngine: game.state._debugPhaseCheckEngine
+        };
 
         return {
             success: true,
@@ -284,6 +324,7 @@ export default class HeadlessEngine extends BaseEngine {
             winner,
             entityCounts,
             unitStatistics,
+            debugInfo,
             ...simResults,
             gameState: gameSummary
         };
