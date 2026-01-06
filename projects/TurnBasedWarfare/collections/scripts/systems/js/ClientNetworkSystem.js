@@ -21,6 +21,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'sendPlacementRequest',
         'transformUnit',
         'levelSquad',
+        'specializeSquad',
         // Local game mode services (set by SkirmishGameSystem or other local modes)
         'getLocalPlayerId',
         'setLocalGame',
@@ -515,10 +516,45 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.networkRequest({
             eventName: 'LEVEL_SQUAD',
             responseName: 'SQUAD_LEVELED',
-            data: requestData
+            data: requestData,
+            onSuccess: (result) => {
+                // In multiplayer, apply specialization on client (entity IDs are preserved by replaceUnit)
+                if (!this.game.state.isLocalGame && result.specializationId) {
+                    this.game.call('applySpecialization', requestData.placementId, result.specializationId);
+                }
+            }
         }, (success, result) => {
             console.log('[ClientNetworkSystem.levelSquad] networkRequest callback, success:', success, 'result:', result);
             callback(success, result);
+        });
+    }
+
+    /**
+     * Send specialization request to server (separate from level up)
+     * Used when player selects a specialization for an already-leveled squad
+     */
+    specializeSquad(requestData, callback) {
+        console.log('[ClientNetworkSystem.specializeSquad] called with requestData:', requestData);
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            console.log('[ClientNetworkSystem.specializeSquad] not in placement phase');
+            if (callback) callback(false, 'Not in placement phase.');
+            return;
+        }
+
+        this.networkRequest({
+            eventName: 'SPECIALIZE_SQUAD',
+            responseName: 'SQUAD_SPECIALIZED',
+            data: requestData,
+            onSuccess: (result) => {
+                // In multiplayer, apply specialization on client
+                if (!this.game.state.isLocalGame && result.specializationId) {
+                    console.log('[ClientNetworkSystem.specializeSquad] Applying specialization locally');
+                    this.game.call('applySpecialization', result.placementId, result.specializationId);
+                }
+            }
+        }, (success, result) => {
+            console.log('[ClientNetworkSystem.specializeSquad] callback, success:', success, 'result:', result);
+            if (callback) callback(success, result);
         });
     }
 

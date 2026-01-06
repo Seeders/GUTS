@@ -229,6 +229,7 @@ class PlacementSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with success flag and squad data
      */
     spawnSquad(networkUnitData, team, playerId = null, serverEntityIds = null) {
+        console.log(`[spawnSquad] team=${team}, playerId=${playerId}, serverEntityIds=${JSON.stringify(serverEntityIds)}, placementId=${networkUnitData.placementId}, unitTypeId=${networkUnitData.unitTypeId}`);
         try {
             const unitType = networkUnitData.unitType;
             if (!unitType) {
@@ -856,21 +857,81 @@ class PlacementSystem extends GUTS.BaseSystem {
                 collection: unitData.collection
             });
 
-            // Skip if already placed
-            if (existingPlacements.find(p => p.placementId === unitData.placementId)) {
-                console.log(`[applyNetworkUnitData] Skipping - placement ${unitData.placementId} already exists`);
-                return;
+            // Check if placement already exists on this client
+            const existingPlacement = existingPlacements.find(p => p.placementId === unitData.placementId);
+            if (existingPlacement) {
+                console.log(`[applyNetworkUnitData] Placement ${unitData.placementId} exists, checking for unit type mismatch`);
+
+                // Check if unit type changed (e.g., specialization during placement phase)
+                const squadUnits = existingPlacement.squadUnits || unitData.squadUnits || [];
+                if (squadUnits.length > 0) {
+                    const firstEntityId = squadUnits[0];
+                    const existingUnitType = this.game.getComponent(firstEntityId, 'unitType');
+                    const expectedUnitTypeId = unitData.unitTypeId;
+
+                    console.log(`[applyNetworkUnitData] Existing placement check: existingUnitType.type=${existingUnitType?.type}, expectedUnitTypeId=${expectedUnitTypeId}`);
+
+                    if (existingUnitType && existingUnitType.type !== expectedUnitTypeId) {
+                        // Unit type changed - transform the existing units
+                        console.log(`[applyNetworkUnitData] Unit type mismatch in existing placement! Transforming units.`);
+
+                        const targetUnitTypeId = this.reverseEnums?.units?.[expectedUnitTypeId];
+                        if (targetUnitTypeId && this.game.hasService('replaceUnit')) {
+                            console.log(`[applyNetworkUnitData] Replacing ${squadUnits.length} units with ${targetUnitTypeId}`);
+                            squadUnits.forEach(entityId => {
+                                if (this.game.entityAlive[entityId] === 1) {
+                                    console.log(`[applyNetworkUnitData] Calling replaceUnit for entity ${entityId} -> ${targetUnitTypeId}`);
+                                    this.game.call('replaceUnit', entityId, targetUnitTypeId);
+                                }
+                            });
+                        } else {
+                            console.log(`[applyNetworkUnitData] Cannot replace: targetUnitTypeId=${targetUnitTypeId}, hasReplaceUnit=${this.game.hasService('replaceUnit')}`);
+                        }
+                    } else {
+                        console.log(`[applyNetworkUnitData] Unit types match for existing placement, no transformation needed`);
+                    }
+                }
+                return; // Don't re-spawn existing placements
             }
 
-            // Skip if server-provided entity IDs already exist (from ECS sync)
-            // This happens when ECS sync runs before applyNetworkUnitData
+            // Check if server-provided entity IDs already exist (from previous round)
             if (unitData.squadUnits && unitData.squadUnits.length > 0) {
                 const firstEntityId = unitData.squadUnits[0];
                 const entityExists = this.game.entityAlive[firstEntityId] === 1;
                 console.log(`[applyNetworkUnitData] Checking entity ${firstEntityId}: entityAlive=${entityExists}`);
                 if (entityExists) {
-                    // Entity already exists from ECS sync - just register the placement
-                    console.log(`[applyNetworkUnitData] Entity ${firstEntityId} already exists from ECS sync, registering existing squad for placementId=${unitData.placementId}`);
+                    // Entity exists - check if unit type matches (might have been specialized)
+                    const existingUnitType = this.game.getComponent(firstEntityId, 'unitType');
+                    const expectedUnitTypeId = unitData.unitTypeId;
+
+                    console.log(`[applyNetworkUnitData] Comparing unit types for entity ${firstEntityId}: existingUnitType.type=${existingUnitType?.type}, expectedUnitTypeId=${expectedUnitTypeId}`);
+
+                    if (existingUnitType && existingUnitType.type !== expectedUnitTypeId) {
+                        // Unit type changed (e.g., specialization) - replace the units
+                        console.log(`[applyNetworkUnitData] Unit type mismatch for entity ${firstEntityId}: existing=${existingUnitType.type}, expected=${expectedUnitTypeId}. Applying transformation.`);
+
+                        // Get the target unit type ID string from the enum
+                        const targetUnitTypeId = this.reverseEnums?.units?.[expectedUnitTypeId];
+                        console.log(`[applyNetworkUnitData] Target unit type ID string: ${targetUnitTypeId}, hasReplaceUnit=${this.game.hasService('replaceUnit')}`);
+
+                        if (targetUnitTypeId && this.game.hasService('replaceUnit')) {
+                            // Replace each unit in the squad
+                            console.log(`[applyNetworkUnitData] Replacing ${unitData.squadUnits.length} units with ${targetUnitTypeId}`);
+                            unitData.squadUnits.forEach(entityId => {
+                                if (this.game.entityAlive[entityId] === 1) {
+                                    console.log(`[applyNetworkUnitData] Calling replaceUnit for entity ${entityId} -> ${targetUnitTypeId}`);
+                                    this.game.call('replaceUnit', entityId, targetUnitTypeId);
+                                }
+                            });
+                        } else {
+                            console.log(`[applyNetworkUnitData] Cannot replace: targetUnitTypeId=${targetUnitTypeId}, hasReplaceUnit=${this.game.hasService('replaceUnit')}`);
+                        }
+                    } else {
+                        console.log(`[applyNetworkUnitData] Unit types match, no transformation needed`);
+                    }
+
+                    // Register the existing squad (whether transformed or not)
+                    console.log(`[applyNetworkUnitData] Entity ${firstEntityId} already exists, registering existing squad for placementId=${unitData.placementId}`);
                     this.registerExistingSquad(unitData, team, playerId);
                     return;
                 }

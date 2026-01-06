@@ -128,8 +128,13 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             return { success: false, error: 'Player not found' };
         }
 
-        // Check if already purchased
-        if (playerStats.upgrades.has(upgradeId)) {
+        const upgradeIndex = this.enums.upgrades?.[upgradeId];
+        if (upgradeIndex === undefined) {
+            return { success: false, error: `Unknown upgrade: ${upgradeId}` };
+        }
+
+        // Check if already purchased (bitmask check)
+        if (playerStats.upgrades & (1 << upgradeIndex)) {
             return { success: false, error: 'Upgrade already purchased' };
         }
 
@@ -138,9 +143,9 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             return { success: false, error: 'Not enough gold' };
         }
 
-        // Deduct gold and add upgrade
+        // Deduct gold and set upgrade bit
         playerStats.gold -= upgrade.value;
-        playerStats.upgrades.add(upgradeId);
+        playerStats.upgrades |= (1 << upgradeIndex);
 
         return { success: true, upgradeId };
     }
@@ -294,19 +299,18 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
      * - Unit specialization (upgrade to specialized unit type)
      * - Any other unit replacement scenarios
      *
-     * Creates new entity underground, optionally plays animation, then swaps when complete.
+     * Destroys old entity, creates new entity with the SAME ID to avoid sync issues.
      * Preserves position, team, HP percentage, and placement reference.
      *
-     * @param {number} entityId - The entity to replace
+     * @param {number} entityId - The entity to replace (new entity will use same ID)
      * @param {string} targetUnitTypeId - The target unit type ID (e.g., 'dragon_red_flying')
      * @param {Object} options - Optional configuration
      * @param {string} options.animationType - Animation to play on old entity ('takeoff', 'land', etc.)
-     * @param {number} options.providedNewEntityId - Entity ID from server (for network sync)
      * @param {number} options.swapDelay - Override delay before swap (ms). If not set, uses animation duration or 100ms
-     * @returns {number|null} New entity ID or null on failure
+     * @returns {number} The entity ID (same as input since we reuse the ID)
      */
     replaceUnit(entityId, targetUnitTypeId, options = {}) {
-        const { animationType = null, providedNewEntityId = null, swapDelay = null } = options;
+        const { animationType = null, swapDelay = null } = options;
 
         // Get current entity state
         const transform = this.game.getComponent(entityId, 'transform');
@@ -420,12 +424,12 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
         // This prevents the new entity from appearing before the old one finishes its animation
         if (animationType && finalSwapDelay > 100) {
             // Store data needed for delayed creation
+            // We reuse the same entity ID to avoid sync issues between server and clients
             const creationData = {
                 networkUnitData,
                 transformData,
                 team,
-                providedNewEntityId,
-                oldEntityId: entityId,
+                reuseEntityId: entityId,
                 hpPercent,
                 unitDef
             };
@@ -444,72 +448,73 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             }
 
             if (this.game.hasService('scheduleAction')) {
-                // Don't pass entityId to scheduleAction - we don't want the swap cancelled if something
-                // destroys the old entity early (but we do check entityExists before destroying)
                 this.game.call('scheduleAction', () => {
-                    // Create the new entity
-                    let newEntityId;
+                    // Destroy old entity first, then create new one with same ID
+                    if (this.game.entityExists(creationData.reuseEntityId)) {
+                        if (this.game.hasService('removeInstance')) {
+                            this.game.call('removeInstance', creationData.reuseEntityId);
+                        }
+                        this.game.destroyEntity(creationData.reuseEntityId);
+                    }
+
+                    // Create the new entity reusing the same ID
                     if (this.game.hasService('createPlacement')) {
-                        newEntityId = this.game.call('createPlacement', creationData.networkUnitData, creationData.transformData, creationData.team, creationData.providedNewEntityId);
+                        this.game.call('createPlacement', creationData.networkUnitData, creationData.transformData, creationData.team, creationData.reuseEntityId);
                     } else {
                         console.error('[replaceUnit] createPlacement service not available');
                         return;
                     }
 
                     // Adjust HP to preserve percentage
-                    const healthComp = this.game.getComponent(newEntityId, 'health');
+                    const healthComp = this.game.getComponent(creationData.reuseEntityId, 'health');
                     if (healthComp) {
                         const newMaxHp = creationData.unitDef.hp || 100;
                         const newCurrentHp = Math.round(creationData.hpPercent * newMaxHp);
                         healthComp.max = newMaxHp;
                         healthComp.current = newCurrentHp;
-                    }
-
-                    // Destroy old entity
-                    if (this.game.entityExists(creationData.oldEntityId)) {
-                        if (this.game.hasService('removeInstance')) {
-                            this.game.call('removeInstance', creationData.oldEntityId);
-                        }
-                        this.game.destroyEntity(creationData.oldEntityId);
                     }
                 }, delaySeconds, null);
             } else {
                 // Fallback to setTimeout if scheduling system not available
                 setTimeout(() => {
-                    let newEntityId;
+                    if (this.game.entityExists(creationData.reuseEntityId)) {
+                        if (this.game.hasService('removeInstance')) {
+                            this.game.call('removeInstance', creationData.reuseEntityId);
+                        }
+                        this.game.destroyEntity(creationData.reuseEntityId);
+                    }
+
                     if (this.game.hasService('createPlacement')) {
-                        newEntityId = this.game.call('createPlacement', creationData.networkUnitData, creationData.transformData, creationData.team, creationData.providedNewEntityId);
+                        this.game.call('createPlacement', creationData.networkUnitData, creationData.transformData, creationData.team, creationData.reuseEntityId);
                     } else {
                         console.error('[replaceUnit] createPlacement service not available');
                         return;
                     }
 
-                    const healthComp = this.game.getComponent(newEntityId, 'health');
+                    const healthComp = this.game.getComponent(creationData.reuseEntityId, 'health');
                     if (healthComp) {
                         const newMaxHp = creationData.unitDef.hp || 100;
                         const newCurrentHp = Math.round(creationData.hpPercent * newMaxHp);
                         healthComp.max = newMaxHp;
                         healthComp.current = newCurrentHp;
                     }
-
-                    if (this.game.entityExists(creationData.oldEntityId)) {
-                        if (this.game.hasService('removeInstance')) {
-                            this.game.call('removeInstance', creationData.oldEntityId);
-                        }
-                        this.game.destroyEntity(creationData.oldEntityId);
-                    }
                 }, finalSwapDelay);
             }
 
-            // Return null since entity isn't created yet - caller should handle this
-            // For network sync, the providedNewEntityId will be used when entity is created
-            return providedNewEntityId || -1; // Return expected ID for tracking
+            // Return the same entity ID since we're reusing it
+            return entityId;
         }
 
-        // Non-animated path: create entity immediately
+        // Non-animated path: destroy old entity, create new one with same ID
+        if (this.game.hasService('removeInstance')) {
+            this.game.call('removeInstance', entityId);
+        }
+        this.game.destroyEntity(entityId);
+
+        // Create new entity reusing the same ID
         let newEntityId;
         if (this.game.hasService('createPlacement')) {
-            newEntityId = this.game.call('createPlacement', networkUnitData, transformData, team, providedNewEntityId);
+            newEntityId = this.game.call('createPlacement', networkUnitData, transformData, team, entityId);
         } else {
             console.error('[replaceUnit] createPlacement service not available');
             return null;
@@ -524,39 +529,16 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             healthComp.current = newCurrentHp;
         }
 
-        // For non-animated, destroy old entity after small delay using game time
-        const delaySeconds = finalSwapDelay / 1000;
-        if (this.game.hasService('scheduleAction')) {
-            // Don't pass entityId - we just want a delayed cleanup, and we check entityExists anyway
-            this.game.call('scheduleAction', () => {
-                if (this.game.entityExists(entityId)) {
-                    if (this.game.hasService('removeInstance')) {
-                        this.game.call('removeInstance', entityId);
-                    }
-                    this.game.destroyEntity(entityId);
-                }
-            }, delaySeconds, null);
-        } else {
-            // Fallback to setTimeout if scheduling system not available
-            setTimeout(() => {
-                if (this.game.entityExists(entityId)) {
-                    if (this.game.hasService('removeInstance')) {
-                        this.game.call('removeInstance', entityId);
-                    }
-                    this.game.destroyEntity(entityId);
-                }
-            }, finalSwapDelay);
-        }
-
         return newEntityId;
     }
 
     /**
      * Process unit transformation (dragon takeoff/land) - wrapper around replaceUnit
-     * Kept for API compatibility with network handlers
+     * Kept for API compatibility with network handlers.
+     * Entity ID is preserved (same ID reused for new entity).
      */
-    processTransformUnit(entityId, targetUnitType, animationType, providedNewEntityId, _issuedTime) {
-        return this.replaceUnit(entityId, targetUnitType, { animationType, providedNewEntityId });
+    processTransformUnit(entityId, targetUnitType, animationType, _providedNewEntityId, _issuedTime) {
+        return this.replaceUnit(entityId, targetUnitType, { animationType });
     }
 
     // ==================== CHEAT ====================

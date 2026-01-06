@@ -311,8 +311,11 @@ class ShopSystem extends GUTS.BaseSystem {
             const upgrade = this.collections.upgrades[upgradeId];
             if (!upgrade) return;
 
-            // Use bitmask helper to check if upgrade is owned
-            const isOwned = playerStats?.upgrades?.has(upgradeId) || false;
+            // Check if upgrade is owned using bitmask
+            const upgradeIndex = this.enums.upgrades?.[upgradeId];
+            const isOwned = upgradeIndex !== undefined && playerStats?.upgrades !== undefined
+                ? (playerStats.upgrades & (1 << upgradeIndex)) !== 0
+                : false;
             const canAfford = this.game.call('canAffordCost', upgrade.value);
             const requirements = this.checkRequirements(upgrade);
             const locked = isOwned || !canAfford || !requirements.met;

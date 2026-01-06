@@ -443,6 +443,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     handleReadyForBattleUpdate(data) {
         const myPlayerId = this.game.clientNetworkManager?.playerId;
+        console.log(`[handleReadyForBattleUpdate] myPlayerId=${myPlayerId}, allReady=${data.allReady}`);
         if (data.playerId === myPlayerId) {
             this.isPlayerReady = data.ready;
             this.updatePlacementUI();
@@ -458,10 +459,20 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
             // Apply network unit data for each opponent (spawns their units with proper renderable)
             // This must happen before entitySync so client-only components are set correctly
+            console.log(`[handleReadyForBattleUpdate] players in gameState:`, data.gameState?.players?.length || 0);
             if (data.gameState?.players) {
                 data.gameState.players.forEach((player) => {
+                    console.log(`[handleReadyForBattleUpdate] Player ${player.id}: team=${player.team}, networkUnitData=${player.networkUnitData?.length || 0} placements`);
+                    if (player.networkUnitData) {
+                        player.networkUnitData.forEach((p, i) => {
+                            console.log(`[handleReadyForBattleUpdate]   Placement ${i}: placementId=${p.placementId}, unitTypeId=${p.unitTypeId}, squadUnits=${JSON.stringify(p.squadUnits)}`);
+                        });
+                    }
                     if (player.id !== myPlayerId) {
+                        console.log(`[handleReadyForBattleUpdate] Calling applyNetworkUnitData for opponent ${player.id}`);
                         this.game.call('applyNetworkUnitData', player.networkUnitData, player.team, player.id);
+                    } else {
+                        console.log(`[handleReadyForBattleUpdate] Skipping applyNetworkUnitData for self (${player.id})`);
                     }
                 });
             }

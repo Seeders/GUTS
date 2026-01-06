@@ -80,10 +80,14 @@ class StatAggregationSystem extends GUTS.BaseSystem {
         if (!team) return;
 
         const playerStats = this.game.call('getPlayerStatsByTeam', team.team);
-        if (!playerStats?.upgrades) return;
+        if (playerStats?.upgrades === undefined) return;
 
         for (const [upgradeId, upgradeDef] of Object.entries(this.upgrades)) {
-            if (playerStats.upgrades.has(upgradeId)) {
+            // Check bitmask for upgrade
+            const upgradeIndex = this.enums.upgrades?.[upgradeId];
+            if (upgradeIndex === undefined) continue;
+
+            if (playerStats.upgrades & (1 << upgradeIndex)) {
                 // New format: damageModifiers array
                 if (upgradeDef.damageModifiers) {
                     for (const mod of upgradeDef.damageModifiers) {

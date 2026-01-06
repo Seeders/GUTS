@@ -252,7 +252,8 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     
     /**
      * Apply specialization transformation to a squad
-     * Uses the shared replaceUnit pipeline from BaseNetworkSystem
+     * Uses the shared replaceUnit pipeline from BaseNetworkSystem.
+     * Entity IDs are preserved (old entity destroyed, new one created with same ID).
      * @param {string} placementId - Squad placement ID
      * @param {string} specializationId - Specialization unit type ID
      * @returns {boolean} Success status
@@ -283,9 +284,10 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         }
 
         // Replace all units in the squad with the new unit type
-        const oldUnitIds = [...this.getSquadUnits(placementId)];
+        // Entity IDs are preserved by replaceUnit (destroys old, creates new with same ID)
+        const unitIds = [...this.getSquadUnits(placementId)];
 
-        oldUnitIds.forEach(entityId => {
+        unitIds.forEach(entityId => {
             // Use shared replaceUnit - no animation for specialization
             this.game.call('replaceUnit', entityId, specializationId);
         });
@@ -359,8 +361,11 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
                 
                 optionButton.addEventListener('click', () => {
                     document.body.removeChild(modal);
-                    this.game.call('applySpecialization', placementId, specId);
-                    if (callback) callback(true);
+                    // Send specialization to server so it can update pendingNetworkUnitData for opponents
+                    // Use specializeSquad (separate from levelSquad) to avoid trying to level up again
+                    this.game.call('specializeSquad', { placementId, specializationId: specId }, (success) => {
+                        if (callback) callback(success);
+                    });
                 });
                 
                 optionButton.addEventListener('mouseenter', () => {

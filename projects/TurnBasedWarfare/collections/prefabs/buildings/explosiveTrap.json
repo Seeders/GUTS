@@ -3,7 +3,7 @@
   "info": "A hidden trap that explodes when enemies approach",
   "value": 0,
   "category": "trap",
-  "buildTime": 1.5,
+  "buildTime": 1,
   "render": {
     "animations": {
       "idle": [

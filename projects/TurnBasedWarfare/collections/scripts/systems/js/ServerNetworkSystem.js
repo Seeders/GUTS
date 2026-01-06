@@ -26,6 +26,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleReadyForBattle',
         'handleGetStartingState',
         'handleLevelSquad',
+        'handleSpecializeSquad',
         'handleExecuteCheat',
         'handleTransformUnit'
     ];
@@ -120,6 +121,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('PURCHASE_UPGRADE', this.handlePurchaseUpgrade.bind(this));
         this.game.serverEventManager.subscribe('READY_FOR_BATTLE', this.handleReadyForBattle.bind(this));
         this.game.serverEventManager.subscribe('LEVEL_SQUAD', this.handleLevelSquad.bind(this));
+        this.game.serverEventManager.subscribe('SPECIALIZE_SQUAD', this.handleSpecializeSquad.bind(this));
         this.game.serverEventManager.subscribe('SET_SQUAD_TARGET', this.handleSetSquadTarget.bind(this));
         this.game.serverEventManager.subscribe('SET_SQUAD_TARGETS', this.handleSetSquadTargets.bind(this));
         this.game.serverEventManager.subscribe('CANCEL_BUILDING', this.handleCancelBuilding.bind(this));
@@ -188,6 +190,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
      * Queue networkUnitData for a placement to be sent at battle start
      */
     queueNetworkUnitData(playerId, numericPlayerId, team, placement, result) {
+        console.log(`[queueNetworkUnitData] playerId=${playerId}, numericPlayerId=${numericPlayerId}, team=${team}, placementId=${result.placementId}, squadUnits=${JSON.stringify(result.squadUnits)}, unitTypeId=${placement.unitTypeId}`);
         if (!this.pendingNetworkUnitData.has(playerId)) {
             this.pendingNetworkUnitData.set(playerId, { team, numericPlayerId, placements: [] });
         }
@@ -211,9 +214,13 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
      * Build players array with networkUnitData for battle start
      */
     buildPlayersForBattleStart() {
+        console.log(`[buildPlayersForBattleStart] pendingNetworkUnitData has ${this.pendingNetworkUnitData.size} entries`);
         const players = [];
         for (const [socketPlayerId, data] of this.pendingNetworkUnitData) {
-
+            console.log(`[buildPlayersForBattleStart] Player ${socketPlayerId}: team=${data.team}, placements=${data.placements.length}`);
+            data.placements.forEach((p, i) => {
+                console.log(`[buildPlayersForBattleStart]   Placement ${i}: placementId=${p.placementId}, unitTypeId=${p.unitTypeId}, squadUnits=${JSON.stringify(p.squadUnits)}`);
+            });
             players.push({
                 id: socketPlayerId,
                 team: data.team,
@@ -321,9 +328,9 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const levelUpCost = this.game.call('getLevelUpCost', placementId);
         console.log('[handleLevelSquad] levelUpCost:', levelUpCost);
 
-        // Apply specialization if provided
+        // Apply specialization if provided (entity IDs are preserved by replaceUnit)
         if (specializationId) {
-            this.game.call('applySpecialization', placementId, specializationId, playerId);
+            this.game.call('applySpecialization', placementId, specializationId);
         }
 
         // Perform the level up directly
@@ -334,14 +341,144 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         if (success) {
             playerStats.gold -= levelUpCost;
 
+            // Update queued networkUnitData with new unit type if specialization was applied
+            // This ensures opponent sees the specialized unit when battle starts
+            if (specializationId) {
+                console.log(`[handleLevelSquad] Calling updateQueuedNetworkUnitData with effectivePlayerId=${effectivePlayerId}, placementId=${placementId}, specializationId=${specializationId}`);
+                this.updateQueuedNetworkUnitData(effectivePlayerId, placementId, specializationId);
+            }
+
             const result = {
                 playerId: playerId,
                 currentGold: playerStats.gold,
-                success: true
+                success: true,
+                specializationId: specializationId || null
             };
             this.respond(playerId, responseName, result, callback);
         } else {
             return this.respondError(playerId, responseName, 'Level up failed', callback);
+        }
+    }
+
+    /**
+     * Handle specialization request (separate from level up)
+     * Called when player selects a specialization for an already-leveled squad
+     */
+    handleSpecializeSquad(eventData, callback) {
+        console.log('[handleSpecializeSquad] called with eventData:', eventData);
+        const { playerId, data } = eventData;
+        const responseName = 'SQUAD_SPECIALIZED';
+        const { placementId, specializationId } = data;
+
+        if (!placementId || !specializationId) {
+            return this.respondError(playerId, responseName, 'Missing placementId or specializationId', callback);
+        }
+
+        // Must be in placement phase
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            return this.respondError(playerId, responseName, 'Not in placement phase', callback);
+        }
+
+        // Get the placement
+        const placement = this.game.call('getPlacementById', placementId);
+        if (!placement || !placement.squadUnits || placement.squadUnits.length === 0) {
+            return this.respondError(playerId, responseName, 'Placement not found', callback);
+        }
+
+        // Get the team from the first unit
+        const squadEntityId = placement.squadUnits[0];
+        const teamComp = this.game.getComponent(squadEntityId, 'team');
+        if (!teamComp) {
+            return this.respondError(playerId, responseName, 'Squad has no team', callback);
+        }
+
+        const effectivePlayerId = teamComp.team === this.enums.team.left ? 0 : 1;
+
+        // Apply the specialization
+        console.log(`[handleSpecializeSquad] Applying specialization ${specializationId} to placement ${placementId}`);
+        const success = this.game.call('applySpecialization', placementId, specializationId);
+
+        if (success) {
+            // Update queued networkUnitData so opponent sees the specialized unit at battle start
+            console.log(`[handleSpecializeSquad] Calling updateQueuedNetworkUnitData`);
+            this.updateQueuedNetworkUnitData(effectivePlayerId, placementId, specializationId);
+
+            const result = {
+                success: true,
+                placementId,
+                specializationId
+            };
+            this.respond(playerId, responseName, result, callback);
+        } else {
+            return this.respondError(playerId, responseName, 'Specialization failed', callback);
+        }
+    }
+
+    /**
+     * Update queued networkUnitData when a squad gets specialized
+     * This ensures the opponent receives the correct unit type at battle start
+     */
+    updateQueuedNetworkUnitData(playerId, placementId, specializationId) {
+        console.log(`[updateQueuedNetworkUnitData] playerId=${playerId}, placementId=${placementId}, specializationId=${specializationId}`);
+
+        // If no pending data for this player, create it
+        // This handles surviving units from previous rounds that weren't placed this round
+        if (!this.pendingNetworkUnitData.has(playerId)) {
+            const playerStats = this.game.call('getPlayerStats', playerId);
+            console.log(`[updateQueuedNetworkUnitData] No pending data for player ${playerId}, creating entry`);
+            this.pendingNetworkUnitData.set(playerId, {
+                team: playerStats?.team,
+                numericPlayerId: playerId,
+                placements: []
+            });
+        }
+
+        const playerData = this.pendingNetworkUnitData.get(playerId);
+        console.log(`[updateQueuedNetworkUnitData] Found playerData with ${playerData.placements.length} placements`);
+
+        // Find the placement in queued data and update its unit type
+        let placement = playerData.placements.find(p => p.placementId === placementId);
+
+        // If placement doesn't exist in queued data (surviving unit from previous round), add it
+        if (!placement) {
+            console.log(`[updateQueuedNetworkUnitData] Placement ${placementId} not found, adding entry for surviving unit`);
+            const existingPlacement = this.game.call('getPlacementById', placementId);
+            if (existingPlacement) {
+                // Get squadUnits from the existing placement
+                const squadUnits = existingPlacement.squadUnits || [];
+                placement = {
+                    placementId: placementId,
+                    gridPosition: existingPlacement.gridPosition,
+                    unitTypeId: existingPlacement.unitTypeId,
+                    collection: existingPlacement.collection || this.enums?.objectTypeDefinitions?.units,
+                    team: playerData.team,
+                    squadUnits: squadUnits
+                };
+                playerData.placements.push(placement);
+                console.log(`[updateQueuedNetworkUnitData] Added surviving unit placement with squadUnits:`, squadUnits);
+            } else {
+                console.log(`[updateQueuedNetworkUnitData] Could not find existing placement ${placementId}`);
+                return;
+            }
+        }
+
+        // Get new unit type indices for the specialization
+        const newUnitTypeIndex = this.enums?.units?.[specializationId];
+        console.log(`[updateQueuedNetworkUnitData] Updating placement. Old unitTypeId=${placement.unitTypeId}, new unitTypeIndex=${newUnitTypeIndex}`);
+
+        if (newUnitTypeIndex !== undefined) {
+            placement.unitTypeId = newUnitTypeIndex;
+            // Update the unitType object if present
+            if (placement.unitType) {
+                placement.unitType = {
+                    ...this.collections.units[specializationId],
+                    id: specializationId,
+                    collection: 'units'
+                };
+            }
+            console.log(`[updateQueuedNetworkUnitData] Updated placement unitTypeId to ${newUnitTypeIndex}`);
+        } else {
+            console.log(`[updateQueuedNetworkUnitData] Could not find enum index for ${specializationId}`);
         }
     }
 
