@@ -1,6 +1,0 @@
-{
-  "fileName": "SnapTrapAbility",
-  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/SnapTrapAbility.js",
-  "impactParticleEffectSystems": ["snap_trap_trigger"],
-  "expirationParticleEffectSystems": ["snap_trap_trigger"]
-}

@@ -2,10 +2,10 @@
   "title": "Beast Master (2) [D]",
   "size": 25,
   "height": 50,
-  "value": 35,
-  "hp": 140,
+  "value": 85,
+  "hp": 160,
   "speed": 55,
-  "damage": 16,
+  "damage": 18,
   "attackSpeed": 1.1,
   "range": 200,
   "projectile": "arrow",
@@ -13,7 +13,7 @@
   "fireResistance": 0.5,
   "coldResistance": 0.5,
   "lightningResistance": 0.5,
-  "armor": 1,
+  "armor": 2,
   "render": {
     "animations": {
       "idle": [

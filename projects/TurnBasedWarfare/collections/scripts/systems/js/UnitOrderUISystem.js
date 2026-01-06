@@ -405,6 +405,60 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         this.game.uiSystem?.showNotification('Click to place bear trap', 'info', 2000);
     }
 
+    placeExplosiveTrap() {
+        // Get selected trappers
+        const placementIds = this.game.call('getSelectedSquads') || [];
+        if (!placementIds || placementIds.length === 0) {
+            this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
+            return;
+        }
+
+        // Find a trapper unit with ExplosiveTrapAbility
+        let trapperUnit = null;
+        for (const placementId of placementIds) {
+            const placement = this.game.call('getPlacementById', placementId);
+            if (!placement) continue;
+
+            for (const unitId of placement.squadUnits) {
+                const abilities = this.game.call('getEntityAbilities', unitId);
+                if (abilities) {
+                    const explosiveTrapAbility = abilities.find(a => a.id === 'ExplosiveTrapAbility');
+                    if (explosiveTrapAbility) {
+                        // Check if ability is available (cooldown and max traps)
+                        if (explosiveTrapAbility.canExecute(unitId)) {
+                            trapperUnit = unitId;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (trapperUnit) break;
+        }
+
+        if (!trapperUnit) {
+            this.game.uiSystem?.showNotification('Cannot place trap (max 2 traps or on cooldown).', 'warning', 800);
+            return;
+        }
+
+        // Get explosive trap building definition
+        const explosiveTrapBuilding = this.collections.buildings?.explosiveTrap;
+        if (!explosiveTrapBuilding) {
+            this.game.uiSystem?.showNotification('Explosive trap building not found.', 'error', 1000);
+            return;
+        }
+
+        // Use the same pattern as peasant building placement
+        // Trapper will walk to position and place trap (uses buildTime from explosiveTrap.json)
+        const trapDef = {
+            ...explosiveTrapBuilding,
+            id: 'explosiveTrap',
+            collection: 'buildings'
+        };
+
+        this.activateBuildingPlacement(trapDef, trapperUnit);
+        this.game.uiSystem?.showNotification('Click to place explosive trap', 'info', 2000);
+    }
+
     // ==================== TRANSFORM ACTIONS ====================
 
     transformToFlying() {

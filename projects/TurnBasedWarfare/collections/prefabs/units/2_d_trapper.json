@@ -2,18 +2,18 @@
   "title": "Trapper (2) [D]",
   "size": 25,
   "height": 50,
-  "value": 35,
-  "hp": 140,
+  "value": 95,
+  "hp": 170,
   "speed": 55,
-  "damage": 16,
-  "attackSpeed": 1.1,
+  "damage": 20,
+  "attackSpeed": 1.2,
   "range": 200,
   "projectile": "arrow",
   "element": "physical",
   "fireResistance": 0.5,
   "coldResistance": 0.5,
   "lightningResistance": 0.5,
-  "armor": 1,
+  "armor": 2,
   "render": {
     "animations": {
       "idle": [
@@ -167,6 +167,7 @@
   "abilities": [
     "ExplosiveTrapAbility"
   ],
+  "actionSet": "trapper_actions",
   "requiresUnits": [],
   "requiresBuildings": []
 }

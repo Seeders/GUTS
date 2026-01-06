@@ -857,9 +857,16 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
         } else if (roundsSinceLastAttack >= 10 && currentArmySize >= 2) {
             // Been too long since last attack, go with what we have
             shouldAttack = true;
-        } else if (aiState.isAttacking && currentArmySize > 0) {
-            // Already attacking, continue with remaining units
+        } else if (aiState.isAttacking && currentArmySize >= Math.max(2, Math.floor(requiredWaveSize * 0.5))) {
+            // Already attacking - only continue if we still have at least half our wave size
+            // This prevents sending reinforcements one at a time
             shouldAttack = true;
+        }
+
+        // Reset attack state if army is too depleted - need to rebuild
+        // This prevents trickling units one by one after a wave is wiped out
+        if (aiState.isAttacking && currentArmySize < Math.max(2, Math.floor(requiredWaveSize * 0.3))) {
+            aiState.isAttacking = false;
         }
 
         // Main army behavior
@@ -1393,7 +1400,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (unitDef?.id === 'peasant') continue;
 
             // Get squad data
-            const squadData = game.squadExperienceSystem?.getSquadExperienceData?.(placement.placementId);
+            const squadData = game.squadExperienceSystem?.getSquadExperience?.(placement.placementId);
             if (!squadData) continue;
 
             // Check if can level up
@@ -1407,14 +1414,14 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             score += xpProgress * 10;
 
             // Bonus for units with specializations available
-            const specializations = unitDef?.specializations || [];
+            const specializations = unitDef?.specUnits || [];
             if (squadData.level === 1 && specializations.length > 0) {
-                score += 15; // Level 2 unlocks specializations
+                score += 40; // High priority - specialization is a major power spike
             }
 
             // Choose best specialization if at level 2
             let specializationId = null;
-            if (squadData.level >= 2 && specializations.length > 0) {
+            if (squadData.level >= 1 && specializations.length > 0 && squadData.canLevelUp) {
                 specializationId = this.chooseBestSpecialization(specializations, aiState, collections);
             }
 
@@ -1542,21 +1549,102 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     /**
-     * Choose the best specialization for a unit based on current army composition
+     * Choose the best specialization for a unit based on current army composition,
+     * enemy composition, and ability power.
      */
     chooseBestSpecialization(specializations, aiState, collections) {
         if (!specializations || specializations.length === 0) return null;
 
-        // Simple heuristic: pick the first available specialization
-        // Could be enhanced to consider counter-picking based on enemy composition
+        const counters = collections.aiConfig?.counters;
+        let bestSpec = null;
+        let bestScore = -Infinity;
+
         for (const specId of specializations) {
             const specDef = collections.units?.[specId];
-            if (specDef) {
-                return specId;
+            if (!specDef) continue;
+
+            let score = 0;
+
+            // Base combat power score
+            const combatPower = this.calculateUnitPower(specDef);
+            score += combatPower * 0.5;
+
+            // Ability bonus - units with abilities are more valuable
+            const abilities = specDef.abilities || [];
+            if (abilities.length > 0) {
+                score += 20 * abilities.length;
+
+                // Bonus for powerful AoE abilities
+                for (const abilityName of abilities) {
+                    if (abilityName.includes('Chain') || abilityName.includes('Meteor') ||
+                        abilityName.includes('Raise') || abilityName.includes('Mind')) {
+                        score += 15; // Strong abilities
+                    }
+                    if (abilityName.includes('Summon') || abilityName.includes('Trap')) {
+                        score += 10; // Utility abilities
+                    }
+                    if (abilityName.includes('Heal') || abilityName.includes('Buff') ||
+                        abilityName.includes('Cry') || abilityName.includes('Aura')) {
+                        score += 12; // Support abilities
+                    }
+                }
+            }
+
+            // Counter score - does this spec counter visible enemies?
+            if (counters?.units?.[specId] && aiState.visibleEnemyUnits) {
+                const unitInfo = counters.units[specId];
+                for (const [enemyType, count] of Object.entries(aiState.visibleEnemyUnits)) {
+                    if (unitInfo.strongAgainst?.includes(enemyType)) {
+                        score += count * 8;
+                    }
+                    if (unitInfo.weakAgainst?.includes(enemyType)) {
+                        score -= count * 4;
+                    }
+                }
+            }
+
+            // Army composition balance - prefer specs we don't have many of
+            const currentCount = aiState.ownUnits?.[specId] || 0;
+            if (currentCount === 0) {
+                score += 15; // Encourage diversity
+            } else if (currentCount >= 3) {
+                score -= 10; // Discourage too many of same spec
+            }
+
+            // Ranged vs melee balance
+            const isRanged = (specDef.range && specDef.range > 50) || specDef.projectile;
+            const totalRanged = Object.entries(aiState.ownUnits || {})
+                .filter(([id, _]) => {
+                    const def = collections.units?.[id];
+                    return def && ((def.range && def.range > 50) || def.projectile);
+                })
+                .reduce((sum, [_, count]) => sum + count, 0);
+            const totalMelee = Object.entries(aiState.ownUnits || {})
+                .filter(([id, _]) => {
+                    const def = collections.units?.[id];
+                    return def && (!def.range || def.range <= 50) && !def.projectile;
+                })
+                .reduce((sum, [_, count]) => sum + count, 0);
+
+            // Prefer to balance ranged/melee ratio (aim for ~40% ranged)
+            if (isRanged && totalRanged < totalMelee * 0.6) {
+                score += 10; // Need more ranged
+            } else if (!isRanged && totalMelee < totalRanged * 1.5) {
+                score += 10; // Need more melee
+            }
+
+            // Cost efficiency - prefer better value specs
+            const cost = specDef.value || 100;
+            const efficiency = combatPower / Math.max(cost, 1);
+            score += efficiency * 5;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestSpec = specId;
             }
         }
 
-        return null;
+        return bestSpec;
     }
 
     /**

@@ -1,9 +1,9 @@
 {
-  "title": "Bear Trap",
-  "info": "A hidden trap that snares enemies",
+  "title": "Explosive Trap",
+  "info": "A hidden trap that explodes when enemies approach",
   "value": 0,
   "category": "trap",
-  "buildTime": 1,
+  "buildTime": 1.5,
   "render": {
     "animations": {
       "idle": [
@@ -21,8 +21,8 @@
         "shapes": [
           {
             "type": "sphere",
-            "size": 40,
-            "color": "#cccccc",
+            "size": 35,
+            "color": "#8B4513",
             "position": {
               "x": 0,
               "y": 0,
@@ -52,15 +52,15 @@
   "footprintWidth": 1,
   "footprintHeight": 1,
   "height": 10,
-  "size": 20,
+  "size": 25,
   "damage": 0,
   "attackSpeed": 1,
   "range": 48,
-  "element": "physical",
-  "hp": 100,
+  "element": "fire",
+  "hp": 50,
   "stealth": 75,
   "abilities": [
-    "BearTrapTrigger"
+    "ExplosiveTrapTrigger"
   ],
   "isTrap": true,
   "isHidden": true,

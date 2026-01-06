@@ -1,0 +1,6 @@
+{
+  "fileName": "BearTrapTrigger",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/BearTrapTrigger.js",
+  "impactParticleEffectSystems": ["snap_trap_trigger"],
+  "expirationParticleEffectSystems": ["snap_trap_trigger"]
+}

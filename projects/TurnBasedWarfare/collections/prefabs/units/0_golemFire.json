@@ -2,11 +2,11 @@
   "title": "Fire Golem",
   "size": 25,
   "height": 100,
-  "value": 480,
-  "hp": 2500,
-  "speed": 15,
-  "damage": 40,
-  "attackSpeed": 0.7,
+  "value": 130,
+  "hp": 380,
+  "speed": 26,
+  "damage": 32,
+  "attackSpeed": 0.85,
   "element": "fire",
   "armor": 8,
   "fireResistance": 1,
@@ -123,5 +123,7 @@
     "BurningAuraAbility"
   ],
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [
+    "keep"
+  ]
 }

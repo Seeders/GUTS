@@ -2,13 +2,13 @@
   "title": "Stone Golem",
   "size": 25,
   "height": 100,
-  "value": 480,
-  "hp": 2500,
-  "speed": 15,
-  "damage": 150,
-  "attackSpeed": 0.7,
+  "value": 110,
+  "hp": 420,
+  "speed": 28,
+  "damage": 38,
+  "attackSpeed": 0.8,
   "element": "physical",
-  "armor": 12,
+  "armor": 10,
   "fireResistance": 0.1,
   "coldResistance": 0.1,
   "lightningResistance": 0.1,
@@ -126,5 +126,7 @@
   "icon": "unit_stoneGolem",
   "spriteAnimationSet": "stonegolem",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [
+    "keep"
+  ]
 }

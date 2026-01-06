@@ -268,7 +268,9 @@ class RenderSystem extends GUTS.BaseSystem {
 
             // Check fog of war visibility (cliffs and worldObjects always visible)
             const isVisible = this.game.call('isVisibleAt', pos.x, pos.z);
-            const isAlwaysVisible = unitType.collection === "worldObjects" || unitType.collection === "cliffs";
+            const unitTypeCollection = unitTypeComp?.collection;
+            const isAlwaysVisible = unitTypeCollection === this.enums.objectTypeDefinitions?.worldObjects ||
+                                    unitTypeCollection === this.enums.objectTypeDefinitions?.cliffs;
 
             if (!isAlwaysVisible && !isVisible) {
                 // Entity not currently visible in fog of war - skip entirely (don't spawn or update)
@@ -276,8 +278,9 @@ class RenderSystem extends GUTS.BaseSystem {
             }
 
             // Check stealth visibility - enemy units with stealth should not render if not detected
+            // Skip this check for always-visible entities (worldObjects, cliffs)
             // Get local player's team from player entity stats
-            if (this.game.hasService('getLocalPlayerStats') && this.game.hasService('isEntityVisibleToTeam')) {
+            if (!isAlwaysVisible && this.game.hasService('getLocalPlayerStats') && this.game.hasService('isEntityVisibleToTeam')) {
                 const localPlayerStats = this.game.call('getLocalPlayerStats');
                 const myTeam = localPlayerStats?.team;
                 if (myTeam !== undefined) {
