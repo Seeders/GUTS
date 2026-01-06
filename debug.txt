@@ -1,0 +1,488 @@
+GameRoom startGame()
+[ServerGameRoom] Created player entity for player EwgQU8knKazH1JWUAAAF
+[ServerGameRoom] Created player entity for player qhIaXvMoYzBECEYCAAAH
+[ServerGameRoom] After startGame. Total entities on server: 1564
+Game started in room 1001 with level: 0
+[Memory] queryCache: 9, proxyCache: 9, entityCount: 1564, behaviors: 0, mvmtPool: 0, trails: 0
+[Memory] queryCache: 9, proxyCache: 10, entityCount: 1564, behaviors: 1, mvmtPool: 0, trails: 0
+[buildPlayersForBattleStart] pendingNetworkUnitData has 2 entries
+[buildPlayersForBattleStart] Player 1: team=3, placements=1
+[buildPlayersForBattleStart]   Placement 0: placementId=13, unitTypeId=5, squadUnits=[]
+[buildPlayersForBattleStart] Player 0: team=2, placements=1
+[buildPlayersForBattleStart]   Placement 0: placementId=14, unitTypeId=8, squadUnits=[]
+[UnitCreationSystem] setupAbilities called for entity 1565 unitType.abilities: undefined
+[UnitCreationSystem] No abilities defined for unit type
+[UnitCreationSystem] setupAbilities called for entity 1566 unitType.abilities: undefined
+[UnitCreationSystem] No abilities defined for unit type
+[Memory] queryCache: 18, proxyCache: 23, entityCount: 1566, behaviors: 24, mvmtPool: 0, trails: 0
+[Memory] queryCache: 18, proxyCache: 23, entityCount: 1566, behaviors: 24, mvmtPool: 0, trails: 0
+[Memory] queryCache: 18, proxyCache: 23, entityCount: 1566, behaviors: 24, mvmtPool: 0, trails: 0
+[GameServices] missing method getBillboardAnimationState
+[GameServices] missing method getBillboardAnimationState
+[Memory] queryCache: 26, proxyCache: 23, entityCount: 1566, behaviors: 24, mvmtPool: 0, trails: 0
+[Memory] queryCache: 26, proxyCache: 23, entityCount: 1566, behaviors: 24, mvmtPool: 0, trails: 0
+[UnitCreationSystem] setupAbilities called for entity 1567 unitType.abilities: [ 'FireBallAbility' ]
+[UnitCreationSystem] Checking ability FireBallAbility - exists: true
+[UnitCreationSystem] Valid abilities: [ 'FireBallAbility' ]
+[UnitCreationSystem] hasService addAbilitiesToUnit: true
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1567
+[Memory] queryCache: 27, proxyCache: 23, entityCount: 1567, behaviors: 24, mvmtPool: 0, trails: 0
+[UnitOrderSystem] applySquadTargetPosition entity=1567 (1_i_apprentice) placementId=17 isHiding=false isMoveOrder=true wasHiding=false
+[Memory] queryCache: 27, proxyCache: 23, entityCount: 1567, behaviors: 24, mvmtPool: 0, trails: 0
+[UnitCreationSystem] setupAbilities called for entity 1568 unitType.abilities: []
+[UnitCreationSystem] Valid abilities: []
+[Memory] queryCache: 27, proxyCache: 23, entityCount: 1568, behaviors: 24, mvmtPool: 0, trails: 0
+[buildPlayersForBattleStart] pendingNetworkUnitData has 2 entries
+[buildPlayersForBattleStart] Player 0: team=2, placements=1
+[buildPlayersForBattleStart]   Placement 0: placementId=17, unitTypeId=6, squadUnits=[1567]
+[buildPlayersForBattleStart] Player 1: team=3, placements=1
+[buildPlayersForBattleStart]   Placement 0: placementId=18, unitTypeId=4, squadUnits=[1568]
+[GameServices] missing method calculateAnimationSpeed
+[GameServices] missing method calculateAnimationSpeed
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:31:14.982Z] [INFO] [Projectile] HIT! 1_d_archer(1568) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"50/50"}
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method calculateAnimationSpeed
+[GameServices] missing method showDamageNumber
+[GameServices] missing method showDamageNumber
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:31:15.833Z] [INFO] [Projectile] HIT! 1_d_archer(1568) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"33/50"}
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:31:16.687Z] [INFO] [Projectile] HIT! 1_d_archer(1568) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"16/50"}
+[GameServices] missing method playEffect
+[2026-01-06T21:31:16.687Z] [INFO] [Damage] FATAL: 0_skeleton(1549) [neutral] killed by 1_d_archer(1568) [right]
+[2026-01-06T21:31:16.688Z] [INFO] [Death] DYING: 0_skeleton(1549) [neutral] started death process
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:31:16.982Z] [INFO] [Damage] FATAL: 0_skeleton(1547) [neutral] killed by 1_i_apprentice(1567) [left]
+[2026-01-06T21:31:16.983Z] [INFO] [Death] DYING: 0_skeleton(1547) [neutral] started death process
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:31:16.983Z] [INFO] [Damage] FATAL: 0_skeleton(1545) [neutral] killed by 1_i_apprentice(1567) [left]
+[2026-01-06T21:31:16.983Z] [INFO] [Death] DYING: 0_skeleton(1545) [neutral] started death process
+[GameServices] missing method showDamageNumber
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:31:17.032Z] [INFO] [InvestigateAttacker] 1_i_apprentice(1567) [left] INVESTIGATING attacker 0_skeleton(1546) [neutral] {"timeSinceAttack":"0.4"}
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method calculateAnimationSpeed
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:31:17.533Z] [INFO] [Projectile] HIT! 1_d_archer(1568) -> 0_skeleton(1550) {"damage":22,"element":"physical","targetHealthBefore":"50/50"}
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:31:18.378Z] [INFO] [Projectile] HIT! 1_d_archer(1568) -> 0_skeleton(1550) {"damage":22,"element":"physical","targetHealthBefore":"33/50"}
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:31:18.529Z] [INFO] [Damage] FATAL: 0_skeleton(1546) [neutral] killed by 1_i_apprentice(1567) [left]
+[2026-01-06T21:31:18.529Z] [INFO] [Death] DYING: 0_skeleton(1546) [neutral] started death process
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:31:18.680Z] [INFO] [Death] CORPSE: 0_skeleton(1549) [neutral] converted to corpse
+[GameServices] missing method playEffect
+[2026-01-06T21:31:18.835Z] [INFO] [Damage] FATAL: 1_d_archer(1568) [right] killed by 0_skeleton(1548) [neutral]
+[2026-01-06T21:31:18.835Z] [INFO] [Death] DYING: 1_d_archer(1568) [right] started death process
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:31:18.982Z] [INFO] [Death] CORPSE: 0_skeleton(1545) [neutral] converted to corpse
+[2026-01-06T21:31:18.982Z] [INFO] [Death] CORPSE: 0_skeleton(1547) [neutral] converted to corpse
+[2026-01-06T21:31:19.232Z] [INFO] [Projectile] HIT! 1_d_archer(1568) -> 0_skeleton(1550) {"damage":22,"element":"physical","targetHealthBefore":"16/50"}
+[GameServices] missing method playEffect
+[2026-01-06T21:31:19.232Z] [INFO] [Damage] FATAL: 0_skeleton(1550) [neutral] killed by 1_d_archer(1568) [right]
+[2026-01-06T21:31:19.233Z] [INFO] [Death] DYING: 0_skeleton(1550) [neutral] started death process
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:31:20.528Z] [INFO] [Death] CORPSE: 0_skeleton(1546) [neutral] converted to corpse
+[2026-01-06T21:31:20.781Z] [INFO] [Death] CORPSE: 1_d_archer(1568) [right] converted to corpse
+[2026-01-06T21:31:21.238Z] [INFO] [Death] CORPSE: 0_skeleton(1550) [neutral] converted to corpse
+[UnitCreationSystem] setupAbilities called for entity 1545 unitType.abilities: []
+[UnitCreationSystem] Valid abilities: []
+[UnitOrderSystem] applySquadTargetPosition entity=1545 (1_d_archer) placementId=19 isHiding=false isMoveOrder=true wasHiding=false
+[handleLevelSquad] called with eventData: {
+  playerId: 'EwgQU8knKazH1JWUAAAF',
+  numericPlayerId: 0,
+  eventName: 'LEVEL_SQUAD',
+  data: { placementId: 17 },
+  socket: Socket {
+    _events: [Object: null prototype] {
+      error: [Function: noop],
+      CREATE_ROOM: [Function (anonymous)],
+      JOIN_ROOM: [Function (anonymous)],
+      disconnect: [Function (anonymous)]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    nsp: Namespace {
+      _events: [Object: null prototype],
+      _eventsCount: 1,
+      _maxListeners: undefined,
+      sockets: [Map],
+      _preConnectSockets: Map(0) {},
+      _fns: [],
+      _ids: 0,
+      server: [Server],
+      name: '/',
+      adapter: [Adapter],
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false
+    },
+    client: Client {
+      sockets: [Map],
+      nsps: [Map],
+      server: [Server],
+      conn: [Socket],
+      encoder: [Encoder],
+      decoder: [Decoder],
+      id: 'jMx7uIrPgyzM0clEAAAE',
+      onclose: [Function: bound onclose],
+      ondata: [Function: bound ondata],
+      onerror: [Function: bound onerror],
+      ondecoded: [Function: bound ondecoded],
+      connectTimeout: undefined
+    },
+    recovered: false,
+    data: {},
+    connected: true,
+    acks: Map(0) {},
+    fns: [],
+    flags: {},
+    server: Server {
+      _events: [Object: null prototype] {},
+      _eventsCount: 0,
+      _maxListeners: undefined,
+      _nsps: [Map],
+      parentNsps: Map(0) {},
+      parentNamespacesFromRegExp: Map(0) {},
+      _path: '/socket.io',
+      clientPathRegex: /^\/socket\.io\/socket\.io(\.msgpack|\.esm)?(\.min)?\.js(\.map)?(?:\?|$)/,
+      _connectTimeout: 45000,
+      _serveClient: true,
+      _parser: [Object],
+      encoder: [Encoder],
+      opts: [Object],
+      _adapter: [class Adapter extends EventEmitter],
+      sockets: [Namespace],
+      eio: [Server],
+      httpServer: [Server],
+      engine: [Server],
+      _corsMiddleware: [Function: corsMiddleware],
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false
+    },
+    adapter: Adapter {
+      _events: [Object: null prototype] {},
+      _eventsCount: 0,
+      _maxListeners: undefined,
+      nsp: [Namespace],
+      rooms: [Map],
+      sids: [Map],
+      encoder: [Encoder],
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false
+    },
+    id: 'EwgQU8knKazH1JWUAAAF',
+    handshake: {
+      headers: [Object],
+      time: 'Tue Jan 06 2026 13:29:54 GMT-0800 (Pacific Standard Time)',
+      address: '::ffff:127.0.0.1',
+      xdomain: true,
+      secure: false,
+      issued: 1767734994480,
+      url: '/socket.io/?EIO=4&transport=websocket',
+      query: [Object: null prototype],
+      auth: {}
+    },
+    _anyListeners: [ [Function (anonymous)] ],
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+  networkManager: <ref *1> ServerNetworkManager {
+    engine: ServerEngine {
+      plugins: {},
+      currentTime: 1767734161871,
+      lastTime: 2347207599.0269,
+      deltaTime: 0,
+      accumulator: 0.02526145263992145,
+      engineClasses: [],
+      appClasses: {},
+      libraries: {},
+      running: true,
+      collections: [Object],
+      gameInstance: null,
+      isServer: true,
+      players: Map(0) {},
+      gameRooms: [Map],
+      tickRate: 0.05,
+      lastTick: 2348162175.7086,
+      serverNetworkManager: [Circular *1]
+    },
+    io: Server {
+      _events: [Object: null prototype] {},
+      _eventsCount: 0,
+      _maxListeners: undefined,
+      _nsps: [Map],
+      parentNsps: Map(0) {},
+      parentNamespacesFromRegExp: Map(0) {},
+      _path: '/socket.io',
+      clientPathRegex: /^\/socket\.io\/socket\.io(\.msgpack|\.esm)?(\.min)?\.js(\.map)?(?:\?|$)/,
+      _connectTimeout: 45000,
+      _serveClient: true,
+      _parser: [Object],
+      encoder: [Encoder],
+      opts: [Object],
+      _adapter: [class Adapter extends EventEmitter],
+      sockets: [Namespace],
+      eio: [Server],
+      httpServer: [Server],
+      engine: [Server],
+      _corsMiddleware: [Function: corsMiddleware],
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false
+    },
+    playerSockets: Map(2) {
+      'EwgQU8knKazH1JWUAAAF' => [Object],
+      'qhIaXvMoYzBECEYCAAAH' => [Object]
+    },
+    nextRoomId: 1002,
+    currentRoomIds: [ '1000', '1001' ],
+    _initialized: true
+  }
+}
+[handleLevelSquad] playerStats: {} effectivePlayerId: 0
+[handleLevelSquad] playerGold: 225
+[handleLevelSquad] squadData: {}
+[handleLevelSquad] levelUpCost: 17
+[handleLevelSquad] calling finishLevelingSquad
+[SquadExperience] Squad 17 leveled up from 1 to 2
+[GameServices] missing method createParticleEffect
+[handleLevelSquad] finishLevelingSquad result: true
+[handleSpecializeSquad] called with eventData: {
+  playerId: 'EwgQU8knKazH1JWUAAAF',
+  numericPlayerId: 0,
+  eventName: 'SPECIALIZE_SQUAD',
+  data: { placementId: 17, specializationId: '2_i_elementalist' },
+  socket: Socket {
+    _events: [Object: null prototype] {
+      error: [Function: noop],
+      CREATE_ROOM: [Function (anonymous)],
+      JOIN_ROOM: [Function (anonymous)],
+      disconnect: [Function (anonymous)]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    nsp: Namespace {
+      _events: [Object: null prototype],
+      _eventsCount: 1,
+      _maxListeners: undefined,
+      sockets: [Map],
+      _preConnectSockets: Map(0) {},
+      _fns: [],
+      _ids: 0,
+      server: [Server],
+      name: '/',
+      adapter: [Adapter],
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false
+    },
+    client: Client {
+      sockets: [Map],
+      nsps: [Map],
+      server: [Server],
+      conn: [Socket],
+      encoder: [Encoder],
+      decoder: [Decoder],
+      id: 'jMx7uIrPgyzM0clEAAAE',
+      onclose: [Function: bound onclose],
+      ondata: [Function: bound ondata],
+      onerror: [Function: bound onerror],
+      ondecoded: [Function: bound ondecoded],
+      connectTimeout: undefined
+    },
+    recovered: false,
+    data: {},
+    connected: true,
+    acks: Map(0) {},
+    fns: [],
+    flags: {},
+    server: Server {
+      _events: [Object: null prototype] {},
+      _eventsCount: 0,
+      _maxListeners: undefined,
+      _nsps: [Map],
+      parentNsps: Map(0) {},
+      parentNamespacesFromRegExp: Map(0) {},
+      _path: '/socket.io',
+      clientPathRegex: /^\/socket\.io\/socket\.io(\.msgpack|\.esm)?(\.min)?\.js(\.map)?(?:\?|$)/,
+      _connectTimeout: 45000,
+      _serveClient: true,
+      _parser: [Object],
+      encoder: [Encoder],
+      opts: [Object],
+      _adapter: [class Adapter extends EventEmitter],
+      sockets: [Namespace],
+      eio: [Server],
+      httpServer: [Server],
+      engine: [Server],
+      _corsMiddleware: [Function: corsMiddleware],
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false
+    },
+    adapter: Adapter {
+      _events: [Object: null prototype] {},
+      _eventsCount: 0,
+      _maxListeners: undefined,
+      nsp: [Namespace],
+      rooms: [Map],
+      sids: [Map],
+      encoder: [Encoder],
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false
+    },
+    id: 'EwgQU8knKazH1JWUAAAF',
+    handshake: {
+      headers: [Object],
+      time: 'Tue Jan 06 2026 13:29:54 GMT-0800 (Pacific Standard Time)',
+      address: '::ffff:127.0.0.1',
+      xdomain: true,
+      secure: false,
+      issued: 1767734994480,
+      url: '/socket.io/?EIO=4&transport=websocket',
+      query: [Object: null prototype],
+      auth: {}
+    },
+    _anyListeners: [ [Function (anonymous)] ],
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+  networkManager: <ref *1> ServerNetworkManager {
+    engine: ServerEngine {
+      plugins: {},
+      currentTime: 1767734161871,
+      lastTime: 2347207599.0269,
+      deltaTime: 0,
+      accumulator: 0.016654652559436676,
+      engineClasses: [],
+      appClasses: {},
+      libraries: {},
+      running: true,
+      collections: [Object],
+      gameInstance: null,
+      isServer: true,
+      players: Map(0) {},
+      gameRooms: [Map],
+      tickRate: 0.05,
+      lastTick: 2348163567.1018,
+      serverNetworkManager: [Circular *1]
+    },
+    io: Server {
+      _events: [Object: null prototype] {},
+      _eventsCount: 0,
+      _maxListeners: undefined,
+      _nsps: [Map],
+      parentNsps: Map(0) {},
+      parentNamespacesFromRegExp: Map(0) {},
+      _path: '/socket.io',
+      clientPathRegex: /^\/socket\.io\/socket\.io(\.msgpack|\.esm)?(\.min)?\.js(\.map)?(?:\?|$)/,
+      _connectTimeout: 45000,
+      _serveClient: true,
+      _parser: [Object],
+      encoder: [Encoder],
+      opts: [Object],
+      _adapter: [class Adapter extends EventEmitter],
+      sockets: [Namespace],
+      eio: [Server],
+      httpServer: [Server],
+      engine: [Server],
+      _corsMiddleware: [Function: corsMiddleware],
+      [Symbol(shapeMode)]: false,
+      [Symbol(kCapture)]: false
+    },
+    playerSockets: Map(2) {
+      'EwgQU8knKazH1JWUAAAF' => [Object],
+      'qhIaXvMoYzBECEYCAAAH' => [Object]
+    },
+    nextRoomId: 1002,
+    currentRoomIds: [ '1000', '1001' ],
+    _initialized: true
+  }
+}
+[handleSpecializeSquad] Applying specialization 2_i_elementalist to placement 17
+[UnitCreationSystem] setupAbilities called for entity 1567 unitType.abilities: [ 'ChainLightningAbility' ]
+[UnitCreationSystem] Checking ability ChainLightningAbility - exists: true
+[UnitCreationSystem] Valid abilities: [ 'ChainLightningAbility' ]
+[UnitCreationSystem] hasService addAbilitiesToUnit: true
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1567
+[handleSpecializeSquad] Calling updateQueuedNetworkUnitData
+[updateQueuedNetworkUnitData] playerId=0, placementId=17, specializationId=2_i_elementalist
+[updateQueuedNetworkUnitData] No pending data for player 0, creating entry
+[updateQueuedNetworkUnitData] Found playerData with 0 placements
+[updateQueuedNetworkUnitData] Placement 17 not found, adding entry for surviving unit
+[updateQueuedNetworkUnitData] Added surviving unit placement with squadUnits: [ 1567 ]
+[updateQueuedNetworkUnitData] Updating placement. Old unitTypeId=16, new unitTypeIndex=16
+[updateQueuedNetworkUnitData] Updated placement unitTypeId to 16
+[Memory] queryCache: 30, proxyCache: 26, entityCount: 1563, behaviors: 26, mvmtPool: 6, trails: 0
+[UnitOrderSystem] applySquadTargetPosition entity=1567 (2_i_elementalist) placementId=17 isHiding=false isMoveOrder=true wasHiding=false
+[buildPlayersForBattleStart] pendingNetworkUnitData has 2 entries
+[buildPlayersForBattleStart] Player 1: team=3, placements=1
+[buildPlayersForBattleStart]   Placement 0: placementId=19, unitTypeId=4, squadUnits=[1545]
+[buildPlayersForBattleStart] Player 0: team=2, placements=1
+[buildPlayersForBattleStart]   Placement 0: placementId=17, unitTypeId=16, squadUnits=[1567]
+[2026-01-06T21:32:09.532Z] [INFO] [Projectile] HIT! 1_d_archer(1545) -> 0_skeleton(1548) {"damage":22,"element":"physical","targetHealthBefore":"50/50"}
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:32:09.573Z] [INFO] [InvestigateAttacker] 0_skeleton(1548) [neutral] INVESTIGATING attacker 1_d_archer(1545) [right] {"timeSinceAttack":"0.0"}
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:32:11.882Z] [INFO] [Projectile] HIT! 1_d_archer(1545) -> 0_skeleton(1548) {"damage":22,"element":"physical","targetHealthBefore":"33/50"}
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[GameServices] missing method playEffect
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:32:12.730Z] [INFO] [Projectile] HIT! 1_d_archer(1545) -> 0_skeleton(1548) {"damage":22,"element":"physical","targetHealthBefore":"16/50"}
+[GameServices] missing method playEffect
+[2026-01-06T21:32:12.730Z] [INFO] [Damage] FATAL: 0_skeleton(1548) [neutral] killed by 1_d_archer(1545) [right]
+[2026-01-06T21:32:12.730Z] [INFO] [Death] DYING: 0_skeleton(1548) [neutral] started death process
+[GameServices] missing method showDamageNumber
+[2026-01-06T21:32:14.682Z] [INFO] [Death] CORPSE: 0_skeleton(1548) [neutral] converted to corpse
+[GameServices] missing method calculateAnimationSpeed
+[GameServices] missing method showDamageNumber
+[BaseECSGame] createEntity called for existing entity 1567!
+Trace: createEntity called from:
+    at ServerECSGame.createEntity (webpack-internal:///./global/collections/scripts/libraries/js/BaseECSGame.js:1049:15)
+    at ProjectileSystem.fireProjectile (webpack-internal:///./projects/TurnBasedWarfare/collections/scripts/systems/js/ProjectileSystem.js:106:36)
+    at GameServices.call (webpack-internal:///./global/collections/scripts/libraries/js/GameServices.js:25:12)
+    at ServerECSGame.call (webpack-internal:///./global/collections/scripts/libraries/js/BaseECSGame.js:802:35)
+    at AttackEnemyBehaviorAction.fireProjectile (webpack-internal:///./projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/AttackEnemyBehaviorAction.js:179:12)
+    at Object.eval [as callback] (webpack-internal:///./projects

@@ -1095,6 +1095,17 @@ class BaseECSGame {
             console.error(`[BaseECSGame] createEntity called for existing entity ${id}!`);
             console.trace('createEntity called from:');
         }
+        // If using a specific ID, remove it from the free list if present
+        // This is critical when reusing entity IDs (e.g., replaceUnit destroys then recreates with same ID)
+        if (setId !== undefined && setId !== null) {
+            for (let i = 0; i < this.freeEntityCount; i++) {
+                if (this.freeEntityIds[i] === setId) {
+                    // Swap with last and decrement count
+                    this.freeEntityIds[i] = this.freeEntityIds[--this.freeEntityCount];
+                    break;
+                }
+            }
+        }
         // Mark entity as alive
         this.entityAlive[id] = 1;
         // Clear component bitmask
@@ -1106,7 +1117,7 @@ class BaseECSGame {
         if (id >= this.nextEntityId) {
             this.nextEntityId = id + 1;
         }
-                return id;
+        return id;
     }
 
     destroyEntity(entityId) {
