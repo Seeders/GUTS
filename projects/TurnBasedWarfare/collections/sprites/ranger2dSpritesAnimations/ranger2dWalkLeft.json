@@ -1,0 +1,12 @@
+{
+  "title": "ranger2d Walk Left",
+  "spriteCollection": "ranger2dSprites",
+  "sprites": [
+    "ranger2dWalkLeft_0",
+    "ranger2dWalkLeft_1",
+    "ranger2dWalkLeft_2",
+    "ranger2dWalkLeft_3",
+    "ranger2dWalkLeft_4"
+  ],
+  "fps": 4
+}

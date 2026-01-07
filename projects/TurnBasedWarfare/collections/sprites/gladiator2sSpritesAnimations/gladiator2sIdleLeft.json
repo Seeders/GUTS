@@ -1,0 +1,12 @@
+{
+  "title": "gladiator2s Idle Left",
+  "spriteCollection": "gladiator2sSprites",
+  "sprites": [
+    "gladiator2sIdleLeft_0",
+    "gladiator2sIdleLeft_1",
+    "gladiator2sIdleLeft_2",
+    "gladiator2sIdleLeft_3",
+    "gladiator2sIdleLeft_4"
+  ],
+  "fps": 4
+}

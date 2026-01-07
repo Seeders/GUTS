@@ -1,0 +1,12 @@
+{
+  "title": "hoplite2sd Walk Up Right",
+  "spriteCollection": "hoplite2sdSprites",
+  "sprites": [
+    "hoplite2sdWalkUpRight_0",
+    "hoplite2sdWalkUpRight_1",
+    "hoplite2sdWalkUpRight_2",
+    "hoplite2sdWalkUpRight_3",
+    "hoplite2sdWalkUpRight_4"
+  ],
+  "fps": 4
+}

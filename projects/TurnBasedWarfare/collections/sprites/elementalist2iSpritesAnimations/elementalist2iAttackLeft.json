@@ -1,0 +1,16 @@
+{
+  "title": "elementalist2i Attack Left",
+  "spriteCollection": "elementalist2iSprites",
+  "sprites": [
+    "elementalist2iAttackLeft_0",
+    "elementalist2iAttackLeft_1",
+    "elementalist2iAttackLeft_2",
+    "elementalist2iAttackLeft_3",
+    "elementalist2iAttackLeft_4",
+    "elementalist2iAttackLeft_5",
+    "elementalist2iAttackLeft_6",
+    "elementalist2iAttackLeft_7",
+    "elementalist2iAttackLeft_8"
+  ],
+  "fps": 4
+}

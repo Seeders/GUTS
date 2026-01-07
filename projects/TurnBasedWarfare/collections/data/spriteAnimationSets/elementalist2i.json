@@ -1,0 +1,69 @@
+{
+  "title": "Elementalist2i",
+  "animationCollection": "elementalist2iSpritesAnimations",
+  "spriteSheet": "sprites/elementalist2iSprites/elementalist2iSheet.png",
+  "spriteOffset": 15,
+  "idleSpriteAnimations": [
+    "elementalist2iIdleDown",
+    "elementalist2iIdleDownLeft",
+    "elementalist2iIdleLeft",
+    "elementalist2iIdleUpLeft",
+    "elementalist2iIdleUp",
+    "elementalist2iIdleUpRight",
+    "elementalist2iIdleRight",
+    "elementalist2iIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "elementalist2iWalkDown",
+    "elementalist2iWalkDownLeft",
+    "elementalist2iWalkLeft",
+    "elementalist2iWalkUpLeft",
+    "elementalist2iWalkUp",
+    "elementalist2iWalkUpRight",
+    "elementalist2iWalkRight",
+    "elementalist2iWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "elementalist2iAttackDown",
+    "elementalist2iAttackDownLeft",
+    "elementalist2iAttackLeft",
+    "elementalist2iAttackUpLeft",
+    "elementalist2iAttackUp",
+    "elementalist2iAttackUpRight",
+    "elementalist2iAttackRight",
+    "elementalist2iAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "elementalist2iDeathDown",
+    "elementalist2iDeathDownLeft",
+    "elementalist2iDeathLeft",
+    "elementalist2iDeathUpLeft",
+    "elementalist2iDeathUp",
+    "elementalist2iDeathUpRight",
+    "elementalist2iDeathRight",
+    "elementalist2iDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "elementalist2iCelebrateDown",
+    "elementalist2iCelebrateDownLeft",
+    "elementalist2iCelebrateLeft",
+    "elementalist2iCelebrateUpLeft",
+    "elementalist2iCelebrateUp",
+    "elementalist2iCelebrateUpRight",
+    "elementalist2iCelebrateRight",
+    "elementalist2iCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 8,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

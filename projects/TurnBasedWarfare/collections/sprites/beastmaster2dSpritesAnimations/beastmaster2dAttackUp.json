@@ -1,0 +1,29 @@
+{
+  "title": "beastmaster2d Attack Up",
+  "spriteCollection": "beastmaster2dSprites",
+  "sprites": [
+    "beastmaster2dAttackUp_0",
+    "beastmaster2dAttackUp_1",
+    "beastmaster2dAttackUp_2",
+    "beastmaster2dAttackUp_3",
+    "beastmaster2dAttackUp_4",
+    "beastmaster2dAttackUp_5",
+    "beastmaster2dAttackUp_6",
+    "beastmaster2dAttackUp_7",
+    "beastmaster2dAttackUp_8",
+    "beastmaster2dAttackUp_9",
+    "beastmaster2dAttackUp_10",
+    "beastmaster2dAttackUp_11",
+    "beastmaster2dAttackUp_12",
+    "beastmaster2dAttackUp_13",
+    "beastmaster2dAttackUp_14",
+    "beastmaster2dAttackUp_15",
+    "beastmaster2dAttackUp_16",
+    "beastmaster2dAttackUp_17",
+    "beastmaster2dAttackUp_18",
+    "beastmaster2dAttackUp_19",
+    "beastmaster2dAttackUp_20",
+    "beastmaster2dAttackUp_21"
+  ],
+  "fps": 4
+}

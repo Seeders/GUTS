@@ -1,0 +1,14 @@
+{
+  "title": "oathbreaker2is Attack Up",
+  "spriteCollection": "oathbreaker2isSprites",
+  "sprites": [
+    "oathbreaker2isAttackUp_0",
+    "oathbreaker2isAttackUp_1",
+    "oathbreaker2isAttackUp_2",
+    "oathbreaker2isAttackUp_3",
+    "oathbreaker2isAttackUp_4",
+    "oathbreaker2isAttackUp_5",
+    "oathbreaker2isAttackUp_6"
+  ],
+  "fps": 4
+}

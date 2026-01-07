@@ -1,0 +1,12 @@
+{
+  "title": "enchanter2i Walk Up Left",
+  "spriteCollection": "enchanter2iSprites",
+  "sprites": [
+    "enchanter2iWalkUpLeft_0",
+    "enchanter2iWalkUpLeft_1",
+    "enchanter2iWalkUpLeft_2",
+    "enchanter2iWalkUpLeft_3",
+    "enchanter2iWalkUpLeft_4"
+  ],
+  "fps": 4
+}

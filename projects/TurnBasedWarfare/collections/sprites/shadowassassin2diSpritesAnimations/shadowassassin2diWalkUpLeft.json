@@ -1,0 +1,12 @@
+{
+  "title": "shadowassassin2di Walk Up Left",
+  "spriteCollection": "shadowassassin2diSprites",
+  "sprites": [
+    "shadowassassin2diWalkUpLeft_0",
+    "shadowassassin2diWalkUpLeft_1",
+    "shadowassassin2diWalkUpLeft_2",
+    "shadowassassin2diWalkUpLeft_3",
+    "shadowassassin2diWalkUpLeft_4"
+  ],
+  "fps": 4
+}

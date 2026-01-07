@@ -62,7 +62,8 @@
     "borderSize": 1,
     "outlineColor": "#170F13",
     "outlineConnectivity": 4,
-    "cameraHeight": 1
+    "cameraHeight": 1,
+    "isProjectile": false
   },
   "spriteOffset": 32
 }

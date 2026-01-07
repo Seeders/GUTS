@@ -22,13 +22,21 @@
           "main": {
             "shapes": [
               {
+                "type": "gltf",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
                 "scale": {
                   "z": 1,
                   "y": 1,
                   "x": 1
                 },
+                "model": "archmage",
                 "id": 0,
-                "animation": "idle"
+                "animation": "idle_short"
               }
             ]
           }
@@ -166,5 +174,6 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "spriteAnimationSet": "elementalist2i"
 }

@@ -1,0 +1,16 @@
+{
+  "title": "warlord2s Death Down",
+  "spriteCollection": "warlord2sSprites",
+  "sprites": [
+    "warlord2sDeathDown_0",
+    "warlord2sDeathDown_1",
+    "warlord2sDeathDown_2",
+    "warlord2sDeathDown_3",
+    "warlord2sDeathDown_4",
+    "warlord2sDeathDown_5",
+    "warlord2sDeathDown_6",
+    "warlord2sDeathDown_7",
+    "warlord2sDeathDown_8"
+  ],
+  "fps": 4
+}

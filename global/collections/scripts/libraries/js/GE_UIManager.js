@@ -101,12 +101,12 @@ class GE_UIManager {
             distance: savedSettings.cameraDistance ?? 100,
             spriteSize: savedSettings.spriteSize ?? 64,
             animationFPS: savedSettings.fps ?? 4,
-            brightness: savedSettings.brightness ?? 2.5,
-            palette: savedSettings.palette ?? '',
+            brightness: savedSettings.brightness ?? 10,
+            palette: savedSettings.palette ?? 'main',
             borderSize: savedSettings.borderSize ?? 1,
             outlineColor: savedSettings.outlineColor ?? '',
             outlineConnectivity: savedSettings.outlineConnectivity ?? 4,
-            cameraHeight: savedSettings.cameraHeight ?? 1.5,
+            cameraHeight: savedSettings.cameraHeight ?? 1,
             isProjectile: savedSettings.isProjectile ?? false
         };
 
@@ -207,6 +207,17 @@ class GE_UIManager {
             return;
         }
 
+        // Show progress bar
+        const progressContainer = this.showSaveProgress();
+        const updateProgress = (percent, status) => {
+            const progressBar = progressContainer.querySelector('.save-progress-bar');
+            const progressText = progressContainer.querySelector('.save-progress-text');
+            if (progressBar) progressBar.style.width = `${percent}%`;
+            if (progressText) progressText.textContent = status;
+        };
+
+        updateProgress(0, 'Preparing sprites...');
+
         // Get the model name from the currently selected object
         const currentObject = this.graphicsEditor.gameEditor.getCurrentObject();
         const modelTitle = currentObject?.title || 'character';
@@ -256,6 +267,26 @@ class GE_UIManager {
         canvas.height = sheetHeight;
         const ctx = canvas.getContext('2d');
 
+        // Calculate total sprites for progress tracking
+        let totalSprites = 0;
+        for (const animType in this.generatedSprites) {
+            totalSprites += this.generatedSprites[animType].length * numDirections;
+        }
+        if (this.generatedBallisticSprites && Object.keys(this.generatedBallisticSprites).length > 0) {
+            for (const angleName of ballisticAngleNames) {
+                const angleData = this.generatedBallisticSprites[angleName];
+                if (!angleData) continue;
+                if (Array.isArray(angleData)) {
+                    totalSprites += angleData.length * numDirections;
+                } else {
+                    for (const animType in angleData) {
+                        totalSprites += angleData[animType].length * numDirections;
+                    }
+                }
+            }
+        }
+        let processedSprites = 0;
+
         // Pack all sprites and create metadata
         const spriteMetadata = {};
         let animTypeIndex = 0;
@@ -288,6 +319,10 @@ class GE_UIManager {
                         height: spriteHeight,
                         frameIndex
                     });
+
+                    processedSprites++;
+                    const percent = Math.round((processedSprites / totalSprites) * 80); // 80% for sprite packing
+                    updateProgress(percent, `Packing sprites... ${processedSprites}/${totalSprites}`);
                 }
             }
 
@@ -300,12 +335,12 @@ class GE_UIManager {
             cameraDistance: parseFloat(document.getElementById('iso-distance').value) || 100,
             spriteSize: parseFloat(document.getElementById('iso-size').value) || 64,
             fps: parseInt(document.getElementById('iso-fps').value) || 4,
-            brightness: parseFloat(document.getElementById('iso-brightness').value) || 2.5,
-            palette: document.getElementById('iso-palette').value || '',
+            brightness: parseFloat(document.getElementById('iso-brightness').value) || 10,
+            palette: document.getElementById('iso-palette').value || 'main',
             borderSize: parseInt(document.getElementById('iso-pixel-size').value) || 1,
             outlineColor: document.getElementById('iso-outline').value || '',
             outlineConnectivity: parseInt(document.getElementById('iso-outline-connectivity').value) || 8,
-            cameraHeight: parseFloat(document.getElementById('iso-camera-height').value) || 1.5,
+            cameraHeight: parseFloat(document.getElementById('iso-camera-height').value) || 1,
             isProjectile: document.getElementById('iso-is-projectile')?.checked || false
         };
 
@@ -355,6 +390,10 @@ class GE_UIManager {
                                 height: spriteHeight,
                                 frameIndex
                             });
+
+                            processedSprites++;
+                            const percent = Math.round((processedSprites / totalSprites) * 80);
+                            updateProgress(percent, `Packing sprites... ${processedSprites}/${totalSprites}`);
                         }
                         rowIndex++;
                     }
@@ -385,6 +424,10 @@ class GE_UIManager {
                                     height: spriteHeight,
                                     frameIndex
                                 });
+
+                                processedSprites++;
+                                const percent = Math.round((processedSprites / totalSprites) * 80);
+                                updateProgress(percent, `Packing sprites... ${processedSprites}/${totalSprites}`);
                             }
                             rowIndex++;
                         }
@@ -393,6 +436,11 @@ class GE_UIManager {
             }
         }
 
+        // Calculate sprite offset from first idle frame
+        updateProgress(85, 'Calculating sprite offset...');
+        const spriteOffset = this.calculateSpriteOffset(ctx, spriteMetadata, baseName);
+
+        updateProgress(90, 'Saving to server...');
         try {
             // Send single combined sprite sheet and metadata to server
             // Ballistic sprites are now included in the main spriteSheet canvas
@@ -409,25 +457,77 @@ class GE_UIManager {
                     ballisticAngleNames,
                     directionNames,
                     animationFPS: generatorSettings.fps,
-                    generatorSettings
+                    generatorSettings,
+                    spriteOffset
                 })
             });
 
             const result = await response.json();
             if (result.success) {
+                updateProgress(100, 'Complete!');
                 const ballisticCount = result.ballisticSpriteCount || 0;
                 const message = ballisticCount > 0
                     ? `Successfully saved ${result.spriteCount} sprites + ${ballisticCount} ballistic sprites!`
                     : `Successfully saved ${result.spriteCount} sprites and created all data files!`;
+                // Hide progress after a short delay
+                setTimeout(() => this.hideSaveProgress(), 1500);
                 alert(message);
                 // Reload collections to show new sprites
                 await this.graphicsEditor.gameEditor.fs.syncFromFilesystem();
             } else {
+                this.hideSaveProgress();
                 alert('Error saving sprites: ' + result.error);
             }
         } catch (error) {
             console.error('Error saving sprites:', error);
+            this.hideSaveProgress();
             alert('Failed to save sprites: ' + error.message);
+        }
+    }
+
+    /**
+     * Show a progress bar overlay for sprite saving
+     * @returns {HTMLElement} The progress container element
+     */
+    showSaveProgress() {
+        // Remove existing progress bar if any
+        this.hideSaveProgress();
+
+        const container = document.createElement('div');
+        container.id = 'sprite-save-progress';
+        container.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2a2a3e;
+            border: 2px solid #4a9eff;
+            border-radius: 8px;
+            padding: 20px 30px;
+            z-index: 10001;
+            min-width: 300px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        `;
+
+        container.innerHTML = `
+            <div style="color: #fff; font-size: 14px; margin-bottom: 10px; text-align: center;">Saving Sprites</div>
+            <div style="background: #1a1a2e; border-radius: 4px; height: 20px; overflow: hidden;">
+                <div class="save-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #4a9eff, #6ab0ff); transition: width 0.2s ease;"></div>
+            </div>
+            <div class="save-progress-text" style="color: #aaa; font-size: 12px; margin-top: 8px; text-align: center;">Preparing...</div>
+        `;
+
+        document.body.appendChild(container);
+        return container;
+    }
+
+    /**
+     * Hide and remove the progress bar overlay
+     */
+    hideSaveProgress() {
+        const existing = document.getElementById('sprite-save-progress');
+        if (existing) {
+            existing.remove();
         }
     }
 
@@ -438,6 +538,61 @@ class GE_UIManager {
             img.onerror = reject;
             img.src = dataUrl;
         });
+    }
+
+    /**
+     * Calculate the sprite offset by counting transparent pixel rows from the bottom
+     * of the first idle animation frame (direction 0 / Down).
+     * @param {CanvasRenderingContext2D} ctx - The canvas context containing the sprite sheet
+     * @param {Object} spriteMetadata - The sprite metadata containing animation info
+     * @param {string} baseName - The base name used for animation naming
+     * @returns {number} Number of transparent pixel rows from bottom to first non-transparent row
+     */
+    calculateSpriteOffset(ctx, spriteMetadata, baseName) {
+        // Get the first idle animation frame (direction 0 = Down)
+        const idleAnimations = spriteMetadata['idle']?.animations;
+        if (!idleAnimations) {
+            console.warn('No idle animations found for sprite offset calculation');
+            return 0;
+        }
+
+        // Find the first idle animation (direction Down)
+        const idleDownAnimName = `${baseName}IdleDown`;
+        const idleDownFrames = idleAnimations[idleDownAnimName];
+        if (!idleDownFrames || idleDownFrames.length === 0) {
+            console.warn('No idle Down animation frames found for sprite offset calculation');
+            return 0;
+        }
+
+        // Get the first frame's location on the sprite sheet
+        const firstFrame = idleDownFrames[0];
+        const { x, y, width, height } = firstFrame;
+
+        // Get the pixel data for this sprite region
+        const imageData = ctx.getImageData(x, y, width, height);
+        const pixels = imageData.data; // RGBA array
+
+        // Count transparent rows from the bottom
+        let transparentRows = 0;
+        for (let row = height - 1; row >= 0; row--) {
+            let rowHasNonTransparent = false;
+
+            for (let col = 0; col < width; col++) {
+                // Get alpha value (4th byte in RGBA)
+                const alphaIndex = (row * width + col) * 4 + 3;
+                if (pixels[alphaIndex] > 0) {
+                    rowHasNonTransparent = true;
+                    break;
+                }
+            }
+
+            if (rowHasNonTransparent) {
+                break;
+            }
+            transparentRows++;
+        }
+
+        return transparentRows;
     }
 
     displayIsometricSprites(sprites, ballisticSprites = null) {

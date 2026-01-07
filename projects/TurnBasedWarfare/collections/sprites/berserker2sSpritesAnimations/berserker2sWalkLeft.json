@@ -1,0 +1,12 @@
+{
+  "title": "berserker2s Walk Left",
+  "spriteCollection": "berserker2sSprites",
+  "sprites": [
+    "berserker2sWalkLeft_0",
+    "berserker2sWalkLeft_1",
+    "berserker2sWalkLeft_2",
+    "berserker2sWalkLeft_3",
+    "berserker2sWalkLeft_4"
+  ],
+  "fps": 4
+}

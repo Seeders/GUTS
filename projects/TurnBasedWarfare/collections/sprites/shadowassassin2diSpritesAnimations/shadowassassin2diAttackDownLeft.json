@@ -1,0 +1,14 @@
+{
+  "title": "shadowassassin2di Attack Down Left",
+  "spriteCollection": "shadowassassin2diSprites",
+  "sprites": [
+    "shadowassassin2diAttackDownLeft_0",
+    "shadowassassin2diAttackDownLeft_1",
+    "shadowassassin2diAttackDownLeft_2",
+    "shadowassassin2diAttackDownLeft_3",
+    "shadowassassin2diAttackDownLeft_4",
+    "shadowassassin2diAttackDownLeft_5",
+    "shadowassassin2diAttackDownLeft_6"
+  ],
+  "fps": 4
+}

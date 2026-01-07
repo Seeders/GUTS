@@ -1,0 +1,69 @@
+{
+  "title": "Hoplite2sd",
+  "animationCollection": "hoplite2sdSpritesAnimations",
+  "spriteSheet": "sprites/hoplite2sdSprites/hoplite2sdSheet.png",
+  "spriteOffset": 15,
+  "idleSpriteAnimations": [
+    "hoplite2sdIdleDown",
+    "hoplite2sdIdleDownLeft",
+    "hoplite2sdIdleLeft",
+    "hoplite2sdIdleUpLeft",
+    "hoplite2sdIdleUp",
+    "hoplite2sdIdleUpRight",
+    "hoplite2sdIdleRight",
+    "hoplite2sdIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "hoplite2sdWalkDown",
+    "hoplite2sdWalkDownLeft",
+    "hoplite2sdWalkLeft",
+    "hoplite2sdWalkUpLeft",
+    "hoplite2sdWalkUp",
+    "hoplite2sdWalkUpRight",
+    "hoplite2sdWalkRight",
+    "hoplite2sdWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "hoplite2sdAttackDown",
+    "hoplite2sdAttackDownLeft",
+    "hoplite2sdAttackLeft",
+    "hoplite2sdAttackUpLeft",
+    "hoplite2sdAttackUp",
+    "hoplite2sdAttackUpRight",
+    "hoplite2sdAttackRight",
+    "hoplite2sdAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "hoplite2sdDeathDown",
+    "hoplite2sdDeathDownLeft",
+    "hoplite2sdDeathLeft",
+    "hoplite2sdDeathUpLeft",
+    "hoplite2sdDeathUp",
+    "hoplite2sdDeathUpRight",
+    "hoplite2sdDeathRight",
+    "hoplite2sdDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "hoplite2sdCelebrateDown",
+    "hoplite2sdCelebrateDownLeft",
+    "hoplite2sdCelebrateLeft",
+    "hoplite2sdCelebrateUpLeft",
+    "hoplite2sdCelebrateUp",
+    "hoplite2sdCelebrateUpRight",
+    "hoplite2sdCelebrateRight",
+    "hoplite2sdCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 15,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

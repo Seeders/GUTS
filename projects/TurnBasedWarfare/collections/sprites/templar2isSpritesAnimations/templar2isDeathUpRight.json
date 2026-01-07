@@ -1,0 +1,16 @@
+{
+  "title": "templar2is Death Up Right",
+  "spriteCollection": "templar2isSprites",
+  "sprites": [
+    "templar2isDeathUpRight_0",
+    "templar2isDeathUpRight_1",
+    "templar2isDeathUpRight_2",
+    "templar2isDeathUpRight_3",
+    "templar2isDeathUpRight_4",
+    "templar2isDeathUpRight_5",
+    "templar2isDeathUpRight_6",
+    "templar2isDeathUpRight_7",
+    "templar2isDeathUpRight_8"
+  ],
+  "fps": 4
+}

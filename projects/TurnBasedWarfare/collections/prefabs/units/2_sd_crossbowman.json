@@ -20,7 +20,7 @@
             "shapes": [
               {
                 "id": 0,
-                "animation": "idle"
+                "animation": "idle_short"
               }
             ]
           }
@@ -131,7 +131,7 @@
           "rotation": {
             "x": 0,
             "y": 0,
-            "z": -20
+            "z": 67
           }
         }
       }
@@ -145,5 +145,6 @@
   "range": 200,
   "projectile": "bolt",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "spriteAnimationSet": "crossbowman2sd"
 }

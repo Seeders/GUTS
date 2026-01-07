@@ -1,0 +1,12 @@
+{
+  "title": "gladiator2s Walk Up",
+  "spriteCollection": "gladiator2sSprites",
+  "sprites": [
+    "gladiator2sWalkUp_0",
+    "gladiator2sWalkUp_1",
+    "gladiator2sWalkUp_2",
+    "gladiator2sWalkUp_3",
+    "gladiator2sWalkUp_4"
+  ],
+  "fps": 4
+}

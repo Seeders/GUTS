@@ -1,0 +1,14 @@
+{
+  "title": "trickster2di Attack Up",
+  "spriteCollection": "trickster2diSprites",
+  "sprites": [
+    "trickster2diAttackUp_0",
+    "trickster2diAttackUp_1",
+    "trickster2diAttackUp_2",
+    "trickster2diAttackUp_3",
+    "trickster2diAttackUp_4",
+    "trickster2diAttackUp_5",
+    "trickster2diAttackUp_6"
+  ],
+  "fps": 4
+}

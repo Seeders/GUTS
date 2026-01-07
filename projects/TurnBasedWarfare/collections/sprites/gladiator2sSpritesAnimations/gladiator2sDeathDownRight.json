@@ -1,0 +1,16 @@
+{
+  "title": "gladiator2s Death Down Right",
+  "spriteCollection": "gladiator2sSprites",
+  "sprites": [
+    "gladiator2sDeathDownRight_0",
+    "gladiator2sDeathDownRight_1",
+    "gladiator2sDeathDownRight_2",
+    "gladiator2sDeathDownRight_3",
+    "gladiator2sDeathDownRight_4",
+    "gladiator2sDeathDownRight_5",
+    "gladiator2sDeathDownRight_6",
+    "gladiator2sDeathDownRight_7",
+    "gladiator2sDeathDownRight_8"
+  ],
+  "fps": 4
+}

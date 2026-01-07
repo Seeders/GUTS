@@ -28,7 +28,7 @@
                   "x": 1
                 },
                 "id": 0,
-                "animation": "idle"
+                "animation": "idle_short"
               }
             ]
           }
@@ -166,5 +166,6 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "spriteAnimationSet": "enchanter2i"
 }

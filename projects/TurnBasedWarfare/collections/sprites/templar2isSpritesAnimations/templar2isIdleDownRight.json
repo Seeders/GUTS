@@ -1,0 +1,12 @@
+{
+  "title": "templar2is Idle Down Right",
+  "spriteCollection": "templar2isSprites",
+  "sprites": [
+    "templar2isIdleDownRight_0",
+    "templar2isIdleDownRight_1",
+    "templar2isIdleDownRight_2",
+    "templar2isIdleDownRight_3",
+    "templar2isIdleDownRight_4"
+  ],
+  "fps": 4
+}

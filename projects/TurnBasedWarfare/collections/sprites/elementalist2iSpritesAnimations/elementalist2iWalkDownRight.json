@@ -1,0 +1,12 @@
+{
+  "title": "elementalist2i Walk Down Right",
+  "spriteCollection": "elementalist2iSprites",
+  "sprites": [
+    "elementalist2iWalkDownRight_0",
+    "elementalist2iWalkDownRight_1",
+    "elementalist2iWalkDownRight_2",
+    "elementalist2iWalkDownRight_3",
+    "elementalist2iWalkDownRight_4"
+  ],
+  "fps": 4
+}

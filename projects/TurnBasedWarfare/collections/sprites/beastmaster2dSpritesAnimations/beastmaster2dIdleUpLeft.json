@@ -1,0 +1,12 @@
+{
+  "title": "beastmaster2d Idle Up Left",
+  "spriteCollection": "beastmaster2dSprites",
+  "sprites": [
+    "beastmaster2dIdleUpLeft_0",
+    "beastmaster2dIdleUpLeft_1",
+    "beastmaster2dIdleUpLeft_2",
+    "beastmaster2dIdleUpLeft_3",
+    "beastmaster2dIdleUpLeft_4"
+  ],
+  "fps": 4
+}

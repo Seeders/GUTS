@@ -1,0 +1,16 @@
+{
+  "title": "ranger2d Death Up Right",
+  "spriteCollection": "ranger2dSprites",
+  "sprites": [
+    "ranger2dDeathUpRight_0",
+    "ranger2dDeathUpRight_1",
+    "ranger2dDeathUpRight_2",
+    "ranger2dDeathUpRight_3",
+    "ranger2dDeathUpRight_4",
+    "ranger2dDeathUpRight_5",
+    "ranger2dDeathUpRight_6",
+    "ranger2dDeathUpRight_7",
+    "ranger2dDeathUpRight_8"
+  ],
+  "fps": 4
+}

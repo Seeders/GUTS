@@ -1,0 +1,69 @@
+{
+  "title": "Warlord2s",
+  "animationCollection": "warlord2sSpritesAnimations",
+  "spriteSheet": "sprites/warlord2sSprites/warlord2sSheet.png",
+  "spriteOffset": 15,
+  "idleSpriteAnimations": [
+    "warlord2sIdleDown",
+    "warlord2sIdleDownLeft",
+    "warlord2sIdleLeft",
+    "warlord2sIdleUpLeft",
+    "warlord2sIdleUp",
+    "warlord2sIdleUpRight",
+    "warlord2sIdleRight",
+    "warlord2sIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "warlord2sWalkDown",
+    "warlord2sWalkDownLeft",
+    "warlord2sWalkLeft",
+    "warlord2sWalkUpLeft",
+    "warlord2sWalkUp",
+    "warlord2sWalkUpRight",
+    "warlord2sWalkRight",
+    "warlord2sWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "warlord2sAttackDown",
+    "warlord2sAttackDownLeft",
+    "warlord2sAttackLeft",
+    "warlord2sAttackUpLeft",
+    "warlord2sAttackUp",
+    "warlord2sAttackUpRight",
+    "warlord2sAttackRight",
+    "warlord2sAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "warlord2sDeathDown",
+    "warlord2sDeathDownLeft",
+    "warlord2sDeathLeft",
+    "warlord2sDeathUpLeft",
+    "warlord2sDeathUp",
+    "warlord2sDeathUpRight",
+    "warlord2sDeathRight",
+    "warlord2sDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "warlord2sCelebrateDown",
+    "warlord2sCelebrateDownLeft",
+    "warlord2sCelebrateLeft",
+    "warlord2sCelebrateUpLeft",
+    "warlord2sCelebrateUp",
+    "warlord2sCelebrateUpRight",
+    "warlord2sCelebrateRight",
+    "warlord2sCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

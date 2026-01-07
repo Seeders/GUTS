@@ -1,0 +1,14 @@
+{
+  "title": "hoplite2sd Attack Up",
+  "spriteCollection": "hoplite2sdSprites",
+  "sprites": [
+    "hoplite2sdAttackUp_0",
+    "hoplite2sdAttackUp_1",
+    "hoplite2sdAttackUp_2",
+    "hoplite2sdAttackUp_3",
+    "hoplite2sdAttackUp_4",
+    "hoplite2sdAttackUp_5",
+    "hoplite2sdAttackUp_6"
+  ],
+  "fps": 4
+}

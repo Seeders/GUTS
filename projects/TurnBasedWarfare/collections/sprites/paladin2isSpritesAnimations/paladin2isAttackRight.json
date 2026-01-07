@@ -1,0 +1,14 @@
+{
+  "title": "paladin2is Attack Right",
+  "spriteCollection": "paladin2isSprites",
+  "sprites": [
+    "paladin2isAttackRight_0",
+    "paladin2isAttackRight_1",
+    "paladin2isAttackRight_2",
+    "paladin2isAttackRight_3",
+    "paladin2isAttackRight_4",
+    "paladin2isAttackRight_5",
+    "paladin2isAttackRight_6"
+  ],
+  "fps": 4
+}

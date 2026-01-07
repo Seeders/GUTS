@@ -28,9 +28,7 @@ class BaseECSGame {
         // For more components, we use multiple Uint32s
         this.entityComponentMask = new Uint32Array(this.MAX_ENTITIES * 2); // 64 component types max
 
-        // Free entity ID pool for recycling
-        this.freeEntityIds = new Uint32Array(this.MAX_ENTITIES);
-        this.freeEntityCount = 0;
+        // Entity ID counter (no recycling - IDs grow monotonically to prevent reference bugs)
         this.nextEntityId = 1; // Start at 1, reserve 0 as "no entity"
         this.entityCount = 0;
 
@@ -953,21 +951,10 @@ class BaseECSGame {
     }
 
     getEntityId() {
-        // Recycle freed entity IDs deterministically - always use lowest available
-        // This ensures client and server get the same ID even if destruction order differs
-        if (this.freeEntityCount > 0) {
-            // Find the minimum ID in the free list for deterministic selection
-            let minIdx = 0;
-            for (let i = 1; i < this.freeEntityCount; i++) {
-                if (this.freeEntityIds[i] < this.freeEntityIds[minIdx]) {
-                    minIdx = i;
-                }
-            }
-            const id = this.freeEntityIds[minIdx];
-            // Swap with last and decrement count
-            this.freeEntityIds[minIdx] = this.freeEntityIds[--this.freeEntityCount];
-            return id;
-        }
+        // Never recycle entity IDs - always use fresh IDs
+        // This prevents bugs where cached entity references (lastAttacker, target, etc.)
+        // accidentally point to completely different entities after ID reuse
+        // Memory cost is negligible - typed arrays grow as needed
         if (this.nextEntityId >= this.MAX_ENTITIES) {
             throw new Error(`Maximum entity limit (${this.MAX_ENTITIES}) reached`);
         }
@@ -1089,22 +1076,11 @@ class BaseECSGame {
     }
 
     createEntity(setId) {
-        const id = setId || this.getEntityId();
+        const id = setId !== undefined && setId !== null ? setId : this.getEntityId();
         // Log if overwriting existing entity - this is a bug!
         if (this.entityAlive[id]) {
             console.error(`[BaseECSGame] createEntity called for existing entity ${id}!`);
             console.trace('createEntity called from:');
-        }
-        // If using a specific ID, remove it from the free list if present
-        // This is critical when reusing entity IDs (e.g., replaceUnit destroys then recreates with same ID)
-        if (setId !== undefined && setId !== null) {
-            for (let i = 0; i < this.freeEntityCount; i++) {
-                if (this.freeEntityIds[i] === setId) {
-                    // Swap with last and decrement count
-                    this.freeEntityIds[i] = this.freeEntityIds[--this.freeEntityCount];
-                    break;
-                }
-            }
         }
         // Mark entity as alive
         this.entityAlive[id] = 1;
@@ -1146,13 +1122,12 @@ class BaseECSGame {
         // Note: TypedArray numeric data doesn't need clearing -
         // the bitmask ensures it won't be read
 
-        // Mark entity as dead and recycle ID
+        // Mark entity as dead (no ID recycling - IDs are never reused)
         this.entityAlive[entityId] = 0;
         this.entityComponentMask[entityId * 2] = 0;
         this.entityComponentMask[entityId * 2 + 1] = 0;
-        this.freeEntityIds[this.freeEntityCount++] = entityId;
         this.entityCount--;
-            }
+    }
 
     addComponent(entityId, componentId, data) {
         if (!this.entityAlive[entityId]) {
@@ -1758,20 +1733,11 @@ class BaseECSGame {
             this.nextEntityId = data.nextEntityId;
         }
 
-        // Rebuild freeEntityIds from entityAlive to ensure consistency
-        this.freeEntityCount = 0;
-        for (let i = 1; i < this.nextEntityId; i++) {
-            if (this.entityAlive[i] === 0) {
-                this.freeEntityIds[this.freeEntityCount++] = i;
-            }
-        }
-
         // Clear all cached proxies since data has been overwritten
         for (const [, componentCache] of this._proxyCache) {
             componentCache.clear();
         }
-
-            }
+    }
 
     /**
      * Update specific fields of a component
@@ -1994,7 +1960,6 @@ class BaseECSGame {
         this.entityComponentMask.fill(0);
 
         // Reset entity management
-        this.freeEntityCount = 0;
         this.nextEntityId = 1;
         this.entityCount = 0;
 

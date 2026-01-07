@@ -1,0 +1,14 @@
+{
+  "title": "templar2is Attack Up",
+  "spriteCollection": "templar2isSprites",
+  "sprites": [
+    "templar2isAttackUp_0",
+    "templar2isAttackUp_1",
+    "templar2isAttackUp_2",
+    "templar2isAttackUp_3",
+    "templar2isAttackUp_4",
+    "templar2isAttackUp_5",
+    "templar2isAttackUp_6"
+  ],
+  "fps": 4
+}

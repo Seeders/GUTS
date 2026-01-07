@@ -1,0 +1,12 @@
+{
+  "title": "enchanter2i Walk Down Right",
+  "spriteCollection": "enchanter2iSprites",
+  "sprites": [
+    "enchanter2iWalkDownRight_0",
+    "enchanter2iWalkDownRight_1",
+    "enchanter2iWalkDownRight_2",
+    "enchanter2iWalkDownRight_3",
+    "enchanter2iWalkDownRight_4"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,69 @@
+{
+  "title": "Berserker2s",
+  "animationCollection": "berserker2sSpritesAnimations",
+  "spriteSheet": "sprites/berserker2sSprites/berserker2sSheet.png",
+  "idleSpriteAnimations": [
+    "berserker2sIdleDown",
+    "berserker2sIdleDownLeft",
+    "berserker2sIdleLeft",
+    "berserker2sIdleUpLeft",
+    "berserker2sIdleUp",
+    "berserker2sIdleUpRight",
+    "berserker2sIdleRight",
+    "berserker2sIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "berserker2sWalkDown",
+    "berserker2sWalkDownLeft",
+    "berserker2sWalkLeft",
+    "berserker2sWalkUpLeft",
+    "berserker2sWalkUp",
+    "berserker2sWalkUpRight",
+    "berserker2sWalkRight",
+    "berserker2sWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "berserker2sAttackDown",
+    "berserker2sAttackDownLeft",
+    "berserker2sAttackLeft",
+    "berserker2sAttackUpLeft",
+    "berserker2sAttackUp",
+    "berserker2sAttackUpRight",
+    "berserker2sAttackRight",
+    "berserker2sAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "berserker2sDeathDown",
+    "berserker2sDeathDownLeft",
+    "berserker2sDeathLeft",
+    "berserker2sDeathUpLeft",
+    "berserker2sDeathUp",
+    "berserker2sDeathUpRight",
+    "berserker2sDeathRight",
+    "berserker2sDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "berserker2sCelebrateDown",
+    "berserker2sCelebrateDownLeft",
+    "berserker2sCelebrateLeft",
+    "berserker2sCelebrateUpLeft",
+    "berserker2sCelebrateUp",
+    "berserker2sCelebrateUpRight",
+    "berserker2sCelebrateRight",
+    "berserker2sCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  },
+  "spriteOffset": 15
+}

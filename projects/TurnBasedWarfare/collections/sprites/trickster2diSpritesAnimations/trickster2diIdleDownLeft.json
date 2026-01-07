@@ -1,0 +1,12 @@
+{
+  "title": "trickster2di Idle Down Left",
+  "spriteCollection": "trickster2diSprites",
+  "sprites": [
+    "trickster2diIdleDownLeft_0",
+    "trickster2diIdleDownLeft_1",
+    "trickster2diIdleDownLeft_2",
+    "trickster2diIdleDownLeft_3",
+    "trickster2diIdleDownLeft_4"
+  ],
+  "fps": 4
+}

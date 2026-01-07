@@ -1,0 +1,12 @@
+{
+  "title": "trickster2di Walk Down",
+  "spriteCollection": "trickster2diSprites",
+  "sprites": [
+    "trickster2diWalkDown_0",
+    "trickster2diWalkDown_1",
+    "trickster2diWalkDown_2",
+    "trickster2diWalkDown_3",
+    "trickster2diWalkDown_4"
+  ],
+  "fps": 4
+}

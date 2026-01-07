@@ -1,0 +1,16 @@
+{
+  "title": "enchanter2i Death Up Left",
+  "spriteCollection": "enchanter2iSprites",
+  "sprites": [
+    "enchanter2iDeathUpLeft_0",
+    "enchanter2iDeathUpLeft_1",
+    "enchanter2iDeathUpLeft_2",
+    "enchanter2iDeathUpLeft_3",
+    "enchanter2iDeathUpLeft_4",
+    "enchanter2iDeathUpLeft_5",
+    "enchanter2iDeathUpLeft_6",
+    "enchanter2iDeathUpLeft_7",
+    "enchanter2iDeathUpLeft_8"
+  ],
+  "fps": 4
+}

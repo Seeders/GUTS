@@ -1,0 +1,16 @@
+{
+  "title": "berserker2s Death Right",
+  "spriteCollection": "berserker2sSprites",
+  "sprites": [
+    "berserker2sDeathRight_0",
+    "berserker2sDeathRight_1",
+    "berserker2sDeathRight_2",
+    "berserker2sDeathRight_3",
+    "berserker2sDeathRight_4",
+    "berserker2sDeathRight_5",
+    "berserker2sDeathRight_6",
+    "berserker2sDeathRight_7",
+    "berserker2sDeathRight_8"
+  ],
+  "fps": 4
+}

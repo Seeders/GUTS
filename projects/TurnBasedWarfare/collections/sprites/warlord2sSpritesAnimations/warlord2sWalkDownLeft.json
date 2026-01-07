@@ -1,0 +1,12 @@
+{
+  "title": "warlord2s Walk Down Left",
+  "spriteCollection": "warlord2sSprites",
+  "sprites": [
+    "warlord2sWalkDownLeft_0",
+    "warlord2sWalkDownLeft_1",
+    "warlord2sWalkDownLeft_2",
+    "warlord2sWalkDownLeft_3",
+    "warlord2sWalkDownLeft_4"
+  ],
+  "fps": 4
+}

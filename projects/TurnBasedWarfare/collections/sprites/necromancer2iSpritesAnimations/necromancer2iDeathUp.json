@@ -1,0 +1,16 @@
+{
+  "title": "necromancer2i Death Up",
+  "spriteCollection": "necromancer2iSprites",
+  "sprites": [
+    "necromancer2iDeathUp_0",
+    "necromancer2iDeathUp_1",
+    "necromancer2iDeathUp_2",
+    "necromancer2iDeathUp_3",
+    "necromancer2iDeathUp_4",
+    "necromancer2iDeathUp_5",
+    "necromancer2iDeathUp_6",
+    "necromancer2iDeathUp_7",
+    "necromancer2iDeathUp_8"
+  ],
+  "fps": 4
+}

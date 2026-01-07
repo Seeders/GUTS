@@ -1,0 +1,16 @@
+{
+  "title": "hoplite2sd Death Down",
+  "spriteCollection": "hoplite2sdSprites",
+  "sprites": [
+    "hoplite2sdDeathDown_0",
+    "hoplite2sdDeathDown_1",
+    "hoplite2sdDeathDown_2",
+    "hoplite2sdDeathDown_3",
+    "hoplite2sdDeathDown_4",
+    "hoplite2sdDeathDown_5",
+    "hoplite2sdDeathDown_6",
+    "hoplite2sdDeathDown_7",
+    "hoplite2sdDeathDown_8"
+  ],
+  "fps": 4
+}

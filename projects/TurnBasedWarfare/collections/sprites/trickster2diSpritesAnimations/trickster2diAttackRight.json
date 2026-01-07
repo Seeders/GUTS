@@ -1,0 +1,14 @@
+{
+  "title": "trickster2di Attack Right",
+  "spriteCollection": "trickster2diSprites",
+  "sprites": [
+    "trickster2diAttackRight_0",
+    "trickster2diAttackRight_1",
+    "trickster2diAttackRight_2",
+    "trickster2diAttackRight_3",
+    "trickster2diAttackRight_4",
+    "trickster2diAttackRight_5",
+    "trickster2diAttackRight_6"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,16 @@
+{
+  "title": "beastmaster2d Death Up",
+  "spriteCollection": "beastmaster2dSprites",
+  "sprites": [
+    "beastmaster2dDeathUp_0",
+    "beastmaster2dDeathUp_1",
+    "beastmaster2dDeathUp_2",
+    "beastmaster2dDeathUp_3",
+    "beastmaster2dDeathUp_4",
+    "beastmaster2dDeathUp_5",
+    "beastmaster2dDeathUp_6",
+    "beastmaster2dDeathUp_7",
+    "beastmaster2dDeathUp_8"
+  ],
+  "fps": 4
+}

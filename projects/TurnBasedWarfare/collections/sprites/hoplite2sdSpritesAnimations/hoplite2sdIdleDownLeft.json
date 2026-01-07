@@ -1,0 +1,12 @@
+{
+  "title": "hoplite2sd Idle Down Left",
+  "spriteCollection": "hoplite2sdSprites",
+  "sprites": [
+    "hoplite2sdIdleDownLeft_0",
+    "hoplite2sdIdleDownLeft_1",
+    "hoplite2sdIdleDownLeft_2",
+    "hoplite2sdIdleDownLeft_3",
+    "hoplite2sdIdleDownLeft_4"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,14 @@
+{
+  "title": "gladiator2s Attack Right",
+  "spriteCollection": "gladiator2sSprites",
+  "sprites": [
+    "gladiator2sAttackRight_0",
+    "gladiator2sAttackRight_1",
+    "gladiator2sAttackRight_2",
+    "gladiator2sAttackRight_3",
+    "gladiator2sAttackRight_4",
+    "gladiator2sAttackRight_5",
+    "gladiator2sAttackRight_6"
+  ],
+  "fps": 4
+}

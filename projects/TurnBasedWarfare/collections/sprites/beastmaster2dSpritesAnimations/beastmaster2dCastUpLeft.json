@@ -1,0 +1,16 @@
+{
+  "title": "beastmaster2d Cast Up Left",
+  "spriteCollection": "beastmaster2dSprites",
+  "sprites": [
+    "beastmaster2dCastUpLeft_0",
+    "beastmaster2dCastUpLeft_1",
+    "beastmaster2dCastUpLeft_2",
+    "beastmaster2dCastUpLeft_3",
+    "beastmaster2dCastUpLeft_4",
+    "beastmaster2dCastUpLeft_5",
+    "beastmaster2dCastUpLeft_6",
+    "beastmaster2dCastUpLeft_7",
+    "beastmaster2dCastUpLeft_8"
+  ],
+  "fps": 4
+}

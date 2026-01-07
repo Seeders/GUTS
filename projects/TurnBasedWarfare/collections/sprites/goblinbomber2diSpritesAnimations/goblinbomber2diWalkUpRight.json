@@ -1,0 +1,12 @@
+{
+  "title": "goblinbomber2di Walk Up Right",
+  "spriteCollection": "goblinbomber2diSprites",
+  "sprites": [
+    "goblinbomber2diWalkUpRight_0",
+    "goblinbomber2diWalkUpRight_1",
+    "goblinbomber2diWalkUpRight_2",
+    "goblinbomber2diWalkUpRight_3",
+    "goblinbomber2diWalkUpRight_4"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,14 @@
+{
+  "title": "hoplite2sd Attack Left",
+  "spriteCollection": "hoplite2sdSprites",
+  "sprites": [
+    "hoplite2sdAttackLeft_0",
+    "hoplite2sdAttackLeft_1",
+    "hoplite2sdAttackLeft_2",
+    "hoplite2sdAttackLeft_3",
+    "hoplite2sdAttackLeft_4",
+    "hoplite2sdAttackLeft_5",
+    "hoplite2sdAttackLeft_6"
+  ],
+  "fps": 4
+}

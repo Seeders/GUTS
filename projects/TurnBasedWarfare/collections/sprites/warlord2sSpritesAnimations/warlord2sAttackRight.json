@@ -1,0 +1,14 @@
+{
+  "title": "warlord2s Attack Right",
+  "spriteCollection": "warlord2sSprites",
+  "sprites": [
+    "warlord2sAttackRight_0",
+    "warlord2sAttackRight_1",
+    "warlord2sAttackRight_2",
+    "warlord2sAttackRight_3",
+    "warlord2sAttackRight_4",
+    "warlord2sAttackRight_5",
+    "warlord2sAttackRight_6"
+  ],
+  "fps": 4
+}

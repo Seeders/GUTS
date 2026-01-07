@@ -1,0 +1,16 @@
+{
+  "title": "templar2is Death Left",
+  "spriteCollection": "templar2isSprites",
+  "sprites": [
+    "templar2isDeathLeft_0",
+    "templar2isDeathLeft_1",
+    "templar2isDeathLeft_2",
+    "templar2isDeathLeft_3",
+    "templar2isDeathLeft_4",
+    "templar2isDeathLeft_5",
+    "templar2isDeathLeft_6",
+    "templar2isDeathLeft_7",
+    "templar2isDeathLeft_8"
+  ],
+  "fps": 4
+}

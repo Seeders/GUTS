@@ -1,0 +1,16 @@
+{
+  "title": "beastmaster2d Cast Right",
+  "spriteCollection": "beastmaster2dSprites",
+  "sprites": [
+    "beastmaster2dCastRight_0",
+    "beastmaster2dCastRight_1",
+    "beastmaster2dCastRight_2",
+    "beastmaster2dCastRight_3",
+    "beastmaster2dCastRight_4",
+    "beastmaster2dCastRight_5",
+    "beastmaster2dCastRight_6",
+    "beastmaster2dCastRight_7",
+    "beastmaster2dCastRight_8"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,12 @@
+{
+  "title": "enchanter2i Idle Right",
+  "spriteCollection": "enchanter2iSprites",
+  "sprites": [
+    "enchanter2iIdleRight_0",
+    "enchanter2iIdleRight_1",
+    "enchanter2iIdleRight_2",
+    "enchanter2iIdleRight_3",
+    "enchanter2iIdleRight_4"
+  ],
+  "fps": 4
+}

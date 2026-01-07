@@ -1,0 +1,14 @@
+{
+  "title": "paladin2is Attack Up Left",
+  "spriteCollection": "paladin2isSprites",
+  "sprites": [
+    "paladin2isAttackUpLeft_0",
+    "paladin2isAttackUpLeft_1",
+    "paladin2isAttackUpLeft_2",
+    "paladin2isAttackUpLeft_3",
+    "paladin2isAttackUpLeft_4",
+    "paladin2isAttackUpLeft_5",
+    "paladin2isAttackUpLeft_6"
+  ],
+  "fps": 4
+}

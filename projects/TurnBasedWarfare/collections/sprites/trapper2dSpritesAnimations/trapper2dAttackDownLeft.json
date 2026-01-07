@@ -1,0 +1,29 @@
+{
+  "title": "trapper2d Attack Down Left",
+  "spriteCollection": "trapper2dSprites",
+  "sprites": [
+    "trapper2dAttackDownLeft_0",
+    "trapper2dAttackDownLeft_1",
+    "trapper2dAttackDownLeft_2",
+    "trapper2dAttackDownLeft_3",
+    "trapper2dAttackDownLeft_4",
+    "trapper2dAttackDownLeft_5",
+    "trapper2dAttackDownLeft_6",
+    "trapper2dAttackDownLeft_7",
+    "trapper2dAttackDownLeft_8",
+    "trapper2dAttackDownLeft_9",
+    "trapper2dAttackDownLeft_10",
+    "trapper2dAttackDownLeft_11",
+    "trapper2dAttackDownLeft_12",
+    "trapper2dAttackDownLeft_13",
+    "trapper2dAttackDownLeft_14",
+    "trapper2dAttackDownLeft_15",
+    "trapper2dAttackDownLeft_16",
+    "trapper2dAttackDownLeft_17",
+    "trapper2dAttackDownLeft_18",
+    "trapper2dAttackDownLeft_19",
+    "trapper2dAttackDownLeft_20",
+    "trapper2dAttackDownLeft_21"
+  ],
+  "fps": 4
+}

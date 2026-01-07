@@ -1,0 +1,16 @@
+{
+  "title": "necromancer2i Attack Down Left",
+  "spriteCollection": "necromancer2iSprites",
+  "sprites": [
+    "necromancer2iAttackDownLeft_0",
+    "necromancer2iAttackDownLeft_1",
+    "necromancer2iAttackDownLeft_2",
+    "necromancer2iAttackDownLeft_3",
+    "necromancer2iAttackDownLeft_4",
+    "necromancer2iAttackDownLeft_5",
+    "necromancer2iAttackDownLeft_6",
+    "necromancer2iAttackDownLeft_7",
+    "necromancer2iAttackDownLeft_8"
+  ],
+  "fps": 4
+}

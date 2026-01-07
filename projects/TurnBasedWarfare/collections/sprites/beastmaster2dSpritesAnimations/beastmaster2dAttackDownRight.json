@@ -1,0 +1,29 @@
+{
+  "title": "beastmaster2d Attack Down Right",
+  "spriteCollection": "beastmaster2dSprites",
+  "sprites": [
+    "beastmaster2dAttackDownRight_0",
+    "beastmaster2dAttackDownRight_1",
+    "beastmaster2dAttackDownRight_2",
+    "beastmaster2dAttackDownRight_3",
+    "beastmaster2dAttackDownRight_4",
+    "beastmaster2dAttackDownRight_5",
+    "beastmaster2dAttackDownRight_6",
+    "beastmaster2dAttackDownRight_7",
+    "beastmaster2dAttackDownRight_8",
+    "beastmaster2dAttackDownRight_9",
+    "beastmaster2dAttackDownRight_10",
+    "beastmaster2dAttackDownRight_11",
+    "beastmaster2dAttackDownRight_12",
+    "beastmaster2dAttackDownRight_13",
+    "beastmaster2dAttackDownRight_14",
+    "beastmaster2dAttackDownRight_15",
+    "beastmaster2dAttackDownRight_16",
+    "beastmaster2dAttackDownRight_17",
+    "beastmaster2dAttackDownRight_18",
+    "beastmaster2dAttackDownRight_19",
+    "beastmaster2dAttackDownRight_20",
+    "beastmaster2dAttackDownRight_21"
+  ],
+  "fps": 4
+}

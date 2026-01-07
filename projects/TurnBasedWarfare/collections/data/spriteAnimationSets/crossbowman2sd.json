@@ -1,0 +1,69 @@
+{
+  "title": "Crossbowman2sd",
+  "animationCollection": "crossbowman2sdSpritesAnimations",
+  "spriteSheet": "sprites/crossbowman2sdSprites/crossbowman2sdSheet.png",
+  "spriteOffset": 15,
+  "idleSpriteAnimations": [
+    "crossbowman2sdIdleDown",
+    "crossbowman2sdIdleDownLeft",
+    "crossbowman2sdIdleLeft",
+    "crossbowman2sdIdleUpLeft",
+    "crossbowman2sdIdleUp",
+    "crossbowman2sdIdleUpRight",
+    "crossbowman2sdIdleRight",
+    "crossbowman2sdIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "crossbowman2sdWalkDown",
+    "crossbowman2sdWalkDownLeft",
+    "crossbowman2sdWalkLeft",
+    "crossbowman2sdWalkUpLeft",
+    "crossbowman2sdWalkUp",
+    "crossbowman2sdWalkUpRight",
+    "crossbowman2sdWalkRight",
+    "crossbowman2sdWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "crossbowman2sdAttackDown",
+    "crossbowman2sdAttackDownLeft",
+    "crossbowman2sdAttackLeft",
+    "crossbowman2sdAttackUpLeft",
+    "crossbowman2sdAttackUp",
+    "crossbowman2sdAttackUpRight",
+    "crossbowman2sdAttackRight",
+    "crossbowman2sdAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "crossbowman2sdDeathDown",
+    "crossbowman2sdDeathDownLeft",
+    "crossbowman2sdDeathLeft",
+    "crossbowman2sdDeathUpLeft",
+    "crossbowman2sdDeathUp",
+    "crossbowman2sdDeathUpRight",
+    "crossbowman2sdDeathRight",
+    "crossbowman2sdDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "crossbowman2sdCelebrateDown",
+    "crossbowman2sdCelebrateDownLeft",
+    "crossbowman2sdCelebrateLeft",
+    "crossbowman2sdCelebrateUpLeft",
+    "crossbowman2sdCelebrateUp",
+    "crossbowman2sdCelebrateUpRight",
+    "crossbowman2sdCelebrateRight",
+    "crossbowman2sdCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 15,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

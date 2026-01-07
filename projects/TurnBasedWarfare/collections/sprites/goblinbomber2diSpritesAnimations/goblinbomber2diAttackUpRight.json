@@ -1,0 +1,14 @@
+{
+  "title": "goblinbomber2di Attack Up Right",
+  "spriteCollection": "goblinbomber2diSprites",
+  "sprites": [
+    "goblinbomber2diAttackUpRight_0",
+    "goblinbomber2diAttackUpRight_1",
+    "goblinbomber2diAttackUpRight_2",
+    "goblinbomber2diAttackUpRight_3",
+    "goblinbomber2diAttackUpRight_4",
+    "goblinbomber2diAttackUpRight_5",
+    "goblinbomber2diAttackUpRight_6"
+  ],
+  "fps": 4
+}

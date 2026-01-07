@@ -29,8 +29,13 @@
           "main": {
             "shapes": [
               {
+                "type": "gltf",
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "model": "new_peasant",
                 "id": 0,
-                "animation": "idle"
+                "animation": "idle_short"
               }
             ]
           }

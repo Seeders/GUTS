@@ -1,0 +1,29 @@
+{
+  "title": "trapper2d Attack Up Right",
+  "spriteCollection": "trapper2dSprites",
+  "sprites": [
+    "trapper2dAttackUpRight_0",
+    "trapper2dAttackUpRight_1",
+    "trapper2dAttackUpRight_2",
+    "trapper2dAttackUpRight_3",
+    "trapper2dAttackUpRight_4",
+    "trapper2dAttackUpRight_5",
+    "trapper2dAttackUpRight_6",
+    "trapper2dAttackUpRight_7",
+    "trapper2dAttackUpRight_8",
+    "trapper2dAttackUpRight_9",
+    "trapper2dAttackUpRight_10",
+    "trapper2dAttackUpRight_11",
+    "trapper2dAttackUpRight_12",
+    "trapper2dAttackUpRight_13",
+    "trapper2dAttackUpRight_14",
+    "trapper2dAttackUpRight_15",
+    "trapper2dAttackUpRight_16",
+    "trapper2dAttackUpRight_17",
+    "trapper2dAttackUpRight_18",
+    "trapper2dAttackUpRight_19",
+    "trapper2dAttackUpRight_20",
+    "trapper2dAttackUpRight_21"
+  ],
+  "fps": 4
+}

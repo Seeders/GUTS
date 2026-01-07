@@ -1,0 +1,12 @@
+{
+  "title": "templar2is Walk Up Right",
+  "spriteCollection": "templar2isSprites",
+  "sprites": [
+    "templar2isWalkUpRight_0",
+    "templar2isWalkUpRight_1",
+    "templar2isWalkUpRight_2",
+    "templar2isWalkUpRight_3",
+    "templar2isWalkUpRight_4"
+  ],
+  "fps": 4
+}

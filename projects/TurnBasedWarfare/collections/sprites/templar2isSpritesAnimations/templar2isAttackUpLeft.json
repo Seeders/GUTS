@@ -1,0 +1,14 @@
+{
+  "title": "templar2is Attack Up Left",
+  "spriteCollection": "templar2isSprites",
+  "sprites": [
+    "templar2isAttackUpLeft_0",
+    "templar2isAttackUpLeft_1",
+    "templar2isAttackUpLeft_2",
+    "templar2isAttackUpLeft_3",
+    "templar2isAttackUpLeft_4",
+    "templar2isAttackUpLeft_5",
+    "templar2isAttackUpLeft_6"
+  ],
+  "fps": 4
+}

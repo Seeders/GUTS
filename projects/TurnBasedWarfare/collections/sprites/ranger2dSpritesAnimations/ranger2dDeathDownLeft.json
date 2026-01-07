@@ -1,0 +1,16 @@
+{
+  "title": "ranger2d Death Down Left",
+  "spriteCollection": "ranger2dSprites",
+  "sprites": [
+    "ranger2dDeathDownLeft_0",
+    "ranger2dDeathDownLeft_1",
+    "ranger2dDeathDownLeft_2",
+    "ranger2dDeathDownLeft_3",
+    "ranger2dDeathDownLeft_4",
+    "ranger2dDeathDownLeft_5",
+    "ranger2dDeathDownLeft_6",
+    "ranger2dDeathDownLeft_7",
+    "ranger2dDeathDownLeft_8"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,69 @@
+{
+  "title": "Goblinbomber2di",
+  "animationCollection": "goblinbomber2diSpritesAnimations",
+  "spriteSheet": "sprites/goblinbomber2diSprites/goblinbomber2diSheet.png",
+  "spriteOffset": 17,
+  "idleSpriteAnimations": [
+    "goblinbomber2diIdleDown",
+    "goblinbomber2diIdleDownLeft",
+    "goblinbomber2diIdleLeft",
+    "goblinbomber2diIdleUpLeft",
+    "goblinbomber2diIdleUp",
+    "goblinbomber2diIdleUpRight",
+    "goblinbomber2diIdleRight",
+    "goblinbomber2diIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "goblinbomber2diWalkDown",
+    "goblinbomber2diWalkDownLeft",
+    "goblinbomber2diWalkLeft",
+    "goblinbomber2diWalkUpLeft",
+    "goblinbomber2diWalkUp",
+    "goblinbomber2diWalkUpRight",
+    "goblinbomber2diWalkRight",
+    "goblinbomber2diWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "goblinbomber2diAttackDown",
+    "goblinbomber2diAttackDownLeft",
+    "goblinbomber2diAttackLeft",
+    "goblinbomber2diAttackUpLeft",
+    "goblinbomber2diAttackUp",
+    "goblinbomber2diAttackUpRight",
+    "goblinbomber2diAttackRight",
+    "goblinbomber2diAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "goblinbomber2diDeathDown",
+    "goblinbomber2diDeathDownLeft",
+    "goblinbomber2diDeathLeft",
+    "goblinbomber2diDeathUpLeft",
+    "goblinbomber2diDeathUp",
+    "goblinbomber2diDeathUpRight",
+    "goblinbomber2diDeathRight",
+    "goblinbomber2diDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "goblinbomber2diCelebrateDown",
+    "goblinbomber2diCelebrateDownLeft",
+    "goblinbomber2diCelebrateLeft",
+    "goblinbomber2diCelebrateUpLeft",
+    "goblinbomber2diCelebrateUp",
+    "goblinbomber2diCelebrateUpRight",
+    "goblinbomber2diCelebrateRight",
+    "goblinbomber2diCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 28,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

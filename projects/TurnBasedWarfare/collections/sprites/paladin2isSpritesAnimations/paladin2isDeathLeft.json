@@ -1,0 +1,16 @@
+{
+  "title": "paladin2is Death Left",
+  "spriteCollection": "paladin2isSprites",
+  "sprites": [
+    "paladin2isDeathLeft_0",
+    "paladin2isDeathLeft_1",
+    "paladin2isDeathLeft_2",
+    "paladin2isDeathLeft_3",
+    "paladin2isDeathLeft_4",
+    "paladin2isDeathLeft_5",
+    "paladin2isDeathLeft_6",
+    "paladin2isDeathLeft_7",
+    "paladin2isDeathLeft_8"
+  ],
+  "fps": 4
+}

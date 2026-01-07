@@ -1,0 +1,16 @@
+{
+  "title": "trickster2di Death Left",
+  "spriteCollection": "trickster2diSprites",
+  "sprites": [
+    "trickster2diDeathLeft_0",
+    "trickster2diDeathLeft_1",
+    "trickster2diDeathLeft_2",
+    "trickster2diDeathLeft_3",
+    "trickster2diDeathLeft_4",
+    "trickster2diDeathLeft_5",
+    "trickster2diDeathLeft_6",
+    "trickster2diDeathLeft_7",
+    "trickster2diDeathLeft_8"
+  ],
+  "fps": 4
+}

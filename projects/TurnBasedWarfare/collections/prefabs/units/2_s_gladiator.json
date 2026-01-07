@@ -25,7 +25,7 @@
                   "x": 1
                 },
                 "id": 0,
-                "animation": "idle"
+                "animation": "idle_short"
               }
             ]
           }
@@ -166,5 +166,6 @@
     "ArenaPresenceAbility"
   ],
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "spriteAnimationSet": "gladiator2s"
 }

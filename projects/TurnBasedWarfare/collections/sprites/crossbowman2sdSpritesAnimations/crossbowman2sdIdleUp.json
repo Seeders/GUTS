@@ -1,0 +1,12 @@
+{
+  "title": "crossbowman2sd Idle Up",
+  "spriteCollection": "crossbowman2sdSprites",
+  "sprites": [
+    "crossbowman2sdIdleUp_0",
+    "crossbowman2sdIdleUp_1",
+    "crossbowman2sdIdleUp_2",
+    "crossbowman2sdIdleUp_3",
+    "crossbowman2sdIdleUp_4"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,69 @@
+{
+  "title": "Ranger2d",
+  "animationCollection": "ranger2dSpritesAnimations",
+  "spriteSheet": "sprites/ranger2dSprites/ranger2dSheet.png",
+  "spriteOffset": 16,
+  "idleSpriteAnimations": [
+    "ranger2dIdleDown",
+    "ranger2dIdleDownLeft",
+    "ranger2dIdleLeft",
+    "ranger2dIdleUpLeft",
+    "ranger2dIdleUp",
+    "ranger2dIdleUpRight",
+    "ranger2dIdleRight",
+    "ranger2dIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "ranger2dWalkDown",
+    "ranger2dWalkDownLeft",
+    "ranger2dWalkLeft",
+    "ranger2dWalkUpLeft",
+    "ranger2dWalkUp",
+    "ranger2dWalkUpRight",
+    "ranger2dWalkRight",
+    "ranger2dWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "ranger2dAttackDown",
+    "ranger2dAttackDownLeft",
+    "ranger2dAttackLeft",
+    "ranger2dAttackUpLeft",
+    "ranger2dAttackUp",
+    "ranger2dAttackUpRight",
+    "ranger2dAttackRight",
+    "ranger2dAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "ranger2dDeathDown",
+    "ranger2dDeathDownLeft",
+    "ranger2dDeathLeft",
+    "ranger2dDeathUpLeft",
+    "ranger2dDeathUp",
+    "ranger2dDeathUpRight",
+    "ranger2dDeathRight",
+    "ranger2dDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "ranger2dCelebrateDown",
+    "ranger2dCelebrateDownLeft",
+    "ranger2dCelebrateLeft",
+    "ranger2dCelebrateUpLeft",
+    "ranger2dCelebrateUp",
+    "ranger2dCelebrateUpRight",
+    "ranger2dCelebrateRight",
+    "ranger2dCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 8,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

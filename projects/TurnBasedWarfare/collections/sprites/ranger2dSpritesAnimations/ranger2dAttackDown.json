@@ -1,0 +1,29 @@
+{
+  "title": "ranger2d Attack Down",
+  "spriteCollection": "ranger2dSprites",
+  "sprites": [
+    "ranger2dAttackDown_0",
+    "ranger2dAttackDown_1",
+    "ranger2dAttackDown_2",
+    "ranger2dAttackDown_3",
+    "ranger2dAttackDown_4",
+    "ranger2dAttackDown_5",
+    "ranger2dAttackDown_6",
+    "ranger2dAttackDown_7",
+    "ranger2dAttackDown_8",
+    "ranger2dAttackDown_9",
+    "ranger2dAttackDown_10",
+    "ranger2dAttackDown_11",
+    "ranger2dAttackDown_12",
+    "ranger2dAttackDown_13",
+    "ranger2dAttackDown_14",
+    "ranger2dAttackDown_15",
+    "ranger2dAttackDown_16",
+    "ranger2dAttackDown_17",
+    "ranger2dAttackDown_18",
+    "ranger2dAttackDown_19",
+    "ranger2dAttackDown_20",
+    "ranger2dAttackDown_21"
+  ],
+  "fps": 4
+}

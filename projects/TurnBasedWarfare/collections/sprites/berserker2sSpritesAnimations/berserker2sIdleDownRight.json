@@ -1,0 +1,12 @@
+{
+  "title": "berserker2s Idle Down Right",
+  "spriteCollection": "berserker2sSprites",
+  "sprites": [
+    "berserker2sIdleDownRight_0",
+    "berserker2sIdleDownRight_1",
+    "berserker2sIdleDownRight_2",
+    "berserker2sIdleDownRight_3",
+    "berserker2sIdleDownRight_4"
+  ],
+  "fps": 4
+}

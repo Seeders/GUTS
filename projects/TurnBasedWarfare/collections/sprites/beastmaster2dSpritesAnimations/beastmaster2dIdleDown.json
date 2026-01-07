@@ -1,0 +1,12 @@
+{
+  "title": "beastmaster2d Idle Down",
+  "spriteCollection": "beastmaster2dSprites",
+  "sprites": [
+    "beastmaster2dIdleDown_0",
+    "beastmaster2dIdleDown_1",
+    "beastmaster2dIdleDown_2",
+    "beastmaster2dIdleDown_3",
+    "beastmaster2dIdleDown_4"
+  ],
+  "fps": 4
+}

@@ -44066,9 +44066,9 @@
         "components": {
           "transform": {
             "position": {
-              "x": 380.34,
+              "x": 380.3399963378906,
               "y": 30,
-              "z": 1145.67
+              "z": 1145.6700439453125
             },
             "rotation": {
               "x": 0,
@@ -44089,7 +44089,7 @@
         "components": {
           "transform": {
             "position": {
-              "x": 447.36,
+              "x": 447.3599853515625,
               "y": 30,
               "z": 1157.75
             },
@@ -44112,13 +44112,680 @@
         "components": {
           "transform": {
             "position": {
-              "x": 461.45,
+              "x": 461.45001220703125,
               "y": 30,
-              "z": 1230.67
+              "z": 1230.6700439453125
             },
             "rotation": {
               "x": 0,
               "y": -0.5235987901687622,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "1_d_archer",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 200.4978485107422,
+              "y": 30,
+              "z": -126.10302734375
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "1_is_acolyte",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -18.30353546142578,
+              "y": 30,
+              "z": 175.1982421875
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "1_i_apprentice",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -125.82520294189453,
+              "y": 30,
+              "z": 32.5206413269043
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "1_sd_soldier",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 292.4662170410156,
+              "y": 30,
+              "z": 26.29976463317871
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "1_s_barbarian",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 181.98707580566406,
+              "y": 30,
+              "z": 168.45420837402344
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "1_di_scout",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 7.238739013671875,
+              "y": 30,
+              "z": -128.5188751220703
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_di_goblinBomber",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -155.84,
+              "y": 30,
+              "z": -181.54
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_di_shadowAssassin",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -120.76,
+              "y": 30,
+              "z": -235.19
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_di_trickster",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -43.42,
+              "y": 30,
+              "z": -261.54
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_d_beastMaster",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 294.56927490234375,
+              "y": 30,
+              "z": -185.47622680664062
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_d_ranger",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 257.2186279296875,
+              "y": 30,
+              "z": -226.04293823242188
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_d_trapper",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 183.44,
+              "y": 30,
+              "z": -242.21
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_is_crusader",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -89.45394134521484,
+              "y": 30,
+              "z": 292.8710021972656
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_is_oathBreaker",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -137.1153564453125,
+              "y": 30,
+              "z": 264.44970703125
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_is_paladin",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -155.33262634277344,
+              "y": 30,
+              "z": 213.52859497070312
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_i_elementalist",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -262.09149169921875,
+              "y": 30,
+              "z": 88.23464965820312
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_i_enchanter",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -270.118408203125,
+              "y": 30,
+              "z": 25.224294662475586
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_i_necromancer",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -242.98,
+              "y": 30,
+              "z": -31.57
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_sd_crossbowman",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 388.25,
+              "y": 30,
+              "z": -36.78
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_sd_hoplite",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 417.34,
+              "y": 30,
+              "z": 26.55
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_sd_knight",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 387.14,
+              "y": 30,
+              "z": 85.67
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_s_berserker",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 240.23,
+              "y": 30,
+              "z": 252.18
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_s_warlord",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 167.16,
+              "y": 30,
+              "z": 280.16
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "2_s_gladiator",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 293.83,
+              "y": 30,
+              "z": 188.24
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "peasant",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 88.35916900634766,
+              "y": 30,
+              "z": 28.29661750793457
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "dragon_red",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -402.4167785644531,
+              "y": 30,
+              "z": 293.70269775390625
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "dragon_red_flying",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -351.25750732421875,
+              "y": 30,
+              "z": -222.66152954101562
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "ballista",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 117.23999786376953,
+              "y": 30,
+              "z": -426.80999755859375
+            },
+            "rotation": {
+              "x": 0,
+              "y": 1.832595705986023,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "prefab": "unit",
+        "type": "0_golemStone",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 3.1514997482299805,
+              "y": 30,
+              "z": 400.5498962402344
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
               "z": 0
             },
             "scale": {

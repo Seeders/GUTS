@@ -1,0 +1,12 @@
+{
+  "title": "beastmaster2d Walk Right",
+  "spriteCollection": "beastmaster2dSprites",
+  "sprites": [
+    "beastmaster2dWalkRight_0",
+    "beastmaster2dWalkRight_1",
+    "beastmaster2dWalkRight_2",
+    "beastmaster2dWalkRight_3",
+    "beastmaster2dWalkRight_4"
+  ],
+  "fps": 4
+}

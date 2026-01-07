@@ -1,0 +1,12 @@
+{
+  "title": "crossbowman2sd Walk Down Right",
+  "spriteCollection": "crossbowman2sdSprites",
+  "sprites": [
+    "crossbowman2sdWalkDownRight_0",
+    "crossbowman2sdWalkDownRight_1",
+    "crossbowman2sdWalkDownRight_2",
+    "crossbowman2sdWalkDownRight_3",
+    "crossbowman2sdWalkDownRight_4"
+  ],
+  "fps": 4
+}

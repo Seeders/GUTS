@@ -1,0 +1,12 @@
+{
+  "title": "trickster2di Walk Up Right",
+  "spriteCollection": "trickster2diSprites",
+  "sprites": [
+    "trickster2diWalkUpRight_0",
+    "trickster2diWalkUpRight_1",
+    "trickster2diWalkUpRight_2",
+    "trickster2diWalkUpRight_3",
+    "trickster2diWalkUpRight_4"
+  ],
+  "fps": 4
+}

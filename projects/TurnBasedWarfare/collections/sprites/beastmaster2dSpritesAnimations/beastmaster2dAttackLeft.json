@@ -1,0 +1,29 @@
+{
+  "title": "beastmaster2d Attack Left",
+  "spriteCollection": "beastmaster2dSprites",
+  "sprites": [
+    "beastmaster2dAttackLeft_0",
+    "beastmaster2dAttackLeft_1",
+    "beastmaster2dAttackLeft_2",
+    "beastmaster2dAttackLeft_3",
+    "beastmaster2dAttackLeft_4",
+    "beastmaster2dAttackLeft_5",
+    "beastmaster2dAttackLeft_6",
+    "beastmaster2dAttackLeft_7",
+    "beastmaster2dAttackLeft_8",
+    "beastmaster2dAttackLeft_9",
+    "beastmaster2dAttackLeft_10",
+    "beastmaster2dAttackLeft_11",
+    "beastmaster2dAttackLeft_12",
+    "beastmaster2dAttackLeft_13",
+    "beastmaster2dAttackLeft_14",
+    "beastmaster2dAttackLeft_15",
+    "beastmaster2dAttackLeft_16",
+    "beastmaster2dAttackLeft_17",
+    "beastmaster2dAttackLeft_18",
+    "beastmaster2dAttackLeft_19",
+    "beastmaster2dAttackLeft_20",
+    "beastmaster2dAttackLeft_21"
+  ],
+  "fps": 4
+}

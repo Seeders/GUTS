@@ -1,0 +1,12 @@
+{
+  "title": "paladin2is Idle Up Right",
+  "spriteCollection": "paladin2isSprites",
+  "sprites": [
+    "paladin2isIdleUpRight_0",
+    "paladin2isIdleUpRight_1",
+    "paladin2isIdleUpRight_2",
+    "paladin2isIdleUpRight_3",
+    "paladin2isIdleUpRight_4"
+  ],
+  "fps": 4
+}

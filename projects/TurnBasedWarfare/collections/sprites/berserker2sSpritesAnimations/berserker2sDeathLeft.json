@@ -1,0 +1,16 @@
+{
+  "title": "berserker2s Death Left",
+  "spriteCollection": "berserker2sSprites",
+  "sprites": [
+    "berserker2sDeathLeft_0",
+    "berserker2sDeathLeft_1",
+    "berserker2sDeathLeft_2",
+    "berserker2sDeathLeft_3",
+    "berserker2sDeathLeft_4",
+    "berserker2sDeathLeft_5",
+    "berserker2sDeathLeft_6",
+    "berserker2sDeathLeft_7",
+    "berserker2sDeathLeft_8"
+  ],
+  "fps": 4
+}

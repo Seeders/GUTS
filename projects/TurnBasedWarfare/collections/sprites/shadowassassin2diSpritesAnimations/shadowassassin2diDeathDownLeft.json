@@ -1,0 +1,16 @@
+{
+  "title": "shadowassassin2di Death Down Left",
+  "spriteCollection": "shadowassassin2diSprites",
+  "sprites": [
+    "shadowassassin2diDeathDownLeft_0",
+    "shadowassassin2diDeathDownLeft_1",
+    "shadowassassin2diDeathDownLeft_2",
+    "shadowassassin2diDeathDownLeft_3",
+    "shadowassassin2diDeathDownLeft_4",
+    "shadowassassin2diDeathDownLeft_5",
+    "shadowassassin2diDeathDownLeft_6",
+    "shadowassassin2diDeathDownLeft_7",
+    "shadowassassin2diDeathDownLeft_8"
+  ],
+  "fps": 4
+}

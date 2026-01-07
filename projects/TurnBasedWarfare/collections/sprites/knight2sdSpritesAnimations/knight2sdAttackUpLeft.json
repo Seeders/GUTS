@@ -1,0 +1,14 @@
+{
+  "title": "knight2sd Attack Up Left",
+  "spriteCollection": "knight2sdSprites",
+  "sprites": [
+    "knight2sdAttackUpLeft_0",
+    "knight2sdAttackUpLeft_1",
+    "knight2sdAttackUpLeft_2",
+    "knight2sdAttackUpLeft_3",
+    "knight2sdAttackUpLeft_4",
+    "knight2sdAttackUpLeft_5",
+    "knight2sdAttackUpLeft_6"
+  ],
+  "fps": 4
+}

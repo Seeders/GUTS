@@ -18,7 +18,7 @@
             "shapes": [
               {
                 "id": 0,
-                "animation": "idle"
+                "animation": "idle_short"
               }
             ]
           }
@@ -127,5 +127,6 @@
   "range": 100,
   "projectile": "fireball",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "spriteAnimationSet": "goblinbomber2di"
 }

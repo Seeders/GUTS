@@ -1,0 +1,12 @@
+{
+  "title": "paladin2is Walk Up Right",
+  "spriteCollection": "paladin2isSprites",
+  "sprites": [
+    "paladin2isWalkUpRight_0",
+    "paladin2isWalkUpRight_1",
+    "paladin2isWalkUpRight_2",
+    "paladin2isWalkUpRight_3",
+    "paladin2isWalkUpRight_4"
+  ],
+  "fps": 4
+}

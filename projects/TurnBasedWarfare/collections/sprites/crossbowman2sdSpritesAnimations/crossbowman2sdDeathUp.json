@@ -1,0 +1,16 @@
+{
+  "title": "crossbowman2sd Death Up",
+  "spriteCollection": "crossbowman2sdSprites",
+  "sprites": [
+    "crossbowman2sdDeathUp_0",
+    "crossbowman2sdDeathUp_1",
+    "crossbowman2sdDeathUp_2",
+    "crossbowman2sdDeathUp_3",
+    "crossbowman2sdDeathUp_4",
+    "crossbowman2sdDeathUp_5",
+    "crossbowman2sdDeathUp_6",
+    "crossbowman2sdDeathUp_7",
+    "crossbowman2sdDeathUp_8"
+  ],
+  "fps": 4
+}

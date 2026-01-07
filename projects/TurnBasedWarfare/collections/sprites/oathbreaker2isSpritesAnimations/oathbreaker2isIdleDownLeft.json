@@ -1,0 +1,12 @@
+{
+  "title": "oathbreaker2is Idle Down Left",
+  "spriteCollection": "oathbreaker2isSprites",
+  "sprites": [
+    "oathbreaker2isIdleDownLeft_0",
+    "oathbreaker2isIdleDownLeft_1",
+    "oathbreaker2isIdleDownLeft_2",
+    "oathbreaker2isIdleDownLeft_3",
+    "oathbreaker2isIdleDownLeft_4"
+  ],
+  "fps": 4
+}

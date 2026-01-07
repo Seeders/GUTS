@@ -1,0 +1,12 @@
+{
+  "title": "templar2is Walk Down",
+  "spriteCollection": "templar2isSprites",
+  "sprites": [
+    "templar2isWalkDown_0",
+    "templar2isWalkDown_1",
+    "templar2isWalkDown_2",
+    "templar2isWalkDown_3",
+    "templar2isWalkDown_4"
+  ],
+  "fps": 4
+}

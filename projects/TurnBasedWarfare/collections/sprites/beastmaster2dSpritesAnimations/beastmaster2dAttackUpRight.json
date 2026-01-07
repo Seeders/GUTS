@@ -1,0 +1,29 @@
+{
+  "title": "beastmaster2d Attack Up Right",
+  "spriteCollection": "beastmaster2dSprites",
+  "sprites": [
+    "beastmaster2dAttackUpRight_0",
+    "beastmaster2dAttackUpRight_1",
+    "beastmaster2dAttackUpRight_2",
+    "beastmaster2dAttackUpRight_3",
+    "beastmaster2dAttackUpRight_4",
+    "beastmaster2dAttackUpRight_5",
+    "beastmaster2dAttackUpRight_6",
+    "beastmaster2dAttackUpRight_7",
+    "beastmaster2dAttackUpRight_8",
+    "beastmaster2dAttackUpRight_9",
+    "beastmaster2dAttackUpRight_10",
+    "beastmaster2dAttackUpRight_11",
+    "beastmaster2dAttackUpRight_12",
+    "beastmaster2dAttackUpRight_13",
+    "beastmaster2dAttackUpRight_14",
+    "beastmaster2dAttackUpRight_15",
+    "beastmaster2dAttackUpRight_16",
+    "beastmaster2dAttackUpRight_17",
+    "beastmaster2dAttackUpRight_18",
+    "beastmaster2dAttackUpRight_19",
+    "beastmaster2dAttackUpRight_20",
+    "beastmaster2dAttackUpRight_21"
+  ],
+  "fps": 4
+}

@@ -747,6 +747,18 @@ class DamageSystem extends GUTS.BaseSystem {
         }
         eventsToRemove.forEach(id => this.pendingDamageEvents.delete(id));
 
+        // Clear lastAttacker references pointing to this entity
+        // This prevents entity ID reuse issues where a new entity inherits
+        // the old entity's ID and gets incorrectly targeted for retaliation
+        const combatEntities = this.game.getEntitiesWith('combatState');
+        for (const otherId of combatEntities) {
+            const combatState = this.game.getComponent(otherId, 'combatState');
+            if (combatState && combatState.lastAttacker === entityId) {
+                combatState.lastAttacker = null;
+                combatState.lastAttackTime = 0;
+            }
+        }
+
         // Status effects are automatically cleaned up by ECS when entity is destroyed
     }
 

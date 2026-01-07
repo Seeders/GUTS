@@ -1,0 +1,16 @@
+{
+  "title": "shadowassassin2di Death Up Right",
+  "spriteCollection": "shadowassassin2diSprites",
+  "sprites": [
+    "shadowassassin2diDeathUpRight_0",
+    "shadowassassin2diDeathUpRight_1",
+    "shadowassassin2diDeathUpRight_2",
+    "shadowassassin2diDeathUpRight_3",
+    "shadowassassin2diDeathUpRight_4",
+    "shadowassassin2diDeathUpRight_5",
+    "shadowassassin2diDeathUpRight_6",
+    "shadowassassin2diDeathUpRight_7",
+    "shadowassassin2diDeathUpRight_8"
+  ],
+  "fps": 4
+}

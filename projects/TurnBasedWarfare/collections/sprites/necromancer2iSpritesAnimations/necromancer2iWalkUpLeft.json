@@ -1,0 +1,12 @@
+{
+  "title": "necromancer2i Walk Up Left",
+  "spriteCollection": "necromancer2iSprites",
+  "sprites": [
+    "necromancer2iWalkUpLeft_0",
+    "necromancer2iWalkUpLeft_1",
+    "necromancer2iWalkUpLeft_2",
+    "necromancer2iWalkUpLeft_3",
+    "necromancer2iWalkUpLeft_4"
+  ],
+  "fps": 4
+}

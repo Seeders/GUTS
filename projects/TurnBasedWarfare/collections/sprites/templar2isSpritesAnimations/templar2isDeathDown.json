@@ -1,0 +1,16 @@
+{
+  "title": "templar2is Death Down",
+  "spriteCollection": "templar2isSprites",
+  "sprites": [
+    "templar2isDeathDown_0",
+    "templar2isDeathDown_1",
+    "templar2isDeathDown_2",
+    "templar2isDeathDown_3",
+    "templar2isDeathDown_4",
+    "templar2isDeathDown_5",
+    "templar2isDeathDown_6",
+    "templar2isDeathDown_7",
+    "templar2isDeathDown_8"
+  ],
+  "fps": 4
+}

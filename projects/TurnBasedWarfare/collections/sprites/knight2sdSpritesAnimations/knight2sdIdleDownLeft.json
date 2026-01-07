@@ -1,0 +1,12 @@
+{
+  "title": "knight2sd Idle Down Left",
+  "spriteCollection": "knight2sdSprites",
+  "sprites": [
+    "knight2sdIdleDownLeft_0",
+    "knight2sdIdleDownLeft_1",
+    "knight2sdIdleDownLeft_2",
+    "knight2sdIdleDownLeft_3",
+    "knight2sdIdleDownLeft_4"
+  ],
+  "fps": 4
+}

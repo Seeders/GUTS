@@ -22,7 +22,7 @@
             "shapes": [
               {
                 "id": 0,
-                "animation": "idle"
+                "animation": "idle_short"
               }
             ]
           }
@@ -166,5 +166,6 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "spriteAnimationSet": "necromancer2i"
 }

@@ -1,0 +1,6 @@
+{
+  "id": "equippedItems",
+  "name": "Equipped Items",
+  "singular": "equippedItem",
+  "objectTypeCategory": "prefabs"
+}

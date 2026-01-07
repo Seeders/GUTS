@@ -1,0 +1,69 @@
+{
+  "title": "Shadowassassin2di",
+  "animationCollection": "shadowassassin2diSpritesAnimations",
+  "spriteSheet": "sprites/shadowassassin2diSprites/shadowassassin2diSheet.png",
+  "spriteOffset": 16,
+  "idleSpriteAnimations": [
+    "shadowassassin2diIdleDown",
+    "shadowassassin2diIdleDownLeft",
+    "shadowassassin2diIdleLeft",
+    "shadowassassin2diIdleUpLeft",
+    "shadowassassin2diIdleUp",
+    "shadowassassin2diIdleUpRight",
+    "shadowassassin2diIdleRight",
+    "shadowassassin2diIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "shadowassassin2diWalkDown",
+    "shadowassassin2diWalkDownLeft",
+    "shadowassassin2diWalkLeft",
+    "shadowassassin2diWalkUpLeft",
+    "shadowassassin2diWalkUp",
+    "shadowassassin2diWalkUpRight",
+    "shadowassassin2diWalkRight",
+    "shadowassassin2diWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "shadowassassin2diAttackDown",
+    "shadowassassin2diAttackDownLeft",
+    "shadowassassin2diAttackLeft",
+    "shadowassassin2diAttackUpLeft",
+    "shadowassassin2diAttackUp",
+    "shadowassassin2diAttackUpRight",
+    "shadowassassin2diAttackRight",
+    "shadowassassin2diAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "shadowassassin2diDeathDown",
+    "shadowassassin2diDeathDownLeft",
+    "shadowassassin2diDeathLeft",
+    "shadowassassin2diDeathUpLeft",
+    "shadowassassin2diDeathUp",
+    "shadowassassin2diDeathUpRight",
+    "shadowassassin2diDeathRight",
+    "shadowassassin2diDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "shadowassassin2diCelebrateDown",
+    "shadowassassin2diCelebrateDownLeft",
+    "shadowassassin2diCelebrateLeft",
+    "shadowassassin2diCelebrateUpLeft",
+    "shadowassassin2diCelebrateUp",
+    "shadowassassin2diCelebrateUpRight",
+    "shadowassassin2diCelebrateRight",
+    "shadowassassin2diCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 14,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

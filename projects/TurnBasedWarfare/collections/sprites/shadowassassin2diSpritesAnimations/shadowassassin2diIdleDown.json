@@ -1,0 +1,12 @@
+{
+  "title": "shadowassassin2di Idle Down",
+  "spriteCollection": "shadowassassin2diSprites",
+  "sprites": [
+    "shadowassassin2diIdleDown_0",
+    "shadowassassin2diIdleDown_1",
+    "shadowassassin2diIdleDown_2",
+    "shadowassassin2diIdleDown_3",
+    "shadowassassin2diIdleDown_4"
+  ],
+  "fps": 4
+}

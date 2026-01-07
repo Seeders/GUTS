@@ -1,0 +1,16 @@
+{
+  "title": "enchanter2i Attack Up Right",
+  "spriteCollection": "enchanter2iSprites",
+  "sprites": [
+    "enchanter2iAttackUpRight_0",
+    "enchanter2iAttackUpRight_1",
+    "enchanter2iAttackUpRight_2",
+    "enchanter2iAttackUpRight_3",
+    "enchanter2iAttackUpRight_4",
+    "enchanter2iAttackUpRight_5",
+    "enchanter2iAttackUpRight_6",
+    "enchanter2iAttackUpRight_7",
+    "enchanter2iAttackUpRight_8"
+  ],
+  "fps": 4
+}

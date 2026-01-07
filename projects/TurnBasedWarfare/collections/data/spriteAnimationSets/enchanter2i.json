@@ -1,0 +1,69 @@
+{
+  "title": "Enchanter2i",
+  "animationCollection": "enchanter2iSpritesAnimations",
+  "spriteSheet": "sprites/enchanter2iSprites/enchanter2iSheet.png",
+  "spriteOffset": 16,
+  "idleSpriteAnimations": [
+    "enchanter2iIdleDown",
+    "enchanter2iIdleDownLeft",
+    "enchanter2iIdleLeft",
+    "enchanter2iIdleUpLeft",
+    "enchanter2iIdleUp",
+    "enchanter2iIdleUpRight",
+    "enchanter2iIdleRight",
+    "enchanter2iIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "enchanter2iWalkDown",
+    "enchanter2iWalkDownLeft",
+    "enchanter2iWalkLeft",
+    "enchanter2iWalkUpLeft",
+    "enchanter2iWalkUp",
+    "enchanter2iWalkUpRight",
+    "enchanter2iWalkRight",
+    "enchanter2iWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "enchanter2iAttackDown",
+    "enchanter2iAttackDownLeft",
+    "enchanter2iAttackLeft",
+    "enchanter2iAttackUpLeft",
+    "enchanter2iAttackUp",
+    "enchanter2iAttackUpRight",
+    "enchanter2iAttackRight",
+    "enchanter2iAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "enchanter2iDeathDown",
+    "enchanter2iDeathDownLeft",
+    "enchanter2iDeathLeft",
+    "enchanter2iDeathUpLeft",
+    "enchanter2iDeathUp",
+    "enchanter2iDeathUpRight",
+    "enchanter2iDeathRight",
+    "enchanter2iDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "enchanter2iCelebrateDown",
+    "enchanter2iCelebrateDownLeft",
+    "enchanter2iCelebrateLeft",
+    "enchanter2iCelebrateUpLeft",
+    "enchanter2iCelebrateUp",
+    "enchanter2iCelebrateUpRight",
+    "enchanter2iCelebrateRight",
+    "enchanter2iCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 15,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

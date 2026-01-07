@@ -1,0 +1,12 @@
+{
+  "title": "knight2sd Walk Down Right",
+  "spriteCollection": "knight2sdSprites",
+  "sprites": [
+    "knight2sdWalkDownRight_0",
+    "knight2sdWalkDownRight_1",
+    "knight2sdWalkDownRight_2",
+    "knight2sdWalkDownRight_3",
+    "knight2sdWalkDownRight_4"
+  ],
+  "fps": 4
+}

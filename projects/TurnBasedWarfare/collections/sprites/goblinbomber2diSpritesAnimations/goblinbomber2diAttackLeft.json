@@ -1,0 +1,14 @@
+{
+  "title": "goblinbomber2di Attack Left",
+  "spriteCollection": "goblinbomber2diSprites",
+  "sprites": [
+    "goblinbomber2diAttackLeft_0",
+    "goblinbomber2diAttackLeft_1",
+    "goblinbomber2diAttackLeft_2",
+    "goblinbomber2diAttackLeft_3",
+    "goblinbomber2diAttackLeft_4",
+    "goblinbomber2diAttackLeft_5",
+    "goblinbomber2diAttackLeft_6"
+  ],
+  "fps": 4
+}

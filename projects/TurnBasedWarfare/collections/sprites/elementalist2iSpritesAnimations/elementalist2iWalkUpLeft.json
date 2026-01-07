@@ -1,0 +1,12 @@
+{
+  "title": "elementalist2i Walk Up Left",
+  "spriteCollection": "elementalist2iSprites",
+  "sprites": [
+    "elementalist2iWalkUpLeft_0",
+    "elementalist2iWalkUpLeft_1",
+    "elementalist2iWalkUpLeft_2",
+    "elementalist2iWalkUpLeft_3",
+    "elementalist2iWalkUpLeft_4"
+  ],
+  "fps": 4
+}

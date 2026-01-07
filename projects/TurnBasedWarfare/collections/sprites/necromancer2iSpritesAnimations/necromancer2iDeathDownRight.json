@@ -1,0 +1,16 @@
+{
+  "title": "necromancer2i Death Down Right",
+  "spriteCollection": "necromancer2iSprites",
+  "sprites": [
+    "necromancer2iDeathDownRight_0",
+    "necromancer2iDeathDownRight_1",
+    "necromancer2iDeathDownRight_2",
+    "necromancer2iDeathDownRight_3",
+    "necromancer2iDeathDownRight_4",
+    "necromancer2iDeathDownRight_5",
+    "necromancer2iDeathDownRight_6",
+    "necromancer2iDeathDownRight_7",
+    "necromancer2iDeathDownRight_8"
+  ],
+  "fps": 4
+}

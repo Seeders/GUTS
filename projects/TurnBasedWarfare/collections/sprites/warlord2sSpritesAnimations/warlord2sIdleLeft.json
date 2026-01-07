@@ -1,0 +1,12 @@
+{
+  "title": "warlord2s Idle Left",
+  "spriteCollection": "warlord2sSprites",
+  "sprites": [
+    "warlord2sIdleLeft_0",
+    "warlord2sIdleLeft_1",
+    "warlord2sIdleLeft_2",
+    "warlord2sIdleLeft_3",
+    "warlord2sIdleLeft_4"
+  ],
+  "fps": 4
+}

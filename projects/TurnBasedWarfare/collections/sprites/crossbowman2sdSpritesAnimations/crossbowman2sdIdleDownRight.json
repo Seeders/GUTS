@@ -1,0 +1,12 @@
+{
+  "title": "crossbowman2sd Idle Down Right",
+  "spriteCollection": "crossbowman2sdSprites",
+  "sprites": [
+    "crossbowman2sdIdleDownRight_0",
+    "crossbowman2sdIdleDownRight_1",
+    "crossbowman2sdIdleDownRight_2",
+    "crossbowman2sdIdleDownRight_3",
+    "crossbowman2sdIdleDownRight_4"
+  ],
+  "fps": 4
+}

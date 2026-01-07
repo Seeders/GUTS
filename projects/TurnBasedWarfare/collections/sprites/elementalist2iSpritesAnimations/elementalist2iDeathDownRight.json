@@ -1,0 +1,16 @@
+{
+  "title": "elementalist2i Death Down Right",
+  "spriteCollection": "elementalist2iSprites",
+  "sprites": [
+    "elementalist2iDeathDownRight_0",
+    "elementalist2iDeathDownRight_1",
+    "elementalist2iDeathDownRight_2",
+    "elementalist2iDeathDownRight_3",
+    "elementalist2iDeathDownRight_4",
+    "elementalist2iDeathDownRight_5",
+    "elementalist2iDeathDownRight_6",
+    "elementalist2iDeathDownRight_7",
+    "elementalist2iDeathDownRight_8"
+  ],
+  "fps": 4
+}

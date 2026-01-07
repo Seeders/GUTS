@@ -1,0 +1,29 @@
+{
+  "title": "crossbowman2sd Attack Down Right",
+  "spriteCollection": "crossbowman2sdSprites",
+  "sprites": [
+    "crossbowman2sdAttackDownRight_0",
+    "crossbowman2sdAttackDownRight_1",
+    "crossbowman2sdAttackDownRight_2",
+    "crossbowman2sdAttackDownRight_3",
+    "crossbowman2sdAttackDownRight_4",
+    "crossbowman2sdAttackDownRight_5",
+    "crossbowman2sdAttackDownRight_6",
+    "crossbowman2sdAttackDownRight_7",
+    "crossbowman2sdAttackDownRight_8",
+    "crossbowman2sdAttackDownRight_9",
+    "crossbowman2sdAttackDownRight_10",
+    "crossbowman2sdAttackDownRight_11",
+    "crossbowman2sdAttackDownRight_12",
+    "crossbowman2sdAttackDownRight_13",
+    "crossbowman2sdAttackDownRight_14",
+    "crossbowman2sdAttackDownRight_15",
+    "crossbowman2sdAttackDownRight_16",
+    "crossbowman2sdAttackDownRight_17",
+    "crossbowman2sdAttackDownRight_18",
+    "crossbowman2sdAttackDownRight_19",
+    "crossbowman2sdAttackDownRight_20",
+    "crossbowman2sdAttackDownRight_21"
+  ],
+  "fps": 4
+}

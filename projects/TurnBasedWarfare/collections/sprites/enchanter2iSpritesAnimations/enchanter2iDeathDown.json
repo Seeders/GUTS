@@ -1,0 +1,16 @@
+{
+  "title": "enchanter2i Death Down",
+  "spriteCollection": "enchanter2iSprites",
+  "sprites": [
+    "enchanter2iDeathDown_0",
+    "enchanter2iDeathDown_1",
+    "enchanter2iDeathDown_2",
+    "enchanter2iDeathDown_3",
+    "enchanter2iDeathDown_4",
+    "enchanter2iDeathDown_5",
+    "enchanter2iDeathDown_6",
+    "enchanter2iDeathDown_7",
+    "enchanter2iDeathDown_8"
+  ],
+  "fps": 4
+}

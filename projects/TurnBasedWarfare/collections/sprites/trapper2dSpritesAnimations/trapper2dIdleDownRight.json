@@ -1,0 +1,12 @@
+{
+  "title": "trapper2d Idle Down Right",
+  "spriteCollection": "trapper2dSprites",
+  "sprites": [
+    "trapper2dIdleDownRight_0",
+    "trapper2dIdleDownRight_1",
+    "trapper2dIdleDownRight_2",
+    "trapper2dIdleDownRight_3",
+    "trapper2dIdleDownRight_4"
+  ],
+  "fps": 4
+}

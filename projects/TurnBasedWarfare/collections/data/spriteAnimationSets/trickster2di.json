@@ -1,0 +1,69 @@
+{
+  "title": "Trickster2di",
+  "animationCollection": "trickster2diSpritesAnimations",
+  "spriteSheet": "sprites/trickster2diSprites/trickster2diSheet.png",
+  "spriteOffset": 16,
+  "idleSpriteAnimations": [
+    "trickster2diIdleDown",
+    "trickster2diIdleDownLeft",
+    "trickster2diIdleLeft",
+    "trickster2diIdleUpLeft",
+    "trickster2diIdleUp",
+    "trickster2diIdleUpRight",
+    "trickster2diIdleRight",
+    "trickster2diIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "trickster2diWalkDown",
+    "trickster2diWalkDownLeft",
+    "trickster2diWalkLeft",
+    "trickster2diWalkUpLeft",
+    "trickster2diWalkUp",
+    "trickster2diWalkUpRight",
+    "trickster2diWalkRight",
+    "trickster2diWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "trickster2diAttackDown",
+    "trickster2diAttackDownLeft",
+    "trickster2diAttackLeft",
+    "trickster2diAttackUpLeft",
+    "trickster2diAttackUp",
+    "trickster2diAttackUpRight",
+    "trickster2diAttackRight",
+    "trickster2diAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "trickster2diDeathDown",
+    "trickster2diDeathDownLeft",
+    "trickster2diDeathLeft",
+    "trickster2diDeathUpLeft",
+    "trickster2diDeathUp",
+    "trickster2diDeathUpRight",
+    "trickster2diDeathRight",
+    "trickster2diDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "trickster2diCelebrateDown",
+    "trickster2diCelebrateDownLeft",
+    "trickster2diCelebrateLeft",
+    "trickster2diCelebrateUpLeft",
+    "trickster2diCelebrateUp",
+    "trickster2diCelebrateUpRight",
+    "trickster2diCelebrateRight",
+    "trickster2diCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 30,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

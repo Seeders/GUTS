@@ -1,0 +1,16 @@
+{
+  "title": "knight2sd Death Down Left",
+  "spriteCollection": "knight2sdSprites",
+  "sprites": [
+    "knight2sdDeathDownLeft_0",
+    "knight2sdDeathDownLeft_1",
+    "knight2sdDeathDownLeft_2",
+    "knight2sdDeathDownLeft_3",
+    "knight2sdDeathDownLeft_4",
+    "knight2sdDeathDownLeft_5",
+    "knight2sdDeathDownLeft_6",
+    "knight2sdDeathDownLeft_7",
+    "knight2sdDeathDownLeft_8"
+  ],
+  "fps": 4
+}

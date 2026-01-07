@@ -19,15 +19,8 @@
           "main": {
             "shapes": [
               {
-                "type": "gltf",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1",
                 "id": 0,
-                "animation": "idle"
+                "animation": "idle_short"
               }
             ]
           }
@@ -179,5 +172,6 @@
     "ShadowStrikeAbility"
   ],
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "spriteAnimationSet": "shadowassassin2di"
 }

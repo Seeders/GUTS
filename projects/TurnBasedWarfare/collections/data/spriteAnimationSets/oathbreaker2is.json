@@ -1,0 +1,69 @@
+{
+  "title": "Oathbreaker2is",
+  "animationCollection": "oathbreaker2isSpritesAnimations",
+  "spriteSheet": "sprites/oathbreaker2isSprites/oathbreaker2isSheet.png",
+  "spriteOffset": 15,
+  "idleSpriteAnimations": [
+    "oathbreaker2isIdleDown",
+    "oathbreaker2isIdleDownLeft",
+    "oathbreaker2isIdleLeft",
+    "oathbreaker2isIdleUpLeft",
+    "oathbreaker2isIdleUp",
+    "oathbreaker2isIdleUpRight",
+    "oathbreaker2isIdleRight",
+    "oathbreaker2isIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "oathbreaker2isWalkDown",
+    "oathbreaker2isWalkDownLeft",
+    "oathbreaker2isWalkLeft",
+    "oathbreaker2isWalkUpLeft",
+    "oathbreaker2isWalkUp",
+    "oathbreaker2isWalkUpRight",
+    "oathbreaker2isWalkRight",
+    "oathbreaker2isWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "oathbreaker2isAttackDown",
+    "oathbreaker2isAttackDownLeft",
+    "oathbreaker2isAttackLeft",
+    "oathbreaker2isAttackUpLeft",
+    "oathbreaker2isAttackUp",
+    "oathbreaker2isAttackUpRight",
+    "oathbreaker2isAttackRight",
+    "oathbreaker2isAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "oathbreaker2isDeathDown",
+    "oathbreaker2isDeathDownLeft",
+    "oathbreaker2isDeathLeft",
+    "oathbreaker2isDeathUpLeft",
+    "oathbreaker2isDeathUp",
+    "oathbreaker2isDeathUpRight",
+    "oathbreaker2isDeathRight",
+    "oathbreaker2isDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "oathbreaker2isCelebrateDown",
+    "oathbreaker2isCelebrateDownLeft",
+    "oathbreaker2isCelebrateLeft",
+    "oathbreaker2isCelebrateUpLeft",
+    "oathbreaker2isCelebrateUp",
+    "oathbreaker2isCelebrateUpRight",
+    "oathbreaker2isCelebrateRight",
+    "oathbreaker2isCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

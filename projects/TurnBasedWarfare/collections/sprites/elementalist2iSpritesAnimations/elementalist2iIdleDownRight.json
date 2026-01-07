@@ -1,0 +1,12 @@
+{
+  "title": "elementalist2i Idle Down Right",
+  "spriteCollection": "elementalist2iSprites",
+  "sprites": [
+    "elementalist2iIdleDownRight_0",
+    "elementalist2iIdleDownRight_1",
+    "elementalist2iIdleDownRight_2",
+    "elementalist2iIdleDownRight_3",
+    "elementalist2iIdleDownRight_4"
+  ],
+  "fps": 4
+}

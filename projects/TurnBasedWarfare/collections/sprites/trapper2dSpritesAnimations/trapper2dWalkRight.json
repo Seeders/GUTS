@@ -1,0 +1,12 @@
+{
+  "title": "trapper2d Walk Right",
+  "spriteCollection": "trapper2dSprites",
+  "sprites": [
+    "trapper2dWalkRight_0",
+    "trapper2dWalkRight_1",
+    "trapper2dWalkRight_2",
+    "trapper2dWalkRight_3",
+    "trapper2dWalkRight_4"
+  ],
+  "fps": 4
+}

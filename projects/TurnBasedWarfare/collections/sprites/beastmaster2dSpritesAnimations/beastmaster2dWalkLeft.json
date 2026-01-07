@@ -1,0 +1,12 @@
+{
+  "title": "beastmaster2d Walk Left",
+  "spriteCollection": "beastmaster2dSprites",
+  "sprites": [
+    "beastmaster2dWalkLeft_0",
+    "beastmaster2dWalkLeft_1",
+    "beastmaster2dWalkLeft_2",
+    "beastmaster2dWalkLeft_3",
+    "beastmaster2dWalkLeft_4"
+  ],
+  "fps": 4
+}

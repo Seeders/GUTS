@@ -1,0 +1,16 @@
+{
+  "title": "goblinbomber2di Death Up Right",
+  "spriteCollection": "goblinbomber2diSprites",
+  "sprites": [
+    "goblinbomber2diDeathUpRight_0",
+    "goblinbomber2diDeathUpRight_1",
+    "goblinbomber2diDeathUpRight_2",
+    "goblinbomber2diDeathUpRight_3",
+    "goblinbomber2diDeathUpRight_4",
+    "goblinbomber2diDeathUpRight_5",
+    "goblinbomber2diDeathUpRight_6",
+    "goblinbomber2diDeathUpRight_7",
+    "goblinbomber2diDeathUpRight_8"
+  ],
+  "fps": 4
+}

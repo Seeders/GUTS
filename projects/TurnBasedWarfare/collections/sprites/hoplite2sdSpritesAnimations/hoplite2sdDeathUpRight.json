@@ -1,0 +1,16 @@
+{
+  "title": "hoplite2sd Death Up Right",
+  "spriteCollection": "hoplite2sdSprites",
+  "sprites": [
+    "hoplite2sdDeathUpRight_0",
+    "hoplite2sdDeathUpRight_1",
+    "hoplite2sdDeathUpRight_2",
+    "hoplite2sdDeathUpRight_3",
+    "hoplite2sdDeathUpRight_4",
+    "hoplite2sdDeathUpRight_5",
+    "hoplite2sdDeathUpRight_6",
+    "hoplite2sdDeathUpRight_7",
+    "hoplite2sdDeathUpRight_8"
+  ],
+  "fps": 4
+}

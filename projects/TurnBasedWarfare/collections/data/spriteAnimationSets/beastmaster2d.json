@@ -1,0 +1,79 @@
+{
+  "title": "Beastmaster2d",
+  "animationCollection": "beastmaster2dSpritesAnimations",
+  "spriteSheet": "sprites/beastmaster2dSprites/beastmaster2dSheet.png",
+  "idleSpriteAnimations": [
+    "beastmaster2dIdleDown",
+    "beastmaster2dIdleDownLeft",
+    "beastmaster2dIdleLeft",
+    "beastmaster2dIdleUpLeft",
+    "beastmaster2dIdleUp",
+    "beastmaster2dIdleUpRight",
+    "beastmaster2dIdleRight",
+    "beastmaster2dIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "beastmaster2dWalkDown",
+    "beastmaster2dWalkDownLeft",
+    "beastmaster2dWalkLeft",
+    "beastmaster2dWalkUpLeft",
+    "beastmaster2dWalkUp",
+    "beastmaster2dWalkUpRight",
+    "beastmaster2dWalkRight",
+    "beastmaster2dWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "beastmaster2dAttackDown",
+    "beastmaster2dAttackDownLeft",
+    "beastmaster2dAttackLeft",
+    "beastmaster2dAttackUpLeft",
+    "beastmaster2dAttackUp",
+    "beastmaster2dAttackUpRight",
+    "beastmaster2dAttackRight",
+    "beastmaster2dAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "beastmaster2dDeathDown",
+    "beastmaster2dDeathDownLeft",
+    "beastmaster2dDeathLeft",
+    "beastmaster2dDeathUpLeft",
+    "beastmaster2dDeathUp",
+    "beastmaster2dDeathUpRight",
+    "beastmaster2dDeathRight",
+    "beastmaster2dDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "beastmaster2dCelebrateDown",
+    "beastmaster2dCelebrateDownLeft",
+    "beastmaster2dCelebrateLeft",
+    "beastmaster2dCelebrateUpLeft",
+    "beastmaster2dCelebrateUp",
+    "beastmaster2dCelebrateUpRight",
+    "beastmaster2dCelebrateRight",
+    "beastmaster2dCelebrateDownRight"
+  ],
+  "castSpriteAnimations": [
+    "beastmaster2dCastDown",
+    "beastmaster2dCastDownLeft",
+    "beastmaster2dCastLeft",
+    "beastmaster2dCastUpLeft",
+    "beastmaster2dCastUp",
+    "beastmaster2dCastUpRight",
+    "beastmaster2dCastRight",
+    "beastmaster2dCastDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  },
+  "spriteOffset": 16
+}

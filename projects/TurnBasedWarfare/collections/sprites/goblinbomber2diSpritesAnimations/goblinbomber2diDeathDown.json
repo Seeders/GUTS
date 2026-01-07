@@ -1,0 +1,16 @@
+{
+  "title": "goblinbomber2di Death Down",
+  "spriteCollection": "goblinbomber2diSprites",
+  "sprites": [
+    "goblinbomber2diDeathDown_0",
+    "goblinbomber2diDeathDown_1",
+    "goblinbomber2diDeathDown_2",
+    "goblinbomber2diDeathDown_3",
+    "goblinbomber2diDeathDown_4",
+    "goblinbomber2diDeathDown_5",
+    "goblinbomber2diDeathDown_6",
+    "goblinbomber2diDeathDown_7",
+    "goblinbomber2diDeathDown_8"
+  ],
+  "fps": 4
+}

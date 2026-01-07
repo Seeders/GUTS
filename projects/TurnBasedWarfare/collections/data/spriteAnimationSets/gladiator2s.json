@@ -1,0 +1,69 @@
+{
+  "title": "Gladiator2s",
+  "animationCollection": "gladiator2sSpritesAnimations",
+  "spriteSheet": "sprites/gladiator2sSprites/gladiator2sSheet.png",
+  "spriteOffset": 16,
+  "idleSpriteAnimations": [
+    "gladiator2sIdleDown",
+    "gladiator2sIdleDownLeft",
+    "gladiator2sIdleLeft",
+    "gladiator2sIdleUpLeft",
+    "gladiator2sIdleUp",
+    "gladiator2sIdleUpRight",
+    "gladiator2sIdleRight",
+    "gladiator2sIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "gladiator2sWalkDown",
+    "gladiator2sWalkDownLeft",
+    "gladiator2sWalkLeft",
+    "gladiator2sWalkUpLeft",
+    "gladiator2sWalkUp",
+    "gladiator2sWalkUpRight",
+    "gladiator2sWalkRight",
+    "gladiator2sWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "gladiator2sAttackDown",
+    "gladiator2sAttackDownLeft",
+    "gladiator2sAttackLeft",
+    "gladiator2sAttackUpLeft",
+    "gladiator2sAttackUp",
+    "gladiator2sAttackUpRight",
+    "gladiator2sAttackRight",
+    "gladiator2sAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "gladiator2sDeathDown",
+    "gladiator2sDeathDownLeft",
+    "gladiator2sDeathLeft",
+    "gladiator2sDeathUpLeft",
+    "gladiator2sDeathUp",
+    "gladiator2sDeathUpRight",
+    "gladiator2sDeathRight",
+    "gladiator2sDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "gladiator2sCelebrateDown",
+    "gladiator2sCelebrateDownLeft",
+    "gladiator2sCelebrateLeft",
+    "gladiator2sCelebrateUpLeft",
+    "gladiator2sCelebrateUp",
+    "gladiator2sCelebrateUpRight",
+    "gladiator2sCelebrateRight",
+    "gladiator2sCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

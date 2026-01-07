@@ -1,0 +1,14 @@
+{
+  "title": "oathbreaker2is Attack Left",
+  "spriteCollection": "oathbreaker2isSprites",
+  "sprites": [
+    "oathbreaker2isAttackLeft_0",
+    "oathbreaker2isAttackLeft_1",
+    "oathbreaker2isAttackLeft_2",
+    "oathbreaker2isAttackLeft_3",
+    "oathbreaker2isAttackLeft_4",
+    "oathbreaker2isAttackLeft_5",
+    "oathbreaker2isAttackLeft_6"
+  ],
+  "fps": 4
+}

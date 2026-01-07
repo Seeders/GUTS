@@ -1,0 +1,16 @@
+{
+  "title": "trickster2di Death Down",
+  "spriteCollection": "trickster2diSprites",
+  "sprites": [
+    "trickster2diDeathDown_0",
+    "trickster2diDeathDown_1",
+    "trickster2diDeathDown_2",
+    "trickster2diDeathDown_3",
+    "trickster2diDeathDown_4",
+    "trickster2diDeathDown_5",
+    "trickster2diDeathDown_6",
+    "trickster2diDeathDown_7",
+    "trickster2diDeathDown_8"
+  ],
+  "fps": 4
+}

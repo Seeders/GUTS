@@ -1,0 +1,12 @@
+{
+  "title": "ranger2d Walk Up Right",
+  "spriteCollection": "ranger2dSprites",
+  "sprites": [
+    "ranger2dWalkUpRight_0",
+    "ranger2dWalkUpRight_1",
+    "ranger2dWalkUpRight_2",
+    "ranger2dWalkUpRight_3",
+    "ranger2dWalkUpRight_4"
+  ],
+  "fps": 4
+}

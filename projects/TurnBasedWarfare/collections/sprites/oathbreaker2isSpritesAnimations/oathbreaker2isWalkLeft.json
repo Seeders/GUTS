@@ -1,0 +1,12 @@
+{
+  "title": "oathbreaker2is Walk Left",
+  "spriteCollection": "oathbreaker2isSprites",
+  "sprites": [
+    "oathbreaker2isWalkLeft_0",
+    "oathbreaker2isWalkLeft_1",
+    "oathbreaker2isWalkLeft_2",
+    "oathbreaker2isWalkLeft_3",
+    "oathbreaker2isWalkLeft_4"
+  ],
+  "fps": 4
+}

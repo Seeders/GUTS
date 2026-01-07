@@ -1,0 +1,17 @@
+{
+  "title": "berserker2s Attack Left",
+  "spriteCollection": "berserker2sSprites",
+  "sprites": [
+    "berserker2sAttackLeft_0",
+    "berserker2sAttackLeft_1",
+    "berserker2sAttackLeft_2",
+    "berserker2sAttackLeft_3",
+    "berserker2sAttackLeft_4",
+    "berserker2sAttackLeft_5",
+    "berserker2sAttackLeft_6",
+    "berserker2sAttackLeft_7",
+    "berserker2sAttackLeft_8",
+    "berserker2sAttackLeft_9"
+  ],
+  "fps": 4
+}

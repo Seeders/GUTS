@@ -69,7 +69,7 @@ class MemoryLocalityAnalyzer {
             nextEntityId: game.nextEntityId,
             aliveCount: aliveCount,
             highestAliveId: highestAliveId,
-            freePoolSize: game.freeEntityCount,
+            deadCount: game.nextEntityId - 1 - aliveCount, // IDs used but entities destroyed
             utilizationPercent: ((aliveCount / game.MAX_ENTITIES) * 100).toFixed(2),
             idSpaceUsed: ((game.nextEntityId / game.MAX_ENTITIES) * 100).toFixed(2)
         };

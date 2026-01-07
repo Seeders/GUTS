@@ -1,0 +1,69 @@
+{
+  "title": "Trapper2d",
+  "animationCollection": "trapper2dSpritesAnimations",
+  "spriteSheet": "sprites/trapper2dSprites/trapper2dSheet.png",
+  "spriteOffset": 16,
+  "idleSpriteAnimations": [
+    "trapper2dIdleDown",
+    "trapper2dIdleDownLeft",
+    "trapper2dIdleLeft",
+    "trapper2dIdleUpLeft",
+    "trapper2dIdleUp",
+    "trapper2dIdleUpRight",
+    "trapper2dIdleRight",
+    "trapper2dIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "trapper2dWalkDown",
+    "trapper2dWalkDownLeft",
+    "trapper2dWalkLeft",
+    "trapper2dWalkUpLeft",
+    "trapper2dWalkUp",
+    "trapper2dWalkUpRight",
+    "trapper2dWalkRight",
+    "trapper2dWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "trapper2dAttackDown",
+    "trapper2dAttackDownLeft",
+    "trapper2dAttackLeft",
+    "trapper2dAttackUpLeft",
+    "trapper2dAttackUp",
+    "trapper2dAttackUpRight",
+    "trapper2dAttackRight",
+    "trapper2dAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "trapper2dDeathDown",
+    "trapper2dDeathDownLeft",
+    "trapper2dDeathLeft",
+    "trapper2dDeathUpLeft",
+    "trapper2dDeathUp",
+    "trapper2dDeathUpRight",
+    "trapper2dDeathRight",
+    "trapper2dDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "trapper2dCelebrateDown",
+    "trapper2dCelebrateDownLeft",
+    "trapper2dCelebrateLeft",
+    "trapper2dCelebrateUpLeft",
+    "trapper2dCelebrateUp",
+    "trapper2dCelebrateUpRight",
+    "trapper2dCelebrateRight",
+    "trapper2dCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 10,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

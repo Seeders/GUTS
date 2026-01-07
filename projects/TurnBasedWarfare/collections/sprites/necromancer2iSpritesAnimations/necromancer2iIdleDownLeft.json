@@ -1,0 +1,12 @@
+{
+  "title": "necromancer2i Idle Down Left",
+  "spriteCollection": "necromancer2iSprites",
+  "sprites": [
+    "necromancer2iIdleDownLeft_0",
+    "necromancer2iIdleDownLeft_1",
+    "necromancer2iIdleDownLeft_2",
+    "necromancer2iIdleDownLeft_3",
+    "necromancer2iIdleDownLeft_4"
+  ],
+  "fps": 4
+}

@@ -1,0 +1,14 @@
+{
+  "title": "paladin2is Attack Down",
+  "spriteCollection": "paladin2isSprites",
+  "sprites": [
+    "paladin2isAttackDown_0",
+    "paladin2isAttackDown_1",
+    "paladin2isAttackDown_2",
+    "paladin2isAttackDown_3",
+    "paladin2isAttackDown_4",
+    "paladin2isAttackDown_5",
+    "paladin2isAttackDown_6"
+  ],
+  "fps": 4
+}

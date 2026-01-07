@@ -1,0 +1,16 @@
+{
+  "title": "trapper2d Death Left",
+  "spriteCollection": "trapper2dSprites",
+  "sprites": [
+    "trapper2dDeathLeft_0",
+    "trapper2dDeathLeft_1",
+    "trapper2dDeathLeft_2",
+    "trapper2dDeathLeft_3",
+    "trapper2dDeathLeft_4",
+    "trapper2dDeathLeft_5",
+    "trapper2dDeathLeft_6",
+    "trapper2dDeathLeft_7",
+    "trapper2dDeathLeft_8"
+  ],
+  "fps": 4
+}

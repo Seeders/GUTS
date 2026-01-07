@@ -1,0 +1,12 @@
+{
+  "title": "goblinbomber2di Idle Up",
+  "spriteCollection": "goblinbomber2diSprites",
+  "sprites": [
+    "goblinbomber2diIdleUp_0",
+    "goblinbomber2diIdleUp_1",
+    "goblinbomber2diIdleUp_2",
+    "goblinbomber2diIdleUp_3",
+    "goblinbomber2diIdleUp_4"
+  ],
+  "fps": 4
+}

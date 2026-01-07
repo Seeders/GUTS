@@ -1,0 +1,14 @@
+{
+  "title": "templar2is Attack Down Right",
+  "spriteCollection": "templar2isSprites",
+  "sprites": [
+    "templar2isAttackDownRight_0",
+    "templar2isAttackDownRight_1",
+    "templar2isAttackDownRight_2",
+    "templar2isAttackDownRight_3",
+    "templar2isAttackDownRight_4",
+    "templar2isAttackDownRight_5",
+    "templar2isAttackDownRight_6"
+  ],
+  "fps": 4
+}

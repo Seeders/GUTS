@@ -1,0 +1,14 @@
+{
+  "title": "warlord2s Attack Down",
+  "spriteCollection": "warlord2sSprites",
+  "sprites": [
+    "warlord2sAttackDown_0",
+    "warlord2sAttackDown_1",
+    "warlord2sAttackDown_2",
+    "warlord2sAttackDown_3",
+    "warlord2sAttackDown_4",
+    "warlord2sAttackDown_5",
+    "warlord2sAttackDown_6"
+  ],
+  "fps": 4
+}

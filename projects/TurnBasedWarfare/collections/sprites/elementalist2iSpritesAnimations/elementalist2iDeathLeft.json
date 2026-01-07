@@ -1,0 +1,16 @@
+{
+  "title": "elementalist2i Death Left",
+  "spriteCollection": "elementalist2iSprites",
+  "sprites": [
+    "elementalist2iDeathLeft_0",
+    "elementalist2iDeathLeft_1",
+    "elementalist2iDeathLeft_2",
+    "elementalist2iDeathLeft_3",
+    "elementalist2iDeathLeft_4",
+    "elementalist2iDeathLeft_5",
+    "elementalist2iDeathLeft_6",
+    "elementalist2iDeathLeft_7",
+    "elementalist2iDeathLeft_8"
+  ],
+  "fps": 4
+}

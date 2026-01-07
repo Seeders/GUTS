@@ -1,0 +1,69 @@
+{
+  "title": "Necromancer2i",
+  "animationCollection": "necromancer2iSpritesAnimations",
+  "spriteSheet": "sprites/necromancer2iSprites/necromancer2iSheet.png",
+  "spriteOffset": 16,
+  "idleSpriteAnimations": [
+    "necromancer2iIdleDown",
+    "necromancer2iIdleDownLeft",
+    "necromancer2iIdleLeft",
+    "necromancer2iIdleUpLeft",
+    "necromancer2iIdleUp",
+    "necromancer2iIdleUpRight",
+    "necromancer2iIdleRight",
+    "necromancer2iIdleDownRight"
+  ],
+  "walkSpriteAnimations": [
+    "necromancer2iWalkDown",
+    "necromancer2iWalkDownLeft",
+    "necromancer2iWalkLeft",
+    "necromancer2iWalkUpLeft",
+    "necromancer2iWalkUp",
+    "necromancer2iWalkUpRight",
+    "necromancer2iWalkRight",
+    "necromancer2iWalkDownRight"
+  ],
+  "attackSpriteAnimations": [
+    "necromancer2iAttackDown",
+    "necromancer2iAttackDownLeft",
+    "necromancer2iAttackLeft",
+    "necromancer2iAttackUpLeft",
+    "necromancer2iAttackUp",
+    "necromancer2iAttackUpRight",
+    "necromancer2iAttackRight",
+    "necromancer2iAttackDownRight"
+  ],
+  "deathSpriteAnimations": [
+    "necromancer2iDeathDown",
+    "necromancer2iDeathDownLeft",
+    "necromancer2iDeathLeft",
+    "necromancer2iDeathUpLeft",
+    "necromancer2iDeathUp",
+    "necromancer2iDeathUpRight",
+    "necromancer2iDeathRight",
+    "necromancer2iDeathDownRight"
+  ],
+  "celebrateSpriteAnimations": [
+    "necromancer2iCelebrateDown",
+    "necromancer2iCelebrateDownLeft",
+    "necromancer2iCelebrateLeft",
+    "necromancer2iCelebrateUpLeft",
+    "necromancer2iCelebrateUp",
+    "necromancer2iCelebrateUpRight",
+    "necromancer2iCelebrateRight",
+    "necromancer2iCelebrateDownRight"
+  ],
+  "generatorSettings": {
+    "frustumSize": 48,
+    "cameraDistance": 100,
+    "spriteSize": 64,
+    "fps": 4,
+    "brightness": 15,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 1,
+    "isProjectile": false
+  }
+}

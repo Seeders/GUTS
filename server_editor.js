@@ -570,7 +570,7 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
     try {
         const { projectName, baseName, collectionName, spriteSheet, spriteMetadata,
                 ballisticSpriteMetadata, ballisticAngleNames,
-                directionNames, animationFPS = 4, generatorSettings } = req.body;
+                directionNames, animationFPS = 4, generatorSettings, spriteOffset } = req.body;
 
         // Create directories
         const spritesFolder = path.join(PROJS_DIR, projectName, 'resources', 'sprites', collectionName);
@@ -593,6 +593,10 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
 
         const spriteSheetPath = `sprites/${collectionName}/${sheetName}.png`;
         const animationNames = {};
+
+        // Collect all file write operations to execute in parallel
+        const spriteWritePromises = [];
+        const animationWritePromises = [];
 
         // Process each animation type
         for (const animType in spriteMetadata) {
@@ -619,9 +623,11 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
                         height: frame.height
                     };
 
-                    await fs.writeFile(
-                        path.join(scriptsSpritesFolder, `${spriteName}.json`),
-                        JSON.stringify(spriteJson, null, 2)
+                    spriteWritePromises.push(
+                        fs.writeFile(
+                            path.join(scriptsSpritesFolder, `${spriteName}.json`),
+                            JSON.stringify(spriteJson, null, 2)
+                        )
                     );
 
                     spriteNames.push(spriteName);
@@ -634,18 +640,35 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
                     sprites: spriteNames,
                     fps: animationFPS
                 };
-                await fs.writeFile(
-                    path.join(scriptsSpriteAnimationsFolder, `${animationName}.json`),
-                    JSON.stringify(spriteAnimationJson, null, 2)
+                animationWritePromises.push(
+                    fs.writeFile(
+                        path.join(scriptsSpriteAnimationsFolder, `${animationName}.json`),
+                        JSON.stringify(spriteAnimationJson, null, 2)
+                    )
                 );
             }
         }
 
-        // Create sprite animation set JSON with sprite sheet path
+        // Write all sprite JSON files in parallel
+        await Promise.all(spriteWritePromises);
+
+        // Read existing animation set JSON to preserve properties like spriteOffset
+        const animationSetPath = path.join(scriptsSpriteAnimationSetsFolder, `${baseName}.json`);
+        let existingAnimationSet = {};
+        try {
+            const existingContent = await fs.readFile(animationSetPath, 'utf8');
+            existingAnimationSet = JSON.parse(existingContent);
+        } catch (e) {
+            // File doesn't exist yet, start fresh
+        }
+
+        // Create sprite animation set JSON, preserving existing properties
         const animationSetJson = {
+            ...existingAnimationSet,
             title: baseName.charAt(0).toUpperCase() + baseName.slice(1),
             animationCollection: collectionName + 'Animations',
-            spriteSheet: spriteSheetPath
+            spriteSheet: spriteSheetPath,
+            spriteOffset: spriteOffset ?? 0
         };
 
         // Add animation types (walk, attack, etc.)
@@ -661,6 +684,9 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
 
         // Process ballistic sprites if present (now on same sheet as regular sprites)
         let ballisticSpriteCount = 0;
+        const ballisticSpriteWritePromises = [];
+        const ballisticAnimationWritePromises = [];
+
         if (ballisticSpriteMetadata && ballisticAngleNames) {
             // Ballistic sprites are now included in the main spriteSheet
             // No separate ballisticSpriteSheet property needed
@@ -695,9 +721,11 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
                                 height: frame.height
                             };
 
-                            await fs.writeFile(
-                                path.join(scriptsSpritesFolder, `${spriteName}.json`),
-                                JSON.stringify(spriteJson, null, 2)
+                            ballisticSpriteWritePromises.push(
+                                fs.writeFile(
+                                    path.join(scriptsSpritesFolder, `${spriteName}.json`),
+                                    JSON.stringify(spriteJson, null, 2)
+                                )
                             );
 
                             spriteNames.push(spriteName);
@@ -712,9 +740,11 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
                             fps: animationFPS,
                             ballisticAngle: angleName
                         };
-                        await fs.writeFile(
-                            path.join(scriptsSpriteAnimationsFolder, `${animationName}.json`),
-                            JSON.stringify(spriteAnimationJson, null, 2)
+                        ballisticAnimationWritePromises.push(
+                            fs.writeFile(
+                                path.join(scriptsSpriteAnimationsFolder, `${animationName}.json`),
+                                JSON.stringify(spriteAnimationJson, null, 2)
+                            )
                         );
                     }
 
@@ -726,22 +756,19 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
             }
         }
 
-        await fs.writeFile(
-            path.join(scriptsSpriteAnimationSetsFolder, `${baseName}.json`),
-            JSON.stringify(animationSetJson, null, 2)
-        );
+        // Write all ballistic sprite and animation files in parallel
+        await Promise.all([...ballisticSpriteWritePromises, ...ballisticAnimationWritePromises]);
 
-        // Create collection definitions
+        // Write all animation JSON files in parallel (after sprites are done)
+        await Promise.all(animationWritePromises);
+
+        // Write animation set and collection definitions in parallel
         const spriteCollectionDef = {
             id: collectionName,
             name: collectionName.charAt(0).toUpperCase() + collectionName.slice(1),
             singular: collectionName.slice(0, -1),
             objectTypeCategory: 'sprites'
         };
-        await fs.writeFile(
-            path.join(settingsFolder, `${collectionName}.json`),
-            JSON.stringify(spriteCollectionDef, null, 2)
-        );
 
         const spriteAnimationCollectionDef = {
             id: collectionName + 'Animations',
@@ -749,10 +776,21 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
             singular: collectionName.charAt(0).toUpperCase() + collectionName.slice(1).slice(0, -1) + 'Animation',
             objectTypeCategory: 'sprites'
         };
-        await fs.writeFile(
-            path.join(settingsFolder, `${collectionName}Animations.json`),
-            JSON.stringify(spriteAnimationCollectionDef, null, 2)
-        );
+
+        await Promise.all([
+            fs.writeFile(
+                path.join(scriptsSpriteAnimationSetsFolder, `${baseName}.json`),
+                JSON.stringify(animationSetJson, null, 2)
+            ),
+            fs.writeFile(
+                path.join(settingsFolder, `${collectionName}.json`),
+                JSON.stringify(spriteCollectionDef, null, 2)
+            ),
+            fs.writeFile(
+                path.join(settingsFolder, `${collectionName}Animations.json`),
+                JSON.stringify(spriteAnimationCollectionDef, null, 2)
+            )
+        ]);
 
         res.json({ success: true, spriteCount: 1, ballisticSpriteCount });
     } catch (error) {
