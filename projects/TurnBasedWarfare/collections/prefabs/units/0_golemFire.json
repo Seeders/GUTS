@@ -19,13 +19,6 @@
           "main": {
             "shapes": [
               {
-                "type": "gltf",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1",
                 "id": 0,
                 "animation": "idle"
               }
@@ -67,18 +60,6 @@
               }
             ],
             "loops": false
-          }
-        }
-      ],
-      "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "dance_thriller"
-              }
-            ]
           }
         }
       ]
@@ -125,5 +106,6 @@
   "requiresUnits": [],
   "requiresBuildings": [
     "keep"
-  ]
+  ],
+  "spriteAnimationSet": "firegolem"
 }

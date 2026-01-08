@@ -349,13 +349,16 @@ class RenderSystem extends GUTS.BaseSystem {
                     const angleDiff = Math.abs(angle - cached.angle);
                     const scaleChanged = (cached.scaleX ?? 1) !== scaleX;
 
-                    // Check if renderOffset changed (used for height animations like dragon takeoff/land)
+                    // Check if renderOffset or spriteCameraAngle changed
                     const animState = this.game.getComponent(entityId, 'animationState');
                     const renderOffsetY = animState?.renderOffset?.y ?? 0;
                     const renderOffsetChanged = Math.abs((cached.renderOffsetY ?? 0) - renderOffsetY) > 0.001;
+                    // spriteCameraAngle affects sprite offset (ground-level vs isometric)
+                    const spriteCameraAngle = animState?.spriteCameraAngle ?? 0;
+                    const cameraAngleChanged = (cached.spriteCameraAngle ?? 0) !== spriteCameraAngle;
 
-                    // Skip update if position/rotation/scale/renderOffset hasn't changed significantly
-                    if (distSq < this._positionThreshold && angleDiff < 0.01 && !scaleChanged && !renderOffsetChanged) {
+                    // Skip update if position/rotation/scale/renderOffset/cameraAngle hasn't changed significantly
+                    if (distSq < this._positionThreshold && angleDiff < 0.01 && !scaleChanged && !renderOffsetChanged && !cameraAngleChanged) {
                         continue;
                     }
 
@@ -366,6 +369,7 @@ class RenderSystem extends GUTS.BaseSystem {
                     cached.angle = angle;
                     cached.scaleX = scaleX;
                     cached.renderOffsetY = renderOffsetY;
+                    cached.spriteCameraAngle = spriteCameraAngle;
                 }
 
                 // Update existing entity (reuse object to avoid allocation)

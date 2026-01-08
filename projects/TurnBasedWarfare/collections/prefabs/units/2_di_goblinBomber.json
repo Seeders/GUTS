@@ -60,28 +60,6 @@
             "loops": false
           }
         }
-      ],
-      "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "dance_gangnamstyle"
-              }
-            ]
-          }
-        },
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "dance_thriller"
-              }
-            ]
-          }
-        }
       ]
     },
     "model": {

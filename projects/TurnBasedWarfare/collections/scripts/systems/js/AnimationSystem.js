@@ -43,6 +43,10 @@ class AnimationSystem extends GUTS.BaseSystem {
         // This avoids storing complex objects per-entity
         this.spriteAnimationCache = new Map();
 
+        // Cache for derived animations (keyed by spriteAnimationSet name)
+        // Stored separately from collection objects to avoid polluting saved data
+        this._derivedAnimationsCache = new Map();
+
         // Callback map for animation completion (entityId -> callback)
         // Stored here instead of on component since callbacks can't be serialized
         this._animationCallbacks = new Map();
@@ -71,6 +75,42 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     /**
+     * Get derived animations for a sprite animation set (cached separately from collection data)
+     * @param {string} spriteAnimationSetName - The sprite animation set name
+     * @param {object} animSetData - The animation set data from collections
+     * @returns {object} Derived animations object
+     */
+    getDerivedAnimations(spriteAnimationSetName, animSetData) {
+        if (!this._derivedAnimationsCache.has(spriteAnimationSetName)) {
+            const fps = animSetData.generatorSettings?.fps || 4;
+            const animationTypes = animSetData.generatorSettings?.animationTypes || null;
+            this._derivedAnimationsCache.set(
+                spriteAnimationSetName,
+                this.deriveAnimationsFromFrames(animSetData.frames, fps, animationTypes)
+            );
+        }
+        return this._derivedAnimationsCache.get(spriteAnimationSetName);
+    }
+
+    /**
+     * Get derived animations using a cache key (for raw data that may not have a name)
+     * @param {string} cacheKey - The cache key
+     * @param {object} rawData - The raw animation set data
+     * @returns {object} Derived animations object
+     */
+    getDerivedAnimationsForRawData(cacheKey, rawData) {
+        if (!this._derivedAnimationsCache.has(cacheKey)) {
+            const fps = rawData.generatorSettings?.fps || 4;
+            const animationTypes = rawData.generatorSettings?.animationTypes || null;
+            this._derivedAnimationsCache.set(
+                cacheKey,
+                this.deriveAnimationsFromFrames(rawData.frames, fps, animationTypes)
+            );
+        }
+        return this._derivedAnimationsCache.get(cacheKey);
+    }
+
+    /**
      * Get the duration of a sprite animation in milliseconds
      * @param {string} spriteAnimationSetName - The sprite animation set name (e.g., 'dragonred')
      * @param {string} animationType - The animation type (e.g., 'takeoff', 'land')
@@ -84,15 +124,11 @@ class AnimationSystem extends GUTS.BaseSystem {
             return 1000; // fallback
         }
 
-        // Derive animation data from frames (cached)
-        if (!animSetData._derivedAnimations) {
-            const fps = animSetData.generatorSettings?.fps || 4;
-            const animationTypes = animSetData.generatorSettings?.animationTypes || null;
-            animSetData._derivedAnimations = this.deriveAnimationsFromFrames(animSetData.frames, fps, animationTypes);
-        }
+        // Get derived animation data from cache (not stored on collection object)
+        const derivedAnimations = this.getDerivedAnimations(spriteAnimationSetName, animSetData);
 
         const animKey = `${animationType}SpriteAnimations`;
-        const animNames = animSetData._derivedAnimations.animationArrays[animKey];
+        const animNames = derivedAnimations.animationArrays[animKey];
 
         if (!animNames || animNames.length === 0) {
             console.warn(`[AnimationSystem] No ${animKey} in ${spriteAnimationSetName}`);
@@ -100,7 +136,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         }
 
         const firstAnimName = animNames[0];
-        const animData = animSetData._derivedAnimations.animations[firstAnimName];
+        const animData = derivedAnimations.animations[firstAnimName];
         if (!animData) {
             console.warn(`[AnimationSystem] No animation data for ${firstAnimName}`);
             return 1000;
@@ -630,15 +666,12 @@ class AnimationSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Derive animations if not already cached
-        if (!rawData._derivedAnimations) {
-            const fps = rawData.generatorSettings?.fps || 4;
-            const animationTypes = rawData.generatorSettings?.animationTypes || null;
-            rawData._derivedAnimations = this.deriveAnimationsFromFrames(rawData.frames, fps, animationTypes);
-        }
+        // Get derived animations from cache (keyed by spriteAnimationSet index to avoid polluting collection data)
+        const cacheKey = `idx_${animState.spriteAnimationSet}`;
+        const derivedAnimations = this.getDerivedAnimationsForRawData(cacheKey, rawData);
 
         // Check if any ballistic animations exist (derived from frame names)
-        const hasBallistic = Object.keys(rawData._derivedAnimations.ballisticArrays).length > 0;
+        const hasBallistic = Object.keys(derivedAnimations.ballisticArrays).length > 0;
         if (!hasBallistic) {
             return;
         }
@@ -670,7 +703,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         const ballisticPropertyName = `ballistic${animType.charAt(0).toUpperCase() + animType.slice(1)}SpriteAnimations${angleName}`;
 
         // Get animation names from derived data
-        const ballisticAnimationNames = rawData._derivedAnimations.ballisticArrays[ballisticPropertyName];
+        const ballisticAnimationNames = derivedAnimations.ballisticArrays[ballisticPropertyName];
 
         if (!ballisticAnimationNames || !Array.isArray(ballisticAnimationNames)) {
             console.warn('[Ballistic] No animation names array for:', ballisticPropertyName, 'Available:', Object.keys(rawData).filter(k => k.includes('ballistic')));
@@ -1382,13 +1415,8 @@ class AnimationSystem extends GUTS.BaseSystem {
                 return;
             }
 
-            // Derive animation data from frame names (cached on animSetData)
-            if (!animSetData._derivedAnimations) {
-                const fps = animSetData.generatorSettings?.fps || 4;
-                const animationTypes = animSetData.generatorSettings?.animationTypes || null;
-                animSetData._derivedAnimations = this.deriveAnimationsFromFrames(animSetData.frames, fps, animationTypes);
-            }
-            const derivedData = animSetData._derivedAnimations;
+            // Get derived animation data from cache (not stored on collection object)
+            const derivedData = this.getDerivedAnimations(spriteAnimationSet, animSetData);
 
             for (let i = 0; i < this.animationTypeNames.length; i++) {
                 const animTypeName = this.animationTypeNames[i];
@@ -1500,13 +1528,9 @@ class AnimationSystem extends GUTS.BaseSystem {
             return result;
         }
 
-        // Derive animations from frame names (cached)
-        if (!animSetData._derivedAnimations) {
-            const fps = animSetData.generatorSettings?.fps || 4;
-            const animationTypes = animSetData.generatorSettings?.animationTypes || null;
-            animSetData._derivedAnimations = this.deriveAnimationsFromFrames(animSetData.frames, fps, animationTypes);
-        }
-        const derived = animSetData._derivedAnimations;
+        // Get derived animations from cache using title as key (not stored on collection object)
+        const cacheKey = animSetData.title || animSetData.spriteSheet || 'unknown';
+        const derived = this.getDerivedAnimationsForRawData(cacheKey, animSetData);
 
         for (const animName of animNames) {
             const animData = derived.animations[animName];

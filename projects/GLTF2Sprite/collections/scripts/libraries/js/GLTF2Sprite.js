@@ -914,14 +914,11 @@ class GLTF2Sprite {
         // Get palette colors if enabled
         let paletteColors = null;
         if (usePalette && this.currentPalette.length > 0) {
-            paletteColors = this.currentPalette.map(hex => this.hexToRgb(hex));
+            paletteColors = this.currentPalette.map(hex => SpriteUtils.hexToRgb(hex));
         }
 
-        // Create temporary renderer for sprite generation
-        const spriteRenderer = new this.THREE.WebGLRenderer({ antialias: false, alpha: true, preserveDrawingBuffer: true });
-        spriteRenderer.setSize(size, size);
-        spriteRenderer.setClearColor(0x000000, 0); // Transparent background
-        spriteRenderer.outputColorSpace = this.THREE.SRGBColorSpace;
+        // Create temporary renderer for sprite generation using SpriteUtils
+        const spriteRenderer = SpriteUtils.createSpriteRenderer(this.THREE, size);
 
         // Calculate model bounds (model is centered at origin with bottom at Y=0, scale already applied)
         const box = new this.THREE.Box3().setFromObject(this.baseModel);
@@ -948,14 +945,13 @@ class GLTF2Sprite {
         this.ambientLight.intensity = brightness / 4;
         this.ambientLight.color.set(lightColor);
 
-        // Create 8 isometric cameras
-        const aspect = 1;
-        const cameras = this.createCameraArray(frustumSize, aspect, cameraDistance, cameraHeight, lookAtY);
+        // Create 8 isometric cameras using SpriteUtils
+        const cameras = SpriteUtils.createCameraArray(this.THREE, frustumSize, cameraDistance, cameraHeight, lookAtY);
 
         // Create ground-level cameras if enabled
         let groundCameras = null;
         if (generateGroundLevel) {
-            groundCameras = this.createCameraArray(frustumSize, aspect, cameraDistance, modelHeight, lookAtY);
+            groundCameras = SpriteUtils.createCameraArray(this.THREE, frustumSize, cameraDistance, modelHeight, lookAtY);
         }
 
         // Ballistic angles for projectiles
@@ -1071,166 +1067,27 @@ class GLTF2Sprite {
         console.log('[GLTF2Sprite] Sprite generation complete');
     }
 
-    createCameraArray(frustumSize, aspect, distance, height, lookAtY) {
-        const cameras = [];
-        for (let i = 0; i < 8; i++) {
-            cameras.push(new this.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000));
-        }
-
-        // Position cameras around origin: Down, DownLeft, Left, UpLeft, Up, UpRight, Right, DownRight
-        // Model is centered at origin with bottom at Y=0
-        cameras[0].position.set(0, height, distance);              // Down (S)
-        cameras[1].position.set(distance, height, distance);       // DownLeft (SW)
-        cameras[2].position.set(distance, height, 0);              // Left (W)
-        cameras[3].position.set(distance, height, -distance);      // UpLeft (NW)
-        cameras[4].position.set(0, height, -distance);             // Up (N)
-        cameras[5].position.set(-distance, height, -distance);     // UpRight (NE)
-        cameras[6].position.set(-distance, height, 0);             // Right (E)
-        cameras[7].position.set(-distance, height, distance);      // DownRight (SE)
-
-        // All cameras look at the model center (origin at lookAtY height)
-        const lookAtTarget = new this.THREE.Vector3(0, lookAtY, 0);
-        cameras.forEach(camera => {
-            camera.lookAt(lookAtTarget);
-            camera.updateProjectionMatrix();
-        });
-
-        return cameras;
-    }
-
     async renderFrame(renderer, cameras, size, paletteColors, outlineColor, outlineConnectivity, borderSize) {
         const frames = [];
 
         for (const camera of cameras) {
-            // Render directly to the renderer's canvas (preserves sRGB color space)
-            renderer.setRenderTarget(null);
-            renderer.clear();
-            renderer.render(this.scene, camera);
-
-            // Create output canvas and copy from renderer's canvas
-            const canvas = document.createElement('canvas');
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(renderer.domElement, 0, 0);
+            // Render using SpriteUtils
+            const canvas = SpriteUtils.renderToCanvas(renderer, this.scene, camera, size);
 
             // Apply palette
             if (paletteColors && paletteColors.length > 0) {
-                this.applyPaletteToCanvas(canvas, paletteColors);
+                SpriteUtils.applyPaletteToCanvas(canvas, paletteColors);
             }
 
             // Apply outline
             if (outlineColor) {
-                this.applyOutlineToCanvas(canvas, outlineColor, 'outset', outlineConnectivity, borderSize);
+                SpriteUtils.applyOutlineToCanvas(canvas, outlineColor, 'outset', outlineConnectivity, borderSize);
             }
 
             frames.push(canvas);
         }
 
         return frames;
-    }
-
-    // Color/palette functions (from GE_SceneRenderer)
-    hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-    }
-
-    findNearestPaletteColor(r, g, b, palette) {
-        let minDistance = Infinity;
-        let nearestColor = palette[0];
-
-        for (const color of palette) {
-            const dist = (r - color.r) ** 2 + (g - color.g) ** 2 + (b - color.b) ** 2;
-            if (dist < minDistance) {
-                minDistance = dist;
-                nearestColor = color;
-            }
-        }
-
-        return nearestColor;
-    }
-
-    applyPaletteToCanvas(canvas, paletteColors) {
-        const ctx = canvas.getContext('2d');
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-
-        for (let i = 0; i < data.length; i += 4) {
-            if (data[i + 3] === 0) continue;
-
-            const nearest = this.findNearestPaletteColor(data[i], data[i + 1], data[i + 2], paletteColors);
-            data[i] = nearest.r;
-            data[i + 1] = nearest.g;
-            data[i + 2] = nearest.b;
-        }
-
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    applyOutlineToCanvas(canvas, outlineColorHex, position, connectivity, borderSize) {
-        const ctx = canvas.getContext('2d');
-        const width = canvas.width;
-        const height = canvas.height;
-        const imageData = ctx.getImageData(0, 0, width, height);
-        const data = imageData.data;
-
-        const outlineColor = this.hexToRgb(outlineColorHex);
-        if (!outlineColor) return;
-
-        const alphaMap = new Uint8Array(width * height);
-        for (let i = 0; i < data.length; i += 4) {
-            alphaMap[i / 4] = data[i + 3];
-        }
-
-        const outlineData = new Uint8ClampedArray(data.length);
-        outlineData.set(data);
-
-        const baseOffsets = connectivity === 4
-            ? [[-1, 0], [1, 0], [0, -1], [0, 1]]
-            : [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
-
-        const neighborOffsets = [];
-        for (const [baseX, baseY] of baseOffsets) {
-            for (let i = 0; i < borderSize; i++) {
-                neighborOffsets.push([baseX * (i + 1), baseY * (i + 1)]);
-            }
-        }
-
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const idx = y * width + x;
-                const pixelIdx = idx * 4;
-
-                if (alphaMap[idx] > 0) continue;
-
-                let hasEdgeNeighbor = false;
-                for (const [dx, dy] of neighborOffsets) {
-                    const nx = x + dx;
-                    const ny = y + dy;
-                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                        if (alphaMap[ny * width + nx] > 0) {
-                            hasEdgeNeighbor = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (hasEdgeNeighbor) {
-                    outlineData[pixelIdx] = outlineColor.r;
-                    outlineData[pixelIdx + 1] = outlineColor.g;
-                    outlineData[pixelIdx + 2] = outlineColor.b;
-                    outlineData[pixelIdx + 3] = 255;
-                }
-            }
-        }
-
-        imageData.data.set(outlineData);
-        ctx.putImageData(imageData, 0, 0);
     }
 
     // Sprite sheet composition

@@ -13,6 +13,7 @@
     "GE_GroupManager",
     "GE_ShapeManager",
     "GE_RotationUtils",
+    "SpriteUtils",
     "GE_SceneRenderer",
     "GE_UIManager",
     "GE_EquipmentManager",

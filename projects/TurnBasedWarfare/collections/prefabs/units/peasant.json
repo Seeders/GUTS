@@ -29,11 +29,6 @@
           "main": {
             "shapes": [
               {
-                "type": "gltf",
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1",
-                "model": "new_peasant",
                 "id": 0,
                 "animation": "idle_short"
               }
@@ -79,18 +74,6 @@
               }
             ],
             "loops": false
-          }
-        }
-      ],
-      "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "dance_thriller"
-              }
-            ]
           }
         }
       ]

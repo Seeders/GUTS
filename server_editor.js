@@ -572,7 +572,7 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
     try {
         const { projectName, baseName, collectionName, spriteSheet, spriteMetadata,
                 ballisticSpriteMetadata, ballisticAngleNames, groundLevelSpriteMetadata,
-                generatorSettings, spriteOffset } = req.body;
+                generatorSettings, spriteOffset, groundLevelSpriteOffset } = req.body;
 
         // Create directories (only need sprite sheet folder and animation set folder now)
         const spritesFolder = path.join(PROJS_DIR, projectName, 'resources', 'sprites', collectionName);
@@ -625,6 +625,8 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
             title: baseName.charAt(0).toUpperCase() + baseName.slice(1),
             spriteSheet: spriteSheetPath,
             spriteOffset: spriteOffset ?? 0,
+            // Ground-level sprites have a different camera angle, so need separate offset
+            groundLevelSpriteOffset: groundLevelSpriteOffset ?? null,
             // Store generator settings for future reference/regeneration
             generatorSettings: generatorSettings ? {
                 ...generatorSettings,

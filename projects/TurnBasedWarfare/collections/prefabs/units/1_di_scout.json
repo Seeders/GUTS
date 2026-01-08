@@ -18,10 +18,21 @@
   "accuracy": 100,
   "evasion": 40,
   "criticalChance": 0.15,
-  "criticalMultiplier": 2.0,
+  "criticalMultiplier": 2,
   "passives": [
-    { "type": "increased", "tags": ["ranged"], "value": 0.2 },
-    { "type": "more", "tags": [], "value": 0.1, "condition": "critical" }
+    {
+      "type": "increased",
+      "tags": [
+        "ranged"
+      ],
+      "value": 0.2
+    },
+    {
+      "type": "more",
+      "tags": [],
+      "value": 0.1,
+      "condition": "critical"
+    }
   ],
   "render": {
     "animations": {
@@ -88,18 +99,6 @@
             "loops": false
           }
         }
-      ],
-      "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "dance_thriller"
-              }
-            ]
-          }
-        }
       ]
     },
     "model": {
@@ -158,7 +157,9 @@
       }
     ]
   },
-  "abilities": ["BearTrapAbility"],
+  "abilities": [
+    "BearTrapAbility"
+  ],
   "buyable": true,
   "specUnits": [
     "2_di_shadowAssassin",

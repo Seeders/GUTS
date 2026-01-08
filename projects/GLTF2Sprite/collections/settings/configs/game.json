@@ -10,6 +10,7 @@
     "three_OrbitControls",
     "BaseECSGame",
     "BaseLoader",
+    "SpriteUtils",
     "GLTF2Sprite"
   ],
   "systems": [],

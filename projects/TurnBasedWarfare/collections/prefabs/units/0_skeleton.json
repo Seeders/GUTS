@@ -74,18 +74,6 @@
             "loops": false
           }
         }
-      ],
-      "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "dance_thriller"
-              }
-            ]
-          }
-        }
       ]
     },
     "model": {

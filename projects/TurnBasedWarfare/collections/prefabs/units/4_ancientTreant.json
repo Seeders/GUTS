@@ -20,7 +20,7 @@
             "shapes": [
               {
                 "id": 0,
-                "animation": "mutant_idle"
+                "animation": "idle_short"
               }
             ]
           }
@@ -62,28 +62,6 @@
             "loops": false
           }
         }
-      ],
-      "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "dance_gangnamstyle"
-              }
-            ]
-          }
-        },
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "dance_thriller"
-              }
-            ]
-          }
-        }
       ]
     },
     "model": {
@@ -123,5 +101,6 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "spriteAnimationSet": "ancienttreant"
 }
