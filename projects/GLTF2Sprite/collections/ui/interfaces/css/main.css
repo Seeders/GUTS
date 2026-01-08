@@ -376,6 +376,22 @@ body {
     color: #fff;
 }
 
+/* Vertical Angle Picker */
+.g2s-vertical-angle {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.g2s-vertical-angle .g2s-btn-small {
+    min-width: 60px;
+}
+
+.g2s-vertical-angle .g2s-vangle-active {
+    background: #e94560;
+    color: #fff;
+}
+
 /* Playback */
 .g2s-playback {
     display: flex;

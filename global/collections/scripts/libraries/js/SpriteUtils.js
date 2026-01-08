@@ -259,6 +259,64 @@ class SpriteUtils {
             getCurrentFrame: () => currentFrame
         };
     }
+
+    /**
+     * Calculate sprite offset by measuring transparent rows from the bottom of the idle frame
+     * This positions the sprite so feet are at the tile center
+     * @param {CanvasRenderingContext2D} ctx - Canvas context containing the sprite sheet
+     * @param {Object} frameData - Object mapping frame names to {x, y, w, h}
+     * @param {number} spriteSize - Size of each sprite
+     * @param {string} idleAnimPrefix - Prefix for idle animation (e.g., 'idle' or 'idleGround')
+     * @returns {number} Sprite offset value
+     */
+    static calculateSpriteOffset(ctx, frameData, spriteSize, idleAnimPrefix = 'idle') {
+        // Find the first idle Down frame (direction 0)
+        const idleDownFrameName = `${idleAnimPrefix}Down_0`;
+        const frame = frameData[idleDownFrameName];
+
+        if (!frame) {
+            console.warn(`[SpriteOffset] No ${idleDownFrameName} frame found for offset calculation`);
+            return 0;
+        }
+
+        const { x, y, w, h } = frame;
+        const width = w || spriteSize;
+        const height = h || spriteSize;
+
+        console.log(`[SpriteOffset] Measuring frame at x=${x}, y=${y}, width=${width}, height=${height}`);
+
+        // Get the pixel data for this sprite region
+        const imageData = ctx.getImageData(x, y, width, height);
+        const pixels = imageData.data;
+
+        // Count transparent rows from the bottom
+        // Use a threshold to ignore nearly-transparent pixels (anti-aliasing artifacts)
+        const alphaThreshold = 32;
+        let transparentRows = 0;
+
+        for (let row = height - 1; row >= 0; row--) {
+            let rowHasNonTransparent = false;
+
+            for (let col = 0; col < width; col++) {
+                const alphaIndex = (row * width + col) * 4 + 3;
+                const alpha = pixels[alphaIndex];
+                if (alpha >= alphaThreshold) {
+                    rowHasNonTransparent = true;
+                    break;
+                }
+            }
+
+            if (rowHasNonTransparent) {
+                break;
+            }
+            transparentRows++;
+        }
+
+        // Calculate final offset: half sprite height minus transparent rows
+        const spriteOffset = Math.floor(height / 2) - transparentRows;
+        console.log(`[SpriteOffset] Transparent rows: ${transparentRows}, Final offset: ${height}/2 - ${transparentRows} = ${spriteOffset}`);
+        return spriteOffset;
+    }
 }
 
 // Export for GUTS

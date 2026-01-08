@@ -33,6 +33,8 @@ class GLTF2Sprite {
         this.previewFps = 4;
         this.lastFrameTime = 0;
         this.animationFrameId = null;
+        this.previewVerticalAngle = 0; // 0 = isometric, 1 = ground-level
+        this.preview3DVerticalAngle = 0; // 0 = isometric, 1 = ground-level
 
         // 3D model preview state
         this.previewRenderer = null;
@@ -229,6 +231,10 @@ class GLTF2Sprite {
                                         <button data-dir="0" class="g2s-dir-btn g2s-dir-active">S</button>
                                         <button data-dir="7" class="g2s-dir-btn">SE</button>
                                     </div>
+                                    <div class="g2s-vertical-angle" id="preview-3d-vangle">
+                                        <button data-vangle="0" class="g2s-btn-small g2s-vangle-active">Iso</button>
+                                        <button data-vangle="1" class="g2s-btn-small">Ground</button>
+                                    </div>
                                     <div class="g2s-anim-controls">
                                         <select id="model-preview-anim">
                                             <option value="">T-Pose</option>
@@ -258,6 +264,10 @@ class GLTF2Sprite {
                                         <button data-dir="1" class="g2s-dir-btn">SW</button>
                                         <button data-dir="0" class="g2s-dir-btn g2s-dir-active">S</button>
                                         <button data-dir="7" class="g2s-dir-btn">SE</button>
+                                    </div>
+                                    <div class="g2s-vertical-angle" id="sprite-vangle">
+                                        <button data-vangle="0" class="g2s-btn-small g2s-vangle-active">Iso</button>
+                                        <button data-vangle="1" class="g2s-btn-small">Ground</button>
                                     </div>
                                     <div class="g2s-anim-controls">
                                         <select id="preview-anim">
@@ -336,6 +346,18 @@ class GLTF2Sprite {
             });
         });
 
+        // Sprite preview vertical angle picker
+        document.querySelectorAll('#sprite-vangle .g2s-btn-small').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.previewVerticalAngle = parseInt(e.target.dataset.vangle);
+                // Update active state
+                document.querySelectorAll('#sprite-vangle .g2s-btn-small').forEach(b => b.classList.remove('g2s-vangle-active'));
+                e.target.classList.add('g2s-vangle-active');
+                this.previewFrame = 0;
+                this.renderPreview();
+            });
+        });
+
         document.getElementById('preview-play').addEventListener('click', () => {
             this.previewPlaying = true;
             this.startPreviewAnimation();
@@ -379,6 +401,17 @@ class GLTF2Sprite {
                 // Update active state
                 document.querySelectorAll('#preview-3d-directions .g2s-dir-btn').forEach(b => b.classList.remove('g2s-dir-active'));
                 e.target.classList.add('g2s-dir-active');
+            });
+        });
+
+        // 3D preview vertical angle picker
+        document.querySelectorAll('#preview-3d-vangle .g2s-btn-small').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.preview3DVerticalAngle = parseInt(e.target.dataset.vangle);
+                // Update active state
+                document.querySelectorAll('#preview-3d-vangle .g2s-btn-small').forEach(b => b.classList.remove('g2s-vangle-active'));
+                e.target.classList.add('g2s-vangle-active');
+                this.updatePreviewCamera();
             });
         });
 
@@ -651,8 +684,14 @@ class GLTF2Sprite {
         const box = new this.THREE.Box3().setFromObject(this.previewModel);
         const modelSize = box.getSize(new this.THREE.Vector3());
         const modelHeight = modelSize.y;
-        const cameraHeight = cameraDistance * cameraHeightMultiplier;
         const lookAtY = modelHeight / 2;
+
+        // Camera height depends on vertical angle mode
+        // Isometric (0): uses height multiplier setting
+        // Ground-level (1): uses model height for a flatter angle
+        const cameraHeight = this.preview3DVerticalAngle === 1
+            ? modelHeight
+            : cameraDistance * cameraHeightMultiplier;
 
         // Get container aspect ratio
         const container = document.getElementById('model-preview-container');
@@ -1143,7 +1182,9 @@ class GLTF2Sprite {
                 cameraHeight: parseFloat(document.getElementById('gen-height').value),
                 spriteSize: spriteSize,
                 fps: fps,
-                brightness: parseFloat(document.getElementById('gen-brightness').value)
+                brightness: parseFloat(document.getElementById('gen-brightness').value),
+                // Animation types for runtime derivation
+                animationTypes: animNames
             },
             frames: {}
         };
@@ -1206,6 +1247,23 @@ class GLTF2Sprite {
                         }
                     }
                 }
+            }
+        }
+
+        // Calculate sprite offsets using SpriteUtils
+        const spriteOffset = SpriteUtils.calculateSpriteOffset(ctx, metadata.frames, spriteSize, 'idle');
+        metadata.spriteOffset = spriteOffset;
+
+        // Calculate ground-level sprite offset if ground-level sprites were generated
+        if (hasGroundLevel && groundLevelSprites && Object.keys(groundLevelSprites).length > 0) {
+            // Ground-level frames use 'Ground' suffix (e.g., 'idleDownGround_0')
+            // Create a mapping that SpriteUtils expects
+            const groundFrame = metadata.frames['idleDownGround_0'];
+            if (groundFrame) {
+                // SpriteUtils looks for '{prefix}Down_0', so we pass the ground frame as 'idleDown_0'
+                const groundOffset = SpriteUtils.calculateSpriteOffset(ctx, { 'idleDown_0': groundFrame }, spriteSize, 'idle');
+                metadata.groundLevelSpriteOffset = groundOffset;
+                console.log(`[SpriteOffset] Ground-level offset: ${groundOffset}`);
             }
         }
 
@@ -1279,11 +1337,23 @@ class GLTF2Sprite {
     }
 
     advanceFrame() {
-        const { sprites } = this.generatedSprites;
-        const frames = sprites[this.previewAnimation];
+        const frames = this.getPreviewFrames();
         if (frames) {
             this.previewFrame = (this.previewFrame + 1) % frames.length;
         }
+    }
+
+    getPreviewFrames() {
+        if (!this.generatedSprites) return null;
+
+        const { sprites, groundLevelSprites } = this.generatedSprites;
+
+        // Use ground-level sprites if vertical angle is 1 and they exist
+        if (this.previewVerticalAngle === 1 && groundLevelSprites && groundLevelSprites[this.previewAnimation]) {
+            return groundLevelSprites[this.previewAnimation];
+        }
+
+        return sprites[this.previewAnimation];
     }
 
     renderPreview() {
@@ -1294,8 +1364,7 @@ class GLTF2Sprite {
 
         if (!this.generatedSprites) return;
 
-        const { sprites } = this.generatedSprites;
-        const frames = sprites[this.previewAnimation];
+        const frames = this.getPreviewFrames();
 
         if (frames && frames[this.previewFrame] && frames[this.previewFrame][this.previewDirection]) {
             const sprite = frames[this.previewFrame][this.previewDirection];
@@ -1305,7 +1374,8 @@ class GLTF2Sprite {
 
         // Update frame info
         const frameCount = frames ? frames.length : 1;
-        document.getElementById('preview-frame-info').textContent = `Frame: ${this.previewFrame + 1}/${frameCount}`;
+        const angleLabel = this.previewVerticalAngle === 1 ? ' (Ground)' : '';
+        document.getElementById('preview-frame-info').textContent = `Frame: ${this.previewFrame + 1}/${frameCount}${angleLabel}`;
     }
 
     // Export functions
