@@ -330,6 +330,86 @@ class BaseECSGame {
     }
 
     /**
+     * Get direct references to TypedArrays for a component's fields.
+     * Use this for maximum performance in tight loops - avoids all proxy/function overhead.
+     *
+     * @param {string} componentType - Component name (e.g., 'transform')
+     * @param {string[]} fieldPaths - Array of field paths (e.g., ['position.x', 'position.y', 'position.z'])
+     * @returns {Object} Map of fieldPath -> Float32Array (or undefined if not found)
+     * @example
+     * // Get direct array access for transform position fields
+     * const arrays = game.getFieldArrays('transform', ['position.x', 'position.y', 'position.z']);
+     * // Now access directly: arrays['position.x'][entityId]
+     * for (const entityId of entities) {
+     *     const x = arrays['position.x'][entityId];
+     *     const y = arrays['position.y'][entityId];
+     *     const z = arrays['position.z'][entityId];
+     * }
+     */
+    getFieldArrays(componentType, fieldPaths) {
+        const result = {};
+        for (const fieldPath of fieldPaths) {
+            const key = `${componentType}.${fieldPath}`;
+            result[fieldPath] = this._numericArrays.get(key);
+        }
+        return result;
+    }
+
+    /**
+     * Get a single TypedArray for direct field access.
+     * Use in hot loops where you need to read/write many entities.
+     *
+     * @param {string} componentType - Component name
+     * @param {string} fieldPath - Field path (e.g., 'position.x')
+     * @returns {Float32Array|undefined} Direct array reference
+     * @example
+     * const posX = game.getFieldArray('transform', 'position.x');
+     * const posZ = game.getFieldArray('transform', 'position.z');
+     * for (const id of nearbyUnits) {
+     *     const dx = myX - posX[id];
+     *     const dz = myZ - posZ[id];
+     * }
+     */
+    getFieldArray(componentType, fieldPath) {
+        const key = `${componentType}.${fieldPath}`;
+        return this._numericArrays.get(key);
+    }
+
+    /**
+     * Read multiple fields from a component in one call - more efficient than multiple getField calls.
+     * Returns plain values (not a proxy), so it's a snapshot that won't track changes.
+     *
+     * @param {number} entityId - Entity ID
+     * @param {string} componentType - Component name
+     * @param {string[]} fieldPaths - Array of field paths to read
+     * @returns {Object} Map of fieldPath -> value
+     * @example
+     * const { 'position.x': x, 'position.z': z } = game.getFields(id, 'transform', ['position.x', 'position.z']);
+     */
+    getFields(entityId, componentType, fieldPaths) {
+        const result = {};
+        for (const fieldPath of fieldPaths) {
+            result[fieldPath] = this._getNumericField(componentType, entityId, fieldPath);
+        }
+        return result;
+    }
+
+    /**
+     * Write multiple fields to a component in one call.
+     *
+     * @param {number} entityId - Entity ID
+     * @param {string} componentType - Component name
+     * @param {Object} fieldValues - Map of fieldPath -> value
+     * @example
+     * game.setFields(id, 'velocity', { vx: 10, vy: 0, vz: 5 });
+     */
+    setFields(entityId, componentType, fieldValues) {
+        for (const fieldPath in fieldValues) {
+            this._setNumericField(componentType, entityId, fieldPath, this._toStorageValue(fieldValues[fieldPath]));
+        }
+    }
+
+    /**
      * Check if a field value represents null/unset
      * @param {number} value - Value from getField or direct TypedArray read
      * @returns {boolean} - True if value represents null
@@ -1127,6 +1207,9 @@ class BaseECSGame {
         this.entityComponentMask[entityId * 2] = 0;
         this.entityComponentMask[entityId * 2 + 1] = 0;
         this.entityCount--;
+
+        // Invalidate query cache - entity was destroyed, cached query results are stale
+        this._queryCache.clear();
     }
 
     addComponent(entityId, componentId, data) {
@@ -1166,6 +1249,8 @@ class BaseECSGame {
             storage[entityId] = componentData;
         }
 
+        // Invalidate query cache - component was added, cached query results are stale
+        this._queryCache.clear();
     }
 
     /**
@@ -1211,6 +1296,7 @@ class BaseECSGame {
         }
 
         // Single cache invalidation for all components
+        this._queryCache.clear();
     }
 
     removeComponent(entityId, componentType) {
@@ -1236,6 +1322,9 @@ class BaseECSGame {
         if (componentCache) {
             componentCache.delete(entityId);
         }
+
+        // Invalidate query cache - component was removed, cached query results are stale
+        this._queryCache.clear();
 
         return component;
     }
@@ -1537,6 +1626,106 @@ class BaseECSGame {
      */
     resetSyncState() {
         this._lastSyncedState = null;
+    }
+
+    /**
+     * Capture a checksum of the current ECS state for determinism validation.
+     * Used to verify that client and server simulations are in sync.
+     *
+     * The checksum includes:
+     * - All alive entity IDs
+     * - All component bitmasks
+     * - All numeric component data (TypedArrays)
+     * - Current tick count
+     *
+     * @returns {Object} { checksum: number, tickCount: number, entityCount: number }
+     */
+    captureStateChecksum() {
+        // Simple but effective hash function (djb2 variant)
+        let hash = 5381;
+        const addToHash = (value) => {
+            // Handle different value types
+            if (typeof value === 'number') {
+                // Convert to integer bits for consistent hashing
+                // Use DataView for proper float-to-int conversion
+                if (!this._checksumBuffer) {
+                    this._checksumBuffer = new ArrayBuffer(8);
+                    this._checksumView = new DataView(this._checksumBuffer);
+                }
+                this._checksumView.setFloat64(0, value, true);
+                const low = this._checksumView.getUint32(0, true);
+                const high = this._checksumView.getUint32(4, true);
+                hash = ((hash << 5) + hash + low) >>> 0;
+                hash = ((hash << 5) + hash + high) >>> 0;
+            } else {
+                hash = ((hash << 5) + hash + (value | 0)) >>> 0;
+            }
+        };
+
+        const maxEntity = this.nextEntityId;
+
+        // Hash tick count for temporal sync verification
+        addToHash(this.tickCount);
+
+        // Hash all alive entities and their component masks
+        for (let entityId = 1; entityId < maxEntity; entityId++) {
+            if (!this.entityAlive[entityId]) continue;
+
+            addToHash(entityId);
+            addToHash(this.entityComponentMask[entityId * 2]);
+            addToHash(this.entityComponentMask[entityId * 2 + 1]);
+        }
+
+        // Hash all numeric component data (deterministic order via sorted keys)
+        const sortedKeys = Array.from(this._numericArrays.keys()).sort();
+        for (const key of sortedKeys) {
+            // Skip client-only components
+            const componentType = key.split('.')[0];
+            if (this._clientOnlyComponents.has(componentType)) continue;
+
+            const arr = this._numericArrays.get(key);
+            for (let entityId = 1; entityId < maxEntity; entityId++) {
+                if (!this.entityAlive[entityId]) continue;
+                // Only hash if entity has this component
+                const typeId = this._componentTypeId.get(componentType);
+                if (typeId !== undefined && this._hasComponentBit(entityId, typeId)) {
+                    addToHash(arr[entityId]);
+                }
+            }
+        }
+
+        return {
+            checksum: hash,
+            tickCount: this.tickCount,
+            entityCount: this.entityCount
+        };
+    }
+
+    /**
+     * Compare two state checksums for determinism validation.
+     * Logs detailed info if mismatch detected.
+     *
+     * @param {Object} localState - Local checksum from captureStateChecksum()
+     * @param {Object} remoteState - Remote checksum from captureStateChecksum()
+     * @returns {boolean} True if states match, false if desync detected
+     */
+    validateStateSync(localState, remoteState) {
+        if (localState.tickCount !== remoteState.tickCount) {
+            console.warn(`[Desync] Tick mismatch: local=${localState.tickCount}, remote=${remoteState.tickCount}`);
+            return false;
+        }
+
+        if (localState.entityCount !== remoteState.entityCount) {
+            console.warn(`[Desync] Entity count mismatch at tick ${localState.tickCount}: local=${localState.entityCount}, remote=${remoteState.entityCount}`);
+            return false;
+        }
+
+        if (localState.checksum !== remoteState.checksum) {
+            console.warn(`[Desync] State checksum mismatch at tick ${localState.tickCount}: local=${localState.checksum}, remote=${remoteState.checksum}`);
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -1964,7 +2153,8 @@ class BaseECSGame {
         this.entityCount = 0;
 
         // Invalidate query cache
-            }
+        this._queryCache.clear();
+    }
 
     triggerEvent(eventName, data) {
         for (let i = 0; i < this.systems.length; i++) {

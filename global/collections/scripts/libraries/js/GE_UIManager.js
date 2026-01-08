@@ -299,7 +299,8 @@ class GE_UIManager {
 
             for (let dirIndex = 0; dirIndex < numDirections; dirIndex++) {
                 const dirName = directionNames[dirIndex];
-                const animationName = `${baseName}${animType.charAt(0).toUpperCase() + animType.slice(1)}${dirName}`;
+                // Use short animation names without unit prefix (e.g., "idleDown" instead of "barbarianIdleDown")
+                const animationName = `${animType}${dirName}`;
                 spriteMetadata[animType].animations[animationName] = [];
 
                 for (let frameIndex = 0; frameIndex < numFrames; frameIndex++) {
@@ -370,7 +371,8 @@ class GE_UIManager {
 
                     for (let dirIndex = 0; dirIndex < numDirections; dirIndex++) {
                         const dirName = directionNames[dirIndex];
-                        const animationName = `${baseName}${animType.charAt(0).toUpperCase() + animType.slice(1)}${dirName}${angleName}`;
+                        // Use short animation names (e.g., "idleDownUp90" instead of "arrowIdleDownUp90")
+                        const animationName = `${animType}${dirName}${angleName}`;
                         ballisticSpriteMetadata[angleName][animType].animations[animationName] = [];
 
                         const frames = angleData;
@@ -404,7 +406,8 @@ class GE_UIManager {
 
                         for (let dirIndex = 0; dirIndex < numDirections; dirIndex++) {
                             const dirName = directionNames[dirIndex];
-                            const animationName = `${baseName}${animType.charAt(0).toUpperCase() + animType.slice(1)}${dirName}${angleName}`;
+                            // Use short animation names (e.g., "idleDownUp90" instead of "arrowIdleDownUp90")
+                        const animationName = `${animType}${dirName}${angleName}`;
                             ballisticSpriteMetadata[angleName][animType].animations[animationName] = [];
 
                             const frames = angleData[animType];
@@ -438,7 +441,7 @@ class GE_UIManager {
 
         // Calculate sprite offset from first idle frame
         updateProgress(85, 'Calculating sprite offset...');
-        const spriteOffset = this.calculateSpriteOffset(ctx, spriteMetadata, baseName);
+        const spriteOffset = this.calculateSpriteOffset(ctx, spriteMetadata);
 
         updateProgress(90, 'Saving to server...');
         try {
@@ -545,10 +548,9 @@ class GE_UIManager {
      * of the first idle animation frame (direction 0 / Down).
      * @param {CanvasRenderingContext2D} ctx - The canvas context containing the sprite sheet
      * @param {Object} spriteMetadata - The sprite metadata containing animation info
-     * @param {string} baseName - The base name used for animation naming
      * @returns {number} Number of transparent pixel rows from bottom to first non-transparent row
      */
-    calculateSpriteOffset(ctx, spriteMetadata, baseName) {
+    calculateSpriteOffset(ctx, spriteMetadata) {
         // Get the first idle animation frame (direction 0 = Down)
         const idleAnimations = spriteMetadata['idle']?.animations;
         if (!idleAnimations) {
@@ -557,7 +559,8 @@ class GE_UIManager {
         }
 
         // Find the first idle animation (direction Down)
-        const idleDownAnimName = `${baseName}IdleDown`;
+        // Animation names use short format without baseName prefix (e.g., "idleDown")
+        const idleDownAnimName = 'idleDown';
         const idleDownFrames = idleAnimations[idleDownAnimName];
         if (!idleDownFrames || idleDownFrames.length === 0) {
             console.warn('No idle Down animation frames found for sprite offset calculation');
@@ -568,31 +571,50 @@ class GE_UIManager {
         const firstFrame = idleDownFrames[0];
         const { x, y, width, height } = firstFrame;
 
+        console.log(`[SpriteOffset] Measuring frame at x=${x}, y=${y}, width=${width}, height=${height}`);
+
         // Get the pixel data for this sprite region
         const imageData = ctx.getImageData(x, y, width, height);
         const pixels = imageData.data; // RGBA array
 
         // Count transparent rows from the bottom
+        // Use a threshold to ignore nearly-transparent pixels (anti-aliasing artifacts)
+        const alphaThreshold = 32; // ~12.5% opacity minimum to count as visible
         let transparentRows = 0;
+        let firstNonTransparentRow = -1;
+        let maxAlphaInFirstRow = 0;
+
         for (let row = height - 1; row >= 0; row--) {
             let rowHasNonTransparent = false;
+            let maxAlphaInRow = 0;
 
             for (let col = 0; col < width; col++) {
                 // Get alpha value (4th byte in RGBA)
                 const alphaIndex = (row * width + col) * 4 + 3;
-                if (pixels[alphaIndex] > 0) {
+                const alpha = pixels[alphaIndex];
+                if (alpha > maxAlphaInRow) maxAlphaInRow = alpha;
+                if (alpha >= alphaThreshold) {
                     rowHasNonTransparent = true;
-                    break;
                 }
             }
 
             if (rowHasNonTransparent) {
+                firstNonTransparentRow = row;
+                maxAlphaInFirstRow = maxAlphaInRow;
                 break;
             }
             transparentRows++;
         }
 
-        return transparentRows;
+        console.log(`[SpriteOffset] First non-transparent row: ${firstNonTransparentRow} (from bottom: row ${height - 1 - firstNonTransparentRow})`);
+        console.log(`[SpriteOffset] Max alpha in that row: ${maxAlphaInFirstRow}`);
+        console.log(`[SpriteOffset] Transparent rows from bottom: ${transparentRows}`);
+
+        // Calculate final offset: half sprite height minus transparent rows
+        // This positions the sprite so feet are at the tile center
+        const spriteOffset = Math.floor(height / 2) - transparentRows;
+        console.log(`[SpriteOffset] Final offset: ${height}/2 - ${transparentRows} = ${spriteOffset}`);
+        return spriteOffset;
     }
 
     displayIsometricSprites(sprites, ballisticSprites = null) {

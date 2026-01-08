@@ -566,24 +566,20 @@ app.post('/api/save-texture', async (req, res) => {
 });
 
 // Save isometric sprites with all data files
+// Uses CONSOLIDATED format - all frame and animation data embedded in SpriteAnimationSet JSON
+// This avoids creating thousands of individual sprite/animation JSON files
 app.post('/api/save-isometric-sprites', async (req, res) => {
     try {
         const { projectName, baseName, collectionName, spriteSheet, spriteMetadata,
                 ballisticSpriteMetadata, ballisticAngleNames,
-                directionNames, animationFPS = 4, generatorSettings, spriteOffset } = req.body;
+                generatorSettings, spriteOffset } = req.body;
 
-        // Create directories
+        // Create directories (only need sprite sheet folder and animation set folder now)
         const spritesFolder = path.join(PROJS_DIR, projectName, 'resources', 'sprites', collectionName);
-        const scriptsSpritesFolder = path.join(PROJS_DIR, projectName, 'collections', 'sprites', collectionName);
-        const scriptsSpriteAnimationsFolder = path.join(PROJS_DIR, projectName, 'collections', 'sprites', collectionName + 'Animations');
         const scriptsSpriteAnimationSetsFolder = path.join(PROJS_DIR, projectName, 'collections', 'data', 'spriteAnimationSets');
-        const settingsFolder = path.join(PROJS_DIR, projectName, 'collections', 'settings', 'objectTypeDefinitions');
 
         await fs.mkdir(spritesFolder, { recursive: true });
-        await fs.mkdir(scriptsSpritesFolder, { recursive: true });
-        await fs.mkdir(scriptsSpriteAnimationsFolder, { recursive: true });
         await fs.mkdir(scriptsSpriteAnimationSetsFolder, { recursive: true });
-        await fs.mkdir(settingsFolder, { recursive: true });
 
         // Save single sprite sheet image
         const sheetName = `${baseName}Sheet`;
@@ -592,105 +588,63 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
         await fs.writeFile(path.join(spritesFolder, `${sheetName}.png`), buffer);
 
         const spriteSheetPath = `sprites/${collectionName}/${sheetName}.png`;
-        const animationNames = {};
 
-        // Collect all file write operations to execute in parallel
-        const spriteWritePromises = [];
-        const animationWritePromises = [];
+        // STRIPPED FORMAT: Only build frame coordinates object
+        // Animations are derived at runtime from frame names (e.g., "idleDown_0" -> idle animation, down direction, frame 0)
+        const frames = {};
+        let totalFrameCount = 0;
 
-        // Process each animation type
+        // Process each animation type (idle, walk, attack, etc.)
         for (const animType in spriteMetadata) {
             const metadata = spriteMetadata[animType];
-            animationNames[animType] = [];
 
-            // Create sprite JSONs and animation JSONs for each direction
+            // Process each direction within this animation type
             for (const animationName in metadata.animations) {
-                const frames = metadata.animations[animationName];
-                animationNames[animType].push(animationName);
+                const frameList = metadata.animations[animationName];
 
-                const spriteNames = [];
-
-                // Create individual sprite JSON files with only coordinates
-                for (let i = 0; i < frames.length; i++) {
-                    const frame = frames[i];
+                // Add frame coordinates to frames object
+                for (let i = 0; i < frameList.length; i++) {
+                    const frame = frameList[i];
                     const spriteName = `${animationName}_${i}`;
 
-                    const spriteJson = {
-                        title: `${animationName} ${i}`,
+                    frames[spriteName] = {
                         x: frame.x,
                         y: frame.y,
-                        width: frame.width,
-                        height: frame.height
+                        w: frame.width,
+                        h: frame.height
                     };
 
-                    spriteWritePromises.push(
-                        fs.writeFile(
-                            path.join(scriptsSpritesFolder, `${spriteName}.json`),
-                            JSON.stringify(spriteJson, null, 2)
-                        )
-                    );
-
-                    spriteNames.push(spriteName);
+                    totalFrameCount++;
                 }
-
-                // Create sprite animation JSON with FPS for consistent playback
-                const spriteAnimationJson = {
-                    title: animationName.replace(/([A-Z])/g, ' $1').trim(),
-                    spriteCollection: collectionName,
-                    sprites: spriteNames,
-                    fps: animationFPS
-                };
-                animationWritePromises.push(
-                    fs.writeFile(
-                        path.join(scriptsSpriteAnimationsFolder, `${animationName}.json`),
-                        JSON.stringify(spriteAnimationJson, null, 2)
-                    )
-                );
             }
         }
 
-        // Write all sprite JSON files in parallel
-        await Promise.all(spriteWritePromises);
-
-        // Read existing animation set JSON to preserve properties like spriteOffset
-        const animationSetPath = path.join(scriptsSpriteAnimationSetsFolder, `${baseName}.json`);
-        let existingAnimationSet = {};
-        try {
-            const existingContent = await fs.readFile(animationSetPath, 'utf8');
-            existingAnimationSet = JSON.parse(existingContent);
-        } catch (e) {
-            // File doesn't exist yet, start fresh
-        }
-
-        // Create sprite animation set JSON, preserving existing properties
+        // Create stripped sprite animation set JSON
+        // Only save essential data - animations are derived at runtime from frame names
         const animationSetJson = {
-            ...existingAnimationSet,
             title: baseName.charAt(0).toUpperCase() + baseName.slice(1),
-            animationCollection: collectionName + 'Animations',
             spriteSheet: spriteSheetPath,
-            spriteOffset: spriteOffset ?? 0
+            spriteOffset: spriteOffset ?? 0,
+            // Store generator settings for future reference/regeneration
+            generatorSettings: generatorSettings ? {
+                ...generatorSettings,
+                // Include animation types that were generated (derived from spriteMetadata keys)
+                animationTypes: Object.keys(spriteMetadata)
+            } : undefined,
+            // STRIPPED FORMAT: Only frame coordinates, animations derived at runtime
+            frames: frames
         };
 
-        // Add animation types (walk, attack, etc.)
-        for (const animType in animationNames) {
-            const propertyName = `${animType}SpriteAnimations`;
-            animationSetJson[propertyName] = animationNames[animType];
-        }
-
-        // Store generator settings for future reference/regeneration
-        if (generatorSettings) {
-            animationSetJson.generatorSettings = generatorSettings;
+        // Remove undefined generatorSettings if not provided
+        if (!animationSetJson.generatorSettings) {
+            delete animationSetJson.generatorSettings;
         }
 
         // Process ballistic sprites if present (now on same sheet as regular sprites)
-        let ballisticSpriteCount = 0;
-        const ballisticSpriteWritePromises = [];
-        const ballisticAnimationWritePromises = [];
+        // Only add frame coordinates - ballistic animations are derived at runtime from frame names
+        let ballisticFrameCount = 0;
 
         if (ballisticSpriteMetadata && ballisticAngleNames) {
-            // Ballistic sprites are now included in the main spriteSheet
-            // No separate ballisticSpriteSheet property needed
-
             // Process each ballistic angle
             for (const angleName of ballisticAngleNames) {
                 const angleData = ballisticSpriteMetadata[angleName];
@@ -699,100 +653,43 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
                 // Process each animation type within this angle
                 for (const animType in angleData) {
                     const metadata = angleData[animType];
-                    const ballisticAnimationNames = [];
 
-                    // Create sprite JSONs and animation JSONs for each direction
+                    // Process each direction
                     for (const animationName in metadata.animations) {
-                        const frames = metadata.animations[animationName];
-                        ballisticAnimationNames.push(animationName);
+                        const frameList = metadata.animations[animationName];
 
-                        const spriteNames = [];
-
-                        // Create individual sprite JSON files
-                        for (let i = 0; i < frames.length; i++) {
-                            const frame = frames[i];
+                        // Add frame coordinates to frames object
+                        for (let i = 0; i < frameList.length; i++) {
+                            const frame = frameList[i];
                             const spriteName = `${animationName}_${i}`;
 
-                            const spriteJson = {
-                                title: `${animationName} ${i}`,
+                            frames[spriteName] = {
                                 x: frame.x,
                                 y: frame.y,
-                                width: frame.width,
-                                height: frame.height
+                                w: frame.width,
+                                h: frame.height
                             };
 
-                            ballisticSpriteWritePromises.push(
-                                fs.writeFile(
-                                    path.join(scriptsSpritesFolder, `${spriteName}.json`),
-                                    JSON.stringify(spriteJson, null, 2)
-                                )
-                            );
-
-                            spriteNames.push(spriteName);
-                            ballisticSpriteCount++;
+                            ballisticFrameCount++;
                         }
-
-                        // Create sprite animation JSON
-                        const spriteAnimationJson = {
-                            title: animationName.replace(/([A-Z])/g, ' $1').trim(),
-                            spriteCollection: collectionName,
-                            sprites: spriteNames,
-                            fps: animationFPS,
-                            ballisticAngle: angleName
-                        };
-                        ballisticAnimationWritePromises.push(
-                            fs.writeFile(
-                                path.join(scriptsSpriteAnimationsFolder, `${animationName}.json`),
-                                JSON.stringify(spriteAnimationJson, null, 2)
-                            )
-                        );
                     }
-
-                    // Add ballistic animation array to animation set JSON
-                    // Property name format: ballisticIdleSpriteAnimationsUp90
-                    const propertyName = `ballistic${animType.charAt(0).toUpperCase() + animType.slice(1)}SpriteAnimations${angleName}`;
-                    animationSetJson[propertyName] = ballisticAnimationNames;
                 }
             }
         }
 
-        // Write all ballistic sprite and animation files in parallel
-        await Promise.all([...ballisticSpriteWritePromises, ...ballisticAnimationWritePromises]);
+        // Write stripped animation set JSON (single file instead of thousands)
+        await fs.writeFile(
+            path.join(scriptsSpriteAnimationSetsFolder, `${baseName}.json`),
+            JSON.stringify(animationSetJson, null, 2)
+        );
 
-        // Write all animation JSON files in parallel (after sprites are done)
-        await Promise.all(animationWritePromises);
+        console.log(`Saved stripped sprite data: ${totalFrameCount + ballisticFrameCount} frames`);
 
-        // Write animation set and collection definitions in parallel
-        const spriteCollectionDef = {
-            id: collectionName,
-            name: collectionName.charAt(0).toUpperCase() + collectionName.slice(1),
-            singular: collectionName.slice(0, -1),
-            objectTypeCategory: 'sprites'
-        };
-
-        const spriteAnimationCollectionDef = {
-            id: collectionName + 'Animations',
-            name: collectionName.charAt(0).toUpperCase() + collectionName.slice(1) + ' Animations',
-            singular: collectionName.charAt(0).toUpperCase() + collectionName.slice(1).slice(0, -1) + 'Animation',
-            objectTypeCategory: 'sprites'
-        };
-
-        await Promise.all([
-            fs.writeFile(
-                path.join(scriptsSpriteAnimationSetsFolder, `${baseName}.json`),
-                JSON.stringify(animationSetJson, null, 2)
-            ),
-            fs.writeFile(
-                path.join(settingsFolder, `${collectionName}.json`),
-                JSON.stringify(spriteCollectionDef, null, 2)
-            ),
-            fs.writeFile(
-                path.join(settingsFolder, `${collectionName}Animations.json`),
-                JSON.stringify(spriteAnimationCollectionDef, null, 2)
-            )
-        ]);
-
-        res.json({ success: true, spriteCount: 1, ballisticSpriteCount });
+        res.json({
+            success: true,
+            frameCount: totalFrameCount + ballisticFrameCount,
+            format: 'stripped'
+        });
     } catch (error) {
         console.error('Error saving isometric sprites:', error);
         res.status(500).json({ error: error.message });
