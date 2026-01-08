@@ -266,14 +266,9 @@ class GE_UIManager {
             }
         }
 
-        // Calculate grid dimensions for a roughly square layout
-        // Aim for sqrt(totalFrames) sprites per side
-        const spritesPerSide = Math.ceil(Math.sqrt(totalFrames));
-        const gridCols = spritesPerSide;
-        const gridRows = Math.ceil(totalFrames / gridCols);
-
-        const sheetWidth = gridCols * spriteWidth;
-        const sheetHeight = gridRows * spriteHeight;
+        // Use SpriteUtils for square packing calculations
+        const { gridCols, gridRows, sheetWidth, sheetHeight } = SpriteUtils.calculateSquareGridDimensions(totalFrames, spriteWidth);
+        const packer = SpriteUtils.createSquarePackingIterator(gridCols, spriteWidth);
 
         console.log(`[SpriteSheet] Packing ${totalFrames} frames into ${gridCols}x${gridRows} grid: ${sheetWidth}x${sheetHeight}px`);
 
@@ -282,17 +277,6 @@ class GE_UIManager {
         canvas.width = sheetWidth;
         canvas.height = sheetHeight;
         const ctx = canvas.getContext('2d');
-
-        // Track current position for sequential packing
-        let currentFrame = 0;
-        const getFramePosition = () => {
-            const col = currentFrame % gridCols;
-            const row = Math.floor(currentFrame / gridCols);
-            return {
-                x: col * spriteWidth,
-                y: row * spriteHeight
-            };
-        };
 
         let processedSprites = 0;
         const totalSprites = totalFrames;
@@ -317,7 +301,7 @@ class GE_UIManager {
                     const img = await this.loadImage(spriteData);
 
                     // Get position for this frame using square packing
-                    const pos = getFramePosition();
+                    const pos = packer.getPosition();
                     ctx.drawImage(img, pos.x, pos.y);
 
                     // Store sprite location metadata
@@ -329,7 +313,7 @@ class GE_UIManager {
                         frameIndex
                     });
 
-                    currentFrame++;
+                    packer.nextFrame();
                     processedSprites++;
                     const percent = Math.round((processedSprites / totalSprites) * 80); // 80% for sprite packing
                     updateProgress(percent, `Packing sprites... ${processedSprites}/${totalSprites}`);
@@ -384,7 +368,7 @@ class GE_UIManager {
                             const spriteData = frames[frameIndex][dirIndex];
                             const img = await this.loadImage(spriteData);
 
-                            const pos = getFramePosition();
+                            const pos = packer.getPosition();
                             ctx.drawImage(img, pos.x, pos.y);
 
                             ballisticSpriteMetadata[angleName][animType].animations[animationName].push({
@@ -395,7 +379,7 @@ class GE_UIManager {
                                 frameIndex
                             });
 
-                            currentFrame++;
+                            packer.nextFrame();
                             processedSprites++;
                             const percent = Math.round((processedSprites / totalSprites) * 80);
                             updateProgress(percent, `Packing sprites... ${processedSprites}/${totalSprites}`);
@@ -416,7 +400,7 @@ class GE_UIManager {
                                 const spriteData = frames[frameIndex][dirIndex];
                                 const img = await this.loadImage(spriteData);
 
-                                const pos = getFramePosition();
+                                const pos = packer.getPosition();
                                 ctx.drawImage(img, pos.x, pos.y);
 
                                 ballisticSpriteMetadata[angleName][animType].animations[animationName].push({
@@ -427,7 +411,7 @@ class GE_UIManager {
                                     frameIndex
                                 });
 
-                                currentFrame++;
+                                packer.nextFrame();
                                 processedSprites++;
                                 const percent = Math.round((processedSprites / totalSprites) * 80);
                                 updateProgress(percent, `Packing sprites... ${processedSprites}/${totalSprites}`);
@@ -458,7 +442,7 @@ class GE_UIManager {
                         const spriteData = frames[frameIndex][dirIndex];
                         const img = await this.loadImage(spriteData);
 
-                        const pos = getFramePosition();
+                        const pos = packer.getPosition();
                         ctx.drawImage(img, pos.x, pos.y);
 
                         groundLevelSpriteMetadata[animType].animations[animationName].push({
@@ -469,7 +453,7 @@ class GE_UIManager {
                             frameIndex
                         });
 
-                        currentFrame++;
+                        packer.nextFrame();
                         processedSprites++;
                         const percent = Math.round((processedSprites / totalSprites) * 80);
                         updateProgress(percent, `Packing sprites... ${processedSprites}/${totalSprites}`);

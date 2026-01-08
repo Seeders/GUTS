@@ -215,6 +215,50 @@ class SpriteUtils {
 
         return cameras;
     }
+
+    /**
+     * Calculate square grid dimensions for sprite sheet packing
+     * Aims for a roughly square layout to avoid WebGL texture size limits
+     * @param {number} totalFrames - Total number of sprite frames
+     * @param {number} spriteSize - Size of each sprite in pixels
+     * @returns {{gridCols: number, gridRows: number, sheetWidth: number, sheetHeight: number}}
+     */
+    static calculateSquareGridDimensions(totalFrames, spriteSize) {
+        const spritesPerSide = Math.ceil(Math.sqrt(totalFrames));
+        const gridCols = spritesPerSide;
+        const gridRows = Math.ceil(totalFrames / gridCols);
+
+        return {
+            gridCols,
+            gridRows,
+            sheetWidth: gridCols * spriteSize,
+            sheetHeight: gridRows * spriteSize
+        };
+    }
+
+    /**
+     * Create a frame position calculator for sequential square packing
+     * @param {number} gridCols - Number of columns in the grid
+     * @param {number} spriteSize - Size of each sprite in pixels
+     * @returns {function(): {x: number, y: number, nextFrame: function}} Position calculator
+     */
+    static createSquarePackingIterator(gridCols, spriteSize) {
+        let currentFrame = 0;
+        return {
+            getPosition: () => {
+                const col = currentFrame % gridCols;
+                const row = Math.floor(currentFrame / gridCols);
+                return {
+                    x: col * spriteSize,
+                    y: row * spriteSize
+                };
+            },
+            nextFrame: () => {
+                currentFrame++;
+            },
+            getCurrentFrame: () => currentFrame
+        };
+    }
 }
 
 // Export for GUTS

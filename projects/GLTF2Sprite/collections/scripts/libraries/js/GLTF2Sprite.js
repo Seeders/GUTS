@@ -1090,32 +1090,43 @@ class GLTF2Sprite {
         return frames;
     }
 
-    // Sprite sheet composition
+    // Sprite sheet composition - uses square packing via SpriteUtils
     composeSpriteSheet(spriteSize, fps, hasBallisticSprites, hasGroundLevel) {
         const { sprites, ballisticSprites, groundLevelSprites } = this.generatedSprites;
 
-        // Calculate dimensions
         const animNames = Object.keys(sprites);
-        let maxFrames = 0;
-        for (const frames of Object.values(sprites)) {
-            maxFrames = Math.max(maxFrames, frames.length);
-        }
-
         const numDirections = 8;
-        let totalRows = animNames.length * numDirections;
 
-        // Add ballistic rows
-        if (hasBallisticSprites && Object.keys(ballisticSprites).length > 0) {
-            totalRows += 5 * animNames.length * numDirections; // 5 angles
+        // Count total frames for square packing
+        let totalFrames = 0;
+        for (const animName of animNames) {
+            totalFrames += sprites[animName].length * numDirections;
+        }
+        if (hasGroundLevel && groundLevelSprites) {
+            for (const animName of animNames) {
+                if (groundLevelSprites[animName]) {
+                    totalFrames += groundLevelSprites[animName].length * numDirections;
+                }
+            }
+        }
+        if (hasBallisticSprites && ballisticSprites) {
+            const angleNames = ['Up90', 'Up45', 'Level', 'Down45', 'Down90'];
+            for (const angleName of angleNames) {
+                const angleSprites = ballisticSprites[angleName];
+                if (!angleSprites) continue;
+                for (const animName of animNames) {
+                    if (angleSprites[animName]) {
+                        totalFrames += angleSprites[animName].length * numDirections;
+                    }
+                }
+            }
         }
 
-        // Add ground-level rows
-        if (hasGroundLevel && Object.keys(groundLevelSprites).length > 0) {
-            totalRows += animNames.length * numDirections;
-        }
+        // Use SpriteUtils for square packing calculations
+        const { gridCols, gridRows, sheetWidth, sheetHeight } = SpriteUtils.calculateSquareGridDimensions(totalFrames, spriteSize);
+        const packer = SpriteUtils.createSquarePackingIterator(gridCols, spriteSize);
 
-        const sheetWidth = spriteSize * maxFrames;
-        const sheetHeight = spriteSize * totalRows;
+        console.log(`[SpriteSheet] Packing ${totalFrames} frames into ${gridCols}x${gridRows} grid: ${sheetWidth}x${sheetHeight}px`);
 
         // Create canvas
         const canvas = document.createElement('canvas');
@@ -1137,47 +1148,43 @@ class GLTF2Sprite {
             frames: {}
         };
 
-        let rowIndex = 0;
-
-        // Draw regular sprites
+        // Draw regular sprites using square packing
         for (const animName of animNames) {
             const frames = sprites[animName];
             for (let dir = 0; dir < numDirections; dir++) {
                 for (let f = 0; f < frames.length; f++) {
                     const sprite = frames[f][dir];
-                    const x = f * spriteSize;
-                    const y = rowIndex * spriteSize;
-                    ctx.drawImage(sprite, x, y);
+                    const pos = packer.getPosition();
+                    ctx.drawImage(sprite, pos.x, pos.y);
 
                     const frameName = `${animName}${this.directionNames[dir]}_${f}`;
-                    metadata.frames[frameName] = { x, y, w: spriteSize, h: spriteSize };
+                    metadata.frames[frameName] = { x: pos.x, y: pos.y, w: spriteSize, h: spriteSize };
+                    packer.nextFrame();
                 }
-                rowIndex++;
             }
         }
 
         // Draw ground-level sprites
-        if (hasGroundLevel) {
+        if (hasGroundLevel && groundLevelSprites) {
             for (const animName of animNames) {
                 const frames = groundLevelSprites[animName];
                 if (!frames) continue;
                 for (let dir = 0; dir < numDirections; dir++) {
                     for (let f = 0; f < frames.length; f++) {
                         const sprite = frames[f][dir];
-                        const x = f * spriteSize;
-                        const y = rowIndex * spriteSize;
-                        ctx.drawImage(sprite, x, y);
+                        const pos = packer.getPosition();
+                        ctx.drawImage(sprite, pos.x, pos.y);
 
                         const frameName = `${animName}${this.directionNames[dir]}Ground_${f}`;
-                        metadata.frames[frameName] = { x, y, w: spriteSize, h: spriteSize };
+                        metadata.frames[frameName] = { x: pos.x, y: pos.y, w: spriteSize, h: spriteSize };
+                        packer.nextFrame();
                     }
-                    rowIndex++;
                 }
             }
         }
 
         // Draw ballistic sprites
-        if (hasBallisticSprites) {
+        if (hasBallisticSprites && ballisticSprites) {
             const angleNames = ['Up90', 'Up45', 'Level', 'Down45', 'Down90'];
             for (const angleName of angleNames) {
                 const angleSprites = ballisticSprites[angleName];
@@ -1190,14 +1197,13 @@ class GLTF2Sprite {
                     for (let dir = 0; dir < numDirections; dir++) {
                         for (let f = 0; f < frames.length; f++) {
                             const sprite = frames[f][dir];
-                            const x = f * spriteSize;
-                            const y = rowIndex * spriteSize;
-                            ctx.drawImage(sprite, x, y);
+                            const pos = packer.getPosition();
+                            ctx.drawImage(sprite, pos.x, pos.y);
 
                             const frameName = `${animName}${this.directionNames[dir]}${angleName}_${f}`;
-                            metadata.frames[frameName] = { x, y, w: spriteSize, h: spriteSize };
+                            metadata.frames[frameName] = { x: pos.x, y: pos.y, w: spriteSize, h: spriteSize };
+                            packer.nextFrame();
                         }
-                        rowIndex++;
                     }
                 }
             }
