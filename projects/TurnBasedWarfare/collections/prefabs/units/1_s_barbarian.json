@@ -17,7 +17,14 @@
   "criticalChance": 0.05,
   "criticalMultiplier": 1.5,
   "passives": [
-    { "type": "increased", "tags": ["melee", "physical"], "value": 0.15 }
+    {
+      "type": "increased",
+      "tags": [
+        "melee",
+        "physical"
+      ],
+      "value": 0.15
+    }
   ],
   "render": {
     "animations": {
@@ -27,7 +34,7 @@
             "shapes": [
               {
                 "id": 0,
-                "animation": "idle"
+                "animation": "idle_short"
               }
             ]
           }
@@ -67,18 +74,6 @@
               }
             ],
             "loops": false
-          }
-        }
-      ],
-      "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "dance_thriller"
-              }
-            ]
           }
         }
       ]

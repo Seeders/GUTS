@@ -19,7 +19,14 @@
   "criticalChance": 0.1,
   "criticalMultiplier": 1.5,
   "passives": [
-    { "type": "increased", "tags": ["ranged", "projectile"], "value": 0.1 }
+    {
+      "type": "increased",
+      "tags": [
+        "ranged",
+        "projectile"
+      ],
+      "value": 0.1
+    }
   ],
   "render": {
     "animations": {
@@ -34,7 +41,7 @@
                   "x": 1
                 },
                 "id": 0,
-                "animation": "idle"
+                "animation": "idle_short"
               }
             ]
           }
@@ -91,18 +98,6 @@
               }
             ],
             "loops": false
-          }
-        }
-      ],
-      "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "dance_thriller"
-              }
-            ]
           }
         }
       ]

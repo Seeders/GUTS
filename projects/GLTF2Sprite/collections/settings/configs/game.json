@@ -1,0 +1,22 @@
+{
+  "title": "GLTF2Sprite",
+  "gridSize": 64,
+  "imageSize": 128,
+  "is3D": true,
+  "isIsometric": false,
+  "libraries": [
+    "threejs",
+    "GLTFLoader",
+    "three_OrbitControls",
+    "BaseECSGame",
+    "BaseLoader",
+    "GLTF2Sprite"
+  ],
+  "systems": [],
+  "classes": [],
+  "interface": "main",
+  "appLibrary": "GLTF2Sprite",
+  "appLoaderLibrary": "BaseLoader",
+  "canvasWidth": 1200,
+  "canvasHeight": 800
+}

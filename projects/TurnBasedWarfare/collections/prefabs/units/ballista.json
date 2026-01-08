@@ -19,14 +19,6 @@
           "main": {
             "shapes": [
               {
-                "type": "gltf",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1",
-                "model": "ballista",
                 "id": 0,
                 "animation": "ballista_idle"
               }
@@ -78,18 +70,6 @@
             "loops": false
           }
         }
-      ],
-      "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "ballista_idle"
-              }
-            ]
-          }
-        }
       ]
     },
     "model": {
@@ -132,7 +112,9 @@
   "icon": "ballista",
   "spriteAnimationSet": "ballista",
   "requiresUnits": [],
-  "requiresBuildings": ["keep"],
+  "requiresBuildings": [
+    "keep"
+  ],
   "projectile": "ballista_bolt",
   "range": 300
 }
