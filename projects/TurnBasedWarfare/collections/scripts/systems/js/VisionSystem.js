@@ -35,6 +35,27 @@ class VisionSystem extends GUTS.BaseSystem {
     }
 
     init() {
+        // Cache direct TypedArray references for hot path optimization
+        this._posXArray = null;
+        this._posYArray = null;
+        this._posZArray = null;
+        this._teamArray = null;
+        this._healthCurrentArray = null;
+        this._healthMaxArray = null;
+    }
+
+    /**
+     * Ensure cached field arrays are initialized (lazy init)
+     */
+    _ensureFieldArrays() {
+        if (!this._posXArray) {
+            this._posXArray = this.game.getFieldArray('transform', 'position.x');
+            this._posYArray = this.game.getFieldArray('transform', 'position.y');
+            this._posZArray = this.game.getFieldArray('transform', 'position.z');
+            this._teamArray = this.game.getFieldArray('team', 'team');
+            this._healthCurrentArray = this.game.getFieldArray('health', 'current');
+            this._healthMaxArray = this.game.getFieldArray('health', 'max');
+        }
     }
 
     /**
@@ -324,42 +345,58 @@ class VisionSystem extends GUTS.BaseSystem {
      * @returns {number[]} - Array of visible enemy entity IDs
      */
     getVisibleEnemiesInRange(entityId, range) {
-        const transform = this.game.getComponent(entityId, 'transform');
-        const pos = transform?.position;
-        const team = this.game.getComponent(entityId, 'team');
+        // Ensure field arrays are ready
+        this._ensureFieldArrays();
 
-        if (!pos || !team) return [];
+        const posXArr = this._posXArray;
+        const posZArr = this._posZArray;
+        const teamArr = this._teamArray;
+        const healthCurrentArr = this._healthCurrentArray;
 
-        // Get viewer's awareness (default 50)
+        // Get entity data directly from arrays
+        const myPosX = posXArr[entityId];
+        const myPosZ = posZArr[entityId];
+        const myTeam = teamArr ? teamArr[entityId] : undefined;
+
+        if (myPosX === undefined || myTeam === undefined) return [];
+
+        const pos = { x: myPosX, y: 0, z: myPosZ };
+
+        // Get viewer's awareness (default 50) - still need proxy for this less frequent access
         const combat = this.game.getComponent(entityId, 'combat');
         const awareness = combat?.awareness ?? 50;
 
         // Search with extended range to find all potential targets
-        // The accurate range check happens below with isInRange which accounts for target radius
         const nearbyEntityIds = this.game.call('getNearbyUnits', pos, range, entityId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
 
         const enums = this.game.getEnums();
+        const aliveState = enums.deathState?.alive ?? 0;
         const enemies = [];
 
+        // Get deathState array for fast checks
+        const deathStateArr = this.game.getFieldArray('deathState', 'state');
+
         for (const targetId of nearbyEntityIds) {
+            // HOT PATH: Direct array access for common checks
             // Team check - must be enemy
-            const targetTeam = this.game.getComponent(targetId, 'team');
-            if (!targetTeam || targetTeam.team === team.team) continue;
+            const targetTeam = teamArr ? teamArr[targetId] : undefined;
+            if (targetTeam === undefined || targetTeam === myTeam) continue;
 
             // Health check - must be alive
-            const targetHealth = this.game.getComponent(targetId, 'health');
-            if (!targetHealth || targetHealth.current <= 0) continue;
+            const targetHealthCurrent = healthCurrentArr ? healthCurrentArr[targetId] : undefined;
+            if (targetHealthCurrent === undefined || targetHealthCurrent <= 0) continue;
 
             // Death state check - must not be dying/dead
-            const targetDeathState = this.game.getComponent(targetId, 'deathState');
-            if (targetDeathState && targetDeathState.state !== enums.deathState?.alive) continue;
+            if (deathStateArr) {
+                const targetDeathState = deathStateArr[targetId];
+                if (targetDeathState !== undefined && targetDeathState !== aliveState) continue;
+            }
 
-            // Stealth check
+            // Stealth check (still uses getComponent internally - less frequent)
             const targetStealth = this._calculateTargetStealth(targetId);
             if (targetStealth > awareness) continue;
 
-            // Range already checked by getNearbyUnits (center-to-center)
             enemies.push(targetId);
         }
 
@@ -371,27 +408,40 @@ class VisionSystem extends GUTS.BaseSystem {
      * @private
      */
     _buildEnemyList(entityId, visibleEnemyIds, includeHealth = false, maxHealthPercent = 1.0) {
-        const transform = this.game.getComponent(entityId, 'transform');
-        const pos = transform?.position;
-        if (!pos) return { pos: null, enemies: [] };
+        // Ensure field arrays are ready
+        this._ensureFieldArrays();
 
+        const posXArr = this._posXArray;
+        const posZArr = this._posZArray;
+        const healthCurrentArr = this._healthCurrentArray;
+        const healthMaxArr = this._healthMaxArray;
+
+        // Get entity position directly
+        const myPosX = posXArr[entityId];
+        const myPosZ = posZArr[entityId];
+        if (myPosX === undefined) return { pos: null, enemies: [] };
+
+        const pos = { x: myPosX, z: myPosZ };
         const enemies = [];
-        for (const targetId of visibleEnemyIds) {
-            const targetTransform = this.game.getComponent(targetId, 'transform');
-            const targetPos = targetTransform?.position;
-            if (!targetPos) continue;
 
-            const dx = targetPos.x - pos.x;
-            const dz = targetPos.z - pos.z;
+        for (const targetId of visibleEnemyIds) {
+            // HOT PATH: Direct array access instead of getComponent
+            const targetPosX = posXArr[targetId];
+            const targetPosZ = posZArr[targetId];
+            if (targetPosX === undefined) continue;
+
+            const dx = targetPosX - myPosX;
+            const dz = targetPosZ - myPosZ;
             const distance = Math.sqrt(dx * dx + dz * dz);
 
-            const enemy = { id: targetId, pos: targetPos, distance, dx, dz };
+            const enemy = { id: targetId, pos: { x: targetPosX, z: targetPosZ }, distance, dx, dz };
 
             if (includeHealth) {
-                const targetHealth = this.game.getComponent(targetId, 'health');
-                if (!targetHealth) continue;
-                enemy.healthPercent = targetHealth.current / targetHealth.max;
-                enemy.healthCurrent = targetHealth.current;
+                const healthCurrent = healthCurrentArr ? healthCurrentArr[targetId] : undefined;
+                const healthMax = healthMaxArr ? healthMaxArr[targetId] : undefined;
+                if (healthCurrent === undefined || healthMax === undefined || healthMax <= 0) continue;
+                enemy.healthPercent = healthCurrent / healthMax;
+                enemy.healthCurrent = healthCurrent;
                 if (enemy.healthPercent > maxHealthPercent) continue;
             }
 

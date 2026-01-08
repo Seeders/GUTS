@@ -1,9 +1,0 @@
-{
-  "title": "arrow Idle Down Left Level",
-  "spriteCollection": "arrowSprites",
-  "sprites": [
-    "arrowIdleDownLeftLevel_0"
-  ],
-  "fps": 4,
-  "ballisticAngle": "Level"
-}

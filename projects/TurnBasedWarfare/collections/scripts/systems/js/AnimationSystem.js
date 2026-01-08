@@ -79,40 +79,38 @@ class AnimationSystem extends GUTS.BaseSystem {
     getSpriteAnimationDuration(spriteAnimationSetName, animationType) {
         // Get the animation set data from collections
         const animSetData = this.collections?.spriteAnimationSets?.[spriteAnimationSetName];
-        if (!animSetData) {
+        if (!animSetData || !animSetData.frames) {
             console.warn(`[AnimationSystem] No animation set found for ${spriteAnimationSetName}`);
             return 1000; // fallback
         }
 
-        // Get the animation collection name
-        const animationCollection = animSetData.animationCollection;
-        if (!animationCollection) {
-            console.warn(`[AnimationSystem] No animationCollection in ${spriteAnimationSetName}`);
-            return 1000;
+        // Derive animation data from frames (cached)
+        if (!animSetData._derivedAnimations) {
+            const fps = animSetData.generatorSettings?.fps || 4;
+            const animationTypes = animSetData.generatorSettings?.animationTypes || null;
+            animSetData._derivedAnimations = this.deriveAnimationsFromFrames(animSetData.frames, fps, animationTypes);
         }
 
-        // Get the animation names for this type (e.g., takeoffSpriteAnimations)
         const animKey = `${animationType}SpriteAnimations`;
-        const animNames = animSetData[animKey];
+        const animNames = animSetData._derivedAnimations.animationArrays[animKey];
+
         if (!animNames || animNames.length === 0) {
             console.warn(`[AnimationSystem] No ${animKey} in ${spriteAnimationSetName}`);
             return 1000;
         }
 
-        // Get the first animation data to determine frame count and fps
         const firstAnimName = animNames[0];
-        const animData = this.collections?.[animationCollection]?.[firstAnimName];
-        if (!animData || !animData.sprites) {
+        const animData = animSetData._derivedAnimations.animations[firstAnimName];
+        if (!animData) {
             console.warn(`[AnimationSystem] No animation data for ${firstAnimName}`);
             return 1000;
         }
 
-        // Calculate duration: frameCount / fps * 1000 (convert to ms)
-        const frameCount = animData.sprites.length;
-        const fps = animData.fps || animSetData.generatorSettings?.fps || 4;
-        const durationMs = (frameCount / fps) * 1000;
+        const frameCount = animData.frames.length;
+        const fps = animSetData.generatorSettings?.fps || 4;
 
-        console.log(`[AnimationSystem] Animation duration for ${spriteAnimationSetName}/${animationType}: ${frameCount} frames @ ${fps}fps = ${durationMs}ms`);
+        // Calculate duration: frameCount / fps * 1000 (convert to ms)
+        const durationMs = (frameCount / fps) * 1000;
         return durationMs;
     }
 
@@ -588,12 +586,22 @@ class AnimationSystem extends GUTS.BaseSystem {
         }
 
         const rawData = animSetData.rawAnimSetData;
-        const hasBallisticAnimations = Object.keys(rawData).some(key =>
-            key.startsWith('ballisticIdleSpriteAnimations')
-        );
 
-        if (!hasBallisticAnimations) {
-            console.warn('[Ballistic] No ballistic animations found. Keys:', Object.keys(rawData).filter(k => k.includes('ballistic')));
+        if (!rawData.frames) {
+            console.warn('[Ballistic] No frames in animation set');
+            return;
+        }
+
+        // Derive animations if not already cached
+        if (!rawData._derivedAnimations) {
+            const fps = rawData.generatorSettings?.fps || 4;
+            const animationTypes = rawData.generatorSettings?.animationTypes || null;
+            rawData._derivedAnimations = this.deriveAnimationsFromFrames(rawData.frames, fps, animationTypes);
+        }
+
+        // Check if any ballistic animations exist (derived from frame names)
+        const hasBallistic = Object.keys(rawData._derivedAnimations.ballisticArrays).length > 0;
+        if (!hasBallistic) {
             return;
         }
 
@@ -623,7 +631,9 @@ class AnimationSystem extends GUTS.BaseSystem {
         const animType = this.animationTypeNames[animState.spriteAnimationType] || 'idle';
         const ballisticPropertyName = `ballistic${animType.charAt(0).toUpperCase() + animType.slice(1)}SpriteAnimations${angleName}`;
 
-        const ballisticAnimationNames = rawData[ballisticPropertyName];
+        // Get animation names from derived data
+        const ballisticAnimationNames = rawData._derivedAnimations.ballisticArrays[ballisticPropertyName];
+
         if (!ballisticAnimationNames || !Array.isArray(ballisticAnimationNames)) {
             console.warn('[Ballistic] No animation names array for:', ballisticPropertyName, 'Available:', Object.keys(rawData).filter(k => k.includes('ballistic')));
             return;
@@ -650,10 +660,8 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Cache key is the property name (includes angle)
         if (!animSetData.ballisticAnimations[ballisticPropertyName]) {
-            const spriteAnimationCollection = rawData.animationCollection;
-            console.warn('[Ballistic] Loading animations from collection:', spriteAnimationCollection);
             animSetData.ballisticAnimations[ballisticPropertyName] =
-                this.loadAnimationsFromCollections(ballisticAnimationNames, spriteAnimationCollection);
+                this.loadAnimationsFromCollections(ballisticAnimationNames, rawData);
         }
 
         const ballisticAnimData = animSetData.ballisticAnimations[ballisticPropertyName];
@@ -1328,17 +1336,29 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Check if animation data is already cached for this animation set
         let cachedData = this.spriteAnimationCache.get(spriteAnimationSetIndex);
         if (!cachedData) {
-            // Build animation data structure from collections (once per animation set type)
-            // Animation data is stored keyed by string names (idle, walk, etc.) for lookup
+            // Build animation data structure from frames (once per animation set type)
             const animations = {};
+
+            if (!animSetData.frames) {
+                console.warn(`[AnimationSystem] No frames in animation set ${spriteAnimationSet}`);
+                return;
+            }
+
+            // Derive animation data from frame names (cached on animSetData)
+            if (!animSetData._derivedAnimations) {
+                const fps = animSetData.generatorSettings?.fps || 4;
+                const animationTypes = animSetData.generatorSettings?.animationTypes || null;
+                animSetData._derivedAnimations = this.deriveAnimationsFromFrames(animSetData.frames, fps, animationTypes);
+            }
+            const derivedData = animSetData._derivedAnimations;
 
             for (let i = 0; i < this.animationTypeNames.length; i++) {
                 const animTypeName = this.animationTypeNames[i];
                 const animKey = `${animTypeName}SpriteAnimations`;
-                const animNames = animSetData[animKey];
+                const animNames = derivedData.animationArrays[animKey];
 
                 if (animNames && animNames.length > 0) {
-                    animations[animTypeName] = this.loadAnimationsFromCollections(animNames, spriteAnimationCollection);
+                    animations[animTypeName] = this.loadAnimationsFromCollections(animNames, animSetData);
                 }
             }
 
@@ -1411,44 +1431,168 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Load animation data from collections
+     * Load animation data from sprite animation set
+     * Derives animations from frame names at runtime
+     *
+     * @param {string[]} animNames - Animation names to load
+     * @param {object} animSetData - The sprite animation set data with frames
      */
-    loadAnimationsFromCollections(animNames, collectionName) {
-        const collections = this.collections;
+    loadAnimationsFromCollections(animNames, animSetData) {
         const result = {};
 
+        if (!animSetData || !animSetData.frames) {
+            console.warn('[AnimationSystem] No animSetData or frames provided');
+            return result;
+        }
+
+        // Derive animations from frame names (cached)
+        if (!animSetData._derivedAnimations) {
+            const fps = animSetData.generatorSettings?.fps || 4;
+            const animationTypes = animSetData.generatorSettings?.animationTypes || null;
+            animSetData._derivedAnimations = this.deriveAnimationsFromFrames(animSetData.frames, fps, animationTypes);
+        }
+        const derived = animSetData._derivedAnimations;
+
         for (const animName of animNames) {
-            const animData = collections?.[collectionName]?.[animName];
-            if (animData && animData.sprites) {
-                // Get sprite collection from animation data's spriteCollection property
-                const spriteCollectionName = animData.spriteCollection;
-                if (!spriteCollectionName) {
-                    console.warn(`[AnimationSystem] Animation '${animName}' missing spriteCollection property`);
-                    continue;
-                }
+            const animData = derived.animations[animName];
+            if (!animData) continue;
 
-                // Extract direction from animation name (e.g., "peasantIdleDown" -> "down")
-                const direction = this.extractDirectionFromName(animName);
+            const direction = this.extractDirectionFromName(animName);
+            if (!direction) continue;
 
-                if (direction) {
-                    const frames = animData.sprites.map(spriteName => {
-                        const sprite = collections?.[spriteCollectionName]?.[spriteName];
-                        if (!sprite) {
-                            console.warn(`[AnimationSystem] Sprite '${spriteName}' not found in collection '${spriteCollectionName}'`);
-                        }
-                        return sprite ? {
-                            x: sprite.x,
-                            y: sprite.y,
-                            width: sprite.width,
-                            height: sprite.height
-                        } : null;
-                    }).filter(f => f !== null);
+            result[direction] = { frames: animData.frames };
+        }
 
-                    result[direction] = {
-                        frames
-                    };
+        return result;
+    }
+
+    /**
+     * Derive animation structure from frame names
+     * Frame names follow pattern: {animType}{direction}_{frameIndex}
+     * e.g., "idleDown_0", "walkUpLeft_3", "attackRight_5"
+     *
+     * @param {object} frames - Frame coordinate data keyed by frame name
+     * @param {number} fps - Frames per second for animations
+     * @param {string[]} animationTypes - Animation types from generatorSettings (or null to derive from frames)
+     * @returns {{ animations, animationArrays, ballisticArrays }}
+     */
+    deriveAnimationsFromFrames(frames, fps = 4, animationTypes = null) {
+        const directions = ['down', 'downleft', 'left', 'upleft', 'up', 'upright', 'right', 'downright'];
+        const ballisticAngles = ['up90', 'up45', 'level', 'down45', 'down90'];
+
+        // Use provided animation types, or derive from frame names if not available
+        let animTypes;
+        if (animationTypes && animationTypes.length > 0) {
+            animTypes = animationTypes;
+        } else {
+            // Fallback: derive animation types from frame names
+            const detectedTypes = new Set();
+            const knownTypes = ['idle', 'walk', 'attack', 'death', 'celebrate', 'cast', 'takeoff', 'land'];
+            for (const frameName of Object.keys(frames)) {
+                const lowerName = frameName.toLowerCase();
+                for (const type of knownTypes) {
+                    if (lowerName.startsWith(type)) {
+                        detectedTypes.add(type);
+                        break;
+                    }
                 }
             }
+            animTypes = Array.from(detectedTypes);
+        }
+
+        // Group frames by animation name (without frame index)
+        // e.g., "idleDown_0" -> "idleDown"
+        const animationFrames = {};
+
+        for (const [frameName, frameData] of Object.entries(frames)) {
+            // Extract animation name by removing _N suffix
+            const match = frameName.match(/^(.+)_(\d+)$/);
+            if (!match) continue;
+
+            const animName = match[1];
+            const frameIndex = parseInt(match[2], 10);
+
+            if (!animationFrames[animName]) {
+                animationFrames[animName] = [];
+            }
+
+            // Store with index for proper ordering
+            animationFrames[animName][frameIndex] = {
+                x: frameData.x,
+                y: frameData.y,
+                width: frameData.w,
+                height: frameData.h
+            };
+        }
+
+        // Build result structure grouped by animation type
+        const result = {
+            animations: {},      // { animName: { frames: [...], fps } }
+            animationArrays: {}, // { idleSpriteAnimations: [...], walkSpriteAnimations: [...] }
+            ballisticArrays: {}  // { ballisticIdleSpriteAnimationsUp90: [...] }
+        };
+
+        // Process each animation name
+        for (const [animName, frameList] of Object.entries(animationFrames)) {
+            // Filter out any sparse array holes
+            const frames = frameList.filter(f => f !== undefined);
+            if (frames.length === 0) continue;
+
+            result.animations[animName] = { frames, fps };
+
+            // Determine animation type and build arrays
+            const lowerName = animName.toLowerCase();
+
+            for (const animType of animTypes) {
+                if (lowerName.startsWith(animType)) {
+                    const arrayKey = `${animType}SpriteAnimations`;
+
+                    // Check if this is a ballistic animation (has angle suffix)
+                    let isBallistic = false;
+                    for (const angle of ballisticAngles) {
+                        if (lowerName.endsWith(angle)) {
+                            // Ballistic animation: ballisticIdleSpriteAnimationsUp90
+                            const capitalAngle = angle.charAt(0).toUpperCase() + angle.slice(1);
+                            const ballisticKey = `ballistic${animType.charAt(0).toUpperCase() + animType.slice(1)}SpriteAnimations${capitalAngle}`;
+                            if (!result.ballisticArrays[ballisticKey]) {
+                                result.ballisticArrays[ballisticKey] = [];
+                            }
+                            result.ballisticArrays[ballisticKey].push(animName);
+                            isBallistic = true;
+                            break;
+                        }
+                    }
+
+                    if (!isBallistic) {
+                        // Regular animation
+                        if (!result.animationArrays[arrayKey]) {
+                            result.animationArrays[arrayKey] = [];
+                        }
+                        result.animationArrays[arrayKey].push(animName);
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Sort animation arrays by direction order for consistent lookup
+        const directionOrder = {};
+        directions.forEach((dir, i) => directionOrder[dir] = i);
+
+        for (const key of Object.keys(result.animationArrays)) {
+            result.animationArrays[key].sort((a, b) => {
+                const dirA = this.extractDirectionFromName(a);
+                const dirB = this.extractDirectionFromName(b);
+                return (directionOrder[dirA] || 0) - (directionOrder[dirB] || 0);
+            });
+        }
+
+        for (const key of Object.keys(result.ballisticArrays)) {
+            result.ballisticArrays[key].sort((a, b) => {
+                const dirA = this.extractDirectionFromName(a);
+                const dirB = this.extractDirectionFromName(b);
+                return (directionOrder[dirA] || 0) - (directionOrder[dirB] || 0);
+            });
         }
 
         return result;

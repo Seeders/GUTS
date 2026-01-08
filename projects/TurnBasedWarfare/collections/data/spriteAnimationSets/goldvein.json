@@ -1,17 +1,56 @@
 {
   "title": "Goldvein",
-  "animationCollection": "goldveinSpritesAnimations",
   "spriteSheet": "sprites/goldveinSprites/goldveinSheet.png",
-  "idleSpriteAnimations": [
-    "goldveinIdleDown",
-    "goldveinIdleDownLeft",
-    "goldveinIdleLeft",
-    "goldveinIdleUpLeft",
-    "goldveinIdleUp",
-    "goldveinIdleUpRight",
-    "goldveinIdleRight",
-    "goldveinIdleDownRight"
-  ],
   "spriteOffset": 32,
-  "generatorSettings": "{\"frustumSize\":96,\"cameraDistance\":100,\"spriteSize\":128,\"fps\":4,\"brightness\":5.8,\"palette\":\"main\",\"borderSize\":1,\"outlineColor\":\"#170F13\",\"outlineConnectivity\":4,\"cameraHeight\":2}"
+  "generatorSettings": "{\"frustumSize\":96,\"cameraDistance\":100,\"spriteSize\":128,\"fps\":4,\"brightness\":5.8,\"palette\":\"main\",\"borderSize\":1,\"outlineColor\":\"#170F13\",\"outlineConnectivity\":4,\"cameraHeight\":2}",
+  "frames": {
+    "idleDownLeft_0": {
+      "x": 0,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    },
+    "idleDownRight_0": {
+      "x": 0,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    },
+    "idleDown_0": {
+      "x": 0,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    },
+    "idleLeft_0": {
+      "x": 0,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    },
+    "idleRight_0": {
+      "x": 0,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    },
+    "idleUpLeft_0": {
+      "x": 0,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    },
+    "idleUpRight_0": {
+      "x": 0,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    },
+    "idleUp_0": {
+      "x": 0,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  }
 }

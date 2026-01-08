@@ -1,17 +1,6 @@
 {
   "title": "Ballistabolt",
-  "animationCollection": "ballistaboltSpritesAnimations",
   "spriteSheet": "sprites/ballistaboltSprites/ballistaboltSheet.png",
-  "idleSpriteAnimations": [
-    "ballistaboltIdleDown",
-    "ballistaboltIdleDownLeft",
-    "ballistaboltIdleLeft",
-    "ballistaboltIdleUpLeft",
-    "ballistaboltIdleUp",
-    "ballistaboltIdleUpRight",
-    "ballistaboltIdleRight",
-    "ballistaboltIdleDownRight"
-  ],
   "generatorSettings": {
     "frustumSize": 48,
     "cameraDistance": 100,
@@ -23,56 +12,299 @@
     "outlineColor": "#000000",
     "outlineConnectivity": 4,
     "cameraHeight": 1,
-    "isProjectile": true
+    "isProjectile": true,
+    "animationTypes": [
+      "idle"
+    ]
   },
-  "ballisticIdleSpriteAnimationsUp90": [
-    "ballistaboltIdleDownUp90",
-    "ballistaboltIdleDownLeftUp90",
-    "ballistaboltIdleLeftUp90",
-    "ballistaboltIdleUpLeftUp90",
-    "ballistaboltIdleUpUp90",
-    "ballistaboltIdleUpRightUp90",
-    "ballistaboltIdleRightUp90",
-    "ballistaboltIdleDownRightUp90"
-  ],
-  "ballisticIdleSpriteAnimationsUp45": [
-    "ballistaboltIdleDownUp45",
-    "ballistaboltIdleDownLeftUp45",
-    "ballistaboltIdleLeftUp45",
-    "ballistaboltIdleUpLeftUp45",
-    "ballistaboltIdleUpUp45",
-    "ballistaboltIdleUpRightUp45",
-    "ballistaboltIdleRightUp45",
-    "ballistaboltIdleDownRightUp45"
-  ],
-  "ballisticIdleSpriteAnimationsLevel": [
-    "ballistaboltIdleDownLevel",
-    "ballistaboltIdleDownLeftLevel",
-    "ballistaboltIdleLeftLevel",
-    "ballistaboltIdleUpLeftLevel",
-    "ballistaboltIdleUpLevel",
-    "ballistaboltIdleUpRightLevel",
-    "ballistaboltIdleRightLevel",
-    "ballistaboltIdleDownRightLevel"
-  ],
-  "ballisticIdleSpriteAnimationsDown45": [
-    "ballistaboltIdleDownDown45",
-    "ballistaboltIdleDownLeftDown45",
-    "ballistaboltIdleLeftDown45",
-    "ballistaboltIdleUpLeftDown45",
-    "ballistaboltIdleUpDown45",
-    "ballistaboltIdleUpRightDown45",
-    "ballistaboltIdleRightDown45",
-    "ballistaboltIdleDownRightDown45"
-  ],
-  "ballisticIdleSpriteAnimationsDown90": [
-    "ballistaboltIdleDownDown90",
-    "ballistaboltIdleDownLeftDown90",
-    "ballistaboltIdleLeftDown90",
-    "ballistaboltIdleUpLeftDown90",
-    "ballistaboltIdleUpDown90",
-    "ballistaboltIdleUpRightDown90",
-    "ballistaboltIdleRightDown90",
-    "ballistaboltIdleDownRightDown90"
-  ]
+  "frames": {
+    "idleDownDown45_0": {
+      "x": 0,
+      "y": 2048,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownDown90_0": {
+      "x": 0,
+      "y": 2560,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownLeftDown45_0": {
+      "x": 0,
+      "y": 2112,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownLeftDown90_0": {
+      "x": 0,
+      "y": 2624,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownLeftLevel_0": {
+      "x": 0,
+      "y": 1600,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownLeftUp45_0": {
+      "x": 0,
+      "y": 1088,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownLeftUp90_0": {
+      "x": 0,
+      "y": 576,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownLeft_0": {
+      "x": 0,
+      "y": 64,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownLevel_0": {
+      "x": 0,
+      "y": 1536,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownRightDown45_0": {
+      "x": 0,
+      "y": 2496,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownRightDown90_0": {
+      "x": 0,
+      "y": 3008,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownRightLevel_0": {
+      "x": 0,
+      "y": 1984,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownRightUp45_0": {
+      "x": 0,
+      "y": 1472,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownRightUp90_0": {
+      "x": 0,
+      "y": 960,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownRight_0": {
+      "x": 0,
+      "y": 448,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownUp45_0": {
+      "x": 0,
+      "y": 1024,
+      "w": 64,
+      "h": 64
+    },
+    "idleDownUp90_0": {
+      "x": 0,
+      "y": 512,
+      "w": 64,
+      "h": 64
+    },
+    "idleDown_0": {
+      "x": 0,
+      "y": 0,
+      "w": 64,
+      "h": 64
+    },
+    "idleLeftDown45_0": {
+      "x": 0,
+      "y": 2176,
+      "w": 64,
+      "h": 64
+    },
+    "idleLeftDown90_0": {
+      "x": 0,
+      "y": 2688,
+      "w": 64,
+      "h": 64
+    },
+    "idleLeftLevel_0": {
+      "x": 0,
+      "y": 1664,
+      "w": 64,
+      "h": 64
+    },
+    "idleLeftUp45_0": {
+      "x": 0,
+      "y": 1152,
+      "w": 64,
+      "h": 64
+    },
+    "idleLeftUp90_0": {
+      "x": 0,
+      "y": 640,
+      "w": 64,
+      "h": 64
+    },
+    "idleLeft_0": {
+      "x": 0,
+      "y": 128,
+      "w": 64,
+      "h": 64
+    },
+    "idleRightDown45_0": {
+      "x": 0,
+      "y": 2432,
+      "w": 64,
+      "h": 64
+    },
+    "idleRightDown90_0": {
+      "x": 0,
+      "y": 2944,
+      "w": 64,
+      "h": 64
+    },
+    "idleRightLevel_0": {
+      "x": 0,
+      "y": 1920,
+      "w": 64,
+      "h": 64
+    },
+    "idleRightUp45_0": {
+      "x": 0,
+      "y": 1408,
+      "w": 64,
+      "h": 64
+    },
+    "idleRightUp90_0": {
+      "x": 0,
+      "y": 896,
+      "w": 64,
+      "h": 64
+    },
+    "idleRight_0": {
+      "x": 0,
+      "y": 384,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpDown45_0": {
+      "x": 0,
+      "y": 2304,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpDown90_0": {
+      "x": 0,
+      "y": 2816,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpLeftDown45_0": {
+      "x": 0,
+      "y": 2240,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpLeftDown90_0": {
+      "x": 0,
+      "y": 2752,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpLeftLevel_0": {
+      "x": 0,
+      "y": 1728,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpLeftUp45_0": {
+      "x": 0,
+      "y": 1216,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpLeftUp90_0": {
+      "x": 0,
+      "y": 704,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpLeft_0": {
+      "x": 0,
+      "y": 192,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpLevel_0": {
+      "x": 0,
+      "y": 1792,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpRightDown45_0": {
+      "x": 0,
+      "y": 2368,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpRightDown90_0": {
+      "x": 0,
+      "y": 2880,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpRightLevel_0": {
+      "x": 0,
+      "y": 1856,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpRightUp45_0": {
+      "x": 0,
+      "y": 1344,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpRightUp90_0": {
+      "x": 0,
+      "y": 832,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpRight_0": {
+      "x": 0,
+      "y": 320,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpUp45_0": {
+      "x": 0,
+      "y": 1280,
+      "w": 64,
+      "h": 64
+    },
+    "idleUpUp90_0": {
+      "x": 0,
+      "y": 768,
+      "w": 64,
+      "h": 64
+    },
+    "idleUp_0": {
+      "x": 0,
+      "y": 256,
+      "w": 64,
+      "h": 64
+    }
+  }
 }

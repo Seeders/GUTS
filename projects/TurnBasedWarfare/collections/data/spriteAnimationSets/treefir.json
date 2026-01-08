@@ -1,17 +1,6 @@
 {
   "title": "Treefir",
-  "animationCollection": "treefirSpritesAnimations",
   "spriteSheet": "sprites/treefirSprites/treefirSheet.png",
-  "idleSpriteAnimations": [
-    "treefirIdleDown",
-    "treefirIdleDownLeft",
-    "treefirIdleLeft",
-    "treefirIdleUpLeft",
-    "treefirIdleUp",
-    "treefirIdleUpRight",
-    "treefirIdleRight",
-    "treefirIdleDownRight"
-  ],
   "generatorSettings": {
     "frustumSize": 42,
     "cameraDistance": 100,
@@ -23,6 +12,59 @@
     "outlineColor": "#170F13",
     "outlineConnectivity": 4,
     "cameraHeight": 1.25,
-    "isProjectile": false
+    "isProjectile": false,
+    "animationTypes": [
+      "idle"
+    ]
+  },
+  "frames": {
+    "idleDownLeft_0": {
+      "x": 0,
+      "y": 96,
+      "w": 96,
+      "h": 96
+    },
+    "idleDownRight_0": {
+      "x": 0,
+      "y": 672,
+      "w": 96,
+      "h": 96
+    },
+    "idleDown_0": {
+      "x": 0,
+      "y": 0,
+      "w": 96,
+      "h": 96
+    },
+    "idleLeft_0": {
+      "x": 0,
+      "y": 192,
+      "w": 96,
+      "h": 96
+    },
+    "idleRight_0": {
+      "x": 0,
+      "y": 576,
+      "w": 96,
+      "h": 96
+    },
+    "idleUpLeft_0": {
+      "x": 0,
+      "y": 288,
+      "w": 96,
+      "h": 96
+    },
+    "idleUpRight_0": {
+      "x": 0,
+      "y": 480,
+      "w": 96,
+      "h": 96
+    },
+    "idleUp_0": {
+      "x": 0,
+      "y": 384,
+      "w": 96,
+      "h": 96
+    }
   }
 }

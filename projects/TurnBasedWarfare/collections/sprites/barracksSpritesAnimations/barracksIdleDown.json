@@ -1,8 +1,0 @@
-{
-  "title": "barracks Idle Down",
-  "spriteCollection": "barracksSprites",
-  "sprites": [
-    "barracksIdleDown_0"
-  ],
-  "fps": 4
-}

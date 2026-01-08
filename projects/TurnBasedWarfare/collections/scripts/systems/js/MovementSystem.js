@@ -55,6 +55,24 @@ class MovementSystem extends GUTS.BaseSystem {
     }
 
     init() {
+        // Cache direct TypedArray references for hot path optimization
+        // These are accessed every frame for every nearby unit - proxy overhead adds up
+        this._posXArray = null;
+        this._posYArray = null;
+        this._posZArray = null;
+        this._collisionRadiusArray = null;
+    }
+
+    /**
+     * Ensure cached field arrays are initialized (lazy init on first battle frame)
+     */
+    _ensureFieldArrays() {
+        if (!this._posXArray) {
+            this._posXArray = this.game.getFieldArray('transform', 'position.x');
+            this._posYArray = this.game.getFieldArray('transform', 'position.y');
+            this._posZArray = this.game.getFieldArray('transform', 'position.z');
+            this._collisionRadiusArray = this.game.getFieldArray('collision', 'radius');
+        }
     }
 
     // Get or create a pooled unit data object
@@ -75,6 +93,9 @@ class MovementSystem extends GUTS.BaseSystem {
 
     update() {
         if (this.game.state.phase !== this.enums.gamePhase.battle) return;
+
+        // Ensure direct field array access is initialized for hot paths
+        this._ensureFieldArrays();
 
         this.frameCounter++;
         const entities = this.game.getEntitiesWith("transform", "velocity");
@@ -348,41 +369,52 @@ class MovementSystem extends GUTS.BaseSystem {
             data.separationForce.z = 0;
             return;
         }
-        
+
         const separationRadius = unitRadius * this.SEPARATION_RADIUS_MULTIPLIER;
         const nearbyUnits = this.game.call('getNearbyUnits', pos, separationRadius, entityId);
-        
+
         let separationForceX = 0;
         let separationForceZ = 0;
         let neighborCount = 0;
         let checksPerformed = 0;
-        
+
+        // HOT PATH OPTIMIZATION: Use direct TypedArray access instead of getComponent proxy
+        // This avoids proxy creation overhead for every nearby unit
+        const posXArr = this._posXArray;
+        const posZArr = this._posZArray;
+        const radiusArr = this._collisionRadiusArray;
+        const myPosX = pos.x;
+        const myPosZ = pos.z;
+
         for (const otherEntityId of nearbyUnits) {
             if (checksPerformed >= this.MAX_SEPARATION_CHECKS) break;
 
             checksPerformed++;
 
-            const otherTransform = this.game.getComponent(otherEntityId, "transform");
-            const otherPos = otherTransform?.position;
-            const otherCollision = this.game.getComponent(otherEntityId, "collision");
+            // Direct array access - no proxy overhead
+            const otherPosX = posXArr[otherEntityId];
+            const otherPosZ = posZArr[otherEntityId];
 
-            if (!otherPos) continue;
-            
-            const otherRadius = this.getUnitRadius(otherCollision);
-            
-            const dx = pos.x - otherPos.x;
-            const dz = pos.z - otherPos.z;
+            // Skip if no position (entity might be dead or missing transform)
+            if (otherPosX === undefined || otherPosX === 0 && otherPosZ === 0) continue;
+
+            // Get radius with fallback to default
+            const otherRadiusRaw = radiusArr ? radiusArr[otherEntityId] : 0;
+            const otherRadius = otherRadiusRaw > 0 ? Math.max(this.DEFAULT_UNIT_RADIUS, otherRadiusRaw) : this.DEFAULT_UNIT_RADIUS;
+
+            const dx = myPosX - otherPosX;
+            const dz = myPosZ - otherPosZ;
             const distance = Math.sqrt(dx * dx + dz * dz);
-            
+
             const minDistance = unitRadius + otherRadius;
             const influenceDistance = Math.max(minDistance, separationRadius);
-            
+
             if (distance < influenceDistance && distance > 0.1) {
                 const force = this.SEPARATION_FORCE * (influenceDistance - distance) / influenceDistance;
-                
+
                 const dirX = dx / distance;
                 const dirZ = dz / distance;
-                
+
                 separationForceX += dirX * force;
                 separationForceZ += dirZ * force;
                 neighborCount++;
@@ -490,53 +522,60 @@ class MovementSystem extends GUTS.BaseSystem {
     findObstaclesInPathOptimized(pos, direction, unitRadius, entityId, targetEntityId = null) {
         const lookaheadDistance = this.PATHFINDING_LOOKAHEAD;
         const checkRadius = unitRadius * 1.5;
-        
+
         const nearbyUnits = this.game.call('getNearbyUnits', pos, lookaheadDistance + checkRadius, entityId);
-        
+
         let closestObstacle = null;
         let closestDistance = Infinity;
         let checksPerformed = 0;
-        
+
+        // HOT PATH OPTIMIZATION: Use direct TypedArray access
+        const posXArr = this._posXArray;
+        const posZArr = this._posZArray;
+        const radiusArr = this._collisionRadiusArray;
+
         for (let i = 1; i <= this.PATHFINDING_CHECK_POINTS; i++) {
             const checkDistance = (lookaheadDistance / this.PATHFINDING_CHECK_POINTS) * i;
-            const checkPos = {
-                x: pos.x + direction.x * checkDistance,
-                z: pos.z + direction.z * checkDistance
-            };
-            
+            const checkPosX = pos.x + direction.x * checkDistance;
+            const checkPosZ = pos.z + direction.z * checkDistance;
+
             for (const otherEntityId of nearbyUnits) {
                 if (targetEntityId >= 0 && otherEntityId === targetEntityId) continue;
                 if (checksPerformed >= this.MAX_PATHFINDING_CHECKS) break;
 
                 checksPerformed++;
 
-                const otherTransform = this.game.getComponent(otherEntityId, "transform");
-                const otherPos = otherTransform?.position;
-                const otherCollision = this.game.getComponent(otherEntityId, "collision");
+                // Direct array access - no proxy overhead
+                const otherPosX = posXArr[otherEntityId];
+                const otherPosZ = posZArr[otherEntityId];
 
-                if (!otherPos) continue;
-                
-                const otherRadius = this.getUnitRadius(otherCollision);
-                
-                const dx = checkPos.x - otherPos.x;
-                const dz = checkPos.z - otherPos.z;
+                // Skip if no valid position
+                if (otherPosX === undefined) continue;
+
+                // Get radius with fallback
+                const otherRadiusRaw = radiusArr ? radiusArr[otherEntityId] : 0;
+                const otherRadius = otherRadiusRaw > 0 ? Math.max(this.DEFAULT_UNIT_RADIUS, otherRadiusRaw) : this.DEFAULT_UNIT_RADIUS;
+
+                const dx = checkPosX - otherPosX;
+                const dz = checkPosZ - otherPosZ;
                 const distance = Math.sqrt(dx * dx + dz * dz);
                 const minDistance = checkRadius + otherRadius;
-                
+
                 if (distance < minDistance && distance < closestDistance) {
                     closestDistance = distance;
+                    // Only create obstacle object when we find a closer one
                     closestObstacle = {
-                        pos: otherPos,
+                        pos: { x: otherPosX, z: otherPosZ },
                         radius: otherRadius,
                         distance: distance,
                         entityId: otherEntityId
                     };
                 }
             }
-            
+
             if (checksPerformed >= this.MAX_PATHFINDING_CHECKS) break;
         }
-        
+
         return {
             hasObstacle: closestObstacle !== null,
             obstacle: closestObstacle

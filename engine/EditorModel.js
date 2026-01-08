@@ -66,8 +66,9 @@ class EditorModel {
     }
 
     /**
-     * Loads a project from localStorage by name
+     * Loads a project by name
      * Sets it as the current project in application state
+     * FileSystemSyncService will populate the actual data
      * @param {string} name - Project identifier to load
      * @returns {Object} The loaded project data
      */
@@ -81,22 +82,18 @@ class EditorModel {
             console.warn('Error saving to localStorage:', e);
         }
 
-        // Try to load from localStorage cache first
-        const cached = localStorage.getItem(this.state.currentProject);
-        if (cached) {
-            this.state.project = JSON.parse(cached);
-        } else {
-            // Initialize empty project structure - FileSystemSyncService will populate it
-            this.state.project = {
-                objectTypes: {},
-                objectTypeDefinitions: []
-            };
-        }
+        // Initialize empty project structure - FileSystemSyncService will populate it
+        // localStorage caching removed due to quota limits with large projects
+        this.state.project = {
+            objectTypes: {},
+            objectTypeDefinitions: []
+        };
     }
 
     /**
-     * Persists the current project state to localStorage
+     * Persists the current project state
      * Individual files are saved to filesystem via FileSystemSyncService
+     * Note: localStorage caching disabled due to quota limits with large projects
      * @returns {boolean} Success status
      */
     saveProject() {
@@ -115,16 +112,8 @@ class EditorModel {
             }
         }
 
-        try {
-            // Save to localStorage for caching during editing session
-            const projectToSave = this.stripScriptsFromProject(this.state.project);
-            const projectText = JSON.stringify(this.sortObjectTypes(projectToSave));
-            localStorage.setItem(this.state.currentProject, projectText);
-        } catch (e) {
-            console.error('Failed to save project to localStorage:', e);
-            return false;
-        }
-
+        // Project data is saved to filesystem via FileSystemSyncService
+        // localStorage caching removed due to quota limits with large projects
         return true;
     }
 
@@ -254,22 +243,19 @@ class EditorModel {
         if (!name || typeof name !== 'string') {
             return { success: false, message: 'Invalid project name' };
         }
-    
-        // Check if project exists
-        if (localStorage.getItem(name)) {
+
+        // Check if project exists in list
+        const currentProjects = JSON.parse(localStorage.getItem('projects') || '[]');
+        if (currentProjects.includes(name)) {
             return { success: false, message: 'Project already exists' };
         }
 
-        let currentProjects = JSON.parse(localStorage.getItem('projects'));
-        currentProjects.push(name);
-        localStorage.setItem("projects", JSON.stringify(currentProjects));
-        // Use provided config or default template
-        const projectConfig = config;
-    
         try {
-            // Save project
-            localStorage.setItem(name, JSON.stringify(projectConfig)); 
-            // Set metadata
+            // Add to projects list
+            currentProjects.push(name);
+            localStorage.setItem("projects", JSON.stringify(currentProjects));
+
+            // Set metadata (small, won't exceed quota)
             localStorage.setItem(
                 `${name}_metadata`,
                 JSON.stringify({
@@ -278,7 +264,10 @@ class EditorModel {
                     version: 1.0
                 })
             );
-    
+
+            // Note: Project config is saved to filesystem via FileSystemSyncService
+            // localStorage caching removed due to quota limits with large projects
+
             return { success: true, message: 'Project created' };
         } catch (error) {
             console.error('Project creation failed:', error);
@@ -296,19 +285,20 @@ class EditorModel {
         if (this.isDefaultProject(name)) {
             return { success: false, message: 'Cannot delete default projects' };
         }
-        
-        if (!localStorage.getItem(name)) {
+
+        const projects = JSON.parse(localStorage.getItem("projects") || '[]');
+        if (!projects.includes(name)) {
             return { success: false, message: 'Project not found' };
         }
-        
+
         try {
-            // Remove project data
-            localStorage.removeItem(name);
-            
+            // Remove project metadata
+            localStorage.removeItem(`${name}_metadata`);
+
             // Update projects list
-            const projects = JSON.parse(localStorage.getItem("projects") || []).filter(p => p !== name);
-            localStorage.setItem('projects', JSON.stringify(projects));
-            
+            const updatedProjects = projects.filter(p => p !== name);
+            localStorage.setItem('projects', JSON.stringify(updatedProjects));
+
             return { success: true, message: 'Project deleted successfully' };
         } catch (error) {
             return { success: false, message: 'Failed to delete project' };

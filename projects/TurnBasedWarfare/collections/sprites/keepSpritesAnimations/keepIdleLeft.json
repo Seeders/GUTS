@@ -1,8 +1,0 @@
-{
-  "title": "keep Idle Left",
-  "spriteCollection": "keepSprites",
-  "sprites": [
-    "keepIdleLeft_0"
-  ],
-  "fps": 4
-}

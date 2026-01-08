@@ -1,9 +1,0 @@
-{
-  "title": "ballista Death Up Right",
-  "spriteCollection": "ballistaSprites",
-  "sprites": [
-    "ballistaDeathUpRight_0",
-    "ballistaDeathUpRight_1"
-  ],
-  "fps": 4
-}

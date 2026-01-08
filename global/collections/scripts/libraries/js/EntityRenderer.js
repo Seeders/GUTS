@@ -754,13 +754,32 @@ class EntityRenderer {
             return false;
         }
 
-        // Dynamically load all animation types from the animation set
+        // Derive animation types from generatorSettings or frame names
+        // Frame names follow pattern: {animType}{direction}_{frameIndex}
+        // e.g., "idleDown_0", "walkUpLeft_3", "attackRight_5"
         const animations = {};
-        for (const key in animSet) {
-            if (key.endsWith('SpriteAnimations') && Array.isArray(animSet[key])) {
-                // Extract animation type name (e.g., 'idleSpriteAnimations' -> 'idle')
-                const animType = key.replace('SpriteAnimations', '');
-                animations[animType] = animSet[key];
+
+        if (animSet.frames) {
+            // Use animationTypes from generatorSettings if available
+            const animTypes = animSet.generatorSettings?.animationTypes || null;
+
+            if (animTypes && animTypes.length > 0) {
+                // Use stored animation types
+                for (const animType of animTypes) {
+                    animations[animType] = true;
+                }
+            } else {
+                // Fallback: derive from frame names
+                const knownTypes = ['idle', 'walk', 'attack', 'death', 'celebrate', 'cast', 'takeoff', 'land'];
+                for (const frameName of Object.keys(animSet.frames)) {
+                    const lowerName = frameName.toLowerCase();
+                    for (const animType of knownTypes) {
+                        if (lowerName.startsWith(animType) && !animations[animType]) {
+                            animations[animType] = true;
+                            break;
+                        }
+                    }
+                }
             }
         }
 

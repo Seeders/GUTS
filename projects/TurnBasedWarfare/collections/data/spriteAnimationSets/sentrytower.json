@@ -1,17 +1,7 @@
 {
   "title": "Sentrytower",
-  "animationCollection": "sentrytowerSpritesAnimations",
   "spriteSheet": "sprites/sentrytowerSprites/sentrytowerSheet.png",
-  "idleSpriteAnimations": [
-    "sentrytowerIdleDown",
-    "sentrytowerIdleDownLeft",
-    "sentrytowerIdleLeft",
-    "sentrytowerIdleUpLeft",
-    "sentrytowerIdleUp",
-    "sentrytowerIdleUpRight",
-    "sentrytowerIdleRight",
-    "sentrytowerIdleDownRight"
-  ],
+  "spriteOffset": 32,
   "generatorSettings": {
     "frustumSize": 96,
     "cameraDistance": 100,
@@ -22,7 +12,59 @@
     "borderSize": 1,
     "outlineColor": "#170F13",
     "outlineConnectivity": 4,
-    "cameraHeight": 2
+    "cameraHeight": 2,
+    "animationTypes": [
+      "idle"
+    ]
   },
-  "spriteOffset": 32
+  "frames": {
+    "idleDownLeft_0": {
+      "x": 0,
+      "y": 96,
+      "w": 96,
+      "h": 96
+    },
+    "idleDownRight_0": {
+      "x": 0,
+      "y": 672,
+      "w": 96,
+      "h": 96
+    },
+    "idleDown_0": {
+      "x": 0,
+      "y": 0,
+      "w": 96,
+      "h": 96
+    },
+    "idleLeft_0": {
+      "x": 0,
+      "y": 192,
+      "w": 96,
+      "h": 96
+    },
+    "idleRight_0": {
+      "x": 0,
+      "y": 576,
+      "w": 96,
+      "h": 96
+    },
+    "idleUpLeft_0": {
+      "x": 0,
+      "y": 288,
+      "w": 96,
+      "h": 96
+    },
+    "idleUpRight_0": {
+      "x": 0,
+      "y": 480,
+      "w": 96,
+      "h": 96
+    },
+    "idleUp_0": {
+      "x": 0,
+      "y": 384,
+      "w": 96,
+      "h": 96
+    }
+  }
 }
