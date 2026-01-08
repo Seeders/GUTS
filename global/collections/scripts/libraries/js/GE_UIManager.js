@@ -232,7 +232,7 @@ class GE_UIManager {
         const projectName = this.graphicsEditor.gameEditor.getProjectName();
 
         // Create a single sprite sheet for all animations
-        // First, calculate total dimensions needed
+        // First, get sprite dimensions
         const animTypes = Object.keys(this.generatedSprites);
         const firstAnimFrames = this.generatedSprites[animTypes[0]];
         const firstSprite = await this.loadImage(firstAnimFrames[0][0]);
@@ -240,75 +240,65 @@ class GE_UIManager {
         const spriteHeight = firstSprite.height;
 
         const numDirections = directionNames.length;
-
-        // Calculate max frames across all animations
-        let maxFrames = 0;
-        for (const animType in this.generatedSprites) {
-            maxFrames = Math.max(maxFrames, this.generatedSprites[animType].length);
-        }
-
-        // Layout: Each animation type gets a row of (8 directions x N frames)
-        // Total height = spriteHeight * numDirections * numAnimTypes
-        // Total width = spriteWidth * maxFrames
-        const sheetWidth = spriteWidth * maxFrames;
-        let sheetHeight = spriteHeight * numDirections * animTypes.length;
-
-        // Calculate additional height for ballistic sprites if present
         const ballisticAngleNames = ['Up90', 'Up45', 'Level', 'Down45', 'Down90'];
-        let ballisticRowOffset = numDirections * animTypes.length; // Starting row for ballistic sprites
 
-        if (this.generatedBallisticSprites && Object.keys(this.generatedBallisticSprites).length > 0) {
-            // Add space for ballistic sprites: 8 directions * 5 angles * numAnimTypes
-            const firstAngleData = this.generatedBallisticSprites[ballisticAngleNames[0]];
-            const isBallisticStatic = Array.isArray(firstAngleData);
-            const numBallisticAnimTypes = isBallisticStatic ? 1 : Object.keys(firstAngleData).length;
-            sheetHeight += spriteHeight * numDirections * ballisticAngleNames.length * numBallisticAnimTypes;
-        }
-
-        // Calculate additional height for ground-level sprites if present
-        let groundLevelRowOffset = 0;
-        if (this.generatedGroundLevelSprites && Object.keys(this.generatedGroundLevelSprites).length > 0) {
-            // Ground-level row offset is after isometric + ballistic sprites
-            groundLevelRowOffset = sheetHeight / spriteHeight;
-            // Add space for ground-level sprites: 8 directions * numAnimTypes
-            const numGroundLevelAnimTypes = Object.keys(this.generatedGroundLevelSprites).length;
-            sheetHeight += spriteHeight * numDirections * numGroundLevelAnimTypes;
-        }
-
-        // Create single canvas for all sprites (including ballistic)
-        const canvas = document.createElement('canvas');
-        canvas.width = sheetWidth;
-        canvas.height = sheetHeight;
-        const ctx = canvas.getContext('2d');
-
-        // Calculate total sprites for progress tracking
-        let totalSprites = 0;
+        // Count total frames across all sprite types
+        let totalFrames = 0;
         for (const animType in this.generatedSprites) {
-            totalSprites += this.generatedSprites[animType].length * numDirections;
+            totalFrames += this.generatedSprites[animType].length * numDirections;
         }
         if (this.generatedBallisticSprites && Object.keys(this.generatedBallisticSprites).length > 0) {
             for (const angleName of ballisticAngleNames) {
                 const angleData = this.generatedBallisticSprites[angleName];
                 if (!angleData) continue;
                 if (Array.isArray(angleData)) {
-                    totalSprites += angleData.length * numDirections;
+                    totalFrames += angleData.length * numDirections;
                 } else {
                     for (const animType in angleData) {
-                        totalSprites += angleData[animType].length * numDirections;
+                        totalFrames += angleData[animType].length * numDirections;
                     }
                 }
             }
         }
         if (this.generatedGroundLevelSprites && Object.keys(this.generatedGroundLevelSprites).length > 0) {
             for (const animType in this.generatedGroundLevelSprites) {
-                totalSprites += this.generatedGroundLevelSprites[animType].length * numDirections;
+                totalFrames += this.generatedGroundLevelSprites[animType].length * numDirections;
             }
         }
+
+        // Calculate grid dimensions for a roughly square layout
+        // Aim for sqrt(totalFrames) sprites per side
+        const spritesPerSide = Math.ceil(Math.sqrt(totalFrames));
+        const gridCols = spritesPerSide;
+        const gridRows = Math.ceil(totalFrames / gridCols);
+
+        const sheetWidth = gridCols * spriteWidth;
+        const sheetHeight = gridRows * spriteHeight;
+
+        console.log(`[SpriteSheet] Packing ${totalFrames} frames into ${gridCols}x${gridRows} grid: ${sheetWidth}x${sheetHeight}px`);
+
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = sheetWidth;
+        canvas.height = sheetHeight;
+        const ctx = canvas.getContext('2d');
+
+        // Track current position for sequential packing
+        let currentFrame = 0;
+        const getFramePosition = () => {
+            const col = currentFrame % gridCols;
+            const row = Math.floor(currentFrame / gridCols);
+            return {
+                x: col * spriteWidth,
+                y: row * spriteHeight
+            };
+        };
+
         let processedSprites = 0;
+        const totalSprites = totalFrames;
 
         // Pack all sprites and create metadata
         const spriteMetadata = {};
-        let animTypeIndex = 0;
 
         for (const animType in this.generatedSprites) {
             const frames = this.generatedSprites[animType];
@@ -326,27 +316,25 @@ class GE_UIManager {
                     const spriteData = frames[frameIndex][dirIndex];
                     const img = await this.loadImage(spriteData);
 
-                    // Calculate position in the single sprite sheet
-                    const x = frameIndex * spriteWidth;
-                    const y = (animTypeIndex * numDirections + dirIndex) * spriteHeight;
-                    ctx.drawImage(img, x, y);
+                    // Get position for this frame using square packing
+                    const pos = getFramePosition();
+                    ctx.drawImage(img, pos.x, pos.y);
 
                     // Store sprite location metadata
                     spriteMetadata[animType].animations[animationName].push({
-                        x,
-                        y,
+                        x: pos.x,
+                        y: pos.y,
                         width: spriteWidth,
                         height: spriteHeight,
                         frameIndex
                     });
 
+                    currentFrame++;
                     processedSprites++;
                     const percent = Math.round((processedSprites / totalSprites) * 80); // 80% for sprite packing
                     updateProgress(percent, `Packing sprites... ${processedSprites}/${totalSprites}`);
                 }
             }
-
-            animTypeIndex++;
         }
 
         // Get the generation settings used
@@ -375,9 +363,6 @@ class GE_UIManager {
             const firstAngleData = this.generatedBallisticSprites[ballisticAngleNames[0]];
             const isStatic = Array.isArray(firstAngleData);
 
-            // Use ballisticRowOffset calculated earlier for y position
-            let rowIndex = ballisticRowOffset;
-
             for (const angleName of ballisticAngleNames) {
                 const angleData = this.generatedBallisticSprites[angleName];
                 if (!angleData) continue;
@@ -391,7 +376,6 @@ class GE_UIManager {
 
                     for (let dirIndex = 0; dirIndex < numDirections; dirIndex++) {
                         const dirName = directionNames[dirIndex];
-                        // Use short animation names (e.g., "idleDownUp90" instead of "arrowIdleDownUp90")
                         const animationName = `${animType}${dirName}${angleName}`;
                         ballisticSpriteMetadata[angleName][animType].animations[animationName] = [];
 
@@ -400,24 +384,22 @@ class GE_UIManager {
                             const spriteData = frames[frameIndex][dirIndex];
                             const img = await this.loadImage(spriteData);
 
-                            const x = frameIndex * spriteWidth;
-                            const y = rowIndex * spriteHeight;
-                            // Draw onto main canvas (not separate ballistic canvas)
-                            ctx.drawImage(img, x, y);
+                            const pos = getFramePosition();
+                            ctx.drawImage(img, pos.x, pos.y);
 
                             ballisticSpriteMetadata[angleName][animType].animations[animationName].push({
-                                x,
-                                y,
+                                x: pos.x,
+                                y: pos.y,
                                 width: spriteWidth,
                                 height: spriteHeight,
                                 frameIndex
                             });
 
+                            currentFrame++;
                             processedSprites++;
                             const percent = Math.round((processedSprites / totalSprites) * 80);
                             updateProgress(percent, `Packing sprites... ${processedSprites}/${totalSprites}`);
                         }
-                        rowIndex++;
                     }
                 } else {
                     // Animated projectile
@@ -426,8 +408,7 @@ class GE_UIManager {
 
                         for (let dirIndex = 0; dirIndex < numDirections; dirIndex++) {
                             const dirName = directionNames[dirIndex];
-                            // Use short animation names (e.g., "idleDownUp90" instead of "arrowIdleDownUp90")
-                        const animationName = `${animType}${dirName}${angleName}`;
+                            const animationName = `${animType}${dirName}${angleName}`;
                             ballisticSpriteMetadata[angleName][animType].animations[animationName] = [];
 
                             const frames = angleData[animType];
@@ -435,24 +416,22 @@ class GE_UIManager {
                                 const spriteData = frames[frameIndex][dirIndex];
                                 const img = await this.loadImage(spriteData);
 
-                                const x = frameIndex * spriteWidth;
-                                const y = rowIndex * spriteHeight;
-                                // Draw onto main canvas (not separate ballistic canvas)
-                                ctx.drawImage(img, x, y);
+                                const pos = getFramePosition();
+                                ctx.drawImage(img, pos.x, pos.y);
 
                                 ballisticSpriteMetadata[angleName][animType].animations[animationName].push({
-                                    x,
-                                    y,
+                                    x: pos.x,
+                                    y: pos.y,
                                     width: spriteWidth,
                                     height: spriteHeight,
                                     frameIndex
                                 });
 
+                                currentFrame++;
                                 processedSprites++;
                                 const percent = Math.round((processedSprites / totalSprites) * 80);
                                 updateProgress(percent, `Packing sprites... ${processedSprites}/${totalSprites}`);
                             }
-                            rowIndex++;
                         }
                     }
                 }
@@ -464,8 +443,6 @@ class GE_UIManager {
 
         if (this.generatedGroundLevelSprites && Object.keys(this.generatedGroundLevelSprites).length > 0) {
             groundLevelSpriteMetadata = {};
-
-            let rowIndex = groundLevelRowOffset;
 
             for (const animType in this.generatedGroundLevelSprites) {
                 groundLevelSpriteMetadata[animType] = { animations: {} };
@@ -481,23 +458,22 @@ class GE_UIManager {
                         const spriteData = frames[frameIndex][dirIndex];
                         const img = await this.loadImage(spriteData);
 
-                        const x = frameIndex * spriteWidth;
-                        const y = rowIndex * spriteHeight;
-                        ctx.drawImage(img, x, y);
+                        const pos = getFramePosition();
+                        ctx.drawImage(img, pos.x, pos.y);
 
                         groundLevelSpriteMetadata[animType].animations[animationName].push({
-                            x,
-                            y,
+                            x: pos.x,
+                            y: pos.y,
                             width: spriteWidth,
                             height: spriteHeight,
                             frameIndex
                         });
 
+                        currentFrame++;
                         processedSprites++;
                         const percent = Math.round((processedSprites / totalSprites) * 80);
                         updateProgress(percent, `Packing sprites... ${processedSprites}/${totalSprites}`);
                     }
-                    rowIndex++;
                 }
             }
         }
@@ -505,6 +481,13 @@ class GE_UIManager {
         // Calculate sprite offset from first idle frame
         updateProgress(85, 'Calculating sprite offset...');
         const spriteOffset = this.calculateSpriteOffset(ctx, spriteMetadata);
+
+        // Calculate ground-level sprite offset if ground-level sprites were generated
+        let groundLevelSpriteOffset = null;
+        if (groundLevelSpriteMetadata) {
+            groundLevelSpriteOffset = this.calculateSpriteOffset(ctx, groundLevelSpriteMetadata, true);
+            console.log(`[SpriteOffset] Ground-level offset: ${groundLevelSpriteOffset}`);
+        }
 
         updateProgress(90, 'Saving to server...');
         try {
@@ -525,7 +508,8 @@ class GE_UIManager {
                     directionNames,
                     animationFPS: generatorSettings.fps,
                     generatorSettings,
-                    spriteOffset
+                    spriteOffset,
+                    groundLevelSpriteOffset
                 })
             });
 
@@ -612,9 +596,10 @@ class GE_UIManager {
      * of the first idle animation frame (direction 0 / Down).
      * @param {CanvasRenderingContext2D} ctx - The canvas context containing the sprite sheet
      * @param {Object} spriteMetadata - The sprite metadata containing animation info
+     * @param {boolean} isGroundLevel - Whether this is ground-level sprite metadata (uses "Ground" suffix)
      * @returns {number} Number of transparent pixel rows from bottom to first non-transparent row
      */
-    calculateSpriteOffset(ctx, spriteMetadata) {
+    calculateSpriteOffset(ctx, spriteMetadata, isGroundLevel = false) {
         // Get the first idle animation frame (direction 0 = Down)
         const idleAnimations = spriteMetadata['idle']?.animations;
         if (!idleAnimations) {
@@ -623,11 +608,11 @@ class GE_UIManager {
         }
 
         // Find the first idle animation (direction Down)
-        // Animation names use short format without baseName prefix (e.g., "idleDown")
-        const idleDownAnimName = 'idleDown';
+        // Animation names use short format (e.g., "idleDown" or "idleDownGround" for ground-level)
+        const idleDownAnimName = isGroundLevel ? 'idleDownGround' : 'idleDown';
         const idleDownFrames = idleAnimations[idleDownAnimName];
         if (!idleDownFrames || idleDownFrames.length === 0) {
-            console.warn('No idle Down animation frames found for sprite offset calculation');
+            console.warn(`No ${idleDownAnimName} animation frames found for sprite offset calculation`);
             return 0;
         }
 

@@ -1317,7 +1317,21 @@ class EntityRenderer {
         // Get spriteSize from animation set's generatorSettings, fallback to entity's spriteScale, then default 64
         const spriteScale = animSetData?.generatorSettings?.spriteSize || entityDef?.spriteScale || 32;
         // spriteYOffset allows adjusting vertical position when sprite feet aren't at bottom of frame
-        const spriteOffset = entityDef?.spriteOffset || animSetData?.spriteOffset || 0;
+        // Use groundLevelSpriteOffset when using ground-level camera angle (spriteCameraAngle === 1)
+        const isGroundLevel = animState?.spriteCameraAngle === 1;
+        let spriteOffset;
+        if (entityDef?.spriteOffset != null) {
+            spriteOffset = entityDef.spriteOffset;
+        } else if (isGroundLevel && animSetData?.groundLevelSpriteOffset != null) {
+            spriteOffset = animSetData.groundLevelSpriteOffset;
+        } else {
+            spriteOffset = animSetData?.spriteOffset || 0;
+        }
+
+        // Debug ground level offset
+        if (entity.entityType?.includes('dragon')) {
+            console.log(`[SpriteOffset] ${entity.entityType}: cameraAngle=${animState?.spriteCameraAngle}, isGroundLevel=${isGroundLevel}, offset=${spriteOffset}, groundOffset=${animSetData?.groundLevelSpriteOffset}, normalOffset=${animSetData?.spriteOffset}`);
+        }
 
         // Calculate dimensions based on texture aspect ratio
         let aspectRatio = 1;

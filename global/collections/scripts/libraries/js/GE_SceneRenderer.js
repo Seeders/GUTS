@@ -386,27 +386,6 @@ class GE_SceneRenderer {
             { name: 'Down90', pitchDegrees: 90 }     // Pointing straight down
         ];
 
-        const aspect = 1;
-        const tempRenderer = new window.THREE.WebGLRenderer({ antialias: false, alpha: true });
-        tempRenderer.setSize(size, size);
-        // Match the main editor renderer settings - no special color management
-        tempRenderer.outputEncoding = THREE.LinearEncoding;
-        // Don't close the modal - keep it open for adjustments
-        // document.getElementById('modal-generateIsoSprites').classList.remove('show');
-    
-        const renderTarget = new window.THREE.WebGLRenderTarget(size, size);
-        // All 8 directions: Down, DownLeft, Left, UpLeft, Up, UpRight, Right, DownRight
-        const cameras = [
-            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-            new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000)
-        ];
-
         // Get height from current selected object
         let modelHeight = 0;
         const currentObject = this.graphicsEditor.gameEditor.getCurrentObject();
@@ -414,56 +393,40 @@ class GE_SceneRenderer {
             modelHeight = currentObject.height;
         }
 
-        // Position cameras for all 8 directions
         // Camera height multiplier for steeper angle (matches in-game perspective)
         const cameraHeightMultiplier = parseFloat(document.getElementById('iso-camera-height').value) || 1.5;
         const cameraHeight = cameraDistance * cameraHeightMultiplier;
-
-        // Down, DownLeft, Left, UpLeft, Up, UpRight, Right, DownRight
-        cameras[0].position.set(0, cameraHeight, cameraDistance);                       // Down (S)
-        cameras[1].position.set(cameraDistance, cameraHeight, cameraDistance);          // DownLeft (SW)
-        cameras[2].position.set(cameraDistance, cameraHeight, 0);                       // Left (W)
-        cameras[3].position.set(cameraDistance, cameraHeight, -cameraDistance);         // UpLeft (NW)
-        cameras[4].position.set(0, cameraHeight, -cameraDistance);                      // Up (N)
-        cameras[5].position.set(-cameraDistance, cameraHeight, -cameraDistance);        // UpRight (NE)
-        cameras[6].position.set(-cameraDistance, cameraHeight, 0);                      // Right (E)
-        cameras[7].position.set(-cameraDistance, cameraHeight, cameraDistance);         // DownRight (SE)
-
-        // Point cameras at center of model (half the model height)
         const lookAtY = modelHeight / 2;
-        cameras.forEach(camera => camera.lookAt(0, lookAtY, 0));
+
+        // Create sprite renderer using SpriteUtils
+        const tempRenderer = SpriteUtils.createSpriteRenderer(THREE, size);
+
+        // Create 8 isometric cameras using SpriteUtils
+        const cameras = SpriteUtils.createCameraArray(THREE, frustumSize, cameraDistance, cameraHeight, lookAtY);
 
         // Create ground-level cameras if enabled
-        // These cameras are at eye-level (same Y as lookAtY) looking straight at the model
         let groundCameras = null;
         if (generateGroundLevel) {
-            groundCameras = [
-                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
-                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000)
-            ];
-
-            // Position ground-level cameras at double the center height (Y = modelHeight)
-            const groundCameraY = modelHeight; // Double lookAtY (modelHeight/2 * 2)
-            groundCameras[0].position.set(0, groundCameraY, cameraDistance);                       // Down (S)
-            groundCameras[1].position.set(cameraDistance, groundCameraY, cameraDistance);          // DownLeft (SW)
-            groundCameras[2].position.set(cameraDistance, groundCameraY, 0);                       // Left (W)
-            groundCameras[3].position.set(cameraDistance, groundCameraY, -cameraDistance);         // UpLeft (NW)
-            groundCameras[4].position.set(0, groundCameraY, -cameraDistance);                      // Up (N)
-            groundCameras[5].position.set(-cameraDistance, groundCameraY, -cameraDistance);        // UpRight (NE)
-            groundCameras[6].position.set(-cameraDistance, groundCameraY, 0);                      // Right (E)
-            groundCameras[7].position.set(-cameraDistance, groundCameraY, cameraDistance);         // DownRight (SE)
-
-            // Point ground-level cameras at center of model
-            groundCameras.forEach(camera => camera.lookAt(0, lookAtY, 0));
-
-            console.log('[SpriteGen] Ground-level cameras created at Y=' + groundCameraY + ' (model height)');
+            groundCameras = SpriteUtils.createCameraArray(THREE, frustumSize, cameraDistance, modelHeight, lookAtY);
+            console.log('[SpriteGen] Ground-level cameras created at Y=' + modelHeight + ' (model height)');
         }
+
+        // Helper function to render a sprite and return canvas data URL
+        const renderSpriteToDataURL = (camera) => {
+            const canvas = SpriteUtils.renderToCanvas(tempRenderer, scene, camera, size);
+
+            // Apply palette if selected
+            if (finalPaletteColors && finalPaletteColors.length > 0) {
+                SpriteUtils.applyPaletteToCanvas(canvas, finalPaletteColors);
+            }
+
+            // Apply outline if selected
+            if (outlineColor && outlineColor !== '') {
+                SpriteUtils.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
+            }
+
+            return canvas.toDataURL('image/png');
+        };
     
         // Use the main editor scene which already has everything loaded properly
         const scene = this.scene;
@@ -563,37 +526,7 @@ class GE_SceneRenderer {
             sprites['idle'] = [[]];
 
             for (const camera of cameras) {
-                const buffer = new Uint8Array(size * size * 4);
-                tempRenderer.setRenderTarget(renderTarget);
-                tempRenderer.render(scene, camera);
-                tempRenderer.setRenderTarget(null);
-                tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
-
-                const flippedBuffer = new Uint8Array(size * size * 4);
-                for (let y = 0; y < size; y++) {
-                    const srcRowStart = y * size * 4;
-                    const destRowStart = (size - 1 - y) * size * 4;
-                    flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);
-                }
-
-                const canvas = document.createElement('canvas');
-                canvas.width = size;
-                canvas.height = size;
-                const ctx = canvas.getContext('2d');
-                const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);
-                ctx.putImageData(imageData, 0, 0);
-
-                // Apply palette if selected
-                if (finalPaletteColors && finalPaletteColors.length > 0) {
-                    this.applyPaletteToCanvas(canvas, finalPaletteColors);
-                }
-
-                // Apply outline if selected
-                if (outlineColor && outlineColor !== '') {
-                    this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
-                }
-
-                sprites['idle'][0].push(canvas.toDataURL('image/png'));
+                sprites['idle'][0].push(renderSpriteToDataURL(camera));
             }
 
             // Generate ballistic angle sprites for projectiles (static models)
@@ -607,37 +540,7 @@ class GE_SceneRenderer {
                     characterModel.rotation.x = THREE.MathUtils.degToRad(angle.pitchDegrees);
 
                     for (const camera of cameras) {
-                        const buffer = new Uint8Array(size * size * 4);
-                        tempRenderer.setRenderTarget(renderTarget);
-                        tempRenderer.render(scene, camera);
-                        tempRenderer.setRenderTarget(null);
-                        tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
-
-                        const flippedBuffer = new Uint8Array(size * size * 4);
-                        for (let y = 0; y < size; y++) {
-                            const srcRowStart = y * size * 4;
-                            const destRowStart = (size - 1 - y) * size * 4;
-                            flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);
-                        }
-
-                        const canvas = document.createElement('canvas');
-                        canvas.width = size;
-                        canvas.height = size;
-                        const ctx = canvas.getContext('2d');
-                        const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);
-                        ctx.putImageData(imageData, 0, 0);
-
-                        // Apply palette if selected
-                        if (finalPaletteColors && finalPaletteColors.length > 0) {
-                            this.applyPaletteToCanvas(canvas, finalPaletteColors);
-                        }
-
-                        // Apply outline if selected
-                        if (outlineColor && outlineColor !== '') {
-                            this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
-                        }
-
-                        ballisticSprites[angle.name][0].push(canvas.toDataURL('image/png'));
+                        ballisticSprites[angle.name][0].push(renderSpriteToDataURL(camera));
                     }
 
                     console.log(`[SpriteGen] Generated ${angle.name} angle sprites (8 directions)`);
@@ -657,37 +560,7 @@ class GE_SceneRenderer {
                 groundLevelSprites['idle'] = [[]];
 
                 for (const camera of groundCameras) {
-                    const buffer = new Uint8Array(size * size * 4);
-                    tempRenderer.setRenderTarget(renderTarget);
-                    tempRenderer.render(scene, camera);
-                    tempRenderer.setRenderTarget(null);
-                    tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
-
-                    const flippedBuffer = new Uint8Array(size * size * 4);
-                    for (let y = 0; y < size; y++) {
-                        const srcRowStart = y * size * 4;
-                        const destRowStart = (size - 1 - y) * size * 4;
-                        flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);
-                    }
-
-                    const canvas = document.createElement('canvas');
-                    canvas.width = size;
-                    canvas.height = size;
-                    const ctx = canvas.getContext('2d');
-                    const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);
-                    ctx.putImageData(imageData, 0, 0);
-
-                    // Apply palette if selected
-                    if (finalPaletteColors && finalPaletteColors.length > 0) {
-                        this.applyPaletteToCanvas(canvas, finalPaletteColors);
-                    }
-
-                    // Apply outline if selected
-                    if (outlineColor && outlineColor !== '') {
-                        this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
-                    }
-
-                    groundLevelSprites['idle'][0].push(canvas.toDataURL('image/png'));
+                    groundLevelSprites['idle'][0].push(renderSpriteToDataURL(camera));
                 }
                 console.log('[SpriteGen] Generated ground-level sprites (8 directions)');
             }
@@ -777,40 +650,7 @@ class GE_SceneRenderer {
                                 // Render from all camera angles
                                 const frameSprites = [];
                                 for (const camera of cameras) {
-                                    const buffer = new Uint8Array(size * size * 4);
-                                    tempRenderer.setRenderTarget(renderTarget);
-                                    tempRenderer.render(scene, camera);
-                                    tempRenderer.setRenderTarget(null);
-                                    tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
-
-                                    const flippedBuffer = new Uint8Array(size * size * 4);
-                                    for (let y = 0; y < size; y++) {
-                                        const srcRowStart = y * size * 4;
-                                        const destRowStart = (size - 1 - y) * size * 4;
-                                        flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);
-                                    }
-                                    const canvas = document.createElement('canvas');
-                                    canvas.width = size;
-                                    canvas.height = size;
-                                    if (animType === 'celebrate') {
-                                        console.log(`Celebrate canvas size: ${canvas.width}x${canvas.height}, requested size: ${size}`);
-                                    }
-                                    const ctx = canvas.getContext('2d');
-                                    const imageData = ctx.createImageData(size, size);
-                                    imageData.data.set(flippedBuffer);
-                                    ctx.putImageData(imageData, 0, 0);
-
-                                    // Apply palette if selected
-                                    if (finalPaletteColors && finalPaletteColors.length > 0) {
-                                        this.applyPaletteToCanvas(canvas, finalPaletteColors);
-                                    }
-
-                                    // Apply outline if selected
-                                    if (outlineColor && outlineColor !== '') {
-                                        this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
-                                    }
-
-                                    frameSprites.push(canvas.toDataURL());
+                                    frameSprites.push(renderSpriteToDataURL(camera));
                                 }
                                 sprites[animType].push(frameSprites);
 
@@ -831,37 +671,7 @@ class GE_SceneRenderer {
                                         // Render from all camera angles for this ballistic angle
                                         const ballisticFrameSprites = [];
                                         for (const camera of cameras) {
-                                            const buffer = new Uint8Array(size * size * 4);
-                                            tempRenderer.setRenderTarget(renderTarget);
-                                            tempRenderer.render(scene, camera);
-                                            tempRenderer.setRenderTarget(null);
-                                            tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
-
-                                            const flippedBuffer = new Uint8Array(size * size * 4);
-                                            for (let y = 0; y < size; y++) {
-                                                const srcRowStart = y * size * 4;
-                                                const destRowStart = (size - 1 - y) * size * 4;
-                                                flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);
-                                            }
-                                            const canvas = document.createElement('canvas');
-                                            canvas.width = size;
-                                            canvas.height = size;
-                                            const ctx = canvas.getContext('2d');
-                                            const imageData = ctx.createImageData(size, size);
-                                            imageData.data.set(flippedBuffer);
-                                            ctx.putImageData(imageData, 0, 0);
-
-                                            // Apply palette if selected
-                                            if (finalPaletteColors && finalPaletteColors.length > 0) {
-                                                this.applyPaletteToCanvas(canvas, finalPaletteColors);
-                                            }
-
-                                            // Apply outline if selected
-                                            if (outlineColor && outlineColor !== '') {
-                                                this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
-                                            }
-
-                                            ballisticFrameSprites.push(canvas.toDataURL());
+                                            ballisticFrameSprites.push(renderSpriteToDataURL(camera));
                                         }
                                         ballisticSprites[angle.name][animType].push(ballisticFrameSprites);
                                     }
@@ -882,37 +692,7 @@ class GE_SceneRenderer {
                                     // Render from all ground-level camera angles
                                     const groundFrameSprites = [];
                                     for (const camera of groundCameras) {
-                                        const buffer = new Uint8Array(size * size * 4);
-                                        tempRenderer.setRenderTarget(renderTarget);
-                                        tempRenderer.render(scene, camera);
-                                        tempRenderer.setRenderTarget(null);
-                                        tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
-
-                                        const flippedBuffer = new Uint8Array(size * size * 4);
-                                        for (let y = 0; y < size; y++) {
-                                            const srcRowStart = y * size * 4;
-                                            const destRowStart = (size - 1 - y) * size * 4;
-                                            flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);
-                                        }
-                                        const canvas = document.createElement('canvas');
-                                        canvas.width = size;
-                                        canvas.height = size;
-                                        const ctx = canvas.getContext('2d');
-                                        const imageData = ctx.createImageData(size, size);
-                                        imageData.data.set(flippedBuffer);
-                                        ctx.putImageData(imageData, 0, 0);
-
-                                        // Apply palette if selected
-                                        if (finalPaletteColors && finalPaletteColors.length > 0) {
-                                            this.applyPaletteToCanvas(canvas, finalPaletteColors);
-                                        }
-
-                                        // Apply outline if selected
-                                        if (outlineColor && outlineColor !== '') {
-                                            this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
-                                        }
-
-                                        groundFrameSprites.push(canvas.toDataURL());
+                                        groundFrameSprites.push(renderSpriteToDataURL(camera));
                                     }
                                     groundLevelSprites[animType].push(groundFrameSprites);
                                 }
@@ -930,9 +710,7 @@ class GE_SceneRenderer {
                 characterModel.rotation.z = originalModelRotation.z;
             }
         } // End else block for animation processing
-        tempRenderer.setRenderTarget(null);
         tempRenderer.dispose();
-        renderTarget.dispose();
 
         // Restore ambient light brightness
         originalAmbientIntensity.forEach(({ light, intensity }) => {
