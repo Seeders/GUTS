@@ -65,7 +65,7 @@ class GE_AnimationManager {
 
     deleteAnimation() {
         if (this.graphicsEditor.state.currentAnimation !== "idle") {
-            delete this.graphicsEditor.getCurrentAnimation();
+            delete this.graphicsEditor.state.renderData.animations[this.graphicsEditor.state.currentAnimation];
             this.graphicsEditor.state.currentAnimation = "idle";
             this.graphicsEditor.state.currentFrame = 0;
             this.graphicsEditor.state.selectedShapeIndex = -1;

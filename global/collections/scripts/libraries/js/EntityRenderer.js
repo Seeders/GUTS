@@ -1421,8 +1421,14 @@ class EntityRenderer {
         }
 
         // Get sprite animations from shared cache
+        // Use ground-level animations if camera angle is ground-level and they exist
         const spriteAnimationData = this.game?.call('getSpriteAnimationData', animState.spriteAnimationSet);
-        const spriteAnimations = spriteAnimationData?.animations;
+        let spriteAnimations = null;
+        if (animState.spriteCameraAngle === 1 && spriteAnimationData?.groundLevelAnimations) {
+            spriteAnimations = spriteAnimationData.groundLevelAnimations;
+        } else {
+            spriteAnimations = spriteAnimationData?.animations;
+        }
 
         if (!spriteAnimations) {
             console.warn(`[EntityRenderer] No sprite animations found for animationSet ${animState.spriteAnimationSet} on entity ${entityId}`);

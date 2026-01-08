@@ -107,7 +107,8 @@ class GE_UIManager {
             outlineColor: savedSettings.outlineColor ?? '',
             outlineConnectivity: savedSettings.outlineConnectivity ?? 4,
             cameraHeight: savedSettings.cameraHeight ?? 1,
-            isProjectile: savedSettings.isProjectile ?? false
+            isProjectile: savedSettings.isProjectile ?? false,
+            generateGroundLevel: savedSettings.generateGroundLevel ?? false
         };
 
         // Populate palette dropdown
@@ -187,6 +188,9 @@ class GE_UIManager {
         if (config.isProjectile !== undefined) {
             document.getElementById('iso-is-projectile').checked = config.isProjectile;
         }
+        if (config.generateGroundLevel !== undefined) {
+            document.getElementById('iso-ground-level').checked = config.generateGroundLevel;
+        }
 
         // Setup save button (disabled initially, enabled after generation)
         const saveButton = document.getElementById('iso-save');
@@ -261,6 +265,16 @@ class GE_UIManager {
             sheetHeight += spriteHeight * numDirections * ballisticAngleNames.length * numBallisticAnimTypes;
         }
 
+        // Calculate additional height for ground-level sprites if present
+        let groundLevelRowOffset = 0;
+        if (this.generatedGroundLevelSprites && Object.keys(this.generatedGroundLevelSprites).length > 0) {
+            // Ground-level row offset is after isometric + ballistic sprites
+            groundLevelRowOffset = sheetHeight / spriteHeight;
+            // Add space for ground-level sprites: 8 directions * numAnimTypes
+            const numGroundLevelAnimTypes = Object.keys(this.generatedGroundLevelSprites).length;
+            sheetHeight += spriteHeight * numDirections * numGroundLevelAnimTypes;
+        }
+
         // Create single canvas for all sprites (including ballistic)
         const canvas = document.createElement('canvas');
         canvas.width = sheetWidth;
@@ -283,6 +297,11 @@ class GE_UIManager {
                         totalSprites += angleData[animType].length * numDirections;
                     }
                 }
+            }
+        }
+        if (this.generatedGroundLevelSprites && Object.keys(this.generatedGroundLevelSprites).length > 0) {
+            for (const animType in this.generatedGroundLevelSprites) {
+                totalSprites += this.generatedGroundLevelSprites[animType].length * numDirections;
             }
         }
         let processedSprites = 0;
@@ -342,7 +361,8 @@ class GE_UIManager {
             outlineColor: document.getElementById('iso-outline').value || '',
             outlineConnectivity: parseInt(document.getElementById('iso-outline-connectivity').value) || 8,
             cameraHeight: parseFloat(document.getElementById('iso-camera-height').value) || 1,
-            isProjectile: document.getElementById('iso-is-projectile')?.checked || false
+            isProjectile: document.getElementById('iso-is-projectile')?.checked || false,
+            generateGroundLevel: document.getElementById('iso-ground-level')?.checked || false
         };
 
         // Build ballistic sprite metadata and draw onto main canvas if projectile
@@ -439,6 +459,49 @@ class GE_UIManager {
             }
         }
 
+        // Build ground-level sprite metadata and draw onto main canvas
+        let groundLevelSpriteMetadata = null;
+
+        if (this.generatedGroundLevelSprites && Object.keys(this.generatedGroundLevelSprites).length > 0) {
+            groundLevelSpriteMetadata = {};
+
+            let rowIndex = groundLevelRowOffset;
+
+            for (const animType in this.generatedGroundLevelSprites) {
+                groundLevelSpriteMetadata[animType] = { animations: {} };
+
+                for (let dirIndex = 0; dirIndex < numDirections; dirIndex++) {
+                    const dirName = directionNames[dirIndex];
+                    // Use "Ground" suffix for ground-level animation names (e.g., "idleDownGround")
+                    const animationName = `${animType}${dirName}Ground`;
+                    groundLevelSpriteMetadata[animType].animations[animationName] = [];
+
+                    const frames = this.generatedGroundLevelSprites[animType];
+                    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+                        const spriteData = frames[frameIndex][dirIndex];
+                        const img = await this.loadImage(spriteData);
+
+                        const x = frameIndex * spriteWidth;
+                        const y = rowIndex * spriteHeight;
+                        ctx.drawImage(img, x, y);
+
+                        groundLevelSpriteMetadata[animType].animations[animationName].push({
+                            x,
+                            y,
+                            width: spriteWidth,
+                            height: spriteHeight,
+                            frameIndex
+                        });
+
+                        processedSprites++;
+                        const percent = Math.round((processedSprites / totalSprites) * 80);
+                        updateProgress(percent, `Packing sprites... ${processedSprites}/${totalSprites}`);
+                    }
+                    rowIndex++;
+                }
+            }
+        }
+
         // Calculate sprite offset from first idle frame
         updateProgress(85, 'Calculating sprite offset...');
         const spriteOffset = this.calculateSpriteOffset(ctx, spriteMetadata);
@@ -458,6 +521,7 @@ class GE_UIManager {
                     spriteMetadata,
                     ballisticSpriteMetadata,
                     ballisticAngleNames,
+                    groundLevelSpriteMetadata,
                     directionNames,
                     animationFPS: generatorSettings.fps,
                     generatorSettings,
@@ -617,10 +681,11 @@ class GE_UIManager {
         return spriteOffset;
     }
 
-    displayIsometricSprites(sprites, ballisticSprites = null) {
+    displayIsometricSprites(sprites, ballisticSprites = null, groundLevelSprites = null) {
         // Store sprites for saving later
         this.generatedSprites = sprites;
         this.generatedBallisticSprites = ballisticSprites;
+        this.generatedGroundLevelSprites = groundLevelSprites;
 
         // Find or create results container in the modal
         const modal = document.getElementById('modal-generateIsoSprites');
@@ -769,6 +834,49 @@ class GE_UIManager {
                 }
 
                 resultsContainer.appendChild(ballisticAngleSection);
+            }
+        }
+
+        // Display ground-level sprites if present
+        if (groundLevelSprites && Object.keys(groundLevelSprites).length > 0) {
+            const groundLevelHeader = document.createElement('h3');
+            groundLevelHeader.textContent = 'Ground-Level Camera Sprites';
+            groundLevelHeader.style.cssText = 'color: #e0e0e0; margin-top: 30px; margin-bottom: 15px; border-top: 2px solid #666; padding-top: 20px;';
+            resultsContainer.appendChild(groundLevelHeader);
+
+            for (const animType in groundLevelSprites) {
+                const animSection = document.createElement('div');
+                const title = document.createElement('h4');
+                title.textContent = `${animType} Animation (Ground-Level)`;
+                title.style.cssText = 'color: #88ffcc; margin: 15px 0 10px 0;';
+                animSection.appendChild(title);
+
+                const anglesContainer = document.createElement('div');
+                anglesContainer.style.cssText = 'margin-left: 20px;';
+
+                for (let angle = 0; angle < 8; angle++) {
+                    const angleSection = document.createElement('div');
+                    const angleLabel = document.createElement('h5');
+                    angleLabel.textContent = angleLabels[angle];
+                    angleLabel.style.cssText = 'color: #ccc; margin: 5px 0;';
+                    angleSection.appendChild(angleLabel);
+
+                    const grid = document.createElement('div');
+                    grid.style.cssText = 'display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;';
+
+                    groundLevelSprites[animType].forEach(frame => {
+                        const img = document.createElement('img');
+                        img.src = frame[angle];
+                        img.style.imageRendering = 'pixelated';
+                        grid.appendChild(img);
+                    });
+
+                    angleSection.appendChild(grid);
+                    anglesContainer.appendChild(angleSection);
+                }
+
+                animSection.appendChild(anglesContainer);
+                resultsContainer.appendChild(animSection);
             }
         }
 
