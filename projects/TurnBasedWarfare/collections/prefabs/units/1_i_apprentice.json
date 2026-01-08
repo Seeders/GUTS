@@ -16,9 +16,16 @@
   "accuracy": 100,
   "evasion": 5,
   "criticalChance": 0.05,
-  "criticalMultiplier": 2.0,
+  "criticalMultiplier": 2,
   "passives": [
-    { "type": "increased", "tags": ["spell", "fire"], "value": 0.2 }
+    {
+      "type": "increased",
+      "tags": [
+        "spell",
+        "fire"
+      ],
+      "value": 0.2
+    }
   ],
   "render": {
     "animations": {
@@ -33,7 +40,7 @@
                   "x": 1
                 },
                 "id": 0,
-                "animation": "idle"
+                "animation": "idle_short"
               }
             ]
           }
@@ -90,18 +97,6 @@
               }
             ],
             "loops": false
-          }
-        }
-      ],
-      "celebrate": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "dance_thriller"
-              }
-            ]
           }
         }
       ]

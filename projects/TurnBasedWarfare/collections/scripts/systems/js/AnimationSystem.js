@@ -116,13 +116,20 @@ class AnimationSystem extends GUTS.BaseSystem {
 
     /**
      * Get sprite animations for an entity from the shared cache
+     * Uses ground-level animations when spriteCameraAngle === 1 (if available)
      * @param {object} animState - The entity's animationState component
      * @returns {object|null} The animations object keyed by animation type name
      */
     _getSpriteAnimations(animState) {
         if (!animState || animState.spriteAnimationSet == null) return null;
         const cachedData = this.spriteAnimationCache.get(animState.spriteAnimationSet);
-        return cachedData?.animations || null;
+        if (!cachedData) return null;
+
+        // Use ground-level animations if camera angle is ground-level and they exist
+        if (animState.spriteCameraAngle === 1 && cachedData.groundLevelAnimations) {
+            return cachedData.groundLevelAnimations;
+        }
+        return cachedData.animations || null;
     }
 
     calculateAnimationSpeed(attackerId, baseAttackSpeed) {
@@ -521,6 +528,37 @@ class AnimationSystem extends GUTS.BaseSystem {
         if (newDirection !== animState.spriteDirection) {
             // Let setBillboardAnimationDirection handle setting the direction and applying the frame
             this.game.call('setBillboardAnimationDirection', entityId, newDirection);
+        }
+
+        // Calculate camera vertical angle to determine isometric vs ground-level sprite set
+        // Only relevant for perspective cameras - orthographic always uses isometric
+        if (!cam.isOrthographicCamera) {
+            const entityPos = transform.position;
+            const dx = cam.position.x - entityPos.x;
+            const dy = cam.position.y - entityPos.y;
+            const dz = cam.position.z - entityPos.z;
+            const horizontalDist = Math.sqrt(dx * dx + dz * dz);
+
+            // Calculate vertical angle (positive = camera above entity)
+            const verticalAngle = Math.atan2(dy, horizontalDist);
+            const verticalDegrees = verticalAngle * (180 / Math.PI);
+
+            // Threshold: ~20 degrees - above uses isometric, below uses ground-level
+            // 0 = isometric (high camera), 1 = ground-level (low camera)
+            const newCameraAngle = verticalDegrees > 20 ? 0 : 1;
+
+            // Check if camera angle state changed
+            if (animState.spriteCameraAngle !== newCameraAngle) {
+                animState.spriteCameraAngle = newCameraAngle;
+                // Force animation frame update to use correct sprite set
+                this.game.call('applyBillboardAnimationFrame', entityId);
+            }
+        } else {
+            // Orthographic cameras always use isometric sprites
+            if (animState.spriteCameraAngle !== 0) {
+                animState.spriteCameraAngle = 0;
+                this.game.call('applyBillboardAnimationFrame', entityId);
+            }
         }
     }
 
@@ -1362,13 +1400,29 @@ class AnimationSystem extends GUTS.BaseSystem {
                 }
             }
 
+            // Load ground-level animations if available
+            const groundLevelAnimations = {};
+            for (let i = 0; i < this.animationTypeNames.length; i++) {
+                const animTypeName = this.animationTypeNames[i];
+                const groundKey = `${animTypeName}SpriteAnimationsGround`;
+                const groundAnimNames = derivedData.groundLevelArrays[groundKey];
+
+                if (groundAnimNames && groundAnimNames.length > 0) {
+                    groundLevelAnimations[animTypeName] = this.loadAnimationsFromCollections(groundAnimNames, animSetData);
+                }
+            }
+
             // Get fps from animation set's generator settings
             const animationFps = animSetData.generatorSettings?.fps || -1;
+
+            // Check if ground-level sprites are available
+            const hasGroundLevel = Object.keys(groundLevelAnimations).length > 0;
 
             // Cache the shared animation data
             // Include rawAnimSetData for accessing ballistic animation properties at runtime
             cachedData = {
                 animations,
+                groundLevelAnimations: hasGroundLevel ? groundLevelAnimations : null,
                 fps: animationFps,
                 rawAnimSetData: animSetData  // For ballistic angle sprite lookup
             };
@@ -1408,6 +1462,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             animState.spriteFrameTime = 0;
             animState.spriteLoopAnimation = true;
             animState.isSprite = true;
+            animState.spriteCameraAngle = 0; // 0 = isometric, 1 = ground-level
         }
 
         // Apply initial idle animation (sets UV coordinates)
@@ -1529,7 +1584,8 @@ class AnimationSystem extends GUTS.BaseSystem {
         const result = {
             animations: {},      // { animName: { frames: [...], fps } }
             animationArrays: {}, // { idleSpriteAnimations: [...], walkSpriteAnimations: [...] }
-            ballisticArrays: {}  // { ballisticIdleSpriteAnimationsUp90: [...] }
+            ballisticArrays: {}, // { ballisticIdleSpriteAnimationsUp90: [...] }
+            groundLevelArrays: {} // { idleSpriteAnimationsGround: [...], walkSpriteAnimationsGround: [...] }
         };
 
         // Process each animation name
@@ -1564,11 +1620,22 @@ class AnimationSystem extends GUTS.BaseSystem {
                     }
 
                     if (!isBallistic) {
-                        // Regular animation
-                        if (!result.animationArrays[arrayKey]) {
-                            result.animationArrays[arrayKey] = [];
+                        // Check if this is a ground-level animation (has "ground" suffix before direction)
+                        // Pattern: idleDownGround, walkUpLeftGround
+                        if (lowerName.endsWith('ground')) {
+                            // Ground-level animation: idleSpriteAnimationsGround
+                            const groundKey = `${animType}SpriteAnimationsGround`;
+                            if (!result.groundLevelArrays[groundKey]) {
+                                result.groundLevelArrays[groundKey] = [];
+                            }
+                            result.groundLevelArrays[groundKey].push(animName);
+                        } else {
+                            // Regular isometric animation
+                            if (!result.animationArrays[arrayKey]) {
+                                result.animationArrays[arrayKey] = [];
+                            }
+                            result.animationArrays[arrayKey].push(animName);
                         }
-                        result.animationArrays[arrayKey].push(animName);
                     }
                     break;
                 }
@@ -1595,18 +1662,33 @@ class AnimationSystem extends GUTS.BaseSystem {
             });
         }
 
+        for (const key of Object.keys(result.groundLevelArrays)) {
+            result.groundLevelArrays[key].sort((a, b) => {
+                const dirA = this.extractDirectionFromName(a);
+                const dirB = this.extractDirectionFromName(b);
+                return (directionOrder[dirA] || 0) - (directionOrder[dirB] || 0);
+            });
+        }
+
         return result;
     }
 
     /**
      * Extract direction from animation name (e.g., "peasantIdleDown" -> "down")
      * Handles ballistic angle suffixes like "Up45", "Down90", "Level"
+     * Handles ground-level suffix "Ground"
      */
     extractDirectionFromName(animName) {
+        let lowerName = animName.toLowerCase();
+
+        // Remove ground-level suffix first
+        if (lowerName.endsWith('ground')) {
+            lowerName = lowerName.slice(0, -6); // Remove "ground"
+        }
+
         // Remove ballistic angle suffixes before extracting direction
         // Order matters: check longer patterns first
         const ballisticSuffixes = ['up90', 'up45', 'down90', 'down45', 'level'];
-        let lowerName = animName.toLowerCase();
 
         for (const suffix of ballisticSuffixes) {
             if (lowerName.endsWith(suffix)) {

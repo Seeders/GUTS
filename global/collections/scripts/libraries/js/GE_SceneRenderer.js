@@ -373,6 +373,9 @@ class GE_SceneRenderer {
         // Get projectile flag for ballistic angle generation
         const isProjectile = document.getElementById('iso-is-projectile')?.checked || false;
 
+        // Get ground-level flag for generating additional ground-level sprites
+        const generateGroundLevel = document.getElementById('iso-ground-level')?.checked || false;
+
         // Ballistic pitch angles for projectiles (model rotation on X-axis)
         // Negative degrees = pointing up, positive = pointing down
         const ballisticAngles = [
@@ -429,6 +432,38 @@ class GE_SceneRenderer {
         // Point cameras at center of model (half the model height)
         const lookAtY = modelHeight / 2;
         cameras.forEach(camera => camera.lookAt(0, lookAtY, 0));
+
+        // Create ground-level cameras if enabled
+        // These cameras are at eye-level (same Y as lookAtY) looking straight at the model
+        let groundCameras = null;
+        if (generateGroundLevel) {
+            groundCameras = [
+                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000),
+                new window.THREE.OrthographicCamera(-frustumSize * aspect, frustumSize * aspect, frustumSize, -frustumSize, 0.1, 1000)
+            ];
+
+            // Position ground-level cameras at double the center height (Y = modelHeight)
+            const groundCameraY = modelHeight; // Double lookAtY (modelHeight/2 * 2)
+            groundCameras[0].position.set(0, groundCameraY, cameraDistance);                       // Down (S)
+            groundCameras[1].position.set(cameraDistance, groundCameraY, cameraDistance);          // DownLeft (SW)
+            groundCameras[2].position.set(cameraDistance, groundCameraY, 0);                       // Left (W)
+            groundCameras[3].position.set(cameraDistance, groundCameraY, -cameraDistance);         // UpLeft (NW)
+            groundCameras[4].position.set(0, groundCameraY, -cameraDistance);                      // Up (N)
+            groundCameras[5].position.set(-cameraDistance, groundCameraY, -cameraDistance);        // UpRight (NE)
+            groundCameras[6].position.set(-cameraDistance, groundCameraY, 0);                      // Right (E)
+            groundCameras[7].position.set(-cameraDistance, groundCameraY, cameraDistance);         // DownRight (SE)
+
+            // Point ground-level cameras at center of model
+            groundCameras.forEach(camera => camera.lookAt(0, lookAtY, 0));
+
+            console.log('[SpriteGen] Ground-level cameras created at Y=' + groundCameraY + ' (model height)');
+        }
     
         // Use the main editor scene which already has everything loaded properly
         const scene = this.scene;
@@ -494,6 +529,7 @@ class GE_SceneRenderer {
 
         const sprites = {};
         const ballisticSprites = {};  // For projectile ballistic angle sprites
+        const groundLevelSprites = {};  // For ground-level camera angle sprites
 
         // Store original model rotation for restoration after ballistic angle generation
         let originalModelRotation = null;
@@ -613,6 +649,47 @@ class GE_SceneRenderer {
                     characterModel.rotation.y = originalModelRotation.y;
                     characterModel.rotation.z = originalModelRotation.z;
                 }
+            }
+
+            // Generate ground-level sprites for static buildings
+            if (generateGroundLevel && groundCameras) {
+                console.log('[SpriteGen] Generating ground-level sprites for static building...');
+                groundLevelSprites['idle'] = [[]];
+
+                for (const camera of groundCameras) {
+                    const buffer = new Uint8Array(size * size * 4);
+                    tempRenderer.setRenderTarget(renderTarget);
+                    tempRenderer.render(scene, camera);
+                    tempRenderer.setRenderTarget(null);
+                    tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
+
+                    const flippedBuffer = new Uint8Array(size * size * 4);
+                    for (let y = 0; y < size; y++) {
+                        const srcRowStart = y * size * 4;
+                        const destRowStart = (size - 1 - y) * size * 4;
+                        flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    const imageData = new ImageData(new Uint8ClampedArray(flippedBuffer), size, size);
+                    ctx.putImageData(imageData, 0, 0);
+
+                    // Apply palette if selected
+                    if (finalPaletteColors && finalPaletteColors.length > 0) {
+                        this.applyPaletteToCanvas(canvas, finalPaletteColors);
+                    }
+
+                    // Apply outline if selected
+                    if (outlineColor && outlineColor !== '') {
+                        this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
+                    }
+
+                    groundLevelSprites['idle'][0].push(canvas.toDataURL('image/png'));
+                }
+                console.log('[SpriteGen] Generated ground-level sprites (8 directions)');
             }
         } else {
             // Only process animation loop if we didn't generate static building sprites
@@ -794,6 +871,51 @@ class GE_SceneRenderer {
                                         characterModel.rotation.x = originalModelRotation.x;
                                     }
                                 }
+
+                                // Generate ground-level sprites for this frame
+                                if (generateGroundLevel && groundCameras) {
+                                    // Initialize ground-level sprite structure for this animation type
+                                    if (!groundLevelSprites[animType]) {
+                                        groundLevelSprites[animType] = [];
+                                    }
+
+                                    // Render from all ground-level camera angles
+                                    const groundFrameSprites = [];
+                                    for (const camera of groundCameras) {
+                                        const buffer = new Uint8Array(size * size * 4);
+                                        tempRenderer.setRenderTarget(renderTarget);
+                                        tempRenderer.render(scene, camera);
+                                        tempRenderer.setRenderTarget(null);
+                                        tempRenderer.readRenderTargetPixels(renderTarget, 0, 0, size, size, buffer);
+
+                                        const flippedBuffer = new Uint8Array(size * size * 4);
+                                        for (let y = 0; y < size; y++) {
+                                            const srcRowStart = y * size * 4;
+                                            const destRowStart = (size - 1 - y) * size * 4;
+                                            flippedBuffer.set(buffer.subarray(srcRowStart, srcRowStart + size * 4), destRowStart);
+                                        }
+                                        const canvas = document.createElement('canvas');
+                                        canvas.width = size;
+                                        canvas.height = size;
+                                        const ctx = canvas.getContext('2d');
+                                        const imageData = ctx.createImageData(size, size);
+                                        imageData.data.set(flippedBuffer);
+                                        ctx.putImageData(imageData, 0, 0);
+
+                                        // Apply palette if selected
+                                        if (finalPaletteColors && finalPaletteColors.length > 0) {
+                                            this.applyPaletteToCanvas(canvas, finalPaletteColors);
+                                        }
+
+                                        // Apply outline if selected
+                                        if (outlineColor && outlineColor !== '') {
+                                            this.applyOutlineToCanvas(canvas, outlineColor, outlinePosition, outlineConnectivity, borderSize);
+                                        }
+
+                                        groundFrameSprites.push(canvas.toDataURL());
+                                    }
+                                    groundLevelSprites[animType].push(groundFrameSprites);
+                                }
                             }
                         }
                     }
@@ -832,6 +954,15 @@ class GE_SceneRenderer {
             console.log('[SpriteGen] Ballistic sprites generated:', Object.keys(ballisticSprites));
         }
 
-        this.graphicsEditor.displayIsometricSprites(sprites, isProjectile ? ballisticSprites : null);
+        // Log ground-level sprite generation summary
+        if (generateGroundLevel && Object.keys(groundLevelSprites).length > 0) {
+            console.log('[SpriteGen] Ground-level sprites generated:', Object.keys(groundLevelSprites));
+        }
+
+        this.graphicsEditor.displayIsometricSprites(
+            sprites,
+            isProjectile ? ballisticSprites : null,
+            generateGroundLevel ? groundLevelSprites : null
+        );
     }
 }

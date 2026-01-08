@@ -571,7 +571,7 @@ app.post('/api/save-texture', async (req, res) => {
 app.post('/api/save-isometric-sprites', async (req, res) => {
     try {
         const { projectName, baseName, collectionName, spriteSheet, spriteMetadata,
-                ballisticSpriteMetadata, ballisticAngleNames,
+                ballisticSpriteMetadata, ballisticAngleNames, groundLevelSpriteMetadata,
                 generatorSettings, spriteOffset } = req.body;
 
         // Create directories (only need sprite sheet folder and animation set folder now)
@@ -677,17 +677,49 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
             }
         }
 
+        // Process ground-level sprites if present (now on same sheet as regular sprites)
+        // Only add frame coordinates - ground-level animations are derived at runtime from frame names
+        let groundLevelFrameCount = 0;
+
+        if (groundLevelSpriteMetadata) {
+            // Process each animation type
+            for (const animType in groundLevelSpriteMetadata) {
+                const metadata = groundLevelSpriteMetadata[animType];
+
+                // Process each direction
+                for (const animationName in metadata.animations) {
+                    const frameList = metadata.animations[animationName];
+
+                    // Add frame coordinates to frames object
+                    for (let i = 0; i < frameList.length; i++) {
+                        const frame = frameList[i];
+                        const spriteName = `${animationName}_${i}`;
+
+                        frames[spriteName] = {
+                            x: frame.x,
+                            y: frame.y,
+                            w: frame.width,
+                            h: frame.height
+                        };
+
+                        groundLevelFrameCount++;
+                    }
+                }
+            }
+        }
+
         // Write stripped animation set JSON (single file instead of thousands)
         await fs.writeFile(
             path.join(scriptsSpriteAnimationSetsFolder, `${baseName}.json`),
             JSON.stringify(animationSetJson, null, 2)
         );
 
-        console.log(`Saved stripped sprite data: ${totalFrameCount + ballisticFrameCount} frames`);
+        console.log(`Saved stripped sprite data: ${totalFrameCount + ballisticFrameCount + groundLevelFrameCount} frames`);
 
         res.json({
             success: true,
-            frameCount: totalFrameCount + ballisticFrameCount,
+            frameCount: totalFrameCount + ballisticFrameCount + groundLevelFrameCount,
+            groundLevelFrameCount: groundLevelFrameCount,
             format: 'stripped'
         });
     } catch (error) {

@@ -24,6 +24,7 @@
     "lastResolvedClip": null,
     "fallbackCooldown": 0,
     "ballisticAngle": -1,
-    "lastBallisticDirection": null
+    "lastBallisticDirection": null,
+    "spriteCameraAngle": 0
   }
 }

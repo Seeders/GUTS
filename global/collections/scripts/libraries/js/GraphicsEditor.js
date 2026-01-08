@@ -109,9 +109,10 @@ class GraphicsEditor {
      * Displays isometric sprite previews
      * @param {Object} sprites - Object containing sprite data keyed by animation type
      * @param {Object} ballisticSprites - Optional object containing ballistic angle sprite data
+     * @param {Object} groundLevelSprites - Optional object containing ground-level camera angle sprite data
      */
-    displayIsometricSprites(sprites, ballisticSprites = null){
-        this.uiManager.displayIsometricSprites(sprites, ballisticSprites);
+    displayIsometricSprites(sprites, ballisticSprites = null, groundLevelSprites = null){
+        this.uiManager.displayIsometricSprites(sprites, ballisticSprites, groundLevelSprites);
     }
 
     /**
