@@ -355,13 +355,13 @@ class ParticleRenderSystem extends GUTS.BaseSystem {
             const worldPos = voxelGrid.gridToWorld(x, y, z);
             let renderY = worldPos.y;
 
-            // Surface water voxels that are still "searching" should be hidden inside the water body
-            // Any water on the surface (air above) that has support below gets offset down
+            // Water on top of other water (surface layer on water) is "searching" - hide it inside
+            // This is water with air/nothing above but water below
             if (mat === WATER) {
                 const aboveMat = voxelGrid.get(x, y + 1, z);
                 const belowMat = voxelGrid.get(x, y - 1, z);
-                // Surface water (air above) with any support below (water or solid)
-                if (aboveMat !== WATER && belowMat !== voxelGrid.MATERIAL.AIR) {
+                // Top surface water that's sitting on other water (not on solid ground)
+                if (aboveMat !== WATER && belowMat === WATER) {
                     renderY -= 1.0;
                 }
             }
