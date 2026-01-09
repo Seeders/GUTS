@@ -4,10 +4,20 @@
         <div id="canvasContainer">
             <canvas id="gameCanvas"></canvas>
         </div>
-        <div id="statsOverlay">
-            <div>GUTS ECS Boid Simulation</div>
-            <div id="boidCount">Boids: 100,000</div>
-            <div id="fpsCounter">FPS: --</div>
+        <div id="controlPanel">
+            <div class="panel-title">GUTS ECS Boid Simulation</div>
+            <div class="control-group">
+                <label for="boidCountInput">Boid Count:</label>
+                <input type="number" id="boidCountInput" value="100000" min="100" max="500000" step="1000">
+            </div>
+            <div class="control-group">
+                <button id="restartBtn">Restart Simulation</button>
+            </div>
+            <div class="stats-group">
+                <div id="boidCount">Boids: 60,000</div>
+                <div id="fpsCounter">FPS: --</div>
+                <div id="entityCount">Entities: --</div>
+            </div>
         </div>
     </div>
 </div>

@@ -1,7 +1,7 @@
 /**
  * BoidRenderSystem - Renders boids using Three.js instanced meshes
  *
- * Uses instanced rendering for efficient display of 100k boids.
+ * Uses instanced rendering for efficient display of large boid counts.
  */
 class BoidRenderSystem extends GUTS.BaseSystem {
     constructor(game) {
@@ -15,7 +15,8 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         this.controls = null;
 
         // Boid mesh
-        this.boidMesh = null;
+        this.boidGeometry = null;
+        this.boidMaterial = null;
         this.instancedMesh = null;
 
         // Target and obstacle meshes
@@ -23,7 +24,7 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         this.obstacleMeshes = [];
 
         // Configuration
-        this.NUM_BOIDS = 60000;
+        this.NUM_BOIDS = 100000;
 
         // Camera settings
         this.cameraDistance = 150;
@@ -74,7 +75,7 @@ class BoidRenderSystem extends GUTS.BaseSystem {
 
         this.renderer = new THREE.WebGLRenderer({
             canvas: canvas,
-            antialias: false, // Disable for performance with 100k objects
+            antialias: false, // Disable for performance with many objects
             powerPreference: 'high-performance'
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -108,17 +109,17 @@ class BoidRenderSystem extends GUTS.BaseSystem {
 
     createBoidGeometry() {
         // Create a simple fish-like geometry (cone pointing forward)
-        const geometry = new THREE.ConeGeometry(0.3, 1.0, 4);
-        geometry.rotateX(Math.PI / 2); // Point forward along Z axis
+        this.boidGeometry = new THREE.ConeGeometry(0.3, 1.0, 4);
+        this.boidGeometry.rotateX(Math.PI / 2); // Point forward along Z axis
 
         // Create material
-        const material = new THREE.MeshPhongMaterial({
+        this.boidMaterial = new THREE.MeshPhongMaterial({
             color: 0xff6600,
             flatShading: true
         });
 
         // Create instanced mesh
-        this.instancedMesh = new THREE.InstancedMesh(geometry, material, this.NUM_BOIDS);
+        this.instancedMesh = new THREE.InstancedMesh(this.boidGeometry, this.boidMaterial, this.NUM_BOIDS);
         this.instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         this.scene.add(this.instancedMesh);
     }
@@ -145,6 +146,29 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         }
     }
 
+    /**
+     * Called when the boid count changes - recreates the instanced mesh
+     */
+    onBoidCountChanged(newCount) {
+        console.log(`BoidRenderSystem: Updating instance count to ${newCount}`);
+
+        // Remove old instanced mesh
+        if (this.instancedMesh) {
+            this.scene.remove(this.instancedMesh);
+            this.instancedMesh.dispose();
+        }
+
+        // Update count
+        this.NUM_BOIDS = newCount;
+
+        // Create new instanced mesh with new count
+        this.instancedMesh = new THREE.InstancedMesh(this.boidGeometry, this.boidMaterial, this.NUM_BOIDS);
+        this.instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        this.scene.add(this.instancedMesh);
+
+        console.log(`BoidRenderSystem: Instance count updated to ${newCount}`);
+    }
+
     render() {
         if (!this.renderer || !this.scene || !this.camera) return;
 
@@ -153,32 +177,38 @@ class BoidRenderSystem extends GUTS.BaseSystem {
 
         // Update instanced mesh matrices - directly set the array for performance
         const matrices = flockingSystem.getInstanceMatrices();
-        if (matrices) {
-            this.instancedMesh.instanceMatrix.array.set(matrices);
+        if (matrices && this.instancedMesh) {
+            // Handle case where matrices array size matches or is smaller than instance count
+            const expectedSize = this.NUM_BOIDS * 16;
+            if (matrices.length >= expectedSize) {
+                this.instancedMesh.instanceMatrix.array.set(matrices.subarray(0, expectedSize));
+            } else {
+                this.instancedMesh.instanceMatrix.array.set(matrices);
+            }
             this.instancedMesh.instanceMatrix.needsUpdate = true;
         }
 
         // Update target positions
-        for (let i = 0; i < flockingSystem.targetPositions.length && i < this.targetMeshes.length; i++) {
-            const pos = flockingSystem.targetPositions[i];
-            this.targetMeshes[i].position.set(pos.x, pos.y, pos.z);
+        for (let i = 0; i < flockingSystem.NUM_TARGETS && i < this.targetMeshes.length; i++) {
+            this.targetMeshes[i].position.set(
+                flockingSystem.targetX[i],
+                flockingSystem.targetY[i],
+                flockingSystem.targetZ[i]
+            );
         }
 
         // Update obstacle positions
-        for (let i = 0; i < flockingSystem.obstaclePositions.length && i < this.obstacleMeshes.length; i++) {
-            const pos = flockingSystem.obstaclePositions[i];
-            this.obstacleMeshes[i].position.set(pos.x, pos.y, pos.z);
+        for (let i = 0; i < flockingSystem.NUM_OBSTACLES && i < this.obstacleMeshes.length; i++) {
+            this.obstacleMeshes[i].position.set(
+                flockingSystem.obstacleX[i],
+                flockingSystem.obstacleY[i],
+                flockingSystem.obstacleZ[i]
+            );
         }
 
         // Update controls
         if (this.controls) {
             this.controls.update();
-        }
-
-        // Update FPS counter in UI
-        const fpsCounter = document.getElementById('fpsCounter');
-        if (fpsCounter) {
-            fpsCounter.textContent = `FPS: ${flockingSystem.getFps()}`;
         }
 
         // Render

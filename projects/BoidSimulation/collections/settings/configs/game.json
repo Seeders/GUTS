@@ -3,6 +3,7 @@
   "imageSize": 128,
   "title": "GUTS ECS Boid Simulation",
   "tickRate": 120,
+  "maxEntities": 1048576,
   "isIsometric": false,
   "libraries": [
     "GameServices",
