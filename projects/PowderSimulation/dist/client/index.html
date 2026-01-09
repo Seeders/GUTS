@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUTS ECS Boid Simulation - 100k Boids</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #025e83;
+            overflow: hidden;
+        }
+        #game-canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        #appContainer {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<canvas id="game-canvas"></canvas>
+<div id="appContainer"></div>
+<script src="./game.js"></script>
+<script>
+    (() => {
+        const engine = new GUTS.Engine("appContainer");
+        async function main() {
+            await window.COMPILED_GAME.ready;
+            await engine.init("BoidSimulation");
+
+            if (window.COMPILED_GAME && !window.COMPILED_GAME.initialized) {
+                window.COMPILED_GAME.init(engine);
+            }
+
+            window.game = engine.gameInstance;
+            console.log('GUTS ECS Boid Simulation started - 100k boids');
+        }
+        window.onload = main;
+    })();
+</script>
+</body>
+</html>

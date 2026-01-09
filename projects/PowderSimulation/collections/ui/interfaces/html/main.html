@@ -1,0 +1,84 @@
+<!-- 3D Powder Simulation -->
+<div id="gameScreen" class="screen active">
+    <div id="gameContainer">
+        <div id="canvasContainer">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- Tool Palette -->
+        <div id="toolPalette">
+            <div class="panel-title">3D Powder Simulation</div>
+
+            <div class="section-title">Materials</div>
+            <div class="material-grid">
+                <div class="material-btn" data-material="sand" title="Sand">
+                    <div class="material-swatch sand"></div>
+                    <span>Sand</span>
+                </div>
+                <div class="material-btn" data-material="water" title="Water">
+                    <div class="material-swatch water"></div>
+                    <span>Water</span>
+                </div>
+                <div class="material-btn" data-material="stone" title="Stone">
+                    <div class="material-swatch stone"></div>
+                    <span>Stone</span>
+                </div>
+                <div class="material-btn" data-material="wood" title="Wood">
+                    <div class="material-swatch wood"></div>
+                    <span>Wood</span>
+                </div>
+                <div class="material-btn" data-material="fire" title="Fire">
+                    <div class="material-swatch fire"></div>
+                    <span>Fire</span>
+                </div>
+                <div class="material-btn" data-material="erase" title="Erase">
+                    <div class="material-swatch erase"></div>
+                    <span>Erase</span>
+                </div>
+                <div class="material-btn" data-material="emitter" title="Place Emitter">
+                    <div class="material-swatch emitter"></div>
+                    <span>Emitter</span>
+                </div>
+            </div>
+
+            <div class="section-title">Brush</div>
+            <div class="control-group">
+                <label for="brushSize">Size: <span id="brushSizeValue">3</span></label>
+                <input type="range" id="brushSize" min="1" max="15" value="3">
+            </div>
+
+            <div class="control-group">
+                <label for="spawnHeight">Height: <span id="spawnHeightValue">50</span></label>
+                <input type="range" id="spawnHeight" min="10" max="95" value="50">
+            </div>
+
+            <div class="section-title">Controls</div>
+            <div class="control-group">
+                <button id="clearAll">Clear All</button>
+            </div>
+            <div class="control-group">
+                <button id="pauseBtn">Pause</button>
+            </div>
+
+            <div class="section-title">Stats</div>
+            <div class="stats-group">
+                <div>Active: <span id="activeCount">0</span></div>
+                <div>Settled: <span id="settledCount">0</span></div>
+                <div>FPS: <span id="fpsDisplay">0</span></div>
+            </div>
+
+            <div class="help-text">
+                <strong>Controls:</strong><br>
+                Left-click: Spawn/Place<br>
+                Right-drag: Rotate camera<br>
+                Middle-drag: Pan camera<br>
+                Scroll: Zoom<br>
+                <br>
+                <strong>Emitter Mode:</strong><br>
+                Click: Place emitter<br>
+                Drag: Move emitter<br>
+                Double-click: Toggle on/off
+            </div>
+        </div>
+    </div>
+</div>
