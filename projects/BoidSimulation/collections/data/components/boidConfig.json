@@ -1,0 +1,11 @@
+{
+  "title": "boidConfig",
+  "schema": {
+    "separationWeight": 1.0,
+    "alignmentWeight": 1.0,
+    "cohesionWeight": 1.0,
+    "targetWeight": 2.0,
+    "obstacleAversionDistance": 30.0,
+    "moveSpeed": 25.0
+  }
+}

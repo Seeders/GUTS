@@ -1,0 +1,42 @@
+{
+  "gridSize": 48,
+  "imageSize": 128,
+  "title": "GUTS ECS Boid Simulation",
+  "tickRate": 120,
+  "isIsometric": false,
+  "libraries": [
+    "GameServices",
+    "threejs",
+    "BaseECSGame",
+    "ShapeFactory",
+    "ImageManager",
+    "ModelManager",
+    "SpatialGrid",
+    "CoordinateTranslator",
+    "CanvasUtility",
+    "GameState",
+    "TileMap",
+    "three_OrbitControls",
+    "GLTFLoader",
+    "ECSGame",
+    "BaseLoader",
+    "GameLoader",
+    "BaseSystem",
+    "SeededRandom",
+    "ComponentGenerator",
+    "SceneManager"
+  ],
+  "systems": [
+    "BoidFlockingSystem",
+    "BoidRenderSystem"
+  ],
+  "classes": [],
+  "fileName": "game",
+  "interface": "main",
+  "appLibrary": "ECSGame",
+  "canvasWidth": 1920,
+  "canvasHeight": 1080,
+  "is3D": true,
+  "appLoaderLibrary": "GameLoader",
+  "initialScene": "simulation"
+}

@@ -1,0 +1,22 @@
+{
+  "title": "Editor Config",
+  "editorCategories": "",
+  "theme": "claude2",
+  "editorModules": [
+    "terrainModule",
+    "sceneModule",
+    "graphicsModule",
+    "spriteAnimationModule",
+    "scriptModule",
+    "aiPromptModule",
+    "audioModule",
+    "exportScriptModule",
+    "textureEditor",
+    "behaviorTreeModule",
+    "particleEffectSystemModule",
+    "particleEffectModule",
+    "simulationModule"
+  ],
+  "path": "/",
+  "fileName": "editor"
+}

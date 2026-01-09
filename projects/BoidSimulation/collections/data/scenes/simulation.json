@@ -1,0 +1,9 @@
+{
+  "title": "simulation",
+  "systems": [
+    "BoidFlockingSystem",
+    "BoidRenderSystem"
+  ],
+  "clientSystems": [],
+  "serverSystems": []
+}

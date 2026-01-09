@@ -1,0 +1,7 @@
+{
+  "id": "sounds",
+  "name": "Sounds",
+  "singular": "Sound",
+  "objectTypeCategory": "audio",
+  "isCore": true
+}
