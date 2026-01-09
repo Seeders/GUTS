@@ -35,10 +35,6 @@
                     <div class="material-swatch erase"></div>
                     <span>Erase</span>
                 </div>
-                <div class="material-btn" data-material="emitter" title="Place Emitter">
-                    <div class="material-swatch emitter"></div>
-                    <span>Emitter</span>
-                </div>
             </div>
 
             <div class="section-title">Brush</div>
@@ -47,12 +43,10 @@
                 <input type="range" id="brushSize" min="1" max="15" value="3">
             </div>
 
-            <div class="control-group">
-                <label for="spawnHeight">Height: <span id="spawnHeightValue">50</span></label>
-                <input type="range" id="spawnHeight" min="10" max="95" value="50">
-            </div>
-
             <div class="section-title">Controls</div>
+            <div class="control-group">
+                <button id="createEmitterBtn">Create Emitter</button>
+            </div>
             <div class="control-group">
                 <button id="clearAll">Clear All</button>
             </div>
@@ -74,10 +68,11 @@
                 Middle-drag: Pan camera<br>
                 Scroll: Zoom<br>
                 <br>
-                <strong>Emitter Mode:</strong><br>
-                Click: Place emitter<br>
-                Drag: Move emitter<br>
-                Double-click: Toggle on/off
+                <strong>Emitters:</strong><br>
+                Click emitter: Select<br>
+                Drag gizmo arrows: Move<br>
+                Double-click: Toggle on/off<br>
+                Click elsewhere/Esc: Deselect
             </div>
         </div>
     </div>

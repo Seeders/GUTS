@@ -18,9 +18,6 @@ class SpawnSystem extends GUTS.BaseSystem {
         this.mouseX = 0;
         this.mouseY = 0;
 
-        // Spawn plane Y position (adjustable)
-        this.spawnPlaneY = 50;
-
         // Tool modes
         this.TOOLS = {
             SAND: 1,
@@ -28,16 +25,14 @@ class SpawnSystem extends GUTS.BaseSystem {
             STONE: 3,
             FIRE: 4,
             WOOD: 5,
-            ERASE: -1,
-            EMITTER: -2
+            ERASE: -1
         };
 
         // Current tool mode
-        this.currentTool = 'spawn'; // 'spawn', 'emitter', 'erase'
+        this.currentTool = 'spawn'; // 'spawn', 'erase'
 
-        // Emitter dragging state
-        this.isDraggingEmitter = false;
-        this.emitterMaterialType = 1; // Material for new emitters
+        // Material type for new emitters
+        this.emitterMaterialType = 1;
     }
 
     init() {
@@ -59,46 +54,64 @@ class SpawnSystem extends GUTS.BaseSystem {
         }
         console.log('SpawnSystem: Setting up mouse handlers on canvas');
 
-        // Mouse down - start spawning or handle emitter
+        // Mouse down - start spawning or handle emitter selection
         canvas.addEventListener('mousedown', (e) => {
             if (e.button === 0) { // Left click
                 this.mouseX = e.clientX;
                 this.mouseY = e.clientY;
 
-                if (this.currentTool === 'emitter') {
-                    this.handleEmitterClick();
-                } else {
-                    this.isSpawning = true;
-                    // Immediately spawn on click (don't wait for tick)
-                    this.spawnAtMouse();
+                const emitterSystem = this.game.emitterSystem;
+
+                // Check if clicking on gizmo first (if visible)
+                if (emitterSystem && emitterSystem.isClickOnGizmo(this.mouseX, this.mouseY)) {
+                    // Let the gizmo handle it, don't spawn
+                    return;
                 }
+
+                // Check if clicking on an existing emitter
+                if (emitterSystem) {
+                    const hitEmitter = emitterSystem.raycastEmitter(this.mouseX, this.mouseY);
+                    if (hitEmitter !== -1) {
+                        // Select the emitter (gizmo will handle dragging)
+                        emitterSystem.selectEmitter(hitEmitter);
+                        return;
+                    }
+
+                    // Clicked on nothing - deselect emitter if one is selected
+                    // Don't spawn on this click, just deselect
+                    if (emitterSystem.selectedEmitter !== -1) {
+                        emitterSystem.selectEmitter(-1);
+                        return;
+                    }
+                }
+
+                // Otherwise, spawn particles
+                this.isSpawning = true;
+                // Immediately spawn on click (don't wait for tick)
+                this.spawnAtMouse();
             }
         });
 
-        // Mouse move - update position and drag emitter
+        // Mouse move - update position
         canvas.addEventListener('mousemove', (e) => {
             this.mouseX = e.clientX;
             this.mouseY = e.clientY;
-
-            if (this.isDraggingEmitter) {
-                this.dragEmitter();
-            }
         });
 
-        // Mouse up - stop spawning or dragging
+        // Mouse up - stop spawning
         canvas.addEventListener('mouseup', (e) => {
             if (e.button === 0) {
                 this.isSpawning = false;
-                this.isDraggingEmitter = false;
             }
         });
 
-        // Double click to toggle emitter on/off
+        // Double click to toggle emitter on/off (if clicking on an emitter)
         canvas.addEventListener('dblclick', (e) => {
-            if (this.currentTool === 'emitter') {
-                const emitterSystem = this.game.emitterSystem;
-                if (emitterSystem && emitterSystem.selectedEmitter !== -1) {
-                    emitterSystem.toggleEmitter(emitterSystem.selectedEmitter);
+            const emitterSystem = this.game.emitterSystem;
+            if (emitterSystem) {
+                const hitEmitter = emitterSystem.raycastEmitter(e.clientX, e.clientY);
+                if (hitEmitter !== -1) {
+                    emitterSystem.toggleEmitter(hitEmitter);
                 }
             }
         });
@@ -111,6 +124,16 @@ class SpawnSystem extends GUTS.BaseSystem {
         // Prevent context menu on right click
         canvas.addEventListener('contextmenu', (e) => {
             e.preventDefault();
+        });
+
+        // Escape key to deselect emitter
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const emitterSystem = this.game.emitterSystem;
+                if (emitterSystem && emitterSystem.selectedEmitter !== -1) {
+                    emitterSystem.selectEmitter(-1);
+                }
+            }
         });
     }
 
@@ -140,13 +163,11 @@ class SpawnSystem extends GUTS.BaseSystem {
                 });
             }
 
-            // Spawn height slider
-            const heightSlider = document.getElementById('spawnHeight');
-            const heightValue = document.getElementById('spawnHeightValue');
-            if (heightSlider) {
-                heightSlider.addEventListener('input', (e) => {
-                    this.spawnPlaneY = parseInt(e.target.value, 10);
-                    if (heightValue) heightValue.textContent = this.spawnPlaneY;
+            // Create Emitter button
+            const createEmitterBtn = document.getElementById('createEmitterBtn');
+            if (createEmitterBtn) {
+                createEmitterBtn.addEventListener('click', () => {
+                    this.createEmitterAtCenter();
                 });
             }
 
@@ -205,9 +226,6 @@ class SpawnSystem extends GUTS.BaseSystem {
             case 'erase':
                 this.selectedMaterial = this.TOOLS.ERASE;
                 this.currentTool = 'erase';
-                break;
-            case 'emitter':
-                this.currentTool = 'emitter';
                 break;
             default:
                 this.selectedMaterial = voxelGrid.MATERIAL.SAND;
@@ -405,63 +423,33 @@ class SpawnSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Handle click in emitter mode
+     * Create an emitter at the center of the box for the currently selected material
      */
-    handleEmitterClick() {
-        console.log('handleEmitterClick called');
-        console.log('this.game:', this.game);
-        console.log('this.game.emitterSystem:', this.game.emitterSystem);
+    createEmitterAtCenter() {
         const emitterSystem = this.game.emitterSystem;
-        if (!emitterSystem) {
-            console.log('No emitter system found!');
+        const voxelGrid = this.game.voxelGridSystem;
+
+        if (!emitterSystem || !voxelGrid) {
+            console.log('Cannot create emitter - missing system');
             return;
         }
 
-        // Check if clicking on existing emitter
-        const hitEmitter = emitterSystem.raycastEmitter(this.mouseX, this.mouseY);
-        console.log('Raycast hit emitter:', hitEmitter);
-
-        if (hitEmitter !== -1) {
-            // Select and start dragging the emitter
-            emitterSystem.selectEmitter(hitEmitter);
-            this.isDraggingEmitter = true;
-        } else {
-            // Create new emitter at click position
-            const worldPos = this.raycastToSpawnPlane();
-            console.log('World pos for emitter:', worldPos);
-            if (worldPos) {
-                const voxelGrid = this.game.voxelGridSystem;
-                const bounds = voxelGrid.getWorldBounds();
-
-                // Clamp to bounds
-                const x = Math.max(bounds.minX + 2, Math.min(bounds.maxX - 2, worldPos.x));
-                const z = Math.max(bounds.minZ + 2, Math.min(bounds.maxZ - 2, worldPos.z));
-
-                console.log('Creating emitter at:', x, this.spawnPlaneY, z, 'material:', this.emitterMaterialType);
-                const eid = emitterSystem.createEmitter(x, this.spawnPlaneY, z, this.emitterMaterialType);
-                emitterSystem.selectEmitter(eid);
-            }
-        }
-    }
-
-    /**
-     * Drag selected emitter to mouse position
-     */
-    dragEmitter() {
-        const emitterSystem = this.game.emitterSystem;
-        if (!emitterSystem || emitterSystem.selectedEmitter === -1) return;
-
-        const worldPos = this.raycastToSpawnPlane();
-        if (!worldPos) return;
-
-        const voxelGrid = this.game.voxelGridSystem;
         const bounds = voxelGrid.getWorldBounds();
 
-        // Clamp to bounds
-        const x = Math.max(bounds.minX + 2, Math.min(bounds.maxX - 2, worldPos.x));
-        const z = Math.max(bounds.minZ + 2, Math.min(bounds.maxZ - 2, worldPos.z));
+        // Calculate center of the box
+        const centerX = (bounds.minX + bounds.maxX) / 2;
+        const centerZ = (bounds.minZ + bounds.maxZ) / 2;
+        const y = 50; // Fixed emitter spawn height
 
-        emitterSystem.moveEmitter(emitterSystem.selectedEmitter, x, this.spawnPlaneY, z);
+        // Use the currently selected material (unless it's erase)
+        let material = this.selectedMaterial;
+        if (material === this.TOOLS.ERASE) {
+            material = voxelGrid.MATERIAL.SAND; // Default to sand for erase tool
+        }
+
+        console.log('Creating emitter at center:', centerX, y, centerZ, 'material:', material);
+        emitterSystem.createEmitter(centerX, y, centerZ, material);
+        // Don't auto-select - user clicks to select and show gizmo
     }
 
     /**

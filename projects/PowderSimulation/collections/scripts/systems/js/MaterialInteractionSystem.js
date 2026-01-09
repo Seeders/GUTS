@@ -118,9 +118,13 @@ class MaterialInteractionSystem extends GUTS.BaseSystem {
 
             let hydration = this.livingWoodHydration.get(key) || 0;
 
-            // Direct water contact fills hydration
-            if (this.hasAdjacentMaterial(voxelGrid, x, y, z, WATER)) {
+            // Direct water contact fills hydration and CONSUMES the water
+            const adjacentWater = this.getAdjacentCellsWithMaterial(voxelGrid, x, y, z, WATER);
+            if (adjacentWater.length > 0) {
                 hydration = this.LIVING_MAX_HYDRATION;
+                // Consume one adjacent water voxel
+                const waterPos = adjacentWater[0];
+                toConvert.push({ x: waterPos.x, y: waterPos.y, z: waterPos.z, from: WATER, to: AIR });
             }
             // Wet wood contact adds some hydration
             else if (this.hasAdjacentMaterial(voxelGrid, x, y, z, WET_WOOD)) {
@@ -176,21 +180,13 @@ class MaterialInteractionSystem extends GUTS.BaseSystem {
                 continue;
             }
 
-            // Hydrated living wood spreads life to neighbors
+            // Hydrated living wood spreads life to neighbors (costs hydration)
             if (hydration > this.LIVING_SHARE_THRESHOLD) {
                 // Convert adjacent wet wood to living wood
                 const adjacentWetWood = this.getAdjacentCellsWithMaterial(voxelGrid, x, y, z, WET_WOOD);
                 for (const pos of adjacentWetWood) {
                     if (Math.random() < this.LIVING_GROW_CHANCE * 3) {
                         toConvert.push({ x: pos.x, y: pos.y, z: pos.z, from: WET_WOOD, to: LIVING_WOOD });
-                    }
-                }
-
-                // Convert adjacent dry wood to wet wood
-                const adjacentWood = this.getAdjacentCellsWithMaterial(voxelGrid, x, y, z, WOOD);
-                for (const pos of adjacentWood) {
-                    if (Math.random() < this.LIVING_GROW_CHANCE * 2) {
-                        toConvert.push({ x: pos.x, y: pos.y, z: pos.z, from: WOOD, to: WET_WOOD });
                     }
                 }
             }
@@ -251,7 +247,9 @@ class MaterialInteractionSystem extends GUTS.BaseSystem {
         // Apply conversions
         for (const conv of toConvert) {
             if (voxelGrid.get(conv.x, conv.y, conv.z) === conv.from) {
-                voxelGrid.set(conv.x, conv.y, conv.z, conv.to);
+                // Don't wake neighbors when absorbing water - this would cause water multiplication!
+                const shouldWakeNeighbors = !(conv.from === WATER && conv.to === AIR);
+                voxelGrid.set(conv.x, conv.y, conv.z, conv.to, shouldWakeNeighbors);
 
                 // Track new wet wood and living wood
                 const key = `${conv.x},${conv.y},${conv.z}`;
@@ -360,14 +358,27 @@ class MaterialInteractionSystem extends GUTS.BaseSystem {
                     );
                 }
 
-                // Water touching wood gets absorbed
+                // Water touching any wood type gets absorbed
                 const adjacentWood = this.getAdjacentCellsWithMaterial(voxelGrid, gridPos.x, gridPos.y, gridPos.z, WOOD);
+                const adjacentWetWood = this.getAdjacentCellsWithMaterial(voxelGrid, gridPos.x, gridPos.y, gridPos.z, WET_WOOD);
+                const adjacentLivingWood = this.getAdjacentCellsWithMaterial(voxelGrid, gridPos.x, gridPos.y, gridPos.z, LIVING_WOOD);
+
+                // Dry wood absorbs water and becomes wet
                 for (const pos of adjacentWood) {
                     if (Math.random() < this.WATER_ABSORB_CHANCE * 2) {
                         voxelGrid.set(pos.x, pos.y, pos.z, WET_WOOD);
                         this.wetWoodVoxels.add(`${pos.x},${pos.y},${pos.z}`);
                         toDestroy.push(eid); // Water particle consumed
                         break;
+                    }
+                }
+
+                // Wet wood and living wood also absorb water (just destroy the water)
+                if (!toDestroy.includes(eid)) {
+                    if (adjacentWetWood.length > 0 || adjacentLivingWood.length > 0) {
+                        if (Math.random() < this.WATER_ABSORB_CHANCE * 3) {
+                            toDestroy.push(eid); // Water particle consumed by wet/living wood
+                        }
                     }
                 }
             }

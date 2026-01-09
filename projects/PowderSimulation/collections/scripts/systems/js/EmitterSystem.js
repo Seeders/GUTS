@@ -11,12 +11,15 @@ class EmitterSystem extends GUTS.BaseSystem {
 
         // Selected emitter for editing
         this.selectedEmitter = -1;
-        this.isDragging = false;
-        this.dragOffset = { x: 0, z: 0 };
 
         // Emitter visuals
         this.emitterMeshes = new Map(); // eid -> THREE.Mesh
         this.visualsReady = false;
+
+        // Gizmo for emitter manipulation
+        this.gizmoGroup = null;
+        this.isDragging = false;
+        this.selectedAxis = null;
 
         // Frame counter for spawn rate limiting
         this.frameCounter = 0;
@@ -25,7 +28,46 @@ class EmitterSystem extends GUTS.BaseSystem {
     init() {
         console.log('EmitterSystem initializing...');
         this.setupEmitterVisuals();
+        this.setupTransformControls();
+        // Create default emitters after systems are ready
+        setTimeout(() => this.createDefaultEmitters(), 500);
         console.log('EmitterSystem initialized');
+    }
+
+    /**
+     * Create default sand and water emitters
+     */
+    createDefaultEmitters() {
+        const voxelGrid = this.game.voxelGridSystem;
+        if (!voxelGrid) {
+            console.log('EmitterSystem: VoxelGrid not ready, retrying...');
+            setTimeout(() => this.createDefaultEmitters(), 100);
+            return;
+        }
+
+        const bounds = voxelGrid.getWorldBounds();
+        const centerX = (bounds.minX + bounds.maxX) / 2;
+        const centerZ = (bounds.minZ + bounds.maxZ) / 2;
+        const y = 50;
+
+        // Create sand emitter (offset to the left)
+        const sandEid = this.createEmitter(centerX - 15, y, centerZ, voxelGrid.MATERIAL.SAND);
+        // Turn it on
+        const enabled = this.game.getFieldArray('emitter', 'enabled');
+        if (enabled && sandEid !== undefined) {
+            enabled[sandEid] = 1;
+            this.updateEmitterMesh(sandEid);
+        }
+
+        // Create water emitter (offset to the right)
+        const waterEid = this.createEmitter(centerX + 15, y, centerZ, voxelGrid.MATERIAL.WATER);
+        // Turn it on
+        if (enabled && waterEid !== undefined) {
+            enabled[waterEid] = 1;
+            this.updateEmitterMesh(waterEid);
+        }
+
+        console.log('EmitterSystem: Created default sand and water emitters');
     }
 
     setupEmitterVisuals() {
@@ -54,6 +96,248 @@ class EmitterSystem extends GUTS.BaseSystem {
         this.visualsReady = true;
     }
 
+    setupTransformControls() {
+        const renderSystem = this.game.particleRenderSystem;
+        if (!renderSystem || !renderSystem.camera || !renderSystem.renderer) {
+            // Retry after render system is ready
+            setTimeout(() => this.setupTransformControls(), 100);
+            return;
+        }
+
+        // Create custom gizmo group for translate arrows
+        this.gizmoGroup = new THREE.Group();
+        this.gizmoGroup.visible = false;
+        renderSystem.scene.add(this.gizmoGroup);
+
+        const arrowLength = 8;
+        const arrowHeadLength = 2;
+        const arrowHeadWidth = 1;
+
+        // X-axis (red)
+        const xCylinderGeometry = new THREE.CylinderGeometry(0.3, 0.3, arrowLength - arrowHeadLength, 8);
+        const xCylinderMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const xCylinder = new THREE.Mesh(xCylinderGeometry, xCylinderMaterial);
+        xCylinder.rotation.z = Math.PI / 2;
+        xCylinder.position.x = (arrowLength - arrowHeadLength) / 2;
+        xCylinder.name = "translate-x";
+        this.gizmoGroup.add(xCylinder);
+
+        const xConeGeometry = new THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);
+        const xConeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const xCone = new THREE.Mesh(xConeGeometry, xConeMaterial);
+        xCone.rotation.z = -Math.PI / 2;
+        xCone.position.x = arrowLength - arrowHeadLength / 2;
+        xCone.name = "translate-x";
+        this.gizmoGroup.add(xCone);
+
+        // Y-axis (green)
+        const yCylinderGeometry = new THREE.CylinderGeometry(0.3, 0.3, arrowLength - arrowHeadLength, 8);
+        const yCylinderMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const yCylinder = new THREE.Mesh(yCylinderGeometry, yCylinderMaterial);
+        yCylinder.position.y = (arrowLength - arrowHeadLength) / 2;
+        yCylinder.name = "translate-y";
+        this.gizmoGroup.add(yCylinder);
+
+        const yConeGeometry = new THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);
+        const yConeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const yCone = new THREE.Mesh(yConeGeometry, yConeMaterial);
+        yCone.position.y = arrowLength - arrowHeadLength / 2;
+        yCone.name = "translate-y";
+        this.gizmoGroup.add(yCone);
+
+        // Z-axis (blue)
+        const zCylinderGeometry = new THREE.CylinderGeometry(0.3, 0.3, arrowLength - arrowHeadLength, 8);
+        const zCylinderMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        const zCylinder = new THREE.Mesh(zCylinderGeometry, zCylinderMaterial);
+        zCylinder.rotation.x = Math.PI / 2;
+        zCylinder.position.z = (arrowLength - arrowHeadLength) / 2;
+        zCylinder.name = "translate-z";
+        this.gizmoGroup.add(zCylinder);
+
+        const zConeGeometry = new THREE.ConeGeometry(arrowHeadWidth, arrowHeadLength, 8);
+        const zConeMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        const zCone = new THREE.Mesh(zConeGeometry, zConeMaterial);
+        zCone.rotation.x = Math.PI / 2;
+        zCone.position.z = arrowLength - arrowHeadLength / 2;
+        zCone.name = "translate-z";
+        this.gizmoGroup.add(zCone);
+
+        // Setup mouse handling for gizmo
+        this.isDragging = false;
+        this.selectedAxis = null;
+        this.mouse = new THREE.Vector2();
+        this.lastMouse = new THREE.Vector2();
+        this.raycaster = new THREE.Raycaster();
+
+        const canvas = renderSystem.renderer.domElement;
+        canvas.addEventListener('mousedown', (e) => this.onGizmoMouseDown(e));
+        canvas.addEventListener('mousemove', (e) => this.onGizmoMouseMove(e));
+        canvas.addEventListener('mouseup', (e) => this.onGizmoMouseUp(e));
+
+        console.log('EmitterSystem: Custom gizmo initialized');
+    }
+
+    onGizmoMouseDown(event) {
+        if (!this.gizmoGroup || !this.gizmoGroup.visible) return;
+        if (event.button !== 0) return; // Left click only
+
+        const renderSystem = this.game.particleRenderSystem;
+        const canvas = renderSystem.renderer.domElement;
+        const rect = canvas.getBoundingClientRect();
+        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        this.raycaster.setFromCamera(this.mouse, renderSystem.camera);
+        const intersects = this.raycaster.intersectObjects(this.gizmoGroup.children, true);
+
+        if (intersects.length > 0) {
+            const object = intersects[0].object;
+            this.selectedAxis = object.name.split('-')[1];
+            this.isDragging = true;
+            this.lastMouse.copy(this.mouse);
+
+            // Disable orbit controls while dragging
+            if (renderSystem.controls) {
+                renderSystem.controls.enabled = false;
+            }
+
+            event.stopPropagation();
+        }
+    }
+
+    onGizmoMouseMove(event) {
+        if (!this.isDragging || !this.selectedAxis || this.selectedEmitter === -1) return;
+
+        const renderSystem = this.game.particleRenderSystem;
+        const canvas = renderSystem.renderer.domElement;
+        const rect = canvas.getBoundingClientRect();
+        this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        const mesh = this.emitterMeshes.get(this.selectedEmitter);
+        if (!mesh) return;
+
+        const camera = renderSystem.camera;
+
+        // Get the world axis direction
+        let axisDirection;
+        if (this.selectedAxis === 'x') {
+            axisDirection = new THREE.Vector3(1, 0, 0);
+        } else if (this.selectedAxis === 'y') {
+            axisDirection = new THREE.Vector3(0, 1, 0);
+        } else if (this.selectedAxis === 'z') {
+            axisDirection = new THREE.Vector3(0, 0, 1);
+        }
+
+        // Project the axis onto screen space to determine how mouse movement maps to world movement
+        const objectPos = mesh.position.clone();
+        const axisEnd = objectPos.clone().add(axisDirection);
+
+        // Project both points to screen space
+        const screenStart = objectPos.clone().project(camera);
+        const screenEnd = axisEnd.clone().project(camera);
+
+        // Get the screen-space direction of the axis
+        const screenAxisDir = new THREE.Vector2(
+            screenEnd.x - screenStart.x,
+            screenEnd.y - screenStart.y
+        );
+
+        // If axis is nearly perpendicular to view, don't move
+        const screenAxisLength = screenAxisDir.length();
+        if (screenAxisLength < 0.001) {
+            this.lastMouse.copy(this.mouse);
+            return;
+        }
+
+        screenAxisDir.normalize();
+
+        // Get mouse delta
+        const deltaMouse = new THREE.Vector2(
+            this.mouse.x - this.lastMouse.x,
+            this.mouse.y - this.lastMouse.y
+        );
+
+        // Project mouse movement onto the screen-space axis direction
+        const projectedMovement = deltaMouse.dot(screenAxisDir);
+
+        // Calculate scale factor based on how much 1 world unit moves in screen space
+        // This makes the emitter track the mouse more accurately
+        const worldMovement = projectedMovement / screenAxisLength;
+
+        // Apply movement along the world axis
+        if (this.selectedAxis === 'x') {
+            mesh.position.x += worldMovement;
+        } else if (this.selectedAxis === 'y') {
+            mesh.position.y += worldMovement;
+        } else if (this.selectedAxis === 'z') {
+            mesh.position.z += worldMovement;
+        }
+
+        // Sync to ECS
+        const posX = this.game.getFieldArray('position', 'x');
+        const posY = this.game.getFieldArray('position', 'y');
+        const posZ = this.game.getFieldArray('position', 'z');
+        if (posX) {
+            posX[this.selectedEmitter] = mesh.position.x;
+            posY[this.selectedEmitter] = mesh.position.y;
+            posZ[this.selectedEmitter] = mesh.position.z;
+        }
+
+        // Update gizmo position
+        this.gizmoGroup.position.copy(mesh.position);
+
+        this.lastMouse.copy(this.mouse);
+    }
+
+    onGizmoMouseUp(event) {
+        if (this.isDragging) {
+            const renderSystem = this.game.particleRenderSystem;
+            if (renderSystem.controls) {
+                renderSystem.controls.enabled = true;
+            }
+        }
+        this.isDragging = false;
+        this.selectedAxis = null;
+    }
+
+    updateGizmoPosition() {
+        if (!this.gizmoGroup) return;
+
+        if (this.selectedEmitter !== -1) {
+            const mesh = this.emitterMeshes.get(this.selectedEmitter);
+            if (mesh) {
+                this.gizmoGroup.position.copy(mesh.position);
+                this.gizmoGroup.visible = true;
+            }
+        } else {
+            this.gizmoGroup.visible = false;
+        }
+    }
+
+    /**
+     * Check if a screen position would hit the gizmo
+     */
+    isClickOnGizmo(screenX, screenY) {
+        if (!this.gizmoGroup || !this.gizmoGroup.visible) return false;
+
+        const renderSystem = this.game.particleRenderSystem;
+        if (!renderSystem || !renderSystem.camera) return false;
+
+        const canvas = renderSystem.renderer.domElement;
+        const rect = canvas.getBoundingClientRect();
+        const mouse = new THREE.Vector2(
+            ((screenX - rect.left) / rect.width) * 2 - 1,
+            -((screenY - rect.top) / rect.height) * 2 + 1
+        );
+
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(mouse, renderSystem.camera);
+        const intersects = raycaster.intersectObjects(this.gizmoGroup.children, true);
+
+        return intersects.length > 0;
+    }
+
     /**
      * Create a new emitter at world position
      */
@@ -69,7 +353,7 @@ class EmitterSystem extends GUTS.BaseSystem {
         this.game.addComponent(eid, 'emitter', {
             materialType: materialType,
             rate: 5,
-            enabled: 1,
+            enabled: 0,  // Off by default
             radius: 2
         });
 
@@ -84,7 +368,8 @@ class EmitterSystem extends GUTS.BaseSystem {
         const renderSystem = this.game.particleRenderSystem;
         if (!renderSystem || !renderSystem.scene) return;
 
-        const mesh = new THREE.Mesh(this.emitterGeometry, this.emitterMaterialActive);
+        // Start with inactive material since emitters are off by default
+        const mesh = new THREE.Mesh(this.emitterGeometry, this.emitterMaterialInactive);
         mesh.position.set(x, y, z);
         mesh.userData.emitterId = eid;
 
@@ -109,6 +394,8 @@ class EmitterSystem extends GUTS.BaseSystem {
 
         if (this.selectedEmitter === eid) {
             this.selectedEmitter = -1;
+            // Hide gizmo when selected emitter is removed
+            this.updateGizmoPosition();
         }
     }
 
@@ -137,6 +424,9 @@ class EmitterSystem extends GUTS.BaseSystem {
         if (eid !== -1) {
             this.updateEmitterMesh(eid);
         }
+
+        // Update gizmo visibility and position
+        this.updateGizmoPosition();
     }
 
     /**

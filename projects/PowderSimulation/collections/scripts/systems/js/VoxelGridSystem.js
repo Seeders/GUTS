@@ -415,7 +415,8 @@ class VoxelGridSystem extends GUTS.BaseSystem {
         for (const move of toMove) {
             if (this.get(move.fromX, move.fromY, move.fromZ) === WATER &&
                 this.get(move.toX, move.toY, move.toZ) === AIR) {
-                this.set(move.fromX, move.fromY, move.fromZ, AIR);
+                // Don't wake neighbors when water moves - this is normal flow, not collapse
+                this.set(move.fromX, move.fromY, move.fromZ, AIR, false);
                 this.set(move.toX, move.toY, move.toZ, WATER);
             }
         }
