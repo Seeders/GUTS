@@ -273,3 +273,50 @@ body {
 .help-text strong {
     color: #888;
 }
+
+/* Toggle UI Button */
+#toggleUIBtn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(20, 20, 35, 0.9);
+    color: #7eb8ff;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1001;
+    border: 1px solid rgba(126, 184, 255, 0.3);
+    transition: all 0.2s;
+}
+
+#toggleUIBtn:hover {
+    background: rgba(126, 184, 255, 0.2);
+}
+
+#toggleUIBtn:active {
+    background: rgba(126, 184, 255, 0.3);
+}
+
+/* Hidden state for tool palette */
+#toolPalette.hidden {
+    transform: translateX(-120%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+#toolPalette {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Disabled button style */
+.control-group button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.control-group button:disabled:hover {
+    background: rgba(126, 184, 255, 0.2);
+}

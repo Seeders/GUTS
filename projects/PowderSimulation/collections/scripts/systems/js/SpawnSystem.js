@@ -128,10 +128,16 @@ class SpawnSystem extends GUTS.BaseSystem {
 
         // Escape key to deselect emitter
         document.addEventListener('keydown', (e) => {
+            const emitterSystem = this.game.emitterSystem;
+            if (!emitterSystem) return;
+
             if (e.key === 'Escape') {
-                const emitterSystem = this.game.emitterSystem;
-                if (emitterSystem && emitterSystem.selectedEmitter !== -1) {
+                if (emitterSystem.selectedEmitter !== -1) {
                     emitterSystem.selectEmitter(-1);
+                }
+            } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                if (emitterSystem.selectedEmitter !== -1) {
+                    emitterSystem.removeEmitter(emitterSystem.selectedEmitter);
                 }
             }
         });
@@ -171,6 +177,14 @@ class SpawnSystem extends GUTS.BaseSystem {
                 });
             }
 
+            // Delete Emitter button
+            const deleteEmitterBtn = document.getElementById('deleteEmitterBtn');
+            if (deleteEmitterBtn) {
+                deleteEmitterBtn.addEventListener('click', () => {
+                    this.deleteSelectedEmitter();
+                });
+            }
+
             // Clear button
             const clearBtn = document.getElementById('clearAll');
             if (clearBtn) {
@@ -185,6 +199,16 @@ class SpawnSystem extends GUTS.BaseSystem {
                 pauseBtn.addEventListener('click', () => {
                     this.togglePause();
                     pauseBtn.textContent = this.game.particlePhysicsSystem?.paused ? 'Resume' : 'Pause';
+                });
+            }
+
+            // Toggle UI button
+            const toggleUIBtn = document.getElementById('toggleUIBtn');
+            const toolPalette = document.getElementById('toolPalette');
+            if (toggleUIBtn && toolPalette) {
+                toggleUIBtn.addEventListener('click', () => {
+                    toolPalette.classList.toggle('hidden');
+                    toggleUIBtn.textContent = toolPalette.classList.contains('hidden') ? 'Menu' : 'Hide';
                 });
             }
 

@@ -5,6 +5,9 @@
             <canvas id="gameCanvas"></canvas>
         </div>
 
+        <!-- Toggle UI Button -->
+        <button id="toggleUIBtn" title="Toggle UI Panel">Menu</button>
+
         <!-- Tool Palette -->
         <div id="toolPalette">
             <div class="panel-title">3D Powder Simulation</div>
@@ -48,6 +51,9 @@
                 <button id="createEmitterBtn">Create Emitter</button>
             </div>
             <div class="control-group">
+                <button id="deleteEmitterBtn" disabled>Delete Emitter</button>
+            </div>
+            <div class="control-group">
                 <button id="clearAll">Clear All</button>
             </div>
             <div class="control-group">
@@ -72,6 +78,7 @@
                 Click emitter: Select<br>
                 Drag gizmo arrows: Move<br>
                 Double-click: Toggle on/off<br>
+                Delete/Backspace: Remove<br>
                 Click elsewhere/Esc: Deselect
             </div>
         </div>

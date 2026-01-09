@@ -393,9 +393,8 @@ class EmitterSystem extends GUTS.BaseSystem {
         this.game.destroyEntity(eid);
 
         if (this.selectedEmitter === eid) {
-            this.selectedEmitter = -1;
-            // Hide gizmo when selected emitter is removed
-            this.updateGizmoPosition();
+            // Use selectEmitter to properly update UI state
+            this.selectEmitter(-1);
         }
     }
 
@@ -427,6 +426,12 @@ class EmitterSystem extends GUTS.BaseSystem {
 
         // Update gizmo visibility and position
         this.updateGizmoPosition();
+
+        // Update delete button state
+        const deleteBtn = document.getElementById('deleteEmitterBtn');
+        if (deleteBtn) {
+            deleteBtn.disabled = (eid === -1);
+        }
     }
 
     /**
