@@ -56,6 +56,15 @@ class Engine extends BaseEngine {
         this.loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);
         await this.loader.load();
 
+        // Allow game config to override tick rate (default is 20 TPS)
+        if (projectConfig.tickRate) {
+            this.tickRate = 1 / projectConfig.tickRate;
+            // Also update the game's fixed delta time to match
+            if (this.gameInstance && this.gameInstance.FIXED_DELTA_TIME !== undefined) {
+                this.gameInstance.FIXED_DELTA_TIME = this.tickRate;
+            }
+        }
+
         // Cache battle phase enum for game loop comparison
         const enums = this.gameInstance.call('getEnums');
         this.battlePhaseEnum = enums?.gamePhase?.battle;
