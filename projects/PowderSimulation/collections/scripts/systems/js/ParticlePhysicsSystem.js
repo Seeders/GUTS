@@ -37,6 +37,9 @@ class ParticlePhysicsSystem extends GUTS.BaseSystem {
 
         // Paused state
         this.paused = false;
+
+        // Speed multiplier (1.0 = normal speed)
+        this.speedMultiplier = 1.0;
     }
 
     init() {
@@ -56,11 +59,12 @@ class ParticlePhysicsSystem extends GUTS.BaseSystem {
     }
 
     update() {
-        this.runPhysics(this.game.deltaTime);
+        // Apply speed multiplier to deltaTime
+        this.runPhysics(this.game.deltaTime * this.speedMultiplier);
     }
 
     runPhysics(dt) {
-        if (this.paused) return;
+        if (this.paused || dt === 0) return;
 
         const voxelGrid = this.game.voxelGridSystem;
         if (!voxelGrid) return;
@@ -171,51 +175,24 @@ class ParticlePhysicsSystem extends GUTS.BaseSystem {
                         collided = false;
                     }
                 } else if (mat === WATER) {
-                    // Water spreads horizontally - check multiple distances
-                    const dirs = [
-                        { dx: -1, dz: 0 },
-                        { dx: 1, dz: 0 },
-                        { dx: 0, dz: -1 },
-                        { dx: 0, dz: 1 },
-                        { dx: -1, dz: -1 },
-                        { dx: -1, dz: 1 },
-                        { dx: 1, dz: -1 },
-                        { dx: 1, dz: 1 }
-                    ];
-                    // Shuffle for randomness
-                    for (let i = dirs.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
-                    }
-                    // Try to spread - check further distances too
-                    for (const dir of dirs) {
-                        // Try 1, 2, or 3 cells away
-                        for (let dist = 1; dist <= 3; dist++) {
-                            const checkX = gx + dir.dx * dist;
-                            const checkZ = gz + dir.dz * dist;
-                            if (voxelGrid.isEmpty(checkX, gy, checkZ)) {
-                                // Also check if there's a path (for dist > 1)
-                                let pathClear = true;
-                                for (let d = 1; d < dist; d++) {
-                                    if (!voxelGrid.isEmpty(gx + dir.dx * d, gy, gz + dir.dz * d)) {
-                                        pathClear = false;
-                                        break;
-                                    }
-                                }
-                                if (pathClear) {
-                                    nx = px + dir.dx * dist * 0.5;
-                                    nz = pz + dir.dz * dist * 0.5;
-                                    collided = false;
-                                    break;
-                                }
-                            }
-                        }
-                        if (!collided) break;
-                    }
-                    // Water also tries to flow down through diagonal paths
-                    if (collided && voxelGrid.isEmpty(gx, gy - 1, gz)) {
-                        ny = py - 0.5;
+                    // Water can pass through other water - check what we hit
+                    const hitMat = voxelGrid.get(gx, gy, gz);
+
+                    if (hitMat === WATER) {
+                        // Hit settled water - allow passing through while searching
+                        // Keep falling/moving, the settling logic below will handle finding a spot
                         collided = false;
+                    } else {
+                        // Hit solid (stone, sand, etc.) - find a spot to settle
+                        const settlePos = this.findWaterSettlePosition(voxelGrid, gx, gy, gz);
+                        if (settlePos) {
+                            voxelGrid.set(settlePos.x, settlePos.y, settlePos.z, WATER);
+                            material[eid] = 0;
+                            continue;
+                        }
+                        // No valid position found - destroy the particle
+                        material[eid] = 0;
+                        continue;
                     }
                 }
 
@@ -264,24 +241,55 @@ class ParticlePhysicsSystem extends GUTS.BaseSystem {
                     counters[eid] = 0;
                 }
             } else if (mat === WATER) {
-                // Water settles when stopped and has support below
-                // The voxel grid's water flow simulation will handle spreading
-                const totalVel = Math.abs(vx) + Math.abs(vy) + Math.abs(vz);
-                if (totalVel < settleThresh && collided) {
-                    // Check if there's solid support below
-                    const belowMat = voxelGrid.get(gx, gy - 1, gz);
-                    const hasSupport = belowMat !== voxelGrid.MATERIAL.AIR;
+                // Water settles when it finds an empty cell with support
+                const waterGridPos = voxelGrid.worldToGrid(nx, ny, nz);
+                const wx = waterGridPos.x;
+                const wy = waterGridPos.y;
+                const wz = waterGridPos.z;
+                const currentCellMat = voxelGrid.get(wx, wy, wz);
+                const belowMat = voxelGrid.get(wx, wy - 1, wz);
 
-                    if (hasSupport) {
-                        counters[eid]++;
-                        if (counters[eid] >= settleFrames * 2) {
-                            toSettle.push(eid);
-                        }
-                    } else {
-                        counters[eid] = 0;
+                // If current cell is empty and has solid support, settle here
+                if (currentCellMat === voxelGrid.MATERIAL.AIR &&
+                    belowMat !== voxelGrid.MATERIAL.AIR &&
+                    belowMat !== voxelGrid.MATERIAL.WATER) {
+                    // Found empty cell with solid support - settle!
+                    voxelGrid.set(wx, wy, wz, WATER);
+                    material[eid] = 0;
+                }
+                // If we're inside settled water, search for space to settle
+                else if (currentCellMat === WATER || belowMat === WATER) {
+                    // Check if there's air above the water surface to settle on top
+                    // Find the top of the water column
+                    let surfaceY = wy;
+                    while (voxelGrid.get(wx, surfaceY, wz) === WATER && surfaceY < voxelGrid.sizeY - 1) {
+                        surfaceY++;
                     }
-                } else {
-                    counters[eid] = 0;
+
+                    // If we found air above water, settle there
+                    if (voxelGrid.get(wx, surfaceY, wz) === voxelGrid.MATERIAL.AIR) {
+                        voxelGrid.set(wx, surfaceY, wz, WATER);
+                        material[eid] = 0;
+                    } else {
+                        // Water body is capped - apply drift to find edges
+                        if (Math.abs(vx) < 3 && Math.abs(vz) < 3) {
+                            velX[eid] += (Math.random() - 0.5) * 5;
+                            velZ[eid] += (Math.random() - 0.5) * 5;
+                        }
+                        if (vy < 1) {
+                            velY[eid] += 0.5;
+                        }
+                    }
+                }
+                // If below is air, keep falling
+                // Otherwise search for empty spot
+                else if (belowMat !== voxelGrid.MATERIAL.AIR && currentCellMat !== voxelGrid.MATERIAL.AIR) {
+                    // Hit something solid and cell is occupied - find nearby empty cell
+                    const settlePos = this.findWaterSettlePosition(voxelGrid, wx, wy, wz);
+                    if (settlePos) {
+                        voxelGrid.set(settlePos.x, settlePos.y, settlePos.z, WATER);
+                    }
+                    material[eid] = 0;
                 }
             }
         }
@@ -301,14 +309,126 @@ class ParticlePhysicsSystem extends GUTS.BaseSystem {
         const mat = this._material[eid];
 
         const gridCoords = voxelGrid.worldToGrid(px, py, pz);
+        const gx = gridCoords.x;
+        const gy = gridCoords.y;
+        const gz = gridCoords.z;
+
+        // For water, find the best settle position
+        if (mat === voxelGrid.MATERIAL.WATER) {
+            if (voxelGrid.isEmpty(gx, gy, gz)) {
+                voxelGrid.set(gx, gy, gz, mat);
+            } else {
+                const settlePos = this.findWaterSettlePosition(voxelGrid, gx, gy, gz);
+                if (settlePos) {
+                    voxelGrid.set(settlePos.x, settlePos.y, settlePos.z, mat);
+                }
+            }
+            this.game.destroyEntity(eid);
+            return;
+        }
 
         // Only settle if the cell is empty
-        if (voxelGrid.isEmpty(gridCoords.x, gridCoords.y, gridCoords.z)) {
-            voxelGrid.set(gridCoords.x, gridCoords.y, gridCoords.z, mat);
+        if (voxelGrid.isEmpty(gx, gy, gz)) {
+            voxelGrid.set(gx, gy, gz, mat);
         }
 
         // Destroy the active particle
         this.game.destroyEntity(eid);
+    }
+
+    /**
+     * Find the best position to settle water - searches outward for empty cells
+     * Prefers lower positions, fills layer by layer
+     */
+    findWaterSettlePosition(voxelGrid, startX, startY, startZ) {
+        const AIR = voxelGrid.MATERIAL.AIR;
+        const WATER = voxelGrid.MATERIAL.WATER;
+
+        // First check if we can go directly below
+        for (let y = startY; y >= 1; y--) {
+            if (voxelGrid.isEmpty(startX, y, startZ)) {
+                const belowMat = voxelGrid.get(startX, y - 1, startZ);
+                if (belowMat !== AIR) {
+                    return { x: startX, y, z: startZ };
+                }
+            } else {
+                break; // Hit something, stop going down
+            }
+        }
+
+        // Search outward at the starting Y level and below
+        const dirs = [
+            { dx: -1, dz: 0 }, { dx: 1, dz: 0 },
+            { dx: 0, dz: -1 }, { dx: 0, dz: 1 },
+            { dx: -1, dz: -1 }, { dx: -1, dz: 1 },
+            { dx: 1, dz: -1 }, { dx: 1, dz: 1 }
+        ];
+
+        // Shuffle directions for randomness
+        for (let i = dirs.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+        }
+
+        // Search for empty spot with support, preferring lower Y levels
+        let bestPos = null;
+        let bestY = startY + 100; // Higher Y is worse
+
+        for (const dir of dirs) {
+            for (let dist = 1; dist <= 30; dist++) {
+                const x = startX + dir.dx * dist;
+                const z = startZ + dir.dz * dist;
+
+                // Check from current Y down to find lowest empty spot
+                for (let y = startY; y >= 1; y--) {
+                    const mat = voxelGrid.get(x, y, z);
+                    const belowMat = voxelGrid.get(x, y - 1, z);
+
+                    if (mat === AIR && belowMat !== AIR) {
+                        // Found valid spot - is it better than current best?
+                        if (y < bestY) {
+                            bestY = y;
+                            bestPos = { x, y, z };
+                        }
+                        break; // Found best at this x,z - move to next
+                    } else if (mat !== AIR && mat !== WATER) {
+                        break; // Hit solid, can't go lower
+                    }
+                }
+            }
+        }
+
+        // If no spot found below or at same level, search upward (stacking)
+        if (!bestPos) {
+            for (const dir of dirs) {
+                for (let dist = 1; dist <= 20; dist++) {
+                    const x = startX + dir.dx * dist;
+                    const z = startZ + dir.dz * dist;
+
+                    // Check upward for empty spot on top of water/solid
+                    for (let y = startY; y <= startY + 10; y++) {
+                        const mat = voxelGrid.get(x, y, z);
+                        const belowMat = voxelGrid.get(x, y - 1, z);
+
+                        if (mat === AIR && belowMat !== AIR) {
+                            return { x, y, z };
+                        }
+                    }
+                }
+            }
+
+            // Last resort - check directly above starting position
+            for (let y = startY; y <= startY + 20; y++) {
+                if (voxelGrid.isEmpty(startX, y, startZ)) {
+                    const belowMat = voxelGrid.get(startX, y - 1, startZ);
+                    if (belowMat !== AIR) {
+                        return { x: startX, y, z: startZ };
+                    }
+                }
+            }
+        }
+
+        return bestPos;
     }
 
     /**

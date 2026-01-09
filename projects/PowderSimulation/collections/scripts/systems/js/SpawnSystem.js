@@ -193,12 +193,36 @@ class SpawnSystem extends GUTS.BaseSystem {
                 });
             }
 
+            // Simulation speed slider
+            const simSpeedSlider = document.getElementById('simSpeed');
+            const simSpeedValue = document.getElementById('simSpeedValue');
+            if (simSpeedSlider) {
+                simSpeedSlider.addEventListener('input', (e) => {
+                    const speed = parseFloat(e.target.value);
+                    if (simSpeedValue) {
+                        simSpeedValue.textContent = speed === 0 ? 'Paused' : speed.toFixed(2) + 'x';
+                    }
+                    this.setSimulationSpeed(speed);
+                });
+            }
+
             // Pause button
             const pauseBtn = document.getElementById('pauseBtn');
             if (pauseBtn) {
                 pauseBtn.addEventListener('click', () => {
                     this.togglePause();
-                    pauseBtn.textContent = this.game.particlePhysicsSystem?.paused ? 'Resume' : 'Pause';
+                    const isPaused = this.game.particlePhysicsSystem?.paused;
+                    pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+                    // Sync slider when pausing/resuming
+                    if (simSpeedSlider && simSpeedValue) {
+                        if (isPaused) {
+                            simSpeedSlider.value = 0;
+                            simSpeedValue.textContent = 'Paused';
+                        } else {
+                            simSpeedSlider.value = this.game.particlePhysicsSystem?.speedMultiplier || 1;
+                            simSpeedValue.textContent = (this.game.particlePhysicsSystem?.speedMultiplier || 1).toFixed(2) + 'x';
+                        }
+                    }
                 });
             }
 
@@ -443,6 +467,33 @@ class SpawnSystem extends GUTS.BaseSystem {
         const physicsSystem = this.game.particlePhysicsSystem;
         if (physicsSystem) {
             physicsSystem.paused = !physicsSystem.paused;
+        }
+    }
+
+    setSimulationSpeed(speed) {
+        const physicsSystem = this.game.particlePhysicsSystem;
+        const voxelGrid = this.game.voxelGridSystem;
+        const emitterSystem = this.game.emitterSystem;
+
+        if (speed === 0) {
+            // Pause all systems
+            if (physicsSystem) physicsSystem.paused = true;
+            if (voxelGrid) voxelGrid.paused = true;
+            if (emitterSystem) emitterSystem.paused = true;
+        } else {
+            // Unpause and set speed multiplier
+            if (physicsSystem) {
+                physicsSystem.paused = false;
+                physicsSystem.speedMultiplier = speed;
+            }
+            if (voxelGrid) {
+                voxelGrid.paused = false;
+                voxelGrid.speedMultiplier = speed;
+            }
+            if (emitterSystem) {
+                emitterSystem.paused = false;
+                emitterSystem.speedMultiplier = speed;
+            }
         }
     }
 

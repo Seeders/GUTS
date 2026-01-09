@@ -23,6 +23,10 @@ class EmitterSystem extends GUTS.BaseSystem {
 
         // Frame counter for spawn rate limiting
         this.frameCounter = 0;
+
+        // Paused state and speed multiplier
+        this.paused = false;
+        this.speedMultiplier = 1.0;
     }
 
     init() {
@@ -499,6 +503,8 @@ class EmitterSystem extends GUTS.BaseSystem {
     }
 
     update() {
+        if (this.paused) return;
+
         const physicsSystem = this.game.particlePhysicsSystem;
         if (!physicsSystem) return;
 
@@ -515,7 +521,8 @@ class EmitterSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const dt = this.game.deltaTime;
+        // Apply speed multiplier to deltaTime
+        const dt = this.game.deltaTime * this.speedMultiplier;
 
         // Iterate through emitters
         for (const [eid, mesh] of this.emitterMeshes) {

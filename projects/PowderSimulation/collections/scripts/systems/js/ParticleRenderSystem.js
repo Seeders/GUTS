@@ -272,9 +272,13 @@ class ParticleRenderSystem extends GUTS.BaseSystem {
         const posX = this.game.getFieldArray('position', 'x');
         const posY = this.game.getFieldArray('position', 'y');
         const posZ = this.game.getFieldArray('position', 'z');
+        const velY = this.game.getFieldArray('velocity', 'vy');
         const material = this.game.getFieldArray('material', 'type');
 
         if (!posX || !material) return;
+
+        const voxelGrid = this.game.voxelGridSystem;
+        const WATER = voxelGrid ? voxelGrid.MATERIAL.WATER : 2;
 
         const matrix = this._tempMatrix;
         const color = this._tempColor;
@@ -284,8 +288,29 @@ class ParticleRenderSystem extends GUTS.BaseSystem {
             const mat = material[eid];
             if (mat === 0) continue;
 
+            let renderY = posY[eid];
+
+            // Active water particles that are on top of settled water should render inside it
+            if (mat === WATER && voxelGrid) {
+                const gridPos = voxelGrid.worldToGrid(posX[eid], posY[eid], posZ[eid]);
+                const currentMat = voxelGrid.get(gridPos.x, gridPos.y, gridPos.z);
+                const belowMat = voxelGrid.get(gridPos.x, gridPos.y - 1, gridPos.z);
+
+                // If particle is above or inside settled water, find the surface and hide inside
+                if (currentMat === WATER || belowMat === WATER) {
+                    // Find the water surface (topmost water cell)
+                    let surfaceY = gridPos.y;
+                    while (voxelGrid.get(gridPos.x, surfaceY + 1, gridPos.z) === WATER) {
+                        surfaceY++;
+                    }
+                    // Render at surface level minus 1 to hide inside
+                    const surfaceWorldY = voxelGrid.gridToWorld(gridPos.x, surfaceY, gridPos.z).y;
+                    renderY = surfaceWorldY - 0.5;
+                }
+            }
+
             // Set matrix (position only, no rotation/scale)
-            matrix.makeTranslation(posX[eid], posY[eid], posZ[eid]);
+            matrix.makeTranslation(posX[eid], renderY, posZ[eid]);
             matrix.toArray(this.particleMatrices, instanceIndex * 16);
 
             // Set color
@@ -320,13 +345,28 @@ class ParticleRenderSystem extends GUTS.BaseSystem {
         let instanceIndex = 0;
 
         // Use tracked non-air voxels instead of scanning entire grid
+        const WATER = voxelGrid.MATERIAL.WATER;
+
         for (const [key, mat] of voxelGrid.nonAirVoxels) {
             if (instanceIndex >= this.maxVoxels) break;
 
             const [x, y, z] = key.split(',').map(Number);
-            const worldPos = voxelGrid.gridToWorld(x, y, z);
 
-            matrix.makeTranslation(worldPos.x, worldPos.y, worldPos.z);
+            const worldPos = voxelGrid.gridToWorld(x, y, z);
+            let renderY = worldPos.y;
+
+            // Surface water voxels that are still "searching" should be hidden inside the water body
+            // Any water on the surface (air above) that has support below gets offset down
+            if (mat === WATER) {
+                const aboveMat = voxelGrid.get(x, y + 1, z);
+                const belowMat = voxelGrid.get(x, y - 1, z);
+                // Surface water (air above) with any support below (water or solid)
+                if (aboveMat !== WATER && belowMat !== voxelGrid.MATERIAL.AIR) {
+                    renderY -= 1.0;
+                }
+            }
+
+            matrix.makeTranslation(worldPos.x, renderY, worldPos.z);
             matrix.toArray(this.voxelMatrices, instanceIndex * 16);
 
             color.setHex(this.getMaterialColor(mat));

@@ -58,9 +58,13 @@ class VoxelGridSystem extends GUTS.BaseSystem {
         this.nonAirVoxels = new Map();
 
         // Process water in batches for performance
-        this.waterProcessBatchSize = 200;
+        this.waterProcessBatchSize = 1000;  // Process lots of water per tick
         this.waterTickCounter = 0;
-        this.waterTickInterval = 5; // Process water every N ticks
+        this.waterTickInterval = 1; // Process water every tick
+
+        // Paused state and speed multiplier
+        this.paused = false;
+        this.speedMultiplier = 1.0;
     }
 
     init() {
@@ -322,17 +326,26 @@ class VoxelGridSystem extends GUTS.BaseSystem {
     }
 
     update() {
+        if (this.paused) return;
+
+        // Adjust tick interval based on speed multiplier (faster = more frequent water sim)
+        const adjustedInterval = Math.max(1, Math.round(this.waterTickInterval / this.speedMultiplier));
+
         // Only simulate water every few ticks for performance
         this.waterTickCounter++;
-        if (this.waterTickCounter >= this.waterTickInterval) {
+        if (this.waterTickCounter >= adjustedInterval) {
             this.waterTickCounter = 0;
-            this.simulateWaterFlow();
+            // Process more water at higher speeds
+            const batchMultiplier = Math.max(1, Math.ceil(this.speedMultiplier));
+            for (let i = 0; i < batchMultiplier; i++) {
+                this.simulateWaterFlow();
+            }
         }
     }
 
     /**
-     * Simulate settled water spreading to fill containers
-     * Optimized: Only processes tracked water voxels instead of scanning entire grid
+     * Simulate settled water - water falls and spreads to fill gaps
+     * Simple rules: fall if possible, spread horizontally to fill the level
      */
     simulateWaterFlow() {
         const WATER = this.MATERIAL.WATER;
@@ -340,14 +353,11 @@ class VoxelGridSystem extends GUTS.BaseSystem {
 
         if (this.waterVoxels.size === 0) return;
 
-        // Convert Set to array and shuffle for fair processing
         const waterArray = Array.from(this.waterVoxels);
-
-        // Process only a batch of water voxels per tick
         const batchSize = Math.min(this.waterProcessBatchSize, waterArray.length);
         const toMove = [];
 
-        // Shuffle the array for random selection
+        // Shuffle for fair processing
         for (let i = waterArray.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [waterArray[i], waterArray[j]] = [waterArray[j], waterArray[i]];
@@ -357,55 +367,100 @@ class VoxelGridSystem extends GUTS.BaseSystem {
             const key = waterArray[i];
             const [x, y, z] = key.split(',').map(Number);
 
-            // Skip if no longer water (might have been moved)
+            // Skip if no longer water
             if (this.get(x, y, z) !== WATER) continue;
 
             // Skip boundary cells
-            if (x <= 0 || x >= this.sizeX - 1 || y <= 0 || y >= this.sizeY - 1 || z <= 0 || z >= this.sizeZ - 1) continue;
+            if (x <= 0 || x >= this.sizeX - 1 || y <= 1 || z <= 0 || z >= this.sizeZ - 1) continue;
 
-            // Water tries to fall first
+            // Rule 1: Fall straight down if possible
             if (this.get(x, y - 1, z) === AIR) {
                 toMove.push({ fromX: x, fromY: y, fromZ: z, toX: x, toY: y - 1, toZ: z });
                 continue;
             }
 
-            // If can't fall, try to spread horizontally
-            // Only spread if not under pressure (no water directly above)
-            const hasWaterAbove = this.get(x, y + 1, z) === WATER;
-            if (hasWaterAbove) continue;
-
-            // Check all 4 horizontal directions, pick randomly
-            const dirs = [
-                { dx: -1, dz: 0 },
-                { dx: 1, dz: 0 },
-                { dx: 0, dz: -1 },
-                { dx: 0, dz: 1 }
-            ];
-
-            // Shuffle directions
-            for (let j = dirs.length - 1; j > 0; j--) {
+            // Rule 2: Fall diagonally if there's air below-adjacent
+            const fallDirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+            // Shuffle
+            for (let j = fallDirs.length - 1; j > 0; j--) {
                 const k = Math.floor(Math.random() * (j + 1));
-                [dirs[j], dirs[k]] = [dirs[k], dirs[j]];
+                [fallDirs[j], fallDirs[k]] = [fallDirs[k], fallDirs[j]];
             }
 
-            for (const dir of dirs) {
-                const nx = x + dir.dx;
-                const nz = z + dir.dz;
+            let fell = false;
+            for (const [dx, dz] of fallDirs) {
+                const nx = x + dx;
+                const nz = z + dz;
+                const adjMat = this.get(nx, y, nz);
+                // Can fall diagonally if adjacent is passable and below-adjacent is air
+                if ((adjMat === AIR || adjMat === WATER) && this.get(nx, y - 1, nz) === AIR) {
+                    toMove.push({ fromX: x, fromY: y, fromZ: z, toX: nx, toY: y - 1, toZ: nz });
+                    fell = true;
+                    break;
+                }
+            }
+            if (fell) continue;
 
+            // Rule 3: Spread horizontally to adjacent empty cells with support
+            // Check if there's an empty spot nearby at same level
+            let spreadHorizontally = false;
+            for (const [dx, dz] of fallDirs) {
+                const nx = x + dx;
+                const nz = z + dz;
                 if (this.get(nx, y, nz) === AIR) {
-                    const belowTarget = this.get(nx, y - 1, nz);
-                    if (belowTarget !== AIR) {
-                        // Has support, can spread
-                        if (Math.random() < 0.15) {
-                            toMove.push({ fromX: x, fromY: y, fromZ: z, toX: nx, toY: y, toZ: nz });
+                    const belowAdj = this.get(nx, y - 1, nz);
+                    // Only spread if there's solid support (not air)
+                    if (belowAdj !== AIR) {
+                        toMove.push({ fromX: x, fromY: y, fromZ: z, toX: nx, toY: y, toZ: nz });
+                        spreadHorizontally = true;
+                        break;
+                    }
+                }
+            }
+            if (spreadHorizontally) continue;
+
+            // Rule 4: If water is stacked (has water above), search further for empty space
+            const hasWaterAbove = this.get(x, y + 1, z) === WATER;
+            if (hasWaterAbove) {
+                // Search further out for empty space at same level
+                let foundSpot = false;
+                for (const [dx, dz] of fallDirs) {
+                    let pathBlocked = false;
+                    for (let dist = 2; dist <= 15; dist++) {
+                        const nx = x + dx * dist;
+                        const nz = z + dz * dist;
+                        const mat = this.get(nx, y, nz);
+
+                        // Check if path is blocked by non-water solid
+                        if (mat !== AIR && mat !== WATER) {
+                            // Hit solid wall - stop searching in this direction
+                            pathBlocked = true;
                             break;
                         }
-                    } else {
-                        // No support below - move diagonally down
-                        if (Math.random() < 0.25) {
-                            toMove.push({ fromX: x, fromY: y, fromZ: z, toX: nx, toY: y - 1, toZ: nz });
-                            break;
+
+                        if (mat === AIR) {
+                            const belowMat = this.get(nx, y - 1, nz);
+                            if (belowMat !== AIR) {
+                                // Found empty spot with support - move there
+                                toMove.push({ fromX: x, fromY: y, fromZ: z, toX: nx, toY: y, toZ: nz });
+                                foundSpot = true;
+                                break;
+                            }
                         }
+                        // mat === WATER continues to next distance
+                    }
+                    if (pathBlocked) continue; // Try next direction
+                    if (foundSpot) break;
+                }
+
+                // Rule 5: If level seems full, try to move water UP to next level
+                // This allows water to stack and fill a tank from bottom up
+                if (!foundSpot) {
+                    // Check if there's air directly above and this water has support
+                    const aboveMat = this.get(x, y + 1, z);
+                    if (aboveMat === AIR) {
+                        // Move up - this creates space for water below to spread
+                        toMove.push({ fromX: x, fromY: y, fromZ: z, toX: x, toY: y + 1, toZ: z });
                     }
                 }
             }
@@ -415,10 +470,79 @@ class VoxelGridSystem extends GUTS.BaseSystem {
         for (const move of toMove) {
             if (this.get(move.fromX, move.fromY, move.fromZ) === WATER &&
                 this.get(move.toX, move.toY, move.toZ) === AIR) {
-                // Don't wake neighbors when water moves - this is normal flow, not collapse
                 this.set(move.fromX, move.fromY, move.fromZ, AIR, false);
-                this.set(move.toX, move.toY, move.toZ, WATER);
+                this.set(move.toX, move.toY, move.toZ, WATER, false);
             }
         }
+    }
+
+    /**
+     * Get the height of the water column at this position (how many water cells stacked)
+     */
+    getWaterColumnHeight(x, y, z) {
+        const WATER = this.MATERIAL.WATER;
+        let height = 1;
+
+        // Count water above
+        let checkY = y + 1;
+        while (checkY < this.sizeY && this.get(x, checkY, z) === WATER) {
+            height++;
+            checkY++;
+        }
+
+        return height;
+    }
+
+    /**
+     * Find an empty spot for water to flow to by searching outward
+     * Prefers solid support, but will return positions on water if that's the only option
+     */
+    findEmptyWaterSpot(startX, startY, startZ, dx, dz, maxDist) {
+        const WATER = this.MATERIAL.WATER;
+        const AIR = this.MATERIAL.AIR;
+
+        let x = startX + dx;
+        let z = startZ + dz;
+        let y = startY;
+
+        // Track best position on water as fallback
+        let bestOnWater = null;
+
+        for (let dist = 1; dist <= maxDist; dist++) {
+            // Check bounds
+            if (x <= 0 || x >= this.sizeX - 1 || z <= 0 || z >= this.sizeZ - 1) {
+                break;
+            }
+
+            const mat = this.get(x, y, z);
+
+            if (mat === AIR) {
+                // Found empty space - find the lowest point
+                let targetY = y;
+                while (targetY > 1 && this.get(x, targetY - 1, z) === AIR) {
+                    targetY--;
+                }
+                const belowMat = this.get(x, targetY - 1, z);
+
+                // Prefer solid support
+                if (belowMat !== AIR && belowMat !== WATER) {
+                    return { x, y: targetY, z };
+                }
+                // Track position on water as fallback
+                if (belowMat === WATER && !bestOnWater) {
+                    bestOnWater = { x, y: targetY, z };
+                }
+            } else if (mat !== WATER) {
+                // Hit a solid - can't continue this direction
+                break;
+            }
+
+            // Continue through water
+            x += dx;
+            z += dz;
+        }
+
+        // Return position on water if no solid support found
+        return bestOnWater;
     }
 }

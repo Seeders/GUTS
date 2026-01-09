@@ -46,18 +46,26 @@
                 <input type="range" id="brushSize" min="1" max="15" value="3">
             </div>
 
-            <div class="section-title">Controls</div>
+            <div class="section-title">Simulation</div>
+            <div class="control-group">
+                <label for="simSpeed">Speed: <span id="simSpeedValue">1.0x</span></label>
+                <input type="range" id="simSpeed" min="0" max="3" step="0.25" value="1">
+            </div>
+            <div class="control-group">
+                <button id="pauseBtn">Pause</button>
+            </div>
+
+            <div class="section-title">Emitters</div>
             <div class="control-group">
                 <button id="createEmitterBtn">Create Emitter</button>
             </div>
             <div class="control-group">
                 <button id="deleteEmitterBtn" disabled>Delete Emitter</button>
             </div>
+
+            <div class="section-title">Actions</div>
             <div class="control-group">
                 <button id="clearAll">Clear All</button>
-            </div>
-            <div class="control-group">
-                <button id="pauseBtn">Pause</button>
             </div>
 
             <div class="section-title">Stats</div>
