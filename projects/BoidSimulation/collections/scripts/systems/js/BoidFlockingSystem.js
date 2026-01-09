@@ -14,10 +14,11 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
         this.NUM_TARGETS = 2;
         this.NUM_OBSTACLES = 1;
 
-        // Spatial hashing parameters
-        this.GRID_SIZE = 8192;
+        // Spatial hashing parameters - use power of 2 for fast modulo with bitwise AND
+        this.GRID_SIZE = 16384; // 2^14
+        this.GRID_MASK = 16383; // GRID_SIZE - 1, for bitwise AND instead of modulo
         this.CELL_SIZE = 8.0;
-        this.INV_CELL_SIZE = 1.0 / 8.0;
+        this.INV_CELL_SIZE = 0.125; // 1.0 / 8.0
 
         // Boid behavior weights
         this.BOID_SEPARATION_WEIGHT = 1.0;
@@ -75,6 +76,11 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
         this.frameCount = 0;
         this.lastFpsTime = 0;
         this.fps = 0;
+
+        // Cached DOM elements (to avoid getElementById every frame)
+        this._domBoidCount = null;
+        this._domFpsCounter = null;
+        this._domEntityCount = null;
     }
 
     init() {
@@ -113,9 +119,14 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
             const restartBtn = document.getElementById('restartBtn');
             const boidCountInput = document.getElementById('boidCountInput');
 
+            // Cache DOM elements
+            this._domBoidCount = document.getElementById('boidCount');
+            this._domFpsCounter = document.getElementById('fpsCounter');
+            this._domEntityCount = document.getElementById('entityCount');
+
             if (restartBtn) {
                 restartBtn.addEventListener('click', () => {
-                    const newCount = parseInt(boidCountInput?.value || '60000', 10);
+                    const newCount = parseInt(boidCountInput?.value || '100000', 10);
                     this.restartSimulation(newCount);
                 });
             }
@@ -129,13 +140,10 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
     }
 
     updateUI() {
-        const boidCountEl = document.getElementById('boidCount');
-        const fpsCounterEl = document.getElementById('fpsCounter');
-        const entityCountEl = document.getElementById('entityCount');
-
-        if (boidCountEl) boidCountEl.textContent = `Boids: ${this.NUM_BOIDS.toLocaleString()}`;
-        if (fpsCounterEl) fpsCounterEl.textContent = `FPS: ${this.fps}`;
-        if (entityCountEl) entityCountEl.textContent = `Entities: ${this.game.entityCount?.toLocaleString() || '--'}`;
+        // Use cached DOM elements and avoid toLocaleString in hot path
+        if (this._domBoidCount) this._domBoidCount.textContent = 'Boids: ' + this.NUM_BOIDS;
+        if (this._domFpsCounter) this._domFpsCounter.textContent = 'FPS: ' + this.fps;
+        if (this._domEntityCount) this._domEntityCount.textContent = 'Entities: ' + (this.game.entityCount || 0);
     }
 
     restartSimulation(newBoidCount) {
@@ -334,11 +342,11 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
         const sumPY = this.bucketSumPosY;
         const sumPZ = this.bucketSumPosZ;
         const invCell = this.INV_CELL_SIZE;
-        const gridSize = this.GRID_SIZE;
+        const gridMask = this.GRID_MASK;
         const start = this._boidRange.start;
         const end = this._boidRange.end;
 
-        // Clear buckets
+        // Clear buckets - use typed array views for faster clearing
         counts.fill(0);
         sumAX.fill(0);
         sumAY.fill(0);
@@ -356,12 +364,11 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
             const hy = headY[eid];
             const hz = headZ[eid];
 
-            // Inline spatial hash
+            // Inline spatial hash with bitwise AND instead of modulo
             const cellX = (px * invCell) | 0;
             const cellY = (py * invCell) | 0;
             const cellZ = (pz * invCell) | 0;
-            let hash = (cellX * 73856093) ^ (cellY * 19349663) ^ (cellZ * 83492791);
-            hash = ((hash % gridSize) + gridSize) % gridSize;
+            const hash = ((cellX * 73856093) ^ (cellY * 19349663) ^ (cellZ * 83492791)) & gridMask;
 
             boidHash[eid] = hash;
             counts[hash]++;
@@ -416,7 +423,7 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
             }
             nearestTarget[b] = minIdx;
 
-            // Find nearest obstacle
+            // Find nearest obstacle - store squared distance to avoid sqrt
             minDistSq = 1e18;
             minIdx = 0;
             for (let o = 0; o < numObs; o++) {
@@ -430,7 +437,7 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
                 }
             }
             nearestObs[b] = minIdx;
-            nearestObsDist[b] = Math.sqrt(minDistSq);
+            nearestObsDist[b] = minDistSq; // Store squared distance
         }
     }
 
@@ -462,7 +469,7 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
         const sepWeight = this.BOID_SEPARATION_WEIGHT;
         const alignWeight = this.BOID_ALIGNMENT_WEIGHT;
         const targetWeight = this.BOID_TARGET_WEIGHT;
-        const avoidDist = this.BOID_OBSTACLE_AVERSION_DISTANCE;
+        const avoidDistSq = this.BOID_OBSTACLE_AVERSION_DISTANCE * this.BOID_OBSTACLE_AVERSION_DISTANCE;
         const moveDist = this.BOID_MOVE_SPEED * dt;
 
         const start = this._boidRange.start;
@@ -486,16 +493,16 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
             if (cnt > 0) {
                 const invCnt = 1.0 / cnt;
 
-                // Alignment
+                // Alignment - use squared length comparison, normalize only if needed
                 const avgHx = sumAX[hash] * invCnt;
                 const avgHy = sumAY[hash] * invCnt;
                 const avgHz = sumAZ[hash] * invCnt;
-                let adx = avgHx - hx;
-                let ady = avgHy - hy;
-                let adz = avgHz - hz;
-                const aLen = Math.sqrt(adx * adx + ady * ady + adz * adz);
-                if (aLen > 0.0001) {
-                    const inv = alignWeight / aLen;
+                const adx = avgHx - hx;
+                const ady = avgHy - hy;
+                const adz = avgHz - hz;
+                const aLenSq = adx * adx + ady * ady + adz * adz;
+                if (aLenSq > 0.00000001) {
+                    const inv = alignWeight / Math.sqrt(aLenSq);
                     alignRx = adx * inv;
                     alignRy = ady * inv;
                     alignRz = adz * inv;
@@ -505,9 +512,9 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
                 const sdx = px - sumPX[hash] * invCnt;
                 const sdy = py - sumPY[hash] * invCnt;
                 const sdz = pz - sumPZ[hash] * invCnt;
-                const sLen = Math.sqrt(sdx * sdx + sdy * sdy + sdz * sdz);
-                if (sLen > 0.0001) {
-                    const inv = sepWeight / sLen;
+                const sLenSq = sdx * sdx + sdy * sdy + sdz * sdz;
+                if (sLenSq > 0.00000001) {
+                    const inv = sepWeight / Math.sqrt(sLenSq);
                     sepRx = sdx * inv;
                     sepRy = sdy * inv;
                     sepRz = sdz * inv;
@@ -519,10 +526,10 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
             const tdx = tgtX[tIdx] - px;
             const tdy = tgtY[tIdx] - py;
             const tdz = tgtZ[tIdx] - pz;
-            const tLen = Math.sqrt(tdx * tdx + tdy * tdy + tdz * tdz);
+            const tLenSq = tdx * tdx + tdy * tdy + tdz * tdz;
             let targetRx = 0, targetRy = 0, targetRz = 0;
-            if (tLen > 0.0001) {
-                const inv = targetWeight / tLen;
+            if (tLenSq > 0.00000001) {
+                const inv = targetWeight / Math.sqrt(tLenSq);
                 targetRx = tdx * inv;
                 targetRy = tdy * inv;
                 targetRz = tdz * inv;
@@ -532,9 +539,9 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
             let nx = alignRx + sepRx + targetRx;
             let ny = alignRy + sepRy + targetRy;
             let nz = alignRz + sepRz + targetRz;
-            let nLen = Math.sqrt(nx * nx + ny * ny + nz * nz);
-            if (nLen > 0.0001) {
-                const inv = 1.0 / nLen;
+            let nLenSq = nx * nx + ny * ny + nz * nz;
+            if (nLenSq > 0.00000001) {
+                const inv = 1.0 / Math.sqrt(nLenSq);
                 nx *= inv;
                 ny *= inv;
                 nz *= inv;
@@ -544,16 +551,16 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
                 nz = hz;
             }
 
-            // Obstacle avoidance
-            const obsDist = nearestObsDist[hash];
-            if (obsDist < avoidDist) {
+            // Obstacle avoidance - nearestObsDist already stores squared distance
+            const obsDistSq = nearestObsDist[hash];
+            if (obsDistSq < avoidDistSq) {
                 const oIdx = nearestObs[hash];
                 const odx = px - obsX[oIdx];
                 const ody = py - obsY[oIdx];
                 const odz = pz - obsZ[oIdx];
-                const oLen = Math.sqrt(odx * odx + ody * ody + odz * odz);
-                if (oLen > 0.0001) {
-                    const inv = 1.0 / oLen;
+                const oLenSq = odx * odx + ody * ody + odz * odz;
+                if (oLenSq > 0.00000001) {
+                    const inv = 1.0 / Math.sqrt(oLenSq);
                     nx = odx * inv;
                     ny = ody * inv;
                     nz = odz * inv;
@@ -564,9 +571,9 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
             hx += dt * (nx - hx);
             hy += dt * (ny - hy);
             hz += dt * (nz - hz);
-            nLen = Math.sqrt(hx * hx + hy * hy + hz * hz);
-            if (nLen > 0.0001) {
-                const inv = 1.0 / nLen;
+            nLenSq = hx * hx + hy * hy + hz * hz;
+            if (nLenSq > 0.00000001) {
+                const inv = 1.0 / Math.sqrt(nLenSq);
                 hx *= inv;
                 hy *= inv;
                 hz *= inv;
