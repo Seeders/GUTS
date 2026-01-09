@@ -1081,10 +1081,10 @@ class BaseECSGame {
 
             // Use tick count based timing to avoid floating-point accumulation errors
             this.tickCount++;
-            // Use FIXED_DELTA_TIME for deterministic simulation (ignore variable deltaTime)
+            // Use deltaTime from Engine (respects tickRate config)
             // Round to 2 decimal places to avoid floating-point precision issues
             // (e.g., 3 * 0.05 = 0.15000000000000002 in JavaScript)
-            this.currentTime = Math.round(this.tickCount * this.FIXED_DELTA_TIME * 100) / 100;
+            this.currentTime = Math.round(this.tickCount * deltaTime * 100) / 100;
 
             // Only update if a reasonable amount of time has passed
             // const timeSinceLastUpdate = this.currentTime - this.lastTime;
@@ -1095,9 +1095,9 @@ class BaseECSGame {
             //     return;
             // }
             this.state.now = this.currentTime;
-            // Use fixed deltaTime for deterministic simulation
-            this.state.deltaTime = this.FIXED_DELTA_TIME;
-            this.deltaTime = this.FIXED_DELTA_TIME;
+            // Use deltaTime from Engine (which respects tickRate config)
+            this.state.deltaTime = deltaTime;
+            this.deltaTime = deltaTime;
 
             for (const system of this.systems) {
                 // Skip disabled systems

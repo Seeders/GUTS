@@ -51,6 +51,12 @@ export default class HeadlessEngine extends BaseEngine {
         const loaderLibrary = config.appLoaderLibrary || 'HeadlessGameLoader';
         this.loader = new global.GUTS[loaderLibrary](this.gameInstance);
         await this.loader.load();
+
+        // Allow game config to override tick rate (default is 20 TPS)
+        const gameConfig = this.collections.configs.game;
+        if (gameConfig?.tickRate) {
+            this.tickRate = 1 / gameConfig.tickRate;
+        }
     }
 
     async loadCollections(projectName) {
@@ -227,10 +233,10 @@ export default class HeadlessEngine extends BaseEngine {
             if (!this.paused) {
                 // Manual sync update - bypass async game.update()
                 game.tickCount++;
-                game.currentTime = Math.round(game.tickCount * game.FIXED_DELTA_TIME * 100) / 100;
+                game.currentTime = Math.round(game.tickCount * this.tickRate * 100) / 100;
                 game.state.now = game.currentTime;
-                game.state.deltaTime = game.FIXED_DELTA_TIME;
-                game.deltaTime = game.FIXED_DELTA_TIME;
+                game.state.deltaTime = this.tickRate;
+                game.deltaTime = this.tickRate;
 
                 for (const system of game.systems) {
                     if (!system.enabled || !system.update) continue;

@@ -24,6 +24,12 @@ export default class ServerEngine extends BaseEngine {
         this.serverNetworkManager = new ServerNetworkManager(this);
         await this.serverNetworkManager.init();
 
+        // Allow game config to override tick rate (default is 20 TPS)
+        const gameConfig = this.collections.configs.game;
+        if (gameConfig?.tickRate) {
+            this.tickRate = 1 / gameConfig.tickRate;
+        }
+
         this.start();
     }
 

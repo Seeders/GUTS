@@ -33,9 +33,10 @@ class EditorECSGame extends GUTS.BaseECSGame {
         this.register("getCollections", () => this.getCollections());
         this.register("isVisibleAt", () => true);
 
-        // Animation loop - matches Engine tick rate
+        // Animation loop - uses tickRate from config (default 20 TPS)
         this.animationFrameId = null;
-        this.tickRate = 1 / 20; // 20 TPS - same as Engine
+        const gameConfig = app?.collections?.configs?.game;
+        this.tickRate = 1 / (gameConfig?.tickRate || 20);
         this.accumulator = 0;
         this.lastTick = 0;
 
