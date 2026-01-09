@@ -19,7 +19,9 @@ class BaseECSGame {
         // ============================================
 
         // Maximum entities - pre-allocate for performance
-        this.MAX_ENTITIES = 65536; // Power of 2 for fast modulo
+        // Can be configured via game.json maxEntities (default 65536)
+        const gameConfig = app?.collections?.configs?.game;
+        this.MAX_ENTITIES = gameConfig?.maxEntities || 65536; // Power of 2 recommended for performance
 
         // Entity management with TypedArrays
         // entityAlive[i] = 1 if entity i exists, 0 if free slot
@@ -2059,6 +2061,145 @@ class BaseECSGame {
      */
     entityExists(entityId) {
         return entityId > 0 && entityId < this.MAX_ENTITIES && this.entityAlive[entityId] === 1;
+    }
+
+    // ============================================
+    // HIGH-PERFORMANCE ITERATION API
+    // ============================================
+
+    /**
+     * Get the contiguous entity ID range for entities with a specific component.
+     * This is optimal when entities are created sequentially and not destroyed.
+     *
+     * @param {string} componentType - The component type to query
+     * @returns {{start: number, end: number, count: number, contiguous: boolean}}
+     *          start: first entity ID with component
+     *          end: last entity ID + 1 (exclusive, for loop compatibility)
+     *          count: number of entities with this component
+     *          contiguous: true if all entities in range have the component (no gaps)
+     *
+     * @example
+     * // Fast iteration when entities are contiguous:
+     * const range = game.getEntityRange('boidTag');
+     * const posX = game.getFieldArray('position', 'x');
+     * if (range.contiguous) {
+     *     for (let eid = range.start; eid < range.end; eid++) {
+     *         posX[eid] += 1; // Direct array access, no indirection
+     *     }
+     * }
+     */
+    getEntityRange(componentType) {
+        const typeId = this._componentTypeId.get(componentType);
+        if (typeId === undefined) {
+            return { start: 0, end: 0, count: 0, contiguous: true };
+        }
+
+        const alive = this.entityAlive;
+        const masks = this.entityComponentMask;
+        const maxId = this.nextEntityId;
+        const maskIndex = typeId < 32 ? 0 : 1;
+        const bit = 1 << (typeId < 32 ? typeId : typeId - 32);
+
+        let start = 0;
+        let end = 0;
+        let count = 0;
+
+        // Find first and last entity with this component
+        for (let entityId = 1; entityId < maxId; entityId++) {
+            if (alive[entityId] && (masks[entityId * 2 + maskIndex] & bit)) {
+                if (start === 0) start = entityId;
+                end = entityId + 1;
+                count++;
+            }
+        }
+
+        // Check if contiguous (no gaps)
+        const contiguous = (end - start) === count;
+
+        return { start, end, count, contiguous };
+    }
+
+    /**
+     * High-performance entity iteration without array allocation.
+     * Calls the callback for each entity with the specified components.
+     *
+     * @param {string|string[]} componentTypes - Component type(s) to query
+     * @param {function(entityId: number): void} callback - Called for each matching entity
+     *
+     * @example
+     * game.forEachEntity('boidTag', (eid) => {
+     *     posX[eid] += headX[eid] * speed;
+     * });
+     */
+    forEachEntity(componentTypes, callback) {
+        const types = Array.isArray(componentTypes) ? componentTypes : [componentTypes];
+
+        // Build query bitmask
+        let queryMask0 = 0;
+        let queryMask1 = 0;
+        for (const componentType of types) {
+            const typeId = this._componentTypeId.get(componentType);
+            if (typeId === undefined) return; // No entities can match
+            if (typeId < 32) {
+                queryMask0 |= (1 << typeId);
+            } else {
+                queryMask1 |= (1 << (typeId - 32));
+            }
+        }
+
+        const alive = this.entityAlive;
+        const masks = this.entityComponentMask;
+        const maxId = this.nextEntityId;
+
+        for (let entityId = 1; entityId < maxId; entityId++) {
+            if (!alive[entityId]) continue;
+            const mask0 = masks[entityId * 2];
+            const mask1 = masks[entityId * 2 + 1];
+            if ((mask0 & queryMask0) === queryMask0 && (mask1 & queryMask1) === queryMask1) {
+                callback(entityId);
+            }
+        }
+    }
+
+    /**
+     * Iterate over a contiguous range of entities.
+     * Use this when you know entities were created sequentially and not destroyed.
+     * This is the fastest iteration method - no component checks, pure array access.
+     *
+     * @param {number} start - First entity ID (inclusive)
+     * @param {number} end - Last entity ID (exclusive)
+     * @param {function(entityId: number): void} callback
+     *
+     * @example
+     * const range = game.getEntityRange('boidTag');
+     * if (range.contiguous) {
+     *     game.forEachInRange(range.start, range.end, (eid) => {
+     *         posX[eid] += headX[eid] * speed;
+     *     });
+     * }
+     */
+    forEachInRange(start, end, callback) {
+        for (let entityId = start; entityId < end; entityId++) {
+            callback(entityId);
+        }
+    }
+
+    /**
+     * Get multiple field arrays at once for a component.
+     * More efficient than multiple getFieldArray calls.
+     *
+     * @param {string} componentType
+     * @param {...string} fieldPaths - Field paths to retrieve
+     * @returns {Float32Array[]} Array of TypedArrays in the same order as fieldPaths
+     *
+     * @example
+     * const [posX, posY, posZ] = game.getFields('position', 'x', 'y', 'z');
+     */
+    getFields(componentType, ...fieldPaths) {
+        return fieldPaths.map(fieldPath => {
+            const key = `${componentType}.${fieldPath}`;
+            return this._numericArrays.get(key);
+        });
     }
 
     /**
