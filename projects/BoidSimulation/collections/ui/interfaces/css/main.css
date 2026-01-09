@@ -116,3 +116,27 @@ body {
 .stats-group div {
     color: #8f8;
 }
+
+#followBoidBtn {
+    background: #ff9800;
+}
+
+#followBoidBtn:hover {
+    background: #ffb74d;
+}
+
+#followBoidBtn:active {
+    background: #f57c00;
+}
+
+#freeCamBtn {
+    background: #666;
+}
+
+#freeCamBtn:hover {
+    background: #888;
+}
+
+#freeCamBtn:active {
+    background: #555;
+}

@@ -29,6 +29,12 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         // Camera settings
         this.cameraDistance = 150;
         this.cameraTarget = { x: 0, y: 5, z: -120 };
+
+        // Follow mode settings
+        this.followMode = false;
+        this.followEntityId = -1;
+        this.followDistance = 8;
+        this.followHeight = 3;
     }
 
     init() {
@@ -43,6 +49,7 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         this.initThreeJs();
         this.createBoidGeometry();
         this.createTargetAndObstacleMeshes();
+        this.setupFollowUI();
 
         console.log('BoidRenderSystem initialized');
     }
@@ -121,6 +128,8 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         // Create instanced mesh
         this.instancedMesh = new THREE.InstancedMesh(this.boidGeometry, this.boidMaterial, this.NUM_BOIDS);
         this.instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        // Disable frustum culling - boids are spread out and culling the entire instanced mesh causes flickering
+        this.instancedMesh.frustumCulled = false;
         this.scene.add(this.instancedMesh);
     }
 
@@ -146,6 +155,61 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         }
     }
 
+    setupFollowUI() {
+        setTimeout(() => {
+            const followBtn = document.getElementById('followBoidBtn');
+            const freeCamBtn = document.getElementById('freeCamBtn');
+
+            if (followBtn) {
+                followBtn.addEventListener('click', () => {
+                    this.followRandomBoid();
+                });
+            }
+
+            if (freeCamBtn) {
+                freeCamBtn.addEventListener('click', () => {
+                    this.exitFollowMode();
+                });
+            }
+        }, 100);
+    }
+
+    followRandomBoid() {
+        const flockingSystem = this.game.boidFlockingSystem;
+        if (!flockingSystem || !flockingSystem._boidRange) return;
+
+        const range = flockingSystem._boidRange;
+        const randomIndex = Math.floor(Math.random() * range.count);
+        this.followEntityId = range.start + randomIndex;
+        this.followMode = true;
+
+        // Disable orbit controls in follow mode
+        if (this.controls) {
+            this.controls.enabled = false;
+        }
+
+        console.log('Following boid entity:', this.followEntityId);
+    }
+
+    exitFollowMode() {
+        this.followMode = false;
+        this.followEntityId = -1;
+
+        // Re-enable orbit controls
+        if (this.controls) {
+            this.controls.enabled = true;
+            this.controls.target.set(this.cameraTarget.x, this.cameraTarget.y, this.cameraTarget.z);
+            this.camera.position.set(
+                this.cameraTarget.x,
+                this.cameraTarget.y + 100,
+                this.cameraTarget.z + this.cameraDistance
+            );
+            this.controls.update();
+        }
+
+        console.log('Exited follow mode');
+    }
+
     /**
      * Called when the boid count changes - recreates the instanced mesh
      */
@@ -164,6 +228,7 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         // Create new instanced mesh with new count
         this.instancedMesh = new THREE.InstancedMesh(this.boidGeometry, this.boidMaterial, this.NUM_BOIDS);
         this.instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        this.instancedMesh.frustumCulled = false;
         this.scene.add(this.instancedMesh);
 
         console.log(`BoidRenderSystem: Instance count updated to ${newCount}`);
@@ -206,12 +271,66 @@ class BoidRenderSystem extends GUTS.BaseSystem {
             );
         }
 
-        // Update controls
-        if (this.controls) {
+        // Update camera for follow mode
+        if (this.followMode && this.followEntityId >= 0) {
+            this.updateFollowCamera(flockingSystem);
+        }
+
+        // Update controls (only when not in follow mode)
+        if (this.controls && !this.followMode) {
             this.controls.update();
         }
 
         // Render
         this.renderer.render(this.scene, this.camera);
+    }
+
+    updateFollowCamera(flockingSystem) {
+        const eid = this.followEntityId;
+        const posX = flockingSystem._posX;
+        const posY = flockingSystem._posY;
+        const posZ = flockingSystem._posZ;
+        const headX = flockingSystem._headX;
+        const headY = flockingSystem._headY;
+        const headZ = flockingSystem._headZ;
+
+        if (!posX || eid < 0 || eid >= posX.length) return;
+
+        // Get boid position and heading
+        const bx = posX[eid];
+        const by = posY[eid];
+        const bz = posZ[eid];
+        let hx = headX[eid];
+        let hy = headY[eid];
+        let hz = headZ[eid];
+
+        // Ensure heading is valid (normalize if needed)
+        const hLen = Math.sqrt(hx * hx + hy * hy + hz * hz);
+        if (hLen < 0.001) {
+            hx = 0;
+            hy = 0;
+            hz = -1;
+        } else {
+            hx /= hLen;
+            hy /= hLen;
+            hz /= hLen;
+        }
+
+        // Position camera behind and above the boid
+        const camX = bx - hx * this.followDistance;
+        const camY = by + this.followHeight - hy * this.followDistance;
+        const camZ = bz - hz * this.followDistance;
+
+        // Smooth camera movement
+        this.camera.position.x += (camX - this.camera.position.x) * 0.1;
+        this.camera.position.y += (camY - this.camera.position.y) * 0.1;
+        this.camera.position.z += (camZ - this.camera.position.z) * 0.1;
+
+        // Look ahead of the boid in the direction it's heading (chase cam style)
+        const lookAhead = 10;
+        const lookX = bx + hx * lookAhead;
+        const lookY = by + hy * lookAhead;
+        const lookZ = bz + hz * lookAhead;
+        this.camera.lookAt(lookX, lookY, lookZ);
     }
 }
