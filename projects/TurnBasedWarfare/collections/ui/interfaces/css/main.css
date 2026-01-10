@@ -1621,6 +1621,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 /* Loading Screen */
 #loadingScreen {
     background: var(--shadow-gradient);
+    z-index: 9999;
 }
 
 .loading-content {

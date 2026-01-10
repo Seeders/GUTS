@@ -254,8 +254,8 @@
     </div>
 </div>
 
-<!-- Loading Screen -->
-<div id="loadingScreen" class="screen active">
+<!-- Loading Screen - inline styles ensure visibility before CSS loads -->
+<div id="loadingScreen" class="screen active" style="display:flex;position:absolute;top:0;left:0;width:100%;height:100vh;z-index:9999;background:#1a1a2e;justify-content:center;align-items:center;">
     <div class="loading-content">
         <div class="loading-spinner"></div>
         <div class="loading-text" id="loadingText">Loading...</div>
