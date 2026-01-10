@@ -1,0 +1,13 @@
+{
+  "title": "sandbox",
+  "systems": [
+    "VoxelGridSystem",
+    "ParticlePhysicsSystem",
+    "MaterialInteractionSystem",
+    "ParticleRenderSystem",
+    "EmitterSystem",
+    "SpawnSystem"
+  ],
+  "clientSystems": [],
+  "serverSystems": []
+}
