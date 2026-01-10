@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUTS - Gamedevs Ultimate Tooling System</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/style/editor-modules.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--editor-bg-dark);
+            color: var(--editor-text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            min-height: 100vh;
+        }
+
+        .homepage {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--editor-spacing-xl);
+        }
+
+        .homepage__header {
+            text-align: center;
+            padding: 60px 0;
+        }
+
+        .homepage__logo {
+            height: 100px;
+            margin-bottom: var(--editor-spacing-lg);
+            filter: drop-shadow(0 4px 20px rgba(99, 102, 241, 0.3));
+        }
+
+        .homepage__title {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--editor-primary), var(--editor-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0 0 var(--editor-spacing-sm) 0;
+        }
+
+        .homepage__subtitle {
+            font-size: 1.2rem;
+            color: var(--editor-text-muted);
+            font-weight: 300;
+            margin: 0;
+        }
+
+        .homepage__section {
+            margin-bottom: 48px;
+        }
+
+        .homepage__section-title {
+            font-size: 1.25rem;
+            color: var(--editor-primary);
+            margin: 0 0 var(--editor-spacing-lg) 0;
+            display: flex;
+            align-items: center;
+            gap: var(--editor-spacing-md);
+        }
+
+        .homepage__section-title::before {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, var(--editor-primary), var(--editor-secondary));
+            border-radius: 2px;
+        }
+
+        .homepage__grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--editor-spacing-lg);
+        }
+
+        .homepage__card {
+            background-color: var(--editor-bg-medium);
+            border: 1px solid var(--editor-border-color);
+            border-radius: var(--editor-border-radius);
+            padding: var(--editor-spacing-xl);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: var(--editor-transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .homepage__card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--editor-primary), var(--editor-secondary));
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .homepage__card:hover {
+            transform: translateY(-2px);
+            border-color: var(--editor-border-color-hover);
+            background-color: var(--editor-bg-light);
+            box-shadow: var(--editor-shadow-lg);
+        }
+
+        .homepage__card:hover::before {
+            opacity: 1;
+        }
+
+        .homepage__card--editor {
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .homepage__card--editor::before {
+            background: linear-gradient(90deg, var(--editor-primary), #a855f7);
+        }
+
+        .homepage__card--editor:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .homepage__card-icon {
+            font-size: 2rem;
+            margin-bottom: var(--editor-spacing-md);
+            display: block;
+        }
+
+        .homepage__card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0 0 var(--editor-spacing-sm) 0;
+            color: var(--editor-text-primary);
+        }
+
+        .homepage__card-description {
+            font-size: 0.9rem;
+            color: var(--editor-text-muted);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .homepage__empty {
+            color: var(--editor-text-muted);
+            font-style: italic;
+            padding: var(--editor-spacing-lg);
+        }
+
+        .homepage__footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--editor-text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--editor-border-color);
+            margin-top: 40px;
+        }
+
+        .homepage__footer a {
+            color: var(--editor-primary);
+            text-decoration: none;
+        }
+
+        .homepage__footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .homepage__title {
+                font-size: 2rem;
+            }
+            .homepage {
+                padding: var(--editor-spacing-lg);
+            }
+            .homepage__header {
+                padding: 40px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="homepage">
+        <header class="homepage__header">
+            <img src="/logo.png" alt="GUTS Logo" class="homepage__logo">
+            <h1 class="homepage__title">GUTS</h1>
+            <p class="homepage__subtitle">Gamedevs Ultimate Tooling System</p>
+        </header>
+
+        <section class="homepage__section">
+            <h2 class="homepage__section-title">Tools</h2>
+            <div class="homepage__grid">
+                <a href="/projects/Editor/index.html" target="_blank" class="homepage__card homepage__card--editor">
+                    <span class="homepage__card-icon">&#9998;</span>
+                    <h3 class="homepage__card-title">Editor</h3>
+                    <p class="homepage__card-description">Create and edit game objects, manage collections, and configure your projects.</p>
+                </a>
+            </div>
+        </section>
+
+        <section class="homepage__section">
+            <h2 class="homepage__section-title">Projects</h2>
+            <div class="homepage__grid" id="projects-grid">
+                <p class="homepage__empty">Loading projects...</p>
+            </div>
+        </section>
+    </div>
+
+    <footer class="homepage__footer">
+        <p>GUTS Engine &copy; 2025</p>
+    </footer>
+
+    <script>
+        async function loadProjects() {
+            const grid = document.getElementById('projects-grid');
+
+            try {
+                const response = await fetch('/list-projects');
+                const data = await response.json();
+
+                // Filter out Editor and Homepage from the projects list
+                const projects = data.projects.filter(p => p !== 'Editor' && p !== 'Homepage');
+
+                if (projects.length === 0) {
+                    grid.innerHTML = '<p class="homepage__empty">No projects found. Create one in the Editor!</p>';
+                    return;
+                }
+
+                grid.innerHTML = projects.map(project => `
+                    <a href="/projects/${project}/index.html" target="_blank" class="homepage__card">
+                        <span class="homepage__card-icon">&#127918;</span>
+                        <h3 class="homepage__card-title">${project}</h3>
+                        <p class="homepage__card-description">Launch the ${project} game project.</p>
+                    </a>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load projects:', error);
+                grid.innerHTML = '<p class="homepage__empty">Failed to load projects.</p>';
+            }
+        }
+
+        loadProjects();
+    </script>
+</body>
+</html>

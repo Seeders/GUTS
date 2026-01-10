@@ -65,10 +65,6 @@ class Engine extends BaseEngine {
             }
         }
 
-        // Cache battle phase enum for game loop comparison
-        const enums = this.gameInstance.call('getEnums');
-        this.battlePhaseEnum = enums?.gamePhase?.battle;
-
         this.start();
     }
 

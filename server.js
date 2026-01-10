@@ -817,81 +817,6 @@ app.get('/api/rooms', (req, res) => {
     res.json(rooms);
 });
 
-// ===== WEBPACK BUILD INTEGRATION (Development only) =====
-
-let webpackIntegration = null;
-
-async function setupDevelopmentMode(defaultProject) {
-    // Setup Webpack Build Integration
-    const WebpackEditorIntegration = require('./build/editor-integration');
-    webpackIntegration = new WebpackEditorIntegration();
-    webpackIntegration.setupRoutes(app);
-
-    // Auto-build editor on file changes
-    const AUTO_BUILD_DEBOUNCE = 500;
-    let autoBuildTimeout = null;
-    let autoBuildWatcher = null;
-
-    function setupEditorAutoBuild(projectName) {
-        if (autoBuildWatcher) {
-            autoBuildWatcher.close();
-        }
-
-        const watchPaths = [
-            PROJS_DIR,
-            MODULES_DIR,
-            path.join(__dirname, 'engine')
-        ];
-
-        console.log(`\nEditor auto-build watching for changes in:`);
-        watchPaths.forEach(p => console.log(`   ${p}`));
-
-        autoBuildWatcher = chokidar.watch(watchPaths, {
-            ignored: [
-                /(^|[\/\\])\../,
-                /node_modules/,
-                /\.map$/
-            ],
-            persistent: true,
-            ignoreInitial: true
-        });
-
-        autoBuildWatcher.on('change', (filePath) => {
-            if (!filePath.match(/\.(js|json|html|css)$/)) return;
-
-            console.log(`\nFile changed: ${path.relative(__dirname, filePath)}`);
-
-            if (autoBuildTimeout) {
-                clearTimeout(autoBuildTimeout);
-            }
-
-            autoBuildTimeout = setTimeout(async () => {
-                console.log(`Triggering editor auto-rebuild...`);
-                try {
-                    await webpackIntegration.buildEditor(projectName, { production: false });
-                } catch (err) {
-                    console.error('Editor auto-build failed:', err.error || err.message || err);
-                }
-            }, AUTO_BUILD_DEBOUNCE);
-        });
-
-        autoBuildWatcher.on('error', (error) => {
-            console.error('Editor auto-build watcher error:', error);
-        });
-    }
-
-    // Run initial editor build
-    console.log(`\nRunning initial editor build...`);
-    try {
-        await webpackIntegration.buildEditor(defaultProject, { production: false });
-        console.log('Initial editor build complete');
-    } catch (err) {
-        console.error('Initial editor build failed:', err.error || err.message || err);
-    }
-
-    // Setup editor auto-build watcher
-    setupEditorAutoBuild(defaultProject);
-}
 
 // ===== START SERVER =====
 
@@ -916,16 +841,13 @@ async function startServer() {
         // Continue anyway - editor will still work
     }
 
-    if (isProduction) {
-        console.log(`\nProduction mode - skipping auto-build and file watching`);
-    } else {
-        await setupDevelopmentMode(defaultProject);
-    }
+    // Skip auto-build - use `npm run build` separately
+    console.log(`\nServer started without auto-build. Use 'npm run build' to build projects.`);
 
     server.listen(PORT, () => {
         console.log(`\nServer running on port ${PORT}`);
-        console.log(`Editor: http://localhost:${PORT}/editor.html`);
-        console.log(`Game:   http://localhost:${PORT}/projects/TurnBasedWarfare/dist/client/index.html`);
+        console.log(`Editor: http://localhost:${PORT}/projects/Editor/index.html`);
+        console.log(`Game:   http://localhost:${PORT}/projects/TurnBasedWarfare/index.html`);
     });
 }
 

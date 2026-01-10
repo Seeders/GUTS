@@ -1,5 +1,5 @@
 <!-- Main Menu Screen -->
-<div id="mainMenu" class="screen active">
+<div id="mainMenu" class="screen">
     <div class="game-title">LEGENDS OF THE ARENA</div>
     <div class="subtitle">Where Heroes Rise and Legends Are Forged</div>
     <div class="main-menu-buttons">
@@ -255,10 +255,14 @@
 </div>
 
 <!-- Loading Screen -->
-<div id="loadingScreen" class="screen">
+<div id="loadingScreen" class="screen active">
     <div class="loading-content">
         <div class="loading-spinner"></div>
-        <div class="loading-text">🔮 SUMMONING WARRIORS...</div>
+        <div class="loading-text" id="loadingText">Loading...</div>
+        <div class="loading-progress-container">
+            <div class="loading-progress-bar" id="loadingProgressBar"></div>
+        </div>
+        <div class="loading-progress-text" id="loadingProgressText">0%</div>
         <div class="loading-tip">Tip: Position ranged units behind your frontline for maximum effectiveness</div>
     </div>
 </div>

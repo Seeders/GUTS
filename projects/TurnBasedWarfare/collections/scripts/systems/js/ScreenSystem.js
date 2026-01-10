@@ -18,6 +18,14 @@ class ScreenSystem extends GUTS.BaseSystem {
     init() {
     }
 
+    onSceneLoad(sceneData) {
+        // When lobby scene loads, show the main menu (transition from loading screen)
+        const sceneName = this.game.sceneManager?.getCurrentSceneName?.();
+        if (sceneName === 'lobby') {
+            this.showMainMenu();
+        }
+    }
+
     // Alias methods for service names
     pauseScreen() {
         return this.pause();

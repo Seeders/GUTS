@@ -1,0 +1,18 @@
+{
+    "title": "Homepage",
+    "gridSize": 48,
+    "imageSize": 128,
+    "is3D": false,
+    "isIsometric": false,
+    "libraries": [
+        "HomepageApp",
+        "SimpleLoader"
+    ],
+    "systems": [],
+    "classes": [],
+    "interface": "main",
+    "appLibrary": "HomepageApp",
+    "appLoaderLibrary": "SimpleLoader",
+    "canvasWidth": 800,
+    "canvasHeight": 600
+}

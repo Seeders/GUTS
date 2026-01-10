@@ -34,7 +34,7 @@ const entries = generator.generateAll();
 const clientOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'client');
 const serverOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'server');
 const headlessOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'headless');
-const editorOutput = path.resolve(__dirname, 'dist');
+const editorOutput = path.resolve(__dirname, 'projects', 'Editor', 'dist');
 
 // Base webpack configuration
 const baseConfig = {
