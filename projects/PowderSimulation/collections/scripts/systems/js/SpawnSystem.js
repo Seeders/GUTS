@@ -239,6 +239,15 @@ class SpawnSystem extends GUTS.BaseSystem {
             // Set default active button
             const defaultBtn = document.querySelector('.material-btn[data-material="sand"]');
             if (defaultBtn) defaultBtn.classList.add('active');
+
+            // Shape buttons
+            const shapeBtns = document.querySelectorAll('.shape-btn');
+            shapeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const shape = btn.dataset.shape;
+                    this.createShape(shape);
+                });
+            });
         }, 100);
     }
 
@@ -534,6 +543,128 @@ class SpawnSystem extends GUTS.BaseSystem {
         const emitterSystem = this.game.emitterSystem;
         if (emitterSystem && emitterSystem.selectedEmitter !== -1) {
             emitterSystem.removeEmitter(emitterSystem.selectedEmitter);
+        }
+    }
+
+    /**
+     * Create a shape at the center of the grid using the selected material
+     */
+    createShape(shapeType) {
+        const voxelGrid = this.game.voxelGridSystem;
+        if (!voxelGrid) return;
+
+        // Use selected material (default to stone if erase is selected)
+        let material = this.selectedMaterial;
+        if (material === this.TOOLS.ERASE || material <= 0) {
+            material = voxelGrid.MATERIAL.STONE;
+        }
+
+        // Get grid center
+        const centerX = Math.floor(voxelGrid.sizeX / 2);
+        const centerZ = Math.floor(voxelGrid.sizeZ / 2);
+        const baseY = 1; // Just above the floor
+
+        console.log(`Creating ${shapeType} with material ${material}`);
+
+        switch (shapeType) {
+            case 'cylinder':
+                this.createCylinder(voxelGrid, centerX, baseY, centerZ, 12, 20, material);
+                break;
+            case 'box':
+                this.createHollowBox(voxelGrid, centerX, baseY, centerZ, 20, 15, 20, material);
+                break;
+            case 'sphere':
+                this.createSphere(voxelGrid, centerX, baseY + 10, centerZ, 8, material);
+                break;
+            case 'platform':
+                this.createPlatform(voxelGrid, centerX, baseY + 10, centerZ, 25, 25, material);
+                break;
+        }
+    }
+
+    /**
+     * Create a hollow cylinder (container)
+     */
+    createCylinder(voxelGrid, cx, baseY, cz, radius, height, material) {
+        const wallThickness = 1;
+
+        for (let y = baseY; y < baseY + height; y++) {
+            for (let x = cx - radius; x <= cx + radius; x++) {
+                for (let z = cz - radius; z <= cz + radius; z++) {
+                    const dx = x - cx;
+                    const dz = z - cz;
+                    const dist = Math.sqrt(dx * dx + dz * dz);
+
+                    // Create walls (outer ring)
+                    if (dist <= radius && dist > radius - wallThickness) {
+                        voxelGrid.set(x, y, z, material);
+                    }
+                    // Create floor (only at base)
+                    else if (y === baseY && dist <= radius - wallThickness) {
+                        voxelGrid.set(x, y, z, material);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Create a hollow box (container)
+     */
+    createHollowBox(voxelGrid, cx, baseY, cz, width, height, depth, material) {
+        const halfW = Math.floor(width / 2);
+        const halfD = Math.floor(depth / 2);
+
+        for (let y = baseY; y < baseY + height; y++) {
+            for (let x = cx - halfW; x <= cx + halfW; x++) {
+                for (let z = cz - halfD; z <= cz + halfD; z++) {
+                    const onEdgeX = (x === cx - halfW || x === cx + halfW);
+                    const onEdgeZ = (z === cz - halfD || z === cz + halfD);
+
+                    // Create walls
+                    if (onEdgeX || onEdgeZ) {
+                        voxelGrid.set(x, y, z, material);
+                    }
+                    // Create floor (only at base)
+                    else if (y === baseY) {
+                        voxelGrid.set(x, y, z, material);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Create a solid sphere
+     */
+    createSphere(voxelGrid, cx, cy, cz, radius, material) {
+        for (let x = cx - radius; x <= cx + radius; x++) {
+            for (let y = cy - radius; y <= cy + radius; y++) {
+                for (let z = cz - radius; z <= cz + radius; z++) {
+                    const dx = x - cx;
+                    const dy = y - cy;
+                    const dz = z - cz;
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+                    if (dist <= radius) {
+                        voxelGrid.set(x, y, z, material);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Create a flat platform
+     */
+    createPlatform(voxelGrid, cx, y, cz, width, depth, material) {
+        const halfW = Math.floor(width / 2);
+        const halfD = Math.floor(depth / 2);
+
+        for (let x = cx - halfW; x <= cx + halfW; x++) {
+            for (let z = cz - halfD; z <= cz + halfD; z++) {
+                voxelGrid.set(x, y, z, material);
+            }
         }
     }
 }

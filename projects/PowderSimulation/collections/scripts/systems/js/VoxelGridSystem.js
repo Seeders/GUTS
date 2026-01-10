@@ -58,9 +58,9 @@ class VoxelGridSystem extends GUTS.BaseSystem {
         this.nonAirVoxels = new Map();
 
         // Process water in batches for performance
-        this.waterProcessBatchSize = 200;  // Process water per tick
+        this.waterProcessBatchSize = 1000;  // Process water per tick
         this.waterTickCounter = 0;
-        this.waterTickInterval = 8; // Process water every 8 ticks for smoother flow
+        this.waterTickInterval = 1; // Process water every tick
 
         // Paused state and speed multiplier
         this.paused = false;
