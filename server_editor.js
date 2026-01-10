@@ -11,6 +11,7 @@ const cors = require('cors');
 
 // CLI Arguments
 const port = process.argv[2] || 443;
+const isProduction = process.argv.includes('--production') || process.argv.includes('-p');
 
 // Base directory for all file operations
 const BASE_DIR = path.join(__dirname, '/');
@@ -799,15 +800,19 @@ server.listen(port, async () => {
     // Default project for auto-build
     const defaultProject = 'TurnBasedWarfare';
 
-    // Run initial editor build
-    console.log(`\n🚀 Running initial editor build...`);
-    try {
-        await webpackIntegration.buildEditor(defaultProject, { production: false });
-        console.log('✅ Initial editor build complete');
-    } catch (err) {
-        console.error('Initial editor build failed:', err.error || err.message || err);
-    }
+    if (isProduction) {
+        console.log(`\n🏭 Production mode - skipping auto-build and file watching`);
+    } else {
+        // Run initial editor build
+        console.log(`\n🚀 Running initial editor build...`);
+        try {
+            await webpackIntegration.buildEditor(defaultProject, { production: false });
+            console.log('✅ Initial editor build complete');
+        } catch (err) {
+            console.error('Initial editor build failed:', err.error || err.message || err);
+        }
 
-    // Setup editor auto-build watcher
-    setupEditorAutoBuild(defaultProject);
+        // Setup editor auto-build watcher
+        setupEditorAutoBuild(defaultProject);
+    }
 });
