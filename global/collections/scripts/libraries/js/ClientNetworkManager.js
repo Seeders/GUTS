@@ -9,11 +9,8 @@ class ClientNetworkManager {
         this.playerId = null;  // Socket ID (string)
         this.numericPlayerId = -1;  // Numeric player ID for ECS components
 
-        // Configuration - use productionServerUrl in production mode
-        const multiplayerConfig = this.game.getCollections().configs.multiplayer;
-        // Detect production by checking if we're not on localhost
-        const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-        this.serverUrl = options.serverUrl || (isProduction && multiplayerConfig.productionServerUrl) || multiplayerConfig.serverUrl;
+        // Server URL will be determined in connect() when collections are available
+        this.serverUrl = options.serverUrl || null;
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = options.maxReconnectAttempts || 5;
         this.reconnectDelay = options.reconnectDelay || 1000;
@@ -31,6 +28,13 @@ class ClientNetworkManager {
     // =============================================
 
     async connect(serverUrl = null) {
+        // Determine server URL - use production URL if not on localhost
+        if (!this.serverUrl) {
+            const multiplayerConfig = this.game.getCollections().configs.multiplayer;
+            const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+            this.serverUrl = (isProduction && multiplayerConfig.productionServerUrl) || multiplayerConfig.serverUrl;
+        }
+
         console.log('[ClientNetworkManager] connect() called, serverUrl:', serverUrl || this.serverUrl);
         if (serverUrl) {
             this.serverUrl = serverUrl;
