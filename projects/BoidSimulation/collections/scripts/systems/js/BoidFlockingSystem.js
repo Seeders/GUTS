@@ -10,7 +10,7 @@ class BoidFlockingSystem extends GUTS.BaseSystem {
         this.game.boidFlockingSystem = this;
 
         // Configuration constants
-        this.NUM_BOIDS = 100000;
+        this.NUM_BOIDS = 50000;
         this.NUM_TARGETS = 2;
         this.NUM_OBSTACLES = 1;
 
