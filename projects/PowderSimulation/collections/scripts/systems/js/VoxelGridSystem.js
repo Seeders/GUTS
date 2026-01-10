@@ -58,9 +58,9 @@ class VoxelGridSystem extends GUTS.BaseSystem {
         this.nonAirVoxels = new Map();
 
         // Process water in batches for performance
-        this.waterProcessBatchSize = 1000;  // Process lots of water per tick
+        this.waterProcessBatchSize = 200;  // Process water per tick
         this.waterTickCounter = 0;
-        this.waterTickInterval = 1; // Process water every tick
+        this.waterTickInterval = 8; // Process water every 8 ticks for smoother flow
 
         // Paused state and speed multiplier
         this.paused = false;
@@ -419,43 +419,43 @@ class VoxelGridSystem extends GUTS.BaseSystem {
             }
             if (spreadHorizontally) continue;
 
-            // Rule 4: If water is stacked (has water above), search further for empty space
+            // Rule 4: If water is stacked (has water above), move toward empty space (one cell at a time)
             const hasWaterAbove = this.get(x, y + 1, z) === WATER;
             if (hasWaterAbove) {
-                // Search further out for empty space at same level
-                let foundSpot = false;
+                // Search for direction with empty space, but only move 1 cell
+                let foundDirection = false;
                 for (const [dx, dz] of fallDirs) {
-                    let pathBlocked = false;
-                    for (let dist = 2; dist <= 15; dist++) {
+                    // Check if adjacent cell is water (can move through it)
+                    const adjMat = this.get(x + dx, y, z + dz);
+                    if (adjMat !== WATER) continue; // Can only move through water
+
+                    // Look ahead to see if there's eventually empty space in this direction
+                    for (let dist = 2; dist <= 5; dist++) {
                         const nx = x + dx * dist;
                         const nz = z + dz * dist;
                         const mat = this.get(nx, y, nz);
 
                         // Check if path is blocked by non-water solid
                         if (mat !== AIR && mat !== WATER) {
-                            // Hit solid wall - stop searching in this direction
-                            pathBlocked = true;
-                            break;
+                            break; // Hit solid wall
                         }
 
                         if (mat === AIR) {
                             const belowMat = this.get(nx, y - 1, nz);
                             if (belowMat !== AIR) {
-                                // Found empty spot with support - move there
-                                toMove.push({ fromX: x, fromY: y, fromZ: z, toX: nx, toY: y, toZ: nz });
-                                foundSpot = true;
+                                // Found empty spot - move ONE cell toward it
+                                toMove.push({ fromX: x, fromY: y, fromZ: z, toX: x + dx, toY: y, toZ: z + dz });
+                                foundDirection = true;
                                 break;
                             }
                         }
-                        // mat === WATER continues to next distance
                     }
-                    if (pathBlocked) continue; // Try next direction
-                    if (foundSpot) break;
+                    if (foundDirection) break;
                 }
 
                 // Rule 5: If level seems full, try to move water UP to next level
                 // This allows water to stack and fill a tank from bottom up
-                if (!foundSpot) {
+                if (!foundDirection) {
                     // Check if there's air directly above and this water has support
                     const aboveMat = this.get(x, y + 1, z);
                     if (aboveMat === AIR) {
