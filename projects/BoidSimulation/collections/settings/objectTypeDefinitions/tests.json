@@ -2,5 +2,5 @@
   "id": "tests",
   "name": "Tests",
   "singular": "test",
-  "objectTypeCategory": "systems"
+  "objectTypeCategory": "libraries"
 }

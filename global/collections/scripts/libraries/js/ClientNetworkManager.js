@@ -11,7 +11,8 @@ class ClientNetworkManager {
 
         // Configuration - use productionServerUrl in production mode
         const multiplayerConfig = this.game.getCollections().configs.multiplayer;
-        const isProduction = typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production';
+        // Detect production by checking if we're not on localhost
+        const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
         this.serverUrl = options.serverUrl || (isProduction && multiplayerConfig.productionServerUrl) || multiplayerConfig.serverUrl;
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = options.maxReconnectAttempts || 5;
