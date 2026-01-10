@@ -9,8 +9,10 @@ class ClientNetworkManager {
         this.playerId = null;  // Socket ID (string)
         this.numericPlayerId = -1;  // Numeric player ID for ECS components
 
-        // Configuration
-        this.serverUrl = options.serverUrl || this.game.getCollections().configs.multiplayer.serverUrl;
+        // Configuration - use productionServerUrl in production mode
+        const multiplayerConfig = this.game.getCollections().configs.multiplayer;
+        const isProduction = typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production';
+        this.serverUrl = options.serverUrl || (isProduction && multiplayerConfig.productionServerUrl) || multiplayerConfig.serverUrl;
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = options.maxReconnectAttempts || 5;
         this.reconnectDelay = options.reconnectDelay || 1000;
