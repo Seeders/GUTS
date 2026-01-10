@@ -38,8 +38,10 @@ class ScreenSystem extends GUTS.BaseSystem {
     showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
+            // Clear inline styles (loading screen has inline display:flex)
+            screen.style.display = '';
         });
-        
+
         const targetScreen = document.getElementById(screenId);
         if (targetScreen) {
             targetScreen.classList.add('active');
