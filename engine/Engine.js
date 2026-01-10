@@ -76,10 +76,10 @@ class Engine extends BaseEngine {
         return this.currentProjectName;
     }
 
-    getResourcesPath(){ 
+    getResourcesPath(){
         if(window){
-            let path = window.location.pathname.replace('index.html', 'resources/');
-            return path.slice(1, path.length);
+            // Return absolute path to prevent doubling when accessed from subdirectories
+            return window.location.pathname.replace('index.html', 'resources/');
         }
         return "resources/";
     }
