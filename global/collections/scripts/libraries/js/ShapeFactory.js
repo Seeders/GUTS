@@ -68,7 +68,9 @@ class ShapeFactory {
     }
 
     getResourcesPath(shapeUrl){
-        return `${this.urlRoot}${this.resourcesPath}${shapeUrl.replace(this.resourcesPath,'')}`;
+        // If resourcesPath is absolute (starts with /), don't prepend urlRoot
+        const basePath = this.resourcesPath.startsWith('/') ? this.resourcesPath : `${this.urlRoot}${this.resourcesPath}`;
+        return `${basePath}${shapeUrl.replace(this.resourcesPath,'')}`;
     }
     
     setGLTFScale(scale) {
