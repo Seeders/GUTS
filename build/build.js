@@ -20,17 +20,24 @@ const projectName = nonFlagArgs[0];
 const watch = args.includes('--watch') || args.includes('-w');
 const production = args.includes('--production') || args.includes('-p');
 
+// Parse --target flag (e.g., --target server)
+const targetIndex = args.findIndex(arg => arg === '--target' || arg === '-t');
+const targetFilter = targetIndex !== -1 ? args[targetIndex + 1] : null;
+const validTargets = ['client', 'server', 'headless', 'editor'];
+
 // Show usage if no project specified
 if (!projectName) {
     console.log(`
 Usage: node build/build.js <project-name> [options]
 
 Options:
-  --watch, -w       Watch for changes and rebuild
-  --production, -p  Build in production mode
+  --watch, -w              Watch for changes and rebuild
+  --production, -p         Build in production mode
+  --target, -t <target>    Build only one target (client|server|headless|editor)
 
 Examples:
   node build/build.js TurnBasedWarfare
+  node build/build.js TurnBasedWarfare --target server
   node build/build.js HelloWorld --watch
   node build/build.js TurnBasedWarfare --production
 
@@ -65,6 +72,7 @@ console.log(`
 ╟───────────────────────────────────────────────────────────╢
 ║  Project: ${projectName.padEnd(47)}║
 ║  Mode:    ${(production ? 'Production' : 'Development').padEnd(47)}║
+║  Target:  ${(targetFilter || 'all').padEnd(47)}║
 ║  Watch:   ${(watch ? 'Enabled' : 'Disabled').padEnd(47)}║
 ╚═══════════════════════════════════════════════════════════╝
 `);
@@ -73,7 +81,22 @@ console.log(`
 copyResources(projectName, false);
 
 // Load webpack config
-const webpackConfig = require('../webpack.config.js');
+let webpackConfig = require('../webpack.config.js');
+
+// Filter to single target if --target flag is provided
+if (targetFilter) {
+    if (!validTargets.includes(targetFilter)) {
+        console.error(`Error: Invalid target "${targetFilter}". Valid targets: ${validTargets.join(', ')}`);
+        process.exit(1);
+    }
+    const filtered = webpackConfig.filter(config => config.name === targetFilter);
+    if (filtered.length === 0) {
+        console.error(`Error: Target "${targetFilter}" not found in webpack config. This project may not have a ${targetFilter} configuration.`);
+        process.exit(1);
+    }
+    webpackConfig = filtered;
+    console.log(`🎯 Building only: ${targetFilter}\n`);
+}
 
 // Create compiler
 const compiler = webpack(webpackConfig);
