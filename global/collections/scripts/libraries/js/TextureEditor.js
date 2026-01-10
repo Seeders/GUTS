@@ -485,8 +485,7 @@ class TextureEditor {
         }
 
         // File path - construct full path
-        const projectName = this.gameEditor.getCurrentProject();
-        const imageSrc = `/projects/${projectName}/resources/${imagePath}`;
+        const imageSrc = this.gameEditor.getResourcesPath() + imagePath;
 
         // Load image onto canvas
         const img = new Image();

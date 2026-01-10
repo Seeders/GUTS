@@ -57,6 +57,14 @@ class EntityRenderer {
         this.modelCache = new Map(); // collectionType -> { entityType: modelData }
         this.loadingPromises = new Map();
 
+        // Resource path getter - prioritize app reference, fallback to constructed path
+        this.getResourcesPath = () => {
+            if (this.modelManager?.app?.getResourcesPath) {
+                return this.modelManager.app.getResourcesPath();
+            }
+            return this.projectName ? `/projects/${this.projectName}/resources/` : '';
+        };
+
         // Configuration
         this.modelScale = options.modelScale || 32;
         this.defaultCapacity = options.defaultCapacity || 2056;
@@ -1088,15 +1096,7 @@ class EntityRenderer {
      */
     async loadTexture(textureId, imagePath) {
         return new Promise((resolve, reject) => {
-            // Construct full URL - check if modelManager has app reference
-            let resourcesPath = '';
-            if (this.modelManager?.app?.getResourcesPath) {
-                resourcesPath = this.modelManager.app.getResourcesPath();
-            } else if (this.projectName) {
-                resourcesPath = `/projects/${this.projectName}/resources/`;
-            }
-
-            const url = resourcesPath + imagePath;
+            const url = this.getResourcesPath() + imagePath;
 
             this.textureLoader.load(
                 url,
@@ -2031,7 +2031,7 @@ class EntityRenderer {
                     console.warn(`[EntityRenderer] Model '${shape.model}' not found in models collection`);
                     continue;
                 }
-                const url = `/projects/${this.projectName}/resources/${modelData.file}`;
+                const url = this.getResourcesPath() + modelData.file;
              
                 const gltf = await new Promise((resolve, reject) => {
                     loader.load(url, resolve, undefined, reject);

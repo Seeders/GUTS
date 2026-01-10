@@ -167,8 +167,7 @@ class TerrainMapEditor {
                     collections.terrainTypes[terrainTypeId].texture = textureName;
                     const texture = this.gameEditor.getCollections().textures[textureName];
                     if (texture && texture.imagePath) {
-                        const projectName = this.gameEditor.getCurrentProject();
-                        const imageSrc = `/projects/${projectName}/resources/${texture.imagePath}`;
+                        const imageSrc = this.gameEditor.getResourcesPath() + texture.imagePath;
                         this.terrainImageProcessor.processImage(imageSrc);
                     }
                 }
@@ -832,7 +831,7 @@ class TerrainMapEditor {
 
             if (iconData && iconData.imagePath) {
                 const img = document.createElement('img');
-                img.src = `./projects/TurnBasedWarfare/resources/${iconData.imagePath}`;
+                img.src = this.gameEditor.getResourcesPath() + iconData.imagePath;
                 img.alt = itemData.title || itemId;
                 item.appendChild(img);
             } else {
@@ -1256,8 +1255,7 @@ class TerrainMapEditor {
         if (terrain.texture && collections.textures[terrain.texture]) {
             const texture = collections.textures[terrain.texture];
             if (texture.imagePath) {
-                const projectName = this.gameEditor.getCurrentProject();
-                const imageSrc = `/projects/${projectName}/resources/${texture.imagePath}`;
+                const imageSrc = this.gameEditor.getResourcesPath() + texture.imagePath;
                 this.terrainImageProcessor.processImage(imageSrc);
             }
         }
