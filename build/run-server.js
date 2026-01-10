@@ -9,15 +9,21 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-// Get project name from command line
-const projectName = process.argv[2];
+// Get project name and flags from command line
+const args = process.argv.slice(2);
+const projectName = args.find(arg => !arg.startsWith('-'));
+const isProduction = args.includes('--production') || args.includes('-p');
 
 if (!projectName) {
     console.log(`
-Usage: node build/run-server.js <project-name>
+Usage: node build/run-server.js <project-name> [options]
+
+Options:
+  --production, -p    Run in production mode (port 8080)
 
 Examples:
   node build/run-server.js TurnBasedWarfare
+  node build/run-server.js TurnBasedWarfare --production
   npm run game:server -- TurnBasedWarfare
 `);
     process.exit(1);
@@ -39,10 +45,16 @@ if (!fs.existsSync(serverScript)) {
     process.exit(1);
 }
 
-console.log(`Starting game server for: ${projectName}`);
+console.log(`Starting game server for: ${projectName}${isProduction ? ' (production mode)' : ''}`);
+
+// Build server arguments
+const serverArgs = [serverScript];
+if (isProduction) {
+    serverArgs.push('--production');
+}
 
 // Run the server script
-const server = spawn('node', [serverScript], {
+const server = spawn('node', serverArgs, {
     stdio: 'inherit',
     cwd: projectPath
 });

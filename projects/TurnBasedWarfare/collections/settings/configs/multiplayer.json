@@ -1,6 +1,7 @@
 {
   "title": "Multiplayer",
   "serverUrl": "http://localhost:3000",
+  "productionServerUrl": "https://guts-cgg4h.ondigitalocean.app",
   "maxReconnectAttempts": 5,
   "reconnectDelay": 3000,
   "enabled": true

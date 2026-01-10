@@ -13,6 +13,10 @@ import ServerEngine from '../../engine/ServerEngine.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// CLI Arguments
+const isProduction = process.argv.includes('--production') || process.argv.includes('-p');
+const PORT = isProduction ? 8080 : 3000;
+
 // Load and execute compiled game files in Node.js context
 function loadCompiledGame() {
     console.log('Loading compiled game files...');
@@ -107,11 +111,11 @@ async function startServer() {
             global.window.COMPILED_GAME.init(gameServer);
         }
         console.log('GUTS Multiplayer Server started successfully');
-        console.log('Game server running on port 3000');
+        console.log(`Game server running on port ${PORT}`);
 
         // Start HTTP server (Socket.IO is attached to this same server)
-        server.listen(3000, () => {
-            console.log('Web server (and Socket.IO) running on port 3000');
+        server.listen(PORT, () => {
+            console.log(`Web server (and Socket.IO) running on port ${PORT}`);
         });
 
     } catch (error) {
