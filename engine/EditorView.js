@@ -871,18 +871,22 @@ class EditorView {
             this.showNewProjectModal();
           } else {
             this.elements.app.style.display = 'none';
-            localStorage.setItem("currentProject", e.target.value);
-            window.location.reload();
+            // Use URL parameter to select project
+            const url = new URL(window.location.href);
+            url.searchParams.set('project', e.target.value);
+            window.location.href = url.toString();
           }
         });
-      
+
         // Delete project button
         this.elements.deleteProjectBtn?.addEventListener('click', () => {
           if (confirm(`Delete project "${this.controller.getCurrentProject()}"?`)) {
             this.controller.deleteProject(this.controller.getCurrentProject());
             this.elements.app.style.display = 'none';
-            localStorage.setItem("currentProject", "Hello World");
-            window.location.reload();
+            // Reload without project parameter to load first available
+            const url = new URL(window.location.href);
+            url.searchParams.delete('project');
+            window.location.href = url.toString();
           }
         });
             

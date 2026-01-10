@@ -19,7 +19,7 @@ class EditorModel {
         };
 
         // Application state tracks selections and project data
-        this.state = {          
+        this.state = {
             currentVersion: VERSION,
             project: {
                 objectTypes: {},
@@ -30,11 +30,9 @@ class EditorModel {
             selectedObject: null,
             expandedCategories: {}
         };
-        let projects = localStorage.getItem("projects");
-        if(!projects){
-            // Initialize empty projects list - will be populated by syncProjectsFromFilesystem
-            localStorage.setItem("projects", JSON.stringify([]));
-        }
+
+        // Projects list - populated from server
+        this.projects = [];
     }
 
     getCurrentVersion() {
@@ -47,22 +45,22 @@ class EditorModel {
     getSelectedType(){
         return this.state.selectedType;
     }
+
     /**
      * Determines which project to load initially
-     * Checks localStorage for last used project
-     * Falls back to first available project
+     * Checks URL parameter first, then returns first available project
      * @returns {string} Project ID to load
      */
     getInitialProject() {
-        const savedProject = localStorage.getItem("currentProject");
-        const projects = this.listProjects();
-
-        if (savedProject && projects.includes(savedProject)) {
-            return savedProject;
+        // Check URL parameter first
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlProject = urlParams.get('project');
+        if (urlProject && this.projects.includes(urlProject)) {
+            return urlProject;
         }
 
         // Return first available project, or null if none
-        return projects.length > 0 ? projects[0] : null;
+        return this.projects.length > 0 ? this.projects[0] : null;
     }
 
     /**
@@ -75,15 +73,7 @@ class EditorModel {
     async loadProject(name) {
         this.state.currentProject = name;
 
-        try {
-            // Remember current project for next session
-            localStorage.setItem("currentProject", this.state.currentProject);
-        } catch (e) {
-            console.warn('Error saving to localStorage:', e);
-        }
-
         // Initialize empty project structure - FileSystemSyncService will populate it
-        // localStorage caching removed due to quota limits with large projects
         this.state.project = {
             objectTypes: {},
             objectTypeDefinitions: []
@@ -93,7 +83,6 @@ class EditorModel {
     /**
      * Persists the current project state
      * Individual files are saved to filesystem via FileSystemSyncService
-     * Note: localStorage caching disabled due to quota limits with large projects
      * @returns {boolean} Success status
      */
     saveProject() {
@@ -113,7 +102,6 @@ class EditorModel {
         }
 
         // Project data is saved to filesystem via FileSystemSyncService
-        // localStorage caching removed due to quota limits with large projects
         return true;
     }
 
@@ -229,11 +217,11 @@ class EditorModel {
      * @returns {boolean} True if the project is a default project
      */
     isDefaultProject(name) {
-        return Object.keys(this.defaultProjects).includes(name);
+        return Object.keys(this.defaultProjects || {}).includes(name);
     }
 
     /**
-     * Creates a new project with validation and default metadata
+     * Creates a new project with validation
      * @param {string} name - Project name/ID
      * @param {object} config - Project configuration (optional)
      * @returns {object} { success: boolean, message: string }
@@ -245,34 +233,14 @@ class EditorModel {
         }
 
         // Check if project exists in list
-        const currentProjects = JSON.parse(localStorage.getItem('projects') || '[]');
-        if (currentProjects.includes(name)) {
+        if (this.projects.includes(name)) {
             return { success: false, message: 'Project already exists' };
         }
 
-        try {
-            // Add to projects list
-            currentProjects.push(name);
-            localStorage.setItem("projects", JSON.stringify(currentProjects));
+        // Add to projects list (server will create the actual project)
+        this.projects.push(name);
 
-            // Set metadata (small, won't exceed quota)
-            localStorage.setItem(
-                `${name}_metadata`,
-                JSON.stringify({
-                    createdAt: new Date().toISOString(),
-                    lastModified: new Date().toISOString(),
-                    version: 1.0
-                })
-            );
-
-            // Note: Project config is saved to filesystem via FileSystemSyncService
-            // localStorage caching removed due to quota limits with large projects
-
-            return { success: true, message: 'Project created' };
-        } catch (error) {
-            console.error('Project creation failed:', error);
-            return { success: false, message: 'Storage error' };
-        }
+        return { success: true, message: 'Project created' };
     }
 
     /**
@@ -286,64 +254,44 @@ class EditorModel {
             return { success: false, message: 'Cannot delete default projects' };
         }
 
-        const projects = JSON.parse(localStorage.getItem("projects") || '[]');
-        if (!projects.includes(name)) {
+        if (!this.projects.includes(name)) {
             return { success: false, message: 'Project not found' };
         }
 
-        try {
-            // Remove project metadata
-            localStorage.removeItem(`${name}_metadata`);
+        // Remove from projects list
+        this.projects = this.projects.filter(p => p !== name);
 
-            // Update projects list
-            const updatedProjects = projects.filter(p => p !== name);
-            localStorage.setItem('projects', JSON.stringify(updatedProjects));
-
-            return { success: true, message: 'Project deleted successfully' };
-        } catch (error) {
-            return { success: false, message: 'Failed to delete project' };
-        }
+        return { success: true, message: 'Project deleted successfully' };
     }
 
     /**
-     * Lists all available projects from localStorage
+     * Lists all available projects
      * @returns {Array} List of project identifiers
      */
     listProjects() {
-        const projects = JSON.parse(localStorage.getItem('projects') || '[]');
-        return Array.isArray(projects) ? projects : [];
+        return this.projects;
     }
 
     /**
-     * Syncs the project list with the filesystem
-     * Fetches available projects from the server and merges with localStorage
-     * @returns {Promise<Array>} Updated list of project identifiers
+     * Fetches available projects from the server
+     * @returns {Promise<Array>} List of project identifiers
      */
     async syncProjectsFromFilesystem() {
         try {
             const response = await fetch('/list-projects');
             if (!response.ok) {
                 console.warn('Could not fetch projects from filesystem');
-                return this.listProjects();
+                return this.projects;
             }
 
             const data = await response.json();
-            const filesystemProjects = data.projects || [];
+            this.projects = data.projects || [];
 
-            // Get current localStorage projects
-            const localProjects = this.listProjects();
-
-            // Merge: add any filesystem projects not in localStorage
-            const mergedProjects = [...new Set([...localProjects, ...filesystemProjects])];
-
-            // Update localStorage with merged list
-            localStorage.setItem('projects', JSON.stringify(mergedProjects));
-
-            console.log('Synced projects from filesystem:', mergedProjects);
-            return mergedProjects;
+            console.log('Synced projects from filesystem:', this.projects);
+            return this.projects;
         } catch (error) {
             console.warn('Error syncing projects from filesystem:', error);
-            return this.listProjects();
+            return this.projects;
         }
     }
 
@@ -422,33 +370,33 @@ class EditorModel {
         return typeDef ? typeDef.objectTypeCategory : null;
     }
 
-        
+
     findMatchingTypes(key) {
         const keyLower = key.toLowerCase();
         const collectionDefs = this.getCollectionDefs();
         const editorModules = Object.values(this.getCollections().editorModules);
-        
+
         // Check for exact matches first, fall back to endsWith if no exact match
-        const matchingTypePlural = collectionDefs.find(t => 
+        const matchingTypePlural = collectionDefs.find(t =>
             keyLower === t.id.toLowerCase()) ||
-            collectionDefs.find(t => 
+            collectionDefs.find(t =>
                 keyLower.endsWith(t.id.toLowerCase()));
-        
-        const matchingTypeSingular = collectionDefs.find(t => 
+
+        const matchingTypeSingular = collectionDefs.find(t =>
             keyLower === t.singular.replace(/ /g,'').toLowerCase()) ||
-            collectionDefs.find(t => 
+            collectionDefs.find(t =>
                 keyLower.endsWith(t.singular.replace(/ /g,'').toLowerCase()));
-        
+
         const matchingModuleType = editorModules.find((t) => {
             return (t.propertyName && keyLower === t.propertyName.toLowerCase()) ||
-                (t.propertyNames && JSON.parse(t.propertyNames).some(name => 
+                (t.propertyNames && JSON.parse(t.propertyNames).some(name =>
                     keyLower === name.toLowerCase()));
         }) || editorModules.find((t) => {
             return (t.propertyName && keyLower.endsWith(t.propertyName.toLowerCase())) ||
-                (t.propertyNames && JSON.parse(t.propertyNames).some(name => 
+                (t.propertyNames && JSON.parse(t.propertyNames).some(name =>
                     keyLower.endsWith(name.toLowerCase())));
         });
-        
+
         return { matchingTypePlural, matchingTypeSingular, matchingModuleType };
     }
 
@@ -464,26 +412,26 @@ class EditorModel {
       const collections = this.getCollections();
       const collectionDefs = this.getCollectionDefs();
       const references = [];
-      
+
       // Find the singular and plural forms for the object type
       const typeDef = collectionDefs.find(def => def.id === objectType);
       const pluralType = typeDef ? typeDef.name : objectType;
       const singularType = typeDef ? typeDef.singular : objectType.slice(0, -1);
-            
+
       // Recursive function to search an object for references
       const searchObject = (obj, path, parentObj) => {
           if (!obj || typeof obj !== 'object') return;
-          
+
           // Check if this is the source property itself to avoid self-references
-          if (path === `${objectType}.${objectId}` || 
+          if (path === `${objectType}.${objectId}` ||
               path === `${objectType}.${objectId}.${propertyName}`) {
               return;
           }
-          
+
           // Check each property of the object
           for (const [key, value] of Object.entries(obj)) {
               const currentPath = path ? `${path}.${key}` : key;
-              
+
               // Check if this is a string that contains our reference
               if (typeof value === 'string') {
 
@@ -493,20 +441,20 @@ class EditorModel {
                             value: value
                         });
                     }
-                
-              } 
+
+              }
               // Continue searching recursively if it's an object
               else if (typeof value === 'object' && value !== null) {
                   searchObject(value, currentPath, obj);
               }
           }
       };
-      
+
       // Search through all collections
       for (const [typeId, typeObjects] of Object.entries(collections)) {
           searchObject(typeObjects, typeId, collections);
       }
-      
+
       return references;
     }
 
@@ -603,7 +551,7 @@ class EditorModel {
         if (!this.state.selectedType || !this.state.selectedObject) {
             return { success: false, message: 'No object selected' };
         }
-        
+
         // Replace entire object
         this.getCollections()[this.state.selectedType][this.state.selectedObject] = complete;
 
@@ -716,35 +664,25 @@ class EditorModel {
     }
 
     /**
-     * Gets metadata for a project (creation date, modification, etc)
+     * Gets metadata for a project
      * @param {string} name - Project identifier
      * @returns {Object} Project metadata
      */
     getProjectMetadata(name) {
-        const meta = localStorage.getItem(`${name}_metadata`);
-        return meta ? JSON.parse(meta) : {
+        // Metadata is now managed by the server/filesystem
+        return {
             createdAt: new Date().toISOString(),
             lastModified: new Date().toISOString()
         };
     }
-    
+
     /**
      * Updates metadata for the current project
-     * Always updates lastModified timestamp
      * @param {Object} updates - Metadata properties to update
      */
     updateProjectMetadata(updates) {
-        if (!this.state.currentProject) return;
-        
-        const currentMeta = this.getProjectMetadata(this.state.currentProject);
-        localStorage.setItem(
-            `${this.state.currentProject}_metadata`,
-            JSON.stringify({
-                ...currentMeta,
-                ...updates,
-                lastModified: new Date().toISOString()
-            })
-        );
+        // Metadata is now managed by the server/filesystem
+        // This is a no-op but kept for API compatibility
     }
 
     /**

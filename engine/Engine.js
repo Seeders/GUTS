@@ -93,7 +93,7 @@ class Engine extends BaseEngine {
         }
 
         // No collections available
-        console.warn('No collections found in localStorage or COMPILED_GAME');
+        console.warn('No collections found in COMPILED_GAME');
         return {};
     }
 
