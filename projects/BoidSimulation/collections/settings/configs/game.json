@@ -25,7 +25,8 @@
     "BaseSystem",
     "SeededRandom",
     "ComponentGenerator",
-    "SceneManager"
+    "SceneManager",
+    "SpriteBillboardRenderer"
   ],
   "systems": [
     "BoidFlockingSystem",

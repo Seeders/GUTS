@@ -1,7 +1,7 @@
 /**
- * BoidRenderSystem - Renders boids using Three.js instanced meshes
+ * BoidRenderSystem - Renders boids as flying dragons using sprite billboards
  *
- * Uses instanced rendering for efficient display of large boid counts.
+ * Uses the SpriteBillboardRenderer library for efficient instanced sprite rendering.
  */
 class BoidRenderSystem extends GUTS.BaseSystem {
     constructor(game) {
@@ -14,10 +14,8 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         this.renderer = null;
         this.controls = null;
 
-        // Boid mesh
-        this.boidGeometry = null;
-        this.boidMaterial = null;
-        this.instancedMesh = null;
+        // Sprite billboard renderer
+        this.spriteRenderer = null;
 
         // Target and obstacle meshes
         this.targetMeshes = [];
@@ -25,6 +23,7 @@ class BoidRenderSystem extends GUTS.BaseSystem {
 
         // Configuration
         this.NUM_BOIDS = 100000;
+        this.DRAGON_SCALE = 8;  // Scale for dragon sprites
 
         // Camera settings
         this.cameraDistance = 150;
@@ -33,11 +32,15 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         // Follow mode settings
         this.followMode = false;
         this.followEntityId = -1;
-        this.followDistance = 8;
-        this.followHeight = 3;
+        this.followDistance = 15;
+        this.followHeight = 8;
+
+        // Animation settings
+        this.animationTime = 0;
+        this.animationType = 'walk';  // Flying dragons use 'walk' animation for flying
     }
 
-    init() {
+    async init() {
         // Only initialize on client
         if (typeof window === 'undefined' || typeof document === 'undefined') {
             console.log('BoidRenderSystem: Skipping init (not in browser)');
@@ -47,7 +50,7 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         console.log('BoidRenderSystem initializing...');
 
         this.initThreeJs();
-        this.createBoidGeometry();
+        await this.createDragonSprites();
         this.createTargetAndObstacleMeshes();
         this.setupFollowUI();
 
@@ -57,7 +60,7 @@ class BoidRenderSystem extends GUTS.BaseSystem {
     initThreeJs() {
         // Create scene
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x025e83); // Ocean blue
+        this.scene.background = new THREE.Color(0x87CEEB);  // Sky blue
 
         // Create camera
         this.camera = new THREE.PerspectiveCamera(
@@ -82,7 +85,7 @@ class BoidRenderSystem extends GUTS.BaseSystem {
 
         this.renderer = new THREE.WebGLRenderer({
             canvas: canvas,
-            antialias: false, // Disable for performance with many objects
+            antialias: false,
             powerPreference: 'high-performance'
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -98,10 +101,10 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         }
 
         // Add ambient light
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         this.scene.add(ambientLight);
 
-        // Add directional light
+        // Add directional light (sun)
         const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
         directionalLight.position.set(100, 200, 100);
         this.scene.add(directionalLight);
@@ -114,23 +117,72 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         });
     }
 
-    createBoidGeometry() {
-        // Create a simple fish-like geometry (cone pointing forward)
-        this.boidGeometry = new THREE.ConeGeometry(0.3, 1.0, 4);
-        this.boidGeometry.rotateX(Math.PI / 2); // Point forward along Z axis
+    async createDragonSprites() {
+        // Get sprite animation set from collections
+        const collections = this.game.getCollections();
+        const dragonAnimSet = collections?.spriteAnimationSets?.dragonredflying;
 
-        // Create material
-        this.boidMaterial = new THREE.MeshPhongMaterial({
+        if (!dragonAnimSet) {
+            console.error('BoidRenderSystem: dragonredflying sprite animation set not found');
+            // Fallback to simple geometry
+            this.createFallbackGeometry();
+            return;
+        }
+
+        // Get resources path from the game/app
+        // Need to make it absolute (starting with /) for TextureLoader
+        let resourcesPath = '';
+        if (this.game.app?.getResourcesPath) {
+            resourcesPath = this.game.app.getResourcesPath();
+            // Ensure it starts with / for absolute path
+            if (!resourcesPath.startsWith('/')) {
+                resourcesPath = '/' + resourcesPath;
+            }
+        } else {
+            // Fallback: construct path based on project name
+            const projectName = this.game.projectName || 'BoidSimulation';
+            resourcesPath = `/projects/${projectName}/resources/`;
+        }
+
+        // Create sprite billboard renderer
+        this.spriteRenderer = new SpriteBillboardRenderer({
+            scene: this.scene,
+            capacity: this.NUM_BOIDS,
+            resourcesPath: resourcesPath
+        });
+
+        // Get sprite sheet path
+        const spriteSheetPath = dragonAnimSet.spriteSheet;
+        console.log('BoidRenderSystem: Loading dragon sprite sheet:', resourcesPath + spriteSheetPath);
+
+        // Initialize the sprite renderer
+        const success = await this.spriteRenderer.init(spriteSheetPath, dragonAnimSet);
+
+        if (!success) {
+            console.error('BoidRenderSystem: Failed to initialize sprite renderer');
+            this.createFallbackGeometry();
+            return;
+        }
+
+        console.log('BoidRenderSystem: Dragon sprites loaded successfully');
+    }
+
+    createFallbackGeometry() {
+        console.log('BoidRenderSystem: Using fallback cone geometry');
+
+        // Create a simple fish-like geometry (cone pointing forward)
+        const geometry = new THREE.ConeGeometry(0.3, 1.0, 4);
+        geometry.rotateX(Math.PI / 2);
+
+        const material = new THREE.MeshPhongMaterial({
             color: 0xff6600,
             flatShading: true
         });
 
-        // Create instanced mesh
-        this.instancedMesh = new THREE.InstancedMesh(this.boidGeometry, this.boidMaterial, this.NUM_BOIDS);
-        this.instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        // Disable frustum culling - boids are spread out and culling the entire instanced mesh causes flickering
-        this.instancedMesh.frustumCulled = false;
-        this.scene.add(this.instancedMesh);
+        this.fallbackMesh = new THREE.InstancedMesh(geometry, material, this.NUM_BOIDS);
+        this.fallbackMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        this.fallbackMesh.frustumCulled = false;
+        this.scene.add(this.fallbackMesh);
     }
 
     createTargetAndObstacleMeshes() {
@@ -188,7 +240,7 @@ class BoidRenderSystem extends GUTS.BaseSystem {
             this.controls.enabled = false;
         }
 
-        console.log('Following boid entity:', this.followEntityId);
+        console.log('Following dragon:', this.followEntityId);
     }
 
     exitFollowMode() {
@@ -211,25 +263,59 @@ class BoidRenderSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Called when the boid count changes - recreates the instanced mesh
+     * Called when the boid count changes - recreates the sprite renderer
      */
-    onBoidCountChanged(newCount) {
+    async onBoidCountChanged(newCount) {
         console.log(`BoidRenderSystem: Updating instance count to ${newCount}`);
 
-        // Remove old instanced mesh
-        if (this.instancedMesh) {
-            this.scene.remove(this.instancedMesh);
-            this.instancedMesh.dispose();
-        }
-
-        // Update count
         this.NUM_BOIDS = newCount;
 
-        // Create new instanced mesh with new count
-        this.instancedMesh = new THREE.InstancedMesh(this.boidGeometry, this.boidMaterial, this.NUM_BOIDS);
-        this.instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        this.instancedMesh.frustumCulled = false;
-        this.scene.add(this.instancedMesh);
+        if (this.spriteRenderer) {
+            // Dispose old renderer and create new one
+            this.spriteRenderer.dispose();
+
+            const collections = this.game.getCollections();
+            const dragonAnimSet = collections?.spriteAnimationSets?.dragonredflying;
+
+            if (dragonAnimSet) {
+                // Get resources path (ensure absolute)
+                let resourcesPath = '';
+                if (this.game.app?.getResourcesPath) {
+                    resourcesPath = this.game.app.getResourcesPath();
+                    if (!resourcesPath.startsWith('/')) {
+                        resourcesPath = '/' + resourcesPath;
+                    }
+                } else {
+                    const projectName = this.game.projectName || 'BoidSimulation';
+                    resourcesPath = `/projects/${projectName}/resources/`;
+                }
+
+                this.spriteRenderer = new SpriteBillboardRenderer({
+                    scene: this.scene,
+                    capacity: this.NUM_BOIDS,
+                    resourcesPath: resourcesPath
+                });
+
+                await this.spriteRenderer.init(dragonAnimSet.spriteSheet, dragonAnimSet);
+            }
+        } else if (this.fallbackMesh) {
+            // Update fallback mesh
+            this.scene.remove(this.fallbackMesh);
+            this.fallbackMesh.dispose();
+
+            const geometry = new THREE.ConeGeometry(0.3, 1.0, 4);
+            geometry.rotateX(Math.PI / 2);
+
+            const material = new THREE.MeshPhongMaterial({
+                color: 0xff6600,
+                flatShading: true
+            });
+
+            this.fallbackMesh = new THREE.InstancedMesh(geometry, material, this.NUM_BOIDS);
+            this.fallbackMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            this.fallbackMesh.frustumCulled = false;
+            this.scene.add(this.fallbackMesh);
+        }
 
         console.log(`BoidRenderSystem: Instance count updated to ${newCount}`);
     }
@@ -240,17 +326,32 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         const flockingSystem = this.game.boidFlockingSystem;
         if (!flockingSystem) return;
 
-        // Update instanced mesh matrices - directly set the array for performance
-        const matrices = flockingSystem.getInstanceMatrices();
-        if (matrices && this.instancedMesh) {
-            // Handle case where matrices array size matches or is smaller than instance count
-            const expectedSize = this.NUM_BOIDS * 16;
-            if (matrices.length >= expectedSize) {
-                this.instancedMesh.instanceMatrix.array.set(matrices.subarray(0, expectedSize));
-            } else {
-                this.instancedMesh.instanceMatrix.array.set(matrices);
-            }
-            this.instancedMesh.instanceMatrix.needsUpdate = true;
+        // Skip rendering if neither sprite renderer nor fallback mesh is ready
+        const spriteReady = this.spriteRenderer && this.spriteRenderer.instancedMesh;
+        const fallbackReady = this.fallbackMesh;
+        if (!spriteReady && !fallbackReady) return;
+
+        // Update animation time
+        const deltaTime = this.game.state?.deltaTime || 0.016;
+        this.animationTime += deltaTime;
+
+        // Get flocking data
+        const posX = flockingSystem._posX;
+        const posY = flockingSystem._posY;
+        const posZ = flockingSystem._posZ;
+        const headX = flockingSystem._headX;
+        const headY = flockingSystem._headY;
+        const headZ = flockingSystem._headZ;
+        const range = flockingSystem._boidRange;
+
+        if (!posX || !range) return;
+
+        // Update sprites or fallback mesh
+        // Check if spriteRenderer is fully initialized (has instancedMesh)
+        if (this.spriteRenderer && this.spriteRenderer.instancedMesh) {
+            this.updateDragonSprites(posX, posY, posZ, headX, headY, headZ, range);
+        } else if (this.fallbackMesh) {
+            this.updateFallbackMesh(flockingSystem);
         }
 
         // Update target positions
@@ -283,6 +384,59 @@ class BoidRenderSystem extends GUTS.BaseSystem {
 
         // Render
         this.renderer.render(this.scene, this.camera);
+    }
+
+    updateDragonSprites(posX, posY, posZ, headX, headY, headZ, range) {
+        const fps = this.spriteRenderer.fps || 4;
+        const framesPerDir = this.spriteRenderer.framesPerDirection || 4;
+
+        // Calculate current animation frame (cycles through frames)
+        const frameIndex = Math.floor(this.animationTime * fps) % framesPerDir;
+
+        // Get camera position for direction calculation
+        const camX = this.camera.position.x;
+        const camZ = this.camera.position.z;
+
+        // Update each boid
+        for (let i = 0; i < range.count; i++) {
+            const eid = range.start + i;
+
+            // Get position
+            const x = posX[eid];
+            const y = posY[eid];
+            const z = posZ[eid];
+
+            // Get heading
+            const hx = headX[eid];
+            const hz = headZ[eid];
+
+            // Set transform (position + scale)
+            this.spriteRenderer.setInstanceTransform(i, x, y, z, this.DRAGON_SCALE);
+
+            // Calculate direction from heading relative to camera
+            const direction = this.spriteRenderer.headingToDirection(hx, hz, camX, camZ, x, z);
+
+            // Set animation frame
+            this.spriteRenderer.setInstanceFrame(i, this.animationType, direction, frameIndex);
+        }
+
+        // Set instance count and finalize
+        this.spriteRenderer.setInstanceCount(range.count);
+        this.spriteRenderer.finalizeUpdates();
+    }
+
+    updateFallbackMesh(flockingSystem) {
+        // Use the matrices from the flocking system
+        const matrices = flockingSystem.getInstanceMatrices();
+        if (matrices && this.fallbackMesh) {
+            const expectedSize = this.NUM_BOIDS * 16;
+            if (matrices.length >= expectedSize) {
+                this.fallbackMesh.instanceMatrix.array.set(matrices.subarray(0, expectedSize));
+            } else {
+                this.fallbackMesh.instanceMatrix.array.set(matrices);
+            }
+            this.fallbackMesh.instanceMatrix.needsUpdate = true;
+        }
     }
 
     updateFollowCamera(flockingSystem) {
@@ -327,7 +481,7 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         this.camera.position.z += (camZ - this.camera.position.z) * 0.1;
 
         // Look ahead of the boid in the direction it's heading (chase cam style)
-        const lookAhead = 10;
+        const lookAhead = 15;
         const lookX = bx + hx * lookAhead;
         const lookY = by + hy * lookAhead;
         const lookZ = bz + hz * lookAhead;
