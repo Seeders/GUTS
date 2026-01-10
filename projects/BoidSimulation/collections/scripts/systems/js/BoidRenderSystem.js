@@ -22,7 +22,7 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         this.obstacleMeshes = [];
 
         // Configuration
-        this.NUM_BOIDS = 100000;
+        this.NUM_BOIDS = 50000;
         this.DRAGON_SCALE = 8;  // Scale for dragon sprites
 
         // Camera settings
@@ -390,34 +390,20 @@ class BoidRenderSystem extends GUTS.BaseSystem {
         const fps = this.spriteRenderer.fps || 4;
         const framesPerDir = this.spriteRenderer.framesPerDirection || 4;
 
-        // Calculate current animation frame (cycles through frames)
+        // Set animation frame once (uniform, not per instance)
         const frameIndex = Math.floor(this.animationTime * fps) % framesPerDir;
+        this.spriteRenderer.setAnimationFrame(frameIndex);
 
-        // Get camera position for direction calculation
-        const camX = this.camera.position.x;
-        const camZ = this.camera.position.z;
-
-        // Update each boid
+        // Update each boid - position, scale, and heading only
+        // Direction calculation happens in GPU shader
         for (let i = 0; i < range.count; i++) {
             const eid = range.start + i;
-
-            // Get position
-            const x = posX[eid];
-            const y = posY[eid];
-            const z = posZ[eid];
-
-            // Get heading
-            const hx = headX[eid];
-            const hz = headZ[eid];
-
-            // Set transform (position + scale)
-            this.spriteRenderer.setInstanceTransform(i, x, y, z, this.DRAGON_SCALE);
-
-            // Calculate direction from heading relative to camera
-            const direction = this.spriteRenderer.headingToDirection(hx, hz, camX, camZ, x, z);
-
-            // Set animation frame
-            this.spriteRenderer.setInstanceFrame(i, this.animationType, direction, frameIndex);
+            this.spriteRenderer.setInstance(
+                i,
+                posX[eid], posY[eid], posZ[eid],
+                this.DRAGON_SCALE,
+                headX[eid], headZ[eid]
+            );
         }
 
         // Set instance count and finalize
