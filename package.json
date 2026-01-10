@@ -30,7 +30,7 @@
     "dev:server": "node server_editor.js",
     "game:server": "node build/run-server.js",
     "start": "node build/start-project.js",
-    "start:editor": "node server_editor.js 5000",
+    "start:editor": "node server_editor.js 8080",
     "webpack": "webpack --config webpack.config.js"
   },
   "author": "",
