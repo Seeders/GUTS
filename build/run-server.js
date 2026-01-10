@@ -12,7 +12,7 @@ const fs = require('fs');
 // Get project name and flags from command line
 const args = process.argv.slice(2);
 const projectName = args.find(arg => !arg.startsWith('-'));
-const isProduction = args.includes('--production') || args.includes('-p');
+const isProduction = args.includes('--production') || args.includes('-p') || args.includes('--prod');
 
 if (!projectName) {
     console.log(`

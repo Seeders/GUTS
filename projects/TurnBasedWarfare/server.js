@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // CLI Arguments
-const isProduction = process.argv.includes('--production') || process.argv.includes('-p');
+const isProduction = process.argv.includes('--production') || process.argv.includes('-p') || process.argv.includes('--prod');
 const PORT = isProduction ? 8080 : 3000;
 
 // Load and execute compiled game files in Node.js context
