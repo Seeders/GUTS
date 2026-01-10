@@ -39,7 +39,7 @@ const editorOutput = path.resolve(__dirname, 'dist');
 // Base webpack configuration
 const baseConfig = {
     mode: mode,
-    devtool: isProduction ? 'source-map' : 'eval-source-map',
+    devtool: isProduction ? false : 'eval-source-map', // Source maps in dev, disabled in prod for memory
     resolve: {
         extensions: ['.js', '.json'],
         alias: {
