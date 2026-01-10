@@ -440,8 +440,8 @@ class EditorController {
         return this.model.state.currentProject;
     }
 
-    getResourcesPath(){ 
-        return `projects/${this.getCurrentProject()}/resources/`;
+    getResourcesPath(){
+        return `/projects/${this.getCurrentProject()}/resources/`;
     }
 
     getDefaultRender() {
