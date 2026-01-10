@@ -136,7 +136,7 @@ Mode: ${mode}`,
     optimization: {
         usedExports: true,
         minimize: isProduction,
-        splitChunks: false // Keep everything in one bundle for now
+        splitChunks: false
     }
 };
 
