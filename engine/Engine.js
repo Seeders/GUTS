@@ -50,7 +50,12 @@ class Engine extends BaseEngine {
             }
         }
 
-
+        // Show the app container and loading screen immediately (before loader starts)
+        this.applicationTarget.style.display = '';
+        const loadingScreen = document.getElementById('loadingScreen');
+        if (loadingScreen) {
+            loadingScreen.classList.add('active');
+        }
 
         this.gameInstance = new GUTS[projectConfig.appLibrary](this);
         this.loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);
