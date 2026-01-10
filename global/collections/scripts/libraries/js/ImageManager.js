@@ -156,8 +156,9 @@ class ImageManager {
     /**
      * Load all textures from the textures collection as THREE.Texture objects
      * @param {Object} texturesCollection - The textures collection object
+     * @param {Function} onProgress - Optional callback called when each texture loads
      */
-    async loadTextures(texturesCollection) {
+    async loadTextures(texturesCollection, onProgress = null) {
         if (!texturesCollection) return;
 
         const resourcesPath = this.app.getResourcesPath();
@@ -167,7 +168,10 @@ class ImageManager {
             if (!textureDef?.imagePath) continue;
 
             // Skip if already loaded
-            if (this.loadedTextures.has(textureId)) continue;
+            if (this.loadedTextures.has(textureId)) {
+                if (onProgress) onProgress(textureId);
+                continue;
+            }
 
             const url = resourcesPath + textureDef.imagePath;
 
@@ -180,11 +184,13 @@ class ImageManager {
                         texture.minFilter = THREE.NearestFilter;
                         texture.magFilter = THREE.NearestFilter;
                         this.loadedTextures.set(textureId, texture);
+                        if (onProgress) onProgress(textureId);
                         resolve();
                     },
                     undefined,
                     (error) => {
                         console.warn(`[ImageManager] Failed to load texture '${textureId}' from ${url}`);
+                        if (onProgress) onProgress(textureId);
                         resolve(); // Don't fail the whole batch for one texture
                     }
                 );

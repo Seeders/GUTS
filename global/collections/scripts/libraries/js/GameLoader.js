@@ -1,7 +1,15 @@
 class GameLoader extends GUTS.BaseLoader {
 
     async load(){
-        this.collections = this.game.getCollections();        
+        this.collections = this.game.getCollections();
+
+        // Initialize loading progress tracker
+        this.progress = GUTS.LoadingProgress ? new GUTS.LoadingProgress() : null;
+        if (this.progress) {
+            this.countAssetsToLoad();
+            this.progress.start();
+        }
+
        // this.collections.configs.game.canvasWidth = window.outerWidth;
        // this.collections.configs.game.canvasHeight = window.outerHeight;
         this.game.palette = this.collections.palettes && this.collections.configs.game.palette ? this.collections.palettes[this.collections.configs.game.palette] : null;
@@ -25,7 +33,50 @@ class GameLoader extends GUTS.BaseLoader {
         this.game.terrainTileMapper = new GUTS.TileMap({});
 
         this.game.terrainTileMapper.init(this.game.terrainCanvasBuffer, this.collections.configs.game.gridSize, terrainImages, this.isometric, { terrainTypeNames });
+
+        if (this.progress) {
+            this.progress.complete();
+        }
+
         this.game.init(false);
+    }
+
+    /**
+     * Count assets that need to be loaded for progress tracking
+     */
+    countAssetsToLoad() {
+        let textureCount = 0;
+        let modelCount = 0;
+
+        // Count textures
+        if (this.collections.textures) {
+            textureCount = Object.keys(this.collections.textures).length;
+        }
+
+        // Count models from all collections
+        for (const objectType in this.collections) {
+            const collection = this.collections[objectType];
+            if (!collection || typeof collection !== 'object') continue;
+
+            for (const [type, cfg] of Object.entries(collection)) {
+                if (cfg?.render?.model) {
+                    modelCount++;
+                    // Count animation variants too
+                    if (cfg.render?.animations) {
+                        for (const variants of Object.values(cfg.render.animations)) {
+                            modelCount += variants.length;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (textureCount > 0) {
+            this.progress.addPhase('textures', textureCount);
+        }
+        if (modelCount > 0) {
+            this.progress.addPhase('models', modelCount);
+        }
     }
 
     setupCanvas(canvasWidth, canvasHeight) {
@@ -64,13 +115,15 @@ class GameLoader extends GUTS.BaseLoader {
 
         // Load THREE.Texture objects from the textures collection
         if (this.collections.textures) {
-            await this.game.imageManager.loadTextures(this.collections.textures);
+            const onTextureProgress = this.progress ? () => this.progress.increment('textures') : null;
+            await this.game.imageManager.loadTextures(this.collections.textures, onTextureProgress);
         }
 
         this.game.modelManager = new GUTS.ModelManager(this.game.app, {}, { ShapeFactory: GUTS.ShapeFactory, palette: this.game.palette, textures: this.game.getCollections().textures, models: this.game.getCollections().models, animations: this.game.getCollections().animations});
 
+        const onModelProgress = this.progress ? () => this.progress.increment('models') : null;
         for(let objectType in this.collections) {
-            await this.game.modelManager.loadModels(objectType, this.collections[objectType]);
+            await this.game.modelManager.loadModels(objectType, this.collections[objectType], onModelProgress);
         }
 
     }

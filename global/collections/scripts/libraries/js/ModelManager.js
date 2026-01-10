@@ -35,7 +35,7 @@ class ModelManager {
         this.clear();
     }
 
-    async loadModels(prefix, config) {
+    async loadModels(prefix, config, onProgress = null) {
 
         // Load all models first (master + animations)
         for (const [type, cfg] of Object.entries(config)) {
@@ -45,6 +45,7 @@ class ModelManager {
 
             // Load master model
             this.masterModels.set(modelKey, await this.createModel(cfg.render.model));
+            if (onProgress) onProgress(modelKey);
 
             // Load animation variants
             if (cfg.render.animations) {
@@ -74,6 +75,7 @@ class ModelManager {
 
                         const animModel = await this.createModel(mergedModel);
                         this.animationModels.set(animKey, animModel);
+                        if (onProgress) onProgress(animKey);
                     }
                 }
             }
