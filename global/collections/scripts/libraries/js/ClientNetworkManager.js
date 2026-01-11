@@ -89,6 +89,7 @@ class ClientNetworkManager {
         // Forward all events to our event system
         if (typeof this.socket.onAny === 'function') {
             this.socket.onAny((eventName, data) => {
+                console.log('[ClientNetworkManager] Received event:', eventName, data ? '(has data)' : '(no data)');
                 this.emit(eventName, data);
             });
         } else {

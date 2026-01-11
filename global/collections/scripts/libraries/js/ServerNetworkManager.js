@@ -127,40 +127,47 @@ class ServerNetworkManager {
 
 
     handleJoinRoom(socket, data) {
-        
         const playerId = socket.id;
-        console.log('joinRoom', data)
+        console.log('[handleJoinRoom] START - playerId:', playerId, 'data:', JSON.stringify(data));
+
         try {
             const { roomId, playerName } = data;
-            
+
             if (!roomId) {
-                this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
-                    error: 'Room code required' 
-                });
-                return;
-            }
-            
-            const room = this.engine.gameRooms.get(roomId);
-            if (!room) {
-                this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
-                    error: 'Room not found' 
-                });
-                return;
-            }
-            
-            // Check if room allows joining
-            const enums = room.game.call('getEnums');
-            if (room.game.state.phase !== enums.gamePhase.waiting && room.game.state.phase !== enums.gamePhase.lobby) {
-                this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
-                    error: 'Game already in progress' 
+                console.log('[handleJoinRoom] FAIL - no roomId provided');
+                this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', {
+                    error: 'Room code required'
                 });
                 return;
             }
 
+            console.log('[handleJoinRoom] Looking for room:', roomId, 'Available rooms:', Array.from(this.engine.gameRooms.keys()));
+            const room = this.engine.gameRooms.get(roomId);
+            if (!room) {
+                console.log('[handleJoinRoom] FAIL - room not found:', roomId);
+                this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', {
+                    error: 'Room not found'
+                });
+                return;
+            }
+
+            // Check if room allows joining
+            const enums = room.game.call('getEnums');
+            console.log('[handleJoinRoom] Room phase:', room.game.state.phase, 'waiting:', enums.gamePhase.waiting, 'lobby:', enums.gamePhase.lobby);
+            if (room.game.state.phase !== enums.gamePhase.waiting && room.game.state.phase !== enums.gamePhase.lobby) {
+                console.log('[handleJoinRoom] FAIL - game already in progress, phase:', room.game.state.phase);
+                this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', {
+                    error: 'Game already in progress'
+                });
+                return;
+            }
+
+            console.log('[handleJoinRoom] Adding player to room...');
             const result = room.addPlayer(playerId, {
                 name: playerName || `Player ${playerId.substr(-4)}`,
                 isHost: false
             });
+            console.log('[handleJoinRoom] addPlayer result:', JSON.stringify(result));
 
             if (result.success) {
                 this.joinRoom(playerId, roomId);
@@ -171,32 +178,36 @@ class ServerNetworkManager {
                     socketInfo.numericPlayerId = result.numericPlayerId;
                 }
 
+                const gameState = room.getGameState();
+                console.log('[handleJoinRoom] SUCCESS - sending ROOM_JOINED to player:', playerId);
                 this.sendToPlayer(playerId, 'ROOM_JOINED', {
                     roomId: roomId,
                     playerId: playerId,
                     numericPlayerId: result.numericPlayerId,
                     isHost: false,
-                    gameState: room.getGameState()
+                    gameState: gameState
                 });
 
                 // Notify other players
+                console.log('[handleJoinRoom] Broadcasting PLAYER_JOINED to room:', roomId);
                 this.broadcastToRoom(roomId, 'PLAYER_JOINED', {
                     playerId: playerId,
                     numericPlayerId: result.numericPlayerId,
                     playerName: playerName,
-                    gameState: room.getGameState()
+                    gameState: gameState
                 });
-                
-                console.log(`Player ${playerName} joined room ${roomId}`);
+
+                console.log(`[handleJoinRoom] COMPLETE - Player ${playerName} joined room ${roomId}`);
             } else {
-                this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
-                    error: result.error || result.reason || 'Failed to join room' 
+                console.log('[handleJoinRoom] FAIL - addPlayer failed:', result.error || result.reason);
+                this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', {
+                    error: result.error || result.reason || 'Failed to join room'
                 });
             }
         } catch (error) {
-            console.error('Error joining room:', error);
-            this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', { 
-                error: 'Server error while joining room' 
+            console.error('[handleJoinRoom] ERROR:', error);
+            this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', {
+                error: 'Server error while joining room'
             });
         }
     }
