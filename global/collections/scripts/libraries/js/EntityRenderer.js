@@ -762,33 +762,16 @@ class EntityRenderer {
             return false;
         }
 
-        // Derive animation types from generatorSettings or frame names
-        // Frame names follow pattern: {animType}{direction}_{frameIndex}
-        // e.g., "idleDown_0", "walkUpLeft_3", "attackRight_5"
+        // Get animation types from generatorSettings
         const animations = {};
+        const animTypes = animSet.generatorSettings?.animationTypes;
 
-        if (animSet.frames) {
-            // Use animationTypes from generatorSettings if available
-            const animTypes = animSet.generatorSettings?.animationTypes || null;
-
-            if (animTypes && animTypes.length > 0) {
-                // Use stored animation types
-                for (const animType of animTypes) {
-                    animations[animType] = true;
-                }
-            } else {
-                // Fallback: derive from frame names
-                const knownTypes = ['idle', 'walk', 'attack', 'death', 'celebrate', 'cast', 'takeoff', 'land'];
-                for (const frameName of Object.keys(animSet.frames)) {
-                    const lowerName = frameName.toLowerCase();
-                    for (const animType of knownTypes) {
-                        if (lowerName.startsWith(animType) && !animations[animType]) {
-                            animations[animType] = true;
-                            break;
-                        }
-                    }
-                }
+        if (animTypes && animTypes.length > 0) {
+            for (const animType of animTypes) {
+                animations[animType] = true;
             }
+        } else {
+            console.warn(`[EntityRenderer] Sprite animation set '${entityDef.spriteAnimationSet}' missing generatorSettings.animationTypes`);
         }
 
         // Get sprite sheet path for batching
