@@ -16,15 +16,17 @@ class SceneManager {
      * @returns {Promise<void>}
      */
     async loadScene(sceneName) {
+        console.log(`[SceneManager] loadScene('${sceneName}') called`);
+
         const collections = this.game.getCollections();
         const sceneData = collections.scenes?.[sceneName];
 
         if (!sceneData) {
+            console.warn(`[SceneManager] Scene '${sceneName}' not found`);
             return;
         }
 
         // Get systems needed by new scene for smart cleanup
-        // Include base systems + environment-specific systems
         const isServer = !!this.game.isServer;
         const baseSystems = sceneData.systems || [];
         const environmentSystems = isServer
@@ -34,22 +36,31 @@ class SceneManager {
 
         // Unload current scene if one is loaded
         if (this.currentScene) {
+            console.log(`[SceneManager] Unloading current scene: ${this.currentSceneName}`);
             await this.unloadCurrentScene(newSceneSystems);
         }
 
         this.currentScene = sceneData;
         this.currentSceneName = sceneName;
 
-        // Enable/disable systems based on scene configuration
+        // Load scene-specific interface if defined (must happen first so DOM elements exist)
+        if (!isServer && sceneData.interface) {
+            this.loadSceneInterface(sceneData.interface, collections);
+        }
+
+        // Enable/disable systems based on scene configuration (must happen before loader)
         this.configureSystems(sceneData);
+
+        // Run scene-specific loader if defined (e.g., GameLoader for game scenes)
+        if (sceneData.loader && GUTS[sceneData.loader]) {
+            console.log(`[SceneManager] Running loader: ${sceneData.loader}`);
+            const loader = new GUTS[sceneData.loader](this.game);
+            await loader.load();
+            console.log(`[SceneManager] Loader complete: ${sceneData.loader}`);
+        }
 
         // Check if we're loading from a save file
         const isLoadingSave = !!this.game.pendingSaveData;
-
-        console.log(`[SceneManager] Loading scene: ${sceneName}, isLoadingSave: ${isLoadingSave}, hasSaveData: ${!!this.game.pendingSaveData}, hasSaveSystem: ${!!this.game.saveSystem}, isServer: ${!!this.game.isServer}`);
-        if (this.game.pendingSaveData) {
-            console.log(`[SceneManager] pendingSaveData has ${this.game.pendingSaveData.entities?.length || 0} entities`);
-        }
 
         // Set flag so systems know not to spawn starting entities
         if (isLoadingSave) {
@@ -59,13 +70,10 @@ class SceneManager {
         // Spawn entities from scene definition (skip if loading save - save has all entities)
         if (!isLoadingSave) {
             await this.spawnSceneEntities(sceneData);
-        } else {
-            console.log(`[SceneManager] Skipping scene entities - loading from save`);
         }
 
         // Inject saved entities if there's pending save data
         if (isLoadingSave) {
-            console.log('[SceneManager] Calling saveSystem.loadSavedEntities(), saveSystem:', this.game.saveSystem ? 'exists' : 'null');
             if (this.game.saveSystem) {
                 this.game.saveSystem.loadSavedEntities();
             } else {
@@ -79,6 +87,7 @@ class SceneManager {
         // Notify all systems for post-load processing (after all systems have done initial setup)
         this.notifyPostSceneLoad(sceneData);
 
+        console.log(`[SceneManager] loadScene('${sceneName}') complete`);
     }
 
     /**
@@ -331,6 +340,45 @@ class SceneManager {
     getAvailableScenes() {
         const collections = this.game.getCollections();
         return Object.keys(collections.scenes || {});
+    }
+
+    /**
+     * Load a scene-specific interface, replacing the current appContainer content
+     * @param {string} interfaceName - The interface name to load
+     * @param {Object} collections - The game collections
+     */
+    loadSceneInterface(interfaceName, collections) {
+        const interfaceData = collections.interfaces?.[interfaceName];
+        if (!interfaceData) {
+            console.warn(`[SceneManager] Interface '${interfaceName}' not found`);
+            return;
+        }
+
+        const appContainer = document.getElementById('appContainer');
+        if (!appContainer) {
+            console.warn('[SceneManager] appContainer not found');
+            return;
+        }
+
+        // Skip if already loaded
+        if (appContainer.dataset.currentInterface === interfaceName) {
+            return;
+        }
+
+        // Replace appContainer content with new interface HTML
+        if (interfaceData.html) {
+            appContainer.innerHTML = interfaceData.html;
+            appContainer.dataset.currentInterface = interfaceName;
+        }
+
+        // Inject CSS if not already present
+        const styleId = `interface-${interfaceName}-styles`;
+        if (interfaceData.css && !document.getElementById(styleId)) {
+            const styleSheet = document.createElement('style');
+            styleSheet.id = styleId;
+            styleSheet.textContent = interfaceData.css;
+            document.head.appendChild(styleSheet);
+        }
     }
 }
 

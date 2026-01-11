@@ -21,45 +21,22 @@ class Engine extends BaseEngine {
 
         let projectConfig = this.collections.configs.game;
 
-
-        let ui = this.collections.interfaces[projectConfig.interface];
-        if (ui) {
-            let html = ui.html;
-            let css = ui.css;
-            let modals = ui.modals;
-            if (html) {
-                this.applicationTarget.innerHTML += html;
-            }
-            if (css) {
-                let styleTag = document.createElement('style');
-                styleTag.innerHTML = css;
-                document.head.append(styleTag);
-            }
-
-            if (modals) {
-                modals.forEach((modalId) => {
-                    let modal = document.createElement('div');
-                    modal.setAttribute('id', `modal-${modalId}`);
-                    let modalContent = document.createElement('div');
-                    modal.classList.add('modal');
-                    modalContent.classList.add('modal-content');
-                    modal.append(modalContent);
-                    modalContent.innerHTML = this.collections.modals[modalId].html;
-                    this.applicationTarget.append(modal);
-                });
-            }
-        }
-
-        // Show the app container and loading screen immediately (before loader starts)
+        // Show the app container
         this.applicationTarget.style.display = '';
-        const loadingScreen = document.getElementById('loadingScreen');
-        if (loadingScreen) {
-            loadingScreen.classList.add('active');
+
+        // Create game instance
+        this.gameInstance = new GUTS[projectConfig.appLibrary](this);
+
+        // Run loader if specified in config
+        if (projectConfig.appLoaderLibrary && GUTS[projectConfig.appLoaderLibrary]) {
+            const loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);
+            await loader.load();
         }
 
-        this.gameInstance = new GUTS[projectConfig.appLibrary](this);
-        this.loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);
-        await this.loader.load();
+        // Initialize the game
+        if (this.gameInstance.init) {
+            await this.gameInstance.init();
+        }
 
         // Allow game config to override tick rate (default is 20 TPS)
         if (projectConfig.tickRate) {

@@ -1,0 +1,20 @@
+<div id="chatPanel" class="chat-panel">
+    <div class="chat-header" id="chatHeader">
+        <span class="chat-title">Chat</span>
+        <span class="chat-context-badge" id="chatContextBadge">Lobby</span>
+        <span class="chat-unread-badge" id="chatUnreadBadge" style="display:none">0</span>
+        <button class="chat-toggle" id="chatToggle">-</button>
+    </div>
+    <div class="chat-body" id="chatBody">
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-empty">No messages yet. Say hello!</div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chatInput"
+                   placeholder="Type a message..."
+                   maxlength="500"
+                   autocomplete="off">
+            <button id="chatSendBtn" class="chat-send-btn">Send</button>
+        </div>
+    </div>
+</div>
