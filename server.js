@@ -570,6 +570,14 @@ app.get('/browse-directory', (req, res) => {
 // List all available projects from the filesystem
 app.get('/list-projects', async (req, res) => {
     try {
+        console.log('Listing projects from:', PROJS_DIR);
+
+        // Check if directory exists
+        if (!fsSync.existsSync(PROJS_DIR)) {
+            console.error('Projects directory does not exist:', PROJS_DIR);
+            return res.json({ projects: [], error: 'Projects directory not found' });
+        }
+
         const entries = await fs.readdir(PROJS_DIR, { withFileTypes: true });
         const projects = entries
             .filter(entry => entry.isDirectory())
@@ -579,6 +587,7 @@ app.get('/list-projects', async (req, res) => {
         res.json({ projects });
     } catch (error) {
         console.error('Error listing projects:', error);
+        console.error('PROJS_DIR was:', PROJS_DIR);
         res.status(500).json({ error: error.message, projects: [] });
     }
 });
