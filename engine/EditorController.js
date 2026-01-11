@@ -47,9 +47,7 @@ class EditorController {
     async init() {
 
         // Sync projects from filesystem (discovers new project folders)
-        if (window.location.hostname === "localhost") {
-            await this.model.syncProjectsFromFilesystem();
-        }
+        await this.model.syncProjectsFromFilesystem();
 
         // Determine which project to load (saved or first available)
         const initialProject = this.model.getInitialProject();
@@ -138,9 +136,7 @@ class EditorController {
     async loadProject(name) {
 
         await this.model.loadProject(name);
-        if(window.location.hostname == "localhost") {
-            await this.fs.importProject(name);
-        }
+        await this.fs.importProject(name);
         const project = this.model.state.project;
 
         try {
