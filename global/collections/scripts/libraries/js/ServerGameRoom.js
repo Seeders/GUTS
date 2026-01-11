@@ -6,7 +6,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         this.enums = this.game.getEnums();
 
         // Add multiplayer lobby functionality
-        this.game.state.phase = this.enums.gamePhase.waiting;
+        this.game.state.phase = this.enums.gamePhase.lobby;
         this.gameConfig = gameConfig;
         this.createdAt = Date.now();
         this.nextRoomId = 1000;
@@ -44,7 +44,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             // Find available room
             let availableRoom = null;
             for (const [roomId, room] of this.engine.gameRooms) {
-                if ((this.game.state.phase === this.enums.gamePhase.waiting || this.game.state.phase === this.enums.gamePhase.lobby) &&
+                if (this.game.state.phase === this.enums.gamePhase.lobby &&
                     room.players.size < room.maxPlayers) {
                     availableRoom = room;
                     break;
@@ -138,7 +138,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             }
 
             // Only allow in lobby phase
-            if (this.game.state.phase !== this.enums.gamePhase.lobby && this.game.state.phase !== this.enums.gamePhase.waiting) {
+            if (this.game.state.phase !== this.enums.gamePhase.lobby) {
                 this.serverNetworkManager.sendToPlayer(playerId, 'SAVE_DATA_UPLOADED', {
                     success: false,
                     error: 'Can only upload save data in lobby'
@@ -345,10 +345,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             // Team enum: left=2, right=3 (host is left team)
             player.team = playerData.isHost ? 2 : 3;
 
-            // If room is full, enter lobby phase (don't auto-start like parent does)
-            if (this.players.size === this.maxPlayers && this.game.state.phase === this.enums.gamePhase.waiting) {
-                this.enterLobbyPhase();
-            }
+            // Room is already in lobby phase - no need to transition
         }
 
         return result;
@@ -369,8 +366,8 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
     togglePlayerReady(playerId) {
         const player = this.players.get(playerId);
-        if (!player || (this.game.state.phase !== this.enums.gamePhase.lobby && this.game.state.phase !== this.enums.gamePhase.waiting)) {
-            console.log("no player or not in lobby/waiting phase", this.game.state.phase);
+        if (!player || this.game.state.phase !== this.enums.gamePhase.lobby) {
+            console.log("no player or not in lobby phase", this.game.state.phase);
             return false;
         }
         

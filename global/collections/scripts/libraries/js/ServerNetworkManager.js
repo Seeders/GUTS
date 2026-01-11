@@ -162,7 +162,9 @@ class ServerNetworkManager {
 
             // Check if room allows joining
             const enums = room.game.call('getEnums');
-            if (room.game.state.phase !== enums.gamePhase.waiting && room.game.state.phase !== enums.gamePhase.lobby) {
+            console.log('[ServerNetworkManager] Room phase:', room.game.state.phase, 'lobby:', enums.gamePhase.lobby);
+            if (room.game.state.phase !== enums.gamePhase.lobby) {
+                console.log('[ServerNetworkManager] Rejecting join - game in progress, phase:', room.game.state.phase);
                 this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', {
                     error: 'Game already in progress'
                 });
@@ -173,6 +175,7 @@ class ServerNetworkManager {
                 name: playerName || `Player ${playerId.substr(-4)}`,
                 isHost: false
             });
+            console.log('[ServerNetworkManager] addPlayer result:', result);
 
             if (result.success) {
                 // Leave lobby when joining a game room
