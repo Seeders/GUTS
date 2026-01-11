@@ -51,6 +51,7 @@ class ServerNetworkManager {
                 this.handleCreateRoom(socket, data);
             });
             socket.on('JOIN_ROOM', (data) => {
+                console.log('[ServerNetworkManager] JOIN_ROOM event received from', socket.id, data);
                 this.handleJoinRoom(socket, data);
             });
             socket.on('CHAT_MESSAGE', (data) => {
@@ -58,6 +59,8 @@ class ServerNetworkManager {
             });
             // Catch ALL events and route to game systems
             socket.onAny((eventName, data) => {
+                console.log('[ServerNetworkManager] onAny event:', eventName, 'from', socket.id);
+
                 // Skip internal socket.io events and events with dedicated handlers
                 if (eventName.startsWith('__') ||
                     eventName === 'disconnect' ||
@@ -260,9 +263,13 @@ class ServerNetworkManager {
 
     // Helper methods for systems to use
     sendToPlayer(playerId, eventName, data) {
+        console.log('[ServerNetworkManager] sendToPlayer:', playerId, eventName);
         const playerData = this.playerSockets.get(playerId);
         if (playerData && playerData.socket) {
             playerData.socket.emit(eventName, data);
+            console.log('[ServerNetworkManager] Event emitted successfully');
+        } else {
+            console.warn('[ServerNetworkManager] No socket found for player:', playerId);
         }
     }
 
