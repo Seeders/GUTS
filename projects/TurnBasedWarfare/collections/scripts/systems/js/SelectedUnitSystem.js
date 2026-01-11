@@ -185,6 +185,13 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     initialize() {
         if (this.initialized || !this.game.scene) return;
 
+        // Update canvas reference (may not have been available in constructor)
+        this.canvas = this.game.canvas;
+        if (!this.canvas) {
+            console.warn('[SelectedUnitSystem] Canvas not available, deferring initialization');
+            return;
+        }
+
         this.initialized = true;
         this.setupBoxSelectionListeners();
         this.createBoxSelectionElement();
@@ -248,8 +255,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
     
     setupBoxSelectionListeners() {
-        // Mouse down - start box selection
-        this.canvas.addEventListener('mousedown', (event) => {
+        // Store handlers for cleanup
+        this._mousedownHandler = (event) => {
             // Only left click, and not clicking on UI elements
             if (event.button !== 0) return;
 
@@ -260,28 +267,30 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             this.boxSelection.active = true;
 
             // Don't show box immediately - wait for drag
-        });
-        
+        };
+        this.canvas.addEventListener('mousedown', this._mousedownHandler);
+
         // Mouse move - update box selection
-        this.canvas.addEventListener('mousemove', (event) => {
+        this._mousemoveHandler = (event) => {
             if (!this.boxSelection.active) return;
-            
+
             this.boxSelection.currentX = event.clientX;
             this.boxSelection.currentY = event.clientY;
-            
+
             // Calculate distance dragged
             const dx = this.boxSelection.currentX - this.boxSelection.startX;
             const dy = this.boxSelection.currentY - this.boxSelection.startY;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            
+
             // Only show box if dragged more than 5 pixels (prevents accidental box on click)
             if (distance > 5) {
                 this.updateBoxSelectionVisual();
             }
-        });
-        
+        };
+        this.canvas.addEventListener('mousemove', this._mousemoveHandler);
+
         // Mouse up - complete box selection
-        this.canvas.addEventListener('mouseup', (event) => {
+        this._mouseupHandler = (event) => {
             if (!this.boxSelection.active) return;
 
             const dx = this.boxSelection.currentX - this.boxSelection.startX;
@@ -302,21 +311,49 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             if (this.boxSelection.element) {
                 this.boxSelection.element.style.display = 'none';
             }
-        });
-        
+        };
+        this.canvas.addEventListener('mouseup', this._mouseupHandler);
+
         // Prevent browser context menu on canvas, cancel box selection if active
-        this.canvas.addEventListener('contextmenu', (event) => {
+        this._contextmenuHandler = (event) => {
             event.preventDefault();
             if (this.boxSelection.active) {
                 this.cancelBoxSelection();
             }
-        });
-        
-        document.addEventListener('keydown', (event) => {
+        };
+        this.canvas.addEventListener('contextmenu', this._contextmenuHandler);
+
+        this._keydownHandler = (event) => {
             if (event.key === 'Escape' && this.boxSelection.active) {
                 this.cancelBoxSelection();
             }
-        });
+        };
+        document.addEventListener('keydown', this._keydownHandler);
+    }
+
+    cleanupBoxSelectionListeners() {
+        if (this.canvas) {
+            if (this._mousedownHandler) {
+                this.canvas.removeEventListener('mousedown', this._mousedownHandler);
+            }
+            if (this._mousemoveHandler) {
+                this.canvas.removeEventListener('mousemove', this._mousemoveHandler);
+            }
+            if (this._mouseupHandler) {
+                this.canvas.removeEventListener('mouseup', this._mouseupHandler);
+            }
+            if (this._contextmenuHandler) {
+                this.canvas.removeEventListener('contextmenu', this._contextmenuHandler);
+            }
+        }
+        if (this._keydownHandler) {
+            document.removeEventListener('keydown', this._keydownHandler);
+        }
+        this._mousedownHandler = null;
+        this._mousemoveHandler = null;
+        this._mouseupHandler = null;
+        this._contextmenuHandler = null;
+        this._keydownHandler = null;
     }
     
     updateBoxSelectionVisual() {
@@ -1126,6 +1163,9 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
     
     destroy() {
+        // Clean up box selection listeners
+        this.cleanupBoxSelectionListeners();
+
         // Clean up box selection element
         if (this.boxSelection.element && this.boxSelection.element.parentElement) {
             this.boxSelection.element.parentElement.removeChild(this.boxSelection.element);
@@ -1140,7 +1180,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         this.highlightedUnits.clear();
         this.selectedUnitIds.clear();
         this.initialized = false;
-
+        this.canvas = null;
     }
 
     onSceneUnload() {

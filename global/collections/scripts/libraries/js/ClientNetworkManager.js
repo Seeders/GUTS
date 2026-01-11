@@ -212,7 +212,7 @@ class ClientNetworkManager {
         // Emit to one-time callbacks
         const oneTimeCallbacks = this.oneTimeCallbacks.get(eventName);
         if (oneTimeCallbacks) {
-            oneTimeCallbacks.forEach(callback => {
+            oneTimeCallbacks.forEach((callback) => {
                 try {
                     callback(data);
                 } catch (error) {

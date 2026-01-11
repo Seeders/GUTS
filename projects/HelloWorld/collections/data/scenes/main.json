@@ -1,0 +1,6 @@
+{
+  "title": "Hello World Main",
+  "description": "Main scene for Hello World example",
+  "interface": "main",
+  "systems": []
+}

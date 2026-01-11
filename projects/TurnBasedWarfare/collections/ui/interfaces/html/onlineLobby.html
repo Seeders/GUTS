@@ -1,0 +1,106 @@
+<!-- Online Lobby Screen -->
+<div id="onlineLobbyScreen" class="screen active">
+    <div class="online-lobby-wrapper">
+        <div class="online-lobby-header">
+            <h1 class="online-lobby-title">ONLINE ARENA</h1>
+            <button id="onlineLobbyBackBtn" class="btn btn-secondary">Back to Menu</button>
+        </div>
+        <div class="online-lobby-content">
+            <div class="games-panel">
+                <div class="games-header">
+                    <h2>Available Games</h2>
+                    <div class="games-actions">
+                        <button id="createGameBtn" class="btn btn-primary">+ Create Game</button>
+                        <button id="refreshGamesBtn" class="btn btn-secondary">Refresh</button>
+                    </div>
+                </div>
+                <div id="gamesListContainer" class="games-list">
+                    <div class="games-loading">Loading games...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Multiplayer Game Lobby (shown after creating/joining a room) -->
+<div id="multiplayerLobby" class="screen">
+    <div class="multiplayer-lobby-container">
+        <div class="lobby-header">
+            <h1 class="lobby-title">WAR COUNCIL</h1>
+            <div class="room-info">
+                <div class="room-id-display">
+                    <span class="room-label">Battle Hall:</span>
+                    <span id="lobbyRoomId" class="room-id">------</span>
+                    <button id="copyRoomIdBtn" class="btn-small">Copy</button>
+                </div>
+                <div class="connection-status">
+                    <span id="connectionStatus" class="status-indicator">Summoning...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="lobby-content">
+            <div class="players-section">
+                <h2>Warriors (<span id="playerCount">1</span>/2)</h2>
+                <div id="playersContainer" class="players-grid">
+                    <div class="player-card" id="player1Card">
+                        <div class="player-name" id="player1Name">You</div>
+                        <div class="player-status waiting" id="player1Status">Preparing...</div>
+                        <div class="player-stats">Ready to battle</div>
+                    </div>
+                    <div class="player-card empty" id="player2Card">
+                        <div class="player-name" id="player2Name">Waiting for opponent</div>
+                        <div class="player-status empty" id="player2Status">Empty slot</div>
+                        <div class="player-stats">Seeking worthy challenger</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-status">
+                <div class="status-message" id="lobbyStatusMessage">Waiting for worthy opponents...</div>
+                <div class="game-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="gameProgressFill"></div>
+                    </div>
+                    <div class="progress-text" id="gameProgressText">Preparing battlefield...</div>
+                </div>
+            </div>
+
+            <div class="game-info">
+                <h3>Battle Configuration</h3>
+                <div class="game-settings">
+                    <div class="setting">
+                        <span class="setting-label">Map</span>
+                        <select id="levelSelect" class="setting-select"></select>
+                    </div>
+                    <div class="setting">
+                        <span class="setting-label">Turn Timer</span>
+                        <span class="setting-value" id="lobbyTurnTimer">30 seconds</span>
+                    </div>
+                    <div class="setting">
+                        <span class="setting-label">Starting Gold</span>
+                        <span class="setting-value" id="lobbyStartGold">100 coins</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-footer">
+                <div class="lobby-controls">
+                    <div class="lobby-controls-left">
+                        <button id="leaveLobbyBtn" class="btn btn-secondary">Retreat</button>
+                        <button id="loadGameBtn" class="btn btn-secondary">Load Game</button>
+                        <input type="file" id="loadGameFileInput" accept=".json" style="display: none;">
+                    </div>
+                    <div class="lobby-controls-right">
+                        <button id="player1ReadyBtn" class="ready-btn">READY FOR BATTLE</button>
+                    </div>
+                </div>
+
+                <div class="lobby-tips">
+                    <p>Prepare your strategies while waiting for opponents</p>
+                    <p>Victory requires both tactical skill and wise resource management</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

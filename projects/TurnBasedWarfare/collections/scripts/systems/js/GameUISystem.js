@@ -394,4 +394,8 @@ class GameUISystem extends GUTS.BaseSystem {
 
         this.gameMenuEventsSetup = false;
     }
+
+    onSceneUnload() {
+        this.dispose();
+    }
 }

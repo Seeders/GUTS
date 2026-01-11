@@ -1,5 +1,7 @@
 {
   "title": "Skirmish Scene",
+  "interface": "game",
+  "loader": "GameLoader",
   "systems": [
     "BaseNetworkSystem",
     "ServerNetworkSystem",
@@ -31,6 +33,7 @@
   ],
   "clientSystems": [
     "GameInterfaceSystem",
+    "InputSystem",
     "RenderSystem",
     "WorldSystem",
     "TerrainDetailSystem",

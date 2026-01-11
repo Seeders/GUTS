@@ -9,18 +9,27 @@ class InputSystem extends GUTS.BaseSystem {
     }
     
     init() {
-        this.setupCanvasEvents();
         this.setupButtonEvents();
         this.setupKeyboardEvents();
         this.setupMouseTracking();
         this.setupDefaultShortcuts();
     }
+
+    onSceneLoad() {
+        // Setup canvas events on scene load since canvas may not exist during init()
+        // (InputSystem is reused across scenes, but gameCanvas only exists in game scene)
+        this.setupCanvasEvents();
+    }
         
     setupCanvasEvents() {
+        // Clean up any existing canvas listeners first
+        this.cleanupCanvasEvents();
+
         const canvas = document.getElementById('gameCanvas');
         if (!canvas) return;
 
-        canvas.addEventListener('click', (event) => {
+        this._currentCanvas = canvas;
+        this._canvasClickHandler = (event) => {
             // Get world position from screen coordinates
             const worldPos = this.game.call('getWorldPositionFromMouse', event.clientX, event.clientY);
             if (!worldPos) return;
@@ -35,10 +44,20 @@ class InputSystem extends GUTS.BaseSystem {
             this.game.call('ui_handleCanvasClick', worldPos.x, worldPos.z, modifiers, (result) => {
                 this.game.triggerEvent('onInputResult', result);
             });
-        });
+        };
+
+        canvas.addEventListener('click', this._canvasClickHandler);
 
         // Note: Right-click (contextmenu) is handled by UnitOrderUISystem
         // which manages its own canvas listener based on isTargeting state
+    }
+
+    cleanupCanvasEvents() {
+        if (this._currentCanvas && this._canvasClickHandler) {
+            this._currentCanvas.removeEventListener('click', this._canvasClickHandler);
+        }
+        this._currentCanvas = null;
+        this._canvasClickHandler = null;
     }
     
     setupButtonEvents() {        
@@ -452,6 +471,9 @@ class InputSystem extends GUTS.BaseSystem {
     }
 
     onSceneUnload() {
+        // Clean up canvas event listeners
+        this.cleanupCanvasEvents();
+
         // Clear key states
         this.keyStates = {};
         this.mouseState = { x: 0, y: 0, pressed: false };

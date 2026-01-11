@@ -345,10 +345,18 @@ class LobbyUISystem extends GUTS.BaseSystem {
         this.currentScreen = 'lobby';
         this.roomId = roomId;
 
+        // Hide all screens first
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
         });
-        document.getElementById('multiplayerLobby').classList.add('active');
+
+        // Show multiplayer lobby screen
+        const multiplayerLobby = document.getElementById('multiplayerLobby');
+        if (multiplayerLobby) {
+            multiplayerLobby.classList.add('active');
+        } else {
+            console.error('[LobbyUISystem] multiplayerLobby element not found');
+        }
 
         this.populateLevelSelector();
         this.updateLobby(gameState);
@@ -707,5 +715,22 @@ class LobbyUISystem extends GUTS.BaseSystem {
             });
             this.networkUnsubscribers = [];
         }
+
+        // Clean up bound handlers from button listeners
+        if (this.boundHandlers) {
+            const readyBtn = document.getElementById('player1ReadyBtn');
+            const leaveBtn = document.getElementById('leaveLobbyBtn');
+            const loadGameBtn = document.getElementById('loadGameBtn');
+            const loadGameFileInput = document.getElementById('loadGameFileInput');
+
+            if (readyBtn) readyBtn.removeEventListener('click', this.boundHandlers.readyClick);
+            if (leaveBtn) leaveBtn.removeEventListener('click', this.boundHandlers.leaveClick);
+            if (loadGameBtn) loadGameBtn.removeEventListener('click', this.boundHandlers.loadGameClick);
+            if (loadGameFileInput) loadGameFileInput.removeEventListener('change', this.boundHandlers.loadGameFileChange);
+        }
+    }
+
+    onSceneUnload() {
+        this.dispose();
     }
 }

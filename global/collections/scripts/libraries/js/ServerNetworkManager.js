@@ -43,7 +43,9 @@ class ServerNetworkManager {
 
             console.log('Player connected:', socket.id);
 
-            this.playerSockets.set(socket.id, { socket });
+            // Auto-join lobby room for global chat
+            socket.join('lobby');
+            this.playerSockets.set(socket.id, { socket, inLobby: true });
 
             socket.on('CREATE_ROOM', (data) => {
                 this.handleCreateRoom(socket, data);
@@ -51,13 +53,17 @@ class ServerNetworkManager {
             socket.on('JOIN_ROOM', (data) => {
                 this.handleJoinRoom(socket, data);
             });
+            socket.on('CHAT_MESSAGE', (data) => {
+                this.handleChatMessage(socket, data);
+            });
             // Catch ALL events and route to game systems
             socket.onAny((eventName, data) => {
                 // Skip internal socket.io events and events with dedicated handlers
                 if (eventName.startsWith('__') ||
                     eventName === 'disconnect' ||
                     eventName === 'CREATE_ROOM' ||
-                    eventName === 'JOIN_ROOM') {
+                    eventName === 'JOIN_ROOM' ||
+                    eventName === 'CHAT_MESSAGE') {
                     return;
                 }
 
@@ -95,11 +101,15 @@ class ServerNetworkManager {
 
             if (result.success) {
                 this.currentRoomIds.push(roomId);
+                // Leave lobby when joining a game room
+                this.leaveLobby(socket.id);
                 this.playerSockets.set(socket.id, {
                     socket,
                     roomId,
                     isHost: true,
-                    numericPlayerId: result.numericPlayerId
+                    numericPlayerId: result.numericPlayerId,
+                    inLobby: false,
+                    playerName: playerName || `Player ${socket.id.substr(-4)}`
                 });
                 socket.join(roomId);
 
@@ -162,12 +172,16 @@ class ServerNetworkManager {
             });
 
             if (result.success) {
+                // Leave lobby when joining a game room
+                this.leaveLobby(playerId);
                 this.joinRoom(playerId, roomId);
 
-                // Store numeric ID in socket info
+                // Store player info in socket data
                 const socketInfo = this.playerSockets.get(playerId);
                 if (socketInfo) {
                     socketInfo.numericPlayerId = result.numericPlayerId;
+                    socketInfo.inLobby = false;
+                    socketInfo.playerName = playerName || `Player ${playerId.substr(-4)}`;
                 }
 
                 const gameState = room.getGameState();
@@ -269,6 +283,8 @@ class ServerNetworkManager {
         if (playerData && playerData.socket) {
             playerData.socket.leave(roomId);
             delete playerData.roomId;
+            // Rejoin lobby when leaving a game room
+            this.rejoinLobby(playerId);
         }
     }
 
@@ -289,6 +305,91 @@ class ServerNetworkManager {
         return {
             connectedPlayers: this.playerSockets.size
         };
+    }
+
+    // Chat message handling
+    handleChatMessage(socket, data) {
+        const { content, context } = data;
+        const playerData = this.playerSockets.get(socket.id);
+
+        // Sanitize content (strip HTML, limit length)
+        const sanitizedContent = this.sanitizeMessage(content);
+        if (!sanitizedContent) return;
+
+        // Get player name from room if in game, otherwise use stored name or socket ID
+        let senderName = `Player ${socket.id.substr(-4)}`;
+        if (playerData?.roomId) {
+            const room = this.engine.gameRooms.get(playerData.roomId);
+            if (room) {
+                const player = room.players.get(socket.id);
+                if (player?.name) {
+                    senderName = player.name;
+                }
+            }
+        } else if (playerData?.playerName) {
+            senderName = playerData.playerName;
+        }
+
+        const message = {
+            id: `${Date.now()}-${socket.id.substr(-4)}`,
+            sender: senderName,
+            senderId: socket.id,
+            content: sanitizedContent,
+            timestamp: Date.now(),
+            type: 'chat',
+            context: context
+        };
+
+        if (context === 'lobby' && playerData?.inLobby) {
+            // Broadcast to all players in lobby room
+            this.io.to('lobby').emit('CHAT_MESSAGE', message);
+        } else if (context === 'game' && playerData?.roomId) {
+            // Broadcast to players in the game room
+            this.io.to(playerData.roomId).emit('CHAT_MESSAGE', message);
+        }
+    }
+
+    sanitizeMessage(content) {
+        if (!content || typeof content !== 'string') return null;
+        // Strip HTML tags, trim whitespace, limit to 500 chars
+        const sanitized = content.replace(/<[^>]*>/g, '').trim().slice(0, 500);
+        return sanitized.length > 0 ? sanitized : null;
+    }
+
+    broadcastSystemMessage(roomOrContext, messageText) {
+        const systemMsg = {
+            id: `sys-${Date.now()}`,
+            sender: 'System',
+            senderId: 'system',
+            content: messageText,
+            timestamp: Date.now(),
+            type: 'system',
+            context: roomOrContext === 'lobby' ? 'lobby' : 'game'
+        };
+
+        if (roomOrContext === 'lobby') {
+            this.io.to('lobby').emit('CHAT_MESSAGE', systemMsg);
+        } else {
+            this.io.to(roomOrContext).emit('CHAT_MESSAGE', systemMsg);
+        }
+    }
+
+    // Leave lobby when joining a game room
+    leaveLobby(playerId) {
+        const playerData = this.playerSockets.get(playerId);
+        if (playerData?.socket && playerData.inLobby) {
+            playerData.socket.leave('lobby');
+            playerData.inLobby = false;
+        }
+    }
+
+    // Rejoin lobby when leaving a game room
+    rejoinLobby(playerId) {
+        const playerData = this.playerSockets.get(playerId);
+        if (playerData?.socket && !playerData.inLobby) {
+            playerData.socket.join('lobby');
+            playerData.inLobby = true;
+        }
     }
 
     cleanup() {

@@ -1,5 +1,6 @@
 {
   "title": "simulation",
+  "interface": "main",
   "systems": [
     "BoidFlockingSystem",
     "BoidRenderSystem"

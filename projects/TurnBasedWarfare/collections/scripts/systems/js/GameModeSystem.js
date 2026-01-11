@@ -198,14 +198,15 @@ class GameModeSystem extends GUTS.BaseSystem {
     }
 
     onMultiplayerConnected(playerName) {
-        // Show the multiplayer mode selection (arena, etc.)
-        // For now, we only have arena, so go directly to it
+        // Set the arena game mode for multiplayer
         const arenaMode = this.multiplayerModes.arena;
         this.setGameMode(arenaMode.id);
 
-        // Pass the player name to the mode handler
+        // Store player name in game state
         this.game.state.playerName = playerName;
-        arenaMode.onStart(arenaMode);
+
+        // Transition to the online lobby scene where chat and games list are prominent
+        this.game.switchScene('onlineLobby');
     }
 
     selectMode(modeId) {

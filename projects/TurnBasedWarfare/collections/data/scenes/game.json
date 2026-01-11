@@ -1,5 +1,7 @@
 {
   "title": "Game Scene",
+  "interface": "game",
+  "loader": "GameLoader",
   "systems": [
     "BaseNetworkSystem",
     "GridSystem",
@@ -51,7 +53,8 @@
     "MiniMapSystem",
     "CameraControlSystem",
     "DamageNumberSystem",
-    "SaveSystem"
+    "SaveSystem",
+    "ChatUISystem"
   ],
   "serverSystems": [
     "ServerBattlePhaseSystem",

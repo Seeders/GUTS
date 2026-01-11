@@ -1,6 +1,7 @@
 {
   "title": "Lobby Scene",
   "description": "Minimal scene for main menu and lobby - no terrain or world loading",
+  "interface": "main",
   "systems": [
     "GameSystem",
     "ScreenSystem",

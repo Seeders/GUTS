@@ -39,20 +39,31 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
 
     onGameStarted() {
+        // Skip if already initialized
+        if (this.initialized) {
+            return;
+        }
+
         // Get the container and its actual width
         this.container = document.getElementById('miniMapContainer');
         if (!this.container) {
             console.warn('[MiniMapSystem] miniMapContainer not found, skipping initialization');
             return;
         }
+
+        // Clear any existing canvas from previous sessions
+        while (this.container.firstChild) {
+            this.container.removeChild(this.container.firstChild);
+        }
+
         const rect = this.container.getBoundingClientRect();
        // this.MINIMAP_SIZE = rect.width; // use actual displayed size
 
         // Use that size for both the canvas and render target
         this.minimapWorldSize = this.game.call('getWorldExtendedSize');
-        
+
         this.createMinimapCamera();
-        this.addTerrainBackground(); 
+        this.addTerrainBackground();
         this.createIconMaterials();
         this.createMinimapUI();
         this.setupEventListeners();
@@ -287,24 +298,49 @@ class MiniMapSystem extends GUTS.BaseSystem {
 
 
     setupEventListeners() {
-        this.container.addEventListener('mousedown', (e) => {
+        this._mousedownHandler = (e) => {
             this.isDragging = true;
             this.handleMinimapClick(e);
-        });
-        
-        this.container.addEventListener('mousemove', (e) => {
+        };
+        this.container.addEventListener('mousedown', this._mousedownHandler);
+
+        this._mousemoveHandler = (e) => {
             if (this.isDragging) {
                 this.handleMinimapClick(e);
             }
-        });
-        
-        this.container.addEventListener('mouseup', () => {
+        };
+        this.container.addEventListener('mousemove', this._mousemoveHandler);
+
+        this._mouseupHandler = () => {
             this.isDragging = false;
-        });
-        
-        this.container.addEventListener('mouseleave', () => {
+        };
+        this.container.addEventListener('mouseup', this._mouseupHandler);
+
+        this._mouseleaveHandler = () => {
             this.isDragging = false;
-        });
+        };
+        this.container.addEventListener('mouseleave', this._mouseleaveHandler);
+    }
+
+    cleanupEventListeners() {
+        if (this.container) {
+            if (this._mousedownHandler) {
+                this.container.removeEventListener('mousedown', this._mousedownHandler);
+            }
+            if (this._mousemoveHandler) {
+                this.container.removeEventListener('mousemove', this._mousemoveHandler);
+            }
+            if (this._mouseupHandler) {
+                this.container.removeEventListener('mouseup', this._mouseupHandler);
+            }
+            if (this._mouseleaveHandler) {
+                this.container.removeEventListener('mouseleave', this._mouseleaveHandler);
+            }
+        }
+        this._mousedownHandler = null;
+        this._mousemoveHandler = null;
+        this._mouseupHandler = null;
+        this._mouseleaveHandler = null;
     }
 
     handleMinimapClick(event) {
@@ -654,11 +690,12 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
     
     onSceneUnload() {
-        // Note: dispose() is called by SceneManager after onSceneUnload
-        // So we just reset state here, actual cleanup happens in dispose()
+        this.dispose();
     }
 
     dispose() {
+        // Clean up event listeners first
+        this.cleanupEventListeners();
         // Remove the canvas we created, but NOT the container (it's part of the HTML structure)
         if (this.canvas && this.canvas.parentNode) {
             this.canvas.parentNode.removeChild(this.canvas);

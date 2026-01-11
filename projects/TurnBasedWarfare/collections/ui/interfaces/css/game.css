@@ -1,0 +1,8 @@
+/* Game Interface Styles */
+/* Most styles are inherited from main.css which loads as the base stylesheet */
+/* This file contains game-specific overrides if needed */
+
+/* Ensure game screen starts as active when this interface loads */
+#gameScreen.screen {
+    display: flex;
+}

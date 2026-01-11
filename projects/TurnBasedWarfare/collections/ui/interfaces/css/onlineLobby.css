@@ -1,0 +1,128 @@
+/* Online Lobby Styles */
+#onlineLobbyScreen {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background-image: url('resources/images/background.png');
+    background-size: cover;
+    background-position: center center;
+}
+
+.online-lobby-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px;
+}
+
+.online-lobby-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 170, 0, 0.3);
+}
+
+.online-lobby-title {
+    color: #d4af37;
+    font-size: 2rem;
+    margin: 0;
+}
+
+.online-lobby-content {
+    flex: 1;
+    display: flex;
+    gap: 20px;
+    padding-top: 20px;
+    overflow: hidden;
+}
+
+.games-panel {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 170, 0, 0.2);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    max-width: 800px;
+}
+
+.games-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.games-header h2 {
+    color: #d4af37;
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+.games-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.games-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.games-loading, .no-games {
+    color: #888;
+    text-align: center;
+    padding: 40px;
+}
+
+.game-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 170, 0, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-item:hover {
+    background: rgba(255, 170, 0, 0.1);
+}
+
+.game-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.game-id {
+    color: #d4af37;
+    font-weight: bold;
+}
+
+.game-players {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.game-full {
+    color: #888;
+    font-style: italic;
+}
+
+.join-btn {
+    background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+    border: none;
+    color: #1a1a2e;
+    padding: 8px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.join-btn:hover {
+    transform: scale(1.02);
+}

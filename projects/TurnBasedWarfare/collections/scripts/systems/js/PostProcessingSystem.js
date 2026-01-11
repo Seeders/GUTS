@@ -38,10 +38,11 @@ class PostProcessingSystem extends GUTS.BaseSystem {
 
     onSceneLoad(sceneData) {
         // Initialize composer once WorldSystem has created renderer/scene/camera
-        if (this.composer) return; // Already initialized
+        if (this.composer) {
+            return; // Already initialized
+        }
 
         if (!this.game.renderer || !this.game.scene || !this.game.camera) {
-            console.warn('[PostProcessingSystem] Waiting for renderer, scene, or camera');
             return;
         }
 

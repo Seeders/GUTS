@@ -1,0 +1,16 @@
+{
+  "title": "Online Lobby Scene",
+  "description": "Multiplayer lobby with chat and game browser",
+  "interface": "onlineLobby",
+  "systems": [
+    "GameSystem",
+    "ScreenSystem",
+    "InputSystem",
+    "BaseNetworkSystem",
+    "ClientNetworkSystem",
+    "LobbyUISystem",
+    "OnlineLobbyUISystem",
+    "ChatUISystem",
+    "SaveSystem"
+  ]
+}

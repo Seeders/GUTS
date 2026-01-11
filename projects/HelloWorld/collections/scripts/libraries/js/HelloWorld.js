@@ -1,6 +1,6 @@
 class HelloWorld {
-    constructor(app) {
-        this.app = app;
+    constructor(engine) {
+        this.engine = engine;
     }
 
     async init() {

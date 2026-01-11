@@ -161,9 +161,11 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     setupNetworkListeners() {
         const nm = this.game.clientNetworkManager;
         if (!nm) {
-            console.error('ClientNetworkManager not available');
-            return;
+            return; // ClientNetworkManager not available yet (connection not established)
         }
+
+        // Clean up any existing listeners first
+        this.cleanupNetworkListeners();
 
         // Listen to events that update the UI
         this.networkUnsubscribers.push(
@@ -237,6 +239,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     createRoom(playerName, maxPlayers = 2) {
+        console.log('[ClientNetworkSystem] createRoom:', playerName);
         this.game.call('showNotification', 'Creating room...', 'info');
 
         this.game.clientNetworkManager.call(
@@ -247,6 +250,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                 if (error) {
                     this.game.call('showNotification', `Failed to create room: ${error.message}`, 'error');
                 } else {
+                    console.log('[ClientNetworkSystem] ROOM_CREATED roomId:', data.roomId);
                     this.roomId = data.roomId;
                     this.isHost = data.isHost;
                     this.gameState = data.gameState;
@@ -257,6 +261,11 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
                     this.game.call('showNotification', `Room created! Code: ${this.roomId}`, 'success');
                     this.game.call('showLobby', data.gameState, this.roomId);
+
+                    // Notify ChatSystem of game room join
+                    if (this.game.chatSystem) {
+                        this.game.chatSystem.onGameJoined();
+                    }
                 }
             }
         );
@@ -283,6 +292,11 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
                     this.game.call('showNotification', `Joined room ${this.roomId}`, 'success');
                     this.game.call('showLobby', data.gameState, this.roomId);
+
+                    // Notify ChatSystem of game room join
+                    if (this.game.chatSystem) {
+                        this.game.chatSystem.onGameJoined();
+                    }
                 }
             }
         );
@@ -308,6 +322,11 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
                     this.game.call('showNotification', `Match found! Entering room...`, 'success');
                     this.game.call('showLobby', data.gameState, this.roomId);
+
+                    // Notify ChatSystem of game room join
+                    if (this.game.chatSystem) {
+                        this.game.chatSystem.onGameJoined();
+                    }
                 }
             }
         );
@@ -656,6 +675,11 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
     leaveRoom() {
         this.game.clientNetworkManager.call('LEAVE_ROOM');
+
+        // Notify ChatSystem of game room leave
+        if (this.game.chatSystem) {
+            this.game.chatSystem.onGameLeft();
+        }
     }
 
     /**
@@ -715,6 +739,8 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     async handleGameStarted(data) {
+        console.log('[ClientNetworkSystem] handleGameStarted - level:', data.level, 'nextEntityId:', data.nextEntityId);
+
         // Store the level from server (numeric index)
         const levelIndex = data.level ?? 1;
         this.game.state.level = levelIndex;
@@ -748,7 +774,9 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         }
 
         // Switch to the game scene
+        console.log('[ClientNetworkSystem] Switching to game scene...');
         await this.game.switchScene('game');
+        console.log('[ClientNetworkSystem] Game scene loaded, syncing entities...');
 
         // Sync nextEntityId from server to ensure subsequent entity creation is in sync
         if (data.nextEntityId !== undefined) {
@@ -759,7 +787,9 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.syncPlayerEntities();
 
         // Now initialize the game
+        console.log('[ClientNetworkSystem] Calling initializeGame...');
         this.game.call('initializeGame', data);
+        console.log('[ClientNetworkSystem] handleGameStarted complete');
     }
 
     /**
@@ -777,11 +807,8 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                     }
                     if (!this.game.hasComponent(playerEntity.entityId, 'playerStats')) {
                         this.game.addComponent(playerEntity.entityId, 'playerStats', playerEntity.playerStats);
-                    } else {
-                        // Update existing component
-                        const stats = this.game.getComponent(playerEntity.entityId, 'playerStats');
-                        Object.assign(stats, playerEntity.playerStats);
                     }
+                    // If component already exists, skip update - server state is synced via GAME_STATE_UPDATE
 
                     // Track our team
                     if (playerEntity.playerStats.playerId === numericPlayerId) {
@@ -1215,7 +1242,10 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.processCheat(cheatName, mergedParams);
     }
 
-    dispose() {
+    /**
+     * Clean up network listeners
+     */
+    cleanupNetworkListeners() {
         this.networkUnsubscribers.forEach(unsubscribe => {
             if (typeof unsubscribe === 'function') {
                 unsubscribe();
@@ -1224,9 +1254,13 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.networkUnsubscribers = [];
     }
 
+    dispose() {
+        this.cleanupNetworkListeners();
+    }
+
     onSceneUnload() {
-        // Note: Don't call dispose() here as we want to keep network listeners
-        // active across scene transitions. Only reset game-specific state.
+        // Clean up network listeners - they will be re-registered on next scene load
+        this.cleanupNetworkListeners();
 
         // Reset game state tracking
         this.gameState = null;

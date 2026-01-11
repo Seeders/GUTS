@@ -1,9 +1,10 @@
 class HomepageApp {
-    constructor() {
-        this.init();
+    constructor(engine) {
+        this.engine = engine;
     }
 
     async init() {
+        // Interface already loaded by SimpleLoader via Engine
         await this.loadProjects();
     }
 

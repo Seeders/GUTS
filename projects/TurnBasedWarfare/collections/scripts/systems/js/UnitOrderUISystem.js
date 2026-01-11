@@ -847,9 +847,15 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         this.stopTargeting();
         if (this.targetingPreview) {
             this.targetingPreview.dispose();
+            this.targetingPreview = null;
         }
         if (this.orderPreview) {
             this.orderPreview.dispose();
+            this.orderPreview = null;
         }
+    }
+
+    onSceneUnload() {
+        this.destroy();
     }
 }

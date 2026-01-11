@@ -153,6 +153,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
     }
 
     onSceneLoad(sceneData) {
+        // Update canvas reference - it may not have existed at constructor time
+        this.canvas = this.game.canvas;
+
         // Initialize RaycastHelper when scene and camera are available
         if (this.game.scene && this.game.camera && !this.raycastHelper) {
             this.raycastHelper = new GUTS.RaycastHelper(this.game.camera, this.game.scene);
@@ -235,30 +238,33 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         // Keyboard undo
         if (this.config.enableUndo) {
-            document.addEventListener('keydown', (event) => {
+            this._keydownHandler = (event) => {
                 if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
                     event.preventDefault();
                     this.undoLastPlacement();
                 }
-            });
+            };
+            document.addEventListener('keydown', this._keydownHandler);
         }
 
         // Mouse tracking for preview
         if (this.config.enablePreview && this.placementPreview && this.canvas) {
-            this.canvas.addEventListener('mousemove', (event) => {
+            this._canvasMouseMoveHandler = (event) => {
                 const rect = this.canvas.getBoundingClientRect();
                 this.mouseScreenPos.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
                 this.mouseScreenPos.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-            });
+            };
+            this.canvas.addEventListener('mousemove', this._canvasMouseMoveHandler);
 
-            this.canvas.addEventListener('mouseleave', () => {
+            this._canvasMouseLeaveHandler = () => {
                 // Don't clear - just show pending buildings if any
                 this.lastPendingBuildingUpdate = 0; // Force refresh
                 this.updatePendingBuildingPreview();
                 this.cachedValidation = null;
                 this.cachedGridPos = null;
                 document.body.style.cursor = 'default';
-            });
+            };
+            this.canvas.addEventListener('mouseleave', this._canvasMouseLeaveHandler);
         }
 
         // Mouse raycast interval
@@ -764,6 +770,24 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (this.mouseRayCastInterval) {
             clearInterval(this.mouseRayCastInterval);
             this.mouseRayCastInterval = null;
+        }
+
+        // Clean up keyboard listener
+        if (this._keydownHandler) {
+            document.removeEventListener('keydown', this._keydownHandler);
+            this._keydownHandler = null;
+        }
+
+        // Clean up canvas listeners
+        if (this.canvas) {
+            if (this._canvasMouseMoveHandler) {
+                this.canvas.removeEventListener('mousemove', this._canvasMouseMoveHandler);
+                this._canvasMouseMoveHandler = null;
+            }
+            if (this._canvasMouseLeaveHandler) {
+                this.canvas.removeEventListener('mouseleave', this._canvasMouseLeaveHandler);
+                this._canvasMouseLeaveHandler = null;
+            }
         }
 
         this.cachedValidation = null;

@@ -517,6 +517,20 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
     cleanup() {
         if (this.updateInterval) {
             clearInterval(this.updateInterval);
+            this.updateInterval = null;
         }
+        this.lastUpdateData = null;
+        this._lastPlayerStrength = -1;
+        this._lastEnemyStrength = -1;
+        this._lastPlayerStrengthClass = '';
+        this._lastEnemyStrengthClass = '';
+    }
+
+    onSceneUnload() {
+        this.cleanup();
+    }
+
+    dispose() {
+        this.cleanup();
     }
 }
