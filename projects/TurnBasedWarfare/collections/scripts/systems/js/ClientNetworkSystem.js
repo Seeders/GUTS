@@ -263,7 +263,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     joinRoom(roomId, playerName) {
-        console.log('[ClientNetworkSystem.joinRoom] START - roomId:', roomId, 'playerName:', playerName);
         this.game.call('showNotification', 'Joining room...', 'info');
 
         this.game.clientNetworkManager.call(
@@ -271,12 +270,9 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             { roomId, playerName },
             'ROOM_JOINED',
             (data, error) => {
-                console.log('[ClientNetworkSystem.joinRoom] Response received - data:', data, 'error:', error);
                 if (error) {
-                    console.log('[ClientNetworkSystem.joinRoom] FAILED:', error.message);
                     this.game.call('showNotification', `Failed to join room: ${error.message}`, 'error');
                 } else {
-                    console.log('[ClientNetworkSystem.joinRoom] SUCCESS - roomId:', data.roomId, 'isHost:', data.isHost);
                     this.roomId = data.roomId;
                     this.isHost = data.isHost;
                     this.gameState = data.gameState;
@@ -286,7 +282,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                     this.setMyTeamFromGameState(data.playerId, data.gameState);
 
                     this.game.call('showNotification', `Joined room ${this.roomId}`, 'success');
-                    console.log('[ClientNetworkSystem.joinRoom] Calling showLobby with gameState');
                     this.game.call('showLobby', data.gameState, this.roomId);
                 }
             }
