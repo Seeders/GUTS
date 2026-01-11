@@ -81,9 +81,6 @@ export default class ServerEngine extends BaseEngine {
 
     createGameRoom(roomId, maxPlayers = 4) {
         if (!this.gameRooms.has(roomId)) {
-            console.log("GUTS", global.GUTS);
-            console.log("NAME", this.collections.configs.server.appLibrary);
-            console.log("APP", global.GUTS[this.collections.configs.server.appLibrary]);
             const gameInstance = new global.GUTS[this.collections.configs.server.appLibrary](this);
             const room = new global.GUTS.ServerGameRoom(this, roomId, gameInstance, maxPlayers);
             this.gameRooms.set(roomId, room);
