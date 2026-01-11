@@ -272,6 +272,13 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     joinRoom(roomId, playerName) {
+        console.log('[ClientNetworkSystem] joinRoom called:', roomId, playerName);
+
+        // Check if showLobby service is registered
+        if (!this.game.hasService('showLobby')) {
+            console.error('[ClientNetworkSystem] showLobby service not registered!');
+        }
+
         this.game.call('showNotification', 'Joining room...', 'info');
 
         this.game.clientNetworkManager.call(
@@ -279,7 +286,9 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             { roomId, playerName },
             'ROOM_JOINED',
             (data, error) => {
+                console.log('[ClientNetworkSystem] ROOM_JOINED callback received:', { data, error });
                 if (error) {
+                    console.error('[ClientNetworkSystem] Join error:', error);
                     this.game.call('showNotification', `Failed to join room: ${error.message}`, 'error');
                 } else {
                     this.roomId = data.roomId;
@@ -291,7 +300,10 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                     this.setMyTeamFromGameState(data.playerId, data.gameState);
 
                     this.game.call('showNotification', `Joined room ${this.roomId}`, 'success');
+
+                    console.log('[ClientNetworkSystem] Calling showLobby with:', data.gameState, this.roomId);
                     this.game.call('showLobby', data.gameState, this.roomId);
+                    console.log('[ClientNetworkSystem] showLobby called');
 
                     // Notify ChatSystem of game room join
                     if (this.game.chatSystem) {

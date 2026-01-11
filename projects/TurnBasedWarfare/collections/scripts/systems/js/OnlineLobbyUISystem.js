@@ -110,7 +110,18 @@ class OnlineLobbyUISystem extends GUTS.BaseSystem {
 
             container.querySelectorAll('.join-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
+                    // Prevent multiple clicks
+                    if (this.isJoining) return;
+                    this.isJoining = true;
+
                     const roomId = e.target.dataset.roomId;
+
+                    // Disable all join buttons
+                    container.querySelectorAll('.join-btn').forEach(b => {
+                        b.disabled = true;
+                        b.textContent = 'Joining...';
+                    });
+
                     this.joinGame(roomId);
                 });
             });
