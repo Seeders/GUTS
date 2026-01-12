@@ -152,8 +152,12 @@ class ServerNetworkManager {
                 return;
             }
 
+            console.log('[ServerNetworkManager] Looking for room:', roomId, 'type:', typeof roomId);
+            console.log('[ServerNetworkManager] Available rooms:', Array.from(this.engine.gameRooms.keys()));
+
             const room = this.engine.gameRooms.get(roomId);
             if (!room) {
+                console.log('[ServerNetworkManager] Room not found!');
                 this.sendToPlayer(playerId, 'JOIN_ROOM_FAILED', {
                     error: 'Room not found'
                 });
