@@ -153,7 +153,9 @@ class ServerNetworkManager {
             }
 
             console.log('[ServerNetworkManager] Looking for room:', roomId, 'type:', typeof roomId);
+            console.log('[ServerNetworkManager] Engine instance:', this.engine.constructor.name);
             console.log('[ServerNetworkManager] Available rooms:', Array.from(this.engine.gameRooms.keys()));
+            console.log('[ServerNetworkManager] gameRooms Map size:', this.engine.gameRooms.size);
 
             const room = this.engine.gameRooms.get(roomId);
             if (!room) {
