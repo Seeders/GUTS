@@ -5,13 +5,12 @@ class ServerEventManager {
     }
     
     subscribe(eventType, callback) {
-        console.log("subscribing", eventType);
         if (!this.listeners.has(eventType)) {
             this.listeners.set(eventType, []);
         }
         this.listeners.get(eventType).push(callback);
     }
-    
+
     emit(eventType, data) {
         const callbacks = this.listeners.get(eventType) || [];
         const results = [];

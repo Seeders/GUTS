@@ -2,7 +2,7 @@ class ServerECSGame extends global.GUTS.BaseECSGame {
     constructor(app) {
         super(app);
         this.state = new global.GUTS.GameState(this.getCollections());
-        this.desyncDebugger = new global.GUTS.DesyncDebugger(this);        
+        this.desyncDebugger = new global.GUTS.DesyncDebugger(this);
         this.serverEventManager = new global.GUTS.ServerEventManager(this);
         this.isServer = true;
     }

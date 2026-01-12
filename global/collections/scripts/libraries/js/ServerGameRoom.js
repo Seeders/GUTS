@@ -17,13 +17,12 @@ class ServerGameRoom extends global.GUTS.GameRoom {
     }
 
     subscribeToEvents() {
-        console.log('game room subscribing to events');
         if (!this.game.serverEventManager) {
             console.error('No event manager found on engine');
             return;
         }
 
-        // Subscribe to room management events
+        // Subscribe to room management events (events are isolated per room's serverEventManager)
         this.game.serverEventManager.subscribe('LEAVE_ROOM', this.handleLeaveRoom.bind(this));
         this.game.serverEventManager.subscribe('PLAYER_DISCONNECT', this.handlePlayerDisconnect.bind(this));
         this.game.serverEventManager.subscribe('TOGGLE_READY', this.handleToggleReady.bind(this));
@@ -113,54 +112,52 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
     handlePlayerDisconnect(eventData) {
         const { playerId } = eventData;
-        console.log(`Player ${playerId} disconnected`);
 
-        // Get the room the player was in
-        const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-        if (roomId) {
-            const room = this.engine.gameRooms.get(roomId);
-            if (room) {
-                // Get player data before removing
-                const player = room.players.get(playerId);
-                const playerName = player?.name || 'Unknown';
+        // Only handle disconnect if player is in THIS room
+        if (!this.players.has(playerId)) {
+            return;
+        }
 
-                // If game is active and has remaining players, trigger victory for remaining player
-                if (room.isActive && room.players.size === 2) {
-                    // Find remaining player and end game with them as winner
-                    if (room.game && room.game.serverBattlePhaseSystem) {
-                        room.game.serverBattlePhaseSystem.handlePlayerDisconnect(playerId);
-                    }
-                }
+        console.log(`[Room ${this.id}] Player ${playerId} disconnected`);
 
-                // Notify other players
-                this.serverNetworkManager.broadcastToRoom(roomId, 'PLAYER_LEFT', {
-                    playerId: playerId,
-                    playerName: playerName
-                });
+        // Get player data before removing
+        const player = this.players.get(playerId);
+        const playerName = player?.name || 'Unknown';
 
-                // Clean up player state completely
-                this.cleanupPlayerState(room, playerId);
-
-                // Remove from room
-                room.removePlayer(playerId);
-                this.serverNetworkManager.leaveRoom(playerId, roomId);
-
-
-                // Clean up empty rooms
-                if (room.players.size === 0) {
-                    this.cleanupRoom(room);
-                    this.engine.gameRooms.delete(roomId);
-                    // Also remove from network manager's room tracking
-                    const roomIndex = this.serverNetworkManager.currentRoomIds.indexOf(roomId);
-                    if (roomIndex > -1) {
-                        this.serverNetworkManager.currentRoomIds.splice(roomIndex, 1);
-                    }
-                    console.log(`Removed empty room ${roomId}`);
-                } else {
-                    // If room still has players, reset their states for next game
-                    this.resetPlayersForNextGame(room);
-                }
+        // If game is active and has remaining players, trigger victory for remaining player
+        if (this.isActive && this.players.size === 2) {
+            // Find remaining player and end game with them as winner
+            if (this.game && this.game.serverBattlePhaseSystem) {
+                this.game.serverBattlePhaseSystem.handlePlayerDisconnect(playerId);
             }
+        }
+
+        // Notify other players
+        this.serverNetworkManager.broadcastToRoom(this.id, 'PLAYER_LEFT', {
+            playerId: playerId,
+            playerName: playerName
+        });
+
+        // Clean up player state completely
+        this.cleanupPlayerState(this, playerId);
+
+        // Remove from room
+        this.removePlayer(playerId);
+        this.serverNetworkManager.leaveRoom(playerId, this.id);
+
+        // Clean up empty rooms
+        if (this.players.size === 0) {
+            this.cleanupRoom(this);
+            this.engine.gameRooms.delete(this.id);
+            // Also remove from network manager's room tracking
+            const roomIndex = this.serverNetworkManager.currentRoomIds.indexOf(this.id);
+            if (roomIndex > -1) {
+                this.serverNetworkManager.currentRoomIds.splice(roomIndex, 1);
+            }
+            console.log(`[Room ${this.id}] Removed empty room`);
+        } else {
+            // If room still has players, reset their states for next game
+            this.resetPlayersForNextGame(this);
         }
 
         // Clean up network manager state
@@ -169,58 +166,57 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
     handleLeaveRoom(eventData) {
         const { playerId } = eventData;
-        console.log(`Player ${playerId} leaving room`);
 
-        // Get the room the player was in
-        const roomId = this.serverNetworkManager.getPlayerRoom(playerId);
-        if (roomId) {
-            const room = this.engine.gameRooms.get(roomId);
-            if (room) {
-                // Get player data before removing
-                const player = room.players.get(playerId);
-                const playerName = player?.name || 'Unknown';
+        // Only handle leave if player is in THIS room
+        if (!this.players.has(playerId)) {
+            return;
+        }
 
-                // If game is active and has remaining players, trigger victory for remaining player
-                if (room.isActive && room.players.size === 2) {
-                    // Find remaining player and end game with them as winner
-                    if (room.game && room.game.serverBattlePhaseSystem) {
-                        room.game.serverBattlePhaseSystem.handlePlayerDisconnect(playerId);
-                    }
-                }
+        console.log(`[Room ${this.id}] Player ${playerId} leaving room`);
 
-                // Notify other players
-                this.serverNetworkManager.broadcastToRoom(roomId, 'PLAYER_LEFT', {
-                    playerId: playerId,
-                    playerName: playerName
-                });
+        // Get player data before removing
+        const player = this.players.get(playerId);
+        const playerName = player?.name || 'Unknown';
 
-                // Clean up player state in the room
-                this.cleanupPlayerState(room, playerId);
-
-                // Remove from room
-                room.removePlayer(playerId);
-                this.serverNetworkManager.leaveRoom(playerId, roomId);
-
-                // Clean up empty rooms
-                if (room.players.size === 0) {
-                    this.cleanupRoom(room);
-                    this.engine.gameRooms.delete(roomId);
-                    // Also remove from network manager's room tracking
-                    const roomIndex = this.serverNetworkManager.currentRoomIds.indexOf(roomId);
-                    if (roomIndex > -1) {
-                        this.serverNetworkManager.currentRoomIds.splice(roomIndex, 1);
-                    }
-                    console.log(`Removed empty room ${roomId}`);
-                } else {
-                    // If room still has players, reset their states for next game
-                    this.resetPlayersForNextGame(room);
-                }
+        // If game is active and has remaining players, trigger victory for remaining player
+        if (this.isActive && this.players.size === 2) {
+            // Find remaining player and end game with them as winner
+            if (this.game && this.game.serverBattlePhaseSystem) {
+                this.game.serverBattlePhaseSystem.handlePlayerDisconnect(playerId);
             }
+        }
+
+        // Notify other players
+        this.serverNetworkManager.broadcastToRoom(this.id, 'PLAYER_LEFT', {
+            playerId: playerId,
+            playerName: playerName
+        });
+
+        // Clean up player state in the room
+        this.cleanupPlayerState(this, playerId);
+
+        // Remove from room
+        this.removePlayer(playerId);
+        this.serverNetworkManager.leaveRoom(playerId, this.id);
+
+        // Clean up empty rooms
+        if (this.players.size === 0) {
+            this.cleanupRoom(this);
+            this.engine.gameRooms.delete(this.id);
+            // Also remove from network manager's room tracking
+            const roomIndex = this.serverNetworkManager.currentRoomIds.indexOf(this.id);
+            if (roomIndex > -1) {
+                this.serverNetworkManager.currentRoomIds.splice(roomIndex, 1);
+            }
+            console.log(`[Room ${this.id}] Removed empty room`);
+        } else {
+            // If room still has players, reset their states for next game
+            this.resetPlayersForNextGame(this);
         }
 
         // IMPORTANT: DO NOT delete socket here - player is still connected, just not in a room
         // Only handlePlayerDisconnect should delete the socket
-        console.log(`Player ${playerId} left room successfully, socket preserved`);
+        console.log(`[Room ${this.id}] Player ${playerId} left room successfully, socket preserved`);
     }
 
     cleanupPlayerState(room, playerId) {
