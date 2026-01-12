@@ -9,8 +9,6 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         this.game.state.phase = this.enums.gamePhase.lobby;
         this.gameConfig = gameConfig;
         this.createdAt = Date.now();
-        this.nextRoomId = 1000;
-        this.currentRoomIds = [];
 
         // Subscribe to events from network manager
         this.subscribeToEvents();
@@ -52,8 +50,9 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             }
             
             if (!availableRoom) {
-                // Create new room for quick match
-                const roomId = this.generateRoomId();
+                // Create new room for quick match - use network manager as single source of truth
+                const roomId = this.serverNetworkManager.generateRoomId();
+                this.serverNetworkManager.currentRoomIds.push(roomId);
                 availableRoom = this.engine.createGameRoom(roomId, 2);
             }
             
@@ -220,6 +219,11 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 if (room.players.size === 0) {
                     this.cleanupRoom(room);
                     this.engine.gameRooms.delete(roomId);
+                    // Also remove from network manager's room tracking
+                    const roomIndex = this.serverNetworkManager.currentRoomIds.indexOf(roomId);
+                    if (roomIndex > -1) {
+                        this.serverNetworkManager.currentRoomIds.splice(roomIndex, 1);
+                    }
                     console.log(`Removed empty room ${roomId}`);
                 } else {
                     // If room still has players, reset their states for next game
@@ -270,6 +274,11 @@ class ServerGameRoom extends global.GUTS.GameRoom {
                 if (room.players.size === 0) {
                     this.cleanupRoom(room);
                     this.engine.gameRooms.delete(roomId);
+                    // Also remove from network manager's room tracking
+                    const roomIndex = this.serverNetworkManager.currentRoomIds.indexOf(roomId);
+                    if (roomIndex > -1) {
+                        this.serverNetworkManager.currentRoomIds.splice(roomIndex, 1);
+                    }
                     console.log(`Removed empty room ${roomId}`);
                 } else {
                     // If room still has players, reset their states for next game
@@ -633,20 +642,6 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         return networkUnitData;
     }
 
-    generateRoomId() {
-        let id;
-        do {
-            id = this.nextRoomId++;
-            if (this.nextRoomId > 9999) {
-                this.nextRoomId = 1000;
-            }
-        } while (this.currentRoomIds.includes(id.toString()));
-        
-        this.currentRoomIds.push(id.toString());
-        return id.toString();
-    }
-
-
     // Reset all remaining players for next game
     resetPlayersForNextGame(room) {
         for (const [playerId, player] of room.players) {
@@ -674,15 +669,12 @@ class ServerGameRoom extends global.GUTS.GameRoom {
     cleanupRoom(room) {
         try {
             // Clear all game systems
-            if (room.game) {                
+            if (room.game) {
                 room.game.triggerEvent('dispose');
             }
-            // Remove room ID from tracking
-            const roomIndex = this.currentRoomIds.indexOf(room.id);
-            if (roomIndex > -1) {
-                this.currentRoomIds.splice(roomIndex, 1);
-            }
-            
+            // Room ID tracking is now handled at the point where room is deleted
+            // (in handlePlayerDisconnect and handleLeaveRoom)
+
         } catch (error) {
             console.error('Error during room cleanup:', error);
         }
