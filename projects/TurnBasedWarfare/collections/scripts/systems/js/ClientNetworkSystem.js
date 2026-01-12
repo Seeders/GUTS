@@ -314,35 +314,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         );
     }
 
-    startQuickMatch(playerName) {
-        this.game.call('showNotification', 'Finding opponent...', 'info');
-
-        this.game.clientNetworkManager.call(
-            'QUICK_MATCH',
-            { playerName },
-            'QUICK_MATCH_FOUND',
-            (data, error) => {
-                if (error) {
-                    this.game.call('showNotification', `Quick match failed: ${error.message}`, 'error');
-                } else {
-                    this.roomId = data.roomId;
-                    this.isHost = data.isHost;
-                    this.gameState = data.gameState;
-
-                    // Set myTeam from lobby response so it's available before game scene loads
-                    this.setMyTeamFromGameState(data.playerId, data.gameState);
-
-                    this.game.call('showNotification', `Match found! Entering room...`, 'success');
-                    this.game.call('showLobby', data.gameState, this.roomId);
-
-                    // Notify ChatSystem of game room join
-                    if (this.game.chatSystem) {
-                        this.game.chatSystem.onGameJoined();
-                    }
-                }
-            }
-        );
-    }
 
     getStartingState(callback){
         this.game.clientNetworkManager.call(

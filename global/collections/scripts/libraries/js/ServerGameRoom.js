@@ -24,79 +24,10 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         }
 
         // Subscribe to room management events
-        this.game.serverEventManager.subscribe('QUICK_MATCH', this.handleQuickMatch.bind(this));
         this.game.serverEventManager.subscribe('LEAVE_ROOM', this.handleLeaveRoom.bind(this));
         this.game.serverEventManager.subscribe('PLAYER_DISCONNECT', this.handlePlayerDisconnect.bind(this));
         this.game.serverEventManager.subscribe('TOGGLE_READY', this.handleToggleReady.bind(this));
         this.game.serverEventManager.subscribe('UPLOAD_SAVE_DATA', this.handleUploadSaveData.bind(this));
-    }
-
-
-
-    handleQuickMatch(eventData) {
-        const { playerId, data } = eventData;
-        
-        try {
-            const { playerName } = data;
-            
-            // Find available room
-            let availableRoom = null;
-            for (const [roomId, room] of this.engine.gameRooms) {
-                if (this.game.state.phase === this.enums.gamePhase.lobby &&
-                    room.players.size < room.maxPlayers) {
-                    availableRoom = room;
-                    break;
-                }
-            }
-            
-            if (!availableRoom) {
-                // Create new room for quick match - use network manager as single source of truth
-                const roomId = this.serverNetworkManager.generateRoomId();
-                this.serverNetworkManager.currentRoomIds.push(roomId);
-                availableRoom = this.engine.createGameRoom(roomId, 2);
-            }
-            
-            if (!availableRoom) {
-                this.serverNetworkManager.sendToPlayer(playerId, 'QUICK_MATCH_FAILED', { 
-                    error: 'Failed to create or find room' 
-                });
-                return;
-            }
-
-            const result = availableRoom.addPlayer(playerId, {
-                name: playerName || `Player ${playerId.substr(-4)}`,
-                isHost: availableRoom.players.size === 0
-            });
-
-            if (result.success) {
-                this.serverNetworkManager.joinRoom(playerId, availableRoom.id);
-                
-                this.serverNetworkManager.sendToPlayer(playerId, 'QUICK_MATCH_FOUND', {
-                    roomId: availableRoom.id,
-                    playerId: playerId,
-                    isHost: availableRoom.players.size === 1,
-                    gameState: availableRoom.getGameState()
-                });
-                
-                // Notify other players in room
-                this.serverNetworkManager.broadcastToRoom(availableRoom.id, 'PLAYER_JOINED', {
-                    playerId: playerId,
-                    playerName: playerName,
-                    gameState: availableRoom.getGameState()
-                });
-                
-                console.log(`Player ${playerName} quick-matched into room ${availableRoom.id}`);
-            } else {
-                this.serverNetworkManager.sendToPlayer(playerId, 'QUICK_MATCH_FAILED', { 
-                    error: result.error || result.reason || 'Failed to find match' 
-                });
-            }
-        } catch (error) {
-            console.error('Error in quick match:', error);
-            this.serverNetworkManager.sendToPlayer(playerId, 'QUICK_MATCH_FAILED', { 
-                error: 'Server error during quick match' 
-            });
-        }
     }
 
     handleToggleReady(eventData) {

@@ -80,12 +80,15 @@ export default class ServerEngine extends BaseEngine {
     }
 
     createGameRoom(roomId, maxPlayers = 4) {
+        console.log(`[ServerEngine] createGameRoom called for room ${roomId}, current rooms:`, Array.from(this.gameRooms.keys()));
         if (!this.gameRooms.has(roomId)) {
             const gameInstance = new global.GUTS[this.collections.configs.server.appLibrary](this);
             const room = new global.GUTS.ServerGameRoom(this, roomId, gameInstance, maxPlayers);
             this.gameRooms.set(roomId, room);
+            console.log(`[ServerEngine] Room ${roomId} created and added to gameRooms. Total rooms:`, this.gameRooms.size);
             return room;
         }
+        console.log(`[ServerEngine] Room ${roomId} already exists, returning existing room`);
         return this.gameRooms.get(roomId);
     }
 
