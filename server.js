@@ -815,6 +815,8 @@ app.get('/api/rooms', (req, res) => {
     if (!gameServer) {
         return res.json([]);
     }
+    console.log('[/api/rooms] gameServer.gameRooms size:', gameServer.gameRooms?.size);
+    console.log('[/api/rooms] gameServer === global.serverEngine:', gameServer === global.serverEngine);
     const rooms = Array.from(gameServer.gameRooms?.entries() || [])
         .filter(([id, room]) => room.players.size > 0)
         .map(([id, room]) => ({
@@ -823,6 +825,7 @@ app.get('/api/rooms', (req, res) => {
             maxPlayers: room.maxPlayers,
             isActive: room.isActive
         }));
+    console.log('[/api/rooms] Returning rooms:', rooms);
     res.json(rooms);
 });
 
