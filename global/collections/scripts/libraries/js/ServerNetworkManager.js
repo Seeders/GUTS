@@ -158,8 +158,15 @@ class ServerNetworkManager {
 
             console.log('[ServerNetworkManager] Looking for room:', roomId, 'type:', typeof roomId);
             console.log('[ServerNetworkManager] Engine instance:', this.engine.constructor.name);
+            console.log('[ServerNetworkManager] this.engine reference:', this.engine);
+            console.log('[ServerNetworkManager] global.serverEngine reference:', global.serverEngine);
+            console.log('[ServerNetworkManager] Same engine?', this.engine === global.serverEngine);
             console.log('[ServerNetworkManager] Available rooms:', Array.from(this.engine.gameRooms.keys()));
             console.log('[ServerNetworkManager] gameRooms Map size:', this.engine.gameRooms.size);
+            if (global.serverEngine) {
+                console.log('[ServerNetworkManager] global.serverEngine.gameRooms size:', global.serverEngine.gameRooms.size);
+                console.log('[ServerNetworkManager] global.serverEngine rooms:', Array.from(global.serverEngine.gameRooms.keys()));
+            }
 
             const room = this.engine.gameRooms.get(roomId);
             if (!room) {
