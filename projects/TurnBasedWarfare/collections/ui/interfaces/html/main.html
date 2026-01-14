@@ -10,13 +10,19 @@
 
 <!-- Game Mode Selection Screen -->
 <div id="gameModeSelect" class="screen">
-    <div class="mode-selection">
-        <h2>CHOOSE YOUR DESTINY</h2>
-        <div class="mode-grid" id="modeGrid">
-            <!-- Game mode cards populated by GameModeManager -->
+    <div class="mode-selection-wrapper">
+        <!-- Top Bar -->
+        <div class="mode-selection-topbar">
+            <button id="gameMode_BackBtn" class="topbar-btn retreat-btn">Back to Menu</button>
+            <h1 class="mode-selection-title">Choose Your Path</h1>
+            <div class="topbar-spacer"></div>
         </div>
-        <div>
-            <button id="gameMode_BackBtn" class="btn btn-secondary">RETURN</button>
+
+        <!-- Mode Cards Container -->
+        <div class="mode-selection-content">
+            <div class="mode-grid" id="modeGrid">
+                <!-- Game mode cards populated by GameModeManager -->
+            </div>
         </div>
     </div>
 </div>

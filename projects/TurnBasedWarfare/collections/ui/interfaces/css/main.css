@@ -142,32 +142,66 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 
 
-/* Game Mode Selection */
-.mode-selection {
-    text-align: center;
+/* ================================================
+   Game Mode Selection Screen
+   ================================================ */
+
+/* Main wrapper - centered with solid background */
+.mode-selection-wrapper {
     max-width: 1000px;
     width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    background: rgba(10, 10, 20, 0.95);
+    border-left: 1px solid rgba(255, 170, 0, 0.2);
+    border-right: 1px solid rgba(255, 170, 0, 0.2);
+    display: flex;
+    flex-direction: column;
 }
 
-.mode-selection h2 {
+/* Top bar with back button and title */
+.mode-selection-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(180deg, rgba(20, 15, 30, 0.98) 0%, rgba(15, 12, 25, 0.95) 100%);
+    border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+}
+
+.mode-selection-title {
     font-family: var(--font-decorative);
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     color: var(--primary-gold);
-    margin-bottom: 2rem;    
-    text-shadow: 2px 2px 3px var(--dark-green);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 3px;
 }
 
+.topbar-spacer {
+    width: 120px;
+}
+
+/* Content area */
+.mode-selection-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+/* Mode grid - two columns for cleaner layout */
 .mode-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
 }
 
+/* Section headers spanning full width */
 .mode-section-header {
     grid-column: 1 / -1;
-    margin-top: 1rem;
-    margin-bottom: -0.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .mode-section-header:first-child {
@@ -176,37 +210,38 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 .mode-section-header h3 {
     font-family: var(--font-title);
-    font-size: 1.5rem;
-    color: var(--primary-gold);
+    font-size: 1rem;
+    color: rgba(212, 175, 55, 0.7);
     text-transform: uppercase;
-    letter-spacing: 2px;
-    border-bottom: 2px solid var(--dark-bronze);
+    letter-spacing: 3px;
     padding-bottom: 0.5rem;
-    text-shadow: 2px 2px 3px var(--dark-green);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    margin: 0;
 }
 
+/* Mode cards - refined style */
 .mode-card {
-    background: linear-gradient(145deg, rgba(26, 13, 26, 0.8), rgba(13, 10, 26, 0.8));
-    border: 2px solid var(--dark-bronze);
-    border-radius: 12px;
-    padding: 2rem;
+    background: linear-gradient(135deg, rgba(30, 25, 40, 0.9) 0%, rgba(20, 18, 35, 0.9) 100%);
+    border: 1px solid rgba(255, 170, 0, 0.25);
+    border-radius: 8px;
+    padding: 1.5rem;
     cursor: pointer;
-    transition: all 0.4s ease;
+    transition: all 0.3s ease;
     text-align: center;
     position: relative;
     overflow: hidden;
 }
+
 .mode-card::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.5), transparent);
     opacity: 0;
-    transition: opacity 0.4s ease;
-    z-index: 0;
+    transition: opacity 0.3s ease;
 }
 
 .mode-card:hover::before {
@@ -214,19 +249,21 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 }
 
 .mode-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    border-color: var(--primary-gold);
-    box-shadow: 
-        0 15px 40px rgba(212, 175, 55, 0.2),
-        0 0 30px rgba(212, 175, 55, 0.3);
+    transform: translateY(-4px);
+    border-color: rgba(212, 175, 55, 0.5);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4),
+                0 0 20px rgba(212, 175, 55, 0.15);
 }
 
 .mode-card.selected {
-    border-color: var(--accent-amber);
-    background: linear-gradient(145deg, rgba(26, 13, 26, 0.95), rgba(13, 10, 26, 0.95));
-    box-shadow: 
-        0 0 30px rgba(255, 140, 0, 0.4),
-        inset 0 0 20px rgba(255, 140, 0, 0.1);
+    border-color: var(--primary-gold);
+    background: linear-gradient(135deg, rgba(40, 35, 55, 0.95) 0%, rgba(30, 25, 45, 0.95) 100%);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3),
+                inset 0 0 30px rgba(212, 175, 55, 0.05);
+}
+
+.mode-card.selected::before {
+    opacity: 1;
 }
 
 .mode-card > * {
@@ -234,32 +271,33 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     z-index: 1;
 }
 
+/* Mode card content */
 .mode-icon {
-    font-size: 3.5rem;
-    margin-bottom: 1rem;
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
     display: block;
 }
 
 .mode-title {
     font-family: var(--font-title);
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     color: var(--primary-gold);
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.5rem;
     font-weight: 600;
 }
 
 .mode-description {
-    font-size: 0.95rem;
-    color: var(--stone-gray);
-    margin-bottom: 1.2rem;
+    font-size: 0.85rem;
+    color: rgba(200, 200, 200, 0.8);
+    margin-bottom: 1rem;
     line-height: 1.4;
 }
 
 .mode-difficulty {
     display: inline-block;
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
     font-weight: bold;
     font-family: var(--font-title);
     text-transform: uppercase;
@@ -300,6 +338,34 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     background: linear-gradient(135deg, #e53935, #ff5722);
     color: var(--parchment);
     box-shadow: 0 0 10px rgba(229, 57, 53, 0.3);
+}
+
+/* Topbar buttons (shared with online lobby) */
+.topbar-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ccc;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: var(--font-body);
+    transition: all 0.2s ease;
+}
+
+.topbar-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.retreat-btn {
+    color: #ff8888;
+    border-color: rgba(255, 100, 100, 0.3);
+}
+
+.retreat-btn:hover {
+    background: rgba(255, 100, 100, 0.2);
+    color: #ff6666;
 }
 
 /* Team Selector */
@@ -2233,11 +2299,33 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     .game-title {
         font-size: 2.5rem;
     }
-    
+
+    .mode-selection-wrapper {
+        border-left: none;
+        border-right: none;
+    }
+
+    .mode-selection-topbar {
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .mode-selection-title {
+        font-size: 1.4rem;
+        order: -1;
+        width: 100%;
+        text-align: center;
+    }
+
+    .topbar-spacer {
+        display: none;
+    }
+
     .mode-grid {
         grid-template-columns: 1fr;
     }
-    
+
     #canvasContainer {
         width: 100%;
     }

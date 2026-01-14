@@ -38,7 +38,7 @@
             "color": "#ff0000",
             "metalness": 0,
             "roughness": 1,
-            "url": "models/goldvein.glb"
+            "model": "goldvein"
           }
         ],
         "position": {

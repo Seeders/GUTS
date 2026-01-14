@@ -11,7 +11,8 @@ class FileSystemSyncService {
         this.propertyConfig = [
             { propertyName: 'script', ext: 'js' },
             { propertyName: 'html', ext: 'html' },
-            { propertyName: 'css', ext: 'css' }
+            { propertyName: 'css', ext: 'css' },
+            { propertyName: 'testScript', ext: 'test.js', folder: 'tests' }
         ];
         this.intervalId = null;
         this.lastSyncTime = Date.now();
@@ -302,7 +303,8 @@ class FileSystemSyncService {
             }
 
             let category, collectionId, objectId;
-            const propertyDirs = this.propertyConfig.map(config => config.ext);
+            // Build property directory names (use 'folder' if specified, otherwise 'ext')
+            const propertyDirs = this.propertyConfig.map(config => config.folder || config.ext);
             let subdirIndex = -1;
 
             for (const dir of propertyDirs) {
@@ -325,12 +327,14 @@ class FileSystemSyncService {
                 category = parts[subdirIndex - 2];
                 collectionId = parts[subdirIndex - 1];
                 const fileName = parts[parts.length - 1];
-                objectId = fileName.substring(0, fileName.lastIndexOf('.'));
+                // Handle .test.js extension - strip .test before the final extension
+                objectId = fileName.replace(/\.test\.js$/, '').replace(/\.[^/.]+$/, '');
             } else {
                 category = parts[parts.length - 3];
                 collectionId = parts[parts.length - 2];
                 const fileName = parts[parts.length - 1];
-                objectId = fileName.substring(0, fileName.lastIndexOf('.'));
+                // Handle .test.js extension - strip .test before the final extension
+                objectId = fileName.replace(/\.test\.js$/, '').replace(/\.[^/.]+$/, '');
             }
 
             if (!category || !collectionId || !objectId) {
@@ -427,10 +431,15 @@ class FileSystemSyncService {
             Object.assign(objectData, newData);
         }
 
-        // Process special property files (e.g., .html, .css)
+        // Process special property files (e.g., .html, .css, .test.js)
         const specialFiles = files.filter(f => !f.name.endsWith('.json'));
         for (const fileInfo of specialFiles) {
-            const fileExt = fileInfo.name.substring(fileInfo.name.lastIndexOf('.') + 1);
+            // Extract file extension, handling compound extensions like .test.js
+            let fileExt = fileInfo.name.substring(fileInfo.name.lastIndexOf('.') + 1);
+            // Check for compound extension (e.g., .test.js)
+            if (fileInfo.name.endsWith('.test.js')) {
+                fileExt = 'test.js';
+            }
             const propertyConfig = this.propertyConfig.find(config => config.ext === fileExt);
 
             if (propertyConfig) {
@@ -453,11 +462,13 @@ class FileSystemSyncService {
                 } else {
                     filePath = '/projects/' + filePath;
                 }
-                objectData['filePath'] = filePath;
+                // Set filePath property based on property type (e.g., testScript -> testFilePath)
+                const filePathProp = propertyConfig.propertyName === 'testScript' ? 'testFilePath' : 'filePath';
+                objectData[filePathProp] = filePath;
                 this.typeHasSpecialProperties[collectionIdFromPath] = true;
 
-                // Extract static services array from JS files
-                if (fileExt === 'js') {
+                // Extract static services array from JS files (not test files)
+                if (fileExt === 'js' && propertyConfig.propertyName === 'script') {
                     const services = this.extractStaticServices(content);
                     if (services.length > 0) {
                         objectData.services = services;
@@ -468,7 +479,8 @@ class FileSystemSyncService {
 
         // Set fileName if applicable
         if (this.hasSpecialPropertiesInType(collectionIdFromPath)) {
-            const fileName = files[0].name.split('/').pop().replace(/\.[^/.]+$/, '');
+            // Handle .test.js extension when extracting fileName
+            const fileName = files[0].name.split('/').pop().replace(/\.test\.js$/, '').replace(/\.[^/.]+$/, '');
             objectData.fileName = fileName;
         }
 
@@ -624,12 +636,17 @@ class FileSystemSyncService {
             Object.assign(objectData, newData);
         }
     
-        // Process special property files (e.g., .html, .css)
+        // Process special property files (e.g., .html, .css, .test.js)
         const specialFiles = files.filter(f => !f.name.endsWith('.json'));
         for (const fileInfo of specialFiles) {
-            const fileExt = fileInfo.name.substring(fileInfo.name.lastIndexOf('.') + 1);
+            // Extract file extension, handling compound extensions like .test.js
+            let fileExt = fileInfo.name.substring(fileInfo.name.lastIndexOf('.') + 1);
+            // Check for compound extension (e.g., .test.js)
+            if (fileInfo.name.endsWith('.test.js')) {
+                fileExt = 'test.js';
+            }
             const propertyConfig = this.propertyConfig.find(config => config.ext === fileExt);
-    
+
             if (propertyConfig) {
                 const response = await fetch('/read-file', {
                     method: 'POST',
@@ -645,19 +662,21 @@ class FileSystemSyncService {
                 } else {
                     filePath = '/projects/' + filePath;
                 }
-                objectData['filePath'] = filePath;
+                // Set filePath property based on property type (e.g., testScript -> testFilePath)
+                const filePathProp = propertyConfig.propertyName === 'testScript' ? 'testFilePath' : 'filePath';
+                objectData[filePathProp] = filePath;
                 this.typeHasSpecialProperties[collectionIdFromPath] = true;
             }
         }
-    
+
         // Set fileName if applicable
         if (this.hasSpecialPropertiesInType(collectionIdFromPath)) {
-            const fileName = files[0].name.split('/').pop().replace(/\.[^/.]+$/, '');
+            const fileName = files[0].name.split('/').pop().replace(/\.test\.js$/, '').replace(/\.[^/.]+$/, '');
             objectData.fileName = fileName;
         }
-    
+
         this.currentCollections[collectionIdFromPath][objectId] = objectData;
-        
+
         const updateEvent = new CustomEvent('projectUpdated', { cancelable: true });
         document.body.dispatchEvent(updateEvent);
     }
@@ -694,7 +713,8 @@ class FileSystemSyncService {
             if (typeof data[propName] === 'string') {
                 specialProperties[propName] = {
                     content: data[propName],
-                    ext: config.ext
+                    ext: config.ext,
+                    folder: config.folder || config.ext  // Use folder if specified, otherwise ext
                 };
                 delete jsonData[propName];
                 hasSpecialProperties = true;
@@ -735,7 +755,8 @@ class FileSystemSyncService {
             // Save special property files (if any)
             const specialPropertyPromises = Object.entries(specialProperties).map(
                 async ([propName, propData]) => {
-                    const fileDir = `${basePath}/${propData.ext}`;
+                    // Use folder for directory (e.g., 'tests'), ext for file extension (e.g., 'test.js')
+                    const fileDir = `${basePath}/${propData.folder}`;
                     const filePath = `${fileDir}/${fileName}.${propData.ext}`;
                     const fileContent = propData.content;
 
@@ -804,7 +825,8 @@ class FileSystemSyncService {
             if (parts.length < 3) continue;
 
             let category, collectionId, objectId;
-            const propertyDirs = this.propertyConfig.map(config => config.ext);
+            // Build property directory names (use 'folder' if specified, otherwise 'ext')
+            const propertyDirs = this.propertyConfig.map(config => config.folder || config.ext);
             let subdirIndex = -1;
 
             for (const dir of propertyDirs) {
@@ -827,12 +849,14 @@ class FileSystemSyncService {
                 category = parts[subdirIndex - 2];
                 collectionId = parts[subdirIndex - 1];
                 const fileName = parts[parts.length - 1];
-                objectId = fileName.substring(0, fileName.lastIndexOf('.'));
+                // Handle .test.js extension - strip .test before the final extension
+                objectId = fileName.replace(/\.test\.js$/, '').replace(/\.[^/.]+$/, '');
             } else {
                 category = parts[parts.length - 3];
                 collectionId = parts[parts.length - 2];
                 const fileName = parts[parts.length - 1];
-                objectId = fileName.substring(0, fileName.lastIndexOf('.'));
+                // Handle .test.js extension - strip .test before the final extension
+                objectId = fileName.replace(/\.test\.js$/, '').replace(/\.[^/.]+$/, '');
             }
 
             if (category && collectionId && objectId) {

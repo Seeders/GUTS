@@ -53,8 +53,8 @@
     "MiniMapSystem",
     "CameraControlSystem",
     "DamageNumberSystem",
-    "SaveSystem",
-    "ChatUISystem"
+    "GameChatSystem",
+    "SaveSystem"
   ],
   "serverSystems": [
     "ServerBattlePhaseSystem",

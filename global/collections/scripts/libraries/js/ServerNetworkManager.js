@@ -4,7 +4,6 @@ class ServerNetworkManager {
         this.io = null;
         this.playerSockets = new Map();
         this.nextRoomId = 1000; // Starting room code
-        this.currentRoomIds = [];
         this._initialized = false;
     }
 
@@ -47,6 +46,12 @@ class ServerNetworkManager {
             socket.join('lobby');
             this.playerSockets.set(socket.id, { socket, inLobby: true });
 
+            socket.on('SET_PLAYER_NAME', (data) => {
+                const playerData = this.playerSockets.get(socket.id);
+                if (playerData && data.playerName) {
+                    playerData.playerName = data.playerName;
+                }
+            });
             socket.on('CREATE_ROOM', (data) => {
                 this.handleCreateRoom(socket, data);
             });
@@ -103,7 +108,6 @@ class ServerNetworkManager {
             });
 
             if (result.success) {
-                this.currentRoomIds.push(roomId);
                 // Leave lobby when joining a game room
                 this.leaveLobby(socket.id);
                 this.playerSockets.set(socket.id, {
@@ -234,8 +238,8 @@ class ServerNetworkManager {
             if (this.nextRoomId > 9999) {
                 this.nextRoomId = 1000; // Reset to avoid very long codes
             }
-        } while (this.currentRoomIds.includes(id.toString()));
-        
+        } while (this.engine.gameRooms.has(id.toString()));
+
         return id.toString();
     }
 

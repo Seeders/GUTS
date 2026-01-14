@@ -4,6 +4,13 @@
         <div id="canvasContainer">
             <canvas id="gameCanvas"></canvas>
         </div>
+        <!-- In-Game Chat (WC3/Dota style) - positioned above minimap -->
+        <div id="gameChat" class="game-chat">
+            <div id="gameChatMessages" class="game-chat-messages"></div>
+            <div id="gameChatInputContainer" class="game-chat-input-container hidden">
+                <input type="text" id="gameChatInput" class="game-chat-input" placeholder="" maxlength="200" autocomplete="off">
+            </div>
+        </div>
         <div id="resourcesContainer" class="resources">
             <div class="resource-item">
                 <span class="resource-label">💰</span>

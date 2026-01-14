@@ -19,6 +19,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
         };
 
         this.networkUnsubscribers = [];
+        this.roomChatManager = null;
     }
 
     init(params) {
@@ -259,7 +260,32 @@ class LobbyUISystem extends GUTS.BaseSystem {
 
     leaveRoom() {
         this.game.call('leaveRoom');
-        this.exitToMainMenu();
+        this.returnToOnlineLobby();
+    }
+
+    returnToOnlineLobby() {
+        this.currentScreen = null;
+        this.roomId = null;
+
+        // Clean up room chat
+        if (this.roomChatManager) {
+            this.roomChatManager.dispose();
+            this.roomChatManager = null;
+        }
+
+        // Hide the multiplayer lobby screen
+        const multiplayerLobby = document.getElementById('multiplayerLobby');
+        if (multiplayerLobby) {
+            multiplayerLobby.classList.remove('active');
+        }
+
+        // Show the online lobby screen
+        const onlineLobby = document.getElementById('onlineLobbyScreen');
+        if (onlineLobby) {
+            onlineLobby.classList.add('active');
+            // Show chat view by default
+            this.game.call('showChatView');
+        }
     }
 
     setupEventListeners() {
@@ -359,7 +385,29 @@ class LobbyUISystem extends GUTS.BaseSystem {
         }
 
         this.populateLevelSelector();
+        this.setupRoomChat();
         this.updateLobby(gameState);
+    }
+
+    setupRoomChat() {
+        // Clean up any existing chat manager
+        if (this.roomChatManager) {
+            this.roomChatManager.dispose();
+            this.roomChatManager = null;
+        }
+
+        // Initialize ChatManager for room chat
+        if (GUTS.ChatManager) {
+            this.roomChatManager = new GUTS.ChatManager(this.game, {
+                messagesContainerId: 'roomChatMessages',
+                inputId: 'roomChatInput',
+                sendButtonId: 'roomChatSendBtn',
+                context: 'game'
+            });
+            this.roomChatManager.init();
+            // Clear any old messages from previous games
+            this.roomChatManager.clearMessages();
+        }
     }
 
     populateLevelSelector() {
@@ -380,6 +428,9 @@ class LobbyUISystem extends GUTS.BaseSystem {
         levelSelect.innerHTML = '';
 
         for (const [levelId, levelData] of Object.entries(levels)) {
+            // Only show published levels
+            if (!levelData.published) continue;
+
             const option = document.createElement('option');
             option.value = levelId;
             option.textContent = levelData.title || levelId;
@@ -416,59 +467,59 @@ class LobbyUISystem extends GUTS.BaseSystem {
             const opponent = gameState.players.find(p => p.id !== myPlayerId);
 
             if (myPlayer) {
+                const player1Card = document.getElementById('player1Card');
                 const player1Name = document.getElementById('player1Name');
                 const player1Status = document.getElementById('player1Status');
                 const player1ReadyBtn = document.getElementById('player1ReadyBtn');
-                const player1Info = document.getElementById('player1Info');
 
+                if (player1Card) {
+                    player1Card.className = `player-card ${myPlayer.ready ? 'ready' : 'waiting'}`;
+                }
                 if (player1Name) {
-                    player1Name.textContent = `${myPlayer.name} (You)${myPlayer.isHost ? ' - Host' : ''}`;
+                    player1Name.textContent = myPlayer.isHost ? `${myPlayer.name} (Host)` : myPlayer.name;
                 }
                 if (player1Status) {
-                    player1Status.textContent = myPlayer.ready ? '🟢 Ready for Battle!' : '🟡 Preparing...';
+                    player1Status.textContent = myPlayer.ready ? 'Ready' : 'Preparing';
                     player1Status.className = `player-status ${myPlayer.ready ? 'ready' : 'waiting'}`;
                 }
                 if (player1ReadyBtn) {
                     player1ReadyBtn.disabled = false;
-                    player1ReadyBtn.textContent = myPlayer.ready ? '⏳ CANCEL READY' : '🛡️ READY FOR BATTLE';
-                    player1ReadyBtn.className = myPlayer.ready ? 'ready-btn ready-state' : 'ready-btn';
-                }
-                if (player1Info) {
-                    player1Info.className = `player-card ${myPlayer.ready ? 'ready' : 'waiting'}`;
+                    player1ReadyBtn.textContent = myPlayer.ready ? 'CANCEL READY' : 'READY FOR BATTLE';
+                    player1ReadyBtn.className = myPlayer.ready ? 'ready-btn-large ready-state' : 'ready-btn-large';
                 }
             }
 
             if (opponent) {
+                const player2Card = document.getElementById('player2Card');
                 const player2Name = document.getElementById('player2Name');
                 const player2Status = document.getElementById('player2Status');
-                const player2Info = document.getElementById('player2Info');
 
-                if (player2Info) {
-                    player2Info.style.display = 'block';
-                    player2Info.className = `player-card ${opponent.ready ? 'ready' : 'waiting'}`;
+                if (player2Card) {
+                    player2Card.className = `player-card ${opponent.ready ? 'ready' : 'waiting'}`;
                 }
                 if (player2Name) {
-                    player2Name.textContent = `${opponent.name}${opponent.isHost ? ' - Host' : ''}`;
+                    player2Name.textContent = opponent.isHost ? `${opponent.name} (Host)` : opponent.name;
                 }
                 if (player2Status) {
-                    player2Status.textContent = opponent.ready ? '🟢 Ready for Battle!' : '🟡 Preparing...';
+                    player2Status.textContent = opponent.ready ? 'Ready' : 'Preparing';
                     player2Status.className = `player-status ${opponent.ready ? 'ready' : 'waiting'}`;
                 }
             } else {
-                const player2Info = document.getElementById('player2Info');
-                if (player2Info) {
-                    player2Info.style.display = 'none';
+                // Reset player 2 slot to empty state
+                const player2Card = document.getElementById('player2Card');
+                const player2Name = document.getElementById('player2Name');
+                const player2Status = document.getElementById('player2Status');
+
+                if (player2Card) {
+                    player2Card.className = 'player-card empty';
                 }
-            }
-
-            const startBtn = document.getElementById('startGameBtn');
-            if (startBtn && myPlayer?.isHost) {
-                const allReady = gameState.players.every(p => p.ready);
-                const canStart = gameState.players.length === 2 && allReady;
-
-                startBtn.style.display = gameState.players.length === 2 ? 'block' : 'none';
-                startBtn.disabled = !canStart;
-                startBtn.textContent = allReady ? '⚡ COMMENCE WAR' : 'Waiting for Ready';
+                if (player2Name) {
+                    player2Name.textContent = 'Waiting...';
+                }
+                if (player2Status) {
+                    player2Status.textContent = 'Waiting';
+                    player2Status.className = 'player-status empty';
+                }
             }
 
             const loadGameBtn = document.getElementById('loadGameBtn');
@@ -479,12 +530,12 @@ class LobbyUISystem extends GUTS.BaseSystem {
             const statusMsg = document.getElementById('lobbyStatusMessage');
             if (statusMsg) {
                 if (gameState.players.length === 1) {
-                    statusMsg.textContent = 'Waiting for worthy opponents...';
+                    statusMsg.textContent = 'Waiting for opponent...';
                 } else if (gameState.players.length === 2) {
                     const allReady = gameState.players.every(p => p.ready);
                     statusMsg.textContent = allReady ?
-                        'All warriors ready! Prepare for battle!' :
-                        'Opponent found! Awaiting ready status...';
+                        'Both players ready! Starting soon...' :
+                        'Opponent joined! Click Ready when prepared.';
                 }
             }
         }
@@ -706,6 +757,12 @@ class LobbyUISystem extends GUTS.BaseSystem {
 
     dispose() {
         this.stopLobbyRefresh();
+
+        // Clean up room chat manager
+        if (this.roomChatManager) {
+            this.roomChatManager.dispose();
+            this.roomChatManager = null;
+        }
 
         if (this.networkUnsubscribers) {
             this.networkUnsubscribers.forEach(unsubscribe => {

@@ -1,5 +1,6 @@
 {
   "title": "Level Forest Meadow",
+  "published": false,
   "world": "shire",
   "grassShader": "grass",
   "waterShader": "water",

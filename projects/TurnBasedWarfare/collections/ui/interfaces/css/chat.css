@@ -1,15 +1,7 @@
 /* === CHAT SYSTEM === */
+/* Hide the floating chat panel - we use integrated chat in the UI instead */
 .chat-panel {
-    position: fixed;
-    bottom: 20px;
-    left: 10px;
-    width: 320px;
-    background: rgba(20, 20, 30, 0.95);
-    border: 2px solid rgba(255, 170, 0, 0.3);
-    border-radius: 8px;
-    z-index: 1000;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    display: none !important;
 }
 
 .chat-header {

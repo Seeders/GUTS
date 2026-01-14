@@ -1,18 +1,23 @@
 /**
  * OnlineLobbyUISystem - Manages the online multiplayer lobby UI
- * Shows available games list and allows creating/joining games
+ * Shows chat lobby as main view with Create/Join game options
  */
 class OnlineLobbyUISystem extends GUTS.BaseSystem {
     static services = [
         'refreshGamesList',
         'showOnlineLobby',
-        'hideOnlineLobby'
+        'hideOnlineLobby',
+        'showChatView',
+        'showGamesListView'
     ];
 
     constructor(game) {
         super(game);
         this.refreshInterval = null;
         this.container = null;
+        this.currentView = 'chat'; // 'chat' or 'gamesList'
+        this.boundHandlers = {};
+        this.chatManager = null;
     }
 
     init(params) {
@@ -20,46 +25,144 @@ class OnlineLobbyUISystem extends GUTS.BaseSystem {
         this.container = document.getElementById('onlineLobbyScreen');
         this.showOnlineLobby();
         this.setupEventListeners();
-        this.startAutoRefresh();
-        this.refreshGamesList();
+        this.setupChat();
+        this.sendPlayerName();
+        this.updateLobbyStats();
+        this.statsInterval = setInterval(() => this.updateLobbyStats(), 5000);
+    }
+
+    sendPlayerName() {
+        // Send player name to server for chat display
+        const nm = this.game.clientNetworkManager;
+        const playerName = this.game.state.playerName || 'Player';
+        if (nm?.socket) {
+            nm.socket.emit('SET_PLAYER_NAME', { playerName });
+        }
+    }
+
+    setupChat() {
+        // Use ChatManager for lobby chat
+        if (GUTS.ChatManager) {
+            this.chatManager = new GUTS.ChatManager(this.game, {
+                messagesContainerId: 'lobbyChatMessages',
+                inputId: 'lobbyChatInput',
+                sendButtonId: 'lobbyChatSendBtn',
+                context: 'lobby'
+            });
+            this.chatManager.init();
+        }
     }
 
     setupEventListeners() {
         const backBtn = document.getElementById('onlineLobbyBackBtn');
         const createBtn = document.getElementById('createGameBtn');
+        const joinBtn = document.getElementById('joinGameBtn');
         const refreshBtn = document.getElementById('refreshGamesBtn');
+        const gamesListBackBtn = document.getElementById('gamesListBackBtn');
 
         // Store bound handlers for cleanup
-        this._backHandler = () => this.goBackToMenu();
-        this._createHandler = () => this.createGame();
-        this._refreshHandler = () => this.refreshGamesList();
+        this.boundHandlers.back = () => this.goBackToMenu();
+        this.boundHandlers.create = () => this.createGame();
+        this.boundHandlers.join = () => this.showGamesListView();
+        this.boundHandlers.refresh = () => this.refreshGamesList();
+        this.boundHandlers.gamesListBack = () => this.showChatView();
 
-        backBtn?.addEventListener('click', this._backHandler);
-        createBtn?.addEventListener('click', this._createHandler);
-        refreshBtn?.addEventListener('click', this._refreshHandler);
+        backBtn?.addEventListener('click', this.boundHandlers.back);
+        createBtn?.addEventListener('click', this.boundHandlers.create);
+        joinBtn?.addEventListener('click', this.boundHandlers.join);
+        refreshBtn?.addEventListener('click', this.boundHandlers.refresh);
+        gamesListBackBtn?.addEventListener('click', this.boundHandlers.gamesListBack);
+    }
+
+    async updateLobbyStats() {
+        try {
+            // Fetch player count
+            const statsResponse = await fetch('/api/stats');
+            if (statsResponse.ok) {
+                const stats = await statsResponse.json();
+                const countEl = document.getElementById('onlinePlayersCount');
+                if (countEl) {
+                    countEl.textContent = stats.connectedPlayers || 0;
+                }
+            }
+
+            // Fetch room counts
+            const roomsResponse = await fetch('/api/rooms');
+            if (roomsResponse.ok) {
+                const rooms = await roomsResponse.json();
+
+                // Available games: has players, not full, not active
+                const availableGames = rooms.filter(room =>
+                    room.playerCount > 0 &&
+                    room.playerCount < room.maxPlayers &&
+                    !room.isActive
+                );
+
+                // Active games: currently in battle
+                const activeGames = rooms.filter(room => room.isActive);
+
+                const availableEl = document.getElementById('availableGamesCount');
+                const activeEl = document.getElementById('activeGamesCount');
+
+                if (availableEl) {
+                    availableEl.textContent = availableGames.length;
+                }
+                if (activeEl) {
+                    activeEl.textContent = activeGames.length;
+                }
+            }
+        } catch (error) {
+            // Silently fail - not critical
+        }
     }
 
     cleanupEventListeners() {
         const backBtn = document.getElementById('onlineLobbyBackBtn');
         const createBtn = document.getElementById('createGameBtn');
+        const joinBtn = document.getElementById('joinGameBtn');
         const refreshBtn = document.getElementById('refreshGamesBtn');
+        const gamesListBackBtn = document.getElementById('gamesListBackBtn');
 
-        if (this._backHandler) {
-            backBtn?.removeEventListener('click', this._backHandler);
-        }
-        if (this._createHandler) {
-            createBtn?.removeEventListener('click', this._createHandler);
-        }
-        if (this._refreshHandler) {
-            refreshBtn?.removeEventListener('click', this._refreshHandler);
+        backBtn?.removeEventListener('click', this.boundHandlers.back);
+        createBtn?.removeEventListener('click', this.boundHandlers.create);
+        joinBtn?.removeEventListener('click', this.boundHandlers.join);
+        refreshBtn?.removeEventListener('click', this.boundHandlers.refresh);
+        gamesListBackBtn?.removeEventListener('click', this.boundHandlers.gamesListBack);
+
+        if (this.statsInterval) {
+            clearInterval(this.statsInterval);
+            this.statsInterval = null;
         }
 
-        this._backHandler = null;
-        this._createHandler = null;
-        this._refreshHandler = null;
+        this.boundHandlers = {};
+    }
+
+    showChatView() {
+        this.currentView = 'chat';
+        this.stopAutoRefresh();
+
+        const chatView = document.getElementById('chatLobbyView');
+        const gamesView = document.getElementById('gamesListView');
+
+        if (chatView) chatView.classList.add('active');
+        if (gamesView) gamesView.classList.remove('active');
+    }
+
+    showGamesListView() {
+        this.currentView = 'gamesList';
+
+        const chatView = document.getElementById('chatLobbyView');
+        const gamesView = document.getElementById('gamesListView');
+
+        if (chatView) chatView.classList.remove('active');
+        if (gamesView) gamesView.classList.add('active');
+
+        this.refreshGamesList();
+        this.startAutoRefresh();
     }
 
     startAutoRefresh() {
+        this.stopAutoRefresh();
         this.refreshInterval = setInterval(() => {
             this.refreshGamesList();
         }, 5000);
@@ -145,6 +248,8 @@ class OnlineLobbyUISystem extends GUTS.BaseSystem {
         if (this.container) {
             this.container.classList.add('active');
         }
+        // Always start with chat view
+        this.showChatView();
     }
 
     hideOnlineLobby() {
@@ -156,6 +261,10 @@ class OnlineLobbyUISystem extends GUTS.BaseSystem {
     dispose() {
         this.stopAutoRefresh();
         this.cleanupEventListeners();
+        if (this.chatManager) {
+            this.chatManager.dispose();
+            this.chatManager = null;
+        }
     }
 
     onSceneUnload() {

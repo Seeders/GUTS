@@ -39,6 +39,7 @@
     "PlayerOrderPreview",
     "MultiplayerECSGame",
     "ClientNetworkManager",
+    "ChatManager",
     "socket.io.min.js",
     "BaseSystem",
     "SeededRandom",
@@ -118,8 +119,8 @@
     "SupplySystem",
     "CheatCodeSystem",
     "SkirmishGameSystem",
-    "ChatUISystem",
-    "OnlineLobbyUISystem"
+    "OnlineLobbyUISystem",
+    "GameChatSystem"
   ],
   "classes": [
     {

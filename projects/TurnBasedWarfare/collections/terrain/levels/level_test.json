@@ -1,5 +1,6 @@
 {
   "title": "Level Test",
+  "published": false,
   "world": "shire",
   "grassShader": "grass",
   "waterShader": "water",

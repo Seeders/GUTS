@@ -1,5 +1,6 @@
 {
   "title": "Level Hell",
+  "published": false,
   "world": "hell",
   "grassShader": "grass",
   "waterShader": "water",

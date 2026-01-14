@@ -2,7 +2,21 @@
   "title": "Goldvein",
   "spriteSheet": "sprites/goldveinSprites/goldveinSheet.png",
   "spriteOffset": 32,
-  "generatorSettings": "{\"frustumSize\":96,\"cameraDistance\":100,\"spriteSize\":128,\"fps\":4,\"brightness\":5.8,\"palette\":\"main\",\"borderSize\":1,\"outlineColor\":\"#170F13\",\"outlineConnectivity\":4,\"cameraHeight\":2}",
+  "generatorSettings": {
+    "frustumSize": 96,
+    "cameraDistance": 100,
+    "spriteSize": 128,
+    "fps": 4,
+    "brightness": 5.8,
+    "palette": "main",
+    "borderSize": 1,
+    "outlineColor": "#170F13",
+    "outlineConnectivity": 4,
+    "cameraHeight": 2,
+    "animationTypes": [
+      "idle"
+    ]
+  },
   "frames": {
     "idleDownLeft_0": {
       "x": 0,

@@ -19,6 +19,8 @@ class InputSystem extends GUTS.BaseSystem {
         // Setup canvas events on scene load since canvas may not exist during init()
         // (InputSystem is reused across scenes, but gameCanvas only exists in game scene)
         this.setupCanvasEvents();
+        // Setup game-specific button events (camera rotation, etc.)
+        this.setupGameButtons();
     }
         
     setupCanvasEvents() {
@@ -59,7 +61,19 @@ class InputSystem extends GUTS.BaseSystem {
         this._currentCanvas = null;
         this._canvasClickHandler = null;
     }
-    
+
+    setupGameButtons() {
+        // Camera rotation buttons - only exist in game scene
+        const rotateCameraLeftBtn = document.getElementById('rotateCameraLeftBtn');
+        const rotateCameraRightBtn = document.getElementById('rotateCameraRightBtn');
+        rotateCameraLeftBtn?.addEventListener('click', () => {
+            this.game.call('rotateCamera', 'left');
+        });
+        rotateCameraRightBtn?.addEventListener('click', () => {
+            this.game.call('rotateCamera', 'right');
+        });
+    }
+
     setupButtonEvents() {        
         const mainMenuPlayGameBtn = document.getElementById('mainMenu_PlayGameBtn');
         const mainMenuTutorialBtn = document.getElementById('mainMenu_TutorialBtn');
@@ -102,16 +116,6 @@ class InputSystem extends GUTS.BaseSystem {
         });
         gameExitBtn?.addEventListener('click', () => {
             this.game.call('exitToMenu');
-        });
-
-        // Camera rotation buttons
-        const rotateCameraLeftBtn = document.getElementById('rotateCameraLeftBtn');
-        const rotateCameraRightBtn = document.getElementById('rotateCameraRightBtn');
-        rotateCameraLeftBtn?.addEventListener('click', () => {
-            this.game.call('rotateCamera', 'left');
-        });
-        rotateCameraRightBtn?.addEventListener('click', () => {
-            this.game.call('rotateCamera', 'right');
         });
 
         victoryMainMenuBtn?.addEventListener('click', () => {

@@ -345,17 +345,17 @@ class MiniMapSystem extends GUTS.BaseSystem {
 
     handleMinimapClick(event) {
         const rect = this.canvas.getBoundingClientRect();
-         const camera = this.game.camera;
-     
+        const camera = this.game.camera;
+
         // Get click position relative to canvas center (in pixels)
         const clickX = event.clientX - rect.left - rect.width / 2;
         const clickY = event.clientY - rect.top - rect.height / 2;
-        
+
         // Apply inverse rotation to compensate for CSS rotation
         const angle = -this.MINIMAP_ROTATION * Math.PI / 180;
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
-        
+
         const rotatedX = clickX * cos - clickY * sin;
         const rotatedY = clickX * sin + clickY * cos;
 
