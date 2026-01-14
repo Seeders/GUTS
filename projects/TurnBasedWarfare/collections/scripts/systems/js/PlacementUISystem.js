@@ -592,7 +592,18 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (!squadData) return;
 
         const cells = this.game.call('getSquadCells', gridPos, squadData);
-        const isValid = this.game.call('isValidGridPlacement', cells, this.game.call('getActivePlayerTeam'));
+        let isValid = this.game.call('isValidGridPlacement', cells, this.game.call('getActivePlayerTeam'));
+
+        // Gold mines can only be placed on unclaimed gold veins
+        if (isValid && unitType.id === 'goldMine' && this.game.hasService('isValidGoldMinePlacement')) {
+            const footprintWidth = unitType.footprintWidth || 2;
+            const footprintHeight = unitType.footprintHeight || 2;
+            const gridWidth = footprintWidth * 2;
+            const gridHeight = footprintHeight * 2;
+
+            const validation = this.game.call('isValidGoldMinePlacement', gridPos, gridWidth, gridHeight);
+            isValid = validation.valid;
+        }
 
         this.cachedValidation = isValid;
 

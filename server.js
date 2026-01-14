@@ -118,9 +118,7 @@ function loadCompiledGame(projectName) {
  * Initialize game server for a project
  */
 async function initGameServer(projectName) {
-    console.log(`[initGameServer] Called for ${projectName}, already exists: ${gameServers.has(projectName)}`);
     if (gameServers.has(projectName)) {
-        console.log(`[initGameServer] Returning existing server for ${projectName}`);
         return gameServers.get(projectName);
     }
 
@@ -140,18 +138,15 @@ async function initGameServer(projectName) {
     });
 
     // Initialize the game server
-    console.log(`[initGameServer] Creating new ServerEngine for ${projectName}`);
     const gameServer = new ServerEngine();
     await gameServer.init(projectName);
 
     if (global.window.COMPILED_GAME && !global.window.COMPILED_GAME.initialized) {
-        console.log(`[initGameServer] Initializing COMPILED_GAME`);
         global.window.COMPILED_GAME.init(gameServer);
     }
 
     gameServers.set(projectName, gameServer);
     global.serverEngine = gameServer;
-    console.log(`[initGameServer] Stored gameServer, instanceId: ${gameServer._instanceId}`);
 
     console.log(`Game server initialized for ${projectName}`);
     return gameServer;
@@ -820,8 +815,6 @@ app.get('/api/rooms', (req, res) => {
     if (!gameServer) {
         return res.json([]);
     }
-    console.log('[/api/rooms] gameServer.gameRooms size:', gameServer.gameRooms?.size);
-    console.log('[/api/rooms] gameServer === global.serverEngine:', gameServer === global.serverEngine);
     const rooms = Array.from(gameServer.gameRooms?.entries() || [])
         .filter(([id, room]) => room.players.size > 0)
         .map(([id, room]) => ({
@@ -830,7 +823,10 @@ app.get('/api/rooms', (req, res) => {
             maxPlayers: room.maxPlayers,
             isActive: room.isActive
         }));
-    console.log('[/api/rooms] Returning rooms:', rooms);
+    // Only log when there are rooms to reduce noise
+    if (rooms.length > 0) {
+        console.log('[/api/rooms] Returning rooms:', rooms.map(r => r.id));
+    }
     res.json(rooms);
 });
 

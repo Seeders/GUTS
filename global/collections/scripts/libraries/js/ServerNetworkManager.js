@@ -160,12 +160,6 @@ class ServerNetworkManager {
                 return;
             }
 
-            // Debug: identify which engine instance we're using
-            const engineId = this.engine._instanceId || 'unknown';
-            const globalEngineId = global.serverEngine?._instanceId || 'unknown';
-            console.log(`[ServerNetworkManager] JOIN_ROOM lookup: roomId=${roomId}, engineId=${engineId}, globalEngineId=${globalEngineId}, sameEngine=${this.engine === global.serverEngine}`);
-            console.log(`[ServerNetworkManager] Available rooms:`, Array.from(this.engine.gameRooms.keys()), 'size:', this.engine.gameRooms.size);
-
             const room = this.engine.gameRooms.get(roomId);
             if (!room) {
                 console.log('[ServerNetworkManager] Room not found!');

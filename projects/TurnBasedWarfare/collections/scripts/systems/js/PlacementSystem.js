@@ -1000,6 +1000,25 @@ class PlacementSystem extends GUTS.BaseSystem {
             return false;
         }
 
+        // Gold mines can only be placed on unclaimed gold veins
+        if (placement.unitType?.id === 'goldMine' && this.game.hasService('isValidGoldMinePlacement')) {
+            const footprintWidth = placement.unitType.footprintWidth || 2;
+            const footprintHeight = placement.unitType.footprintHeight || 2;
+            const gridWidth = footprintWidth * 2;
+            const gridHeight = footprintHeight * 2;
+
+            const validation = this.game.call('isValidGoldMinePlacement',
+                placement.gridPosition,
+                gridWidth,
+                gridHeight
+            );
+
+            if (!validation.valid) {
+                console.log('[validatePlacement] FAIL: Gold mine must be placed on an unclaimed gold vein');
+                return false;
+            }
+        }
+
         return true;
     }
 
