@@ -1,17 +1,9 @@
 import BaseEngine from './BaseEngine.js';
 import ServerNetworkManager from '../global/collections/scripts/libraries/js/ServerNetworkManager.js';
 
-// Track engine instances for debugging
-let engineInstanceCount = 0;
-
 export default class ServerEngine extends BaseEngine {
     constructor() {
         super();
-        this._instanceId = ++engineInstanceCount;
-        console.log(`[ServerEngine] Creating instance #${this._instanceId}`);
-        if (engineInstanceCount > 1) {
-            console.error(`[ServerEngine] WARNING: Multiple engine instances created! Instance #${this._instanceId}`);
-        }
         this.isServer = true;
         this.players = new Map();
         this.gameRooms = new Map();
