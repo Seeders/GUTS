@@ -118,7 +118,9 @@ function loadCompiledGame(projectName) {
  * Initialize game server for a project
  */
 async function initGameServer(projectName) {
+    console.log(`[initGameServer] Called for ${projectName}, already exists: ${gameServers.has(projectName)}`);
     if (gameServers.has(projectName)) {
+        console.log(`[initGameServer] Returning existing server for ${projectName}`);
         return gameServers.get(projectName);
     }
 
@@ -138,15 +140,18 @@ async function initGameServer(projectName) {
     });
 
     // Initialize the game server
+    console.log(`[initGameServer] Creating new ServerEngine for ${projectName}`);
     const gameServer = new ServerEngine();
     await gameServer.init(projectName);
 
     if (global.window.COMPILED_GAME && !global.window.COMPILED_GAME.initialized) {
+        console.log(`[initGameServer] Initializing COMPILED_GAME`);
         global.window.COMPILED_GAME.init(gameServer);
     }
 
     gameServers.set(projectName, gameServer);
     global.serverEngine = gameServer;
+    console.log(`[initGameServer] Stored gameServer, instanceId: ${gameServer._instanceId}`);
 
     console.log(`Game server initialized for ${projectName}`);
     return gameServer;
