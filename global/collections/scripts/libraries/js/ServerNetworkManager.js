@@ -80,8 +80,11 @@ class ServerNetworkManager {
 
             socket.on('disconnect', () => {
                 console.log('Player disconnected:', socket.id);
+                const playerData = this.playerSockets.get(socket.id);
+                console.log('[ServerNetworkManager] Disconnect - player data:', playerData?.roomId ? `in room ${playerData.roomId}` : 'not in a room');
                 this.routeEventToEngine(socket, 'PLAYER_DISCONNECT', { playerId: socket.id });
                 this.playerSockets.delete(socket.id);
+                console.log('[ServerNetworkManager] Remaining players in playerSockets:', Array.from(this.playerSockets.keys()));
             });
 
             socket.emit('CONNECTED', { 

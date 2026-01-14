@@ -150,7 +150,8 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         if (this.players.size === 0) {
             this.cleanupRoom(this);
             this.engine.gameRooms.delete(this.id);
-            console.log(`[Room ${this.id}] Removed empty room`);
+            console.log(`[Room ${this.id}] Removed empty room after player ${playerId} disconnected`);
+            console.log(`[Room ${this.id}] Remaining rooms:`, Array.from(this.engine.gameRooms.keys()));
         } else {
             // If room still has players, reset their states for next game
             this.resetPlayersForNextGame(this);
@@ -158,6 +159,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
         // Clean up network manager state
         this.serverNetworkManager.playerSockets.delete(playerId);
+        console.log(`[Room ${this.id}] Cleaned up network state for player ${playerId}`);
     }
 
     handleLeaveRoom(eventData) {
