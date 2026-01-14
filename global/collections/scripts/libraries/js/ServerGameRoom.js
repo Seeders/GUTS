@@ -132,28 +132,24 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             }
         }
 
-        // Notify other players
-        this.serverNetworkManager.broadcastToRoom(this.id, 'PLAYER_LEFT', {
-            playerId: playerId,
-            playerName: playerName
-        });
-
         // Clean up player state completely
         this.cleanupPlayerState(this, playerId);
 
         // Remove from room
         this.removePlayer(playerId);
+
+        // Notify other players (after removing so gameState reflects the change)
+        this.serverNetworkManager.broadcastToRoom(this.id, 'PLAYER_LEFT', {
+            playerId: playerId,
+            playerName: playerName,
+            gameState: this.getGameState()
+        });
         this.serverNetworkManager.leaveRoom(playerId, this.id);
 
         // Clean up empty rooms
         if (this.players.size === 0) {
             this.cleanupRoom(this);
             this.engine.gameRooms.delete(this.id);
-            // Also remove from network manager's room tracking
-            const roomIndex = this.serverNetworkManager.currentRoomIds.indexOf(this.id);
-            if (roomIndex > -1) {
-                this.serverNetworkManager.currentRoomIds.splice(roomIndex, 1);
-            }
             console.log(`[Room ${this.id}] Removed empty room`);
         } else {
             // If room still has players, reset their states for next game
@@ -186,12 +182,6 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             }
         }
 
-        // Notify other players
-        this.serverNetworkManager.broadcastToRoom(this.id, 'PLAYER_LEFT', {
-            playerId: playerId,
-            playerName: playerName
-        });
-
         // Clean up player state in the room
         this.cleanupPlayerState(this, playerId);
 
@@ -199,15 +189,17 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         this.removePlayer(playerId);
         this.serverNetworkManager.leaveRoom(playerId, this.id);
 
+        // Notify other players (after removing so gameState reflects the change)
+        this.serverNetworkManager.broadcastToRoom(this.id, 'PLAYER_LEFT', {
+            playerId: playerId,
+            playerName: playerName,
+            gameState: this.getGameState()
+        });
+
         // Clean up empty rooms
         if (this.players.size === 0) {
             this.cleanupRoom(this);
             this.engine.gameRooms.delete(this.id);
-            // Also remove from network manager's room tracking
-            const roomIndex = this.serverNetworkManager.currentRoomIds.indexOf(this.id);
-            if (roomIndex > -1) {
-                this.serverNetworkManager.currentRoomIds.splice(roomIndex, 1);
-            }
             console.log(`[Room ${this.id}] Removed empty room`);
         } else {
             // If room still has players, reset their states for next game

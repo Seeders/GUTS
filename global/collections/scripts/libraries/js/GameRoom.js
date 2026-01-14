@@ -218,7 +218,6 @@ class GameRoom {
     }
 
     broadcastToPlayers(type, data) {
-            console.log('broadcasting to all players', message);
         this.serverNetworkManager.broadcastToRoom(this.id, type, data);
     }
 }

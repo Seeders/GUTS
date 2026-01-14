@@ -826,6 +826,15 @@ app.get('/api/rooms', (req, res) => {
     res.json(rooms);
 });
 
+app.get('/api/stats', (req, res) => {
+    const gameServer = gameServers.get('TurnBasedWarfare');
+    if (!gameServer || !gameServer.serverNetworkManager) {
+        return res.json({ connectedPlayers: 0 });
+    }
+    const stats = gameServer.serverNetworkManager.getServerStats();
+    res.json(stats);
+});
+
 
 // ===== START SERVER =====
 
