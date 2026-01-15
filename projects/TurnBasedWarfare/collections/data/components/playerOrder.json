@@ -9,6 +9,7 @@
     "completed": false,
     "issuedTime": 0,
     "enabled": false,
-    "isHiding": false
+    "isHiding": false,
+    "sneaking": false
   }
 }

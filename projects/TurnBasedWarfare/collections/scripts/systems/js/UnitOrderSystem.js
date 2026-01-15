@@ -60,7 +60,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 playerOrder.isMoveOrder = !!meta?.isMoveOrder;
                 playerOrder.preventEnemiesInRangeCheck = !!meta?.preventEnemiesInRangeCheck;
                 // Store intent to hide - actual isHiding is set when unit reaches destination
-                playerOrder.wantsToHide = !!meta?.isHiding;
+                playerOrder.sneaking = !!meta?.isHiding;
                 // Only set isHiding immediately if not moving to a position
                 playerOrder.isHiding = !!meta?.isHiding && !meta?.isMoveOrder;
                 playerOrder.completed = false;
