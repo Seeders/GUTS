@@ -67,12 +67,21 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 // Clear any existing pathfinding path so the unit doesn't continue following
                 // an old path to a previous destination when battle starts
                 if (this.game.hasService('clearEntityPath')) {
+                    // DEBUG: Log path clear for archer units
+                    if (unitName === 'archer') {
+                        const existingPath = this.game.call('getEntityPath', unitId);
+                        console.log(`[UnitOrderSystem] ARCHER ${unitId} CLEARING path (had ${existingPath ? existingPath.length + ' waypoints' : 'no path'})`);
+                    }
                     this.game.call('clearEntityPath', unitId);
                 }
 
                 // Also reset pathfinding component state to force immediate path recalculation
                 const pathfinding = this.game.getComponent(unitId, 'pathfinding');
                 if (pathfinding) {
+                    // DEBUG: Log pathfinding reset for archer units
+                    if (unitName === 'archer') {
+                        console.log(`[UnitOrderSystem] ARCHER ${unitId} resetting pathfinding state (lastPathRequest was ${pathfinding.lastPathRequest})`);
+                    }
                     pathfinding.lastPathRequest = 0;
                     pathfinding.pathIndex = 0;
                     pathfinding.lastTargetX = 0;

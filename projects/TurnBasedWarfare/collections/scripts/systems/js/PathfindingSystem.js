@@ -844,6 +844,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 );
             }
 
+            // DEBUG: Log path computation for archer units
+            if (unitDef?.id === 'archer') {
+                console.log(`[PathfindingSystem] ARCHER ${request.entityId} path computed: ${path ? path.length + ' waypoints' : 'NULL'}`);
+            }
+
             if (path) {
                 // Store path in system Map
                 this.setEntityPath(request.entityId, path);
@@ -851,6 +856,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 const pathfindingComp = this.game.getComponent(request.entityId, "pathfinding");
                 if (pathfindingComp) {
                     pathfindingComp.pathIndex = 0;
+                }
+                // DEBUG: Confirm path stored for archer units
+                if (unitDef?.id === 'archer') {
+                    const storedPath = this.getEntityPath(request.entityId);
+                    console.log(`[PathfindingSystem] ARCHER ${request.entityId} path STORED, verify: ${storedPath ? storedPath.length + ' waypoints' : 'NULL'}`);
                 }
             }
         }
