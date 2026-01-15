@@ -1,0 +1,64 @@
+round 2
+
+Jan 15 01:27:11  [ServerNetworkManager] onAny event: READY_FOR_BATTLE from 3-UaetgmNuQICgGtAAAB
+Jan 15 01:27:11  [ServerNetworkManager] sendToPlayer: 3-UaetgmNuQICgGtAAAB READY_FOR_BATTLE_RESPONSE
+Jan 15 01:27:11  [ServerNetworkManager] Event emitted successfully
+Jan 15 01:27:13  [ServerNetworkManager] onAny event: READY_FOR_BATTLE from sNFvkvoRj41GyvhcAAAD
+Jan 15 01:27:13  [ServerNetworkManager] sendToPlayer: sNFvkvoRj41GyvhcAAAD READY_FOR_BATTLE_RESPONSE
+Jan 15 01:27:13  [ServerNetworkManager] Event emitted successfully
+Jan 15 01:27:13  [buildPlayersForBattleStart] pendingNetworkUnitData has 0 entries
+Jan 15 01:27:13  [PathfindingSystem] Processing 1 path requests
+Jan 15 01:27:16  [PathfindingSystem] Processing 1 path requests
+Jan 15 01:27:16  [PathfindingSystem] Processing 1 path requests
+Jan 15 01:27:16  [PathfindingSystem] Processing 1 path requests
+Jan 15 01:27:18  [GameServices] missing method playEffect
+Jan 15 01:27:18  [GameServices] missing method showDamageNumber
+Jan 15 01:27:18  [GameServices] missing method playEffect
+Jan 15 01:27:18  [GameServices] missing method showDamageNumber
+Jan 15 01:27:19  [2026-01-15T01:27:19.281Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"50/50"}
+Jan 15 01:27:19  [GameServices] missing method playEffect
+Jan 15 01:27:19  [GameServices] missing method showDamageNumber
+Jan 15 01:27:19  [GameServices] missing method playEffect
+Jan 15 01:27:19  [GameServices] missing method showDamageNumber
+Jan 15 01:27:19  [GameServices] missing method playEffect
+Jan 15 01:27:19  [GameServices] missing method showDamageNumber
+Jan 15 01:27:20  [GameServices] missing method playEffect
+Jan 15 01:27:20  [GameServices] missing method showDamageNumber
+Jan 15 01:27:20  [2026-01-15T01:27:20.162Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"33/50"}
+Jan 15 01:27:20  [GameServices] missing method playEffect
+Jan 15 01:27:20  [GameServices] missing method showDamageNumber
+Jan 15 01:27:20  [GameServices] missing method playEffect
+Jan 15 01:27:20  [GameServices] missing method showDamageNumber
+Jan 15 01:27:20  [GameServices] missing method playEffect
+Jan 15 01:27:20  [GameServices] missing method showDamageNumber
+Jan 15 01:27:20  [2026-01-15T01:27:20.977Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"16/50"}
+Jan 15 01:27:20  [GameServices] missing method playEffect
+Jan 15 01:27:20  [2026-01-15T01:27:20.978Z] [INFO] [Damage] FATAL: 0_skeleton(1549) [neutral] killed by 1_d_archer(1566) [right]
+Jan 15 01:27:20  [2026-01-15T01:27:20.979Z] [INFO] [Death] DYING: 0_skeleton(1549) [neutral] started death process
+Jan 15 01:27:20  [GameServices] missing method showDamageNumber
+Jan 15 01:27:21  [GameServices] missing method playEffect
+Jan 15 01:27:21  [GameServices] missing method showDamageNumber
+Jan 15 01:27:21  [GameServices] missing method playEffect
+Jan 15 01:27:21  [GameServices] missing method showDamageNumber
+Jan 15 01:27:21  [2026-01-15T01:27:21.852Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1550) {"damage":22,"element":"physical","targetHealthBefore":"50/50"}
+Jan 15 01:27:21  [GameServices] missing method playEffect
+Jan 15 01:27:21  [GameServices] missing method showDamageNumber
+Jan 15 01:27:22  [GameServices] missing method playEffect
+Jan 15 01:27:22  [GameServices] missing method showDamageNumber
+Jan 15 01:27:22  [GameServices] missing method playEffect
+Jan 15 01:27:22  [GameServices] missing method showDamageNumber
+Jan 15 01:27:22  [2026-01-15T01:27:22.686Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1550) {"damage":22,"element":"physical","targetHealthBefore":"33/50"}
+Jan 15 01:27:22  [GameServices] missing method playEffect
+Jan 15 01:27:22  [GameServices] missing method showDamageNumber
+Jan 15 01:27:22  [2026-01-15T01:27:22.985Z] [INFO] [Death] CORPSE: 0_skeleton(1549) [neutral] converted to corpse
+Jan 15 01:27:23  [GameServices] missing method playEffect
+Jan 15 01:27:23  [2026-01-15T01:27:23.084Z] [INFO] [Damage] FATAL: 1_d_archer(1566) [right] killed by 0_skeleton(1548) [neutral]
+Jan 15 01:27:23  [2026-01-15T01:27:23.085Z] [INFO] [Death] DYING: 1_d_archer(1566) [right] started death process
+Jan 15 01:27:23  [GameServices] missing method showDamageNumber
+Jan 15 01:27:23  [2026-01-15T01:27:23.552Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1550) {"damage":22,"element":"physical","targetHealthBefore":"16/50"}
+Jan 15 01:27:23  [GameServices] missing method playEffect
+Jan 15 01:27:23  [2026-01-15T01:27:23.552Z] [INFO] [Damage] FATAL: 0_skeleton(1550) [neutral] killed by 1_d_archer(1566) [right]
+Jan 15 01:27:23  [2026-01-15T01:27:23.552Z] [INFO] [Death] DYING: 0_skeleton(1550) [neutral] started death process
+Jan 15 01:27:23  [GameServices] missing method showDamageNumber
+Jan 15 01:27:25  [2026-01-15T01:27:25.077Z] [INFO] [Death] CORPSE: 1_d_archer(1566) [right] converted to corpse
+Jan 15 01:27:25  [2026-01-15T01:27:25.484Z] [INFO] [Death] CORPSE: 0_skeleton(1550) [neutral] converted to corpse
