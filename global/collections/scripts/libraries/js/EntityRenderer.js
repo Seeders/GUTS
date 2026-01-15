@@ -1569,6 +1569,7 @@ class EntityRenderer {
 
         const batch = entity.batch;
         if (!batch.attributes.opacity) {
+            console.warn(`[EntityRenderer] No opacity attribute on batch for entity ${entityId}`);
             return false;
         }
 

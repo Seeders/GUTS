@@ -28,6 +28,11 @@ class MoveBehaviorAction extends GUTS.BaseBehaviorAction {
                 // This allows the unit to hold position until the battle ends
                 playerOrder.completed = true;
 
+                // If unit wanted to hide, now actually set isHiding since they've arrived
+                if (playerOrder.wantsToHide) {
+                    playerOrder.isHiding = true;
+                }
+
                 return this.success({
                     targetPosition: targetPosition,
                     reachedTarget: true,

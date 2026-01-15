@@ -78,7 +78,9 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const targetTransform = game.getComponent(targetId, 'transform');
         const targetPos = targetTransform?.position;
 
-        if (attackerPos && targetPos && attackerTransform) {
+        // Skip rotation for anchored units (buildings)
+        const velocity = game.getComponent(attackerId, 'velocity');
+        if (attackerPos && targetPos && attackerTransform && !velocity?.anchored) {
             const dx = targetPos.x - attackerPos.x;
             const dz = targetPos.z - attackerPos.z;
             if (!attackerTransform.rotation) attackerTransform.rotation = { x: 0, y: 0, z: 0 };
