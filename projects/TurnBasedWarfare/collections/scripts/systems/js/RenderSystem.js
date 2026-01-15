@@ -299,6 +299,11 @@ class RenderSystem extends GUTS.BaseSystem {
             // Entity passed visibility checks - mark it as visible for cleanup tracking
             this._currentEntitiesSet.add(entityId);
 
+            // Check if unit is hiding (for semi-transparency)
+            const playerOrder = this.game.getComponent(entityId, 'playerOrder');
+            const isHiding = playerOrder?.isHiding || false;
+            const opacity = isHiding ? 0.5 : 1.0;
+
             // Pass numeric indices directly to EntityRenderer (O(1) lookup)
             const objectType = renderable.objectType;
             const spawnType = renderable.spawnType;
@@ -324,17 +329,18 @@ class RenderSystem extends GUTS.BaseSystem {
                 this._spawnData.rotation = angle;
                 this._spawnData.transform = transform;
                 this._spawnData.velocity = velocity;
-                await this.spawnEntity(entityId, this._spawnData);
+                await this.spawnEntity(entityId, this._spawnData, opacity);
                 // Cache initial position - reuse existing cache object if available
                 let posCache = this._entityPositionCache.get(entityId);
                 if (!posCache) {
-                    posCache = { x: 0, y: 0, z: 0, angle: 0, scaleX: 1 };
+                    posCache = { x: 0, y: 0, z: 0, angle: 0, scaleX: 1, opacity: 1 };
                     this._entityPositionCache.set(entityId, posCache);
                 }
                 posCache.x = pos.x;
                 posCache.y = pos.y;
                 posCache.z = pos.z;
                 posCache.angle = angle;
+                posCache.opacity = opacity;
             } else {
                 // Check if position/rotation/scale/renderOffset has actually changed
                 const cached = this._entityPositionCache.get(entityId);
@@ -348,6 +354,7 @@ class RenderSystem extends GUTS.BaseSystem {
                     const distSq = dx*dx + dy*dy + dz*dz;
                     const angleDiff = Math.abs(angle - cached.angle);
                     const scaleChanged = (cached.scaleX ?? 1) !== scaleX;
+                    const opacityChanged = (cached.opacity ?? 1) !== opacity;
 
                     // Check if renderOffset or spriteCameraAngle changed
                     const animState = this.game.getComponent(entityId, 'animationState');
@@ -357,8 +364,8 @@ class RenderSystem extends GUTS.BaseSystem {
                     const spriteCameraAngle = animState?.spriteCameraAngle ?? 0;
                     const cameraAngleChanged = (cached.spriteCameraAngle ?? 0) !== spriteCameraAngle;
 
-                    // Skip update if position/rotation/scale/renderOffset/cameraAngle hasn't changed significantly
-                    if (distSq < this._positionThreshold && angleDiff < 0.01 && !scaleChanged && !renderOffsetChanged && !cameraAngleChanged) {
+                    // Skip update if position/rotation/scale/renderOffset/cameraAngle/opacity hasn't changed significantly
+                    if (distSq < this._positionThreshold && angleDiff < 0.01 && !scaleChanged && !renderOffsetChanged && !cameraAngleChanged && !opacityChanged) {
                         continue;
                     }
 
@@ -370,6 +377,7 @@ class RenderSystem extends GUTS.BaseSystem {
                     cached.scaleX = scaleX;
                     cached.renderOffsetY = renderOffsetY;
                     cached.spriteCameraAngle = spriteCameraAngle;
+                    cached.opacity = opacity;
                 }
 
                 // Update existing entity (reuse object to avoid allocation)
@@ -379,7 +387,7 @@ class RenderSystem extends GUTS.BaseSystem {
                 this._updateData.rotation = angle;
                 this._updateData.transform = transform;
                 this._updateData.velocity = velocity;
-                this.updateEntity(entityId, this._updateData);
+                this.updateEntity(entityId, this._updateData, opacity);
             }
         }
 
@@ -387,11 +395,16 @@ class RenderSystem extends GUTS.BaseSystem {
         this.cleanupRemovedEntities(this._currentEntitiesSet);
     }
 
-    async spawnEntity(entityId, data) {
+    async spawnEntity(entityId, data, opacity = 1.0) {
         const spawned = await this.entityRenderer.spawnEntity(entityId, data);
         if (spawned) {
             // Note: spawnedEntities is already updated by caller to prevent race conditions
             this._stats.entitiesSpawned++;
+
+            // Set opacity for hiding units (only affects billboard entities)
+            if (opacity !== 1.0) {
+                this.entityRenderer.setEntityOpacity(entityId, opacity);
+            }
 
             // Trigger billboard spawn event for AnimationSystem
             // Use EntityRenderer's indexed lookup (data.collection/type are resolved by EntityRenderer)
@@ -410,11 +423,13 @@ class RenderSystem extends GUTS.BaseSystem {
         return spawned;
     }
 
-    updateEntity(entityId, data) {
+    updateEntity(entityId, data, opacity = 1.0) {
         const updated = this.entityRenderer.updateEntityTransform(entityId, data);
         if (updated) {
             this._stats.entitiesUpdated++;
         }
+        // Always set opacity (to restore when hiding stops)
+        this.entityRenderer.setEntityOpacity(entityId, opacity);
         return updated;
     }
 
