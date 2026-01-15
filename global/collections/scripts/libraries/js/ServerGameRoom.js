@@ -315,8 +315,8 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             });
         }
         
-        // Auto-start if all ready
-        if (allReady) {
+        // Auto-start if all ready and we have at least 2 players
+        if (allReady && this.players.size >= 2) {
             setTimeout(() => this.startGame(), 1000);
         }
         
@@ -330,9 +330,9 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             return false;
         }
 
-        // Check if all players are ready
+        // Check if all players are ready and we have at least 2 players
         const allReady = Array.from(this.players.values()).every(p => p.ready);
-        if (!allReady) {
+        if (!allReady || this.players.size < 2) {
             return false;
         }
 
