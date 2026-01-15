@@ -862,8 +862,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 );
             }
 
+            // DEBUG: Log path computation result
+            console.log(`[PathfindingSystem] Entity ${request.entityId} path result: ${path ? path.length + ' waypoints' : 'NULL'} from (${request.startX.toFixed(0)},${request.startZ.toFixed(0)}) to (${request.endX.toFixed(0)},${request.endZ.toFixed(0)})`);
+
             // DEBUG: Log path computation for archer units
-            if (unitDef?.id === 'archer') {
+            if (unitDef?.id?.includes('archer')) {
                 console.log(`[PathfindingSystem] ARCHER ${request.entityId} path computed: ${path ? path.length + ' waypoints' : 'NULL'}`);
             }
 
@@ -876,7 +879,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
                     pathfindingComp.pathIndex = 0;
                 }
                 // DEBUG: Confirm path stored for archer units
-                if (unitDef?.id === 'archer') {
+                if (unitDef?.id?.includes('archer')) {
                     const storedPath = this.getEntityPath(request.entityId);
                     console.log(`[PathfindingSystem] ARCHER ${request.entityId} path STORED, verify: ${storedPath ? storedPath.length + ' waypoints' : 'NULL'}`);
                 }

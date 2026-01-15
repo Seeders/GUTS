@@ -1,0 +1,369 @@
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015. (Reason: CORS request did not succeed). Status code: (null).
+None of the “sha512” hashes in the integrity attribute match the content of the subresource at “https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015”. The computed hash is “z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==”. index.html
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015. (Reason: CORS request did not succeed). Status code: (null).
+None of the “sha512” hashes in the integrity attribute match the content of the subresource at “https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015”. The computed hash is “z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==”. index.html
+[SceneManager] loadScene('lobby') called SceneManager.js:24:13
+✅ COMPILED_GAME initialized client-entry.js:10947:13
+[SceneManager] loadScene('lobby') complete SceneManager.js:89:13
+[ClientNetworkManager] connect() called, serverUrl: https://gutsengine.app ClientNetworkManager.js:41:13
+[ClientNetworkManager] Creating socket connection to: https://gutsengine.app ClientNetworkManager.js:51:15
+Connected to server ClientNetworkManager.js:61:19
+[ClientNetworkManager] call: CONNECT isConnected: true responseEvent: CONNECTED ClientNetworkManager.js:233:13
+[ClientNetworkManager] Received event: CONNECTED 
+Object { playerId: "3-UaetgmNuQICgGtAAAB", serverTime: 1768440198938 }
+ClientNetworkManager.js:94:17
+[SceneManager] loadScene('onlineLobby') called SceneManager.js:24:13
+[SceneManager] Unloading current scene: lobby SceneManager.js:40:15
+[SceneManager] loadScene('onlineLobby') complete SceneManager.js:89:13
+[Memory] queryCache: 0, proxyCache: 0, entityCount: 0 BaseECSGame.js:1037:15
+[ClientNetworkSystem] joinRoom called: 1000 Player ClientNetworkSystem.js:224:13
+[ClientNetworkManager] call: JOIN_ROOM isConnected: true responseEvent: ROOM_JOINED ClientNetworkManager.js:233:13
+[ClientNetworkManager] Received event: ROOM_JOINED 
+Object { roomId: "1000", playerId: "3-UaetgmNuQICgGtAAAB", numericPlayerId: 1, isHost: false, gameState: {…} }
+ClientNetworkManager.js:94:17
+[ClientNetworkSystem] ROOM_JOINED callback received: 
+Object { data: {…}, error: undefined }
+ClientNetworkSystem.js:235:15
+[ClientNetworkSystem] Calling showLobby with: 
+Object { roomId: "1000", phase: 0, isActive: false, maxPlayers: 2, gameType: "default", players: (2) […], round: 1, gameData: null }
+ 1000 ClientNetworkSystem.js:251:17
+[ClientNetworkSystem] showLobby called ClientNetworkSystem.js:253:17
+[ClientNetworkManager] Received event: PLAYER_JOINED 
+Object { playerId: "3-UaetgmNuQICgGtAAAB", numericPlayerId: 1, playerName: "Player", gameState: {…} }
+ClientNetworkManager.js:94:17
+[Memory] queryCache: 0, proxyCache: 0, entityCount: 0 BaseECSGame.js:1037:15
+[ClientNetworkManager] Received event: PLAYER_READY_UPDATE 
+Object { playerId: "sNFvkvoRj41GyvhcAAAD", ready: true, allReady: false, gameState: {…} }
+ClientNetworkManager.js:94:17
+[ClientNetworkManager] call: TOGGLE_READY isConnected: true responseEvent: null ClientNetworkManager.js:233:13
+[ClientNetworkManager] Emitting (fire and forget): TOGGLE_READY ClientNetworkManager.js:245:15
+[ClientNetworkManager] Received event: PLAYER_READY_UPDATE 
+Object { playerId: "3-UaetgmNuQICgGtAAAB", ready: true, allReady: true, gameState: {…} }
+ClientNetworkManager.js:94:17
+[ClientNetworkManager] Received event: GAME_STARTED 
+Object { gameState: {…}, entitySync: {…}, level: 0, isLoadingSave: false, saveData: null, nextEntityId: 1565 }
+ClientNetworkManager.js:94:17
+[ClientNetworkSystem] handleGameStarted - level: 0 nextEntityId: 1565 ClientNetworkSystem.js:644:13
+[ClientNetworkSystem] Switching to game scene... ClientNetworkSystem.js:678:13
+[SceneManager] loadScene('game') called SceneManager.js:24:13
+[SceneManager] Unloading current scene: onlineLobby SceneManager.js:40:15
+[GameChatSystem] init - isMultiplayer: true GameChatSystem.js:36:13
+[SceneManager] Running loader: GameLoader SceneManager.js:56:15
+[ImageManager] Loaded 169 textures ImageManager.js:200:13
+[Memory] queryCache: 8, proxyCache: 0, entityCount: 0, behaviors: 0, mvmtPool: 0, trails: 0, renderPosCache: 0, spawned: 0, effects: 0, healthBars: 0, fowUnitPos: 0, losCache: 0, dmgNums: 0 2 BaseECSGame.js:1037:15
+[SceneManager] Loader complete: GameLoader SceneManager.js:59:15
+[TerrainSystem] onSceneLoad called, game.state.level: 0 TerrainSystem.js:56:13
+[TerrainSystem] Level name from index: level_1 TerrainSystem.js:67:13
+[TerrainSystem] Initializing terrain for level: level_1 TerrainSystem.js:72:13
+[TerrainSystem] Loading 1549 level entities... TerrainSystem.js:155:13
+[TerrainSystem] Loaded 1549 level entities TerrainSystem.js:213:13
+[TerrainSystem] Terrain initialized TerrainSystem.js:74:13
+[PathfindingSystem] onSceneLoad called, initialized: false PathfindingSystem.js:66:13
+[PathfindingSystem] levelId: level_1 PathfindingSystem.js:86:13
+[PathfindingSystem] isTerrainInitialized: true PathfindingSystem.js:93:13
+[PlacementSystem] spawnStartingUnits called PlacementSystem.js:482:13
+[PlacementSystem] startingUnitsConfig: 
+Object { title: "Starting Units Configuration", description: "Defines starting units for each team. Positions are relative to the team's starting location in world coordinates.", prefabs: (5) […], id: "startingUnits", collection: "configs" }
+PlacementSystem.js:491:13
+[PlacementSystem] getStartingLocationsFromLevel - terrain entities: 1 PlacementSystem.js:749:13
+[PlacementSystem] Terrain component: 
+Proxy { <target>: {}, <handler>: {…} }
+PlacementSystem.js:756:13
+[PlacementSystem] Level index from terrain: 0 PlacementSystem.js:762:13
+[PlacementSystem] startingLocations: 
+Object { 2: {…}, 3: {…} }
+PlacementSystem.js:495:13
+[spawnSquad] team=2, playerId=null, serverEntityIds=null, placementId=1, unitTypeId=10 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1551 unitType.abilities: undefined UnitCreationSystem.js:782:13
+[UnitCreationSystem] No abilities defined for unit type UnitCreationSystem.js:784:15
+[spawnSquad] team=2, playerId=null, serverEntityIds=null, placementId=2, unitTypeId=33 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1552 unitType.abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:782:13
+[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Valid abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:799:15
+[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:802:17
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1552 UnitCreationSystem.js:805:19
+[spawnSquad] team=2, playerId=null, serverEntityIds=null, placementId=3, unitTypeId=33 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1553 unitType.abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:782:13
+[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Valid abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:799:15
+[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:802:17
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1553 UnitCreationSystem.js:805:19
+[spawnSquad] team=2, playerId=null, serverEntityIds=null, placementId=4, unitTypeId=33 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1554 unitType.abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:782:13
+[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Valid abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:799:15
+[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:802:17
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1554 UnitCreationSystem.js:805:19
+[spawnSquad] team=2, playerId=null, serverEntityIds=null, placementId=5, unitTypeId=33 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1555 unitType.abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:782:13
+[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Valid abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:799:15
+[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:802:17
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1555 UnitCreationSystem.js:805:19
+[spawnSquad] team=3, playerId=null, serverEntityIds=null, placementId=6, unitTypeId=10 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1556 unitType.abilities: undefined UnitCreationSystem.js:782:13
+[UnitCreationSystem] No abilities defined for unit type UnitCreationSystem.js:784:15
+[spawnSquad] team=3, playerId=null, serverEntityIds=null, placementId=7, unitTypeId=33 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1557 unitType.abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:782:13
+[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Valid abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:799:15
+[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:802:17
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1557 UnitCreationSystem.js:805:19
+[spawnSquad] team=3, playerId=null, serverEntityIds=null, placementId=8, unitTypeId=33 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1558 unitType.abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:782:13
+[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Valid abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:799:15
+[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:802:17
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1558 UnitCreationSystem.js:805:19
+[spawnSquad] team=3, playerId=null, serverEntityIds=null, placementId=9, unitTypeId=33 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1559 unitType.abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:782:13
+[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Valid abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:799:15
+[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:802:17
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1559 UnitCreationSystem.js:805:19
+[spawnSquad] team=3, playerId=null, serverEntityIds=null, placementId=10, unitTypeId=33 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1560 unitType.abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:782:13
+[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:791:17
+[UnitCreationSystem] Valid abilities: 
+Array [ "BuildAbility", "MineGoldAbility" ]
+UnitCreationSystem.js:799:15
+[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:802:17
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1560 UnitCreationSystem.js:805:19
+[spawnSquad] team=2, playerId=null, serverEntityIds=null, placementId=11, unitTypeId=6 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1561 unitType.abilities: undefined UnitCreationSystem.js:782:13
+[UnitCreationSystem] No abilities defined for unit type UnitCreationSystem.js:784:15
+[spawnSquad] team=3, playerId=null, serverEntityIds=null, placementId=12, unitTypeId=6 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1562 unitType.abilities: undefined UnitCreationSystem.js:782:13
+[UnitCreationSystem] No abilities defined for unit type UnitCreationSystem.js:784:15
+[SceneManager] loadScene('game') complete SceneManager.js:89:13
+[ClientNetworkSystem] Game scene loaded, syncing entities... ClientNetworkSystem.js:680:13
+[ClientNetworkManager] call: GET_STARTING_STATE isConnected: true responseEvent: GOT_STARTING_STATE ClientNetworkManager.js:233:13
+[ClientNetworkSystem] Calling initializeGame... ClientNetworkSystem.js:691:13
+[ClientNetworkSystem] handleGameStarted complete ClientNetworkSystem.js:693:13
+[ClientNetworkManager] Received event: GOT_STARTING_STATE 
+Object { success: true, playerEntities: (2) […] }
+ClientNetworkManager.js:94:17
+[Memory] queryCache: 13, proxyCache: 16, entityCount: 1564, behaviors: 0, mvmtPool: 0, trails: 0, renderPosCache: 1545, spawned: 1545, effects: 0, healthBars: 0, fowUnitPos: 6, losCache: 4, dmgNums: 0 BaseECSGame.js:1037:15
+[shouldShowAction] actionId: move placementIds: 
+Array [ 10 ]
+UnitOrderUISystem.js:701:13
+[shouldShowAction] squadData: 
+Proxy { <target>: {}, <handler>: {…} }
+UnitOrderUISystem.js:705:13
+[createActionButton] adding click handler for order: moveOrderAction UnitOrderUISystem.js:150:15
+[shouldShowAction] actionId: hold placementIds: 
+Array [ 10 ]
+UnitOrderUISystem.js:701:13
+[shouldShowAction] squadData: 
+Proxy { <target>: {}, <handler>: {…} }
+UnitOrderUISystem.js:705:13
+[createActionButton] adding click handler for order: holdPosition UnitOrderUISystem.js:150:15
+[shouldShowAction] actionId: hide placementIds: 
+Array [ 10 ]
+UnitOrderUISystem.js:701:13
+[shouldShowAction] squadData: 
+Proxy { <target>: {}, <handler>: {…} }
+UnitOrderUISystem.js:705:13
+[createActionButton] adding click handler for order: hideOrderAction UnitOrderUISystem.js:150:15
+[shouldShowAction] actionId: levelUp placementIds: 
+Array [ 10 ]
+UnitOrderUISystem.js:701:13
+[shouldShowAction] squadData: 
+Proxy { <target>: {}, <handler>: {…} }
+UnitOrderUISystem.js:705:13
+[shouldShowAction] levelUp result: false UnitOrderUISystem.js:708:15
+[shouldShowAction] actionId: specialize placementIds: 
+Array [ 10 ]
+UnitOrderUISystem.js:701:13
+[shouldShowAction] squadData: 
+Proxy { <target>: {}, <handler>: {…} }
+UnitOrderUISystem.js:705:13
+[shouldShowAction] actionId: build placementIds: 
+Array [ 10 ]
+UnitOrderUISystem.js:701:13
+[shouldShowAction] squadData: 
+Proxy { <target>: {}, <handler>: {…} }
+UnitOrderUISystem.js:705:13
+[shouldShowAction] actionId: mineGold placementIds: 
+Array [ 10 ]
+UnitOrderUISystem.js:701:13
+[shouldShowAction] squadData: 
+Proxy { <target>: {}, <handler>: {…} }
+UnitOrderUISystem.js:705:13
+[Memory] queryCache: 15, proxyCache: 17, entityCount: 1564, behaviors: 0, mvmtPool: 0, trails: 0, renderPosCache: 1545, spawned: 1545, effects: 0, healthBars: 1, fowUnitPos: 6, losCache: 4, dmgNums: 0 BaseECSGame.js:1037:15
+[UnitOrderUISystem] activateBuildingPlacement called 
+Object { buildingId: "fletchersHall", buildTime: 1, selectedUnitId: 1560, isTrap: undefined }
+UnitOrderUISystem.js:203:13
+[UnitOrderUISystem] peasantBuildingPlacement set 
+Object { peasantId: 1560, buildTime: 1 }
+UnitOrderUISystem.js:216:13
+[ClientNetworkManager] call: SUBMIT_PLACEMENT isConnected: true responseEvent: SUBMITTED_PLACEMENT ClientNetworkManager.js:233:13
+[ClientNetworkManager] Received event: SUBMITTED_PLACEMENT 
+Object { success: true, squadUnits: [], placementId: 13, serverTime: 20.05, nextEntityId: 1565 }
+ClientNetworkManager.js:94:17
+[spawnSquad] team=3, playerId=1, serverEntityIds=[], placementId=13, unitTypeId=5 PlacementSystem.js:212:13
+[ClientNetworkManager] call: READY_FOR_BATTLE isConnected: true responseEvent: READY_FOR_BATTLE_RESPONSE ClientNetworkManager.js:233:13
+[ClientNetworkManager] Received event: READY_FOR_BATTLE_RESPONSE 
+Object { success: true }
+ClientNetworkManager.js:94:17
+[ClientNetworkManager] Received event: READY_FOR_BATTLE_UPDATE 
+Object { gameState: {…}, allReady: false }
+ClientNetworkManager.js:94:17
+[handleReadyForBattleUpdate] myPlayerId=3-UaetgmNuQICgGtAAAB, allReady=false PlacementUISystem.js:436:13
+[Memory] queryCache: 15, proxyCache: 18, entityCount: 1564, behaviors: 1, mvmtPool: 0, trails: 0, renderPosCache: 1545, spawned: 1545, effects: 0, healthBars: 1, fowUnitPos: 6, losCache: 4, dmgNums: 0 BaseECSGame.js:1037:15
+[ClientNetworkManager] Received event: READY_FOR_BATTLE_UPDATE 
+Object { gameState: {…}, allReady: true, entitySync: {…}, serverTime: 0, nextEntityId: 1565 }
+ClientNetworkManager.js:94:17
+[handleReadyForBattleUpdate] myPlayerId=3-UaetgmNuQICgGtAAAB, allReady=true PlacementUISystem.js:436:13
+[handleReadyForBattleUpdate] players in gameState: 1 PlacementUISystem.js:451:15
+[handleReadyForBattleUpdate] Player 1: team=3, networkUnitData=1 placements PlacementUISystem.js:454:19
+[handleReadyForBattleUpdate]   Placement 0: placementId=13, unitTypeId=5, squadUnits=[] PlacementUISystem.js:457:23
+[handleReadyForBattleUpdate] Calling applyNetworkUnitData for opponent 1 PlacementUISystem.js:461:21
+[applyNetworkUnitData] Processing unitData: 
+Object { placementId: 13, squadUnits: [], unitTypeId: 5, collection: 32 }
+PlacementSystem.js:818:15
+[applyNetworkUnitData] Skipping pending building placementId=13 - will be spawned by builder 1560 PlacementSystem.js:901:19
+[resyncEntities] playerOrder fields in sync: 
+Array(6) [ "playerOrder.targetPositionX", "playerOrder.targetPositionY", "playerOrder.targetPositionZ", "playerOrder.preventEnemiesInRangeCheck", "playerOrder.issuedTime", "playerOrder.enabled" ]
+ClientNetworkSystem.js:838:15
+[UnitCreationSystem] setupAbilities called for entity 1565 unitType.abilities: undefined UnitCreationSystem.js:782:13
+[UnitCreationSystem] No abilities defined for unit type UnitCreationSystem.js:784:15
+[ClientNetworkManager] Received event: BATTLE_END 
+Object { result: {…}, gameState: {…}, entitySync: {…}, serverTime: 30, nextEntityId: 1566 }
+ClientNetworkManager.js:94:17
+[resyncEntities] playerOrder fields in sync: 
+Array(6) [ "playerOrder.targetPositionX", "playerOrder.targetPositionY", "playerOrder.targetPositionZ", "playerOrder.preventEnemiesInRangeCheck", "playerOrder.issuedTime", "playerOrder.enabled" ]
+ClientNetworkSystem.js:838:15
+[ClientNetworkManager] call: SUBMIT_PLACEMENT isConnected: true responseEvent: SUBMITTED_PLACEMENT ClientNetworkManager.js:233:13
+[ClientNetworkManager] Received event: SUBMITTED_PLACEMENT 
+Object { success: true, squadUnits: (1) […], placementId: 15, serverTime: 32.15, nextEntityId: 1567 }
+ClientNetworkManager.js:94:17
+[spawnSquad] team=3, playerId=1, serverEntityIds=[1566], placementId=15, unitTypeId=4 PlacementSystem.js:212:13
+[UnitCreationSystem] setupAbilities called for entity 1566 unitType.abilities: 
+Array []
+UnitCreationSystem.js:782:13
+[UnitCreationSystem] Valid abilities: 
+Array []
+UnitCreationSystem.js:799:15
+[shouldShowAction] actionId: move placementIds: 
+Array [ 15 ]
+UnitOrderUISystem.js:701:13
+[shouldShowAction] squadData: 
+Proxy { <target>: {}, <handler>: {…} }
+UnitOrderUISystem.js:705:13
+[createActionButton] adding click handler for order: moveOrderAction UnitOrderUISystem.js:150:15
+[shouldShowAction] actionId: hold placementIds: 
+Array [ 15 ]
+UnitOrderUISystem.js:701:13
+[shouldShowAction] squadData: 
+Proxy { <target>: {}, <handler>: {…} }
+UnitOrderUISystem.js:705:13
+[createActionButton] adding click handler for order: holdPosition UnitOrderUISystem.js:150:15
+[shouldShowAction] actionId: hide placementIds: 
+Array [ 15 ]
+UnitOrderUISystem.js:701:13
+[shouldShowAction] squadData: 
+Proxy { <target>: {}, <handler>: {…} }
+UnitOrderUISystem.js:705:13
+[createActionButton] adding click handler for order: hideOrderAction UnitOrderUISystem.js:150:15
+[shouldShowAction] actionId: levelUp placementIds: 
+Array [ 15 ]
+UnitOrderUISystem.js:701:13
+[shouldShowAction] squadData: 
+Proxy { <target>: {}, <handler>: {…} }
+UnitOrderUISystem.js:705:13
+[shouldShowAction] levelUp result: false UnitOrderUISystem.js:708:15
+[shouldShowAction] actionId: specialize placementIds: 
+Array [ 15 ]
+UnitOrderUISystem.js:701:13
+[shouldShowAction] squadData: 
+Proxy { <target>: {}, <handler>: {…} }
+UnitOrderUISystem.js:705:13
+[ClientNetworkManager] call: SET_SQUAD_TARGETS isConnected: true responseEvent: SQUAD_TARGETS_SET ClientNetworkManager.js:233:13
+[ClientNetworkManager] Received event: SQUAD_TARGETS_SET 
+Object { success: true, placementIds: (1) […], targetPositions: (1) […], meta: {…}, issuedTime: 35.75 }
+ClientNetworkManager.js:94:17
+[UnitOrderSystem] applySquadTargetPosition entity=1566 (1_d_archer) placementId=15 isHiding=false isMoveOrder=true wasHiding=false UnitOrderSystem.js:53:17
+[ClientNetworkManager] Received event: READY_FOR_BATTLE_UPDATE 
+Object { gameState: {…}, allReady: false }
+ClientNetworkManager.js:94:17
+[handleReadyForBattleUpdate] myPlayerId=3-UaetgmNuQICgGtAAAB, allReady=false PlacementUISystem.js:436:13
+[ClientNetworkManager] call: READY_FOR_BATTLE isConnected: true responseEvent: READY_FOR_BATTLE_RESPONSE ClientNetworkManager.js:233:13
+[ClientNetworkManager] Received event: READY_FOR_BATTLE_RESPONSE 
+Object { success: true }
+ClientNetworkManager.js:94:17
+[ClientNetworkManager] Received event: READY_FOR_BATTLE_UPDATE 
+Object { gameState: {…}, allReady: true, entitySync: {…}, serverTime: 0, nextEntityId: 1567 }
+ClientNetworkManager.js:94:17
+[handleReadyForBattleUpdate] myPlayerId=3-UaetgmNuQICgGtAAAB, allReady=true PlacementUISystem.js:436:13
+[handleReadyForBattleUpdate] players in gameState: 1 PlacementUISystem.js:451:15
+[handleReadyForBattleUpdate] Player 1: team=3, networkUnitData=1 placements PlacementUISystem.js:454:19
+[handleReadyForBattleUpdate]   Placement 0: placementId=15, unitTypeId=4, squadUnits=[1566] PlacementUISystem.js:457:23
+[handleReadyForBattleUpdate] Calling applyNetworkUnitData for opponent 1 PlacementUISystem.js:461:21
+[applyNetworkUnitData] Processing unitData: 
+Object { placementId: 15, squadUnits: (1) […], unitTypeId: 4, collection: 153 }
+PlacementSystem.js:818:15
+[applyNetworkUnitData] Placement 15 exists, checking for unit type mismatch PlacementSystem.js:828:17
+[applyNetworkUnitData] Existing placement check: existingUnitType.type=4, expectedUnitTypeId=4 PlacementSystem.js:836:19
+[applyNetworkUnitData] Unit types match for existing placement, no transformation needed PlacementSystem.js:853:21
+[resyncEntities] playerOrder fields in sync: 
+Array(5) [ "playerOrder.targetPositionX", "playerOrder.targetPositionZ", "playerOrder.isMoveOrder", "playerOrder.issuedTime", "playerOrder.enabled" ]
+ClientNetworkSystem.js:838:15
+[2026-01-15T01:24:36.005Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"50/50"} HeadlessLogger.js:123:29
+[2026-01-15T01:24:36.859Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"50/50"} HeadlessLogger.js:123:29
+[2026-01-15T01:24:37.705Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"30.799999237060547/50"} HeadlessLogger.js:123:29
+[2026-01-15T01:24:38.553Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"11.59999942779541/50"} HeadlessLogger.js:123:29
+[2026-01-15T01:24:38.553Z] [INFO] [Damage] FATAL: 0_skeleton(1549) [neutral] killed by 1_d_archer(1566) [right] HeadlessLogger.js:123:29
+[2026-01-15T01:24:38.553Z] [INFO] [Death] DYING: 0_skeleton(1549) [neutral] started death process HeadlessLogger.js:123:29
+[2026-01-15T01:24:39.408Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1550) {"damage":22,"element":"physical","targetHealthBefore":"50/50"} HeadlessLogger.js:123:29
+[2026-01-15T01:24:39.802Z] [INFO] [Damage] FATAL: 1_d_archer(1566) [right] killed by 0_skeleton(1548) [neutral] HeadlessLogger.js:123:29
+[2026-01-15T01:24:39.802Z] [INFO] [Death] DYING: 1_d_archer(1566) [right] started death process HeadlessLogger.js:123:29
+[2026-01-15T01:24:40.254Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1550) {"damage":22,"element":"physical","targetHealthBefore":"30.799999237060547/50"} HeadlessLogger.js:123:29
+[2026-01-15T01:24:40.553Z] [INFO] [Death] CORPSE: 0_skeleton(1549) [neutral] converted to corpse HeadlessLogger.js:123:29
+[2026-01-15T01:24:41.109Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1550) {"damage":22,"element":"physical","targetHealthBefore":"11.59999942779541/50"} HeadlessLogger.js:123:29
+[2026-01-15T01:24:41.109Z] [INFO] [Damage] FATAL: 0_skeleton(1550) [neutral] killed by 1_d_archer(1566) [right] HeadlessLogger.js:123:29
+[2026-01-15T01:24:41.109Z] [INFO] [Death] DYING: 0_skeleton(1550) [neutral] started death process HeadlessLogger.js:123:29
+[2026-01-15T01:24:41.801Z] [INFO] [Death] CORPSE: 1_d_archer(1566) [right] converted to corpse HeadlessLogger.js:123:29
+[2026-01-15T01:24:43.118Z] [INFO] [Death] CORPSE: 0_skeleton(1550) [neutral] converted to corpse HeadlessLogger.js:123:29
+[ClientNetworkManager] Received event: BATTLE_END 
+Object { result: {…}, gameState: {…}, entitySync: {…}, serverTime: 30, nextEntityId: 1567 }
+ClientNetworkManager.js:94:17
+[resyncEntities] NO playerOrder fields in numericArrays! ClientNetworkSystem.js:845:15
