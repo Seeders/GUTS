@@ -37,10 +37,19 @@ class FindNearestGoldMineBehaviorAction extends GUTS.BaseBehaviorAction {
         let closestDistance = Infinity;
 
         // Find nearest mine belonging to our team
+        const debugMines = [];
         for (const mineId of sortedMineIds) {
             const mineTeam = game.getComponent(mineId, 'team');
             const mineTransform = game.getComponent(mineId, 'transform');
             const minePos = mineTransform?.position;
+
+            debugMines.push({
+                mineId,
+                mineTeam: mineTeam?.team,
+                entityTeam: team.team,
+                minePos: minePos ? { x: minePos.x?.toFixed(0), z: minePos.z?.toFixed(0) } : null,
+                distance: minePos ? this.distance(pos, minePos).toFixed(0) : null
+            });
 
             if (mineTeam && mineTeam.team === team.team) {
                 const distance = this.distance(pos, minePos);
@@ -53,6 +62,10 @@ class FindNearestGoldMineBehaviorAction extends GUTS.BaseBehaviorAction {
             }
         }
 
+        // DEBUG: Log all mines found
+        console.log(`[FindNearestGoldMine] Entity ${entityId} at (${pos.x.toFixed(0)},${pos.z.toFixed(0)}) team=${team.team}, found ${sortedMineIds.length} mines:`, debugMines);
+        console.log(`[FindNearestGoldMine] Selected mine: ${closestMine} at distance ${closestDistance.toFixed(0)}`);
+
         if (!closestMine) {
             return this.failure();
         }
@@ -63,7 +76,7 @@ class FindNearestGoldMineBehaviorAction extends GUTS.BaseBehaviorAction {
         shared.targetMinePosition = closestPosition;
         shared.targetPosition = closestPosition; // For movement
 
-     
+
         return this.success({
             targetMine: closestMine,
             targetPosition: closestPosition,
