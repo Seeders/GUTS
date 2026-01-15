@@ -114,6 +114,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         // Load terrain types from collections
         this.terrainTypesCollection = collections.terrainTypes;
+        console.log('[PathfindingSystem] terrainTypesCollection:', !!this.terrainTypesCollection);
         if (!this.terrainTypesCollection) {
             console.error('PathfindingSystem: No terrainTypes collection found');
             return;
@@ -121,6 +122,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         // Get the terrain type IDs array from the level
         this.terrainTypeIds = level.tileMap.terrainTypes;
+        console.log('[PathfindingSystem] terrainTypeIds:', !!this.terrainTypeIds, 'length:', this.terrainTypeIds?.length);
         if (!this.terrainTypeIds) {
             console.error('PathfindingSystem: No terrainTypes array in tileMap');
             return;
@@ -128,11 +130,13 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         // Set navigation grid size to half of terrain grid (matches placement grid)
         this.navGridSize = this.game.call('getPlacementGridSize');
+        console.log('[PathfindingSystem] navGridSize:', this.navGridSize);
 
         // Load ramps data
         this.loadRamps(level.tileMap);
 
         this.bakeNavMesh();
+        console.log('[PathfindingSystem] NavMesh baked, navGridWidth:', this.navGridWidth, 'navGridHeight:', this.navGridHeight);
 
         // Initialize debug visualization (only on client)
         if (!this.game.isServer && this.game.uiScene) {
@@ -141,6 +145,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         this.initialized = true;
         this.currentLevelId = levelId; // Track which level we initialized for
+        console.log('[PathfindingSystem] Initialization complete, initialized:', this.initialized);
     }
 
     onPlacementPhaseStart() {
@@ -404,6 +409,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     requestPath(entityId, startX, startZ, endX, endZ, priority = 0) {
+        // DEBUG: Log if not initialized
+        if (!this.initialized) {
+            console.log(`[PathfindingSystem] requestPath called but NOT INITIALIZED! entityId=${entityId}`);
+        }
+
         const cacheKey = `${Math.floor(startX/50)},${Math.floor(startZ/50)}-${Math.floor(endX/50)},${Math.floor(endZ/50)}`;
 
         const cached = this.pathCache.get(cacheKey);
@@ -794,6 +804,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
     update() {
         // Wait for onSceneLoad to initialize
         if (!this.initialized) {
+            // DEBUG: Log once when not initialized
+            if (!this._loggedNotInitialized) {
+                console.log('[PathfindingSystem] update() called but not initialized');
+                this._loggedNotInitialized = true;
+            }
             return;
         }
 
@@ -812,8 +827,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
         for (const key of this._keysToDelete) {
             this.pathCache.delete(key);
         }
-        
+
         if (this.pathRequests.length === 0) return;
+
+        // DEBUG: Log when processing path requests
+        console.log(`[PathfindingSystem] Processing ${this.pathRequests.length} path requests`);
 
         // OPTIMIZATION: Use numeric sort for entity IDs (still deterministic, much faster)
         this.pathRequests.sort((a, b) => {
