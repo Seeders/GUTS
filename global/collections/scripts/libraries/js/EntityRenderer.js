@@ -489,9 +489,11 @@ class EntityRenderer {
         const capacity = this.capacitiesByType[batchKey] || this.defaultCapacity;
         const uvOffsets = new Float32Array(capacity * 2);  // x, y offset per instance
         const uvScales = new Float32Array(capacity * 2);   // width, height scale per instance
+        const opacities = new Float32Array(capacity).fill(1.0);  // opacity per instance
 
         geometry.setAttribute('uvOffset', new THREE.InstancedBufferAttribute(uvOffsets, 2));
         geometry.setAttribute('uvScale', new THREE.InstancedBufferAttribute(uvScales, 2));
+        geometry.setAttribute('aOpacity', new THREE.InstancedBufferAttribute(opacities, 1));
 
         // Custom shader material for billboarding with UV manipulation
         const material = new THREE.ShaderMaterial({
@@ -505,7 +507,9 @@ class EntityRenderer {
             vertexShader: `
                 attribute vec2 uvOffset;
                 attribute vec2 uvScale;
+                attribute float aOpacity;
                 varying vec2 vUv;
+                varying float vOpacity;
                 #include <fog_pars_vertex>
 
                 const float PI = 3.14159265359;
@@ -515,6 +519,7 @@ class EntityRenderer {
                     // Pass UV with instance-specific offset and scale
                     // Flip V coordinate since we disabled texture.flipY
                     vUv = vec2(uv.x * uvScale.x + uvOffset.x, (1.0 - uv.y) * uvScale.y + uvOffset.y);
+                    vOpacity = aOpacity;
 
                     // Get instance transform
                     mat4 instanceMat = instanceMatrix;
@@ -603,6 +608,7 @@ class EntityRenderer {
                 uniform sampler2D map;
                 uniform vec3 ambientLightColor;
                 varying vec2 vUv;
+                varying float vOpacity;
                 #include <fog_pars_fragment>
 
                 void main() {
@@ -610,7 +616,7 @@ class EntityRenderer {
                     if (texColor.a < 0.5) discard;
                     // Apply ambient lighting to the sprite
                     vec3 litColor = texColor.rgb * ambientLightColor;
-                    gl_FragColor = vec4(litColor, texColor.a);
+                    gl_FragColor = vec4(litColor, texColor.a * vOpacity);
                     #include <colorspace_fragment>
                     #include <fog_fragment>
                 }
@@ -650,7 +656,8 @@ class EntityRenderer {
             maxUsedIndex: -1,
             attributes: {
                 uvOffset: geometry.attributes.uvOffset,
-                uvScale: geometry.attributes.uvScale
+                uvScale: geometry.attributes.uvScale,
+                opacity: geometry.attributes.aOpacity
             },
             animationCache: null  // Will be populated on first entity spawn
         };
@@ -1547,6 +1554,27 @@ class EntityRenderer {
         batch.attributes.animSpeed.setX(entity.instanceIndex, speed);
         batch.attributes.animSpeed.array[entity.instanceIndex] = speed;
         batch.dirty.animation = true;
+
+        return true;
+    }
+
+    /**
+     * Set opacity for billboard entity (used for hiding units)
+     */
+    setEntityOpacity(entityId, opacity) {
+        const entity = this.entities.get(entityId);
+        if (!entity || entity.type !== 'billboardInstanced') {
+            return false;
+        }
+
+        const batch = entity.batch;
+        if (!batch.attributes.opacity) {
+            return false;
+        }
+
+        batch.attributes.opacity.setX(entity.instanceIndex, opacity);
+        batch.attributes.opacity.array[entity.instanceIndex] = opacity;
+        batch.attributes.opacity.needsUpdate = true;
 
         return true;
     }
