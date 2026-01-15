@@ -1527,6 +1527,22 @@ class PlacementSystem extends GUTS.BaseSystem {
         // Reserve grid cells
         this.game.call('reserveGridCells', cells, buildingEntityId);
 
+        // Handle gold mine buildings - add goldMine component
+        if (unitType.id === 'goldMine') {
+            const footprintWidth = unitType.footprintWidth || unitType.placementGridWidth || 2;
+            const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 2;
+            const gridWidth = footprintWidth * 2;
+            const gridHeight = footprintHeight * 2;
+
+            this.game.call('buildGoldMine',
+                buildingEntityId,
+                team,
+                gridPosition,
+                gridWidth,
+                gridHeight
+            );
+        }
+
         // Update buildingState to point to the new building entity and clear pending data
         buildingState.targetBuildingEntityId = buildingEntityId;
         buildingState.pendingGridPosition.x = 0;

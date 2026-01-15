@@ -756,16 +756,6 @@ class MovementSystem extends GUTS.BaseSystem {
         const transform = this.game.getComponent(entityId, "transform");
         if (!pathfinding) return;
 
-        // DEBUG: Check path state for archer units at start of function
-        const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-        const unitDefDebug = unitTypeComp ? this.game.call('getUnitTypeDef', unitTypeComp) : null;
-        if (unitDefDebug?.id === 'archer') {
-            const existingPathDebug = this.game.call('getEntityPath', entityId);
-            if (!existingPathDebug) {
-                console.log(`[MovementSystem] ARCHER ${entityId} requestPathIfNeeded called - NO PATH, lastPathRequest=${pathfinding.lastPathRequest}, now=${now}`);
-            }
-        }
-
         // Get target from behavior state
         let targetX = null;
         let targetZ = null;
@@ -809,13 +799,6 @@ class MovementSystem extends GUTS.BaseSystem {
                 pathfinding.lastTargetX = targetX;
                 pathfinding.lastTargetZ = targetZ;
 
-                // DEBUG: Log path request for archer units
-                const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                const unitDef = unitTypeComp ? this.game.call('getUnitTypeDef', unitTypeComp) : null;
-                if (unitDef?.id?.includes('archer')) {
-                    console.log(`[MovementSystem] ARCHER ${entityId} requesting path from (${pos.x.toFixed(0)},${pos.z.toFixed(0)}) to (${targetX.toFixed(0)},${targetZ.toFixed(0)})`);
-                }
-
                 const cachedPath = this.game.call('requestPath',
                     entityId,
                     pos.x,
@@ -829,12 +812,6 @@ class MovementSystem extends GUTS.BaseSystem {
                 if (cachedPath && cachedPath.length > 0) {
                     this.game.call('setEntityPath', entityId, cachedPath);
                     pathfinding.pathIndex = 0;
-                    // DEBUG: Log cached path for archer units
-                    if (unitDef?.id?.includes('archer')) {
-                        console.log(`[MovementSystem] ARCHER ${entityId} got CACHED path with ${cachedPath.length} waypoints`);
-                    }
-                } else if (unitDef?.id?.includes('archer')) {
-                    console.log(`[MovementSystem] ARCHER ${entityId} path queued (no cache hit)`);
                 }
             }
         } else {

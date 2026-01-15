@@ -77,8 +77,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     onSceneLoad(sceneData) {
-        console.log('[PathfindingSystem] onSceneLoad called, initialized:', this.initialized);
-
         // Check if level changed - if so, we need to re-initialize
         const levelId = this.game.call('getLevel');
         if (this.initialized && this.currentLevelId === levelId) {
@@ -87,7 +85,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         // Level changed or first init - reset and rebuild
         if (this.initialized && this.currentLevelId !== levelId) {
-            console.log('[PathfindingSystem] Level changed from', this.currentLevelId, 'to', levelId, '- re-initializing');
             this.onSceneUnload(); // Clean up old navmesh
         }
 
@@ -97,8 +94,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // levelId already obtained at top of function
-        console.log('[PathfindingSystem] levelId:', levelId);
         const level = collections.levels?.[levelId];
         if (!level || !level.tileMap) {
             console.warn('PathfindingSystem: Level or tileMap not available, levelId:', levelId, 'level:', !!level);
@@ -106,7 +101,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
         }
 
         const terrainInitialized = this.game.call('isTerrainInitialized');
-        console.log('[PathfindingSystem] isTerrainInitialized:', terrainInitialized);
         if (!terrainInitialized) {
             console.warn('PathfindingSystem: Waiting for terrain system...');
             return;
@@ -114,7 +108,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         // Load terrain types from collections
         this.terrainTypesCollection = collections.terrainTypes;
-        console.log('[PathfindingSystem] terrainTypesCollection:', !!this.terrainTypesCollection);
         if (!this.terrainTypesCollection) {
             console.error('PathfindingSystem: No terrainTypes collection found');
             return;
@@ -122,7 +115,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         // Get the terrain type IDs array from the level
         this.terrainTypeIds = level.tileMap.terrainTypes;
-        console.log('[PathfindingSystem] terrainTypeIds:', !!this.terrainTypeIds, 'length:', this.terrainTypeIds?.length);
         if (!this.terrainTypeIds) {
             console.error('PathfindingSystem: No terrainTypes array in tileMap');
             return;
@@ -130,13 +122,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         // Set navigation grid size to half of terrain grid (matches placement grid)
         this.navGridSize = this.game.call('getPlacementGridSize');
-        console.log('[PathfindingSystem] navGridSize:', this.navGridSize);
 
         // Load ramps data
         this.loadRamps(level.tileMap);
 
         this.bakeNavMesh();
-        console.log('[PathfindingSystem] NavMesh baked, navGridWidth:', this.navGridWidth, 'navGridHeight:', this.navGridHeight);
 
         // Initialize debug visualization (only on client)
         if (!this.game.isServer && this.game.uiScene) {
@@ -145,7 +135,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
         this.initialized = true;
         this.currentLevelId = levelId; // Track which level we initialized for
-        console.log('[PathfindingSystem] Initialization complete, initialized:', this.initialized);
     }
 
     onPlacementPhaseStart() {
@@ -409,11 +398,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     requestPath(entityId, startX, startZ, endX, endZ, priority = 0) {
-        // DEBUG: Log if not initialized
-        if (!this.initialized) {
-            console.log(`[PathfindingSystem] requestPath called but NOT INITIALIZED! entityId=${entityId}`);
-        }
-
         const cacheKey = `${Math.floor(startX/50)},${Math.floor(startZ/50)}-${Math.floor(endX/50)},${Math.floor(endZ/50)}`;
 
         const cached = this.pathCache.get(cacheKey);
@@ -804,11 +788,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
     update() {
         // Wait for onSceneLoad to initialize
         if (!this.initialized) {
-            // DEBUG: Log once when not initialized
-            if (!this._loggedNotInitialized) {
-                console.log('[PathfindingSystem] update() called but not initialized');
-                this._loggedNotInitialized = true;
-            }
             return;
         }
 
@@ -829,9 +808,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
         }
 
         if (this.pathRequests.length === 0) return;
-
-        // DEBUG: Log when processing path requests
-        console.log(`[PathfindingSystem] Processing ${this.pathRequests.length} path requests`);
 
         // OPTIMIZATION: Use numeric sort for entity IDs (still deterministic, much faster)
         this.pathRequests.sort((a, b) => {
@@ -862,14 +838,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 );
             }
 
-            // DEBUG: Log path computation result
-            console.log(`[PathfindingSystem] Entity ${request.entityId} path result: ${path ? path.length + ' waypoints' : 'NULL'} from (${request.startX.toFixed(0)},${request.startZ.toFixed(0)}) to (${request.endX.toFixed(0)},${request.endZ.toFixed(0)})`);
-
-            // DEBUG: Log path computation for archer units
-            if (unitDef?.id?.includes('archer')) {
-                console.log(`[PathfindingSystem] ARCHER ${request.entityId} path computed: ${path ? path.length + ' waypoints' : 'NULL'}`);
-            }
-
             if (path) {
                 // Store path in system Map
                 this.setEntityPath(request.entityId, path);
@@ -877,11 +845,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 const pathfindingComp = this.game.getComponent(request.entityId, "pathfinding");
                 if (pathfindingComp) {
                     pathfindingComp.pathIndex = 0;
-                }
-                // DEBUG: Confirm path stored for archer units
-                if (unitDef?.id?.includes('archer')) {
-                    const storedPath = this.getEntityPath(request.entityId);
-                    console.log(`[PathfindingSystem] ARCHER ${request.entityId} path STORED, verify: ${storedPath ? storedPath.length + ' waypoints' : 'NULL'}`);
                 }
             }
         }
