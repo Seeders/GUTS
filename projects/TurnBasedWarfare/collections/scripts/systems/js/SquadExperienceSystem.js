@@ -11,7 +11,8 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         'getCurrentUnitType',
         'getSquadInfo',
         'setSquadInfo',
-        'resetSquadExperience'
+        'resetSquadExperience',
+        'grantCombatExperience'
     ];
 
     constructor(game) {
@@ -24,8 +25,10 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             maxLevel: 10,                // Maximum squad level
             levelUpCostRatio: 0.5,       // Cost to level up = squad value * ratio
             experienceMultiplier: 1.0,   // Global experience gain multiplier
-            baselineXPPerSecond: 1,   // tune: ~1–3% of a cheap unit's value per 10s
-            baselineXPCombatOnly: true  // only tick during combat phase
+            baselineXPPerSecond: 0,      // Disabled - XP is now gained from combat
+            baselineXPCombatOnly: true,  // only tick during combat phase
+            xpPerDamageDealt: 0.1,       // XP gained per point of damage dealt
+            xpPerDamageTaken: 0.05       // XP gained per point of damage taken
         };
 
         // Level bonuses (applied to all units in squad)
@@ -194,6 +197,35 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             this.lastUIUpdate = this.game.state.now;
         }
     }
+
+    /**
+     * Grant experience from combat (dealing or taking damage)
+     * @param {number} attackerId - Entity that dealt damage
+     * @param {number} targetId - Entity that took damage
+     * @param {number} damage - Amount of damage dealt
+     */
+    grantCombatExperience(attackerId, targetId, damage) {
+        if (damage <= 0) return;
+
+        // Grant XP to attacker for dealing damage
+        if (attackerId) {
+            const attackerPlacement = this.game.getComponent(attackerId, 'placement');
+            if (attackerPlacement?.placementId) {
+                const xp = damage * this.config.xpPerDamageDealt * this.config.experienceMultiplier;
+                this.addExperience(attackerPlacement.placementId, xp);
+            }
+        }
+
+        // Grant XP to target for taking damage
+        if (targetId) {
+            const targetPlacement = this.game.getComponent(targetId, 'placement');
+            if (targetPlacement?.placementId) {
+                const xp = damage * this.config.xpPerDamageTaken * this.config.experienceMultiplier;
+                this.addExperience(targetPlacement.placementId, xp);
+            }
+        }
+    }
+
     getLevelUpCost(placementId){
         const squadData = this.getSquadExperience(placementId);
         if(squadData){
@@ -307,8 +339,14 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     showSpecializationSelection(placementId, squadData, callback) {
         const currentUnitType = this.getCurrentUnitType(placementId, squadData.team);
         if (!currentUnitType || !currentUnitType.specUnits) return;
-        
-        
+
+        // Get units that are available based on player's buildings
+        const availableUnits = this.getAvailableSpecializations(squadData.team, currentUnitType.specUnits);
+        if (availableUnits.length === 0) {
+            this.game.uiSystem?.showNotification('Build a training building first', 'warning', 1200);
+            return;
+        }
+
         // Create specialization selection modal
         const modal = document.createElement('div');
         modal.className = 'specialization-modal';
@@ -341,7 +379,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         
         // Add specialization options
         const optionsContainer = content.querySelector('#specialization-options');
-        currentUnitType.specUnits.forEach(specId => {
+        availableUnits.forEach(specId => {
             const specUnit = this.collections.units[specId];
             if (specUnit) {
                 const optionButton = document.createElement('button');
@@ -399,6 +437,35 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         document.body.appendChild(modal);
     }
     
+    /**
+     * Get specializations available based on buildings the team has
+     * @param {number} team - Team number
+     * @param {Array} specUnits - Array of unit IDs that could be specialized into
+     * @returns {Array} Array of unit IDs the player can specialize into
+     */
+    getAvailableSpecializations(team, specUnits) {
+        // Get all units that the team's buildings can produce
+        const producibleUnits = new Set();
+
+        // Find all buildings owned by this team
+        const buildingEntities = this.game.getEntitiesWith('team', 'unitType');
+        for (const entityId of buildingEntities) {
+            const teamComp = this.game.getComponent(entityId, 'team');
+            if (teamComp?.team !== team) continue;
+
+            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+            const unitTypeDef = this.game.call('getUnitTypeDef', unitTypeComp);
+
+            // Check if this is a building with a units array
+            if (unitTypeDef?.units && Array.isArray(unitTypeDef.units)) {
+                unitTypeDef.units.forEach(unitId => producibleUnits.add(unitId));
+            }
+        }
+
+        // Filter specUnits to only those that can be produced by owned buildings
+        return specUnits.filter(unitId => producibleUnits.has(unitId));
+    }
+
     /**
      * Get the current unit type for a squad
      * @param {string} placementId - Squad placement ID

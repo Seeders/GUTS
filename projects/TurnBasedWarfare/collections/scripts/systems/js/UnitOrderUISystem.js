@@ -750,6 +750,10 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
      * @returns {boolean} Whether the action should be displayed
      */
     shouldShowAction(actionId, selectedUnitId) {
+        // Check if action is hidden
+        const action = this.collections.actions?.[actionId];
+        if (action?.hidden) return false;
+
         const placementIds = this.game.call('getSelectedSquads') || [];
         console.log('[shouldShowAction] actionId:', actionId, 'placementIds:', placementIds);
         if (!placementIds.length) return actionId !== 'levelUp' && actionId !== 'specialize';

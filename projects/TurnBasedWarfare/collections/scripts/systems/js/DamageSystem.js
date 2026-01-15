@@ -258,6 +258,11 @@ class DamageSystem extends GUTS.BaseSystem {
             this.game.call('showDamageNumber', targetPos.x, targetPos.y + targetUnitType.height, targetPos.z, damageResult.finalDamage, element);
         }
 
+        // Grant combat experience (attacker gains XP for dealing damage, target gains XP for taking damage)
+        if (this.game.hasService('grantCombatExperience') && damageResult.finalDamage > 0) {
+            this.game.call('grantCombatExperience', sourceId, targetId, damageResult.finalDamage);
+        }
+
         return {
             damage: damageResult.finalDamage,
             originalDamage: baseDamage,

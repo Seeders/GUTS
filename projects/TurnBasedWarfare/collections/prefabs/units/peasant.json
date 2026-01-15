@@ -10,7 +10,14 @@
   "element": "physical",
   "armor": 8,
   "buyable": true,
-  "specUnits": [],
+  "specUnits": [
+    "1_s_barbarian",
+    "1_sd_soldier",
+    "1_d_archer",
+    "1_di_scout",
+    "1_i_apprentice",
+    "1_is_acolyte"
+  ],
   "squadWidth": 1,
   "squadHeight": 1,
   "placementGridWidth": 1,
