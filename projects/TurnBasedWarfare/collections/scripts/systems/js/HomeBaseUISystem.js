@@ -2428,6 +2428,21 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
     }
 
     /**
+     * Get the URL for a texture from the textures collection
+     * @param {string} textureId - The texture ID to look up
+     * @returns {string} The texture URL or empty string if not found
+     */
+    getTextureUrl(textureId) {
+        if (!textureId) return '';
+        const texture = this.collections?.textures?.[textureId];
+        if (texture && texture.imagePath) {
+            const resourcesPath = this.game.app?.getResourcesPath?.() || './resources/';
+            return `${resourcesPath}${texture.imagePath}`;
+        }
+        return '';
+    }
+
+    /**
      * Update the tarot card collection display
      */
     updateTarotCollectionDisplay() {
@@ -2446,11 +2461,23 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
                 ${allCardIds.map(cardId => {
                     const card = tarotCards[cardId];
                     const isCollected = collectedCards.includes(cardId);
+                    const textureUrl = isCollected ? this.getTextureUrl(card.texture) : '';
                     return `
                         <div class="tarot-collection-card ${isCollected ? 'collected' : 'locked'}"
-                             title="${isCollected ? card.title : '???'}">
-                            <span class="card-number">${card.number}</span>
-                            ${isCollected ? `<span class="card-name">${card.title}</span>` : '<span class="card-locked">?</span>'}
+                             title="${isCollected ? card.title : '???'}"
+                             ${isCollected ? `data-view-tarot="${cardId}"` : ''}>
+                            ${isCollected && textureUrl ?
+                                `<img src="${textureUrl}" alt="${card.title}" class="card-texture" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                 <div class="card-fallback" style="display:none;">
+                                    <span class="card-number">${card.number}</span>
+                                    <span class="card-name">${card.title}</span>
+                                 </div>` :
+                                isCollected ?
+                                    `<span class="card-number">${card.number}</span>
+                                     <span class="card-name">${card.title}</span>` :
+                                    `<span class="card-number">${card.number}</span>
+                                     <span class="card-locked">?</span>`
+                            }
                         </div>
                     `;
                 }).join('')}
@@ -2464,6 +2491,14 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
             </div>
         `;
 
+        // Attach event listeners to view collected cards
+        collectionSection.querySelectorAll('[data-view-tarot]').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const cardId = card.dataset.viewTarot;
+                this.showTarotCardModal(cardId);
+            });
+        });
+
         // Attach event listeners to purchase buttons
         collectionSection.querySelectorAll('[data-purchase-tarot]').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -2471,6 +2506,76 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
                 this.purchaseTarotCard(cardId);
             });
         });
+    }
+
+    /**
+     * Show a modal with a tarot card in high resolution
+     * @param {string} cardId - The tarot card ID to display
+     */
+    showTarotCardModal(cardId) {
+        const tarotCards = this.collections?.tarotCards || {};
+        const card = tarotCards[cardId];
+        if (!card) return;
+
+        const textureUrl = this.getTextureUrl(card.texture);
+
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.className = 'tarot-card-modal';
+        modal.innerHTML = `
+            <div class="tarot-modal-backdrop"></div>
+            <div class="tarot-modal-content">
+                <div class="tarot-modal-card">
+                    ${textureUrl ?
+                        `<img src="${textureUrl}" alt="${card.title}" class="tarot-modal-image">` :
+                        `<div class="tarot-modal-placeholder">
+                            <span class="card-number">${card.number}</span>
+                            <span class="card-title">${card.title}</span>
+                        </div>`
+                    }
+                </div>
+                <div class="tarot-modal-info">
+                    <h3>${card.number}. ${card.title}</h3>
+                    <div class="tarot-modal-readings">
+                        <div class="reading-section">
+                            <h4>Past (Player Buffs)</h4>
+                            <p><strong>Upright - ${card.past?.upright?.name}:</strong> ${card.past?.upright?.description}</p>
+                            <p><strong>Reversed - ${card.past?.reversed?.name}:</strong> ${card.past?.reversed?.description}</p>
+                        </div>
+                        <div class="reading-section">
+                            <h4>Present (Mission Modifiers)</h4>
+                            <p><strong>Upright - ${card.present?.upright?.name}:</strong> ${card.present?.upright?.description}</p>
+                            <p><strong>Reversed - ${card.present?.reversed?.name}:</strong> ${card.present?.reversed?.description}</p>
+                        </div>
+                        <div class="reading-section">
+                            <h4>Future (Rewards)</h4>
+                            <p><strong>Upright - ${card.future?.upright?.name}:</strong> ${card.future?.upright?.description}</p>
+                            <p><strong>Reversed - ${card.future?.reversed?.name}:</strong> ${card.future?.reversed?.description}</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="tarot-modal-close">&times;</button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Close modal on backdrop click or close button
+        modal.querySelector('.tarot-modal-backdrop').addEventListener('click', () => {
+            modal.remove();
+        });
+        modal.querySelector('.tarot-modal-close').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        // Close on Escape key
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                modal.remove();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
     }
 
     /**
@@ -2703,7 +2808,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
             <div class="tarot-spread">
                 ${modifiers.map((mod, index) => {
                     const position = mod.position || (index === 0 ? 'past' : (index === 1 ? 'present' : 'future'));
-                    const texturePath = mod.texture ? `resources/textures/${mod.texture}.png` : '';
+                    const texturePath = this.getTextureUrl(mod.texture);
                     const cardClass = mod.isReversed ? 'tarot-card reversed' : 'tarot-card';
 
                     return `

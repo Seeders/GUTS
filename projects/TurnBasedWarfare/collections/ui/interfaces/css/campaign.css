@@ -46,6 +46,7 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    overflow-y: auto;
 }
 
 .campaign-select-section h2 {
@@ -296,11 +297,13 @@
 .home-base-content {
     flex: 1;
     overflow: hidden;
+    min-height: 0; /* Allow flex child to shrink below content size */
 }
 
 .tab-content {
     display: none;
     height: 100%;
+    overflow-y: auto;
 }
 
 .tab-content.active {
@@ -329,6 +332,8 @@
     background: rgba(0, 0, 0, 0.4);
     border-left: 1px solid rgba(255, 170, 0, 0.2);
     padding: 1.5rem;
+    overflow-y: auto;
+    max-height: 100%;
 }
 
 .node-info-panel h3 {
@@ -535,6 +540,7 @@
     flex-direction: row;
     padding: 1.5rem;
     gap: 1.5rem;
+    overflow-y: auto;
 }
 
 .inventory-container {
@@ -587,6 +593,8 @@
     background: rgba(0, 0, 0, 0.4);
     border-radius: 8px;
     padding: 1rem;
+    overflow-y: auto;
+    max-height: 100%;
 }
 
 .item-info-panel h3 {
@@ -840,6 +848,7 @@
     flex-direction: row;
     gap: 1.5rem;
     padding: 1.5rem;
+    overflow-y: auto;
 }
 
 .commander-container {
@@ -1073,6 +1082,7 @@
     gap: 1.5rem;
     padding: 1.5rem;
     position: relative;
+    overflow-y: auto;
 }
 
 .oracle-container {
@@ -2081,6 +2091,7 @@
 .tarot-collection-section {
     margin-top: 1.5rem;
     padding-top: 1rem;
+    width: 50%;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -2108,16 +2119,38 @@
     font-size: 0.7rem;
     cursor: default;
     transition: all 0.2s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.tarot-collection-card .card-texture {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.tarot-collection-card .card-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .tarot-collection-card.collected {
     border-color: var(--primary-gold);
     background: linear-gradient(135deg, rgba(50, 40, 60, 0.9), rgba(30, 25, 40, 0.9));
+    cursor: pointer;
 }
 
 .tarot-collection-card.collected:hover {
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.05);
     box-shadow: 0 4px 12px rgba(255, 170, 0, 0.3);
+    z-index: 1;
 }
 
 .tarot-collection-card.locked {
@@ -2229,4 +2262,158 @@
     text-align: center;
     padding: 1rem;
     font-style: italic;
+}
+
+/* ================================================
+   Tarot Card Modal
+   ================================================ */
+
+.tarot-card-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tarot-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.tarot-modal-content {
+    position: relative;
+    display: flex;
+    gap: 2rem;
+    max-width: 900px;
+    max-height: 90vh;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(30, 25, 50, 0.98), rgba(20, 15, 35, 0.98));
+    border: 2px solid var(--primary-gold);
+    border-radius: 12px;
+    box-shadow: 0 0 40px rgba(155, 89, 182, 0.4);
+}
+
+.tarot-modal-card {
+    flex-shrink: 0;
+    width: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tarot-modal-image {
+    max-width: 100%;
+    max-height: 420px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.tarot-modal-placeholder {
+    width: 280px;
+    height: 420px;
+    background: linear-gradient(135deg, rgba(50, 40, 70, 0.9), rgba(30, 25, 50, 0.9));
+    border: 2px solid var(--primary-gold);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.tarot-modal-placeholder .card-number {
+    font-family: var(--font-decorative);
+    font-size: 4rem;
+    color: var(--primary-gold);
+}
+
+.tarot-modal-placeholder .card-title {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    color: var(--cream);
+    text-align: center;
+    padding: 0 1rem;
+}
+
+.tarot-modal-info {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 500px;
+}
+
+.tarot-modal-info h3 {
+    font-family: var(--font-decorative);
+    font-size: 1.8rem;
+    color: var(--primary-gold);
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+}
+
+.tarot-modal-readings {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.tarot-modal-readings .reading-section {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(155, 89, 182, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.tarot-modal-readings .reading-section h4 {
+    font-family: var(--font-title);
+    color: #9b59b6;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.tarot-modal-readings .reading-section p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+}
+
+.tarot-modal-readings .reading-section p:last-child {
+    margin-bottom: 0;
+}
+
+.tarot-modal-readings .reading-section p strong {
+    color: var(--cream);
+}
+
+.tarot-modal-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 36px;
+    height: 36px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: var(--cream);
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    line-height: 1;
+    padding-bottom: 2px;
+}
+
+.tarot-modal-close:hover {
+    background: rgba(192, 57, 43, 0.8);
+    border-color: #e74c3c;
 }

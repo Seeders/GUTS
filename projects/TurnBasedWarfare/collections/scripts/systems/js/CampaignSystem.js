@@ -842,10 +842,17 @@ class CampaignSystem extends GUTS.BaseSystem {
             return null;
         }
 
-        // Draw 3 random cards (no duplicates)
-        const allCards = Object.values(tarotCards);
+        // Only use collected tarot cards for prophecies
+        const collectedCardIds = this.getCollectedTarotCards();
+        if (collectedCardIds.length < 3) {
+            console.warn('[CampaignSystem] Need at least 3 collected tarot cards for a reading');
+            return { success: false, error: 'Need at least 3 collected tarot cards for a prophecy reading.' };
+        }
+
+        // Draw 3 random cards from collected cards only (no duplicates)
+        const collectedCards = collectedCardIds.map(id => tarotCards[id]).filter(Boolean);
         const drawnCards = [];
-        const availableCards = [...allCards];
+        const availableCards = [...collectedCards];
 
         const positions = ['past', 'present', 'future'];
 
@@ -874,25 +881,73 @@ class CampaignSystem extends GUTS.BaseSystem {
             });
         }
 
+        // Calculate reward bonus from effects
+        // Each position affects rewards differently:
+        // - Past (player buffs): Helpful effects reduce rewards, handicaps increase rewards
+        // - Present (challenges): Harder challenges increase rewards
+        // - Future (rewards): Direct reward modifiers
+        let totalRewardMultiplier = 1;
+
         // Build modifiers from the tarot reading
-        const rolledModifiers = drawnCards.map(card => ({
-            id: card.id,
-            title: `${card.title} ${card.isReversed ? '(Reversed)' : '(Upright)'}`,
-            subtitle: card.readingName,
-            description: card.description,
-            effects: card.effects,
-            texture: card.texture,
-            isReversed: card.isReversed,
-            position: card.position
-        }));
+        const rolledModifiers = drawnCards.map(card => {
+            // Calculate reward bonus for this specific card based on position
+            let cardRewardBonus = 0;
+
+            if (card.effects) {
+                for (const effect of card.effects) {
+                    // Future position: Direct reward effects
+                    if (effect.target === 'rewards' && effect.stat === 'multiplier') {
+                        if (effect.operation === 'add') {
+                            cardRewardBonus += effect.value;
+                        } else if (effect.operation === 'multiply') {
+                            cardRewardBonus += (effect.value - 1);
+                        }
+                    }
+                }
+            }
+
+            // Position-based reward adjustments for non-reward effects
+            if (card.position === 'past') {
+                // Past cards buff the player - helpful = less reward, harmful = more reward
+                // Check if this is a beneficial or harmful effect
+                const isBeneficial = this.isPastCardBeneficial(card.effects);
+                if (cardRewardBonus === 0) {
+                    // No explicit reward modifier, calculate based on effect type
+                    cardRewardBonus = isBeneficial ? -0.10 : 0.15; // Buffs reduce rewards, debuffs increase
+                }
+            } else if (card.position === 'present') {
+                // Present cards modify the mission - challenges increase rewards
+                const isChallenge = this.isPresentCardChallenge(card.effects);
+                if (cardRewardBonus === 0) {
+                    // No explicit reward modifier, calculate based on challenge level
+                    cardRewardBonus = isChallenge ? 0.20 : -0.05; // Challenges increase rewards, easy modifiers decrease
+                }
+            }
+            // Future cards use their explicit reward modifiers (already calculated above)
+
+            // Accumulate total reward multiplier
+            totalRewardMultiplier += cardRewardBonus;
+
+            return {
+                id: card.id,
+                title: `${card.title} ${card.isReversed ? '(Reversed)' : '(Upright)'}`,
+                subtitle: card.readingName,
+                description: card.description,
+                effects: card.effects,
+                texture: card.texture,
+                isReversed: card.isReversed,
+                position: card.position,
+                rewardBonus: cardRewardBonus
+            };
+        });
 
         // Update scroll data with tarot reading
         scroll.itemData.modifiers = rolledModifiers;
         scroll.itemData.tarotReading = drawnCards;
         scroll.itemData.timesRolled = (scroll.itemData.timesRolled || 0) + 1;
 
-        // Base reward multiplier (effects may modify rewards via Future position effects)
-        scroll.itemData.rewardMultiplier = 1;
+        // Set the calculated reward multiplier
+        scroll.itemData.rewardMultiplier = totalRewardMultiplier;
 
         // Update scroll name to reflect the reading
         scroll.name = scroll.name.replace(/ \(.*\)$/, '');
@@ -939,15 +994,17 @@ class CampaignSystem extends GUTS.BaseSystem {
 
         this.deductCost(cost);
 
-        // Get available tarot cards excluding current ones
+        // Get available tarot cards from collected cards only, excluding current ones
         const tarotCards = this.collections.tarotCards;
         const currentCardIds = modifiers.map(m => m.id);
+        const collectedCardIds = this.getCollectedTarotCards();
 
-        const availableCards = Object.values(tarotCards)
-            .filter(c => !currentCardIds.includes(c.id));
+        const availableCards = collectedCardIds
+            .map(id => tarotCards[id])
+            .filter(c => c && !currentCardIds.includes(c.id));
 
         if (availableCards.length === 0) {
-            console.warn('[CampaignSystem] No alternative cards available');
+            console.warn('[CampaignSystem] No alternative collected cards available');
             return scroll.itemData;
         }
 
@@ -962,6 +1019,30 @@ class CampaignSystem extends GUTS.BaseSystem {
 
         const oldModifier = modifiers[cardIndex];
 
+        // Calculate reward bonus for the new card based on position
+        let cardRewardBonus = 0;
+        const cardEffects = reading.effects || [];
+
+        // First check for explicit reward modifiers
+        for (const effect of cardEffects) {
+            if (effect.target === 'rewards' && effect.stat === 'multiplier') {
+                if (effect.operation === 'add') {
+                    cardRewardBonus += effect.value;
+                } else if (effect.operation === 'multiply') {
+                    cardRewardBonus += (effect.value - 1);
+                }
+            }
+        }
+
+        // Position-based reward adjustments for non-reward effects
+        if (position === 'past' && cardRewardBonus === 0) {
+            const isBeneficial = this.isPastCardBeneficial(cardEffects);
+            cardRewardBonus = isBeneficial ? -0.10 : 0.15;
+        } else if (position === 'present' && cardRewardBonus === 0) {
+            const isChallenge = this.isPresentCardChallenge(cardEffects);
+            cardRewardBonus = isChallenge ? 0.20 : -0.05;
+        }
+
         // Update the tarot reading
         const newCardData = {
             id: newCard.id,
@@ -971,7 +1052,7 @@ class CampaignSystem extends GUTS.BaseSystem {
             isReversed: isReversed,
             readingName: reading.name,
             description: reading.description,
-            effects: reading.effects || [],
+            effects: cardEffects,
             position: position
         };
 
@@ -985,14 +1066,19 @@ class CampaignSystem extends GUTS.BaseSystem {
             title: `${newCard.title} ${isReversed ? '(Reversed)' : '(Upright)'}`,
             subtitle: reading.name,
             description: reading.description,
-            effects: reading.effects || [],
+            effects: cardEffects,
             texture: newCard.texture,
             isReversed: isReversed,
-            position: position
+            position: position,
+            rewardBonus: cardRewardBonus
         };
 
-        // Modifiers no longer have individual reward bonuses
-        scroll.itemData.rewardMultiplier = 1;
+        // Recalculate total reward multiplier from all modifiers
+        let totalRewardMultiplier = 1;
+        for (const mod of modifiers) {
+            totalRewardMultiplier += (mod.rewardBonus || 0);
+        }
+        scroll.itemData.rewardMultiplier = totalRewardMultiplier;
 
         this.game.call('saveCampaign');
 
@@ -1369,6 +1455,69 @@ class CampaignSystem extends GUTS.BaseSystem {
                 cost: this.getTarotCardPurchaseCost(cardId)
             }))
             .sort((a, b) => a.number - b.number);
+    }
+
+    // ===== TAROT CARD EFFECT ANALYSIS =====
+
+    /**
+     * Determine if a Past position card's effects are beneficial to the player
+     * Beneficial effects (buffs) reduce rewards, harmful effects (debuffs) increase rewards
+     * @param {Array} effects - Array of effect objects
+     * @returns {boolean} True if effects are beneficial
+     */
+    isPastCardBeneficial(effects) {
+        if (!effects || effects.length === 0) return true; // Default to beneficial
+
+        // Check each effect to determine if it helps or hinders the player
+        for (const effect of effects) {
+            // Negative values for player stats are harmful
+            if (effect.target === 'player' || effect.target === 'player_units') {
+                if (effect.operation === 'add' && effect.value < 0) return false;
+                if (effect.operation === 'multiply' && effect.value < 1) return false;
+                if (effect.operation === 'set' && effect.stat === 'noFlee') return true; // Can't flee is double-edged
+            }
+        }
+
+        return true; // Most past effects are beneficial buffs
+    }
+
+    /**
+     * Determine if a Present position card's effects make the mission harder
+     * Challenges increase rewards, easy modifiers decrease rewards
+     * @param {Array} effects - Array of effect objects
+     * @returns {boolean} True if effects make the mission harder
+     */
+    isPresentCardChallenge(effects) {
+        if (!effects || effects.length === 0) return false; // Default to neutral
+
+        // Keywords/stats that indicate challenge
+        const challengeStats = [
+            'extraPacks', 'extraEnemies', 'enemyDamage', 'enemyHealth',
+            'noHealing', 'noStealth', 'decoyEnemies', 'randomSpawns',
+            'reducedVision', 'fasterEnemies'
+        ];
+
+        // Keywords/stats that indicate easier mission
+        const easyStats = [
+            'noFogOfWar', 'revealEnemies', 'slowEnemies', 'weakerEnemies',
+            'fewerEnemies', 'noTimeLimit'
+        ];
+
+        for (const effect of effects) {
+            if (effect.target === 'mission' || effect.target === 'all_units' || effect.target === 'enemies') {
+                // Check if stat indicates challenge
+                if (challengeStats.some(s => effect.stat?.includes(s))) return true;
+                if (easyStats.some(s => effect.stat?.includes(s))) return false;
+
+                // Extra packs/enemies = harder
+                if (effect.stat === 'extraPacks' && effect.value > 0) return true;
+
+                // Accuracy reduction affects everyone - slight challenge
+                if (effect.stat === 'accuracy' && effect.value < 1) return true;
+            }
+        }
+
+        return true; // Default present cards to being challenges (they modify the mission)
     }
 
     onSceneUnload() {
