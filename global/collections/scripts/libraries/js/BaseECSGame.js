@@ -28,7 +28,9 @@ class BaseECSGame {
         this.entityAlive = new Uint8Array(this.MAX_ENTITIES);
         // Component bitmask per entity (up to 32 component types with single Uint32)
         // For more components, we use multiple Uint32s
-        this.entityComponentMask = new Uint32Array(this.MAX_ENTITIES * 2); // 64 component types max
+        // 256 component types max = 8 Uint32s per entity
+        this.MASK_UINT32_COUNT = 8;
+        this.entityComponentMask = new Uint32Array(this.MAX_ENTITIES * this.MASK_UINT32_COUNT);
 
         // Entity ID counter (no recycling - IDs grow monotonically to prevent reference bugs)
         this.nextEntityId = 1; // Start at 1, reserve 0 as "no entity"
@@ -137,27 +139,33 @@ class BaseECSGame {
 
     /**
      * Set component bit in entity's bitmask
+     * Supports up to 256 component types (8 Uint32s per entity)
      */
     _setComponentBit(entityId, componentTypeId) {
-        const maskIndex = entityId * 2 + (componentTypeId >= 32 ? 1 : 0);
+        const wordIndex = Math.floor(componentTypeId / 32);
+        const maskIndex = entityId * this.MASK_UINT32_COUNT + wordIndex;
         const bit = componentTypeId % 32;
         this.entityComponentMask[maskIndex] |= (1 << bit);
     }
 
     /**
      * Clear component bit in entity's bitmask
+     * Supports up to 256 component types (8 Uint32s per entity)
      */
     _clearComponentBit(entityId, componentTypeId) {
-        const maskIndex = entityId * 2 + (componentTypeId >= 32 ? 1 : 0);
+        const wordIndex = Math.floor(componentTypeId / 32);
+        const maskIndex = entityId * this.MASK_UINT32_COUNT + wordIndex;
         const bit = componentTypeId % 32;
         this.entityComponentMask[maskIndex] &= ~(1 << bit);
     }
 
     /**
      * Check if entity has component via bitmask
+     * Supports up to 256 component types (8 Uint32s per entity)
      */
     _hasComponentBit(entityId, componentTypeId) {
-        const maskIndex = entityId * 2 + (componentTypeId >= 32 ? 1 : 0);
+        const wordIndex = Math.floor(componentTypeId / 32);
+        const maskIndex = entityId * this.MASK_UINT32_COUNT + wordIndex;
         const bit = componentTypeId % 32;
         return (this.entityComponentMask[maskIndex] & (1 << bit)) !== 0;
     }
@@ -1024,11 +1032,12 @@ class BaseECSGame {
     /**
      * Switch to a different scene
      * @param {string} sceneName - Name of the scene to load
+     * @param {Object} [params] - Optional parameters to pass to the scene's systems via onSceneLoad
      * @returns {Promise<void>}
      */
-    async switchScene(sceneName) {
+    async switchScene(sceneName, params = null) {
         if (this.sceneManager) {
-            await this.sceneManager.switchScene(sceneName);
+            await this.sceneManager.switchScene(sceneName, params);
         }
     }
 
@@ -1047,31 +1056,7 @@ class BaseECSGame {
         return this.app.getCollections();
     }
 
-    async update(deltaTime) {
-        // Memory leak debug logging - logs cache sizes every 5 seconds
-        if (!this._memoryDebugLastLog) this._memoryDebugLastLog = 0;
-        if (this.currentTime - this._memoryDebugLastLog >= 5) {
-            this._memoryDebugLastLog = this.currentTime;
-            const stats = {
-                queryCache: this._queryCache?.size || 0,
-                proxyCache: this._proxyCache?.size || 0,
-                entityCount: this.entityCount || 0
-            };
-            // Collect stats from systems
-            for (const system of this.systems) {
-                if (system._entityPositionCache) stats.renderPosCache = system._entityPositionCache.size;
-                if (system._unitPositions) stats.fowUnitPos = system._unitPositions.size;
-                if (system._losCache) stats.losCache = system._losCache.size;
-                if (system.spawnedEntities) stats.spawned = system.spawnedEntities.size;
-                if (system.projectileTrails) stats.trails = system.projectileTrails.size;
-                if (system.healthBars) stats.healthBars = system.healthBars.size;
-                if (system.damageNumbers) stats.dmgNums = system.damageNumbers.length;
-                if (system.activeEffects) stats.effects = system.activeEffects.length;
-                if (system.entityBehaviorState) stats.behaviors = system.entityBehaviorState.size;
-                if (system._unitDataPool) stats.mvmtPool = system._unitDataPool.length;
-            }
-            console.log('[Memory]', Object.entries(stats).map(([k,v]) => `${k}: ${v}`).join(', '));
-        }
+    async update(deltaTime) { 
 
         if (!this.state.isPaused) {
             // Start performance frame tracking
@@ -1159,16 +1144,14 @@ class BaseECSGame {
 
     createEntity(setId) {
         const id = setId !== undefined && setId !== null ? setId : this.getEntityId();
-        // Log if overwriting existing entity - this is a bug!
-        if (this.entityAlive[id]) {
-            console.error(`[BaseECSGame] createEntity called for existing entity ${id}!`);
-            console.trace('createEntity called from:');
-        }
         // Mark entity as alive
         this.entityAlive[id] = 1;
         // Clear component bitmask
-        this.entityComponentMask[id * 2] = 0;
-        this.entityComponentMask[id * 2 + 1] = 0;
+        // Clear all mask words for this entity
+        const maskBase = id * this.MASK_UINT32_COUNT;
+        for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+            this.entityComponentMask[maskBase + w] = 0;
+        }
         this.entityCount++;
         // When using a specific ID, ensure nextEntityId is always higher
         // This is critical for getEntitiesWith() which iterates up to nextEntityId
@@ -1206,8 +1189,11 @@ class BaseECSGame {
 
         // Mark entity as dead (no ID recycling - IDs are never reused)
         this.entityAlive[entityId] = 0;
-        this.entityComponentMask[entityId * 2] = 0;
-        this.entityComponentMask[entityId * 2 + 1] = 0;
+        // Clear all mask words for this entity
+        const maskBase = entityId * this.MASK_UINT32_COUNT;
+        for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+            this.entityComponentMask[maskBase + w] = 0;
+        }
         this.entityCount--;
 
         // Invalidate query cache - entity was destroyed, cached query results are stale
@@ -1372,7 +1358,7 @@ class BaseECSGame {
      *   fullSync: boolean,  // true if this is a full state sync
      *   entityAlive: { entityId: 1, ... },  // sparse: only alive entities (or changed)
      *   entityDead: [entityId, ...],  // only in delta: entities that died since last sync
-     *   entityComponentMask: { entityId: [low, high], ... },  // sparse: only entities with components (or changed)
+     *   entityComponentMask: { entityId: [w0, w1, w2, w3, w4, w5, w6, w7], ... },  // sparse: 8 Uint32s for 256 component types
      *   numericArrays: { key: { entityId: value, ... } },  // sparse: only non-zero/non-null values (or changed)
      *   objectComponents: { componentType: { entityId: data } },
      *   nextEntityId: number
@@ -1415,18 +1401,29 @@ class BaseECSGame {
         }
 
         // Sparse entityComponentMask - only include entities with components
-        // Stored as [low, high] pairs for the two 32-bit parts
+        // Stored as array of 8 Uint32 values for 256 component types
         for (let i = 0; i < maxEntity; i++) {
-            const low = this.entityComponentMask[i * 2];
-            const high = this.entityComponentMask[i * 2 + 1];
-            if (low !== 0 || high !== 0) {
-                result.entityComponentMask[i] = [low, high];
+            const maskBase = i * this.MASK_UINT32_COUNT;
+            let hasAnyBit = false;
+            for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                if (this.entityComponentMask[maskBase + w] !== 0) {
+                    hasAnyBit = true;
+                    break;
+                }
+            }
+            if (hasAnyBit) {
+                const maskArray = [];
+                for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                    maskArray.push(this.entityComponentMask[maskBase + w]);
+                }
+                result.entityComponentMask[i] = maskArray;
             }
         }
 
         // Include numeric arrays in sparse format (only non-zero, non-null values)
         // ALSO include zeros that changed FROM non-zero (to ensure clients reset them)
         // Skip client-only components
+        // IMPORTANT: Only include entities that are alive AND have the component bit set
         const lastState = this._lastSyncedState;
         for (const [key, arr] of this._numericArrays) {
             // key format is "componentType.fieldPath" - extract component type
@@ -1435,10 +1432,16 @@ class BaseECSGame {
                 continue;  // Skip client-only components
             }
 
+            // Get component type ID for bit checking
+            const typeId = this._componentTypeId.get(componentType);
+
             const lastArr = lastState?.numericArrays?.get(key);
             const lastMaxEntity = lastState?.nextEntityId || 0;
             const sparse = {};
             for (let i = 0; i < maxEntity; i++) {
+                // Skip if entity doesn't have this component (check bitmask)
+                if (typeId !== undefined && !this._hasComponentBit(i, typeId)) continue;
+
                 const val = arr[i];
                 // Only check lastArr within its bounds
                 const lastVal = (lastArr && i < lastMaxEntity) ? lastArr[i] : 0;
@@ -1481,7 +1484,7 @@ class BaseECSGame {
         const snapshot = {
             nextEntityId: this.nextEntityId,
             entityAlive: new Uint8Array(maxEntity),
-            entityComponentMask: new Uint32Array(maxEntity * 2),
+            entityComponentMask: new Uint32Array(maxEntity * this.MASK_UINT32_COUNT),
             numericArrays: new Map(),
             objectComponents: new Map()
         };
@@ -1490,7 +1493,7 @@ class BaseECSGame {
         snapshot.entityAlive.set(this.entityAlive.subarray(0, maxEntity));
 
         // Copy entityComponentMask
-        snapshot.entityComponentMask.set(this.entityComponentMask.subarray(0, maxEntity * 2));
+        snapshot.entityComponentMask.set(this.entityComponentMask.subarray(0, maxEntity * this.MASK_UINT32_COUNT));
 
         // Copy numeric arrays
         for (const [key, arr] of this._numericArrays) {
@@ -1541,29 +1544,48 @@ class BaseECSGame {
             }
         }
 
-        // Check entityComponentMask changes
+        // Check entityComponentMask changes (8 Uint32s per entity for 256 component types)
         for (let i = 0; i < maxEntity; i++) {
-            const lowCurrent = this.entityComponentMask[i * 2];
-            const highCurrent = this.entityComponentMask[i * 2 + 1];
-            const lowPrev = i < lastMaxEntity ? lastState.entityComponentMask[i * 2] : 0;
-            const highPrev = i < lastMaxEntity ? lastState.entityComponentMask[i * 2 + 1] : 0;
+            const maskBase = i * this.MASK_UINT32_COUNT;
+            const lastMaskBase = i * this.MASK_UINT32_COUNT;
+            let hasChanged = false;
 
-            if (lowCurrent !== lowPrev || highCurrent !== highPrev) {
-                result.entityComponentMask[i] = [lowCurrent, highCurrent];
+            for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                const current = this.entityComponentMask[maskBase + w];
+                const prev = (i < lastMaxEntity) ? lastState.entityComponentMask[lastMaskBase + w] : 0;
+                if (current !== prev) {
+                    hasChanged = true;
+                    break;
+                }
+            }
+
+            if (hasChanged) {
+                const maskArray = [];
+                for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                    maskArray.push(this.entityComponentMask[maskBase + w]);
+                }
+                result.entityComponentMask[i] = maskArray;
             }
         }
 
         // Check numeric array changes - skip client-only components
+        // IMPORTANT: Only include entities that are alive AND have the component bit set
         for (const [key, arr] of this._numericArrays) {
             const componentType = key.split('.')[0];
             if (this._clientOnlyComponents.has(componentType)) {
                 continue;
             }
 
+            // Get component type ID for bit checking
+            const typeId = this._componentTypeId.get(componentType);
+
             const lastArr = lastState.numericArrays.get(key);
             const sparse = {};
 
             for (let i = 0; i < maxEntity; i++) {
+                // Skip if entity doesn't have this component (check bitmask)
+                if (typeId !== undefined && !this._hasComponentBit(i, typeId)) continue;
+
                 const current = arr[i];
                 const previous = (lastArr && i < lastMaxEntity) ? lastArr[i] : 0;
 
@@ -1674,8 +1696,10 @@ class BaseECSGame {
             if (!this.entityAlive[entityId]) continue;
 
             addToHash(entityId);
-            addToHash(this.entityComponentMask[entityId * 2]);
-            addToHash(this.entityComponentMask[entityId * 2 + 1]);
+            const maskBase = entityId * this.MASK_UINT32_COUNT;
+            for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                addToHash(this.entityComponentMask[maskBase + w]);
+            }
         }
 
         // Hash all numeric component data (deterministic order via sorted keys)
@@ -1759,35 +1783,36 @@ class BaseECSGame {
             }
         }
 
-        // Build bitmask for client-only components to preserve
-        let clientOnlyMaskLow = 0;
-        let clientOnlyMaskHigh = 0;
+        // Build bitmask for client-only components to preserve (8 Uint32s for 256 component types)
+        const clientOnlyMask = new Uint32Array(this.MASK_UINT32_COUNT);
         for (const componentType of this._clientOnlyComponents) {
             const typeId = this._componentTypeId.get(componentType);
             if (typeId !== undefined) {
-                if (typeId < 32) {
-                    clientOnlyMaskLow |= (1 << typeId);
-                } else {
-                    clientOnlyMaskHigh |= (1 << (typeId - 32));
-                }
+                const wordIndex = Math.floor(typeId / 32);
+                const bit = typeId % 32;
+                clientOnlyMask[wordIndex] |= (1 << bit);
             }
         }
 
         // Apply component masks from sparse format, preserving client-only component bits
         for (let i = 0; i < maxEntity; i++) {
-            // Preserve client-only bits from current mask
-            const preservedLow = this.entityComponentMask[i * 2] & clientOnlyMaskLow;
-            const preservedHigh = this.entityComponentMask[i * 2 + 1] & clientOnlyMaskHigh;
-            // Clear the mask
-            this.entityComponentMask[i * 2] = preservedLow;
-            this.entityComponentMask[i * 2 + 1] = preservedHigh;
+            const maskBase = i * this.MASK_UINT32_COUNT;
+            // Preserve client-only bits from current mask, clear the rest
+            for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                const preserved = this.entityComponentMask[maskBase + w] & clientOnlyMask[w];
+                this.entityComponentMask[maskBase + w] = preserved;
+            }
         }
         if (data.entityComponentMask) {
             for (const [entityIdStr, mask] of Object.entries(data.entityComponentMask)) {
                 const entityId = parseInt(entityIdStr, 10);
+                const maskBase = entityId * this.MASK_UINT32_COUNT;
                 // Merge server mask with preserved client-only bits
-                this.entityComponentMask[entityId * 2] |= mask[0];
-                this.entityComponentMask[entityId * 2 + 1] |= mask[1];
+                // Handle both old format (2 elements) and new format (8 elements)
+                const maskLen = Math.min(mask.length, this.MASK_UINT32_COUNT);
+                for (let w = 0; w < maskLen; w++) {
+                    this.entityComponentMask[maskBase + w] |= mask[w];
+                }
             }
         }
 
@@ -1839,9 +1864,11 @@ class BaseECSGame {
         if (data.entityDead) {
             for (const entityId of data.entityDead) {
                 this.entityAlive[entityId] = 0;
-                // Clear component mask for dead entities
-                this.entityComponentMask[entityId * 2] = 0;
-                this.entityComponentMask[entityId * 2 + 1] = 0;
+                // Clear all mask words for dead entity
+                const maskBase = entityId * this.MASK_UINT32_COUNT;
+                for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                    this.entityComponentMask[maskBase + w] = 0;
+                }
             }
         }
 
@@ -1854,27 +1881,27 @@ class BaseECSGame {
 
         // Apply component mask changes, preserving client-only component bits
         if (data.entityComponentMask) {
-            // Build bitmask for client-only components to preserve
-            let clientOnlyMaskLow = 0;
-            let clientOnlyMaskHigh = 0;
+            // Build bitmask for client-only components to preserve (8 Uint32s for 256 component types)
+            const clientOnlyMask = new Uint32Array(this.MASK_UINT32_COUNT);
             for (const componentType of this._clientOnlyComponents) {
                 const typeId = this._componentTypeId.get(componentType);
                 if (typeId !== undefined) {
-                    if (typeId < 32) {
-                        clientOnlyMaskLow |= (1 << typeId);
-                    } else {
-                        clientOnlyMaskHigh |= (1 << (typeId - 32));
-                    }
+                    const wordIndex = Math.floor(typeId / 32);
+                    const bit = typeId % 32;
+                    clientOnlyMask[wordIndex] |= (1 << bit);
                 }
             }
 
             for (const [entityIdStr, mask] of Object.entries(data.entityComponentMask)) {
                 const entityId = parseInt(entityIdStr, 10);
-                // Preserve client-only bits, apply server bits
-                const preservedLow = this.entityComponentMask[entityId * 2] & clientOnlyMaskLow;
-                const preservedHigh = this.entityComponentMask[entityId * 2 + 1] & clientOnlyMaskHigh;
-                this.entityComponentMask[entityId * 2] = mask[0] | preservedLow;
-                this.entityComponentMask[entityId * 2 + 1] = mask[1] | preservedHigh;
+                const maskBase = entityId * this.MASK_UINT32_COUNT;
+                // Handle both old format (2 elements) and new format (8 elements)
+                const maskLen = Math.min(mask.length, this.MASK_UINT32_COUNT);
+                for (let w = 0; w < maskLen; w++) {
+                    // Preserve client-only bits, apply server bits
+                    const preserved = this.entityComponentMask[maskBase + w] & clientOnlyMask[w];
+                    this.entityComponentMask[maskBase + w] = mask[w] | preserved;
+                }
             }
         }
 
@@ -1999,20 +2026,17 @@ class BaseECSGame {
         }
         result.length = 0;  // Clear without deallocating (keeps underlying buffer)
 
-        // Build query bitmask from component types
-        let queryMask0 = 0;
-        let queryMask1 = 0;
+        // Build query bitmask from component types (8 Uint32s for 256 component types)
+        const queryMask = new Uint32Array(this.MASK_UINT32_COUNT);
         for (const componentType of componentTypes) {
             const typeId = this._componentTypeId.get(componentType);
             if (typeId === undefined) {
                 // Component type doesn't exist yet, no entities can have it
                 return result;  // Return empty reusable array
             }
-            if (typeId < 32) {
-                queryMask0 |= (1 << typeId);
-            } else {
-                queryMask1 |= (1 << (typeId - 32));
-            }
+            const wordIndex = Math.floor(typeId / 32);
+            const bit = typeId % 32;
+            queryMask[wordIndex] |= (1 << bit);
         }
 
         // Scan all entities using bitmask matching
@@ -2020,17 +2044,22 @@ class BaseECSGame {
         const alive = this.entityAlive;
         const masks = this.entityComponentMask;
         const maxId = this.nextEntityId;
+        const maskCount = this.MASK_UINT32_COUNT;
 
         for (let entityId = 1; entityId < maxId; entityId++) {
             // Skip dead entities
             if (!alive[entityId]) continue;
 
             // Check if entity has all required components via bitmask
-            const mask0 = masks[entityId * 2];
-            const mask1 = masks[entityId * 2 + 1];
-
-            if ((mask0 & queryMask0) === queryMask0 &&
-                (mask1 & queryMask1) === queryMask1) {
+            const maskBase = entityId * maskCount;
+            let match = true;
+            for (let w = 0; w < maskCount; w++) {
+                if ((masks[maskBase + w] & queryMask[w]) !== queryMask[w]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
                 result.push(entityId);
             }
         }
@@ -2097,8 +2126,9 @@ class BaseECSGame {
         const alive = this.entityAlive;
         const masks = this.entityComponentMask;
         const maxId = this.nextEntityId;
-        const maskIndex = typeId < 32 ? 0 : 1;
-        const bit = 1 << (typeId < 32 ? typeId : typeId - 32);
+        const wordIndex = Math.floor(typeId / 32);
+        const bit = 1 << (typeId % 32);
+        const maskCount = this.MASK_UINT32_COUNT;
 
         let start = 0;
         let end = 0;
@@ -2106,7 +2136,7 @@ class BaseECSGame {
 
         // Find first and last entity with this component
         for (let entityId = 1; entityId < maxId; entityId++) {
-            if (alive[entityId] && (masks[entityId * 2 + maskIndex] & bit)) {
+            if (alive[entityId] && (masks[entityId * maskCount + wordIndex] & bit)) {
                 if (start === 0) start = entityId;
                 end = entityId + 1;
                 count++;
@@ -2134,28 +2164,32 @@ class BaseECSGame {
     forEachEntity(componentTypes, callback) {
         const types = Array.isArray(componentTypes) ? componentTypes : [componentTypes];
 
-        // Build query bitmask
-        let queryMask0 = 0;
-        let queryMask1 = 0;
+        // Build query bitmask (8 Uint32s for 256 component types)
+        const queryMask = new Uint32Array(this.MASK_UINT32_COUNT);
         for (const componentType of types) {
             const typeId = this._componentTypeId.get(componentType);
             if (typeId === undefined) return; // No entities can match
-            if (typeId < 32) {
-                queryMask0 |= (1 << typeId);
-            } else {
-                queryMask1 |= (1 << (typeId - 32));
-            }
+            const wordIndex = Math.floor(typeId / 32);
+            const bit = typeId % 32;
+            queryMask[wordIndex] |= (1 << bit);
         }
 
         const alive = this.entityAlive;
         const masks = this.entityComponentMask;
         const maxId = this.nextEntityId;
+        const maskCount = this.MASK_UINT32_COUNT;
 
         for (let entityId = 1; entityId < maxId; entityId++) {
             if (!alive[entityId]) continue;
-            const mask0 = masks[entityId * 2];
-            const mask1 = masks[entityId * 2 + 1];
-            if ((mask0 & queryMask0) === queryMask0 && (mask1 & queryMask1) === queryMask1) {
+            const maskBase = entityId * maskCount;
+            let match = true;
+            for (let w = 0; w < maskCount; w++) {
+                if ((masks[maskBase + w] & queryMask[w]) !== queryMask[w]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
                 callback(entityId);
             }
         }
@@ -2219,22 +2253,18 @@ class BaseECSGame {
         if (!this.entityAlive[entityId]) return [];
 
         const result = [];
-        const mask0 = this.entityComponentMask[entityId * 2];
-        const mask1 = this.entityComponentMask[entityId * 2 + 1];
+        const maskBase = entityId * this.MASK_UINT32_COUNT;
 
-        // Check first 32 component types
-        for (let bit = 0; bit < 32; bit++) {
-            if (mask0 & (1 << bit)) {
-                const name = this._componentTypeNames[bit];
-                if (name) result.push(name);
-            }
-        }
-
-        // Check next 32 component types
-        for (let bit = 0; bit < 32; bit++) {
-            if (mask1 & (1 << bit)) {
-                const name = this._componentTypeNames[bit + 32];
-                if (name) result.push(name);
+        // Check all 256 possible component types (8 words x 32 bits)
+        for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+            const mask = this.entityComponentMask[maskBase + w];
+            if (mask === 0) continue; // Skip empty words
+            for (let bit = 0; bit < 32; bit++) {
+                if (mask & (1 << bit)) {
+                    const typeId = w * 32 + bit;
+                    const name = this._componentTypeNames[typeId];
+                    if (name) result.push(name);
+                }
             }
         }
 
@@ -2248,29 +2278,32 @@ class BaseECSGame {
      * @param {function} callback - Called with each matching entityId
      */
     forEachEntityWith(componentTypes, callback) {
-        // Build query bitmask
-        let queryMask0 = 0;
-        let queryMask1 = 0;
+        // Build query bitmask (8 Uint32s for 256 component types)
+        const queryMask = new Uint32Array(this.MASK_UINT32_COUNT);
         for (const componentType of componentTypes) {
             const typeId = this._componentTypeId.get(componentType);
             if (typeId === undefined) return; // No entities can match
-            if (typeId < 32) {
-                queryMask0 |= (1 << typeId);
-            } else {
-                queryMask1 |= (1 << (typeId - 32));
-            }
+            const wordIndex = Math.floor(typeId / 32);
+            const bit = typeId % 32;
+            queryMask[wordIndex] |= (1 << bit);
         }
 
         const alive = this.entityAlive;
         const masks = this.entityComponentMask;
         const maxId = this.nextEntityId;
+        const maskCount = this.MASK_UINT32_COUNT;
 
         for (let entityId = 1; entityId < maxId; entityId++) {
             if (!alive[entityId]) continue;
-            const mask0 = masks[entityId * 2];
-            const mask1 = masks[entityId * 2 + 1];
-            if ((mask0 & queryMask0) === queryMask0 &&
-                (mask1 & queryMask1) === queryMask1) {
+            const maskBase = entityId * maskCount;
+            let match = true;
+            for (let w = 0; w < maskCount; w++) {
+                if ((masks[maskBase + w] & queryMask[w]) !== queryMask[w]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
                 callback(entityId);
             }
         }
