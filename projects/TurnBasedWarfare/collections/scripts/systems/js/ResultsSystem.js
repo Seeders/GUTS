@@ -1,17 +1,34 @@
 class ResultsSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
-        this.game.resultsSystem = this;                
+        this.game.resultsSystem = this;
     }
 
     showVictory(stats) {
         this.populateStats('victoryStats', stats, 'victory');
+        this.updateButtonForCampaign('victory_MainMenuBtn');
         this.game.call('showVictoryScreen');
     }
 
     showDefeat(stats) {
         this.populateStats('defeatStats', stats, 'defeat');
+        this.updateButtonForCampaign('defeat_MainMenuBtn');
         this.game.call('showDefeatScreen');
+    }
+
+    /**
+     * Update the results screen button text for campaign missions
+     */
+    updateButtonForCampaign(buttonId) {
+        const btn = document.getElementById(buttonId);
+        if (!btn) return;
+
+        const isCampaignMission = this.game.state.skirmishConfig?.isCampaignMission;
+        if (isCampaignMission) {
+            btn.textContent = 'RETURN TO CAMPAIGN';
+        } else {
+            btn.textContent = 'RETURN TO MAIN MENU';
+        }
     }
 
     populateStats(containerId, stats, type) {

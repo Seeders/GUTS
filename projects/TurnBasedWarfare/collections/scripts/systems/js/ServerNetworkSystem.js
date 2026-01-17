@@ -35,7 +35,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         super(game);
         this.game.serverNetworkSystem = this;
         this.placementReadyStates = new Map();
-        this.numPlayers = 2;
         // Queue networkUnitData per player for battle start sync
         // Map<playerId, Array<networkUnitData>>
         this.pendingNetworkUnitData = new Map();
@@ -855,8 +854,12 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
     // ==================== HELPER METHODS ====================
 
     areAllPlayersReady() {
+        // Get actual player count from ECS player entities
+        const playerEntities = this.game.call('getPlayerEntities') || [];
+        const numPlayers = playerEntities.length;
+
         const states = [...this.placementReadyStates.values()];
-        return states.length === this.numPlayers && states.every(ready => ready === true);
+        return states.length === numPlayers && states.every(ready => ready === true);
     }
 
     getStartingStateResponse() {

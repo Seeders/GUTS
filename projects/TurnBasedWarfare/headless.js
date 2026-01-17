@@ -21,7 +21,7 @@
  * Programmatic usage:
  *   import { createHeadlessRunner } from './headless.js';
  *   const { runner, engine } = await createHeadlessRunner();
- *   await runner.setup({ level: 'level_1', seed: 12345, leftBuildOrder: 'basic', rightBuildOrder: 'basic' });
+ *   await runner.setup({ level: 'forest', seed: 12345, leftBuildOrder: 'basic', rightBuildOrder: 'basic' });
  *   const results = await runner.run();
  */
 import path from 'path';
@@ -153,7 +153,7 @@ function parseArgs() {
         simulation: null,
         simulations: [],  // For batch mode
         batch: false,     // Run all simulations
-        level: 'level_1',
+        level: 'forest',
         seed: Date.now(),
         startingGold: 100,
         leftBuildOrder: 'basic',
@@ -283,7 +283,7 @@ Options:
   --simulation, --sim <id> Run a predefined simulation from collections/data/simulations/
   --batch, -b              Run all simulations in batch mode
   --simulations <ids>      Run specific simulations (comma-separated list)
-  --level, -l <name>       Level to simulate (default: level_1)
+  --level, -l <name>       Level to simulate (default: forest)
   --seed, -s <number>      Random seed for deterministic simulation
   --gold, -g <number>      Starting gold for each team (default: 100)
   --left-build <id>        Build order for left team (default: basic)

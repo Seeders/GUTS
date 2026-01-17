@@ -20,7 +20,7 @@
             "shapes": [
               {
                 "id": 0,
-                "animation": "idle"
+                "animation": "idle_short"
               }
             ]
           }

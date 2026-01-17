@@ -3,7 +3,7 @@
   "description": "Acolyte (intel/dex healer) vs Barbarian (pure strength melee). Support vs raw power.",
   "seed": 42,
   "startingGold": 500,
-  "level": "level_1",
+  "level": "forest",
   "buildOrders": ["acolyte", "barbarian"],
   "maxRounds": 10,
   "endOnFirstDeath": false

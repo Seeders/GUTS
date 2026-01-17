@@ -1,0 +1,21 @@
+{
+  "title": "Fireball Trail",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "fireball",
+    "projectile",
+    "trail"
+  ],
+  "layers": [
+    {
+      "effect": "fire_trail",
+      "delay": 0
+    },
+    {
+      "effect": "smoke_trail",
+      "delay": 0,
+      "countMultiplier": 0.5
+    }
+  ]
+}

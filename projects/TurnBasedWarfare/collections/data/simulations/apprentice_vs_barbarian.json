@@ -3,7 +3,7 @@
   "description": "Apprentice (intelligence caster with fireball) vs Barbarian (pure strength melee). Tests magic vs melee.",
   "seed": 42,
   "startingGold": 500,
-  "level": "level_1",
+  "level": "forest",
   "buildOrders": ["apprentice", "barbarian"],
   "maxRounds": 10,
   "endOnFirstDeath": false

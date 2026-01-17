@@ -25,6 +25,21 @@ class GameModeSystem extends GUTS.BaseSystem {
 
     initializeSinglePlayerModes() {
         return {
+            campaign: {
+                id: 'campaign',
+                title: 'Campaign',
+                icon: '🗺️',
+                interfaceId: 'campaignSelect',
+                description: 'Conquer the Atlas and build your legend',
+                difficulty: 'Progressive',
+                difficultyClass: 'campaign',
+                isMultiplayer: false,
+                maxPlayers: 1,
+                startingGold: 100,
+                onStart: (mode) => {
+                    this.game.call('showCampaignSelect');
+                }
+            },
             skirmish: {
                 id: 'skirmish',
                 title: 'Skirmish',

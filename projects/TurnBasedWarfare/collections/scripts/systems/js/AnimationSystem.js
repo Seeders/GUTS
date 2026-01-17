@@ -488,8 +488,8 @@ class AnimationSystem extends GUTS.BaseSystem {
         const transform = this.game.getComponent(entityId, 'transform');
         if (!transform?.position || !transform?.rotation) return;
 
-        // Get camera via registered function (returns live reference from worldRenderer)
-        const cam = this.game.call('getCamera') || this.game.camera;
+        // Get camera via service
+        const cam = this.game.call('getCamera');
         if (!cam) return;
 
         const rotationY = transform.rotation.y;
@@ -579,9 +579,9 @@ class AnimationSystem extends GUTS.BaseSystem {
             const verticalAngle = Math.atan2(dy, horizontalDist);
             const verticalDegrees = verticalAngle * (180 / Math.PI);
 
-            // Threshold: ~20 degrees - above uses isometric, below uses ground-level
+            // Threshold: ~30 degrees - above uses isometric, below uses ground-level
             // 0 = isometric (high camera), 1 = ground-level (low camera)
-            const newCameraAngle = verticalDegrees > 20 ? 0 : 1;
+            const newCameraAngle = verticalDegrees > 35 ? 0 : 1;
 
             // Check if camera angle state changed
             if (animState.spriteCameraAngle !== newCameraAngle) {

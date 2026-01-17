@@ -1,0 +1,305 @@
+<!-- Campaign Select Screen -->
+<div id="campaignSelect" class="screen">
+    <div class="campaign-wrapper">
+        <div class="campaign-header">
+            <button id="campaignBackBtn" class="topbar-btn retreat-btn">Back to Menu</button>
+            <h1 class="campaign-title">CAMPAIGN</h1>
+            <div class="topbar-spacer"></div>
+        </div>
+
+        <div class="campaign-select-content">
+            <div class="campaign-select-section">
+                <h2>Your Campaigns</h2>
+                <div id="campaignList" class="campaign-list">
+                    <!-- Campaign cards populated dynamically -->
+                </div>
+            </div>
+
+            <div class="campaign-actions">
+                <button id="newCampaignBtn" class="btn btn-primary">NEW CAMPAIGN</button>
+                <button id="importCampaignBtn" class="btn btn-secondary">Import</button>
+                <input type="file" id="importCampaignFile" accept=".json" style="display: none;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Campaign Dialog -->
+<div id="newCampaignDialog" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h2>Create New Campaign</h2>
+        <div class="form-group">
+            <label for="commanderNameInput">Commander Name:</label>
+            <input type="text" id="commanderNameInput" placeholder="Enter your name" maxlength="20" value="Commander">
+        </div>
+        <div class="modal-actions">
+            <button id="createCampaignBtn" class="btn btn-primary">Begin Journey</button>
+            <button id="cancelNewCampaignBtn" class="btn btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Campaign Home Base Screen -->
+<div id="campaignHomeBase" class="screen">
+    <div class="home-base-wrapper">
+        <!-- Header with commander info and currencies -->
+        <div class="home-base-header">
+            <div class="commander-info">
+                <span class="commander-name" id="homeBaseCommanderName">Commander</span>
+                <span class="campaign-stats" id="homeBaseCampaignStats">Missions: 0 | Tier: 1</span>
+            </div>
+            <div class="currency-display">
+                <div class="currency valor">
+                    <span class="currency-icon">⚔️</span>
+                    <span class="currency-amount" id="valorAmount">0</span>
+                    <span class="currency-label">Valor</span>
+                </div>
+                <div class="currency glory">
+                    <span class="currency-icon">🏆</span>
+                    <span class="currency-amount" id="gloryAmount">0</span>
+                    <span class="currency-label">Glory</span>
+                </div>
+                <div class="currency essence">
+                    <span class="currency-icon">✨</span>
+                    <span class="currency-amount" id="essenceAmount">0</span>
+                    <span class="currency-label">Essence</span>
+                </div>
+            </div>
+            <div class="home-base-controls">
+                <button id="homeBaseSaveBtn" class="btn btn-small">Save</button>
+                <button id="homeBaseExitBtn" class="btn btn-small btn-secondary">Exit Campaign</button>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="home-base-tabs">
+            <button class="tab-btn active" data-tab="atlas">Atlas</button>
+            <button class="tab-btn" data-tab="commander">Commander</button>
+            <button class="tab-btn" data-tab="oracle">Oracle</button>
+            <button class="tab-btn" data-tab="upgrades">Upgrades</button>
+            <button class="tab-btn" data-tab="unlocks">Unlocks</button>
+            <button class="tab-btn" data-tab="inventory">Inventory</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="home-base-content">
+            <!-- Atlas Tab -->
+            <div id="atlasTab" class="tab-content active">
+                <div class="atlas-container">
+                    <canvas id="atlasCanvas"></canvas>
+                </div>
+                <div class="atlas-sidebar">
+                    <div id="nodeInfoPanel" class="node-info-panel">
+                        <h3 id="selectedNodeTitle">Select a Node</h3>
+                        <p id="selectedNodeDesc">Click on a node in the atlas to view details.</p>
+                        <div id="nodeRewards" class="node-rewards" style="display: none;">
+                            <h4>Rewards:</h4>
+                            <div id="nodeRewardsList"></div>
+                        </div>
+                        <div id="nodeModifiers" class="node-modifiers" style="display: none;">
+                            <h4>Active Modifiers:</h4>
+                            <div id="nodeModifiersList"></div>
+                        </div>
+                        <button id="startMissionBtn" class="btn btn-primary" style="display: none;">START MISSION</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commander Tab -->
+            <div id="commanderTab" class="tab-content">
+                <div class="commander-container">
+                    <div class="commander-main">
+                        <div class="commander-header">
+                            <div class="commander-title">The War Room</div>
+                            <p class="commander-subtitle">Select quests and upgrade your commander rank</p>
+                        </div>
+
+                        <!-- Commander Upgrade Section -->
+                        <div class="info-section commander-upgrade-section">
+                            <h3>Commander Rank</h3>
+                            <div id="commanderUpgradeSection" class="commander-upgrade-content">
+                                <!-- Commander level and upgrade button displayed here -->
+                            </div>
+                        </div>
+
+                        <!-- Quest Selection Section -->
+                        <div class="info-section quest-section">
+                            <h3>Available Quests</h3>
+                            <div id="questSelectionSection" class="quest-selection-content">
+                                <!-- Quest selection or current quest displayed here -->
+                            </div>
+                        </div>
+
+                        <div class="commander-info-panel">
+                            <div class="info-section">
+                                <h3>Campaign Status</h3>
+                                <div id="campaignStatusInfo" class="status-info">
+                                    <!-- Campaign stats displayed here -->
+                                </div>
+                            </div>
+                            <div class="info-section">
+                                <h3>How Quests Work</h3>
+                                <ul class="mission-guide">
+                                    <li>Choose a quest length: Short, Medium, or Long</li>
+                                    <li>Longer quests have more nodes and greater total rewards</li>
+                                    <li>Complete nodes to progress through the quest</li>
+                                    <li>Defeat the boss to complete the quest</li>
+                                    <li>Upgrade your Commander rank to unlock higher tier quests</li>
+                                    <li>Boss battles reward Essence for upgrades</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="commander-sidebar">
+                        <div class="scroll-inventory-section">
+                            <h3>Your Prophecy Scrolls</h3>
+                            <div id="commanderScrollInventory" class="scroll-inventory-list">
+                                <!-- Player's scrolls displayed here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Oracle Tab -->
+            <div id="oracleTab" class="tab-content">
+                <div class="oracle-container">
+                    <div class="oracle-main">
+                        <div class="oracle-header">
+                            <div class="oracle-title">The Oracle's Chamber</div>
+                            <p class="oracle-subtitle">Reveal prophecies on blank scrolls, then apply them to missions</p>
+                        </div>
+                        <div class="oracle-instructions">
+                            <ol>
+                                <li>Select a blank scroll from your inventory</li>
+                                <li>Pay Valor to reveal the prophecy's modifiers</li>
+                                <li>Reroll if desired, or seal the prophecy</li>
+                                <li>Apply sealed prophecies to missions from the Atlas</li>
+                            </ol>
+                        </div>
+                        <div class="oracle-altar">
+                            <div id="oracleScrollSlot" class="oracle-scroll-slot empty">
+                                <span class="slot-hint">Place a scroll here</span>
+                            </div>
+                            <div id="prophecyDisplay" class="prophecy-display" style="display: none;">
+                                <h4>The Prophecy</h4>
+                                <div id="prophecyModifiers" class="prophecy-modifiers">
+                                    <!-- Modifiers displayed here -->
+                                </div>
+                                <div class="prophecy-reward">
+                                    Reward Multiplier: <span id="prophecyRewardMultiplier">1.00x</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="oracleActions" class="oracle-actions" style="display: none;">
+                            <button id="readProphecyBtn" class="btn btn-oracle">
+                                Read Prophecy (<span id="prophecyCost">0</span> Valor)
+                            </button>
+                            <button id="rerollProphecyBtn" class="btn btn-oracle-secondary" style="display: none;">
+                                Reroll Prophecy (<span id="rerollCost">0</span> Valor)
+                            </button>
+                            <button id="sealProphecyBtn" class="btn btn-primary" style="display: none;">Seal Prophecy</button>
+                            <button id="removeScrollBtn" class="btn btn-secondary">Remove Scroll</button>
+                        </div>
+
+                        <!-- Oracle Upgrade Section -->
+                        <div id="oracleUpgradeSection" class="oracle-upgrade-section">
+                            <!-- Oracle specialization tree populated dynamically -->
+                        </div>
+
+                        <!-- Tarot Collection Section -->
+                        <div id="tarotCollectionSection" class="tarot-collection-section">
+                            <!-- Tarot card collection grid populated dynamically -->
+                        </div>
+                    </div>
+                    <div class="oracle-scrolls-panel">
+                        <h3>Your Scrolls</h3>
+                        <div id="oracleScrollsList" class="oracle-scrolls-list">
+                            <!-- Scrolls from inventory listed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upgrades Tab -->
+            <div id="upgradesTab" class="tab-content">
+                <div class="upgrades-container">
+                    <div class="upgrade-category" id="economyUpgrades">
+                        <h3>Economy</h3>
+                        <div class="upgrade-list"></div>
+                    </div>
+                    <div class="upgrade-category" id="militaryUpgrades">
+                        <h3>Military</h3>
+                        <div class="upgrade-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unlocks Tab -->
+            <div id="unlocksTab" class="tab-content">
+                <div class="unlocks-container">
+                    <div class="unlock-filter">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="unit">Units</button>
+                        <button class="filter-btn" data-filter="building">Buildings</button>
+                    </div>
+                    <div id="unlocksList" class="unlocks-list">
+                        <!-- Unlock cards populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Tab -->
+            <div id="inventoryTab" class="tab-content">
+                <div class="inventory-container">
+                    <div class="inventory-header">
+                        <span>Inventory Slots: <span id="inventoryUsed">0</span>/<span id="inventoryMax">20</span></span>
+                    </div>
+                    <div id="inventoryGrid" class="inventory-grid">
+                        <!-- Inventory slots populated dynamically -->
+                    </div>
+                </div>
+                <div class="inventory-sidebar">
+                    <div id="itemInfoPanel" class="item-info-panel">
+                        <h3 id="selectedItemTitle">Select an Item</h3>
+                        <p id="selectedItemDesc">Click on an item to view details.</p>
+                        <div id="itemActions" style="display: none;">
+                            <button id="useItemBtn" class="btn btn-primary">Use</button>
+                            <button id="discardItemBtn" class="btn btn-secondary">Discard</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mission Results Screen -->
+<div id="missionResults" class="screen">
+    <div class="results-wrapper">
+        <h1 id="missionResultTitle" class="result-title">VICTORY!</h1>
+        <div class="results-content">
+            <div class="rewards-section">
+                <h2>Rewards Earned</h2>
+                <div id="rewardsList" class="rewards-list">
+                    <!-- Rewards populated dynamically -->
+                </div>
+            </div>
+            <div id="itemsCollectedSection" class="items-section" style="display: none;">
+                <h2>Items Collected</h2>
+                <div id="itemsCollectedList" class="items-collected-list">
+                    <!-- Items populated dynamically -->
+                </div>
+            </div>
+            <div class="stats-section">
+                <h2>Battle Statistics</h2>
+                <div id="battleStatsList" class="stats-list">
+                    <!-- Stats populated dynamically -->
+                </div>
+            </div>
+        </div>
+        <div class="results-actions">
+            <button id="continueToHomeBtn" class="btn btn-primary">Return to Home Base</button>
+        </div>
+    </div>
+</div>

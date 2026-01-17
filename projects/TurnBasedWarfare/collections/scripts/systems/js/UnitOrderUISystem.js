@@ -164,9 +164,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         btn.append(iconEl);
 
         if (action.order) {
-            console.log('[createActionButton] adding click handler for order:', action.order);
             btn.addEventListener('click', () => {
-                console.log('[createActionButton] button clicked, calling:', action.order);
                 this[action.order]();
             });
         } else if (action.actionSet) {
@@ -224,21 +222,12 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
     }
 
     activateBuildingPlacement(building, selectedUnitId) {
-        console.log('[UnitOrderUISystem] activateBuildingPlacement called', {
-            buildingId: building.id,
-            buildTime: building.buildTime,
-            selectedUnitId,
-            isTrap: building.isTrap
-        });
-
         this.game.state.selectedUnitType = { ...building };
 
         this.game.state.peasantBuildingPlacement = {
             peasantId: selectedUnitId,
             buildTime: building.buildTime
         };
-
-        console.log('[UnitOrderUISystem] peasantBuildingPlacement set', this.game.state.peasantBuildingPlacement);
 
         this.stopTargeting();
 
@@ -755,17 +744,13 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         if (action?.hidden) return false;
 
         const placementIds = this.game.call('getSelectedSquads') || [];
-        console.log('[shouldShowAction] actionId:', actionId, 'placementIds:', placementIds);
         if (!placementIds.length) return actionId !== 'levelUp' && actionId !== 'specialize';
 
         const placementId = placementIds[0];
         const squadData = this.game.squadExperienceSystem?.getSquadExperience(placementId);
-        console.log('[shouldShowAction] squadData:', squadData);
 
         if (actionId === 'levelUp') {
-            const result = squadData?.canLevelUp === true;
-            console.log('[shouldShowAction] levelUp result:', result);
-            return result;
+            return squadData?.canLevelUp === true;
         }
         if (actionId === 'specialize') {
             const unitType = this.game.squadExperienceSystem?.getCurrentUnitType(placementId);
@@ -778,21 +763,17 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
      * Level up the selected squad
      */
     levelUpSquadAction() {
-        console.log('[LevelUp] levelUpSquadAction called');
         const placementIds = this.game.call('getSelectedSquads') || [];
-        console.log('[LevelUp] placementIds:', placementIds);
         if (!placementIds.length) return;
 
         const placementId = placementIds[0];
         const squadData = this.game.squadExperienceSystem?.getSquadExperience(placementId);
-        console.log('[LevelUp] squadData:', squadData);
         if (!squadData?.canLevelUp) {
             this.game.uiSystem?.showNotification('Not ready to level up', 'warning', 800);
             return;
         }
 
         const playerGold = this.game.call('getPlayerGold');
-        console.log('[LevelUp] playerGold:', playerGold);
         if (!this.game.call('canAffordLevelUp', placementId, playerGold)) {
             const cost = this.game.call('getLevelUpCost', placementId);
             this.game.uiSystem?.showNotification(`Need ${cost} gold`, 'warning', 800);
@@ -804,9 +785,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         const willBeLevel2 = currentLevel + 1 === 2;
         const hasSpecializations = unitType?.specUnits?.length > 0;
 
-        console.log('[LevelUp] calling levelSquad service');
         this.game.call('levelSquad', { placementId }, (success) => {
-            console.log('[LevelUp] levelSquad callback, success:', success);
             if (success) {
                 this.game.uiSystem?.showNotification('Leveled up!', 'success', 1000);
                 this.showSquadActionPanel(placementId);

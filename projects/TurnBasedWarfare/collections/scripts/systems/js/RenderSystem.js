@@ -236,7 +236,7 @@ class RenderSystem extends GUTS.BaseSystem {
 
 
     async update() {
-        if (!this.game.scene || !this.game.camera || !this.game.renderer) return;
+        if (!this.game.scene || !this.game.call('getCamera') || !this.game.renderer) return;
         if (!this.entityRenderer) return;
 
         this._frame++;

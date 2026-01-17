@@ -22,6 +22,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'transformUnit',
         'levelSquad',
         'specializeSquad',
+        'handleGameEnd',
         // Local game mode services (set by SkirmishGameSystem or other local modes)
         'getLocalPlayerId',
         'setLocalGame',
@@ -59,6 +60,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     setLocalGame(isLocal, playerId = 0) {
         this.game.state.isLocalGame = isLocal;
         this._localPlayerId = playerId;
+        this.game.state.localPlayerId = playerId;
     }
 
     /**
@@ -507,14 +509,11 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     levelSquad(requestData, callback) {
-        console.log('[ClientNetworkSystem.levelSquad] called with requestData:', requestData);
         if (this.game.state.phase !== this.enums.gamePhase.placement) {
-            console.log('[ClientNetworkSystem.levelSquad] not in placement phase');
             callback(false, 'Not in placement phase.');
             return;
         }
 
-        console.log('[ClientNetworkSystem.levelSquad] calling networkRequest');
         this.networkRequest({
             eventName: 'LEVEL_SQUAD',
             responseName: 'SQUAD_LEVELED',
@@ -525,10 +524,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                     this.game.call('applySpecialization', requestData.placementId, result.specializationId);
                 }
             }
-        }, (success, result) => {
-            console.log('[ClientNetworkSystem.levelSquad] networkRequest callback, success:', success, 'result:', result);
-            callback(success, result);
-        });
+        }, callback);
     }
 
     /**
@@ -536,9 +532,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
      * Used when player selects a specialization for an already-leveled squad
      */
     specializeSquad(requestData, callback) {
-        console.log('[ClientNetworkSystem.specializeSquad] called with requestData:', requestData);
         if (this.game.state.phase !== this.enums.gamePhase.placement) {
-            console.log('[ClientNetworkSystem.specializeSquad] not in placement phase');
             if (callback) callback(false, 'Not in placement phase.');
             return;
         }
@@ -550,12 +544,10 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             onSuccess: (result) => {
                 // In multiplayer, apply specialization on client
                 if (!this.game.state.isLocalGame && result.specializationId) {
-                    console.log('[ClientNetworkSystem.specializeSquad] Applying specialization locally');
                     this.game.call('applySpecialization', result.placementId, result.specializationId);
                 }
             }
         }, (success, result) => {
-            console.log('[ClientNetworkSystem.specializeSquad] callback, success:', success, 'result:', result);
             if (callback) callback(success, result);
         });
     }
@@ -819,6 +811,14 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     handleBattleEnd(data) {
+        // Debug: Log when battle end is received
+        console.warn('[ClientNetworkSystem] handleBattleEnd received', {
+            phase: this.game.state.phase,
+            round: this.game.state.round,
+            isHuntMission: this.game.state.isHuntMission,
+            stack: new Error().stack
+        });
+
         // Store battle end data and wait for client to catch up to server time
         this.pendingBattleEnd = data;
 
@@ -992,6 +992,17 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         const isWinner = data.result.winner === myPlayerId;
         const reason = data.result.reason || 'unknown';
 
+        console.log('[ClientNetworkSystem] handleGameEnd - winner:', data.result.winner, 'myPlayerId:', myPlayerId, 'isWinner:', isWinner, 'localPlayerId:', this.game.state.localPlayerId);
+
+        // Store game result for campaign processing
+        this.game.state.lastGameResult = {
+            winner: data.result.winner,
+            reason: reason,
+            isWinner: isWinner,
+            finalStats: data.result.finalStats,
+            totalRounds: data.result.totalRounds
+        };
+
         // Pause the game
         this.game.state.phase = this.enums.gamePhase.ended;
         this.game.state.isPaused = true;
@@ -1001,6 +1012,9 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         switch (reason) {
             case 'buildings_destroyed':
                 reasonText = isWinner ? 'You destroyed all enemy buildings!' : 'All your buildings were destroyed.';
+                break;
+            case 'boss_defeated':
+                reasonText = isWinner ? 'You slayed the boss!' : 'Your army was wiped out.';
                 break;
             case 'opponent_disconnected':
                 reasonText = isWinner ? 'Your opponent left the game.' : 'You disconnected from the game.';
@@ -1012,11 +1026,80 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         // Populate stats and show appropriate screen
         if (isWinner) {
             this.populateGameEndStats('victoryStats', data.result, reasonText);
+            this.updateButtonForCampaign('victory_MainMenuBtn');
+            this.showCampaignRewardsPreview('victory');
             this.game.call('showVictoryScreen');
         } else {
             this.populateGameEndStats('defeatStats', data.result, reasonText);
+            this.updateButtonForCampaign('defeat_MainMenuBtn');
+            this.showCampaignRewardsPreview('defeat');
             this.game.call('showDefeatScreen');
         }
+    }
+
+    /**
+     * Update the results screen button text for campaign missions
+     */
+    updateButtonForCampaign(buttonId) {
+        const btn = document.getElementById(buttonId);
+        if (!btn) return;
+
+        const isCampaignMission = this.game.state.skirmishConfig?.isCampaignMission;
+        if (isCampaignMission) {
+            btn.textContent = 'CONTINUE';
+        } else {
+            btn.textContent = 'RETURN TO MAIN MENU';
+        }
+    }
+
+    /**
+     * Show a preview of campaign rewards on the victory/defeat screen
+     */
+    showCampaignRewardsPreview(type) {
+        const previewEl = document.getElementById(`${type}RewardsPreview`);
+        const listEl = document.getElementById(`${type}RewardsList`);
+
+        // Hide preview by default
+        if (previewEl) {
+            previewEl.style.display = 'none';
+        }
+
+        const isCampaignMission = this.game.state.skirmishConfig?.isCampaignMission;
+        if (!isCampaignMission || !previewEl || !listEl) return;
+
+        // Only show rewards preview for victory
+        if (type !== 'victory') return;
+
+        // Get the node to preview rewards
+        const nodeId = this.game.state.skirmishConfig?.missionNodeId;
+        if (!nodeId) return;
+
+        const atlasNodes = this.collections?.atlasNodes;
+        const node = atlasNodes ? atlasNodes[nodeId] : null;
+
+        if (!node || !node.baseRewards) return;
+
+        // Build rewards preview
+        listEl.innerHTML = '';
+        const rewards = node.baseRewards;
+
+        if (rewards.valor) {
+            listEl.innerHTML += `<div class="reward-item"><span class="reward-icon">⚔️</span> +${rewards.valor} Valor</div>`;
+        }
+        if (rewards.glory) {
+            listEl.innerHTML += `<div class="reward-item"><span class="reward-icon">🏆</span> +${rewards.glory} Glory</div>`;
+        }
+        if (rewards.essence) {
+            listEl.innerHTML += `<div class="reward-item"><span class="reward-icon">✨</span> +${rewards.essence} Essence</div>`;
+        }
+
+        // Check for pending loot collected during the mission
+        const pendingLoot = this.game.state.pendingLoot;
+        if (pendingLoot && pendingLoot.length > 0) {
+            listEl.innerHTML += `<div class="reward-item"><span class="reward-icon">📦</span> +${pendingLoot.length} Item${pendingLoot.length > 1 ? 's' : ''} Collected</div>`;
+        }
+
+        previewEl.style.display = 'block';
     }
 
     populateGameEndStats(containerId, result, reasonText) {
@@ -1193,23 +1276,18 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     // ==================== CHEAT NETWORK HANDLING ====================
 
     /**
-     * Send cheat request to server
+     * Send cheat request to server (or execute locally in single-player mode)
      */
     sendCheatRequest(cheatName, params, callback) {
-        this.game.clientNetworkManager.call(
-            'EXECUTE_CHEAT',
-            { cheatName, params },
-            'CHEAT_EXECUTED',
-            (data, error) => {
-                if (error) {
-                    if (callback) callback(false, error);
-                } else if (data.error) {
-                    if (callback) callback(false, data.error);
-                } else {
-                    if (callback) callback(true, data);
-                }
+        this.networkRequest({
+            eventName: 'EXECUTE_CHEAT',
+            responseName: 'CHEAT_EXECUTED',
+            data: { cheatName, params },
+            onSuccess: (result) => {
+                // In local mode, the cheat is already executed by the handler
+                // In multiplayer, we'll receive a broadcast
             }
-        );
+        }, callback || (() => {}));
     }
 
     /**

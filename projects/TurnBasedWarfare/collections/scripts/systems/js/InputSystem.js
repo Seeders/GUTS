@@ -16,11 +16,39 @@ class InputSystem extends GUTS.BaseSystem {
     }
 
     onSceneLoad() {
+        // Setup all button events on scene load since DOM elements are recreated when switching scenes
+        // (SceneManager.loadSceneInterface replaces appContainer.innerHTML, destroying old elements)
+        this.setupButtonEvents();
         // Setup canvas events on scene load since canvas may not exist during init()
         // (InputSystem is reused across scenes, but gameCanvas only exists in game scene)
         this.setupCanvasEvents();
         // Setup game-specific button events (camera rotation, etc.)
         this.setupGameButtons();
+        // Setup victory/defeat buttons (may not exist during init() if interface loads later)
+        this.setupResultButtons();
+    }
+
+    setupResultButtons() {
+        const victoryMainMenuBtn = document.getElementById('victory_MainMenuBtn');
+        const defeatMainMenuBtn = document.getElementById('defeat_MainMenuBtn');
+
+        console.log('[InputSystem] setupResultButtons - victory button:', victoryMainMenuBtn, 'defeat button:', defeatMainMenuBtn);
+
+        if (victoryMainMenuBtn && !victoryMainMenuBtn._clickHandlerAttached) {
+            victoryMainMenuBtn._clickHandlerAttached = true;
+            victoryMainMenuBtn.addEventListener('click', () => {
+                console.log('[InputSystem] Victory button clicked, calling leaveGame');
+                this.game.call('leaveGame');
+            });
+        }
+
+        if (defeatMainMenuBtn && !defeatMainMenuBtn._clickHandlerAttached) {
+            defeatMainMenuBtn._clickHandlerAttached = true;
+            defeatMainMenuBtn.addEventListener('click', () => {
+                console.log('[InputSystem] Defeat button clicked, calling leaveGame');
+                this.game.call('leaveGame');
+            });
+        }
     }
         
     setupCanvasEvents() {
@@ -71,6 +99,16 @@ class InputSystem extends GUTS.BaseSystem {
         });
         rotateCameraRightBtn?.addEventListener('click', () => {
             this.game.call('rotateCamera', 'right');
+        });
+
+        // Camera mode toggle button
+        const toggleCameraModeBtn = document.getElementById('toggleCameraModeBtn');
+        toggleCameraModeBtn?.addEventListener('click', () => {
+            this.game.call('toggleCameraMode');
+            // Update button appearance based on mode
+            const mode = this.game.call('getCameraMode');
+            toggleCameraModeBtn.classList.toggle('active', mode === 'free');
+            toggleCameraModeBtn.title = mode === 'free' ? 'Switch to game camera' : 'Switch to free camera';
         });
     }
 

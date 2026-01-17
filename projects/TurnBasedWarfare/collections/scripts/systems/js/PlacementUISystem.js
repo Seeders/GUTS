@@ -157,8 +157,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.canvas = this.game.canvas;
 
         // Initialize RaycastHelper when scene and camera are available
-        if (this.game.scene && this.game.camera && !this.raycastHelper) {
-            this.raycastHelper = new GUTS.RaycastHelper(this.game.camera, this.game.scene);
+        const camera = this.game.call('getCamera');
+        if (this.game.scene && camera && !this.raycastHelper) {
+            this.raycastHelper = new GUTS.RaycastHelper(camera, this.game.scene);
         }
     }
 
@@ -189,11 +190,12 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
 
         const cameraData = this.game.call('getCameraPositionForTeam', myTeam);
-        if (cameraData && this.game.camera) {
+        const camera = this.game.call('getCamera');
+        if (cameraData && camera) {
             const pos = cameraData.position;
             const look = cameraData.lookAt;
-            this.game.camera.position.set(pos.x, pos.y, pos.z);
-            this.game.camera.lookAt(look.x, look.y, look.z);
+            camera.position.set(pos.x, pos.y, pos.z);
+            camera.lookAt(look.x, look.y, look.z);
         }
     }
 
@@ -449,7 +451,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     handleReadyForBattleUpdate(data) {
         const myPlayerId = this.game.clientNetworkManager?.playerId;
-        console.log(`[handleReadyForBattleUpdate] myPlayerId=${myPlayerId}, allReady=${data.allReady}`);
         if (data.playerId === myPlayerId) {
             this.isPlayerReady = data.ready;
             this.updatePlacementUI();
@@ -465,20 +466,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
             // Apply network unit data for each opponent (spawns their units with proper renderable)
             // This must happen before entitySync so client-only components are set correctly
-            console.log(`[handleReadyForBattleUpdate] players in gameState:`, data.gameState?.players?.length || 0);
-            if (data.gameState?.players) {
+            // Skip in local/hunt mode - there are no remote opponents to sync
+            if (data.gameState?.players && !this.game.state.isLocalGame) {
                 data.gameState.players.forEach((player) => {
-                    console.log(`[handleReadyForBattleUpdate] Player ${player.id}: team=${player.team}, networkUnitData=${player.networkUnitData?.length || 0} placements`);
-                    if (player.networkUnitData) {
-                        player.networkUnitData.forEach((p, i) => {
-                            console.log(`[handleReadyForBattleUpdate]   Placement ${i}: placementId=${p.placementId}, unitTypeId=${p.unitTypeId}, squadUnits=${JSON.stringify(p.squadUnits)}`);
-                        });
-                    }
                     if (player.id !== myPlayerId) {
-                        console.log(`[handleReadyForBattleUpdate] Calling applyNetworkUnitData for opponent ${player.id}`);
                         this.game.call('applyNetworkUnitData', player.networkUnitData, player.team, player.id);
-                    } else {
-                        console.log(`[handleReadyForBattleUpdate] Skipping applyNetworkUnitData for self (${player.id})`);
                     }
                 });
             }
@@ -503,6 +495,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
             // This ensures all clients have identical state (including playerOrder.isHiding)
             // before behavior trees start processing
             if (data.entitySync) {
+                console.log('[PlacementUISystem] About to call resyncEntities', {
+                    isLocalGame: this.game.state.isLocalGame,
+                    isHuntMission: this.game.state.isHuntMission,
+                    entitySyncAliveCount: data.entitySync?.entityAlive ? Object.keys(data.entitySync.entityAlive).length : 0
+                });
                 this.game.call('resyncEntities', data);
             }
 
@@ -563,7 +560,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
     // ==================== PREVIEW ====================
 
     updatePlacementPreview() {
-        if (!this.placementPreview || !this.game.state.selectedUnitType) return;
+        if (!this.placementPreview || !this.game.state.selectedUnitType) {
+            return;
+        }
 
         if (!this.mouseWorldPos) {
             // No mouse position - show pending buildings instead of clearing

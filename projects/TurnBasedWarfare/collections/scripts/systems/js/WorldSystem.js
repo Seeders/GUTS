@@ -217,11 +217,15 @@ class WorldSystem extends GUTS.BaseSystem {
         // Create UI scene separately (not part of WorldRenderer)
         this.uiScene = new THREE.Scene();
 
-        // Expose to game object
-        this.game.camera = this.camera;
+        // Expose to game object (scene/renderer still needed by other systems)
         this.game.scene = this.scene;
         this.game.uiScene = this.uiScene;
         this.game.renderer = this.renderer;
+
+        // Register camera via service (CameraControlSystem manages the active camera)
+        if (this.game.hasService('setCamera')) {
+            this.game.call('setCamera', this.camera);
+        }
 
         // Setup world rendering - store promise so postSceneLoad can wait for it
         this.setupWorldRenderingPromise = this.setupWorldRendering(levelName, effectiveWorldName);
@@ -339,7 +343,8 @@ class WorldSystem extends GUTS.BaseSystem {
                     render: (renderer, writeBuffer, readBuffer, deltaTime, maskActive) => {
                         renderer.setRenderTarget(writeBuffer);
                         renderer.clear(true, true, true); // Clear color, depth, and stencil
-                        renderer.render(this.scene, this.camera);
+                        const camera = this.game.call('getCamera');
+                        renderer.render(this.scene, camera);
                     },
 
                     setSize: (width, height) => {

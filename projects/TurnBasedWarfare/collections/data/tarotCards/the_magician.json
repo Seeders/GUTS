@@ -1,0 +1,45 @@
+{
+  "id": "the_magician",
+  "number": 2,
+  "title": "The Magician",
+  "texture": "tarot_2_the_magician",
+  "past": {
+    "upright": {
+      "name": "Mastery",
+      "description": "Your spellcasters deal +20% damage",
+      "effects": [{ "target": "player_units", "stat": "magicDamage", "operation": "multiply", "value": 1.2 }]
+    },
+    "reversed": {
+      "name": "Trickery",
+      "description": "Your spellcasters have -15% accuracy",
+      "effects": [{ "target": "player_units", "stat": "magicAccuracy", "operation": "multiply", "value": 0.85 }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Manifestation",
+      "description": "Enemy mages are more powerful",
+      "effects": [{ "target": "enemy_units", "stat": "magicDamage", "operation": "multiply", "value": 1.25 }]
+    },
+    "reversed": {
+      "name": "Illusion",
+      "description": "Some enemies are illusions with 1 HP",
+      "effects": [{ "target": "mission", "stat": "illusionEnemies", "operation": "set", "value": 0.2 }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Resourcefulness",
+      "description": "+20% gold rewards",
+      "effects": [{ "target": "rewards", "stat": "goldMultiplier", "operation": "add", "value": 0.2 }]
+    },
+    "reversed": {
+      "name": "Manipulation",
+      "description": "Double item drops, halved gold",
+      "effects": [
+        { "target": "rewards", "stat": "itemDropRate", "operation": "multiply", "value": 2 },
+        { "target": "rewards", "stat": "goldMultiplier", "operation": "multiply", "value": 0.5 }
+      ]
+    }
+  }
+}

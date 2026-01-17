@@ -3,7 +3,7 @@
   "description": "Apprentice (intel/strength magic caster) vs Scout (dex/intel hybrid ranged). Magic caster vs hybrid ranged.",
   "seed": 42,
   "startingGold": 500,
-  "level": "level_1",
+  "level": "forest",
   "buildOrders": ["apprentice", "scout"],
   "maxRounds": 10,
   "endOnFirstDeath": false

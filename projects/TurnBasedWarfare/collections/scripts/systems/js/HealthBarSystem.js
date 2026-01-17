@@ -27,7 +27,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
     
     update() {
         // Wait for scene to be available from WorldSystem
-        if (!this.game.scene || !this.game.camera) {
+        if (!this.game.scene || !this.game.call('getCamera')) {
             return;
         }
         
@@ -152,7 +152,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
 
         
         // Make health bar always face camera (billboard effect)
-        const cameraPosition = this.game.camera.position;
+        const cameraPosition = this.game.call('getCamera').position;
         group.lookAt(cameraPosition.x, cameraPosition.y, cameraPosition.z);
         
         // Calculate health percentage

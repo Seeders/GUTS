@@ -60,7 +60,16 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     checkForBattleEnd() {
-        // Check if any team has lost all buildings
+        // Check for hunt mission victory (boss defeated)
+        if (this.game.state.isHuntMission && this.game.hasService('checkHuntVictory')) {
+            const huntVictory = this.game.call('checkHuntVictory');
+            if (huntVictory) {
+                this.endBattle(huntVictory.winner, huntVictory.reason);
+                return;
+            }
+        }
+
+        // Check if any team has lost all buildings (skirmish mode)
         const buildingVictory = this.checkBuildingVictoryCondition();
         if (buildingVictory) {
             this.endBattle(buildingVictory.winner, buildingVictory.reason);
@@ -167,6 +176,16 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     endBattle(winner = null, reason = 'unknown') {
+        // Debug: Log when battle ends
+        console.warn('[ServerBattlePhaseSystem] endBattle called', {
+            winner,
+            reason,
+            phase: this.game.state.phase,
+            round: this.game.state.round,
+            isHuntMission: this.game.state.isHuntMission,
+            stack: new Error().stack
+        });
+
         this.game.triggerEvent('onBattleEnd');
         const playerStats = this.getPlayerStatsForBroadcast();
         let battleResult = {
@@ -257,6 +276,14 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     shouldEndGame() {
+        // Hunt missions: game ends when boss is defeated
+        if (this.game.state.isHuntMission && this.game.hasService('checkHuntVictory')) {
+            const huntVictory = this.game.call('checkHuntVictory');
+            if (huntVictory) {
+                return true;
+            }
+        }
+
         // RTS-style: game ends when a team loses all buildings (checked in checkBuildingVictoryCondition)
         // This is called after battle ends - check if any team has no buildings
         const buildingVictory = this.checkBuildingVictoryCondition();
@@ -271,12 +298,25 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     endGame(reason = 'buildings_destroyed') {
         this.game.state.phase = this.enums.gamePhase.ended;
 
-        // Determine final winner based on building victory condition
-        const buildingVictory = this.checkBuildingVictoryCondition();
-        let finalWinner = buildingVictory?.winner || null;
+        let finalWinner = null;
+
+        // Hunt missions: winner is player 0 when boss is defeated
+        if (this.game.state.isHuntMission && this.game.hasService('checkHuntVictory')) {
+            const huntVictory = this.game.call('checkHuntVictory');
+            if (huntVictory) {
+                finalWinner = huntVictory.winner;
+                reason = huntVictory.reason || 'boss_defeated';
+            }
+        }
+
+        // Determine final winner based on building victory condition (if not already set)
+        if (finalWinner === null) {
+            const buildingVictory = this.checkBuildingVictoryCondition();
+            finalWinner = buildingVictory?.winner || null;
+        }
 
         // If no building victory (e.g., disconnect), find remaining player
-        if (!finalWinner && reason === 'opponent_disconnected') {
+        if (finalWinner === null && reason === 'opponent_disconnected') {
             const playerEntities = this.game.call('getPlayerEntities');
             if (playerEntities.length > 0) {
                 const stats = this.game.getComponent(playerEntities[0], 'playerStats');

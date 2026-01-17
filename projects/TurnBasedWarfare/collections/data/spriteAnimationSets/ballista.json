@@ -11,7 +11,7 @@
     "brightness": 5,
     "palette": "main",
     "borderSize": 1,
-    "outlineColor": "#170F13",
+    "outlineColor": "#030202",
     "outlineConnectivity": 4,
     "cameraHeight": 1.5,
     "isProjectile": false,

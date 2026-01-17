@@ -495,10 +495,10 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
     /**
      * Get the camera to use for projections
-     * Uses config.camera if provided, falls back to game.camera
+     * Uses config.camera if provided, falls back to getCamera service
      */
     getCamera() {
-        return this.config.camera || this.game.camera;
+        return this.config.camera || this.game.call('getCamera');
     }
 
     worldToScreen(x, y, z) {
@@ -787,7 +787,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
     update() {
         // Wait for scene to be available
-        if (!this.game.scene || !this.game.camera) {
+        if (!this.game.scene || !this.game.call('getCamera')) {
             return;
         }
         
@@ -848,12 +848,24 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                 if (statsOverlay) {
                     container.append(statsOverlay);
                 }
+                // Add third-person camera button
+                const cameraButton = this.createThirdPersonCameraButton(selectedEntityId);
+                if (cameraButton) {
+                    container.append(cameraButton);
+                }
                 // Update follow indicator
                 const followTarget = this.game.call('getCameraFollowTarget');
                 if (followTarget === selectedEntityId) {
                     container.classList.add('following');
                 } else {
                     container.classList.remove('following');
+                }
+                // Update third-person indicator
+                const thirdPersonTarget = this.game.call('getThirdPersonTarget');
+                if (thirdPersonTarget === selectedEntityId) {
+                    container.classList.add('third-person');
+                } else {
+                    container.classList.remove('third-person');
                 }
             }
             const selectedUnitsContainer = document.getElementById('selectedUnits');
@@ -966,7 +978,57 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
         return container;
     }
-    
+
+    /**
+     * Create a camera button for third-person view
+     */
+    createThirdPersonCameraButton(entityId) {
+        const button = document.createElement('button');
+        button.className = 'third-person-camera-btn';
+        button.innerHTML = '📷';
+        button.title = 'Third-person camera (follow unit)';
+
+        // Check if already in third-person mode for this entity
+        const currentTarget = this.game.call('getThirdPersonTarget');
+        if (currentTarget === entityId) {
+            button.classList.add('active');
+        }
+
+        button.addEventListener('click', (e) => {
+            e.stopPropagation(); // Don't trigger portrait click (follow mode)
+
+            const currentTarget = this.game.call('getThirdPersonTarget');
+            if (currentTarget === entityId) {
+                // Already following this unit, stop third-person
+                this.game.call('stopThirdPersonCamera');
+                button.classList.remove('active');
+                const container = document.getElementById('unitPortrait');
+                if (container) container.classList.remove('third-person');
+            } else {
+                // Start third-person camera for this unit
+                this.game.call('startThirdPersonCamera', entityId);
+                button.classList.add('active');
+                const container = document.getElementById('unitPortrait');
+                if (container) container.classList.add('third-person');
+            }
+        });
+
+        return button;
+    }
+
+    /**
+     * Handle third-person camera stop event
+     */
+    onThirdPersonCameraStop() {
+        if (!this.config.showGameUI) return;
+        const container = document.getElementById('unitPortrait');
+        if (container) {
+            container.classList.remove('third-person');
+            const btn = container.querySelector('.third-person-camera-btn');
+            if (btn) btn.classList.remove('active');
+        }
+    }
+
     clearAllHighlights() {
         // Remove all selection circles
         for (const entityId of this.highlightedUnits) {

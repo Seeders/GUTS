@@ -16,16 +16,21 @@ class GameSystem extends GUTS.BaseSystem {
     }
 
     initializeGame(multiplayerData = null){
-        // For single-player, require game mode selection
-        const selectedMode = this.game.call('getSelectedMode');
+        console.log('[GameSystem] initializeGame called, multiplayerData:', !!multiplayerData, 'gameMode:', this.game.state.gameMode);
+
+        // Check game mode - use state directly (no dependency on GameModeSystem)
+        const selectedMode = this.game.state.gameMode;
         if (!multiplayerData && !selectedMode) {
+            console.error('[GameSystem] No game mode set in game.state.gameMode');
             alert('Please select a game mode first!');
             return;
         }
 
         // Only show loading screen for single-player (multiplayer already showed it)
         if (!multiplayerData) {
-            this.game.call('showLoadingScreen');
+            if (this.game.hasService('showLoadingScreen')) {
+                this.game.call('showLoadingScreen');
+            }
 
             // Update loading content based on selected mode
             if (selectedMode) {
@@ -37,8 +42,11 @@ class GameSystem extends GUTS.BaseSystem {
         }
 
         this.game.state.isPaused = false;
-        this.game.call('showGameScreen');
+        if (this.game.hasService('showGameScreen')) {
+            this.game.call('showGameScreen');
+        }
         // Trigger onGameStarted AFTER screen is visible so UI elements are accessible
+        console.log('[GameSystem] Triggering onGameStarted event');
         this.game.triggerEvent('onGameStarted');
     }
 

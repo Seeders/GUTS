@@ -1,0 +1,42 @@
+{
+  "id": "the_empress",
+  "number": 4,
+  "title": "The Empress",
+  "texture": "tarot_4_the_empress",
+  "past": {
+    "upright": {
+      "name": "Abundance",
+      "description": "Start with an extra unit",
+      "effects": [{ "target": "player", "stat": "bonusUnits", "operation": "add", "value": 1 }]
+    },
+    "reversed": {
+      "name": "Dependence",
+      "description": "Units heal when near your castle",
+      "effects": [{ "target": "player_units", "stat": "castleHealing", "operation": "set", "value": true }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Fertility",
+      "description": "Enemies spawn reinforcements over time",
+      "effects": [{ "target": "mission", "stat": "enemyReinforcements", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Stagnation",
+      "description": "No natural regeneration for anyone",
+      "effects": [{ "target": "all_units", "stat": "naturalRegen", "operation": "set", "value": false }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Nurturing",
+      "description": "Surviving units gain permanent +5 HP",
+      "effects": [{ "target": "rewards", "stat": "survivorHPBonus", "operation": "add", "value": 5 }]
+    },
+    "reversed": {
+      "name": "Smothering",
+      "description": "All rewards converted to healing items",
+      "effects": [{ "target": "rewards", "stat": "healingItemsOnly", "operation": "set", "value": true }]
+    }
+  }
+}

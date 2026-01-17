@@ -3,7 +3,7 @@
   "description": "Soldier (strength/dex hybrid) vs Scout (dex/intel hybrid). Tests hybrid unit combat.",
   "seed": 42,
   "startingGold": 500,
-  "level": "level_1",
+  "level": "forest",
   "buildOrders": ["soldier", "scout"],
   "maxRounds": 10,
   "endOnFirstDeath": false

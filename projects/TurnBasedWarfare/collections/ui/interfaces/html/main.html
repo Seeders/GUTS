@@ -185,6 +185,164 @@
     </div>
 </div>
 
+<!-- Campaign Select Screen -->
+<div id="campaignSelect" class="screen">
+    <div class="campaign-wrapper">
+        <div class="campaign-header">
+            <button id="campaignBackBtn" class="topbar-btn retreat-btn">Back to Menu</button>
+            <h1 class="campaign-title">CAMPAIGN</h1>
+            <div class="topbar-spacer"></div>
+        </div>
+
+        <div class="campaign-select-content">
+            <div class="campaign-select-section">
+                <h2>Your Campaigns</h2>
+                <div id="campaignList" class="campaign-list">
+                    <!-- Campaign cards populated dynamically -->
+                </div>
+            </div>
+
+            <div class="campaign-actions">
+                <button id="newCampaignBtn" class="btn btn-primary">NEW CAMPAIGN</button>
+                <button id="importCampaignBtn" class="btn btn-secondary">Import</button>
+                <input type="file" id="importCampaignFile" accept=".json" style="display: none;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Campaign Dialog -->
+<div id="newCampaignDialog" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h2>Create New Campaign</h2>
+        <div class="form-group">
+            <label for="commanderNameInput">Commander Name:</label>
+            <input type="text" id="commanderNameInput" placeholder="Enter your name" maxlength="20" value="Commander">
+        </div>
+        <div class="modal-actions">
+            <button id="createCampaignBtn" class="btn btn-primary">Begin Journey</button>
+            <button id="cancelNewCampaignBtn" class="btn btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Campaign Home Base Screen -->
+<div id="campaignHomeBase" class="screen">
+    <div class="home-base-wrapper">
+        <!-- Header with commander info and currencies -->
+        <div class="home-base-header">
+            <div class="commander-info">
+                <span class="commander-name" id="homeBaseCommanderName">Commander</span>
+                <span class="campaign-stats" id="homeBaseCampaignStats">Missions: 0 | Tier: 1</span>
+            </div>
+            <div class="currency-display">
+                <div class="currency valor">
+                    <span class="currency-icon">V</span>
+                    <span class="currency-amount" id="valorAmount">0</span>
+                    <span class="currency-label">Valor</span>
+                </div>
+                <div class="currency glory">
+                    <span class="currency-icon">G</span>
+                    <span class="currency-amount" id="gloryAmount">0</span>
+                    <span class="currency-label">Glory</span>
+                </div>
+                <div class="currency essence">
+                    <span class="currency-icon">E</span>
+                    <span class="currency-amount" id="essenceAmount">0</span>
+                    <span class="currency-label">Essence</span>
+                </div>
+            </div>
+            <div class="home-base-controls">
+                <button id="homeBaseSaveBtn" class="btn btn-small">Save</button>
+                <button id="homeBaseExitBtn" class="btn btn-small btn-secondary">Exit Campaign</button>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="home-base-tabs">
+            <button class="tab-btn active" data-tab="atlas">Atlas</button>
+            <button class="tab-btn" data-tab="upgrades">Upgrades</button>
+            <button class="tab-btn" data-tab="unlocks">Unlocks</button>
+            <button class="tab-btn" data-tab="inventory">Inventory</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="home-base-content">
+            <!-- Atlas Tab -->
+            <div id="atlasTab" class="tab-content active">
+                <div class="atlas-container">
+                    <canvas id="atlasCanvas"></canvas>
+                </div>
+                <div class="atlas-sidebar">
+                    <div id="nodeInfoPanel" class="node-info-panel">
+                        <h3 id="selectedNodeTitle">Select a Node</h3>
+                        <p id="selectedNodeDesc">Click on a node in the atlas to view details.</p>
+                        <div id="nodeRewards" class="node-rewards" style="display: none;">
+                            <h4>Rewards:</h4>
+                            <div id="nodeRewardsList"></div>
+                        </div>
+                        <div id="nodeModifiers" class="node-modifiers" style="display: none;">
+                            <h4>Active Modifiers:</h4>
+                            <div id="nodeModifiersList"></div>
+                        </div>
+                        <button id="startMissionBtn" class="btn btn-primary" style="display: none;">START MISSION</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upgrades Tab -->
+            <div id="upgradesTab" class="tab-content">
+                <div class="upgrades-container">
+                    <div class="upgrade-category" id="economyUpgrades">
+                        <h3>Economy</h3>
+                        <div class="upgrade-list"></div>
+                    </div>
+                    <div class="upgrade-category" id="militaryUpgrades">
+                        <h3>Military</h3>
+                        <div class="upgrade-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unlocks Tab -->
+            <div id="unlocksTab" class="tab-content">
+                <div class="unlocks-container">
+                    <div class="unlock-filter">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="unit">Units</button>
+                        <button class="filter-btn" data-filter="building">Buildings</button>
+                    </div>
+                    <div id="unlocksList" class="unlocks-list">
+                        <!-- Unlock cards populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Tab -->
+            <div id="inventoryTab" class="tab-content">
+                <div class="inventory-container">
+                    <div class="inventory-header">
+                        <span>Inventory Slots: <span id="inventoryUsed">0</span>/<span id="inventoryMax">20</span></span>
+                    </div>
+                    <div id="inventoryGrid" class="inventory-grid">
+                        <!-- Inventory slots populated dynamically -->
+                    </div>
+                </div>
+                <div class="inventory-sidebar">
+                    <div id="itemInfoPanel" class="item-info-panel">
+                        <h3 id="selectedItemTitle">Select an Item</h3>
+                        <p id="selectedItemDesc">Click on an item to view details.</p>
+                        <div id="itemActions" style="display: none;">
+                            <button id="useItemBtn" class="btn btn-primary">Use</button>
+                            <button id="discardItemBtn" class="btn btn-secondary">Discard</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Loading Screen - inline styles ensure visibility before CSS loads -->
 <div id="loadingScreen" class="screen active" style="display:flex;position:absolute;top:0;left:0;width:100%;height:100vh;z-index:9999;background:#1a1a2e;justify-content:center;align-items:center;">
     <div class="loading-content">

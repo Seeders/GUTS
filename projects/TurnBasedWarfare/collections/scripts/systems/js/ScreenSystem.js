@@ -6,6 +6,9 @@ class ScreenSystem extends GUTS.BaseSystem {
         'showVictoryScreen',
         'showDefeatScreen',
         'showGameModeSelect',
+        'showCampaignSelect',
+        'showCampaignHomeBase',
+        'showMissionResults',
         'pauseScreen',
         'resumeScreen'
     ];
@@ -77,8 +80,18 @@ class ScreenSystem extends GUTS.BaseSystem {
         this.setScreen('defeatScreen');
     }
 
+    showCampaignSelect() {
+        this.setScreen('campaignSelect');
+    }
 
-    
+    showCampaignHomeBase() {
+        this.setScreen('campaignHomeBase');
+    }
+
+    showMissionResults() {
+        this.setScreen('missionResults');
+    }
+
     reset() {
         this.currentScreen = 'mainMenu';
         this.selectedGameMode = null;

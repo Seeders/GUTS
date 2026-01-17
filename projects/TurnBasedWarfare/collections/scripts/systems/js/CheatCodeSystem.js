@@ -40,8 +40,9 @@ class CheatCodeSystem extends GUTS.BaseSystem {
      * Main cheat entry point - routes to network or executes directly based on server/client
      */
     cheat(cheatName, params = {}, callback = null) {
-        if (this.game.isServer) {
-            // Server-side: execute cheats directly (no network round-trip needed)
+        // Execute directly for server or local games (no network connection)
+        const isLocalGame = this.game.state?.isLocalGame || !this.game.clientNetworkManager?.isConnected;
+        if (this.game.isServer || isLocalGame) {
             return this.executeCheat(cheatName, params);
         } else {
             // Client-side: route through network
@@ -82,6 +83,24 @@ class CheatCodeSystem extends GUTS.BaseSystem {
             example: 'game.call("cheat", "killEnemies", { team: 3 })',
             validate: this.validateKillEnemies.bind(this),
             execute: this.executeKillEnemies.bind(this)
+        });
+
+        // Win cheat - trigger victory
+        this.cheatRegistry.set('win', {
+            description: 'Trigger victory condition immediately',
+            usage: 'win',
+            example: 'game.call("cheat", "win")',
+            validate: () => ({ valid: true }),
+            execute: this.executeWin.bind(this)
+        });
+
+        // Lose cheat - trigger defeat
+        this.cheatRegistry.set('lose', {
+            description: 'Trigger defeat condition immediately',
+            usage: 'lose',
+            example: 'game.call("cheat", "lose")',
+            validate: () => ({ valid: true }),
+            execute: this.executeLose.bind(this)
         });
     }
 
@@ -401,5 +420,52 @@ NOTES
         }
 
         return { killed: killCount };
+    }
+
+    /**
+     * Trigger victory condition
+     */
+    executeWin() {
+        console.log('[CheatCodeSystem] Triggering win condition');
+
+        // Get player ID
+        const myPlayerId = this.game.clientNetworkManager?.playerId ?? this.game.state.localPlayerId ?? 0;
+
+        // Build game end result
+        const result = {
+            winner: myPlayerId,
+            reason: 'cheat',
+            finalStats: {},
+            totalRounds: this.game.state.round || 1
+        };
+
+        // Broadcast game end through network system (event name is GAME_END, not handleGameEnd)
+        this.game.call('broadcastToRoom', null, 'GAME_END', { result });
+
+        return { success: true, winner: myPlayerId };
+    }
+
+    /**
+     * Trigger defeat condition
+     */
+    executeLose() {
+        console.log('[CheatCodeSystem] Triggering lose condition');
+
+        // Get player ID - the loser is the current player, winner is someone else
+        const myPlayerId = this.game.clientNetworkManager?.playerId ?? this.game.state.localPlayerId ?? 0;
+        const winnerId = myPlayerId === 0 ? 1 : 0; // The other player wins
+
+        // Build game end result
+        const result = {
+            winner: winnerId,
+            reason: 'cheat',
+            finalStats: {},
+            totalRounds: this.game.state.round || 1
+        };
+
+        // Broadcast game end through network system (event name is GAME_END, not handleGameEnd)
+        this.game.call('broadcastToRoom', null, 'GAME_END', { result });
+
+        return { success: true, winner: winnerId };
     }
 }

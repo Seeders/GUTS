@@ -733,8 +733,9 @@ class LobbyUISystem extends GUTS.BaseSystem {
 
     startSkirmishGame() {
         console.log('[LobbyUISystem] startSkirmishGame called, pendingSaveData:', this.game.pendingSaveData ? 'present' : 'null');
-        // Store skirmish configuration in game state
-        this.game.state.skirmishConfig = {
+
+        // Build skirmish config to pass to scene
+        const skirmishConfig = {
             isSkirmish: true,
             selectedLevel: this.skirmishSelectedLevel,
             selectedTeam: this.skirmishSelectedTeam || 'left',
@@ -751,8 +752,8 @@ class LobbyUISystem extends GUTS.BaseSystem {
             startingGold: this.skirmishMode?.startingGold || 100
         };
 
-        // Start the skirmish game via LocalGameController
-        this.game.call('startSkirmishGame');
+        // Switch to skirmish scene with config
+        this.game.switchScene('skirmish', skirmishConfig);
     }
 
     dispose() {

@@ -1,0 +1,13 @@
+{
+  "id": "unit_elementalist",
+  "title": "Elementalist",
+  "description": "Unlock the Elementalist unit - master of destructive magic",
+  "type": "unit",
+  "unlockId": "2_i_elementalist",
+  "cost": { "glory": 120, "essence": 10 },
+  "requires": {
+    "units": ["1_i_apprentice"],
+    "atlasProgress": 4
+  },
+  "icon": "unit_elementalist"
+}

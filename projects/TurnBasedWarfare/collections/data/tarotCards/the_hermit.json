@@ -1,0 +1,45 @@
+{
+  "id": "the_hermit",
+  "number": 10,
+  "title": "The Hermit",
+  "texture": "tarot_10_the_hermit",
+  "past": {
+    "upright": {
+      "name": "Wisdom",
+      "description": "Your ranged units have +15% range",
+      "effects": [{ "target": "player_units", "stat": "attackRange", "operation": "multiply", "value": 1.15 }]
+    },
+    "reversed": {
+      "name": "Solitude",
+      "description": "Lone units deal +30% damage",
+      "effects": [{ "target": "player_units", "stat": "loneWolfBonus", "operation": "add", "value": 0.3 }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Isolation",
+      "description": "Lone units take +20% damage",
+      "effects": [{ "target": "all_units", "stat": "isolationPenalty", "operation": "add", "value": 0.2 }]
+    },
+    "reversed": {
+      "name": "Ambush",
+      "description": "Hidden enemies throughout the map",
+      "effects": [{ "target": "mission", "stat": "hiddenEnemies", "operation": "set", "value": true }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Enlightenment",
+      "description": "Double experience for survivors",
+      "effects": [{ "target": "rewards", "stat": "expMultiplier", "operation": "multiply", "value": 2 }]
+    },
+    "reversed": {
+      "name": "Exile",
+      "description": "One unit leaves but drops rare item",
+      "effects": [
+        { "target": "rewards", "stat": "loseRandomUnit", "operation": "set", "value": true },
+        { "target": "rewards", "stat": "guaranteedRare", "operation": "set", "value": true }
+      ]
+    }
+  }
+}

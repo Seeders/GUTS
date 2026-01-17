@@ -31,6 +31,7 @@
             <button id="undoBtn" class="btn btn-secondary">Undo</button>
             <button id="rotateCameraLeftBtn" class="btn btn-secondary">◀</button>
             <button id="rotateCameraRightBtn" class="btn btn-secondary">▶</button>
+            <button id="toggleCameraModeBtn" class="btn btn-secondary" title="Toggle free camera mode">🎥</button>
             <button id="placementReadyBtn" class="btn btn-primary">Ready for Battle!</button>
         </div>
         <div id="uiContainer">
@@ -48,6 +49,10 @@
         <div class="result-title victory-title">VICTORY!</div>
         <div class="stats-grid" id="victoryStats">
             <!-- Stats populated dynamically -->
+        </div>
+        <div id="victoryRewardsPreview" class="rewards-preview" style="display: none;">
+            <h3>Rewards</h3>
+            <div id="victoryRewardsList" class="rewards-list"></div>
         </div>
         <div>
             <button id="victory_MainMenuBtn" class="btn">RETURN TO MAIN MENU</button>

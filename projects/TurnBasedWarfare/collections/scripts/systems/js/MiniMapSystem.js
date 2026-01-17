@@ -345,7 +345,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
 
     handleMinimapClick(event) {
         const rect = this.canvas.getBoundingClientRect();
-        const camera = this.game.camera;
+        const camera = this.game.call('getCamera');
 
         // Get click position relative to canvas center (in pixels)
         const clickX = event.clientX - rect.left - rect.width / 2;
@@ -507,9 +507,8 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
 
     updateCameraView() {
-        if (!this.game.camera) return;
-        
-        const camera = this.game.camera;
+        const camera = this.game.call('getCamera');
+        if (!camera) return;
         const cameraPos = camera.position;
         
         if (!cameraPos || isNaN(cameraPos.x) || isNaN(cameraPos.y) || isNaN(cameraPos.z)) {
@@ -619,7 +618,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
         
     drawCameraOutline() {
-        const camera = this.game.camera;
+        const camera = this.game.call('getCamera');
         if (!camera || !camera.isOrthographicCamera) return;
 
         // Frustum corners in NDC (CCW)

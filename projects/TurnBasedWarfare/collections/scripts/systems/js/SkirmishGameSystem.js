@@ -13,10 +13,6 @@
  * which runs the same code in both multiplayer and local modes.
  */
 class SkirmishGameSystem extends GUTS.BaseSystem {
-    static services = [
-        'startSkirmishGame'
-    ];
-
     constructor(game) {
         super(game);
         this.game.skirmishGameSystem = this;
@@ -27,19 +23,50 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
     init() {
     }
 
+    /**
+     * Called when the skirmish scene loads
+     * Stores config for postSceneLoad to initialize
+     * @param {Object} sceneData - The scene configuration
+     * @param {Object} params - Skirmish config passed to switchScene
+     */
+    onSceneLoad(sceneData, params) {
+        if (params && params.isSkirmish) {
+            // Store config for postSceneLoad - don't initialize yet
+            // Other systems (WorldSystem, etc.) need to complete their onSceneLoad first
+            this.pendingSkirmishConfig = params;
+        }
+    }
+
+    /**
+     * Called after all systems have finished onSceneLoad
+     * This ensures WorldSystem has created uiScene before we call initializeGame
+     */
+    postSceneLoad() {
+        if (!this.pendingSkirmishConfig) return;
+
+        this.initializeSkirmish(this.pendingSkirmishConfig);
+        this.pendingSkirmishConfig = null;
+    }
+
     // ==================== SKIRMISH INITIALIZATION ====================
 
-    async startSkirmishGame() {
-        const config = this.game.state.skirmishConfig;
+    /**
+     * Initialize and start a skirmish game
+     * @param {Object} config - Skirmish configuration passed from scene switch
+     */
+    initializeSkirmish(config) {
         if (!config) {
-            console.error('[SkirmishGameSystem] No skirmish config found');
+            console.error('[SkirmishGameSystem] No skirmish config provided');
             return;
         }
+
+        // Store config in game state for other systems to access
+        this.game.state.skirmishConfig = config;
 
         // Check if we're loading from a save file
         const isLoadingSave = !!this.game.pendingSaveData;
         const saveData = this.game.pendingSaveData;
-        console.log('[SkirmishGameSystem] startSkirmishGame, isLoadingSave:', isLoadingSave, 'pendingSaveData:', saveData ? 'present' : 'null');
+        console.log('[SkirmishGameSystem] initializeSkirmish, isLoadingSave:', isLoadingSave, 'pendingSaveData:', saveData ? 'present' : 'null');
 
         // Enable local game mode (sets game.state.isLocalGame and local player ID)
         this.game.call('setLocalGame', true, 0);
@@ -78,7 +105,7 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         this.game.call('showLoadingScreen');
 
         // Update terrain
-        const gameScene = this.collections?.scenes?.game;
+        const gameScene = this.collections?.scenes?.skirmish;
         if (gameScene?.entities) {
             const terrainEntity = gameScene.entities.find(e => e.prefab === 'terrain');
             if (terrainEntity) {
@@ -87,8 +114,6 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
                 terrainEntity.components.terrain.level = levelIndex;
             }
         }
-
-        await this.game.switchScene('skirmish');
 
         // When loading a save, SceneManager automatically restores entities via loadSavedEntities()
         // We only need to create player/AI entities for new games
@@ -192,5 +217,6 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         this.game.call('setLocalGame', false, 0);
         this.playerTeam = null;
         this.aiTeam = null;
+        this.pendingSkirmishConfig = null;
     }
 }

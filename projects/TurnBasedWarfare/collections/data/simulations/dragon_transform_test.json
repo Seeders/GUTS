@@ -3,7 +3,7 @@
   "description": "Tests dragon takeoff and land animations. Dragon spawns, takes off (round 2), lands (round 3), takes off (round 4), lands (round 5).",
   "seed": 12345,
   "startingGold": 0,
-  "level": "level_1",
+  "level": "forest",
   "buildOrders": ["dragonTransformTest", "emptyBuildOrder"],
   "maxRounds": 10,
   "endOnFirstDeath": false

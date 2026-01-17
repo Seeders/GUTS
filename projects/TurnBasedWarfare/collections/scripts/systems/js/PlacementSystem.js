@@ -229,7 +229,6 @@ class PlacementSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with success flag and squad data
      */
     spawnSquad(networkUnitData, team, playerId = null, serverEntityIds = null) {
-        console.log(`[spawnSquad] team=${team}, playerId=${playerId}, serverEntityIds=${JSON.stringify(serverEntityIds)}, placementId=${networkUnitData.placementId}, unitTypeId=${networkUnitData.unitTypeId}`);
         try {
             const unitType = networkUnitData.unitType;
             if (!unitType) {
@@ -527,18 +526,15 @@ class PlacementSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with spawned units per team
      */
     spawnStartingUnits() {
-        console.log('[PlacementSystem] spawnStartingUnits called');
         const startingUnitsConfig = this.collections.configs.startingUnits;
 
         if (!startingUnitsConfig?.prefabs) {
             console.warn('[PlacementSystem] No startingUnits config found');
             return { success: false, error: 'No startingUnits config' };
         }
-        console.log('[PlacementSystem] startingUnitsConfig:', startingUnitsConfig);
 
         // Get starting locations from level
         const startingLocations = this.getStartingLocationsFromLevel();
-        console.log('[PlacementSystem] startingLocations:', startingLocations);
         if (!startingLocations) {
             console.error('[PlacementSystem] No starting locations found in level');
             return { success: false, error: 'No starting locations in level' };
@@ -780,7 +776,6 @@ class PlacementSystem extends GUTS.BaseSystem {
     getStartingLocationsFromLevel() {
         // Get level name from terrain entity
         const terrainEntities = this.game.getEntitiesWith('terrain');
-        console.log('[PlacementSystem] getStartingLocationsFromLevel - terrain entities:', terrainEntities.length);
         if (terrainEntities.length === 0) {
             console.warn('[PlacementSystem] No terrain entity found');
             return null;
@@ -788,13 +783,11 @@ class PlacementSystem extends GUTS.BaseSystem {
 
         const terrainEntityId = terrainEntities[0];
         const terrainComponent = this.game.getComponent(terrainEntityId, 'terrain');
-        console.log('[PlacementSystem] Terrain component:', terrainComponent);
         const levelIndex = terrainComponent?.level;
         if (levelIndex === undefined || levelIndex < 0) {
             console.warn('[PlacementSystem] Terrain entity missing level');
             return null;
         }
-        console.log('[PlacementSystem] Level index from terrain:', levelIndex);
 
         // Get level data by numeric index
         const levelKey = this.reverseEnums.levels[levelIndex];
@@ -850,18 +843,9 @@ class PlacementSystem extends GUTS.BaseSystem {
         const existingPlacements = this.getPlacementsForSide(team) || [];
 
         networkUnitData.forEach(unitData => {
-            console.log(`[applyNetworkUnitData] Processing unitData:`, {
-                placementId: unitData.placementId,
-                squadUnits: unitData.squadUnits,
-                unitTypeId: unitData.unitTypeId,
-                collection: unitData.collection
-            });
-
             // Check if placement already exists on this client
             const existingPlacement = existingPlacements.find(p => p.placementId === unitData.placementId);
             if (existingPlacement) {
-                console.log(`[applyNetworkUnitData] Placement ${unitData.placementId} exists, checking for unit type mismatch`);
-
                 // Check if unit type changed (e.g., specialization during placement phase)
                 const squadUnits = existingPlacement.squadUnits || unitData.squadUnits || [];
                 if (squadUnits.length > 0) {
@@ -869,26 +853,16 @@ class PlacementSystem extends GUTS.BaseSystem {
                     const existingUnitType = this.game.getComponent(firstEntityId, 'unitType');
                     const expectedUnitTypeId = unitData.unitTypeId;
 
-                    console.log(`[applyNetworkUnitData] Existing placement check: existingUnitType.type=${existingUnitType?.type}, expectedUnitTypeId=${expectedUnitTypeId}`);
-
                     if (existingUnitType && existingUnitType.type !== expectedUnitTypeId) {
                         // Unit type changed - transform the existing units
-                        console.log(`[applyNetworkUnitData] Unit type mismatch in existing placement! Transforming units.`);
-
                         const targetUnitTypeId = this.reverseEnums?.units?.[expectedUnitTypeId];
                         if (targetUnitTypeId && this.game.hasService('replaceUnit')) {
-                            console.log(`[applyNetworkUnitData] Replacing ${squadUnits.length} units with ${targetUnitTypeId}`);
                             squadUnits.forEach(entityId => {
                                 if (this.game.entityAlive[entityId] === 1) {
-                                    console.log(`[applyNetworkUnitData] Calling replaceUnit for entity ${entityId} -> ${targetUnitTypeId}`);
                                     this.game.call('replaceUnit', entityId, targetUnitTypeId);
                                 }
                             });
-                        } else {
-                            console.log(`[applyNetworkUnitData] Cannot replace: targetUnitTypeId=${targetUnitTypeId}, hasReplaceUnit=${this.game.hasService('replaceUnit')}`);
                         }
-                    } else {
-                        console.log(`[applyNetworkUnitData] Unit types match for existing placement, no transformation needed`);
                     }
                 }
                 return; // Don't re-spawn existing placements
@@ -898,40 +872,26 @@ class PlacementSystem extends GUTS.BaseSystem {
             if (unitData.squadUnits && unitData.squadUnits.length > 0) {
                 const firstEntityId = unitData.squadUnits[0];
                 const entityExists = this.game.entityAlive[firstEntityId] === 1;
-                console.log(`[applyNetworkUnitData] Checking entity ${firstEntityId}: entityAlive=${entityExists}`);
                 if (entityExists) {
                     // Entity exists - check if unit type matches (might have been specialized)
                     const existingUnitType = this.game.getComponent(firstEntityId, 'unitType');
                     const expectedUnitTypeId = unitData.unitTypeId;
 
-                    console.log(`[applyNetworkUnitData] Comparing unit types for entity ${firstEntityId}: existingUnitType.type=${existingUnitType?.type}, expectedUnitTypeId=${expectedUnitTypeId}`);
-
                     if (existingUnitType && existingUnitType.type !== expectedUnitTypeId) {
                         // Unit type changed (e.g., specialization) - replace the units
-                        console.log(`[applyNetworkUnitData] Unit type mismatch for entity ${firstEntityId}: existing=${existingUnitType.type}, expected=${expectedUnitTypeId}. Applying transformation.`);
-
-                        // Get the target unit type ID string from the enum
                         const targetUnitTypeId = this.reverseEnums?.units?.[expectedUnitTypeId];
-                        console.log(`[applyNetworkUnitData] Target unit type ID string: ${targetUnitTypeId}, hasReplaceUnit=${this.game.hasService('replaceUnit')}`);
 
                         if (targetUnitTypeId && this.game.hasService('replaceUnit')) {
                             // Replace each unit in the squad
-                            console.log(`[applyNetworkUnitData] Replacing ${unitData.squadUnits.length} units with ${targetUnitTypeId}`);
                             unitData.squadUnits.forEach(entityId => {
                                 if (this.game.entityAlive[entityId] === 1) {
-                                    console.log(`[applyNetworkUnitData] Calling replaceUnit for entity ${entityId} -> ${targetUnitTypeId}`);
                                     this.game.call('replaceUnit', entityId, targetUnitTypeId);
                                 }
                             });
-                        } else {
-                            console.log(`[applyNetworkUnitData] Cannot replace: targetUnitTypeId=${targetUnitTypeId}, hasReplaceUnit=${this.game.hasService('replaceUnit')}`);
                         }
-                    } else {
-                        console.log(`[applyNetworkUnitData] Unit types match, no transformation needed`);
                     }
 
                     // Register the existing squad (whether transformed or not)
-                    console.log(`[applyNetworkUnitData] Entity ${firstEntityId} already exists, registering existing squad for placementId=${unitData.placementId}`);
                     this.registerExistingSquad(unitData, team, playerId);
                     return;
                 }
@@ -939,10 +899,8 @@ class PlacementSystem extends GUTS.BaseSystem {
                 // Check if this is a pending building (no squadUnits because peasant hasn't built it yet)
                 // These will be spawned by spawnPendingBuilding when the peasant arrives
                 if (unitData.isPendingBuilding || unitData.assignedBuilder) {
-                    console.log(`[applyNetworkUnitData] Skipping pending building placementId=${unitData.placementId} - will be spawned by builder ${unitData.assignedBuilder}`);
                     return;
                 }
-                console.log(`[applyNetworkUnitData] No squadUnits provided, will spawn new entities`);
             }
 
             // Store playerId on unitData for unit creation
@@ -976,19 +934,16 @@ class PlacementSystem extends GUTS.BaseSystem {
         const playerTeam = player.team;
 
         if (newUnitCost > playerGold) {
-            console.log('[validatePlacement] FAIL: Not enough gold', { newUnitCost, playerGold });
             return false;
         }
 
         // Only check supply for units, not buildings (buildings provide supply, not consume it)
         const isBuilding = placement.unitType?.collection === 'buildings' || placement.collection === this.enums?.objectTypeDefinitions?.buildings;
         if (!isBuilding && this.game.hasService('canAffordSupply') && !this.game.call('canAffordSupply', playerTeam, placement.unitType)) {
-            console.log('[validatePlacement] FAIL: Not enough supply', { playerTeam, unitType: placement.unitType?.id });
             return false;
         }
 
         if (!placement.gridPosition || !placement.unitType) {
-            console.log('[validatePlacement] FAIL: Missing gridPosition or unitType', { gridPosition: placement.gridPosition, unitType: placement.unitType?.id });
             return false;
         }
 
@@ -996,7 +951,6 @@ class PlacementSystem extends GUTS.BaseSystem {
         const squadData = this.game.call('getSquadData', placement.unitType);
         const cells = this.game.call('getSquadCells', placement.gridPosition, squadData);
         if (!this.game.call('isValidGridPlacement', cells, playerTeam)) {
-            console.log('[validatePlacement] FAIL: Invalid grid placement', { gridPosition: placement.gridPosition, cells, playerTeam });
             return false;
         }
 
@@ -1014,7 +968,6 @@ class PlacementSystem extends GUTS.BaseSystem {
             );
 
             if (!validation.valid) {
-                console.log('[validatePlacement] FAIL: Gold mine must be placed on an unclaimed gold vein');
                 return false;
             }
         }
@@ -1079,7 +1032,11 @@ class PlacementSystem extends GUTS.BaseSystem {
      * Called when battle ends to clean up fully killed squads
      */
     removeDeadSquadsAfterRound() {
-   
+        // Debug: Log entry
+        if (this.game.state.debugEntityDestruction) {
+            console.warn('[PlacementSystem] removeDeadSquadsAfterRound called');
+        }
+
         const entitiesWithPlacement = this.game.getEntitiesWith('placement');
         const processedPlacements = new Set();
         const placementsToCleanup = [];
@@ -1170,6 +1127,13 @@ class PlacementSystem extends GUTS.BaseSystem {
      * Called when battle ends
      */
     onBattleEnd() {
+        // Debug: Log when onBattleEnd is triggered
+        console.warn('[PlacementSystem] onBattleEnd triggered', {
+            phase: this.game.state.phase,
+            round: this.game.state.round,
+            isHuntMission: this.game.state.isHuntMission,
+            stack: new Error().stack
+        });
         this.removeDeadSquadsAfterRound();
     }
 
@@ -1466,7 +1430,6 @@ class PlacementSystem extends GUTS.BaseSystem {
 
         // Check if building already exists (from ECS sync or previous spawn)
         if (buildingState.targetBuildingEntityId > 0 && this.game.entityAlive[buildingState.targetBuildingEntityId] === 1) {
-            console.log(`[spawnPendingBuilding] Building entity ${buildingState.targetBuildingEntityId} already exists for builder ${builderId}, skipping spawn`);
             return buildingState.targetBuildingEntityId;
         }
 

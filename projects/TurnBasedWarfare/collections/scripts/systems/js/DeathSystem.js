@@ -81,6 +81,11 @@ class DeathSystem extends GUTS.BaseSystem {
             this.game.call('playDeathAnimation', entityId);
         }
 
+        // Drop loot if this is a neutral monster (hunt missions)
+        if (this.game.hasService('dropLoot') && this.game.hasComponent(entityId, 'neutralMonster')) {
+            this.game.call('dropLoot', entityId);
+        }
+
         // Trigger onUnitKilled event immediately when unit starts dying
         // This allows simulation to end as soon as a combat unit dies,
         // rather than waiting for the death animation to complete

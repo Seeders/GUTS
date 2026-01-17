@@ -173,8 +173,8 @@ describe('HeadlessSkirmishRunner', () => {
 
             async setup(config) {
                 this.config = {
-                    level: config.level || 'level_1',
-                    selectedLevel: config.level || 'level_1',
+                    level: config.level || 'forest',
+                    selectedLevel: config.level || 'forest',
                     startingGold: config.startingGold || 100,
                     seed: config.seed || Date.now(),
                     selectedTeam: config.selectedTeam || 'left',
@@ -244,7 +244,7 @@ describe('HeadlessSkirmishRunner', () => {
             expect(runner.isSetup).toBe(true);
             expect(game.state.isLocalGame).toBe(true);
             expect(game.state.skirmishConfig.startingGold).toBe(100);
-            expect(game.state.skirmishConfig.level).toBe('level_1');
+            expect(game.state.skirmishConfig.level).toBe('forest');
         });
 
         it('should configure game state with custom values', async () => {

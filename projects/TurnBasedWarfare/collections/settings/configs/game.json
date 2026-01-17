@@ -57,7 +57,8 @@
     "BaseBehaviorNode",
     "SceneManager",
     "HeadlessLogger",
-    "ChatSystem"
+    "ChatSystem",
+    "GameCameraController"
   ],
   "systems": [
     "GameSystem",
@@ -120,7 +121,12 @@
     "CheatCodeSystem",
     "SkirmishGameSystem",
     "OnlineLobbyUISystem",
-    "GameChatSystem"
+    "GameChatSystem",
+    "CampaignSaveSystem",
+    "CampaignSystem",
+    "HomeBaseUISystem",
+    "HuntMissionSystem",
+    "LootSystem"
   ],
   "classes": [
     {

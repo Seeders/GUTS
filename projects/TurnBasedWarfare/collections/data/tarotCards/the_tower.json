@@ -1,0 +1,42 @@
+{
+  "id": "the_tower",
+  "number": 17,
+  "title": "The Tower",
+  "texture": "tarot_17_the_tower",
+  "past": {
+    "upright": {
+      "name": "Breakthrough",
+      "description": "Critical hits deal double damage",
+      "effects": [{ "target": "player_units", "stat": "critDamage", "operation": "multiply", "value": 2.0 }]
+    },
+    "reversed": {
+      "name": "Fragility",
+      "description": "Your buildings have -50% health",
+      "effects": [{ "target": "player_buildings", "stat": "maxHealth", "operation": "multiply", "value": 0.5 }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Destruction",
+      "description": "All buildings take +50% damage",
+      "effects": [{ "target": "all_buildings", "stat": "damageTaken", "operation": "multiply", "value": 1.5 }]
+    },
+    "reversed": {
+      "name": "Disaster",
+      "description": "Random explosions occur on the battlefield",
+      "effects": [{ "target": "mission", "stat": "randomExplosions", "operation": "set", "value": true }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Liberation",
+      "description": "Destroy enemy base for bonus rewards",
+      "effects": [{ "target": "rewards", "stat": "baseDestructionBonus", "operation": "add", "value": 100 }]
+    },
+    "reversed": {
+      "name": "Ruin",
+      "description": "Lose your base but keep all rewards",
+      "effects": [{ "target": "rewards", "stat": "noBasePenalty", "operation": "set", "value": true }]
+    }
+  }
+}

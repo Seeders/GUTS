@@ -11,6 +11,9 @@
     "BaseNetworkSystem",
     "ClientNetworkSystem",
     "SkirmishGameSystem",
-    "SaveSystem"
+    "SaveSystem",
+    "CampaignSaveSystem",
+    "CampaignSystem",
+    "HomeBaseUISystem"
   ]
 }

@@ -1,0 +1,42 @@
+{
+  "id": "the_moon",
+  "number": 19,
+  "title": "The Moon",
+  "texture": "tarot_19_the_moon",
+  "past": {
+    "upright": {
+      "name": "Intuition",
+      "description": "Stealth units stay hidden 50% longer",
+      "effects": [{ "target": "player_units", "stat": "stealthDuration", "operation": "multiply", "value": 1.5 }]
+    },
+    "reversed": {
+      "name": "Deception",
+      "description": "First attack from stealth deals +100% damage",
+      "effects": [{ "target": "player_units", "stat": "stealthBurstDamage", "operation": "add", "value": 1.0 }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Illusion",
+      "description": "Some enemies are decoys with no loot",
+      "effects": [{ "target": "mission", "stat": "decoyEnemies", "operation": "set", "value": 0.25 }]
+    },
+    "reversed": {
+      "name": "Confusion",
+      "description": "All units have -15% accuracy",
+      "effects": [{ "target": "all_units", "stat": "accuracy", "operation": "multiply", "value": 0.85 }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Dreams",
+      "description": "Preview next mission's modifiers",
+      "effects": [{ "target": "rewards", "stat": "previewNext", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Nightmares",
+      "description": "Next mission has random penalty",
+      "effects": [{ "target": "rewards", "stat": "nextMissionPenalty", "operation": "set", "value": true }]
+    }
+  }
+}

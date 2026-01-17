@@ -429,7 +429,8 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                 cameraNear: { value: 1 },
                 cameraFar: { value: 100 },
                 cameraWorldMatrix: { value: new THREE.Matrix4() },
-                cameraProjectionMatrixInv: { value: new THREE.Matrix4() }
+                cameraProjectionMatrixInv: { value: new THREE.Matrix4() },
+                isPerspective: { value: 0.0 }
             },
             
             material: null,
@@ -457,23 +458,24 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                 uniform float cameraFar;
                 uniform mat4 cameraWorldMatrix;
                 uniform mat4 cameraProjectionMatrixInv;
+                uniform float isPerspective;
 
                 varying vec2 vUv;
-                
+
                 float readDepth(vec2 coord) {
                     return texture2D(tDepth, coord).x;
                 }
-                
+
                 vec3 getWorldPosition(vec2 uv, float depth) {
                     float x = uv.x * 2.0 - 1.0;
                     float y = uv.y * 2.0 - 1.0;
                     float z = depth * 2.0 - 1.0;
-                    
+
                     vec4 clipPos = vec4(x, y, z, 1.0);
                     vec4 viewPos = cameraProjectionMatrixInv * clipPos;
                     viewPos /= viewPos.w;
                     vec4 worldPos = cameraWorldMatrix * viewPos;
-                    
+
                     return worldPos.xyz;
                 }
 
@@ -481,35 +483,35 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                     vec4 sceneColor = texture2D(tDiffuse, vUv);
                     float unexploredIntensity = 0.025;
                     float exploredIntensity = 0.2;
-                    
+
                     float depth = readDepth(vUv);
                     vec3 worldPos = getWorldPosition(vUv, depth);
-                    
+
                     float halfSize = worldSize * 0.5;
                     vec2 fogUV = vec2(
                         (worldPos.x + halfSize) / worldSize,
                         (-worldPos.z + halfSize) / worldSize
                     );
-                    
+
                     vec3 grayscale = vec3(dot(sceneColor.rgb, vec3(0.299, 0.587, 0.114)));
-                    
+
                     float inset = 1e-4;
                     if (fogUV.x < inset || fogUV.x > 1.0 - inset ||
                         fogUV.y < inset || fogUV.y > 1.0 - inset) {
                         gl_FragColor = vec4(grayscale * unexploredIntensity, 1.0);
                         return;
                     }
-                    
+
                     vec4 fogSample = texture2D(fogTexture, fogUV);
                     float visibleGradient = fogSample.r;
-                    
+
                     vec4 explorationSample = texture2D(explorationTexture, fogUV);
                     float explorationGradient = explorationSample.r;
-                    
+
                     vec3 exploredColor = sceneColor.rgb * exploredIntensity;
                     vec3 visibleColor = mix(exploredColor, sceneColor.rgb, visibleGradient);
                     vec3 finalColor = mix(grayscale * unexploredIntensity, visibleColor, explorationGradient);
-                    
+
                     gl_FragColor = vec4(finalColor, 1.0);
                 }
             `
@@ -534,24 +536,27 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         };
         
         this.fogPass.render = function(renderer, writeBuffer, readBuffer) {
-            if (fogSystemRef.game.camera) {
-                fogPassObj.uniforms.cameraWorldMatrix.value.copy(fogSystemRef.game.camera.matrixWorld);
-                fogPassObj.uniforms.cameraProjectionMatrixInv.value.copy(fogSystemRef.game.camera.projectionMatrixInverse);
-                fogPassObj.uniforms.cameraNear.value = fogSystemRef.game.camera.near;
-                fogPassObj.uniforms.cameraFar.value = fogSystemRef.game.camera.far;
+            const camera = fogSystemRef.game.call('getCamera');
+
+            if (camera) {
+                fogPassObj.uniforms.cameraWorldMatrix.value.copy(camera.matrixWorld);
+                fogPassObj.uniforms.cameraProjectionMatrixInv.value.copy(camera.projectionMatrixInverse);
+                fogPassObj.uniforms.cameraNear.value = camera.near;
+                fogPassObj.uniforms.cameraFar.value = camera.far;
+                fogPassObj.uniforms.isPerspective.value = camera.isPerspectiveCamera ? 1.0 : 0.0;
             }
-            
+
             fogSystemRef.renderFogTexture();
-            
+
             fogPassObj.uniforms.tDiffuse.value = readBuffer.texture;
             fogPassObj.uniforms.tDepth.value = readBuffer.depthTexture;
-            
+
             if (fogPassObj.needsSwap) {
                 renderer.setRenderTarget(writeBuffer);
             } else {
                 renderer.setRenderTarget(null);
             }
-            
+
             fogPassObj.fsQuad.render(renderer);
         };
                 

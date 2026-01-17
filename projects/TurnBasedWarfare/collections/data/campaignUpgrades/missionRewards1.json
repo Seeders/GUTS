@@ -1,0 +1,11 @@
+{
+  "id": "missionRewards1",
+  "title": "Spoils of War I",
+  "description": "+10% mission rewards",
+  "category": "economy",
+  "cost": { "glory": 50 },
+  "effect": { "stat": "missionRewards", "value": 10 },
+  "requires": [],
+  "maxLevel": 3,
+  "icon": "treasure"
+}

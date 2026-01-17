@@ -523,11 +523,47 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     border-color: rgba(0, 255, 100, 0.8);
     box-shadow: 0 0 10px rgba(0, 255, 100, 0.5);
 }
+#unitPortrait.third-person {
+    border-color: rgba(100, 150, 255, 0.8);
+    box-shadow: 0 0 10px rgba(100, 150, 255, 0.5);
+}
 #unitPortrait:hover {
     cursor: pointer;
 }
 #unitPortrait {
     position: relative;
+}
+
+/* Third-person camera button */
+.third-person-camera-btn {
+    position: absolute;
+    top: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 28px;
+    border: 2px solid rgba(100, 150, 255, 0.5);
+    border-radius: 6px;
+    background: rgba(20, 20, 40, 0.9);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    pointer-events: auto;
+}
+.third-person-camera-btn:hover {
+    border-color: rgba(100, 150, 255, 0.9);
+    background: rgba(40, 40, 80, 0.95);
+    transform: translateX(-50%) scale(1.1);
+}
+.third-person-camera-btn.active {
+    border-color: rgba(100, 150, 255, 1);
+    background: rgba(60, 80, 140, 0.95);
+    box-shadow: 0 0 8px rgba(100, 150, 255, 0.6);
 }
 .unit-stats-overlay {
     position: absolute;
@@ -1684,6 +1720,60 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     min-width: 150px;
 }
 
+/* Campaign Rewards Preview */
+.rewards-preview {
+    margin: 1.5rem 0;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid var(--dark-bronze);
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+}
+
+.rewards-preview h3 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    padding-bottom: 0.5rem;
+}
+
+.rewards-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.reward-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-title);
+}
+
+.reward-item .reward-icon {
+    font-size: 1.2rem;
+}
+
+.reward-item .reward-value {
+    color: var(--primary-gold);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.reward-item .reward-label {
+    color: var(--cream);
+    font-size: 0.9rem;
+    text-transform: capitalize;
+}
+
 /* Loading Screen */
 #loadingScreen {
     background: var(--shadow-gradient);
@@ -2051,9 +2141,14 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     width: 6.5em;
 }
 #rotateCameraRightBtn {
-    position: absolute;
-    right: 0;
     width: 6.5em;
+}
+#toggleCameraModeBtn {
+    width: 3em;
+}
+#toggleCameraModeBtn.active {
+    background: var(--primary-gold);
+    color: #000;
 }
 #placementReadyBtn {
     width: 100%;

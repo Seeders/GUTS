@@ -272,7 +272,7 @@ class DamageNumberSystem extends GUTS.BaseSystem {
     }
     
     updateDamageNumberInstance(damageObj, progress) {
-        if (!this.game.camera) return;
+        if (!this.game.call('getCamera')) return;
 
         // Calculate position with simple upward motion - reuse vector instead of clone()
         const pos = this._currentPos;
@@ -341,9 +341,9 @@ class DamageNumberSystem extends GUTS.BaseSystem {
     }
 
     updateDamageNumbers() {
-        if (!this.game.state || this.damageNumbers.length === 0 || !this.game.camera) return;
+        const camera = this.game.call('getCamera');
+        if (!this.game.state || this.damageNumbers.length === 0 || !camera) return;
         // Update camera vectors for billboarding (reuse pre-allocated vectors)
-        const camera = this.game.camera;
 
         camera.matrixWorld.extractBasis(this._cameraRight, this._cameraUp, this._tempVec3);
 

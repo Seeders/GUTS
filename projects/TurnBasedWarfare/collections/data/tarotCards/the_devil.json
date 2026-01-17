@@ -1,0 +1,48 @@
+{
+  "id": "the_devil",
+  "number": 16,
+  "title": "The Devil",
+  "texture": "tarot_16_the_devil",
+  "past": {
+    "upright": {
+      "name": "Power",
+      "description": "+30% damage but -30% armor",
+      "effects": [
+        { "target": "player_units", "stat": "damage", "operation": "multiply", "value": 1.3 },
+        { "target": "player_units", "stat": "armor", "operation": "multiply", "value": 0.7 }
+      ]
+    },
+    "reversed": {
+      "name": "Chains",
+      "description": "Units can't retreat from combat",
+      "effects": [{ "target": "player_units", "stat": "noRetreat", "operation": "set", "value": true }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Bondage",
+      "description": "Enemies are empowered (+25% damage/health)",
+      "effects": [
+        { "target": "enemy_units", "stat": "damage", "operation": "multiply", "value": 1.25 },
+        { "target": "enemy_units", "stat": "maxHealth", "operation": "multiply", "value": 1.25 }
+      ]
+    },
+    "reversed": {
+      "name": "Temptation",
+      "description": "Some enemies will join you if wounded",
+      "effects": [{ "target": "enemy_units", "stat": "defectWhenWounded", "operation": "set", "value": true }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Materialism",
+      "description": "+50% gold rewards",
+      "effects": [{ "target": "rewards", "stat": "goldMultiplier", "operation": "add", "value": 0.5 }]
+    },
+    "reversed": {
+      "name": "Corruption",
+      "description": "Cursed items with powerful effects",
+      "effects": [{ "target": "rewards", "stat": "cursedItems", "operation": "set", "value": true }]
+    }
+  }
+}

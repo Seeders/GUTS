@@ -161,6 +161,9 @@ class GameUISystem extends GUTS.BaseSystem {
     }
 
     async leaveGame() {
+        console.log('[GameUISystem] leaveGame called');
+        console.log('[GameUISystem] skirmishConfig:', this.game.state.skirmishConfig);
+
         if (this.game.hasService('leaveRoom')) {
             this.game.call('leaveRoom');
         }
@@ -186,6 +189,49 @@ class GameUISystem extends GUTS.BaseSystem {
 
         this.currentScreen = null;
 
+        // Check if this was a campaign mission
+        const isCampaignMission = this.game.state.skirmishConfig?.isCampaignMission;
+        console.log('[GameUISystem] isCampaignMission:', isCampaignMission);
+        if (isCampaignMission) {
+            // Use the stored game result (set by handleGameEnd)
+            const lastGameResult = this.game.state.lastGameResult;
+            const victory = lastGameResult?.isWinner ?? false;
+            const nodeId = this.game.state.skirmishConfig?.missionNodeId;
+
+            // Get scroll data if this was a scroll mission
+            const isScrollMission = this.game.state.skirmishConfig?.isScrollMission;
+            let scrollData = null;
+            if (isScrollMission) {
+                scrollData = {
+                    rewardMultiplier: this.game.state.skirmishConfig?.rewardMultiplier || 1,
+                    modifiers: this.game.state.skirmishConfig?.scrollModifiers || []
+                };
+            }
+
+            // Store pending results for HomeBaseUISystem to pick up after scene switch
+            // HomeBaseUISystem.onSceneLoad will detect this and process mission results
+            this.game.state.pendingMissionResults = {
+                victory,
+                nodeId,
+                scrollData,
+                stats: {
+                    round: lastGameResult?.totalRounds || this.game.state.round || 1,
+                    goldEarned: 0,
+                    unitsDeployed: 0,
+                    unitsLost: 0
+                },
+                // Mark that we need to process mission results (not just display)
+                needsProcessing: true
+            };
+
+            // Switch to campaign scene - HomeBaseUISystem.onSceneLoad will detect pending results
+            console.log('[GameUISystem] Switching to campaign scene with pendingMissionResults:', this.game.state.pendingMissionResults);
+            await this.game.switchScene('campaign');
+            console.log('[GameUISystem] Campaign scene switch complete');
+            return;
+        }
+
+        console.log('[GameUISystem] Switching to lobby scene');
         await this.game.switchScene('lobby');
 
         this.game.call('showMainMenu');

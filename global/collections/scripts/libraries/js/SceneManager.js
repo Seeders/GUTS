@@ -13,10 +13,11 @@ class SceneManager {
     /**
      * Load a scene by name
      * @param {string} sceneName - The name of the scene to load (from scenes collection)
+     * @param {Object} [params] - Optional parameters to pass to the scene's systems via onSceneLoad
      * @returns {Promise<void>}
      */
-    async loadScene(sceneName) {
-        console.log(`[SceneManager] loadScene('${sceneName}') called`);
+    async loadScene(sceneName, params = null) {
+        console.log(`[SceneManager] loadScene('${sceneName}') called`, params ? 'with params' : '');
 
         const collections = this.game.getCollections();
         const sceneData = collections.scenes?.[sceneName];
@@ -81,11 +82,14 @@ class SceneManager {
             }
         }
 
+        // Store params for systems to access
+        this.currentSceneParams = params;
+
         // Notify all systems that scene has loaded (initial setup)
-        await this.notifySceneLoaded(sceneData);
+        await this.notifySceneLoaded(sceneData, params);
 
         // Notify all systems for post-load processing (after all systems have done initial setup)
-        this.notifyPostSceneLoad(sceneData);
+        this.notifyPostSceneLoad(sceneData, params);
 
         console.log(`[SceneManager] loadScene('${sceneName}') complete`);
     }
@@ -93,10 +97,11 @@ class SceneManager {
     /**
      * Switch to a different scene
      * @param {string} sceneName - The name of the scene to switch to
+     * @param {Object} [params] - Optional parameters to pass to the scene's systems via onSceneLoad
      * @returns {Promise<void>}
      */
-    async switchScene(sceneName) {
-        await this.loadScene(sceneName);
+    async switchScene(sceneName, params = null) {
+        await this.loadScene(sceneName, params);
     }
 
     /**
@@ -270,11 +275,12 @@ class SceneManager {
     /**
      * Notify all systems that a scene has been loaded
      * @param {Object} sceneData - The scene configuration
+     * @param {Object} [params] - Optional parameters passed to switchScene
      */
-    async notifySceneLoaded(sceneData) {
+    async notifySceneLoaded(sceneData, params = null) {
         for (const system of this.game.systems) {
             if (system.enabled && system.onSceneLoad) {
-                await system.onSceneLoad(sceneData);
+                await system.onSceneLoad(sceneData, params);
             }
         }
     }
@@ -283,11 +289,12 @@ class SceneManager {
      * Notify all systems after scene load is complete
      * This runs after all systems have done their initial onSceneLoad setup
      * @param {Object} sceneData - The scene configuration
+     * @param {Object} [params] - Optional parameters passed to switchScene
      */
-    notifyPostSceneLoad(sceneData) {
+    notifyPostSceneLoad(sceneData, params = null) {
         for (const system of this.game.systems) {
             if (system.enabled && system.postSceneLoad) {
-                system.postSceneLoad(sceneData);
+                system.postSceneLoad(sceneData, params);
             }
         }
     }

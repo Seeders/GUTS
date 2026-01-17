@@ -3,7 +3,7 @@
   "description": "Apprentice (intel/strength magic caster) vs Acolyte (intel/dex healer). Pure intelligence matchup.",
   "seed": 42,
   "startingGold": 500,
-  "level": "level_1",
+  "level": "forest",
   "buildOrders": ["apprentice", "acolyte"],
   "maxRounds": 10,
   "endOnFirstDeath": false

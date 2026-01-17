@@ -1,90 +1,117 @@
 class CameraControlSystem extends GUTS.BaseSystem {
   static services = [
+    'getCamera',
+    'setCamera',
     'cameraLookAt',
     'toggleCameraFollow',
     'getCameraFollowTarget',
     'rotateCamera',
-    'positionCameraAtStart'
+    'positionCameraAtStart',
+    'toggleCameraMode',
+    'getCameraMode',
+    'startThirdPersonCamera',
+    'stopThirdPersonCamera',
+    'getThirdPersonTarget'
   ];
 
   constructor(game) {
     super(game);
     this.game.cameraControlSystem = this;
 
-    this.SPEED = 900; // world units per second
-
-    // Mouse state
-    this.mouseX = -1;
-    this.mouseY = -1;
-    this.inside = false;
-
-    // When mouse leaves the window, keep panning in these directions
-    this.holdDirX = 0; // -1 left, +1 right
-    this.holdDirZ = 0; // +1 up/forward, -1 down/backward
-
-    this.vertical_threshold = 10;
-
-    // Reusable vectors
-    this.right = new THREE.Vector3();
-    this.fwd   = new THREE.Vector3();
-    this.delta = new THREE.Vector3();
-
     // Camera follow mode
     this.followingEntityId = null;
 
-    // Camera rotation (yaw angle in radians)
-    this.cameraYaw = 135 * Math.PI / 180; // Default isometric angle
+    // Camera controller (initialized in init())
+    this.cameraController = null;
 
-    // Reusable vector for lookAt to avoid allocations
-    this._lookAtTarget = new THREE.Vector3();
+    // Active camera reference (managed by this system)
+    this.activeCamera = null;
   }
 
   init() {
-    this.onMove  = (e)=>this.onMouseMove(e);
-    this.onEnter = ()=>{ this.inside = true; this.holdDirX = 0; this.holdDirZ = 0; };
-    this.onLeave = ()=>this.onMouseLeave();
-    this.onBlur  = ()=>{ this.inside = false; this.holdDirX = 0; this.holdDirZ = 0; };
-    this.onWheel = (e) => this.handleWheel(e);
+    // Initialize the GameCameraController
+    this.cameraController = new GUTS.GameCameraController({
+      getCamera: () => this.activeCamera,
+      setCamera: (camera) => {
+        this.activeCamera = camera;
+      },
+      container: document.body,
+      getGroundMesh: () => this.game.call('getGroundMesh'),
+      getWorldBounds: () => {
+        const extendedSize = this.game.call('getWorldExtendedSize');
+        const half = extendedSize ? extendedSize * 0.5 : 1000;
+        return { min: -half, max: half };
+      },
+      getCameraHeight: () => this.getCameraHeight(),
+      onModeChange: (newMode, prevMode) => {
+        // Stop following when switching modes
+        if (this.followingEntityId) {
+          this.followingEntityId = null;
+          this.game.triggerEvent('onUnFollowEntity');
+        }
+        // Notify UI of mode change
+        this.game.triggerEvent('onCameraModeChange', { mode: newMode, prevMode });
+      }
+    });
 
-    window.addEventListener('mousemove', this.onMove, { passive: true });
-    window.addEventListener('mouseenter', this.onEnter);
-    window.addEventListener('mouseleave', this.onLeave);
-    window.addEventListener('blur',      this.onBlur);
-    window.addEventListener('wheel', this.onWheel);
+    this.cameraController.initialize();
   }
 
-  // Alias methods for service names
+  /**
+   * Get the current active camera (service method)
+   * All systems should use this instead of this.game.camera
+   */
+  getCamera() {
+    return this.activeCamera;
+  }
+
+  /**
+   * Set the active camera (service method)
+   * Called by WorldSystem when it creates the camera
+   */
+  setCamera(camera) {
+    this.activeCamera = camera;
+  }
+
+  // ==================== SERVICE METHODS ====================
+
   cameraLookAt(worldX, worldZ) {
-    return this.lookAtRequest(worldX, worldZ);
+    this.followingEntityId = null;
+    this.game.triggerEvent('onUnFollowEntity');
+
+    if (this.cameraController) {
+      this.cameraController.lookAt(worldX, worldZ);
+    }
   }
 
   toggleCameraFollow(entityId) {
-    return this.toggleFollow(entityId);
+    if (this.followingEntityId === entityId) {
+      this.followingEntityId = null;
+      return false;
+    } else {
+      this.followingEntityId = entityId;
+      if (entityId) {
+        const transform = this.game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+        if (pos && this.cameraController) {
+          this.cameraController.lookAt(pos.x, pos.z);
+        }
+      }
+      return true;
+    }
   }
 
   getCameraFollowTarget() {
     return this.followingEntityId;
   }
 
-  lookAtRequest(worldX, worldZ){
-      this.followingEntityId = null;
-      this.game.triggerEvent('onUnFollowEntity');
-      this.lookAt(worldX, worldZ);
-  }
-
-  onSceneLoad(sceneData) {
-    // Camera is now available from WorldSystem
-    if (!this.game.camera) {
-      console.warn('[CameraControlSystem] Camera not available in onSceneLoad');
-      return;
+  rotateCamera(direction) {
+    if (this.cameraController) {
+      this.cameraController.rotateGameCamera(direction);
     }
-
-    // Position camera to look at player's starting position (town hall or first building)
-    this.positionCameraAtStart();
   }
 
   positionCameraAtStart() {
-    // Find player's town hall or first building
     const buildings = this.game.getEntitiesWith('transform', 'team', 'unitType');
     let targetPos = null;
 
@@ -102,143 +129,120 @@ class CameraControlSystem extends GUTS.BaseSystem {
       }
     }
 
-    // Default to center if no building found
     if (!targetPos) {
       targetPos = { x: 0, z: 0 };
     }
 
-    this.lookAt(targetPos.x, targetPos.z);
+    if (this.cameraController) {
+      this.cameraController.lookAt(targetPos.x, targetPos.z);
+    }
   }
 
-  update() {
-    // Follow unit if in follow mode
-    if (this.followingEntityId) {
-      const transform = this.game.getComponent(this.followingEntityId, 'transform');
-      const pos = transform?.position;
-      if (pos) {
-        this.lookAt(pos.x, pos.z);
-      } else {
-        // Entity no longer exists, stop following
-        this.followingEntityId = null;
-      }
+  toggleCameraMode() {
+    if (this.cameraController) {
+      this.cameraController.toggleCameraMode();
     }
+  }
+
+  getCameraMode() {
+    return this.cameraController?.getCameraMode() || 'game';
   }
 
   /**
-   * Toggle camera follow mode for an entity
-   * @param {string} entityId - The entity to follow, or null to stop following
-   * @returns {boolean} - Whether camera is now following
+   * Start third-person camera following an entity
+   * @param {number} entityId - Entity to follow
    */
-  toggleFollow(entityId) {
-    if (this.followingEntityId === entityId) {
-      // Already following this entity, stop following
-      this.followingEntityId = null;
-      return false;
-    } else {
-      // Start following this entity
-      this.followingEntityId = entityId;
-      // Immediately look at the entity
-      if (entityId) {
-        const transform = this.game.getComponent(entityId, 'transform');
-        const pos = transform?.position;
-        if (pos) {
-          this.lookAt(pos.x, pos.z);
-        }
+  startThirdPersonCamera(entityId) {
+    if (!this.cameraController) return;
+
+    // Clear any existing follow mode
+    this.followingEntityId = null;
+
+    // Create target object that provides position and rotation
+    const game = this.game;
+    const target = {
+      entityId: entityId,
+      getPosition: () => {
+        const transform = game.getComponent(entityId, 'transform');
+        return transform?.position || null;
+      },
+      getRotation: () => {
+        const transform = game.getComponent(entityId, 'transform');
+        return transform?.rotation?.y || 0;
       }
-      return true;
-    }
+    };
+
+    this.cameraController.setThirdPersonTarget(target);
+    this.cameraController.setCameraMode('thirdPerson');
+
+    // Trigger event for UI updates
+    this.game.triggerEvent('onThirdPersonCameraStart', { entityId });
   }
 
-  handleWheel(e) {
-    if (!this.game.camera) return;
+  /**
+   * Stop third-person camera and return to game mode
+   */
+  stopThirdPersonCamera() {
+    if (!this.cameraController) return;
 
-    let dy = e.deltaY;
-    if(dy > 0){
-      //scrolling down
-      this.game.camera.zoom = this.game.camera.zoom * 0.9;
-    } else {
-      this.game.camera.zoom = this.game.camera.zoom * 1.1;
+    const target = this.cameraController.getThirdPersonTarget();
+    const entityId = target?.entityId;
+
+    this.cameraController.setThirdPersonTarget(null);
+    this.cameraController.setCameraMode('game');
+
+    // Trigger event for UI updates
+    this.game.triggerEvent('onThirdPersonCameraStop', { entityId });
+  }
+
+  /**
+   * Get the entity being followed in third-person mode
+   */
+  getThirdPersonTarget() {
+    const target = this.cameraController?.getThirdPersonTarget();
+    return target?.entityId || null;
+  }
+
+  // ==================== LIFECYCLE ====================
+
+  onSceneLoad(sceneData) {
+    // Camera should be set by WorldSystem via setCamera service
+    if (!this.activeCamera) {
+      console.warn('[CameraControlSystem] Camera not available in onSceneLoad - WorldSystem should call setCamera');
+      return;
     }
-    this.game.camera.zoom = Math.min(2, this.game.camera.zoom);
-    this.game.camera.updateProjectionMatrix();
+    this.positionCameraAtStart();
+  }
+
+  update() {
+    const dt = this.game.state.deltaTime || 1/60;
+
+    // Follow unit if in follow mode (only in game camera mode)
+    if (this.followingEntityId && this.getCameraMode() === 'game') {
+      const transform = this.game.getComponent(this.followingEntityId, 'transform');
+      const pos = transform?.position;
+      if (pos && this.cameraController) {
+        this.cameraController.lookAt(pos.x, pos.z);
+      } else {
+        this.followingEntityId = null;
+      }
+    }
+
+    // Update camera controller
+    if (this.cameraController) {
+      this.cameraController.update(dt);
+    }
   }
 
   dispose() {
-    window.removeEventListener('mousemove', this.onMove);
-    window.removeEventListener('mouseenter', this.onEnter);
-    window.removeEventListener('mouseleave', this.onLeave);
-    window.removeEventListener('blur',       this.onBlur);
-    window.removeEventListener('wheel', this.onWheel);
+    if (this.cameraController) {
+      this.cameraController.destroy();
+      this.cameraController = null;
+    }
   }
 
   onSceneUnload() {
     // Note: dispose() is called by SceneManager after onSceneUnload
-  }
-
-  onMouseMove(e) {
-    this.mouseX = e.clientX;
-    this.mouseY = e.clientY;
-    this.inside = true;
-  }
-
-  onMouseLeave() {
-    // Decide which edge we left from and “hold” that pan direction
-    const w = window.innerWidth  || document.documentElement.clientWidth;
-    const h = window.innerHeight || document.documentElement.clientHeight;
-
-    // X hold
-    if (this.mouseX <= 0)            this.holdDirX = -1;
-    else if (this.mouseX >= w - 1)   this.holdDirX =  1;
-    else                              this.holdDirX =  0;
-
-    // Z hold (reversed per your request: top = +forward, bottom = -backward)
-    if (this.mouseY <= this.vertical_threshold)            this.holdDirZ =  1;  // went off top -> forward
-    else if (this.mouseY >= h - this.vertical_threshold)   this.holdDirZ = -1;  // went off bottom -> backward
-    else                              this.holdDirZ =  0;
-
-    this.inside = false;
-  }
-
-  clampCamera(camera, padding = 0) {
-    const extendedSize = this.game.call('getWorldExtendedSize');
-    const half = extendedSize ? extendedSize * 0.5 : 1000;
-    camera.position.x = Math.max(-half + padding, Math.min(half - padding, camera.position.x));
-    camera.position.z = Math.max(-half + padding, Math.min(half - padding, camera.position.z));
-
-    if (camera.userData?.lookAt instanceof THREE.Vector3) {
-      camera.userData.lookAt.x = Math.max(-half + padding, Math.min(half - padding, camera.userData.lookAt.x));
-      camera.userData.lookAt.z = Math.max(-half + padding, Math.min(half - padding, camera.userData.lookAt.z));
-    }
-  }
-
-  updateGroundBasis(camera) {
-    this.right.set(1,0,0).applyQuaternion(camera.quaternion);
-    this.fwd.set(0,0,-1).applyQuaternion(camera.quaternion);
-    this.right.y = 0; this.fwd.y = 0;
-    if (this.right.lengthSq() > 0) this.right.normalize();
-    if (this.fwd.lengthSq() > 0) this.fwd.normalize();
-  }
-
-  lookAt(worldX, worldZ){
-    const pitch = 35.264 * Math.PI / 180;
-    const yaw = this.cameraYaw;
-    const distance = this.getCameraHeight();
-
-    const cdx = Math.sin(yaw) * Math.cos(pitch);
-    const cdz = Math.cos(yaw) * Math.cos(pitch);
-
-    const cameraPosition = {
-        x: worldX - cdx * distance,
-        y: distance,
-        z: worldZ - cdz * distance
-    };
-
-    this.game.camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    this.game.camera.lookAt(worldX, 0, worldZ);
-
-    // Reuse vector instead of creating new THREE.Vector3 each call
-    this._lookAtTarget.set(worldX, 0, worldZ);
-    this.game.camera.userData.lookAt = this._lookAtTarget;
   }
 
   /**
@@ -256,84 +260,5 @@ class CameraControlSystem extends GUTS.BaseSystem {
     this._cameraHeight = cameraSettings?.position?.y || 512;
 
     return this._cameraHeight;
-  }
-
-  /**
-   * Rotate the camera 45 degrees around the look-at point
-   * @param {string} direction - 'left' or 'right'
-   */
-  rotateCamera(direction) {
-    const camera = this.game.camera;
-    if (!camera) return;
-
-    // Raycast from center of screen to find ground point
-    const raycaster = new THREE.Raycaster();
-    const centerScreen = new THREE.Vector2(0, 0); // NDC center
-    raycaster.setFromCamera(centerScreen, camera);
-
-    // Find the terrain/ground
-    const ground = this.game.call('getGroundMesh');
-    if (!ground) return;
-
-    const intersects = raycaster.intersectObject(ground, true);
-    if (intersects.length === 0) return;
-
-    const groundPoint = intersects[0].point;
-
-    // Update yaw and rotate around the ground point
-    const rotationAngle = direction === 'left' ? -Math.PI / 4 : Math.PI / 4;
-    this.cameraYaw += rotationAngle;
-
-    // Set the look-at point and reposition camera
-    this.lookAt(groundPoint.x, groundPoint.z);
-  }
-
-
-  moveCamera() {
-    const cam = this.game.camera;
-    if (!cam) return;
-
-    const dt = this.game.state.deltaTime || 1/60;
-
-    const w = window.innerWidth  || document.documentElement.clientWidth;
-    const h = window.innerHeight || document.documentElement.clientHeight;
-
-    // Compute directions from current mouse position (supports off-screen values too)
-    let dirX = 0;
-    let dirZ = 0;
-
-    if (this.inside) {
-      if (this.mouseX <= 0)           dirX = -1;
-      else if (this.mouseX >= w - 1)  dirX =  1;
-
-      // Z reversed: top edge -> +1 (forward), bottom -> -1 (backward)
-      if (this.mouseY <= this.vertical_threshold)           dirZ =  1;
-      else if (this.mouseY >= h - this.vertical_threshold)  dirZ = -1;
-
-      // Clear holds while inside; we’ll recompute every frame
-      this.holdDirX = 0;
-      this.holdDirZ = 0;
-    } else {
-      // Outside window—keep moving in the last known edge direction
-      dirX = this.holdDirX;
-      dirZ = this.holdDirZ;
-    }
-
-    if (dirX === 0 && dirZ === 0) return;
-
-    this.updateGroundBasis(cam);
-
-    this.delta.set(0,0,0)
-      .addScaledVector(this.right, dirX * this.SPEED * dt)
-      .addScaledVector(this.fwd,   dirZ * this.SPEED * dt);
-
-    cam.position.add(this.delta);
-
-    if (cam.userData?.lookAt instanceof THREE.Vector3) {
-      cam.userData.lookAt.add(this.delta);
-      cam.lookAt(cam.userData.lookAt);
-    }
-
-    this.clampCamera(cam, 0);
   }
 }

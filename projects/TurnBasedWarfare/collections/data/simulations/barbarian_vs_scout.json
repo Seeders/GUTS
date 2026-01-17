@@ -3,7 +3,7 @@
   "description": "Barbarian (pure strength melee) vs Scout (dex/intel hybrid ranged). Pure melee vs hybrid ranged.",
   "seed": 42,
   "startingGold": 500,
-  "level": "level_1",
+  "level": "forest",
   "buildOrders": ["barbarian", "scout"],
   "maxRounds": 10,
   "endOnFirstDeath": false

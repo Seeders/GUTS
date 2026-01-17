@@ -1,0 +1,2232 @@
+/* ================================================
+   Campaign Mode Styles
+   ================================================ */
+
+/* Campaign Select Screen */
+#campaignSelect {
+    background-color: rgba(0, 0, 0, 0.5);
+    background-image: url('resources/images/background.png');
+    background-size: cover;
+    background-position: center center;
+    padding: 2rem;
+}
+
+.campaign-wrapper {
+    max-width: 900px;
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    background: rgba(10, 10, 20, 0.95);
+    border: 1px solid rgba(255, 170, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+}
+
+.campaign-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(180deg, rgba(20, 15, 30, 0.98) 0%, rgba(15, 12, 25, 0.95) 100%);
+    border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+}
+
+.campaign-title {
+    font-family: var(--font-decorative);
+    font-size: 2rem;
+    color: var(--primary-gold);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin: 0;
+    letter-spacing: 3px;
+}
+
+.campaign-select-content {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.campaign-select-section h2 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 1rem;
+}
+
+.campaign-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.campaign-card {
+    background: linear-gradient(135deg, rgba(30, 25, 40, 0.9), rgba(20, 15, 30, 0.9));
+    border: 1px solid rgba(255, 170, 0, 0.3);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.campaign-card:hover {
+    border-color: var(--primary-gold);
+    background: linear-gradient(135deg, rgba(40, 35, 50, 0.9), rgba(30, 25, 40, 0.9));
+    transform: translateX(5px);
+}
+
+.campaign-card-info {
+    flex: 1;
+}
+
+.campaign-card-name {
+    font-family: var(--font-title);
+    font-size: 1.3rem;
+    color: var(--cream);
+    margin-bottom: 0.25rem;
+}
+
+.campaign-card-meta {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.campaign-card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.campaign-card-actions .btn-small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+.campaign-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.no-campaigns {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 2rem;
+    font-style: italic;
+}
+
+/* New Campaign Dialog */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, rgba(30, 25, 40, 0.98), rgba(20, 15, 30, 0.98));
+    border: 2px solid var(--primary-gold);
+    border-radius: 10px;
+    padding: 2rem;
+    min-width: 400px;
+    text-align: center;
+}
+
+.modal-content h2 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--cream);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 170, 0, 0.3);
+    border-radius: 5px;
+    color: var(--cream);
+    font-size: 1.1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-gold);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Home Base Screen */
+#campaignHomeBase {
+    background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+    padding: 0;
+}
+
+.home-base-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.home-base-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: linear-gradient(180deg, rgba(20, 15, 30, 0.98), rgba(10, 8, 15, 0.95));
+    border-bottom: 2px solid rgba(255, 170, 0, 0.3);
+}
+
+.commander-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.commander-name {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    color: var(--primary-gold);
+}
+
+.campaign-stats {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.currency-display {
+    display: flex;
+    gap: 2rem;
+}
+
+.currency {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    min-width: 80px;
+}
+
+.currency-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.currency-amount {
+    font-family: var(--font-title);
+    font-size: 1.3rem;
+    color: var(--cream);
+}
+
+.currency-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+}
+
+.currency.valor { border: 1px solid #cd7f32; }
+.currency.glory { border: 1px solid #ffd700; }
+.currency.essence { border: 1px solid #9b59b6; }
+
+.home-base-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Tab Navigation */
+.home-base-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 170, 0, 0.2);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 1rem 2rem;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: var(--font-title);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-btn:hover {
+    color: var(--cream);
+    background: rgba(255, 170, 0, 0.1);
+}
+
+.tab-btn.active {
+    color: var(--primary-gold);
+    border-bottom-color: var(--primary-gold);
+    background: rgba(255, 170, 0, 0.05);
+}
+
+/* Tab Content */
+.home-base-content {
+    flex: 1;
+    overflow: hidden;
+}
+
+.tab-content {
+    display: none;
+    height: 100%;
+}
+
+.tab-content.active {
+    display: flex;
+}
+
+/* Atlas Tab */
+#atlasTab {
+    flex-direction: row;
+}
+
+.atlas-container {
+    flex: 1;
+    position: relative;
+    background: linear-gradient(135deg, #0d1117, #161b22);
+    overflow: hidden;
+}
+
+#atlasCanvas {
+    width: 100%;
+    height: 100%;
+}
+
+.atlas-sidebar {
+    width: 300px;
+    background: rgba(0, 0, 0, 0.4);
+    border-left: 1px solid rgba(255, 170, 0, 0.2);
+    padding: 1.5rem;
+}
+
+.node-info-panel h3 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 0.5rem;
+}
+
+.node-info-panel p {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1rem;
+}
+
+.node-rewards, .node-modifiers {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.node-rewards h4, .node-modifiers h4 {
+    font-size: 0.9rem;
+    color: var(--cream);
+    margin-bottom: 0.5rem;
+}
+
+/* Upgrades Tab */
+#upgradesTab {
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.upgrades-container {
+    display: flex;
+    gap: 2rem;
+    width: 100%;
+}
+
+.upgrade-category {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.upgrade-category h3 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+    padding-bottom: 0.5rem;
+}
+
+.upgrade-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.upgrade-card {
+    background: rgba(20, 20, 30, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.upgrade-card:hover {
+    border-color: var(--primary-gold);
+    transform: translateY(-2px);
+}
+
+.upgrade-card.maxed {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.upgrade-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.upgrade-card-title {
+    font-family: var(--font-title);
+    color: var(--cream);
+}
+
+.upgrade-card-level {
+    font-size: 0.85rem;
+    color: var(--primary-gold);
+}
+
+.upgrade-card-desc {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.5rem;
+}
+
+.upgrade-card-cost {
+    font-size: 0.85rem;
+    color: #cd7f32;
+}
+
+/* Unlocks Tab */
+#unlocksTab {
+    flex-direction: column;
+    padding: 1.5rem;
+}
+
+.unlocks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    height: 100%;
+}
+
+.unlock-filter {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 170, 0, 0.1);
+}
+
+.filter-btn.active {
+    background: rgba(255, 170, 0, 0.2);
+    border-color: var(--primary-gold);
+    color: var(--primary-gold);
+}
+
+.unlocks-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.unlock-card {
+    background: rgba(20, 20, 30, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.unlock-card:hover:not(.owned) {
+    border-color: var(--primary-gold);
+}
+
+.unlock-card.owned {
+    border-color: #27ae60;
+    background: rgba(39, 174, 96, 0.1);
+}
+
+.unlock-card.locked {
+    opacity: 0.5;
+}
+
+.unlock-card-title {
+    font-family: var(--font-title);
+    color: var(--cream);
+    margin-bottom: 0.5rem;
+}
+
+.unlock-card-desc {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.75rem;
+}
+
+.unlock-card-cost {
+    font-size: 0.9rem;
+    color: #ffd700;
+}
+
+.unlock-card-status {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.unlock-card.owned .unlock-card-status {
+    color: #27ae60;
+}
+
+/* Inventory Tab */
+#inventoryTab {
+    flex-direction: row;
+    padding: 1.5rem;
+    gap: 1.5rem;
+}
+
+.inventory-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.inventory-header {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.inventory-slot {
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    transition: all 0.2s ease;
+}
+
+.inventory-slot:hover {
+    border-color: var(--primary-gold);
+}
+
+.inventory-slot.filled {
+    background: rgba(40, 40, 60, 0.8);
+}
+
+.inventory-slot.selected {
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+}
+
+.inventory-sidebar {
+    width: 250px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.item-info-panel h3 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 0.5rem;
+}
+
+.item-info-panel p {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1rem;
+}
+
+#itemActions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Mission Results Screen */
+#missionResults {
+    background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+}
+
+.results-wrapper {
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    padding: 2rem;
+}
+
+.result-title {
+    font-family: var(--font-decorative);
+    font-size: 3rem;
+    margin-bottom: 2rem;
+}
+
+.result-title.victory {
+    color: #27ae60;
+    text-shadow: 0 0 20px rgba(39, 174, 96, 0.5);
+}
+
+.result-title.defeat {
+    color: #c0392b;
+    text-shadow: 0 0 20px rgba(192, 57, 43, 0.5);
+}
+
+.results-content {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.rewards-section, .stats-section {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.rewards-section h2, .stats-section h2 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.rewards-list, .stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.reward-item, .stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+}
+
+.reward-item span:first-child, .stat-item span:first-child {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.reward-item span:last-child {
+    color: var(--primary-gold);
+    font-weight: bold;
+}
+
+.results-actions {
+    margin-top: 1rem;
+}
+
+/* Utility Classes */
+.btn-small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+/* Difficulty badge for campaign */
+.mode-difficulty.campaign {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+}
+
+/* Items Collected Section (Mission Results) */
+.items-section {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.items-section h2 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.items-collected-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.collected-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid;
+    border-radius: 8px;
+    transition: transform 0.2s ease;
+}
+
+.collected-item:hover {
+    transform: scale(1.05);
+}
+
+.collected-item .item-icon {
+    font-size: 1.2rem;
+}
+
+.collected-item .item-name {
+    color: var(--cream);
+    font-size: 0.9rem;
+}
+
+.no-items {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+    padding: 1rem;
+}
+
+/* Inventory Item Display Improvements */
+.inventory-slot .item-amount {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 0.7rem;
+    color: var(--cream);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 0 4px;
+    border-radius: 3px;
+}
+
+.inventory-slot {
+    position: relative;
+}
+
+/* Item rarity colors */
+.inventory-slot[data-rarity="common"] { border-color: #7f8c8d; }
+.inventory-slot[data-rarity="rare"] { border-color: #3498db; }
+.inventory-slot[data-rarity="epic"] { border-color: #9b59b6; }
+.inventory-slot[data-rarity="legendary"] { border-color: #f39c12; }
+
+/* Scroll Actions Panel */
+.scroll-actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.scroll-actions-title {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+}
+
+.scroll-actions .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.modifier-reroll-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.modifier-reroll-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    border-left: 3px solid var(--primary-gold);
+}
+
+.modifier-name {
+    font-size: 0.85rem;
+    color: var(--cream);
+}
+
+.modifier-reroll-item .btn-small {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Item description whitespace handling */
+#selectedItemDesc {
+    white-space: pre-line;
+    line-height: 1.5;
+}
+
+/* ================================================
+   Commander Tab Styles
+   ================================================ */
+#commanderTab {
+    flex-direction: row;
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.commander-container {
+    display: flex;
+    flex: 1;
+    gap: 1.5rem;
+}
+
+.commander-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(ellipse at center, rgba(139, 69, 19, 0.15) 0%, rgba(10, 10, 20, 0.9) 70%);
+    border-radius: 10px;
+    padding: 2rem;
+}
+
+.commander-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.commander-title {
+    font-family: var(--font-decorative);
+    font-size: 2rem;
+    color: #cd7f32;
+    text-shadow: 0 0 20px rgba(205, 127, 50, 0.5);
+    margin-bottom: 0.5rem;
+}
+
+.commander-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+.commander-info-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1rem 0;
+}
+
+.info-section {
+    background: rgba(30, 25, 40, 0.6);
+    border: 1px solid rgba(255, 170, 0, 0.2);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+}
+
+.info-section h3 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.status-info {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+}
+
+.mission-guide {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    line-height: 1.8;
+}
+
+.mission-guide li {
+    margin-bottom: 0.25rem;
+}
+
+.commander-shop {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.commander-shop .shop-section h3 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+}
+
+.commander-scroll-shop {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.shop-scroll-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(30, 25, 20, 0.9), rgba(50, 40, 30, 0.9));
+    border: 2px solid rgba(205, 127, 50, 0.3);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.shop-scroll-item:hover {
+    border-color: #cd7f32;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(205, 127, 50, 0.3);
+}
+
+.shop-scroll-item.selected {
+    border-color: #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.shop-scroll-item.free {
+    border-color: #27ae60;
+    background: linear-gradient(135deg, rgba(20, 40, 20, 0.9), rgba(30, 60, 30, 0.9));
+}
+
+.shop-scroll-item.free::before {
+    content: 'FREE';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #27ae60;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+}
+
+.shop-scroll-item {
+    position: relative;
+}
+
+.shop-scroll-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.shop-scroll-name {
+    font-size: 0.9rem;
+    color: var(--cream);
+    text-align: center;
+    margin-bottom: 0.25rem;
+}
+
+.shop-scroll-type {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.shop-scroll-cost {
+    font-size: 0.85rem;
+    color: #f39c12;
+    font-weight: bold;
+}
+
+.shop-scroll-cost.free {
+    color: #27ae60;
+}
+
+.commander-sidebar {
+    width: 300px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.scroll-preview-panel h3 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 1rem;
+}
+
+.scroll-preview-panel p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+}
+
+#scrollPreviewDetails {
+    margin-top: 1rem;
+}
+
+.preview-mission-type {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.preview-tier {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1rem;
+}
+
+.preview-description {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.5;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+#scrollPurchaseActions {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.scroll-cost {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #f39c12;
+    font-weight: bold;
+}
+
+.scroll-cost.free {
+    color: #27ae60;
+}
+
+/* ================================================
+   Oracle Tab Styles
+   ================================================ */
+#oracleTab {
+    flex-direction: row;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    position: relative;
+}
+
+.oracle-container {
+    display: flex;
+    flex: 1;
+    gap: 1.5rem;
+}
+
+.oracle-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: radial-gradient(ellipse at center, rgba(75, 0, 130, 0.15) 0%, rgba(10, 10, 20, 0.9) 70%);
+    border-radius: 10px;
+    padding: 2rem;
+}
+
+.oracle-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.oracle-title {
+    font-family: var(--font-decorative);
+    font-size: 2rem;
+    color: #9b59b6;
+    text-shadow: 0 0 20px rgba(155, 89, 182, 0.5);
+    margin-bottom: 0.5rem;
+}
+
+.oracle-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+.oracle-instructions {
+    background: rgba(155, 89, 182, 0.1);
+    border: 1px solid rgba(155, 89, 182, 0.3);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin: 1rem 0;
+    max-width: 400px;
+}
+
+.oracle-instructions ol {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.oracle-instructions li {
+    margin-bottom: 0.25rem;
+}
+
+.oracle-altar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    flex: 1;
+    width: 100%;
+    max-width: 400px;
+}
+
+.oracle-scroll-slot {
+    width: 120px;
+    height: 150px;
+    background: linear-gradient(135deg, rgba(30, 20, 50, 0.9), rgba(50, 30, 80, 0.9));
+    border: 3px dashed rgba(155, 89, 182, 0.5);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.oracle-scroll-slot:hover {
+    border-color: #9b59b6;
+    box-shadow: 0 0 20px rgba(155, 89, 182, 0.3);
+}
+
+.oracle-scroll-slot.empty .slot-hint {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 1rem;
+}
+
+.oracle-scroll-slot.filled {
+    border-style: solid;
+    border-color: #9b59b6;
+    background: linear-gradient(135deg, rgba(50, 30, 80, 0.9), rgba(75, 45, 110, 0.9));
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.oracle-scroll-slot .scroll-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.oracle-scroll-slot .scroll-name {
+    font-size: 0.85rem;
+    color: var(--cream);
+    text-align: center;
+}
+
+.oracle-scroll-slot .scroll-tier {
+    font-size: 0.75rem;
+    color: #9b59b6;
+}
+
+.prophecy-display {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(155, 89, 182, 0.3);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.prophecy-display h4 {
+    font-family: var(--font-title);
+    color: #9b59b6;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.prophecy-modifiers {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.prophecy-modifier {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: rgba(155, 89, 182, 0.1);
+    border-left: 3px solid #9b59b6;
+    border-radius: 0 5px 5px 0;
+}
+
+.prophecy-modifier .modifier-info {
+    flex: 1;
+}
+
+.prophecy-modifier .modifier-title {
+    color: var(--cream);
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.prophecy-modifier .modifier-desc {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.prophecy-modifier .modifier-bonus {
+    color: #27ae60;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.no-prophecy {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    padding: 2rem;
+}
+
+.prophecy-reward {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(155, 89, 182, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.prophecy-reward span {
+    color: #f39c12;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.oracle-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 300px;
+    margin-top: 1.5rem;
+}
+
+.btn-oracle {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-oracle:hover {
+    background: linear-gradient(135deg, #a66bbe, #9b59b6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+}
+
+.btn-oracle-secondary {
+    background: linear-gradient(135deg, rgba(155, 89, 182, 0.3), rgba(142, 68, 173, 0.3));
+    color: #9b59b6;
+    border: 1px solid #9b59b6;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-oracle-secondary:hover {
+    background: linear-gradient(135deg, rgba(155, 89, 182, 0.5), rgba(142, 68, 173, 0.5));
+}
+
+/* Oracle Scrolls List Panel */
+.oracle-scrolls-panel {
+    width: 280px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.oracle-scrolls-panel h3 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+}
+
+.oracle-scrolls-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.oracle-scroll-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(30, 20, 50, 0.6);
+    border: 1px solid rgba(155, 89, 182, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.oracle-scroll-item:hover {
+    border-color: #9b59b6;
+    background: rgba(50, 30, 80, 0.6);
+}
+
+.oracle-scroll-item.selected {
+    border-color: #9b59b6;
+    box-shadow: 0 0 10px rgba(155, 89, 182, 0.3);
+}
+
+.oracle-scroll-item.has-prophecy {
+    border-color: #27ae60;
+    background: rgba(39, 174, 96, 0.1);
+}
+
+.oracle-scroll-item .scroll-item-icon {
+    font-size: 1.5rem;
+}
+
+.oracle-scroll-item .scroll-item-info {
+    flex: 1;
+}
+
+.oracle-scroll-item .scroll-item-name {
+    color: var(--cream);
+    font-size: 0.9rem;
+}
+
+.oracle-scroll-item .scroll-item-status {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.oracle-scroll-item.has-prophecy .scroll-item-status {
+    color: #27ae60;
+}
+
+.no-scrolls {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    padding: 2rem 1rem;
+}
+
+/* Scroll Incantation in Atlas */
+.node-scroll-info {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(155, 89, 182, 0.1);
+    border: 1px solid rgba(155, 89, 182, 0.3);
+    border-radius: 5px;
+}
+
+.node-scroll-info h4 {
+    color: #9b59b6;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.apply-scroll-btn {
+    margin-top: 0.5rem;
+}
+
+.applied-scroll-info {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(155, 89, 182, 0.15);
+    border: 1px solid #9b59b6;
+    border-radius: 5px;
+}
+
+.applied-scroll-info h4 {
+    color: #9b59b6;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.applied-scroll-info .modifier-list {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.remove-scroll-btn {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+}
+
+/* Available Scrolls List in Atlas Node Panel */
+.available-scrolls-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.available-scroll-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(155, 89, 182, 0.3);
+    border-radius: 5px;
+    transition: all 0.2s ease;
+}
+
+.available-scroll-item:hover {
+    border-color: #9b59b6;
+    background: rgba(155, 89, 182, 0.1);
+}
+
+.available-scroll-item .scroll-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.available-scroll-item .scroll-icon {
+    font-size: 1.2rem;
+}
+
+.available-scroll-item .scroll-name {
+    font-size: 0.9rem;
+    color: var(--cream);
+    font-weight: bold;
+}
+
+.available-scroll-item .apply-this-scroll-btn {
+    margin-top: 0.5rem;
+    align-self: flex-start;
+}
+
+/* ================================================
+   Quest Complete Styles
+   ================================================ */
+
+.result-title.quest-complete {
+    color: #9b59b6;
+    text-shadow: 0 0 20px rgba(155, 89, 182, 0.5);
+    animation: questPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes questPulse {
+    0%, 100% {
+        text-shadow: 0 0 20px rgba(155, 89, 182, 0.5);
+    }
+    50% {
+        text-shadow: 0 0 40px rgba(155, 89, 182, 0.8), 0 0 60px rgba(155, 89, 182, 0.4);
+    }
+}
+
+.reward-item.essence-reward {
+    color: #9b59b6;
+    font-weight: bold;
+    background: rgba(155, 89, 182, 0.1);
+    border-left: 3px solid #9b59b6;
+    padding-left: 0.5rem;
+}
+
+.reward-item.quest-reward {
+    color: #f39c12;
+    font-weight: bold;
+    background: rgba(243, 156, 18, 0.1);
+    border-left: 3px solid #f39c12;
+    padding-left: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Boss node glow effect in atlas */
+.boss-node-available {
+    animation: bossGlow 2s ease-in-out infinite;
+}
+
+@keyframes bossGlow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(155, 89, 182, 0.8), 0 0 40px rgba(155, 89, 182, 0.4);
+    }
+}
+
+/* Boss scroll in Commander shop */
+.shop-scroll-item.boss {
+    background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(142, 68, 173, 0.3));
+    border-color: #9b59b6;
+}
+
+.shop-scroll-item.boss:hover {
+    background: linear-gradient(135deg, rgba(155, 89, 182, 0.3), rgba(142, 68, 173, 0.4));
+    border-color: #a569bd;
+}
+
+/* ================================================
+   Tarot Card Reading Styles
+   ================================================ */
+
+.tarot-spread {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 1rem 0;
+}
+
+.tarot-card-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 140px;
+}
+
+.tarot-card-slot .position-label {
+    font-family: var(--font-title);
+    font-size: 0.85rem;
+    color: #9b59b6;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.tarot-card-slot[data-position="past"] .position-label { color: #3498db; }
+.tarot-card-slot[data-position="present"] .position-label { color: #9b59b6; }
+.tarot-card-slot[data-position="future"] .position-label { color: #f39c12; }
+
+.tarot-card {
+    width: 100px;
+    height: 150px;
+    background: linear-gradient(135deg, #2c1f4a, #1a1030);
+    border: 2px solid rgba(155, 89, 182, 0.5);
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.tarot-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(155, 89, 182, 0.4);
+}
+
+.tarot-card.reversed {
+    transform: rotate(180deg);
+    border-color: #c0392b;
+}
+
+.tarot-card.reversed:hover {
+    transform: rotate(180deg) scale(1.05);
+}
+
+.tarot-card .card-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.3);
+    font-family: var(--font-decorative);
+}
+
+.tarot-card .reversed-indicator {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%) rotate(180deg);
+    font-size: 0.65rem;
+    color: #c0392b;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.tarot-card-slot .card-info {
+    text-align: center;
+    width: 100%;
+}
+
+.tarot-card-slot .card-name {
+    font-size: 0.85rem;
+    color: var(--cream);
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.tarot-card-slot .card-meaning {
+    font-size: 0.75rem;
+    color: #9b59b6;
+    font-style: italic;
+    margin-bottom: 0.35rem;
+}
+
+.tarot-card-slot .card-effect {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.3;
+    margin-bottom: 0.35rem;
+}
+
+.tarot-card-slot .card-bonus {
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+/* Position-specific card border colors */
+.tarot-card-slot[data-position="past"] .tarot-card {
+    border-color: rgba(52, 152, 219, 0.5);
+}
+.tarot-card-slot[data-position="past"] .tarot-card:hover {
+    box-shadow: 0 6px 25px rgba(52, 152, 219, 0.4);
+}
+
+.tarot-card-slot[data-position="present"] .tarot-card {
+    border-color: rgba(155, 89, 182, 0.5);
+}
+.tarot-card-slot[data-position="present"] .tarot-card:hover {
+    box-shadow: 0 6px 25px rgba(155, 89, 182, 0.4);
+}
+
+.tarot-card-slot[data-position="future"] .tarot-card {
+    border-color: rgba(243, 156, 18, 0.5);
+}
+.tarot-card-slot[data-position="future"] .tarot-card:hover {
+    box-shadow: 0 6px 25px rgba(243, 156, 18, 0.4);
+}
+
+/* Reversed cards have red border regardless of position */
+.tarot-card-slot .tarot-card.reversed {
+    border-color: rgba(192, 57, 43, 0.7) !important;
+}
+.tarot-card-slot .tarot-card.reversed:hover {
+    box-shadow: 0 6px 25px rgba(192, 57, 43, 0.4) !important;
+}
+
+/* ================================================
+   Commander Upgrade Section
+   ================================================ */
+
+.commander-upgrade-section {
+    margin-bottom: 1.5rem;
+}
+
+.commander-upgrade-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.commander-level-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.commander-level-display .level-label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.commander-level-display .level-value {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    color: var(--primary-gold);
+}
+
+.commander-level-display .level-desc {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.commander-upgrade-action {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.upgrade-btn {
+    background: linear-gradient(180deg, rgba(155, 89, 182, 0.8), rgba(142, 68, 173, 0.9));
+    border: 1px solid rgba(155, 89, 182, 0.5);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.upgrade-btn:hover:not(.disabled) {
+    background: linear-gradient(180deg, rgba(165, 99, 192, 0.9), rgba(152, 78, 183, 1));
+    transform: translateY(-1px);
+}
+
+.upgrade-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.upgrade-btn .upgrade-cost {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.9rem;
+}
+
+.upgrade-hint {
+    font-size: 0.8rem;
+    color: rgba(255, 200, 100, 0.7);
+    font-style: italic;
+}
+
+.max-level {
+    color: var(--primary-gold);
+    font-style: italic;
+}
+
+/* ================================================
+   Quest Selection Section
+   ================================================ */
+
+.quest-section {
+    margin-bottom: 1.5rem;
+}
+
+.quest-selection-content {
+    min-height: 100px;
+}
+
+.quest-selection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.quest-selection-label {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.quest-selection-tier {
+    background: rgba(255, 170, 0, 0.2);
+    color: var(--primary-gold);
+    padding: 0.25rem 0.75rem;
+    border-radius: 3px;
+    font-size: 0.85rem;
+}
+
+.quest-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.quest-option {
+    background: linear-gradient(135deg, rgba(30, 25, 40, 0.9), rgba(20, 15, 30, 0.9));
+    border: 1px solid rgba(255, 170, 0, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.quest-option:hover {
+    border-color: var(--primary-gold);
+    transform: translateY(-2px);
+}
+
+.quest-option-header {
+    font-family: var(--font-title);
+    font-size: 1.2rem;
+    color: var(--cream);
+}
+
+.quest-option-nodes {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.quest-option-desc {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+}
+
+.quest-select-btn {
+    margin-top: 0.5rem;
+    background: linear-gradient(180deg, rgba(46, 204, 113, 0.8), rgba(39, 174, 96, 0.9));
+    border: 1px solid rgba(46, 204, 113, 0.5);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.quest-select-btn:hover {
+    background: linear-gradient(180deg, rgba(56, 214, 123, 0.9), rgba(49, 184, 106, 1));
+    transform: translateY(-1px);
+}
+
+/* Current Quest Display */
+.current-quest-display {
+    background: linear-gradient(135deg, rgba(30, 60, 30, 0.3), rgba(20, 40, 20, 0.3));
+    border: 1px solid rgba(46, 204, 113, 0.4);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.current-quest-display .quest-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.current-quest-display .quest-label {
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    color: rgba(46, 204, 113, 1);
+}
+
+.current-quest-display .quest-tier {
+    background: rgba(255, 170, 0, 0.2);
+    color: var(--primary-gold);
+    padding: 0.25rem 0.75rem;
+    border-radius: 3px;
+    font-size: 0.85rem;
+}
+
+.current-quest-display .quest-details {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.current-quest-display .quest-length,
+.current-quest-display .quest-nodes {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.current-quest-display .quest-instruction {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+    margin: 0;
+    font-style: italic;
+}
+
+.no-quests-available {
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    padding: 2rem;
+}
+
+/* ================================================
+   Oracle Locked State
+   ================================================ */
+
+.oracle-container.locked {
+    pointer-events: none;
+}
+
+.oracle-locked-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    pointer-events: all;
+}
+
+.oracle-locked-content {
+    text-align: center;
+    max-width: 400px;
+    padding: 2rem;
+}
+
+.oracle-locked-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.oracle-locked-content h3 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.oracle-locked-content p {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.5rem;
+}
+
+.oracle-locked-progress {
+    margin: 1.5rem 0;
+}
+
+.oracle-locked-progress .progress-text {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--primary-gold);
+}
+
+.oracle-locked-progress .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.oracle-locked-progress .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #9b59b6, #e74c3c);
+    transition: width 0.3s ease;
+}
+
+.oracle-locked-hint {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+/* ================================================
+   Oracle Upgrade Section
+   ================================================ */
+
+.oracle-upgrade-section {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.oracle-upgrade-section h4 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 1rem;
+}
+
+.oracle-upgrade-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.oracle-branch {
+    background: linear-gradient(135deg, rgba(30, 25, 40, 0.9), rgba(20, 15, 30, 0.9));
+    border: 1px solid var(--branch-color, rgba(255, 255, 255, 0.2));
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.oracle-branch-header {
+    font-family: var(--font-title);
+    font-size: 1rem;
+    color: var(--branch-color, var(--cream));
+    margin-bottom: 0.75rem;
+}
+
+.oracle-branch-level {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.oracle-branch-level .level-pip {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--branch-color, rgba(255, 255, 255, 0.3));
+    background: transparent;
+}
+
+.oracle-branch-level .level-pip.filled {
+    background: var(--branch-color, var(--primary-gold));
+}
+
+.oracle-branch-desc {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.75rem;
+    min-height: 2.5em;
+}
+
+.oracle-branch-upgrade {
+    width: 100%;
+    background: linear-gradient(180deg, rgba(155, 89, 182, 0.6), rgba(142, 68, 173, 0.7));
+    border: 1px solid rgba(155, 89, 182, 0.5);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.oracle-branch-upgrade:hover:not(.disabled) {
+    background: linear-gradient(180deg, rgba(165, 99, 192, 0.8), rgba(152, 78, 183, 0.9));
+}
+
+.oracle-branch-upgrade.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.oracle-branch-maxed {
+    color: var(--primary-gold);
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
+/* ================================================
+   Tarot Collection Section
+   ================================================ */
+
+.tarot-collection-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tarot-collection-section h4 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 1rem;
+}
+
+.tarot-collection-grid {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: 0.5rem;
+}
+
+.tarot-collection-card {
+    aspect-ratio: 2/3;
+    background: linear-gradient(135deg, rgba(30, 25, 40, 0.9), rgba(20, 15, 30, 0.9));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    cursor: default;
+    transition: all 0.2s ease;
+}
+
+.tarot-collection-card.collected {
+    border-color: var(--primary-gold);
+    background: linear-gradient(135deg, rgba(50, 40, 60, 0.9), rgba(30, 25, 40, 0.9));
+}
+
+.tarot-collection-card.collected:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 170, 0, 0.3);
+}
+
+.tarot-collection-card.locked {
+    opacity: 0.4;
+}
+
+.tarot-collection-card .card-number {
+    font-family: var(--font-title);
+    font-size: 0.9rem;
+    color: var(--primary-gold);
+}
+
+.tarot-collection-card .card-name {
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    padding: 0 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.tarot-collection-card .card-locked {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* ================================================
+   Tarot Purchase Section
+   ================================================ */
+
+.tarot-purchase-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tarot-purchase-section h4 {
+    font-family: var(--font-title);
+    color: var(--primary-gold);
+    margin-bottom: 0.5rem;
+}
+
+.tarot-purchase-section .purchase-hint {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 1rem;
+}
+
+.tarot-purchase-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.tarot-purchase-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, rgba(30, 25, 40, 0.9), rgba(20, 15, 30, 0.9));
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+}
+
+.tarot-purchase-item.cannot-afford {
+    opacity: 0.6;
+}
+
+.purchase-card-number {
+    font-family: var(--font-title);
+    font-size: 1rem;
+    color: var(--primary-gold);
+    min-width: 24px;
+    text-align: center;
+}
+
+.purchase-card-title {
+    flex: 1;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+}
+
+.purchase-card-btn {
+    background: linear-gradient(180deg, rgba(155, 89, 182, 0.7), rgba(142, 68, 173, 0.8));
+    border: 1px solid rgba(155, 89, 182, 0.5);
+    color: white;
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.purchase-card-btn:hover:not(.disabled) {
+    background: linear-gradient(180deg, rgba(165, 99, 192, 0.9), rgba(152, 78, 183, 1));
+}
+
+.purchase-card-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.all-cards-collected {
+    color: var(--primary-gold);
+    text-align: center;
+    padding: 1rem;
+    font-style: italic;
+}

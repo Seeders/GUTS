@@ -3,7 +3,7 @@
   "description": "Two archers facing off. Tests ranged projectile combat symmetrically.",
   "seed": 42,
   "startingGold": 500,
-  "level": "level_1",
+  "level": "forest",
   "buildOrders": ["archer", "archer"],
   "maxRounds": 10,
   "endOnFirstDeath": false

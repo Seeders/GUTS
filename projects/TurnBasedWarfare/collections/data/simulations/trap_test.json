@@ -3,7 +3,7 @@
   "description": "Tests if bear trap triggers when enemy walks over it. Left team spawns a bear trap at center, right team's barbarian walks over it.",
   "seed": 12345,
   "startingGold": 500,
-  "level": "level_1",
+  "level": "forest",
   "buildOrders": ["trapTest", "walkToCenter"],
   "maxRounds": 10,
   "endOnFirstDeath": false

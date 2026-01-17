@@ -3,6 +3,8 @@
   "interface": "game",
   "loader": "GameLoader",
   "systems": [
+    "GameSystem",
+    "ScreenSystem",
     "BaseNetworkSystem",
     "ServerNetworkSystem",
     "ServerBattlePhaseSystem",

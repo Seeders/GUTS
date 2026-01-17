@@ -1,0 +1,45 @@
+{
+  "id": "the_sun",
+  "number": 20,
+  "title": "The Sun",
+  "texture": "tarot_20_the_sun",
+  "past": {
+    "upright": {
+      "name": "Vitality",
+      "description": "All units start at full morale",
+      "effects": [{ "target": "player_units", "stat": "startingMorale", "operation": "set", "value": 100 }]
+    },
+    "reversed": {
+      "name": "Optimism",
+      "description": "Units never flee from combat",
+      "effects": [{ "target": "player_units", "stat": "noFlee", "operation": "set", "value": true }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Clarity",
+      "description": "No fog of war for anyone",
+      "effects": [{ "target": "mission", "stat": "noFogOfWar", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Exposure",
+      "description": "All stealth abilities disabled",
+      "effects": [{ "target": "all_units", "stat": "noStealth", "operation": "set", "value": true }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Success",
+      "description": "+25% all rewards",
+      "effects": [{ "target": "rewards", "stat": "multiplier", "operation": "add", "value": 0.25 }]
+    },
+    "reversed": {
+      "name": "Hubris",
+      "description": "Double rewards but next mission harder",
+      "effects": [
+        { "target": "rewards", "stat": "multiplier", "operation": "multiply", "value": 2 },
+        { "target": "rewards", "stat": "nextMissionHarder", "operation": "set", "value": true }
+      ]
+    }
+  }
+}

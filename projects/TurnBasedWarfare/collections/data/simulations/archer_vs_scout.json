@@ -3,7 +3,7 @@
   "description": "Archer (pure dex ranged) vs Scout (dex/intel hybrid ranged). Pure vs hybrid ranged combat.",
   "seed": 42,
   "startingGold": 500,
-  "level": "level_1",
+  "level": "forest",
   "buildOrders": ["archer", "scout"],
   "maxRounds": 10,
   "endOnFirstDeath": false
