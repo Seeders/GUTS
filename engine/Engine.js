@@ -31,10 +31,9 @@ class Engine extends BaseEngine {
         if (projectConfig.appLoaderLibrary && GUTS[projectConfig.appLoaderLibrary]) {
             const loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);
             await loader.load();
-        }
-
-        // Initialize the game
-        if (this.gameInstance.init) {
+            // Note: GameLoader.load() already calls game.init() internally
+        } else if (this.gameInstance.init) {
+            // Only call init directly if no loader was used
             await this.gameInstance.init();
         }
 
