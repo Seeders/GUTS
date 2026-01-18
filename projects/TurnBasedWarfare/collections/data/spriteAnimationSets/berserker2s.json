@@ -1,7 +1,7 @@
 {
   "title": "Berserker2s",
   "spriteSheet": "sprites/berserker2sSprites/berserker2sSheet.png",
-  "spriteOffset": 17,
+  "spriteOffset": 15,
   "groundLevelSpriteOffset": 18,
   "generatorSettings": {
     "frustumSize": 48,
@@ -13,7 +13,7 @@
     "borderSize": 1,
     "outlineColor": "#030202",
     "outlineConnectivity": 4,
-    "cameraHeight": 1,
+    "cameraHeight": 1.5,
     "isProjectile": false,
     "generateGroundLevel": true,
     "animationTypes": [

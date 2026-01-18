@@ -380,12 +380,21 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         // Log before calling parent startGame
         console.log(`[ServerGameRoom] About to call super.startGame(). pendingSaveData set: ${!!this.game.pendingSaveData}, isLoadingSave: ${isLoadingSave}`);
 
+        // Store player info on game state so SkirmishGameSystem can create player entities
+        // This keeps player entity creation consistent across all game modes
+        this.game.state.onlinePlayers = [];
+        for (const [playerId, player] of this.players) {
+            this.game.state.onlinePlayers.push({
+                playerId: playerId,
+                team: player.team,
+                gold: this.game.state.startingGold
+            });
+        }
+
         // Call parent's startGame (loads scene, spawns entities, etc.)
         // If pendingSaveData is set, SceneManager will load saved entities instead of scene entities
+        // SkirmishGameSystem.postSceneLoad() will create player entities and starting state
         await super.startGame();
-
-        // Create player entities now that the game scene is loaded
-        this.createPlayerEntities();
 
         // Log after scene load to verify entities were created
         const entityCount = this.game.getEntityCount?.() || 0;
@@ -408,23 +417,6 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
         console.log(`Game started in room ${this.id} with level: ${level}${isLoadingSave ? ' (from save)' : ''}`);
         return true;
-    }
-
-    /**
-     * Create player entities for all players in the room
-     * Called after scene loads so PlayerStatsSystem is available
-     */
-    createPlayerEntities() {
-        for (const [playerId, player] of this.players) {
-            // Create player entity with playerStats component via service
-            this.game.call('createPlayerEntity', playerId, {
-                team: player.team,
-                gold: this.game.state.startingGold,
-                upgrades: []
-            });
-
-            console.log(`[ServerGameRoom] Created player entity for player ${playerId}`);
-        }
     }
 
     // Enhanced game state for multiplayer

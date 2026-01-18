@@ -60,82 +60,14 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     checkForBattleEnd() {
-        // Check for hunt mission victory (boss defeated)
-        if (this.game.state.isHuntMission && this.game.hasService('checkHuntVictory')) {
-            const huntVictory = this.game.call('checkHuntVictory');
-            if (huntVictory) {
-                this.endBattle(huntVictory.winner, huntVictory.reason);
-                return;
-            }
-        }
-
-        // Check if any team has lost all buildings (skirmish mode)
-        const buildingVictory = this.checkBuildingVictoryCondition();
-        if (buildingVictory) {
-            this.endBattle(buildingVictory.winner, buildingVictory.reason);
-            return;
-        }
-
         // Calculate battle duration same way as client
         const battleDuration = (this.game.state.now || 0) - this.battleStartTime;
 
-        // Battle always lasts exactly battleDuration seconds
+        // Battle times out after battleDuration seconds
+        // Victory conditions are handled by scenario systems via onBattleEnd event
         if (battleDuration >= this.battleDuration) {
             this.endBattle(null, 'timeout');
         }
-    }
-
-    /**
-     * Check if any team has lost all their buildings
-     * Returns { winner: playerId, reason: string } or null
-     */
-    checkBuildingVictoryCondition() {
-        // Get all alive buildings grouped by team (using numeric team keys)
-        const buildingsByTeam = {};
-        buildingsByTeam[this.enums.team.left] = [];
-        buildingsByTeam[this.enums.team.right] = [];
-
-        const buildingEntities = this.game.getEntitiesWith('unitType', 'team', 'health');
-        for (const entityId of buildingEntities) {
-            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
-            if (!unitType || unitType.collection !== 'buildings') continue;
-
-            const health = this.game.getComponent(entityId, 'health');
-            if (!health || health.current <= 0) continue;
-
-            const deathState = this.game.getComponent(entityId, 'deathState');
-            if (deathState && deathState.state >= this.enums.deathState.dying) continue;
-
-            const team = this.game.getComponent(entityId, 'team');
-            if (team && buildingsByTeam[team.team] !== undefined) {
-                buildingsByTeam[team.team].push(entityId);
-            }
-        }
-
-        // Check if any team has no buildings left
-        let losingTeam = null;
-        if (buildingsByTeam[this.enums.team.left].length === 0 && buildingsByTeam[this.enums.team.right].length > 0) {
-            losingTeam = this.enums.team.left;
-        } else if (buildingsByTeam[this.enums.team.right].length === 0 && buildingsByTeam[this.enums.team.left].length > 0) {
-            losingTeam = this.enums.team.right;
-        }
-
-        if (losingTeam !== null) {
-            // Find the winner (player on the opposite team) using player entities
-            const playerEntities = this.game.call('getPlayerEntities');
-            for (const entityId of playerEntities) {
-                const stats = this.game.getComponent(entityId, 'playerStats');
-                if (stats && stats.team !== losingTeam) {
-                    return {
-                        winner: stats.playerId,
-                        reason: 'buildings_destroyed'
-                    };
-                }
-            }
-        }
-
-        return null;
     }
 
     checkNoCombatActive(aliveEntities) {
@@ -187,6 +119,12 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         });
 
         this.game.triggerEvent('onBattleEnd');
+
+        // Check if a scenario system ended the game during onBattleEnd
+        if (this.game.state.phase === this.enums.gamePhase.ended) {
+            return;
+        }
+
         const playerStats = this.getPlayerStatsForBroadcast();
         let battleResult = {
             winner: winner,
@@ -208,15 +146,10 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             nextEntityId: this.game.nextEntityId
         });
 
-        // Check for game end or continue to next round
-        if (this.shouldEndGame()) {
-            this.endGame();
-        } else {
-            this.game.state.round += 1;
-            // Transition back to placement phase
-            this.game.state.phase = this.enums.gamePhase.placement;
-            this.game.triggerEvent('onPlacementPhaseStart');
-        }
+        // Continue to next round
+        this.game.state.round += 1;
+        this.game.state.phase = this.enums.gamePhase.placement;
+        this.game.triggerEvent('onPlacementPhaseStart');
     }
 
 
@@ -275,73 +208,8 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         return stats;
     }
 
-    shouldEndGame() {
-        // Hunt missions: game ends when boss is defeated
-        if (this.game.state.isHuntMission && this.game.hasService('checkHuntVictory')) {
-            const huntVictory = this.game.call('checkHuntVictory');
-            if (huntVictory) {
-                return true;
-            }
-        }
-
-        // RTS-style: game ends when a team loses all buildings (checked in checkBuildingVictoryCondition)
-        // This is called after battle ends - check if any team has no buildings
-        const buildingVictory = this.checkBuildingVictoryCondition();
-        return buildingVictory !== null;
-    }
-
-  
-    addGoldForTeam(goldAmt, team){
+    addGoldForTeam(goldAmt, team) {
         this.game.call('addPlayerGold', team, goldAmt);
-    }
-
-    endGame(reason = 'buildings_destroyed') {
-        this.game.state.phase = this.enums.gamePhase.ended;
-
-        let finalWinner = null;
-
-        // Hunt missions: winner is player 0 when boss is defeated
-        if (this.game.state.isHuntMission && this.game.hasService('checkHuntVictory')) {
-            const huntVictory = this.game.call('checkHuntVictory');
-            if (huntVictory) {
-                finalWinner = huntVictory.winner;
-                reason = huntVictory.reason || 'boss_defeated';
-            }
-        }
-
-        // Determine final winner based on building victory condition (if not already set)
-        if (finalWinner === null) {
-            const buildingVictory = this.checkBuildingVictoryCondition();
-            finalWinner = buildingVictory?.winner || null;
-        }
-
-        // If no building victory (e.g., disconnect), find remaining player
-        if (finalWinner === null && reason === 'opponent_disconnected') {
-            const playerEntities = this.game.call('getPlayerEntities');
-            if (playerEntities.length > 0) {
-                const stats = this.game.getComponent(playerEntities[0], 'playerStats');
-                finalWinner = stats?.playerId ?? null;
-            }
-        }
-
-        const gameResult = {
-            winner: finalWinner,
-            reason: reason,
-            finalStats: this.getPlayerStatsForBroadcast(),
-            totalRounds: this.game.state.round
-        };
-
-        this.game.call('broadcastToRoom', null, 'GAME_END', {
-            result: gameResult,
-            gameState: this.game.state
-        });
-
-        // Mark room as inactive after delay (multiplayer only)
-        if (this.game.room) {
-            setTimeout(() => {
-                this.game.room.isActive = false;
-            }, 10000);
-        }
     }
 
     /**
@@ -362,7 +230,15 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             }
 
             if (remainingPlayer !== null) {
-                this.endGame('opponent_disconnected');
+                const result = {
+                    winner: remainingPlayer,
+                    reason: 'opponent_disconnected',
+                    finalStats: this.getPlayerStatsForBroadcast(),
+                    totalRounds: this.game.state.round
+                };
+                // Broadcast to clients then end game locally
+                this.game.call('broadcastGameEnd', result);
+                this.game.endGame(result);
             }
         }
     }

@@ -1,19 +1,19 @@
 {
   "title": "Scout",
   "spriteSheet": "sprites/scoutSprites/scoutSheet.png",
-  "spriteOffset": 16,
+  "spriteOffset": 13,
   "groundLevelSpriteOffset": 18,
   "generatorSettings": {
     "frustumSize": 48,
     "cameraDistance": 100,
     "spriteSize": 64,
     "fps": 4,
-    "brightness": 10,
+    "brightness": 4,
     "palette": "main",
     "borderSize": 1,
     "outlineColor": "#030202",
     "outlineConnectivity": 4,
-    "cameraHeight": 1,
+    "cameraHeight": 1.5,
     "isProjectile": false,
     "generateGroundLevel": true,
     "animationTypes": [

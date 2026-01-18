@@ -1,7 +1,7 @@
 {
   "title": "Ancienttreant",
   "spriteSheet": "sprites/ancienttreantSprites/ancienttreantSheet.png",
-  "spriteOffset": 50,
+  "spriteOffset": 43,
   "groundLevelSpriteOffset": 50,
   "generatorSettings": {
     "frustumSize": 128,
@@ -13,7 +13,7 @@
     "borderSize": 1,
     "outlineColor": "#030202",
     "outlineConnectivity": 4,
-    "cameraHeight": 1,
+    "cameraHeight": 1.5,
     "isProjectile": false,
     "generateGroundLevel": true,
     "animationTypes": [

@@ -849,11 +849,14 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
 
         // Show node title with mission type
         const missionType = node.missionType || 'hunt';
-        const missionIcon = missionType === 'hunt' ? '🎯' : '⚔️';
+        const missionIcons = { hunt: '🎯', skirmish: '⚔️', survival: '🛡️' };
+        const missionColors = { hunt: '#e74c3c', skirmish: '#3498db', survival: '#9b59b6' };
+        const missionIcon = missionIcons[missionType] || '⚔️';
+        const missionColor = missionColors[missionType] || '#3498db';
         const missionLabel = missionType.charAt(0).toUpperCase() + missionType.slice(1);
 
         if (titleEl) titleEl.textContent = node.title;
-        if (descEl) descEl.innerHTML = `<span style="color: ${missionType === 'hunt' ? '#e74c3c' : '#3498db'};">${missionIcon} ${missionLabel} Mission</span><br>${node.description || 'No description available.'}`;
+        if (descEl) descEl.innerHTML = `<span style="color: ${missionColor};">${missionIcon} ${missionLabel} Mission</span><br>${node.description || 'No description available.'}`;
 
         // Show base rewards for this location
         if (rewardsEl && rewardsListEl && node.baseRewards) {
@@ -1197,8 +1200,9 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const missionType = node.missionType || 'hunt';
 
         // Set game mode for GameSystem.initializeGame() - required for game to start properly
+        const gameModeId = missionType === 'hunt' ? 'hunt' : (missionType === 'survival' ? 'survival' : 'campaign');
         this.game.state.gameMode = {
-            id: missionType === 'hunt' ? 'hunt' : 'campaign',
+            id: gameModeId,
             title: `${node.title} - ${missionType.charAt(0).toUpperCase() + missionType.slice(1)}`,
             description: node.description || node.title
         };
@@ -1241,6 +1245,31 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
 
             // Switch to hunt scene with config
             this.game.switchScene('hunt', huntConfig);
+        } else if (missionType === 'survival') {
+            // Survival mission config - defend base against 30 waves
+            const nodeDifficulty = node.baseDifficulty || 1;
+
+            const survivalConfig = {
+                isSurvivalMission: true,
+                isCampaignMission: true,
+                selectedLevel: node.level,
+                selectedTeam: 'left',
+                startingGold: missionConfig.startingGold,
+                difficulty: nodeDifficulty,
+                missionNodeId: this.selectedNode,
+                campaignModifiers: missionConfig.campaignModifiers,
+                prophecyModifiers: prophecyModifiers,
+                prophecyRewardMultiplier: prophecyRewardMultiplier,
+                hasAppliedProphecy: !!appliedScroll
+            };
+
+            // Consume scroll if one was applied (prophecy is used up)
+            if (appliedScroll) {
+                this.consumeAppliedScroll(this.selectedNode);
+            }
+
+            // Switch to survival scene with config
+            this.game.switchScene('survival', survivalConfig);
         } else {
             // Skirmish mission config - pass directly to scene
             // AI resources scale with node difficulty
@@ -1904,6 +1933,26 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
                 }
             }
 
+            // Show tarot card drop
+            if (results.rewards.tarotCard) {
+                const cardId = results.rewards.tarotCard;
+                const tarotCards = this.collections?.tarotCards || {};
+                const card = tarotCards[cardId];
+                if (card) {
+                    const textureUrl = this.getTextureUrl(card.texture);
+                    rewardsList.innerHTML += `
+                        <div class="reward-item tarot-card-drop" data-view-tarot="${cardId}">
+                            <div class="tarot-drop-preview">
+                                ${textureUrl ? `<img src="${textureUrl}" alt="${card.title}" class="tarot-drop-image">` : ''}
+                            </div>
+                            <div class="tarot-drop-info">
+                                <span class="tarot-drop-label">NEW TAROT CARD!</span>
+                                <span class="tarot-drop-name">${card.number}. ${card.title}</span>
+                            </div>
+                        </div>`;
+                }
+            }
+
             if (isQuestComplete) {
                 rewardsList.innerHTML += `<div class="reward-item quest-reward"><span class="reward-icon">🎯</span> Quest Complete! A new quest awaits...</div>`;
             }
@@ -1990,6 +2039,15 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
 
         // Show the results screen
         this.showScreen('missionResults');
+
+        // Attach click handler for tarot card drop (if any)
+        const tarotDropEl = document.querySelector('.tarot-card-drop[data-view-tarot]');
+        if (tarotDropEl) {
+            tarotDropEl.addEventListener('click', () => {
+                const cardId = tarotDropEl.dataset.viewTarot;
+                this.showTarotCardModal(cardId);
+            });
+        }
 
         // Clear pending results
         this.game.state.pendingMissionResults = null;
@@ -2461,49 +2519,31 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
                 ${allCardIds.map(cardId => {
                     const card = tarotCards[cardId];
                     const isCollected = collectedCards.includes(cardId);
-                    const textureUrl = isCollected ? this.getTextureUrl(card.texture) : '';
+                    const textureUrl = this.getTextureUrl(card.texture);
                     return `
                         <div class="tarot-collection-card ${isCollected ? 'collected' : 'locked'}"
-                             title="${isCollected ? card.title : '???'}"
-                             ${isCollected ? `data-view-tarot="${cardId}"` : ''}>
-                            ${isCollected && textureUrl ?
+                             title="${card.title}"
+                             data-view-tarot="${cardId}">
+                            ${textureUrl ?
                                 `<img src="${textureUrl}" alt="${card.title}" class="card-texture" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                  <div class="card-fallback" style="display:none;">
                                     <span class="card-number">${card.number}</span>
                                     <span class="card-name">${card.title}</span>
                                  </div>` :
-                                isCollected ?
-                                    `<span class="card-number">${card.number}</span>
-                                     <span class="card-name">${card.title}</span>` :
-                                    `<span class="card-number">${card.number}</span>
-                                     <span class="card-locked">?</span>`
+                                `<span class="card-number">${card.number}</span>
+                                 <span class="card-name">${card.title}</span>`
                             }
                         </div>
                     `;
                 }).join('')}
             </div>
-            <div class="tarot-purchase-section">
-                <h4>Purchase Cards</h4>
-                <p class="purchase-hint">Spend Essence to add cards to your collection.</p>
-                <div id="tarotPurchaseList" class="tarot-purchase-list">
-                    ${this.renderTarotPurchaseList()}
-                </div>
-            </div>
         `;
 
-        // Attach event listeners to view collected cards
+        // Attach event listeners to view all cards (collected and uncollected)
         collectionSection.querySelectorAll('[data-view-tarot]').forEach(card => {
             card.addEventListener('click', (e) => {
                 const cardId = card.dataset.viewTarot;
                 this.showTarotCardModal(cardId);
-            });
-        });
-
-        // Attach event listeners to purchase buttons
-        collectionSection.querySelectorAll('[data-purchase-tarot]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const cardId = e.target.dataset.purchaseTarot;
-                this.purchaseTarotCard(cardId);
             });
         });
     }
@@ -2518,6 +2558,10 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         if (!card) return;
 
         const textureUrl = this.getTextureUrl(card.texture);
+        const isCollected = this.game.call('hasTarotCard', cardId);
+        const cost = this.game.call('getTarotCardPurchaseCost', cardId);
+        const canAfford = this.game.call('canPurchaseTarotCard', cardId);
+        const currentEssence = this.game.call('getCampaignCurrency', 'essence') || 0;
 
         // Create modal overlay
         const modal = document.createElement('div');
@@ -2536,6 +2580,17 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
                 </div>
                 <div class="tarot-modal-info">
                     <h3>${card.number}. ${card.title}</h3>
+                    ${!isCollected ? `
+                        <div class="tarot-modal-purchase">
+                            <p class="purchase-status">This card is not in your collection.</p>
+                            <button class="btn btn-oracle purchase-card-modal-btn ${canAfford ? '' : 'disabled'}"
+                                    data-purchase-card="${cardId}"
+                                    ${canAfford ? '' : 'disabled'}>
+                                Purchase for ${cost?.essence || 0} Essence
+                            </button>
+                            <p class="essence-balance">Your Essence: ${currentEssence}</p>
+                        </div>
+                    ` : ''}
                     <div class="tarot-modal-readings">
                         <div class="reading-section">
                             <h4>Past (Player Buffs)</h4>
@@ -2560,6 +2615,15 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
 
         document.body.appendChild(modal);
 
+        // Handle purchase button click
+        const purchaseBtn = modal.querySelector('.purchase-card-modal-btn');
+        if (purchaseBtn) {
+            purchaseBtn.addEventListener('click', () => {
+                this.purchaseTarotCard(cardId);
+                modal.remove();
+            });
+        }
+
         // Close modal on backdrop click or close button
         modal.querySelector('.tarot-modal-backdrop').addEventListener('click', () => {
             modal.remove();
@@ -2578,34 +2642,6 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         document.addEventListener('keydown', escHandler);
     }
 
-    /**
-     * Render the list of tarot cards available for purchase
-     */
-    renderTarotPurchaseList() {
-        const uncollectedCards = this.game.call('getUncollectedTarotCards') || [];
-
-        if (uncollectedCards.length === 0) {
-            return '<div class="all-cards-collected">All tarot cards collected!</div>';
-        }
-
-        // Show first 5 uncollected cards
-        const displayCards = uncollectedCards.slice(0, 5);
-
-        return displayCards.map(card => {
-            const canAfford = this.game.call('canPurchaseTarotCard', card.id);
-            return `
-                <div class="tarot-purchase-item ${canAfford ? '' : 'cannot-afford'}">
-                    <span class="purchase-card-number">${card.number}</span>
-                    <span class="purchase-card-title">${card.title}</span>
-                    <button class="purchase-card-btn ${canAfford ? '' : 'disabled'}"
-                            data-purchase-tarot="${card.id}"
-                            ${canAfford ? '' : 'disabled'}>
-                        ${card.cost.essence} Essence
-                    </button>
-                </div>
-            `;
-        }).join('');
-    }
 
     /**
      * Handle tarot card purchase
@@ -2705,6 +2741,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const readProphecyBtn = document.getElementById('readProphecyBtn');
         const rerollProphecyBtn = document.getElementById('rerollProphecyBtn');
         const sealProphecyBtn = document.getElementById('sealProphecyBtn');
+        const topSection = document.querySelector('.oracle-top-section');
 
         if (!scrollSlot) return;
 
@@ -2716,8 +2753,12 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
             scrollSlot.innerHTML = '<span class="slot-hint">Place a scroll here</span>';
             if (prophecyDisplay) prophecyDisplay.style.display = 'none';
             if (oracleActions) oracleActions.style.display = 'none';
+            if (topSection) topSection.classList.remove('has-scroll');
             return;
         }
+
+        // Scroll is placed - shift layout left
+        if (topSection) topSection.classList.add('has-scroll');
 
         // Show scroll in slot
         const tier = scroll.itemData?.tier || scroll.tier || 1;

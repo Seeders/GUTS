@@ -10,7 +10,6 @@
  */
 class HuntMissionSystem extends GUTS.BaseSystem {
     static services = [
-        'checkHuntVictory',
         'dropLoot',
         'pickupLoot'
     ];
@@ -145,6 +144,10 @@ class HuntMissionSystem extends GUTS.BaseSystem {
 
         const config = this.pendingMissionConfig;
         const monsterTeam = this.pendingMonsterTeam;
+        const playerTeam = this.enums.team.left;
+
+        // Spawn player's starting state (gold mine and units)
+        this.spawnStartingState(playerTeam);
 
         // Spawn monster packs and boss
         this.spawnMonsterPacks(config, monsterTeam);
@@ -156,6 +159,20 @@ class HuntMissionSystem extends GUTS.BaseSystem {
         // Clear pending config
         this.pendingMissionConfig = null;
         this.pendingMonsterTeam = null;
+    }
+
+    /**
+     * Spawn starting units and gold mine for the player team only
+     * Hunt missions don't have an AI opponent with buildings
+     */
+    spawnStartingState(playerTeam) {
+        // Spawn gold mine for player
+        this.game.call('spawnGoldMineForTeam', playerTeam);
+
+        // Spawn starting units for player
+        this.game.call('spawnStartingUnitsForTeam', playerTeam);
+
+        console.log('[HuntMissionSystem] Spawned starting state for player team');
     }
 
     /**
@@ -325,24 +342,20 @@ class HuntMissionSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Check if the hunt mission is won (boss defeated)
-     * Called by battle phase system
+     * Called when battle ends - check if the hunt mission is won (boss defeated)
      */
-    checkHuntVictory() {
+    onBattleEnd() {
         if (!this.game.state.isHuntMission) {
-            return null;
+            return;
         }
 
-        // If boss was already defeated, return victory info
+        // Already defeated, game should have ended
         if (this.bossDefeated) {
-            return {
-                winner: 0,
-                reason: 'boss_defeated'
-            };
+            return;
         }
 
         if (!this.bossEntityId) {
-            return null;
+            return;
         }
 
         // Check if boss is dead
@@ -354,15 +367,41 @@ class HuntMissionSystem extends GUTS.BaseSystem {
 
         if (bossDead) {
             this.bossDefeated = true;
-
-            // Return victory for player 0
-            return {
+            console.log('[HuntMissionSystem] Boss defeated - victory!');
+            const result = {
                 winner: 0,
-                reason: 'boss_defeated'
+                reason: 'boss_defeated',
+                finalStats: this.getPlayerStatsForBroadcast(),
+                totalRounds: this.game.state.round
             };
+            this.game.call('broadcastGameEnd', result);
+            this.game.endGame(result);
+            return;
         }
 
-        return null;
+        // Boss still alive - continue to next round
+    }
+
+    /**
+     * Get player stats for game end broadcast
+     */
+    getPlayerStatsForBroadcast() {
+        const stats = {};
+        const playerEntities = this.game.call('getPlayerEntities');
+        for (const entityId of playerEntities) {
+            const playerStats = this.game.getComponent(entityId, 'playerStats');
+            if (playerStats) {
+                stats[playerStats.playerId] = {
+                    name: playerStats.playerId === 0 ? 'Player' : 'Opponent',
+                    stats: {
+                        team: playerStats.team,
+                        gold: playerStats.gold,
+                        upgrades: playerStats.upgrades
+                    }
+                };
+            }
+        }
+        return stats;
     }
 
     /**

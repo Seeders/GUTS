@@ -554,7 +554,7 @@ class CampaignSaveSystem extends GUTS.BaseSystem {
 
                 let node;
                 // Mission types available for nodes
-                const missionTypes = ['hunt', 'skirmish'];
+                const missionTypes = ['hunt', 'skirmish', 'survival'];
 
                 if (isBossLayer) {
                     // Boss node - pick a random level
@@ -586,7 +586,7 @@ class CampaignSaveSystem extends GUTS.BaseSystem {
                     node = {
                         id: nodeId,
                         title: levelData.title,
-                        description: `${missionType === 'hunt' ? 'Hunt enemies in' : 'Battle through'} ${levelData.title}.`,
+                        description: `${missionType === 'hunt' ? 'Hunt enemies in' : (missionType === 'survival' ? 'Survive 6 enemy waves in' : 'Battle through')} ${levelData.title}.`,
                         tier: questTier,
                         isBoss: false,
                         layer: layer,

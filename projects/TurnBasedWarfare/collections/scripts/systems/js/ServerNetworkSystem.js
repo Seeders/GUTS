@@ -16,6 +16,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
     static services = [
         // Broadcast services
         'sendToPlayer',
+        'broadcastGameEnd',
         // Handler services (for local game mode game.call() access)
         'handleSubmitPlacement',
         'handleSetSquadTarget',
@@ -876,6 +877,22 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         if (this.game.desyncDebugger) {
             this.game.desyncDebugger.displaySync(true);
             this.game.desyncDebugger.enabled = false;
+        }
+    }
+
+    /**
+     * Broadcast GAME_END to all clients
+     * Handles both local routing and multiplayer broadcasting
+     * @param {Object} result - Game result data from the scenario system
+     */
+    broadcastGameEnd(result) {
+        this.game.call('broadcastToRoom', null, 'GAME_END', { result });
+
+        // Mark room as inactive after delay (multiplayer only)
+        if (this.game.room) {
+            setTimeout(() => {
+                this.game.room.isActive = false;
+            }, 10000);
         }
     }
 

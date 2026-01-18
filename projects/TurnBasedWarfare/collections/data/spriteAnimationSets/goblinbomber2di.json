@@ -1,7 +1,7 @@
 {
   "title": "Goblinbomber2di",
   "spriteSheet": "sprites/goblinbomber2diSprites/goblinbomber2diSheet.png",
-  "spriteOffset": 15,
+  "spriteOffset": 12,
   "groundLevelSpriteOffset": 17,
   "generatorSettings": {
     "frustumSize": 48,
@@ -13,7 +13,7 @@
     "borderSize": 1,
     "outlineColor": "#030202",
     "outlineConnectivity": 4,
-    "cameraHeight": 1,
+    "cameraHeight": 1.5,
     "isProjectile": false,
     "generateGroundLevel": true,
     "animationTypes": [

@@ -43,10 +43,12 @@
 .campaign-select-content {
     flex: 1;
     padding: 2rem;
+    padding-bottom: 3rem;
     display: flex;
     flex-direction: column;
     gap: 2rem;
     overflow-y: auto;
+    background: rgba(10, 10, 20, 0.95);
 }
 
 .campaign-select-section h2 {
@@ -187,6 +189,8 @@
 #campaignHomeBase {
     background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
     padding: 0;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .home-base-wrapper {
@@ -194,6 +198,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .home-base-header {
@@ -298,12 +303,16 @@
     flex: 1;
     overflow: hidden;
     min-height: 0; /* Allow flex child to shrink below content size */
+    display: flex;
+    flex-direction: column;
 }
 
 .tab-content {
     display: none;
-    height: 100%;
-    overflow-y: auto;
+    flex: 1;
+    min-height: 0; /* Critical for nested flex scrolling */
+    overflow: hidden; /* Let inner containers handle scrolling */
+    background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
 }
 
 .tab-content.active {
@@ -363,6 +372,7 @@
 /* Upgrades Tab */
 #upgradesTab {
     padding: 2rem;
+    padding-bottom: 3rem;
     overflow-y: auto;
 }
 
@@ -444,6 +454,7 @@
 #unlocksTab {
     flex-direction: column;
     padding: 1.5rem;
+    padding-bottom: 3rem;
 }
 
 .unlocks-container {
@@ -539,6 +550,7 @@
 #inventoryTab {
     flex-direction: row;
     padding: 1.5rem;
+    padding-bottom: 3rem;
     gap: 1.5rem;
     overflow-y: auto;
 }
@@ -848,13 +860,16 @@
     flex-direction: row;
     gap: 1.5rem;
     padding: 1.5rem;
-    overflow-y: auto;
+    overflow: hidden; /* Inner containers handle scrolling */
 }
 
 .commander-container {
     display: flex;
     flex: 1;
     gap: 1.5rem;
+    min-height: 0; /* Allow flex children to shrink */
+    height: 100%;
+    overflow: hidden;
 }
 
 .commander-main {
@@ -864,6 +879,9 @@
     background: radial-gradient(ellipse at center, rgba(139, 69, 19, 0.15) 0%, rgba(10, 10, 20, 0.9) 70%);
     border-radius: 10px;
     padding: 2rem;
+    padding-bottom: 3rem;
+    overflow-y: auto;
+    min-height: 0; /* Allow scrolling */
 }
 
 .commander-header {
@@ -1018,6 +1036,8 @@
     background: rgba(0, 0, 0, 0.4);
     border-radius: 10px;
     padding: 1.5rem;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 .scroll-preview-panel h3 {
@@ -1082,28 +1102,62 @@
     gap: 1.5rem;
     padding: 1.5rem;
     position: relative;
-    overflow-y: auto;
+    overflow: hidden; /* Inner containers handle scrolling */
 }
 
 .oracle-container {
     display: flex;
     flex: 1;
     gap: 1.5rem;
+    min-height: 0; /* Allow flex children to shrink */
+    height: 100%;
+    overflow: hidden;
 }
 
 .oracle-main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
     background: radial-gradient(ellipse at center, rgba(75, 0, 130, 0.15) 0%, rgba(10, 10, 20, 0.9) 70%);
     border-radius: 10px;
-    padding: 2rem;
+    padding: 1.5rem;
+    overflow-y: auto;
+    min-height: 0;
+    gap: 1.5rem;
 }
 
 .oracle-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 0;
+}
+
+/* Oracle Top Section - Altar and Prophecy side by side */
+.oracle-top-section {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    justify-content: center;
+    transition: justify-content 0.3s ease;
+}
+
+.oracle-top-section.has-scroll {
+    justify-content: flex-start;
+}
+
+.oracle-altar-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    min-width: 200px;
+}
+
+/* Oracle Bottom Section - Upgrades and Collection side by side */
+.oracle-bottom-section {
+    display: flex;
+    gap: 1.5rem;
+    flex: 1;
+    min-height: 430px;
 }
 
 .oracle-title {
@@ -1123,9 +1177,9 @@
     background: rgba(155, 89, 182, 0.1);
     border: 1px solid rgba(155, 89, 182, 0.3);
     border-radius: 8px;
-    padding: 1rem 1.5rem;
-    margin: 1rem 0;
-    max-width: 400px;
+    padding: 0.75rem 1rem;
+    margin-top: auto;
+    font-size: 0.85rem;
 }
 
 .oracle-instructions ol {
@@ -1144,10 +1198,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
-    flex: 1;
-    width: 100%;
-    max-width: 400px;
+    gap: 1rem;
 }
 
 .oracle-scroll-slot {
@@ -1200,11 +1251,12 @@
 }
 
 .prophecy-display {
-    width: 100%;
+    flex: 1;
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(155, 89, 182, 0.3);
     border-radius: 10px;
-    padding: 1.5rem;
+    padding: 1rem;
+    min-width: 300px;
 }
 
 .prophecy-display h4 {
@@ -1277,10 +1329,9 @@
 .oracle-actions {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
     width: 100%;
-    max-width: 300px;
-    margin-top: 1.5rem;
+    max-width: 200px;
 }
 
 .btn-oracle {
@@ -1323,6 +1374,8 @@
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 .oracle-scrolls-panel h3 {
@@ -1520,6 +1573,72 @@
     border-left: 3px solid #f39c12;
     padding-left: 0.5rem;
     margin-top: 0.5rem;
+}
+
+/* Tarot Card Drop in Mission Results */
+.reward-item.tarot-card-drop {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(142, 68, 173, 0.3));
+    border: 2px solid #9b59b6;
+    border-radius: 8px;
+    margin-top: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: tarotDropGlow 2s ease-in-out infinite;
+}
+
+.reward-item.tarot-card-drop:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(155, 89, 182, 0.5);
+}
+
+@keyframes tarotDropGlow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(155, 89, 182, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(155, 89, 182, 0.6), 0 0 30px rgba(155, 89, 182, 0.3);
+    }
+}
+
+.tarot-drop-preview {
+    width: 60px;
+    height: 90px;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(155, 89, 182, 0.5);
+}
+
+.tarot-drop-preview .tarot-drop-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.tarot-drop-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.tarot-drop-label {
+    font-size: 0.75rem;
+    color: #9b59b6;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+.tarot-drop-name {
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    color: var(--primary-gold);
 }
 
 /* Boss node glow effect in atlas */
@@ -1999,9 +2118,11 @@
    ================================================ */
 
 .oracle-upgrade-section {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    flex: 0 0 auto;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(155, 89, 182, 0.2);
 }
 
 .oracle-upgrade-section h4 {
@@ -2089,10 +2210,13 @@
    ================================================ */
 
 .tarot-collection-section {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    width: 50%;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    flex: 1;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(155, 89, 182, 0.2);
+    min-width: 0;
+    overflow: hidden;
 }
 
 .tarot-collection-section h4 {
@@ -2103,8 +2227,8 @@
 
 .tarot-collection-grid {
     display: grid;
-    grid-template-columns: repeat(11, 1fr);
-    gap: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+    gap: 0.4rem;
 }
 
 .tarot-collection-card {
@@ -2154,7 +2278,24 @@
 }
 
 .tarot-collection-card.locked {
-    opacity: 0.4;
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+.tarot-collection-card.locked .card-texture {
+    filter: grayscale(100%);
+}
+
+.tarot-collection-card.locked:hover {
+    opacity: 0.9;
+    transform: translateY(-2px) scale(1.05);
+    border-color: rgba(155, 89, 182, 0.5);
+    box-shadow: 0 4px 12px rgba(155, 89, 182, 0.2);
+    z-index: 1;
+}
+
+.tarot-collection-card.locked:hover .card-texture {
+    filter: grayscale(50%);
 }
 
 .tarot-collection-card .card-number {
@@ -2416,4 +2557,44 @@
 .tarot-modal-close:hover {
     background: rgba(192, 57, 43, 0.8);
     border-color: #e74c3c;
+}
+
+/* Tarot Modal Purchase Section */
+.tarot-modal-purchase {
+    background: rgba(155, 89, 182, 0.15);
+    border: 1px solid rgba(155, 89, 182, 0.4);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.tarot-modal-purchase .purchase-status {
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.75rem;
+}
+
+.tarot-modal-purchase .purchase-card-modal-btn {
+    margin-bottom: 0.5rem;
+}
+
+.tarot-modal-purchase .essence-balance {
+    font-size: 0.85rem;
+    color: rgba(155, 89, 182, 0.9);
+    margin: 0;
+}
+
+.tarot-modal-collected {
+    background: rgba(39, 174, 96, 0.15);
+    border: 1px solid rgba(39, 174, 96, 0.4);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.tarot-modal-collected .collected-status {
+    color: #27ae60;
+    font-weight: bold;
+    margin: 0;
 }

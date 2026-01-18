@@ -1,7 +1,7 @@
 {
   "title": "Icegolem",
   "spriteSheet": "sprites/icegolemSprites/icegolemSheet.png",
-  "spriteOffset": 35,
+  "spriteOffset": 30,
   "groundLevelSpriteOffset": 35,
   "generatorSettings": {
     "frustumSize": 96,
@@ -13,7 +13,7 @@
     "borderSize": 1,
     "outlineColor": "#030202",
     "outlineConnectivity": 4,
-    "cameraHeight": 1,
+    "cameraHeight": 1.5,
     "isProjectile": false,
     "generateGroundLevel": true,
     "animationTypes": [

@@ -1,7 +1,7 @@
 {
   "title": "Dragonredflying",
   "spriteSheet": "sprites/dragonredflyingSprites/dragonredflyingSheet.png",
-  "spriteOffset": 36,
+  "spriteOffset": 45,
   "groundLevelSpriteOffset": 48,
   "generatorSettings": {
     "frustumSize": 1024,
@@ -13,7 +13,7 @@
     "borderSize": 1,
     "outlineColor": "#030202",
     "outlineConnectivity": 4,
-    "cameraHeight": 1,
+    "cameraHeight": 1.5,
     "isProjectile": false,
     "generateGroundLevel": true,
     "animationTypes": [

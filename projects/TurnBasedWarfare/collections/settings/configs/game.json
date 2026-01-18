@@ -126,6 +126,7 @@
     "CampaignSystem",
     "HomeBaseUISystem",
     "HuntMissionSystem",
+    "SurvivalMissionSystem",
     "LootSystem"
   ],
   "classes": [

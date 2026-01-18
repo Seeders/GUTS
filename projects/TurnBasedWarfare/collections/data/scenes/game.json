@@ -28,7 +28,8 @@
     "SupplySystem",
     "PlacementSystem",
     "UnitOrderSystem",
-    "CheatCodeSystem"
+    "CheatCodeSystem",
+    "SkirmishGameSystem"
   ],
   "clientSystems": [
     "RenderSystem",

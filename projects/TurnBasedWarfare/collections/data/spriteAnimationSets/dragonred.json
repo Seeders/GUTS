@@ -1,7 +1,7 @@
 {
   "title": "Dragonred",
   "spriteSheet": "sprites/dragonredSprites/dragonredSheet.png",
-  "spriteOffset": 23,
+  "spriteOffset": 52,
   "groundLevelSpriteOffset": 9,
   "generatorSettings": {
     "frustumSize": 1024,
@@ -13,7 +13,7 @@
     "borderSize": 1,
     "outlineColor": "#030202",
     "outlineConnectivity": 4,
-    "cameraHeight": 0.5,
+    "cameraHeight": 1.5,
     "isProjectile": false,
     "generateGroundLevel": true,
     "animationTypes": [

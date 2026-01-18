@@ -1,7 +1,7 @@
 {
   "title": "Elementalist2i",
   "spriteSheet": "sprites/elementalist2iSprites/elementalist2iSheet.png",
-  "spriteOffset": 17,
+  "spriteOffset": 16,
   "groundLevelSpriteOffset": 18,
   "generatorSettings": {
     "frustumSize": 48,
@@ -13,7 +13,7 @@
     "borderSize": 1,
     "outlineColor": "#030202",
     "outlineConnectivity": 4,
-    "cameraHeight": 1,
+    "cameraHeight": 1.5,
     "isProjectile": false,
     "generateGroundLevel": true,
     "animationTypes": [

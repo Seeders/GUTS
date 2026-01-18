@@ -169,17 +169,25 @@
                             <div class="oracle-title">The Oracle's Chamber</div>
                             <p class="oracle-subtitle">Reveal prophecies on blank scrolls, then apply them to missions</p>
                         </div>
-                        <div class="oracle-instructions">
-                            <ol>
-                                <li>Select a blank scroll from your inventory</li>
-                                <li>Pay Valor to reveal the prophecy's modifiers</li>
-                                <li>Reroll if desired, or seal the prophecy</li>
-                                <li>Apply sealed prophecies to missions from the Atlas</li>
-                            </ol>
-                        </div>
-                        <div class="oracle-altar">
-                            <div id="oracleScrollSlot" class="oracle-scroll-slot empty">
-                                <span class="slot-hint">Place a scroll here</span>
+
+                        <!-- Top section: Altar and Prophecy side by side -->
+                        <div class="oracle-top-section">
+                            <div class="oracle-altar-panel">
+                                <div class="oracle-altar">
+                                    <div id="oracleScrollSlot" class="oracle-scroll-slot empty">
+                                        <span class="slot-hint">Place a scroll here</span>
+                                    </div>
+                                </div>
+                                <div id="oracleActions" class="oracle-actions" style="display: none;">
+                                    <button id="readProphecyBtn" class="btn btn-oracle">
+                                        Read Prophecy (<span id="prophecyCost">0</span> Valor)
+                                    </button>
+                                    <button id="rerollProphecyBtn" class="btn btn-oracle-secondary" style="display: none;">
+                                        Reroll Prophecy (<span id="rerollCost">0</span> Valor)
+                                    </button>
+                                    <button id="sealProphecyBtn" class="btn btn-primary" style="display: none;">Seal Prophecy</button>
+                                    <button id="removeScrollBtn" class="btn btn-secondary">Remove Scroll</button>
+                                </div>
                             </div>
                             <div id="prophecyDisplay" class="prophecy-display" style="display: none;">
                                 <h4>The Prophecy</h4>
@@ -191,31 +199,32 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="oracleActions" class="oracle-actions" style="display: none;">
-                            <button id="readProphecyBtn" class="btn btn-oracle">
-                                Read Prophecy (<span id="prophecyCost">0</span> Valor)
-                            </button>
-                            <button id="rerollProphecyBtn" class="btn btn-oracle-secondary" style="display: none;">
-                                Reroll Prophecy (<span id="rerollCost">0</span> Valor)
-                            </button>
-                            <button id="sealProphecyBtn" class="btn btn-primary" style="display: none;">Seal Prophecy</button>
-                            <button id="removeScrollBtn" class="btn btn-secondary">Remove Scroll</button>
-                        </div>
 
-                        <!-- Oracle Upgrade Section -->
-                        <div id="oracleUpgradeSection" class="oracle-upgrade-section">
-                            <!-- Oracle specialization tree populated dynamically -->
-                        </div>
+                        <!-- Bottom section: Upgrades and Collection side by side -->
+                        <div class="oracle-bottom-section">
+                            <!-- Oracle Upgrade Section -->
+                            <div id="oracleUpgradeSection" class="oracle-upgrade-section">
+                                <!-- Oracle specialization tree populated dynamically -->
+                            </div>
 
-                        <!-- Tarot Collection Section -->
-                        <div id="tarotCollectionSection" class="tarot-collection-section">
-                            <!-- Tarot card collection grid populated dynamically -->
+                            <!-- Tarot Collection Section -->
+                            <div id="tarotCollectionSection" class="tarot-collection-section">
+                                <!-- Tarot card collection grid populated dynamically -->
+                            </div>
                         </div>
                     </div>
                     <div class="oracle-scrolls-panel">
                         <h3>Your Scrolls</h3>
                         <div id="oracleScrollsList" class="oracle-scrolls-list">
                             <!-- Scrolls from inventory listed here -->
+                        </div>
+                        <div class="oracle-instructions">
+                            <ol>
+                                <li>Select a blank scroll from your inventory</li>
+                                <li>Pay Valor to reveal the prophecy's modifiers</li>
+                                <li>Reroll if desired, or seal the prophecy</li>
+                                <li>Apply sealed prophecies to missions from the Atlas</li>
+                            </ol>
                         </div>
                     </div>
                 </div>

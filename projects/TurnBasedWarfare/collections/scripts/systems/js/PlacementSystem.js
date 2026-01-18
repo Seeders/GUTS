@@ -26,7 +26,9 @@ class PlacementSystem extends GUTS.BaseSystem {
         'findBuildingAdjacentPosition',
         'getStartingLocationsFromLevel',
         'spawnPendingBuilding',
-        'getSquadUnitsForPlacement'
+        'getSquadUnitsForPlacement',
+        'spawnStartingUnitsForTeam',
+        'spawnGoldMineForTeam'
     ];
 
     constructor(game) {
@@ -56,10 +58,13 @@ class PlacementSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Called when scene loads - spawn starting units
+     * Called when scene loads
+     * Note: Starting units are NOT auto-spawned here. Each game mode system
+     * (SkirmishGameSystem, HuntMissionSystem, SurvivalMissionSystem, etc.)
+     * is responsible for calling spawnStartingUnitsForTeam as needed.
      */
     onSceneLoad(sceneData) {
-        this.spawnStartingUnits();
+        // Game mode systems handle their own starting state
     }
 
     /**
@@ -568,7 +573,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             const nearestVein = this.game.call('findNearestGoldVein', worldPos);
             const goldVeinPos = nearestVein?.position || null;
 
-            const teamResult = this.spawnStartingUnitsForTeam(
+            const teamResult = this._spawnStartingUnitsForTeamInternal(
                 startingUnitsConfig.prefabs,
                 team,
                 worldPos,
@@ -670,14 +675,68 @@ class PlacementSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Spawn starting units for a single team
+     * Public service to spawn a gold mine for a team at their starting location
+     * Called by game mode systems (SkirmishGameSystem, HuntMissionSystem, etc.)
+     * @param {number} team - Numeric team enum value
+     * @returns {Object} Result with spawned gold mine info
+     */
+    spawnGoldMineForTeam(team) {
+        const startingLocations = this.getStartingLocationsFromLevel();
+        if (!startingLocations || !startingLocations[team]) {
+            console.error('[PlacementSystem] No starting location for team:', team);
+            return { success: false, error: 'No starting location' };
+        }
+
+        const startingLoc = startingLocations[team];
+        const worldPos = this.game.call('tileToWorld', startingLoc.x, startingLoc.z);
+
+        return this.spawnStartingGoldMine(team, worldPos);
+    }
+
+    /**
+     * Public service to spawn starting units for a team at their starting location
+     * Called by game mode systems (SkirmishGameSystem, HuntMissionSystem, etc.)
+     * @param {number} team - Numeric team enum value
+     * @returns {Object} Result with spawned units info
+     */
+    spawnStartingUnitsForTeam(team) {
+        const startingUnitsConfig = this.collections.configs.startingUnits;
+
+        if (!startingUnitsConfig?.prefabs) {
+            console.warn('[PlacementSystem] No startingUnits config found');
+            return { success: false, error: 'No startingUnits config' };
+        }
+
+        const startingLocations = this.getStartingLocationsFromLevel();
+        if (!startingLocations || !startingLocations[team]) {
+            console.error('[PlacementSystem] No starting location for team:', team);
+            return { success: false, error: 'No starting location' };
+        }
+
+        const startingLoc = startingLocations[team];
+        const worldPos = this.game.call('tileToWorld', startingLoc.x, startingLoc.z);
+
+        // Find nearest gold vein to determine spawn direction for units
+        const nearestVein = this.game.call('findNearestGoldVein', worldPos);
+        const goldVeinPos = nearestVein?.position || null;
+
+        return this._spawnStartingUnitsForTeamInternal(
+            startingUnitsConfig.prefabs,
+            team,
+            worldPos,
+            goldVeinPos
+        );
+    }
+
+    /**
+     * Internal method to spawn starting units for a single team
      * @param {Array} prefabs - Array of prefab definitions from config
-     * @param {string} team - Team identifier ('left' or 'right')
+     * @param {number} team - Numeric team enum value
      * @param {Object} startingWorldPos - Starting world position { x, y, z }
      * @param {Object|null} goldVeinPos - Gold vein world position to spawn units toward
      * @returns {Object} Result with spawned entity IDs
      */
-    spawnStartingUnitsForTeam(prefabs, team, startingWorldPos, goldVeinPos = null) {
+    _spawnStartingUnitsForTeamInternal(prefabs, team, startingWorldPos, goldVeinPos = null) {
         const spawnedUnits = [];
 
         // Track spawned building positions for unit placement toward gold vein

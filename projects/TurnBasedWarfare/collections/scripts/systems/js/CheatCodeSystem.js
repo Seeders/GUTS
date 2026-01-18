@@ -439,8 +439,9 @@ NOTES
             totalRounds: this.game.state.round || 1
         };
 
-        // Broadcast game end through network system (event name is GAME_END, not handleGameEnd)
-        this.game.call('broadcastToRoom', null, 'GAME_END', { result });
+        // Broadcast game end and end game
+        this.game.call('broadcastGameEnd', result);
+        this.game.endGame(result);
 
         return { success: true, winner: myPlayerId };
     }
@@ -463,8 +464,9 @@ NOTES
             totalRounds: this.game.state.round || 1
         };
 
-        // Broadcast game end through network system (event name is GAME_END, not handleGameEnd)
-        this.game.call('broadcastToRoom', null, 'GAME_END', { result });
+        // Broadcast game end and end game
+        this.game.call('broadcastGameEnd', result);
+        this.game.endGame(result);
 
         return { success: true, winner: winnerId };
     }

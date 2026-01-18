@@ -315,7 +315,14 @@ class GameUISystem extends GUTS.BaseSystem {
             const round = this.game.state.round || 1;
             if (round !== this._lastRound) {
                 this._lastRound = round;
-                roundNumberEl.textContent = round;
+
+                // For survival missions, show wave X/30 format
+                if (this.game.state.isSurvivalMission && this.game.hasService('getSurvivalWaveInfo')) {
+                    const waveInfo = this.game.call('getSurvivalWaveInfo');
+                    roundNumberEl.textContent = `Wave ${waveInfo.currentWave}/${waveInfo.totalWaves}`;
+                } else {
+                    roundNumberEl.textContent = round;
+                }
             }
         }
     }
