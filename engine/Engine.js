@@ -27,15 +27,9 @@ class Engine extends BaseEngine {
         // Create game instance
         this.gameInstance = new GUTS[projectConfig.appLibrary](this);
 
-        // Run loader if specified in config
-        if (projectConfig.appLoaderLibrary && GUTS[projectConfig.appLoaderLibrary]) {
-            const loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);
-            await loader.load();
-            // Note: GameLoader.load() already calls game.init() internally
-        } else if (this.gameInstance.init) {
-            // Only call init directly if no loader was used
-            await this.gameInstance.init();
-        }
+        // Run loader (loaders call game.init() themselves)
+        const loader = new GUTS[projectConfig.appLoaderLibrary](this.gameInstance);
+        await loader.load();
 
         // Allow game config to override tick rate (default is 20 TPS)
         if (projectConfig.tickRate) {

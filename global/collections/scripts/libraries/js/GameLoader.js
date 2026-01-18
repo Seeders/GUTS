@@ -50,9 +50,9 @@ class GameLoader extends GUTS.BaseLoader {
             this.progress.complete();
         }
 
-        // Only call game.init() on app startup, not when loading as scene loader
+        // Initialize the game (loaders are responsible for calling init)
         if (!isSceneLoad) {
-            this.game.init(false);
+            await this.game.init(false);
         }
     }
 
