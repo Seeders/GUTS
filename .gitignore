@@ -4,7 +4,7 @@ cache/
 
 projects/**/config/*
 projects/**/dist/**/*.js
-projects/**/dist/resources/**/*
+projects/**/dist/**/resources/
 
 build/.temp/**/*
 dist/**/*
