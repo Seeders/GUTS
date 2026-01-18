@@ -2347,6 +2347,17 @@ class BaseECSGame {
         this.state.victory = true;
     }
 
+    /**
+     * End the game with result data
+     * Sets phase to ended and triggers onGameEnd event for local handling
+     * Note: For online games, scenario systems should call broadcastGameEnd service first
+     * @param {Object} result - Game result data built by the scenario system
+     */
+    endGame(result) {
+        this.state.phase = this.enums?.gamePhase?.ended ?? 'ended';
+        this.triggerEvent('onGameEnd', result);
+    }
+
     resetCurrentTime() {
         this.state.now = 0;
         this.lastTime = 0;
