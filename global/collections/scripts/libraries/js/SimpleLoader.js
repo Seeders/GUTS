@@ -15,6 +15,11 @@ class SimpleLoader {
         console.log('loading');
         // Load interface from config
         this.loadInterface();
+
+        // Initialize the game (loaders are responsible for calling init)
+        if (this.game.init) {
+            await this.game.init();
+        }
     }
 
     /**
