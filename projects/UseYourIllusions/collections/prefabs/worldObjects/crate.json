@@ -6,7 +6,7 @@
   "placementGridHeight": 1,
   "impassable": true,
   "spriteScale": 16,
-  "renderTexture": "chest",
+  "renderTexture": "chest_wood_box",
   "spriteOffset": 8,
   "collectable": true
 }

@@ -16,6 +16,7 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         this.game.puzzleLobbyUISystem = this;
         this.availableLevels = [];
         this.currentScreen = 'mainMenu';
+        this.boundEscapeHandler = null;
     }
 
     init() {
@@ -24,15 +25,29 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
     onSceneLoad(sceneData) {
         const sceneName = this.game.sceneManager.currentSceneName;
 
+        // Clean up any previous handlers
+        this.cleanupHandlers();
+
+        // Always load available levels so loadNextLevel works from game scene
+        this.loadAvailableLevels();
+
         if (sceneName === 'menu') {
             this.setupMainMenuHandlers();
-            this.loadAvailableLevels();
+            this.populateLevelGrid();
             this.showScreen('mainMenu');
         }
 
         if (sceneName === 'game') {
             this.setupGameScreenHandlers();
             this.showScreen('gameScreen');
+        }
+    }
+
+    cleanupHandlers() {
+        // Remove document-level event listeners
+        if (this.boundEscapeHandler) {
+            document.removeEventListener('keydown', this.boundEscapeHandler);
+            this.boundEscapeHandler = null;
         }
     }
 
@@ -102,7 +117,7 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
 
         document.getElementById('restartLevelBtn')?.addEventListener('click', () => {
             this.hidePauseMenu();
-            this.game.call('restartLevel');
+            this.restartCurrentLevel();
         });
 
         document.getElementById('returnToMenuBtn')?.addEventListener('click', () => {
@@ -110,24 +125,9 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
             this.returnToMainMenu();
         });
 
-        document.getElementById('nextLevelBtn')?.addEventListener('click', () => {
-            this.hideAllOverlays();
-            this.loadNextLevel();
-        });
-
-        document.getElementById('replayLevelBtn')?.addEventListener('click', () => {
-            this.hideAllOverlays();
-            this.game.call('restartLevel');
-        });
-
-        document.getElementById('victoryMenuBtn')?.addEventListener('click', () => {
-            this.hideAllOverlays();
-            this.returnToMainMenu();
-        });
-
         document.getElementById('retryLevelBtn')?.addEventListener('click', () => {
             this.hideAllOverlays();
-            this.game.call('restartLevel');
+            this.restartCurrentLevel();
         });
 
         document.getElementById('defeatMenuBtn')?.addEventListener('click', () => {
@@ -135,11 +135,13 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
             this.returnToMainMenu();
         });
 
-        document.addEventListener('keydown', (e) => {
+        // Use bound handler so we can remove it later
+        this.boundEscapeHandler = (e) => {
             if (e.key === 'Escape' && this.currentScreen === 'gameScreen') {
                 this.togglePauseMenu();
             }
-        });
+        };
+        document.addEventListener('keydown', this.boundEscapeHandler);
     }
 
     loadAvailableLevels() {
@@ -150,12 +152,17 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
             .map(key => ({ id: key, ...levels[key] }))
             .filter(level => level.published !== false);
 
-        this.populateLevelGrid();
+        console.log('[PuzzleLobbyUISystem] Loaded levels:', this.availableLevels.length, this.availableLevels.map(l => l.id));
     }
 
     populateLevelGrid() {
         const levelGrid = document.getElementById('levelGrid');
-        if (!levelGrid) return;
+        if (!levelGrid) {
+            console.log('[PuzzleLobbyUISystem] populateLevelGrid: levelGrid not found');
+            return;
+        }
+
+        console.log('[PuzzleLobbyUISystem] populateLevelGrid: creating', this.availableLevels.length, 'level cards');
 
         levelGrid.innerHTML = '';
 
@@ -175,6 +182,7 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
 
             if (!isLocked) {
                 card.addEventListener('click', () => {
+                    console.log('[PuzzleLobbyUISystem] Level card clicked:', level.id);
                     this.startLevel(level.id);
                 });
             }
@@ -234,8 +242,66 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         }
     }
 
-    showVictoryScreen() {
-        document.getElementById('victoryScreen')?.classList.add('active');
+    showVictoryScreen(stats = {}) {
+        const overlay = document.getElementById('victoryOverlay');
+        if (!overlay) return;
+
+        // Update stats display
+        const timeEl = document.getElementById('victoryTime');
+        const illusionsEl = document.getElementById('victoryIllusions');
+
+        if (timeEl) {
+            timeEl.textContent = stats.timeFormatted || '0:00';
+        }
+        if (illusionsEl) {
+            illusionsEl.textContent = stats.illusionsUsed ?? 0;
+        }
+
+        // Setup button handlers
+        this.setupVictoryButtons();
+
+        // Show the overlay
+        overlay.classList.add('active');
+    }
+
+    setupVictoryButtons() {
+        const nextBtn = document.getElementById('victoryNextLevelBtn');
+        const retryBtn = document.getElementById('victoryRetryBtn');
+        const menuBtn = document.getElementById('victoryMenuBtn');
+
+        // Remove old listeners by cloning
+        if (nextBtn && !nextBtn._hasHandler) {
+            nextBtn._hasHandler = true;
+            nextBtn.addEventListener('click', () => {
+                this.hideAllOverlays();
+                this.loadNextLevel();
+            });
+        }
+
+        if (retryBtn && !retryBtn._hasHandler) {
+            retryBtn._hasHandler = true;
+            retryBtn.addEventListener('click', () => {
+                this.hideAllOverlays();
+                this.restartCurrentLevel();
+            });
+        }
+
+        if (menuBtn && !menuBtn._hasHandler) {
+            menuBtn._hasHandler = true;
+            menuBtn.addEventListener('click', () => {
+                this.hideAllOverlays();
+                this.returnToMainMenu();
+            });
+        }
+    }
+
+    restartCurrentLevel() {
+        const currentLevelId = this.game.state.selectedLevel;
+        if (currentLevelId) {
+            this.startLevel(currentLevelId);
+        } else {
+            this.returnToMainMenu();
+        }
     }
 
     showDefeatScreen() {
@@ -243,7 +309,7 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
     }
 
     hideAllOverlays() {
-        document.querySelectorAll('.pause-overlay, .victory-overlay, .defeat-overlay').forEach(overlay => {
+        document.querySelectorAll('.pause-overlay, .puzzle-modal-overlay').forEach(overlay => {
             overlay.classList.remove('active');
         });
         this.game.state.paused = false;
@@ -251,5 +317,10 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
 
     onSceneUnload() {
         this.hideAllOverlays();
+        this.cleanupHandlers();
+    }
+
+    dispose() {
+        this.cleanupHandlers();
     }
 }

@@ -1,0 +1,27 @@
+════════════════════════════════════════════════════════════
+                    SIMULATION RESULTS                      
+════════════════════════════════════════════════════════════
+  Matchup: basic vs basic
+────────────────────────────────────────────────────────────
+  Result: NO WINNER (timeout)
+  Completed: No (timeout)
+────────────────────────────────────────────────────────────
+  DEBUG INFO
+────────────────────────────────────────────────────────────
+  ERROR PATH: [HeadlessEngine] HeadlessSimulationSystem not found. Ensure it is registered in the headless scene config.
+  Raw Phase: 1
+  Phase Name: placement
+  game.state.winner: null
+  game.state.gameOver: false
+  Entity Counts - Left: undefined, Right: undefined
+  Final Winner: undefined
+────────────────────────────────────────────────────────────
+  BATTLE STATISTICS
+────────────────────────────────────────────────────────────
+  Final Round: 1
+  Final Phase: placement
+  Total Ticks: 0
+  Game Time: 0.00s
+  Real Time: 0ms
+  Performance: 0 ticks/sec
+════════════════════════════════════════════════════════════

@@ -12,7 +12,8 @@ class TerrainSystem extends GUTS.BaseSystem {
         'getTerrainExtendedSize',
         'hasTerrain',
         'getLevel',
-        'isTerrainInitialized'
+        'isTerrainInitialized',
+        'getLevelEntityData'
     ];
 
     constructor(game) {
@@ -24,6 +25,9 @@ class TerrainSystem extends GUTS.BaseSystem {
         this.terrainDataManager = null;
         this.currentLevel = null;
         this.currentLevelData = null;
+
+        // Map of spawned entity ID -> level entity definition (for puzzle systems to access extra data like patrolWaypoints)
+        this.spawnedLevelEntities = new Map();
     }
 
     init() {
@@ -164,6 +168,9 @@ class TerrainSystem extends GUTS.BaseSystem {
      * Supports prefab format: { prefab: "worldObject", type: "tree_sprite", components: { transform } }
      */
     async loadLevelEntities() {
+        // Clear any previous spawned entity data
+        this.spawnedLevelEntities.clear();
+
         if (!this.currentLevelData) {
             console.log('[TerrainSystem] No level data available for entity loading');
             return;
@@ -223,19 +230,33 @@ class TerrainSystem extends GUTS.BaseSystem {
                 }
 
                 // Create entity using prefab-driven system
-                this.game.call('createEntityFromPrefab', {
+                const entityId = this.game.call('createEntityFromPrefab', {
                     prefab: prefabName,
                     type: type,
                     collection: collection,
                     team: enums.team.neutral,
                     componentOverrides: componentOverrides
                 });
+
+                // Store the level entity definition for this entity (for puzzle systems to access extra data)
+                if (entityId !== undefined && entityId !== null) {
+                    this.spawnedLevelEntities.set(entityId, entityDef);
+                }
             } catch (error) {
                 console.error(`[TerrainSystem] Failed to create level entity:`, entityDef, error);
             }
         }
 
         console.log(`[TerrainSystem] Loaded ${levelEntities.length} level entities`);
+    }
+
+    /**
+     * Get the level entity definition for a spawned entity
+     * @param {number} entityId - The entity ID
+     * @returns {Object|null} The level entity definition or null if not found
+     */
+    getLevelEntityData(entityId) {
+        return this.spawnedLevelEntities.get(entityId) || null;
     }
 
     /**

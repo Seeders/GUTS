@@ -474,6 +474,25 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                     selectedSlot: overrides?.magicBelt?.selectedSlot ?? -1
                 };
 
+            case 'collectible':
+                // Only add collectible component if typeData.collectable is true
+                if (!typeData.collectable) {
+                    return null; // Skip this component
+                }
+                return {
+                    objectType: typeIndex
+                };
+
+            case 'exitZone':
+                // Only add exitZone component if typeData.exit is true
+                if (!typeData.exit) {
+                    return null; // Skip this component
+                }
+                return {
+                    radius: typeData.exitRadius || 60,
+                    isActive: true
+                };
+
             default:
                 // Check if there's an override for this component
                 if (overrides?.[name]) {

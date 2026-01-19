@@ -2,11 +2,13 @@
  * PuzzleGameSystem - Game flow coordination for the puzzle game
  *
  * Handles:
- * - Spawning player at level start
- * - Spawning collectibles from level data
- * - Spawning enemies from level data
- * - Creating exit zone from level data
+ * - Spawning player at starting location from level data
+ * - Configuring guards with behavior trees and patrol waypoints
+ * - Setting up exit zones from exit world objects
  * - Game state management
+ *
+ * Note: World objects and units are spawned by TerrainSystem from levelEntities.
+ * This system handles puzzle-specific setup on top of those entities.
  */
 class PuzzleGameSystem extends GUTS.BaseSystem {
     static services = [
@@ -54,31 +56,44 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
             console.log(`[PuzzleGameSystem] Set active player team to ${playerTeam} (left)`);
         }
 
-        // Spawn player
-        if (levelData.playerSpawn) {
-            this.spawnPlayer(levelData.playerSpawn, playerTeam);
+        // Spawn player at starting location
+        const startingLocations = levelData.tileMap?.startingLocations || [];
+        const playerSpawn = startingLocations.find(loc => loc.side === 'left') || startingLocations[0];
+        if (playerSpawn) {
+            this.spawnPlayerAtLocation(playerSpawn, playerTeam);
+        } else {
+            // Fallback to legacy playerSpawn if no startingLocations
+            if (levelData.playerSpawn) {
+                this.spawnPlayer(levelData.playerSpawn, playerTeam);
+            }
         }
 
-        // Spawn collectibles
-        if (levelData.collectibles && Array.isArray(levelData.collectibles)) {
-            levelData.collectibles.forEach(collectibleData => {
-                this.spawnCollectible(collectibleData);
-            });
-        }
+        // Configure guards that were spawned by TerrainSystem
+        this.configureGuards();
 
-        // Spawn enemies
-        if (levelData.enemies && Array.isArray(levelData.enemies)) {
-            levelData.enemies.forEach(enemyData => {
-                this.spawnEnemy(enemyData, playerTeam);
-            });
-        }
-
-        // Create exit zone
-        if (levelData.exitPosition) {
-            this.createExitZone(levelData.exitPosition);
-        }
+        // Exit zones are now automatically configured by UnitCreationSystem via prefab
+        // when world objects have exit: true in their type data
 
         console.log(`[PuzzleGameSystem] Initialized level: ${this.currentLevelId}`);
+    }
+
+    spawnPlayerAtLocation(location, playerTeam) {
+        // Convert grid position to world position if needed
+        let x, z;
+        if (location.gridX !== undefined && location.gridZ !== undefined) {
+            // Grid-based position from TerrainMapEditor
+            const tileSize = 50; // Standard tile size
+            const terrainSize = this.game.call('getTerrainSize') || 800;
+            const halfTerrain = terrainSize / 2;
+            x = (location.gridX * tileSize) - halfTerrain + (tileSize / 2);
+            z = (location.gridZ * tileSize) - halfTerrain + (tileSize / 2);
+        } else {
+            // World position
+            x = location.x || 0;
+            z = location.z || 0;
+        }
+
+        this.spawnPlayer({ x, z }, playerTeam);
     }
 
     spawnPlayer(spawnData, playerTeam) {
@@ -128,137 +143,103 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         return playerId;
     }
 
-    spawnCollectible(collectibleData) {
-        const position = collectibleData.position || { x: 0, y: 0, z: 0 };
-        const objectType = collectibleData.objectType;
-
-        if (!objectType) {
-            console.warn('[PuzzleGameSystem] Collectible missing objectType');
-            return null;
+    /**
+     * Configure guards that were spawned by TerrainSystem.
+     * Sets up GuardBehaviorTree and patrol waypoints from level data.
+     */
+    configureGuards() {
+        // Find all guard units by checking unitType
+        const guardTypeIndex = this.enums.units?.guard;
+        if (guardTypeIndex === undefined) {
+            console.log('[PuzzleGameSystem] No guard unit type defined');
+            return;
         }
 
-        // Check that the prefab has collectable: true
-        const prefabData = this.collections.worldObjects?.[objectType];
-        if (!prefabData) {
-            console.warn(`[PuzzleGameSystem] World object ${objectType} not found in collections`);
-            return null;
-        }
-        if (!prefabData.collectable) {
-            console.warn(`[PuzzleGameSystem] World object ${objectType} does not have collectable: true`);
-            return null;
-        }
+        const entities = this.game.getEntitiesWith('unitType', 'aiState');
+        let guardCount = 0;
 
-        // Get terrain height at position
-        const terrainHeight = this.game.call('getTerrainHeightAtPosition', position.x, position.z) ?? 0;
+        for (const entityId of entities) {
+            const unitType = this.game.getComponent(entityId, 'unitType');
+            if (unitType?.type !== guardTypeIndex) continue;
 
-        // Use createUnit to spawn from the worldObjects collection
-        const collectionIndex = this.enums.objectTypeDefinitions?.worldObjects;
-        const spawnTypeIndex = this.enums.worldObjects?.[objectType];
-
-        if (collectionIndex === undefined || spawnTypeIndex === undefined) {
-            console.warn(`[PuzzleGameSystem] Collectible ${objectType} not found in enums (collection: ${collectionIndex}, type: ${spawnTypeIndex})`);
-            return null;
-        }
-
-        const transform = {
-            position: { x: position.x, y: terrainHeight, z: position.z },
-            rotation: { x: 0, y: 0, z: 0 },
-            scale: { x: 1, y: 1, z: 1 }
-        };
-
-        const neutralTeam = this.enums.team?.neutral ?? 0;
-        const collectibleId = this.game.call('createUnit', collectionIndex, spawnTypeIndex, transform, neutralTeam);
-
-        // Add collectible component for pickup logic
-        // Store the enum index since TypedArray components can't store strings
-        this.game.addComponent(collectibleId, 'collectible', {
-            objectType: spawnTypeIndex
-        });
-
-        console.log(`[PuzzleGameSystem] Spawned collectible ${objectType} (index: ${spawnTypeIndex}) at (${position.x}, ${position.z})`);
-
-        return collectibleId;
-    }
-
-    spawnEnemy(enemyData, playerTeam) {
-        const position = enemyData.position || { x: 0, y: 0, z: 0 };
-        const enemyType = enemyData.type || 'guard';
-
-        // Get terrain height at position
-        const terrainHeight = this.game.call('getTerrainHeightAtPosition', position.x, position.z) ?? 0;
-
-        // Use createUnit to spawn the enemy
-        const collectionIndex = this.enums.objectTypeDefinitions?.units ?? 0;
-        const spawnTypeIndex = this.enums.units?.[enemyType] ?? this.enums.units?.guard;
-
-        if (spawnTypeIndex === undefined) {
-            console.warn(`[PuzzleGameSystem] Enemy type ${enemyType} not found in enums`);
-            return null;
-        }
-
-        const transform = {
-            position: { x: position.x, y: terrainHeight, z: position.z },
-            rotation: { x: 0, y: 0, z: 0 },
-            scale: { x: 1, y: 1, z: 1 }
-        };
-
-        // Enemies are on the hostile team (opposite of player)
-        const enemyTeam = this.enums.team?.hostile ?? 1;
-        const enemyId = this.game.call('createUnit', collectionIndex, spawnTypeIndex, transform, enemyTeam);
-
-        // Override the behavior tree to use GuardBehaviorTree for guards
-        const aiState = this.game.getComponent(enemyId, 'aiState');
-        console.log(`[PuzzleGameSystem] aiState:`, aiState, 'GuardBehaviorTree enum:', this.enums.behaviorTrees?.GuardBehaviorTree);
-        if (aiState && this.enums.behaviorTrees?.GuardBehaviorTree !== undefined) {
-            aiState.rootBehaviorTree = this.enums.behaviorTrees.GuardBehaviorTree;
-            console.log(`[PuzzleGameSystem] Set GuardBehaviorTree (${aiState.rootBehaviorTree}) for enemy ${enemyId}`);
-        } else {
-            console.log(`[PuzzleGameSystem] Could not set GuardBehaviorTree - aiState: ${!!aiState}, enum: ${this.enums.behaviorTrees?.GuardBehaviorTree}`);
-        }
-
-        // Store patrol data in behavior shared state if provided
-        if (enemyData.patrol && this.game.hasService('getBehaviorShared')) {
-            const shared = this.game.call('getBehaviorShared', enemyId);
-            console.log(`[PuzzleGameSystem] Setting patrol waypoints for enemy ${enemyId}: hasShared=${!!shared}, waypoints=${JSON.stringify(enemyData.patrol.waypoints)}`);
-            if (shared) {
-                shared.patrolWaypoints = enemyData.patrol.waypoints;
-                shared.currentWaypointIndex = 0;
-                console.log(`[PuzzleGameSystem] After setting: shared.patrolWaypoints=${JSON.stringify(shared.patrolWaypoints)}`);
+            // Set GuardBehaviorTree
+            const aiState = this.game.getComponent(entityId, 'aiState');
+            if (aiState && this.enums.behaviorTrees?.GuardBehaviorTree !== undefined) {
+                aiState.rootBehaviorTree = this.enums.behaviorTrees.GuardBehaviorTree;
+                console.log(`[PuzzleGameSystem] Set GuardBehaviorTree for guard ${entityId}`);
             }
-        } else {
-            console.log(`[PuzzleGameSystem] NOT setting patrol waypoints: hasPatrol=${!!enemyData.patrol}, hasService=${this.game.hasService('getBehaviorShared')}`);
+
+            // Get patrol waypoints from level entity data
+            const transform = this.game.getComponent(entityId, 'transform');
+            if (transform && this.game.hasService('getBehaviorShared')) {
+                const shared = this.game.call('getBehaviorShared', entityId);
+                if (shared && !shared.patrolWaypoints) {
+                    // Try to get patrol waypoints from level entity definition
+                    let patrolWaypoints = null;
+                    if (this.game.hasService('getLevelEntityData')) {
+                        const levelEntityData = this.game.call('getLevelEntityData', entityId);
+                        if (levelEntityData?.patrolWaypoints) {
+                            patrolWaypoints = levelEntityData.patrolWaypoints;
+                            console.log(`[PuzzleGameSystem] Using level-defined patrol waypoints for guard ${entityId}`);
+                        }
+                    }
+
+                    // Fall back to default patrol pattern if no waypoints defined
+                    if (!patrolWaypoints) {
+                        const pos = transform.position;
+                        const patrolRadius = 100;
+                        patrolWaypoints = [
+                            { x: pos.x, z: pos.z },
+                            { x: pos.x + patrolRadius, z: pos.z },
+                            { x: pos.x + patrolRadius, z: pos.z + patrolRadius },
+                            { x: pos.x, z: pos.z + patrolRadius }
+                        ];
+                        console.log(`[PuzzleGameSystem] Using default patrol for guard ${entityId}`);
+                    }
+
+                    shared.patrolWaypoints = patrolWaypoints;
+                    shared.currentWaypointIndex = 0;
+                }
+            }
+
+            guardCount++;
         }
 
-        console.log(`[PuzzleGameSystem] Spawned enemy ${enemyType} at (${position.x}, ${position.z})`);
-
-        return enemyId;
+        console.log(`[PuzzleGameSystem] Configured ${guardCount} guards`);
     }
 
-    createExitZone(exitPosition) {
-        const x = exitPosition.x || 0;
-        const z = exitPosition.z || 0;
+    /**
+     * Set up exit zones from world objects marked as exits.
+     * Looks for world objects with exit: true in their prefab data.
+     */
+    configureExitZones() {
+        const worldObjectEntities = this.game.getEntitiesWith('unitType', 'transform');
+        let exitCount = 0;
 
-        // Get terrain height at position
-        const terrainHeight = this.game.call('getTerrainHeightAtPosition', x, z) ?? 0;
+        for (const entityId of worldObjectEntities) {
+            const unitType = this.game.getComponent(entityId, 'unitType');
+            if (!unitType) continue;
 
-        const exitId = this.game.createEntity();
+            // Get the world object type name
+            const typeName = this.reverseEnums.worldObjects?.[unitType.type];
+            if (!typeName) continue;
 
-        // Add transform
-        this.game.addComponent(exitId, 'transform', {
-            position: { x, y: terrainHeight, z },
-            rotation: { x: 0, y: 0, z: 0 },
-            scale: { x: 1, y: 1, z: 1 }
-        });
+            // Check if this world object is marked as an exit
+            const prefabData = this.collections.worldObjects?.[typeName];
+            if (!prefabData?.exit) continue;
 
-        // Add exit zone component
-        this.game.addComponent(exitId, 'exitZone', {
-            radius: 60,
-            isActive: true
-        });
+            // Add exitZone component if not already present
+            if (!this.game.hasComponent(entityId, 'exitZone')) {
+                this.game.addComponent(entityId, 'exitZone', {
+                    radius: prefabData.exitRadius || 60,
+                    isActive: true
+                });
+                console.log(`[PuzzleGameSystem] Configured exit zone on ${typeName} (entity ${entityId})`);
+                exitCount++;
+            }
+        }
 
-        console.log(`[PuzzleGameSystem] Created exit zone at (${x}, ${z})`);
-
-        return exitId;
+        console.log(`[PuzzleGameSystem] Configured ${exitCount} exit zones`);
     }
 
     startPuzzleLevel(levelId) {

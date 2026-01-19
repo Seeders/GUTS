@@ -4,20 +4,35 @@
 class ExitSystem extends GUTS.BaseSystem {
     static services = [
         'isLevelComplete',
-        'getExitPosition'
+        'getExitPosition',
+        'getLevelStats'
     ];
 
     constructor(game) {
         super(game);
         this.game.exitSystem = this;
         this.levelComplete = false;
+        this.levelStartTime = 0;
+        this.levelEndTime = 0;
+        this.illusionsUsed = 0;
     }
+
+    static eventListeners = {
+        'onIllusionCreated': 'handleIllusionCreated'
+    };
 
     init() {
     }
 
     onSceneLoad(sceneData) {
         this.levelComplete = false;
+        this.levelStartTime = Date.now();
+        this.levelEndTime = 0;
+        this.illusionsUsed = 0;
+    }
+
+    handleIllusionCreated(data) {
+        this.illusionsUsed++;
     }
 
     update() {
@@ -60,6 +75,7 @@ class ExitSystem extends GUTS.BaseSystem {
 
     triggerLevelComplete(playerId, exitId) {
         this.levelComplete = true;
+        this.levelEndTime = Date.now();
 
         // Get exit position for effects
         const exitTransform = this.game.getComponent(exitId, 'transform');
@@ -81,14 +97,14 @@ class ExitSystem extends GUTS.BaseSystem {
         // Trigger event for other systems to handle
         this.game.triggerEvent('onLevelComplete', { playerId, exitId });
 
-        // Show victory screen
+        // Show victory screen with stats
         if (this.game.hasService('showVictoryScreen')) {
-            this.game.call('showVictoryScreen');
+            this.game.call('showVictoryScreen', this.getLevelStats());
         } else {
-            // Fallback - show victory interface
-            const victoryScreen = document.getElementById('victoryScreen');
-            if (victoryScreen) {
-                victoryScreen.classList.add('active');
+            // Fallback - show victory overlay
+            const victoryOverlay = document.getElementById('victoryOverlay');
+            if (victoryOverlay) {
+                victoryOverlay.classList.add('active');
             }
         }
     }
@@ -105,7 +121,24 @@ class ExitSystem extends GUTS.BaseSystem {
         return exitTransform?.position || null;
     }
 
+    getLevelStats() {
+        const endTime = this.levelEndTime || Date.now();
+        const elapsedMs = endTime - this.levelStartTime;
+        const totalSeconds = Math.floor(elapsedMs / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+
+        return {
+            timeElapsed: elapsedMs,
+            timeFormatted: `${minutes}:${seconds.toString().padStart(2, '0')}`,
+            illusionsUsed: this.illusionsUsed
+        };
+    }
+
     onSceneUnload() {
         this.levelComplete = false;
+        this.levelStartTime = 0;
+        this.levelEndTime = 0;
+        this.illusionsUsed = 0;
     }
 }

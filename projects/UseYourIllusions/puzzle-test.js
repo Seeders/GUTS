@@ -133,10 +133,15 @@ async function runPuzzleTest() {
         const typeName = reverseEnums.worldObjects?.[unitType?.type];
         if (typeName === 'present') {
             const pos = game.getComponent(entityId, 'transform')?.position;
-            console.log(`[PuzzleTest] Found real present: entity ${entityId} at (${pos?.x}, ${pos?.z})`);
+            const collectible = game.getComponent(entityId, 'collectible');
+            console.log(`[PuzzleTest] Found real present: entity ${entityId} at (${pos?.x}, ${pos?.z}), collectible: ${collectible ? 'YES' : 'NO'}`);
             realPresents.push(entityId);
         }
     }
+
+    // Verify collectible component is present
+    const collectibleEntities = game.getEntitiesWith('collectible');
+    console.log(`[PuzzleTest] Total entities with collectible component: ${collectibleEntities.length}`);
 
     // First, let's run until the guard picks up the nearby real present
     console.log('[PuzzleTest] Running simulation to let guard pick up real presents...');
@@ -275,6 +280,41 @@ async function runPuzzleTest() {
     console.log('Real detected:', realDetected);
     console.log('Illusion still exists:', game.hasEntity(illusionId));
     console.log('Real still exists:', game.hasEntity(realPresentId));
+
+    // Test exit zone functionality
+    console.log('\n[PuzzleTest] === Testing Exit Zone ===');
+
+    // Find exit zone
+    const exitZones = game.getEntitiesWith('exitZone', 'transform');
+    console.log(`[PuzzleTest] Exit zones found: ${exitZones.length}`);
+
+    if (exitZones.length > 0) {
+        const exitId = exitZones[0];
+        const exitZone = game.getComponent(exitId, 'exitZone');
+        const exitTransform = game.getComponent(exitId, 'transform');
+        console.log(`[PuzzleTest] Exit zone entity ${exitId}: radius=${exitZone?.radius}, isActive=${exitZone?.isActive}, pos=(${exitTransform?.position?.x}, ${exitTransform?.position?.z})`);
+
+        // Find player
+        const playerEntities = game.getEntitiesWith('playerController', 'transform');
+        if (playerEntities.length > 0) {
+            const playerId = playerEntities[0];
+            const playerTransform = game.getComponent(playerId, 'transform');
+
+            // Move player to exit position
+            console.log(`[PuzzleTest] Moving player ${playerId} to exit zone...`);
+            playerTransform.position.x = exitTransform.position.x;
+            playerTransform.position.z = exitTransform.position.z;
+
+            // Run a few frames to let ExitSystem detect
+            for (let i = 0; i < 10; i++) {
+                await game.update(1/60);
+            }
+
+            // Check if level is complete
+            const isComplete = game.hasService('isLevelComplete') ? game.call('isLevelComplete') : false;
+            console.log(`[PuzzleTest] Level complete: ${isComplete}`);
+        }
+    }
 
     console.log('[PuzzleTest] Test complete');
     process.exit(0);

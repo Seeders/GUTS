@@ -145,7 +145,7 @@
   "placementGridHeight": 1,
   "abilities": [],
   "icon": "unit_soldier",
-  "visionRange": 400,
+  "visionRange": 250,
   "supplyCost": 0,
   "spriteAnimationSet": "soldier",
   "requiresUnits": [],

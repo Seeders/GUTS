@@ -11,7 +11,12 @@ class FindDesirableObjectBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
         const params = this.parameters || {};
-        const detectionRange = params.detectionRange || 500;
+
+        // Get vision range from unit type definition (prefab), combat component, or params
+        const unitTypeComp = game.getComponent(entityId, 'unitType');
+        const unitTypeDef = game.call('getUnitTypeDef', unitTypeComp);
+        const combat = game.getComponent(entityId, 'combat');
+        const detectionRange = unitTypeDef?.visionRange || combat?.visionRange || params.detectionRange || 300;
 
         const transform = game.getComponent(entityId, 'transform');
         const pos = transform?.position;
@@ -58,10 +63,14 @@ class FindDesirableObjectBehaviorAction extends GUTS.BaseBehaviorAction {
             const dz = targetPos.z - pos.z;
             const dist = Math.sqrt(dx * dx + dz * dz);
 
-            if (dist <= detectionRange && dist < nearestDist) {
-                nearestDist = dist;
-                nearestId = targetId;
-            }
+            if (dist > detectionRange || dist >= nearestDist) continue;
+
+            // Check line of sight - guard must be able to see the object
+            const hasLOS = game.call('hasLineOfSight', pos, targetPos);
+            if (!hasLOS) continue;
+
+            nearestDist = dist;
+            nearestId = targetId;
         }
 
         if (nearestId !== null) {

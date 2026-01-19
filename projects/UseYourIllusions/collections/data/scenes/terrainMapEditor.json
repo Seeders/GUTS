@@ -1,0 +1,14 @@
+{
+  "title": "Terrain Map Editor",
+  "systems": [
+    "GridSystem",
+    "TerrainSystem",
+    "UnitCreationSystem"
+  ],
+  "clientSystems": [
+    "RenderSystem",
+    "WorldSystem",
+    "AnimationSystem",
+    "SelectedUnitSystem"
+  ]
+}

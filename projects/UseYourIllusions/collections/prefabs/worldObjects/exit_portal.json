@@ -1,0 +1,13 @@
+{
+  "title": "Exit Portal",
+  "height": 32,
+  "size": 32,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "impassable": false,
+  "spriteScale": 32,
+  "renderTexture": "water_overlay",
+  "spriteOffset": 16,
+  "exit": true,
+  "exitRadius": 60
+}

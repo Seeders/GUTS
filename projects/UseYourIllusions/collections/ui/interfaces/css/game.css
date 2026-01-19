@@ -118,3 +118,187 @@
 .game-chat-input::placeholder {
     color: #666;
 }
+
+/* ===================== PUZZLE VICTORY MODAL ===================== */
+.puzzle-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    animation: overlayFadeIn 0.3s ease-out;
+}
+
+.puzzle-modal-overlay.active {
+    display: flex;
+}
+
+@keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.puzzle-modal {
+    position: relative;
+    background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+    border: 2px solid rgba(139, 92, 246, 0.6);
+    border-radius: 20px;
+    padding: 50px 60px;
+    text-align: center;
+    min-width: 400px;
+    max-width: 90vw;
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.8),
+        0 0 60px rgba(139, 92, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: scale(0.8) translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.puzzle-modal .modal-glow {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 22px;
+    background: linear-gradient(45deg, #8b5cf6, #06b6d4, #8b5cf6);
+    background-size: 400% 400%;
+    z-index: -1;
+    opacity: 0.5;
+    animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+    0%, 100% {
+        background-position: 0% 50%;
+        opacity: 0.4;
+    }
+    50% {
+        background-position: 100% 50%;
+        opacity: 0.7;
+    }
+}
+
+.victory-modal .victory-icon {
+    font-size: 72px;
+    margin-bottom: 15px;
+    animation: iconBounce 0.6s ease-out 0.2s both;
+}
+
+@keyframes iconBounce {
+    0% {
+        transform: scale(0) rotate(-45deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2) rotate(10deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.victory-modal .victory-title {
+    font-size: 42px;
+    font-weight: bold;
+    color: #4ade80;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 30px;
+    text-shadow:
+        0 0 20px rgba(74, 222, 128, 0.6),
+        0 0 40px rgba(74, 222, 128, 0.4);
+}
+
+.victory-stats {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 25px 40px;
+    margin-bottom: 35px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    color: #a0a0a0;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-buttons .btn {
+    padding: 14px 40px;
+    font-size: 16px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.modal-buttons .btn:hover {
+    transform: translateY(-2px);
+}
+
+.modal-buttons .btn-primary {
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    color: #0a0a1a;
+    border: none;
+    box-shadow: 0 4px 20px rgba(74, 222, 128, 0.4);
+}
+
+.modal-buttons .btn-primary:hover {
+    background: linear-gradient(135deg, #5eeb93, #34d369);
+    box-shadow: 0 6px 30px rgba(74, 222, 128, 0.6);
+}
+
+.modal-buttons .btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: #a0a0a0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-buttons .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+}

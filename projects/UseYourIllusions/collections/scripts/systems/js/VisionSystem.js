@@ -15,10 +15,6 @@ class VisionSystem extends GUTS.BaseSystem {
         // Default unit height for line of sight calculations
         this.DEFAULT_UNIT_HEIGHT = 25;
 
-        // Cached values - populated on first use
-        this._gridSize = null;
-        this._terrainSize = null;
-
         // Pre-allocated bresenham line array to avoid per-call allocation
         this._bresenhamTiles = [];
         this._maxBresenhamLength = 100;
@@ -84,26 +80,13 @@ class VisionSystem extends GUTS.BaseSystem {
         return toHeightLevel <= fromHeightLevel;
     }
 
-    /**
-     * Get cached grid size (only fetches once)
-     */
     _getGridSize() {
-        if (this._gridSize === null) {
-            this._gridSize = this.game.call('getGridSize');
-        }
-        return this._gridSize;
+        return this.game.call('getGridSize');
     }
 
-    /**
-     * Get cached terrain size (only fetches once)
-     */
     _getTerrainSize() {
-        if (this._terrainSize === null) {
-            this._terrainSize = this.game.call('getTerrainSize');
-        }
-        return this._terrainSize;
+        return this.game.call('getTerrainSize');
     }
-
 
     hasLineOfSight(from, to, unitType, viewerEntityId = null) {
         const log = GUTS.HeadlessLogger;
@@ -301,11 +284,6 @@ class VisionSystem extends GUTS.BaseSystem {
         return count;
     }
 
-    onSceneUnload() {
-        // Clear cached values
-        this._gridSize = null;
-        this._terrainSize = null;
-    }
 
     /**
      * Calculate total stealth for a target entity (base + terrain + hiding bonuses)
