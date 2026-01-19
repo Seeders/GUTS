@@ -1428,6 +1428,12 @@ class WorldRenderer {
             return;
         }
 
+        // Generate cliff texture from terrain types and assign to entityRenderer
+        const generatedCliffTexture = this.generateCliffTexture(cliffSet);
+        if (generatedCliffTexture) {
+            entityRenderer.cliffTexture = generatedCliffTexture;
+        }
+
         const heightStep = this.terrainDataManager.heightStep;
 
         // Use game services if available, otherwise fallback to manual calculation
@@ -1578,6 +1584,138 @@ class WorldRenderer {
             }
         }
 
+    }
+
+    /**
+     * Generate cliff texture from terrain type textures based on cliffSet configuration.
+     * @param {Object} cliffSet - The cliffSet definition with baseTerrainType and secondaryTerrainType
+     * @returns {THREE.Texture|null} Generated THREE.Texture or null if textures not available
+     */
+    generateCliffTexture(cliffSet) {
+        if (!cliffSet?.baseTerrainType || !cliffSet?.secondaryTerrainType) {
+            return null;
+        }
+
+        const collections = this.terrainDataManager.collections;
+        if (!collections?.terrainTypes || !collections?.textures) {
+            return null;
+        }
+
+        // Get terrain type definitions
+        const baseTerrainType = collections.terrainTypes[cliffSet.baseTerrainType];
+        const secondaryTerrainType = collections.terrainTypes[cliffSet.secondaryTerrainType];
+
+        if (!baseTerrainType?.texture || !secondaryTerrainType?.texture) {
+            console.warn('[WorldRenderer] Missing terrain type textures for cliff generation');
+            return null;
+        }
+
+        // Get the loaded terrain images from tileMapper
+        if (!this.tileMapper?.layerSpriteSheets) {
+            console.warn('[WorldRenderer] TileMapper not ready for cliff texture generation');
+            return null;
+        }
+
+        // Find terrain indices by name
+        const tileMap = this.terrainDataManager.tileMap;
+        const terrainTypes = tileMap?.terrainTypes || [];
+        const baseIndex = terrainTypes.indexOf(cliffSet.baseTerrainType);
+        const secondaryIndex = terrainTypes.indexOf(cliffSet.secondaryTerrainType);
+
+        if (baseIndex === -1 || secondaryIndex === -1) {
+            console.warn('[WorldRenderer] Terrain types not found in level terrainTypes array');
+            return null;
+        }
+
+        // Get the full terrain sprite sheets (96x48 containing all tile variations)
+        const baseSprites = this.tileMapper.layerSpriteSheets[baseIndex];
+        const secondarySprites = this.tileMapper.layerSpriteSheets[secondaryIndex];
+
+        if (!baseSprites?.fullImage || !secondarySprites?.fullImage) {
+            console.warn('[WorldRenderer] Terrain sprite sheets not loaded');
+            return null;
+        }
+
+        const baseTexture = baseSprites.fullImage;
+        const secondaryTexture = secondarySprites.fullImage;
+
+        // Create output canvas (100x100 for cliff UV texture)
+        const outputSize = 100;
+        const canvas = document.createElement('canvas');
+        canvas.width = outputSize;
+        canvas.height = outputSize;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+
+        // Step 1: Fill entire texture with base terrain's top-left 24x24, repeated
+        const baseSampleSize = 24;
+        for (let y = 0; y < outputSize; y += baseSampleSize) {
+            for (let x = 0; x < outputSize; x += baseSampleSize) {
+                ctx.drawImage(
+                    baseTexture,
+                    0, 0, baseSampleSize, baseSampleSize,
+                    x, y, baseSampleSize, baseSampleSize
+                );
+            }
+        }
+
+        // Step 2: Secondary texture - sample {48,0} 24x6, repeat 3x along bottom edge from left
+        const stripWidth = 24;
+        const stripHeight = 6;
+        for (let i = 0; i < 3; i++) {
+            const destX = i * stripWidth;
+            const destY = outputSize - stripHeight;
+            ctx.drawImage(
+                secondaryTexture,
+                48, 0, stripWidth, stripHeight,
+                destX, destY, stripWidth, stripHeight
+            );
+        }
+
+        // Step 3: Secondary texture - sample {48,42} 24x6 (bottom edge), place 16px up from bottom-left, repeat 3x
+        const strip2Y = outputSize - 16 - stripHeight;
+        for (let i = 0; i < 3; i++) {
+            const destX = i * stripWidth;
+            ctx.drawImage(
+                secondaryTexture,
+                48, 42, stripWidth, stripHeight,
+                destX, strip2Y, stripWidth, stripHeight
+            );
+        }
+
+        // Step 4: Secondary texture - top-left 24x24, place above the strip from step 3, repeat 3x
+        const block24Y = strip2Y - baseSampleSize;
+        for (let i = 0; i < 3; i++) {
+            const destX = i * stripWidth;
+            ctx.drawImage(
+                secondaryTexture,
+                0, 0, baseSampleSize, baseSampleSize,
+                destX, block24Y, baseSampleSize, baseSampleSize
+            );
+        }
+
+        // Step 5: Secondary texture - top-left 24x24, place above the first row of 24x24 blocks, repeat 3x
+        const block24Y2 = block24Y - baseSampleSize;
+        for (let i = 0; i < 3; i++) {
+            const destX = i * stripWidth;
+            ctx.drawImage(
+                secondaryTexture,
+                0, 0, baseSampleSize, baseSampleSize,
+                destX, block24Y2, baseSampleSize, baseSampleSize
+            );
+        }
+
+        // Create THREE.Texture directly from canvas
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.minFilter = THREE.NearestFilter;
+        texture.magFilter = THREE.NearestFilter;
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.flipY = false;
+        texture.needsUpdate = true;
+
+        return texture;
     }
 
     /**

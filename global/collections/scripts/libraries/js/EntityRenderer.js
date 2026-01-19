@@ -35,6 +35,9 @@ class EntityRenderer {
         // Sprite animation tracking for billboards
         this.billboardAnimations = new Map(); // entityId -> { batch, instanceIndex } (GPU rendering data)
 
+        // Generated cliff texture (set by WorldRenderer before spawning cliffs)
+        this.cliffTexture = null;
+
         // Default frame rates per animation type (frames per second)
         // These are fallbacks if animation data doesn't specify fps
         this.spriteAnimationFrameRates = {
@@ -395,7 +398,8 @@ class EntityRenderer {
                     geometry = geometry.clone();
                     geometry.computeVertexNormals();
 
-                    const cliffTexture = originalMaterial.map;
+                    // Use generated cliff texture if available, otherwise fall back to GLB's baked texture
+                    const cliffTexture = this.cliffTexture || originalMaterial.map;
                     if (cliffTexture) {
                         cliffTexture.colorSpace = THREE.SRGBColorSpace;
                         // Use nearest neighbor filtering for pixel art style
