@@ -278,8 +278,32 @@ class PlayerControlSystem extends GUTS.BaseSystem {
             moveX = (moveX / moveLength) * speed * dt;
             moveZ = (moveZ / moveLength) * speed * dt;
 
-            transform.position.x += moveX;
-            transform.position.z += moveZ;
+            // Check if movement is allowed (height/cliff check)
+            const newX = transform.position.x + moveX;
+            const newZ = transform.position.z + moveZ;
+
+            if (this.game.hasService('canMoveToPosition')) {
+                if (!this.game.call('canMoveToPosition', transform.position.x, transform.position.z, newX, newZ)) {
+                    // Movement blocked by cliff - don't move
+                    const velocity = this.game.getComponent(entityId, 'velocity');
+                    if (velocity) {
+                        velocity.vx = 0;
+                        velocity.vz = 0;
+                    }
+                    return;
+                }
+            }
+
+            transform.position.x = newX;
+            transform.position.z = newZ;
+
+            // Snap to terrain height
+            if (this.game.hasService('getTerrainHeightAtPosition')) {
+                const terrainHeight = this.game.call('getTerrainHeightAtPosition', newX, newZ);
+                if (terrainHeight !== null) {
+                    transform.position.y = terrainHeight;
+                }
+            }
 
             // Set velocity so AnimationSystem knows we're moving (for walk animation)
             const velocity = this.game.getComponent(entityId, 'velocity');

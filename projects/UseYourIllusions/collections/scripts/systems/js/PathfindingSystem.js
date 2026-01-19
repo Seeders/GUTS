@@ -2,6 +2,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
     static services = [
         'isPositionWalkable',
         'isGridPositionWalkable',
+        'canMoveToPosition',
         'requestPath',
         'hasRampAt',
         'hasDirectWalkablePath',
@@ -307,6 +308,13 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 // Get collection from prefab name
                 const collectionId = prefabToCollection[entityDef.prefab];
                 if (!collectionId) {
+                    skippedObjects++;
+                    continue;
+                }
+
+                // Skip mobile units - only bake static objects (worldObjects, buildings) into navmesh
+                // Units move around so their initial position shouldn't be permanently blocked
+                if (collectionId === 'units') {
                     skippedObjects++;
                     continue;
                 }
@@ -857,15 +865,47 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
     isPositionWalkable(pos) {
         const grid = this.worldToNavGrid(pos.x, pos.z);
-        
+
         // Check bounds
-        if (grid.x < 0 || grid.x >= this.navGridWidth || 
+        if (grid.x < 0 || grid.x >= this.navGridWidth ||
             grid.z < 0 || grid.z >= this.navGridHeight) {
             return false;
         }
-        
+
         const terrain = this.getTerrainAtNavGrid(grid.x, grid.z);
         return this.isTerrainWalkable(terrain);
+    }
+
+    /**
+     * Check if movement from one world position to another is allowed.
+     * Considers height differences and ramps - movement is only allowed between
+     * positions at the same height level OR if there's a ramp at either position.
+     * @param {number} fromX - Starting world X position
+     * @param {number} fromZ - Starting world Z position
+     * @param {number} toX - Destination world X position
+     * @param {number} toZ - Destination world Z position
+     * @returns {boolean} True if movement is allowed
+     */
+    canMoveToPosition(fromX, fromZ, toX, toZ) {
+        // Check if destination is walkable terrain
+        if (!this.isPositionWalkable({ x: toX, z: toZ })) {
+            return false;
+        }
+
+        // Convert to nav grid positions
+        const fromGrid = this.worldToNavGrid(fromX, fromZ);
+        const toGrid = this.worldToNavGrid(toX, toZ);
+
+        // Get terrain types for both positions
+        const fromTerrain = this.getTerrainAtNavGrid(fromGrid.x, fromGrid.z);
+        const toTerrain = this.getTerrainAtNavGrid(toGrid.x, toGrid.z);
+
+        // Use the existing height/ramp checking logic
+        return this.canWalkBetweenTerrainsWithRamps(
+            fromTerrain, toTerrain,
+            fromGrid.x, fromGrid.z,
+            toGrid.x, toGrid.z
+        );
     }
 
     /**

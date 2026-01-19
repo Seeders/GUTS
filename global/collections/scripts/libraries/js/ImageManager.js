@@ -405,7 +405,8 @@ class ImageManager {
 
                         terrainTiles[terrainIndex] = {
                             type: terrainType.type,
-                            sprites: sprites
+                            sprites: sprites,
+                            fullImage: img  // Store original image for cliff texture generation
                         };
                         resolve();
                     };

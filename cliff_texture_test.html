@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cliff Texture Generator Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #333; color: #fff; }
+        canvas { border: 1px solid #888; margin: 10px; image-rendering: pixelated; }
+        .container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .item { text-align: center; }
+        .item canvas { display: block; }
+        #output { width: 200px; height: 200px; }
+    </style>
+</head>
+<body>
+    <h1>Cliff Texture Generator Test</h1>
+    <div class="container">
+        <div class="item">
+            <h3>Base (brick) 96x48</h3>
+            <canvas id="baseCanvas" width="96" height="48"></canvas>
+        </div>
+        <div class="item">
+            <h3>Secondary (brick) 96x48</h3>
+            <canvas id="secondaryCanvas" width="96" height="48"></canvas>
+        </div>
+        <div class="item">
+            <h3>Output 100x100</h3>
+            <canvas id="output" width="100" height="100"></canvas>
+            <br>
+            <button onclick="downloadOutput()">Download PNG</button>
+        </div>
+    </div>
+    <pre id="log"></pre>
+
+    <script>
+        function log(msg) {
+            document.getElementById('log').textContent += msg + '\n';
+        }
+
+        async function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+
+        async function generateCliffTexture() {
+            log('Loading textures...');
+
+            // Load terrain textures - using brick for both base and secondary
+            const baseTexture = await loadImage('projects/UseYourIllusions/resources/textures/brick.png');
+            const secondaryTexture = await loadImage('projects/UseYourIllusions/resources/textures/terrain_stone.png');
+
+            log(`Base texture (brick): ${baseTexture.width}x${baseTexture.height}`);
+            log(`Secondary texture (brick): ${secondaryTexture.width}x${secondaryTexture.height}`);
+
+            // Draw source textures for reference
+            const baseCtx = document.getElementById('baseCanvas').getContext('2d');
+            baseCtx.drawImage(baseTexture, 0, 0);
+
+            const secondaryCtx = document.getElementById('secondaryCanvas').getContext('2d');
+            secondaryCtx.drawImage(secondaryTexture, 0, 0);
+
+            // Create output canvas (100x100)
+            const outputSize = 100;
+            const canvas = document.getElementById('output');
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+
+            // Step 1: Fill entire texture with base terrain's top-left 24x24, repeated
+            log('Step 1: Fill with base 24x24 pattern...');
+            const baseSampleSize = 24;
+            for (let y = 0; y < outputSize; y += baseSampleSize) {
+                for (let x = 0; x < outputSize; x += baseSampleSize) {
+                    ctx.drawImage(
+                        baseTexture,
+                        0, 0, baseSampleSize, baseSampleSize,
+                        x, y, baseSampleSize, baseSampleSize
+                    );
+                }
+            }
+
+            // Step 2: Secondary texture - sample {48,0} 24x6, repeat 3x along bottom edge starting from left
+            log('Step 2: Secondary strip at bottom (from {48,0})...');
+            const stripWidth = 24;
+            const stripHeight = 6;
+            for (let i = 0; i < 3; i++) {
+                const destX = i * stripWidth;
+                const destY = outputSize - stripHeight;
+                ctx.drawImage(
+                    secondaryTexture,
+                    48, 0, stripWidth, stripHeight,
+                    destX, destY, stripWidth, stripHeight
+                );
+            }
+
+            // Step 3: Secondary texture - sample {48,42} 24x6 (bottom edge), place 16px up from bottom-left, repeat 3x
+            log('Step 3: Secondary strip 16px up from bottom-left (from {48,42})...');
+            const strip2Y = outputSize - 16 - stripHeight;
+            for (let i = 0; i < 3; i++) {
+                const destX = i * stripWidth;
+                ctx.drawImage(
+                    secondaryTexture,
+                    48, 42, stripWidth, stripHeight,
+                    destX, strip2Y, stripWidth, stripHeight
+                );
+            }
+
+            // Step 4: Secondary texture - top-left 24x24, place above the strip from step 3, repeat 3x
+            log('Step 4: Secondary 24x24 blocks above strip (first row)...');
+            const block24Y = strip2Y - baseSampleSize;
+            for (let i = 0; i < 3; i++) {
+                const destX = i * stripWidth;
+                ctx.drawImage(
+                    secondaryTexture,
+                    0, 0, baseSampleSize, baseSampleSize,
+                    destX, block24Y, baseSampleSize, baseSampleSize
+                );
+            }
+
+            // Step 5: Secondary texture - top-left 24x24, place above the first row of 24x24 blocks, repeat 3x
+            log('Step 5: Secondary 24x24 blocks above first row (second row)...');
+            const block24Y2 = block24Y - baseSampleSize;
+            for (let i = 0; i < 3; i++) {
+                const destX = i * stripWidth;
+                ctx.drawImage(
+                    secondaryTexture,
+                    0, 0, baseSampleSize, baseSampleSize,
+                    destX, block24Y2, baseSampleSize, baseSampleSize
+                );
+            }
+
+            log('Done!');
+        }
+
+        function downloadOutput() {
+            const canvas = document.getElementById('output');
+            const link = document.createElement('a');
+            link.download = 'cliff_texture_test.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        generateCliffTexture().catch(err => log('Error: ' + err));
+    </script>
+</body>
+</html>

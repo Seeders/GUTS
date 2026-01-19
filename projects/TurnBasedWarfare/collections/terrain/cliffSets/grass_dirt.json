@@ -1,6 +1,8 @@
 {
   "title": "Grass Dirt Cliffs",
   "borderTerrain": "grass",
+  "baseTerrainType": "dirt",
+  "secondaryTerrainType": "grass",
   "cliffs": {
     "atom_one": "atom_one",
     "atom_one_top": "atom_one_top",
