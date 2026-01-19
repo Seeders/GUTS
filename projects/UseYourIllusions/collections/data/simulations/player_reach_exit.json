@@ -1,0 +1,14 @@
+{
+  "name": "Player Reach Exit",
+  "description": "Tests player reaching the exit zone to complete the level",
+  "seed": 12345,
+  "level": "test_arena",
+  "maxTicks": 60,
+  "testType": "puzzle",
+  "setup": {
+    "movePlayerToExit": true
+  },
+  "expectedOutcome": {
+    "levelComplete": true
+  }
+}

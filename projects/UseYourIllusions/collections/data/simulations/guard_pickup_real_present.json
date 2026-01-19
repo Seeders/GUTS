@@ -1,0 +1,15 @@
+{
+  "name": "Guard Pickup Real Present",
+  "description": "Tests guard detecting and picking up a real present, then waiting 3 seconds before returning to patrol",
+  "seed": 12345,
+  "level": "test_arena",
+  "maxTicks": 600,
+  "testType": "puzzle",
+  "setup": {
+    "guardNearRealPresent": true
+  },
+  "expectedOutcome": {
+    "realPresentPickedUp": true,
+    "guardWaited": true
+  }
+}

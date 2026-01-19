@@ -1,0 +1,17 @@
+{
+  "title": "Grass Dirt Cliffs",
+  "borderTerrain": "grass",
+  "cliffs": {
+    "atom_one": "atom_one",
+    "atom_one_top": "atom_one_top",
+    "atom_one_mid": "atom_one_mid",
+    "atom_one_base": "atom_one_base",
+    "atom_two": "atom_two",
+    "atom_two_top": "atom_two_top",
+    "atom_two_mid": "atom_two_mid",
+    "atom_two_base": "atom_two_base",
+    "atom_three": "atom_three",
+    "atom_three_top": "atom_three_top",
+    "atom_three_base": "atom_three_base"
+  }
+}

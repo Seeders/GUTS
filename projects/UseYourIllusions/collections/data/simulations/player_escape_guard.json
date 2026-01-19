@@ -1,0 +1,17 @@
+{
+  "name": "Player Escape Guard",
+  "description": "Tests guard losing sight of player, investigating last known position, then giving up chase",
+  "seed": 12345,
+  "level": "test_arena",
+  "maxTicks": 300,
+  "testType": "puzzle",
+  "setup": {
+    "removeDesirables": true,
+    "guardNearPlayer": true,
+    "escapePlayerAfterTicks": 30,
+    "escapePosition": { "x": 600, "z": 600 }
+  },
+  "expectedOutcome": {
+    "guardGaveUp": true
+  }
+}

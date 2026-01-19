@@ -20,6 +20,9 @@ class TileMap {
 		// Store terrain type names for dynamic index lookup (e.g., ["water", "lava", "dirt", "grass"])
 		this.terrainTypeNames = options.terrainTypeNames || [];
 
+		// Cliff border terrain name (from cliffSet.borderTerrain) - defaults to "grass" for backwards compatibility
+		this.cliffBorderTerrain = options.cliffBorderTerrain || null;
+
 		// Initialize height map canvas
 		this.heightMapCanvas = null;
 		this.heightMapCtx = null;
@@ -218,6 +221,19 @@ class TileMap {
 	getGrassIndex() {
 		const idx = this.getTerrainIndexByName('grass');
 		return idx >= 0 ? idx : this.layerTextures.length - 1;
+	}
+
+	/**
+	 * Get the cliff border terrain index (uses cliffBorderTerrain from cliffSet, falls back to grass)
+	 * @returns {number} Cliff border terrain index
+	 */
+	getCliffBorderTerrainIndex() {
+		if (this.cliffBorderTerrain) {
+			const idx = this.getTerrainIndexByName(this.cliffBorderTerrain);
+			if (idx >= 0) return idx;
+		}
+		// Fallback to grass for backwards compatibility
+		return this.getGrassIndex();
 	}
 
 	/**
@@ -1127,7 +1143,7 @@ class TileMap {
 		const h = tile.heightAnalysis;
 		const atomSize = this.tileSize / 2;
 		const ramps = this.getNeighborRampStates(col, row);
-		const atoms = this.baseAtoms[this.getGrassIndex()];
+		const atoms = this.baseAtoms[this.getCliffBorderTerrainIndex()];
 		if (!atoms?.full) return;
 
 		// Effective states (suppress if neighbor has ramp)
@@ -1201,7 +1217,7 @@ class TileMap {
 		if ((h.topHigher && ramps.top) || (h.botHigher && ramps.bot) ||
 			(h.leftHigher && ramps.left) || (h.rightHigher && ramps.right)) return;
 
-		const atoms = this.baseAtoms[this.getGrassIndex()];
+		const atoms = this.baseAtoms[this.getCliffBorderTerrainIndex()];
 		if (!atoms?.full) return;
 
 		// Effective higher states (suppress if neighbor has ramp)

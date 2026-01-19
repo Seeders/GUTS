@@ -500,6 +500,11 @@ class WorldSystem extends GUTS.BaseSystem {
         // Get terrain type names for dynamic index lookup
         const terrainTypeNames = tileMap?.terrainTypes || [];
 
+        // Get cliff border terrain from cliffSet (if available)
+        const world = this.collections.worlds?.[level.world];
+        const cliffSet = world?.cliffSet ? this.collections.cliffSets?.[world.cliffSet] : null;
+        const cliffBorderTerrain = cliffSet?.borderTerrain || null;
+
         // Initialize tile mapper
         this.game.terrainTileMapper = new GUTS.TileMap({});
         this.game.terrainTileMapper.init(
@@ -507,7 +512,7 @@ class WorldSystem extends GUTS.BaseSystem {
             gameConfig.gridSize,
             terrainImages,
             gameConfig.isIsometric,
-            { skipCliffTextures: false, terrainTypeNames }
+            { skipCliffTextures: false, terrainTypeNames, cliffBorderTerrain }
         );
 
     }

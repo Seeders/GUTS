@@ -133,10 +133,11 @@ class TerrainDataManager {
 
         // Check if we have a separate heightMap in the tileMap
 
-        // Initialize all points with height 0 (extension area is always at ground level)
+        // Initialize all points with extension height (for areas outside the main terrain)
+        const extensionHeight = this.tileMap.extensionHeight * this.heightStep;
         for (let z = 0; z < this.extendedSize; z++) {
             for (let x = 0; x < this.extendedSize; x++) {
-                this.heightMapData[z * this.extendedSize + x] = 0;
+                this.heightMapData[z * this.extendedSize + x] = extensionHeight;
             }
         }
 
@@ -200,9 +201,8 @@ class TerrainDataManager {
         // Ensure coordinates are within bounds
         if (heightMapX < 0 || heightMapX >= this.extendedSize ||
             heightMapZ < 0 || heightMapZ >= this.extendedSize) {
-            // Outside terrain bounds, use extension terrain height
-            const extensionTerrainType = this.tileMap?.extensionTerrainType || 0;
-            return extensionTerrainType * this.heightStep;
+            // Outside terrain bounds, use extension height
+            return this.tileMap.extensionHeight * this.heightStep;
         }
 
         // Get height from height map
@@ -238,8 +238,7 @@ class TerrainDataManager {
         // Helper function to get height at specific grid point
         const getHeightAt = (x, z) => {
             if (x < 0 || x >= this.extendedSize || z < 0 || z >= this.extendedSize) {
-                const extensionTerrainType = this.tileMap?.extensionTerrainType || 0;
-                return extensionTerrainType * this.heightStep;
+                return this.tileMap.extensionHeight * this.heightStep;
             }
             const heightIndex = z * this.extendedSize + x;
             return this.heightMapData[heightIndex] || 0;

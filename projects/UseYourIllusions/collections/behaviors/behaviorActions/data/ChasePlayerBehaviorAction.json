@@ -1,0 +1,9 @@
+{
+  "title": "Chase Player",
+  "description": "Chases the player stored in shared.playerTarget and triggers onPlayerCaught event when caught",
+  "behaviorNodeType": "action",
+  "fileName": "ChasePlayerBehaviorAction",
+  "parameters": {
+    "catchRange": 40
+  }
+}

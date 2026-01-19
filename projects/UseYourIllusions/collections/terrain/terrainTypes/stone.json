@@ -1,0 +1,8 @@
+{
+  "title": "Stone",
+  "type": "stone",
+  "texture": "terrain_stone",
+  "color": "#8b5e3c",
+  "buildable": true,
+  "walkable": true
+}

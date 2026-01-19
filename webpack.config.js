@@ -276,10 +276,15 @@ const editorConfig = entries.editor ? {
         ]
     },
     plugins: [
-        new MonacoWebpackPlugin({
-            languages: ['javascript', 'typescript', 'css', 'html', 'json'],
+new MonacoWebpackPlugin({
+            languages: ['javascript', 'css', 'html', 'json'],
             features: ['!gotoSymbol']
         }),
+        // Exclude all basic-languages except javascript, css, html
+        new webpack.NormalModuleReplacementPlugin(
+            /monaco-editor[\\/]esm[\\/]vs[\\/]basic-languages[\\/](?!javascript|css|html|_).*[\\/].*\.js$/,
+            require.resolve('./build/empty-module.js')
+        ),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': JSON.stringify(mode),
             'process.env.IS_CLIENT': JSON.stringify(false),

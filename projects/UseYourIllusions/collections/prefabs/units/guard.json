@@ -6,6 +6,7 @@
   "hp": 150,
   "speed": 35,
   "damage": 25,
+  "range": 50,
   "attackSpeed": 1,
   "element": "physical",
   "armor": 10,

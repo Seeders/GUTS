@@ -4,6 +4,7 @@
   "shadow": "hellShadows",
   "fog": "hellFog",
   "heightMap": "fiveStep",
+  "cliffSet": "grass_dirt",
   "camera": "main",
   "extensionSize": 768,
   "worldObjects": [

@@ -1,0 +1,9 @@
+{
+  "title": "Find Player",
+  "description": "Detects player in vision range with line of sight check and stores in shared.playerTarget",
+  "behaviorNodeType": "action",
+  "fileName": "FindPlayerBehaviorAction",
+  "parameters": {
+    "detectionRange": 300
+  }
+}

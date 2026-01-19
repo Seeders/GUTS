@@ -4,6 +4,7 @@
   "shadow": "sunnyDayShadows",
   "fog": "sunnyDayFog",
   "heightMap": "fiveStep",
+  "cliffSet": "grass_dirt",
   "camera": "top_down",
   "extensionSize": 768,
   "worldObjects": [

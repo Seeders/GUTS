@@ -3,15 +3,46 @@
  *
  * Parameters:
  *   pickupRange: number (default: 30) - Distance at which to pick up the object
+ *   waitTimeAfterPickup: number (default: 3) - Seconds to wait at pickup location
  *
  * Uses shared.desirableTarget set by FindDesirableObjectBehaviorAction
- * Returns RUNNING while moving, SUCCESS when picked up, FAILURE if no target
+ * Returns RUNNING while moving or waiting, SUCCESS when wait complete, FAILURE if no target
  */
 class PickUpObjectBehaviorAction extends GUTS.BaseBehaviorAction {
 
     execute(entityId, game) {
         const params = this.parameters || {};
         const pickupRange = params.pickupRange || 30;
+        const waitTimeAfterPickup = params.waitTimeAfterPickup || 3;
+
+        // Get memory for tracking wait state
+        const memory = this.getMemory(entityId) || {};
+
+        // Check if we're waiting after picking up an object
+        if (memory.waitingAfterPickup) {
+            const waitDuration = game.state.now - memory.pickupTime;
+
+            if (waitDuration >= waitTimeAfterPickup) {
+                // Wait complete - clear memory and return success
+                console.log(`[PickUpObjectBehaviorAction] Guard ${entityId} finished waiting after pickup`);
+                memory.waitingAfterPickup = false;
+                memory.pickupTime = null;
+                // Memory is modified in place (getMemory returns a mutable reference)
+                return this.success({
+                    pickedUp: true,
+                    waitComplete: true
+                });
+            }
+
+            // Still waiting - stop movement
+            const shared = this.getShared(entityId, game);
+            shared.targetPosition = null;
+
+            return this.running({
+                state: 'waiting',
+                timeRemaining: waitTimeAfterPickup - waitDuration
+            });
+        }
 
         const transform = game.getComponent(entityId, 'transform');
         const pos = transform?.position;
@@ -48,7 +79,7 @@ class PickUpObjectBehaviorAction extends GUTS.BaseBehaviorAction {
         // Check if in pickup range
         if (distance <= pickupRange) {
             // Pick up (destroy) the object
-            console.log(`[PickUpObjectBehaviorAction] Guard ${entityId} picked up object ${targetId}`);
+            console.log(`[PickUpObjectBehaviorAction] Guard ${entityId} picked up object ${targetId}, waiting ${waitTimeAfterPickup}s`);
 
             // Trigger event before destroying
             game.triggerEvent('onObjectPickedUp', {
@@ -63,9 +94,17 @@ class PickUpObjectBehaviorAction extends GUTS.BaseBehaviorAction {
             // Clear the target
             shared.desirableTarget = null;
 
-            return this.success({
-                pickedUp: true,
-                objectId: targetId
+            // Start waiting - set memory to track wait state
+            memory.waitingAfterPickup = true;
+            memory.pickupTime = game.state.now;
+            // Memory is modified in place (getMemory returns a mutable reference)
+
+            // Stop movement while waiting
+            shared.targetPosition = null;
+
+            return this.running({
+                state: 'waiting',
+                timeRemaining: waitTimeAfterPickup
             });
         }
 

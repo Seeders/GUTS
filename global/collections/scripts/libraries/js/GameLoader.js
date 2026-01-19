@@ -42,9 +42,14 @@ class GameLoader extends GUTS.BaseLoader {
         const terrainImages = this.game.imageManager.getImages("levels", levelKey);
         const terrainTypeNames = level?.tileMap?.terrainTypes || [];
 
+        // Get cliff border terrain from cliffSet (if available)
+        const world = this.collections.worlds?.[level?.world];
+        const cliffSet = world?.cliffSet ? this.collections.cliffSets?.[world.cliffSet] : null;
+        const cliffBorderTerrain = cliffSet?.borderTerrain || null;
+
         this.game.terrainTileMapper = new GUTS.TileMap({});
 
-        this.game.terrainTileMapper.init(this.game.terrainCanvasBuffer, this.collections.configs.game.gridSize, terrainImages, this.isometric, { terrainTypeNames });
+        this.game.terrainTileMapper.init(this.game.terrainCanvasBuffer, this.collections.configs.game.gridSize, terrainImages, this.isometric, { terrainTypeNames, cliffBorderTerrain });
 
         if (this.progress) {
             this.progress.complete();

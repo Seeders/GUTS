@@ -1,0 +1,20 @@
+{
+  "name": "Guard Prioritizes Present Over Player",
+  "description": "Tests that guard picks up a nearby present instead of chasing the player when both are visible",
+  "seed": 12345,
+  "level": "test_arena",
+  "maxTicks": 600,
+  "testType": "puzzle",
+  "setup": {
+    "removeDesirables": true,
+    "guardNearPlayer": true,
+    "createIllusion": {
+      "type": "present",
+      "position": { "x": 0, "z": 150 }
+    }
+  },
+  "expectedOutcome": {
+    "illusionPickedUp": true,
+    "playerDied": false
+  }
+}

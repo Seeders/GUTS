@@ -1,0 +1,10 @@
+{
+  "title": "Chase Player Sequence",
+  "description": "Detects and chases the player when in vision range",
+  "behaviorNodeType": "sequence",
+  "fileName": "ChasePlayerSequence",
+  "behaviorActions": [
+    "FindPlayerBehaviorAction",
+    "ChasePlayerBehaviorAction"
+  ]
+}

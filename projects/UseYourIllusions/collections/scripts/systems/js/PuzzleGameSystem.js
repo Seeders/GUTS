@@ -17,17 +17,55 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         'getCurrentLevelId'
     ];
 
+    static eventListeners = {
+        'onPlayerCaught': 'handlePlayerCaught',
+        'onUnitKilled': 'handleUnitKilled'
+    };
+
     constructor(game) {
         super(game);
         this.game.puzzleGameSystem = this;
         this.currentLevelId = null;
         this.playerEntityId = null;
+        this.gameOver = false;
     }
 
     init() {
     }
 
+    handlePlayerCaught(data) {
+        if (this.gameOver) return;
+        this.triggerDefeat('Player caught by guard!', data);
+    }
+
+    handleUnitKilled(entityId) {
+        if (this.gameOver) return;
+
+        // Check if the killed entity is the player
+        if (entityId === this.playerEntityId) {
+            this.triggerDefeat('Player was killed!', { playerId: entityId });
+        }
+    }
+
+    triggerDefeat(message, data) {
+        this.gameOver = true;
+
+        console.log(`[PuzzleGameSystem] ${message}`, data);
+
+        // Show defeat screen
+        if (this.game.hasService('showDefeatScreen')) {
+            this.game.call('showDefeatScreen');
+        } else {
+            const defeatScreen = document.getElementById('defeatScreen');
+            if (defeatScreen) {
+                defeatScreen.classList.add('active');
+            }
+        }
+    }
+
     onSceneLoad(sceneData) {
+        this.gameOver = false;
+
         // Get the current level data from collections
         const levelIndex = this.game.state.level ?? 0;
         const levelKey = this.reverseEnums.levels?.[levelIndex];
@@ -169,36 +207,22 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
                 console.log(`[PuzzleGameSystem] Set GuardBehaviorTree for guard ${entityId}`);
             }
 
-            // Get patrol waypoints from level entity data
+            // Get patrol waypoints from level entity data (only if explicitly defined)
             const transform = this.game.getComponent(entityId, 'transform');
             if (transform && this.game.hasService('getBehaviorShared')) {
                 const shared = this.game.call('getBehaviorShared', entityId);
                 if (shared && !shared.patrolWaypoints) {
-                    // Try to get patrol waypoints from level entity definition
-                    let patrolWaypoints = null;
+                    // Only set patrol waypoints if explicitly defined in level data
                     if (this.game.hasService('getLevelEntityData')) {
                         const levelEntityData = this.game.call('getLevelEntityData', entityId);
                         if (levelEntityData?.patrolWaypoints) {
-                            patrolWaypoints = levelEntityData.patrolWaypoints;
+                            shared.patrolWaypoints = levelEntityData.patrolWaypoints;
+                            shared.currentWaypointIndex = 0;
                             console.log(`[PuzzleGameSystem] Using level-defined patrol waypoints for guard ${entityId}`);
+                        } else {
+                            console.log(`[PuzzleGameSystem] Guard ${entityId} has no patrol waypoints - standing guard`);
                         }
                     }
-
-                    // Fall back to default patrol pattern if no waypoints defined
-                    if (!patrolWaypoints) {
-                        const pos = transform.position;
-                        const patrolRadius = 100;
-                        patrolWaypoints = [
-                            { x: pos.x, z: pos.z },
-                            { x: pos.x + patrolRadius, z: pos.z },
-                            { x: pos.x + patrolRadius, z: pos.z + patrolRadius },
-                            { x: pos.x, z: pos.z + patrolRadius }
-                        ];
-                        console.log(`[PuzzleGameSystem] Using default patrol for guard ${entityId}`);
-                    }
-
-                    shared.patrolWaypoints = patrolWaypoints;
-                    shared.currentWaypointIndex = 0;
                 }
             }
 
@@ -260,5 +284,6 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
 
     onSceneUnload() {
         this.playerEntityId = null;
+        this.gameOver = false;
     }
 }

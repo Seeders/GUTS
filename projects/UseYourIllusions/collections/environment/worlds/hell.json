@@ -18,5 +18,6 @@
     "stone_2_sprite",
     "stone_sprite"
   ],
-  "backgroundColor": "#000000"
+  "backgroundColor": "#000000",
+  "cliffSet": "grass_dirt"
 }

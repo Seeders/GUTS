@@ -1,0 +1,15 @@
+{
+  "name": "Guard Chase Player",
+  "description": "Tests guard detecting, chasing, and attacking the player when in vision range (no desirables)",
+  "seed": 12345,
+  "level": "test_arena",
+  "maxTicks": 600,
+  "testType": "puzzle",
+  "setup": {
+    "removeDesirables": true,
+    "guardNearPlayer": true
+  },
+  "expectedOutcome": {
+    "playerDied": true
+  }
+}
