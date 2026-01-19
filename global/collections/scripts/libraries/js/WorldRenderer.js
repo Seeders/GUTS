@@ -1417,6 +1417,16 @@ class WorldRenderer {
             return;
         }
 
+        // Get the cliffSet from the world
+        const cliffSetId = this.terrainDataManager.world?.cliffSet;
+        if (!cliffSetId) {
+            return;
+        }
+        const cliffSet = this.terrainDataManager.collections?.cliffSets?.[cliffSetId];
+        if (!cliffSet) {
+            console.warn(`[WorldRenderer] CliffSet '${cliffSetId}' not found, skipping cliff spawning`);
+            return;
+        }
 
         const heightStep = this.terrainDataManager.heightStep;
 
@@ -1494,10 +1504,12 @@ class WorldRenderer {
                 // Position at the neighbor's height level
                 const cliffBottomHeight = neighborHeight * heightStep;
                 const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
+                const cliffPrefab = cliffSet.cliffs[cliff.type];
+                if (!cliffPrefab) continue;
 
                 const spawned = await entityRenderer.spawnEntity(entityId, {
                     collection: 'cliffs',
-                    type: cliff.type,
+                    type: cliffPrefab,
                     position: { x: worldPos.x, y: cliffBottomHeight, z: worldPos.z },
                     rotation: cliff.rotation
                 });
@@ -1513,44 +1525,55 @@ class WorldRenderer {
                 const topType = baseType.endsWith('_top') ? baseType : `${baseType}_top`;
                 const topHeight = (mapHeight - 1) * heightStep + cliffOffset;
                 const topEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${topType}`;
+                const topPrefab = cliffSet.cliffs[topType];
 
-                const topSpawned = await entityRenderer.spawnEntity(topEntityId, {
-                    collection: 'cliffs',
-                    type: topType,
-                    position: { x: worldPos.x, y: topHeight, z: worldPos.z },
-                    rotation: cliff.rotation
-                });
-                if (topSpawned) spawnedCount++;
+                if (topPrefab) {
+                    const topSpawned = await entityRenderer.spawnEntity(topEntityId, {
+                        collection: 'cliffs',
+                        type: topPrefab,
+                        position: { x: worldPos.x, y: topHeight, z: worldPos.z },
+                        rotation: cliff.rotation
+                    });
+                    if (topSpawned) spawnedCount++;
+                }
 
                 // Spawn mid pieces for each level between top and base (if needed)
                 if (needsMids && heightDiff > 2) {
-                    for (let level = 1; level < heightDiff - 1; level++) {
-                        const midHeight = (mapHeight - 1 - level) * heightStep + cliffOffset;
-                        const midEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseType}_mid_${level}`;
+                    const midType = `${baseType}_mid`;
+                    const midPrefab = cliffSet.cliffs[midType];
+                    if (midPrefab) {
+                        for (let level = 1; level < heightDiff - 1; level++) {
+                            const midHeight = (mapHeight - 1 - level) * heightStep + cliffOffset;
+                            const midEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseType}_mid_${level}`;
 
-                        const midSpawned = await entityRenderer.spawnEntity(midEntityId, {
-                            collection: 'cliffs',
-                            type: `${baseType}_mid`,
-                            position: { x: worldPos.x, y: midHeight, z: worldPos.z },
-                            rotation: cliff.rotation
-                        });
-                        if (midSpawned) spawnedCount++;
+                            const midSpawned = await entityRenderer.spawnEntity(midEntityId, {
+                                collection: 'cliffs',
+                                type: midPrefab,
+                                position: { x: worldPos.x, y: midHeight, z: worldPos.z },
+                                rotation: cliff.rotation
+                            });
+                            if (midSpawned) spawnedCount++;
+                        }
                     }
                 }
 
                 // Spawn base piece at the neighbor's height level
                 // Skip base for atom_three_top - it's a top-only cliff type used near ramps
                 if (!baseType.endsWith('_top')) {
-                    const baseHeight = neighborHeight * heightStep + cliffOffset;
-                    const baseEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseType}_base`;
+                    const baseCliffType = `${baseType}_base`;
+                    const basePrefab = cliffSet.cliffs[baseCliffType];
+                    if (basePrefab) {
+                        const baseHeight = neighborHeight * heightStep + cliffOffset;
+                        const baseEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseCliffType}`;
 
-                    const baseSpawned = await entityRenderer.spawnEntity(baseEntityId, {
-                        collection: 'cliffs',
-                        type: `${baseType}_base`,
-                        position: { x: worldPos.x, y: baseHeight, z: worldPos.z },
-                        rotation: cliff.rotation
-                    });
-                    if (baseSpawned) spawnedCount++;
+                        const baseSpawned = await entityRenderer.spawnEntity(baseEntityId, {
+                            collection: 'cliffs',
+                            type: basePrefab,
+                            position: { x: worldPos.x, y: baseHeight, z: worldPos.z },
+                            rotation: cliff.rotation
+                        });
+                        if (baseSpawned) spawnedCount++;
+                    }
                 }
             }
         }
@@ -1568,6 +1591,8 @@ class WorldRenderer {
         if (!tileMap) return;
 
         const extensionTerrainType = tileMap.extensionTerrainType || 0;
+        const extensionHeight = tileMap.extensionHeight || 0;
+        const extensionY = extensionHeight * this.terrainDataManager.heightStep;
         const extensionDistance = 19000; // How far the planes extend
         const detailedGroundSize = extendedSize;
         const halfDetailedSize = detailedGroundSize / 2;
@@ -1627,7 +1652,7 @@ class WorldRenderer {
         northMaterial.map.repeat.set(northWidth / tileSize, northHeight / tileSize);
         const northPlane = new THREE.Mesh(northGeometry, northMaterial);
         northPlane.rotation.x = -Math.PI / 2;
-        northPlane.position.set(0, 0, halfDetailedSize + extensionDistance / 2);
+        northPlane.position.set(0, extensionY, halfDetailedSize + extensionDistance / 2);
         northPlane.receiveShadow = this.config.shadowsEnabled;
         this.scene.add(northPlane);
         this.extensionPlanes.push(northPlane);
@@ -1641,7 +1666,7 @@ class WorldRenderer {
         southMaterial.map.repeat.set(southWidth / tileSize, southHeight / tileSize);
         const southPlane = new THREE.Mesh(southGeometry, southMaterial);
         southPlane.rotation.x = -Math.PI / 2;
-        southPlane.position.set(0, 0, -halfDetailedSize - extensionDistance / 2);
+        southPlane.position.set(0, extensionY, -halfDetailedSize - extensionDistance / 2);
         southPlane.receiveShadow = this.config.shadowsEnabled;
         this.scene.add(southPlane);
         this.extensionPlanes.push(southPlane);
@@ -1655,7 +1680,7 @@ class WorldRenderer {
         eastMaterial.map.repeat.set(eastWidth / tileSize, eastHeight / tileSize);
         const eastPlane = new THREE.Mesh(eastGeometry, eastMaterial);
         eastPlane.rotation.x = -Math.PI / 2;
-        eastPlane.position.set(halfDetailedSize + extensionDistance / 2, 0, 0);
+        eastPlane.position.set(halfDetailedSize + extensionDistance / 2, extensionY, 0);
         eastPlane.receiveShadow = this.config.shadowsEnabled;
         this.scene.add(eastPlane);
         this.extensionPlanes.push(eastPlane);
@@ -1669,7 +1694,7 @@ class WorldRenderer {
         westMaterial.map.repeat.set(westWidth / tileSize, westHeight / tileSize);
         const westPlane = new THREE.Mesh(westGeometry, westMaterial);
         westPlane.rotation.x = -Math.PI / 2;
-        westPlane.position.set(-halfDetailedSize - extensionDistance / 2, 0, 0);
+        westPlane.position.set(-halfDetailedSize - extensionDistance / 2, extensionY, 0);
         westPlane.receiveShadow = this.config.shadowsEnabled;
         this.scene.add(westPlane);
         this.extensionPlanes.push(westPlane);

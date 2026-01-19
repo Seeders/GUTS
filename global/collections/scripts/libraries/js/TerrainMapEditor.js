@@ -214,13 +214,19 @@ class TerrainMapEditor {
             await this.initGridCanvas();
             this.exportMap();
         });
-        document.getElementById('extensionTerrainType').addEventListener('change', (ev) => {    
-            const newTerrainType = parseInt(ev.target.value);            
+        document.getElementById('extensionTerrainType').addEventListener('change', (ev) => {
+            const newTerrainType = parseInt(ev.target.value);
             this.tileMap.extensionTerrainType = newTerrainType;
             this.initGridCanvas();
             this.exportMap();
         });
-        
+        document.getElementById('extensionHeight').addEventListener('change', (ev) => {
+            const newHeight = parseInt(ev.target.value);
+            this.tileMap.extensionHeight = newHeight;
+            this.initGridCanvas();
+            this.exportMap();
+        });
+
         // Save button - manual save only
         document.getElementById('saveMapBtn').addEventListener('click', () => {
             this.exportMap();
@@ -423,7 +429,12 @@ class TerrainMapEditor {
                     extensionTerrainTypeSelector.appendChild(newOption);
                 }
             });
-        
+            // Set extension height input value
+            const extensionHeightInput = document.getElementById('extensionHeight');
+            if (extensionHeightInput) {
+                extensionHeightInput.value = this.tileMap.extensionHeight || 0;
+            }
+
             // No need to remap terrainMap; assume it already uses indices matching the order
             // If terrainMap has invalid indices, clamp them to valid range
             if (this.tileMap.terrainMap && this.tileMap.terrainMap.length > 0) {
@@ -561,7 +572,13 @@ class TerrainMapEditor {
 
         // Models are already loaded by EditorLoader
         const terrainTypeNames = this.tileMap.terrainTypes || [];
-        this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric, { terrainTypeNames });
+
+        // Get cliff border terrain from world's cliffSet
+        const world = this.objectData.world ? this.gameEditor.getCollections().worlds[this.objectData.world] : null;
+        const cliffSet = world?.cliffSet ? this.gameEditor.getCollections().cliffSets?.[world.cliffSet] : null;
+        const cliffBorderTerrain = cliffSet?.borderTerrain || null;
+
+        this.terrainTileMapper.init(this.terrainCanvasBuffer, this.gameEditor.getCollections().configs.game.gridSize, terrainImages, this.gameEditor.getCollections().configs.game.isIsometric, { terrainTypeNames, cliffBorderTerrain });
 
         // Ensure translator is up to date before creating game object
         this.translator = new GUTS.CoordinateTranslator(this.editorSettings, this.tileMap.size, this.gameEditor.getCollections().configs.game.isIsometric);
@@ -1459,12 +1476,18 @@ class TerrainMapEditor {
 
             // Init TileMap (for both 2D and 3D - 3D uses it for texture generation)
             const terrainTypeNames = this.tileMap.terrainTypes || [];
+
+            // Get cliff border terrain from world's cliffSet
+            const world = this.objectData.world ? this.gameEditor.getCollections().worlds[this.objectData.world] : null;
+            const cliffSet = world?.cliffSet ? this.gameEditor.getCollections().cliffSets?.[world.cliffSet] : null;
+            const cliffBorderTerrain = cliffSet?.borderTerrain || null;
+
             this.terrainTileMapper.init(
                 this.terrainCanvasBuffer,
                 this.gameEditor.getCollections().configs.game.gridSize,
                 terrainImages,
                 this.gameEditor.getCollections().configs.game.isIsometric,
-                { skipCliffTextures: false, terrainTypeNames } // Enable cliffs for 3D
+                { skipCliffTextures: false, terrainTypeNames, cliffBorderTerrain } // Enable cliffs for 3D
             );
         } finally {
             this.isInitializing = false;

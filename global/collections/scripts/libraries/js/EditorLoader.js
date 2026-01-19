@@ -122,6 +122,11 @@ class EditorLoader {
         // Get terrain type names for dynamic index lookup
         const terrainTypeNames = level?.tileMap?.terrainTypes || [];
 
+        // Get cliff border terrain from world's cliffSet
+        const world = this.collections.worlds?.[level?.world];
+        const cliffSet = world?.cliffSet ? this.collections.cliffSets?.[world.cliffSet] : null;
+        const cliffBorderTerrain = cliffSet?.borderTerrain || null;
+
         // Initialize tile mapper (same as GameLoader)
         this.game.terrainTileMapper = new GUTS.TileMap({});
         this.game.terrainTileMapper.init(
@@ -129,7 +134,7 @@ class EditorLoader {
             gameConfig.gridSize,
             terrainImages,
             gameConfig.isIsometric,
-            { skipCliffTextures: false, terrainTypeNames }
+            { skipCliffTextures: false, terrainTypeNames, cliffBorderTerrain }
         );
 
         console.log(`[EditorLoader] Initialized tile mapper for level: ${levelName}`);
