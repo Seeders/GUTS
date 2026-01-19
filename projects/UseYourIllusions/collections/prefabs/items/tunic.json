@@ -10,7 +10,7 @@
       "main": {
         "position": {
           "x": 0,
-          "y": 0.1
+          "y": 0
         },
         "rotation": {
           "x": 0,
@@ -20,8 +20,8 @@
         "shapes": [
           {
             "type": "gltf",
-            "width": 2,
-            "height": 0.2,
+            "width": 1,
+            "height": 1,
             "depth": 1,
             "color": "#FFFFFF",
             "metalness": "0",

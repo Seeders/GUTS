@@ -64,7 +64,7 @@ class CollectAbility extends GUTS.BaseAbility {
         // objectType is stored as enum index, convert back to string name
         const objectTypeIndex = collectible.objectType;
         const reverseEnums = this.game.getReverseEnums();
-        const objectType = reverseEnums.collectibles?.[objectTypeIndex];
+        const objectType = reverseEnums.worldObjects?.[objectTypeIndex];
 
         if (!objectType) return null;
 

@@ -168,20 +168,25 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         const belt = this.game.getComponent(playerEntity, 'magicBelt');
         if (!belt) return;
 
-        // Get selected slot content
+        // Check if a slot is actively selected
         const selectedSlot = belt.selectedSlot;
+        if (selectedSlot < 0) {
+            // No slot active, nothing to place
+            return;
+        }
+
         const slotKey = `slot${selectedSlot}`;
         const selectedItemIndex = belt[slotKey];
 
         // null means empty slot
         if (selectedItemIndex === null) {
-            // No item selected, nothing to place
+            // No item in selected slot, nothing to place
             return;
         }
 
         // Convert index to string name
         const reverseEnums = this.game.getReverseEnums();
-        const selectedItem = reverseEnums.collectibles?.[selectedItemIndex];
+        const selectedItem = reverseEnums.worldObjects?.[selectedItemIndex];
         if (!selectedItem) return;
 
         // Get preview position from IllusionPreviewSystem
@@ -379,7 +384,12 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         const belt = this.game.getComponent(entityId, 'magicBelt');
         if (!belt) return;
 
-        belt.selectedSlot = Math.max(0, Math.min(2, slotIndex));
+        // Toggle off if pressing the same slot again
+        if (belt.selectedSlot === slotIndex) {
+            belt.selectedSlot = -1; // Deactivate
+        } else {
+            belt.selectedSlot = Math.max(0, Math.min(2, slotIndex));
+        }
         this.game.triggerEvent('onBeltSelectionChanged', { entityId, slotIndex: belt.selectedSlot });
     }
 
@@ -395,7 +405,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         if (!belt) return false;
 
         // Convert string objectType to enum index for storage
-        const objectTypeIndex = this.enums.collectibles?.[objectType];
+        const objectTypeIndex = this.enums.worldObjects?.[objectType];
         if (objectTypeIndex === undefined) return false;
 
         // Find first empty slot (null means empty)
@@ -423,7 +433,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
             belt[slotKey] = null;
             // Convert index back to string name
             const reverseEnums = this.game.getReverseEnums();
-            const objectType = reverseEnums.collectibles?.[itemIndex];
+            const objectType = reverseEnums.worldObjects?.[itemIndex];
             this.game.triggerEvent('onBeltUpdated', { entityId, slotIndex, objectType: null });
             return objectType;
         }

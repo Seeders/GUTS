@@ -644,12 +644,9 @@ class MovementSystem extends GUTS.BaseSystem {
         }
 
 
-        // Get movement target from aiState
-        let targetPos = null;
-
-        if (!targetPos && behaviorMeta?.targetPosition) {
-            targetPos = behaviorMeta.targetPosition;
-        }
+        // Get movement target from behaviorMeta or behaviorShared
+        const behaviorShared = aiState ? this.game.call('getBehaviorShared', entityId) : null;
+        let targetPos = behaviorMeta?.targetPosition || behaviorShared?.targetPosition;
 
         if (targetPos) {
             // Get pathfinding component

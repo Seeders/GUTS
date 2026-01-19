@@ -299,10 +299,15 @@ class RenderSystem extends GUTS.BaseSystem {
             // Entity passed visibility checks - mark it as visible for cleanup tracking
             this._currentEntitiesSet.add(entityId);
 
-            // Check if unit is hiding (for semi-transparency)
-            const playerOrder = this.game.getComponent(entityId, 'playerOrder');
-            const isHiding = playerOrder?.isHiding || false;
-            const opacity = isHiding ? 0.5 : 1.0;
+            // Determine opacity: use renderable.opacity if set, otherwise check hiding state
+            let opacity = 1.0;
+            if (renderable.opacity !== null) {
+                opacity = renderable.opacity;
+            } else {
+                const playerOrder = this.game.getComponent(entityId, 'playerOrder');
+                const isHiding = playerOrder?.isHiding || false;
+                opacity = isHiding ? 0.5 : 1.0;
+            }
 
             // Pass numeric indices directly to EntityRenderer (O(1) lookup)
             const objectType = renderable.objectType;
@@ -329,7 +334,8 @@ class RenderSystem extends GUTS.BaseSystem {
                 this._spawnData.rotation = angle;
                 this._spawnData.transform = transform;
                 this._spawnData.velocity = velocity;
-                await this.spawnEntity(entityId, this._spawnData, opacity);
+                const tint = renderable.tint;
+                await this.spawnEntity(entityId, this._spawnData, opacity, tint);
                 // Cache initial position - reuse existing cache object if available
                 let posCache = this._entityPositionCache.get(entityId);
                 if (!posCache) {
@@ -395,7 +401,7 @@ class RenderSystem extends GUTS.BaseSystem {
         this.cleanupRemovedEntities(this._currentEntitiesSet);
     }
 
-    async spawnEntity(entityId, data, opacity = 1.0) {
+    async spawnEntity(entityId, data, opacity = 1.0, tint = null) {
         const spawned = await this.entityRenderer.spawnEntity(entityId, data);
         if (spawned) {
             // Note: spawnedEntities is already updated by caller to prevent race conditions
@@ -404,6 +410,11 @@ class RenderSystem extends GUTS.BaseSystem {
             // Set opacity for hiding units (only affects billboard entities)
             if (opacity !== 1.0) {
                 this.entityRenderer.setEntityOpacity(entityId, opacity);
+            }
+
+            // Set tint if specified (only affects billboard entities)
+            if (tint !== null) {
+                this.entityRenderer.setEntityTint(entityId, tint);
             }
 
             // Trigger billboard spawn event for AnimationSystem

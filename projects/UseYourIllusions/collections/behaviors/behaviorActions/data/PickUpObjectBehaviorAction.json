@@ -1,0 +1,9 @@
+{
+  "title": "Pick Up Object",
+  "description": "Moves to and picks up (destroys) the desirable object stored in shared.desirableTarget",
+  "behaviorNodeType": "action",
+  "fileName": "PickUpObjectBehaviorAction",
+  "parameters": {
+    "pickupRange": 30
+  }
+}

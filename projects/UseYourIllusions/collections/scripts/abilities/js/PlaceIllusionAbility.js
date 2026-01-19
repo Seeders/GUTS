@@ -30,6 +30,8 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
         if (!belt) return false;
 
         const selectedSlot = belt.selectedSlot;
+        if (selectedSlot < 0) return false; // No slot active
+
         const slotKey = `slot${selectedSlot}`;
         const selectedItem = belt[slotKey];
 
@@ -37,44 +39,36 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
     }
 
     execute(casterEntity, params = {}) {
-        console.log('[PlaceIllusionAbility] execute called with params:', JSON.stringify(params));
-
         const transform = this.game.getComponent(casterEntity, 'transform');
         const casterPos = transform?.position;
         if (!casterPos) {
-            console.log('[PlaceIllusionAbility] No caster position');
             return null;
         }
 
         const belt = this.game.getComponent(casterEntity, 'magicBelt');
         if (!belt) {
-            console.log('[PlaceIllusionAbility] No belt component');
             return null;
         }
 
         const selectedSlot = belt.selectedSlot;
         const slotKey = `slot${selectedSlot}`;
         const itemTypeIndex = belt[slotKey];
-        console.log('[PlaceIllusionAbility] Belt state:', { selectedSlot, slotKey, itemTypeIndex, belt: { slot0: belt.slot0, slot1: belt.slot1, slot2: belt.slot2 } });
 
         // null means empty slot
         if (itemTypeIndex === null) {
-            console.log('[PlaceIllusionAbility] No item in selected slot');
             return null;
         }
 
         // Convert index to string name
         const reverseEnums = this.game.getReverseEnums();
-        const itemType = reverseEnums.collectibles?.[itemTypeIndex];
+        const itemType = reverseEnums.worldObjects?.[itemTypeIndex];
         if (!itemType) {
-            console.log('[PlaceIllusionAbility] Could not resolve item type from index:', itemTypeIndex);
             return null;
         }
 
         // Get target position from params
         const targetPosition = params.targetPosition;
         if (!targetPosition) {
-            console.log('[PlaceIllusionAbility] No target position provided');
             return null;
         }
 
@@ -84,19 +78,29 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
         const dist = Math.sqrt(dx * dx + dz * dz);
 
         if (dist > this.range) {
-            console.log('[PlaceIllusionAbility] Target out of range');
             return null;
+        }
+
+        // Destroy any existing illusion for this slot (each slot can only have one active illusion)
+        const illusionKey = `illusion${selectedSlot}`;
+        const existingIllusionId = belt[illusionKey];
+        if (existingIllusionId !== null && existingIllusionId !== undefined) {
+            this.removeIllusion(existingIllusionId);
+            belt[illusionKey] = null;
         }
 
         // Create the illusion
-        const illusionId = this.createIllusion(casterEntity, itemType, targetPosition);
+        const illusionId = this.createIllusion(casterEntity, itemType, targetPosition, selectedSlot);
         if (!illusionId) {
-            console.log('[PlaceIllusionAbility] Failed to create illusion');
             return null;
         }
 
-        // Consume item from belt
-        this.game.call('consumeBeltItem', casterEntity, selectedSlot);
+        // Track the active illusion for this slot
+        belt[illusionKey] = illusionId;
+
+        // Deactivate the belt slot after placing
+        belt.selectedSlot = -1;
+        this.game.triggerEvent('onBeltSelectionChanged', { entityId: casterEntity, slotIndex: -1 });
 
         // Play spawn effect
         this.playConfiguredEffects('cast', targetPosition);
@@ -113,26 +117,19 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
         return { success: true, illusionId, objectType: itemType };
     }
 
-    createIllusion(creatorEntity, objectType, position) {
-        console.log('[PlaceIllusionAbility] createIllusion called:', { objectType, position });
-
+    createIllusion(creatorEntity, objectType, position, slotIndex) {
         // Get the prefab data for this object type
         const prefabData = this.getPrefabData(objectType);
-        console.log('[PlaceIllusionAbility] prefabData:', prefabData);
         if (!prefabData) {
-            console.log(`[PlaceIllusionAbility] Prefab not found for ${objectType}`);
             return null;
         }
 
         // Get enums for collection and type indices
         const enums = this.game.getEnums();
-        const collectionIndex = enums.objectTypeDefinitions?.collectibles;
-        const spawnTypeIndex = enums.collectibles?.[objectType];
-
-        console.log('[PlaceIllusionAbility] Spawn indices:', { collectionIndex, spawnTypeIndex, objectType });
+        const collectionIndex = enums.objectTypeDefinitions?.worldObjects;
+        const spawnTypeIndex = enums.worldObjects?.[objectType];
 
         if (collectionIndex === undefined || spawnTypeIndex === undefined) {
-            console.log(`[PlaceIllusionAbility] Could not find enum indices for ${objectType}`);
             return null;
         }
 
@@ -153,10 +150,8 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
 
         // Use createUnit to properly set up the entity with all rendering components
         const illusionId = this.game.call('createUnit', collectionIndex, spawnTypeIndex, transform, neutralTeam);
-        console.log('[PlaceIllusionAbility] Created illusion entity:', illusionId);
 
         if (illusionId === null || illusionId === undefined) {
-            console.log('[PlaceIllusionAbility] createUnit returned null');
             return null;
         }
 
@@ -166,14 +161,22 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
                 sourcePrefab: objectType,
                 creatorEntity: creatorEntity,
                 createdTime: this.game.state.now || 0,
-                duration: this.ILLUSION_DURATION
+                duration: this.ILLUSION_DURATION,
+                slotIndex: slotIndex
             });
 
-            // Schedule removal
-            if (this.game.schedulingSystem) {
-                this.game.schedulingSystem.scheduleAction(() => {
-                    this.removeIllusion(illusionId);
-                }, this.ILLUSION_DURATION, illusionId);
+            // Add lifetime component for automatic removal after duration
+            this.game.addComponent(illusionId, 'lifetime', {
+                duration: this.ILLUSION_DURATION,
+                startTime: this.game.state.now
+            });
+
+            // Make illusion semi-transparent with purple tint to distinguish from real objects
+            // Set on the renderable component - RenderSystem will apply during spawn
+            const renderable = this.game.getComponent(illusionId, 'renderable');
+            if (renderable) {
+                renderable.tint = 0x8040FF; // Strong purple tint
+                renderable.opacity = 0.7;
             }
 
             return illusionId;
@@ -263,7 +266,22 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
     }
 
     removeIllusion(illusionId) {
-        if (!this.game.hasEntity || !this.game.hasEntity(illusionId)) return;
+        if (!this.game.hasEntity(illusionId)) {
+            return;
+        }
+
+        // Get illusion data to clear the belt reference
+        const illusion = this.game.getComponent(illusionId, 'illusion');
+        if (illusion && illusion.creatorEntity !== null && illusion.slotIndex !== null) {
+            const belt = this.game.getComponent(illusion.creatorEntity, 'magicBelt');
+            if (belt) {
+                const illusionKey = `illusion${illusion.slotIndex}`;
+                // Only clear if this is still the tracked illusion for that slot
+                if (belt[illusionKey] === illusionId) {
+                    belt[illusionKey] = null;
+                }
+            }
+        }
 
         const transform = this.game.getComponent(illusionId, 'transform');
         const illusionPos = transform?.position;
@@ -277,38 +295,23 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
         this.game.triggerEvent('onIllusionExpired', { illusionId });
 
         // Remove the entity
-        if (this.game.removeEntity) {
-            this.game.removeEntity(illusionId);
-        } else if (this.game.destroyEntity) {
-            this.game.destroyEntity(illusionId);
-        }
+        this.game.destroyEntity(illusionId);
     }
 
     getPrefabData(objectType) {
         // Try to get from collections
         const collections = this.game.getCollections();
-        console.log('[PlaceIllusionAbility] getPrefabData for:', objectType);
-        console.log('[PlaceIllusionAbility] Available collections:', Object.keys(collections));
 
-        // Check collectibles collection first
-        if (collections.collectibles && collections.collectibles[objectType]) {
-            console.log('[PlaceIllusionAbility] Found in collectibles');
-            return collections.collectibles[objectType];
-        }
-
-        // Check world objects
+        // Check world objects first (collectable items are now in worldObjects)
         if (collections.worldObjects && collections.worldObjects[objectType]) {
-            console.log('[PlaceIllusionAbility] Found in worldObjects');
             return collections.worldObjects[objectType];
         }
 
         // Check units
         if (collections.units && collections.units[objectType]) {
-            console.log('[PlaceIllusionAbility] Found in units');
             return collections.units[objectType];
         }
 
-        console.log('[PlaceIllusionAbility] Not found in any collection');
         return null;
     }
 

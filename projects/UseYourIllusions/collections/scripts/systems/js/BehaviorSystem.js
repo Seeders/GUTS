@@ -87,11 +87,22 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
     /**
      * Clear behavior state for an entity
+     * Preserves persistent shared state keys like patrolWaypoints
      */
     clearBehaviorState(entityId) {
         const state = this.getOrCreateBehaviorState(entityId);
+
+        // Preserve persistent keys in shared state
+        const persistentKeys = ['patrolWaypoints', 'currentWaypointIndex'];
+        const preserved = {};
+        for (const key of persistentKeys) {
+            if (state.shared[key] !== undefined) {
+                preserved[key] = state.shared[key];
+            }
+        }
+
         state.meta = {};
-        state.shared = {};
+        state.shared = preserved;
     }
 
     /**
@@ -295,6 +306,16 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
         // Evaluate behavior tree to get desired action
         const desiredAction = this.processor.evaluate(rootTreeId, entityId);
+
+        // Always update meta even if action hasn't changed (targetPosition may change each frame)
+        if (desiredAction && desiredAction.meta) {
+            // Extract the deepest meta (unwrap nested metas from composites)
+            let meta = desiredAction.meta;
+            while (meta.meta && meta.action) {
+                meta = meta.meta;
+            }
+            this.setBehaviorMeta(entityId, meta);
+        }
 
         // Check if we need to switch actions
         if (this.shouldSwitchAction(aiState, desiredAction)) {

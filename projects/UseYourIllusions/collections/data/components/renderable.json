@@ -3,6 +3,8 @@
   "schema": {
     "objectType": null,
     "spawnType": null,
-    "capacity": 128
+    "capacity": 128,
+    "tint": null,
+    "opacity": null
   }
 }

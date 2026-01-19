@@ -135,7 +135,7 @@
     "BeltUISystem",
     "PuzzleGameSystem",
     "PuzzleLobbyUISystem",
-    "GhostPreviewSystem"
+    "PlacementPreviewSystem"
   ],
   "classes": [
     {

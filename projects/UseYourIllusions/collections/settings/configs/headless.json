@@ -61,7 +61,10 @@
     "GoldMineSystem",
     "VisionSystem",
     "SupplySystem",
-    "SkirmishGameSystem"
+    "SkirmishGameSystem",
+    "PuzzleGameSystem",
+    "IllusionSystem",
+    "ExitSystem"
   ],
   "classes": [
     {

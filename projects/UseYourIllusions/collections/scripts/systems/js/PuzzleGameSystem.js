@@ -115,7 +115,7 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
                     slot0: null,
                     slot1: null,
                     slot2: null,
-                    selectedSlot: 0
+                    selectedSlot: -1
                 }
             }
         });
@@ -137,12 +137,23 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
             return null;
         }
 
+        // Check that the prefab has collectable: true
+        const prefabData = this.collections.worldObjects?.[objectType];
+        if (!prefabData) {
+            console.warn(`[PuzzleGameSystem] World object ${objectType} not found in collections`);
+            return null;
+        }
+        if (!prefabData.collectable) {
+            console.warn(`[PuzzleGameSystem] World object ${objectType} does not have collectable: true`);
+            return null;
+        }
+
         // Get terrain height at position
         const terrainHeight = this.game.call('getTerrainHeightAtPosition', position.x, position.z) ?? 0;
 
-        // Use createUnit to spawn the collectible from the collectibles collection
-        const collectionIndex = this.enums.objectTypeDefinitions?.collectibles;
-        const spawnTypeIndex = this.enums.collectibles?.[objectType];
+        // Use createUnit to spawn from the worldObjects collection
+        const collectionIndex = this.enums.objectTypeDefinitions?.worldObjects;
+        const spawnTypeIndex = this.enums.worldObjects?.[objectType];
 
         if (collectionIndex === undefined || spawnTypeIndex === undefined) {
             console.warn(`[PuzzleGameSystem] Collectible ${objectType} not found in enums (collection: ${collectionIndex}, type: ${spawnTypeIndex})`);
@@ -158,7 +169,7 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         const neutralTeam = this.enums.team?.neutral ?? 0;
         const collectibleId = this.game.call('createUnit', collectionIndex, spawnTypeIndex, transform, neutralTeam);
 
-        // Add collectible-specific component for pickup logic
+        // Add collectible component for pickup logic
         // Store the enum index since TypedArray components can't store strings
         this.game.addComponent(collectibleId, 'collectible', {
             objectType: spawnTypeIndex
@@ -195,13 +206,27 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         const enemyTeam = this.enums.team?.hostile ?? 1;
         const enemyId = this.game.call('createUnit', collectionIndex, spawnTypeIndex, transform, enemyTeam);
 
+        // Override the behavior tree to use GuardBehaviorTree for guards
+        const aiState = this.game.getComponent(enemyId, 'aiState');
+        console.log(`[PuzzleGameSystem] aiState:`, aiState, 'GuardBehaviorTree enum:', this.enums.behaviorTrees?.GuardBehaviorTree);
+        if (aiState && this.enums.behaviorTrees?.GuardBehaviorTree !== undefined) {
+            aiState.rootBehaviorTree = this.enums.behaviorTrees.GuardBehaviorTree;
+            console.log(`[PuzzleGameSystem] Set GuardBehaviorTree (${aiState.rootBehaviorTree}) for enemy ${enemyId}`);
+        } else {
+            console.log(`[PuzzleGameSystem] Could not set GuardBehaviorTree - aiState: ${!!aiState}, enum: ${this.enums.behaviorTrees?.GuardBehaviorTree}`);
+        }
+
         // Store patrol data in behavior shared state if provided
         if (enemyData.patrol && this.game.hasService('getBehaviorShared')) {
             const shared = this.game.call('getBehaviorShared', enemyId);
+            console.log(`[PuzzleGameSystem] Setting patrol waypoints for enemy ${enemyId}: hasShared=${!!shared}, waypoints=${JSON.stringify(enemyData.patrol.waypoints)}`);
             if (shared) {
                 shared.patrolWaypoints = enemyData.patrol.waypoints;
                 shared.currentWaypointIndex = 0;
+                console.log(`[PuzzleGameSystem] After setting: shared.patrolWaypoints=${JSON.stringify(shared.patrolWaypoints)}`);
             }
+        } else {
+            console.log(`[PuzzleGameSystem] NOT setting patrol waypoints: hasPatrol=${!!enemyData.patrol}, hasService=${this.game.hasService('getBehaviorShared')}`);
         }
 
         console.log(`[PuzzleGameSystem] Spawned enemy ${enemyType} at (${position.x}, ${position.z})`);

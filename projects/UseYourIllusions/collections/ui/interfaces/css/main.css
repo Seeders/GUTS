@@ -157,11 +157,13 @@ body {
 }
 
 .menu-footer {
-    position: absolute;
+    position: fixed;
     bottom: 40px;
     left: 0;
     right: 0;
     text-align: center;
+    z-index: 0;
+    pointer-events: none;
 }
 
 .controls-hint {

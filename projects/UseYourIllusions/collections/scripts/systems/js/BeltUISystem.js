@@ -204,7 +204,7 @@ class BeltUISystem extends GUTS.BaseSystem {
             // null means empty slot, 0 is a valid item index (barrel)
             if (itemTypeIndex !== null) {
                 // Convert index to string name for icon lookup
-                const itemType = reverseEnums.collectibles?.[itemTypeIndex];
+                const itemType = reverseEnums.worldObjects?.[itemTypeIndex];
                 contentEl.innerHTML = `<span class="slot-item-icon">${this.getItemIcon(itemType)}</span>`;
                 slotEl.classList.add('filled');
             } else {
@@ -224,7 +224,7 @@ class BeltUISystem extends GUTS.BaseSystem {
         const icons = {
             'barrel': '🛢️',
             'crate': '📦',
-            'decoy_soldier': '🪖'
+            'present': '🎁'
         };
         return icons[itemType] || '❓';
     }

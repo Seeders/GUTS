@@ -116,58 +116,52 @@ class BaseBehaviorNode {
 
     /**
      * Selector: Try each child until one succeeds (OR logic)
+     *
+     * Important: Always evaluate from index 0 to allow higher-priority behaviors
+     * to preempt lower-priority ones. If a running child fails/succeeds, or a
+     * higher-priority child wants to run, the selector should switch to that child.
      */
     evaluateSelector(entityId, game) {
         const debugger_ = game.call('getDebugger');
         const treeId = this.config.id || this.constructor.name;
         const trace = debugger_?.beginEvaluation(entityId, treeId);
 
-        // Check for running state
+        // Get previously running child to detect preemption
         const runningInfo = this.runningState.get(entityId);
-        let startIndex = 0;
 
-        if (runningInfo) {
-            const runningIndex = this.children.indexOf(runningInfo.childName);
-            if (runningIndex !== -1) {
-                startIndex = runningIndex;
-            } else {
-                this.runningState.delete(entityId);
-            }
-        }
-
-        // If resuming a running child, check it first
-        if (startIndex > 0) {
-            const result = this.evaluateChildWithTrace(entityId, game, this.children[startIndex], startIndex, trace, debugger_);
-            if (result !== null) {
-                if (result.status === 'running') {
-                    const stateObj = this._getRunningStateObj(entityId);
-                    stateObj.childIndex = startIndex;
-                    stateObj.childName = this.children[startIndex];
-                    this.runningState.set(entityId, stateObj);
-                    this.endTrace(debugger_, trace, result, entityId, game);
-                    return result;
-                } else {
-                    this.runningState.delete(entityId);
-                    this.endTrace(debugger_, trace, result, entityId, game);
-                    return result;
-                }
-            }
-            this.runningState.delete(entityId);
-        }
-
-        // Standard selector: try each child
+        // Always evaluate from the beginning to allow preemption
         for (let i = 0; i < this.children.length; i++) {
             const result = this.evaluateChildWithTrace(entityId, game, this.children[i], i, trace, debugger_);
             if (result !== null) {
+                // Check if we preempted a different running child
+                if (runningInfo && runningInfo.childName !== this.children[i]) {
+                    // Notify the previously running child it was preempted
+                    const prevNode = game.call('getNodeByType', runningInfo.childName);
+                    if (prevNode?.onEnd) {
+                        prevNode.onEnd(entityId, game);
+                    }
+                }
+
                 if (result.status === 'running') {
                     const stateObj = this._getRunningStateObj(entityId);
                     stateObj.childIndex = i;
                     stateObj.childName = this.children[i];
                     this.runningState.set(entityId, stateObj);
+                } else {
+                    this.runningState.delete(entityId);
                 }
                 this.endTrace(debugger_, trace, result, entityId, game);
                 return result;
             }
+        }
+
+        // All children failed - clear running state
+        if (runningInfo) {
+            const prevNode = game.call('getNodeByType', runningInfo.childName);
+            if (prevNode?.onEnd) {
+                prevNode.onEnd(entityId, game);
+            }
+            this.runningState.delete(entityId);
         }
 
         this.endTrace(debugger_, trace, null, entityId, game);

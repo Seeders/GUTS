@@ -1,12 +1,12 @@
 {
   "title": "Crate",
-  "height": 50,
-  "size": 35,
+  "height": 16,
+  "size": 16,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "impassable": true,
   "spriteScale": 16,
   "renderTexture": "chest",
   "spriteOffset": 8,
-  "collectible": ""
+  "collectable": true
 }

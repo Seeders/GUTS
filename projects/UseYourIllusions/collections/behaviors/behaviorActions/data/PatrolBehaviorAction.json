@@ -6,7 +6,7 @@
   "fileName": "PatrolBehaviorAction",
   "parameters": {
     "waypoints": [],
-    "waypointsKey": null,
+    "waypointsKey": "patrolWaypoints",
     "waitTime": 1000,
     "loop": true,
     "arrivalDistance": 20

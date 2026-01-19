@@ -385,6 +385,9 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                     useDirectMovement: false
                 };
 
+            case 'aiMovement':
+                return {};
+
             case 'combatState':
                 return {
                     lastAttacker: null,
@@ -468,7 +471,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                     slot0: overrides?.magicBelt?.slot0 ?? null,
                     slot1: overrides?.magicBelt?.slot1 ?? null,
                     slot2: overrides?.magicBelt?.slot2 ?? null,
-                    selectedSlot: overrides?.magicBelt?.selectedSlot ?? 0
+                    selectedSlot: overrides?.magicBelt?.selectedSlot ?? -1
                 };
 
             default:
@@ -651,6 +654,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 rootBehaviorTree: this.enums.behaviorTrees.UnitBattleBehaviorTree,
                 rootBehaviorTreeCollection: this.enums.behaviorCollection.behaviorTrees
             },
+            aiMovement: {},
             pathfinding: {
                 path: null,
                 pathIndex: 0,

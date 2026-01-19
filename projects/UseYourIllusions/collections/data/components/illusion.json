@@ -4,6 +4,7 @@
     "sourcePrefab": null,
     "creatorEntity": null,
     "createdTime": 0,
-    "duration": 30
+    "duration": 30,
+    "slotIndex": null
   }
 }

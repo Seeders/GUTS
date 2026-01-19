@@ -49,7 +49,7 @@ class IllusionSystem extends GUTS.BaseSystem {
     }
 
     removeIllusion(entityId) {
-        if (!this.game.hasEntity || !this.game.hasEntity(entityId)) return;
+        if (!this.game.hasEntity(entityId)) return;
 
         const transform = this.game.getComponent(entityId, 'transform');
         const illusionPos = transform?.position;
@@ -67,12 +67,7 @@ class IllusionSystem extends GUTS.BaseSystem {
 
         this.game.triggerEvent('onIllusionRemoved', { entityId });
 
-        // Remove the entity
-        if (this.game.removeEntity) {
-            this.game.removeEntity(entityId);
-        } else if (this.game.destroyEntity) {
-            this.game.destroyEntity(entityId);
-        }
+        this.game.destroyEntity(entityId);
     }
 
     isIllusion(entityId) {

@@ -26,10 +26,12 @@ class PatrolBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
+        // Get shared state for storing targetPosition
+        const shared = this.getShared(entityId, game);
+
         // Get waypoints from params or shared state
         let waypoints = params.waypoints || [];
         if (waypointsKey) {
-            const shared = this.getShared(entityId, game);
             waypoints = shared[waypointsKey] || waypoints;
         }
 
@@ -45,9 +47,12 @@ class PatrolBehaviorAction extends GUTS.BaseBehaviorAction {
             memory.direction = 1; // 1 = forward, -1 = backward
             memory.waitingUntil = 0;
             memory.patrolState = 'moving';
+            memory.hasMovedOnce = false; // Track if we've ever moved
         }
 
         const now = game.state?.now || Date.now();
+        // Convert waitTime from ms to seconds (game.state.now is in seconds)
+        const waitTimeSeconds = waitTime / 1000;
 
         // Check if we're waiting at a waypoint
         if (memory.patrolState === 'waiting') {
@@ -73,13 +78,31 @@ class PatrolBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Check if arrived at waypoint
         if (distance <= arrivalDistance) {
-            if (waitTime > 0) {
+            // If we haven't moved yet (spawned at waypoint), skip waiting and advance immediately
+            if (!memory.hasMovedOnce) {
+                this.advanceWaypoint(memory, waypoints.length, loop);
+                // Get the new target waypoint after advancing
+                const newTargetWaypoint = waypoints[memory.waypointIndex];
+                const targetPosition = { x: newTargetWaypoint.x, z: newTargetWaypoint.z };
+                shared.targetPosition = targetPosition; // For MovementSystem
+                memory.hasMovedOnce = true;
+                return this.running({
+                    state: 'moving',
+                    targetPosition: targetPosition,
+                    waypointIndex: memory.waypointIndex,
+                    distance: this.distance(pos, newTargetWaypoint)
+                });
+            }
+
+            if (waitTimeSeconds > 0) {
                 memory.patrolState = 'waiting';
-                memory.waitingUntil = now + waitTime;
+                memory.waitingUntil = now + waitTimeSeconds;
+                // Clear targetPosition so guard stops moving during wait
+                shared.targetPosition = null;
                 return this.running({
                     state: 'arrived',
                     waypointIndex: memory.waypointIndex,
-                    waitTime
+                    waitTime: waitTimeSeconds
                 });
             } else {
                 // No wait time, immediately advance
@@ -88,11 +111,13 @@ class PatrolBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Set target position for movement system
-        memory.targetPosition = { x: targetWaypoint.x, z: targetWaypoint.z };
+        const targetPosition = { x: targetWaypoint.x, z: targetWaypoint.z };
+        shared.targetPosition = targetPosition; // For MovementSystem
+        memory.hasMovedOnce = true;
 
         return this.running({
             state: 'moving',
-            targetPosition: memory.targetPosition,
+            targetPosition: targetPosition,
             waypointIndex: memory.waypointIndex,
             distance
         });

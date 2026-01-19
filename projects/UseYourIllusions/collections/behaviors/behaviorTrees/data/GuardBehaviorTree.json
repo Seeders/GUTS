@@ -1,0 +1,11 @@
+{
+  "title": "Guard Behavior Tree",
+  "description": "Behavior tree for puzzle guards. Prioritizes picking up desirable objects over patrolling.",
+  "behaviorNodeType": "selector",
+  "fileName": "GuardBehaviorTree",
+  "behaviorActions": [
+    "SeekDesirableSequence",
+    "PatrolBehaviorAction",
+    "IdleBehaviorAction"
+  ]
+}

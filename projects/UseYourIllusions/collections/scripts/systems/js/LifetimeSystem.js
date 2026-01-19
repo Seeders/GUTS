@@ -124,6 +124,34 @@ class LifetimeSystem extends GUTS.BaseSystem {
         if (this.game.thornsEntities && this.game.thornsEntities.has(entityId)) {
             this.game.thornsEntities.delete(entityId);
         }
+
+        // Handle illusions - clear the belt reference
+        if (this.game.hasComponent(entityId, "illusion")) {
+            this.handleIllusionExpiration(entityId);
+        }
+    }
+
+    handleIllusionExpiration(entityId) {
+        const illusion = this.game.getComponent(entityId, "illusion");
+        if (illusion && illusion.creatorEntity !== null && illusion.slotIndex !== null) {
+            const belt = this.game.getComponent(illusion.creatorEntity, 'magicBelt');
+            if (belt) {
+                const illusionKey = `illusion${illusion.slotIndex}`;
+                if (belt[illusionKey] === entityId) {
+                    belt[illusionKey] = null;
+                }
+            }
+        }
+
+        const transform = this.game.getComponent(entityId, "transform");
+        const illusionPos = transform?.position;
+        if (illusionPos) {
+            this.game.call('createParticleEffect',
+                illusionPos.x, illusionPos.y, illusionPos.z,
+                'smoke',
+                { count: 15, color: 0x9370DB, scaleMultiplier: 1.0 }
+            );
+        }
     }
     
     handleSummonExpiration(entityId) {

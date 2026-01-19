@@ -1,0 +1,9 @@
+{
+  "title": "Find Desirable Object",
+  "description": "Detects nearby objects with desired: true flag and stores in shared.desirableTarget",
+  "behaviorNodeType": "action",
+  "fileName": "FindDesirableObjectBehaviorAction",
+  "parameters": {
+    "detectionRange": 500
+  }
+}

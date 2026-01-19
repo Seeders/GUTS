@@ -4,6 +4,9 @@
     "slot0": null,
     "slot1": null,
     "slot2": null,
-    "selectedSlot": 0
+    "selectedSlot": -1,
+    "illusion0": null,
+    "illusion1": null,
+    "illusion2": null
   }
 }

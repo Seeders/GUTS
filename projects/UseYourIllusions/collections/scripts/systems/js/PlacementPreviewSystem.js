@@ -1,5 +1,5 @@
 /**
- * GhostPreviewSystem - Shows a preview of the illusion to be placed
+ * PlacementPreviewSystem - Shows a preview of the illusion to be placed
  *
  * Features:
  * - Creates a real entity with semi-transparent rendering for preview
@@ -7,7 +7,7 @@
  * - Only shows when a belt slot with an item is selected
  * - Uses the same rendering as the actual illusion for accurate preview
  */
-class GhostPreviewSystem extends GUTS.BaseSystem {
+class PlacementPreviewSystem extends GUTS.BaseSystem {
     static services = [
         'showIllusionPreview',
         'hideIllusionPreview',
@@ -17,7 +17,7 @@ class GhostPreviewSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.placementPreviewSystem = this;
-        console.log('[GhostPreviewSystem] Constructor called');
+        console.log('[PlacementPreviewSystem] Constructor called');
 
         this.previewEntityId = null;
         this.currentItemType = null;
@@ -34,11 +34,11 @@ class GhostPreviewSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('[GhostPreviewSystem] init() called');
+        console.log('[PlacementPreviewSystem] init() called');
     }
 
     onSceneLoad(sceneData) {
-        console.log('[GhostPreviewSystem] onSceneLoad() called');
+        console.log('[PlacementPreviewSystem] onSceneLoad() called');
     }
 
     update() {
@@ -53,8 +53,13 @@ class GhostPreviewSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Check if a slot is selected with an item
+        // Check if a slot is actively selected (not -1) and has an item
         const selectedSlot = belt.selectedSlot;
+        if (selectedSlot < 0) {
+            this.hideIllusionPreview();
+            return;
+        }
+
         const slotKey = `slot${selectedSlot}`;
         const selectedItemIndex = belt[slotKey];
 
@@ -66,9 +71,9 @@ class GhostPreviewSystem extends GUTS.BaseSystem {
 
         // Convert index to string name for preview
         const reverseEnums = this.game.getReverseEnums();
-        const selectedItem = reverseEnums.collectibles?.[selectedItemIndex];
+        const selectedItem = reverseEnums.worldObjects?.[selectedItemIndex];
         if (!selectedItem) {
-            console.log('[GhostPreviewSystem] Could not resolve item name for index:', selectedItemIndex);
+            console.log('[PlacementPreviewSystem] Could not resolve item name for index:', selectedItemIndex);
             this.hideIllusionPreview();
             return;
         }
@@ -101,12 +106,12 @@ class GhostPreviewSystem extends GUTS.BaseSystem {
 
     createPreviewEntity(itemIndex) {
         const enums = this.game.getEnums();
-        const collectionIndex = enums.objectTypeDefinitions?.collectibles;
+        const collectionIndex = enums.objectTypeDefinitions?.worldObjects;
 
-        console.log('[GhostPreviewSystem] createPreviewEntity:', { itemIndex, collectionIndex });
+        console.log('[PlacementPreviewSystem] createPreviewEntity:', { itemIndex, collectionIndex });
 
         if (collectionIndex === undefined || itemIndex === undefined) {
-            console.log('[GhostPreviewSystem] Could not find enum indices for preview');
+            console.log('[PlacementPreviewSystem] Could not find enum indices for preview');
             return;
         }
 
@@ -121,7 +126,7 @@ class GhostPreviewSystem extends GUTS.BaseSystem {
 
         // Use createUnit to properly create the preview entity
         this.previewEntityId = this.game.call('createUnit', collectionIndex, itemIndex, transform, neutralTeam);
-        console.log('[GhostPreviewSystem] Created preview entity:', this.previewEntityId);
+        console.log('[PlacementPreviewSystem] Created preview entity:', this.previewEntityId);
 
         if (this.previewEntityId !== null && this.previewEntityId !== undefined) {
             // Add preview component to mark this as a preview (non-interactive)
@@ -132,10 +137,10 @@ class GhostPreviewSystem extends GUTS.BaseSystem {
             });
 
             // Set opacity for semi-transparent rendering
-            console.log('[GhostPreviewSystem] entityRenderer:', !!this.game.entityRenderer, 'setEntityOpacity:', !!this.game.entityRenderer?.setEntityOpacity);
+            console.log('[PlacementPreviewSystem] entityRenderer:', !!this.game.entityRenderer, 'setEntityOpacity:', !!this.game.entityRenderer?.setEntityOpacity);
             if (this.game.entityRenderer && this.game.entityRenderer.setEntityOpacity) {
                 const result = this.game.entityRenderer.setEntityOpacity(this.previewEntityId, this.config.opacity);
-                console.log('[GhostPreviewSystem] setEntityOpacity result:', result);
+                console.log('[PlacementPreviewSystem] setEntityOpacity result:', result);
             }
 
             // Remove collision so preview doesn't block anything
@@ -143,7 +148,7 @@ class GhostPreviewSystem extends GUTS.BaseSystem {
                 this.game.removeComponent(this.previewEntityId, 'collision');
             }
         } else {
-            console.log('[GhostPreviewSystem] createUnit returned null/undefined');
+            console.log('[PlacementPreviewSystem] createUnit returned null/undefined');
         }
     }
 

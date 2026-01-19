@@ -10,6 +10,7 @@
     "combat",
     "collision",
     "aiState",
+    "aiMovement",
     "pathfinding",
     "combatState",
     "animation",

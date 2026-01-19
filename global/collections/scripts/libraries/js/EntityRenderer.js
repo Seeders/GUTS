@@ -490,10 +490,17 @@ class EntityRenderer {
         const uvOffsets = new Float32Array(capacity * 2);  // x, y offset per instance
         const uvScales = new Float32Array(capacity * 2);   // width, height scale per instance
         const opacities = new Float32Array(capacity).fill(1.0);  // opacity per instance
+        const tints = new Float32Array(capacity * 3);  // RGB tint per instance (default white = no tint)
+        for (let i = 0; i < capacity; i++) {
+            tints[i * 3] = 1.0;      // R
+            tints[i * 3 + 1] = 1.0;  // G
+            tints[i * 3 + 2] = 1.0;  // B
+        }
 
         geometry.setAttribute('uvOffset', new THREE.InstancedBufferAttribute(uvOffsets, 2));
         geometry.setAttribute('uvScale', new THREE.InstancedBufferAttribute(uvScales, 2));
         geometry.setAttribute('aOpacity', new THREE.InstancedBufferAttribute(opacities, 1));
+        geometry.setAttribute('aTint', new THREE.InstancedBufferAttribute(tints, 3));
 
         // Custom shader material for billboarding with UV manipulation
         const material = new THREE.ShaderMaterial({
@@ -508,8 +515,10 @@ class EntityRenderer {
                 attribute vec2 uvOffset;
                 attribute vec2 uvScale;
                 attribute float aOpacity;
+                attribute vec3 aTint;
                 varying vec2 vUv;
                 varying float vOpacity;
+                varying vec3 vTint;
                 #include <fog_pars_vertex>
 
                 const float PI = 3.14159265359;
@@ -520,6 +529,7 @@ class EntityRenderer {
                     // Flip V coordinate since we disabled texture.flipY
                     vUv = vec2(uv.x * uvScale.x + uvOffset.x, (1.0 - uv.y) * uvScale.y + uvOffset.y);
                     vOpacity = aOpacity;
+                    vTint = aTint;
 
                     // Get instance transform
                     mat4 instanceMat = instanceMatrix;
@@ -609,13 +619,15 @@ class EntityRenderer {
                 uniform vec3 ambientLightColor;
                 varying vec2 vUv;
                 varying float vOpacity;
+                varying vec3 vTint;
                 #include <fog_pars_fragment>
 
                 void main() {
                     vec4 texColor = texture2D(map, vUv);
                     if (texColor.a < 0.5) discard;
-                    // Apply ambient lighting to the sprite
-                    vec3 litColor = texColor.rgb * ambientLightColor;
+                    // Apply tint and ambient lighting to the sprite
+                    vec3 tintedColor = texColor.rgb * vTint;
+                    vec3 litColor = tintedColor * ambientLightColor;
                     gl_FragColor = vec4(litColor, texColor.a * vOpacity);
                     #include <colorspace_fragment>
                     #include <fog_fragment>
@@ -657,7 +669,8 @@ class EntityRenderer {
             attributes: {
                 uvOffset: geometry.attributes.uvOffset,
                 uvScale: geometry.attributes.uvScale,
-                opacity: geometry.attributes.aOpacity
+                opacity: geometry.attributes.aOpacity,
+                tint: geometry.attributes.aTint
             },
             animationCache: null  // Will be populated on first entity spawn
         };
@@ -960,9 +973,18 @@ class EntityRenderer {
         const capacity = this.capacitiesByType[batchKey] || this.defaultCapacity;
         const uvOffsets = new Float32Array(capacity * 2);
         const uvScales = new Float32Array(capacity * 2);
+        const opacities = new Float32Array(capacity).fill(1.0);
+        const tints = new Float32Array(capacity * 3);
+        for (let i = 0; i < capacity; i++) {
+            tints[i * 3] = 1.0;
+            tints[i * 3 + 1] = 1.0;
+            tints[i * 3 + 2] = 1.0;
+        }
 
         geometry.setAttribute('uvOffset', new THREE.InstancedBufferAttribute(uvOffsets, 2));
         geometry.setAttribute('uvScale', new THREE.InstancedBufferAttribute(uvScales, 2));
+        geometry.setAttribute('aOpacity', new THREE.InstancedBufferAttribute(opacities, 1));
+        geometry.setAttribute('aTint', new THREE.InstancedBufferAttribute(tints, 3));
 
         // Custom shader material for billboarding (always faces camera)
         const material = new THREE.ShaderMaterial({
@@ -976,13 +998,19 @@ class EntityRenderer {
             vertexShader: `
                 attribute vec2 uvOffset;
                 attribute vec2 uvScale;
+                attribute float aOpacity;
+                attribute vec3 aTint;
                 varying vec2 vUv;
+                varying float vOpacity;
+                varying vec3 vTint;
                 #include <fog_pars_vertex>
 
                 void main() {
                     // Pass UV with instance-specific offset and scale
                     // Flip V coordinate since we disabled texture.flipY
                     vUv = vec2(uv.x * uvScale.x + uvOffset.x, (1.0 - uv.y) * uvScale.y + uvOffset.y);
+                    vOpacity = aOpacity;
+                    vTint = aTint;
 
                     // Get instance transform
                     mat4 instanceMat = instanceMatrix;
@@ -1014,14 +1042,17 @@ class EntityRenderer {
                 uniform sampler2D map;
                 uniform vec3 ambientLightColor;
                 varying vec2 vUv;
+                varying float vOpacity;
+                varying vec3 vTint;
                 #include <fog_pars_fragment>
 
                 void main() {
                     vec4 texColor = texture2D(map, vUv);
                     if (texColor.a < 0.5) discard;
-                    // Apply ambient lighting to the sprite
-                    vec3 litColor = texColor.rgb * ambientLightColor;
-                    gl_FragColor = vec4(litColor, texColor.a);
+                    // Apply tint and ambient lighting to the sprite
+                    vec3 tintedColor = texColor.rgb * vTint;
+                    vec3 litColor = tintedColor * ambientLightColor;
+                    gl_FragColor = vec4(litColor, texColor.a * vOpacity);
                     #include <colorspace_fragment>
                     #include <fog_fragment>
                 }
@@ -1052,7 +1083,9 @@ class EntityRenderer {
             maxUsedIndex: -1,
             attributes: {
                 uvOffset: geometry.attributes.uvOffset,
-                uvScale: geometry.attributes.uvScale
+                uvScale: geometry.attributes.uvScale,
+                opacity: geometry.attributes.aOpacity,
+                tint: geometry.attributes.aTint
             }
         };
 
@@ -1576,6 +1609,56 @@ class EntityRenderer {
         batch.attributes.opacity.setX(entity.instanceIndex, opacity);
         batch.attributes.opacity.array[entity.instanceIndex] = opacity;
         batch.attributes.opacity.needsUpdate = true;
+
+        return true;
+    }
+
+    /**
+     * Set tint color for billboard entity
+     * @param {number} entityId - Entity ID
+     * @param {number|{r:number,g:number,b:number}} color - Hex color (0xFF00FF) or RGB object {r:1,g:0,b:1}
+     */
+    setEntityTint(entityId, color) {
+        console.log('[EntityRenderer] setEntityTint called:', entityId, 'color:', color.toString(16));
+        const entity = this.entities.get(entityId);
+        console.log('[EntityRenderer] entity from map:', entity);
+        if (!entity) {
+            console.warn(`[EntityRenderer] Entity ${entityId} not found in entities map. Map size: ${this.entities.size}`);
+            return false;
+        }
+        if (entity.type !== 'billboardInstanced') {
+            console.warn(`[EntityRenderer] Entity ${entityId} type is '${entity.type}', not 'billboardInstanced'`);
+            return false;
+        }
+
+        const batch = entity.batch;
+        console.log('[EntityRenderer] batch.attributes keys:', Object.keys(batch.attributes || {}));
+        if (!batch.attributes.tint) {
+            console.warn(`[EntityRenderer] No tint attribute on batch for entity ${entityId}, batchKey: ${entity.batchKey}`);
+            return false;
+        }
+
+        let r, g, b;
+        if (typeof color === 'number') {
+            // Hex color like 0x9370DB
+            r = ((color >> 16) & 0xFF) / 255;
+            g = ((color >> 8) & 0xFF) / 255;
+            b = (color & 0xFF) / 255;
+        } else if (color && typeof color === 'object') {
+            // RGB object like {r: 0.5, g: 0.3, b: 0.8}
+            r = color.r ?? 1;
+            g = color.g ?? 1;
+            b = color.b ?? 1;
+        } else {
+            // Reset to white (no tint)
+            r = g = b = 1;
+        }
+
+        const idx = entity.instanceIndex * 3;
+        batch.attributes.tint.array[idx] = r;
+        batch.attributes.tint.array[idx + 1] = g;
+        batch.attributes.tint.array[idx + 2] = b;
+        batch.attributes.tint.needsUpdate = true;
 
         return true;
     }
