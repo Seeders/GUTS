@@ -1,0 +1,48 @@
+{
+  "id": "the_hanged_man",
+  "number": 13,
+  "title": "The Hanged Man",
+  "texture": "tarot_13_the_hanged_man",
+  "past": {
+    "upright": {
+      "name": "Sacrifice",
+      "description": "Deal +30% damage at low health",
+      "effects": [{ "target": "player_units", "stat": "lowHealthDamage", "operation": "add", "value": 0.3 }]
+    },
+    "reversed": {
+      "name": "Suspension",
+      "description": "Units move slower but take less damage",
+      "effects": [
+        { "target": "player_units", "stat": "moveSpeed", "operation": "multiply", "value": 0.8 },
+        { "target": "player_units", "stat": "damageTaken", "operation": "multiply", "value": 0.85 }
+      ]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Limbo",
+      "description": "Time limit reduced by half",
+      "effects": [{ "target": "mission", "stat": "timeLimit", "operation": "multiply", "value": 0.5 }]
+    },
+    "reversed": {
+      "name": "Stalling",
+      "description": "Enemies move slower but are tougher",
+      "effects": [
+        { "target": "enemy_units", "stat": "moveSpeed", "operation": "multiply", "value": 0.7 },
+        { "target": "enemy_units", "stat": "maxHealth", "operation": "multiply", "value": 1.2 }
+      ]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Letting Go",
+      "description": "Convert gold to experience (2x rate)",
+      "effects": [{ "target": "rewards", "stat": "goldToExp", "operation": "set", "value": 2 }]
+    },
+    "reversed": {
+      "name": "Martyrdom",
+      "description": "Killed units grant bonus rewards",
+      "effects": [{ "target": "rewards", "stat": "deathBonus", "operation": "add", "value": 25 }]
+    }
+  }
+}

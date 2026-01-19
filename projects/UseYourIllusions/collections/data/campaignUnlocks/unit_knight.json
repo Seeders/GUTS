@@ -1,0 +1,13 @@
+{
+  "id": "unit_knight",
+  "title": "Knight",
+  "description": "Unlock the Knight unit - heavily armored frontline warrior",
+  "type": "unit",
+  "unlockId": "2_sd_knight",
+  "cost": { "glory": 100 },
+  "requires": {
+    "units": ["1_sd_soldier"],
+    "atlasProgress": 3
+  },
+  "icon": "unit_knight"
+}

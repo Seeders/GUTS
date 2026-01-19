@@ -1,0 +1,7 @@
+{
+  "fileName": "RaiseDeadAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/RaiseDeadAbility.js",
+  "castParticleEffectSystems": ["dark_energy", "dark_sparkles"],
+  "summonParticleEffectSystems": ["dark_burst", "dark_energy"],
+  "impactParticleEffectSystems": ["dark_sparkles"]
+}

@@ -1,0 +1,40 @@
+{
+  "title": "movementState",
+  "schema": {
+    "lastPosition": {
+      "x": 0,
+      "z": 0
+    },
+    "lastMovementTime": 0,
+    "stuckTime": 0,
+    "lastPathTime": 0,
+    "avoidanceDirection": 0,
+    "velocityHistory": {
+      "$fixedArray": {
+        "size": 5,
+        "default": 0,
+        "fields": [
+          "vx",
+          "vz",
+          "frame"
+        ]
+      }
+    },
+    "velocityHistoryIndex": 0,
+    "velocityHistoryCount": 0,
+    "smoothedDirection": {
+      "x": 0,
+      "z": 0
+    },
+    "dampedForces": {
+      "separation": {
+        "x": 0,
+        "z": 0
+      },
+      "avoidance": {
+        "x": 0,
+        "z": 0
+      }
+    }
+  }
+}

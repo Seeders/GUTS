@@ -1,0 +1,10 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/SupplySystem.js",
+  "fileName": "SupplySystem",
+  "services": [
+    "getCurrentSupply",
+    "getCurrentPopulation",
+    "canAffordSupply",
+    "invalidateSupplyCache"
+  ]
+}

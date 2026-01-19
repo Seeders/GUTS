@@ -1,0 +1,10 @@
+{
+  "title": "AI Ready For Battle",
+  "behaviorNodeType": "action",
+  "type": "AIReadyForBattleBehaviorAction",
+  "priority": 5,
+  "description": "Marks AI opponent as ready for battle after executing build order",
+  "parameters": "{}",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/AIReadyForBattleBehaviorAction.js",
+  "fileName": "AIReadyForBattleBehaviorAction"
+}

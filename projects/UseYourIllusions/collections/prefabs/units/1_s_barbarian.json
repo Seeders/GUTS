@@ -1,0 +1,152 @@
+{
+  "title": "Barbarian",
+  "size": 25,
+  "height": 50,
+  "value": 35,
+  "hp": 220,
+  "speed": 40,
+  "damage": 14,
+  "attackSpeed": 1,
+  "element": "physical",
+  "armor": 10,
+  "fireResistance": 0,
+  "coldResistance": 0,
+  "lightningResistance": 0,
+  "accuracy": 90,
+  "evasion": 10,
+  "criticalChance": 0.05,
+  "criticalMultiplier": 1.5,
+  "passives": [
+    {
+      "type": "increased",
+      "tags": [
+        "melee",
+        "physical"
+      ],
+      "value": 0.15
+    }
+  ],
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "idle_short"
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "walk_steady_right_hand"
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "sword_slash"
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "death_fallback"
+              }
+            ],
+            "loops": false
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "model": "barbarian"
+          }
+        ]
+      }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "knightSword",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 0,
+            "y": 5,
+            "z": 5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        }
+      }
+    ]
+  },
+  "buyable": true,
+  "specUnits": [
+    "2_s_berserker",
+    "2_s_gladiator",
+    "2_s_warlord"
+  ],
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "abilities": [
+    "LeapSlamAbility"
+  ],
+  "range": 5,
+  "icon": "unit_barbarian",
+  "visionRange": 500,
+  "supplyCost": 2,
+  "spriteAnimationSet": "barbarian",
+  "requiresUnits": [],
+  "requiresBuildings": []
+}

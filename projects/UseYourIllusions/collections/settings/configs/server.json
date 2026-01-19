@@ -1,0 +1,86 @@
+{
+  "title": "Server Game",
+  "projectName": "TurnBasedWarfare",
+  "tickRate": 20,
+  "seed": "auto",
+  "appLoaderLibrary": "ServerGameLoader",
+  "appLibrary": "ServerECSGame",
+  "initialScene": "game",
+  "libraries": [
+    "GameServices",
+    "CallLogger",
+    "BaseSystem",
+    "BaseLoader",
+    "ServerGameLoader",
+    "GameRoom",
+    "ServerGameRoom",
+    "GameState",
+    "BaseECSGame",
+    "GameUtils",
+    "ServerECSGame",
+    "ServerEventManager",
+    "ServerNetworkManager",
+    "SeededRandom",
+    "MinHeap",
+    "DesyncDebugger",
+    "TerrainDataManager",
+    "CoordinateTranslator",
+    "ComponentGenerator",
+    "BehaviorTreeProcessor",
+    "BaseBehaviorNode",
+    "SceneManager",
+    "HeadlessLogger"
+  ],
+  "systems": [
+    "GameSystem",
+    "SaveSystem",
+    "PlayerStatsSystem",
+    "UnitCreationSystem",
+    "SquadSystem",
+    "GridSystem",
+    "TerrainSystem",
+    "RoundSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "TeamHealthSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "SquadExperienceSystem",
+    "ServerBattlePhaseSystem",
+    "PlacementSystem",
+    "UnitOrderSystem",
+    "BaseNetworkSystem",
+    "ServerNetworkSystem",
+    "LifetimeSystem",
+    "SchedulingSystem",
+    "PathfindingSystem",
+    "GoldMineSystem",
+    "VisionSystem",
+    "SupplySystem",
+    "CheatCodeSystem"
+  ],
+  "classes": [
+    {
+      "collection": "abilities",
+      "baseClass": "BaseAbility"
+    },
+    {
+      "collection": "behaviorActions",
+      "baseClass": "BaseBehaviorAction"
+    },
+    {
+      "collection": "behaviorDecorators",
+      "baseClass": "BaseBehaviorDecorator"
+    },
+    {
+      "collection": "behaviorTrees",
+      "baseClass": "BaseBehaviorTree"
+    },
+    {
+      "collection": "sequenceBehaviorTrees",
+      "baseClass": "SequenceBehaviorTree"
+    }
+  ]
+}

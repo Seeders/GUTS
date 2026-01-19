@@ -1,0 +1,8 @@
+{
+  "fileName": "CorruptingAuraAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/CorruptingAuraAbility.js",
+  "castParticleEffectSystems": ["dark_energy"],
+  "tickParticleEffectSystems": ["dark_sparkles"],
+  "buffParticleEffectSystems": ["dark_burst"],
+  "auraParticleEffectSystems": ["dark_energy", "dark_sparkles"]
+}

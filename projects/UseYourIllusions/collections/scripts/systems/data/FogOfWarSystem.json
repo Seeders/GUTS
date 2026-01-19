@@ -1,0 +1,9 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/FogOfWarSystem.js",
+  "fileName": "FogOfWarSystem",
+  "services": [
+    "getExplorationTexture",
+    "getFogTexture",
+    "invalidateLOSCache"
+  ]
+}

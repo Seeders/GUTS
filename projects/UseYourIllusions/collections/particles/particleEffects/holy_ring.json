@@ -1,0 +1,32 @@
+{
+  "title": "Holy Ring",
+  "category": "holy",
+  "tags": [
+    "holy",
+    "light",
+    "ring",
+    "ground"
+  ],
+  "particleEffectData": {
+    "count": 24,
+    "lifetime": 0.6,
+    "scale": 15,
+    "scaleMultiplier": 1.2,
+    "startColor": "#ffffff",
+    "endColor": "#ffaa00",
+    "emitterShape": "ring",
+    "emitterRadius": 40,
+    "heightOffset": 5,
+    "velocityXMin": -10,
+    "velocityXMax": 10,
+    "velocityYMin": 20,
+    "velocityYMax": 60,
+    "velocityZMin": -10,
+    "velocityZMax": 10,
+    "gravity": -20,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

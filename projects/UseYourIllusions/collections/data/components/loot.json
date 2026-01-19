@@ -1,0 +1,9 @@
+{
+  "title": "loot",
+  "schema": {
+    "type": "currency",
+    "amount": 0,
+    "currency": null,
+    "itemId": null
+  }
+}

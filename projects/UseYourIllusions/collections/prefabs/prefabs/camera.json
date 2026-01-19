@@ -1,0 +1,6 @@
+{
+  "title": "Camera",
+  "description": "Scene camera configuration",
+  "collection": "cameras",
+  "components": ["transform", "camera"]
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Texture Editor",
+  "container": "texture-editor-container",
+  "propertyName": "imagePath",
+  "interface": "TextureEditor",
+  "inputElement": "textarea",
+  "inputDataType": "string",
+  "loadHook": "editTexture",
+  "saveHook": "saveTexture",
+  "libraries": [
+    "TextureEditor"
+  ]
+}

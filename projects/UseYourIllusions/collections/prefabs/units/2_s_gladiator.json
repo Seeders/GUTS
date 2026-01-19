@@ -1,0 +1,149 @@
+{
+  "title": "Gladiator (2) [S]",
+  "size": 25,
+  "height": 50,
+  "value": 95,
+  "hp": 240,
+  "speed": 45,
+  "damage": 18,
+  "attackSpeed": 1.1,
+  "element": "physical",
+  "armor": 6,
+  "fireResistance": 0.05,
+  "coldResistance": 0.05,
+  "lightningResistance": 0.05,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0,
+                "animation": "idle_short"
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0,
+                "animation": "walk_with_shield"
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0,
+                "animation": "sword_slash"
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "death_fallback"
+              }
+            ],
+            "loops": false
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "scale": {
+              "z": 1,
+              "y": 1,
+              "x": 1
+            },
+            "model": "gladiator"
+          }
+        ]
+      }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "knightSword",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 2,
+            "y": 5,
+            "z": 2
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 10
+          }
+        }
+      }
+    ]
+  },
+  "buyable": false,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "abilities": [
+    "ArenaPresenceAbility"
+  ],
+  "requiresUnits": [],
+  "requiresBuildings": [],
+  "spriteAnimationSet": "gladiator2s"
+}

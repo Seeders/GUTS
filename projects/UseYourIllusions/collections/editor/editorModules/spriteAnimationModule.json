@@ -1,0 +1,14 @@
+{
+  "title": "Sprite Animation Editor",
+  "container": "sprite-animation-container",
+  "libraries": [
+    "SpriteAnimationEditor"
+  ],
+  "propertyName": "spriteAnimationSet",
+  "interface": "spriteAnimationEditor",
+  "inputElement": "text",
+  "inputDataType": "string",
+  "loadHook": "renderSpriteAnimation",
+  "saveHook": "saveSpriteAnimation",
+  "unloadHook": "unloadSpriteAnimation"
+}

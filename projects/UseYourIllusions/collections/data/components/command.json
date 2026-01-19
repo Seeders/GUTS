@@ -1,0 +1,17 @@
+{
+  "title": "command",
+  "schema": {
+    "type": 0,
+    "controllerId": null,
+    "targetPosition": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "target": null,
+    "priority": 0,
+    "interruptible": true,
+    "createdTime": 0,
+    "id": null
+  }
+}

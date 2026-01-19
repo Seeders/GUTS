@@ -1,0 +1,32 @@
+{
+  "title": "Meteor Warning",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "meteor",
+    "warning",
+    "ring"
+  ],
+  "particleEffectData": {
+    "count": 24,
+    "lifetime": 2,
+    "scale": 10,
+    "scaleMultiplier": 0.8,
+    "startColor": "#ff4400",
+    "endColor": "#ff0000",
+    "emitterShape": "ring",
+    "emitterRadius": 20,
+    "heightOffset": 5,
+    "velocityXMin": -80,
+    "velocityXMax": 80,
+    "velocityYMin": 5,
+    "velocityYMax": 15,
+    "velocityZMin": -80,
+    "velocityZMax": 80,
+    "gravity": 0,
+    "drag": 0.98,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

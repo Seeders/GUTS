@@ -1,0 +1,6 @@
+{
+  "fileName": "ChainLightningAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/ChainLightningAbility.js",
+  "castParticleEffectSystems": ["lightning_flash"],
+  "chainParticleEffectSystems": ["lightning_sparks", "lightning_arc"]
+}

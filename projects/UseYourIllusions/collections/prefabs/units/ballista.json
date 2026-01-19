@@ -1,0 +1,120 @@
+{
+  "title": "Ballista",
+  "size": 25,
+  "height": 100,
+  "value": 150,
+  "hp": 350,
+  "speed": 12,
+  "damage": 120,
+  "attackSpeed": 0.5,
+  "element": "physical",
+  "armor": 4,
+  "fireResistance": 0.1,
+  "coldResistance": 0.1,
+  "lightningResistance": 0.1,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "ballista_idle"
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "model": "ballista",
+                "id": 0,
+                "animation": "ballista_walk"
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "ballista_attack"
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "ballista_idle"
+              }
+            ],
+            "loops": false
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 2,
+          "y": 2,
+          "z": 2
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "model": "ballista"
+          }
+        ]
+      }
+    }
+  },
+  "buyable": true,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "specUnits": [],
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "icon": "ballista",
+  "spriteAnimationSet": "ballista",
+  "requiresUnits": [],
+  "requiresBuildings": [
+    "keep"
+  ],
+  "projectile": "ballista_bolt",
+  "range": 300
+}

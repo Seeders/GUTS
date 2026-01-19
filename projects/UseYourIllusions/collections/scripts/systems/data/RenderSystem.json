@@ -1,0 +1,16 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/RenderSystem.js",
+  "fileName": "RenderSystem",
+  "services": [
+    "setInstanceClip",
+    "setInstanceSpeed",
+    "isInstanced",
+    "getEntityAnimationState",
+    "setInstanceAnimationTime",
+    "getBatchInfo",
+    "removeInstance",
+    "isBillboardWithAnimations",
+    "getEntityRenderer",
+    "updateInstanceCapacities"
+  ]
+}

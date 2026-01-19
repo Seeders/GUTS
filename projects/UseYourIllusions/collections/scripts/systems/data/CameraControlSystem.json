@@ -1,0 +1,18 @@
+{
+  "filePath": "/projects/UseYourIllusions/collections/scripts/systems/js/CameraControlSystem.js",
+  "fileName": "CameraControlSystem",
+  "services": [
+    "getCamera",
+    "setCamera",
+    "cameraLookAt",
+    "toggleCameraFollow",
+    "getCameraFollowTarget",
+    "rotateCamera",
+    "positionCameraAtStart",
+    "toggleCameraMode",
+    "getCameraMode",
+    "startThirdPersonCamera",
+    "stopThirdPersonCamera",
+    "getThirdPersonTarget"
+  ]
+}

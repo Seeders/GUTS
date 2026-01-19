@@ -1,0 +1,6 @@
+{
+  "title": "Terrain",
+  "description": "Adds terrain/world rendering to a scene",
+  "collection": "levels",
+  "components": ["transform", "terrain"]
+}

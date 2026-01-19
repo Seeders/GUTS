@@ -1,0 +1,11 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/CheatCodeSystem.js",
+  "fileName": "CheatCodeSystem",
+  "services": [
+    "executeCheat",
+    "validateCheat",
+    "listCheats",
+    "cheat",
+    "cheats"
+  ]
+}

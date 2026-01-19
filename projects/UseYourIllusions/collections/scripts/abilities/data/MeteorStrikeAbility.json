@@ -1,0 +1,10 @@
+{
+  "fileName": "MeteorStrikeAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/MeteorStrikeAbility.js",
+  "castParticleEffectSystems": ["fire_burst_core"],
+  "warningParticleEffectSystems": ["meteor_warning"],
+  "trailParticleEffectSystems": ["meteor_trail", "smoke_trail"],
+  "meteorParticleEffectSystems": ["meteor_core", "meteor_flame"],
+  "impactParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary", "rock_debris", "fire_embers"],
+  "targetParticleEffectSystems": ["fire_burst_secondary"]
+}

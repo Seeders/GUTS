@@ -1,0 +1,10 @@
+{
+  "title": "Water",
+  "type": "water",
+  "texture": "water",
+  "color": "#0288d1",
+  "buildable": false,
+  "walkable": false,
+  "spriteWidth": 24,
+  "spriteHeight": 24
+}

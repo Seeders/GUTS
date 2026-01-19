@@ -1,0 +1,8 @@
+{
+  "fileName": "BloodlustAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/BloodlustAbility.js",
+  "castParticleEffectSystems": ["dark_energy"],
+  "buffParticleEffectSystems": ["dark_burst", "dark_sparkles"],
+  "stackParticleEffectSystems": ["dark_sparkles"],
+  "expirationParticleEffectSystems": ["dark_sparkles"]
+}

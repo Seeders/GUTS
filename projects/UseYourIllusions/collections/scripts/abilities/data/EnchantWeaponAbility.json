@@ -1,0 +1,9 @@
+{
+  "fileName": "EnchantWeaponAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/EnchantWeaponAbility.js",
+  "castParticleEffectSystems": ["holy_sparkles"],
+  "enchant_fireParticleEffectSystems": ["fire_burst_core", "fire_embers"],
+  "enchant_coldParticleEffectSystems": ["ice_shard_core", "ice_shard_sparkles"],
+  "enchant_lightningParticleEffectSystems": ["lightning_sparks"],
+  "expirationParticleEffectSystems": ["holy_sparkles"]
+}

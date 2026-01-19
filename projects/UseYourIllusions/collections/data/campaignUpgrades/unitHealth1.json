@@ -1,0 +1,11 @@
+{
+  "id": "unitHealth1",
+  "title": "Fortitude I",
+  "description": "+5% unit health",
+  "category": "military",
+  "cost": { "valor": 75, "glory": 10 },
+  "effect": { "stat": "unitHealth", "value": 5 },
+  "requires": [],
+  "maxLevel": 5,
+  "icon": "heart"
+}

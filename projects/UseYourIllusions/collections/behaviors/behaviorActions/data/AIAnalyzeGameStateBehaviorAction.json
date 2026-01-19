@@ -1,0 +1,10 @@
+{
+  "title": "AI Analyze Game State",
+  "behaviorNodeType": "action",
+  "type": "AIAnalyzeGameStateBehaviorAction",
+  "priority": 10,
+  "description": "Gathers game state information for heuristic AI including own resources, visible enemies",
+  "parameters": "{}",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/AIAnalyzeGameStateBehaviorAction.js",
+  "fileName": "AIAnalyzeGameStateBehaviorAction"
+}

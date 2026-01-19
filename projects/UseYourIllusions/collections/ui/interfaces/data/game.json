@@ -1,0 +1,7 @@
+{
+  "title": "Game Interface",
+  "description": "Interface for gameplay screens including game canvas, victory, defeat, and pause",
+  "modals": [],
+  "fileName": "game",
+  "filePath": "/projects/TurnBasedWarfare/collections/ui/interfaces/html/game.html"
+}

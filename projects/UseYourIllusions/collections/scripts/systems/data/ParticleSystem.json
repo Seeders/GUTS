@@ -1,0 +1,13 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/ParticleSystem.js",
+  "fileName": "ParticleSystem",
+  "services": [
+    "createParticles",
+    "clearAllParticles",
+    "initializeParticleSystem",
+    "createLayeredEffect",
+    "createParticlesWithEmitter",
+    "playEffect",
+    "playEffectSystem"
+  ]
+}

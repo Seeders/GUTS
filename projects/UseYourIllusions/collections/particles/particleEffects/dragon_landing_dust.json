@@ -1,0 +1,31 @@
+{
+  "title": "Dragon Landing Dust",
+  "category": "physical",
+  "tags": [
+    "dragon",
+    "landing",
+    "dust"
+  ],
+  "particleEffectData": {
+    "count": 40,
+    "lifetime": 1.0,
+    "scale": 35,
+    "scaleMultiplier": 2.5,
+    "startColor": "#b09070",
+    "endColor": "#443322",
+    "emitterShape": "ring",
+    "emitterRadius": 50,
+    "heightOffset": 5,
+    "velocityXMin": -120,
+    "velocityXMax": 120,
+    "velocityYMin": 40,
+    "velocityYMax": 100,
+    "velocityZMin": -120,
+    "velocityZMax": 120,
+    "gravity": 120,
+    "drag": 0.90,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

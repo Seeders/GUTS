@@ -1,0 +1,10 @@
+{
+  "name": "Barbarian vs Barbarian",
+  "description": "Two barbarians fighting. Tests melee combat symmetrically.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "forest",
+  "buildOrders": ["barbarian", "barbarian"],
+  "maxRounds": 10,
+  "endOnFirstDeath": false
+}

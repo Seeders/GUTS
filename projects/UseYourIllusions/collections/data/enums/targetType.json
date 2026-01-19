@@ -1,0 +1,9 @@
+{
+  "title": "TargetType",
+  "enum": [
+    "self",
+    "enemy",
+    "ally",
+    "auto"
+  ]
+}

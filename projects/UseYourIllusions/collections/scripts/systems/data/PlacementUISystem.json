@@ -1,0 +1,14 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/PlacementUISystem.js",
+  "fileName": "PlacementUISystem",
+  "services": [
+    "createNetworkUnitData",
+    "getWorldPositionFromMouse",
+    "undoLastPlacement",
+    "getUndoStatus",
+    "handleCanvasClick",
+    "setBattlePaused",
+    "handleReadyForBattleUpdate",
+    "handleUnitSelectionChange"
+  ]
+}

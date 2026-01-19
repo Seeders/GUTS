@@ -1,0 +1,25 @@
+{
+  "title": "Lightning Impact",
+  "category": "lightning",
+  "tags": [
+    "lightning",
+    "electric",
+    "impact"
+  ],
+  "layers": [
+    {
+      "effect": "lightning_flash",
+      "delay": 0
+    },
+    {
+      "effect": "lightning_sparks",
+      "delay": 0
+    },
+    {
+      "effect": "lightning_arc",
+      "delay": 0.05
+    }
+  ],
+  "screenFlashColor": "#ffffaa",
+  "screenFlashDuration": 0.15
+}

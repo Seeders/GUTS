@@ -1,0 +1,6 @@
+{
+  "fileName": "LeapSlamAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/LeapSlamAbility.js",
+  "launchParticleEffectSystems": ["leap_slam_launch"],
+  "impactParticleEffectSystems": ["leap_slam_impact"]
+}

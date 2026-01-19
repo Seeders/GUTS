@@ -1,0 +1,20 @@
+{
+  "currentStrategy": "economy",
+  "strategicPlan": {
+    "targetBuildings": [],
+    "targetUnits": {}
+  },
+  "visibleEnemyUnits": {},
+  "visibleEnemyBuildings": [],
+  "lastAnalyzedRound": 0,
+  "ownArmyPower": 0,
+  "estimatedEnemyPower": 0,
+  "focusUnitId": null,
+  "focusBuildingId": null,
+  "sentryTowersBuilt": 0,
+  "attackWaveSize": 3,
+  "lastAttackRound": 0,
+  "unitsInWave": 0,
+  "isAttacking": false,
+  "waveNumber": 0
+}

@@ -1,0 +1,17 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/PlacementSystem.js",
+  "fileName": "PlacementSystem",
+  "services": [
+    "getPlacementsForSide",
+    "getPlacementById",
+    "placePlacement",
+    "validatePlacement",
+    "spawnSquad",
+    "resetAI",
+    "clearPlayerPlacements",
+    "clearAllPlacements",
+    "getCameraPositionForTeam",
+    "applyNetworkUnitData",
+    "findBuildingSpawnPosition"
+  ]
+}

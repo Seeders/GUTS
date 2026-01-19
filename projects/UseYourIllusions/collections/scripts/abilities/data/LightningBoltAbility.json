@@ -1,0 +1,6 @@
+{
+  "fileName": "LightningBoltAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/LightningBoltAbility.js",
+  "castParticleEffectSystems": ["lightning_flash"],
+  "impactParticleEffectSystems": ["lightning_sparks", "lightning_arc"]
+}

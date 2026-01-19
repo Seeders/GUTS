@@ -1,0 +1,179 @@
+{
+  "title": "Elementalist (2) [I]",
+  "size": 25,
+  "height": 50,
+  "value": 120,
+  "hp": 160,
+  "speed": 50,
+  "damage": 0,
+  "attackSpeed": 0,
+  "range": 160,
+  "armor": 2,
+  "fireResistance": 0.4,
+  "coldResistance": 0,
+  "lightningResistance": 0.2,
+  "abilities": [
+    "ChainLightningAbility"
+  ],
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "model": "archmage",
+                "id": 0,
+                "animation": "idle_short"
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0,
+                "animation": "walk_steady_right_hand"
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0,
+                "animation": "2h_spell_summon"
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "death_fallback"
+              }
+            ],
+            "loops": false
+          }
+        }
+      ],
+      "celebrate": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "dance_gangnamstyle"
+              }
+            ]
+          }
+        },
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "dance_thriller"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "scale": {
+              "z": 1,
+              "y": 1,
+              "x": 1
+            },
+            "model": "archmage"
+          }
+        ]
+      }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "staff_feathers",
+        "attachmentData": {
+          "bone": "LeftHand",
+          "offset": {
+            "x": -10,
+            "y": 15,
+            "z": 0
+          },
+          "rotation": {
+            "x": 180,
+            "y": 0,
+            "z": 180
+          }
+        }
+      }
+    ]
+  },
+  "buyable": false,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "requiresUnits": [],
+  "requiresBuildings": [],
+  "spriteAnimationSet": "elementalist2i"
+}

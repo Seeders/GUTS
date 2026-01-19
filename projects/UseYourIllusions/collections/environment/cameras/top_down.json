@@ -1,0 +1,16 @@
+{
+  "title": "Third Person Perspective",
+  "fov": 60,
+  "near": 0.1,
+  "far": 50000,
+  "position": {
+    "x": 0,
+    "y": 200,
+    "z": 200
+  },
+  "lookAt": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  }
+}

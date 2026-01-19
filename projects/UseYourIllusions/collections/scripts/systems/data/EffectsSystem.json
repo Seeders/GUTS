@@ -1,0 +1,15 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/EffectsSystem.js",
+  "fileName": "EffectsSystem",
+  "services": [
+    "createParticleEffect",
+    "clearAllEffects",
+    "showNotification",
+    "createLineEffect",
+    "createLightningBolt",
+    "createEnergyBeam",
+    "playScreenShake",
+    "playScreenFlash",
+    "initializeEffectsSystem"
+  ]
+}

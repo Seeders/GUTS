@@ -1,0 +1,31 @@
+{
+  "title": "Fire Trail",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "trail",
+    "projectile"
+  ],
+  "particleEffectData": {
+    "count": 3,
+    "lifetime": 0.8,
+    "scale": 12,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ffaa00",
+    "endColor": "#ff2200",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 0,
+    "velocityXMin": -15,
+    "velocityXMax": 15,
+    "velocityYMin": -10,
+    "velocityYMax": 30,
+    "velocityZMin": -15,
+    "velocityZMax": 15,
+    "gravity": -20,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

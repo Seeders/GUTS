@@ -1,0 +1,152 @@
+<!-- Main Menu Screen -->
+<div id="mainMenu" class="screen">
+    <div class="menu-background">
+        <div class="magic-particles"></div>
+    </div>
+    <div class="menu-content">
+        <div class="game-title">USE YOUR ILLUSIONS</div>
+        <div class="subtitle">Master the Art of Deception</div>
+        <div class="main-menu-buttons">
+            <button id="mainMenu_PlayGameBtn" class="btn btn-primary">PLAY</button>
+            <button id="mainMenu_SettingsBtn" class="btn btn-secondary">SETTINGS</button>
+        </div>
+        <div class="menu-footer">
+            <p class="controls-hint">WASD to move • E to collect • 1-2-3 to select • Right-click to place illusion</p>
+        </div>
+    </div>
+</div>
+
+<!-- Level Select Screen -->
+<div id="levelSelect" class="screen">
+    <div class="level-select-wrapper">
+        <div class="level-select-header">
+            <button id="levelSelect_BackBtn" class="btn btn-back">← Back</button>
+            <h1 class="level-select-title">Select Mission</h1>
+            <div class="header-spacer"></div>
+        </div>
+
+        <div class="level-select-content">
+            <div id="levelGrid" class="level-grid">
+                <!-- Level cards populated by PuzzleLobbyUISystem -->
+            </div>
+        </div>
+
+        <div class="level-select-footer">
+            <div class="selected-level-info" id="selectedLevelInfo">
+                <span class="level-info-hint">Select a mission to begin</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Game Screen (in-game UI container) -->
+<div id="gameScreen" class="screen">
+    <!-- Belt UI and other game HUD elements added by systems -->
+
+    <!-- Pause Menu Overlay -->
+    <div id="pauseMenu" class="pause-overlay">
+        <div class="pause-content">
+            <h2>PAUSED</h2>
+            <div class="pause-buttons">
+                <button id="resumeBtn" class="btn btn-primary">Resume</button>
+                <button id="restartLevelBtn" class="btn btn-secondary">Restart Level</button>
+                <button id="returnToMenuBtn" class="btn btn-secondary">Return to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Victory Screen Overlay -->
+    <div id="victoryScreen" class="victory-overlay">
+        <div class="victory-content">
+            <div class="victory-icon">✨</div>
+            <h2>LEVEL COMPLETE!</h2>
+            <p class="victory-message">You've mastered this illusion</p>
+            <div class="victory-buttons">
+                <button id="nextLevelBtn" class="btn btn-primary">Next Level</button>
+                <button id="replayLevelBtn" class="btn btn-secondary">Replay</button>
+                <button id="victoryMenuBtn" class="btn btn-secondary">Return to Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Defeat Screen Overlay -->
+    <div id="defeatScreen" class="defeat-overlay">
+        <div class="defeat-content">
+            <div class="defeat-icon">💀</div>
+            <h2>CAUGHT!</h2>
+            <p class="defeat-message">The guards discovered you</p>
+            <div class="defeat-buttons">
+                <button id="retryLevelBtn" class="btn btn-primary">Try Again</button>
+                <button id="defeatMenuBtn" class="btn btn-secondary">Return to Menu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Screen -->
+<div id="settingsScreen" class="screen">
+    <div class="settings-wrapper">
+        <div class="settings-header">
+            <button id="settings_BackBtn" class="btn btn-back">← Back</button>
+            <h1 class="settings-title">Settings</h1>
+            <div class="header-spacer"></div>
+        </div>
+
+        <div class="settings-content">
+            <div class="settings-section">
+                <h3>Audio</h3>
+                <div class="setting-row">
+                    <label>Master Volume</label>
+                    <input type="range" id="masterVolume" min="0" max="100" value="80">
+                    <span id="masterVolumeValue">80%</span>
+                </div>
+                <div class="setting-row">
+                    <label>Music Volume</label>
+                    <input type="range" id="musicVolume" min="0" max="100" value="70">
+                    <span id="musicVolumeValue">70%</span>
+                </div>
+                <div class="setting-row">
+                    <label>Sound Effects</label>
+                    <input type="range" id="sfxVolume" min="0" max="100" value="80">
+                    <span id="sfxVolumeValue">80%</span>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Display</h3>
+                <div class="setting-row">
+                    <label>Show FPS</label>
+                    <input type="checkbox" id="showFps">
+                </div>
+                <div class="setting-row">
+                    <label>Camera Shake</label>
+                    <input type="checkbox" id="cameraShake" checked>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Controls</h3>
+                <div class="controls-info">
+                    <div class="control-row"><span class="key">W A S D</span><span>Move character</span></div>
+                    <div class="control-row"><span class="key">E</span><span>Collect nearby object</span></div>
+                    <div class="control-row"><span class="key">1 2 3</span><span>Select belt slot</span></div>
+                    <div class="control-row"><span class="key">Right Click</span><span>Place illusion</span></div>
+                    <div class="control-row"><span class="key">ESC</span><span>Pause menu</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Screen -->
+<div id="loadingScreen" class="screen active" style="display:flex;position:absolute;top:0;left:0;width:100%;height:100vh;z-index:9999;background:#0a0a1a;justify-content:center;align-items:center;">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Loading...</div>
+        <div class="loading-progress-container">
+            <div class="loading-progress-bar" id="loadingProgressBar"></div>
+        </div>
+        <div class="loading-progress-text" id="loadingProgressText">0%</div>
+        <div class="loading-tip">Tip: Illusions can distract guards while you slip past</div>
+    </div>
+</div>

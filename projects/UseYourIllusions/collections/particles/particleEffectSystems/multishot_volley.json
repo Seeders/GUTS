@@ -1,0 +1,16 @@
+{
+  "title": "Multishot Volley",
+  "category": "physical",
+  "tags": [
+    "arrow",
+    "volley",
+    "ranged"
+  ],
+  "layers": [
+    {
+      "effect": "arrow_trail",
+      "delay": 0,
+      "countMultiplier": 1.5
+    }
+  ]
+}

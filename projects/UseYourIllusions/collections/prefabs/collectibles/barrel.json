@@ -1,0 +1,12 @@
+{
+  "title": "Barrel",
+  "height": 60,
+  "size": 30,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "impassable": true,
+  "spriteScale": 16,
+  "renderTexture": "chest",
+  "spriteOffset": 8,
+  "collectible": ""
+}

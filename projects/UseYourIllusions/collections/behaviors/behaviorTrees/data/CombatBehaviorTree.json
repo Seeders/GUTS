@@ -1,0 +1,12 @@
+{
+  "title": "Combat Behavior Tree",
+  "description": "Guards combat with hiding check, then runs combat selector: attack if target in range, chase if out of range, investigate attacker, or find new target",
+  "behaviorNodeType": "sequence",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorTrees/js/CombatBehaviorTree.js",
+  "fileName": "CombatBehaviorTree",
+  "behaviorActions": [
+    "IsNotHidingBehaviorAction",
+    "CombatSelectorBehaviorTree"
+  ],
+  "parameters": {}
+}

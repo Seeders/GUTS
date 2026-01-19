@@ -1,0 +1,17 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/PlayerStatsSystem.js",
+  "fileName": "PlayerStatsSystem",
+  "services": [
+    "getPlayerEntityId",
+    "getPlayerStats",
+    "getLocalPlayerStats",
+    "getPlayerStatsByTeam",
+    "getPlayerEntities",
+    "getSerializedPlayerEntities",
+    "getPlayerGold",
+    "addPlayerGold",
+    "deductPlayerGold",
+    "canAffordCost",
+    "createPlayerEntity"
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "units": {
+    "1_s_barbarian": {
+      "strongAgainst": ["1_i_apprentice", "1_is_acolyte"],
+      "weakAgainst": ["1_d_archer", "1_di_scout"],
+      "counterWeight": 1.5,
+      "tags": ["melee", "tank", "physical"]
+    },
+    "1_sd_soldier": {
+      "strongAgainst": ["1_di_scout"],
+      "weakAgainst": ["1_s_barbarian"],
+      "counterWeight": 1.3,
+      "tags": ["melee", "balanced", "physical"]
+    },
+    "1_d_archer": {
+      "strongAgainst": ["1_s_barbarian", "1_i_apprentice"],
+      "weakAgainst": ["1_di_scout", "1_sd_soldier"],
+      "counterWeight": 1.4,
+      "tags": ["ranged", "dps", "physical"]
+    },
+    "1_di_scout": {
+      "strongAgainst": ["1_sd_soldier", "1_is_acolyte"],
+      "weakAgainst": ["1_s_barbarian"],
+      "counterWeight": 1.3,
+      "tags": ["ranged", "evasion", "physical"]
+    },
+    "1_i_apprentice": {
+      "strongAgainst": ["1_s_barbarian", "1_sd_soldier"],
+      "weakAgainst": ["1_d_archer"],
+      "counterWeight": 1.4,
+      "tags": ["ranged", "spell", "fire"]
+    },
+    "1_is_acolyte": {
+      "strongAgainst": ["1_di_scout"],
+      "weakAgainst": ["1_i_apprentice"],
+      "counterWeight": 1.2,
+      "tags": ["ranged", "spell", "holy", "support"]
+    },
+    "ballista": {
+      "strongAgainst": ["1_s_barbarian", "1_sd_soldier"],
+      "weakAgainst": ["1_di_scout", "1_d_archer"],
+      "counterWeight": 1.5,
+      "tags": ["ranged", "siege", "physical"]
+    }
+  },
+  "buildingPriority": {
+    "barracks": {
+      "priority": 1.0,
+      "providesUnits": ["1_s_barbarian", "1_sd_soldier", "ballista"],
+      "strategicRole": "melee"
+    },
+    "fletchersHall": {
+      "priority": 1.0,
+      "providesUnits": ["1_d_archer", "1_di_scout"],
+      "strategicRole": "ranged"
+    },
+    "mageTower": {
+      "priority": 0.9,
+      "providesUnits": ["1_i_apprentice", "1_is_acolyte"],
+      "strategicRole": "magic"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Terrain",
+  "fragmentScript": "uniform sampler2D map;\nuniform vec3 ambientLightColor;\nvarying vec2 vUv;\n#include <common>\n#include <fog_pars_fragment>\n\nvoid main() {\n    vec4 texColor = texture2D(map, vUv);\n    \n    // Apply ambient lighting\n    vec3 litColor = texColor.rgb * ambientLightColor;\n    \n    gl_FragColor = vec4(litColor, texColor.a);\n    #include <colorspace_fragment>\n    #include <fog_fragment>\n}",
+  "vertexScript": "varying vec2 vUv;\n#include <common>\n#include <fog_pars_vertex>\n\nvoid main() {\n    vUv = uv;\n    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);\n    gl_Position = projectionMatrix * mvPosition;\n    #include <fog_vertex>\n}",
+  "uniforms": {
+    "ambientLightColor": {
+      "value": [1, 1, 1]
+    }
+  },
+  "vectors": ["ambientLightColor"]
+}

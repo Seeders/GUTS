@@ -1,0 +1,11 @@
+{
+  "title": "Tree Sprite",
+  "height": 75,
+  "size": 48,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "impassable": true,
+  "spriteScale": 89,
+  "renderTexture": "tree_jungle",
+  "spriteOffset": 32
+}

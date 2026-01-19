@@ -1,0 +1,65 @@
+/* =============================================================================
+   SCENE EDITOR - MODULE-SPECIFIC STYLES
+   ============================================================================= */
+
+/* Scene view */
+.scene-editor__scene-view {
+    flex: 1;
+    min-height: 0; /* Required for flex child to respect container bounds */
+    position: relative;
+    overflow: hidden;
+}
+
+#scene-canvas-container {
+    width: 100%;
+    min-height: calc(100vh);
+    position: relative;
+}
+
+#scene-editor-canvas {
+    cursor: crosshair;
+    outline: none;
+}
+
+/* No selection message */
+.scene-editor__no-selection {
+    text-align: center;
+    padding: var(--editor-spacing-xl);
+    color: var(--editor-text-muted);
+    font-style: italic;
+}
+
+/* Hierarchy item */
+.scene-editor__hierarchy-item {
+    padding: var(--editor-spacing-sm) var(--editor-spacing-md);
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: var(--editor-transition);
+}
+
+.scene-editor__hierarchy-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.scene-editor__hierarchy-item--selected {
+    background-color: var(--editor-primary);
+    border-left-color: var(--editor-primary-hover);
+    color: white;
+}
+
+/* Component styling */
+.scene-editor__component {
+    background-color: var(--editor-bg-light);
+    border-radius: var(--editor-border-radius-sm);
+    margin-bottom: var(--editor-spacing-md);
+    padding: var(--editor-spacing-md);
+}
+
+.scene-editor__component-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--editor-spacing-sm);
+    font-weight: 600;
+    color: var(--editor-text-secondary);
+}

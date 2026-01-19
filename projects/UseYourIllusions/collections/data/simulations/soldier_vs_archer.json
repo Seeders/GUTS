@@ -1,0 +1,10 @@
+{
+  "name": "Soldier vs Archer",
+  "description": "Soldier (strength/dex hybrid melee) vs Archer (pure dex ranged). Hybrid melee vs pure ranged.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "forest",
+  "buildOrders": ["soldier", "archer"],
+  "maxRounds": 10,
+  "endOnFirstDeath": false
+}

@@ -1,0 +1,31 @@
+{
+  "title": "Wind Swirl Top",
+  "category": "wind",
+  "tags": [
+    "wind",
+    "tornado",
+    "swirl"
+  ],
+  "particleEffectData": {
+    "count": 4,
+    "lifetime": 0.6,
+    "scale": 6,
+    "scaleMultiplier": 0.8,
+    "startColor": "#87ceeb",
+    "endColor": "#e0ffff",
+    "emitterShape": "ring",
+    "emitterRadius": 12,
+    "heightOffset": 30,
+    "velocityXMin": -20,
+    "velocityXMax": 20,
+    "velocityYMin": 100,
+    "velocityYMax": 150,
+    "velocityZMin": -20,
+    "velocityZMax": 20,
+    "gravity": -60,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

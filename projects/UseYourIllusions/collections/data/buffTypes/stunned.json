@@ -1,0 +1,11 @@
+{
+  "title": "Stunned",
+  "damageMultiplier": 1,
+  "attackSpeedMultiplier": 0,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 1,
+  "damageReduction": 0,
+  "accuracyReduction": 0,
+  "movementDisabled": 1,
+  "attackDisabled": 1
+}

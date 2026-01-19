@@ -1,0 +1,10 @@
+{
+  "title": "Ballistic Angle",
+  "enum": [
+    "up90",
+    "up45",
+    "level",
+    "down45",
+    "down90"
+  ]
+}

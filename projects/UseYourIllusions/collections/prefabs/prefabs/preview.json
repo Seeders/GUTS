@@ -1,0 +1,11 @@
+{
+  "title": "Preview",
+  "description": "Base prefab for preview entities - minimal components for rendering only",
+  "components": [
+    "transform",
+    "unitType",
+    "animation",
+    "renderable",
+    "preview"
+  ]
+}

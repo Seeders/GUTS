@@ -1,0 +1,8 @@
+{
+  "fileName": "PiercingShotAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/PiercingShotAbility.js",
+  "castParticleEffectSystems": ["ice_shards"],
+  "launchParticleEffectSystems": ["ice_shards", "ice_sparkles"],
+  "trailParticleEffectSystems": ["ice_shards"],
+  "impactParticleEffectSystems": ["ice_shards", "ice_sparkles"]
+}

@@ -1,0 +1,10 @@
+{
+  "title": "Aura Type",
+  "enum": [
+    "passive",
+    "damaging",
+    "healing",
+    "buff",
+    "debuff"
+  ]
+}

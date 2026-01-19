@@ -1,0 +1,34 @@
+{
+  "title": "Fireball Impact",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "fireball",
+    "explosion",
+    "impact"
+  ],
+  "layers": [
+    {
+      "effect": "explosion_flash",
+      "delay": 0
+    },
+    {
+      "effect": "fire_burst_core",
+      "delay": 0
+    },
+    {
+      "effect": "fire_burst_secondary",
+      "delay": 0.05
+    },
+    {
+      "effect": "fire_embers",
+      "delay": 0.1
+    },
+    {
+      "effect": "smoke_rising",
+      "delay": 0.15
+    }
+  ],
+  "screenShakeDuration": 0.15,
+  "screenShakeIntensity": 2
+}

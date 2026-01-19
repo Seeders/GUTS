@@ -1,0 +1,8 @@
+{
+  "fileName": "ArenaPresenceAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/ArenaPresenceAbility.js",
+  "castParticleEffectSystems": ["fire_burst_core"],
+  "auraParticleEffectSystems": ["fire_burst_core", "dark_energy"],
+  "burstParticleEffectSystems": ["fire_ring"],
+  "debuffParticleEffectSystems": ["dark_sparkles"]
+}

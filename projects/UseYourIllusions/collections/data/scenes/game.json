@@ -1,0 +1,41 @@
+{
+  "title": "Game Scene",
+  "description": "Puzzle game scene with player control and illusion mechanics",
+  "interface": "game",
+  "loader": "GameLoader",
+  "systems": [
+    "GridSystem",
+    "TerrainSystem",
+    "PlayerStatsSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "UnitCreationSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "LifetimeSystem",
+    "SchedulingSystem",
+    "PathfindingSystem",
+    "VisionSystem",
+    "IllusionSystem",
+    "ExitSystem",
+    "PuzzleGameSystem"
+  ],
+  "clientSystems": [
+    "RenderSystem",
+    "WorldSystem",
+    "TerrainDetailSystem",
+    "PostProcessingSystem",
+    "AnimationSystem",
+    "EffectsSystem",
+    "InputSystem",
+    "ParticleSystem",
+    "HealthBarSystem",
+    "FogOfWarSystem",
+    "CameraControlSystem",
+    "PlayerControlSystem",
+    "BeltUISystem",
+    "GhostPreviewSystem",
+    "PuzzleLobbyUISystem"
+  ]
+}

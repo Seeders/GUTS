@@ -1,0 +1,8 @@
+{
+  "title": "Side",
+  "enum": [
+    "spectator",
+    "right",
+    "left"
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "title": "Goblin Bomber (2) [DI]",
+  "size": 25,
+  "height": 50,
+  "value": 140,
+  "hp": 150,
+  "speed": 55,
+  "damage": 30,
+  "attackSpeed": 1,
+  "element": "fire",
+  "armor": 1,
+  "fireResistance": 0.75,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "idle_short"
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "walk_steady_right_hand"
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "sword_slash"
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "death_fallback"
+              }
+            ],
+            "loops": false
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 0.5,
+          "y": 0.5,
+          "z": 0.5
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "model": "goblin"
+          }
+        ]
+      }
+    }
+  },
+  "buyable": false,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "abilities": [
+    "MeteorStrikeAbility"
+  ],
+  "range": 100,
+  "projectile": "fireball",
+  "requiresUnits": [],
+  "requiresBuildings": [],
+  "spriteAnimationSet": "goblinbomber2di"
+}

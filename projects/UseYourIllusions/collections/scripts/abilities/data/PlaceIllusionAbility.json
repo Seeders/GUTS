@@ -1,0 +1,6 @@
+{
+  "fileName": "PlaceIllusionAbility",
+  "filePath": "/projects/UseYourIllusions/collections/scripts/abilities/js/PlaceIllusionAbility.js",
+  "castParticleEffectSystems": ["magic_sparkles", "illusion_spawn"],
+  "impactParticleEffectSystems": ["illusion_glow"]
+}

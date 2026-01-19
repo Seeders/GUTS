@@ -1,0 +1,23 @@
+{
+  "title": "combat",
+  "schema": {
+    "damage": 0,
+    "range": 1,
+    "attackSpeed": 1,
+    "projectile": null,
+    "lastAttack": 0,
+    "element": 0,
+    "armor": 0,
+    "fireResistance": 0,
+    "coldResistance": 0,
+    "lightningResistance": 0,
+    "poisonResistance": 0,
+    "visionRange": 300,
+    "stealth": 0,
+    "awareness": 50,
+    "accuracy": 100,
+    "evasion": 0,
+    "criticalChance": 0,
+    "criticalMultiplier": 1.5
+  }
+}

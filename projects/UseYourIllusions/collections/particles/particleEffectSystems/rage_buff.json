@@ -1,0 +1,17 @@
+{
+  "title": "Rage Buff",
+  "category": "buff",
+  "tags": [
+    "rage",
+    "buff",
+    "enrage"
+  ],
+  "layers": [
+    {
+      "effect": "rage_aura",
+      "delay": 0
+    }
+  ],
+  "repeating": true,
+  "repeatInterval": 0.5
+}

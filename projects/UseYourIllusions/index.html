@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turn Based Warfare</title>
+</head>
+<body style="background-color: black;">
+<div id="appContainer" style="display: none;">
+</div>
+<script src="./dist/client/game.js"></script>
+<script>
+    (() => {
+        const engine = new GUTS.Engine("appContainer");
+        async function main() {
+            await window.COMPILED_GAME.ready;
+            await engine.init("TurnBasedWarfare");
+
+            if (window.COMPILED_GAME && !window.COMPILED_GAME.initialized) {
+                window.COMPILED_GAME.init(engine);
+            }
+
+            window.game = engine.gameInstance;
+        }
+        window.onload = main;
+    })();
+</script>
+</body>
+</html>

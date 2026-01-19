@@ -1,0 +1,10 @@
+{
+  "title": "Hazard Type",
+  "enum": [
+    "fire",
+    "poison",
+    "ice",
+    "lightning",
+    "holy"
+  ]
+}

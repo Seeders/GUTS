@@ -1,0 +1,60 @@
+{
+  "title": "Town Hall",
+  "category": "townhall",
+  "value": 100,
+  "upgrades": [
+    "peasantEfficiency"
+  ],
+  "upgradesToBuilding": "keep",
+  "footprintWidth": 3,
+  "footprintHeight": 3,
+  "units": [
+    "peasant"
+  ],
+  "height": 100,
+  "size": 48,
+  "icon": "building_townHall",
+  "hp": 2500,
+  "visionRange": 200,
+  "supplyProvided": 10,
+  "spriteScale": 128,
+  "renderTexture": "townhall",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {},
+            "metalness": 0,
+            "roughness": 1,
+            "name": "foundation",
+            "model": "townhall"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 2,
+          "y": 2,
+          "z": 2
+        }
+      }
+    }
+  },
+  "spriteAnimationSet": "townhall",
+  "requiresUnits": [],
+  "requiresBuildings": []
+}

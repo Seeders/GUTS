@@ -1,0 +1,10 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/PostProcessingSystem.js",
+  "fileName": "PostProcessingSystem",
+  "services": [
+    "registerPostProcessingPass",
+    "removePostProcessingPass",
+    "renderPostProcessing",
+    "getPostProcessingComposer"
+  ]
+}

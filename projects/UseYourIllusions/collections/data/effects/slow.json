@@ -1,0 +1,7 @@
+{
+  "id": "slow",
+  "title": "Slow",
+  "desc": "Target is slowed",
+  "stat": "speed",
+  "lifeTime": 100
+}

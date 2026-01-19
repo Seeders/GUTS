@@ -1,0 +1,5 @@
+{
+  "fileName": "BaseTrapPlacementAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/BaseTrapPlacementAbility.js",
+  "targetParticleEffectSystems": ["trap_placement"]
+}

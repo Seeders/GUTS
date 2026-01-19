@@ -1,0 +1,8 @@
+{
+  "fileName": "MindControlAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/MindControlAbility.js",
+  "castParticleEffectSystems": ["dark_energy", "dark_sparkles"],
+  "targetParticleEffectSystems": ["dark_burst"],
+  "buffParticleEffectSystems": ["holy_sparkles", "dark_sparkles"],
+  "expirationParticleEffectSystems": ["dark_sparkles"]
+}

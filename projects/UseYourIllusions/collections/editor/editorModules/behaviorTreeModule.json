@@ -1,0 +1,43 @@
+{
+  "title": "Behavior Tree Editor",
+  "container": "behavior-tree-editor-container",
+  "interface": "behaviorTreeEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "propertyName": "mockEntities",
+  "loadHook": "editBehaviorTree",
+  "saveHook": "saveBehaviorTree",
+  "unloadHook": "unloadBehaviorTree",
+  "libraries": [
+    "BaseECSGame",
+    "BaseSystem",
+    "BehaviorTreeDebugger",
+    "ComponentGenerator",
+    "GameServices",
+    "MockGameContext",
+    "BehaviorTreeProcessor",
+    "BaseBehaviorNode",
+    "BehaviorTreeEditor"
+  ],
+  "systems": [
+    "BehaviorSystem"
+  ],
+  "classes": [
+    {
+      "collection": "behaviorActions",
+      "baseClass": "BaseBehaviorAction"
+    },
+    {
+      "collection": "behaviorDecorators",
+      "baseClass": "BaseBehaviorDecorator"
+    },
+    {
+      "collection": "behaviorTrees",
+      "baseClass": "BaseBehaviorTree"
+    },
+    {
+      "collection": "sequenceBehaviorTrees",
+      "baseClass": "SequenceBehaviorTree"
+    }
+  ]
+}

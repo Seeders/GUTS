@@ -1,0 +1,7 @@
+{
+  "fileName": "InfernoAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/InfernoAbility.js",
+  "castParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary"],
+  "impactParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary", "fire_ring"],
+  "tickParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary"]
+}

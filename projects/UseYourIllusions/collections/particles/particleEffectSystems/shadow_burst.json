@@ -1,0 +1,25 @@
+{
+  "title": "Shadow Burst",
+  "category": "shadow",
+  "tags": [
+    "shadow",
+    "dark",
+    "damage"
+  ],
+  "layers": [
+    {
+      "effect": "shadow_wisps",
+      "delay": 0
+    },
+    {
+      "effect": "shadow_wisps",
+      "delay": 0.15,
+      "countMultiplier": 0.7
+    },
+    {
+      "effect": "shadow_wisps",
+      "delay": 0.3,
+      "countMultiplier": 0.4
+    }
+  ]
+}

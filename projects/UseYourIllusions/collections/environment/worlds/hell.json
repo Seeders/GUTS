@@ -1,0 +1,22 @@
+{
+  "title": "Hell",
+  "lighting": "doomLighting",
+  "shadow": "hellShadows",
+  "fog": "hellFog",
+  "heightMap": "fiveStep",
+  "camera": "main",
+  "extensionSize": 768,
+  "worldObjects": [
+    "tree",
+    "goldVein",
+    "tree_sprite",
+    "bush_fern_sprite",
+    "bush_sprite",
+    "grass_tuft_small_sprite",
+    "grass_tuft_sprite",
+    "mushroom_sprite",
+    "stone_2_sprite",
+    "stone_sprite"
+  ],
+  "backgroundColor": "#000000"
+}

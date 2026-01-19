@@ -1,0 +1,10 @@
+{
+  "title": "Default Unit Actions",
+  "actions": [
+    "move",
+    "hold",
+    "hide",
+    "levelUp",
+    "specialize"
+  ]
+}

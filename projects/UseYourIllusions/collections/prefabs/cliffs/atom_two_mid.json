@@ -1,0 +1,36 @@
+{
+  "title": "Atom Two Mid",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
+            "metalness": 0,
+            "roughness": 1,
+            "name": "main",
+            "model": "atom_two_mid_grass"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    }
+  }
+}

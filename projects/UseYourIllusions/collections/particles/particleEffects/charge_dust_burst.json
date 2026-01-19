@@ -1,0 +1,31 @@
+{
+  "title": "Charge Dust Burst",
+  "category": "physical",
+  "tags": [
+    "charge",
+    "dust",
+    "ground"
+  ],
+  "particleEffectData": {
+    "count": 25,
+    "lifetime": 0.6,
+    "scale": 20,
+    "scaleMultiplier": 2,
+    "startColor": "#a08060",
+    "endColor": "#665544",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 10,
+    "velocityXMin": -80,
+    "velocityXMax": 80,
+    "velocityYMin": 20,
+    "velocityYMax": 80,
+    "velocityZMin": -80,
+    "velocityZMax": 80,
+    "gravity": 50,
+    "drag": 0.92,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

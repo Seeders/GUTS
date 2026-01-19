@@ -1,0 +1,247 @@
+class TrackingMark extends GUTS.BaseAbility {
+    constructor(game, abilityData = {}) {
+        super(game, {
+            name: 'Tracking Mark',
+            description: 'Mark an enemy for increased damage - multiple Rangers can mark the same target for stacking effect',
+            cooldown: 8.0,
+            range: 200,
+            manaCost: 20,
+            targetType: 'enemy',
+            animation: 'cast',
+            priority: 7,
+            castTime: 1.0,
+            ...abilityData
+        });
+        
+        this.markDamageIncrease = 0.25; // 25% per mark
+        this.maxMarks = 4; // Cap at 4 marks (100% bonus)
+        this.markDuration = 15.0;
+        this.element = this.enums.element.physical;
+    }
+    
+    canExecute(casterEntity) {
+        // Need at least one enemy to mark
+        const enemies = this.getEnemiesInRange(casterEntity);
+        return enemies.length > 0;
+    }
+    
+    execute(casterEntity) {
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
+        if (!casterPos) return null;
+        
+        const enemies = this.getEnemiesInRange(casterEntity);
+        if (enemies.length === 0) return null;
+        
+        // Select target deterministically
+        const target = this.selectMarkTarget(enemies, casterEntity);
+        if (!target) return null;
+        
+        // Show immediate cast effect
+        this.playConfiguredEffects('cast', casterPos);
+        this.logAbilityUsage(casterEntity, `Ranger takes aim at their prey...`);
+        
+        // Schedule the mark application after cast time
+        this.game.schedulingSystem.scheduleAction(() => {
+            this.applyTrackingMark(casterEntity, target);
+        }, this.castTime, casterEntity);
+    }
+    
+    applyTrackingMark(casterEntity, targetId) {
+        const transform1 = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform1?.position;
+        const transform2 = this.game.getComponent(targetId, "transform");
+        const targetPos = transform2?.position;
+
+        // Validate target still exists
+        const targetHealth = this.game.getComponent(targetId, "health");
+        if (!targetHealth || targetHealth.current <= 0 || !targetPos) {
+            this.logAbilityUsage(casterEntity, `Target has vanished from sight!`);
+            return;
+        }
+        
+        // Create marking beam effect if caster still exists
+        if (casterPos) {
+            this.createTrackingBeamEffect(casterPos, targetPos);
+        }
+        
+        // Apply or stack the tracking mark
+        const markResult = this.applyOrStackMark(casterEntity, targetId);
+        
+        // Create appropriate visual effect based on result
+        if (markResult.isNewMark) {
+            this.playConfiguredEffects('debuff', targetPos);
+        } else if (markResult.wasStacked) {
+            this.playConfiguredEffects('stack', targetPos);
+        } else {
+            // Mark refreshed
+            this.playConfiguredEffects('trail', targetPos);
+        }
+        
+        // Enhanced logging
+        this.logMarkResult(casterEntity, targetId, markResult);
+    }
+    
+    applyOrStackMark(casterEntity, targetId) {
+        const currentTime = this.game.state.now || 0;
+        const endTime = currentTime + this.markDuration;
+
+        // Check for existing tracking mark
+        const enums = this.game.getEnums();
+        const buffTypeDef = this.game.call('getBuffTypeDef', enums.buffTypes.marked);
+        const maxStacks = buffTypeDef?.maxStacks || this.maxMarks;
+        const damagePerStack = buffTypeDef?.damagePerStack || this.markDamageIncrease;
+
+        let existingMark = this.game.getComponent(targetId, "buff");
+
+        if (existingMark && existingMark.buffType === enums.buffTypes.marked) {
+            // Stack the mark up to the maximum
+            if (existingMark.stacks < maxStacks) {
+                existingMark.stacks++;
+                existingMark.endTime = endTime; // Refresh duration
+                existingMark.appliedTime = currentTime; // Update applied time
+
+                return {
+                    isNewMark: false,
+                    wasStacked: true,
+                    wasRefreshed: false,
+                    currentStacks: existingMark.stacks,
+                    damageMultiplier: 1 + (damagePerStack * existingMark.stacks)
+                };
+            } else {
+                // Just refresh duration if at max stacks
+                existingMark.endTime = endTime;
+                existingMark.appliedTime = currentTime;
+
+                return {
+                    isNewMark: false,
+                    wasStacked: false,
+                    wasRefreshed: true,
+                    currentStacks: existingMark.stacks,
+                    damageMultiplier: 1 + (damagePerStack * existingMark.stacks)
+                };
+            }
+        } else {
+            // Apply new tracking mark - modifiers from buffTypes/marked.json
+            this.game.addComponent(targetId, "buff", {
+                buffType: enums.buffTypes.marked,
+                endTime: endTime,
+                appliedTime: currentTime,
+                stacks: 1,
+                sourceEntity: casterEntity
+            });
+
+            return {
+                isNewMark: true,
+                wasStacked: false,
+                wasRefreshed: false,
+                currentStacks: 1,
+                damageMultiplier: 1 + damagePerStack
+            };
+        }
+    }
+    
+    createTrackingBeamEffect(casterPos, targetPos) {
+        // Create a visual connection between ranger and target
+        this.playConfiguredEffects('trail', casterPos);
+        this.playConfiguredEffects('trail', targetPos);
+        
+        // Create energy beam if effects system supports it (client only)
+        if (!this.game.isServer && this.game.effectsSystem && this.game.effectsSystem.createEnergyBeam) {
+            this.game.effectsSystem.createEnergyBeam(
+                new THREE.Vector3(casterPos.x, casterPos.y + 15, casterPos.z),
+                new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
+                {
+                    style: { color: 0xFF6347, linewidth: 3 },
+                    animation: { duration: 600, flickerCount: 2 }
+                }
+            );
+        }
+    }
+    
+    logMarkResult(casterEntity, targetId, markResult) {
+       
+        
+    }
+    
+    // FIXED: Deterministic target selection
+    selectMarkTarget(enemies, casterEntity) {
+        if (enemies.length === 0) return null;
+        
+        // Sort enemies deterministically first for consistent processing
+        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
+        
+        // Priority 1: Unmarked enemies (new marks are more valuable)
+        const enums = this.game.getEnums();
+        const unmarkedEnemies = sortedEnemies.filter(enemyId => {
+            const buff = this.game.getComponent(enemyId, "buff");
+            return !buff || buff.buffType !== enums.buffTypes.marked;
+        });
+
+        if (unmarkedEnemies.length > 0) {
+            // Among unmarked enemies, prioritize by distance (closest first)
+            return this.selectClosestEnemy(unmarkedEnemies, casterEntity);
+        }
+
+        // Priority 2: Marked enemies that can be stacked further
+        const stackableEnemies = sortedEnemies.filter(enemyId => {
+            const buff = this.game.getComponent(enemyId, "buff");
+            return buff && buff.buffType === enums.buffTypes.marked && buff.stacks < this.maxMarks;
+        });
+        
+        if (stackableEnemies.length > 0) {
+            // Among stackable enemies, prioritize by current stacks (higher first for focused fire)
+            return this.selectHighestStackedEnemy(stackableEnemies);
+        }
+        
+        // Priority 3: Any marked enemy (for duration refresh)
+        return this.selectClosestEnemy(sortedEnemies, casterEntity);
+    }
+    
+    selectClosestEnemy(enemies, casterEntity) {
+        const transform = this.game.getComponent(casterEntity, "transform");
+        const casterPos = transform?.position;
+        if (!casterPos || enemies.length === 0) return null;
+        
+        let closest = null;
+        let closestDistance = Infinity;
+        
+        enemies.forEach(enemyId => {
+            const transform = this.game.getComponent(enemyId, "transform");
+            const enemyPos = transform?.position;
+            if (!enemyPos) return;
+            
+            const distance = Math.sqrt(
+                Math.pow(enemyPos.x - casterPos.x, 2) + 
+                Math.pow(enemyPos.z - casterPos.z, 2)
+            );
+            
+            // Use <= for consistent tie-breaking (first in sorted order wins)
+            if (distance <= closestDistance) {
+                closestDistance = distance;
+                closest = enemyId;
+            }
+        });
+        
+        return closest;
+    }
+    
+    selectHighestStackedEnemy(enemies) {
+        let highestStacked = null;
+        let highestStacks = 0;
+
+        const enums = this.game.getEnums();
+        enemies.forEach(enemyId => {
+            const buff = this.game.getComponent(enemyId, "buff");
+            if (!buff || buff.buffType !== enums.buffTypes.marked) return;
+            
+            // Use >= for consistent tie-breaking (first in sorted order wins)
+            if (buff.stacks >= highestStacks) {
+                highestStacks = buff.stacks;
+                highestStacked = enemyId;
+            }
+        });
+        
+        return highestStacked;
+    }
+}

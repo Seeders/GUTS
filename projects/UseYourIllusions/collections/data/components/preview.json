@@ -1,0 +1,8 @@
+{
+  "title": "preview",
+  "schema": {
+    "isPreview": 1,
+    "opacity": 0.6,
+    "sourceType": null
+  }
+}

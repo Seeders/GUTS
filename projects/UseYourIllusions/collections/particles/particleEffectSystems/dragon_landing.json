@@ -1,0 +1,27 @@
+{
+  "title": "Dragon Landing",
+  "category": "physical",
+  "tags": [
+    "dragon",
+    "landing",
+    "transform"
+  ],
+  "layers": [
+    {
+      "effect": "dragon_landing_impact",
+      "delay": 0
+    },
+    {
+      "effect": "dragon_landing_shockwave",
+      "delay": 0
+    },
+    {
+      "effect": "dragon_landing_dust",
+      "delay": 0.05
+    },
+    {
+      "effect": "rock_debris",
+      "delay": 0.1
+    }
+  ]
+}

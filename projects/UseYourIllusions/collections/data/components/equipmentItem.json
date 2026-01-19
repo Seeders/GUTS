@@ -1,0 +1,27 @@
+{
+  "title": "equipmentItem",
+  "schema": {
+    "itemType": null,
+    "modelPath": null,
+    "armor": 0,
+    "fireResistance": 0,
+    "coldResistance": 0,
+    "lightningResistance": 0,
+    "poisonResistance": 0,
+    "element": null,
+    "mainHandBone": 0,
+    "mainHandOffsetX": 0,
+    "mainHandOffsetY": 0,
+    "mainHandOffsetZ": 0,
+    "mainHandRotationX": 0,
+    "mainHandRotationY": 0,
+    "mainHandRotationZ": 0,
+    "offHandBone": 1,
+    "offHandOffsetX": 0,
+    "offHandOffsetY": 0,
+    "offHandOffsetZ": 0,
+    "offHandRotationX": 0,
+    "offHandRotationY": 0,
+    "offHandRotationZ": 0
+  }
+}

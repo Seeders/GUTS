@@ -1,0 +1,16 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/DamageSystem.js",
+  "fileName": "DamageSystem",
+  "services": [
+    "applyDamage",
+    "applySplashDamage",
+    "scheduleDamage",
+    "curePoison",
+    "getPoisonStacks",
+    "clearAllDamageEffects",
+    "clearAllStatusEffects",
+    "getAttackerModifiers",
+    "getBuffTypeDef",
+    "buildDamageTags"
+  ]
+}

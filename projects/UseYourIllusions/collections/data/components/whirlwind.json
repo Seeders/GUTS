@@ -1,0 +1,12 @@
+{
+  "title": "whirlwind",
+  "schema": {
+    "damage": 30,
+    "radius": 80,
+    "endTime": 0,
+    "hitInterval": 0.3,
+    "lastHitTime": 0,
+    "totalHits": 0,
+    "isActive": true
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/SaveSystem.js",
+  "fileName": "SaveSystem",
+  "services": [
+    "saveGame",
+    "getSaveData",
+    "loadSaveData",
+    "listSavedGames",
+    "deleteSavedGame",
+    "exportSaveFile",
+    "importSaveFile"
+  ]
+}

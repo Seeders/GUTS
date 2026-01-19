@@ -47,12 +47,12 @@ class GameCameraController {
         // Reference to the original orthographic camera
         this.orthographicCamera = null;
 
-        // Third-person camera state
+        // Top-down camera state
         this.thirdPersonTarget = null; // { getPosition: () => {x, y, z}, getRotation: () => y }
-        this.thirdPersonDistance = 75;
-        this.thirdPersonHeight = 60;
-        this.thirdPersonPitch = 0.35; // Slight downward angle
-        this.thirdPersonSmoothSpeed = 4; // Higher = faster/snappier, lower = smoother
+        this.thirdPersonDistance = 150; // Starting height above character
+        this.thirdPersonMinDistance = 50; // Minimum height (zoomed in)
+        this.thirdPersonMaxDistance = 500; // Maximum height (zoomed out)
+        this.thirdPersonSmoothSpeed = 8; // Higher = faster/snappier, lower = smoother
         this.thirdPersonCurrentPos = new THREE.Vector3();
         this.thirdPersonInitialized = false;
 
@@ -568,11 +568,14 @@ class GameCameraController {
         // Reset initialization flag so camera snaps to initial position
         this.thirdPersonInitialized = false;
 
+        // Reset distance to default starting value (height for top-down)
+        this.thirdPersonDistance = 150;
+
         // Initial setup - actual positioning happens in _updateThirdPersonCamera
         camera.updateProjectionMatrix();
         camera.updateMatrixWorld(true);
 
-        console.log('[GameCameraController] Third-person camera setup complete');
+        console.log('[GameCameraController] Top-down camera setup complete, height:', this.thirdPersonDistance);
     }
 
     _updateThirdPersonCamera(deltaTime) {
@@ -583,27 +586,21 @@ class GameCameraController {
         const targetPos = this.thirdPersonTarget.getPosition();
         if (!targetPos) {
             // Target lost, switch back to game mode
+            console.warn('[TopDownCamera] Target position is null, switching to game mode');
             this.setCameraMode('game');
             return;
         }
 
-        // Get target rotation (facing direction)
-        const targetRotation = this.thirdPersonTarget.getRotation?.() || 0;
-
-        // Calculate desired camera position BEHIND the unit
-        // Unit's forward direction is (cos(rotation), sin(rotation)) in XZ plane
-        // To position camera behind, we subtract the forward vector
-        const forwardX = Math.cos(targetRotation);
-        const forwardZ = Math.sin(targetRotation);
-
-        const desiredX = targetPos.x - forwardX * this.thirdPersonDistance;
-        const desiredY = targetPos.y + this.thirdPersonHeight;
-        const desiredZ = targetPos.z - forwardZ * this.thirdPersonDistance;
+        // Simple top-down camera: position directly above the character
+        const desiredX = targetPos.x;
+        const desiredY = targetPos.y + this.thirdPersonDistance; // Height above character
+        const desiredZ = targetPos.z;
 
         // On first frame, snap to position; otherwise smooth
         if (!this.thirdPersonInitialized) {
             this.thirdPersonCurrentPos.set(desiredX, desiredY, desiredZ);
             this.thirdPersonInitialized = true;
+            console.log('[TopDownCamera] Initialized at:', desiredX, desiredY, desiredZ, 'target:', targetPos.x, targetPos.y, targetPos.z);
         } else {
             // Smooth interpolation (lerp)
             const t = 1 - Math.exp(-this.thirdPersonSmoothSpeed * deltaTime);
@@ -614,8 +611,10 @@ class GameCameraController {
 
         camera.position.copy(this.thirdPersonCurrentPos);
 
-        // Look at the unit (slightly above ground level for head height)
-        this._lookAtTarget.set(targetPos.x, targetPos.y + 30, targetPos.z);
+        // Look straight down at the character
+        // Set camera up vector to -Z so it doesn't flip when looking straight down
+        camera.up.set(0, 0, -1);
+        this._lookAtTarget.set(targetPos.x, targetPos.y, targetPos.z);
         camera.lookAt(this._lookAtTarget);
         camera.updateMatrixWorld(true);
     }
@@ -675,6 +674,13 @@ class GameCameraController {
             }
             camera.zoom = Math.max(0.1, Math.min(5, camera.zoom));
             camera.updateProjectionMatrix();
+        } else if (this.cameraMode === 'thirdPerson') {
+            // Top-down camera: adjust height above character
+            const zoomAmount = e.deltaY > 0 ? 50 : -50;
+            this.thirdPersonDistance = Math.max(
+                this.thirdPersonMinDistance,
+                Math.min(this.thirdPersonMaxDistance, this.thirdPersonDistance + zoomAmount)
+            );
         } else {
             // Free camera: move forward/backward
             const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);

@@ -1,0 +1,23 @@
+{
+  "title": "Player",
+  "description": "Base prefab for player-controlled entities",
+  "components": [
+    "transform",
+    "velocity",
+    "team",
+    "unitType",
+    "health",
+    "combat",
+    "collision",
+    "pathfinding",
+    "combatState",
+    "animation",
+    "equipment",
+    "experience",
+    "deathState",
+    "renderable",
+    "unit",
+    "playerController",
+    "magicBelt"
+  ]
+}

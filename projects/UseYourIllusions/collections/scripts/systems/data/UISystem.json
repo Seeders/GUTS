@@ -1,0 +1,7 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/UISystem.js",
+  "fileName": "UISystem",
+  "services": [
+    "showNotification"
+  ]
+}

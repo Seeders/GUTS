@@ -1,0 +1,11 @@
+{
+  "name": "Heuristic AI Battle",
+  "description": "Two heuristic AIs face off for 50 rounds. Each AI adapts strategy based on visible enemy composition.",
+  "seed": null,
+  "startingGold": 100,
+  "level": "forest",
+  "buildOrders": ["basic", "basic"],
+  "aiModes": ["heuristic", "heuristic"],
+  "endOnFirstDeath": false,
+  "maxRounds": 50
+}

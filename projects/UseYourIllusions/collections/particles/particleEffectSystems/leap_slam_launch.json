@@ -1,0 +1,15 @@
+{
+  "title": "Leap Slam Launch",
+  "category": "physical",
+  "tags": [
+    "leap",
+    "launch",
+    "dust"
+  ],
+  "layers": [
+    {
+      "effect": "dust_launch",
+      "delay": 0
+    }
+  ]
+}

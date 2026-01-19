@@ -1,0 +1,22 @@
+{
+  "title": "Unit",
+  "description": "Base prefab for unit entities",
+  "components": [
+    "transform",
+    "velocity",
+    "team",
+    "unitType",
+    "health",
+    "combat",
+    "collision",
+    "aiState",
+    "pathfinding",
+    "combatState",
+    "animation",
+    "equipment",
+    "experience",
+    "deathState",
+    "renderable",
+    "unit"
+  ]
+}

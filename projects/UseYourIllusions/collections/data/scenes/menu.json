@@ -1,0 +1,11 @@
+{
+  "title": "Menu Scene",
+  "description": "Main menu and level selection for Use Your Illusions",
+  "interface": "main",
+  "systems": [
+    "GameSystem",
+    "ScreenSystem",
+    "InputSystem",
+    "PuzzleLobbyUISystem"
+  ]
+}

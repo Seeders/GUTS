@@ -1,0 +1,14 @@
+{
+  "title": "AI Heuristic Behavior Tree",
+  "description": "Behavior tree for heuristic-based AI. Analyzes game state, plans strategy, and executes decisions based on visible information.",
+  "behaviorNodeType": "sequence",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorTrees/js/AIHeuristicBehaviorTree.js",
+  "fileName": "AIHeuristicBehaviorTree",
+  "behaviorActions": [
+    "AIAnalyzeGameStateBehaviorAction",
+    "AIPlanStrategyBehaviorAction",
+    "AIExecuteHeuristicBehaviorAction",
+    "AIReadyForBattleBehaviorAction"
+  ],
+  "parameters": {}
+}

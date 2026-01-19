@@ -1,0 +1,9 @@
+{
+  "title": "Force Success",
+  "description": "Always returns success regardless of child result",
+  "behaviorNodeType": "decorator",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorDecorators/js/ForceSuccessDecorator.js",
+  "fileName": "ForceSuccessDecorator",
+  "childAction": null,
+  "parameters": {}
+}

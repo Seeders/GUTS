@@ -1,0 +1,5 @@
+{
+  "title": "AI Opponent",
+  "description": "Virtual AI player entity that executes build orders during placement phase",
+  "components": ["team", "aiState", "aiOpponent"]
+}

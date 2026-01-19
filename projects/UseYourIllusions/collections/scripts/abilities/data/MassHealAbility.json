@@ -1,0 +1,7 @@
+{
+  "fileName": "MassHealAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/MassHealAbility.js",
+  "castParticleEffectSystems": ["holy_light", "holy_sparkles"],
+  "burstParticleEffectSystems": ["heal_burst", "holy_ring"],
+  "impactParticleEffectSystems": ["heal_glow", "heal_sparkles"]
+}

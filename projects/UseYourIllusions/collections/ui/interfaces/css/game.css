@@ -1,0 +1,120 @@
+/* Game Interface Styles */
+/* Most styles are inherited from main.css which loads as the base stylesheet */
+/* This file contains game-specific overrides if needed */
+
+/* Ensure game screen starts as active when this interface loads */
+#gameScreen.screen {
+    display: flex;
+}
+
+/* ===================== IN-GAME CHAT (WC3/Dota Style) ===================== */
+.game-chat {
+    position: absolute;
+    left: 15px;
+    bottom: 280px; /* Above the minimap area */
+    width: 400px;
+    max-width: 35vw;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.game-chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 200px;
+    overflow: hidden;
+    padding: 5px 0;
+}
+
+.game-chat-message {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 13px;
+    line-height: 1.3;
+    animation: chatFadeIn 0.2s ease-out;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+
+.game-chat-message.fading {
+    opacity: 0;
+}
+
+.game-chat-message .chat-time {
+    color: #888;
+    font-size: 11px;
+    margin-right: 6px;
+}
+
+.game-chat-message .chat-sender {
+    color: #d4af37;
+    font-weight: bold;
+    margin-right: 6px;
+}
+
+.game-chat-message .chat-sender.ally {
+    color: #4fc3f7;
+}
+
+.game-chat-message .chat-sender.enemy {
+    color: #ef5350;
+}
+
+.game-chat-message .chat-text {
+    color: #e0e0e0;
+}
+
+.game-chat-message.system {
+    background: rgba(212, 175, 55, 0.15);
+    border-left: 2px solid #d4af37;
+}
+
+.game-chat-message.system .chat-system-text {
+    color: #d4af37;
+    font-style: italic;
+}
+
+@keyframes chatFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Chat Input */
+.game-chat-input-container {
+    pointer-events: all;
+    margin-top: 5px;
+    transition: opacity 0.15s ease;
+}
+
+.game-chat-input-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.game-chat-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: #e0e0e0;
+    font-size: 13px;
+    outline: none;
+}
+
+.game-chat-input:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.game-chat-input::placeholder {
+    color: #666;
+}

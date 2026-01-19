@@ -1,0 +1,11 @@
+{
+  "title": "Rage",
+  "damageModifiers": [
+    { "type": "more", "tags": [], "value": 0.5 }
+  ],
+  "attackSpeedMultiplier": 1.3,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 1.2,
+  "damageReduction": 0,
+  "accuracyReduction": 0
+}

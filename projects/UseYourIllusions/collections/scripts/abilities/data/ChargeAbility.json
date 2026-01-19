@@ -1,0 +1,8 @@
+{
+  "fileName": "ChargeAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/ChargeAbility.js",
+  "castParticleEffectSystems": ["dust_burst"],
+  "trailParticleEffectSystems": ["dust_trail"],
+  "impactParticleEffectSystems": ["rock_debris", "dust_burst"],
+  "expirationParticleEffectSystems": ["holy_sparkles"]
+}

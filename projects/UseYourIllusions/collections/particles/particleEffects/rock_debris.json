@@ -1,0 +1,31 @@
+{
+  "title": "Rock Debris",
+  "category": "physical",
+  "tags": [
+    "rock",
+    "debris",
+    "ground"
+  ],
+  "particleEffectData": {
+    "count": 15,
+    "lifetime": 0.6,
+    "scale": 8,
+    "scaleMultiplier": 0.6,
+    "startColor": "#888888",
+    "endColor": "#444444",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 10,
+    "velocityXMin": -80,
+    "velocityXMax": 80,
+    "velocityYMin": 100,
+    "velocityYMax": 200,
+    "velocityZMin": -80,
+    "velocityZMax": 80,
+    "gravity": 400,
+    "drag": 0.98,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

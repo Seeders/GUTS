@@ -1,0 +1,32 @@
+{
+  "title": "Ice Shatter",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "shatter",
+    "impact",
+    "burst"
+  ],
+  "particleEffectData": {
+    "count": 12,
+    "lifetime": 0.6,
+    "scale": 12,
+    "scaleMultiplier": 0.8,
+    "startColor": "#ffffff",
+    "endColor": "#4488ff",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 10,
+    "velocityXMin": -60,
+    "velocityXMax": 60,
+    "velocityYMin": 20,
+    "velocityYMax": 80,
+    "velocityZMin": -60,
+    "velocityZMax": 60,
+    "gravity": 150,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

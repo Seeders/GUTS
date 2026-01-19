@@ -1,0 +1,539 @@
+/* =============================================================================
+   TERRAIN EDITOR - MODULE-SPECIFIC STYLES
+   ============================================================================= */
+
+/* Canvas specific styling */
+#grid {
+    display: block;
+    image-rendering: pixelated;
+}
+
+/* Save button styling */
+.terrain-editor__save-btn {
+    width: 100%;
+    font-weight: 600;
+}
+
+/* Terrain list */
+.terrain-editor__terrain-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--editor-spacing-md);
+}
+
+.terrain-editor__terrain-item {
+    display: flex;
+    align-items: center;
+    gap: var(--editor-spacing-md);
+    padding: var(--editor-spacing-md);
+    border-radius: var(--editor-border-radius-sm);
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--editor-border-color);
+    cursor: move;
+    user-select: none;
+    transition: var(--editor-transition);
+}
+
+.terrain-editor__terrain-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+.terrain-editor__color-option {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: var(--editor-border-radius-sm);
+    cursor: pointer;
+    border: 2px solid transparent;
+    flex-shrink: 0;
+    transition: var(--editor-transition);
+}
+
+.terrain-editor__color-option--active {
+    border-color: var(--editor-primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+.terrain-editor__terrain-label {
+    flex-grow: 1;
+    font-weight: 500;
+}
+
+.terrain-editor__terrain-buttons {
+    display: flex;
+    gap: var(--editor-spacing-sm);
+}
+
+/* Object controls */
+.terrain-editor__object-controls {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--editor-spacing-sm);
+    margin-bottom: var(--editor-spacing-md);
+}
+
+.terrain-editor__object-controls button {
+    flex: 1;
+}
+
+/* Environment objects container */
+.terrain-editor__environment-objects {
+    display: flex;
+    flex-direction: column;
+    gap: var(--editor-spacing-md);
+}
+
+.terrain-editor__environment-type {
+    background-color: var(--editor-bg-light);
+    border-radius: var(--editor-border-radius-sm);
+    overflow: hidden;
+    box-shadow: var(--editor-shadow-sm);
+    transition: var(--editor-transition);
+}
+
+.terrain-editor__environment-type:hover {
+    box-shadow: var(--editor-shadow-md);
+}
+
+.terrain-editor__environment-type-header {
+    padding: var(--editor-spacing-md);
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--editor-bg-medium);
+    color: var(--editor-text-secondary);
+    text-transform: capitalize;
+}
+
+.terrain-editor__environment-type-header::after {
+    content: '▼';
+    font-size: 10px;
+    transition: transform 0.2s ease;
+}
+
+.terrain-editor__environment-type-header.open::after {
+    transform: rotate(180deg);
+}
+
+.terrain-editor__environment-items {
+    padding: var(--editor-spacing-md);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--editor-spacing-xs);
+}
+
+.terrain-editor__environment-item {
+    width: 128px;
+    height: 128px;
+    border: 2px solid var(--editor-border-color);
+    border-radius: var(--editor-border-radius-sm);
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--editor-bg-light);
+    transition: var(--editor-transition);
+    position: relative;
+}
+
+.terrain-editor__environment-item:hover {
+    border-color: var(--editor-border-color-hover);
+    transform: translateY(-2px);
+}
+
+.terrain-editor__environment-item--active {
+    border-color: var(--editor-primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+.terrain-editor__environment-item canvas {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Tooltip for environment items */
+.terrain-editor__environment-item::before {
+    content: attr(data-name);
+    position: absolute;
+    bottom: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--editor-bg-dark);
+    color: var(--editor-text-primary);
+    text-align: center;
+    border-radius: var(--editor-border-radius-sm);
+    padding: var(--editor-spacing-xs) var(--editor-spacing-sm);
+    font-size: 12px;
+    white-space: nowrap;
+    visibility: hidden;
+    opacity: 0;
+    transition: var(--editor-transition);
+    z-index: 10;
+    pointer-events: none;
+    box-shadow: var(--editor-shadow-md);
+}
+
+.terrain-editor__environment-item:hover::before {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Object preview canvas (dragging) */
+#object-preview-canvas {
+    transition: transform 0.05s ease-out;
+    will-change: transform;
+    image-rendering: pixelated;
+    position: absolute;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.7;
+}
+
+/* Delete mode indicator */
+.terrain-editor--delete-mode .editor-module__canvas-area {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M10 11v6M14 11v6"/></svg>'), auto;
+}
+
+/* Height level selector */
+.terrain-editor__height-levels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--editor-spacing-sm);
+    margin-top: var(--editor-spacing-md);
+}
+
+.terrain-editor__height-btn {
+    padding: var(--editor-spacing-sm) var(--editor-spacing-md);
+    background-color: var(--editor-bg-medium);
+    border: 1px solid var(--editor-border-color);
+    border-radius: var(--editor-border-radius-sm);
+    color: var(--editor-text-secondary);
+    cursor: pointer;
+    transition: var(--editor-transition);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.terrain-editor__height-btn:hover {
+    background-color: var(--editor-bg-light);
+    border-color: var(--editor-border-color-hover);
+    transform: translateY(-1px);
+}
+
+.terrain-editor__height-btn.active {
+    background-color: var(--editor-primary);
+    border-color: var(--editor-primary);
+    color: white;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+/* Tool buttons */
+.terrain-editor__tool-buttons {
+    display: flex;
+    gap: var(--editor-spacing-sm);
+    margin-top: var(--editor-spacing-xs);
+}
+
+.terrain-editor__tool-buttons button {
+    flex: 1;
+}
+
+/* Slider styling */
+.editor-module__slider {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--editor-bg-medium);
+    outline: none;
+    -webkit-appearance: none;
+    margin: 0 var(--editor-spacing-sm);
+}
+
+.editor-module__slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--editor-primary);
+    cursor: pointer;
+    transition: var(--editor-transition);
+}
+
+.editor-module__slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--editor-primary);
+    cursor: pointer;
+    border: none;
+    transition: var(--editor-transition);
+}
+
+.editor-module__slider::-webkit-slider-thumb:hover {
+    background: var(--editor-primary-hover);
+    transform: scale(1.2);
+}
+
+.editor-module__slider::-moz-range-thumb:hover {
+    background: var(--editor-primary-hover);
+    transform: scale(1.2);
+}
+
+.editor-module__value-display {
+    min-width: 20px;
+    text-align: center;
+    font-weight: 500;
+    color: var(--editor-text-primary);
+}
+
+/* =============================================================================
+   TERRAIN EDITOR - COMPACT UI STYLES
+   ============================================================================= */
+
+/* === HEADER === */
+.te-header {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--editor-border-color);
+}
+
+.te-header__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.te-header__row:last-child {
+    margin-bottom: 0;
+}
+
+.te-header__label {
+    font-size: 12px;
+    color: var(--editor-text-secondary);
+    min-width: 70px;
+    flex-shrink: 0;
+}
+
+.te-header__select {
+    flex: 1;
+    min-width: 0;
+    padding: 4px 8px;
+    background-color: var(--editor-bg-dark);
+    border: 1px solid var(--editor-border-color);
+    border-radius: var(--editor-border-radius-sm);
+    color: var(--editor-text-primary);
+    font-size: 12px;
+}
+
+/* === PANELS === */
+.te-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.te-panel__section {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--editor-border-color);
+}
+
+.te-panel__section:last-child {
+    border-bottom: none;
+}
+
+.te-panel__section--fixed {
+    flex-shrink: 0;
+}
+
+.te-panel__section--flex {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.te-panel__title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--editor-text-muted);
+    margin: 0 0 8px 0;
+}
+
+.te-panel__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.te-panel__row:last-child {
+    margin-bottom: 0;
+}
+
+/* === ENTITY LIST === */
+.te-list--compact {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.te-list--compact .editor-module__item {
+    padding: 4px 8px;
+    font-size: 11px;
+    border-radius: 2px;
+}
+
+/* === ENTITY FOLDER (GROUPED HIERARCHY) === */
+.te-entity-folder {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--editor-border-color);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s;
+}
+
+.te-entity-folder:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.te-entity-folder__toggle {
+    font-size: 8px;
+    color: var(--editor-text-muted);
+    width: 10px;
+}
+
+.te-entity-folder__name {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--editor-text-primary);
+}
+
+.te-entity-folder__collection {
+    font-size: 10px;
+    color: var(--editor-text-muted);
+}
+
+.te-entity-folder__count {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--editor-primary);
+    background-color: rgba(99, 102, 241, 0.15);
+    padding: 1px 6px;
+    border-radius: 8px;
+}
+
+.te-entity-folder__contents {
+    padding-left: 16px;
+    border-left: 1px solid var(--editor-border-color);
+    margin-left: 4px;
+}
+
+.te-entity-item {
+    padding: 3px 8px !important;
+    font-size: 10px !important;
+}
+
+.te-entity-item__pos {
+    color: var(--editor-text-muted);
+    font-family: monospace;
+}
+
+/* === SPAWN GRID === */
+.te-grid--spawn {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding: 4px 0;
+}
+
+.te-grid--spawn .editor-module__grid-item {
+    aspect-ratio: 1;
+}
+
+/* === UTILITIES === */
+.te-select {
+    width: 100%;
+    padding: 4px 8px;
+    font-size: 12px;
+    background-color: var(--editor-bg-dark);
+    border: 1px solid var(--editor-border-color);
+    border-radius: var(--editor-border-radius-sm);
+    color: var(--editor-text-primary);
+}
+
+.te-badge {
+    font-size: 10px;
+    font-weight: normal;
+    color: var(--editor-text-muted);
+    margin-left: 4px;
+}
+
+.te-hint {
+    font-size: 11px;
+    color: var(--editor-text-muted);
+    margin: 0 0 8px 0;
+}
+
+.te-input--small {
+    width: 60px;
+    padding: 4px 8px;
+    background-color: var(--editor-bg-dark);
+    border: 1px solid var(--editor-border-color);
+    border-radius: var(--editor-border-radius-sm);
+    color: var(--editor-text-primary);
+    font-size: 12px;
+}
+
+/* === COMPACT TERRAIN LIST === */
+.te-terrain-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.te-terrain-list .terrain-editor__terrain-item {
+    padding: 6px 8px;
+    gap: 8px;
+}
+
+.te-terrain-list .terrain-editor__color-option {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+}
+
+.te-terrain-list .terrain-editor__terrain-label {
+    font-size: 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .terrain-editor__environment-items {
+        justify-content: center;
+    }
+
+    .terrain-editor__environment-item {
+        width: 80px;
+        height: 80px;
+    }
+
+    .terrain-editor__height-levels {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

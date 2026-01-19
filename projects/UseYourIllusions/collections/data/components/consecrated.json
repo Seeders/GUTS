@@ -1,0 +1,12 @@
+{
+  "title": "consecrated",
+  "schema": {
+    "consecrationLevel": 1,
+    "healPerTick": 5,
+    "damageToUndead": 10,
+    "tickInterval": 2,
+    "caster": null,
+    "lastTickTime": 0,
+    "isConsecrated": true
+  }
+}

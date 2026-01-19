@@ -1,0 +1,14 @@
+{
+  "title": "buff",
+  "enum": [
+    "buffTypes"
+  ],
+  "schema": {
+    "buffType": 0,
+    "endTime": 0,
+    "appliedTime": 0,
+    "stacks": 1,
+    "sourceEntity": null,
+    "weaponElement": null
+  }
+}

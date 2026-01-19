@@ -1,0 +1,36 @@
+{
+  "title": "Fire Explosion",
+  "category": "explosion",
+  "tags": [
+    "fire",
+    "explosion",
+    "damage"
+  ],
+  "layers": [
+    {
+      "effect": "explosion_flash",
+      "delay": 0
+    },
+    {
+      "effect": "fire_burst_core",
+      "delay": 0
+    },
+    {
+      "effect": "fire_burst_secondary",
+      "delay": 0.05
+    },
+    {
+      "effect": "fire_embers",
+      "delay": 0.1
+    },
+    {
+      "effect": "smoke_rising",
+      "delay": 0.15,
+      "positionOffsetX": 0,
+      "positionOffsetY": 10,
+      "positionOffsetZ": 0
+    }
+  ],
+  "screenShakeDuration": 0.2,
+  "screenShakeIntensity": 3
+}

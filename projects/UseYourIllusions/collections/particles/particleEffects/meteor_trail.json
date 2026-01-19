@@ -1,0 +1,31 @@
+{
+  "title": "Meteor Trail",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "meteor",
+    "trail"
+  ],
+  "particleEffectData": {
+    "count": 8,
+    "lifetime": 0.6,
+    "scale": 20,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ffaa00",
+    "endColor": "#ff2200",
+    "emitterShape": "sphere",
+    "emitterRadius": 10,
+    "heightOffset": 0,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": -20,
+    "velocityYMax": 40,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": -30,
+    "drag": 0.92,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

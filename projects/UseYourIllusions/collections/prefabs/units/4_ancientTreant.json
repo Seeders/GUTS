@@ -1,0 +1,106 @@
+{
+  "title": "Ancient Treant",
+  "size": 25,
+  "height": 100,
+  "value": 480,
+  "hp": 720,
+  "speed": 15,
+  "damage": 40,
+  "attackSpeed": 0.7,
+  "element": "physical",
+  "armor": 12,
+  "fireResistance": -0.2,
+  "coldResistance": 0.3,
+  "lightningResistance": 0.1,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "idle_short"
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "mutant_walk"
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "mutant_swipe"
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "death_fallback"
+              }
+            ],
+            "loops": false
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 2,
+          "y": 2,
+          "z": 2
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "model": "treant"
+          }
+        ]
+      }
+    }
+  },
+  "buyable": false,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "requiresUnits": [],
+  "requiresBuildings": [],
+  "spriteAnimationSet": "ancienttreant"
+}

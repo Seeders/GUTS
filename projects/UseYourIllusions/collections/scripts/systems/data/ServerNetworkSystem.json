@@ -1,0 +1,19 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/ServerNetworkSystem.js",
+  "fileName": "ServerNetworkSystem",
+  "services": [
+    "sendToPlayer",
+    "broadcastToRoom",
+    "handleSubmitPlacement",
+    "handleSetSquadTarget",
+    "handleSetSquadTargets",
+    "handleCancelBuilding",
+    "handleUpgradeBuilding",
+    "handlePurchaseUpgrade",
+    "handleReadyForBattle",
+    "handleGetStartingState",
+    "handleLevelSquad",
+    "handleExecuteCheat",
+    "handleTransformUnit"
+  ]
+}

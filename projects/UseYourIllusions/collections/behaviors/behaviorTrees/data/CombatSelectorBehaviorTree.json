@@ -1,0 +1,14 @@
+{
+  "title": "Combat Selector",
+  "description": "Selector for combat actions: attack if target in range, chase if out of range, investigate attacker, or find new target",
+  "behaviorNodeType": "selector",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorTrees/js/CombatSelectorBehaviorTree.js",
+  "fileName": "CombatSelectorBehaviorTree",
+  "behaviorActions": [
+    "AttackSequence",
+    "ChaseSequence",
+    "InvestigateSequence",
+    "FindNearestEnemyBehaviorAction"
+  ],
+  "parameters": {}
+}

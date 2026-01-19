@@ -1,0 +1,23 @@
+{
+  "title": "Consecration",
+  "category": "holy",
+  "tags": [
+    "holy",
+    "ground",
+    "area",
+    "damage"
+  ],
+  "layers": [
+    {
+      "effect": "holy_ring",
+      "delay": 0
+    },
+    {
+      "effect": "holy_sparkles",
+      "delay": 0.2,
+      "countMultiplier": 0.6
+    }
+  ],
+  "repeating": true,
+  "repeatInterval": 0.6
+}

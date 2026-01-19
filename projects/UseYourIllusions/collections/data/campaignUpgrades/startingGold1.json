@@ -1,0 +1,11 @@
+{
+  "id": "startingGold1",
+  "title": "War Chest I",
+  "description": "+10 starting gold per mission",
+  "category": "economy",
+  "cost": { "valor": 50 },
+  "effect": { "stat": "startingGold", "value": 10 },
+  "requires": [],
+  "maxLevel": 5,
+  "icon": "gold"
+}

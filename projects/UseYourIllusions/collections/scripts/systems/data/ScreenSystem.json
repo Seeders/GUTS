@@ -1,0 +1,14 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/ScreenSystem.js",
+  "fileName": "ScreenSystem",
+  "services": [
+    "showLoadingScreen",
+    "showGameScreen",
+    "showMainMenu",
+    "showVictoryScreen",
+    "showDefeatScreen",
+    "showGameModeSelect",
+    "pauseScreen",
+    "resumeScreen"
+  ]
+}

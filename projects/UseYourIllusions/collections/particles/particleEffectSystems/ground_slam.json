@@ -1,0 +1,23 @@
+{
+  "title": "Ground Slam",
+  "category": "physical",
+  "tags": [
+    "physical",
+    "slam",
+    "impact",
+    "ground"
+  ],
+  "layers": [
+    {
+      "effect": "ground_impact",
+      "delay": 0
+    },
+    {
+      "effect": "smoke_rising",
+      "delay": 0.1,
+      "countMultiplier": 0.5
+    }
+  ],
+  "screenShakeDuration": 0.3,
+  "screenShakeIntensity": 4
+}

@@ -1,0 +1,7 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/SkirmishGameSystem.js",
+  "fileName": "SkirmishGameSystem",
+  "services": [
+    "startSkirmishGame"
+  ]
+}

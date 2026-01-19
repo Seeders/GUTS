@@ -1,0 +1,6 @@
+{
+  "fileName": "CollectAbility",
+  "filePath": "/projects/UseYourIllusions/collections/scripts/abilities/js/CollectAbility.js",
+  "castParticleEffectSystems": ["magic_sparkles"],
+  "impactParticleEffectSystems": ["collect_glow"]
+}

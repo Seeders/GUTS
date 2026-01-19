@@ -1,0 +1,8 @@
+{
+  "fileName": "TrackingMark",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/TrackingMark.js",
+  "castParticleEffectSystems": ["fire_burst_core"],
+  "debuffParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary"],
+  "stackParticleEffectSystems": ["fire_burst_core", "dark_sparkles"],
+  "trailParticleEffectSystems": ["fire_trail"]
+}

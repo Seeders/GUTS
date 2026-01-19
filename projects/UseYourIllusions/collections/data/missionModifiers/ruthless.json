@@ -1,0 +1,17 @@
+{
+  "id": "ruthless",
+  "title": "Ruthless",
+  "description": "Enemies deal 20% more damage",
+  "tier": 1,
+  "category": "enemy_buff",
+  "effects": [
+    {
+      "target": "enemy_units",
+      "stat": "damage",
+      "operation": "multiply",
+      "value": 1.2
+    }
+  ],
+  "rewardBonus": 0.15,
+  "weight": 100
+}

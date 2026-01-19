@@ -1,0 +1,45 @@
+{
+  "title": "Atom Four",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "greyMColor"
+            },
+            "metalness": 0,
+            "roughness": 1,
+            "name": "main",
+            "scale": {
+              "z": 1,
+              "y": 1,
+              "x": 1
+            },
+            "model": "atom_four"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 0.375,
+          "z": 0.375
+        }
+      }
+    }
+  }
+}

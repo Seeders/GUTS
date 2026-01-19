@@ -1,0 +1,32 @@
+{
+  "title": "Dragon Landing Impact",
+  "category": "physical",
+  "tags": [
+    "dragon",
+    "landing",
+    "impact",
+    "flash"
+  ],
+  "particleEffectData": {
+    "count": 8,
+    "lifetime": 0.25,
+    "scale": 60,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ffffcc",
+    "endColor": "#ffdd88",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 15,
+    "velocityXMin": -20,
+    "velocityXMax": 20,
+    "velocityYMin": 10,
+    "velocityYMax": 40,
+    "velocityZMin": -20,
+    "velocityZMax": 20,
+    "gravity": 0,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

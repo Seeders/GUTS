@@ -1,0 +1,15 @@
+{
+  "title": "Loop Decorator",
+  "description": "Executes child node multiple times or until a condition is met. Supports count-based, condition-based, and infinite loops.",
+  "behaviorNodeType": "decorator",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorDecorators/js/LoopDecorator.js",
+  "fileName": "LoopDecorator",
+  "childAction": null,
+  "parameters": {
+    "loopType": "count",
+    "count": 3,
+    "maxIterations": 100,
+    "breakOnRunning": true,
+    "returnLastResult": true
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Trapper Actions",
+  "actions": [
+    "move",
+    "hold",
+    "hide",
+    "explosiveTrap"
+  ]
+}

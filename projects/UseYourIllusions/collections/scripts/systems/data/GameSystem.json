@@ -1,0 +1,11 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/GameSystem.js",
+  "fileName": "GameSystem",
+  "services": [
+    "initializeGame",
+    "pauseGame",
+    "resumeGame",
+    "restartGame",
+    "exitToMenu"
+  ]
+}

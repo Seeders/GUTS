@@ -1,0 +1,32 @@
+{
+  "title": "Frost Aura",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "frost",
+    "aura",
+    "cold"
+  ],
+  "particleEffectData": {
+    "count": 12,
+    "lifetime": 1,
+    "scale": 10,
+    "scaleMultiplier": 1.2,
+    "startColor": "#aaddff",
+    "endColor": "#4488ff",
+    "emitterShape": "ring",
+    "emitterRadius": 35,
+    "heightOffset": 10,
+    "velocityXMin": -20,
+    "velocityXMax": 20,
+    "velocityYMin": 20,
+    "velocityYMax": 50,
+    "velocityZMin": -20,
+    "velocityZMax": 20,
+    "gravity": -20,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

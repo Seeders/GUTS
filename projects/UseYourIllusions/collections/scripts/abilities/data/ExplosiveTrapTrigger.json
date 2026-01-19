@@ -1,0 +1,6 @@
+{
+  "fileName": "ExplosiveTrapTrigger",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/ExplosiveTrapTrigger.js",
+  "impactParticleEffectSystems": ["explosion_fire"],
+  "expirationParticleEffectSystems": ["explosion_smoke"]
+}

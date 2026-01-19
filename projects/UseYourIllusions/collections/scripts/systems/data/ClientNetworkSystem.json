@@ -1,0 +1,24 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/ClientNetworkSystem.js",
+  "fileName": "ClientNetworkSystem",
+  "services": [
+    "createRoom",
+    "joinRoom",
+    "startQuickMatch",
+    "leaveRoom",
+    "toggleReady",
+    "startGame",
+    "getStartingState",
+    "submitPlacementToServer",
+    "purchaseUpgrade",
+    "toggleReadyForBattle",
+    "setSquadTarget",
+    "setSquadTargets",
+    "cancelBuilding",
+    "upgradeBuildingRequest",
+    "uploadSaveData",
+    "resyncEntities",
+    "sendCheatRequest",
+    "sendPlacementRequest"
+  ]
+}

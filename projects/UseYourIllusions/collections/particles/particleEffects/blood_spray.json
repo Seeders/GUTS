@@ -1,0 +1,31 @@
+{
+  "title": "Blood Spray",
+  "category": "damage",
+  "tags": [
+    "blood",
+    "damage",
+    "physical"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 0.5,
+    "scale": 10,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ff2222",
+    "endColor": "#880000",
+    "emitterShape": "sphere",
+    "emitterRadius": 10,
+    "heightOffset": 25,
+    "velocityXMin": -80,
+    "velocityXMax": 80,
+    "velocityYMin": 40,
+    "velocityYMax": 120,
+    "velocityZMin": -80,
+    "velocityZMax": 80,
+    "gravity": 200,
+    "drag": 0.94,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

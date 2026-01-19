@@ -1,0 +1,24 @@
+{
+  "title": "Heal Burst",
+  "category": "heal",
+  "tags": [
+    "heal",
+    "support",
+    "magic"
+  ],
+  "layers": [
+    {
+      "effect": "heal_glow",
+      "delay": 0
+    },
+    {
+      "effect": "heal_sparkles",
+      "delay": 0.1
+    },
+    {
+      "effect": "heal_sparkles",
+      "delay": 0.3,
+      "countMultiplier": 0.5
+    }
+  ]
+}

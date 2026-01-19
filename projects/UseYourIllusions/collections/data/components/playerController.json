@@ -1,0 +1,8 @@
+{
+  "title": "playerController",
+  "schema": {
+    "isPlayer": true,
+    "movementSpeed": 60,
+    "interactionRadius": 50
+  }
+}

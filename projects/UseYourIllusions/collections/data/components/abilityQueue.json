@@ -1,0 +1,12 @@
+{
+  "title": "abilityQueue",
+  "schema": {
+    "abilityId": null,
+    "targetData": null,
+    "executeTime": 0,
+    "targetPositionX": 0,
+    "targetPositionY": 0,
+    "targetPositionZ": 0,
+    "hasTargetPosition": 0
+  }
+}

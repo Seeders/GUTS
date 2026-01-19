@@ -1,0 +1,15 @@
+{
+  "title": "miningState",
+  "schema": {
+    "state": {
+      "$enum": "miningState"
+    },
+    "targetMine": null,
+    "targetTownHall": null,
+    "hasGold": false,
+    "miningStartTime": 0,
+    "depositStartTime": 0,
+    "team": 0,
+    "entityId": null
+  }
+}

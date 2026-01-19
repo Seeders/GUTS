@@ -1,0 +1,138 @@
+{
+  "title": "Decoy Soldier",
+  "size": 25,
+  "height": 50,
+  "hp": 1,
+  "speed": 0,
+  "damage": 0,
+  "attackSpeed": 1,
+  "element": "physical",
+  "armor": 0,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0,
+                "animation": "idle_short"
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0,
+                "animation": "idle_short"
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0,
+                "animation": "idle_short"
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "death_fallback"
+              }
+            ],
+            "loops": false
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "scale": {
+              "z": 1,
+              "y": 1,
+              "x": 1
+            },
+            "model": "warrior"
+          }
+        ]
+      }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "knightSword",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": 0,
+            "y": 15,
+            "z": 5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        }
+      }
+    ]
+  },
+  "spriteAnimationSet": "soldier",
+  "collectible": {
+    "objectType": "decoy_soldier"
+  }
+}

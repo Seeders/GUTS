@@ -1,0 +1,22 @@
+{
+  "title": "Charge Impact",
+  "category": "physical",
+  "layers": [
+    {
+      "effect": "charge_impact_flash",
+      "delay": 0
+    },
+    {
+      "effect": "charge_impact_sparks",
+      "delay": 0.02
+    },
+    {
+      "effect": "charge_impact_dust",
+      "delay": 0.05
+    },
+    {
+      "effect": "metal_debris",
+      "delay": 0.03
+    }
+  ]
+}

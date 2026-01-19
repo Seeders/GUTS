@@ -1,0 +1,11 @@
+{
+  "title": "stealthed",
+  "schema": {
+    "stealthLevel": 1,
+    "detectionRadius": 30,
+    "stealthStartTime": 0,
+    "canAttackWhileStealth": false,
+    "breaksOnAttack": true,
+    "isStealth": true
+  }
+}

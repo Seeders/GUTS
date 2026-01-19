@@ -1,0 +1,11 @@
+{
+  "title": "channeling",
+  "schema": {
+    "abilityId": null,
+    "channelDuration": 3,
+    "channelStartTime": 0,
+    "canBeInterrupted": true,
+    "interruptThreshold": 10,
+    "isChanneling": true
+  }
+}

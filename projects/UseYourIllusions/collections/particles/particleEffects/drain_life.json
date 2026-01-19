@@ -1,0 +1,32 @@
+{
+  "title": "Drain Life",
+  "category": "shadow",
+  "tags": [
+    "drain",
+    "dark",
+    "heal",
+    "vampire"
+  ],
+  "particleEffectData": {
+    "count": 12,
+    "lifetime": 0.6,
+    "scale": 10,
+    "scaleMultiplier": 0.8,
+    "startColor": "#ff0044",
+    "endColor": "#440022",
+    "emitterShape": "sphere",
+    "emitterRadius": 20,
+    "heightOffset": 30,
+    "velocityXMin": -40,
+    "velocityXMax": 40,
+    "velocityYMin": 30,
+    "velocityYMax": 80,
+    "velocityZMin": -40,
+    "velocityZMax": 40,
+    "gravity": -50,
+    "drag": 0.92,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

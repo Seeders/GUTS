@@ -1,0 +1,13 @@
+{
+  "filePath": "/projects/UseYourIllusions/collections/scripts/systems/js/PlayerControlSystem.js",
+  "fileName": "PlayerControlSystem",
+  "services": [
+    "getPlayerEntity",
+    "setPlayerMoveTarget",
+    "getSelectedBeltSlot",
+    "setSelectedBeltSlot",
+    "getBeltContents",
+    "storeBeltItem",
+    "consumeBeltItem"
+  ]
+}

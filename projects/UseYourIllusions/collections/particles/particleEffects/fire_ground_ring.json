@@ -1,0 +1,31 @@
+{
+  "title": "Fire Ground Ring",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "ring",
+    "ground"
+  ],
+  "particleEffectData": {
+    "count": 30,
+    "lifetime": 0.8,
+    "scale": 20,
+    "scaleMultiplier": 2,
+    "startColor": "#ffaa44",
+    "endColor": "#cc2200",
+    "emitterShape": "ring",
+    "emitterRadius": 60,
+    "heightOffset": 5,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 20,
+    "velocityYMax": 60,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": -20,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "fileName": "WindShieldAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/WindShieldAbility.js",
+  "castParticleEffectSystems": ["wind_swirl_base", "wind_wisps"],
+  "expirationParticleEffectSystems": ["wind_swirl_base", "wind_wisps"]
+}

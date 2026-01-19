@@ -1,0 +1,9 @@
+{
+  "fileName": "PhalanxFormationAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/PhalanxFormationAbility.js",
+  "castParticleEffectSystems": ["holy_light"],
+  "burstParticleEffectSystems": ["holy_explosion", "holy_ring"],
+  "buffParticleEffectSystems": ["holy_sparkles"],
+  "sustainedParticleEffectSystems": ["holy_sparkles"],
+  "expirationParticleEffectSystems": ["holy_sparkles"]
+}

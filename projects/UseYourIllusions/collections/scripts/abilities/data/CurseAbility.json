@@ -1,0 +1,7 @@
+{
+  "fileName": "CurseAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/CurseAbility.js",
+  "castParticleEffectSystems": ["dark_energy", "dark_sparkles"],
+  "debuffParticleEffectSystems": ["dark_burst"],
+  "expirationParticleEffectSystems": ["dark_sparkles"]
+}

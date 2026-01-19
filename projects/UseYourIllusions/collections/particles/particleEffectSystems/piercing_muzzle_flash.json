@@ -1,0 +1,15 @@
+{
+  "title": "Piercing Muzzle Flash",
+  "category": "physical",
+  "tags": [
+    "piercing",
+    "flash",
+    "muzzle"
+  ],
+  "layers": [
+    {
+      "effect": "impact_flash",
+      "delay": 0
+    }
+  ]
+}

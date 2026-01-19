@@ -1,0 +1,97 @@
+<!-- Game Screen -->
+<div id="gameScreen" class="screen active">
+    <div id="gameContainer">
+        <div id="canvasContainer">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+        <!-- In-Game Chat (WC3/Dota style) - positioned above minimap -->
+        <div id="gameChat" class="game-chat">
+            <div id="gameChatMessages" class="game-chat-messages"></div>
+            <div id="gameChatInputContainer" class="game-chat-input-container hidden">
+                <input type="text" id="gameChatInput" class="game-chat-input" placeholder="" maxlength="200" autocomplete="off">
+            </div>
+        </div>
+        <div id="resourcesContainer" class="resources">
+            <div class="resource-item">
+                <span class="resource-label">💰</span>
+                <span class="resource-value" id="playerGold">--</span>
+            </div>
+            <div class="resource-item">
+                <span class="resource-label">👥</span>
+                <span class="resource-value" id="playerSupplies">0</span>
+            </div>
+            <div class="resource-item">
+                <span class="resource-label">🏆</span>
+                <span class="resource-value" id="currentRound">--</span>
+            </div>
+        </div>
+        <div id="unitPromotions" style="display: none"></div>
+        <div id="gameControls">
+            <button id="game_ExitBtn" class="btn btn-secondary" style="display:none">Retreat</button>
+            <button id="undoBtn" class="btn btn-secondary">Undo</button>
+            <button id="rotateCameraLeftBtn" class="btn btn-secondary">◀</button>
+            <button id="rotateCameraRightBtn" class="btn btn-secondary">▶</button>
+            <button id="toggleCameraModeBtn" class="btn btn-secondary" title="Toggle free camera mode">🎥</button>
+            <button id="placementReadyBtn" class="btn btn-primary">Ready for Battle!</button>
+        </div>
+        <div id="uiContainer">
+            <div id="miniMapContainer"></div>
+            <div id="selectedUnits"></div>
+            <div id="unitPortrait"></div>
+            <div class="action-panel" id="actionPanel"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Victory Screen -->
+<div id="victoryScreen" class="screen">
+    <div class="result-content">
+        <div class="result-title victory-title">VICTORY!</div>
+        <div class="stats-grid" id="victoryStats">
+            <!-- Stats populated dynamically -->
+        </div>
+        <div id="victoryRewardsPreview" class="rewards-preview" style="display: none;">
+            <h3>Rewards</h3>
+            <div id="victoryRewardsList" class="rewards-list"></div>
+        </div>
+        <div>
+            <button id="victory_MainMenuBtn" class="btn">RETURN TO MAIN MENU</button>
+        </div>
+    </div>
+</div>
+
+<!-- Defeat Screen -->
+<div id="defeatScreen" class="screen">
+    <div class="result-content">
+        <div class="result-title defeat-title">DEFEAT</div>
+        <div class="stats-grid" id="defeatStats">
+            <!-- Stats populated dynamically -->
+        </div>
+        <div>
+            <button id="defeat_MainMenuBtn" class="btn">RETURN TO MAIN MENU</button>
+        </div>
+    </div>
+</div>
+
+<!-- Pause Menu (Overlay) -->
+<div id="pauseMenu" class="pause-overlay">
+    <div class="pause-content">
+        <h2>WAR COUNCIL RECESS</h2>
+        <button id="paused_ResumeBtn" class="btn">RETURN TO BATTLE</button>
+        <button id="paused_RestartBtn" class="btn btn-secondary">RESTART CAMPAIGN</button>
+        <button id="paused_MainMenuBtn" class="btn btn-secondary">RETURN HOME</button>
+    </div>
+</div>
+
+<!-- Loading Screen -->
+<div id="loadingScreen" class="screen" style="display:flex;position:absolute;top:0;left:0;width:100%;height:100vh;z-index:9999;background:#1a1a2e;justify-content:center;align-items:center;">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Loading...</div>
+        <div class="loading-progress-container">
+            <div class="loading-progress-bar" id="loadingProgressBar"></div>
+        </div>
+        <div class="loading-progress-text" id="loadingProgressText">0%</div>
+        <div class="loading-tip">Tip: Position ranged units behind your frontline for maximum effectiveness</div>
+    </div>
+</div>

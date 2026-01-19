@@ -1,0 +1,15 @@
+{
+  "title": "Sunny Day Lighting",
+  "ambientColor": "#ffffff",
+  "ambientIntensity": 1,
+  "directionalColor": "#ffffff",
+  "directionalIntensity": 0.7,
+  "skyColor": "#b3e5fc",
+  "groundColor": "#ffffff",
+  "hemisphereIntensity": 0.5,
+  "direction": {
+    "x": 0,
+    "y": -1,
+    "z": -1
+  }
+}

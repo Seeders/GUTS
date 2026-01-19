@@ -1,0 +1,8 @@
+{
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/GameUISystem.js",
+  "fileName": "GameUISystem",
+  "services": [
+    "leaveGame",
+    "updateGoldDisplay"
+  ]
+}

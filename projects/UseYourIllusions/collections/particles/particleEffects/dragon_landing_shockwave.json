@@ -1,0 +1,31 @@
+{
+  "title": "Dragon Landing Shockwave",
+  "category": "physical",
+  "tags": [
+    "dragon",
+    "landing",
+    "shockwave"
+  ],
+  "particleEffectData": {
+    "count": 32,
+    "lifetime": 0.5,
+    "scale": 20,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ddbb88",
+    "endColor": "#886644",
+    "emitterShape": "ring",
+    "emitterRadius": 30,
+    "heightOffset": 8,
+    "velocityXMin": -200,
+    "velocityXMax": 200,
+    "velocityYMin": 5,
+    "velocityYMax": 25,
+    "velocityZMin": -200,
+    "velocityZMax": 200,
+    "gravity": 40,
+    "drag": 0.80,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

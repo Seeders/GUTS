@@ -1,0 +1,8 @@
+{
+  "title": "Is Hiding Check",
+  "description": "Checks if the entity is currently hiding. Returns SUCCESS if hiding, FAILURE otherwise.",
+  "behaviorNodeType": "action",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/IsHidingBehaviorAction.js",
+  "fileName": "IsHidingBehaviorAction",
+  "parameters": {}
+}

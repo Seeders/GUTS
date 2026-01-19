@@ -1,0 +1,13 @@
+{
+  "title": "playerStats",
+  "schema": {
+    "playerId": null,
+    "team": 2,
+    "gold": 100,
+    "upgrades": {
+      "$bitmask": {
+        "sizeFrom": "upgrades"
+      }
+    }
+  }
+}

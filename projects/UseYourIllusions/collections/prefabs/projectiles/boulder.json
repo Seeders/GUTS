@@ -1,0 +1,56 @@
+{
+  "damageType": "fire",
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "name": "ball",
+                "type": "sphere",
+                "size": 12,
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "name": "ball",
+            "type": "sphere",
+            "size": 12
+          }
+        ],
+        "position": {
+          "x": -3.00653594771243,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "speed": 100,
+  "title": "Boulder",
+  "ballistic": true,
+  "homing": false,
+  "homingStrength": 0,
+  "particle": "smoke",
+  "shadows": false,
+  "hitSound": "explosion",
+  "attackSound": "missileLaunch"
+}

@@ -1,0 +1,42 @@
+{
+  "id": "judgement",
+  "number": 21,
+  "title": "Judgement",
+  "texture": "tarot_21_judgement",
+  "past": {
+    "upright": {
+      "name": "Absolution",
+      "description": "Fallen allies may return once",
+      "effects": [{ "target": "player_units", "stat": "resurrection", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Self-Doubt",
+      "description": "Units deal less damage when wounded",
+      "effects": [{ "target": "player_units", "stat": "woundedPenalty", "operation": "add", "value": 0.2 }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Reckoning",
+      "description": "Enemy units rise as undead when killed",
+      "effects": [{ "target": "enemy_units", "stat": "undeadRise", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Condemnation",
+      "description": "Killing enemies heals the killer",
+      "effects": [{ "target": "all_units", "stat": "lifeStealOnKill", "operation": "add", "value": 0.2 }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Redemption",
+      "description": "Revive one permanently dead unit",
+      "effects": [{ "target": "rewards", "stat": "revivePermadeath", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Final Judgement",
+      "description": "All or nothing: triple rewards or lose all",
+      "effects": [{ "target": "rewards", "stat": "allOrNothing", "operation": "set", "value": true }]
+    }
+  }
+}

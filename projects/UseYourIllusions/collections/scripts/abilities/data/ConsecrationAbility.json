@@ -1,0 +1,10 @@
+{
+  "fileName": "ConsecrationAbility",
+  "filePath": "/projects/TurnBasedWarfare/collections/scripts/abilities/js/ConsecrationAbility.js",
+  "castParticleEffectSystems": ["holy_light", "holy_sparkles"],
+  "burstParticleEffectSystems": ["holy_explosion", "holy_ring"],
+  "sustainedParticleEffectSystems": ["holy_ground_glow"],
+  "tickParticleEffectSystems": ["holy_light"],
+  "healParticleEffectSystems": ["heal_glow", "heal_sparkles"],
+  "expirationParticleEffectSystems": ["holy_sparkles"]
+}
