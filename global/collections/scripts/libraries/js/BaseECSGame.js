@@ -2058,7 +2058,8 @@ class BaseECSGame {
             const maskBase = entityId * maskCount;
             let match = true;
             for (let w = 0; w < maskCount; w++) {
-                if ((masks[maskBase + w] & queryMask[w]) !== queryMask[w]) {
+                // Use >>>0 to ensure unsigned comparison (fixes bit 31 signed/unsigned mismatch)
+                if (((masks[maskBase + w] & queryMask[w]) >>> 0) !== queryMask[w]) {
                     match = false;
                     break;
                 }
