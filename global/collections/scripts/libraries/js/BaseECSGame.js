@@ -1200,6 +1200,10 @@ class BaseECSGame {
         this._queryCache.clear();
     }
 
+    hasEntity(entityId) {
+        return this.entityAlive[entityId] === 1;
+    }
+
     addComponent(entityId, componentId, data) {
         if (!this.entityAlive[entityId]) {
             throw new Error(`Entity ${entityId} does not exist`);
