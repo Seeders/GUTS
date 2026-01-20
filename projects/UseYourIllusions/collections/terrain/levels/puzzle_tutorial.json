@@ -1,7 +1,7 @@
 {
   "title": "Tutorial",
   "published": true,
-  "world": "shire",
+  "world": "dungeon",
   "grassShader": "grass",
   "waterShader": "water",
   "puzzleLevel": true,

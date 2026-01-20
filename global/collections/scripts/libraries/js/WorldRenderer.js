@@ -1494,7 +1494,11 @@ class WorldRenderer {
             // Get height difference (defaults to 1 for backwards compatibility)
             const heightDiff = cliff.heightDiff || 1;
             const mapHeight = this.terrainDataManager.tileMap.heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
-            const cliffOffset = 0.0001;
+            // Small offset to prevent z-fighting between stacked cliff pieces
+            // Each piece type gets a slightly different offset
+            const cliffOffsetTop = 0.002;
+            const cliffOffsetMid = 0.001;
+            const cliffOffsetBase = 0.0;
 
             // Calculate the neighbor's height (where the cliff base should sit)
             const neighborHeight = mapHeight - heightDiff;
@@ -1529,7 +1533,7 @@ class WorldRenderer {
                 // Spawn top piece (at the top of the cliff, one level below tile height)
                 // If baseType already ends with _top, don't add it again
                 const topType = baseType.endsWith('_top') ? baseType : `${baseType}_top`;
-                const topHeight = (mapHeight - 1) * heightStep + cliffOffset;
+                const topHeight = (mapHeight - 1) * heightStep + cliffOffsetTop;
                 const topEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${topType}`;
                 const topPrefab = cliffSet.cliffs[topType];
 
@@ -1549,7 +1553,7 @@ class WorldRenderer {
                     const midPrefab = cliffSet.cliffs[midType];
                     if (midPrefab) {
                         for (let level = 1; level < heightDiff - 1; level++) {
-                            const midHeight = (mapHeight - 1 - level) * heightStep + cliffOffset;
+                            const midHeight = (mapHeight - 1 - level) * heightStep + cliffOffsetMid;
                             const midEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseType}_mid_${level}`;
 
                             const midSpawned = await entityRenderer.spawnEntity(midEntityId, {
@@ -1569,7 +1573,7 @@ class WorldRenderer {
                     const baseCliffType = `${baseType}_base`;
                     const basePrefab = cliffSet.cliffs[baseCliffType];
                     if (basePrefab) {
-                        const baseHeight = neighborHeight * heightStep + cliffOffset;
+                        const baseHeight = neighborHeight * heightStep + cliffOffsetBase;
                         const baseEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseCliffType}`;
 
                         const baseSpawned = await entityRenderer.spawnEntity(baseEntityId, {

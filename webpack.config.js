@@ -277,12 +277,13 @@ const editorConfig = entries.editor ? {
     },
     plugins: [
 new MonacoWebpackPlugin({
-            languages: ['javascript', 'css', 'html', 'json'],
+            // JavaScript language support depends on TypeScript internally
+            languages: ['javascript', 'typescript', 'css', 'html', 'json'],
             features: ['!gotoSymbol']
         }),
-        // Exclude all basic-languages except javascript, css, html
+        // Exclude all basic-languages except javascript, typescript, css, html
         new webpack.NormalModuleReplacementPlugin(
-            /monaco-editor[\\/]esm[\\/]vs[\\/]basic-languages[\\/](?!javascript|css|html|_).*[\\/].*\.js$/,
+            /monaco-editor[\\/]esm[\\/]vs[\\/]basic-languages[\\/](?!javascript|typescript|css|html|_).*[\\/].*\.js$/,
             require.resolve('./build/empty-module.js')
         ),
         new webpack.DefinePlugin({
