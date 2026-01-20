@@ -621,8 +621,9 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "prefab": "exitZone",
         "type": "exit_portal",
+        "team": "neutral",
         "components": {
           "transform": {
             "position": {

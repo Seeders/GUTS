@@ -12,7 +12,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
 
         this.VISION_RADIUS = 500;
         this.WORLD_SIZE = null; // Set in onSceneLoad when terrain is available
-        this.FOG_TEXTURE_SIZE = 64;
+        this.FOG_TEXTURE_SIZE = 256;
 
         // Line of sight settings (optimized)
         this.LOS_ENABLED = true;
@@ -419,7 +419,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             enabled: true,
             needsSwap: true,
             clear: false,
-                                    
+
             uniforms: {
                 tDiffuse: { value: null },
                 tDepth: { value: null },
@@ -430,7 +430,9 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                 cameraFar: { value: 100 },
                 cameraWorldMatrix: { value: new THREE.Matrix4() },
                 cameraProjectionMatrixInv: { value: new THREE.Matrix4() },
-                isPerspective: { value: 0.0 }
+                isPerspective: { value: 0.0 },
+                viewerPos: { value: new THREE.Vector3() },
+                viewerTerrainHeight: { value: 0.0 }
             },
             
             material: null,
@@ -459,6 +461,8 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                 uniform mat4 cameraWorldMatrix;
                 uniform mat4 cameraProjectionMatrixInv;
                 uniform float isPerspective;
+                uniform vec3 viewerPos;
+                uniform float viewerTerrainHeight;
 
                 varying vec2 vUv;
 
@@ -505,6 +509,34 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                     vec4 fogSample = texture2D(fogTexture, fogUV);
                     float visibleGradient = fogSample.r;
 
+                    // Height-based visibility boost for geometry below viewer's terrain level
+                    // This fixes the issue where walls/cliffs at lower terrain get incorrectly fogged
+                    // because their XZ position maps to a "blocked" region in the 2D fog map
+                    float heightDiff = worldPos.y - viewerTerrainHeight;
+                    if (heightDiff < 0.0) {
+                        // Pixel is below viewer's terrain level - check distance to viewer
+                        float dx = worldPos.x - viewerPos.x;
+                        float dz = worldPos.z - viewerPos.z;
+                        float distToViewer = sqrt(dx * dx + dz * dz);
+
+                        // Sample fog at the viewer's position to see if viewer has any visibility
+                        vec2 viewerFogUV = vec2(
+                            (viewerPos.x + halfSize) / worldSize,
+                            (-viewerPos.z + halfSize) / worldSize
+                        );
+                        vec4 viewerFogSample = texture2D(fogTexture, viewerFogUV);
+
+                        // If viewer has visibility and this pixel is reasonably close and below viewer,
+                        // boost its visibility (walls facing the viewer should be visible)
+                        if (viewerFogSample.r > 0.5 && distToViewer < 500.0) {
+                            // Boost visibility for geometry below viewer's height
+                            // More boost for geometry further below and closer to viewer
+                            float heightBoost = clamp(-heightDiff / 50.0, 0.0, 1.0);
+                            float distFactor = 1.0 - clamp(distToViewer / 500.0, 0.0, 1.0);
+                            visibleGradient = max(visibleGradient, heightBoost * distFactor);
+                        }
+                    }
+
                     vec4 explorationSample = texture2D(explorationTexture, fogUV);
                     float explorationGradient = explorationSample.r;
 
@@ -544,6 +576,24 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                 fogPassObj.uniforms.cameraNear.value = camera.near;
                 fogPassObj.uniforms.cameraFar.value = camera.far;
                 fogPassObj.uniforms.isPerspective.value = camera.isPerspectiveCamera ? 1.0 : 0.0;
+            }
+
+            // Update viewer position for height-based fog correction
+            if (fogSystemRef._myUnits && fogSystemRef._myUnits.length > 0) {
+                const viewerEntityId = fogSystemRef._myUnits[0];
+                const transform = fogSystemRef.game.getComponent(viewerEntityId, 'transform');
+                if (transform && transform.position) {
+                    fogPassObj.uniforms.viewerPos.value.set(
+                        transform.position.x,
+                        transform.position.y,
+                        transform.position.z
+                    );
+                    // Get terrain height at viewer position
+                    const terrainHeight = fogSystemRef.game.hasService('getTerrainHeightAtPosition')
+                        ? fogSystemRef.game.call('getTerrainHeightAtPosition', transform.position.x, transform.position.z) || 0
+                        : 0;
+                    fogPassObj.uniforms.viewerTerrainHeight.value = terrainHeight;
+                }
             }
 
             fogSystemRef.renderFogTexture();

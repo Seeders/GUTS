@@ -1,0 +1,55 @@
+{
+  "title": "Exit Portal",
+  "info": "The exit from the level.",
+  "value": 0,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "color": {
+                  "paletteColor": "neutralColor"
+                },
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "color": {
+              "paletteColor": "neutralColor"
+            },
+            "metalness": 0,
+            "roughness": 1,
+            "name": "portal",
+            "model": "portal_baseless"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    }
+  },
+  "height": 32,
+  "size": 32,
+  "hp": 9999,
+  "exit": true,
+  "exitRadius": 60,
+  "impassable": false,
+  "spriteAnimationSet": "exitportal"
+}

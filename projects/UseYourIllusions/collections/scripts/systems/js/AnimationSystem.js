@@ -561,19 +561,29 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Calculate camera vertical angle to determine isometric vs ground-level sprite set
         // Only relevant for perspective cameras - orthographic always uses isometric
         if (!cam.isOrthographicCamera) {
-            const entityPos = transform.position;
-            const dx = cam.position.x - entityPos.x;
-            const dy = cam.position.y - entityPos.y;
-            const dz = cam.position.z - entityPos.z;
-            const horizontalDist = Math.sqrt(dx * dx + dz * dz);
+            // Check if camera is in first-person mode - always use ground-level sprites
+            const zoomLevel = this.game.hasService('getZoomLevel') ? this.game.call('getZoomLevel') : 1;
+            const isFirstPerson = zoomLevel < 0.2;
 
-            // Calculate vertical angle (positive = camera above entity)
-            const verticalAngle = Math.atan2(dy, horizontalDist);
-            const verticalDegrees = verticalAngle * (180 / Math.PI);
+            let newCameraAngle;
+            if (isFirstPerson) {
+                // First-person mode always uses ground-level sprites
+                newCameraAngle = 1;
+            } else {
+                const entityPos = transform.position;
+                const dx = cam.position.x - entityPos.x;
+                const dy = cam.position.y - entityPos.y;
+                const dz = cam.position.z - entityPos.z;
+                const horizontalDist = Math.sqrt(dx * dx + dz * dz);
 
-            // Threshold: ~30 degrees - above uses isometric, below uses ground-level
-            // 0 = isometric (high camera), 1 = ground-level (low camera)
-            const newCameraAngle = verticalDegrees > 35 ? 0 : 1;
+                // Calculate vertical angle (positive = camera above entity)
+                const verticalAngle = Math.atan2(dy, horizontalDist);
+                const verticalDegrees = verticalAngle * (180 / Math.PI);
+
+                // Threshold: 25 degrees - above uses isometric, below uses ground-level
+                // 0 = isometric (high camera), 1 = ground-level (low camera)
+                newCameraAngle = verticalDegrees > 25 ? 0 : 1;
+            }
 
             // Check if camera angle state changed
             if (animState.spriteCameraAngle !== newCameraAngle) {
@@ -1471,6 +1481,20 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         const animState = this.game.getComponent(entityId, 'animationState');
         if (animState) {
+            // Check if this entity already has valid sprite animation state (e.g., respawning after zoom)
+            const hasExistingAnimation = animState.isSprite &&
+                                         animState.spriteAnimationSet === spriteAnimationSetIndex &&
+                                         animState.spriteAnimationType != null;
+
+            if (hasExistingAnimation) {
+                // Entity already has animation state - just re-apply current frame to renderer
+                const entityRenderer = this.game.call('getEntityRenderer');
+                if (entityRenderer) {
+                    entityRenderer.applyBillboardAnimationFrame(entityId, animState);
+                }
+                return;
+            }
+
             // Store only numeric values - animation data is in shared cache
             animState.spriteAnimationSet = spriteAnimationSetIndex;
             animState.spriteFps = cachedData.fps;

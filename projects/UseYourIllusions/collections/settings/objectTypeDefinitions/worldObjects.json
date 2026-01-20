@@ -2,5 +2,5 @@
   "id": "worldObjects",
   "name": "WorldObjects",
   "singular": "worldObject",
-  "objectTypeCategory": "prefabs"
+  "objectTypeCategory": "spawns"
 }

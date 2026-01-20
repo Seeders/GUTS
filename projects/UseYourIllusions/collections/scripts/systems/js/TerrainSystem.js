@@ -229,12 +229,21 @@ class TerrainSystem extends GUTS.BaseSystem {
                     }
                 }
 
+                // Determine team - use entity definition's team if specified, otherwise neutral
+                let team = enums.team.neutral;
+                if (entityDef.team !== undefined) {
+                    // Support both string names and numeric values
+                    team = typeof entityDef.team === 'string'
+                        ? (enums.team[entityDef.team] ?? enums.team.neutral)
+                        : entityDef.team;
+                }
+
                 // Create entity using prefab-driven system
                 const entityId = this.game.call('createEntityFromPrefab', {
                     prefab: prefabName,
                     type: type,
                     collection: collection,
-                    team: enums.team.neutral,
+                    team: team,
                     componentOverrides: componentOverrides
                 });
 

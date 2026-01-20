@@ -171,20 +171,111 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
 
         const casterPos = playerTransform.position;
 
-        // Get facing angle from camera
-        const facingAngle = this.game.hasService('getFacingAngle')
-            ? this.game.call('getFacingAngle')
-            : 0;
+        // Get camera info for raycast
+        const camera = this.game.hasService('getCamera') ? this.game.call('getCamera') : null;
+        const facingAngle = this.game.hasService('getFacingAngle') ? this.game.call('getFacingAngle') : 0;
+        const pitchAngle = this.game.hasService('getPitchAngle') ? this.game.call('getPitchAngle') : 0;
 
-        // Calculate target position in front of player
-        const distance = this.config.placementDistance;
-        const targetX = casterPos.x + Math.cos(facingAngle) * distance;
-        const targetZ = casterPos.z + Math.sin(facingAngle) * distance;
+        // Get player's vision range as max placement distance
+        const combat = this.game.getComponent(playerEntity, 'combat');
+        const unitTypeComp = this.game.getComponent(playerEntity, 'unitType');
+        const unitTypeDef = this.game.call('getUnitTypeDef', unitTypeComp);
+        const visionRange = unitTypeDef?.visionRange || combat?.visionRange || this.config.placementRange;
 
-        // Get terrain height at target position
-        let targetY = 0;
-        if (this.game.hasService('getTerrainHeightAtPosition')) {
-            targetY = this.game.call('getTerrainHeightAtPosition', targetX, targetZ) || 0;
+        let targetX, targetY, targetZ;
+
+        if (camera && camera.position) {
+            // Raycast from camera position in look direction to find terrain intersection
+            const rayOrigin = camera.position;
+
+            // Calculate ray direction from facing angle (yaw) and pitch angle
+            // Horizontal component is reduced by cos(pitch), vertical by sin(pitch)
+            const cosPitch = Math.cos(pitchAngle);
+            const sinPitch = Math.sin(pitchAngle);
+
+            const rayDirX = Math.cos(facingAngle) * cosPitch;
+            const rayDirY = sinPitch;
+            const rayDirZ = Math.sin(facingAngle) * cosPitch;
+
+            // Find intersection with terrain using iterative raymarching
+            // Step along the ray and check terrain height at each point
+            // Stop when we exceed vision range from player
+            const stepSize = 5;
+            const maxSteps = 200; // Safety limit
+
+            let hitX = null, hitZ = null, hitY = null;
+            let lastValidX = null, lastValidZ = null;
+
+            for (let i = 1; i <= maxSteps; i++) {
+                const t = i * stepSize;
+                const testX = rayOrigin.x + rayDirX * t;
+                const testY = rayOrigin.y + rayDirY * t;
+                const testZ = rayOrigin.z + rayDirZ * t;
+
+                // Check distance from player - stop if we exceed vision range
+                const dx = testX - casterPos.x;
+                const dz = testZ - casterPos.z;
+                const distFromPlayer = Math.sqrt(dx * dx + dz * dz);
+
+                if (distFromPlayer > visionRange) {
+                    // We've gone past vision range - use last valid position or clamp
+                    if (lastValidX !== null) {
+                        // Use the last position that was within range
+                        hitX = lastValidX;
+                        hitZ = lastValidZ;
+                        hitY = this.game.hasService('getTerrainHeightAtPosition')
+                            ? this.game.call('getTerrainHeightAtPosition', hitX, hitZ) || 0
+                            : 0;
+                    } else {
+                        // Clamp to vision range boundary
+                        const scale = visionRange / distFromPlayer;
+                        hitX = casterPos.x + dx * scale;
+                        hitZ = casterPos.z + dz * scale;
+                        hitY = this.game.hasService('getTerrainHeightAtPosition')
+                            ? this.game.call('getTerrainHeightAtPosition', hitX, hitZ) || 0
+                            : 0;
+                    }
+                    break;
+                }
+
+                // Track last position within vision range
+                lastValidX = testX;
+                lastValidZ = testZ;
+
+                // Get terrain height at this XZ position
+                const terrainHeight = this.game.hasService('getTerrainHeightAtPosition')
+                    ? this.game.call('getTerrainHeightAtPosition', testX, testZ) || 0
+                    : 0;
+
+                // Check if ray has gone below terrain
+                if (testY <= terrainHeight) {
+                    hitX = testX;
+                    hitZ = testZ;
+                    hitY = terrainHeight;
+                    break;
+                }
+            }
+
+            if (hitX !== null) {
+                targetX = hitX;
+                targetZ = hitZ;
+                targetY = hitY;
+            } else {
+                // No terrain hit within range - place at max range in look direction
+                targetX = casterPos.x + Math.cos(facingAngle) * visionRange;
+                targetZ = casterPos.z + Math.sin(facingAngle) * visionRange;
+                targetY = this.game.hasService('getTerrainHeightAtPosition')
+                    ? this.game.call('getTerrainHeightAtPosition', targetX, targetZ) || 0
+                    : 0;
+            }
+        } else {
+            // Fallback: fixed distance in front of player
+            const distance = this.config.placementDistance;
+            targetX = casterPos.x + Math.cos(facingAngle) * distance;
+            targetZ = casterPos.z + Math.sin(facingAngle) * distance;
+            targetY = this.game.hasService('getTerrainHeightAtPosition')
+                ? this.game.call('getTerrainHeightAtPosition', targetX, targetZ) || 0
+                : 0;
         }
 
         // Store position for placement
@@ -206,7 +297,7 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
         const dist = Math.sqrt(dx * dx + dz * dz);
 
         if (this.game.entityRenderer && this.game.entityRenderer.setEntityOpacity) {
-            if (dist <= this.config.placementRange) {
+            if (dist <= visionRange) {
                 // Valid placement - normal preview opacity
                 this.game.entityRenderer.setEntityOpacity(this.previewEntityId, this.config.opacity);
             } else {

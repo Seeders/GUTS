@@ -12,6 +12,17 @@ class FindDesirableObjectBehaviorAction extends GUTS.BaseBehaviorAction {
     execute(entityId, game) {
         const params = this.parameters || {};
 
+        // Check if PickUpObjectBehaviorAction is in waiting state
+        // If so, return success to allow the sequence to continue to PickUpObjectBehaviorAction
+        const pickupNode = game.call('getNodeByType', 'PickUpObjectBehaviorAction');
+        if (pickupNode) {
+            const pickupMemory = pickupNode.getMemory(entityId);
+            if (pickupMemory && pickupMemory.waitingAfterPickup) {
+                // Already picked up an object and waiting - pass through to pickup action
+                return this.success({ waitingAfterPickup: true });
+            }
+        }
+
         // Get vision range from unit type definition (prefab), combat component, or params
         const unitTypeComp = game.getComponent(entityId, 'unitType');
         const unitTypeDef = game.call('getUnitTypeDef', unitTypeComp);

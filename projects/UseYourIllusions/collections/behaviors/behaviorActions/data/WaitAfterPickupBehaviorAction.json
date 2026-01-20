@@ -1,0 +1,12 @@
+{
+  "title": "Wait After Pickup",
+  "description": "Waits for 3 seconds after picking up a desirable object",
+  "behaviorNodeType": "action",
+  "filePath": "/projects/TurnBasedWarfare/collections/behaviors/behaviorActions/js/WaitBehaviorAction.js",
+  "fileName": "WaitAfterPickupBehaviorAction",
+  "parameters": {
+    "duration": 3000,
+    "durationKey": null,
+    "anchor": true
+  }
+}

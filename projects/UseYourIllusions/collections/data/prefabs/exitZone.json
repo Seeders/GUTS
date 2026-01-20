@@ -1,0 +1,15 @@
+{
+  "title": "Exit Zone",
+  "description": "Base prefab for exit zone entities",
+  "components": [
+    "transform",
+    "velocity",
+    "team",
+    "unitType",
+    "health",
+    "collision",
+    "animation",
+    "renderable",
+    "exitZone"
+  ]
+}

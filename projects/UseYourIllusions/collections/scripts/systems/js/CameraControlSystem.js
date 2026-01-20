@@ -12,7 +12,9 @@ class CameraControlSystem extends GUTS.BaseSystem {
     'getCamera',
     'setCamera',
     'setFollowTarget',
-    'getFacingAngle'
+    'getFacingAngle',
+    'getPitchAngle',
+    'getZoomLevel'
   ];
 
   constructor(game) {
@@ -39,7 +41,7 @@ class CameraControlSystem extends GUTS.BaseSystem {
     this.maxPitch = -Math.PI / 2 + 0.1;   // Top down (looking straight down)
 
     // Camera height offset above target
-    this.targetHeightOffset = 30; // Eye level of character
+    this.targetHeightOffset = 25; // Eye level of character
 
     // Mouse-controlled facing direction
     this.facingAngle = 0; // Current yaw angle in radians (left/right)
@@ -123,6 +125,14 @@ class CameraControlSystem extends GUTS.BaseSystem {
 
   getFacingAngle() {
     return this.facingAngle;
+  }
+
+  getPitchAngle() {
+    return this.pitchAngle;
+  }
+
+  getZoomLevel() {
+    return this.zoomLevel;
   }
 
   getCamera() {

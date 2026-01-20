@@ -296,9 +296,6 @@ class RenderSystem extends GUTS.BaseSystem {
                 }
             }
 
-            // Entity passed visibility checks - mark it as visible for cleanup tracking
-            this._currentEntitiesSet.add(entityId);
-
             // Determine opacity: use renderable.opacity if set, otherwise check hiding state
             let opacity = 1.0;
             if (renderable.opacity !== null) {
@@ -308,6 +305,28 @@ class RenderSystem extends GUTS.BaseSystem {
                 const isHiding = playerOrder?.isHiding || false;
                 opacity = isHiding ? 0.5 : 1.0;
             }
+
+            // Fade player character when camera zooms in close (first-person mode)
+            const playerController = this.game.getComponent(entityId, 'playerController');
+            if (playerController?.isPlayer && this.game.hasService('getZoomLevel')) {
+                const zoomLevel = this.game.call('getZoomLevel');
+                const fadeStart = 0.2;  // Start fading at this zoom level
+                const fadeEnd = 0.05;   // Fully transparent at this zoom level
+                if (zoomLevel < fadeStart) {
+                    // Lerp opacity from 1 to 0 as zoom goes from fadeStart to fadeEnd
+                    const fadeProgress = Math.max(0, (zoomLevel - fadeEnd) / (fadeStart - fadeEnd));
+                    opacity *= fadeProgress;
+                }
+            }
+
+            // Skip rendering entirely if fully transparent (avoids fog masking issues)
+            // Must be before adding to _currentEntitiesSet so entity gets cleaned up
+            if (opacity <= 0) {
+                continue;
+            }
+
+            // Entity passed visibility checks - mark it as visible for cleanup tracking
+            this._currentEntitiesSet.add(entityId);
 
             // Pass numeric indices directly to EntityRenderer (O(1) lookup)
             const objectType = renderable.objectType;

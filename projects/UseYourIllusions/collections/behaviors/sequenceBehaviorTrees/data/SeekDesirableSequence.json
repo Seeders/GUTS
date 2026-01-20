@@ -1,6 +1,6 @@
 {
   "title": "Seek Desirable Sequence",
-  "description": "Finds and picks up nearby desirable objects (objects with desired: true flag)",
+  "description": "Finds and picks up nearby desirable objects (objects with desired: true flag), then waits 3 seconds",
   "behaviorNodeType": "sequence",
   "fileName": "SeekDesirableSequence",
   "behaviorActions": [

@@ -236,6 +236,27 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         this._wasMoving = this.isWASDMoving;
     }
 
+    /**
+     * Check if a position is valid (no cliff/height change in buffer zone)
+     */
+    isPositionValid(fromX, fromZ, toX, toZ, buffer) {
+        // Check destination and buffer points around it
+        const checkPoints = [
+            { x: toX, z: toZ },
+            { x: toX + buffer, z: toZ },
+            { x: toX - buffer, z: toZ },
+            { x: toX, z: toZ + buffer },
+            { x: toX, z: toZ - buffer }
+        ];
+
+        for (const point of checkPoints) {
+            if (!this.game.call('canMoveToPosition', fromX, fromZ, point.x, point.z)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     updateWASDMovement(entityId) {
         const transform = this.game.getComponent(entityId, 'transform');
         const playerController = this.game.getComponent(entityId, 'playerController');
@@ -282,9 +303,34 @@ class PlayerControlSystem extends GUTS.BaseSystem {
             const newX = transform.position.x + moveX;
             const newZ = transform.position.z + moveZ;
 
+            // Buffer distance to prevent getting too close to walls/cliffs
+            const wallBuffer = 8;
+            const curX = transform.position.x;
+            const curZ = transform.position.z;
+
+            let finalX = newX;
+            let finalZ = newZ;
+
             if (this.game.hasService('canMoveToPosition')) {
-                if (!this.game.call('canMoveToPosition', transform.position.x, transform.position.z, newX, newZ)) {
-                    // Movement blocked by cliff - don't move
+                // Check if full movement is allowed (with buffer points)
+                const canMoveBoth = this.isPositionValid(curX, curZ, newX, newZ, wallBuffer);
+                const canMoveX = this.isPositionValid(curX, curZ, newX, curZ, wallBuffer);
+                const canMoveZ = this.isPositionValid(curX, curZ, curX, newZ, wallBuffer);
+
+                if (canMoveBoth) {
+                    // Full diagonal movement allowed
+                    finalX = newX;
+                    finalZ = newZ;
+                } else if (canMoveX && !canMoveZ) {
+                    // Only X movement allowed - slide along wall
+                    finalX = newX;
+                    finalZ = curZ;
+                } else if (!canMoveX && canMoveZ) {
+                    // Only Z movement allowed - slide along wall
+                    finalX = curX;
+                    finalZ = newZ;
+                } else {
+                    // Neither direction allowed - stop
                     const velocity = this.game.getComponent(entityId, 'velocity');
                     if (velocity) {
                         velocity.vx = 0;
@@ -294,12 +340,12 @@ class PlayerControlSystem extends GUTS.BaseSystem {
                 }
             }
 
-            transform.position.x = newX;
-            transform.position.z = newZ;
+            transform.position.x = finalX;
+            transform.position.z = finalZ;
 
             // Snap to terrain height
             if (this.game.hasService('getTerrainHeightAtPosition')) {
-                const terrainHeight = this.game.call('getTerrainHeightAtPosition', newX, newZ);
+                const terrainHeight = this.game.call('getTerrainHeightAtPosition', finalX, finalZ);
                 if (terrainHeight !== null) {
                     transform.position.y = terrainHeight;
                 }

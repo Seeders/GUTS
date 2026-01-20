@@ -12,11 +12,11 @@ class FogOfWarSystem extends GUTS.BaseSystem {
 
         this.VISION_RADIUS = 500;
         this.WORLD_SIZE = null; // Set in onSceneLoad when terrain is available
-        this.FOG_TEXTURE_SIZE = 64;
+        this.FOG_TEXTURE_SIZE = 256;
 
         // Line of sight settings (optimized)
         this.LOS_ENABLED = true;
-        this.LOS_RAYS_PER_UNIT = 16;
+        this.LOS_RAYS_PER_UNIT = 64;
         this.LOS_SAMPLE_DISTANCE = 12;
         this.LOS_UNIT_BLOCKING_ENABLED = true;
         this.LOS_UNIT_HEIGHT = 25;
@@ -67,8 +67,8 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         this._losCacheMaxSize = 500;  // Limit cache size to prevent memory bloat
         
         // Pre-allocate reusable arrays
-        this.tempVisiblePoints = new Array(this.LOS_RAYS_PER_UNIT);
-        for (let i = 0; i < this.LOS_RAYS_PER_UNIT; i++) {
+        this.tempVisiblePoints = new Array(64);
+        for (let i = 0; i < 64; i++) {
             this.tempVisiblePoints[i] = { x: 0, z: 0 };
         }
        
@@ -247,26 +247,11 @@ class FogOfWarSystem extends GUTS.BaseSystem {
     }
 
     generateLOSVisibilityShape(unitPos, visionRadius, unitType, entityId) {
-        // Convert to tile position for cache lookup
-        const { tileX, tileZ } = this._worldToTile(unitPos.x, unitPos.z);
-        const cacheKey = `${tileX}_${tileZ}_${visionRadius}`;
-
-        // Check cache first
-        const cached = this._losCache.get(cacheKey);
-        if (cached) {
-            // Apply cached distances to current unit position
-            const angleStep = (Math.PI * 2) / this.LOS_RAYS_PER_UNIT;
-            for (let i = 0; i < this.LOS_RAYS_PER_UNIT; i++) {
-                const angle = i * angleStep;
-                this.tempVisiblePoints[i].x = unitPos.x + Math.cos(angle) * cached[i];
-                this.tempVisiblePoints[i].z = unitPos.z + Math.sin(angle) * cached[i];
-            }
-            return this.tempVisiblePoints;
-        }
-
-        // Calculate LOS shape (cache miss)
+        // Calculate LOS shape fresh each time (no caching - cache caused stale visibility)
         const angleStep = (Math.PI * 2) / this.LOS_RAYS_PER_UNIT;
-        const distances = new Float32Array(this.LOS_RAYS_PER_UNIT);
+
+        // Extra distance to extend visibility past obstacles to reduce flickering at edges
+        const visibilityOvershoot = 48;
 
         for (let i = 0; i < this.LOS_RAYS_PER_UNIT; i++) {
             const angle = i * angleStep;
@@ -303,21 +288,13 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                         maxDist = midDist;
                     }
                 }
-                visibleDist = minDist;
+                // Extend visibility slightly past the obstacle to reduce flickering
+                visibleDist = Math.min(minDist + visibilityOvershoot, visionRadius);
             }
 
-            distances[i] = visibleDist;
             this.tempVisiblePoints[i].x = unitPos.x + dirX * visibleDist;
             this.tempVisiblePoints[i].z = unitPos.z + dirZ * visibleDist;
         }
-
-        // Cache the distances (limit cache size with simple eviction)
-        if (this._losCache.size >= this._losCacheMaxSize) {
-            // Remove oldest entry (first key)
-            const firstKey = this._losCache.keys().next().value;
-            this._losCache.delete(firstKey);
-        }
-        this._losCache.set(cacheKey, distances);
 
         return this.tempVisiblePoints;
     }
@@ -419,7 +396,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             enabled: true,
             needsSwap: true,
             clear: false,
-                                    
+
             uniforms: {
                 tDiffuse: { value: null },
                 tDepth: { value: null },

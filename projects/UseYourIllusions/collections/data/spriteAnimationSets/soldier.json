@@ -1,8 +1,8 @@
 {
   "title": "Soldier",
   "spriteSheet": "sprites/soldierSprites/soldierSheet.png",
-  "spriteOffset": 15,
-  "groundLevelSpriteOffset": 18,
+  "spriteOffset": 17,
+  "groundLevelSpriteOffset": 20,
   "generatorSettings": {
     "frustumSize": 48,
     "cameraDistance": 100,
