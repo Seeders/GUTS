@@ -59,8 +59,37 @@ class FindPlayerBehaviorAction extends GUTS.BaseBehaviorAction {
         if (closestTarget !== null) {
             // Target found and visible
             const shared = this.getShared(entityId, game);
+
+            // Check if this is a new alert (wasn't tracking before)
+            const wasAlerted = shared.playerTarget !== null && shared.playerTarget !== undefined;
+
             shared.playerTarget = closestTarget;
             shared.playerTargetDistance = closestDistance;
+
+            // Play alert sound when guard first spots player
+            if (!wasAlerted && game.audioManager) {
+                const soundConfig = game.getCollections()?.sounds?.guard_alert?.audio;
+                if (soundConfig) {
+                    // Calculate distance-based volume
+                    const camera = game.hasService('getCamera') ? game.call('getCamera') : null;
+                    let volume = soundConfig.volume || 0.2;
+                    if (camera?.position && pos) {
+                        const dx = pos.x - camera.position.x;
+                        const dz = pos.z - camera.position.z;
+                        const distToCamera = Math.sqrt(dx * dx + dz * dz);
+                        const refDistance = 50;
+                        const maxDistance = 400;
+                        if (distToCamera >= maxDistance) {
+                            volume = 0;
+                        } else if (distToCamera > refDistance) {
+                            volume *= 1.0 - (distToCamera - refDistance) / (maxDistance - refDistance);
+                        }
+                    }
+                    if (volume > 0) {
+                        game.audioManager.playSynthSound(`guard_alert_${entityId}`, soundConfig, { volume });
+                    }
+                }
+            }
 
             return this.success({
                 targetId: closestTarget,

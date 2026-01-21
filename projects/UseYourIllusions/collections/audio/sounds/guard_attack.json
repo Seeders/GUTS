@@ -1,0 +1,32 @@
+{
+  "title": "Guard Attack",
+  "audio": {
+    "waveform": "sawtooth",
+    "frequency": 120,
+    "duration": 0.25,
+    "volume": 0.3,
+    "noise": {
+      "type": "white",
+      "amount": 0.4
+    },
+    "pitchEnvelope": {
+      "start": 3.0,
+      "end": 0.5,
+      "time": 0.03
+    },
+    "envelope": {
+      "attack": 0.001,
+      "decay": 0.04,
+      "sustain": 0.1,
+      "release": 0.15
+    },
+    "effects": {
+      "filter": {
+        "type": "lowpass",
+        "frequency": 2000,
+        "Q": 2
+      },
+      "distortion": 0.6
+    }
+  }
+}

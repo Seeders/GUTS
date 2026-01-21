@@ -2,7 +2,7 @@
   "title": "Barrel",
   "spriteSheet": "sprites/barrelSprites/barrelSheet.png",
   "spriteOffset": 16,
-  "groundLevelSpriteOffset": 15,
+  "groundLevelSpriteOffset": 16,
   "generatorSettings": {
     "frustumSize": 20,
     "cameraDistance": 100,
@@ -16,6 +16,7 @@
     "cameraHeight": 1,
     "isProjectile": false,
     "generateGroundLevel": true,
+    "groundCameraHeight": 0.5,
     "shaderFrames": 0,
     "animationTypes": [
       "idle"

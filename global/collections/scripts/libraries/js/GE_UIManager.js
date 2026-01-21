@@ -191,6 +191,14 @@ class GE_UIManager {
         }
         if (config.generateGroundLevel !== undefined) {
             document.getElementById('iso-ground-level').checked = config.generateGroundLevel;
+            // Show/hide ground height row based on checkbox state
+            const groundHeightRow = document.getElementById('iso-ground-height-row');
+            if (groundHeightRow) {
+                groundHeightRow.style.display = config.generateGroundLevel ? 'flex' : 'none';
+            }
+        }
+        if (config.groundCameraHeight !== undefined) {
+            document.getElementById('iso-ground-height').value = config.groundCameraHeight;
         }
         if (config.shaderFrames !== undefined) {
             document.getElementById('iso-shader-frames').value = config.shaderFrames;
@@ -339,6 +347,7 @@ class GE_UIManager {
             cameraHeight: parseFloat(document.getElementById('iso-camera-height').value) || 1,
             isProjectile: document.getElementById('iso-is-projectile')?.checked || false,
             generateGroundLevel: document.getElementById('iso-ground-level')?.checked || false,
+            groundCameraHeight: parseFloat(document.getElementById('iso-ground-height')?.value) || 0,
             shaderFrames: parseInt(document.getElementById('iso-shader-frames')?.value) || 0
         };
 

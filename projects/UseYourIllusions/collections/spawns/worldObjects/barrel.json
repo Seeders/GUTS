@@ -35,14 +35,19 @@
           "x": 0,
           "y": 0,
           "z": 0
+        },
+        "scale": {
+          "z": 0.01,
+          "y": 0.01,
+          "x": 0.01
         }
       }
     }
   },
   "height": 32,
-  "size": 32,
+  "size": 16,
   "hp": 10,
   "impassable": true,
-  "spriteAnimationSet": "barrel",
-  "collectable": true
+  "collectable": true,
+  "spriteAnimationSet": "barrel"
 }

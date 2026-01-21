@@ -215,6 +215,31 @@ class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
             game.call('triggerSinglePlayAnimation', attackerId, enums.animationType.attack, attackSpeed, minAnimationTime);
         }
 
+        // Play attack sound
+        if (game.audioManager) {
+            const soundConfig = game.getCollections()?.sounds?.guard_attack?.audio;
+            if (soundConfig) {
+                // Calculate distance-based volume
+                const camera = game.hasService('getCamera') ? game.call('getCamera') : null;
+                let volume = soundConfig.volume || 0.25;
+                if (camera?.position && attackerPos) {
+                    const dx = attackerPos.x - camera.position.x;
+                    const dz = attackerPos.z - camera.position.z;
+                    const distToCamera = Math.sqrt(dx * dx + dz * dz);
+                    const refDistance = 50;
+                    const maxDistance = 400;
+                    if (distToCamera >= maxDistance) {
+                        volume = 0;
+                    } else if (distToCamera > refDistance) {
+                        volume *= 1.0 - (distToCamera - refDistance) / (maxDistance - refDistance);
+                    }
+                }
+                if (volume > 0) {
+                    game.audioManager.playSynthSound(`guard_attack_${attackerId}_${game.state.now}`, soundConfig, { volume });
+                }
+            }
+        }
+
         // Schedule melee damage (50% through attack animation)
         const damageDelay = (1 / attackSpeed) * 0.5;
         const element = combat.element || game.getEnums().element?.physical;

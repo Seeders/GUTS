@@ -1,0 +1,28 @@
+{
+  "title": "Guard Alert",
+  "audio": {
+    "waveform": "sawtooth",
+    "frequency": 280,
+    "duration": 0.25,
+    "volume": 0.2,
+    "pitchEnvelope": {
+      "start": 0.8,
+      "end": 1.2,
+      "time": 0.15
+    },
+    "envelope": {
+      "attack": 0.01,
+      "decay": 0.08,
+      "sustain": 0.4,
+      "release": 0.12
+    },
+    "effects": {
+      "filter": {
+        "type": "bandpass",
+        "frequency": 600,
+        "Q": 2
+      },
+      "distortion": 0.3
+    }
+  }
+}

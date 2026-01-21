@@ -1,0 +1,15 @@
+{
+  "title": "Prison Song",
+  "audioFile": "sounds/prison_song.ogg",
+  "audio": {
+    "waveform": "sine",
+    "frequency": 440,
+    "duration": 1,
+    "envelope": {
+      "attack": 0.01,
+      "decay": 0.1,
+      "sustain": 0.7,
+      "release": 0.3
+    }
+  }
+}

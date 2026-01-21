@@ -29,20 +29,26 @@
         ],
         "position": {
           "x": 0,
+          "y": 0,
           "z": 0
         },
         "rotation": {
           "x": 0,
           "y": 0,
           "z": 0
+        },
+        "scale": {
+          "z": 0.005,
+          "y": 0.005,
+          "x": 0.005
         }
       }
     }
   },
   "height": 32,
-  "size": 32,
+  "size": 16,
   "hp": 10,
   "impassable": true,
-  "spriteAnimationSet": "crate",
-  "collectable": true
+  "collectable": true,
+  "spriteAnimationSet": "crate"
 }

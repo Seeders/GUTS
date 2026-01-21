@@ -1253,7 +1253,7 @@ class EntityRenderer {
 
         // NOTE: ModelManager applies the scale from the model definition when building
         // However, for cliffs we need an additional scale multiplier to match terrain scale
-     
+
         mesh.scale.multiplyScalar(32);
 
         // Apply materials

@@ -29,7 +29,6 @@
   "icon": "unit_acolyte",
   "visionRange": 500,
   "supplyCost": 2,
-  "spriteAnimationSet": "acolyte",
   "render": {
     "animations": {
       "idle": [

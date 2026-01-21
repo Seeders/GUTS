@@ -173,6 +173,15 @@ class GE_SceneRenderer {
             this.graphicsEditor.refreshShapes(false); 
         });
         document.getElementById('iso-generate').addEventListener('click', () => this.generateIsometricSprites());
+
+        // Show/hide ground height input when checkbox is toggled
+        const groundLevelCheckbox = document.getElementById('iso-ground-level');
+        const groundHeightRow = document.getElementById('iso-ground-height-row');
+        if (groundLevelCheckbox && groundHeightRow) {
+            groundLevelCheckbox.addEventListener('change', () => {
+                groundHeightRow.style.display = groundLevelCheckbox.checked ? 'flex' : 'none';
+            });
+        }
     }
     initThreeJS() {
         // Scene setup
@@ -418,8 +427,13 @@ class GE_SceneRenderer {
         // Create ground-level cameras if enabled
         let groundCameras = null;
         if (generateGroundLevel) {
-            groundCameras = SpriteUtils.createCameraArray(THREE, frustumSize, cameraDistance, modelHeight, lookAtY);
-            console.log('[SpriteGen] Ground-level cameras created at Y=' + modelHeight + ' (model height)');
+            // Get custom ground camera height, or default to model height
+            const groundHeightMultiplier = parseFloat(document.getElementById('iso-ground-height')?.value) || 0;
+            const groundCameraHeight = groundHeightMultiplier > 0
+                ? cameraDistance * groundHeightMultiplier
+                : modelHeight;
+            groundCameras = SpriteUtils.createCameraArray(THREE, frustumSize, cameraDistance, groundCameraHeight, lookAtY);
+            console.log('[SpriteGen] Ground-level cameras created at Y=' + groundCameraHeight + (groundHeightMultiplier > 0 ? ' (custom multiplier: ' + groundHeightMultiplier + ')' : ' (model height)'));
         }
 
         // Helper function to render a sprite and return canvas data URL

@@ -338,29 +338,36 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 // Convert world position to nav grid coordinates
                 const navGrid = this.worldToNavGrid(transform.position.x, transform.position.z);
 
-                // Get the object's size in tiles (default to 1x1)
-                const sizeX = unitType.size?.x || 1;
-                const sizeZ = unitType.size?.z || 1;
+                // Get the object's size in nav grid cells
+                // Support both number (world units) and object ({ x, z } in tiles) formats
+                let navSizeX, navSizeZ;
+                if (typeof unitType.size === 'number') {
+                    // Size is in world units, convert to nav grid cells
+                    const navCells = Math.max(1, Math.round(unitType.size / this.navGridSize));
+                    navSizeX = navCells;
+                    navSizeZ = navCells;
+                } else {
+                    // Size is in terrain tiles, each tile = 2 nav cells
+                    const sizeX = unitType.size?.x || 1;
+                    const sizeZ = unitType.size?.z || 1;
+                    navSizeX = sizeX * 2;
+                    navSizeZ = sizeZ * 2;
+                }
 
-                // Each terrain tile covers a 2x2 area of nav grid cells
-                // Mark all nav grid cells covered by this object as impassable
-                for (let tz = 0; tz < sizeZ; tz++) {
-                    for (let tx = 0; tx < sizeX; tx++) {
-                        // For each terrain tile the object occupies, mark the corresponding 2x2 nav grid cells
-                        for (let dz = 0; dz < 2; dz++) {
-                            for (let dx = 0; dx < 2; dx++) {
-                                // Calculate nav grid position:
-                                // navGrid is at tile center, so offset by -1 to get top-left of the 2x2 cell block
-                                // Then offset by tile position * 2 (since each tile = 2 nav cells)
-                                const nx = navGrid.x - 1 + (tx * 2) + dx;
-                                const nz = navGrid.z - 1 + (tz * 2) + dz;
+                // Mark nav grid cells covered by this object as impassable
+                // Center the blocked area on the object's position
+                const halfX = Math.floor(navSizeX / 2);
+                const halfZ = Math.floor(navSizeZ / 2);
 
-                                if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
-                                    const idx = nz * this.navGridWidth + nx;
-                                    this.navMesh[idx] = 255;
-                                    markedCells++;
-                                }
-                            }
+                for (let dz = 0; dz < navSizeZ; dz++) {
+                    for (let dx = 0; dx < navSizeX; dx++) {
+                        const nx = navGrid.x - halfX + dx;
+                        const nz = navGrid.z - halfZ + dz;
+
+                        if (nx >= 0 && nx < this.navGridWidth && nz >= 0 && nz < this.navGridHeight) {
+                            const idx = nz * this.navGridWidth + nx;
+                            this.navMesh[idx] = 255;
+                            markedCells++;
                         }
                     }
                 }

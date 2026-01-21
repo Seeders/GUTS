@@ -305,9 +305,10 @@ class RenderSystem extends GUTS.BaseSystem {
                 opacity = isHiding ? 0.5 : 1.0;
             }
 
-            // Fade player character when camera zooms in close (first-person mode)
-            const playerController = this.game.getComponent(entityId, 'playerController');
-            if (playerController?.isPlayer && this.game.hasService('getZoomLevel')) {
+            // Fade the camera's follow target when zoomed in close (first-person mode)
+            // This hides the character the camera is following so it doesn't block the view
+            const cameraFollowTarget = this.game.cameraControlSystem?.followTargetId;
+            if (entityId === cameraFollowTarget && this.game.hasService('getZoomLevel')) {
                 const zoomLevel = this.game.call('getZoomLevel');
                 const fadeStart = 0.2;  // Start fading at this zoom level
                 const fadeEnd = 0.05;   // Fully transparent at this zoom level

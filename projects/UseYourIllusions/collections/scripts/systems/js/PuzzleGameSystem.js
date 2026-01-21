@@ -112,6 +112,15 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         // Exit zones are now automatically configured by UnitCreationSystem via prefab
         // when world objects have exit: true in their type data
 
+        // Start background music if level has songSound defined
+        if (levelData.songSound && this.game.audioManager) {
+            this.game.audioManager.playMusic(levelData.songSound, {
+                volume: 0.4,
+                loop: true,
+                fadeInTime: 2
+            });
+        }
+
         console.log(`[PuzzleGameSystem] Initialized level: ${this.currentLevelId}`);
     }
 
@@ -289,5 +298,10 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
     onSceneUnload() {
         this.playerEntityId = null;
         this.gameOver = false;
+
+        // Stop background music when leaving level
+        if (this.game.audioManager) {
+            this.game.audioManager.stopMusic(1);
+        }
     }
 }
