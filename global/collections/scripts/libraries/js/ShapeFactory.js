@@ -4,12 +4,15 @@ class ShapeFactory {
         this.gltfLoader = new THREE.GLTFLoader();
         this.palette = palette;
         this.textures = textures;
+        this.shaders = null; // Shaders collection for custom materials
+        this.imageManager = null; // ImageManager for loading shader textures
         this.skeleUtils = THREE.SkeletonUtils;
         this.urlRoot = "/";
         this.resourcesPath = resourcesPath;
         this.gltfModelScale = gltfModelScale;
         this.models = models; // Models collection for resolving model references
         this.animations = animations; // Animations collection for resolving animation references
+        this.shaderMaterials = []; // Track shader materials for time updates
     }
 
     /**
@@ -26,6 +29,105 @@ class ShapeFactory {
      */
     setAnimations(animations) {
         this.animations = animations;
+    }
+
+    /**
+     * Set the shaders collection for custom materials
+     * @param {Object} shaders - The shaders collection from getCollections()
+     */
+    setShaders(shaders) {
+        this.shaders = shaders;
+    }
+
+    /**
+     * Set the image manager for loading shader textures
+     * @param {Object} imageManager - The ImageManager instance
+     */
+    setImageManager(imageManager) {
+        this.imageManager = imageManager;
+    }
+
+    /**
+     * Update time uniform for all shader materials
+     * @param {number} time - Current time in seconds
+     */
+    updateShaderTime(time) {
+        for (const material of this.shaderMaterials) {
+            if (material.uniforms && material.uniforms.time) {
+                material.uniforms.time.value = time;
+            }
+        }
+    }
+
+    /**
+     * Create a shader material from a shader definition
+     * @param {Object} shaderDef - The shader definition from shaders collection
+     * @param {THREE.Texture} texture - Optional texture to use
+     * @returns {THREE.ShaderMaterial} The created shader material
+     */
+    createShaderMaterial(shaderDef, texture = null) {
+        const shaderUniforms = {};
+
+        // Build uniforms from shader definition
+        if (shaderDef.uniforms) {
+            for (const [key, uniformDef] of Object.entries(shaderDef.uniforms)) {
+                const isVector = shaderDef.vectors?.includes(key);
+                let value = uniformDef.value;
+
+                if (isVector && Array.isArray(value)) {
+                    if (value.length === 2) {
+                        value = new THREE.Vector2(value[0], value[1]);
+                    } else if (value.length === 3) {
+                        value = new THREE.Vector3(value[0], value[1], value[2]);
+                    } else if (value.length === 4) {
+                        value = new THREE.Vector4(value[0], value[1], value[2], value[3]);
+                    }
+                }
+                shaderUniforms[key] = { value };
+            }
+        }
+
+        // Add texture uniform if texture provided
+        if (texture) {
+            // Use the texture uniform name from shader def, or default to 'portalTexture'
+            const textureUniformName = shaderDef.textureUniform || 'portalTexture';
+            shaderUniforms[textureUniformName] = { value: texture };
+        }
+
+        const material = new THREE.ShaderMaterial({
+            uniforms: shaderUniforms,
+            vertexShader: shaderDef.vertexScript,
+            fragmentShader: shaderDef.fragmentScript,
+            transparent: true,
+            side: THREE.DoubleSide
+        });
+
+        // Track for time updates
+        this.shaderMaterials.push(material);
+
+        return material;
+    }
+
+    /**
+     * Load a texture directly from the textures collection (fallback when no ImageManager)
+     * @param {string} textureName - The texture name from the textures collection
+     * @returns {THREE.Texture|null} The loaded texture or null
+     */
+    loadShaderTexture(textureName) {
+        if (!textureName || !this.textures) return null;
+
+        const textureData = this.textures[textureName];
+        if (!textureData || !textureData.imagePath) return null;
+
+        const textureLoader = new THREE.TextureLoader();
+        const texturePath = this.getResourcesPath(textureData.imagePath);
+
+        // Load texture synchronously for now (will be undefined until loaded)
+        const texture = textureLoader.load(texturePath);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+
+        return texture;
     }
 
     /**
@@ -230,17 +332,50 @@ class ShapeFactory {
                         child.geometry.deleteAttribute('color');
                     }
 
-                    // Use white color instead of preserving original to prevent darkening
-                    // Original GLTF materials might have gray colors that darken textures
-                    child.material = new THREE.MeshStandardMaterial({
-                        color: 0xffffff,
-                        metalness: shape.metalness !== undefined ? shape.metalness : (originalMaterial.metalness || 0.5),
-                        roughness: shape.roughness !== undefined ? shape.roughness : (originalMaterial.roughness || 0.5),
-                        map: map,
-                        aoMap: null,  // Don't use AO map
-                        aoMapIntensity: 0,  // Disable AO
-                        vertexColors: false
-                    });
+                    // Check if shape has a custom shader
+                    const shaderDef = shape.shader && this.shaders?.[shape.shader];
+                    if (shaderDef && shaderDef.fragmentScript && shaderDef.vertexScript) {
+                        // Load shader texture if specified
+                        let shaderTexture = null;
+                        if (shaderDef.texture) {
+                            // Try ImageManager first, fall back to direct loading
+                            if (this.imageManager) {
+                                shaderTexture = this.imageManager.getTexture(shaderDef.texture);
+                            }
+                            if (!shaderTexture) {
+                                shaderTexture = this.loadShaderTexture(shaderDef.texture);
+                            }
+                            if (shaderTexture) {
+                                // Set wrap mode based on shader definition
+                                // Options: "repeat" (default), "clamp", "mirror"
+                                const wrapMode = shaderDef.textureWrap || 'repeat';
+                                if (wrapMode === 'clamp') {
+                                    shaderTexture.wrapS = THREE.ClampToEdgeWrapping;
+                                    shaderTexture.wrapT = THREE.ClampToEdgeWrapping;
+                                } else if (wrapMode === 'mirror') {
+                                    shaderTexture.wrapS = THREE.MirroredRepeatWrapping;
+                                    shaderTexture.wrapT = THREE.MirroredRepeatWrapping;
+                                } else {
+                                    shaderTexture.wrapS = THREE.RepeatWrapping;
+                                    shaderTexture.wrapT = THREE.RepeatWrapping;
+                                }
+                            }
+                        }
+                        // Create shader material
+                        child.material = this.createShaderMaterial(shaderDef, shaderTexture);
+                    } else {
+                        // Use white color instead of preserving original to prevent darkening
+                        // Original GLTF materials might have gray colors that darken textures
+                        child.material = new THREE.MeshStandardMaterial({
+                            color: 0xffffff,
+                            metalness: shape.metalness !== undefined ? shape.metalness : (originalMaterial.metalness || 0.5),
+                            roughness: shape.roughness !== undefined ? shape.roughness : (originalMaterial.roughness || 0.5),
+                            map: map,
+                            aoMap: null,  // Don't use AO map
+                            aoMapIntensity: 0,  // Disable AO
+                            vertexColors: false
+                        });
+                    }
                     child.material.alphaTest = 0.1;
                     child.material.needsUpdate = true;
                     child.castShadow = true;
@@ -250,14 +385,14 @@ class ShapeFactory {
                         index: index,
                         isGLTFChild: true
                     };
-                    
+
                     // Check if this is a skinned mesh
                     if (child.isSkinnedMesh) {
                         skinnedMesh = child;
                         skeleton = child.skeleton;
                     }
                 }
-                
+
                 // Collect all bones for equipment attachment
                 if (child.isBone) {
                     modelBones.set(child.name, child);

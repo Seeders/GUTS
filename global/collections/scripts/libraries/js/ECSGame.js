@@ -1,13 +1,14 @@
 class ECSGame extends GUTS.BaseECSGame {
     constructor(app){
-        super(app);   
+        super(app);
         this.imageManager = new GUTS.ImageManager(app,
             {
                 imageSize: this.getCollections().configs.game.imageSize,
                 palette: this.getCollections().configs.game.palette,
                 textures: this.getCollections().textures,
                 models: this.getCollections().models,
-                animations: this.getCollections().animations
+                animations: this.getCollections().animations,
+                shaders: this.getCollections().shaders
             }
         );         
         this.state = new GUTS.GameState(this.getCollections());  

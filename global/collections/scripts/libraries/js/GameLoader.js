@@ -147,7 +147,7 @@ class GameLoader extends GUTS.BaseLoader {
             await this.game.imageManager.loadTextures(this.collections.textures, onTextureProgress);
         }
 
-        this.game.modelManager = new GUTS.ModelManager(this.game.app, {}, { ShapeFactory: GUTS.ShapeFactory, palette: this.game.palette, textures: this.game.getCollections().textures, models: this.game.getCollections().models, animations: this.game.getCollections().animations});
+        this.game.modelManager = new GUTS.ModelManager(this.game.app, {}, { ShapeFactory: GUTS.ShapeFactory, palette: this.game.palette, textures: this.game.getCollections().textures, models: this.game.getCollections().models, animations: this.game.getCollections().animations, shaders: this.game.getCollections().shaders, imageManager: this.game.imageManager });
 
         const onModelProgress = this.progress ? () => this.progress.increment('models') : null;
         for(let objectType in this.collections) {

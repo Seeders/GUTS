@@ -35,7 +35,11 @@
     "RenderSystem",
     "AnimationSystem",
     "UnitCreationSystem",
-    "SelectedUnitSystem"
+    "SelectedUnitSystem",
+    "ParticleSystem",
+    "SchedulingSystem",
+    "SpawnEffectsSystem",
+    "LightingSystem"
   ],
   "propertyName": "tileMap",
   "interface": "terrainEditor",

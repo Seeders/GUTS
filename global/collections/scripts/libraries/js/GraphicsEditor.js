@@ -20,6 +20,10 @@ class GraphicsEditor {
         this.gameEditor = gameEditor;
         this.config = config;
         this.shapeFactory = new GUTS.ShapeFactory(this.gameEditor.getResourcesPath(), this.gameEditor.getPalette(), this.gameEditor.getCollections().textures, null, 32, this.gameEditor.getCollections().models, this.gameEditor.getCollections().animations);
+        // Pass shaders to ShapeFactory for custom material support
+        if (this.gameEditor.getCollections().shaders) {
+            this.shapeFactory.setShaders(this.gameEditor.getCollections().shaders);
+        }
         if(location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }

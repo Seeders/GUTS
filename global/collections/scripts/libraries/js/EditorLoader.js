@@ -73,7 +73,9 @@ class EditorLoader {
                 palette: this.game.palette,
                 textures: this.collections.textures,
                 models: this.collections.models,
-                animations: this.collections.animations
+                animations: this.collections.animations,
+                shaders: this.collections.shaders,
+                imageManager: this.game.imageManager
             }
         );
 

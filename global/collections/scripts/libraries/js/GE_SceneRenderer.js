@@ -259,10 +259,10 @@ class GE_SceneRenderer {
     animate() {
         requestAnimationFrame(this.animate.bind(this));
         this.controls.update();
-        
+
         // Calculate delta once per frame
         const delta = this.clock ? this.clock.getDelta() : 0;
-        
+
         // Update all mixers with the same delta
         this.scene.traverse(object => {
             if (object.userData.mixer) {
@@ -272,7 +272,13 @@ class GE_SceneRenderer {
                 object.skeleton.update();
             }
         });
-    
+
+        // Update shader time for custom materials (e.g., portal effects)
+        if (this.graphicsEditor.shapeFactory) {
+            const elapsed = this.clock ? this.clock.getElapsedTime() : 0;
+            this.graphicsEditor.shapeFactory.updateShaderTime(elapsed);
+        }
+
         this.renderer.render(this.scene, this.camera);
     }
     
@@ -375,6 +381,11 @@ class GE_SceneRenderer {
 
         // Get ground-level flag for generating additional ground-level sprites
         const generateGroundLevel = document.getElementById('iso-ground-level')?.checked || false;
+
+        // Get shader animation settings
+        // Duration is calculated from frames and FPS (e.g., 16 frames at 4 FPS = 4 seconds)
+        const shaderFrames = parseInt(document.getElementById('iso-shader-frames')?.value) || 0;
+        const shaderDuration = shaderFrames > 0 ? shaderFrames / animationFPS : 0;
 
         // Ballistic pitch angles for projectiles (model rotation on X-axis)
         // Negative degrees = pointing up, positive = pointing down
@@ -521,12 +532,38 @@ class GE_SceneRenderer {
 
         if (isStaticBuilding && (!hasAnimationData || Object.keys(animations).length === 0)) {
             console.log('[SpriteGen] Generating static building sprites...');
-            // Generate a single static sprite from all camera angles
-            // Structure: sprites['idle'][0] = [8 directional sprites]
-            sprites['idle'] = [[]];
 
-            for (const camera of cameras) {
-                sprites['idle'][0].push(renderSpriteToDataURL(camera));
+            // Check if we need to generate shader animation frames
+            if (shaderFrames > 0) {
+                console.log(`[SpriteGen] Generating ${shaderFrames} shader animation frames over ${shaderDuration}s...`);
+                sprites['idle'] = [];
+
+                for (let frameIdx = 0; frameIdx < shaderFrames; frameIdx++) {
+                    // Calculate the simulated time for this frame
+                    const simulatedTime = (frameIdx / shaderFrames) * shaderDuration;
+
+                    // Update shader time for all shader materials
+                    if (this.graphicsEditor.shapeFactory) {
+                        this.graphicsEditor.shapeFactory.updateShaderTime(simulatedTime);
+                    }
+
+                    // Render all 8 directions for this frame
+                    const frameSprites = [];
+                    for (const camera of cameras) {
+                        frameSprites.push(renderSpriteToDataURL(camera));
+                    }
+                    sprites['idle'].push(frameSprites);
+                }
+
+                console.log(`[SpriteGen] Generated ${shaderFrames} shader animation frames`);
+            } else {
+                // Generate a single static sprite from all camera angles
+                // Structure: sprites['idle'][0] = [8 directional sprites]
+                sprites['idle'] = [[]];
+
+                for (const camera of cameras) {
+                    sprites['idle'][0].push(renderSpriteToDataURL(camera));
+                }
             }
 
             // Generate ballistic angle sprites for projectiles (static models)
@@ -557,12 +594,33 @@ class GE_SceneRenderer {
             // Generate ground-level sprites for static buildings
             if (generateGroundLevel && groundCameras) {
                 console.log('[SpriteGen] Generating ground-level sprites for static building...');
-                groundLevelSprites['idle'] = [[]];
 
-                for (const camera of groundCameras) {
-                    groundLevelSprites['idle'][0].push(renderSpriteToDataURL(camera));
+                if (shaderFrames > 0) {
+                    // Generate shader animation frames for ground-level sprites
+                    groundLevelSprites['idle'] = [];
+
+                    for (let frameIdx = 0; frameIdx < shaderFrames; frameIdx++) {
+                        const simulatedTime = (frameIdx / shaderFrames) * shaderDuration;
+
+                        if (this.graphicsEditor.shapeFactory) {
+                            this.graphicsEditor.shapeFactory.updateShaderTime(simulatedTime);
+                        }
+
+                        const frameSprites = [];
+                        for (const camera of groundCameras) {
+                            frameSprites.push(renderSpriteToDataURL(camera));
+                        }
+                        groundLevelSprites['idle'].push(frameSprites);
+                    }
+                    console.log(`[SpriteGen] Generated ${shaderFrames} ground-level shader animation frames`);
+                } else {
+                    groundLevelSprites['idle'] = [[]];
+
+                    for (const camera of groundCameras) {
+                        groundLevelSprites['idle'][0].push(renderSpriteToDataURL(camera));
+                    }
+                    console.log('[SpriteGen] Generated ground-level sprites (8 directions)');
                 }
-                console.log('[SpriteGen] Generated ground-level sprites (8 directions)');
             }
         } else {
             // Only process animation loop if we didn't generate static building sprites

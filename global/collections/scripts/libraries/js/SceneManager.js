@@ -116,7 +116,13 @@ class SceneManager {
         this.game.state.isLoadingSave = false;
         // Note: Don't clear pendingSaveData here - it may be needed for the incoming scene
 
-        // Notify systems that are being unloaded (not kept)
+        // Clear the current interface marker so the next scene's interface will be loaded
+        const appContainer = document.getElementById('appContainer');
+        if (appContainer) {
+            delete appContainer.dataset.currentInterface;
+        }
+
+        // Notify all systems that scene is being unloaded
         this.notifySceneUnloading(keepSystems);
 
         // Destroy ALL entities - not just scene-spawned ones
@@ -301,17 +307,14 @@ class SceneManager {
 
     /**
      * Notify systems that the scene is being unloaded
-     * Only notifies systems that are being destroyed (not kept for next scene)
-     * @param {Set<string>} [keepSystems] - System names that will be kept
+     * Calls onSceneUnload on ALL enabled systems so they can clean up resources
+     * (e.g., WorldSystem needs to dispose renderer even when kept for next scene)
+     * @param {Set<string>} [keepSystems] - System names that will be kept (unused, kept for API compatibility)
      */
     notifySceneUnloading(keepSystems = new Set()) {
         for (const system of this.game.systems) {
             if (system.enabled && system.onSceneUnload) {
-                const systemName = system.constructor.name;
-                // Only call onSceneUnload for systems being destroyed
-                if (!keepSystems.has(systemName)) {
-                    system.onSceneUnload();
-                }
+                system.onSceneUnload();
             }
         }
     }

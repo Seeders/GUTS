@@ -750,7 +750,7 @@ class TerrainMapEditor {
     }
 
     /**
-     * Get available prefabs by finding objectTypeDefinitions with objectTypeCategory: "prefabs"
+     * Get available prefabs by finding objectTypeDefinitions with objectTypeCategory: "spawns"
      * Then match each to its prefab via the singular name
      */
     getAvailablePrefabs() {
@@ -759,8 +759,8 @@ class TerrainMapEditor {
         const availablePrefabs = [];
 
         for (const [typeId, typeDef] of Object.entries(objectTypeDefinitions)) {
-            // Only include collections marked as "prefabs" category
-            if (typeDef.objectTypeCategory !== 'prefabs') continue;
+            // Only include collections marked as "spawns" category
+            if (typeDef.objectTypeCategory !== 'spawns') continue;
 
             // The singular name should match a prefab name (e.g., "unit" matches prefab "unit")
             const prefabId = typeDef.singular;

@@ -1,6 +1,6 @@
 
 class ImageManager {
-    constructor(app, {imageSize, palette, textures, models, animations}) {
+    constructor(app, {imageSize, palette, textures, models, animations, shaders}) {
         this.app = app;
         this.images = {};
         this.imageSize = imageSize || 128;
@@ -27,6 +27,11 @@ class ImageManager {
         const aspect = 1;
 
         this.shapeFactory = new GUTS.ShapeFactory(this.app.getResourcesPath(), palette, textures, null, 32, models, animations);
+        // Pass shaders and imageManager reference to ShapeFactory for custom shader support
+        if (shaders) {
+            this.shapeFactory.setShaders(shaders);
+        }
+        this.shapeFactory.setImageManager(this);
         if(location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");
         }
