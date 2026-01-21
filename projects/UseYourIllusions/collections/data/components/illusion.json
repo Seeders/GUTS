@@ -1,7 +1,7 @@
 {
   "title": "illusion",
   "schema": {
-    "sourcePrefab": null,
+    "sourcePrefab": "",
     "creatorEntity": null,
     "createdTime": 0,
     "duration": 30,

@@ -1,0 +1,31 @@
+{
+  "title": "Portal",
+  "fragmentScript": "uniform float time;\nuniform sampler2D portalTexture;\nuniform float rotationSpeed;\nuniform float textureScale;\nuniform vec3 portalColor;\nuniform float colorMix;\nvarying vec2 vUv;\n\nvoid main() {\n    // Rotate UVs around center\n    float angle = time * rotationSpeed;\n    vec2 center = vec2(0.5, 0.5);\n    vec2 uv = vUv - center;\n    \n    float s = sin(angle);\n    float c = cos(angle);\n    vec2 rotatedUV = vec2(uv.x * c - uv.y * s, uv.x * s + uv.y * c);\n    rotatedUV = (rotatedUV / textureScale) + center;\n    \n    vec4 texColor = texture2D(portalTexture, rotatedUV);\n    \n    // Mix texture with portal color\n    vec3 finalColor = mix(texColor.rgb, portalColor * texColor.rgb, colorMix);\n    \n    gl_FragColor = vec4(finalColor, texColor.a);\n}",
+  "vertexScript": "varying vec2 vUv;\n\nvoid main() {\n    vUv = uv;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}",
+  "uniforms": {
+    "time": {
+      "value": 0
+    },
+    "rotationSpeed": {
+      "value": -1
+    },
+    "textureScale": {
+      "value": 1
+    },
+    "portalColor": {
+      "value": [
+        0.3,
+        0.6,
+        1
+      ]
+    },
+    "colorMix": {
+      "value": 0.5
+    }
+  },
+  "vectors": [
+    "portalColor"
+  ],
+  "texture": "portal_swirl",
+  "textureWrap": "clamp"
+}

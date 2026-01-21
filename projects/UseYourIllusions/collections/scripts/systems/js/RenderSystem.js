@@ -77,7 +77,6 @@ class RenderSystem extends GUTS.BaseSystem {
      * Uses postSceneLoad to ensure WorldSystem has created the Three.js scene first
      */
     postSceneLoad(sceneData) {
-
         // Scene should be available now from WorldSystem
         if (!this.game.scene) {
             console.error('[RenderSystem] Scene not available in postSceneLoad - WorldSystem may have failed');
@@ -468,6 +467,13 @@ class RenderSystem extends GUTS.BaseSystem {
         if (!deltaTime) return;
 
         this.entityRenderer.updateAnimations(deltaTime);
+
+        // Update shader time for custom materials (e.g., portal effects)
+        const modelManager = this.game.modelManager;
+        if (modelManager?.shapeFactory) {
+            const currentTime = this.game.state?.now || 0;
+            modelManager.shapeFactory.updateShaderTime(currentTime);
+        }
     }
 
     finalizeUpdates() {

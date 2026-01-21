@@ -4,6 +4,7 @@
   "interface": "game",
   "loader": "GameLoader",
   "systems": [
+    "PauseSystem",
     "GridSystem",
     "TerrainSystem",
     "PlayerStatsSystem",
@@ -30,6 +31,8 @@
     "EffectsSystem",
     "InputSystem",
     "ParticleSystem",
+    "SpawnEffectsSystem",
+    "LightingSystem",
     "HealthBarSystem",
     "FogOfWarSystem",
     "CameraControlSystem",

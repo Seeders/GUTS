@@ -1,0 +1,58 @@
+{
+  "title": "Brazier",
+  "description": "A brazier.",
+  "particleEffectSystem": "brazier_fire",
+  "particleEffectOffset": { "x": 0, "y": 14, "z": 0 },
+  "pointLight": {
+    "color": "#ff8833",
+    "intensity": 500,
+    "distance": 500,
+    "decay": 1.0,
+    "offset": { "x": 0, "y": 30, "z": 0 },
+    "effect": "flicker"
+  },
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "color": "#ffffff",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "metalness": 0,
+            "roughness": 1,
+            "name": "brazier",
+            "model": "brazier"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    }
+  },
+  "height": 16,
+  "size": 16,
+  "hp": 10,
+  "impassable": true,
+  "spriteAnimationSet": "brazier",
+  "collectable": true
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Illusion Blocks Guard Vision",
+  "description": "Tests that a barrel illusion placed between guard and player blocks line of sight",
+  "seed": 12345,
+  "level": "test_arena",
+  "maxTicks": 300,
+  "testType": "puzzle",
+  "setup": {
+    "removeDesirables": true,
+    "positionGuard": { "x": 0, "z": -100 },
+    "positionPlayer": { "x": 0, "z": 200 },
+    "createBarrelIllusion": { "x": 0, "z": 50 }
+  },
+  "expectedOutcome": {
+    "playerDied": false,
+    "guardChasedPlayer": false
+  }
+}

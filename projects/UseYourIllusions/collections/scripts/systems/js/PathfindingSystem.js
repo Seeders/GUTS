@@ -405,6 +405,56 @@ class PathfindingSystem extends GUTS.BaseSystem {
         return this.navMesh[gridZ * this.navGridWidth + gridX];
     }
 
+    /**
+     * Check if a nav grid position is blocked by an illusion of an impassable object
+     * @param {number} gridX - Nav grid X coordinate
+     * @param {number} gridZ - Nav grid Z coordinate
+     * @returns {boolean} True if blocked by an illusion
+     */
+    isBlockedByIllusion(gridX, gridZ) {
+        // Get all active illusions
+        const illusions = this.game.illusionSystem?.getActiveIllusions();
+        if (!illusions || illusions.length === 0) return false;
+
+        const collections = this.collections;
+
+        for (const illusionId of illusions) {
+            const transform = this.game.getComponent(illusionId, 'transform');
+            const illusion = this.game.getComponent(illusionId, 'illusion');
+            if (!transform?.position || !illusion?.sourcePrefab) continue;
+
+            // Get the source object's data to check if it's impassable
+            const prefabData = collections.worldObjects?.[illusion.sourcePrefab];
+            if (!prefabData || prefabData.impassable === false || !prefabData.size) continue;
+
+            // Convert illusion world position to nav grid
+            const illusionNavGrid = this.worldToNavGrid(transform.position.x, transform.position.z);
+
+            // Get object size in tiles
+            const sizeX = prefabData.size?.x || 1;
+            const sizeZ = prefabData.size?.z || 1;
+
+            // Check if this grid cell is within the illusion's footprint
+            // Each terrain tile covers a 2x2 area of nav grid cells
+            for (let tz = 0; tz < sizeZ; tz++) {
+                for (let tx = 0; tx < sizeX; tx++) {
+                    for (let dz = 0; dz < 2; dz++) {
+                        for (let dx = 0; dx < 2; dx++) {
+                            const nx = illusionNavGrid.x - 1 + (tx * 2) + dx;
+                            const nz = illusionNavGrid.z - 1 + (tz * 2) + dz;
+
+                            if (nx === gridX && nz === gridZ) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     requestPath(entityId, startX, startZ, endX, endZ, priority = 0) {
         const cacheKey = `${Math.floor(startX/50)},${Math.floor(startZ/50)}-${Math.floor(endX/50)},${Math.floor(endZ/50)}`;
 
@@ -497,12 +547,15 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 const neighborTerrain = this.getTerrainAtNavGrid(neighborX, neighborZ);
                 if (neighborTerrain === null || neighborTerrain === 255) continue;
 
+                // Check if blocked by an illusion of an impassable object
+                if (this.isBlockedByIllusion(neighborX, neighborZ)) continue;
+
                 if (!this.canWalkBetweenTerrainsWithRamps(currentTerrain, neighborTerrain, current.x, current.z, neighborX, neighborZ)) {
                     continue;
                 }
-                
+
                 const isDiagonal = dir.dx !== 0 && dir.dz !== 0;
-                
+
                 // For diagonal moves, check both adjacent cells to prevent corner cutting
                 if (isDiagonal) {
                     const terrainX = this.getTerrainAtNavGrid(current.x + dir.dx, current.z);
@@ -511,6 +564,12 @@ class PathfindingSystem extends GUTS.BaseSystem {
                     // Both adjacent cells must exist and be walkable
                     if (terrainX === null || terrainX === 255 ||
                         terrainZ === null || terrainZ === 255) {
+                        continue;
+                    }
+
+                    // Also check illusions for diagonal corner cells
+                    if (this.isBlockedByIllusion(current.x + dir.dx, current.z) ||
+                        this.isBlockedByIllusion(current.x, current.z + dir.dz)) {
                         continue;
                     }
 
@@ -646,6 +705,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 return false;
             }
 
+            // Check if blocked by an illusion
+            if (this.isBlockedByIllusion(x, z)) {
+                return false;
+            }
+
             // Check if current terrain is walkable
             if (!this.isTerrainWalkable(currentTerrain)) {
                 return false;
@@ -655,11 +719,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
             if (!this.canWalkBetweenTerrainsWithRamps(lastTerrain, currentTerrain, lastX, lastZ, x, z)) {
                 return false;
             }
-            
+
             const e2 = 2 * err;
             const willMoveX = e2 > -dz;
             const willMoveZ = e2 < dx;
-            
+
             // For diagonal movement, check both adjacent cells to prevent corner cutting
             if (willMoveX && willMoveZ) {
                 const terrainX = this.getTerrainAtNavGrid(x + sx, z);
@@ -668,6 +732,11 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 // Both adjacent cells must be valid and walkable
                 if (terrainX === null || terrainX === 255 ||
                     terrainZ === null || terrainZ === 255) {
+                    return false;
+                }
+
+                // Check illusions for diagonal corner cells
+                if (this.isBlockedByIllusion(x + sx, z) || this.isBlockedByIllusion(x, z + sz)) {
                     return false;
                 }
 
@@ -697,16 +766,17 @@ class PathfindingSystem extends GUTS.BaseSystem {
             }
         }
     }
+
     hasLineOfSight(from, to) {
         const fromGrid = this.worldToNavGrid(from.x, from.z);
         const toGrid = this.worldToNavGrid(to.x, to.z);
-        
+
         const dx = Math.abs(toGrid.x - fromGrid.x);
         const dz = Math.abs(toGrid.z - fromGrid.z);
         const sx = fromGrid.x < toGrid.x ? 1 : -1;
         const sz = fromGrid.z < toGrid.z ? 1 : -1;
         let err = dx - dz;
-        
+
         let x = fromGrid.x;
         let z = fromGrid.z;
         let lastX = x;
@@ -719,23 +789,31 @@ class PathfindingSystem extends GUTS.BaseSystem {
             const currentTerrain = this.getTerrainAtNavGrid(x, z);
             if (currentTerrain === null || currentTerrain === 255) return false;
 
+            // Check if blocked by an illusion
+            if (this.isBlockedByIllusion(x, z)) return false;
+
             if (!this.canWalkBetweenTerrainsWithRamps(lastTerrain, currentTerrain, lastX, lastZ, x, z)) {
                 return false;
             }
-            
+
             const e2 = 2 * err;
             const willMoveX = e2 > -dz;
             const willMoveZ = e2 < dx;
-            
+
             // Check for diagonal movement (corner cutting)
             if (willMoveX && willMoveZ) {
                 // We're moving diagonally - check both adjacent cells to prevent corner cutting
                 const terrainX = this.getTerrainAtNavGrid(x + sx, z);
                 const terrainZ = this.getTerrainAtNavGrid(x, z + sz);
-                
+
                 // Both adjacent cells must be valid and walkable from current position
                 if (terrainX === null || terrainX === 255 ||
                     terrainZ === null || terrainZ === 255) {
+                    return false;
+                }
+
+                // Check illusions for diagonal corner cells
+                if (this.isBlockedByIllusion(x + sx, z) || this.isBlockedByIllusion(x, z + sz)) {
                     return false;
                 }
 

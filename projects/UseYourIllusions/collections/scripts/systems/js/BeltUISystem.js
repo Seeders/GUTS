@@ -1,5 +1,5 @@
 /**
- * BeltUISystem - Displays the magic belt UI and handles slot selection
+ * BeltUISystem - Displays the magic belt UI, clone ability indicator, and handles slot selection
  */
 class BeltUISystem extends GUTS.BaseSystem {
     static services = [
@@ -10,6 +10,7 @@ class BeltUISystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.beltUISystem = this;
+        this.cloneTimerInterval = null;
     }
 
     init() {
@@ -19,6 +20,7 @@ class BeltUISystem extends GUTS.BaseSystem {
         const sceneName = this.game.sceneManager.currentSceneName;
         if (sceneName === 'game') {
             this.setupBeltUI();
+            this.setupCloneAbilityUI();
         }
     }
 
@@ -229,6 +231,171 @@ class BeltUISystem extends GUTS.BaseSystem {
         return icons[itemType] || '❓';
     }
 
+    setupCloneAbilityUI() {
+        let cloneContainer = document.getElementById('cloneAbilityUI');
+        if (!cloneContainer) {
+            cloneContainer = document.createElement('div');
+            cloneContainer.id = 'cloneAbilityUI';
+            cloneContainer.className = 'clone-ability-container';
+            cloneContainer.innerHTML = `
+                <div class="clone-ability-box" id="cloneAbilityBox">
+                    <div class="clone-icon">👤</div>
+                    <div class="clone-key">Q</div>
+                    <div class="clone-label">Clone</div>
+                    <div class="clone-timer" id="cloneTimer"></div>
+                    <div class="clone-progress-bar" id="cloneProgressBar"></div>
+                </div>
+            `;
+
+            const gameContainer = document.getElementById('gameScreen') || document.body;
+            gameContainer.appendChild(cloneContainer);
+        }
+
+        this.addCloneAbilityCSS();
+        this.startCloneTimerUpdate();
+    }
+
+    addCloneAbilityCSS() {
+        if (document.getElementById('clone-ability-styles')) return;
+
+        const style = document.createElement('style');
+        style.id = 'clone-ability-styles';
+        style.textContent = `
+            .clone-ability-container {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 1000;
+            }
+
+            .clone-ability-box {
+                width: 70px;
+                height: 70px;
+                background: linear-gradient(145deg, rgba(30, 30, 50, 0.95), rgba(20, 20, 40, 0.95));
+                border: 2px solid #4080ff;
+                border-radius: 10px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+                transition: all 0.2s ease;
+            }
+
+            .clone-ability-box.active {
+                border-color: #00ffff;
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+                background: linear-gradient(145deg, rgba(64, 128, 255, 0.3), rgba(20, 20, 40, 0.95));
+            }
+
+            .clone-ability-box.controlling-clone {
+                border-color: #ff8040;
+                box-shadow: 0 0 20px rgba(255, 128, 64, 0.5);
+            }
+
+            .clone-icon {
+                font-size: 24px;
+                margin-bottom: 2px;
+            }
+
+            .clone-key {
+                position: absolute;
+                top: 4px;
+                right: 6px;
+                font-size: 10px;
+                color: #666;
+                font-weight: bold;
+            }
+
+            .clone-label {
+                font-size: 10px;
+                color: #4080ff;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .clone-ability-box.active .clone-label {
+                color: #00ffff;
+            }
+
+            .clone-ability-box.controlling-clone .clone-label {
+                color: #ff8040;
+            }
+
+            .clone-timer {
+                font-size: 12px;
+                color: #fff;
+                font-weight: bold;
+                position: absolute;
+                bottom: 4px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .clone-progress-bar {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 3px;
+                background: #00ffff;
+                border-radius: 0 0 8px 8px;
+                transition: width 0.1s linear;
+            }
+
+            .clone-ability-box.controlling-clone .clone-progress-bar {
+                background: #ff8040;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    startCloneTimerUpdate() {
+        if (this.cloneTimerInterval) {
+            clearInterval(this.cloneTimerInterval);
+        }
+
+        this.cloneTimerInterval = setInterval(() => {
+            this.updateCloneAbilityUI();
+        }, 100);
+    }
+
+    updateCloneAbilityUI() {
+        const playerEntity = this.game.call('getPlayerEntity');
+        if (!playerEntity) return;
+
+        const playerController = this.game.getComponent(playerEntity, 'playerController');
+        if (!playerController) return;
+
+        const cloneBox = document.getElementById('cloneAbilityBox');
+        const cloneTimer = document.getElementById('cloneTimer');
+        const cloneProgressBar = document.getElementById('cloneProgressBar');
+
+        if (!cloneBox) return;
+
+        const hasClone = playerController.activeCloneId && this.game.hasEntity(playerController.activeCloneId);
+        const controllingClone = playerController.controllingClone;
+
+        cloneBox.classList.toggle('active', hasClone);
+        cloneBox.classList.toggle('controlling-clone', hasClone && controllingClone);
+
+        if (hasClone) {
+            const playerClone = this.game.getComponent(playerController.activeCloneId, 'playerClone');
+            if (playerClone) {
+                const now = this.game.state.now || 0;
+                const remaining = Math.max(0, playerClone.expiresAt - now);
+                const duration = playerClone.duration || 10;
+                const progress = (remaining / duration) * 100;
+
+                cloneTimer.textContent = remaining.toFixed(1) + 's';
+                cloneProgressBar.style.width = progress + '%';
+            }
+        } else {
+            cloneTimer.textContent = '';
+            cloneProgressBar.style.width = '0%';
+        }
+    }
+
     onSceneUnload() {
         const beltContainer = document.getElementById('magicBeltUI');
         if (beltContainer) {
@@ -238,6 +405,21 @@ class BeltUISystem extends GUTS.BaseSystem {
         const beltStyles = document.getElementById('belt-ui-styles');
         if (beltStyles) {
             beltStyles.remove();
+        }
+
+        const cloneContainer = document.getElementById('cloneAbilityUI');
+        if (cloneContainer) {
+            cloneContainer.remove();
+        }
+
+        const cloneStyles = document.getElementById('clone-ability-styles');
+        if (cloneStyles) {
+            cloneStyles.remove();
+        }
+
+        if (this.cloneTimerInterval) {
+            clearInterval(this.cloneTimerInterval);
+            this.cloneTimerInterval = null;
         }
     }
 }

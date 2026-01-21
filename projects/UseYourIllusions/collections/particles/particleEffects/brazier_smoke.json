@@ -1,0 +1,27 @@
+{
+  "title": "Brazier Smoke",
+  "category": "smoke",
+  "tags": ["smoke", "brazier", "ambient"],
+  "particleEffectData": {
+    "count": 1,
+    "lifetime": 1.2,
+    "scale": 10,
+    "scaleMultiplier": 1.5,
+    "startColor": "#555555",
+    "endColor": "#222222",
+    "emitterShape": "disk",
+    "emitterRadius": 3,
+    "heightOffset": 10,
+    "velocityXMin": -5,
+    "velocityXMax": 5,
+    "velocityYMin": 15,
+    "velocityYMax": 35,
+    "velocityZMin": -5,
+    "velocityZMax": 5,
+    "gravity": -8,
+    "drag": 0.98,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "title": "Brazier Embers",
+  "category": "fire",
+  "tags": ["fire", "brazier", "sparks"],
+  "particleEffectData": {
+    "count": 2,
+    "lifetime": 0.8,
+    "scale": 3,
+    "scaleMultiplier": 0.6,
+    "startColor": "#ffcc00",
+    "endColor": "#ff6600",
+    "emitterShape": "disk",
+    "emitterRadius": 4,
+    "heightOffset": 5,
+    "velocityXMin": -15,
+    "velocityXMax": 15,
+    "velocityYMin": 30,
+    "velocityYMax": 70,
+    "velocityZMin": -15,
+    "velocityZMax": 15,
+    "gravity": 10,
+    "drag": 0.97,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  }
+}

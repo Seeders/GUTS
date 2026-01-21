@@ -108,7 +108,8 @@ class GE_UIManager {
             outlineConnectivity: savedSettings.outlineConnectivity ?? 4,
             cameraHeight: savedSettings.cameraHeight ?? 1,
             isProjectile: savedSettings.isProjectile ?? false,
-            generateGroundLevel: savedSettings.generateGroundLevel ?? false
+            generateGroundLevel: savedSettings.generateGroundLevel ?? false,
+            shaderFrames: savedSettings.shaderFrames ?? 0
         };
 
         // Populate palette dropdown
@@ -190,6 +191,9 @@ class GE_UIManager {
         }
         if (config.generateGroundLevel !== undefined) {
             document.getElementById('iso-ground-level').checked = config.generateGroundLevel;
+        }
+        if (config.shaderFrames !== undefined) {
+            document.getElementById('iso-shader-frames').value = config.shaderFrames;
         }
 
         // Setup save button (disabled initially, enabled after generation)
@@ -334,7 +338,8 @@ class GE_UIManager {
             outlineConnectivity: parseInt(document.getElementById('iso-outline-connectivity').value) || 8,
             cameraHeight: parseFloat(document.getElementById('iso-camera-height').value) || 1,
             isProjectile: document.getElementById('iso-is-projectile')?.checked || false,
-            generateGroundLevel: document.getElementById('iso-ground-level')?.checked || false
+            generateGroundLevel: document.getElementById('iso-ground-level')?.checked || false,
+            shaderFrames: parseInt(document.getElementById('iso-shader-frames')?.value) || 0
         };
 
         // Build ballistic sprite metadata and draw onto main canvas if projectile
@@ -941,6 +946,23 @@ class GE_UIManager {
                     } else {
                         currentShape.animation = newValue;
                         // Don't delete model - both model and animation should coexist
+                    }
+                    this.graphicsEditor.refreshShapes(false);
+                }
+            });
+
+            // Shader selector (for custom materials like portals)
+            const shaders = collections.shaders || {};
+            const shaderOptions = ['(none)', ...Object.keys(shaders).sort()];
+            this.addFormRow(inspector, 'Shader', 'select', 'shader', shape.shader || '(none)', {
+                options: shaderOptions,
+                change: (e) => {
+                    let currentShape = this.graphicsEditor.getFrameShape();
+                    let newValue = e.target.value;
+                    if (newValue === '(none)') {
+                        delete currentShape.shader;
+                    } else {
+                        currentShape.shader = newValue;
                     }
                     this.graphicsEditor.refreshShapes(false);
                 }

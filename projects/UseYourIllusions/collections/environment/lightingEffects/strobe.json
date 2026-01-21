@@ -1,0 +1,10 @@
+{
+  "title": "Strobe",
+  "description": "Sharp on/off strobe effect",
+  "type": "strobe",
+  "baseIntensity": 1.0,
+  "onIntensity": 1.0,
+  "offIntensity": 0.0,
+  "strobeSpeed": 4,
+  "dutyCycle": 0.5
+}

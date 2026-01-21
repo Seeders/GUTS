@@ -1,0 +1,6 @@
+{
+  "fileName": "ProjectCloneAbility",
+  "filePath": "/projects/UseYourIllusions/collections/scripts/abilities/js/ProjectCloneAbility.js",
+  "castParticleEffectSystems": ["magic_sparkles"],
+  "impactParticleEffectSystems": ["illusion_glow"]
+}

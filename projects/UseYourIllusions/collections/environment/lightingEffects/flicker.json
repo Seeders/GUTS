@@ -1,0 +1,10 @@
+{
+  "title": "Flicker",
+  "description": "Realistic fire flicker effect with random intensity variations",
+  "type": "flicker",
+  "baseIntensity": 1.0,
+  "minIntensity": 0.7,
+  "maxIntensity": 1.1,
+  "flickerSpeed": 8,
+  "noiseScale": 0.3
+}

@@ -164,6 +164,7 @@ class VisionSystem extends GUTS.BaseSystem {
         const unitSize = (unitType && unitType.size) ? unitType.size : gridSize;
         const nearbyTreeIds = this.game.call('getNearbyUnits', { x: midX, y: 0, z: midZ}, distance / 2 + unitSize, viewerEntityId, 'worldObjects');
 
+        // Check worldObjects (trees, etc.) blocking vision
         if (nearbyTreeIds && nearbyTreeIds.length > 0) {
             const numSamples = Math.max(2, Math.ceil(distance / (gridSize * 0.5)));
             const stepX = dx / numSamples;
@@ -195,6 +196,58 @@ class VisionSystem extends GUTS.BaseSystem {
                                 from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
                                 to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
                                 treePos: { x: treePos.x.toFixed(0), z: treePos.z.toFixed(0) }
+                            });
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check illusions blocking vision (guards can't see through illusions)
+        const illusionIds = this.game.illusionSystem?.getActiveIllusions();
+        if (illusionIds && illusionIds.length > 0) {
+            const collections = this.game.getCollections();
+            const numSamples = Math.max(2, Math.ceil(distance / (gridSize * 0.5)));
+            const stepX = dx / numSamples;
+            const stepZ = dz / numSamples;
+
+            for (let i = 1; i < numSamples; i++) {
+                const t = i / numSamples;
+                const sampleX = from.x + stepX * i;
+                const sampleZ = from.z + stepZ * i;
+                const rayHeight = fromEyeHeight + (toEyeHeight - fromEyeHeight) * t;
+
+                for (const illusionId of illusionIds) {
+                    const illusionTransform = this.game.getComponent(illusionId, 'transform');
+                    const illusionPos = illusionTransform?.position;
+                    if (!illusionPos) continue;
+
+                    const illusion = this.game.getComponent(illusionId, 'illusion');
+                    if (!illusion?.sourcePrefab) continue;
+
+                    // Get the source object's data
+                    const prefabData = collections.worldObjects?.[illusion.sourcePrefab];
+                    if (!prefabData) continue;
+
+                    // Only block vision if the source object would block vision (has size and height)
+                    // Size can be a number (radius) or object with x/z (tile dimensions)
+                    const illusionSize = typeof prefabData.size === 'number' ? prefabData.size : (prefabData.size?.x || 1) * gridSize;
+                    const illusionHeight = prefabData.height || 0;
+
+                    // Skip if illusion has no height (can't block vision)
+                    if (illusionHeight <= 0) continue;
+
+                    const illusionDx = sampleX - illusionPos.x;
+                    const illusionDz = sampleZ - illusionPos.z;
+                    const distSq = illusionDx * illusionDx + illusionDz * illusionDz;
+
+                    if (distSq < illusionSize * illusionSize) {
+                        if (rayHeight < illusionPos.y + illusionHeight) {
+                            log.trace('Vision', `${viewerName} LOS check: BLOCKED (illusion)`, {
+                                from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
+                                to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
+                                illusionPos: { x: illusionPos.x.toFixed(0), z: illusionPos.z.toFixed(0) }
                             });
                             return false;
                         }

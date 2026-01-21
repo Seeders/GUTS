@@ -162,6 +162,22 @@ async function runSimulation(game, simConfig) {
         }
     }
 
+    // Apply setup: position guard at specific location
+    if (setup.positionGuard && guardId) {
+        const guardTransform = game.getComponent(guardId, 'transform');
+        guardTransform.position.x = setup.positionGuard.x;
+        guardTransform.position.z = setup.positionGuard.z;
+        console.log(`[Headless] Guard positioned at (${setup.positionGuard.x}, ${setup.positionGuard.z})`);
+    }
+
+    // Apply setup: position player at specific location
+    if (setup.positionPlayer && playerId) {
+        const playerTransform = game.getComponent(playerId, 'transform');
+        playerTransform.position.x = setup.positionPlayer.x;
+        playerTransform.position.z = setup.positionPlayer.z;
+        console.log(`[Headless] Player positioned at (${setup.positionPlayer.x}, ${setup.positionPlayer.z})`);
+    }
+
     // Apply setup: create illusion
     let illusionId = null;
     if (setup.createIllusion) {
@@ -183,7 +199,37 @@ async function runSimulation(game, simConfig) {
             duration: 30.0,
             slotIndex: 0
         });
-        console.log(`[Headless] Created illusion at (${pos.x}, ${pos.z})`);
+        console.log(`[Headless] Created present illusion at (${pos.x}, ${pos.z})`);
+    }
+
+    // Apply setup: create barrel illusion (blocks vision and pathfinding)
+    let barrelIllusionId = null;
+    if (setup.createBarrelIllusion) {
+        const collectionIndex = enums.objectTypeDefinitions?.worldObjects;
+        const barrelIndex = enums.worldObjects?.barrel;
+        const neutralTeam = enums.team?.neutral ?? 0;
+        const pos = setup.createBarrelIllusion;
+
+        // Get terrain height at position
+        let terrainHeight = 0;
+        if (game.hasService('getTerrainHeightAtPosition')) {
+            terrainHeight = game.call('getTerrainHeightAtPosition', pos.x, pos.z) ?? 0;
+        }
+
+        barrelIllusionId = game.call('createUnit', collectionIndex, barrelIndex, {
+            position: { x: pos.x, y: terrainHeight, z: pos.z },
+            rotation: { x: 0, y: 0, z: 0 },
+            scale: { x: 1, y: 1, z: 1 }
+        }, neutralTeam);
+
+        game.addComponent(barrelIllusionId, 'illusion', {
+            sourcePrefab: 'barrel',
+            creatorEntity: null,
+            createdTime: game.state.now || 0,
+            duration: 60.0,
+            slotIndex: 0
+        });
+        console.log(`[Headless] Created barrel illusion at (${pos.x}, ${pos.z})`);
     }
 
     // Apply setup: position guard near a real present (for testing real object pickup)
@@ -212,6 +258,44 @@ async function runSimulation(game, simConfig) {
             guardTransform.position.z = presentPos.z + 100;
             console.log(`[Headless] Guard positioned near real present at (${presentPos.x}, ${presentPos.z})`);
         }
+    }
+
+    // Apply setup: create player clone
+    let cloneId = null;
+    if (setup.createPlayerClone && playerId) {
+        const playerUnitType = game.getComponent(playerId, 'unitType');
+        const playerTeam = game.getComponent(playerId, 'team');
+        const pos = setup.createPlayerClone.position;
+
+        cloneId = game.call('createUnit', playerUnitType.collection, playerUnitType.type, {
+            position: { x: pos.x, y: 0, z: pos.z },
+            rotation: { x: 0, y: 0, z: 0 },
+            scale: { x: 1, y: 1, z: 1 }
+        }, playerTeam?.team ?? 0);
+
+        // Add playerClone component so guards detect it
+        game.addComponent(cloneId, 'playerClone', {
+            originalEntity: playerId,
+            createdTime: game.state.now || 0,
+            duration: 30.0,
+            expiresAt: (game.state.now || 0) + 30.0
+        });
+
+        // Remove AI if present
+        if (game.hasComponent(cloneId, 'aiState')) {
+            game.removeComponent(cloneId, 'aiState');
+        }
+
+        console.log(`[Headless] Created player clone at (${pos.x}, ${pos.z})`);
+    }
+
+    // Apply setup: hide real player
+    if (setup.hideRealPlayer && playerId) {
+        const hidePos = setup.hideRealPlayer.position;
+        const playerTransform = game.getComponent(playerId, 'transform');
+        playerTransform.position.x = hidePos.x;
+        playerTransform.position.z = hidePos.z;
+        console.log(`[Headless] Real player hidden at (${hidePos.x}, ${hidePos.z})`);
     }
 
     // Track outcomes
@@ -261,6 +345,28 @@ async function runSimulation(game, simConfig) {
                 outcomes.guardGaveUp = true;
                 console.log(`[Headless] Guard gave up at tick ${tick}`);
                 break;
+            }
+        }
+
+        // Check: guard chased clone (guard is targeting the clone, not the real player)
+        if (expected.guardChasedClone !== undefined && guardId && cloneId) {
+            const behaviorState = game.behaviorSystem?.getOrCreateBehaviorState(guardId);
+            const shared = behaviorState?.shared || {};
+
+            if (shared.playerTarget === cloneId && !outcomes.guardChasedClone) {
+                outcomes.guardChasedClone = true;
+                console.log(`[Headless] Guard is chasing clone at tick ${tick}`);
+            }
+        }
+
+        // Check: guard chased player (guard is targeting the real player)
+        if (expected.guardChasedPlayer !== undefined && guardId && playerId) {
+            const behaviorState = game.behaviorSystem?.getOrCreateBehaviorState(guardId);
+            const shared = behaviorState?.shared || {};
+
+            if (shared.playerTarget === playerId && !outcomes.guardChasedPlayer) {
+                outcomes.guardChasedPlayer = true;
+                console.log(`[Headless] Guard is chasing player at tick ${tick}`);
             }
         }
 

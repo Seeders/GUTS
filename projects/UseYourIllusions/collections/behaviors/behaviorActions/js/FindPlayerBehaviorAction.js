@@ -1,8 +1,8 @@
 /**
- * FindPlayerBehaviorAction - Detects if the player is within vision range
+ * FindPlayerBehaviorAction - Detects if the player or player clone is within vision range
  *
- * Sets shared.playerTarget to the player entity ID if found
- * Returns SUCCESS if player found and visible, FAILURE otherwise
+ * Sets shared.playerTarget to the player/clone entity ID if found
+ * Returns SUCCESS if player/clone found and visible, FAILURE otherwise
  */
 class FindPlayerBehaviorAction extends GUTS.BaseBehaviorAction {
 
@@ -24,34 +24,51 @@ class FindPlayerBehaviorAction extends GUTS.BaseBehaviorAction {
         // Find entities with playerController component (the player)
         const playerEntities = game.getEntitiesWith('playerController', 'transform');
 
-        for (const playerId of playerEntities) {
-            const playerTransform = game.getComponent(playerId, 'transform');
-            const playerPos = playerTransform?.position;
-            if (!playerPos) continue;
+        // Also find player clones - they should be detected as targets too
+        const cloneEntities = game.getEntitiesWith('playerClone', 'transform');
+
+        // Combine player and clone entities into targets to check
+        const targetEntities = [...playerEntities, ...cloneEntities];
+
+        let closestTarget = null;
+        let closestDistance = Infinity;
+
+        for (const targetId of targetEntities) {
+            const targetTransform = game.getComponent(targetId, 'transform');
+            const targetPos = targetTransform?.position;
+            if (!targetPos) continue;
 
             // Check distance
-            const dx = playerPos.x - pos.x;
-            const dz = playerPos.z - pos.z;
+            const dx = targetPos.x - pos.x;
+            const dz = targetPos.z - pos.z;
             const dist = Math.sqrt(dx * dx + dz * dz);
 
             if (dist > detectionRange) continue;
 
             // Check line of sight
-            const hasLOS = game.call('hasLineOfSight', pos, playerPos);
+            const hasLOS = game.call('hasLineOfSight', pos, targetPos);
             if (!hasLOS) continue;
 
-            // Player found and visible
+            // Track closest visible target
+            if (dist < closestDistance) {
+                closestTarget = targetId;
+                closestDistance = dist;
+            }
+        }
+
+        if (closestTarget !== null) {
+            // Target found and visible
             const shared = this.getShared(entityId, game);
-            shared.playerTarget = playerId;
-            shared.playerTargetDistance = dist;
+            shared.playerTarget = closestTarget;
+            shared.playerTargetDistance = closestDistance;
 
             return this.success({
-                targetId: playerId,
-                distance: dist
+                targetId: closestTarget,
+                distance: closestDistance
             });
         }
 
-        // No player found
+        // No target found
         const shared = this.getShared(entityId, game);
         shared.playerTarget = null;
         shared.playerTargetDistance = null;

@@ -1,8 +1,16 @@
 class ModelManager {
-    constructor(app, config, { ShapeFactory, palette, textures, models, animations }) {
+    constructor(app, config, { ShapeFactory, palette, textures, models, animations, shaders, imageManager }) {
         this.app = app;
         this.config = config;
         this.shapeFactory = new ShapeFactory(this.app.getResourcesPath(), palette, textures, null, 1, models, animations);
+
+        // Pass shaders and imageManager to ShapeFactory for custom shader support
+        if (shaders) {
+            this.shapeFactory.setShaders(shaders);
+        }
+        if (imageManager) {
+            this.shapeFactory.setImageManager(imageManager);
+        }
 
         if (location.hostname.indexOf('github') >= 0) {
             this.shapeFactory.setURLRoot("/GUTS/");

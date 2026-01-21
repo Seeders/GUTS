@@ -86,6 +86,10 @@ class EntityRenderer {
         // Current ambient light color for billboards (updated by setAmbientLightColor)
         this.currentAmbientLight = new THREE.Color(0xffffff);
 
+        // Point lights for billboard shader (max 8 lights)
+        this.maxPointLights = 8;
+        this.pointLights = []; // Array of { position: Vector3, color: Color, intensity: number, distance: number, decay: number }
+
         // Pre-allocate reusable THREE objects to avoid per-frame allocations in updateVATTransform
         this._tempMatrix = new THREE.Matrix4();
         this._tempPosition = new THREE.Vector3();
@@ -506,13 +510,31 @@ class EntityRenderer {
         geometry.setAttribute('aOpacity', new THREE.InstancedBufferAttribute(opacities, 1));
         geometry.setAttribute('aTint', new THREE.InstancedBufferAttribute(tints, 3));
 
+        // Initialize point light uniform arrays
+        const pointLightPositions = [];
+        const pointLightColors = [];
+        const pointLightIntensities = new Float32Array(this.maxPointLights);
+        const pointLightDistances = new Float32Array(this.maxPointLights);
+        const pointLightDecays = new Float32Array(this.maxPointLights);
+        for (let i = 0; i < this.maxPointLights; i++) {
+            pointLightPositions.push(new THREE.Vector3());
+            pointLightColors.push(new THREE.Color(0x000000));
+        }
+
         // Custom shader material for billboarding with UV manipulation
         const material = new THREE.ShaderMaterial({
             uniforms: THREE.UniformsUtils.merge([
                 THREE.UniformsLib.fog,
                 {
                     map: { value: spriteSheetTexture },
-                    ambientLightColor: { value: this.currentAmbientLight.clone() }
+                    ambientLightColor: { value: this.currentAmbientLight.clone() },
+                    // Point light uniforms
+                    numPointLights: { value: this.pointLights.length },
+                    pointLightPositions: { value: pointLightPositions },
+                    pointLightColors: { value: pointLightColors },
+                    pointLightIntensities: { value: pointLightIntensities },
+                    pointLightDistances: { value: pointLightDistances },
+                    pointLightDecays: { value: pointLightDecays }
                 }
             ]),
             vertexShader: `
@@ -523,6 +545,7 @@ class EntityRenderer {
                 varying vec2 vUv;
                 varying float vOpacity;
                 varying vec3 vTint;
+                varying vec3 vWorldPosition;
                 #include <fog_pars_vertex>
 
                 const float PI = 3.14159265359;
@@ -550,6 +573,9 @@ class EntityRenderer {
 
                     // Get world-space instance position
                     vec4 worldPos = modelMatrix * vec4(instancePos, 1.0);
+
+                    // Pass world position to fragment shader for lighting
+                    vWorldPosition = worldPos.xyz;
 
                     vec4 mvPosition;
 
@@ -621,17 +647,58 @@ class EntityRenderer {
             fragmentShader: `
                 uniform sampler2D map;
                 uniform vec3 ambientLightColor;
+
+                // Point light uniforms
+                #define MAX_POINT_LIGHTS 8
+                uniform int numPointLights;
+                uniform vec3 pointLightPositions[MAX_POINT_LIGHTS];
+                uniform vec3 pointLightColors[MAX_POINT_LIGHTS];
+                uniform float pointLightIntensities[MAX_POINT_LIGHTS];
+                uniform float pointLightDistances[MAX_POINT_LIGHTS];
+                uniform float pointLightDecays[MAX_POINT_LIGHTS];
+
                 varying vec2 vUv;
                 varying float vOpacity;
                 varying vec3 vTint;
+                varying vec3 vWorldPosition;
                 #include <fog_pars_fragment>
+
+                // Calculate point light attenuation (matches THREE.js physically correct lights)
+                float getDistanceAttenuation(float lightDistance, float cutoffDistance, float decayExponent) {
+                    if (cutoffDistance > 0.0 && decayExponent > 0.0) {
+                        float distRatio = clamp(1.0 - pow(lightDistance / cutoffDistance, 4.0), 0.0, 1.0);
+                        return distRatio * distRatio / (lightDistance * lightDistance + 1.0);
+                    }
+                    return 1.0;
+                }
 
                 void main() {
                     vec4 texColor = texture2D(map, vUv);
                     if (texColor.a < 0.5) discard;
-                    // Apply tint and ambient lighting to the sprite
+
+                    // Apply tint to the sprite
                     vec3 tintedColor = texColor.rgb * vTint;
-                    vec3 litColor = tintedColor * ambientLightColor;
+
+                    // Start with ambient lighting
+                    vec3 totalLight = ambientLightColor;
+
+                    // Add contribution from each point light
+                    for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
+                        if (i >= numPointLights) break;
+
+                        vec3 lightDir = pointLightPositions[i] - vWorldPosition;
+                        float lightDistance = length(lightDir);
+
+                        // Calculate attenuation
+                        float attenuation = getDistanceAttenuation(lightDistance, pointLightDistances[i], pointLightDecays[i]);
+
+                        // Add light contribution (simple diffuse for sprites - no normal)
+                        totalLight += pointLightColors[i] * pointLightIntensities[i] * attenuation;
+                    }
+
+                    // Apply lighting to tinted color
+                    vec3 litColor = tintedColor * totalLight;
+
                     gl_FragColor = vec4(litColor, texColor.a * vOpacity);
                     #include <colorspace_fragment>
                     #include <fog_fragment>
@@ -642,6 +709,9 @@ class EntityRenderer {
             side: THREE.DoubleSide,
             depthWrite: true
         });
+
+        // Apply current point lights to the new batch
+        this._applyPointLightsToMaterial(material);
 
         const instancedMesh = new THREE.InstancedMesh(geometry, material, capacity);
         instancedMesh.frustumCulled = false;
@@ -2213,6 +2283,133 @@ class EntityRenderer {
         for (const batch of this.billboardBatches.values()) {
             if (batch.instancedMesh?.material?.uniforms?.ambientLightColor) {
                 batch.instancedMesh.material.uniforms.ambientLightColor.value.copy(lightColor);
+            }
+        }
+    }
+
+    /**
+     * Set point lights for billboard rendering
+     * @param {Array} lights - Array of light objects with { position, color, intensity, distance, decay }
+     */
+    setPointLights(lights) {
+        this.pointLights = lights.slice(0, this.maxPointLights);
+        this._updateBillboardPointLights();
+    }
+
+    /**
+     * Add a point light for billboard rendering
+     * @param {string} lightId - Unique identifier for the light
+     * @param {Object} lightData - Light data { position: {x,y,z}, color: string, intensity: number, distance: number, decay: number }
+     * @returns {boolean} True if light was added
+     */
+    addPointLight(lightId, lightData) {
+        // Check if light already exists
+        const existingIndex = this.pointLights.findIndex(l => l.id === lightId);
+        if (existingIndex >= 0) {
+            // Update existing light
+            this.pointLights[existingIndex] = {
+                id: lightId,
+                position: new THREE.Vector3(lightData.position.x, lightData.position.y, lightData.position.z),
+                color: new THREE.Color(lightData.color || '#ffffff'),
+                intensity: lightData.intensity || 1.0,
+                distance: lightData.distance || 200,
+                decay: lightData.decay || 2
+            };
+        } else if (this.pointLights.length < this.maxPointLights) {
+            this.pointLights.push({
+                id: lightId,
+                position: new THREE.Vector3(lightData.position.x, lightData.position.y, lightData.position.z),
+                color: new THREE.Color(lightData.color || '#ffffff'),
+                intensity: lightData.intensity || 1.0,
+                distance: lightData.distance || 200,
+                decay: lightData.decay || 2
+            });
+        } else {
+            return false; // Max lights reached
+        }
+        this._updateBillboardPointLights();
+        return true;
+    }
+
+    /**
+     * Remove a point light from billboard rendering
+     * @param {string} lightId - Unique identifier for the light to remove
+     */
+    removePointLight(lightId) {
+        const index = this.pointLights.findIndex(l => l.id === lightId);
+        if (index >= 0) {
+            this.pointLights.splice(index, 1);
+            this._updateBillboardPointLights();
+        }
+    }
+
+    /**
+     * Update a point light's position
+     * @param {string} lightId - Unique identifier for the light
+     * @param {Object} position - New position {x, y, z}
+     */
+    updatePointLightPosition(lightId, position) {
+        const light = this.pointLights.find(l => l.id === lightId);
+        if (light) {
+            light.position.set(position.x, position.y, position.z);
+            this._updateBillboardPointLights();
+        }
+    }
+
+    /**
+     * Clear all point lights
+     */
+    clearPointLights() {
+        this.pointLights = [];
+        this._updateBillboardPointLights();
+    }
+
+    /**
+     * Internal: Update point light uniforms on all billboard batches
+     */
+    _updateBillboardPointLights() {
+        for (const batch of this.billboardBatches.values()) {
+            const material = batch.instancedMesh?.material;
+            if (!material?.uniforms) continue;
+            this._applyPointLightsToMaterial(material);
+        }
+    }
+
+    /**
+     * Internal: Apply current point lights to a material's uniforms
+     */
+    _applyPointLightsToMaterial(material) {
+        if (!material?.uniforms) return;
+
+        // Update light count
+        if (material.uniforms.numPointLights) {
+            material.uniforms.numPointLights.value = this.pointLights.length;
+        }
+
+        // Update light data arrays
+        for (let i = 0; i < this.maxPointLights; i++) {
+            const light = this.pointLights[i];
+            if (light) {
+                if (material.uniforms.pointLightPositions) {
+                    material.uniforms.pointLightPositions.value[i].copy(light.position);
+                }
+                if (material.uniforms.pointLightColors) {
+                    material.uniforms.pointLightColors.value[i].copy(light.color);
+                }
+                if (material.uniforms.pointLightIntensities) {
+                    material.uniforms.pointLightIntensities.value[i] = light.intensity;
+                }
+                if (material.uniforms.pointLightDistances) {
+                    material.uniforms.pointLightDistances.value[i] = light.distance;
+                }
+                if (material.uniforms.pointLightDecays) {
+                    material.uniforms.pointLightDecays.value[i] = light.decay;
+                }
+            } else {
+                // Clear unused light slots
+                if (material.uniforms.pointLightIntensities) {
+                    material.uniforms.pointLightIntensities.value[i] = 0;
+                }
             }
         }
     }

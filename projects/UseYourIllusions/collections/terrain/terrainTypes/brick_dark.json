@@ -1,0 +1,8 @@
+{
+  "type": "brick_dark",
+  "texture": "brick_dark",
+  "color": "#8b5e3c",
+  "buildable": true,
+  "walkable": true,
+  "title": "Brick Dark"
+}

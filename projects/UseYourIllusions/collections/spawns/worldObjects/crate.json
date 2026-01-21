@@ -1,12 +1,48 @@
 {
   "title": "Crate",
-  "height": 16,
-  "size": 16,
-  "placementGridWidth": 1,
-  "placementGridHeight": 1,
+  "description": "A crate.",
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "color": "#ffffff",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "metalness": 0,
+            "roughness": 1,
+            "name": "crate",
+            "model": "crate"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    }
+  },
+  "height": 32,
+  "size": 32,
+  "hp": 10,
   "impassable": true,
-  "spriteScale": 16,
-  "renderTexture": "chest_wood_box",
-  "spriteOffset": 8,
+  "spriteAnimationSet": "crate",
   "collectable": true
 }

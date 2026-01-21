@@ -220,7 +220,11 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
                             shared.currentWaypointIndex = 0;
                             console.log(`[PuzzleGameSystem] Using level-defined patrol waypoints for guard ${entityId}`);
                         } else {
-                            console.log(`[PuzzleGameSystem] Guard ${entityId} has no patrol waypoints - standing guard`);
+                            // No patrol waypoints - create a single waypoint at spawn position
+                            // so guard returns here after picking up objects
+                            shared.patrolWaypoints = [{ x: transform.position.x, z: transform.position.z }];
+                            shared.currentWaypointIndex = 0;
+                            console.log(`[PuzzleGameSystem] Guard ${entityId} has no patrol waypoints - standing guard at spawn position`);
                         }
                     }
                 }

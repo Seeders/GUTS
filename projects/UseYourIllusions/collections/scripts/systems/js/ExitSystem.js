@@ -29,6 +29,7 @@ class ExitSystem extends GUTS.BaseSystem {
         this.levelStartTime = Date.now();
         this.levelEndTime = 0;
         this.illusionsUsed = 0;
+        // PauseSystem handles resetting pause state on scene load
     }
 
     handleIllusionCreated(data) {
@@ -76,6 +77,14 @@ class ExitSystem extends GUTS.BaseSystem {
     triggerLevelComplete(playerId, exitId) {
         this.levelComplete = true;
         this.levelEndTime = Date.now();
+
+        // Pause the game immediately
+        this.game.call('pauseGame');
+
+        // Unlock mouse so player can click UI buttons
+        if (document.pointerLockElement) {
+            document.exitPointerLock();
+        }
 
         // Get exit position for effects
         const exitTransform = this.game.getComponent(exitId, 'transform');

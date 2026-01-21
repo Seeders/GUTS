@@ -6,6 +6,7 @@
  * - A/D: Strafe left/right relative to facing direction
  * - Mouse: Control facing direction (via CameraControlSystem)
  * - E: Collect nearby object (triggers CollectAbility)
+ * - Q: Create clone / toggle control between player and clone
  * - 1/2/3: Select belt slot
  * - Click with item selected: Place illusion (triggers PlaceIllusionAbility)
  */
@@ -33,6 +34,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         this._clickHandler = null;
         this._wasMoving = false;
         this._lastDirection = null;
+        this._lastCameraTarget = null;
     }
 
     init() {
@@ -116,6 +118,9 @@ class PlayerControlSystem extends GUTS.BaseSystem {
                 break;
             case 'Digit3':
                 this.setSelectedBeltSlot(playerEntity, 2);
+                break;
+            case 'KeyQ':
+                this.handleCloneAbility(playerEntity);
                 break;
         }
     }
@@ -220,20 +225,142 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         const playerEntity = this.getPlayerEntity();
         if (!playerEntity) return;
 
-        // Handle WASD movement
+        const playerController = this.game.getComponent(playerEntity, 'playerController');
+
+        // Check for clone expiration
+        this.updateCloneExpiration(playerEntity, playerController);
+
+        // Determine which entity to control (player or clone)
+        const controlledEntity = this.getControlledEntity(playerEntity, playerController);
+
+        // Handle WASD movement for the controlled entity
         if (this.isWASDMoving) {
             // Set walk animation only when starting to move
             if (!this._wasMoving && this.game.hasService('setBillboardAnimation')) {
-                this.game.call('setBillboardAnimation', playerEntity, this.enums.animationType.walk, true);
+                this.game.call('setBillboardAnimation', controlledEntity, this.enums.animationType.walk, true);
             }
-            this.updateWASDMovement(playerEntity);
+            this.updateWASDMovement(controlledEntity);
         } else if (this._wasMoving) {
             // Just stopped moving - set idle animation
             if (this.game.hasService('setBillboardAnimation')) {
-                this.game.call('setBillboardAnimation', playerEntity, this.enums.animationType.idle, true);
+                this.game.call('setBillboardAnimation', controlledEntity, this.enums.animationType.idle, true);
             }
         }
         this._wasMoving = this.isWASDMoving;
+
+        // Update camera to follow controlled entity
+        this.updateCameraTarget(controlledEntity);
+    }
+
+    /**
+     * Get the entity currently being controlled (player or their clone)
+     */
+    getControlledEntity(playerEntity, playerController) {
+        if (playerController?.controllingClone && playerController?.activeCloneId) {
+            if (this.game.hasEntity(playerController.activeCloneId)) {
+                return playerController.activeCloneId;
+            }
+            // Clone no longer exists, reset state
+            playerController.activeCloneId = null;
+            playerController.controllingClone = false;
+        }
+        return playerEntity;
+    }
+
+    /**
+     * Update camera to follow the controlled entity
+     */
+    updateCameraTarget(entityId) {
+        if (this._lastCameraTarget !== entityId) {
+            this._lastCameraTarget = entityId;
+            if (this.game.hasService('setFollowTarget')) {
+                this.game.call('setFollowTarget', entityId);
+            }
+        }
+    }
+
+    /**
+     * Check for clone expiration and clean up
+     */
+    updateCloneExpiration(playerEntity, playerController) {
+        if (!playerController?.activeCloneId) return;
+
+        const cloneId = playerController.activeCloneId;
+        if (!this.game.hasEntity(cloneId)) {
+            // Clone already destroyed
+            playerController.activeCloneId = null;
+            playerController.controllingClone = false;
+            return;
+        }
+
+        const playerClone = this.game.getComponent(cloneId, 'playerClone');
+        if (!playerClone) return;
+
+        const now = this.game.state.now || 0;
+        if (now >= playerClone.expiresAt) {
+            // Clone expired - destroy it and return control to player
+            this.destroyClone(playerEntity, playerController, cloneId);
+        }
+    }
+
+    /**
+     * Handle Q key - create clone or toggle control
+     */
+    handleCloneAbility(playerEntity) {
+        const playerController = this.game.getComponent(playerEntity, 'playerController');
+        if (!playerController) return;
+
+        // If clone exists, toggle control
+        if (playerController.activeCloneId && this.game.hasEntity(playerController.activeCloneId)) {
+            playerController.controllingClone = !playerController.controllingClone;
+
+            // Play effect at the entity we're switching to
+            const targetEntity = playerController.controllingClone
+                ? playerController.activeCloneId
+                : playerEntity;
+            const transform = this.game.getComponent(targetEntity, 'transform');
+            if (transform?.position && this.game.effectsSystem) {
+                this.game.effectsSystem.createParticleEffect(
+                    transform.position.x,
+                    transform.position.y + 30,
+                    transform.position.z,
+                    'magic',
+                    { count: 15, scaleMultiplier: 0.8 }
+                );
+            }
+            return;
+        }
+
+        // No clone - create one
+        if (this.game.hasService('useAbility')) {
+            this.game.call('useAbility', playerEntity, 'ProjectCloneAbility', {});
+        }
+    }
+
+    /**
+     * Destroy clone and return control to player
+     */
+    destroyClone(playerEntity, playerController, cloneId) {
+        // Create expire effect
+        const transform = this.game.getComponent(cloneId, 'transform');
+        if (transform?.position && this.game.effectsSystem) {
+            this.game.effectsSystem.createParticleEffect(
+                transform.position.x,
+                transform.position.y + 30,
+                transform.position.z,
+                'magic',
+                { count: 25, scaleMultiplier: 1.0 }
+            );
+        }
+
+        // Destroy the clone entity
+        this.game.destroyEntity(cloneId);
+
+        // Reset player controller state
+        playerController.activeCloneId = null;
+        playerController.controllingClone = false;
+
+        this.game.triggerEvent('onCloneExpired', { cloneId, playerEntity });
     }
 
     /**

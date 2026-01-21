@@ -127,7 +127,8 @@
   "placementGridHeight": 1,
   "abilities": [
     "CollectAbility",
-    "PlaceIllusionAbility"
+    "PlaceIllusionAbility",
+    "ProjectCloneAbility"
   ],
   "icon": "unit_rogue",
   "visionRange": 600,

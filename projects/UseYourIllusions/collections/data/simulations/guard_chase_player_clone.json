@@ -1,0 +1,21 @@
+{
+  "name": "Guard Chase Player Clone",
+  "description": "Tests guard detecting and chasing a player clone instead of the real player who is hiding",
+  "seed": 12345,
+  "level": "test_arena",
+  "maxTicks": 600,
+  "testType": "puzzle",
+  "setup": {
+    "removeDesirables": true,
+    "createPlayerClone": {
+      "position": { "x": 0, "z": 150 }
+    },
+    "hideRealPlayer": {
+      "position": { "x": 600, "z": 600 }
+    }
+  },
+  "expectedOutcome": {
+    "guardChasedClone": true,
+    "playerDied": false
+  }
+}

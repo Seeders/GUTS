@@ -1,0 +1,9 @@
+{
+  "title": "Pulse",
+  "description": "Smooth pulsing light effect",
+  "type": "pulse",
+  "baseIntensity": 1.0,
+  "minIntensity": 0.5,
+  "maxIntensity": 1.0,
+  "pulseSpeed": 2
+}

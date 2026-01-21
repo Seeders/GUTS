@@ -11,6 +11,19 @@
     "HeadlessLogger",
     "TerrainMapEditor"
   ],
+  "systems": [
+    "GridSystem",
+    "TerrainSystem",
+    "WorldSystem",
+    "RenderSystem",
+    "AnimationSystem",
+    "UnitCreationSystem",
+    "SelectedUnitSystem",
+    "ParticleSystem",
+    "SchedulingSystem",
+    "SpawnEffectsSystem",
+    "LightingSystem"
+  ],
   "scene": "terrainMapEditor",
   "propertyName": "tileMap",
   "interface": "terrainEditor",

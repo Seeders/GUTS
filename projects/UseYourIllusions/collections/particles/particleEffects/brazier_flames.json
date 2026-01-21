@@ -1,0 +1,27 @@
+{
+  "title": "Brazier Flames",
+  "category": "fire",
+  "tags": ["fire", "brazier", "ambient"],
+  "particleEffectData": {
+    "count": 3,
+    "lifetime": 0.5,
+    "scale": 8,
+    "scaleMultiplier": 1.2,
+    "startColor": "#ffaa00",
+    "endColor": "#ff4400",
+    "emitterShape": "disk",
+    "emitterRadius": 5,
+    "heightOffset": 0,
+    "velocityXMin": -8,
+    "velocityXMax": 8,
+    "velocityYMin": 40,
+    "velocityYMax": 80,
+    "velocityZMin": -8,
+    "velocityZMax": 8,
+    "gravity": -20,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

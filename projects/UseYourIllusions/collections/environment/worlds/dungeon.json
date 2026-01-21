@@ -1,10 +1,10 @@
 {
   "title": "Dungeon",
-  "lighting": "sunnyDayLighting",
+  "lighting": "dungeonLighting",
   "shadow": "sunnyDayShadows",
   "fog": "sunnyDayFog",
   "heightMap": "fiveStep",
-  "cliffSet": "brick_brick",
+  "cliffSet": "dungeon",
   "camera": "top_down",
   "extensionSize": 768,
   "worldObjects": [
@@ -19,5 +19,5 @@
     "stone_2_sprite",
     "stone_sprite"
   ],
-  "backgroundColor": "#b3e5fc"
+  "backgroundColor": "#111122"
 }

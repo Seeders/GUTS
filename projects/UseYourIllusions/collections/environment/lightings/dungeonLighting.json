@@ -1,0 +1,11 @@
+{
+  "title": "Dungeon Lighting",
+  "ambientColor": "#222233",
+  "ambientIntensity": 0.15,
+  "directionalColor": "#333344",
+  "directionalIntensity": 0.1,
+  "skyColor": "#111122",
+  "groundColor": "#000000",
+  "hemisphereIntensity": 0.1,
+  "direction": {"x":0,"y":-1,"z":-1}
+}

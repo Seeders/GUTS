@@ -3,6 +3,7 @@
   "description": "Main menu and level selection for Use Your Illusions",
   "interface": "main",
   "systems": [
+    "PauseSystem",
     "GameSystem",
     "ScreenSystem",
     "InputSystem",

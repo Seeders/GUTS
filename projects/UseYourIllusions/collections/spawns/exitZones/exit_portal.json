@@ -9,9 +9,7 @@
           "main": {
             "shapes": [
               {
-                "color": {
-                  "paletteColor": "neutralColor"
-                },
+                "color": "#ffffff",
                 "id": 0
               }
             ]
@@ -24,13 +22,10 @@
         "shapes": [
           {
             "type": "gltf",
-            "color": {
-              "paletteColor": "neutralColor"
-            },
             "metalness": 0,
             "roughness": 1,
             "name": "portal",
-            "model": "portal_baseless"
+            "model": "portal_arch"
           }
         ],
         "position": {
@@ -41,6 +36,38 @@
           "x": 0,
           "y": 0,
           "z": 0
+        }
+      },
+      "plane": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "size": 2,
+            "color": "#ff0000",
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "model": "portal_plane",
+            "shader": "portal"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
         }
       }
     }

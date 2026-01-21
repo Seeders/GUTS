@@ -3,12 +3,16 @@
   "systems": [
     "GridSystem",
     "TerrainSystem",
-    "UnitCreationSystem"
+    "UnitCreationSystem",
+    "SchedulingSystem"
   ],
   "clientSystems": [
     "RenderSystem",
     "WorldSystem",
     "AnimationSystem",
+    "ParticleSystem",
+    "SpawnEffectsSystem",
+    "LightingSystem",
     "SelectedUnitSystem"
   ]
 }

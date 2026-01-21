@@ -230,7 +230,11 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         const pauseMenu = document.getElementById('pauseMenu');
         if (pauseMenu) {
             pauseMenu.classList.toggle('active');
-            this.game.state.paused = pauseMenu.classList.contains('active');
+            if (pauseMenu.classList.contains('active')) {
+                this.game.call('pauseGame');
+            } else {
+                this.game.call('unpauseGame');
+            }
         }
     }
 
@@ -238,7 +242,7 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         const pauseMenu = document.getElementById('pauseMenu');
         if (pauseMenu) {
             pauseMenu.classList.remove('active');
-            this.game.state.paused = false;
+            this.game.call('unpauseGame');
         }
     }
 
@@ -312,7 +316,7 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         document.querySelectorAll('.pause-overlay, .puzzle-modal-overlay').forEach(overlay => {
             overlay.classList.remove('active');
         });
-        this.game.state.paused = false;
+        this.game.call('unpauseGame');
     }
 
     onSceneUnload() {

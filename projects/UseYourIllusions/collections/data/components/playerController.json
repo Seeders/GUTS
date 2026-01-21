@@ -3,6 +3,8 @@
   "schema": {
     "isPlayer": true,
     "movementSpeed": 60,
-    "interactionRadius": 50
+    "interactionRadius": 50,
+    "activeCloneId": null,
+    "controllingClone": false
   }
 }

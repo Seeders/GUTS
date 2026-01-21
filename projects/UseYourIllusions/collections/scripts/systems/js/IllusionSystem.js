@@ -54,9 +54,9 @@ class IllusionSystem extends GUTS.BaseSystem {
         const transform = this.game.getComponent(entityId, 'transform');
         const illusionPos = transform?.position;
 
-        // Create fade effect
-        if (illusionPos && this.game.effectsSystem) {
-            this.game.effectsSystem.createParticleEffect(
+        // Create fade effect via service
+        if (illusionPos) {
+            this.game.call('createParticleEffect',
                 illusionPos.x,
                 illusionPos.y,
                 illusionPos.z,

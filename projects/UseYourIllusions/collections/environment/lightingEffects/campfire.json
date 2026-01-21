@@ -1,0 +1,10 @@
+{
+  "title": "Campfire",
+  "description": "Slower, warmer flicker for campfires and hearths",
+  "type": "flicker",
+  "baseIntensity": 1.0,
+  "minIntensity": 0.8,
+  "maxIntensity": 1.05,
+  "flickerSpeed": 5,
+  "noiseScale": 0.2
+}

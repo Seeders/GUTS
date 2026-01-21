@@ -1,0 +1,12 @@
+{
+  "title": "Brazier Fire",
+  "category": "fire",
+  "tags": ["fire", "brazier", "ambient", "worldObject"],
+  "layers": [
+    { "effect": "brazier_flames", "delay": 0 },
+    { "effect": "brazier_embers", "delay": 0.05 },
+    { "effect": "brazier_smoke", "delay": 0.1 }
+  ],
+  "repeating": true,
+  "repeatInterval": 0.15
+}

@@ -299,6 +299,9 @@ class WorldSystem extends GUTS.BaseSystem {
             await this.setupWorldRenderingPromise;
         }
 
+        // Setup post-processing passes (must happen each scene load since passes are cleared on unload)
+        this.setupPostProcessing();
+
         // Update instance capacities now that RenderSystem has initialized EntityRenderer
         this.game.call('updateInstanceCapacities');
 
@@ -318,7 +321,8 @@ class WorldSystem extends GUTS.BaseSystem {
     }
 
     postAllInit() {
-        this.setupPostProcessing();
+        // Post-processing setup moved to postSceneLoad since it needs to happen on every scene load
+        // (passes are cleared on scene unload, so they must be re-registered)
     }
 
     setupPostProcessing() {

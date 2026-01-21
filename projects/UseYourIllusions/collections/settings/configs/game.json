@@ -135,7 +135,10 @@
     "BeltUISystem",
     "PuzzleGameSystem",
     "PuzzleLobbyUISystem",
-    "PlacementPreviewSystem"
+    "PlacementPreviewSystem",
+    "PauseSystem",
+    "SpawnEffectsSystem",
+    "LightingSystem"
   ],
   "classes": [
     {
