@@ -1,0 +1,36 @@
+{
+  "title": "Wind",
+  "audio": {
+    "waveform": "noise",
+    "frequency": 200,
+    "duration": 3.0,
+    "noise": {
+      "type": "pink",
+      "amount": 1.0
+    },
+    "envelope": {
+      "attack": 0.5,
+      "decay": 0.5,
+      "sustain": 0.8,
+      "release": 0.5
+    },
+    "effects": {
+      "filter": {
+        "type": "bandpass",
+        "frequency": 400,
+        "Q": 0.5
+      },
+      "distortion": 0,
+      "delay": {
+        "time": 0,
+        "feedback": 0
+      },
+      "reverb": 0.3,
+      "pan": 0
+    }
+  },
+  "ambient": {
+    "loop": true,
+    "volume": 0.2
+  }
+}

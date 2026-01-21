@@ -1,0 +1,33 @@
+{
+  "title": "Confirm",
+  "audio": {
+    "waveform": "sine",
+    "frequency": 440,
+    "duration": 0.2,
+    "envelope": {
+      "attack": 0.01,
+      "decay": 0.05,
+      "sustain": 0.5,
+      "release": 0.1
+    },
+    "pitchEnvelope": {
+      "start": 0.8,
+      "end": 1.2,
+      "time": 0.1
+    },
+    "effects": {
+      "filter": {
+        "type": "lowpass",
+        "frequency": 2000,
+        "Q": 0.5
+      },
+      "distortion": 0,
+      "delay": {
+        "time": 0,
+        "feedback": 0
+      },
+      "reverb": 0.1,
+      "pan": 0
+    }
+  }
+}

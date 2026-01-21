@@ -1,0 +1,32 @@
+{
+  "title": "Gunshot",
+  "audio": {
+    "waveform": "noise",
+    "frequency": 150,
+    "duration": 0.15,
+    "noise": {
+      "type": "white",
+      "amount": 1.0
+    },
+    "envelope": {
+      "attack": 0.001,
+      "decay": 0.05,
+      "sustain": 0.1,
+      "release": 0.08
+    },
+    "effects": {
+      "filter": {
+        "type": "bandpass",
+        "frequency": 1000,
+        "Q": 1
+      },
+      "distortion": 10,
+      "delay": {
+        "time": 0.1,
+        "feedback": 0.15
+      },
+      "reverb": 0.3,
+      "pan": 0
+    }
+  }
+}

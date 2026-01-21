@@ -1,0 +1,28 @@
+{
+  "title": "Click",
+  "audio": {
+    "waveform": "square",
+    "frequency": 800,
+    "duration": 0.05,
+    "envelope": {
+      "attack": 0.001,
+      "decay": 0.02,
+      "sustain": 0.1,
+      "release": 0.02
+    },
+    "effects": {
+      "filter": {
+        "type": "highpass",
+        "frequency": 500,
+        "Q": 1
+      },
+      "distortion": 0,
+      "delay": {
+        "time": 0,
+        "feedback": 0
+      },
+      "reverb": 0,
+      "pan": 0
+    }
+  }
+}

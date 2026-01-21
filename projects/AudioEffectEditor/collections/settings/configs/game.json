@@ -1,0 +1,15 @@
+{
+  "title": "AudioEffectEditor",
+  "is3D": false,
+  "libraries": [
+    "BaseECSGame",
+    "BaseLoader",
+    "AudioManager",
+    "AudioEffectEditor"
+  ],
+  "systems": [],
+  "classes": [],
+  "interface": "main",
+  "appLibrary": "AudioEffectEditor",
+  "appLoaderLibrary": "BaseLoader"
+}

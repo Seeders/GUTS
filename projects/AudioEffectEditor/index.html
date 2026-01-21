@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudioEffectEditor - Layered Sound Effect Creator</title>
+    <link rel="stylesheet" href="collections/ui/interfaces/css/main.css">
+</head>
+<body>
+<div id="appContainer" style="display: block;">
+</div>
+<script src="./dist/client/game.js"></script>
+<script>
+    (() => {
+        async function main() {
+            // Wait for compiled game to be ready
+            await window.COMPILED_GAME.ready;
+
+            // Create AudioEffectEditor app instance
+            const app = new GUTS.AudioEffectEditor(null);
+
+            // Initialize compiled game classes
+            if (window.COMPILED_GAME && !window.COMPILED_GAME.initialized) {
+                window.COMPILED_GAME.init(app);
+            }
+
+            // Initialize the app
+            await app.init();
+
+            // Expose globally for debugging
+            window.audioEffectEditor = app;
+        }
+        window.onload = main;
+    })();
+</script>
+</body>
+</html>

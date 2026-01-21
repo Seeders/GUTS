@@ -1,0 +1,6 @@
+{
+  "id": "attackSounds",
+  "name": "Attack Sounds",
+  "singular": "attackSound",
+  "objectTypeCategory": "audio"
+}
