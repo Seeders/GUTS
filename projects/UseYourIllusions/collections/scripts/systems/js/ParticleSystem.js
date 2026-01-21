@@ -112,7 +112,7 @@ class ParticleSystem extends GUTS.BaseSystem {
       vertexShader,
       fragmentShader,
       transparent: true,
-      depthWrite: false,
+      depthWrite: true,                        // Write to depth for proper 3D occlusion with sprites
       blending: THREE.NormalBlending,          // CHANGED: sane default; per-effect override allowed
       uniforms: { uTime: { value: 0 } },
       toneMapped: false                        // CHANGED: ensure shader output isn't remapped
