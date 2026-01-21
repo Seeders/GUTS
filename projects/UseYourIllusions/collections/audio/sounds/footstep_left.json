@@ -1,0 +1,27 @@
+{
+  "title": "Footstep Left",
+  "audio": {
+    "waveform": "noise",
+    "frequency": 60,
+    "duration": 0.04,
+    "volume": 0.15,
+    "noise": {
+      "type": "brown",
+      "amount": 1.0
+    },
+    "envelope": {
+      "attack": 0.005,
+      "decay": 0.02,
+      "sustain": 0.01,
+      "release": 0.015
+    },
+    "effects": {
+      "filter": {
+        "type": "lowpass",
+        "frequency": 120,
+        "Q": 0.3
+      },
+      "pan": -0.03
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "title": "Guard Footstep Right",
+  "audio": {
+    "waveform": "noise",
+    "frequency": 130,
+    "duration": 0.08,
+    "volume": 0.12,
+    "noise": {
+      "type": "brown",
+      "amount": 1.0
+    },
+    "envelope": {
+      "attack": 0.015,
+      "decay": 0.03,
+      "sustain": 0.05,
+      "release": 0.03
+    },
+    "effects": {
+      "filter": {
+        "type": "lowpass",
+        "frequency": 320,
+        "Q": 0.5
+      },
+      "pan": 0.08
+    }
+  }
+}

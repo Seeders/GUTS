@@ -35,6 +35,11 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         this._wasMoving = false;
         this._lastDirection = null;
         this._lastCameraTarget = null;
+
+        // Footstep sound state
+        this._footstepInterval = 0.5; // Time between footsteps in seconds
+        this._lastFootstepTime = 0;
+        this._footstepSide = 0; // 0 = left, 1 = right (alternates)
     }
 
     init() {
@@ -240,6 +245,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
                 this.game.call('setBillboardAnimation', controlledEntity, this.enums.animationType.walk, true);
             }
             this.updateWASDMovement(controlledEntity);
+            this.playFootstepSound();
         } else if (this._wasMoving) {
             // Just stopped moving - set idle animation
             if (this.game.hasService('setBillboardAnimation')) {
@@ -501,6 +507,88 @@ class PlayerControlSystem extends GUTS.BaseSystem {
             playerOrder.enabled = false;
             playerOrder.completed = true;
         }
+    }
+
+    /**
+     * Play footstep sounds while walking
+     */
+    playFootstepSound() {
+        const now = this.game.state.now || 0;
+
+        // Check if enough time has passed since last footstep (now is in seconds)
+        if (now - this._lastFootstepTime < this._footstepInterval) {
+            return;
+        }
+
+        // Calculate distance to camera for volume attenuation
+        const controlledEntity = this.game.getEntitiesWith('playerControlled')[0];
+        const playerPos = controlledEntity ? this.game.getComponent(controlledEntity, 'transform')?.position : null;
+
+        let distanceVolume = 1.0;
+        if (playerPos) {
+            const camera = this.game.hasService('getCamera') ? this.game.call('getCamera') : null;
+            if (camera?.position) {
+                const dx = playerPos.x - camera.position.x;
+                const dz = playerPos.z - camera.position.z;
+                const distanceToCamera = Math.sqrt(dx * dx + dz * dz);
+
+                const refDistance = 100;   // Full volume within this distance
+                const maxDistance = 500;  // Silent beyond this distance
+
+                if (distanceToCamera >= maxDistance) {
+                    // Too far, skip playing
+                    this._lastFootstepTime = now;
+                    this._footstepSide = 1 - this._footstepSide;
+                    return;
+                }
+
+                // Linear falloff for more predictable attenuation
+                if (distanceToCamera > refDistance) {
+                    distanceVolume = 1.0 - (distanceToCamera - refDistance) / (maxDistance - refDistance);
+                    distanceVolume = Math.max(0, distanceVolume);
+                }
+            }
+        }
+
+        // Play alternating left/right footstep
+        const soundName = this._footstepSide === 0 ? 'footstep_left' : 'footstep_right';
+
+        // Get sound config and apply random variations
+        const audioManager = this.game.audioManager;
+        if (audioManager) {
+            const soundConfig = this.game.getCollections()?.sounds?.[soundName]?.audio;
+            if (soundConfig) {
+                // Clone config and apply random variations
+                const config = JSON.parse(JSON.stringify(soundConfig));
+
+                // Random pitch variation (0.85 to 1.15)
+                const pitchVariation = 0.85 + Math.random() * 0.3;
+                config.frequency = (config.frequency || 200) * pitchVariation;
+
+                // Apply distance-based volume attenuation
+                const baseVolume = (config.volume || 0.2) * (0.8 + Math.random() * 0.2);
+                config.volume = baseVolume * distanceVolume;
+
+                // Slight random filter cutoff variation
+                if (config.effects?.filter) {
+                    config.effects.filter.frequency *= (0.9 + Math.random() * 0.2);
+                }
+
+                // Slight random pan variation
+                if (config.effects) {
+                    const basePan = config.effects.pan || 0;
+                    config.effects.pan = basePan + (Math.random() - 0.5) * 0.15;
+                }
+
+                // Pass volume as options parameter - config.volume isn't used by AudioManager
+                const finalVolume = config.volume;
+                audioManager.playSynthSound(`footstep_${Date.now()}`, config, { volume: finalVolume });
+            }
+        }
+
+        // Update state
+        this._lastFootstepTime = now;
+        this._footstepSide = 1 - this._footstepSide; // Toggle between 0 and 1
     }
 
     updateAnimationDirection(entityId, angle) {
