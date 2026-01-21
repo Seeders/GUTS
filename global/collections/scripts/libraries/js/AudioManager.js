@@ -202,6 +202,8 @@ class AudioManager {
         };
         this.buffers = {};
         this.activeSounds = new Set();
+        this.ambientSounds = new Map(); // Track looping ambient sounds by ID
+        this.listenerPosition = { x: 0, y: 0, z: 0 };
         if (this.audioContext.state === 'suspended') {
             await this.audioContext.resume();
         }
@@ -646,5 +648,407 @@ class AudioManager {
             this.stopSound(sound);
         });
         this.activeSounds.clear();
+    }
+
+    // ========== AMBIENT SOUND METHODS ==========
+
+    /**
+     * Set the listener position for distance-based volume calculations
+     * @param {Object} position - { x, y, z } world position
+     */
+    setListenerPosition(position) {
+        this.listenerPosition = position || { x: 0, y: 0, z: 0 };
+        // Update all ambient sounds' volumes based on new listener position
+        this.updateAmbientVolumes();
+    }
+
+    /**
+     * Start a looping ambient sound at a world position
+     * @param {string} ambientId - Unique ID for this ambient sound instance
+     * @param {Object} soundDefinition - The full sound definition from collection (includes audio and ambient properties)
+     * @param {Object} position - { x, y, z } world position of the sound source
+     * @returns {Object|null} The ambient sound instance or null if failed
+     */
+    startAmbientSound(ambientId, soundDefinition, position) {
+        console.log('[AudioManager] startAmbientSound called:', ambientId, soundDefinition, position);
+        console.log('[AudioManager] isInitialized:', this.isInitialized);
+
+        if (!this.isInitialized) {
+            console.log('[AudioManager] Not initialized, calling initialize()...');
+            this.initialize();
+            return this.startAmbientSound(ambientId, soundDefinition, position);
+        }
+
+        // Stop existing ambient sound with this ID if any
+        if (this.ambientSounds.has(ambientId)) {
+            this.stopAmbientSound(ambientId);
+        }
+
+        const audioConfig = soundDefinition.audio;
+        const ambientConfig = soundDefinition.ambient || {};
+
+        if (!audioConfig) {
+            console.warn(`[AudioManager] No audio config for ambient sound: ${ambientId}`);
+            return null;
+        }
+
+        // Check for special sound types
+        if (audioConfig.type === 'fire') {
+            return this.startFireAmbientSound(ambientId, soundDefinition, position);
+        }
+
+        // Create gain node for distance-based volume control
+        const gainNode = this.audioContext.createGain();
+        const filterNode = this.audioContext.createBiquadFilter();
+
+        // Create noise source for the ambient sound
+        const noiseType = audioConfig.noise?.type || 'brown';
+        const noiseSource = this.createNoiseSource(noiseType);
+
+        // Configure filter
+        if (audioConfig.effects?.filter) {
+            filterNode.type = audioConfig.effects.filter.type || 'bandpass';
+            filterNode.frequency.value = audioConfig.effects.filter.frequency || 500;
+            filterNode.Q.value = audioConfig.effects.filter.Q || 1;
+        } else {
+            filterNode.type = 'bandpass';
+            filterNode.frequency.value = 500;
+            filterNode.Q.value = 1;
+        }
+
+        // Connect: noise -> filter -> gain -> sfxBus
+        noiseSource.connect(filterNode);
+        filterNode.connect(gainNode);
+        gainNode.connect(this.sfxBus.input);
+
+        // Calculate initial volume based on distance
+        const baseVolume = ambientConfig.volume || 0.5;
+        const distance = this.calculateDistance(position, this.listenerPosition);
+        const volume = this.calculateDistanceVolume(distance, ambientConfig, baseVolume);
+        gainNode.gain.value = volume;
+
+        // Start the noise source
+        noiseSource.start();
+
+        // Store the ambient sound
+        const ambient = {
+            id: ambientId,
+            source: noiseSource,
+            gainNode: gainNode,
+            filterNode: filterNode,
+            position: { ...position },
+            config: ambientConfig,
+            baseVolume: baseVolume,
+            active: true
+        };
+
+        this.ambientSounds.set(ambientId, ambient);
+        return ambient;
+    }
+
+    /**
+     * Create a fire ambient sound with layered crackle synthesis
+     */
+    startFireAmbientSound(ambientId, soundDefinition, position) {
+        const audioConfig = soundDefinition.audio;
+        const ambientConfig = soundDefinition.ambient || {};
+        const fireConfig = audioConfig.fire || {};
+
+        // Master gain for distance-based volume
+        const masterGain = this.audioContext.createGain();
+        masterGain.connect(this.sfxBus.input);
+
+        // Calculate initial volume
+        const baseVolume = ambientConfig.volume || 0.15;
+        const distance = this.calculateDistance(position, this.listenerPosition);
+        const volume = this.calculateDistanceVolume(distance, ambientConfig, baseVolume);
+        masterGain.gain.value = volume;
+
+        // Store all sources for cleanup
+        const sources = [];
+        const gainNodes = [];
+        const filterNodes = [];
+
+        // Layer 1: Low rumble (brown noise, low-passed) - the base roar
+        const rumbleGain = this.audioContext.createGain();
+        const rumbleFilter = this.audioContext.createBiquadFilter();
+        const rumbleSource = this.createNoiseSource('brown');
+        rumbleFilter.type = 'lowpass';
+        rumbleFilter.frequency.value = fireConfig.rumbleFreq || 150;
+        rumbleFilter.Q.value = 0.5;
+        rumbleGain.gain.value = fireConfig.rumbleVolume || 0.3;
+        rumbleSource.connect(rumbleFilter);
+        rumbleFilter.connect(rumbleGain);
+        rumbleGain.connect(masterGain);
+        rumbleSource.start();
+        sources.push(rumbleSource);
+        gainNodes.push(rumbleGain);
+        filterNodes.push(rumbleFilter);
+
+        // Layer 2: Mid crackle (pink noise, band-passed) - the body
+        const crackleGain = this.audioContext.createGain();
+        const crackleFilter = this.audioContext.createBiquadFilter();
+        const crackleSource = this.createNoiseSource('pink');
+        crackleFilter.type = 'bandpass';
+        crackleFilter.frequency.value = fireConfig.crackleFreq || 1200;
+        crackleFilter.Q.value = 1.5;
+        crackleGain.gain.value = fireConfig.crackleVolume || 0.15;
+        crackleSource.connect(crackleFilter);
+        crackleFilter.connect(crackleGain);
+        crackleGain.connect(masterGain);
+        crackleSource.start();
+        sources.push(crackleSource);
+        gainNodes.push(crackleGain);
+        filterNodes.push(crackleFilter);
+
+        // Layer 3: High hiss (white noise, high-passed) - the sizzle
+        const hissGain = this.audioContext.createGain();
+        const hissFilter = this.audioContext.createBiquadFilter();
+        const hissSource = this.createNoiseSource('white');
+        hissFilter.type = 'highpass';
+        hissFilter.frequency.value = fireConfig.hissFreq || 3000;
+        hissFilter.Q.value = 0.3;
+        hissGain.gain.value = fireConfig.hissVolume || 0.05;
+        hissSource.connect(hissFilter);
+        hissFilter.connect(hissGain);
+        hissGain.connect(masterGain);
+        hissSource.start();
+        sources.push(hissSource);
+        gainNodes.push(hissGain);
+        filterNodes.push(hissFilter);
+
+        // Layer 4: Random crackle pops using scheduled impulses
+        const crackleInterval = this.startCrackleScheduler(masterGain, fireConfig);
+
+        // Store the ambient sound with all components
+        const ambient = {
+            id: ambientId,
+            sources: sources,
+            gainNodes: gainNodes,
+            filterNodes: filterNodes,
+            gainNode: masterGain, // For volume updates
+            crackleInterval: crackleInterval,
+            position: { ...position },
+            config: ambientConfig,
+            baseVolume: baseVolume,
+            active: true,
+            isFireSound: true
+        };
+
+        this.ambientSounds.set(ambientId, ambient);
+        return ambient;
+    }
+
+    /**
+     * Schedule random crackle/pop sounds for fire
+     */
+    startCrackleScheduler(destination, fireConfig) {
+        const minInterval = fireConfig.crackleMinInterval || 50;
+        const maxInterval = fireConfig.crackleMaxInterval || 300;
+        const crackleChance = fireConfig.crackleChance || 0.7;
+
+        const scheduleCrackle = () => {
+            if (Math.random() < crackleChance) {
+                this.playCrackle(destination, fireConfig);
+            }
+
+            // Schedule next crackle at random interval
+            const nextInterval = minInterval + Math.random() * (maxInterval - minInterval);
+            return setTimeout(scheduleCrackle, nextInterval);
+        };
+
+        return scheduleCrackle();
+    }
+
+    /**
+     * Play a single crackle/pop sound
+     */
+    playCrackle(destination, fireConfig) {
+        if (!this.audioContext) return;
+
+        const now = this.audioContext.currentTime;
+
+        // Create a short burst of filtered noise for the crackle
+        const bufferSize = Math.floor(this.audioContext.sampleRate * 0.03); // 30ms
+        const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        // Generate crackle - starts loud, decays quickly with some randomness
+        for (let i = 0; i < bufferSize; i++) {
+            const decay = Math.exp(-i / (bufferSize * 0.15));
+            const noise = (Math.random() * 2 - 1);
+            // Add some impulse spikes
+            const spike = Math.random() < 0.05 ? (Math.random() * 2 - 1) * 3 : 0;
+            data[i] = (noise + spike) * decay;
+        }
+
+        const source = this.audioContext.createBufferSource();
+        source.buffer = buffer;
+
+        // Randomize the crackle characteristics
+        const filter = this.audioContext.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 800 + Math.random() * 2000; // 800-2800 Hz
+        filter.Q.value = 0.5 + Math.random() * 2;
+
+        const gain = this.audioContext.createGain();
+        const crackleVolume = (fireConfig.popVolume || 0.3) * (0.3 + Math.random() * 0.7);
+        gain.gain.setValueAtTime(crackleVolume, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(destination);
+
+        source.start(now);
+        source.stop(now + 0.05);
+    }
+
+    /**
+     * Stop an ambient sound
+     * @param {string} ambientId - The ID of the ambient sound to stop
+     */
+    stopAmbientSound(ambientId) {
+        const ambient = this.ambientSounds.get(ambientId);
+        if (!ambient) return;
+
+        const now = this.audioContext.currentTime;
+
+        // Fade out
+        ambient.gainNode.gain.cancelScheduledValues(now);
+        ambient.gainNode.gain.setValueAtTime(ambient.gainNode.gain.value, now);
+        ambient.gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+
+        // Clear crackle interval if it's a fire sound
+        if (ambient.crackleInterval) {
+            clearTimeout(ambient.crackleInterval);
+        }
+
+        // Stop source(s) after fade
+        setTimeout(() => {
+            try {
+                // Handle fire sounds with multiple sources
+                if (ambient.isFireSound && ambient.sources) {
+                    ambient.sources.forEach(source => {
+                        try {
+                            source.stop();
+                            source.disconnect();
+                        } catch (e) {}
+                    });
+                    ambient.filterNodes?.forEach(filter => {
+                        try { filter.disconnect(); } catch (e) {}
+                    });
+                    ambient.gainNodes?.forEach(gain => {
+                        try { gain.disconnect(); } catch (e) {}
+                    });
+                } else {
+                    // Single source ambient
+                    ambient.source.stop();
+                    ambient.source.disconnect();
+                    ambient.filterNode.disconnect();
+                }
+                ambient.gainNode.disconnect();
+            } catch (e) {
+                // Source may already be stopped
+            }
+        }, 350);
+
+        ambient.active = false;
+        this.ambientSounds.delete(ambientId);
+    }
+
+    /**
+     * Stop all ambient sounds
+     */
+    stopAllAmbientSounds() {
+        for (const [id] of this.ambientSounds) {
+            this.stopAmbientSound(id);
+        }
+    }
+
+    /**
+     * Update the position of an ambient sound source
+     * @param {string} ambientId - The ID of the ambient sound
+     * @param {Object} position - { x, y, z } new world position
+     */
+    updateAmbientPosition(ambientId, position) {
+        const ambient = this.ambientSounds.get(ambientId);
+        if (!ambient) return;
+
+        ambient.position = { ...position };
+
+        // Recalculate volume based on new position
+        const distance = this.calculateDistance(position, this.listenerPosition);
+        const volume = this.calculateDistanceVolume(distance, ambient.config, ambient.baseVolume);
+
+        const now = this.audioContext.currentTime;
+        ambient.gainNode.gain.setTargetAtTime(volume, now, 0.1);
+    }
+
+    /**
+     * Update all ambient sound volumes based on current listener position
+     */
+    updateAmbientVolumes() {
+        const now = this.audioContext.currentTime;
+
+        for (const [id, ambient] of this.ambientSounds) {
+            if (!ambient.active) continue;
+
+            const distance = this.calculateDistance(ambient.position, this.listenerPosition);
+            const volume = this.calculateDistanceVolume(distance, ambient.config, ambient.baseVolume);
+
+            ambient.gainNode.gain.setTargetAtTime(volume, now, 0.1);
+        }
+    }
+
+    /**
+     * Calculate distance between two 3D points
+     */
+    calculateDistance(pos1, pos2) {
+        const dx = (pos1.x || 0) - (pos2.x || 0);
+        const dy = (pos1.y || 0) - (pos2.y || 0);
+        const dz = (pos1.z || 0) - (pos2.z || 0);
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    /**
+     * Calculate volume based on distance using rolloff model
+     * Uses an inverse distance model similar to Web Audio API's PannerNode
+     */
+    calculateDistanceVolume(distance, config, baseVolume) {
+        const refDistance = config.refDistance || 50;
+        const maxDistance = config.maxDistance || 300;
+        const rolloffFactor = config.rolloffFactor || 1.5;
+
+        // Clamp distance to maxDistance
+        if (distance >= maxDistance) {
+            return 0;
+        }
+
+        // For distances less than reference, use full volume
+        if (distance <= refDistance) {
+            return baseVolume;
+        }
+
+        // Inverse distance rolloff
+        // volume = baseVolume * refDistance / (refDistance + rolloffFactor * (distance - refDistance))
+        const attenuation = refDistance / (refDistance + rolloffFactor * (distance - refDistance));
+        return baseVolume * Math.max(0, Math.min(1, attenuation));
+    }
+
+    /**
+     * Get an ambient sound definition from collections
+     */
+    getAmbientSound(soundName) {
+        const collections = this.game.getCollections();
+        console.log('[AudioManager] getAmbientSound - collections keys:', Object.keys(collections || {}));
+        console.log('[AudioManager] collections.ambientSounds:', collections?.ambientSounds);
+        console.log('[AudioManager] Looking for:', soundName);
+        if (collections.ambientSounds?.[soundName]) {
+            console.log('[AudioManager] Found sound:', collections.ambientSounds[soundName]);
+            return collections.ambientSounds[soundName];
+        }
+        console.warn(`[AudioManager] Ambient sound not found: ${soundName}`);
+        return null;
     }
 }
