@@ -23,6 +23,7 @@
     "PuzzleGameSystem"
   ],
   "clientSystems": [
+    "AudioSystem",
     "RenderSystem",
     "WorldSystem",
     "TerrainDetailSystem",

@@ -6,6 +6,7 @@
   "libraries": [
     "GameServices",
     "CallLogger",
+    "AudioManager",
     "threejs",
     "BaseECSGame",
     "Rapier",
@@ -62,6 +63,7 @@
     "GameCameraController"
   ],
   "systems": [
+    "AudioSystem",
     "GameSystem",
     "GameInterfaceSystem",
     "PlayerStatsSystem",

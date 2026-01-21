@@ -43,10 +43,12 @@ class LightingSystem extends GUTS.BaseSystem {
         this.scene = this.game.worldSystem?.worldRenderer?.getScene();
 
         // Load lighting effects collection
-        const collections = this.game.call('getCollections');
-        console.log('[LightingSystem] onSceneLoad - collections keys:', Object.keys(collections || {}));
-        console.log('[LightingSystem] collections.lightingEffects:', collections?.lightingEffects);
-        this.lightingEffects = collections?.lightingEffects || {};
+        const collections = this.game.getCollections?.() || {};
+        console.log('[LightingSystem] onSceneLoad - getCollections keys:', Object.keys(collections));
+        console.log('[LightingSystem] collections.lightingEffects:', collections.lightingEffects);
+        console.log('[LightingSystem] this.game.app:', this.game.app);
+        console.log('[LightingSystem] window.COMPILED_GAME?.collections?.lightingEffects:', window.COMPILED_GAME?.collections?.lightingEffects);
+        this.lightingEffects = collections.lightingEffects || {};
     }
 
     /**
@@ -54,11 +56,7 @@ class LightingSystem extends GUTS.BaseSystem {
      */
     update() {
         const deltaTime = this.game.state?.deltaTime;
-        if (!deltaTime) {
-            console.log('[LightingSystem] No deltaTime');
-            return;
-        }
-        if (this.activeLights.size === 0) {
+        if (!deltaTime || this.activeLights.size === 0) {
             return;
         }
 
@@ -68,9 +66,6 @@ class LightingSystem extends GUTS.BaseSystem {
         for (const [entityId, lightData] of this.activeLights) {
             if (lightData.effect) {
                 this._processEffect(entityId, lightData, deltaTime);
-            } else if (this._debugFrame === undefined || this._debugFrame++ % 120 === 0) {
-                this._debugFrame = 1;
-                console.log(`[LightingSystem] Light ${entityId} has no effect. Config:`, lightData.config);
             }
         }
     }
@@ -244,14 +239,8 @@ class LightingSystem extends GUTS.BaseSystem {
         // Look up effect if specified
         let effect = null;
         let effectState = {};
-        console.log(`[LightingSystem] addPointLight for entity ${entityId}, effect config:`, lightConfig.effect);
-        console.log(`[LightingSystem] Available effects:`, Object.keys(this.lightingEffects || {}));
         if (lightConfig.effect && this.lightingEffects) {
             effect = this.lightingEffects[lightConfig.effect];
-            console.log(`[LightingSystem] Looked up effect '${lightConfig.effect}':`, effect);
-            if (!effect) {
-                console.warn(`[LightingSystem] Unknown lighting effect: ${lightConfig.effect}`);
-            }
         }
 
         this.activeLights.set(entityId, {

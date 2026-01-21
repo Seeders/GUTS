@@ -1,0 +1,26 @@
+{
+  "title": "Brazier Fire",
+  "description": "Crackling fire ambient sound for braziers",
+  "audio": {
+    "type": "fire",
+    "fire": {
+      "rumbleFreq": 120,
+      "rumbleVolume": 0.25,
+      "crackleFreq": 1000,
+      "crackleVolume": 0.18,
+      "hissFreq": 2500,
+      "hissVolume": 0.04,
+      "crackleMinInterval": 40,
+      "crackleMaxInterval": 180,
+      "crackleChance": 0.85,
+      "popVolume": 0.55
+    }
+  },
+  "ambient": {
+    "loop": true,
+    "maxDistance": 200,
+    "refDistance": 30,
+    "rolloffFactor": 2.0,
+    "volume": 0.15
+  }
+}

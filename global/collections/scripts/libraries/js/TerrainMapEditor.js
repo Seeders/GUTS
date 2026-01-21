@@ -1751,6 +1751,7 @@ class TerrainMapEditor {
             const hasWorldObject = this.editorContext.getComponent(entityId, 'worldObject');
             const hasBuilding = this.editorContext.getComponent(entityId, 'building');
             const hasUnit = this.editorContext.getComponent(entityId, 'unit');
+            const hasExitZone = this.editorContext.getComponent(entityId, 'exitZone');
 
             if (hasWorldObject !== undefined && hasWorldObject !== null) {
                 collection = 'worldObjects';
@@ -1758,6 +1759,8 @@ class TerrainMapEditor {
                 collection = 'buildings';
             } else if (hasUnit !== undefined && hasUnit !== null) {
                 collection = 'units';
+            } else if (hasExitZone !== undefined && hasExitZone !== null) {
+                collection = 'exitZones';
             }
 
             // Skip entities that aren't level entities (e.g., terrain, camera, etc.)

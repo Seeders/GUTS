@@ -3,6 +3,10 @@
   "description": "A brazier.",
   "particleEffectSystem": "brazier_fire",
   "particleEffectOffset": { "x": 0, "y": 14, "z": 0 },
+  "ambientSound": {
+    "sound": "brazier_fire",
+    "offset": { "x": 0, "y": 20, "z": 0 }
+  },
   "pointLight": {
     "color": "#ff8833",
     "intensity": 500,
