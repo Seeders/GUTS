@@ -1074,4 +1074,155 @@ class AudioManager {
         console.warn(`[AudioManager] Ambient sound not found: ${soundName}`);
         return null;
     }
+
+    // ========== MUSIC PLAYBACK METHODS ==========
+
+    /**
+     * Load an audio file and return the buffer
+     * @param {string} url - URL to the audio file
+     * @returns {Promise<AudioBuffer>} The decoded audio buffer
+     */
+    async loadAudioFile(url) {
+        if (this.buffers[url]) {
+            return this.buffers[url];
+        }
+
+        try {
+            const response = await fetch(url);
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+            this.buffers[url] = audioBuffer;
+            return audioBuffer;
+        } catch (error) {
+            console.error(`[AudioManager] Failed to load audio file: ${url}`, error);
+            return null;
+        }
+    }
+
+    /**
+     * Play background music from an audio file (loops by default)
+     * @param {string} soundName - Name of the sound in the sounds collection
+     * @param {Object} options - Playback options
+     * @param {number} options.volume - Volume (0-1), default 0.5
+     * @param {boolean} options.loop - Whether to loop, default true
+     * @param {number} options.fadeInTime - Fade in duration in seconds, default 1
+     * @returns {Object|null} Music instance for control, or null if failed
+     */
+    async playMusic(soundName, options = {}) {
+        if (!this.isInitialized) {
+            await this.initialize();
+        }
+
+        // Stop any existing music
+        this.stopMusic();
+
+        // Get sound definition from collections
+        const collections = this.game.getCollections();
+        const soundDef = collections.sounds?.[soundName];
+
+        if (!soundDef?.audioFile) {
+            console.warn(`[AudioManager] Sound '${soundName}' not found or has no audioFile`);
+            return null;
+        }
+
+        // Build the full URL - audioFile is relative to resources folder
+        const baseUrl = this.game.resourceBaseUrl || './resources/';
+        const url = baseUrl + soundDef.audioFile;
+
+        try {
+            const buffer = await this.loadAudioFile(url);
+            if (!buffer) return null;
+
+            const volume = options.volume ?? 0.5;
+            const loop = options.loop ?? true;
+            const fadeInTime = options.fadeInTime ?? 1;
+
+            // Create source and gain nodes
+            const source = this.audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.loop = loop;
+
+            const gainNode = this.audioContext.createGain();
+            gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+
+            // Connect: source -> gain -> musicBus
+            source.connect(gainNode);
+            gainNode.connect(this.musicBus.input);
+
+            // Fade in
+            gainNode.gain.linearRampToValueAtTime(volume, this.audioContext.currentTime + fadeInTime);
+
+            // Start playback
+            source.start(0);
+
+            // Store reference for stopping
+            this.currentMusic = {
+                source,
+                gainNode,
+                soundName,
+                volume
+            };
+
+            console.log(`[AudioManager] Playing music: ${soundName}`);
+            return this.currentMusic;
+        } catch (error) {
+            console.error(`[AudioManager] Failed to play music: ${soundName}`, error);
+            return null;
+        }
+    }
+
+    /**
+     * Stop the currently playing background music
+     * @param {number} fadeOutTime - Fade out duration in seconds, default 1
+     */
+    stopMusic(fadeOutTime = 1) {
+        if (!this.currentMusic) return;
+
+        const { source, gainNode } = this.currentMusic;
+        const now = this.audioContext.currentTime;
+
+        // Fade out
+        gainNode.gain.cancelScheduledValues(now);
+        gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+        gainNode.gain.linearRampToValueAtTime(0, now + fadeOutTime);
+
+        // Stop after fade
+        setTimeout(() => {
+            try {
+                source.stop();
+                source.disconnect();
+                gainNode.disconnect();
+            } catch (e) {
+                // Source may already be stopped
+            }
+        }, fadeOutTime * 1000 + 100);
+
+        console.log(`[AudioManager] Stopping music: ${this.currentMusic.soundName}`);
+        this.currentMusic = null;
+    }
+
+    /**
+     * Set music volume
+     * @param {number} volume - Volume (0-1)
+     */
+    setMusicVolume(volume) {
+        if (!this.currentMusic) return;
+
+        const now = this.audioContext.currentTime;
+        this.currentMusic.gainNode.gain.cancelScheduledValues(now);
+        this.currentMusic.gainNode.gain.setTargetAtTime(
+            Math.max(0, Math.min(1, volume)),
+            now,
+            0.1
+        );
+        this.currentMusic.volume = volume;
+    }
+
+    /**
+     * Check if music is currently playing
+     * @returns {boolean}
+     */
+    isMusicPlaying() {
+        return this.currentMusic !== null;
+    }
 }

@@ -1,581 +1,394 @@
+/**
+ * AudioEditor - Editor for synthesized audio effects
+ *
+ * Uses AudioManager for consistent sound playback across the engine.
+ */
 class AudioEditor {
-    constructor(gameEditor) {
-        this.gameEditor = gameEditor;
-        let collectionObj = { state: {}, collections: this.gameEditor.getCollections() };
-        this.audioManager = new GUTS.AudioManager(collectionObj, null, {} );
+    constructor(controller, moduleConfig, GUTS) {
+        this.controller = controller;
+        this.moduleConfig = moduleConfig;
+        this.GUTS = GUTS;
+
+        this.currentData = null;
+        this.propertyName = null;
+        this.objectData = null;
+
+        // Create AudioManager for preview playback
+        this.audioManager = new GUTS.AudioManager({}, null, {});
         this.audioManager.init();
-        this.volume = 1;
+
+        // Loading flag to prevent saves during UI updates
+        this._isLoading = false;
+
         this.setupEventListeners();
-        this.updateNoiseUI(); 
     }
 
     setupEventListeners() {
-        const updateStatus = (message, type = 'default') => {
-            const status = document.getElementById('status-message');
-            if (status) {
-                status.textContent = message;
-                status.className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';
-            }
-        };
+        // Listen for load hook
+        document.body.addEventListener(this.moduleConfig.loadHook, (event) => {
+            this.loadAudio(event.detail);
+        });
 
-        const updateSliderDisplay = (sliderId, formatFn) => {
-            const slider = document.getElementById(sliderId);
-            if (slider) {
-                const updateDisplayValue = () => {
-                    const display = slider.nextElementSibling;
-                    if (display && display.classList.contains('value-display')) {
-                        display.textContent = formatFn(parseFloat(slider.value));
-                    }
-                };
-
-                slider.addEventListener('input', updateDisplayValue);
-                updateDisplayValue();
-            }
-        };
-
-        // Listen for unload events
-        document.body.addEventListener('unloadAudio', () => {
+        // Listen for unload event
+        document.body.addEventListener(this.moduleConfig.unloadHook, () => {
             this.handleUnload();
         });
 
-        document.body.addEventListener('editAudio', (event) => {
-            try {
-                const settings = event.detail.data;
-                this.updateUIFromSettings(settings);                
-                updateStatus('Audio settings imported', 'success');
-            } catch (err) {
-                updateStatus('Error importing audio settings: ' + err.message, 'error');
-            }
-        });
+        // Get container
+        const container = document.getElementById(this.moduleConfig.container);
+        if (!container) return;
 
-        const playBtn = document.getElementById('playBtn');
-        
-        playBtn?.addEventListener('click', () => {
-            this.playCurrentSound();
-        });
+        // Play button
+        document.getElementById('playBtn')?.addEventListener('click', () => this.playSound());
 
-        document.getElementById('exportBtn')?.addEventListener('click', () => {
-            const settings = this.getUISettings();
-            this.saveAudio(settings);
-            updateStatus('Audio settings exported', 'success');
-        });
+        // Save button
+        document.getElementById('exportBtn')?.addEventListener('click', () => this.saveCurrentData());
 
-        this.setupUIControls(updateSliderDisplay);
-
-
-
-    }
-    setVolume(value) {
-        this.volume = value;
-    }
-    setupUIControls(updateSliderDisplay) {
-        updateSliderDisplay('volume', (val) => `${Math.round(val * 100)}%`);
-        document.getElementById('volume')?.addEventListener('input', (e) => {
-            const volume = parseFloat(e.target.value);
-            this.setVolume(volume, e);
-        });
-
-        updateSliderDisplay('frequency', (val) => `${val} Hz`);
-        updateSliderDisplay('duration', (val) => `${val.toFixed(2)} s`);
-        
-        updateSliderDisplay('attack', (val) => `${val.toFixed(3)} s`);
-        updateSliderDisplay('decay', (val) => `${val.toFixed(2)} s`);
-        updateSliderDisplay('sustain', (val) => `${Math.round(val * 100)}%`);
-        updateSliderDisplay('release', (val) => `${val.toFixed(2)} s`);
-        
-        updateSliderDisplay('pitchEnvStart', (val) => `${val.toFixed(2)}x`);
-        updateSliderDisplay('pitchEnvEnd', (val) => `${val.toFixed(2)}x`);
-        
-
-        updateSliderDisplay('filterFreq', (val) => `${val} Hz`);
-
-        
-        updateSliderDisplay('filterQ', (val) => `Q: ${val.toFixed(1)}`);
-        
-        updateSliderDisplay('distortion', (val) => `${Math.round(val)}%`);
-
-        
-        updateSliderDisplay('delayTime', (val) => `${val.toFixed(2)} s`);
- 
-        
-        updateSliderDisplay('delayFeedback', (val) => `${Math.round(val * 100)}%`);
-
-        
-        updateSliderDisplay('reverbAmount', (val) => `${Math.round(val * 100)}%`);
-   
-        
-        updateSliderDisplay('bitcrusher', (val) => `${Math.round(val * 100)}%`);
-
-        
-        updateSliderDisplay('panning', (val) => {
-            if (val === 0) return "Center";
-            return val < 0 ? `${Math.abs(Math.round(val * 100))}% Left` : `${Math.round(val * 100)}% Right`;
-        });
-
-    }
-
-    getUISettings() {
-        return {
-            waveform: document.getElementById('waveform')?.value || 'sine',
-            frequency: parseFloat(document.getElementById('frequency')?.value || 440),
-            duration: parseFloat(document.getElementById('duration')?.value || 1),
-            noise: {
-                type: document.getElementById('noiseType')?.value || 'white',
-                amount: parseFloat(document.getElementById('noiseAmount')?.value || 0),
-                filter: {
-                    type: document.getElementById('noiseFilterType')?.value || 'none',
-                    frequency: parseFloat(document.getElementById('noiseFilterFreq')?.value || 2000)
-                }
-            },
-            envelope: {
-                attack: parseFloat(document.getElementById('attack')?.value || 0.01),
-                decay: parseFloat(document.getElementById('decay')?.value || 0.1),
-                sustain: parseFloat(document.getElementById('sustain')?.value || 0.7),
-                release: parseFloat(document.getElementById('release')?.value || 0.3),
-            },
-            pitchEnvelope: {
-                start: parseFloat(document.getElementById('pitchEnvStart')?.value || 1),
-                end: parseFloat(document.getElementById('pitchEnvEnd')?.value || 1),
-                time: parseFloat(document.getElementById('duration')?.value || 1)
-            },
-            effects: {
-                filter: {
-                    type: document.getElementById('filterType')?.value || 'lowpass',
-                    frequency: parseFloat(document.getElementById('filterFreq')?.value || 1000),
-                    Q: parseFloat(document.getElementById('filterQ')?.value || 1)
-                },
-                distortion: parseFloat(document.getElementById('distortion')?.value || 0),
-                delay: {
-                    time: parseFloat(document.getElementById('delayTime')?.value || 0.3),
-                    feedback: parseFloat(document.getElementById('delayFeedback')?.value || 0)
-                },
-                reverb: parseFloat(document.getElementById('reverbAmount')?.value || 0),
-                bitcrusher: parseFloat(document.getElementById('bitcrusher')?.value || 0),
-                pan: parseFloat(document.getElementById('panning')?.value || 0)
-            }
-        };
-    }
-
-    updateUIFromSettings(settings) {
-        if (!settings) return;
-        
-        this.setElementValue('waveform', settings.waveform);
-        this.setElementValue('frequency', settings.frequency);
-        this.setElementValue('duration', settings.duration);
-        
-        if (settings.envelope) {
-            this.setElementValue('attack', settings.envelope.attack);
-            this.setElementValue('decay', settings.envelope.decay);
-            this.setElementValue('sustain', settings.envelope.sustain);
-            this.setElementValue('release', settings.envelope.release);
-        }
-        
-        if (settings.pitchEnvelope) {
-            this.setElementValue('pitchEnvStart', settings.pitchEnvelope.start);
-            this.setElementValue('pitchEnvEnd', settings.pitchEnvelope.end);
-        }
-        
-        if (settings.effects) {
-            if (settings.effects.filter) {
-                this.setElementValue('filterType', settings.effects.filter.type);
-                this.setElementValue('filterFreq', settings.effects.filter.frequency);
-                this.setElementValue('filterQ', settings.effects.filter.Q);
-                
-            }
-            
-            this.setElementValue('distortion', settings.effects.distortion);
-            
-            if (settings.effects.delay) {
-                this.setElementValue('delayTime', settings.effects.delay.time);
-                this.setElementValue('delayFeedback', settings.effects.delay.feedback);
-            }
-            
-            this.setElementValue('reverbAmount', settings.effects.reverb);
-            
-            this.setElementValue('bitcrusher', settings.effects.bitcrusher);
-
-            this.setElementValue('panning', settings.effects.pan);
-        }
-        if (settings.noise) {
-            this.setElementValue('noiseType', settings.noise.type);
-            this.setElementValue('noiseAmount', settings.noise.amount);
-            
-            if (settings.noise.filter) {
-                this.setElementValue('noiseFilterType', settings.noise.filter.type);
-                this.setElementValue('noiseFilterFreq', settings.noise.filter.frequency);
-            }
-        }
-        document.querySelectorAll('input[type="range"]').forEach(el => {
-            el.dispatchEvent(new Event('input'));
-        });
+        // Randomize button
         document.getElementById('randomSoundBtn')?.addEventListener('click', () => {
-            this.generateRandomSound();
-            this.playCurrentSound();
+            this.randomizeSound();
+            this.playSound();
+        });
+
+        // Setup input listeners
+        this.setupInputListeners();
+    }
+
+    setupInputListeners() {
+        const inputIds = [
+            'waveform', 'frequency', 'duration', 'volume',
+            'noiseType', 'noiseAmount', 'noiseFilterType', 'noiseFilterFreq',
+            'attack', 'decay', 'sustain', 'release',
+            'pitchEnvStart', 'pitchEnvEnd',
+            'filterType', 'filterFreq', 'filterQ',
+            'distortion', 'delayTime', 'delayFeedback',
+            'reverbAmount', 'bitcrusher', 'panning'
+        ];
+
+        inputIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                const eventType = el.tagName === 'SELECT' ? 'change' : 'input';
+                el.addEventListener(eventType, () => this.onInputChange(id));
+            }
         });
     }
-    generateRandomSound() {
-        // Waveform options (including noise)
-        const waveforms = ['sine', 'square', 'sawtooth', 'triangle', 'noise'];
-        
-        // Noise types
-        const noiseTypes = ['white', 'pink', 'brown'];
-        
-        // Filter types
-        const filterTypes = ['lowpass', 'highpass', 'bandpass', 'none'];
-        
-        // Random helpers
-        const random = (min, max) => Math.random() * (max - min) + min;
-        const randomInt = (min, max) => Math.floor(random(min, max + 1));
-        const randomItem = (arr) => arr[randomInt(0, arr.length - 1)];
-        
-        // Generate random settings
-        const settings = {
-            waveform: randomItem(waveforms),
-            frequency: random(50, 2000),
-            duration: random(0.1, 3),
-            noise: {
-                type: randomItem(noiseTypes),
-                amount: random(0, 0), // Keep below 1.0 to avoid overpowering
-                filter: {
-                    type: randomItem(filterTypes),
-                    frequency: random(100, 10000),
-                    Q: random(0.5, 5)
-                }
-            },
-            envelope: {
-                attack: random(0.001, 0.5),
-                decay: random(0.01, 1),
-                sustain: random(0, 1),
-                release: random(0.01, 2)
-            },
-            pitchEnvelope: {
-                start: random(0.5, 2),
-                end: random(0.5, 2),
-                time: random(0.1, 2)
-            },
-            effects: {
-                filter: {
-                    type: randomItem(filterTypes),
-                    frequency: random(50, 10000),
-                    Q: random(0.5, 5)
-                },
-                distortion: random(0, 0.8),
-                delay: {
-                    time: random(0, 1),
-                    feedback: random(0, 0.7) // Avoid infinite feedback
-                },
-                reverb: random(0, 0.7),
-                bitcrusher: random(0, 0.5),
-                pan: random(-1, 1)
-            }
+
+    onInputChange(inputId) {
+        if (this._isLoading) return;
+        this.updateValueDisplay(inputId);
+    }
+
+    updateValueDisplay(inputId) {
+        const el = document.getElementById(inputId);
+        if (!el || el.tagName === 'SELECT') return;
+
+        const label = el.closest('.editor-module__form-group')?.querySelector('.audio-editor__value-display');
+        if (!label) return;
+
+        const value = parseFloat(el.value);
+
+        const formatters = {
+            'frequency': v => `${Math.round(v)} Hz`,
+            'duration': v => `${v.toFixed(2)} s`,
+            'volume': v => `${Math.round(v * 100)}%`,
+            'noiseAmount': v => `${Math.round(v * 100)}%`,
+            'noiseFilterFreq': v => `${Math.round(v)} Hz`,
+            'attack': v => `${v.toFixed(3)} s`,
+            'decay': v => `${v.toFixed(2)} s`,
+            'sustain': v => `${Math.round(v * 100)}%`,
+            'release': v => `${v.toFixed(2)} s`,
+            'pitchEnvStart': v => `${v.toFixed(2)}x`,
+            'pitchEnvEnd': v => `${v.toFixed(2)}x`,
+            'filterFreq': v => `${Math.round(v)} Hz`,
+            'filterQ': v => `Q: ${v.toFixed(1)}`,
+            'distortion': v => `${Math.round(v)}%`,
+            'delayTime': v => `${v.toFixed(2)} s`,
+            'delayFeedback': v => `${Math.round(v * 100)}%`,
+            'reverbAmount': v => `${Math.round(v * 100)}%`,
+            'bitcrusher': v => `${Math.round(v * 100)}%`,
+            'panning': v => v === 0 ? 'Center' : (v < 0 ? `L ${Math.round(Math.abs(v) * 100)}%` : `R ${Math.round(v * 100)}%`)
         };
 
-        // Special case: If waveform is noise, disable oscillator frequency
-        if (settings.waveform === 'noise') {
-            settings.noise.amount = 1.0; // Full noise when selected
-            settings.frequency = 440; // Dummy value (unused)
+        if (formatters[inputId]) {
+            label.textContent = formatters[inputId](value);
         }
-
-        // Ensure noise filter isn't "none" if noise is active
-        if (settings.noise.amount > 0 && settings.noise.filter.type === 'none') {
-            settings.noise.filter.type = randomItem(filterTypes.filter(t => t !== 'none'));
-        }
-
-        // Update UI with the new random sound
-        this.updateUIFromSettings(settings);
-        return settings;
     }
 
-    updateNoiseUI() {
-    
-        // Setup the slider display update
-        this.setupNoiseControls();
-    }
-    
-    setupNoiseControls() {
-        const updateSliderDisplay = (sliderId, formatFn) => {
-            const slider = document.getElementById(sliderId);
-            if (slider) {
-                const updateDisplayValue = () => {
-                    const display = slider.nextElementSibling;
-                    if (display && display.classList.contains('value-display')) {
-                        display.textContent = formatFn(parseFloat(slider.value));
-                    }
-                };
-                
-                slider.addEventListener('input', updateDisplayValue);
-                updateDisplayValue();
-            }
-        };
-    
-        updateSliderDisplay('noiseAmount', (val) => `${Math.round(val * 100)}%`);
-        updateSliderDisplay('noiseFilterFreq', (val) => `${val} Hz`);
+    loadAudio(detail) {
+        this.propertyName = detail.propertyName;
+        this.objectData = detail.objectData || this.controller?.getCurrentObject();
+        this.currentData = detail.data || this.getDefaultAudioConfig();
+
+        // Show the editor
+        Object.values(document.getElementsByClassName('editor-module')).forEach((editor) => {
+            editor.classList.remove('show');
+        });
+        document.getElementById(this.moduleConfig.container)?.classList.add('show');
+
+        // Load data into UI
+        this.loadDataIntoUI(this.currentData);
+
+        this.updateStatus('Ready');
     }
 
-    setElementValue(id, value) {
-        const element = document.getElementById(id);
-        if (element) element.value = value;
-    }
-
-
-    saveAudio(settingsObj) {
-        document.body.dispatchEvent(new CustomEvent('saveAudio', {   
-            detail: { data: settingsObj, propertyName: 'audio' },
-        }));
-    }
-
-    playCurrentSound() {
-        const settings = this.getUISettings();
-        this.audioManager.playSynthSound('audioEditorSound', settings);
-    }
-
-    /**
-     * Handles unloading the audio editor data
-     * Resets all UI controls to default values
-     */
-    handleUnload() {
-        // Reset volume
-        this.volume = 1;
-
-        // Reset all UI controls to default values
-        const defaultSettings = {
+    getDefaultAudioConfig() {
+        return {
             waveform: 'sine',
             frequency: 440,
             duration: 1,
-            noise: {
-                type: 'white',
-                amount: 0,
-                filter: {
-                    type: 'none',
-                    frequency: 2000
-                }
-            },
+            volume: 0.7,
             envelope: {
                 attack: 0.01,
                 decay: 0.1,
                 sustain: 0.7,
                 release: 0.3
+            }
+        };
+    }
+
+    loadDataIntoUI(data) {
+        this._isLoading = true;
+
+        // Basic parameters
+        this.setValue('waveform', data.waveform || 'sine');
+        this.setValue('frequency', data.frequency || 440);
+        this.setValue('duration', data.duration || 1);
+        this.setValue('volume', data.volume !== undefined ? data.volume : 0.7);
+
+        // Noise
+        const noise = data.noise || {};
+        this.setValue('noiseType', noise.type || 'white');
+        this.setValue('noiseAmount', noise.amount || 0);
+        this.setValue('noiseFilterType', noise.filter?.type || 'none');
+        this.setValue('noiseFilterFreq', noise.filter?.frequency || 2000);
+
+        // Envelope (ADSR)
+        const env = data.envelope || {};
+        this.setValue('attack', env.attack || 0.01);
+        this.setValue('decay', env.decay || 0.1);
+        this.setValue('sustain', env.sustain !== undefined ? env.sustain : 0.7);
+        this.setValue('release', env.release || 0.3);
+
+        // Pitch envelope
+        const pitch = data.pitchEnvelope || {};
+        this.setValue('pitchEnvStart', pitch.start || 1);
+        this.setValue('pitchEnvEnd', pitch.end || 1);
+
+        // Effects
+        const effects = data.effects || {};
+        const filter = effects.filter || {};
+        this.setValue('filterType', filter.type || 'lowpass');
+        this.setValue('filterFreq', filter.frequency || 1000);
+        this.setValue('filterQ', filter.Q || 1);
+        this.setValue('distortion', effects.distortion || 0);
+
+        const delay = effects.delay || {};
+        this.setValue('delayTime', delay.time || 0.3);
+        this.setValue('delayFeedback', delay.feedback || 0);
+
+        this.setValue('reverbAmount', effects.reverb || 0);
+        this.setValue('bitcrusher', effects.bitcrusher || 0);
+        this.setValue('panning', effects.pan || 0);
+
+        // Update all value displays
+        const inputIds = [
+            'frequency', 'duration', 'volume', 'noiseAmount', 'noiseFilterFreq',
+            'attack', 'decay', 'sustain', 'release', 'pitchEnvStart', 'pitchEnvEnd',
+            'filterFreq', 'filterQ', 'distortion', 'delayTime', 'delayFeedback',
+            'reverbAmount', 'bitcrusher', 'panning'
+        ];
+        inputIds.forEach(id => this.updateValueDisplay(id));
+
+        this._isLoading = false;
+    }
+
+    setValue(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.value = value;
+    }
+
+    getValue(id) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        if (el.tagName === 'SELECT') return el.value;
+        return parseFloat(el.value);
+    }
+
+    getUISettings() {
+        const waveform = this.getValue('waveform');
+        const frequency = this.getValue('frequency');
+        const duration = this.getValue('duration');
+        const volume = this.getValue('volume');
+
+        const settings = {
+            waveform,
+            frequency,
+            duration,
+            volume
+        };
+
+        // Noise
+        const noiseAmount = this.getValue('noiseAmount');
+        if (noiseAmount > 0) {
+            settings.noise = {
+                type: this.getValue('noiseType'),
+                amount: noiseAmount
+            };
+            const noiseFilterType = this.getValue('noiseFilterType');
+            if (noiseFilterType !== 'none') {
+                settings.noise.filter = {
+                    type: noiseFilterType,
+                    frequency: this.getValue('noiseFilterFreq')
+                };
+            }
+        }
+
+        // Envelope
+        settings.envelope = {
+            attack: this.getValue('attack'),
+            decay: this.getValue('decay'),
+            sustain: this.getValue('sustain'),
+            release: this.getValue('release')
+        };
+
+        // Pitch envelope
+        const pitchStart = this.getValue('pitchEnvStart');
+        const pitchEnd = this.getValue('pitchEnvEnd');
+        if (pitchStart !== 1 || pitchEnd !== 1) {
+            settings.pitchEnvelope = {
+                start: pitchStart,
+                end: pitchEnd,
+                time: duration
+            };
+        }
+
+        // Effects
+        const effects = {};
+
+        const filterFreq = this.getValue('filterFreq');
+        if (filterFreq < 20000) {
+            effects.filter = {
+                type: this.getValue('filterType'),
+                frequency: filterFreq,
+                Q: this.getValue('filterQ')
+            };
+        }
+
+        const distortion = this.getValue('distortion');
+        if (distortion > 0) {
+            effects.distortion = distortion;
+        }
+
+        const delayFeedback = this.getValue('delayFeedback');
+        if (delayFeedback > 0) {
+            effects.delay = {
+                time: this.getValue('delayTime'),
+                feedback: delayFeedback
+            };
+        }
+
+        const reverb = this.getValue('reverbAmount');
+        if (reverb > 0) {
+            effects.reverb = reverb;
+        }
+
+        const bitcrusher = this.getValue('bitcrusher');
+        if (bitcrusher > 0) {
+            effects.bitcrusher = bitcrusher;
+        }
+
+        const pan = this.getValue('panning');
+        if (pan !== 0) {
+            effects.pan = pan;
+        }
+
+        if (Object.keys(effects).length > 0) {
+            settings.effects = effects;
+        }
+
+        return settings;
+    }
+
+    saveCurrentData() {
+        if (this._isLoading) return;
+
+        const settings = this.getUISettings();
+
+        const saveEvent = new CustomEvent(this.moduleConfig.saveHook, {
+            detail: {
+                data: JSON.stringify(settings),
+                propertyName: this.propertyName
+            }
+        });
+        document.body.dispatchEvent(saveEvent);
+
+        this.updateStatus('Saved');
+    }
+
+    handleUnload() {
+        this.currentData = null;
+        this.propertyName = null;
+        this.objectData = null;
+    }
+
+    updateStatus(message) {
+        const statusEl = document.getElementById('status-message');
+        if (statusEl) statusEl.textContent = message;
+    }
+
+    playSound() {
+        const settings = this.getUISettings();
+        this.audioManager.playSynthSound('audioEditorPreview', settings);
+    }
+
+    randomizeSound() {
+        const waveforms = ['sine', 'square', 'sawtooth', 'triangle', 'noise'];
+        const noiseTypes = ['white', 'pink', 'brown'];
+        const filterTypes = ['lowpass', 'highpass', 'bandpass', 'notch'];
+
+        const randomConfig = {
+            waveform: waveforms[Math.floor(Math.random() * waveforms.length)],
+            frequency: 50 + Math.random() * 1000,
+            duration: 0.1 + Math.random() * 2,
+            volume: 0.3 + Math.random() * 0.5,
+            noise: {
+                type: noiseTypes[Math.floor(Math.random() * noiseTypes.length)],
+                amount: Math.random() * 0.5,
+                filter: {
+                    type: filterTypes[Math.floor(Math.random() * filterTypes.length)],
+                    frequency: 100 + Math.random() * 5000
+                }
+            },
+            envelope: {
+                attack: 0.001 + Math.random() * 0.5,
+                decay: Math.random() * 0.5,
+                sustain: Math.random(),
+                release: 0.01 + Math.random() * 1
             },
             pitchEnvelope: {
-                start: 1,
-                end: 1,
-                time: 1
+                start: 0.2 + Math.random() * 3,
+                end: 0.2 + Math.random() * 3
             },
             effects: {
                 filter: {
-                    type: 'lowpass',
-                    frequency: 1000,
-                    Q: 1
+                    type: filterTypes[Math.floor(Math.random() * filterTypes.length)],
+                    frequency: 100 + Math.random() * 5000,
+                    Q: 0.5 + Math.random() * 10
                 },
-                distortion: 0,
+                distortion: Math.random() * 50,
                 delay: {
-                    time: 0.3,
-                    feedback: 0
+                    time: Math.random() * 0.5,
+                    feedback: Math.random() * 0.5
                 },
-                reverb: 0,
-                bitcrusher: 0,
-                pan: 0
+                reverb: Math.random() * 0.5,
+                bitcrusher: Math.random() * 0.3,
+                pan: (Math.random() * 2 - 1) * 0.5
             }
         };
 
-        this.updateUIFromSettings(defaultSettings);
-
-        // Clear status message
-        const status = document.getElementById('status-message');
-        if (status) {
-            status.textContent = '';
-            status.className = '';
-        }
+        this.currentData = randomConfig;
+        this.loadDataIntoUI(randomConfig);
+        this.updateStatus('Randomized');
     }
-
-}
-
-// setupKeyboard() {
-//     const keyboard = document.getElementById('keyboard');
-//     if (!keyboard) return;
-    
-//     keyboard.innerHTML = '';
-    
-//     const keyboardLayout = [
-//         { note: 'C4', key: 'a', frequency: 261.63, type: 'white' },
-//         { note: 'C#4', key: 'w', frequency: 277.18, type: 'black' },
-//         { note: 'D4', key: 's', frequency: 293.66, type: 'white' },
-//         { note: 'D#4', key: 'e', frequency: 311.13, type: 'black' },
-//         { note: 'E4', key: 'd', frequency: 329.63, type: 'white' },
-//         { note: 'F4', key: 'f', frequency: 349.23, type: 'white' },
-//         { note: 'F#4', key: 't', frequency: 369.99, type: 'black' },
-//         { note: 'G4', key: 'g', frequency: 392.00, type: 'white' },
-//         { note: 'G#4', key: 'y', frequency: 415.30, type: 'black' },
-//         { note: 'A4', key: 'h', frequency: 440.00, type: 'white' },
-//         { note: 'A#4', key: 'u', frequency: 466.16, type: 'black' },
-//         { note: 'B4', key: 'j', frequency: 493.88, type: 'white' },
-//         { note: 'C5', key: 'k', frequency: 523.25, type: 'white' }
-//     ];
-    
-//     keyboardLayout.forEach(note => {
-//         const key = document.createElement('div');
-//         key.className = `key ${note.type}`;
-//         key.dataset.note = note.note;
-//         key.dataset.frequency = note.frequency;
-//         key.innerHTML = `<span>${note.note}</span><span class="key-label">${note.key}</span>`;
-        
-//         key.addEventListener('mousedown', () => {
-//             key.classList.add('active');
-//             this.playNote(note.frequency);
-//         });
-//         key.addEventListener('mouseup', () => {
-//             key.classList.remove('active');
-//             this.stopNote(note.frequency);
-//         });
-//         key.addEventListener('mouseleave', () => {
-//             if (key.classList.contains('active')) {
-//                 key.classList.remove('active');
-//                 this.stopNote(note.frequency);
-//             }
-//         });
-        
-//         keyboard.appendChild(key);
-//     });
-    
-//     const keyToNote = {};
-//     keyboardLayout.forEach(note => {
-//         keyToNote[note.key] = note.frequency;
-//     });
-    
-//     window.addEventListener('keydown', (e) => {
-//         if (e.repeat) return;
-//         const key = e.key.toLowerCase();
-//         if (keyToNote[key]) {
-//             this.playNote(keyToNote[key]);
-//             const keyElement = Array.from(keyboard.children).find(
-//                 k => k.dataset.frequency == keyToNote[key]
-//             );
-//             if (keyElement) keyElement.classList.add('active');
-//         }
-//     });
-    
-//     window.addEventListener('keyup', (e) => {
-//         const key = e.key.toLowerCase();
-//         if (keyToNote[key]) {
-//             this.stopNote(keyToNote[key]);
-//             const keyElement = Array.from(keyboard.children).find(
-//                 k => k.dataset.frequency == keyToNote[key]
-//             );
-//             if (keyElement) keyElement.classList.remove('active');
-//         }
-//     });
-// }
-
-// stopNote(frequency) {
-//     if (!this.activeNotes.has(frequency)) return;
-    
-//     const note = this.activeNotes.get(frequency);
-//     const now = this.audioContext.currentTime;
-//     const settings = this.getUISettings();
-//     const release = settings.envelope.release;
-    
-//     note.envelopeGain.gain.cancelScheduledValues(now);
-//     note.envelopeGain.gain.setValueAtTime(note.envelopeGain.gain.value, now);
-//     note.envelopeGain.gain.linearRampToValueAtTime(0, now + release);
-    
-//     note.oscillator.stop(now + release + 0.1);
-    
-//     setTimeout(() => {
-//         this.activeNotes.delete(frequency);
-//     }, (release + 0.2) * 1000);
-// }
-// playNote(frequency) {
-//     if (this.activeNotes.has(frequency)) {
-//         this.stopNote(frequency);
-//     }
-    
-//     const settings = this.getUISettings();
-//     settings.frequency = frequency;
-    
-//     const now = this.audioContext.currentTime;
-//     const oscillator = this.createOscillator(settings);
-//     oscillator.connect(this.filter);
-//     oscillator.start(now);
-    
-//     this.activeNotes.set(frequency, {
-//         oscillator,
-//         envelopeGain: this.masterGainNode,
-//         startTime: now
-//     });
-    
-//     this.connectVisualizer(oscillator);
-// }
-// Audio Visualizer class
-class AudioVisualizer {
-    constructor(canvas, audioContext) {
-        this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
-        this.audioContext = audioContext;
-        this.analyzer = audioContext.createAnalyser();
-        this.analyzer.fftSize = 2048;
-        this.bufferLength = this.analyzer.frequencyBinCount;
-        this.dataArray = new Uint8Array(this.bufferLength);
-        this.analyzer.connect(audioContext.destination);
-        
-      
-        
-        // Start visualization loop
-        this.visualize();
-    }
-    
-    connectSource(source) {
-        source.connect(this.analyzer);
-    }
-    
-    drawWaveform(audioBuffer) {
-        const data = audioBuffer.getChannelData(0);
-        const step = Math.ceil(data.length / this.canvas.width);
-        const amp = this.canvas.height / 2;
-        
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.beginPath();
-        this.ctx.moveTo(0, amp);
-        
-        for (let i = 0; i < this.canvas.width; i++) {
-            const idx = Math.floor(i * step);
-            const y = amp + data[idx] * amp;
-            this.ctx.lineTo(i, y);
-        }
-        
-        this.ctx.strokeStyle = '#2196F3';
-        this.ctx.stroke();
-    }
-    
-    visualize() {
-        requestAnimationFrame(() => this.visualize());
-        
-        this.analyzer.getByteTimeDomainData(this.dataArray);
-        
-        this.ctx.fillStyle = 'rgb(200, 200, 200)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeStyle = 'rgb(0, 0, 0)';
-        this.ctx.beginPath();
-        
-        const sliceWidth = this.canvas.width * 1.0 / this.bufferLength;
-        let x = 0;
-        
-        for (let i = 0; i < this.bufferLength; i++) {
-            const v = this.dataArray[i] / 128.0;
-            const y = v * this.canvas.height / 2;
-            
-            if (i === 0) {
-                this.ctx.moveTo(x, y);
-            } else {
-                this.ctx.lineTo(x, y);
-            }
-            
-            x += sliceWidth;
-        }
-        
-        this.ctx.lineTo(this.canvas.width, this.canvas.height / 2);
-        this.ctx.stroke();
-    }
-    
 }

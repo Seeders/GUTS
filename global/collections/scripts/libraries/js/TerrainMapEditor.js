@@ -329,6 +329,13 @@ class TerrainMapEditor {
                     this.removeSelectedEntity();
                 }
             }
+            // G: Snap selected entities to grid
+            else if (event.key === 'g' || event.key === 'G') {
+                if (this.getSelectedEntityIds().length > 0 && this.placementMode === 'placements') {
+                    event.preventDefault();
+                    this.snapSelectedToGrid();
+                }
+            }
         });
 
         // Gizmo mode buttons
@@ -343,6 +350,9 @@ class TerrainMapEditor {
         document.getElementById('te-scale-tool')?.addEventListener('click', () => {
             this.setGizmoMode('scale');
             this.updateGizmoToolbarUI('te-scale-tool');
+        });
+        document.getElementById('te-snap-to-grid')?.addEventListener('click', () => {
+            this.snapSelectedToGrid();
         });
 
         // Camera toggle and rotation buttons
@@ -3157,6 +3167,66 @@ class TerrainMapEditor {
 
         // Update hierarchy list
         this.updateEntityHierarchy();
+    }
+
+    /**
+     * Snap selected entities to the nearest placement grid position
+     */
+    snapSelectedToGrid() {
+        if (!this.editorContext) return;
+
+        const entityIds = this.getSelectedEntityIds();
+        if (entityIds.length === 0) return;
+
+        // Get grid size - placement grid is half of terrain grid
+        const terrainGridSize = this.terrainDataManager?.gridSize ||
+            this.gameEditor?.getCollections()?.configs?.game?.gridSize || 32;
+        const placementGridSize = terrainGridSize / 2;
+
+        const renderSystem = this.editorContext.renderSystem;
+
+        for (const entityId of entityIds) {
+            const levelEntity = this.levelEntities.find(e => e.id === entityId);
+            if (!levelEntity?.components?.transform?.position) continue;
+
+            const transform = this.editorContext.getComponent(entityId, 'transform');
+            if (!transform) continue;
+
+            const pos = levelEntity.components.transform.position;
+
+            // Snap X and Z to nearest placement grid center
+            // Grid centers are at: n * placementGridSize + placementGridSize/2 (offset from world origin)
+            const halfGrid = placementGridSize / 2;
+            const snappedX = Math.round((pos.x - halfGrid) / placementGridSize) * placementGridSize + halfGrid;
+            const snappedZ = Math.round((pos.z - halfGrid) / placementGridSize) * placementGridSize + halfGrid;
+
+            // Update position in levelEntity (this is what gets saved)
+            pos.x = snappedX;
+            pos.z = snappedZ;
+
+            // Update the ECS transform component
+            transform.position.x = snappedX;
+            transform.position.z = snappedZ;
+
+            // Update visual representation via render system
+            if (renderSystem) {
+                renderSystem.updateEntity(entityId, {
+                    position: transform.position,
+                    rotation: transform.rotation?.y || 0,
+                    transform: transform
+                });
+            }
+        }
+
+        // Update gizmo position if attached
+        if (this.selectedEntityId) {
+            this.attachGizmoToEntity(this.selectedEntityId);
+        }
+
+        // Update inspector UI
+        this.updateInspector();
+
+        console.log(`[TerrainMapEditor] Snapped ${entityIds.length} entity/entities to grid`);
     }
 
     /**
