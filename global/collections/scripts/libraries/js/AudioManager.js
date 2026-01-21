@@ -68,11 +68,12 @@ class AudioManager {
                 source.distortion.curve = null;
                 source.distortion.oversample = '4x';
 
-                source.compressor.threshold.setValueAtTime(-24, this.audioContext.currentTime);
-                source.compressor.knee.setValueAtTime(30, this.audioContext.currentTime);
-                source.compressor.ratio.setValueAtTime(12, this.audioContext.currentTime);
-                source.compressor.attack.setValueAtTime(0.003, this.audioContext.currentTime);
-                source.compressor.release.setValueAtTime(0.25, this.audioContext.currentTime);
+                // Gentle limiting to prevent clipping, not for dynamics control
+                source.compressor.threshold.setValueAtTime(-6, this.audioContext.currentTime);
+                source.compressor.knee.setValueAtTime(10, this.audioContext.currentTime);
+                source.compressor.ratio.setValueAtTime(4, this.audioContext.currentTime);
+                source.compressor.attack.setValueAtTime(0.01, this.audioContext.currentTime);
+                source.compressor.release.setValueAtTime(0.1, this.audioContext.currentTime);
 
                 source.pannerNode.pan.setValueAtTime(0, this.audioContext.currentTime);
 
@@ -110,7 +111,13 @@ class AudioManager {
             }
 
             getSource() {
-                let source = this.sources.find(src => !src.active && (!src.lastUsed || this.audioContext.currentTime - src.lastUsed > 1));
+                // First try to find an inactive source with some cooldown time
+                let source = this.sources.find(src => !src.active && (!src.lastUsed || this.audioContext.currentTime - src.lastUsed > 0.1));
+                // If none found, try any inactive source
+                if (!source) {
+                    source = this.sources.find(src => !src.active);
+                }
+                // If still none, expand the pool
                 if (!source && this.sources.length < this.poolSize * 2) {
                     source = this.createSource();
                     this.sources.push(source);
@@ -190,15 +197,17 @@ class AudioManager {
         this.masterBus = this.createAudioBus('master');
         this.musicBus = this.createAudioBus('music');
         this.sfxBus = this.createAudioBus('sfx');
+        this.ambientBus = this.createAudioBus('ambient', true); // Bypass compressor for ambient
         this.uiBus = this.createAudioBus('ui');
         this.musicBus.connect(this.masterBus);
         this.sfxBus.connect(this.masterBus);
+        this.ambientBus.connect(this.masterBus);
         this.uiBus.connect(this.masterBus);
         this.masterBus.connect(this.audioContext.destination);
         this.soundPools = {
-            sfx: new SoundPool(this.audioContext, this.sfxBus.input, 6),
-            music: new SoundPool(this.audioContext, this.musicBus.input, 2),
-            ui: new SoundPool(this.audioContext, this.uiBus.input, 3)
+            sfx: new SoundPool(this.audioContext, this.sfxBus.input, 16),
+            music: new SoundPool(this.audioContext, this.musicBus.input, 4),
+            ui: new SoundPool(this.audioContext, this.uiBus.input, 6)
         };
         this.buffers = {};
         this.activeSounds = new Set();
@@ -210,16 +219,30 @@ class AudioManager {
         this.isInitialized = true;
     }
 
-    createAudioBus(name) {
+    createAudioBus(name, bypassCompressor = false) {
         const bus = {
             name,
             input: this.audioContext.createGain(),
             compressor: this.audioContext.createDynamicsCompressor(),
             output: this.audioContext.createGain()
         };
-        
-        bus.input.connect(bus.compressor);
-        bus.compressor.connect(bus.output);
+
+        if (bypassCompressor) {
+            // Direct connection for buses that don't need dynamics processing (e.g., ambient)
+            bus.input.connect(bus.output);
+        } else {
+            // Configure bus compressor as a gentle limiter only (prevents clipping)
+            // High threshold means it only kicks in to prevent distortion
+            const now = this.audioContext.currentTime;
+            bus.compressor.threshold.setValueAtTime(-3, now);
+            bus.compressor.knee.setValueAtTime(6, now);
+            bus.compressor.ratio.setValueAtTime(8, now);
+            bus.compressor.attack.setValueAtTime(0.001, now);
+            bus.compressor.release.setValueAtTime(0.05, now);
+
+            bus.input.connect(bus.compressor);
+            bus.compressor.connect(bus.output);
+        }
         
         bus.connect = (destination) => {
             bus.output.connect(destination.input || destination);
@@ -563,13 +586,13 @@ class AudioManager {
 
     configureSoundInstance(sound, options) {
         const now = this.audioContext.currentTime;
-        
+
         if (options.volume !== undefined) {
             sound.gainNode.gain.cancelScheduledValues(now);
-            sound.gainNode.gain.setTargetAtTime(
+            // Use setValueAtTime for immediate volume setting (important for short sounds)
+            sound.gainNode.gain.setValueAtTime(
                 options.volume <= 0 ? 0.000001 : Math.max(0, Math.min(options.volume, 1)),
-                now,
-                0.02
+                now
             );
         }
         
@@ -716,10 +739,10 @@ class AudioManager {
             filterNode.Q.value = 1;
         }
 
-        // Connect: noise -> filter -> gain -> sfxBus
+        // Connect: noise -> filter -> gain -> ambientBus (separate from sfx)
         noiseSource.connect(filterNode);
         filterNode.connect(gainNode);
-        gainNode.connect(this.sfxBus.input);
+        gainNode.connect(this.ambientBus.input);
 
         // Calculate initial volume based on distance
         const baseVolume = ambientConfig.volume || 0.5;
@@ -756,7 +779,7 @@ class AudioManager {
 
         // Master gain for distance-based volume
         const masterGain = this.audioContext.createGain();
-        masterGain.connect(this.sfxBus.input);
+        masterGain.connect(this.ambientBus.input);
 
         // Calculate initial volume
         const baseVolume = ambientConfig.volume || 0.15;
