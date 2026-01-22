@@ -227,6 +227,25 @@ class TerrainMapEditor {
             this.exportMap();
         });
 
+        // Indoor level checkbox
+        document.getElementById('indoorLevel').addEventListener('change', (ev) => {
+            this.tileMap.indoor = ev.target.checked;
+            document.getElementById('ceilingSettings').style.display = ev.target.checked ? 'block' : 'none';
+            this.exportMap();
+        });
+
+        // Ceiling terrain type dropdown
+        document.getElementById('ceilingTerrainType').addEventListener('change', (ev) => {
+            this.tileMap.ceilingTerrainType = parseInt(ev.target.value);
+            this.exportMap();
+        });
+
+        // Ceiling height input
+        document.getElementById('ceilingHeight').addEventListener('change', (ev) => {
+            this.tileMap.ceilingHeight = parseInt(ev.target.value);
+            this.exportMap();
+        });
+
         // Save button - manual save only
         document.getElementById('saveMapBtn').addEventListener('click', () => {
             this.exportMap();
@@ -443,6 +462,38 @@ class TerrainMapEditor {
             const extensionHeightInput = document.getElementById('extensionHeight');
             if (extensionHeightInput) {
                 extensionHeightInput.value = this.tileMap.extensionHeight || 0;
+            }
+
+            // Setup indoor level / ceiling options
+            const indoorCheckbox = document.getElementById('indoorLevel');
+            const ceilingSettings = document.getElementById('ceilingSettings');
+            const ceilingTerrainTypeSelect = document.getElementById('ceilingTerrainType');
+            const ceilingHeightInput = document.getElementById('ceilingHeight');
+
+            if (indoorCheckbox) {
+                indoorCheckbox.checked = this.tileMap.indoor || false;
+                ceilingSettings.style.display = this.tileMap.indoor ? 'block' : 'none';
+            }
+
+            // Populate ceiling terrain type dropdown from level's terrain types
+            if (ceilingTerrainTypeSelect) {
+                ceilingTerrainTypeSelect.innerHTML = '';
+                this.tileMap.terrainTypes.forEach((terrainTypeId, index) => {
+                    const terrainType = collections.terrainTypes?.[terrainTypeId];
+                    if (terrainType) {
+                        const option = document.createElement('option');
+                        option.value = index;
+                        option.textContent = terrainType.type || terrainTypeId;
+                        if (index === this.tileMap.ceilingTerrainType) {
+                            option.selected = true;
+                        }
+                        ceilingTerrainTypeSelect.appendChild(option);
+                    }
+                });
+            }
+
+            if (ceilingHeightInput) {
+                ceilingHeightInput.value = this.tileMap.ceilingHeight || 200;
             }
 
             // No need to remap terrainMap; assume it already uses indices matching the order
