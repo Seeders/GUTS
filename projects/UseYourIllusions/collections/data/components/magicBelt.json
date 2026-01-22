@@ -5,6 +5,7 @@
     "slot1": null,
     "slot2": null,
     "selectedSlot": -1,
+    "nextSlot": 0,
     "illusion0": null,
     "illusion1": null,
     "illusion2": null

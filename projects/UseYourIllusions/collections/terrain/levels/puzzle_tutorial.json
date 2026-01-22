@@ -1092,6 +1092,9 @@
     "ramps": [],
     "cliffs": [],
     "extensionTerrainType": 4,
-    "extensionHeight": 9
+    "extensionHeight": 9,
+    "indoor": true,
+    "ceilingTerrainType": 3,
+    "ceilingHeight": 143
   }
 }

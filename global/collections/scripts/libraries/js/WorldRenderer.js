@@ -513,12 +513,108 @@ class WorldRenderer {
 
         this.scene.add(this.ground);
 
+        // Create ceiling if this is an indoor level
+        this.setupCeiling(terrainDataManager);
+
         // Add BVH acceleration for raycasting
         if (typeof THREE.THREEMeshBVH !== 'undefined') {
             THREE.BufferGeometry.prototype.computeBoundsTree = THREE.THREEMeshBVH.computeBoundsTree;
             THREE.BufferGeometry.prototype.disposeBoundsTree = THREE.THREEMeshBVH.disposeBoundsTree;
             THREE.Mesh.prototype.raycast = THREE.THREEMeshBVH.acceleratedRaycast;
         }
+    }
+
+    /**
+     * Create ceiling plane for indoor levels
+     * The ceiling is one-sided (visible from below only) with a repeating terrain sprite
+     */
+    setupCeiling(terrainDataManager) {
+        const tileMap = terrainDataManager.tileMap;
+
+        // Check if this is an indoor level with a ceiling terrain type
+        if (!tileMap?.indoor || tileMap?.ceilingTerrainType === undefined) {
+            return;
+        }
+
+        // Store ceiling config for later creation after tileMapper is ready
+        this.pendingCeiling = {
+            terrainDataManager,
+            ceilingTerrainType: tileMap.ceilingTerrainType,
+            ceilingHeight: tileMap.ceilingHeight || 200
+        };
+    }
+
+    /**
+     * Create the ceiling mesh using the terrain sprite from tileMapper
+     * Called after tileMapper is initialized with sprite sheets
+     */
+    createCeilingFromTerrainType() {
+        if (!this.pendingCeiling || !this.tileMapper?.layerSpriteSheets) {
+            return;
+        }
+
+        const { terrainDataManager, ceilingTerrainType, ceilingHeight } = this.pendingCeiling;
+        const extendedSize = terrainDataManager.extendedSize;
+        const gridSize = terrainDataManager.gridSize || 32;
+
+        // Get the full sprite for this terrain type
+        const spriteSheet = this.tileMapper.layerSpriteSheets[ceilingTerrainType];
+        if (!spriteSheet?.sprites?.[0]) {
+            console.warn(`[WorldRenderer] No sprite found for ceiling terrain type: ${ceilingTerrainType}`);
+            return;
+        }
+
+        const fullSprite = spriteSheet.sprites[0];
+
+        // Create a canvas texture from the terrain sprite, tiled to fill the ceiling
+        const ceilingCanvas = document.createElement('canvas');
+        ceilingCanvas.width = extendedSize;
+        ceilingCanvas.height = extendedSize;
+        const ctx = ceilingCanvas.getContext('2d');
+
+        // Tile the sprite across the ceiling canvas
+        const spriteSize = fullSprite.width;
+        for (let y = 0; y < extendedSize; y += spriteSize) {
+            for (let x = 0; x < extendedSize; x += spriteSize) {
+                ctx.drawImage(fullSprite, x, y);
+            }
+        }
+
+        // Create texture from canvas
+        const ceilingTexture = new THREE.CanvasTexture(ceilingCanvas);
+        ceilingTexture.wrapS = THREE.ClampToEdgeWrapping;
+        ceilingTexture.wrapT = THREE.ClampToEdgeWrapping;
+        ceilingTexture.minFilter = THREE.NearestFilter;
+        ceilingTexture.magFilter = THREE.NearestFilter;
+        ceilingTexture.colorSpace = THREE.SRGBColorSpace;
+
+        // Create ceiling geometry - same size as the extended terrain
+        const ceilingGeometry = new THREE.PlaneGeometry(extendedSize, extendedSize);
+
+        // Create material - FrontSide only so camera above can see through
+        // but camera below will see the texture
+        const ceilingMaterial = new THREE.MeshLambertMaterial({
+            map: ceilingTexture,
+            side: THREE.FrontSide  // Only visible from below (front face faces down)
+        });
+
+        // Create ceiling mesh
+        this.ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+
+        // Position at ceiling height, rotated to face down
+        // PlaneGeometry faces +Z by default, rotate to face -Y (down)
+        this.ceiling.rotation.x = Math.PI / 2;  // Rotate so front face points down
+        this.ceiling.position.set(0, ceilingHeight, 0);
+
+        // Ceiling doesn't cast or receive shadows (it's above everything)
+        this.ceiling.receiveShadow = false;
+        this.ceiling.castShadow = false;
+
+        this.scene.add(this.ceiling);
+        console.log(`[WorldRenderer] Created ceiling at height ${ceilingHeight} with terrain type ${ceilingTerrainType}`);
+
+        // Clear pending ceiling
+        this.pendingCeiling = null;
     }
 
     /**
@@ -1862,6 +1958,9 @@ class WorldRenderer {
 
         // Update ground texture
         this.updateGroundTexture();
+
+        // Create ceiling if pending (now that tileMapper sprites are ready)
+        this.createCeilingFromTerrainType();
     }
 
     /**

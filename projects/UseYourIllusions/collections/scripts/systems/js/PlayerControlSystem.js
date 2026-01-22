@@ -1058,7 +1058,6 @@ class PlayerControlSystem extends GUTS.BaseSystem {
 
         // Check mirrors first (entities with mirror component)
         const mirrors = this.game.getEntitiesWith('mirror', 'transform');
-        console.log('[BeamDebug] Mirrors found:', mirrors.length);
         for (const entityId of mirrors) {
             const result = this.checkEntityInBeam(entityId, startX, startZ, endX, endZ, beamWidth);
             if (!result) continue;
@@ -1071,15 +1070,12 @@ class PlayerControlSystem extends GUTS.BaseSystem {
 
         // Check collectibles (entities with collectible but not mirror component)
         const collectibles = this.game.getEntitiesWith('collectible', 'transform');
-        console.log('[BeamDebug] Collectibles found:', collectibles.length);
         for (const entityId of collectibles) {
             // Skip if this entity is a mirror
             if (this.game.getComponent(entityId, 'mirror')) continue;
 
             const result = this.checkEntityInBeam(entityId, startX, startZ, endX, endZ, beamWidth);
-            if (!result) continue;
-
-            if (result.dist < nearestCollectibleDist) {
+            if (result && result.dist < nearestCollectibleDist) {
                 nearestCollectibleDist = result.dist;
                 nearestCollectible = entityId;
             }
