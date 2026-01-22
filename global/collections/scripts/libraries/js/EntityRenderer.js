@@ -86,8 +86,8 @@ class EntityRenderer {
         // Current ambient light color for billboards (updated by setAmbientLightColor)
         this.currentAmbientLight = new THREE.Color(0xffffff);
 
-        // Point lights for billboard shader (max 8 lights)
-        this.maxPointLights = 8;
+        // Point lights for billboard shader (max 16 lights)
+        this.maxPointLights = 16;
         this.pointLights = []; // Array of { position: Vector3, color: Color, intensity: number, distance: number, decay: number }
 
         // Pre-allocate reusable THREE objects to avoid per-frame allocations in updateVATTransform
@@ -649,7 +649,7 @@ class EntityRenderer {
                 uniform vec3 ambientLightColor;
 
                 // Point light uniforms
-                #define MAX_POINT_LIGHTS 8
+                #define MAX_POINT_LIGHTS 16
                 uniform int numPointLights;
                 uniform vec3 pointLightPositions[MAX_POINT_LIGHTS];
                 uniform vec3 pointLightColors[MAX_POINT_LIGHTS];

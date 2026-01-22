@@ -2,6 +2,7 @@
  * AudioEditor - Editor for synthesized audio effects
  *
  * Uses AudioManager for consistent sound playback across the engine.
+ * Supports the unified layers format with multiple layers per sound.
  */
 class AudioEditor {
     constructor(controller, moduleConfig, GUTS) {
@@ -14,11 +15,20 @@ class AudioEditor {
         this.objectData = null;
 
         // Create AudioManager for preview playback
-        this.audioManager = new GUTS.AudioManager({}, null, {});
+        this.audioManager = new GUTS.AudioManager();
         this.audioManager.init();
 
         // Loading flag to prevent saves during UI updates
         this._isLoading = false;
+
+        // Layer counter for unique IDs
+        this._layerIdCounter = 0;
+
+        // Loop playback state
+        this._isLooping = false;
+        this._loopTimeoutId = null;
+        this._continuousSources = [];
+        this._eventIntervals = [];
 
         this.setupEventListeners();
     }
@@ -41,8 +51,17 @@ class AudioEditor {
         // Play button
         document.getElementById('playBtn')?.addEventListener('click', () => this.playSound());
 
+        // Stop button
+        document.getElementById('stopBtn')?.addEventListener('click', () => this.stopSound());
+
         // Save button
         document.getElementById('exportBtn')?.addEventListener('click', () => this.saveCurrentData());
+
+        // Add layer button
+        document.getElementById('addLayerBtn')?.addEventListener('click', () => this.addLayer());
+
+        // Add event button
+        document.getElementById('addEventBtn')?.addEventListener('click', () => this.addEvent());
 
         // Randomize button
         document.getElementById('randomSoundBtn')?.addEventListener('click', () => {
@@ -50,69 +69,49 @@ class AudioEditor {
             this.playSound();
         });
 
-        // Setup input listeners
-        this.setupInputListeners();
-    }
-
-    setupInputListeners() {
-        const inputIds = [
-            'waveform', 'frequency', 'duration', 'volume',
-            'noiseType', 'noiseAmount', 'noiseFilterType', 'noiseFilterFreq',
-            'attack', 'decay', 'sustain', 'release',
-            'pitchEnvStart', 'pitchEnvEnd',
-            'filterType', 'filterFreq', 'filterQ',
-            'distortion', 'delayTime', 'delayFeedback',
-            'reverbAmount', 'bitcrusher', 'panning'
-        ];
-
-        inputIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                const eventType = el.tagName === 'SELECT' ? 'change' : 'input';
-                el.addEventListener(eventType, () => this.onInputChange(id));
+        // Loop toggle
+        document.getElementById('loopToggle')?.addEventListener('change', (e) => {
+            this._isLooping = e.target.checked;
+            if (!this._isLooping) {
+                this.stopLoop();
             }
         });
+
+        // Master settings listeners
+        this.setupMasterListeners();
     }
 
-    onInputChange(inputId) {
-        if (this._isLoading) return;
-        this.updateValueDisplay(inputId);
-    }
+    setupMasterListeners() {
+        const masterInputs = [
+            { id: 'master-duration', display: 'duration-display', format: v => `${v.toFixed(2)} s` },
+            { id: 'master-volume', display: 'volume-display', format: v => `${Math.round(v * 100)}%` },
+            { id: 'master-filter-freq', display: 'master-filter-freq-display', format: v => `${Math.round(v)} Hz` },
+            { id: 'master-filter-q', display: 'master-filter-q-display', format: v => v.toFixed(1) },
+            { id: 'master-distortion', display: 'master-distortion-display', format: v => `${Math.round(v)}%` },
+            { id: 'master-delay-time', display: 'master-delay-time-display', format: v => `${v.toFixed(2)} s` },
+            { id: 'master-delay-feedback', display: 'master-delay-feedback-display', format: v => `${Math.round(v * 100)}%` },
+            { id: 'master-reverb', display: 'master-reverb-display', format: v => `${Math.round(v * 100)}%` },
+            { id: 'master-bitcrusher', display: 'master-bitcrusher-display', format: v => `${Math.round(v * 100)}%` },
+            { id: 'master-pan', display: 'master-pan-display', format: v => v === 0 ? 'Center' : (v < 0 ? `L ${Math.round(Math.abs(v) * 100)}%` : `R ${Math.round(v * 100)}%`) }
+        ];
 
-    updateValueDisplay(inputId) {
-        const el = document.getElementById(inputId);
-        if (!el || el.tagName === 'SELECT') return;
+        masterInputs.forEach(({ id, display, format }) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', () => {
+                    if (this._isLoading) return;
+                    const displayEl = document.getElementById(display);
+                    if (displayEl) {
+                        displayEl.textContent = format(parseFloat(el.value));
+                    }
+                });
+            }
+        });
 
-        const label = el.closest('.editor-module__form-group')?.querySelector('.audio-editor__value-display');
-        if (!label) return;
-
-        const value = parseFloat(el.value);
-
-        const formatters = {
-            'frequency': v => `${Math.round(v)} Hz`,
-            'duration': v => `${v.toFixed(2)} s`,
-            'volume': v => `${Math.round(v * 100)}%`,
-            'noiseAmount': v => `${Math.round(v * 100)}%`,
-            'noiseFilterFreq': v => `${Math.round(v)} Hz`,
-            'attack': v => `${v.toFixed(3)} s`,
-            'decay': v => `${v.toFixed(2)} s`,
-            'sustain': v => `${Math.round(v * 100)}%`,
-            'release': v => `${v.toFixed(2)} s`,
-            'pitchEnvStart': v => `${v.toFixed(2)}x`,
-            'pitchEnvEnd': v => `${v.toFixed(2)}x`,
-            'filterFreq': v => `${Math.round(v)} Hz`,
-            'filterQ': v => `Q: ${v.toFixed(1)}`,
-            'distortion': v => `${Math.round(v)}%`,
-            'delayTime': v => `${v.toFixed(2)} s`,
-            'delayFeedback': v => `${Math.round(v * 100)}%`,
-            'reverbAmount': v => `${Math.round(v * 100)}%`,
-            'bitcrusher': v => `${Math.round(v * 100)}%`,
-            'panning': v => v === 0 ? 'Center' : (v < 0 ? `L ${Math.round(Math.abs(v) * 100)}%` : `R ${Math.round(v * 100)}%`)
-        };
-
-        if (formatters[inputId]) {
-            label.textContent = formatters[inputId](value);
-        }
+        // Filter type select
+        document.getElementById('master-filter-type')?.addEventListener('change', () => {
+            if (this._isLoading) return;
+        });
     }
 
     loadAudio(detail) {
@@ -134,190 +133,541 @@ class AudioEditor {
 
     getDefaultAudioConfig() {
         return {
-            waveform: 'sine',
-            frequency: 440,
             duration: 1,
             volume: 0.7,
-            envelope: {
-                attack: 0.01,
-                decay: 0.1,
-                sustain: 0.7,
-                release: 0.3
-            }
+            layers: [
+                {
+                    source: 'sine',
+                    frequency: 440,
+                    volume: 1.0,
+                    envelope: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.3 }
+                }
+            ]
         };
     }
 
     loadDataIntoUI(data) {
         this._isLoading = true;
 
-        // Basic parameters
-        this.setValue('waveform', data.waveform || 'sine');
-        this.setValue('frequency', data.frequency || 440);
-        this.setValue('duration', data.duration || 1);
-        this.setValue('volume', data.volume !== undefined ? data.volume : 0.7);
+        // Master settings
+        this.setMasterValue('master-duration', data.duration || 1, 'duration-display', v => `${v.toFixed(2)} s`);
+        this.setMasterValue('master-volume', data.volume !== undefined ? data.volume : 0.7, 'volume-display', v => `${Math.round(v * 100)}%`);
 
-        // Noise
-        const noise = data.noise || {};
-        this.setValue('noiseType', noise.type || 'white');
-        this.setValue('noiseAmount', noise.amount || 0);
-        this.setValue('noiseFilterType', noise.filter?.type || 'none');
-        this.setValue('noiseFilterFreq', noise.filter?.frequency || 2000);
-
-        // Envelope (ADSR)
-        const env = data.envelope || {};
-        this.setValue('attack', env.attack || 0.01);
-        this.setValue('decay', env.decay || 0.1);
-        this.setValue('sustain', env.sustain !== undefined ? env.sustain : 0.7);
-        this.setValue('release', env.release || 0.3);
-
-        // Pitch envelope
-        const pitch = data.pitchEnvelope || {};
-        this.setValue('pitchEnvStart', pitch.start || 1);
-        this.setValue('pitchEnvEnd', pitch.end || 1);
-
-        // Effects
+        // Master effects
         const effects = data.effects || {};
         const filter = effects.filter || {};
-        this.setValue('filterType', filter.type || 'lowpass');
-        this.setValue('filterFreq', filter.frequency || 1000);
-        this.setValue('filterQ', filter.Q || 1);
-        this.setValue('distortion', effects.distortion || 0);
+
+        const filterType = document.getElementById('master-filter-type');
+        if (filterType) {
+            filterType.value = filter.type || 'none';
+        }
+
+        this.setMasterValue('master-filter-freq', filter.frequency || 20000, 'master-filter-freq-display', v => `${Math.round(v)} Hz`);
+        this.setMasterValue('master-filter-q', filter.Q || 1, 'master-filter-q-display', v => v.toFixed(1));
+        this.setMasterValue('master-distortion', effects.distortion || 0, 'master-distortion-display', v => `${Math.round(v)}%`);
 
         const delay = effects.delay || {};
-        this.setValue('delayTime', delay.time || 0.3);
-        this.setValue('delayFeedback', delay.feedback || 0);
+        this.setMasterValue('master-delay-time', delay.time || 0, 'master-delay-time-display', v => `${v.toFixed(2)} s`);
+        this.setMasterValue('master-delay-feedback', delay.feedback || 0, 'master-delay-feedback-display', v => `${Math.round(v * 100)}%`);
 
-        this.setValue('reverbAmount', effects.reverb || 0);
-        this.setValue('bitcrusher', effects.bitcrusher || 0);
-        this.setValue('panning', effects.pan || 0);
+        this.setMasterValue('master-reverb', effects.reverb || 0, 'master-reverb-display', v => `${Math.round(v * 100)}%`);
+        this.setMasterValue('master-bitcrusher', effects.bitcrusher || 0, 'master-bitcrusher-display', v => `${Math.round(v * 100)}%`);
+        this.setMasterValue('master-pan', effects.pan || 0, 'master-pan-display', v => v === 0 ? 'Center' : (v < 0 ? `L ${Math.round(Math.abs(v) * 100)}%` : `R ${Math.round(v * 100)}%`));
 
-        // Update all value displays
-        const inputIds = [
-            'frequency', 'duration', 'volume', 'noiseAmount', 'noiseFilterFreq',
-            'attack', 'decay', 'sustain', 'release', 'pitchEnvStart', 'pitchEnvEnd',
-            'filterFreq', 'filterQ', 'distortion', 'delayTime', 'delayFeedback',
-            'reverbAmount', 'bitcrusher', 'panning'
-        ];
-        inputIds.forEach(id => this.updateValueDisplay(id));
+        // Clear existing layers
+        const container = document.getElementById('layers-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+
+        // Add layers
+        const layers = data.layers || [];
+        layers.forEach(layer => this.addLayerUI(layer));
+
+        // Clear existing events
+        const eventsContainer = document.getElementById('events-container');
+        if (eventsContainer) {
+            eventsContainer.innerHTML = '';
+        }
+
+        // Add events
+        const events = data.events || [];
+        events.forEach(event => this.addEventUI(event));
 
         this._isLoading = false;
     }
 
-    setValue(id, value) {
-        const el = document.getElementById(id);
-        if (el) el.value = value;
+    setMasterValue(inputId, value, displayId, format) {
+        const input = document.getElementById(inputId);
+        const display = document.getElementById(displayId);
+        if (input) input.value = value;
+        if (display && format) display.textContent = format(value);
     }
 
-    getValue(id) {
-        const el = document.getElementById(id);
-        if (!el) return null;
-        if (el.tagName === 'SELECT') return el.value;
-        return parseFloat(el.value);
-    }
-
-    getUISettings() {
-        const waveform = this.getValue('waveform');
-        const frequency = this.getValue('frequency');
-        const duration = this.getValue('duration');
-        const volume = this.getValue('volume');
-
-        const settings = {
-            waveform,
-            frequency,
-            duration,
-            volume
+    addLayer(layerData = null) {
+        const defaultLayer = {
+            source: 'sine',
+            frequency: 440,
+            volume: 1.0,
+            envelope: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.3 }
         };
+        this.addLayerUI(layerData || defaultLayer);
+    }
 
-        // Noise
-        const noiseAmount = this.getValue('noiseAmount');
-        if (noiseAmount > 0) {
-            settings.noise = {
-                type: this.getValue('noiseType'),
-                amount: noiseAmount
+    addLayerUI(layerData) {
+        const container = document.getElementById('layers-container');
+        if (!container) return;
+
+        const layerId = `layer-${this._layerIdCounter++}`;
+        const isNoise = ['white', 'pink', 'brown'].includes(layerData.source);
+
+        const layerEl = document.createElement('div');
+        layerEl.className = 'audio-editor__layer';
+        layerEl.dataset.layerId = layerId;
+
+        layerEl.innerHTML = `
+            <div class="audio-editor__layer-header">
+                <span class="audio-editor__layer-title">Layer</span>
+                <button class="audio-editor__layer-delete editor-module__btn editor-module__btn--danger editor-module__btn--small">Delete</button>
+            </div>
+            <div class="audio-editor__layer-content">
+                <div class="audio-editor__layer-row">
+                    <label>Source:</label>
+                    <select class="editor-module__select layer-source">
+                        <option value="sine" ${layerData.source === 'sine' ? 'selected' : ''}>Sine</option>
+                        <option value="square" ${layerData.source === 'square' ? 'selected' : ''}>Square</option>
+                        <option value="sawtooth" ${layerData.source === 'sawtooth' ? 'selected' : ''}>Sawtooth</option>
+                        <option value="triangle" ${layerData.source === 'triangle' ? 'selected' : ''}>Triangle</option>
+                        <option value="white" ${layerData.source === 'white' ? 'selected' : ''}>White Noise</option>
+                        <option value="pink" ${layerData.source === 'pink' ? 'selected' : ''}>Pink Noise</option>
+                        <option value="brown" ${layerData.source === 'brown' ? 'selected' : ''}>Brown Noise</option>
+                    </select>
+                </div>
+                <div class="audio-editor__layer-row layer-freq-row" ${isNoise ? 'style="display:none"' : ''}>
+                    <label>Frequency: <span class="layer-freq-display">${layerData.frequency || 440} Hz</span></label>
+                    <input type="range" class="editor-module__range layer-frequency" min="20" max="2000" value="${layerData.frequency || 440}" step="1">
+                </div>
+                <div class="audio-editor__layer-row">
+                    <label>Volume: <span class="layer-volume-display">${Math.round((layerData.volume || 1) * 100)}%</span></label>
+                    <input type="range" class="editor-module__range layer-volume" min="0" max="1" value="${layerData.volume || 1}" step="0.01">
+                </div>
+
+                <div class="audio-editor__layer-section">
+                    <div class="audio-editor__layer-section-title">Envelope</div>
+                    <div class="audio-editor__layer-row">
+                        <label>Attack: <span class="layer-attack-display">${((layerData.envelope?.attack || 0.01) * 1000).toFixed(0)} ms</span></label>
+                        <input type="range" class="editor-module__range layer-attack" min="0.001" max="2" value="${layerData.envelope?.attack || 0.01}" step="0.001">
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Decay: <span class="layer-decay-display">${((layerData.envelope?.decay || 0.1) * 1000).toFixed(0)} ms</span></label>
+                        <input type="range" class="editor-module__range layer-decay" min="0" max="2" value="${layerData.envelope?.decay || 0.1}" step="0.001">
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Sustain: <span class="layer-sustain-display">${Math.round((layerData.envelope?.sustain !== undefined ? layerData.envelope.sustain : 0.7) * 100)}%</span></label>
+                        <input type="range" class="editor-module__range layer-sustain" min="0" max="1" value="${layerData.envelope?.sustain !== undefined ? layerData.envelope.sustain : 0.7}" step="0.01">
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Release: <span class="layer-release-display">${((layerData.envelope?.release || 0.3) * 1000).toFixed(0)} ms</span></label>
+                        <input type="range" class="editor-module__range layer-release" min="0.001" max="5" value="${layerData.envelope?.release || 0.3}" step="0.001">
+                    </div>
+                </div>
+
+                <div class="audio-editor__layer-section layer-pitch-section" ${isNoise ? 'style="display:none"' : ''}>
+                    <div class="audio-editor__layer-section-title">Pitch Envelope</div>
+                    <div class="audio-editor__layer-row">
+                        <label>Start: <span class="layer-pitch-start-display">${(layerData.pitchEnvelope?.start || 1).toFixed(2)}x</span></label>
+                        <input type="range" class="editor-module__range layer-pitch-start" min="0.1" max="4" value="${layerData.pitchEnvelope?.start || 1}" step="0.01">
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>End: <span class="layer-pitch-end-display">${(layerData.pitchEnvelope?.end || 1).toFixed(2)}x</span></label>
+                        <input type="range" class="editor-module__range layer-pitch-end" min="0.1" max="4" value="${layerData.pitchEnvelope?.end || 1}" step="0.01">
+                    </div>
+                </div>
+
+                <div class="audio-editor__layer-section">
+                    <div class="audio-editor__layer-section-title">Layer Filter</div>
+                    <div class="audio-editor__layer-row">
+                        <label>Type:</label>
+                        <select class="editor-module__select layer-filter-type">
+                            <option value="none" ${!layerData.filter ? 'selected' : ''}>None</option>
+                            <option value="lowpass" ${layerData.filter?.type === 'lowpass' ? 'selected' : ''}>Low Pass</option>
+                            <option value="highpass" ${layerData.filter?.type === 'highpass' ? 'selected' : ''}>High Pass</option>
+                            <option value="bandpass" ${layerData.filter?.type === 'bandpass' ? 'selected' : ''}>Band Pass</option>
+                            <option value="notch" ${layerData.filter?.type === 'notch' ? 'selected' : ''}>Notch</option>
+                        </select>
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Freq: <span class="layer-filter-freq-display">${layerData.filter?.frequency || 1000} Hz</span></label>
+                        <input type="range" class="editor-module__range layer-filter-freq" min="20" max="20000" value="${layerData.filter?.frequency || 1000}" step="1">
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Q: <span class="layer-filter-q-display">${(layerData.filter?.Q || 1).toFixed(1)}</span></label>
+                        <input type="range" class="editor-module__range layer-filter-q" min="0.1" max="20" value="${layerData.filter?.Q || 1}" step="0.1">
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(layerEl);
+
+        // Add event listeners for this layer
+        this.setupLayerListeners(layerEl);
+    }
+
+    setupLayerListeners(layerEl) {
+        // Delete button
+        layerEl.querySelector('.audio-editor__layer-delete')?.addEventListener('click', () => {
+            layerEl.remove();
+        });
+
+        // Source change (show/hide frequency and pitch envelope)
+        const sourceSelect = layerEl.querySelector('.layer-source');
+        sourceSelect?.addEventListener('change', () => {
+            const isNoise = ['white', 'pink', 'brown'].includes(sourceSelect.value);
+            const freqRow = layerEl.querySelector('.layer-freq-row');
+            const pitchSection = layerEl.querySelector('.layer-pitch-section');
+            if (freqRow) freqRow.style.display = isNoise ? 'none' : '';
+            if (pitchSection) pitchSection.style.display = isNoise ? 'none' : '';
+        });
+
+        // Slider displays
+        const sliderConfigs = [
+            { slider: '.layer-frequency', display: '.layer-freq-display', format: v => `${Math.round(v)} Hz` },
+            { slider: '.layer-volume', display: '.layer-volume-display', format: v => `${Math.round(v * 100)}%` },
+            { slider: '.layer-attack', display: '.layer-attack-display', format: v => `${(v * 1000).toFixed(0)} ms` },
+            { slider: '.layer-decay', display: '.layer-decay-display', format: v => `${(v * 1000).toFixed(0)} ms` },
+            { slider: '.layer-sustain', display: '.layer-sustain-display', format: v => `${Math.round(v * 100)}%` },
+            { slider: '.layer-release', display: '.layer-release-display', format: v => `${(v * 1000).toFixed(0)} ms` },
+            { slider: '.layer-pitch-start', display: '.layer-pitch-start-display', format: v => `${v.toFixed(2)}x` },
+            { slider: '.layer-pitch-end', display: '.layer-pitch-end-display', format: v => `${v.toFixed(2)}x` },
+            { slider: '.layer-filter-freq', display: '.layer-filter-freq-display', format: v => `${Math.round(v)} Hz` },
+            { slider: '.layer-filter-q', display: '.layer-filter-q-display', format: v => v.toFixed(1) }
+        ];
+
+        sliderConfigs.forEach(({ slider, display, format }) => {
+            const sliderEl = layerEl.querySelector(slider);
+            const displayEl = layerEl.querySelector(display);
+            if (sliderEl && displayEl) {
+                sliderEl.addEventListener('input', () => {
+                    displayEl.textContent = format(parseFloat(sliderEl.value));
+                });
+            }
+        });
+    }
+
+    addEvent(eventData = null) {
+        const defaultEvent = {
+            minInterval: 50,
+            maxInterval: 200,
+            chance: 0.7,
+            sound: {
+                duration: 0.05,
+                volume: 0.5,
+                layers: [
+                    {
+                        source: 'white',
+                        volume: 1.0,
+                        envelope: { attack: 0.001, decay: 0.02, sustain: 0, release: 0.02 },
+                        filter: { type: 'bandpass', frequency: 1500, Q: 1 }
+                    }
+                ]
+            }
+        };
+        this.addEventUI(eventData || defaultEvent);
+    }
+
+    addEventUI(eventData) {
+        const container = document.getElementById('events-container');
+        if (!container) return;
+
+        const eventId = `event-${this._layerIdCounter++}`;
+        const sound = eventData.sound || {};
+        const soundLayer = sound.layers?.[0] || {};
+        const randomize = sound.randomize || {};
+
+        const eventEl = document.createElement('div');
+        eventEl.className = 'audio-editor__event';
+        eventEl.dataset.eventId = eventId;
+
+        eventEl.innerHTML = `
+            <div class="audio-editor__layer-header">
+                <span class="audio-editor__layer-title">Event (Random Sound)</span>
+                <button class="audio-editor__layer-delete editor-module__btn editor-module__btn--danger editor-module__btn--small">Delete</button>
+            </div>
+            <div class="audio-editor__event-content">
+                <div class="audio-editor__layer-section">
+                    <div class="audio-editor__layer-section-title">Timing</div>
+                    <div class="audio-editor__layer-row">
+                        <label>Min Interval: <span class="event-min-interval-display">${eventData.minInterval || 50} ms</span></label>
+                        <input type="range" class="editor-module__range event-min-interval" min="10" max="1000" value="${eventData.minInterval || 50}" step="10">
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Max Interval: <span class="event-max-interval-display">${eventData.maxInterval || 200} ms</span></label>
+                        <input type="range" class="editor-module__range event-max-interval" min="10" max="2000" value="${eventData.maxInterval || 200}" step="10">
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Chance: <span class="event-chance-display">${Math.round((eventData.chance || 0.7) * 100)}%</span></label>
+                        <input type="range" class="editor-module__range event-chance" min="0" max="1" value="${eventData.chance || 0.7}" step="0.05">
+                    </div>
+                </div>
+                <div class="audio-editor__layer-section">
+                    <div class="audio-editor__layer-section-title">Sound</div>
+                    <div class="audio-editor__layer-row">
+                        <label>Duration: <span class="event-duration-display">${((sound.duration || 0.05) * 1000).toFixed(0)} ms</span></label>
+                        <input type="range" class="editor-module__range event-duration" min="0.01" max="0.5" value="${sound.duration || 0.05}" step="0.01">
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Volume: <span class="event-volume-display">${Math.round((sound.volume || 0.5) * 100)}%</span></label>
+                        <input type="range" class="editor-module__range event-volume" min="0" max="1" value="${sound.volume || 0.5}" step="0.05">
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Source:</label>
+                        <select class="editor-module__select event-source">
+                            <option value="white" ${soundLayer.source === 'white' ? 'selected' : ''}>White Noise</option>
+                            <option value="pink" ${soundLayer.source === 'pink' ? 'selected' : ''}>Pink Noise</option>
+                            <option value="brown" ${soundLayer.source === 'brown' ? 'selected' : ''}>Brown Noise</option>
+                        </select>
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Filter:</label>
+                        <select class="editor-module__select event-filter-type">
+                            <option value="none" ${!soundLayer.filter ? 'selected' : ''}>None</option>
+                            <option value="lowpass" ${soundLayer.filter?.type === 'lowpass' ? 'selected' : ''}>Low Pass</option>
+                            <option value="highpass" ${soundLayer.filter?.type === 'highpass' ? 'selected' : ''}>High Pass</option>
+                            <option value="bandpass" ${soundLayer.filter?.type === 'bandpass' ? 'selected' : ''}>Band Pass</option>
+                        </select>
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Filter Freq: <span class="event-filter-freq-display">${soundLayer.filter?.frequency || 1500} Hz</span></label>
+                        <input type="range" class="editor-module__range event-filter-freq" min="100" max="10000" value="${soundLayer.filter?.frequency || 1500}" step="50">
+                    </div>
+                </div>
+                <div class="audio-editor__layer-section">
+                    <div class="audio-editor__layer-section-title">Randomization</div>
+                    <div class="audio-editor__layer-row">
+                        <label>Volume Min: <span class="event-rand-vol-min-display">${Math.round((randomize.volume?.min || 0.3) * 100)}%</span></label>
+                        <input type="range" class="editor-module__range event-rand-vol-min" min="0" max="1" value="${randomize.volume?.min || 0.3}" step="0.05">
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Volume Max: <span class="event-rand-vol-max-display">${Math.round((randomize.volume?.max || 1) * 100)}%</span></label>
+                        <input type="range" class="editor-module__range event-rand-vol-max" min="0" max="1" value="${randomize.volume?.max || 1}" step="0.05">
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Filter Freq Min: <span class="event-rand-freq-min-display">${randomize.filterFrequency?.min || 500} Hz</span></label>
+                        <input type="range" class="editor-module__range event-rand-freq-min" min="100" max="10000" value="${randomize.filterFrequency?.min || 500}" step="50">
+                    </div>
+                    <div class="audio-editor__layer-row">
+                        <label>Filter Freq Max: <span class="event-rand-freq-max-display">${randomize.filterFrequency?.max || 3000} Hz</span></label>
+                        <input type="range" class="editor-module__range event-rand-freq-max" min="100" max="10000" value="${randomize.filterFrequency?.max || 3000}" step="50">
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(eventEl);
+        this.setupEventUIListeners(eventEl);
+    }
+
+    setupEventUIListeners(eventEl) {
+        // Delete button
+        eventEl.querySelector('.audio-editor__layer-delete')?.addEventListener('click', () => {
+            eventEl.remove();
+        });
+
+        // Slider displays
+        const sliderConfigs = [
+            { slider: '.event-min-interval', display: '.event-min-interval-display', format: v => `${Math.round(v)} ms` },
+            { slider: '.event-max-interval', display: '.event-max-interval-display', format: v => `${Math.round(v)} ms` },
+            { slider: '.event-chance', display: '.event-chance-display', format: v => `${Math.round(v * 100)}%` },
+            { slider: '.event-duration', display: '.event-duration-display', format: v => `${(v * 1000).toFixed(0)} ms` },
+            { slider: '.event-volume', display: '.event-volume-display', format: v => `${Math.round(v * 100)}%` },
+            { slider: '.event-filter-freq', display: '.event-filter-freq-display', format: v => `${Math.round(v)} Hz` },
+            { slider: '.event-rand-vol-min', display: '.event-rand-vol-min-display', format: v => `${Math.round(v * 100)}%` },
+            { slider: '.event-rand-vol-max', display: '.event-rand-vol-max-display', format: v => `${Math.round(v * 100)}%` },
+            { slider: '.event-rand-freq-min', display: '.event-rand-freq-min-display', format: v => `${Math.round(v)} Hz` },
+            { slider: '.event-rand-freq-max', display: '.event-rand-freq-max-display', format: v => `${Math.round(v)} Hz` }
+        ];
+
+        sliderConfigs.forEach(({ slider, display, format }) => {
+            const sliderEl = eventEl.querySelector(slider);
+            const displayEl = eventEl.querySelector(display);
+            if (sliderEl && displayEl) {
+                sliderEl.addEventListener('input', () => {
+                    displayEl.textContent = format(parseFloat(sliderEl.value));
+                });
+            }
+        });
+    }
+
+    getEventsConfig() {
+        const events = [];
+        const eventEls = document.querySelectorAll('.audio-editor__event');
+
+        eventEls.forEach(eventEl => {
+            const source = eventEl.querySelector('.event-source')?.value || 'white';
+            const filterType = eventEl.querySelector('.event-filter-type')?.value;
+            const filterFreq = parseFloat(eventEl.querySelector('.event-filter-freq')?.value || 1500);
+
+            const soundLayer = {
+                source,
+                volume: 1.0,
+                envelope: { attack: 0.001, decay: 0.02, sustain: 0, release: 0.02 }
             };
-            const noiseFilterType = this.getValue('noiseFilterType');
-            if (noiseFilterType !== 'none') {
-                settings.noise.filter = {
-                    type: noiseFilterType,
-                    frequency: this.getValue('noiseFilterFreq')
+
+            if (filterType && filterType !== 'none') {
+                soundLayer.filter = {
+                    type: filterType,
+                    frequency: filterFreq,
+                    Q: 1
                 };
             }
-        }
 
-        // Envelope
-        settings.envelope = {
-            attack: this.getValue('attack'),
-            decay: this.getValue('decay'),
-            sustain: this.getValue('sustain'),
-            release: this.getValue('release')
-        };
-
-        // Pitch envelope
-        const pitchStart = this.getValue('pitchEnvStart');
-        const pitchEnd = this.getValue('pitchEnvEnd');
-        if (pitchStart !== 1 || pitchEnd !== 1) {
-            settings.pitchEnvelope = {
-                start: pitchStart,
-                end: pitchEnd,
-                time: duration
+            const event = {
+                minInterval: parseFloat(eventEl.querySelector('.event-min-interval')?.value || 50),
+                maxInterval: parseFloat(eventEl.querySelector('.event-max-interval')?.value || 200),
+                chance: parseFloat(eventEl.querySelector('.event-chance')?.value || 0.7),
+                sound: {
+                    duration: parseFloat(eventEl.querySelector('.event-duration')?.value || 0.05),
+                    volume: parseFloat(eventEl.querySelector('.event-volume')?.value || 0.5),
+                    layers: [soundLayer],
+                    randomize: {
+                        volume: {
+                            min: parseFloat(eventEl.querySelector('.event-rand-vol-min')?.value || 0.3),
+                            max: parseFloat(eventEl.querySelector('.event-rand-vol-max')?.value || 1)
+                        },
+                        filterFrequency: {
+                            min: parseFloat(eventEl.querySelector('.event-rand-freq-min')?.value || 500),
+                            max: parseFloat(eventEl.querySelector('.event-rand-freq-max')?.value || 3000)
+                        }
+                    }
+                }
             };
-        }
 
-        // Effects
+            events.push(event);
+        });
+
+        return events;
+    }
+
+    getAudioConfig() {
+        const duration = parseFloat(document.getElementById('master-duration')?.value || 1);
+        const volume = parseFloat(document.getElementById('master-volume')?.value || 0.7);
+
+        // Gather layers
+        const layers = [];
+        const layerEls = document.querySelectorAll('.audio-editor__layer');
+
+        layerEls.forEach(layerEl => {
+            const source = layerEl.querySelector('.layer-source')?.value || 'sine';
+            const isNoise = ['white', 'pink', 'brown'].includes(source);
+
+            const layer = {
+                source,
+                volume: parseFloat(layerEl.querySelector('.layer-volume')?.value || 1)
+            };
+
+            // Frequency (only for oscillators)
+            if (!isNoise) {
+                layer.frequency = parseFloat(layerEl.querySelector('.layer-frequency')?.value || 440);
+            }
+
+            // Envelope
+            const attack = parseFloat(layerEl.querySelector('.layer-attack')?.value || 0.01);
+            const decay = parseFloat(layerEl.querySelector('.layer-decay')?.value || 0.1);
+            const sustain = parseFloat(layerEl.querySelector('.layer-sustain')?.value || 0.7);
+            const release = parseFloat(layerEl.querySelector('.layer-release')?.value || 0.3);
+
+            // Only add envelope if it has meaningful values
+            if (attack > 0 || decay > 0 || sustain < 1 || release > 0) {
+                layer.envelope = { attack, decay, sustain, release };
+            }
+
+            // Pitch envelope (only for oscillators)
+            if (!isNoise) {
+                const pitchStart = parseFloat(layerEl.querySelector('.layer-pitch-start')?.value || 1);
+                const pitchEnd = parseFloat(layerEl.querySelector('.layer-pitch-end')?.value || 1);
+                if (pitchStart !== 1 || pitchEnd !== 1) {
+                    layer.pitchEnvelope = { start: pitchStart, end: pitchEnd, time: duration };
+                }
+            }
+
+            // Layer filter
+            const filterType = layerEl.querySelector('.layer-filter-type')?.value;
+            if (filterType && filterType !== 'none') {
+                layer.filter = {
+                    type: filterType,
+                    frequency: parseFloat(layerEl.querySelector('.layer-filter-freq')?.value || 1000),
+                    Q: parseFloat(layerEl.querySelector('.layer-filter-q')?.value || 1)
+                };
+            }
+
+            layers.push(layer);
+        });
+
+        const config = { duration, volume, layers };
+
+        // Master effects
         const effects = {};
 
-        const filterFreq = this.getValue('filterFreq');
-        if (filterFreq < 20000) {
+        const filterType = document.getElementById('master-filter-type')?.value;
+        const filterFreq = parseFloat(document.getElementById('master-filter-freq')?.value || 20000);
+        if (filterType && filterType !== 'none' && filterFreq < 20000) {
             effects.filter = {
-                type: this.getValue('filterType'),
+                type: filterType,
                 frequency: filterFreq,
-                Q: this.getValue('filterQ')
+                Q: parseFloat(document.getElementById('master-filter-q')?.value || 1)
             };
         }
 
-        const distortion = this.getValue('distortion');
+        const distortion = parseFloat(document.getElementById('master-distortion')?.value || 0);
         if (distortion > 0) {
             effects.distortion = distortion;
         }
 
-        const delayFeedback = this.getValue('delayFeedback');
+        const delayFeedback = parseFloat(document.getElementById('master-delay-feedback')?.value || 0);
         if (delayFeedback > 0) {
             effects.delay = {
-                time: this.getValue('delayTime'),
+                time: parseFloat(document.getElementById('master-delay-time')?.value || 0),
                 feedback: delayFeedback
             };
         }
 
-        const reverb = this.getValue('reverbAmount');
+        const reverb = parseFloat(document.getElementById('master-reverb')?.value || 0);
         if (reverb > 0) {
             effects.reverb = reverb;
         }
 
-        const bitcrusher = this.getValue('bitcrusher');
+        const bitcrusher = parseFloat(document.getElementById('master-bitcrusher')?.value || 0);
         if (bitcrusher > 0) {
             effects.bitcrusher = bitcrusher;
         }
 
-        const pan = this.getValue('panning');
+        const pan = parseFloat(document.getElementById('master-pan')?.value || 0);
         if (pan !== 0) {
             effects.pan = pan;
         }
 
         if (Object.keys(effects).length > 0) {
-            settings.effects = effects;
+            config.effects = effects;
         }
 
-        return settings;
+        // Add events if any
+        const events = this.getEventsConfig();
+        if (events.length > 0) {
+            config.events = events;
+        }
+
+        return config;
     }
 
     saveCurrentData() {
         if (this._isLoading) return;
 
-        const settings = this.getUISettings();
+        const config = this.getAudioConfig();
 
         const saveEvent = new CustomEvent(this.moduleConfig.saveHook, {
             detail: {
-                data: JSON.stringify(settings),
+                data: config,
                 propertyName: this.propertyName
             }
         });
@@ -337,55 +687,278 @@ class AudioEditor {
         if (statusEl) statusEl.textContent = message;
     }
 
-    playSound() {
-        const settings = this.getUISettings();
-        this.audioManager.playSynthSound('audioEditorPreview', settings);
+    async playSound() {
+        // Stop any existing playback first
+        this.stopSound();
+
+        const config = this.getAudioConfig();
+
+        if (this._isLooping) {
+            // For looping, use continuous sources (like ambient sounds)
+            await this.startContinuousPlayback(config);
+        } else {
+            // For one-shot, use playSynthSound
+            await this.audioManager.playSynthSound('audioEditorPreview', config);
+        }
+    }
+
+    async startContinuousPlayback(config) {
+        if (!this.audioManager.isInitialized) {
+            await this.audioManager.initialize();
+        }
+
+        const ctx = this.audioManager.audioContext;
+        if (!ctx) return;
+
+        // Create master gain
+        const masterGain = ctx.createGain();
+        masterGain.gain.value = config.volume || 0.7;
+        masterGain.connect(ctx.destination);
+
+        // Create continuous sources for each layer
+        (config.layers || []).forEach(layer => {
+            const layerGain = ctx.createGain();
+            layerGain.gain.value = layer.volume !== undefined ? layer.volume : 1;
+
+            const isNoise = ['white', 'pink', 'brown'].includes(layer.source);
+            let source;
+
+            if (isNoise) {
+                source = this.audioManager.createNoiseSource(layer.source);
+            } else {
+                source = ctx.createOscillator();
+                source.type = layer.source || 'sine';
+                source.frequency.value = layer.frequency || 440;
+            }
+
+            // Apply filter if defined
+            if (layer.filter && layer.filter.type) {
+                const filter = ctx.createBiquadFilter();
+                filter.type = layer.filter.type;
+                filter.frequency.value = layer.filter.frequency || 1000;
+                filter.Q.value = layer.filter.Q || 1;
+                source.connect(filter);
+                filter.connect(layerGain);
+            } else {
+                source.connect(layerGain);
+            }
+
+            layerGain.connect(masterGain);
+            source.start();
+
+            this._continuousSources.push({ source, layerGain, masterGain });
+        });
+
+        // Start event schedulers if events exist
+        const events = this.getEventsConfig();
+        if (events && events.length > 0) {
+            events.forEach(event => {
+                if (event.sound) {
+                    const intervalId = this.startEventScheduler(masterGain, event);
+                    this._eventIntervals.push(intervalId);
+                }
+            });
+        }
+    }
+
+    startEventScheduler(destination, eventConfig) {
+        const minInterval = eventConfig.minInterval || 50;
+        const maxInterval = eventConfig.maxInterval || 300;
+        const chance = eventConfig.chance || 0.7;
+        const soundDef = eventConfig.sound;
+
+        if (!soundDef) return null;
+
+        const scheduleEvent = () => {
+            if (Math.random() < chance) {
+                this.playEventSound(destination, soundDef);
+            }
+            const nextInterval = minInterval + Math.random() * (maxInterval - minInterval);
+            return setTimeout(scheduleEvent, nextInterval);
+        };
+
+        return scheduleEvent();
+    }
+
+    playEventSound(destination, soundDef) {
+        const ctx = this.audioManager.audioContext;
+        if (!ctx) return;
+
+        const now = ctx.currentTime;
+
+        // Clone and apply randomization
+        const config = JSON.parse(JSON.stringify(soundDef));
+        const randomize = config.randomize || {};
+
+        if (randomize.volume) {
+            const range = randomize.volume;
+            config.volume *= range.min + Math.random() * (range.max - range.min);
+        }
+
+        if (randomize.filterFrequency && config.layers) {
+            config.layers.forEach(layer => {
+                if (layer.filter) {
+                    const range = randomize.filterFrequency;
+                    layer.filter.frequency = range.min + Math.random() * (range.max - range.min);
+                }
+            });
+        }
+
+        const duration = config.duration || 0.1;
+        const masterVolume = config.volume || 1;
+
+        // Create event sound
+        const eventGain = ctx.createGain();
+        eventGain.gain.value = masterVolume;
+        eventGain.connect(destination);
+
+        (config.layers || []).forEach(layer => {
+            const layerGain = ctx.createGain();
+            layerGain.gain.value = layer.volume || 1;
+
+            const isNoise = ['white', 'pink', 'brown'].includes(layer.source);
+            let source;
+
+            if (isNoise) {
+                source = this.audioManager.createNoiseSource(layer.source);
+            } else {
+                source = ctx.createOscillator();
+                source.type = layer.source || 'sine';
+                source.frequency.value = layer.frequency || 440;
+            }
+
+            // Apply envelope
+            const env = layer.envelope || {};
+            const attack = env.attack || 0.001;
+            const decay = env.decay || 0.01;
+            const sustain = env.sustain !== undefined ? env.sustain : 0.5;
+            const release = env.release || 0.01;
+
+            layerGain.gain.setValueAtTime(0, now);
+            layerGain.gain.linearRampToValueAtTime(layer.volume || 1, now + attack);
+            layerGain.gain.linearRampToValueAtTime((layer.volume || 1) * sustain, now + attack + decay);
+            layerGain.gain.linearRampToValueAtTime(0, now + duration + release);
+
+            // Apply filter
+            if (layer.filter && layer.filter.type) {
+                const filter = ctx.createBiquadFilter();
+                filter.type = layer.filter.type;
+                filter.frequency.value = layer.filter.frequency || 1000;
+                filter.Q.value = layer.filter.Q || 1;
+                source.connect(filter);
+                filter.connect(layerGain);
+            } else {
+                source.connect(layerGain);
+            }
+
+            layerGain.connect(eventGain);
+            source.start(now);
+            source.stop(now + duration + release + 0.1);
+        });
+    }
+
+    stopSound() {
+        // Stop loop timeout
+        if (this._loopTimeoutId) {
+            clearTimeout(this._loopTimeoutId);
+            this._loopTimeoutId = null;
+        }
+
+        // Stop continuous sources
+        this._continuousSources.forEach(({ source }) => {
+            try {
+                source.stop();
+            } catch (e) {
+                // Source may already be stopped
+            }
+        });
+        this._continuousSources = [];
+
+        // Stop event intervals
+        this._eventIntervals.forEach(intervalId => {
+            if (intervalId) clearTimeout(intervalId);
+        });
+        this._eventIntervals = [];
+
+        // Stop any one-shot sounds
+        this.audioManager.stopAllSounds?.();
     }
 
     randomizeSound() {
-        const waveforms = ['sine', 'square', 'sawtooth', 'triangle', 'noise'];
-        const noiseTypes = ['white', 'pink', 'brown'];
-        const filterTypes = ['lowpass', 'highpass', 'bandpass', 'notch'];
+        const sources = ['sine', 'square', 'sawtooth', 'triangle', 'white', 'pink', 'brown'];
+        const filterTypes = ['lowpass', 'highpass', 'bandpass'];
+
+        // Random number of layers (1-4)
+        const numLayers = 1 + Math.floor(Math.random() * 4);
+        const layers = [];
+
+        for (let i = 0; i < numLayers; i++) {
+            const source = sources[Math.floor(Math.random() * sources.length)];
+            const isNoise = ['white', 'pink', 'brown'].includes(source);
+
+            const layer = {
+                source,
+                volume: 0.3 + Math.random() * 0.7,
+                envelope: {
+                    attack: 0.001 + Math.random() * 0.5,
+                    decay: Math.random() * 0.5,
+                    sustain: Math.random(),
+                    release: 0.01 + Math.random() * 1
+                }
+            };
+
+            if (!isNoise) {
+                layer.frequency = 50 + Math.random() * 1000;
+                if (Math.random() > 0.5) {
+                    layer.pitchEnvelope = {
+                        start: 0.2 + Math.random() * 3,
+                        end: 0.2 + Math.random() * 3
+                    };
+                }
+            }
+
+            // Random filter on some layers
+            if (Math.random() > 0.5) {
+                layer.filter = {
+                    type: filterTypes[Math.floor(Math.random() * filterTypes.length)],
+                    frequency: 100 + Math.random() * 5000,
+                    Q: 0.5 + Math.random() * 5
+                };
+            }
+
+            layers.push(layer);
+        }
 
         const randomConfig = {
-            waveform: waveforms[Math.floor(Math.random() * waveforms.length)],
-            frequency: 50 + Math.random() * 1000,
             duration: 0.1 + Math.random() * 2,
             volume: 0.3 + Math.random() * 0.5,
-            noise: {
-                type: noiseTypes[Math.floor(Math.random() * noiseTypes.length)],
-                amount: Math.random() * 0.5,
-                filter: {
-                    type: filterTypes[Math.floor(Math.random() * filterTypes.length)],
-                    frequency: 100 + Math.random() * 5000
-                }
-            },
-            envelope: {
-                attack: 0.001 + Math.random() * 0.5,
-                decay: Math.random() * 0.5,
-                sustain: Math.random(),
-                release: 0.01 + Math.random() * 1
-            },
-            pitchEnvelope: {
-                start: 0.2 + Math.random() * 3,
-                end: 0.2 + Math.random() * 3
-            },
-            effects: {
-                filter: {
+            layers
+        };
+
+        // Random master effects
+        if (Math.random() > 0.5) {
+            randomConfig.effects = {};
+
+            if (Math.random() > 0.5) {
+                randomConfig.effects.filter = {
                     type: filterTypes[Math.floor(Math.random() * filterTypes.length)],
                     frequency: 100 + Math.random() * 5000,
                     Q: 0.5 + Math.random() * 10
-                },
-                distortion: Math.random() * 50,
-                delay: {
+                };
+            }
+            if (Math.random() > 0.7) {
+                randomConfig.effects.distortion = Math.random() * 50;
+            }
+            if (Math.random() > 0.7) {
+                randomConfig.effects.delay = {
                     time: Math.random() * 0.5,
                     feedback: Math.random() * 0.5
-                },
-                reverb: Math.random() * 0.5,
-                bitcrusher: Math.random() * 0.3,
-                pan: (Math.random() * 2 - 1) * 0.5
+                };
             }
-        };
+            if (Math.random() > 0.7) {
+                randomConfig.effects.reverb = Math.random() * 0.5;
+            }
+        }
 
         this.currentData = randomConfig;
         this.loadDataIntoUI(randomConfig);
