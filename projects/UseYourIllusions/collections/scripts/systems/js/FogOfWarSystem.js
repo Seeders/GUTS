@@ -71,7 +71,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         for (let i = 0; i < 64; i++) {
             this.tempVisiblePoints[i] = { x: 0, z: 0 };
         }
-       
+
     }
 
     init(params = {}) {
@@ -513,6 +513,34 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         };
         
         this.fogPass.render = function(renderer, writeBuffer, readBuffer) {
+            // Check if in first-person mode - if so, bypass fog entirely
+            const zoomLevel = fogSystemRef.game.call('getZoomLevel');
+            const isFirstPerson = (zoomLevel !== undefined && zoomLevel < 0.1);
+
+            if (isFirstPerson) {
+                // In first-person mode - just copy input to output without fog
+                if (fogPassObj.needsSwap) {
+                    renderer.setRenderTarget(writeBuffer);
+                } else {
+                    renderer.setRenderTarget(null);
+                }
+                // Copy readBuffer directly without fog effect
+                if (!fogSystemRef._copyMaterial) {
+                    fogSystemRef._copyMaterial = new THREE.ShaderMaterial({
+                        uniforms: { tDiffuse: { value: null } },
+                        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+                        fragmentShader: `uniform sampler2D tDiffuse; varying vec2 vUv; void main() { gl_FragColor = texture2D(tDiffuse, vUv); }`
+                    });
+                    fogSystemRef._copyQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), fogSystemRef._copyMaterial);
+                    fogSystemRef._copyScene = new THREE.Scene();
+                    fogSystemRef._copyScene.add(fogSystemRef._copyQuad);
+                    fogSystemRef._copyCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+                }
+                fogSystemRef._copyMaterial.uniforms.tDiffuse.value = readBuffer.texture;
+                renderer.render(fogSystemRef._copyScene, fogSystemRef._copyCamera);
+                return;
+            }
+
             const camera = fogSystemRef.game.call('getCamera');
 
             if (camera) {
@@ -740,6 +768,12 @@ class FogOfWarSystem extends GUTS.BaseSystem {
 
     //only available on CLIENT
     isVisibleAt(x, z) {
+        // Check if fog of war is disabled (first-person mode)
+        const zoomLevel = this.game.call('getZoomLevel');
+        if (zoomLevel !== undefined && zoomLevel < 0.1) {
+            return true;
+        }
+
         const uv = this.worldToUV(x, z);
         if (!uv) return false;
 
