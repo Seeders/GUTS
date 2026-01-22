@@ -1057,6 +1057,29 @@
             }
           }
         }
+      },
+      {
+        "prefab": "worldObject",
+        "type": "mirror",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 281.69,
+              "y": 80,
+              "z": -324
+            },
+            "rotation": {
+              "x": 0,
+              "y": 2.356194496154785,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
       }
     ],
     "startingLocations": [

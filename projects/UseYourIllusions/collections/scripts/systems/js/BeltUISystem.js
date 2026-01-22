@@ -1,5 +1,5 @@
 /**
- * BeltUISystem - Unified ability bar with Q (Clone), E (Collect), and 1-2-3 (Belt Slots)
+ * BeltUISystem - Unified ability bar with E (Collect) and 1-2-3 (Belt Slots)
  */
 class BeltUISystem extends GUTS.BaseSystem {
     static services = [
@@ -31,19 +31,11 @@ class BeltUISystem extends GUTS.BaseSystem {
             abilityBar.className = 'ability-bar-container';
             abilityBar.innerHTML = `
                 <div class="ability-bar">
-                    <!-- Q - Clone Ability -->
-                    <div class="ability-slot ability-action" id="cloneAbilitySlot">
-                        <div class="ability-icon">👤</div>
-                        <div class="ability-key">Q</div>
-                        <div class="ability-label">Clone</div>
-                        <div class="ability-timer" id="cloneTimer"></div>
-                        <div class="ability-progress-bar" id="cloneProgressBar"></div>
-                    </div>
-                    <!-- E - Collect Ability -->
+                    <!-- E - Collect/Beam Ability -->
                     <div class="ability-slot ability-action" id="collectAbilitySlot">
                         <div class="ability-icon">✋</div>
                         <div class="ability-key">E</div>
-                        <div class="ability-label">Collect</div>
+                        <div class="ability-label">Beam</div>
                     </div>
                     <!-- Separator -->
                     <div class="ability-separator"></div>
@@ -60,8 +52,17 @@ class BeltUISystem extends GUTS.BaseSystem {
                         <div class="slot-content"></div>
                         <div class="ability-key">3</div>
                     </div>
+                    <!-- Clone Status (shown when clone active) -->
+                    <div class="ability-separator clone-separator" id="cloneSeparator" style="display: none;"></div>
+                    <div class="ability-slot ability-action" id="cloneStatusSlot" style="display: none;">
+                        <div class="ability-icon">👤</div>
+                        <div class="ability-key">Q</div>
+                        <div class="ability-label">Clone</div>
+                        <div class="ability-timer" id="cloneTimer"></div>
+                        <div class="ability-progress-bar" id="cloneProgressBar"></div>
+                    </div>
                 </div>
-                <div class="ability-bar-hint">Right-click to place illusion</div>
+                <div class="ability-bar-hint">Press E to activate beam</div>
             `;
 
             const gameContainer = document.getElementById('gameScreen') || document.body;
@@ -201,6 +202,36 @@ class BeltUISystem extends GUTS.BaseSystem {
                 color: #00ff80;
             }
 
+            /* Collect mode active - beam is shooting */
+            #collectAbilitySlot.collect-mode-active {
+                border-color: #00ffaa;
+                box-shadow: 0 0 15px rgba(0, 255, 170, 0.5);
+                background: linear-gradient(145deg, rgba(0, 255, 170, 0.2), rgba(0, 0, 0, 0.4));
+            }
+
+            #collectAbilitySlot.collect-mode-active .ability-label {
+                color: #00ffaa;
+            }
+
+            #collectAbilitySlot.collect-mode-active .ability-icon {
+                animation: collectPulse 0.5s ease-in-out infinite;
+            }
+
+            /* Collect mode with target locked */
+            #collectAbilitySlot.collect-mode-active.has-target {
+                border-color: #00ff00;
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+            }
+
+            #collectAbilitySlot.collect-mode-active.has-target .ability-label {
+                color: #00ff00;
+            }
+
+            @keyframes collectPulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+            }
+
             /* Separator between actions and belt */
             .ability-separator {
                 width: 2px;
@@ -270,20 +301,7 @@ class BeltUISystem extends GUTS.BaseSystem {
             }
         }
 
-        // Clone ability slot
-        const cloneSlot = document.getElementById('cloneAbilitySlot');
-        if (cloneSlot && !cloneSlot._clickHandlerAttached) {
-            cloneSlot._clickHandlerAttached = true;
-            cloneSlot.addEventListener('click', () => {
-                // Trigger Q key action
-                const playerEntity = this.game.call('getPlayerEntity');
-                if (playerEntity) {
-                    this.game.call('triggerCloneAbility', playerEntity);
-                }
-            });
-        }
-
-        // Collect ability slot
+        // Collect/Beam ability slot
         const collectSlot = document.getElementById('collectAbilitySlot');
         if (collectSlot && !collectSlot._clickHandlerAttached) {
             collectSlot._clickHandlerAttached = true;
@@ -292,6 +310,19 @@ class BeltUISystem extends GUTS.BaseSystem {
                 const playerEntity = this.game.call('getPlayerEntity');
                 if (playerEntity) {
                     this.game.call('triggerCollectAbility', playerEntity);
+                }
+            });
+        }
+
+        // Clone status slot (for toggling control when clone is active)
+        const cloneStatusSlot = document.getElementById('cloneStatusSlot');
+        if (cloneStatusSlot && !cloneStatusSlot._clickHandlerAttached) {
+            cloneStatusSlot._clickHandlerAttached = true;
+            cloneStatusSlot.addEventListener('click', () => {
+                // Toggle control between player and clone
+                const playerEntity = this.game.call('getPlayerEntity');
+                if (playerEntity) {
+                    this.game.call('toggleCloneControl', playerEntity);
                 }
             });
         }
@@ -305,6 +336,34 @@ class BeltUISystem extends GUTS.BaseSystem {
     // Event handler - called by triggerEvent('onBeltSelectionChanged', data)
     onBeltSelectionChanged(data) {
         this.updateSlotSelection(data.slotIndex);
+    }
+
+    // Event handler - called when collect mode is activated/deactivated
+    onCollectModeChanged(data) {
+        const collectSlot = document.getElementById('collectAbilitySlot');
+        if (collectSlot) {
+            collectSlot.classList.toggle('collect-mode-active', data.active);
+        }
+
+        // Update the hint text
+        const hint = document.querySelector('.ability-bar-hint');
+        if (hint) {
+            if (data.active) {
+                hint.textContent = 'Aim at object, press E to collect';
+                hint.style.color = '#00ffaa';
+            } else {
+                hint.textContent = 'Right-click to place illusion';
+                hint.style.color = '#666';
+            }
+        }
+    }
+
+    // Event handler - called when highlighted collectible changes
+    onCollectHighlightChanged(data) {
+        const collectSlot = document.getElementById('collectAbilitySlot');
+        if (collectSlot) {
+            collectSlot.classList.toggle('has-target', !!data.collectibleId);
+        }
     }
 
     selectSlot(slotIndex) {
@@ -438,17 +497,24 @@ class BeltUISystem extends GUTS.BaseSystem {
         const playerController = this.game.getComponent(playerEntity, 'playerController');
         if (!playerController) return;
 
-        const cloneSlot = document.getElementById('cloneAbilitySlot');
+        const cloneStatusSlot = document.getElementById('cloneStatusSlot');
+        const cloneSeparator = document.getElementById('cloneSeparator');
         const cloneTimer = document.getElementById('cloneTimer');
         const cloneProgressBar = document.getElementById('cloneProgressBar');
 
-        if (!cloneSlot) return;
+        if (!cloneStatusSlot) return;
 
         const hasClone = playerController.activeCloneId && this.game.hasEntity(playerController.activeCloneId);
         const controllingClone = playerController.controllingClone;
 
-        cloneSlot.classList.toggle('active', hasClone);
-        cloneSlot.classList.toggle('controlling-clone', hasClone && controllingClone);
+        // Show/hide clone status slot based on whether clone exists
+        cloneStatusSlot.style.display = hasClone ? 'flex' : 'none';
+        if (cloneSeparator) {
+            cloneSeparator.style.display = hasClone ? 'block' : 'none';
+        }
+
+        cloneStatusSlot.classList.toggle('active', hasClone);
+        cloneStatusSlot.classList.toggle('controlling-clone', hasClone && controllingClone);
 
         if (hasClone) {
             const playerClone = this.game.getComponent(playerController.activeCloneId, 'playerClone');
@@ -458,12 +524,12 @@ class BeltUISystem extends GUTS.BaseSystem {
                 const duration = playerClone.duration || 20;
                 const progress = (remaining / duration) * 100;
 
-                cloneTimer.textContent = remaining.toFixed(1) + 's';
-                cloneProgressBar.style.width = progress + '%';
+                if (cloneTimer) cloneTimer.textContent = remaining.toFixed(1) + 's';
+                if (cloneProgressBar) cloneProgressBar.style.width = progress + '%';
             }
         } else {
-            cloneTimer.textContent = '';
-            cloneProgressBar.style.width = '0%';
+            if (cloneTimer) cloneTimer.textContent = '';
+            if (cloneProgressBar) cloneProgressBar.style.width = '0%';
         }
     }
 

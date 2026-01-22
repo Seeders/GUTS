@@ -22,6 +22,7 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
         });
 
         this.ILLUSION_DURATION = 30.0; // seconds
+        this.CLONE_DURATION = 20.0; // seconds for player clones
     }
 
     canExecute(casterEntity, params = {}) {
@@ -81,6 +82,11 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
             return null;
         }
 
+        // Special handling for clone item
+        if (itemType === 'clone') {
+            return this.executeClonePlacement(casterEntity, targetPosition, selectedSlot, belt);
+        }
+
         // Destroy any existing illusion for this slot (each slot can only have one active illusion)
         const illusionKey = `illusion${selectedSlot}`;
         const existingIllusionId = belt[illusionKey];
@@ -115,6 +121,138 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
         });
 
         return { success: true, illusionId, objectType: itemType };
+    }
+
+    /**
+     * Handle placing a clone from the belt
+     * Creates a controllable player clone at the target position
+     */
+    executeClonePlacement(casterEntity, targetPosition, selectedSlot, belt) {
+        const playerController = this.game.getComponent(casterEntity, 'playerController');
+        if (!playerController) {
+            return null;
+        }
+
+        // Check if player already has an active clone
+        if (playerController.activeCloneId && this.game.hasEntity(playerController.activeCloneId)) {
+            console.log('[PlaceIllusionAbility] Already have an active clone');
+            return null;
+        }
+
+        // Create the clone at target position
+        const cloneId = this.createPlayerClone(casterEntity, targetPosition);
+        if (!cloneId) {
+            return null;
+        }
+
+        // Store clone reference on player (but don't auto-switch control)
+        playerController.activeCloneId = cloneId;
+        playerController.controllingClone = false; // User must press Q to switch
+
+        // Consume the belt item
+        const slotKey = `slot${selectedSlot}`;
+        belt[slotKey] = null;
+        this.game.triggerEvent('onBeltUpdated', { entityId: casterEntity, slotIndex: selectedSlot, objectType: null });
+
+        // Deactivate the belt slot after placing
+        belt.selectedSlot = -1;
+        this.game.triggerEvent('onBeltSelectionChanged', { entityId: casterEntity, slotIndex: -1 });
+
+        // Play spawn effect
+        this.playConfiguredEffects('cast', targetPosition);
+        this.createVisualEffect(targetPosition, 'cast', { count: 25 });
+
+        // Play clone create sound
+        this.game.call('playSound', 'sounds', 'clone_create');
+
+        this.logAbilityUsage(casterEntity, `Placed projection clone!`);
+        this.game.triggerEvent('onCloneCreated', {
+            entityId: casterEntity,
+            cloneId,
+            position: targetPosition
+        });
+
+        return { success: true, cloneId, objectType: 'clone' };
+    }
+
+    /**
+     * Create a controllable clone of the player at the specified position
+     */
+    createPlayerClone(creatorEntity, position) {
+        const enums = this.game.getEnums();
+
+        // Get the creator's unit type to clone their appearance
+        const creatorUnitType = this.game.getComponent(creatorEntity, 'unitType');
+        if (!creatorUnitType) {
+            return null;
+        }
+
+        // Get terrain height at position
+        let terrainHeight = position.y || 0;
+        if (this.game.hasService('getTerrainHeightAtPosition')) {
+            terrainHeight = this.game.call('getTerrainHeightAtPosition', position.x, position.z) ?? terrainHeight;
+        }
+
+        const creatorTransform = this.game.getComponent(creatorEntity, 'transform');
+        const cloneTransform = {
+            position: { x: position.x, y: terrainHeight, z: position.z },
+            rotation: { x: creatorTransform?.rotation?.x || 0, y: creatorTransform?.rotation?.y || 0, z: creatorTransform?.rotation?.z || 0 },
+            scale: { x: 1, y: 1, z: 1 }
+        };
+
+        // Get creator's team
+        const creatorTeam = this.game.getComponent(creatorEntity, 'team');
+        const teamValue = creatorTeam?.team ?? enums.team?.player ?? 0;
+
+        // Create unit using the same type as the creator
+        const cloneId = this.game.call('createUnit',
+            creatorUnitType.collection,
+            creatorUnitType.type,
+            cloneTransform,
+            teamValue
+        );
+
+        if (cloneId === null || cloneId === undefined) {
+            return null;
+        }
+
+        try {
+            // Add clone marker component
+            this.game.addComponent(cloneId, 'playerClone', {
+                originalEntity: creatorEntity,
+                createdTime: this.game.state.now || 0,
+                duration: this.CLONE_DURATION,
+                expiresAt: (this.game.state.now || 0) + this.CLONE_DURATION
+            });
+
+            // Remove AI components so clone doesn't act on its own
+            if (this.game.hasComponent(cloneId, 'aiState')) {
+                this.game.removeComponent(cloneId, 'aiState');
+            }
+
+            // Add velocity component if not present (for movement)
+            if (!this.game.hasComponent(cloneId, 'velocity')) {
+                this.game.addComponent(cloneId, 'velocity', {
+                    vx: 0, vy: 0, vz: 0,
+                    maxSpeed: 60,
+                    affectedByGravity: true,
+                    anchored: false
+                });
+            }
+
+            // Make clone semi-transparent with blue tint
+            const renderable = this.game.getComponent(cloneId, 'renderable');
+            if (renderable) {
+                renderable.tint = 0x4080FF; // Blue tint
+                renderable.opacity = 0.7;
+            }
+
+            return cloneId;
+
+        } catch (error) {
+            console.error('[PlaceIllusionAbility] Failed to add clone components:', error);
+            return cloneId;
+        }
     }
 
     createIllusion(creatorEntity, objectType, position, slotIndex) {

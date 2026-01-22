@@ -1,0 +1,34 @@
+{
+  "title": "Collect Item",
+  "audio": {
+    "duration": 0.5,
+    "volume": 0.25,
+    "layers": [
+      {
+        "source": "sine",
+        "frequency": 500,
+        "volume": 0.6,
+        "envelope": { "attack": 0.01, "decay": 0.15, "sustain": 0.2, "release": 0.2 },
+        "pitchEnvelope": { "start": 1.0, "end": 1.8, "time": 0.3 }
+      },
+      {
+        "source": "triangle",
+        "frequency": 1000,
+        "volume": 0.4,
+        "envelope": { "attack": 0.02, "decay": 0.1, "sustain": 0.15, "release": 0.25 },
+        "pitchEnvelope": { "start": 1.0, "end": 1.5, "time": 0.25 }
+      },
+      {
+        "source": "white",
+        "volume": 0.1,
+        "envelope": { "attack": 0.01, "decay": 0.08, "sustain": 0.02, "release": 0.15 },
+        "filter": { "type": "highpass", "frequency": 4000, "Q": 0.5 }
+      }
+    ],
+    "effects": {
+      "filter": { "type": "lowpass", "frequency": 6000, "Q": 1 },
+      "reverb": 0.3,
+      "delay": { "time": 0.06, "feedback": 0.15 }
+    }
+  }
+}

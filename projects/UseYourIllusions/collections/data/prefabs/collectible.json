@@ -1,0 +1,5 @@
+{
+  "title": "Collectible",
+  "description": "Objects that can be collected with the beam",
+  "components": ["transform", "unitType", "worldObject", "team", "collision", "animation", "renderable", "collectible"]
+}

@@ -18,7 +18,9 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         'setSelectedBeltSlot',
         'getBeltContents',
         'storeBeltItem',
-        'consumeBeltItem'
+        'consumeBeltItem',
+        'toggleCloneControl',
+        'triggerCollectAbility'
     ];
 
     constructor(game) {
@@ -40,6 +42,15 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         this._footstepInterval = 0.5; // Time between footsteps in seconds
         this._lastFootstepTime = 0;
         this._footstepSide = 0; // 0 = left, 1 = right (alternates)
+
+        // Collect beam state
+        this.collectModeActive = false;
+        this.highlightedCollectible = null;
+        this.highlightedMirror = null;
+        this.collectBeamMaxRange = 200;
+        this.collectBeamLine = null;
+        this.collectBeamGeometry = null;
+        this.collectBeamMaterial = null;
     }
 
     init() {
@@ -55,6 +66,10 @@ class PlayerControlSystem extends GUTS.BaseSystem {
 
     onSceneUnload() {
         this.cleanupEventListeners();
+
+        // Clean up collect beam
+        this.deactivateCollectMode();
+        this.removeCollectBeam();
     }
 
     setupKeyboardControls() {
@@ -113,7 +128,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
                 this.isWASDMoving = true;
                 break;
             case 'KeyE':
-                this.triggerCollectAbility(playerEntity);
+                this.handleCollectAbility(playerEntity);
                 break;
             case 'Digit1':
                 this.setSelectedBeltSlot(playerEntity, 0);
@@ -125,7 +140,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
                 this.setSelectedBeltSlot(playerEntity, 2);
                 break;
             case 'KeyQ':
-                this.handleCloneAbility(playerEntity);
+                this.toggleCloneControl(playerEntity);
                 break;
         }
     }
@@ -256,6 +271,9 @@ class PlayerControlSystem extends GUTS.BaseSystem {
 
         // Update camera to follow controlled entity
         this.updateCameraTarget(controlledEntity);
+
+        // Update collect beam if in collect mode
+        this.updateCollectBeam(controlledEntity);
     }
 
     /**
@@ -310,39 +328,37 @@ class PlayerControlSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Handle Q key - create clone or toggle control
+     * Toggle control between player and clone (Q key)
+     * Only works when a clone exists - clones are created via mirror beam
      */
-    handleCloneAbility(playerEntity) {
+    toggleCloneControl(playerEntity) {
         const playerController = this.game.getComponent(playerEntity, 'playerController');
         if (!playerController) return;
 
-        // If clone exists, toggle control
-        if (playerController.activeCloneId && this.game.hasEntity(playerController.activeCloneId)) {
-            playerController.controllingClone = !playerController.controllingClone;
-
-            // Play clone swap sound
-            this.game.call('playSound', 'sounds', 'clone_swap');
-
-            // Play effect at the entity we're switching to
-            const targetEntity = playerController.controllingClone
-                ? playerController.activeCloneId
-                : playerEntity;
-            const transform = this.game.getComponent(targetEntity, 'transform');
-            if (transform?.position && this.game.effectsSystem) {
-                this.game.effectsSystem.createParticleEffect(
-                    transform.position.x,
-                    transform.position.y + 30,
-                    transform.position.z,
-                    'magic',
-                    { count: 15, scaleMultiplier: 0.8 }
-                );
-            }
+        // Only toggle if clone exists
+        if (!playerController.activeCloneId || !this.game.hasEntity(playerController.activeCloneId)) {
+            // No clone exists - do nothing (clones created via mirror beam)
             return;
         }
 
-        // No clone - create one
-        if (this.game.hasService('useAbility')) {
-            this.game.call('useAbility', playerEntity, 'ProjectCloneAbility', {});
+        playerController.controllingClone = !playerController.controllingClone;
+
+        // Play clone swap sound
+        this.game.call('playSound', 'sounds', 'clone_swap');
+
+        // Play effect at the entity we're switching to
+        const targetEntity = playerController.controllingClone
+            ? playerController.activeCloneId
+            : playerEntity;
+        const transform = this.game.getComponent(targetEntity, 'transform');
+        if (transform?.position && this.game.effectsSystem) {
+            this.game.effectsSystem.createParticleEffect(
+                transform.position.x,
+                transform.position.y + 30,
+                transform.position.z,
+                'magic',
+                { count: 15, scaleMultiplier: 0.8 }
+            );
         }
     }
 
@@ -729,11 +745,424 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         return null;
     }
 
-    triggerCollectAbility(entityId) {
-        // Use the CollectAbility
-        if (this.game.hasService('useAbility')) {
-            this.game.call('useAbility', entityId, 'CollectAbility', { target: null });
+    /**
+     * Handle E key - toggle collect mode or collect/clone based on target
+     */
+    handleCollectAbility(entityId) {
+        if (this.collectModeActive) {
+            // Already in collect mode - check what we're targeting
+            if (this.highlightedMirror) {
+                // Targeting a mirror - create clone
+                this.createCloneFromMirror(entityId);
+            } else if (this.highlightedCollectible) {
+                // Targeting a collectible - collect it
+                this.collectHighlightedItem(entityId);
+            }
+            // Deactivate collect mode
+            this.deactivateCollectMode();
+        } else {
+            // Activate collect mode
+            this.activateCollectMode(entityId);
         }
+    }
+
+    activateCollectMode(entityId) {
+        this.collectModeActive = true;
+        this.highlightedCollectible = null;
+        this.highlightedMirror = null;
+
+        // Create the visual beam
+        this.createCollectBeam();
+
+        // Play activation sound
+        this.game.call('playSound', 'sounds', 'collect_activate');
+
+        // Notify UI
+        this.game.triggerEvent('onCollectModeChanged', { active: true, entityId });
+    }
+
+    deactivateCollectMode() {
+        if (!this.collectModeActive) return;
+
+        // Clear highlight on previous collectible/mirror
+        if (this.highlightedCollectible) {
+            this.setCollectibleHighlight(this.highlightedCollectible, false);
+        }
+        if (this.highlightedMirror) {
+            this.setCollectibleHighlight(this.highlightedMirror, false);
+        }
+
+        this.collectModeActive = false;
+        this.highlightedCollectible = null;
+        this.highlightedMirror = null;
+
+        // Remove the visual beam
+        this.removeCollectBeam();
+
+        // Notify UI
+        this.game.triggerEvent('onCollectModeChanged', { active: false });
+    }
+
+    collectHighlightedItem(entityId) {
+        if (!this.highlightedCollectible) return;
+
+        const collectible = this.game.getComponent(this.highlightedCollectible, 'collectible');
+        if (!collectible) return;
+
+        // Get object type from collectible
+        const objectTypeIndex = collectible.objectType;
+        const reverseEnums = this.game.getReverseEnums();
+        const objectType = reverseEnums.worldObjects?.[objectTypeIndex];
+
+        if (!objectType) return;
+
+        // Store in belt
+        const stored = this.game.call('storeBeltItem', entityId, objectType);
+        if (!stored) return;
+
+        // Get collectible position for effects
+        const collectibleTransform = this.game.getComponent(this.highlightedCollectible, 'transform');
+        const collectiblePos = collectibleTransform?.position;
+
+        // Play collection effect
+        if (collectiblePos && this.game.effectsSystem) {
+            this.game.effectsSystem.createParticleEffect(
+                collectiblePos.x,
+                collectiblePos.y + 20,
+                collectiblePos.z,
+                'sparkle',
+                { count: 20, scaleMultiplier: 0.8, speedMultiplier: 1.2 }
+            );
+        }
+
+        // Play collect sound
+        this.game.call('playSound', 'sounds', 'collect_item');
+
+        this.game.triggerEvent('onCollectibleCollected', {
+            entityId,
+            objectType,
+            collectibleId: this.highlightedCollectible
+        });
+    }
+
+    /**
+     * Store a clone item in the belt when beam hits a mirror
+     */
+    createCloneFromMirror(entityId) {
+        if (!this.highlightedMirror) return;
+
+        // Store "clone" item in belt (like other collectibles)
+        const stored = this.game.call('storeBeltItem', entityId, 'clone');
+        if (!stored) {
+            console.log('[PlayerControlSystem] Belt full, cannot store clone');
+            return;
+        }
+
+        // Get mirror position for effects
+        const mirrorTransform = this.game.getComponent(this.highlightedMirror, 'transform');
+        if (mirrorTransform?.position && this.game.effectsSystem) {
+            // Effect at mirror
+            this.game.effectsSystem.createParticleEffect(
+                mirrorTransform.position.x,
+                mirrorTransform.position.y + 20,
+                mirrorTransform.position.z,
+                'magic',
+                { count: 25, scaleMultiplier: 1.0 }
+            );
+        }
+
+        // Play collect sound
+        this.game.call('playSound', 'sounds', 'collect_item');
+
+        this.game.triggerEvent('onCloneStored', { entityId });
+    }
+
+    /**
+     * Create the visual collect beam using a cylinder mesh for better visibility
+     */
+    createCollectBeam() {
+        if (!this.game.scene || typeof THREE === 'undefined') return;
+
+        // Clean up any existing beam
+        this.removeCollectBeam();
+
+        // Create a cylinder geometry for the beam (more visible than a line)
+        // Cylinder along Y-axis, we'll rotate it to point in the right direction
+        this.collectBeamGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 6, 1, true);
+
+        // Rotate geometry so it extends along Z-axis instead of Y
+        this.collectBeamGeometry.rotateX(Math.PI / 2);
+
+        // Glowing cyan/teal material
+        this.collectBeamMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ffaa,
+            transparent: true,
+            opacity: 0.6,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending
+        });
+
+        this.collectBeamLine = new THREE.Mesh(this.collectBeamGeometry, this.collectBeamMaterial);
+        this.game.scene.add(this.collectBeamLine);
+    }
+
+    /**
+     * Remove the visual collect beam
+     */
+    removeCollectBeam() {
+        if (this.collectBeamLine && this.game.scene) {
+            this.game.scene.remove(this.collectBeamLine);
+        }
+        if (this.collectBeamGeometry) {
+            this.collectBeamGeometry.dispose();
+        }
+        if (this.collectBeamMaterial) {
+            this.collectBeamMaterial.dispose();
+        }
+        this.collectBeamLine = null;
+        this.collectBeamGeometry = null;
+        this.collectBeamMaterial = null;
+    }
+
+    /**
+     * Update collect beam - find collectible or mirror in beam path and update visual
+     */
+    updateCollectBeam(entityId) {
+        if (!this.collectModeActive) return;
+
+        const transform = this.game.getComponent(entityId, 'transform');
+        if (!transform?.position) return;
+
+        // Get facing angle from camera
+        const facingAngle = this.game.hasService('getFacingAngle')
+            ? this.game.call('getFacingAngle')
+            : 0;
+
+        const playerPos = transform.position;
+        const beamStartY = playerPos.y + 8; // Start beam at hip height
+        const beamEndX = playerPos.x + Math.cos(facingAngle) * this.collectBeamMaxRange;
+        const beamEndZ = playerPos.z + Math.sin(facingAngle) * this.collectBeamMaxRange;
+
+        // Find collectible or mirror along beam
+        const { collectible: newCollectibleHighlight, mirror: newMirrorHighlight } = this.findTargetsAlongBeam(
+            playerPos.x, playerPos.z,
+            beamEndX, beamEndZ
+        );
+
+        // Get the primary target for beam visual (prioritize nearest)
+        const primaryTarget = newMirrorHighlight || newCollectibleHighlight;
+
+        // Update beam visual
+        this.updateCollectBeamVisual(
+            playerPos.x, beamStartY, playerPos.z,
+            beamEndX, beamStartY, beamEndZ,
+            primaryTarget,
+            newMirrorHighlight // Pass mirror specifically for color change
+        );
+
+        // Update collectible highlight if changed
+        if (newCollectibleHighlight !== this.highlightedCollectible) {
+            if (this.highlightedCollectible) {
+                this.setCollectibleHighlight(this.highlightedCollectible, false);
+            }
+            if (newCollectibleHighlight) {
+                this.setCollectibleHighlight(newCollectibleHighlight, true);
+            }
+            this.highlightedCollectible = newCollectibleHighlight;
+        }
+
+        // Update mirror highlight if changed
+        if (newMirrorHighlight !== this.highlightedMirror) {
+            if (this.highlightedMirror) {
+                this.setCollectibleHighlight(this.highlightedMirror, false);
+            }
+            if (newMirrorHighlight) {
+                this.setCollectibleHighlight(newMirrorHighlight, true);
+            }
+            this.highlightedMirror = newMirrorHighlight;
+        }
+
+        // Notify for UI update
+        this.game.triggerEvent('onCollectHighlightChanged', {
+            collectibleId: newCollectibleHighlight,
+            mirrorId: newMirrorHighlight
+        });
+    }
+
+    /**
+     * Update the visual beam cylinder
+     */
+    updateCollectBeamVisual(startX, startY, startZ, endX, endY, endZ, hasTarget, isMirror = false) {
+        if (!this.collectBeamLine) return;
+
+        // If we have a target, end beam at that target's position
+        let finalEndX = endX;
+        let finalEndY = endY;
+        let finalEndZ = endZ;
+
+        if (hasTarget) {
+            const targetTransform = this.game.getComponent(hasTarget, 'transform');
+            if (targetTransform?.position) {
+                finalEndX = targetTransform.position.x;
+                finalEndY = targetTransform.position.y + 20;
+                finalEndZ = targetTransform.position.z;
+            }
+        }
+
+        // Calculate beam direction and length
+        const dx = finalEndX - startX;
+        const dy = finalEndY - startY;
+        const dz = finalEndZ - startZ;
+        const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+        // Position beam at midpoint between start and end
+        this.collectBeamLine.position.set(
+            startX + dx / 2,
+            startY + dy / 2,
+            startZ + dz / 2
+        );
+
+        // Scale beam to correct length (geometry is unit length along Z)
+        this.collectBeamLine.scale.set(1, 1, length);
+
+        // Rotate beam to point from start to end
+        this.collectBeamLine.lookAt(finalEndX, finalEndY, finalEndZ);
+
+        // Change beam color based on target type
+        if (isMirror) {
+            this.collectBeamMaterial.color.setHex(0xff00ff); // Purple/magenta when targeting mirror
+            this.collectBeamMaterial.opacity = 0.9;
+        } else if (hasTarget) {
+            this.collectBeamMaterial.color.setHex(0x00ff00); // Green when targeting collectible
+            this.collectBeamMaterial.opacity = 0.8;
+        } else {
+            this.collectBeamMaterial.color.setHex(0x00ffaa); // Cyan normally
+            this.collectBeamMaterial.opacity = 0.5;
+        }
+    }
+
+    /**
+     * Find the nearest collectible and mirror along a beam from start to end
+     */
+    findTargetsAlongBeam(startX, startZ, endX, endZ) {
+        const beamWidth = 30; // Width of beam for collision detection
+
+        let nearestCollectible = null;
+        let nearestCollectibleDist = Infinity;
+        let nearestMirror = null;
+        let nearestMirrorDist = Infinity;
+
+        // Check mirrors first (entities with mirror component)
+        const mirrors = this.game.getEntitiesWith('mirror', 'transform');
+        console.log('[BeamDebug] Mirrors found:', mirrors.length);
+        for (const entityId of mirrors) {
+            const result = this.checkEntityInBeam(entityId, startX, startZ, endX, endZ, beamWidth);
+            if (!result) continue;
+
+            if (result.dist < nearestMirrorDist) {
+                nearestMirrorDist = result.dist;
+                nearestMirror = entityId;
+            }
+        }
+
+        // Check collectibles (entities with collectible but not mirror component)
+        const collectibles = this.game.getEntitiesWith('collectible', 'transform');
+        console.log('[BeamDebug] Collectibles found:', collectibles.length);
+        for (const entityId of collectibles) {
+            // Skip if this entity is a mirror
+            if (this.game.getComponent(entityId, 'mirror')) continue;
+
+            const result = this.checkEntityInBeam(entityId, startX, startZ, endX, endZ, beamWidth);
+            if (!result) continue;
+
+            if (result.dist < nearestCollectibleDist) {
+                nearestCollectibleDist = result.dist;
+                nearestCollectible = entityId;
+            }
+        }
+
+        // If mirror is closer than collectible, clear collectible (prioritize mirror)
+        if (nearestMirror && nearestMirrorDist <= nearestCollectibleDist) {
+            nearestCollectible = null;
+        }
+
+        return { collectible: nearestCollectible, mirror: nearestMirror };
+    }
+
+    /**
+     * Check if an entity is within the beam path
+     */
+    checkEntityInBeam(entityId, startX, startZ, endX, endZ, beamWidth) {
+        const transform = this.game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+        if (!pos) return null;
+
+        // Calculate distance from point to line segment
+        const dist = this.pointToLineDistance(
+            pos.x, pos.z,
+            startX, startZ,
+            endX, endZ
+        );
+
+        // Check if within beam width
+        if (dist < beamWidth) {
+            // Calculate distance along beam from start
+            const dx = pos.x - startX;
+            const dz = pos.z - startZ;
+            const distFromStart = Math.sqrt(dx * dx + dz * dz);
+
+            if (distFromStart < this.collectBeamMaxRange) {
+                return { dist: distFromStart };
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Calculate distance from point to line segment
+     */
+    pointToLineDistance(px, pz, x1, z1, x2, z2) {
+        const dx = x2 - x1;
+        const dz = z2 - z1;
+        const lengthSq = dx * dx + dz * dz;
+
+        if (lengthSq === 0) {
+            // Line is a point
+            return Math.sqrt((px - x1) ** 2 + (pz - z1) ** 2);
+        }
+
+        // Project point onto line, clamped to segment
+        let t = ((px - x1) * dx + (pz - z1) * dz) / lengthSq;
+        t = Math.max(0, Math.min(1, t));
+
+        const projX = x1 + t * dx;
+        const projZ = z1 + t * dz;
+
+        return Math.sqrt((px - projX) ** 2 + (pz - projZ) ** 2);
+    }
+
+    /**
+     * Set visual highlight on a collectible entity
+     */
+    setCollectibleHighlight(entityId, highlighted) {
+        // Add/remove highlight component or set property
+        const billboard = this.game.getComponent(entityId, 'billboard');
+        if (billboard) {
+            billboard.highlighted = highlighted;
+        }
+
+        // Also notify for any other highlight systems
+        this.game.triggerEvent('onEntityHighlightChanged', {
+            entityId,
+            highlighted,
+            highlightType: 'collect'
+        });
+    }
+
+    triggerCollectAbility(entityId) {
+        // Legacy method - now use handleCollectAbility
+        this.handleCollectAbility(entityId);
     }
 
     triggerPlaceIllusionAbility(entityId, targetPosition, itemType) {

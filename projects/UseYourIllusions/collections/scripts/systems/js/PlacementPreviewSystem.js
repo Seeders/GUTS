@@ -106,14 +106,6 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
 
     createPreviewEntity(itemIndex) {
         const enums = this.game.getEnums();
-        const collectionIndex = enums.objectTypeDefinitions?.worldObjects;
-
-        console.log('[PlacementPreviewSystem] createPreviewEntity:', { itemIndex, collectionIndex });
-
-        if (collectionIndex === undefined || itemIndex === undefined) {
-            console.log('[PlacementPreviewSystem] Could not find enum indices for preview');
-            return;
-        }
 
         // Create at origin initially, will be moved in updatePreviewPosition
         const transform = {
@@ -124,8 +116,29 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
 
         const neutralTeam = enums.team?.neutral ?? 0;
 
-        // Use createUnit to properly create the preview entity
-        this.previewEntityId = this.game.call('createUnit', collectionIndex, itemIndex, transform, neutralTeam);
+        // Check if this is a clone - use player's unit type for preview
+        if (this.currentItemType === 'clone') {
+            const playerEntity = this.game.call('getPlayerEntity');
+            if (playerEntity) {
+                const playerUnitType = this.game.getComponent(playerEntity, 'unitType');
+                if (playerUnitType) {
+                    console.log('[PlacementPreviewSystem] Creating clone preview using player unit type:', playerUnitType);
+                    this.previewEntityId = this.game.call('createUnit', playerUnitType.collection, playerUnitType.type, transform, neutralTeam);
+                }
+            }
+        } else {
+            const collectionIndex = enums.objectTypeDefinitions?.worldObjects;
+
+            console.log('[PlacementPreviewSystem] createPreviewEntity:', { itemIndex, collectionIndex });
+
+            if (collectionIndex === undefined || itemIndex === undefined) {
+                console.log('[PlacementPreviewSystem] Could not find enum indices for preview');
+                return;
+            }
+
+            // Use createUnit to properly create the preview entity
+            this.previewEntityId = this.game.call('createUnit', collectionIndex, itemIndex, transform, neutralTeam);
+        }
         console.log('[PlacementPreviewSystem] Created preview entity:', this.previewEntityId);
 
         if (this.previewEntityId !== null && this.previewEntityId !== undefined) {

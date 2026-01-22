@@ -1,14 +1,14 @@
 {
-  "title": "Crate",
-  "spriteSheet": "sprites/crateSprites/crateSheet.png",
-  "spriteOffset": 17,
-  "groundLevelSpriteOffset": 16,
+  "title": "Mirror",
+  "spriteSheet": "sprites/mirrorSprites/mirrorSheet.png",
+  "spriteOffset": 11,
+  "groundLevelSpriteOffset": 13,
   "generatorSettings": {
-    "frustumSize": 32,
+    "frustumSize": 48,
     "cameraDistance": 100,
     "spriteSize": 48,
     "fps": 4,
-    "brightness": 3,
+    "brightness": 5,
     "palette": "main",
     "borderSize": 1,
     "outlineColor": "#030202",
@@ -16,7 +16,7 @@
     "cameraHeight": 1.5,
     "isProjectile": false,
     "generateGroundLevel": true,
-    "groundCameraHeight": 0.5,
+    "groundCameraHeight": 0,
     "shaderFrames": 0,
     "animationTypes": [
       "idle"

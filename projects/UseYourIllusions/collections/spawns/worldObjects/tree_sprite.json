@@ -1,5 +1,6 @@
 {
   "title": "Tree Sprite",
+  "prefab": "scenery",
   "height": 75,
   "size": 48,
   "placementGridWidth": 1,

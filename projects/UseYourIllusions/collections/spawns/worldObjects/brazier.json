@@ -1,5 +1,6 @@
 {
   "title": "Brazier",
+  "prefab": "collectible",
   "description": "A brazier.",
   "particleEffectSystem": "brazier_fire",
   "particleEffectOffset": { "x": 0, "y": 14, "z": 0 },

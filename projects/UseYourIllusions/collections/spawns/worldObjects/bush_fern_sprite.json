@@ -1,5 +1,6 @@
 {
   "title": "Bush Fern Sprite",
+  "prefab": "scenery",
   "height": 240,
   "size": 24,
   "placementGridWidth": 1,

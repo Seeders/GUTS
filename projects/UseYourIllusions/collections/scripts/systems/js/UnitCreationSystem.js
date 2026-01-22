@@ -157,6 +157,19 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         }
 
         const unitType = this.collections[collection][spawnType];
+
+        // Check if typeData specifies a custom prefab
+        // This allows spawn definitions to override the default collection-based prefab
+        if (unitType.prefab) {
+            return this.createEntityFromPrefab({
+                prefab: unitType.prefab,
+                type: spawnType,
+                collection: collection,
+                team: team,
+                componentOverrides: { transform }
+            });
+        }
+
         // Ensure transform has defaults (rotation handled by addAllComponents based on team/building)
         const safeTransform = {
             position: transform?.position || { x: 0, y: 0, z: 0 },
@@ -475,22 +488,19 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 };
 
             case 'collectible':
-                // Only add collectible component if typeData.collectable is true
-                if (!typeData.collectable) {
-                    return null; // Skip this component
-                }
                 return {
                     objectType: typeIndex
                 };
 
             case 'exitZone':
-                // Only add exitZone component if typeData.exit is true
-                if (!typeData.exit) {
-                    return null; // Skip this component
-                }
                 return {
                     radius: typeData.exitRadius || 60,
                     isActive: true
+                };
+
+            case 'mirror':
+                return {
+                    objectType: typeIndex
                 };
 
             default:

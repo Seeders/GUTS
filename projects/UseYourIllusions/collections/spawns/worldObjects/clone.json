@@ -1,0 +1,11 @@
+{
+  "title": "Clone",
+  "description": "A projection of yourself that you can control.",
+  "height": 48,
+  "size": 16,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "impassable": false,
+  "collectable": false,
+  "isClone": true
+}

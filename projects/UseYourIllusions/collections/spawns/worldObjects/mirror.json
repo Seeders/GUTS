@@ -1,7 +1,13 @@
 {
-  "title": "Crate",
-  "prefab": "collectible",
-  "description": "A crate.",
+  "title": "Mirror",
+  "description": "A magical mirror that reflects the beam back at you, creating a clone.",
+  "prefab": "mirror",
+  "height": 48,
+  "size": 16,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "impassable": true,
+  "mirror": true,
   "render": {
     "animations": {
       "idle": [
@@ -24,8 +30,8 @@
             "type": "gltf",
             "metalness": 0,
             "roughness": 1,
-            "name": "crate",
-            "model": "crate"
+            "name": "mirror",
+            "model": "mirror"
           }
         ],
         "position": {
@@ -39,17 +45,12 @@
           "z": 0
         },
         "scale": {
-          "z": 0.005,
-          "y": 0.005,
-          "x": 0.005
+          "z": 1,
+          "y": 1,
+          "x": 1
         }
       }
     }
   },
-  "height": 32,
-  "size": 16,
-  "hp": 10,
-  "impassable": true,
-  "collectable": true,
-  "spriteAnimationSet": "crate"
+  "spriteAnimationSet": "mirror"
 }

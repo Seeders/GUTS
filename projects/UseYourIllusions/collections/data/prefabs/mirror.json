@@ -1,0 +1,5 @@
+{
+  "title": "Mirror",
+  "description": "Prefab for mirror objects that can reflect the beam to create clones",
+  "components": ["transform", "unitType", "worldObject", "team", "collision", "animation", "renderable", "mirror"]
+}

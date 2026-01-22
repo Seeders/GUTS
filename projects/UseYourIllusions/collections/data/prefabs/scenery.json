@@ -1,0 +1,5 @@
+{
+  "title": "Scenery",
+  "description": "Static scenery objects (trees, bushes, rocks, grass)",
+  "components": ["transform", "unitType", "worldObject", "team", "collision", "animation", "renderable"]
+}

@@ -1,5 +1,6 @@
 {
   "title": "Grass Tuft Sprite",
+  "prefab": "scenery",
   "height": 16,
   "size": 24,
   "placementGridWidth": 1,

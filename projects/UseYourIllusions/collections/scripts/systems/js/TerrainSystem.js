@@ -210,14 +210,20 @@ class TerrainSystem extends GUTS.BaseSystem {
                     continue;
                 }
 
-                const prefabName = entityDef.prefab;
+                const type = entityDef.type;
+
                 // Get collection from objectTypeDefinitions mapping (singular -> id)
-                const collection = prefabToCollection[prefabName];
+                const basePrefabName = entityDef.prefab;
+                const collection = prefabToCollection[basePrefabName];
                 if (!collection) {
-                    console.warn(`[TerrainSystem] No collection mapping for prefab: ${prefabName}`);
+                    console.warn(`[TerrainSystem] No collection mapping for prefab: ${basePrefabName}`);
                     continue;
                 }
-                const type = entityDef.type;
+
+                // Check if the type definition specifies a custom prefab
+                // e.g., barrel.json has "prefab": "collectible"
+                const typeData = this.collections[collection]?.[type];
+                const prefabName = typeData?.prefab || basePrefabName;
                 const componentOverrides = entityDef.components || {};
 
                 // Adjust terrain height if Y is 0 or undefined

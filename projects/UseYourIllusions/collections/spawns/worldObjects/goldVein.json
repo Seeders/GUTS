@@ -1,5 +1,6 @@
 {
   "title": "Gold Vein",
+  "prefab": "scenery",
   "render": {
     "animations": {
       "idle": [
