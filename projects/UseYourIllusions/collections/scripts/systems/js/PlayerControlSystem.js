@@ -6,7 +6,7 @@
  * - A/D: Strafe left/right relative to facing direction
  * - Mouse: Control facing direction (via CameraControlSystem)
  * - E: Collect nearby object (triggers CollectAbility)
- * - Q: Create clone / toggle control between player and clone
+ * - R: Toggle control between player and clone
  * - 1/2/3: Select belt slot
  * - Click with item selected: Place illusion (triggers PlaceIllusionAbility)
  */
@@ -139,7 +139,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
             case 'Digit3':
                 this.setSelectedBeltSlot(playerEntity, 2);
                 break;
-            case 'KeyQ':
+            case 'KeyR':
                 this.toggleCloneControl(playerEntity);
                 break;
         }
@@ -328,7 +328,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Toggle control between player and clone (Q key)
+     * Toggle control between player and clone (R key)
      * Only works when a clone exists - clones are created via mirror beam
      */
     toggleCloneControl(playerEntity) {
@@ -712,17 +712,21 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         const objectTypeIndex = this.enums.worldObjects?.[objectType];
         if (objectTypeIndex === undefined) return false;
 
-        // Find first empty slot (null means empty)
-        for (let i = 0; i < 3; i++) {
-            const slotKey = `slot${i}`;
-            if (belt[slotKey] === null) {
-                belt[slotKey] = objectTypeIndex;
-                this.game.triggerEvent('onBeltUpdated', { entityId, slotIndex: i, objectType });
-                return true;
-            }
+        // Initialize nextSlot if not set
+        if (belt.nextSlot === undefined) {
+            belt.nextSlot = 0;
         }
 
-        return false; // Belt full
+        // Use the next slot in rotation (overwrites if full)
+        const slotIndex = belt.nextSlot;
+        const slotKey = `slot${slotIndex}`;
+        belt[slotKey] = objectTypeIndex;
+
+        // Advance to next slot (cycles 0 -> 1 -> 2 -> 0)
+        belt.nextSlot = (slotIndex + 1) % 3;
+
+        this.game.triggerEvent('onBeltUpdated', { entityId, slotIndex, objectType });
+        return true;
     }
 
     consumeBeltItem(entityId, slotIndex) {

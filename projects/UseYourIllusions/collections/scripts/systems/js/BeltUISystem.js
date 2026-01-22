@@ -37,6 +37,14 @@ class BeltUISystem extends GUTS.BaseSystem {
                         <div class="ability-key">E</div>
                         <div class="ability-label">Beam</div>
                     </div>
+                    <!-- Clone Status (shown when clone active, next to E) -->
+                    <div class="ability-slot ability-action" id="cloneStatusSlot" style="display: none;">
+                        <div class="ability-icon">👤</div>
+                        <div class="ability-key">R</div>
+                        <div class="ability-label">Clone</div>
+                        <div class="ability-timer" id="cloneTimer"></div>
+                        <div class="ability-progress-bar" id="cloneProgressBar"></div>
+                    </div>
                     <!-- Separator -->
                     <div class="ability-separator"></div>
                     <!-- Belt Slots 1-2-3 -->
@@ -51,15 +59,6 @@ class BeltUISystem extends GUTS.BaseSystem {
                     <div class="ability-slot belt-slot" id="beltSlot2" data-slot="2">
                         <div class="slot-content"></div>
                         <div class="ability-key">3</div>
-                    </div>
-                    <!-- Clone Status (shown when clone active) -->
-                    <div class="ability-separator clone-separator" id="cloneSeparator" style="display: none;"></div>
-                    <div class="ability-slot ability-action" id="cloneStatusSlot" style="display: none;">
-                        <div class="ability-icon">👤</div>
-                        <div class="ability-key">Q</div>
-                        <div class="ability-label">Clone</div>
-                        <div class="ability-timer" id="cloneTimer"></div>
-                        <div class="ability-progress-bar" id="cloneProgressBar"></div>
                     </div>
                 </div>
                 <div class="ability-bar-hint">Press E to activate beam</div>
@@ -518,7 +517,6 @@ class BeltUISystem extends GUTS.BaseSystem {
         if (!playerController) return;
 
         const cloneStatusSlot = document.getElementById('cloneStatusSlot');
-        const cloneSeparator = document.getElementById('cloneSeparator');
         const cloneTimer = document.getElementById('cloneTimer');
         const cloneProgressBar = document.getElementById('cloneProgressBar');
 
@@ -529,9 +527,6 @@ class BeltUISystem extends GUTS.BaseSystem {
 
         // Show/hide clone status slot based on whether clone exists
         cloneStatusSlot.style.display = hasClone ? 'flex' : 'none';
-        if (cloneSeparator) {
-            cloneSeparator.style.display = hasClone ? 'block' : 'none';
-        }
 
         cloneStatusSlot.classList.toggle('active', hasClone);
         cloneStatusSlot.classList.toggle('controlling-clone', hasClone && controllingClone);
