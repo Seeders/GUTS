@@ -149,11 +149,7 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
         playerController.activeCloneId = cloneId;
         playerController.controllingClone = false; // User must press Q to switch
 
-        // Consume the belt item
-        const slotKey = `slot${selectedSlot}`;
-        belt[slotKey] = null;
-        this.game.triggerEvent('onBeltUpdated', { entityId: casterEntity, slotIndex: selectedSlot, objectType: null });
-
+        // Don't consume the clone from belt - it can be reused after the clone expires
         // Deactivate the belt slot after placing
         belt.selectedSlot = -1;
         this.game.triggerEvent('onBeltSelectionChanged', { entityId: casterEntity, slotIndex: -1 });

@@ -352,7 +352,7 @@ class BeltUISystem extends GUTS.BaseSystem {
                 hint.textContent = 'Aim at object, press E to collect';
                 hint.style.color = '#00ffaa';
             } else {
-                hint.textContent = 'Right-click to place illusion';
+                hint.textContent = 'Left-click to place illusion';
                 hint.style.color = '#666';
             }
         }
@@ -432,10 +432,30 @@ class BeltUISystem extends GUTS.BaseSystem {
 
         const resourcesPath = this.game.resourceBaseUrl || './resources/';
 
+        // For clone items, use the player's sprite animation set
+        let spriteAnimationSetName = worldObjectDef.spriteAnimationSet;
+        if (itemType === 'clone') {
+            const playerEntity = this.game.call('getPlayerEntity');
+            if (playerEntity) {
+                const playerUnitType = this.game.getComponent(playerEntity, 'unitType');
+                if (playerUnitType) {
+                    // unitType uses numeric indices, convert to names
+                    const reverseEnums = this.game.getReverseEnums();
+                    const collectionName = reverseEnums.objectTypeDefinitions?.[playerUnitType.collection];
+                    const typeName = reverseEnums[collectionName]?.[playerUnitType.type];
+                    if (collectionName && typeName) {
+                        const playerDef = collections[collectionName]?.[typeName];
+                        if (playerDef?.spriteAnimationSet) {
+                            spriteAnimationSetName = playerDef.spriteAnimationSet;
+                        }
+                    }
+                }
+            }
+        }
+
         // Check for spriteAnimationSet first (has sprite sheet with frames)
-        if (worldObjectDef.spriteAnimationSet) {
-            const spriteSetName = worldObjectDef.spriteAnimationSet;
-            const spriteSet = collections.spriteAnimationSets?.[spriteSetName];
+        if (spriteAnimationSetName) {
+            const spriteSet = collections.spriteAnimationSets?.[spriteAnimationSetName];
 
             if (spriteSet?.spriteSheet && spriteSet.frames) {
                 // Try to get idleDownGround_0 first (ground-level view), fallback to idleDown_0
