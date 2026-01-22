@@ -1,28 +1,20 @@
 {
   "title": "Guard Alert",
   "audio": {
-    "waveform": "sawtooth",
-    "frequency": 280,
-    "duration": 0.25,
-    "volume": 0.2,
-    "pitchEnvelope": {
-      "start": 0.8,
-      "end": 1.2,
-      "time": 0.15
-    },
-    "envelope": {
-      "attack": 0.01,
-      "decay": 0.08,
-      "sustain": 0.4,
-      "release": 0.12
-    },
+    "duration": 0.3,
+    "volume": 0.65,
+    "layers": [
+      {
+        "source": "sawtooth",
+        "frequency": 320,
+        "volume": 1.0,
+        "envelope": { "attack": 0.01, "decay": 0.1, "sustain": 0.5, "release": 0.15 },
+        "pitchEnvelope": { "start": 0.7, "end": 1.3, "time": 0.2 }
+      }
+    ],
     "effects": {
-      "filter": {
-        "type": "bandpass",
-        "frequency": 600,
-        "Q": 2
-      },
-      "distortion": 0.3
+      "filter": { "type": "lowpass", "frequency": 2000, "Q": 1 },
+      "distortion": 0.4
     }
   }
 }

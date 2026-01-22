@@ -303,9 +303,113 @@ async function runSimulation(game, simConfig) {
     let escapeTriggered = false;
     let pickupTick = null;
 
+    // Player movement state for playerMovesRandomly
+    let playerMoveDirection = { x: 1, z: 0 };
+    let playerMoveTimer = 0;
+    const playerMoveSpeed = setup.playerMoveSpeed || 80; // units per second (slower than guard so they can catch up)
+    const playerDirectionChangeInterval = setup.playerDirectionChangeInterval || 45; // ticks between direction changes
+
+    // Guard oscillation detection
+    const guardPositionHistory = [];
+    const oscillationWindowSize = 30; // Check last 30 ticks
+    let oscillationDetected = false;
+
     // Run simulation
     for (let tick = 0; tick < maxTicks; tick++) {
+        // Move player randomly if configured
+        if (setup.playerMovesRandomly && playerId) {
+            const playerTransform = game.getComponent(playerId, 'transform');
+            const playerHealth = game.getComponent(playerId, 'health');
+
+            // Only move if player is alive
+            if (playerHealth && playerHealth.current > 0) {
+                // Change direction periodically
+                playerMoveTimer++;
+                if (playerMoveTimer >= playerDirectionChangeInterval) {
+                    playerMoveTimer = 0;
+                    // Random direction change
+                    const angle = Math.random() * Math.PI * 2;
+                    playerMoveDirection.x = Math.cos(angle);
+                    playerMoveDirection.z = Math.sin(angle);
+                }
+
+                // Move player
+                const dt = 1/60;
+                const newX = playerTransform.position.x + playerMoveDirection.x * playerMoveSpeed * dt;
+                const newZ = playerTransform.position.z + playerMoveDirection.z * playerMoveSpeed * dt;
+
+                // Keep player within bounds (-400 to 400)
+                const bounds = 350;
+                if (newX < -bounds || newX > bounds) {
+                    playerMoveDirection.x *= -1;
+                } else {
+                    playerTransform.position.x = newX;
+                }
+                if (newZ < -bounds || newZ > bounds) {
+                    playerMoveDirection.z *= -1;
+                } else {
+                    playerTransform.position.z = newZ;
+                }
+
+                // Log position occasionally
+                if (tick % 60 === 0 && tick > 0) {
+                    const guardPos = guardId ? game.getComponent(guardId, 'transform')?.position : null;
+                    const dx = guardPos ? playerTransform.position.x - guardPos.x : 0;
+                    const dz = guardPos ? playerTransform.position.z - guardPos.z : 0;
+                    const dist = Math.sqrt(dx * dx + dz * dz);
+                    console.log(`[Headless] Player at (${playerTransform.position.x.toFixed(0)}, ${playerTransform.position.z.toFixed(0)}), dist to guard: ${dist.toFixed(0)}`);
+                }
+            }
+        }
+
         await game.update(1/60);
+
+        // Track guard position for oscillation detection
+        if (guardId && setup.detectOscillation !== false) {
+            const guardTransform = game.getComponent(guardId, 'transform');
+            if (guardTransform?.position) {
+                guardPositionHistory.push({
+                    x: guardTransform.position.x,
+                    z: guardTransform.position.z,
+                    tick: tick
+                });
+
+                // Keep only recent history
+                if (guardPositionHistory.length > oscillationWindowSize) {
+                    guardPositionHistory.shift();
+                }
+
+                // Check for oscillation: if guard moved back and forth multiple times in small area
+                if (guardPositionHistory.length >= oscillationWindowSize) {
+                    let directionChanges = 0;
+                    let lastDx = 0;
+                    let lastDz = 0;
+
+                    for (let i = 1; i < guardPositionHistory.length; i++) {
+                        const dx = guardPositionHistory[i].x - guardPositionHistory[i-1].x;
+                        const dz = guardPositionHistory[i].z - guardPositionHistory[i-1].z;
+
+                        // Check if direction reversed (sign change)
+                        if ((lastDx > 0.5 && dx < -0.5) || (lastDx < -0.5 && dx > 0.5)) {
+                            directionChanges++;
+                        }
+                        if ((lastDz > 0.5 && dz < -0.5) || (lastDz < -0.5 && dz > 0.5)) {
+                            directionChanges++;
+                        }
+
+                        lastDx = dx;
+                        lastDz = dz;
+                    }
+
+                    // If more than 6 direction changes in 30 ticks, that's oscillation
+                    if (directionChanges > 6 && !oscillationDetected) {
+                        oscillationDetected = true;
+                        outcomes.guardOscillated = true;
+                        console.log(`[Headless] WARNING: Guard oscillation detected at tick ${tick} (${directionChanges} direction changes)`);
+                    }
+                }
+            }
+        }
 
         // Check: player died
         if (expected.playerDied !== undefined && playerId) {

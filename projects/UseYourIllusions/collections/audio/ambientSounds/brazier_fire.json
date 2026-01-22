@@ -2,19 +2,46 @@
   "title": "Brazier Fire",
   "description": "Crackling fire ambient sound for braziers",
   "audio": {
-    "type": "fire",
-    "fire": {
-      "rumbleFreq": 120,
-      "rumbleVolume": 0.25,
-      "crackleFreq": 1000,
-      "crackleVolume": 0.18,
-      "hissFreq": 2500,
-      "hissVolume": 0.04,
-      "crackleMinInterval": 40,
-      "crackleMaxInterval": 180,
-      "crackleChance": 0.85,
-      "popVolume": 0.55
-    }
+    "layers": [
+      {
+        "source": "brown",
+        "volume": 0.25,
+        "filter": { "type": "lowpass", "frequency": 120, "Q": 0.5 }
+      },
+      {
+        "source": "pink",
+        "volume": 0.18,
+        "filter": { "type": "bandpass", "frequency": 1000, "Q": 1.5 }
+      },
+      {
+        "source": "white",
+        "volume": 0.04,
+        "filter": { "type": "highpass", "frequency": 2500, "Q": 0.3 }
+      }
+    ],
+    "events": [
+      {
+        "minInterval": 40,
+        "maxInterval": 180,
+        "chance": 0.85,
+        "sound": {
+          "duration": 0.05,
+          "volume": 0.55,
+          "layers": [
+            {
+              "source": "white",
+              "volume": 1.0,
+              "envelope": { "attack": 0.001, "decay": 0.015, "sustain": 0.0, "release": 0.03 },
+              "filter": { "type": "bandpass", "frequency": 1800, "Q": 1.2 }
+            }
+          ],
+          "randomize": {
+            "filterFrequency": { "min": 800, "max": 2800 },
+            "volume": { "min": 0.3, "max": 1.0 }
+          }
+        }
+      }
+    ]
   },
   "ambient": {
     "loop": true,

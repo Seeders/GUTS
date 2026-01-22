@@ -39,58 +39,41 @@
     </div>
 </div>
 
-<!-- Settings Screen -->
-<div id="settingsScreen" class="screen">
-    <div class="settings-wrapper">
-        <div class="settings-header">
-            <button id="settings_BackBtn" class="btn btn-back">← Back</button>
-            <h1 class="settings-title">Settings</h1>
-            <div class="header-spacer"></div>
-        </div>
+<!-- Settings Overlay (shared with game scene) -->
+<div id="settingsOverlay" class="pause-overlay">
+    <div class="pause-content settings-content-panel">
+        <h2>SETTINGS</h2>
 
-        <div class="settings-content">
-            <div class="settings-section">
-                <h3>Audio</h3>
-                <div class="setting-row">
-                    <label>Master Volume</label>
-                    <input type="range" id="masterVolume" min="0" max="100" value="80">
-                    <span id="masterVolumeValue">80%</span>
-                </div>
-                <div class="setting-row">
-                    <label>Music Volume</label>
-                    <input type="range" id="musicVolume" min="0" max="100" value="70">
-                    <span id="musicVolumeValue">70%</span>
-                </div>
-                <div class="setting-row">
-                    <label>Sound Effects</label>
-                    <input type="range" id="sfxVolume" min="0" max="100" value="80">
-                    <span id="sfxVolumeValue">80%</span>
-                </div>
+        <div class="volume-settings">
+            <div class="volume-row">
+                <label for="masterVolumeSlider">Master</label>
+                <input type="range" id="masterVolumeSlider" class="volume-slider" min="0" max="100" value="100">
+                <span class="volume-value" id="masterVolumeValue">100%</span>
             </div>
-
-            <div class="settings-section">
-                <h3>Display</h3>
-                <div class="setting-row">
-                    <label>Show FPS</label>
-                    <input type="checkbox" id="showFps">
-                </div>
-                <div class="setting-row">
-                    <label>Camera Shake</label>
-                    <input type="checkbox" id="cameraShake" checked>
-                </div>
+            <div class="volume-row">
+                <label for="musicVolumeSlider">Music</label>
+                <input type="range" id="musicVolumeSlider" class="volume-slider" min="0" max="100" value="100">
+                <span class="volume-value" id="musicVolumeValue">100%</span>
             </div>
-
-            <div class="settings-section">
-                <h3>Controls</h3>
-                <div class="controls-info">
-                    <div class="control-row"><span class="key">W A S D</span><span>Move character</span></div>
-                    <div class="control-row"><span class="key">E</span><span>Collect nearby object</span></div>
-                    <div class="control-row"><span class="key">1 2 3</span><span>Select belt slot</span></div>
-                    <div class="control-row"><span class="key">Right Click</span><span>Place illusion</span></div>
-                    <div class="control-row"><span class="key">ESC</span><span>Pause menu</span></div>
-                </div>
+            <div class="volume-row">
+                <label for="sfxVolumeSlider">SFX</label>
+                <input type="range" id="sfxVolumeSlider" class="volume-slider" min="0" max="100" value="100">
+                <span class="volume-value" id="sfxVolumeValue">100%</span>
             </div>
         </div>
+
+        <div class="controls-section">
+            <h3>Controls</h3>
+            <div class="controls-info">
+                <div class="control-row"><span class="key">W A S D</span><span>Move</span></div>
+                <div class="control-row"><span class="key">E</span><span>Collect</span></div>
+                <div class="control-row"><span class="key">1 2 3</span><span>Select slot</span></div>
+                <div class="control-row"><span class="key">Right Click</span><span>Place illusion</span></div>
+                <div class="control-row"><span class="key">ESC</span><span>Pause / Back</span></div>
+            </div>
+        </div>
+
+        <button id="settingsBackBtn" class="btn btn-primary">Back</button>
     </div>
 </div>
 

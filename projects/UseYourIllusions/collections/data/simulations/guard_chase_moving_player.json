@@ -1,0 +1,19 @@
+{
+  "name": "Guard Chase Moving Player",
+  "description": "Tests guard chasing a player who keeps moving around - guard should follow and attack without spazzing/oscillating",
+  "seed": 12345,
+  "level": "test_arena",
+  "maxTicks": 900,
+  "testType": "puzzle",
+  "setup": {
+    "removeDesirables": true,
+    "guardNearPlayer": true,
+    "playerMovesRandomly": true,
+    "playerMoveSpeed": 70,
+    "playerDirectionChangeInterval": 60
+  },
+  "expectedOutcome": {
+    "playerDied": true,
+    "guardOscillated": false
+  }
+}

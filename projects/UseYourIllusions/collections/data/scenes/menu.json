@@ -2,11 +2,13 @@
   "title": "Menu Scene",
   "description": "Main menu and level selection for Use Your Illusions",
   "interface": "main",
+  "backgroundMusicSound": "tiptoe_song",
   "systems": [
     "PauseSystem",
     "GameSystem",
     "ScreenSystem",
     "InputSystem",
+    "AudioSystem",
     "PuzzleLobbyUISystem"
   ]
 }

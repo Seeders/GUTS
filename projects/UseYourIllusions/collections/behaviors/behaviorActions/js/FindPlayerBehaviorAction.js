@@ -33,7 +33,17 @@ class FindPlayerBehaviorAction extends GUTS.BaseBehaviorAction {
         let closestTarget = null;
         let closestDistance = Infinity;
 
+        const enums = game.getEnums();
+
         for (const targetId of targetEntities) {
+            // Skip dead targets (no health, health <= 0, or dying/corpse state)
+            const targetHealth = game.getComponent(targetId, 'health');
+            const targetDeathState = game.getComponent(targetId, 'deathState');
+            const isDead = !targetHealth ||
+                           targetHealth.current <= 0 ||
+                           (targetDeathState && targetDeathState.state !== enums.deathState?.alive);
+            if (isDead) continue;
+
             const targetTransform = game.getComponent(targetId, 'transform');
             const targetPos = targetTransform?.position;
             if (!targetPos) continue;
@@ -67,7 +77,7 @@ class FindPlayerBehaviorAction extends GUTS.BaseBehaviorAction {
             shared.playerTargetDistance = closestDistance;
 
             // Play alert sound when guard first spots player
-            if (!wasAlerted && game.audioManager) {
+            if (!wasAlerted && game.hasService('playSynthSound')) {
                 const soundConfig = game.getCollections()?.sounds?.guard_alert?.audio;
                 if (soundConfig) {
                     // Calculate distance-based volume
@@ -86,7 +96,7 @@ class FindPlayerBehaviorAction extends GUTS.BaseBehaviorAction {
                         }
                     }
                     if (volume > 0) {
-                        game.audioManager.playSynthSound(`guard_alert_${entityId}`, soundConfig, { volume });
+                        game.call('playSynthSound', `guard_alert_${entityId}`, soundConfig, { volume });
                     }
                 }
             }

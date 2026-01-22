@@ -320,6 +320,9 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         if (playerController.activeCloneId && this.game.hasEntity(playerController.activeCloneId)) {
             playerController.controllingClone = !playerController.controllingClone;
 
+            // Play clone swap sound
+            this.game.call('playSound', 'sounds', 'clone_swap');
+
             // Play effect at the entity we're switching to
             const targetEntity = playerController.controllingClone
                 ? playerController.activeCloneId
@@ -358,6 +361,9 @@ class PlayerControlSystem extends GUTS.BaseSystem {
                 { count: 25, scaleMultiplier: 1.0 }
             );
         }
+
+        // Play clone disappear sound
+        this.game.call('playSound', 'sounds', 'clone_disappear');
 
         // Destroy the clone entity
         this.game.destroyEntity(cloneId);
@@ -554,36 +560,33 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         const soundName = this._footstepSide === 0 ? 'footstep_left' : 'footstep_right';
 
         // Get sound config and apply random variations
-        const audioManager = this.game.audioManager;
-        if (audioManager) {
-            const soundConfig = this.game.getCollections()?.sounds?.[soundName]?.audio;
-            if (soundConfig) {
-                // Clone config and apply random variations
-                const config = JSON.parse(JSON.stringify(soundConfig));
+        const soundConfig = this.game.getCollections()?.sounds?.[soundName]?.audio;
+        if (soundConfig) {
+            // Clone config and apply random variations
+            const config = JSON.parse(JSON.stringify(soundConfig));
 
-                // Random pitch variation (0.85 to 1.15)
-                const pitchVariation = 0.85 + Math.random() * 0.3;
-                config.frequency = (config.frequency || 200) * pitchVariation;
+            // Random pitch variation (0.85 to 1.15)
+            const pitchVariation = 0.85 + Math.random() * 0.3;
+            config.frequency = (config.frequency || 200) * pitchVariation;
 
-                // Apply distance-based volume attenuation
-                const baseVolume = (config.volume || 0.2) * (0.8 + Math.random() * 0.2);
-                config.volume = baseVolume * distanceVolume;
+            // Apply distance-based volume attenuation
+            const baseVolume = (config.volume || 0.2) * (0.8 + Math.random() * 0.2);
+            config.volume = baseVolume * distanceVolume;
 
-                // Slight random filter cutoff variation
-                if (config.effects?.filter) {
-                    config.effects.filter.frequency *= (0.9 + Math.random() * 0.2);
-                }
-
-                // Slight random pan variation
-                if (config.effects) {
-                    const basePan = config.effects.pan || 0;
-                    config.effects.pan = basePan + (Math.random() - 0.5) * 0.15;
-                }
-
-                // Pass volume as options parameter - config.volume isn't used by AudioManager
-                const finalVolume = config.volume;
-                audioManager.playSynthSound(`footstep_${Date.now()}`, config, { volume: finalVolume });
+            // Slight random filter cutoff variation
+            if (config.effects?.filter) {
+                config.effects.filter.frequency *= (0.9 + Math.random() * 0.2);
             }
+
+            // Slight random pan variation
+            if (config.effects) {
+                const basePan = config.effects.pan || 0;
+                config.effects.pan = basePan + (Math.random() - 0.5) * 0.15;
+            }
+
+            // Pass volume as options parameter - config.volume isn't used by AudioManager
+            const finalVolume = config.volume;
+            this.game.call('playSynthSound', `footstep_${Date.now()}`, config, { volume: finalVolume });
         }
 
         // Update state

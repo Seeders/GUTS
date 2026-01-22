@@ -358,6 +358,120 @@ body {
     gap: 15px;
 }
 
+/* Volume Settings */
+.volume-settings {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+}
+
+.volume-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.volume-row:last-child {
+    margin-bottom: 0;
+}
+
+.volume-row label {
+    width: 70px;
+    text-align: left;
+    color: #a78bfa;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.volume-slider {
+    flex: 1;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #8b5cf6;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.1s;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+    background: #a78bfa;
+    transform: scale(1.1);
+}
+
+.volume-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: #8b5cf6;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.volume-value {
+    width: 50px;
+    text-align: right;
+    color: #e2e8f0;
+    font-size: 14px;
+    font-family: monospace;
+}
+
+/* Settings Panel */
+.settings-content-panel {
+    max-width: 400px;
+}
+
+.controls-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+}
+
+.controls-section h3 {
+    margin: 0 0 12px 0;
+    color: #a78bfa;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.controls-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.controls-info .control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.controls-info .key {
+    background: rgba(167, 139, 250, 0.2);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    color: #a78bfa;
+    font-size: 11px;
+}
+
 /* Victory Screen */
 .victory-overlay {
     display: none;

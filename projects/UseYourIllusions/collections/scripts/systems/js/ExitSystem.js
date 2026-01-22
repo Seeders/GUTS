@@ -101,6 +101,9 @@ class ExitSystem extends GUTS.BaseSystem {
             );
         }
 
+        // Play victory sound
+        this.game.call('playSound', 'sounds', 'victory');
+
         console.log('[ExitSystem] Level complete!');
 
         // Trigger event for other systems to handle

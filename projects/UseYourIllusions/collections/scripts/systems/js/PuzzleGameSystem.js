@@ -17,11 +17,6 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         'getCurrentLevelId'
     ];
 
-    static eventListeners = {
-        'onPlayerCaught': 'handlePlayerCaught',
-        'onUnitKilled': 'handleUnitKilled'
-    };
-
     constructor(game) {
         super(game);
         this.game.puzzleGameSystem = this;
@@ -33,28 +28,44 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
     init() {
     }
 
-    handlePlayerCaught(data) {
+    // Event handler for when a guard catches the player (triggered by ChasePlayerBehaviorAction)
+    onPlayerCaught(data) {
         if (this.gameOver) return;
-        this.triggerDefeat('Player caught by guard!', data);
+        this.triggerDefeat({
+            title: 'Caught!',
+            message: 'You were spotted by the guards.',
+            icon: '&#128065;', // Eye emoji
+            reason: 'caught'
+        });
     }
 
-    handleUnitKilled(entityId) {
+    // Event handler for when any unit is killed (triggered by DeathSystem)
+    onUnitKilled(entityId) {
         if (this.gameOver) return;
 
         // Check if the killed entity is the player
         if (entityId === this.playerEntityId) {
-            this.triggerDefeat('Player was killed!', { playerId: entityId });
+            this.triggerDefeat({
+                title: 'Game Over',
+                message: 'You have been slain.',
+                icon: '&#128128;', // Skull emoji
+                reason: 'killed'
+            });
         }
     }
 
-    triggerDefeat(message, data) {
+    triggerDefeat(defeatInfo) {
         this.gameOver = true;
 
-        console.log(`[PuzzleGameSystem] ${message}`, data);
+        console.log(`[PuzzleGameSystem] triggerDefeat called at ${this.game.state.now}`, defeatInfo);
+        console.log(`[PuzzleGameSystem] isPaused before: ${this.game.state.isPaused}`);
 
-        // Show defeat screen
+        // Play game over sound
+        this.game.call('playSound', 'sounds', 'game_over');
+
+        // Show defeat screen with appropriate message
         if (this.game.hasService('showDefeatScreen')) {
-            this.game.call('showDefeatScreen');
+            this.game.call('showDefeatScreen', defeatInfo);
         } else {
             const defeatScreen = document.getElementById('defeatScreen');
             if (defeatScreen) {
@@ -113,8 +124,8 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         // when world objects have exit: true in their type data
 
         // Start background music if level has songSound defined
-        if (levelData.songSound && this.game.audioManager) {
-            this.game.audioManager.playMusic(levelData.songSound, {
+        if (levelData.songSound) {
+            this.game.call('playMusic', levelData.songSound, {
                 volume: 0.4,
                 loop: true,
                 fadeInTime: 2
@@ -300,8 +311,6 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         this.gameOver = false;
 
         // Stop background music when leaving level
-        if (this.game.audioManager) {
-            this.game.audioManager.stopMusic(1);
-        }
+        this.game.call('stopMusic', 1);
     }
 }

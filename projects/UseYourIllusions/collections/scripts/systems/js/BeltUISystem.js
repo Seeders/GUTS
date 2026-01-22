@@ -1,5 +1,5 @@
 /**
- * BeltUISystem - Displays the magic belt UI, clone ability indicator, and handles slot selection
+ * BeltUISystem - Unified ability bar with Q (Clone), E (Collect), and 1-2-3 (Belt Slots)
  */
 class BeltUISystem extends GUTS.BaseSystem {
     static services = [
@@ -19,78 +19,85 @@ class BeltUISystem extends GUTS.BaseSystem {
     onSceneLoad(sceneData) {
         const sceneName = this.game.sceneManager.currentSceneName;
         if (sceneName === 'game') {
-            this.setupBeltUI();
-            this.setupCloneAbilityUI();
+            this.setupAbilityBar();
         }
     }
 
-    setupBeltUI() {
-        let beltContainer = document.getElementById('magicBeltUI');
-        if (!beltContainer) {
-            beltContainer = document.createElement('div');
-            beltContainer.id = 'magicBeltUI';
-            beltContainer.className = 'magic-belt-container';
-            beltContainer.innerHTML = `
-                <div class="belt-title">Magic Belt</div>
-                <div class="belt-slots">
-                    <div class="belt-slot" id="beltSlot0" data-slot="0">
-                        <div class="slot-content"></div>
-                        <div class="slot-key">1</div>
+    setupAbilityBar() {
+        let abilityBar = document.getElementById('abilityBarUI');
+        if (!abilityBar) {
+            abilityBar = document.createElement('div');
+            abilityBar.id = 'abilityBarUI';
+            abilityBar.className = 'ability-bar-container';
+            abilityBar.innerHTML = `
+                <div class="ability-bar">
+                    <!-- Q - Clone Ability -->
+                    <div class="ability-slot ability-action" id="cloneAbilitySlot">
+                        <div class="ability-icon">👤</div>
+                        <div class="ability-key">Q</div>
+                        <div class="ability-label">Clone</div>
+                        <div class="ability-timer" id="cloneTimer"></div>
+                        <div class="ability-progress-bar" id="cloneProgressBar"></div>
                     </div>
-                    <div class="belt-slot" id="beltSlot1" data-slot="1">
-                        <div class="slot-content"></div>
-                        <div class="slot-key">2</div>
+                    <!-- E - Collect Ability -->
+                    <div class="ability-slot ability-action" id="collectAbilitySlot">
+                        <div class="ability-icon">✋</div>
+                        <div class="ability-key">E</div>
+                        <div class="ability-label">Collect</div>
                     </div>
-                    <div class="belt-slot" id="beltSlot2" data-slot="2">
+                    <!-- Separator -->
+                    <div class="ability-separator"></div>
+                    <!-- Belt Slots 1-2-3 -->
+                    <div class="ability-slot belt-slot" id="beltSlot0" data-slot="0">
                         <div class="slot-content"></div>
-                        <div class="slot-key">3</div>
+                        <div class="ability-key">1</div>
+                    </div>
+                    <div class="ability-slot belt-slot" id="beltSlot1" data-slot="1">
+                        <div class="slot-content"></div>
+                        <div class="ability-key">2</div>
+                    </div>
+                    <div class="ability-slot belt-slot" id="beltSlot2" data-slot="2">
+                        <div class="slot-content"></div>
+                        <div class="ability-key">3</div>
                     </div>
                 </div>
-                <div class="belt-hint">Press 1-3 to select, Right-click to place</div>
+                <div class="ability-bar-hint">Right-click to place illusion</div>
             `;
 
             const gameContainer = document.getElementById('gameScreen') || document.body;
-            gameContainer.appendChild(beltContainer);
+            gameContainer.appendChild(abilityBar);
         }
 
-        this.addBeltCSS();
+        this.addAbilityBarCSS();
         this.setupSlotClickHandlers();
+        this.startCloneTimerUpdate();
     }
 
-    addBeltCSS() {
-        if (document.getElementById('belt-ui-styles')) return;
+    addAbilityBarCSS() {
+        if (document.getElementById('ability-bar-styles')) return;
 
         const style = document.createElement('style');
-        style.id = 'belt-ui-styles';
+        style.id = 'ability-bar-styles';
         style.textContent = `
-            .magic-belt-container {
+            .ability-bar-container {
                 position: fixed;
                 bottom: 20px;
                 left: 50%;
                 transform: translateX(-50%);
+                z-index: 1000;
+            }
+
+            .ability-bar {
+                display: flex;
+                gap: 8px;
                 background: linear-gradient(145deg, rgba(30, 30, 50, 0.95), rgba(20, 20, 40, 0.95));
                 border: 2px solid #8b5cf6;
                 border-radius: 10px;
-                padding: 10px 15px;
-                z-index: 1000;
+                padding: 10px 12px;
                 box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             }
 
-            .belt-title {
-                color: #8b5cf6;
-                font-size: 12px;
-                text-align: center;
-                margin-bottom: 8px;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
-            .belt-slots {
-                display: flex;
-                gap: 10px;
-            }
-
-            .belt-slot {
+            .ability-slot {
                 width: 60px;
                 height: 60px;
                 background: rgba(0, 0, 0, 0.4);
@@ -99,11 +106,112 @@ class BeltUISystem extends GUTS.BaseSystem {
                 position: relative;
                 cursor: pointer;
                 transition: all 0.2s ease;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
             }
 
-            .belt-slot:hover {
+            .ability-slot:hover {
                 border-color: #8b5cf6;
                 transform: scale(1.05);
+            }
+
+            /* Action abilities (Q, E) styling */
+            .ability-action {
+                border-color: #4080ff;
+            }
+
+            .ability-action:hover {
+                border-color: #60a0ff;
+            }
+
+            .ability-icon {
+                font-size: 22px;
+                margin-bottom: 2px;
+            }
+
+            .ability-key {
+                position: absolute;
+                top: 3px;
+                right: 5px;
+                font-size: 10px;
+                color: #666;
+                font-weight: bold;
+            }
+
+            .ability-label {
+                font-size: 9px;
+                color: #4080ff;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .ability-timer {
+                font-size: 11px;
+                color: #fff;
+                font-weight: bold;
+                position: absolute;
+                bottom: 6px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .ability-progress-bar {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 3px;
+                background: #00ffff;
+                border-radius: 0 0 6px 6px;
+                transition: width 0.1s linear;
+            }
+
+            /* Clone ability states */
+            #cloneAbilitySlot.active {
+                border-color: #00ffff;
+                box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+                background: linear-gradient(145deg, rgba(64, 128, 255, 0.3), rgba(0, 0, 0, 0.4));
+            }
+
+            #cloneAbilitySlot.active .ability-label {
+                color: #00ffff;
+            }
+
+            #cloneAbilitySlot.controlling-clone {
+                border-color: #ff8040;
+                box-shadow: 0 0 15px rgba(255, 128, 64, 0.4);
+            }
+
+            #cloneAbilitySlot.controlling-clone .ability-label {
+                color: #ff8040;
+            }
+
+            #cloneAbilitySlot.controlling-clone .ability-progress-bar {
+                background: #ff8040;
+            }
+
+            /* Collect ability - highlight when near collectible */
+            #collectAbilitySlot.can-collect {
+                border-color: #00ff80;
+                box-shadow: 0 0 15px rgba(0, 255, 128, 0.4);
+            }
+
+            #collectAbilitySlot.can-collect .ability-label {
+                color: #00ff80;
+            }
+
+            /* Separator between actions and belt */
+            .ability-separator {
+                width: 2px;
+                background: #333;
+                margin: 5px 4px;
+                border-radius: 1px;
+            }
+
+            /* Belt slot styling */
+            .belt-slot {
+                border-color: #8b5cf6;
             }
 
             .belt-slot.selected {
@@ -124,30 +232,34 @@ class BeltUISystem extends GUTS.BaseSystem {
                 font-size: 24px;
             }
 
-            .slot-key {
-                position: absolute;
-                bottom: 2px;
-                right: 4px;
-                font-size: 10px;
-                color: #666;
-                font-weight: bold;
+            .slot-item-icon {
+                font-size: 26px;
             }
 
-            .belt-hint {
+            .slot-sprite-icon {
+                image-rendering: pixelated;
+                transform: scale(1.4);
+            }
+
+            .slot-item-img {
+                max-width: 48px;
+                max-height: 48px;
+                image-rendering: pixelated;
+                object-fit: contain;
+            }
+
+            .ability-bar-hint {
                 color: #666;
                 font-size: 10px;
                 text-align: center;
-                margin-top: 8px;
-            }
-
-            .slot-item-icon {
-                font-size: 28px;
+                margin-top: 6px;
             }
         `;
         document.head.appendChild(style);
     }
 
     setupSlotClickHandlers() {
+        // Belt slots
         for (let i = 0; i < 3; i++) {
             const slot = document.getElementById(`beltSlot${i}`);
             if (slot && !slot._clickHandlerAttached) {
@@ -156,6 +268,32 @@ class BeltUISystem extends GUTS.BaseSystem {
                     this.selectSlot(i);
                 });
             }
+        }
+
+        // Clone ability slot
+        const cloneSlot = document.getElementById('cloneAbilitySlot');
+        if (cloneSlot && !cloneSlot._clickHandlerAttached) {
+            cloneSlot._clickHandlerAttached = true;
+            cloneSlot.addEventListener('click', () => {
+                // Trigger Q key action
+                const playerEntity = this.game.call('getPlayerEntity');
+                if (playerEntity) {
+                    this.game.call('triggerCloneAbility', playerEntity);
+                }
+            });
+        }
+
+        // Collect ability slot
+        const collectSlot = document.getElementById('collectAbilitySlot');
+        if (collectSlot && !collectSlot._clickHandlerAttached) {
+            collectSlot._clickHandlerAttached = true;
+            collectSlot.addEventListener('click', () => {
+                // Trigger E key action
+                const playerEntity = this.game.call('getPlayerEntity');
+                if (playerEntity) {
+                    this.game.call('triggerCollectAbility', playerEntity);
+                }
+            });
         }
     }
 
@@ -193,6 +331,7 @@ class BeltUISystem extends GUTS.BaseSystem {
         if (!belt) return;
 
         const reverseEnums = this.game.getReverseEnums();
+        const collections = this.game.getCollections();
 
         for (let i = 0; i < 3; i++) {
             const slotKey = `slot${i}`;
@@ -207,7 +346,8 @@ class BeltUISystem extends GUTS.BaseSystem {
             if (itemTypeIndex !== null) {
                 // Convert index to string name for icon lookup
                 const itemType = reverseEnums.worldObjects?.[itemTypeIndex];
-                contentEl.innerHTML = `<span class="slot-item-icon">${this.getItemIcon(itemType)}</span>`;
+                const iconHtml = this.getItemIconHtml(itemType, collections);
+                contentEl.innerHTML = iconHtml;
                 slotEl.classList.add('filled');
             } else {
                 contentEl.innerHTML = '';
@@ -222,132 +362,63 @@ class BeltUISystem extends GUTS.BaseSystem {
         this.updateBeltUI();
     }
 
-    getItemIcon(itemType) {
-        const icons = {
+    /**
+     * Get HTML for item icon - uses sprite sheet or render texture
+     */
+    getItemIconHtml(itemType, collections) {
+        const worldObjectDef = collections.worldObjects?.[itemType];
+        if (!worldObjectDef) {
+            return `<span class="slot-item-icon">❓</span>`;
+        }
+
+        const resourcesPath = this.game.resourceBaseUrl || './resources/';
+
+        // Check for spriteAnimationSet first (has sprite sheet with frames)
+        if (worldObjectDef.spriteAnimationSet) {
+            const spriteSetName = worldObjectDef.spriteAnimationSet;
+            const spriteSet = collections.spriteAnimationSets?.[spriteSetName];
+
+            if (spriteSet?.spriteSheet && spriteSet.frames) {
+                // Try to get idleDownGround_0 first (ground-level view), fallback to idleDown_0
+                const frame = spriteSet.frames.idleDownGround_0 || spriteSet.frames.idleDown_0;
+                if (frame) {
+                    const sheetUrl = resourcesPath + spriteSet.spriteSheet;
+                    return this.createSpriteIconHtml(sheetUrl, frame);
+                }
+            }
+        }
+
+        // Fallback to renderTexture
+        if (worldObjectDef.renderTexture) {
+            const textureName = worldObjectDef.renderTexture;
+            const textureDef = collections.textures?.[textureName];
+
+            if (textureDef?.imagePath) {
+                const textureUrl = resourcesPath + textureDef.imagePath;
+                return `<img class="slot-item-img" src="${textureUrl}" alt="${itemType}">`;
+            }
+        }
+
+        // Final fallback to emoji
+        const fallbackIcons = {
             'barrel': '🛢️',
             'crate': '📦',
             'present': '🎁'
         };
-        return icons[itemType] || '❓';
+        return `<span class="slot-item-icon">${fallbackIcons[itemType] || '❓'}</span>`;
     }
 
-    setupCloneAbilityUI() {
-        let cloneContainer = document.getElementById('cloneAbilityUI');
-        if (!cloneContainer) {
-            cloneContainer = document.createElement('div');
-            cloneContainer.id = 'cloneAbilityUI';
-            cloneContainer.className = 'clone-ability-container';
-            cloneContainer.innerHTML = `
-                <div class="clone-ability-box" id="cloneAbilityBox">
-                    <div class="clone-icon">👤</div>
-                    <div class="clone-key">Q</div>
-                    <div class="clone-label">Clone</div>
-                    <div class="clone-timer" id="cloneTimer"></div>
-                    <div class="clone-progress-bar" id="cloneProgressBar"></div>
-                </div>
-            `;
-
-            const gameContainer = document.getElementById('gameScreen') || document.body;
-            gameContainer.appendChild(cloneContainer);
-        }
-
-        this.addCloneAbilityCSS();
-        this.startCloneTimerUpdate();
-    }
-
-    addCloneAbilityCSS() {
-        if (document.getElementById('clone-ability-styles')) return;
-
-        const style = document.createElement('style');
-        style.id = 'clone-ability-styles';
-        style.textContent = `
-            .clone-ability-container {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                z-index: 1000;
-            }
-
-            .clone-ability-box {
-                width: 70px;
-                height: 70px;
-                background: linear-gradient(145deg, rgba(30, 30, 50, 0.95), rgba(20, 20, 40, 0.95));
-                border: 2px solid #4080ff;
-                border-radius: 10px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                position: relative;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-                transition: all 0.2s ease;
-            }
-
-            .clone-ability-box.active {
-                border-color: #00ffff;
-                box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-                background: linear-gradient(145deg, rgba(64, 128, 255, 0.3), rgba(20, 20, 40, 0.95));
-            }
-
-            .clone-ability-box.controlling-clone {
-                border-color: #ff8040;
-                box-shadow: 0 0 20px rgba(255, 128, 64, 0.5);
-            }
-
-            .clone-icon {
-                font-size: 24px;
-                margin-bottom: 2px;
-            }
-
-            .clone-key {
-                position: absolute;
-                top: 4px;
-                right: 6px;
-                font-size: 10px;
-                color: #666;
-                font-weight: bold;
-            }
-
-            .clone-label {
-                font-size: 10px;
-                color: #4080ff;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
-            .clone-ability-box.active .clone-label {
-                color: #00ffff;
-            }
-
-            .clone-ability-box.controlling-clone .clone-label {
-                color: #ff8040;
-            }
-
-            .clone-timer {
-                font-size: 12px;
-                color: #fff;
-                font-weight: bold;
-                position: absolute;
-                bottom: 4px;
-                left: 50%;
-                transform: translateX(-50%);
-            }
-
-            .clone-progress-bar {
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                height: 3px;
-                background: #00ffff;
-                border-radius: 0 0 8px 8px;
-                transition: width 0.1s linear;
-            }
-
-            .clone-ability-box.controlling-clone .clone-progress-bar {
-                background: #ff8040;
-            }
-        `;
-        document.head.appendChild(style);
+    /**
+     * Create HTML for a sprite icon using CSS background-position
+     */
+    createSpriteIconHtml(sheetUrl, frame) {
+        // Use CSS to show just the specific frame from the sprite sheet
+        return `<div class="slot-sprite-icon" style="
+            background-image: url('${sheetUrl}');
+            background-position: -${frame.x}px -${frame.y}px;
+            width: ${frame.w}px;
+            height: ${frame.h}px;
+        "></div>`;
     }
 
     startCloneTimerUpdate() {
@@ -367,24 +438,24 @@ class BeltUISystem extends GUTS.BaseSystem {
         const playerController = this.game.getComponent(playerEntity, 'playerController');
         if (!playerController) return;
 
-        const cloneBox = document.getElementById('cloneAbilityBox');
+        const cloneSlot = document.getElementById('cloneAbilitySlot');
         const cloneTimer = document.getElementById('cloneTimer');
         const cloneProgressBar = document.getElementById('cloneProgressBar');
 
-        if (!cloneBox) return;
+        if (!cloneSlot) return;
 
         const hasClone = playerController.activeCloneId && this.game.hasEntity(playerController.activeCloneId);
         const controllingClone = playerController.controllingClone;
 
-        cloneBox.classList.toggle('active', hasClone);
-        cloneBox.classList.toggle('controlling-clone', hasClone && controllingClone);
+        cloneSlot.classList.toggle('active', hasClone);
+        cloneSlot.classList.toggle('controlling-clone', hasClone && controllingClone);
 
         if (hasClone) {
             const playerClone = this.game.getComponent(playerController.activeCloneId, 'playerClone');
             if (playerClone) {
                 const now = this.game.state.now || 0;
                 const remaining = Math.max(0, playerClone.expiresAt - now);
-                const duration = playerClone.duration || 10;
+                const duration = playerClone.duration || 20;
                 const progress = (remaining / duration) * 100;
 
                 cloneTimer.textContent = remaining.toFixed(1) + 's';
@@ -397,24 +468,14 @@ class BeltUISystem extends GUTS.BaseSystem {
     }
 
     onSceneUnload() {
-        const beltContainer = document.getElementById('magicBeltUI');
-        if (beltContainer) {
-            beltContainer.remove();
+        const abilityBar = document.getElementById('abilityBarUI');
+        if (abilityBar) {
+            abilityBar.remove();
         }
 
-        const beltStyles = document.getElementById('belt-ui-styles');
-        if (beltStyles) {
-            beltStyles.remove();
-        }
-
-        const cloneContainer = document.getElementById('cloneAbilityUI');
-        if (cloneContainer) {
-            cloneContainer.remove();
-        }
-
-        const cloneStyles = document.getElementById('clone-ability-styles');
-        if (cloneStyles) {
-            cloneStyles.remove();
+        const styles = document.getElementById('ability-bar-styles');
+        if (styles) {
+            styles.remove();
         }
 
         if (this.cloneTimerInterval) {

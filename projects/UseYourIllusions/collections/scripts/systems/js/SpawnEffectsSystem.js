@@ -7,9 +7,7 @@
 class SpawnEffectsSystem extends GUTS.BaseSystem {
     static services = [
         'startSpawnEffect',
-        'stopSpawnEffect',
-        'startAmbientSound',
-        'stopAmbientSound'
+        'stopSpawnEffect'
     ];
 
     constructor(game) {
@@ -21,17 +19,12 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
 
         // Track active ambient sounds: entityId -> { soundName, position }
         this.activeAmbientSounds = new Map();
-
-        // Reference to AudioManager
-        this.audioManager = null;
     }
 
     init() {
     }
 
     onSceneLoad(sceneData) {
-        // Get AudioManager reference
-        this.audioManager = this.game.audioManager;
     }
 
     /**
@@ -39,10 +32,10 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
      */
     update() {
         // Update audio listener position based on camera
-        if (this.audioManager && this.activeAmbientSounds.size > 0) {
+        if (this.activeAmbientSounds.size > 0) {
             const camera = this.game.call('getCamera');
             if (camera?.position) {
-                this.audioManager.setListenerPosition({
+                this.game.call('setListenerPosition', {
                     x: camera.position.x,
                     y: camera.position.y,
                     z: camera.position.z
@@ -135,16 +128,6 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
     startEntityAmbientSound(entityId, entityDef) {
         console.log(`[SpawnEffectsSystem] startEntityAmbientSound called for entity ${entityId}`, entityDef.ambientSound);
 
-        if (!this.audioManager) {
-            this.audioManager = this.game.audioManager;
-            console.log('[SpawnEffectsSystem] Got audioManager:', !!this.audioManager);
-        }
-
-        if (!this.audioManager) {
-            console.warn('[SpawnEffectsSystem] No AudioManager available');
-            return;
-        }
-
         // Don't start duplicate sounds
         if (this.activeAmbientSounds.has(entityId)) return;
 
@@ -162,10 +145,8 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
 
         // Get the sound definition from collections
         console.log(`[SpawnEffectsSystem] Looking for ambient sound: ${ambientConfig.sound}`);
-        const collections = this.game.getCollections?.() || {};
-        console.log('[SpawnEffectsSystem] collections.ambientSounds:', collections.ambientSounds);
 
-        const soundDef = this.audioManager.getAmbientSound(ambientConfig.sound);
+        const soundDef = this.game.call('getAmbientSound', ambientConfig.sound);
         console.log('[SpawnEffectsSystem] Got soundDef:', soundDef);
         if (!soundDef) {
             console.warn(`[SpawnEffectsSystem] Ambient sound not found: ${ambientConfig.sound}`);
@@ -174,7 +155,7 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
 
         // Start the ambient sound
         const ambientId = `entity_${entityId}`;
-        const ambient = this.audioManager.startAmbientSound(ambientId, soundDef, soundPos);
+        const ambient = this.game.call('startAmbientSound', ambientId, soundDef, soundPos);
 
         if (ambient) {
             this.activeAmbientSounds.set(entityId, {
@@ -192,40 +173,8 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
         const soundData = this.activeAmbientSounds.get(entityId);
         if (!soundData) return;
 
-        if (this.audioManager) {
-            this.audioManager.stopAmbientSound(soundData.ambientId);
-        }
+        this.game.call('stopAmbientSound', soundData.ambientId);
         this.activeAmbientSounds.delete(entityId);
-    }
-
-    /**
-     * Service: Start an ambient sound (can be called externally)
-     */
-    startAmbientSound(entityId, soundName, position) {
-        if (!this.audioManager) {
-            this.audioManager = this.game.audioManager;
-        }
-
-        if (!this.audioManager) return;
-
-        const soundDef = this.audioManager.getAmbientSound(soundName);
-        if (!soundDef) return;
-
-        const ambientId = `entity_${entityId}`;
-        this.audioManager.startAmbientSound(ambientId, soundDef, position);
-
-        this.activeAmbientSounds.set(entityId, {
-            ambientId,
-            soundName,
-            offset: { x: 0, y: 0, z: 0 }
-        });
-    }
-
-    /**
-     * Service: Stop an ambient sound (can be called externally)
-     */
-    stopAmbientSound(entityId) {
-        this.stopEntityAmbientSound(entityId);
     }
 
     /**

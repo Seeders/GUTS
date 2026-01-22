@@ -105,40 +105,37 @@ class MovementSystem extends GUTS.BaseSystem {
         }
 
         const soundName = state.side === 0 ? 'guard_footstep_left' : 'guard_footstep_right';
-        const audioManager = this.game.audioManager;
+        const soundConfig = this.game.getCollections()?.sounds?.[soundName]?.audio;
 
-        if (audioManager) {
-            const soundConfig = this.game.getCollections()?.sounds?.[soundName]?.audio;
-            if (soundConfig) {
-                // Clone config for randomization
-                const config = JSON.parse(JSON.stringify(soundConfig));
+        if (soundConfig) {
+            // Clone config for randomization
+            const config = JSON.parse(JSON.stringify(soundConfig));
 
-                // Add random variation
-                const pitchVariation = 0.85 + Math.random() * 0.3;
-                config.frequency = (config.frequency || 200) * pitchVariation;
+            // Add random variation
+            const pitchVariation = 0.85 + Math.random() * 0.3;
+            config.frequency = (config.frequency || 200) * pitchVariation;
 
-                // Apply distance-based volume attenuation
-                const baseVolume = (config.volume || 0.12) * (0.8 + Math.random() * 0.2);
-                config.volume = baseVolume * distanceVolume;
+            // Apply distance-based volume attenuation
+            const baseVolume = (config.volume || 0.12) * (0.8 + Math.random() * 0.2);
+            config.volume = baseVolume * distanceVolume;
 
-                // Debug: log distance and volume occasionally
-                if (Math.random() < 0.1) {
-                    console.log(`[Guard footstep] dist: ${distanceToCamera.toFixed(0)}, vol: ${distanceVolume.toFixed(2)}, final: ${config.volume.toFixed(4)}`);
-                }
-
-                if (config.effects?.filter) {
-                    config.effects.filter.frequency *= (0.9 + Math.random() * 0.2);
-                }
-
-                if (config.effects) {
-                    const basePan = config.effects.pan || 0;
-                    config.effects.pan = basePan + (Math.random() - 0.5) * 0.15;
-                }
-
-                // Pass volume as options parameter - config.volume isn't used by AudioManager
-                const finalVolume = config.volume;
-                audioManager.playSynthSound(`guard_footstep_${entityId}_${Date.now()}`, config, { volume: finalVolume });
+            // Debug: log distance and volume occasionally
+            if (Math.random() < 0.1) {
+                console.log(`[Guard footstep] dist: ${distanceToCamera.toFixed(0)}, vol: ${distanceVolume.toFixed(2)}, final: ${config.volume.toFixed(4)}`);
             }
+
+            if (config.effects?.filter) {
+                config.effects.filter.frequency *= (0.9 + Math.random() * 0.2);
+            }
+
+            if (config.effects) {
+                const basePan = config.effects.pan || 0;
+                config.effects.pan = basePan + (Math.random() - 0.5) * 0.15;
+            }
+
+            // Pass volume as options parameter - config.volume isn't used by AudioManager
+            const finalVolume = config.volume;
+            this.game.call('playSynthSound', `guard_footstep_${entityId}_${Date.now()}`, config, { volume: finalVolume });
         }
 
         state.lastTime = now;

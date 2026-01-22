@@ -32,6 +32,11 @@ class CameraControlSystem extends GUTS.BaseSystem {
     this.maxZoom = 1;     // Top down
     this.zoomSpeed = 0.05;
 
+    // Snap threshold for first-person mode
+    // When zooming in below this level, snap to 0 (first person)
+    // When zooming out from 0, snap to this level first
+    this.firstPersonSnapThreshold = 0.08;
+
     // Camera distance at different zoom levels
     this.minDistance = 5;    // First person (close)
     this.maxDistance = 800;  // Top down (far)
@@ -40,8 +45,9 @@ class CameraControlSystem extends GUTS.BaseSystem {
     this.minPitch = 0;                    // First person (horizontal)
     this.maxPitch = -Math.PI / 2 + 0.1;   // Top down (looking straight down)
 
-    // Camera height offset above target
-    this.targetHeightOffset = 25; // Eye level of character
+    // Camera height offset above target (interpolated based on zoom)
+    this.minHeightOffset = 25; // First person (eye level)
+    this.maxHeightOffset = 35; // Zoomed out (head level)
 
     // Mouse-controlled facing direction
     this.facingAngle = 0; // Current yaw angle in radians (left/right)
@@ -157,9 +163,22 @@ class CameraControlSystem extends GUTS.BaseSystem {
   }
 
   _onWheel(event) {
-    // Zoom in/out
+    // Zoom in/out with snapping near first-person threshold
     const delta = event.deltaY > 0 ? this.zoomSpeed : -this.zoomSpeed;
-    this.zoomLevel = Math.max(this.minZoom, Math.min(this.maxZoom, this.zoomLevel + delta));
+    const wasAtFirstPerson = this.zoomLevel === 0;
+
+    let newZoom = this.zoomLevel + delta;
+
+    // Snap behavior for first-person mode
+    if (wasAtFirstPerson && delta > 0) {
+      // Zooming out from first-person: snap to threshold first
+      newZoom = this.firstPersonSnapThreshold;
+    } else if (!wasAtFirstPerson && newZoom < this.firstPersonSnapThreshold && delta < 0) {
+      // Zooming in past threshold: snap to first-person
+      newZoom = 0;
+    }
+
+    this.zoomLevel = Math.max(this.minZoom, Math.min(this.maxZoom, newZoom));
     event.preventDefault();
   }
 
@@ -169,9 +188,13 @@ class CameraControlSystem extends GUTS.BaseSystem {
     const transform = this.game.getComponent(this.followTargetId, 'transform');
     if (!transform || !transform.position) return null;
 
+    // Use different height offset for first-person vs third-person
+    const isFirstPerson = this.zoomLevel === 0;
+    const heightOffset = isFirstPerson ? this.minHeightOffset : this.maxHeightOffset;
+
     return {
       x: transform.position.x,
-      y: (transform.position.y || 0) + this.targetHeightOffset,
+      y: (transform.position.y || 0) + heightOffset,
       z: transform.position.z,
       rotation: transform.rotation?.y || 0 // Character's Y rotation (facing direction)
     };
@@ -245,8 +268,7 @@ class CameraControlSystem extends GUTS.BaseSystem {
       const lookZ = this.currentPosition.z + Math.sin(cameraAngle) * horizontalLookDist;
       this.activeCamera.lookAt(lookX, lookY, lookZ);
     } else {
-      // In third-person, also apply pitch to look point
-      // Calculate a look point that's offset by pitch from the target
+      // In third-person, look at the orbit point (target.y includes targetHeightOffset)
       const lookDistance = 50;
       const verticalOffset = lookDistance * Math.sin(this.pitchAngle);
       this.activeCamera.lookAt(target.x, target.y + verticalOffset, target.z);

@@ -302,3 +302,65 @@
     color: #fff;
     border-color: rgba(255, 255, 255, 0.4);
 }
+
+/* ===================== PUZZLE DEFEAT MODAL ===================== */
+.defeat-modal {
+    background: linear-gradient(145deg, #2a1a1a 0%, #3e1616 50%, #1f0f0f 100%);
+    border: 2px solid rgba(239, 68, 68, 0.6);
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.8),
+        0 0 60px rgba(239, 68, 68, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.defeat-modal .modal-glow {
+    background: linear-gradient(45deg, #ef4444, #dc2626, #ef4444);
+}
+
+.defeat-modal .defeat-icon {
+    font-size: 72px;
+    margin-bottom: 15px;
+    animation: defeatIconPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes defeatIconPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+.defeat-modal .defeat-title {
+    font-size: 42px;
+    font-weight: bold;
+    color: #ef4444;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 15px;
+    text-shadow:
+        0 0 20px rgba(239, 68, 68, 0.6),
+        0 0 40px rgba(239, 68, 68, 0.4);
+}
+
+.defeat-modal .defeat-message {
+    color: #d0a0a0;
+    font-size: 18px;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.defeat-modal .modal-buttons .btn-primary {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+}
+
+.defeat-modal .modal-buttons .btn-primary:hover {
+    background: linear-gradient(135deg, #f87171, #ef4444);
+    box-shadow: 0 6px 30px rgba(239, 68, 68, 0.6);
+}

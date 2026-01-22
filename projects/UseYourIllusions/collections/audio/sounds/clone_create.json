@@ -1,0 +1,34 @@
+{
+  "title": "Clone Create",
+  "audio": {
+    "duration": 0.4,
+    "volume": 0.15,
+    "layers": [
+      {
+        "source": "sine",
+        "frequency": 400,
+        "volume": 0.6,
+        "envelope": { "attack": 0.01, "decay": 0.15, "sustain": 0.3, "release": 0.2 },
+        "pitchEnvelope": { "start": 0.5, "end": 1.5, "time": 0.3 }
+      },
+      {
+        "source": "triangle",
+        "frequency": 800,
+        "volume": 0.3,
+        "envelope": { "attack": 0.02, "decay": 0.1, "sustain": 0.2, "release": 0.25 },
+        "pitchEnvelope": { "start": 0.7, "end": 1.2, "time": 0.25 }
+      },
+      {
+        "source": "white",
+        "volume": 0.15,
+        "envelope": { "attack": 0.01, "decay": 0.1, "sustain": 0.05, "release": 0.2 },
+        "filter": { "type": "highpass", "frequency": 3000, "Q": 0.5 }
+      }
+    ],
+    "effects": {
+      "filter": { "type": "lowpass", "frequency": 4000, "Q": 1 },
+      "reverb": 0.3,
+      "delay": { "time": 0.08, "feedback": 0.2 }
+    }
+  }
+}

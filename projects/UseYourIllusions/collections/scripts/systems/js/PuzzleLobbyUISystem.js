@@ -35,12 +35,29 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
             this.setupMainMenuHandlers();
             this.populateLevelGrid();
             this.showScreen('mainMenu');
+
+            // Setup one-time click handler to start menu music (AudioContext requires user interaction)
+            this.setupMenuMusicStarter(sceneData);
         }
 
         if (sceneName === 'game') {
             this.setupGameScreenHandlers();
             this.showScreen('gameScreen');
         }
+    }
+
+    setupMenuMusicStarter(sceneData) {
+        if (!sceneData?.backgroundMusicSound) return;
+
+        const startMusic = () => {
+            console.log('[PuzzleLobbyUISystem] User interaction detected, starting menu music');
+            this.game.call('playMusic', sceneData.backgroundMusicSound, { loop: true, fadeInTime: 1 });
+            document.removeEventListener('click', startMusic);
+            document.removeEventListener('keydown', startMusic);
+        };
+
+        document.addEventListener('click', startMusic, { once: true });
+        document.addEventListener('keydown', startMusic, { once: true });
     }
 
     cleanupHandlers() {
@@ -70,43 +87,43 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         });
 
         document.getElementById('mainMenu_SettingsBtn')?.addEventListener('click', () => {
-            this.showScreen('settingsScreen');
+            this.showSettingsOverlay();
         });
 
         document.getElementById('levelSelect_BackBtn')?.addEventListener('click', () => {
             this.showScreen('mainMenu');
         });
 
-        document.getElementById('settings_BackBtn')?.addEventListener('click', () => {
-            this.showScreen('mainMenu');
+        document.getElementById('settingsBackBtn')?.addEventListener('click', () => {
+            this.hideSettingsOverlay();
         });
 
-        this.setupSettingsHandlers();
+        // Setup volume controls (shared with game scene)
+        this.setupVolumeControls();
+
+        // ESC key to close settings overlay in menu
+        this.boundEscapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                const settingsOverlay = document.getElementById('settingsOverlay');
+                if (settingsOverlay?.classList.contains('active')) {
+                    this.hideSettingsOverlay();
+                }
+            }
+        };
+        document.addEventListener('keydown', this.boundEscapeHandler);
     }
 
-    setupSettingsHandlers() {
-        const masterVolume = document.getElementById('masterVolume');
-        const masterVolumeValue = document.getElementById('masterVolumeValue');
-        if (masterVolume && masterVolumeValue) {
-            masterVolume.addEventListener('input', (e) => {
-                masterVolumeValue.textContent = `${e.target.value}%`;
-            });
+    showSettingsOverlay() {
+        const overlay = document.getElementById('settingsOverlay');
+        if (overlay) {
+            overlay.classList.add('active');
         }
+    }
 
-        const musicVolume = document.getElementById('musicVolume');
-        const musicVolumeValue = document.getElementById('musicVolumeValue');
-        if (musicVolume && musicVolumeValue) {
-            musicVolume.addEventListener('input', (e) => {
-                musicVolumeValue.textContent = `${e.target.value}%`;
-            });
-        }
-
-        const sfxVolume = document.getElementById('sfxVolume');
-        const sfxVolumeValue = document.getElementById('sfxVolumeValue');
-        if (sfxVolume && sfxVolumeValue) {
-            sfxVolume.addEventListener('input', (e) => {
-                sfxVolumeValue.textContent = `${e.target.value}%`;
-            });
+    hideSettingsOverlay() {
+        const overlay = document.getElementById('settingsOverlay');
+        if (overlay) {
+            overlay.classList.remove('active');
         }
     }
 
@@ -135,6 +152,9 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
             this.returnToMainMenu();
         });
 
+        // Setup volume controls (shared with menu scene)
+        this.setupVolumeControls();
+
         // Use bound handler so we can remove it later
         this.boundEscapeHandler = (e) => {
             if (e.key === 'Escape' && this.currentScreen === 'gameScreen') {
@@ -142,6 +162,84 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
             }
         };
         document.addEventListener('keydown', this.boundEscapeHandler);
+    }
+
+    setupVolumeControls() {
+        // Load saved settings
+        const savedSettings = this.loadVolumeSettings();
+
+        // Master volume
+        const masterSlider = document.getElementById('masterVolumeSlider');
+        const masterValue = document.getElementById('masterVolumeValue');
+        if (masterSlider) {
+            masterSlider.value = savedSettings.master;
+            if (masterValue) masterValue.textContent = `${savedSettings.master}%`;
+            this.game.call('setMasterVolume', savedSettings.master / 100);
+
+            masterSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                if (masterValue) masterValue.textContent = `${value}%`;
+                this.game.call('setMasterVolume', value / 100);
+                this.saveVolumeSettings();
+            });
+        }
+
+        // Music volume
+        const musicSlider = document.getElementById('musicVolumeSlider');
+        const musicValue = document.getElementById('musicVolumeValue');
+        if (musicSlider) {
+            musicSlider.value = savedSettings.music;
+            if (musicValue) musicValue.textContent = `${savedSettings.music}%`;
+            this.game.call('setMusicVolume', savedSettings.music / 100);
+
+            musicSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                if (musicValue) musicValue.textContent = `${value}%`;
+                this.game.call('setMusicVolume', value / 100);
+                this.saveVolumeSettings();
+            });
+        }
+
+        // SFX volume
+        const sfxSlider = document.getElementById('sfxVolumeSlider');
+        const sfxValue = document.getElementById('sfxVolumeValue');
+        if (sfxSlider) {
+            sfxSlider.value = savedSettings.sfx;
+            if (sfxValue) sfxValue.textContent = `${savedSettings.sfx}%`;
+            this.game.call('setSfxVolume', savedSettings.sfx / 100);
+
+            sfxSlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                if (sfxValue) sfxValue.textContent = `${value}%`;
+                this.game.call('setSfxVolume', value / 100);
+                this.saveVolumeSettings();
+            });
+        }
+    }
+
+    loadVolumeSettings() {
+        try {
+            const saved = localStorage.getItem('audioSettings');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+        } catch (e) {
+            console.warn('[PuzzleLobbyUISystem] Failed to load volume settings:', e);
+        }
+        return { master: 100, music: 25, sfx: 100 };
+    }
+
+    saveVolumeSettings() {
+        const settings = {
+            master: parseInt(document.getElementById('masterVolumeSlider')?.value || 100),
+            music: parseInt(document.getElementById('musicVolumeSlider')?.value || 100),
+            sfx: parseInt(document.getElementById('sfxVolumeSlider')?.value || 100)
+        };
+        try {
+            localStorage.setItem('audioSettings', JSON.stringify(settings));
+        } catch (e) {
+            console.warn('[PuzzleLobbyUISystem] Failed to save volume settings:', e);
+        }
     }
 
     loadAvailableLevels() {
@@ -302,14 +400,60 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
     restartCurrentLevel() {
         const currentLevelId = this.game.state.selectedLevel;
         if (currentLevelId) {
+            // Force interface to reload by clearing the marker
+            const appContainer = document.getElementById('appContainer');
+            if (appContainer) {
+                delete appContainer.dataset.currentInterface;
+            }
+
             this.startLevel(currentLevelId);
         } else {
             this.returnToMainMenu();
         }
     }
 
-    showDefeatScreen() {
-        document.getElementById('defeatScreen')?.classList.add('active');
+    showDefeatScreen(defeatInfo = {}) {
+        console.log(`[PuzzleLobbyUISystem] showDefeatScreen called at ${this.game.state.now}`, defeatInfo);
+        console.log(`[PuzzleLobbyUISystem] isPaused before pauseGame: ${this.game.state.isPaused}`);
+
+        const defeatScreen = document.getElementById('defeatScreen');
+        if (!defeatScreen) {
+            console.log(`[PuzzleLobbyUISystem] ERROR: defeatScreen element not found!`);
+            return;
+        }
+
+        // Pause the game
+        this.game.call('pauseGame');
+        console.log(`[PuzzleLobbyUISystem] isPaused after pauseGame: ${this.game.state.isPaused}`);
+
+        // Stop all sound effects (guard attacks, etc.)
+        this.game.call('stopAllSounds');
+
+        // Unlock mouse so player can click UI buttons
+        if (document.pointerLockElement) {
+            document.exitPointerLock();
+        }
+
+        // Update title
+        const titleEl = document.getElementById('defeatTitle');
+        if (titleEl) {
+            titleEl.textContent = defeatInfo.title || 'Game Over';
+        }
+
+        // Update message
+        const messageEl = document.getElementById('defeatMessage');
+        if (messageEl) {
+            messageEl.textContent = defeatInfo.message || 'You have been defeated.';
+        }
+
+        // Update icon
+        const iconEl = document.getElementById('defeatIcon');
+        if (iconEl) {
+            iconEl.innerHTML = defeatInfo.icon || '&#128128;';
+        }
+
+        // Show the screen
+        defeatScreen.classList.add('active');
     }
 
     hideAllOverlays() {
@@ -320,7 +464,10 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
     }
 
     onSceneUnload() {
-        this.hideAllOverlays();
+        // Remove overlays without trying to unpause (pause state is reset by PauseSystem)
+        document.querySelectorAll('.pause-overlay, .puzzle-modal-overlay').forEach(overlay => {
+            overlay.classList.remove('active');
+        });
         this.cleanupHandlers();
     }
 

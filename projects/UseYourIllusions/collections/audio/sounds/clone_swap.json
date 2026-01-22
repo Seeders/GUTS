@@ -1,0 +1,25 @@
+{
+  "title": "Clone Swap",
+  "audio": {
+    "duration": 0.15,
+    "volume": 0.3,
+    "layers": [
+      {
+        "source": "white",
+        "volume": 0.6,
+        "envelope": { "attack": 0.01, "decay": 0.08, "sustain": 0.05, "release": 0.05 },
+        "filter": { "type": "bandpass", "frequency": 1500, "Q": 0.8 }
+      },
+      {
+        "source": "sine",
+        "frequency": 500,
+        "volume": 0.3,
+        "envelope": { "attack": 0.005, "decay": 0.06, "sustain": 0.0, "release": 0.08 },
+        "pitchEnvelope": { "start": 0.8, "end": 1.4, "time": 0.1 }
+      }
+    ],
+    "effects": {
+      "filter": { "type": "highpass", "frequency": 400, "Q": 0.5 }
+    }
+  }
+}

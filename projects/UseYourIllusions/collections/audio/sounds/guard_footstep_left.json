@@ -1,26 +1,17 @@
 {
   "title": "Guard Footstep Left",
   "audio": {
-    "waveform": "noise",
-    "frequency": 120,
-    "duration": 0.08,
-    "volume": 0.12,
-    "noise": {
-      "type": "brown",
-      "amount": 1.0
-    },
-    "envelope": {
-      "attack": 0.015,
-      "decay": 0.03,
-      "sustain": 0.05,
-      "release": 0.03
-    },
+    "duration": 0.1,
+    "volume": 0.5,
+    "layers": [
+      {
+        "source": "brown",
+        "volume": 1.0,
+        "envelope": { "attack": 0.01, "decay": 0.04, "sustain": 0.25, "release": 0.04 }
+      }
+    ],
     "effects": {
-      "filter": {
-        "type": "lowpass",
-        "frequency": 300,
-        "Q": 0.5
-      },
+      "filter": { "type": "lowpass", "frequency": 500, "Q": 0.6 },
       "pan": -0.08
     }
   }

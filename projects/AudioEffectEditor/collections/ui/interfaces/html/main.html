@@ -9,47 +9,75 @@
             <!-- Effect Info -->
             <section class="aee-panel">
                 <h2>Effect Info</h2>
-                <div class="aee-effect-info">
-                    <div class="aee-form-row">
-                        <label>Title:</label>
-                        <input type="text" id="effect-title" value="Fire Crackle">
-                    </div>
-                    <div class="aee-form-row">
-                        <label>Category:</label>
-                        <select id="effect-category">
-                            <option value="sfx">Sound Effect</option>
-                            <option value="ui">UI Sound</option>
-                            <option value="ambient" selected>Ambient</option>
-                            <option value="music">Music</option>
-                            <option value="explosion">Explosion</option>
-                            <option value="impact">Impact</option>
-                            <option value="magic">Magic</option>
-                        </select>
-                    </div>
-                    <div class="aee-form-row">
-                        <label>Tags:</label>
-                        <input type="text" id="effect-tags" value="fire, crackle, campfire" placeholder="tag1, tag2, tag3">
-                    </div>
-                    <div class="aee-form-row">
-                        <label>Duration:</label>
-                        <input type="number" id="effect-duration" value="2.0" min="0.1" max="30" step="0.1">
-                        <span class="value-display">sec</span>
-                    </div>
+                <div class="aee-form-row">
+                    <label>Title:</label>
+                    <input type="text" id="effect-title" value="New Sound Effect">
                 </div>
             </section>
 
-            <!-- Add Layer -->
+            <!-- Master Settings -->
             <section class="aee-panel">
-                <h2>Add Layer</h2>
-                <div class="aee-btn-group">
-                    <button id="add-custom-layer" class="aee-btn aee-btn-success">+ Custom Synth</button>
+                <h2>Master Settings</h2>
+                <div class="aee-form-row">
+                    <label>Duration: <span id="duration-display" class="aee-value-display">0.50 s</span></label>
+                    <input type="range" id="master-duration" min="0.05" max="10" value="0.5" step="0.05">
                 </div>
-                <div class="aee-sound-library">
-                    <select id="library-sound-select">
-                        <option value="">-- Select from library --</option>
+                <div class="aee-form-row">
+                    <label>Volume: <span id="volume-display" class="aee-value-display">70%</span></label>
+                    <input type="range" id="master-volume" min="0" max="1" value="0.7" step="0.01">
+                </div>
+            </section>
+
+            <!-- Master Effects -->
+            <section class="aee-panel">
+                <h2>Master Effects</h2>
+                <div class="aee-form-row">
+                    <label>Filter:</label>
+                    <select id="master-filter-type">
+                        <option value="none">None</option>
+                        <option value="lowpass">Low Pass</option>
+                        <option value="highpass">High Pass</option>
+                        <option value="bandpass">Band Pass</option>
+                        <option value="notch">Notch</option>
                     </select>
-                    <button id="add-library-layer" class="aee-btn" style="margin-top: 8px;">+ Add from Library</button>
                 </div>
+                <div class="aee-form-row">
+                    <label>Filter Freq: <span id="master-filter-freq-display" class="aee-value-display">20000 Hz</span></label>
+                    <input type="range" id="master-filter-freq" min="20" max="20000" value="20000" step="1">
+                </div>
+                <div class="aee-form-row">
+                    <label>Filter Q: <span id="master-filter-q-display" class="aee-value-display">1.0</span></label>
+                    <input type="range" id="master-filter-q" min="0.1" max="20" value="1" step="0.1">
+                </div>
+                <div class="aee-form-row">
+                    <label>Distortion: <span id="master-distortion-display" class="aee-value-display">0%</span></label>
+                    <input type="range" id="master-distortion" min="0" max="100" value="0" step="1">
+                </div>
+                <div class="aee-form-row">
+                    <label>Delay Time: <span id="master-delay-time-display" class="aee-value-display">0.00 s</span></label>
+                    <input type="range" id="master-delay-time" min="0" max="2" value="0" step="0.01">
+                </div>
+                <div class="aee-form-row">
+                    <label>Delay Feedback: <span id="master-delay-feedback-display" class="aee-value-display">0%</span></label>
+                    <input type="range" id="master-delay-feedback" min="0" max="0.9" value="0" step="0.01">
+                </div>
+                <div class="aee-form-row">
+                    <label>Reverb: <span id="master-reverb-display" class="aee-value-display">0%</span></label>
+                    <input type="range" id="master-reverb" min="0" max="1" value="0" step="0.01">
+                </div>
+                <div class="aee-form-row">
+                    <label>Pan: <span id="master-pan-display" class="aee-value-display">Center</span></label>
+                    <input type="range" id="master-pan" min="-1" max="1" value="0" step="0.01">
+                </div>
+            </section>
+
+            <!-- Library -->
+            <section class="aee-panel">
+                <h2>Sound Library</h2>
+                <select id="library-sound-select">
+                    <option value="">-- Load from library --</option>
+                </select>
+                <button id="load-library-btn" class="aee-btn" style="margin-top: 8px;">Load Sound</button>
             </section>
 
             <!-- Playback -->
@@ -58,11 +86,10 @@
                 <div class="aee-playback-controls">
                     <button id="play-btn" class="aee-playback-btn play" title="Play">&#9658;</button>
                     <button id="stop-btn" class="aee-playback-btn" title="Stop">&#9632;</button>
-                    <button id="loop-btn" class="aee-playback-btn" title="Loop">&#128257;</button>
-                </div>
-                <div class="aee-duration-display" style="margin-top: 10px;">
-                    <span>Position:</span>
-                    <span id="playback-position" class="aee-duration-value">0.00s</span>
+                    <label class="aee-loop-toggle">
+                        <input type="checkbox" id="loop-toggle">
+                        <span>Loop</span>
+                    </label>
                 </div>
             </section>
 
@@ -78,22 +105,26 @@
         </div>
 
         <div class="aee-content">
-            <!-- Timeline -->
+            <!-- Layers & Events Toolbar -->
+            <div class="aee-toolbar">
+                <button id="add-layer-btn" class="aee-btn aee-btn-success">+ Add Layer</button>
+                <button id="add-event-btn" class="aee-btn aee-btn-warning">+ Add Event</button>
+                <button id="randomize-btn" class="aee-btn">Randomize</button>
+            </div>
+
+            <!-- Layers Container -->
             <section class="aee-panel">
-                <h2>Timeline</h2>
-                <div class="aee-timeline" id="timeline-container">
-                    <div class="aee-timeline-ruler" id="timeline-ruler"></div>
-                    <div class="aee-timeline-tracks" id="timeline-tracks">
-                        <div class="aee-timeline-empty">Add layers to begin</div>
-                    </div>
+                <h2>Layers</h2>
+                <div id="layers-container" class="aee-layers-container">
+                    <!-- Layers will be dynamically added here -->
                 </div>
             </section>
 
-            <!-- Layer Editor -->
-            <section class="aee-panel aee-layer-controls" id="layer-editor">
-                <h2>Layer Settings</h2>
-                <div id="layer-editor-content">
-                    <div class="aee-layer-controls-empty">Select a layer to edit</div>
+            <!-- Events Container -->
+            <section class="aee-panel">
+                <h2>Events (Random Sounds)</h2>
+                <div id="events-container" class="aee-events-container">
+                    <!-- Events will be dynamically added here -->
                 </div>
             </section>
         </div>

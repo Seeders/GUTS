@@ -1,0 +1,66 @@
+{
+  "title": "Victory",
+  "audio": {
+    "duration": 0.1,
+    "volume": 0.15,
+    "layers": [
+      {
+        "source": "sine",
+        "frequency": 523,
+        "volume": 0.8,
+        "envelope": {
+          "attack": 0.01,
+          "decay": 0.1,
+          "sustain": 0.6,
+          "release": 0.8
+        },
+        "pitchEnvelope": {
+          "start": 0.8,
+          "end": 1,
+          "time": 0.15
+        }
+      },
+      {
+        "source": "sine",
+        "frequency": 659,
+        "volume": 0.6,
+        "envelope": {
+          "attack": 0.15,
+          "decay": 0.1,
+          "sustain": 0.5,
+          "release": 0.7
+        }
+      },
+      {
+        "source": "sine",
+        "frequency": 784,
+        "volume": 0.5,
+        "envelope": {
+          "attack": 0.3,
+          "decay": 0.1,
+          "sustain": 0.4,
+          "release": 0.6
+        }
+      },
+      {
+        "source": "triangle",
+        "frequency": 1047,
+        "volume": 0.3,
+        "envelope": {
+          "attack": 0.5,
+          "decay": 0.2,
+          "sustain": 0.3,
+          "release": 0.5
+        }
+      }
+    ],
+    "effects": {
+      "reverb": 0.4,
+      "filter": {
+        "type": "lowpass",
+        "frequency": 4000,
+        "Q": 0.5
+      }
+    }
+  }
+}

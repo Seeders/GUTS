@@ -321,48 +321,11 @@ class InputSystem extends GUTS.BaseSystem {
     }
     
     showSettingsModal() {
-        const settingsContent = `
-            <h3>⚙️ GAME SETTINGS</h3>
-            <div class="settings-section">
-                <h4>Graphics</h4>
-                <label><input type="checkbox" id="particles-enabled" checked> Particle Effects</label>
-                <label><input type="checkbox" id="screen-shake" checked> Screen Shake</label>
-                <label><input type="range" id="particle-density" min="0.5" max="2" step="0.1" value="1"> Particle Density</label>
-            </div>
-            <div class="settings-section">
-                <h4>Audio</h4>
-                <label><input type="checkbox" id="sound-effects" checked> Sound Effects</label>
-                <label><input type="range" id="volume" min="0" max="1" step="0.1" value="0.7"> Volume</label>
-            </div>
-            <div class="settings-section">
-                <h4>Controls</h4>
-                <p><strong>ESC</strong> - Cancel/Close</p>
-            </div>
-        `;
-        
-        this.showModal('Settings', settingsContent, () => {
-            this.applySettings();
-        });
-    }
-    
-    applySettings() {
-        // Apply settings from modal
-        const particlesEnabled = document.getElementById('particles-enabled')?.checked ?? true;
-        const screenShake = document.getElementById('screen-shake')?.checked ?? true;
-        const particleDensity = document.getElementById('particle-density')?.value ?? 1;
-        const soundEffects = document.getElementById('sound-effects')?.checked ?? true;
-        const volume = document.getElementById('volume')?.value ?? 0.7;
-        
-        // Save to localStorage
-        localStorage.setItem('gameSettings', JSON.stringify({
-            particlesEnabled,
-            screenShake,
-            particleDensity,
-            soundEffects,
-            volume
-        }));
-        
-        GUTS.NotificationSystem.show('Settings saved!', 'success');
+        // Use the unified settings overlay instead of a custom modal
+        const overlay = document.getElementById('settingsOverlay');
+        if (overlay) {
+            overlay.classList.add('active');
+        }
     }
     
     showModal(title, content, onClose = null) {

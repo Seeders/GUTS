@@ -22,7 +22,7 @@ class ProjectCloneAbility extends GUTS.BaseAbility {
             ...abilityData
         });
 
-        this.CLONE_DURATION = 10.0; // seconds
+        this.CLONE_DURATION = 20.0; // seconds
     }
 
     canExecute(casterEntity, params = {}) {
@@ -59,6 +59,9 @@ class ProjectCloneAbility extends GUTS.BaseAbility {
 
         // Play spawn effect
         this.createVisualEffect(casterPos, 'cast', { count: 25 });
+
+        // Play clone create sound
+        this.game.call('playSound', 'sounds', 'clone_create');
 
         this.logAbilityUsage(casterEntity, `Created projection clone!`);
         this.game.triggerEvent('onCloneCreated', {
@@ -158,6 +161,9 @@ class ProjectCloneAbility extends GUTS.BaseAbility {
         if (clonePos) {
             this.createVisualEffect(clonePos, 'impact', { count: 20 });
         }
+
+        // Play clone disappear sound
+        this.game.call('playSound', 'sounds', 'clone_disappear');
 
         this.game.triggerEvent('onCloneExpired', { cloneId, creatorEntity });
 

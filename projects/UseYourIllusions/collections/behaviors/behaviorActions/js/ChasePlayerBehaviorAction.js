@@ -36,25 +36,34 @@ class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        // Check if player is dead
+        // Check if player is dead (no health component, health <= 0, or dying/corpse state)
         const playerHealth = game.getComponent(playerId, 'health');
-        if (playerHealth && playerHealth.current <= 0) {
-            console.log(`[ChasePlayerBehaviorAction] Guard ${entityId} defeated player ${playerId}`);
+        const playerDeathState = game.getComponent(playerId, 'deathState');
+        const enums = game.getEnums();
+        const isDead = !playerHealth ||
+                       playerHealth.current <= 0 ||
+                       (playerDeathState && playerDeathState.state !== enums.deathState?.alive);
 
-            const playerTransform = game.getComponent(playerId, 'transform');
-            const playerPos = playerTransform?.position || pos;
-
-            // Trigger player caught event - this will trigger defeat
-            game.triggerEvent('onPlayerCaught', {
-                guardId: entityId,
-                playerId: playerId,
-                position: { x: playerPos.x, y: playerPos.y, z: playerPos.z }
-            });
+        if (isDead) {
+            console.log(`[ChasePlayerBehaviorAction] Guard ${entityId} - player ${playerId} is dead, stopping chase`);
 
             // Clear the targets
             shared.playerTarget = null;
             shared.target = null;
             this.clearMemory(entityId);
+
+            // Only trigger onPlayerCaught if we haven't already (player just died)
+            // Check if this is the first frame detecting death
+            if (playerHealth && playerHealth.current <= 0) {
+                const playerTransform = game.getComponent(playerId, 'transform');
+                const playerPos = playerTransform?.position || pos;
+
+                game.triggerEvent('onPlayerCaught', {
+                    guardId: entityId,
+                    playerId: playerId,
+                    position: { x: playerPos.x, y: playerPos.y, z: playerPos.z }
+                });
+            }
 
             return this.success({
                 defeated: true,
@@ -118,6 +127,9 @@ class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
         if (distance <= attackRange) {
             // Set target for compatibility with other systems
             shared.target = playerId;
+
+            // Clear target position so movement system stops moving us
+            shared.targetPosition = null;
 
             // Attack the player using the combat system
             if (combat) {
@@ -207,6 +219,7 @@ class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         combat.lastAttack = game.state.now;
+        console.log(`[ChasePlayerBehaviorAction] Guard ${attackerId} attacking player ${targetId} at time ${game.state.now}, isPaused: ${game.state.isPaused}`);
 
         // Trigger attack animation
         if (!game.isServer && game.hasService('triggerSinglePlayAnimation')) {
@@ -215,8 +228,8 @@ class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
             game.call('triggerSinglePlayAnimation', attackerId, enums.animationType.attack, attackSpeed, minAnimationTime);
         }
 
-        // Play attack sound
-        if (game.audioManager) {
+        // Play attack sound via AudioSystem service
+        if (game.hasService('playSynthSound')) {
             const soundConfig = game.getCollections()?.sounds?.guard_attack?.audio;
             if (soundConfig) {
                 // Calculate distance-based volume
@@ -235,7 +248,7 @@ class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
                     }
                 }
                 if (volume > 0) {
-                    game.audioManager.playSynthSound(`guard_attack_${attackerId}_${game.state.now}`, soundConfig, { volume });
+                    game.call('playSynthSound', `guard_attack_${attackerId}_${game.state.now}`, soundConfig, { volume });
                 }
             }
         }

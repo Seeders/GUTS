@@ -1,25 +1,36 @@
 {
   "title": "Guard Attack",
   "audio": {
-    "waveform": "sawtooth",
-    "frequency": 120,
-    "duration": 0.25,
-    "volume": 0.3,
-    "noise": {
-      "type": "white",
-      "amount": 0.4
-    },
-    "pitchEnvelope": {
-      "start": 3.0,
-      "end": 0.5,
-      "time": 0.03
-    },
-    "envelope": {
-      "attack": 0.001,
-      "decay": 0.04,
-      "sustain": 0.1,
-      "release": 0.15
-    },
+    "duration": 0.1,
+    "volume": 1,
+    "layers": [
+      {
+        "source": "sawtooth",
+        "frequency": 120,
+        "volume": 1,
+        "envelope": {
+          "attack": 0.001,
+          "decay": 0.04,
+          "sustain": 0.1,
+          "release": 0.15
+        },
+        "pitchEnvelope": {
+          "start": 3,
+          "end": 0.5,
+          "time": 0.03
+        }
+      },
+      {
+        "source": "white",
+        "volume": 0.4,
+        "envelope": {
+          "attack": 0.001,
+          "decay": 0.04,
+          "sustain": 0.1,
+          "release": 0.15
+        }
+      }
+    ],
     "effects": {
       "filter": {
         "type": "lowpass",

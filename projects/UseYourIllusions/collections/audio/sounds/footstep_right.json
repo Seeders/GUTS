@@ -1,26 +1,17 @@
 {
   "title": "Footstep Right",
   "audio": {
-    "waveform": "noise",
-    "frequency": 65,
-    "duration": 0.04,
-    "volume": 0.15,
-    "noise": {
-      "type": "brown",
-      "amount": 1.0
-    },
-    "envelope": {
-      "attack": 0.005,
-      "decay": 0.02,
-      "sustain": 0.01,
-      "release": 0.015
-    },
+    "duration": 0.06,
+    "volume": 0.45,
+    "layers": [
+      {
+        "source": "brown",
+        "volume": 1.0,
+        "envelope": { "attack": 0.005, "decay": 0.03, "sustain": 0.2, "release": 0.025 }
+      }
+    ],
     "effects": {
-      "filter": {
-        "type": "lowpass",
-        "frequency": 130,
-        "Q": 0.3
-      },
+      "filter": { "type": "lowpass", "frequency": 420, "Q": 0.5 },
       "pan": 0.03
     }
   }

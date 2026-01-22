@@ -1,8 +1,6 @@
 class GameSystem extends GUTS.BaseSystem {
     static services = [
         'initializeGame',
-        'pauseGame',
-        'resumeGame',
         'restartGame',
         'exitToMenu'
     ];
@@ -48,22 +46,6 @@ class GameSystem extends GUTS.BaseSystem {
         // Trigger onGameStarted AFTER screen is visible so UI elements are accessible
         console.log('[GameSystem] Triggering onGameStarted event');
         this.game.triggerEvent('onGameStarted');
-    }
-
-    pauseGame() {
-        this.game.call('pauseScreen');
-        const pauseMenu = document.getElementById('pauseMenu');
-        if (pauseMenu) {
-            pauseMenu.style.display = 'flex';
-        }
-    }
-
-    resumeGame() {
-        this.game.call('resumeScreen');
-        const pauseMenu = document.getElementById('pauseMenu');
-        if (pauseMenu) {
-            pauseMenu.style.display = 'none';
-        }
     }
 
     restartGame() {

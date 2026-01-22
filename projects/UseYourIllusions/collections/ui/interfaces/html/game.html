@@ -35,13 +35,14 @@
     </div>
 </div>
 
-<!-- Defeat Screen -->
+<!-- Game Over / Defeat Screen -->
 <div id="defeatScreen" class="puzzle-modal-overlay">
     <div class="puzzle-modal defeat-modal">
+        <div class="modal-glow"></div>
         <div class="modal-content">
-            <div class="defeat-icon">&#128128;</div>
-            <h2 class="defeat-title">Caught!</h2>
-            <p class="defeat-message">You were spotted by the guards.</p>
+            <div class="defeat-icon" id="defeatIcon">&#128128;</div>
+            <h2 class="defeat-title" id="defeatTitle">Game Over</h2>
+            <p class="defeat-message" id="defeatMessage">You have been defeated.</p>
             <div class="modal-buttons">
                 <button id="retryLevelBtn" class="btn btn-primary">Try Again</button>
                 <button id="defeatMenuBtn" class="btn btn-secondary">Main Menu</button>
@@ -54,6 +55,25 @@
 <div id="pauseMenu" class="pause-overlay">
     <div class="pause-content">
         <h2>PAUSED</h2>
+
+        <div class="volume-settings">
+            <div class="volume-row">
+                <label for="masterVolumeSlider">Master</label>
+                <input type="range" id="masterVolumeSlider" class="volume-slider" min="0" max="100" value="100">
+                <span class="volume-value" id="masterVolumeValue">100%</span>
+            </div>
+            <div class="volume-row">
+                <label for="musicVolumeSlider">Music</label>
+                <input type="range" id="musicVolumeSlider" class="volume-slider" min="0" max="100" value="100">
+                <span class="volume-value" id="musicVolumeValue">100%</span>
+            </div>
+            <div class="volume-row">
+                <label for="sfxVolumeSlider">SFX</label>
+                <input type="range" id="sfxVolumeSlider" class="volume-slider" min="0" max="100" value="100">
+                <span class="volume-value" id="sfxVolumeValue">100%</span>
+            </div>
+        </div>
+
         <button id="resumeBtn" class="btn btn-primary">Resume</button>
         <button id="restartLevelBtn" class="btn btn-secondary">Restart Level</button>
         <button id="returnToMenuBtn" class="btn btn-secondary">Main Menu</button>
