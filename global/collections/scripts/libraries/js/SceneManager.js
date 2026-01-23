@@ -27,25 +27,17 @@ class SceneManager {
             return;
         }
 
-        // Get systems needed by new scene for smart cleanup
-        const isServer = !!this.game.isServer;
-        const baseSystems = sceneData.systems || [];
-        const environmentSystems = isServer
-            ? (sceneData.serverSystems || [])
-            : (sceneData.clientSystems || []);
-        const newSceneSystems = new Set([...baseSystems, ...environmentSystems]);
-
         // Unload current scene if one is loaded
         if (this.currentScene) {
             console.log(`[SceneManager] Unloading current scene: ${this.currentSceneName}`);
-            await this.unloadCurrentScene(newSceneSystems);
+            await this.unloadCurrentScene();
         }
 
         this.currentScene = sceneData;
         this.currentSceneName = sceneName;
 
         // Load scene-specific interface if defined (must happen first so DOM elements exist)
-        if (!isServer && sceneData.interface) {
+        if (!this.game.isServer && sceneData.interface) {
             this.loadSceneInterface(sceneData.interface, collections);
         }
 
@@ -106,10 +98,9 @@ class SceneManager {
 
     /**
      * Unload the current scene
-     * @param {Set<string>} [keepSystems] - System names to keep (needed by next scene)
      * @returns {Promise<void>}
      */
-    async unloadCurrentScene(keepSystems = new Set()) {
+    async unloadCurrentScene() {
         if (!this.currentScene) return;
 
         // Clear isLoadingSave flag but preserve pendingSaveData for the next scene
@@ -123,7 +114,7 @@ class SceneManager {
         }
 
         // Notify all systems that scene is being unloaded
-        this.notifySceneUnloading(keepSystems);
+        this.notifySceneUnloading();
 
         // Destroy ALL entities - not just scene-spawned ones
         // This includes dynamically created entities (units, projectiles, etc.)
@@ -136,28 +127,23 @@ class SceneManager {
         // Reset entity ID counter so new scene starts fresh
         this.game.nextEntityId = 1;
 
-        // Destroy systems that are NOT needed by the new scene
-        this.destroyUnneededSystems(keepSystems);
+        // Destroy ALL systems for a clean slate (they'll be recreated by configureSystems)
+        this.destroyAllSystems();
 
         this.currentScene = null;
         this.currentSceneName = null;
     }
 
     /**
-     * Destroy enabled systems that are not needed by the next scene
-     * @param {Set<string>} keepSystems - System names to keep
+     * Destroy all enabled systems for a clean slate
+     * Systems will be recreated by configureSystems for the new scene
      */
-    destroyUnneededSystems(keepSystems) {
+    destroyAllSystems() {
         const systemsToRemove = [];
 
         for (const system of this.game.systems) {
             if (system.enabled) {
                 const systemName = system.constructor.name;
-
-                // Skip systems that are needed in the next scene
-                if (keepSystems.has(systemName)) {
-                    continue;
-                }
 
                 // Call dispose if available
                 if (system.dispose) {
@@ -200,14 +186,9 @@ class SceneManager {
         // Combine base + environment-specific systems
         const sceneSystems = [...baseSystems, ...environmentSystems];
 
-        // Disable all currently active systems first
-        for (const system of this.game.systems) {
-            system.enabled = false;
-        }
-
-        // Lazily instantiate and enable systems required by this scene
+        // Create and enable systems required by this scene
         for (const systemName of sceneSystems) {
-            const system = this.game.getOrCreateSystem(systemName);
+            const system = this.game.createSystem(systemName);
             if (system) {
                 system.enabled = true;
             }
@@ -310,10 +291,8 @@ class SceneManager {
     /**
      * Notify systems that the scene is being unloaded
      * Calls onSceneUnload on ALL enabled systems so they can clean up resources
-     * (e.g., WorldSystem needs to dispose renderer even when kept for next scene)
-     * @param {Set<string>} [keepSystems] - System names that will be kept (unused, kept for API compatibility)
      */
-    notifySceneUnloading(keepSystems = new Set()) {
+    notifySceneUnloading() {
         for (const system of this.game.systems) {
             if (system.enabled && system.onSceneUnload) {
                 system.onSceneUnload();

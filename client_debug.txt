@@ -3,395 +3,217 @@ Object { app: {…}, state: {…}, entitiesToAdd: [], classes: [], systems: [], 
 SimpleLoader.js:34:13
 got collections SimpleLoader.js:36:13
 got config 
-Object { gridSize: 48, imageSize: 128, title: "Turn Based Warfare", isIsometric: false, libraries: (56) […], systems: (67) […], classes: (5) […], fileName: "game", appLibrary: "MultiplayerECSGame", appLoaderLibrary: "SimpleLoader", … }
+Object { gridSize: 48, imageSize: 128, title: "Use Your Illusions", isIsometric: false, libraries: (57) […], systems: (78) […], classes: (5) […], fileName: "game", appLibrary: "MultiplayerECSGame", appLoaderLibrary: "SimpleLoader", … }
 SimpleLoader.js:38:13
-[SceneManager] loadScene('lobby') called <empty string> SceneManager.js:25:13
+[SceneManager] loadScene('menu') called <empty string> SceneManager.js:25:13
+[BaseECSGame]  - registering services for PauseSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for GameSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for ScreenSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for GameModeSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for InputSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for LobbyUISystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for BaseNetworkSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for ClientNetworkSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for SkirmishGameSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for SaveSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for CampaignSaveSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for CampaignSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for HomeBaseUISystem BaseECSGame.js:1010:13
-service not found! leaveGame BaseECSGame.js:889:15
-service not found! getWorldPositionFromMouse BaseECSGame.js:889:15
-service not found! ui_handleCanvasClick BaseECSGame.js:889:15
-service not found! rotateCamera BaseECSGame.js:889:15
-service not found! toggleCameraMode BaseECSGame.js:889:15
-service not found! getCameraMode BaseECSGame.js:889:15
-service not found! handleUnitSelectionChange BaseECSGame.js:889:15
-service not found! startQuickMatch BaseECSGame.js:889:15
-service not found! showChatView BaseECSGame.js:889:15
-service not found! placePlacement BaseECSGame.js:889:15
-service not found! getPlacementById BaseECSGame.js:889:15
-service not found! applySquadTargetPosition BaseECSGame.js:889:15
-service not found! getPlayerStats BaseECSGame.js:889:15
-service not found! addPlayerGold BaseECSGame.js:889:15
-service not found! removeInstance BaseECSGame.js:889:15
-service not found! releaseGridCells BaseECSGame.js:889:15
-service not found! getSpriteAnimationDuration BaseECSGame.js:889:15
-service not found! triggerSinglePlayAnimation BaseECSGame.js:889:15
-service not found! startHeightAnimation BaseECSGame.js:889:15
-service not found! scheduleAction BaseECSGame.js:889:15
-service not found! playEffectSystem BaseECSGame.js:889:15
-service not found! createPlacement BaseECSGame.js:889:15
-service not found! validateCheat BaseECSGame.js:889:15
-service not found! executeCheat BaseECSGame.js:889:15
-service not found! showNotification BaseECSGame.js:889:15
-service not found! getActivePlayerTeam BaseECSGame.js:889:15
-service not found! clearPlayerPlacements BaseECSGame.js:889:15
-service not found! applySpecialization BaseECSGame.js:889:15
-service not found! setActivePlayer BaseECSGame.js:889:15
-service not found! positionCameraAtStart BaseECSGame.js:889:15
-service not found! handleReadyForBattleUpdate BaseECSGame.js:889:15
-service not found! setBattlePaused BaseECSGame.js:889:15
-service not found! getPlayerStats BaseECSGame.js:889:15
-service not found! leaveGame BaseECSGame.js:889:15
-service not found! getPlayerEntityId BaseECSGame.js:889:15
-service not found! updateGoldDisplay BaseECSGame.js:889:15
-service not found! setSquadInfo BaseECSGame.js:889:15
-service not found! setActivePlayer BaseECSGame.js:889:15
-service not found! createPlayerEntity BaseECSGame.js:889:15
-service not found! spawnGoldMineForTeam BaseECSGame.js:889:15
-service not found! spawnStartingUnitsForTeam BaseECSGame.js:889:15
-service not found! getPlayerEntities BaseECSGame.js:889:15
-service not found! broadcastGameEnd BaseECSGame.js:889:15
-service not found! getActivePlayerTeam BaseECSGame.js:889:15
-service not found! addAbilitiesToUnit BaseECSGame.js:889:15
-service not found! removeFromInventory BaseECSGame.js:889:15
-service not found! showNotification BaseECSGame.js:889:15
-service not found! getCampaignCurrency BaseECSGame.js:889:15
-✅ COMPILED_GAME initialized client-entry.js:11534:13
+[AudioSystem] Creating AudioManager... AudioSystem.js:21:13
+[BaseECSGame]  - registering services for AudioSystem BaseECSGame.js:1010:13
+[AudioSystem] init() called AudioSystem.js:28:13
+[BaseECSGame]  - registering services for PuzzleLobbyUISystem BaseECSGame.js:1010:13
+[PauseSystem] onSceneLoad - isPaused was: false, setting to false PauseSystem.js:23:13
+✅ COMPILED_GAME initialized client-entry.js:11738:13
 [InputSystem] setupResultButtons - victory button: null defeat button: null InputSystem.js:42:13
-[SkirmishGameSystem] onSceneLoad called, params: null SkirmishGameSystem.js:41:13
-[SkirmishGameSystem] onlinePlayers in game.state: undefined SkirmishGameSystem.js:42:13
-[SkirmishGameSystem] No match configuration detected SkirmishGameSystem.js:54:15
-[SkirmishGameSystem] postSceneLoad called, pendingSkirmishConfig: false pendingOnlineMatch: false SkirmishGameSystem.js:63:13
-[SceneManager] loadScene('lobby') complete SceneManager.js:93:13
-[ClientNetworkManager] connect() called, serverUrl: http://localhost:8080 ClientNetworkManager.js:41:13
-[ClientNetworkManager] Creating socket connection to: http://localhost:8080 ClientNetworkManager.js:51:15
-Connected to server ClientNetworkManager.js:61:19
-[ClientNetworkManager] call: CONNECT isConnected: true responseEvent: CONNECTED ClientNetworkManager.js:233:13
-[ClientNetworkManager] Received event: CONNECTED 
-Object { playerId: "vFD72ueoarOYqu1yAAAB", serverTime: 1769144263534 }
-ClientNetworkManager.js:94:17
-[SceneManager] loadScene('onlineLobby') called <empty string> SceneManager.js:25:13
-[SceneManager] Unloading current scene: lobby SceneManager.js:41:15
-[BaseECSGame]  - registering services for OnlineLobbyUISystem BaseECSGame.js:1010:13
-service not found! leaveGame BaseECSGame.js:889:15
-service not found! getWorldPositionFromMouse BaseECSGame.js:889:15
-service not found! ui_handleCanvasClick BaseECSGame.js:889:15
-service not found! rotateCamera BaseECSGame.js:889:15
-service not found! toggleCameraMode BaseECSGame.js:889:15
-service not found! getCameraMode BaseECSGame.js:889:15
-service not found! handleUnitSelectionChange BaseECSGame.js:889:15
-service not found! placePlacement BaseECSGame.js:889:15
-service not found! getPlacementById BaseECSGame.js:889:15
-service not found! applySquadTargetPosition BaseECSGame.js:889:15
-service not found! getPlayerStats BaseECSGame.js:889:15
-service not found! addPlayerGold BaseECSGame.js:889:15
-service not found! removeInstance BaseECSGame.js:889:15
-service not found! releaseGridCells BaseECSGame.js:889:15
-service not found! getSpriteAnimationDuration BaseECSGame.js:889:15
-service not found! triggerSinglePlayAnimation BaseECSGame.js:889:15
-service not found! startHeightAnimation BaseECSGame.js:889:15
-service not found! scheduleAction BaseECSGame.js:889:15
-service not found! playEffectSystem BaseECSGame.js:889:15
-service not found! createPlacement BaseECSGame.js:889:15
-service not found! validateCheat BaseECSGame.js:889:15
-service not found! executeCheat BaseECSGame.js:889:15
-service not found! showNotification BaseECSGame.js:889:15
-service not found! getActivePlayerTeam BaseECSGame.js:889:15
-service not found! clearPlayerPlacements BaseECSGame.js:889:15
-service not found! applySpecialization BaseECSGame.js:889:15
-service not found! setActivePlayer BaseECSGame.js:889:15
-service not found! positionCameraAtStart BaseECSGame.js:889:15
-service not found! handleReadyForBattleUpdate BaseECSGame.js:889:15
-service not found! setBattlePaused BaseECSGame.js:889:15
-service not found! getPlayerStats BaseECSGame.js:889:15
-service not found! leaveGame BaseECSGame.js:889:15
-service not found! getPlayerEntityId BaseECSGame.js:889:15
-service not found! updateGoldDisplay BaseECSGame.js:889:15
-service not found! setSquadInfo BaseECSGame.js:889:15
-service not found! startQuickMatch BaseECSGame.js:889:15
-service not found! getActivePlayerTeam BaseECSGame.js:889:15
-service not found! addAbilitiesToUnit BaseECSGame.js:889:15
-[InputSystem] setupResultButtons - victory button: null defeat button: null InputSystem.js:42:13
-[SceneManager] loadScene('onlineLobby') complete SceneManager.js:93:13
-[ClientNetworkSystem] createRoom: Player ClientNetworkSystem.js:200:13
-[ClientNetworkManager] call: CREATE_ROOM isConnected: true responseEvent: ROOM_CREATED ClientNetworkManager.js:233:13
-[ClientNetworkManager] Received event: ROOM_CREATED 
-Object { roomId: "1000", playerId: "vFD72ueoarOYqu1yAAAB", numericPlayerId: 0, isHost: true, gameState: {…} }
-ClientNetworkManager.js:94:17
-[ClientNetworkSystem] ROOM_CREATED roomId: 1000 ClientNetworkSystem.js:209:17
-[ClientNetworkManager] Received event: PLAYER_JOINED 
-Object { playerId: "9tK_VXnBjQp5xYN5AAAD", numericPlayerId: 1, playerName: "Player", gameState: {…} }
-ClientNetworkManager.js:94:17
-[ClientNetworkManager] Received event: PLAYER_READY_UPDATE 
-Object { playerId: "9tK_VXnBjQp5xYN5AAAD", ready: true, allReady: false, gameState: {…} }
-ClientNetworkManager.js:94:17
-[ClientNetworkManager] call: TOGGLE_READY isConnected: true responseEvent: null ClientNetworkManager.js:233:13
-[ClientNetworkManager] Emitting (fire and forget): TOGGLE_READY ClientNetworkManager.js:245:15
-[ClientNetworkManager] Received event: PLAYER_READY_UPDATE 
-Object { playerId: "vFD72ueoarOYqu1yAAAB", ready: true, allReady: true, gameState: {…} }
-ClientNetworkManager.js:94:17
-[ClientNetworkManager] Received event: GAME_STARTED 
-Object { gameState: {…}, level: 0, isLoadingSave: false, saveData: null, nextEntityId: 1565 }
-ClientNetworkManager.js:94:17
-[ClientNetworkSystem] handleGameStarted - level: 0 nextEntityId: 1565 ClientNetworkSystem.js:641:13
-[ClientNetworkSystem] entitySync contains 0 entities ClientNetworkSystem.js:642:13
-[ClientNetworkSystem] entitySync sample: 
-Array []
-ClientNetworkSystem.js:643:13
-[ClientNetworkSystem] data.gameState: 
-Object { roomId: "1000", phase: 1, isActive: true, maxPlayers: 2, gameType: "default", players: (2) […], round: 1, onlinePlayers: (2) […], gameData: null }
-ClientNetworkSystem.js:644:13
-[ClientNetworkSystem] data.gameState.onlinePlayers: 
-Array [ {…}, {…} ]
-ClientNetworkSystem.js:645:13
-[ClientNetworkSystem] Applied gameState from server ClientNetworkSystem.js:651:15
-[ClientNetworkSystem] game.state.onlinePlayers after assign: 
-Array [ {…}, {…} ]
-ClientNetworkSystem.js:652:15
-[ClientNetworkSystem] Switching to game scene... ClientNetworkSystem.js:687:13
+[AudioSystem] Playing scene background music: tiptoe_song AudioSystem.js:38:15
+[PuzzleLobbyUISystem] Loaded levels: 2 
+Array [ "level1_1", "puzzle_tutorial" ]
+PuzzleLobbyUISystem.js:233:13
+[PuzzleLobbyUISystem] populateLevelGrid: creating 2 level cards PuzzleLobbyUISystem.js:241:13
+[SceneManager] loadScene('menu') complete SceneManager.js:93:13
+service not found! showGameModeSelect BaseECSGame.js:889:15
+[PuzzleLobbyUISystem] User interaction detected, starting menu music PuzzleLobbyUISystem.js:45:15
+[AudioManager] Applied saved volume settings: 
+Object { master: 100, music: 49, sfx: 100 }
+AudioManager.js:234:17
+[AudioManager] Applied saved volume settings: 
+Object { master: 100, music: 49, sfx: 100 }
+AudioManager.js:234:17
+[AudioManager] Playing music: tiptoe_song AudioManager.js:1167:15
+[PuzzleLobbyUISystem] Level card clicked: level1_1 PuzzleLobbyUISystem.js:256:19
+[PuzzleLobbyUISystem] Starting level: level1_1 PuzzleLobbyUISystem.js:270:13
 [SceneManager] loadScene('game') called <empty string> SceneManager.js:25:13
-[SceneManager] Unloading current scene: onlineLobby SceneManager.js:41:15
+[SceneManager] Unloading current scene: menu SceneManager.js:41:15
+[PauseSystem] onSceneUnload - isPaused was: false, setting to false PauseSystem.js:28:13
+[AudioManager] Stopping music: tiptoe_song AudioManager.js:1202:13
 [BaseECSGame]  - registering services for GridSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for TerrainSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for RoundSystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for PlayerStatsSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for BehaviorSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for MovementSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for ProjectileSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for SquadSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for UnitCreationSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for PlayerStatsSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for TeamHealthSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for DeathSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for StatAggregationSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for AccuracySystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for DamageSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for AbilitySystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for SquadExperienceSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for LifetimeSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for SchedulingSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for GoldMineSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for PathfindingSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for VisionSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for SupplySystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for PlacementSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for UnitOrderSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for CheatCodeSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for SkirmishGameSystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for IllusionSystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for ExitSystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for PuzzleGameSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for RenderSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for WorldSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for TerrainDetailSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for PostProcessingSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for AnimationSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for ArmyDisplaySystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for EffectsSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for PlacementUISystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for GameUISystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for GameInterfaceSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for ShopSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for HealthBarSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for EquipmentSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for ParticleSystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for SpawnEffectsSystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for LightingSystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for HealthBarSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for FogOfWarSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for SelectedUnitSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for UnitOrderUISystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for MiniMapSystem BaseECSGame.js:1010:13
 [BaseECSGame]  - registering services for CameraControlSystem BaseECSGame.js:1010:13
-[GameCameraController] Initialized GameCameraController.js:107:13
-[BaseECSGame]  - registering services for DamageNumberSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for GameChatSystem BaseECSGame.js:1010:13
-[GameChatSystem] init - isMultiplayer: true GameChatSystem.js:36:13
-service not found! removeSquadExperience BaseECSGame.js:889:15
-service not found! isValidGridPosition BaseECSGame.js:889:15
-service not found! getCurrentUnitTypeForSquad BaseECSGame.js:889:15
-service not found! getSquadExperienceData BaseECSGame.js:889:15
-service not found! dropLoot BaseECSGame.js:889:15
-service not found! getOpponentPlacements BaseECSGame.js:889:15
-service not found! broadcastGameEnd 2 BaseECSGame.js:889:15
-service not found! applyBillboardAnimationFrame BaseECSGame.js:889:15
-service not found! showModal BaseECSGame.js:889:15
-service not found! getSurvivalWaveInfo BaseECSGame.js:889:15
+[BaseECSGame]  - registering services for PlayerControlSystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for BeltUISystem BaseECSGame.js:1010:13
+[PlacementPreviewSystem] Constructor called PlacementPreviewSystem.js:22:13
+[BaseECSGame]  - registering services for PlacementPreviewSystem BaseECSGame.js:1010:13
+[PlacementPreviewSystem] init() called PlacementPreviewSystem.js:41:13
 [SceneManager] Running loader: GameLoader SceneManager.js:57:15
-[ImageManager] Loaded 191 textures ImageManager.js:206:13
+[PlayerControlSystem] update #0, isPaused: false PlayerControlSystem.js:227:15
+[PlayerControlSystem] update #1, isPaused: false PlayerControlSystem.js:227:15
+[PlayerControlSystem] update #2, isPaused: false PlayerControlSystem.js:227:15
+[ImageManager] Loaded 194 textures ImageManager.js:206:13
 [SceneManager] Loader complete: GameLoader SceneManager.js:60:15
-[InputSystem] setupResultButtons - victory button: 
-<button id="victory_MainMenuBtn" class="btn">
- defeat button: 
-<button id="defeat_MainMenuBtn" class="btn">
-InputSystem.js:42:13
-[TerrainSystem] onSceneLoad called, game.state.level: 0 TerrainSystem.js:56:13
-[TerrainSystem] Level name from index: forest TerrainSystem.js:67:13
-[TerrainSystem] Initializing terrain for level: forest TerrainSystem.js:72:13
-[TerrainSystem] Loading 1549 level entities... TerrainSystem.js:155:13
-[TerrainSystem] Loaded 1549 level entities TerrainSystem.js:213:13
-[TerrainSystem] Terrain initialized TerrainSystem.js:74:13
-[SkirmishGameSystem] onSceneLoad called, params: null SkirmishGameSystem.js:41:13
-[SkirmishGameSystem] onlinePlayers in game.state: 
-Array [ {…}, {…} ]
-SkirmishGameSystem.js:42:13
-[SkirmishGameSystem] Online match mode SkirmishGameSystem.js:52:15
-[SkirmishGameSystem] postSceneLoad called, pendingSkirmishConfig: false pendingOnlineMatch: true SkirmishGameSystem.js:63:13
-[SkirmishGameSystem] Calling initializeOnlineMatch... SkirmishGameSystem.js:70:15
-[SkirmishGameSystem] initializeOnlineMatch called (isServer: false) SkirmishGameSystem.js:260:13
-[SkirmishGameSystem] nextEntityId before init: 1551 SkirmishGameSystem.js:261:13
-[SkirmishGameSystem] onlinePlayers from game.state: 
-Array [ {…}, {…} ]
-SkirmishGameSystem.js:272:13
-[SkirmishGameSystem] Creating 2 player entities... SkirmishGameSystem.js:277:13
-[SkirmishGameSystem] Created player entity: 1551 for playerId: vFD72ueoarOYqu1yAAAB team: 2 SkirmishGameSystem.js:286:15
-[SkirmishGameSystem] Created player entity: 1552 for playerId: 9tK_VXnBjQp5xYN5AAAD team: 3 SkirmishGameSystem.js:286:15
-[SkirmishGameSystem] Player entities after creation: 2 SkirmishGameSystem.js:291:13
-[SkirmishGameSystem] About to spawn gold mines - nextEntityId: 1553 SkirmishGameSystem.js:296:13
-[UnitCreationSystem] Created entity 1553: 
-Object { unitTypeId: "goldMine", collection: "buildings", collectionIndex: 32, spawnTypeIndex: 6, team: 2, renderable: {…}, placement: null, health: {…}, combat: {…} }
-UnitCreationSystem.js:192:15
-[UnitCreationSystem] setupAbilities called for entity 1553 unitType.abilities: undefined UnitCreationSystem.js:811:13
-[UnitCreationSystem] No abilities defined for unit type UnitCreationSystem.js:813:15
-[SkirmishGameSystem] Spawned left gold mine: 1553 nextEntityId: 1554 SkirmishGameSystem.js:300:13
-[UnitCreationSystem] Created entity 1554: 
-Object { unitTypeId: "goldMine", collection: "buildings", collectionIndex: 32, spawnTypeIndex: 6, team: 3, renderable: {…}, placement: null, health: {…}, combat: {…} }
-UnitCreationSystem.js:192:15
-[UnitCreationSystem] setupAbilities called for entity 1554 unitType.abilities: undefined UnitCreationSystem.js:811:13
-[UnitCreationSystem] No abilities defined for unit type UnitCreationSystem.js:813:15
-[SkirmishGameSystem] Spawned right gold mine: 1554 nextEntityId: 1555 SkirmishGameSystem.js:302:13
-[SkirmishGameSystem] About to spawn starting units - nextEntityId: 1555 SkirmishGameSystem.js:303:13
-[PlacementSystem] spawnStartingUnitsForTeam called for team: 2 PlacementSystem.js:657:13
-[UnitCreationSystem] Created entity 1555: 
-Object { unitTypeId: "townHall", collection: "buildings", collectionIndex: 32, spawnTypeIndex: 10, team: 2, renderable: {…}, placement: null, health: {…}, combat: {…} }
-UnitCreationSystem.js:192:15
-[UnitCreationSystem] setupAbilities called for entity 1555 unitType.abilities: undefined UnitCreationSystem.js:811:13
-[UnitCreationSystem] No abilities defined for unit type UnitCreationSystem.js:813:15
-[UnitCreationSystem] Created entity 1556: 
-Object { unitTypeId: "peasant", collection: "units", collectionIndex: 159, spawnTypeIndex: 33, team: 2, renderable: {…}, placement: null, health: {…}, combat: {…} }
-UnitCreationSystem.js:192:15
-[UnitCreationSystem] setupAbilities called for entity 1556 unitType.abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:811:13
-[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Valid abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:828:15
-[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:831:17
-[UnitCreationSystem] Called addAbilitiesToUnit for entity 1556 UnitCreationSystem.js:834:19
-[UnitCreationSystem] Created entity 1557: 
-Object { unitTypeId: "peasant", collection: "units", collectionIndex: 159, spawnTypeIndex: 33, team: 2, renderable: {…}, placement: null, health: {…}, combat: {…} }
-UnitCreationSystem.js:192:15
-[UnitCreationSystem] setupAbilities called for entity 1557 unitType.abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:811:13
-[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Valid abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:828:15
-[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:831:17
-[UnitCreationSystem] Called addAbilitiesToUnit for entity 1557 UnitCreationSystem.js:834:19
-[UnitCreationSystem] Created entity 1558: 
-Object { unitTypeId: "peasant", collection: "units", collectionIndex: 159, spawnTypeIndex: 33, team: 2, renderable: {…}, placement: null, health: {…}, combat: {…} }
-UnitCreationSystem.js:192:15
-[UnitCreationSystem] setupAbilities called for entity 1558 unitType.abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:811:13
-[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Valid abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:828:15
-[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:831:17
-[UnitCreationSystem] Called addAbilitiesToUnit for entity 1558 UnitCreationSystem.js:834:19
-[UnitCreationSystem] Created entity 1559: 
-Object { unitTypeId: "peasant", collection: "units", collectionIndex: 159, spawnTypeIndex: 33, team: 2, renderable: {…}, placement: null, health: {…}, combat: {…} }
-UnitCreationSystem.js:192:15
-[UnitCreationSystem] setupAbilities called for entity 1559 unitType.abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:811:13
-[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Valid abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:828:15
-[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:831:17
-[UnitCreationSystem] Called addAbilitiesToUnit for entity 1559 UnitCreationSystem.js:834:19
-[PlacementSystem] Spawned 5 starting units for team 2 PlacementSystem.js:787:13
-[SkirmishGameSystem] Spawned left team units - nextEntityId: 1560 SkirmishGameSystem.js:305:13
-[PlacementSystem] spawnStartingUnitsForTeam called for team: 3 PlacementSystem.js:657:13
-[UnitCreationSystem] Created entity 1560: 
-Object { unitTypeId: "townHall", collection: "buildings", collectionIndex: 32, spawnTypeIndex: 10, team: 3, renderable: {…}, placement: null, health: {…}, combat: {…} }
-UnitCreationSystem.js:192:15
-[UnitCreationSystem] setupAbilities called for entity 1560 unitType.abilities: undefined UnitCreationSystem.js:811:13
-[UnitCreationSystem] No abilities defined for unit type UnitCreationSystem.js:813:15
-[UnitCreationSystem] Created entity 1561: 
-Object { unitTypeId: "peasant", collection: "units", collectionIndex: 159, spawnTypeIndex: 33, team: 3, renderable: {…}, placement: null, health: {…}, combat: {…} }
-UnitCreationSystem.js:192:15
-[UnitCreationSystem] setupAbilities called for entity 1561 unitType.abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:811:13
-[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Valid abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:828:15
-[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:831:17
-[UnitCreationSystem] Called addAbilitiesToUnit for entity 1561 UnitCreationSystem.js:834:19
-[UnitCreationSystem] Created entity 1562: 
-Object { unitTypeId: "peasant", collection: "units", collectionIndex: 159, spawnTypeIndex: 33, team: 3, renderable: {…}, placement: null, health: {…}, combat: {…} }
-UnitCreationSystem.js:192:15
-[UnitCreationSystem] setupAbilities called for entity 1562 unitType.abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:811:13
-[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Valid abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:828:15
-[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:831:17
-[UnitCreationSystem] Called addAbilitiesToUnit for entity 1562 UnitCreationSystem.js:834:19
-[UnitCreationSystem] Created entity 1563: 
-Object { unitTypeId: "peasant", collection: "units", collectionIndex: 159, spawnTypeIndex: 33, team: 3, renderable: {…}, placement: null, health: {…}, combat: {…} }
-UnitCreationSystem.js:192:15
-[UnitCreationSystem] setupAbilities called for entity 1563 unitType.abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:811:13
-[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Valid abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:828:15
-[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:831:17
-[UnitCreationSystem] Called addAbilitiesToUnit for entity 1563 UnitCreationSystem.js:834:19
-[UnitCreationSystem] Created entity 1564: 
-Object { unitTypeId: "peasant", collection: "units", collectionIndex: 159, spawnTypeIndex: 33, team: 3, renderable: {…}, placement: null, health: {…}, combat: {…} }
-UnitCreationSystem.js:192:15
-[UnitCreationSystem] setupAbilities called for entity 1564 unitType.abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:811:13
-[UnitCreationSystem] Checking ability BuildAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Checking ability MineGoldAbility - exists: true UnitCreationSystem.js:820:17
-[UnitCreationSystem] Valid abilities: 
-Array [ "BuildAbility", "MineGoldAbility" ]
-UnitCreationSystem.js:828:15
-[UnitCreationSystem] hasService addAbilitiesToUnit: true UnitCreationSystem.js:831:17
-[UnitCreationSystem] Called addAbilitiesToUnit for entity 1564 UnitCreationSystem.js:834:19
-[PlacementSystem] Spawned 5 starting units for team 3 PlacementSystem.js:787:13
-[SkirmishGameSystem] Spawned right team units - nextEntityId: 1565 SkirmishGameSystem.js:307:13
-[SkirmishGameSystem] Initialized online match - final nextEntityId: 1565 SkirmishGameSystem.js:308:13
-[SkirmishGameSystem] initializeOnlineMatch complete SkirmishGameSystem.js:73:15
+[PauseSystem] onSceneLoad - isPaused was: false, setting to false PauseSystem.js:23:13
+[InputSystem] setupResultButtons - victory button: null defeat button: null InputSystem.js:42:13
+[PuzzleLobbyUISystem] Loaded levels: 2 
+Array [ "level1_1", "puzzle_tutorial" ]
+PuzzleLobbyUISystem.js:233:13
+[TerrainSystem] onSceneLoad called, game.state.level: 0 TerrainSystem.js:59:13
+[TerrainSystem] Level name from index: level1_1 TerrainSystem.js:70:13
+[TerrainSystem] Initializing terrain for level: level1_1 TerrainSystem.js:75:13
+[TerrainSystem] Loading 663 level entities... TerrainSystem.js:160:13
+[TerrainSystem] Loaded 663 level entities TerrainSystem.js:236:13
+[TerrainSystem] Terrain initialized TerrainSystem.js:77:13
+[PuzzleGameSystem] onSceneLoad - levelIndex: 0, levelKey: level1_1, puzzleLevel: true PuzzleGameSystem.js:77:13
+[PuzzleGameSystem] Spawned player entity 665 at (-697, 80, -797) PuzzleGameSystem.js:193:13
+[PuzzleGameSystem] Set GuardBehaviorTree for guard 9 PuzzleGameSystem.js:226:17
+[PuzzleGameSystem] Guard 9 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
+[PuzzleGameSystem] Set GuardBehaviorTree for guard 10 PuzzleGameSystem.js:226:17
+[PuzzleGameSystem] Guard 10 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
+[PuzzleGameSystem] Set GuardBehaviorTree for guard 11 PuzzleGameSystem.js:226:17
+[PuzzleGameSystem] Guard 11 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
+[PuzzleGameSystem] Configured 3 guards PuzzleGameSystem.js:254:13
+[PuzzleGameSystem] Initialized level: level1_1 PuzzleGameSystem.js:121:13
+[LightingSystem] onSceneLoad - getCollections keys: 
+Array(62) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+LightingSystem.js:44:13
+[LightingSystem] collections.lightingEffects: 
+Object { campfire: {…}, flicker: {…}, pulse: {…}, strobe: {…} }
+LightingSystem.js:45:13
+[LightingSystem] this.game.app: 
+Object { plugins: {}, currentTime: 1769207105962, lastTime: 319, deltaTime: 0, accumulator: 0.02199999999999952, engineClasses: [], appClasses: {}, libraries: {}, running: true, collections: {…}, … }
+LightingSystem.js:46:13
+[LightingSystem] window.COMPILED_GAME?.collections?.lightingEffects: 
+Object { campfire: {…}, flicker: {…}, pulse: {…}, strobe: {…} }
+LightingSystem.js:47:13
+[CameraControlSystem] onSceneLoad called CameraControlSystem.js:273:13
+[CameraControlSystem] _attachCanvasListener - Canvas element: true CameraControlSystem.js:293:13
+[CameraControlSystem] Click listener attached to canvas CameraControlSystem.js:298:15
+[PlayerControlSystem] onSceneLoad called, isPaused: false PlayerControlSystem.js:56:13
+[PlacementPreviewSystem] onSceneLoad() called PlacementPreviewSystem.js:44:13
+[RenderSystem] postSceneLoad called, spawnedEntities count: 0 RenderSystem.js:81:13
+[RenderSystem] EntityRenderer created, scene: true RenderSystem.js:105:13
+[CameraControlSystem] postSceneLoad called CameraControlSystem.js:286:13
+[CameraControlSystem] _attachCanvasListener - Canvas element: true CameraControlSystem.js:293:13
+[CameraControlSystem] Click listener attached to canvas CameraControlSystem.js:298:15
+[PlayerControlSystem] postSceneLoad - playerEntity: 665, isPaused: false PlayerControlSystem.js:66:13
 [SceneManager] loadScene('game') complete SceneManager.js:93:13
-[ClientNetworkSystem] Game scene loaded ClientNetworkSystem.js:689:13
-[ClientNetworkSystem] Set nextEntityId from server: 1565 ClientNetworkSystem.js:694:15
-[ClientNetworkSystem] Calling initializeGame... ClientNetworkSystem.js:698:13
-[GameSystem] initializeGame called, multiplayerData: true gameMode: 
-Object { id: "arena", title: "Arena", description: "Battle against another player in real-time strategic combat", isMultiplayer: true, maxPlayers: 2, startingGold: 100 }
-GameSystem.js:16:13
-[GameSystem] Triggering onGameStarted event GameSystem.js:45:13
-[ClientNetworkSystem] handleGameStarted complete ClientNetworkSystem.js:700:13
+[SpawnEffectsSystem] billboardSpawned entity 2, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 3, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 4, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 5, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 6, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 7, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 12, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[RenderSystem] Spawning player 665 to renderer: objectType=162, spawnType=34 RenderSystem.js:347:19
+[RenderSystem] spawnEntity result for player 665: spawned=true RenderSystem.js:439:15
+[RenderSystem] Player entityDef: illusionist RenderSystem.js:459:17
+[RenderSystem] Triggering billboardSpawned for player 665 RenderSystem.js:466:19
+[AnimationSystem] billboardSpawned for player 665, animationSet: illusionist AnimationSystem.js:1292:15
+[SpawnEffectsSystem] billboardSpawned entity 665, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[PlayerControlSystem] update #0, isPaused: false PlayerControlSystem.js:227:15
+[PlayerControlSystem] update #1, isPaused: false PlayerControlSystem.js:227:15
+[PlayerControlSystem] update #2, isPaused: false PlayerControlSystem.js:227:15
+[AudioManager] Playing music: prison_song AudioManager.js:1167:15
+service not found! getWorldPositionFromMouse BaseECSGame.js:889:15
+[PauseSystem] pauseGame called PauseSystem.js:36:13
+[PauseSystem] unpauseGame called PauseSystem.js:44:13
+[PauseSystem] pauseGame called PauseSystem.js:36:13
+[PauseSystem] unpauseGame called PauseSystem.js:44:13
+[PuzzleLobbyUISystem] restartCurrentLevel called, selectedLevel: level1_1 PuzzleLobbyUISystem.js:359:13
+[PuzzleLobbyUISystem] Starting level: level1_1 PuzzleLobbyUISystem.js:270:13
+[SceneManager] loadScene('game') called <empty string> SceneManager.js:25:13
+[SceneManager] Unloading current scene: game SceneManager.js:41:15
+[PauseSystem] onSceneUnload - isPaused was: false, setting to false PauseSystem.js:28:13
+[AudioManager] Stopping music: prison_song AudioManager.js:1202:13
+[RenderSystem] onSceneUnload called, spawnedEntities: 659 RenderSystem.js:674:13
+[RenderSystem] onSceneUnload complete, tracking data cleared RenderSystem.js:693:13
+[SceneManager] Running loader: GameLoader SceneManager.js:57:15
+[ImageManager] Loaded 194 textures ImageManager.js:206:13
+[SceneManager] Loader complete: GameLoader SceneManager.js:60:15
+[PauseSystem] onSceneLoad - isPaused was: false, setting to false PauseSystem.js:23:13
+[InputSystem] setupResultButtons - victory button: null defeat button: null InputSystem.js:42:13
+[PuzzleLobbyUISystem] Loaded levels: 2 
+Array [ "level1_1", "puzzle_tutorial" ]
+PuzzleLobbyUISystem.js:233:13
+[TerrainSystem] onSceneLoad called, game.state.level: 0 TerrainSystem.js:59:13
+[TerrainSystem] Level name from index: level1_1 TerrainSystem.js:70:13
+[TerrainSystem] Initializing terrain for level: level1_1 TerrainSystem.js:75:13
+[TerrainSystem] Loading 663 level entities... TerrainSystem.js:160:13
+[TerrainSystem] Loaded 663 level entities TerrainSystem.js:236:13
+[TerrainSystem] Terrain initialized TerrainSystem.js:77:13
+[PuzzleGameSystem] onSceneLoad - levelIndex: 0, levelKey: level1_1, puzzleLevel: true PuzzleGameSystem.js:77:13
+[PuzzleGameSystem] Spawned player entity 665 at (-697, 80, -797) PuzzleGameSystem.js:193:13
+[PuzzleGameSystem] Set GuardBehaviorTree for guard 9 PuzzleGameSystem.js:226:17
+[PuzzleGameSystem] Guard 9 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
+[PuzzleGameSystem] Set GuardBehaviorTree for guard 10 PuzzleGameSystem.js:226:17
+[PuzzleGameSystem] Guard 10 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
+[PuzzleGameSystem] Set GuardBehaviorTree for guard 11 PuzzleGameSystem.js:226:17
+[PuzzleGameSystem] Guard 11 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
+[PuzzleGameSystem] Configured 3 guards PuzzleGameSystem.js:254:13
+[PuzzleGameSystem] Initialized level: level1_1 PuzzleGameSystem.js:121:13
+[AudioManager] Playing music: prison_song AudioManager.js:1167:15
+[LightingSystem] onSceneLoad - getCollections keys: 
+Array(62) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+LightingSystem.js:44:13
+[LightingSystem] collections.lightingEffects: 
+Object { campfire: {…}, flicker: {…}, pulse: {…}, strobe: {…} }
+LightingSystem.js:45:13
+[LightingSystem] this.game.app: 
+Object { plugins: {}, currentTime: 1769207105962, lastTime: 319, deltaTime: 0, accumulator: 0.012999999999994943, engineClasses: [], appClasses: {}, libraries: {}, running: true, collections: {…}, … }
+LightingSystem.js:46:13
+[LightingSystem] window.COMPILED_GAME?.collections?.lightingEffects: 
+Object { campfire: {…}, flicker: {…}, pulse: {…}, strobe: {…} }
+LightingSystem.js:47:13
+[CameraControlSystem] onSceneLoad called CameraControlSystem.js:273:13
+[CameraControlSystem] _attachCanvasListener - Canvas element: true CameraControlSystem.js:293:13
+[CameraControlSystem] Click listener attached to canvas CameraControlSystem.js:298:15
+[PlayerControlSystem] onSceneLoad called, isPaused: false PlayerControlSystem.js:56:13
+[PlacementPreviewSystem] onSceneLoad() called PlacementPreviewSystem.js:44:13
+[RenderSystem] postSceneLoad called, spawnedEntities count: 0 RenderSystem.js:81:13
+[RenderSystem] EntityRenderer created, scene: true RenderSystem.js:105:13
+[CameraControlSystem] postSceneLoad called CameraControlSystem.js:286:13
+[CameraControlSystem] _attachCanvasListener - Canvas element: true CameraControlSystem.js:293:13
+[CameraControlSystem] Click listener attached to canvas CameraControlSystem.js:298:15
+[PlayerControlSystem] postSceneLoad - playerEntity: 665, isPaused: false PlayerControlSystem.js:66:13
+[SceneManager] loadScene('game') complete SceneManager.js:93:13
+[SpawnEffectsSystem] billboardSpawned entity 2, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 3, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 4, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 5, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 6, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 7, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 12, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[RenderSystem] Spawning player 665 to renderer: objectType=162, spawnType=34 RenderSystem.js:347:19
+[RenderSystem] spawnEntity result for player 665: spawned=true RenderSystem.js:439:15
+[RenderSystem] Player entityDef: illusionist RenderSystem.js:459:17
+[RenderSystem] Triggering billboardSpawned for player 665 RenderSystem.js:466:19
+[AnimationSystem] billboardSpawned for player 665, animationSet: illusionist AnimationSystem.js:1292:15
+[SpawnEffectsSystem] billboardSpawned entity 665, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[PlayerControlSystem] update #0, isPaused: false PlayerControlSystem.js:227:15
+[PlayerControlSystem] update #1, isPaused: false PlayerControlSystem.js:227:15
+[PlayerControlSystem] update #2, isPaused: false PlayerControlSystem.js:227:15
