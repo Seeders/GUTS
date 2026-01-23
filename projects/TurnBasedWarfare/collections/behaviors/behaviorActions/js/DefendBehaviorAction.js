@@ -11,6 +11,13 @@
  */
 class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'findNearestVisibleEnemy',
+        'triggerSinglePlayAnimation',
+        'fireProjectile',
+        'scheduleDamage'
+    ];
+
     execute(entityId, game) {
         const params = this.parameters || {};
         const defendRadius = params.defendRadius || 100;
@@ -86,7 +93,7 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findNearestEnemyInRadius(entityId, game, centerPos, team, radius) {
-        return game.call('findNearestVisibleEnemy', entityId, radius);
+        return this.call.findNearestVisibleEnemy( entityId, radius);
     }
 
     performAttack(attackerId, targetId, game, combat) {
@@ -114,21 +121,21 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Trigger attack
         if (game.has('triggerSinglePlayAnimation')) {
-            const enums = game.call('getEnums');
-            game.call('triggerSinglePlayAnimation', attackerId, enums.animationType.attack, combat.attackSpeed);
+            const enums = game.getEnums();
+            this.call.triggerSinglePlayAnimation( attackerId, enums.animationType.attack, combat.attackSpeed);
         }
 
         if (combat.projectile) {
             const projectileData = game.getCollections().projectiles?.[combat.projectile];
             if (projectileData) {
-                game.call('fireProjectile', attackerId, targetId, {
+                this.call.fireProjectile( attackerId, targetId, {
                     id: combat.projectile,
                     ...projectileData
                 });
             }
         } else if (combat.damage > 0) {
             const damageDelay = (1 / combat.attackSpeed) * 0.5;
-            game.call('scheduleDamage', attackerId, targetId, combat.damage, 'physical', damageDelay);
+            this.call.scheduleDamage( attackerId, targetId, combat.damage, 'physical', damageDelay);
         }
     }
 

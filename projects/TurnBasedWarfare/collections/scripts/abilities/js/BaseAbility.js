@@ -1,10 +1,26 @@
 class BaseAbility {
+    // Static property for services this ability depends on (will be cached for fast access)
+    // Format: ['serviceName1', 'serviceName2', ...]
+    // Child classes can extend this array: static serviceDependencies = [...GUTS.BaseAbility.serviceDependencies, 'additionalService']
+    static serviceDependencies = [
+        'getVisibleEnemiesInRange',
+        'getNearbyUnits',
+        'playEffectSystem',
+        'applyDamage'
+    ];
+
     constructor(game, abilityData = {}) {
         this.game = game;
         this.abilityData = abilityData;
 
         // Initialize enums
         this.enums = this.game.getEnums();
+
+        // Cached service functions for fast access (e.g., this.call.serviceName)
+        this.call = {};
+
+        // Cache service dependencies for fast access
+        this.game.cacheServiceDependencies(this);
 
         this.id = abilityData.id || 'unknown';
         this.name = abilityData.name || 'Unknown Ability';
@@ -97,7 +113,7 @@ class BaseAbility {
 
         const pos = new THREE.Vector3(position.x, position.y, position.z);
         effects.forEach(effectName => {
-            this.game.call('playEffectSystem', effectName, pos);
+            this.call.playEffectSystem( effectName, pos);
         });
     }
     
@@ -108,7 +124,7 @@ class BaseAbility {
         }
         if (this.game.hasService('applyDamage')) {
             // Use game.call to ensure damage is logged by CallLogger
-            const result = this.game.call('applyDamage', sourceId, targetId, damage, element, { isSpell: true, ...options });
+            const result = this.call.applyDamage( sourceId, targetId, damage, element, { isSpell: true, ...options });
 
             const transform = this.game.getComponent(targetId, "transform");
             const targetPos = transform?.position;
@@ -126,7 +142,7 @@ class BaseAbility {
     // Handles: spatial lookup, team filtering, health check, stealth/awareness, range checking
     getEnemiesInRange(casterEntity, range = null) {
         const baseRange = range || this.range;
-        return this.game.call('getVisibleEnemiesInRange', casterEntity, baseRange);
+        return this.call.getVisibleEnemiesInRange( casterEntity, baseRange);
     }
 
     // Use spatial grid for efficient lookup - returns array of entityIds
@@ -142,7 +158,7 @@ class BaseAbility {
 
         // Search with extended range to account for target collision radii
         const searchRange = baseRange + casterRadius + 50; // +50 as buffer for large units
-        const nearbyEntityIds = this.game.call('getNearbyUnits', casterPos, searchRange, null);
+        const nearbyEntityIds = this.call.getNearbyUnits( casterPos, searchRange, null);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
 
         return nearbyEntityIds.filter(entityId => {

@@ -17,6 +17,20 @@ class AnimationSystem extends GUTS.BaseSystem {
         'startHeightAnimation'
     ];
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'isBillboardWithAnimations',
+        'setBillboardAnimation',
+        'getCamera',
+        'setBillboardAnimationDirection',
+        'applyBillboardAnimationFrame',
+        'getEntityRenderer',
+        'getEntityAnimationState',
+        'setInstanceAnimationTime',
+        'setInstanceSpeed',
+        'getBatchInfo'
+    ];
+
     constructor(game) {
         super(game);
         this.game.animationSystem = this;
@@ -262,7 +276,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
             // Check if this is a static entity (worldObjects, cliffs)
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             const isStaticEntity = unitType && (unitType.collection === 'worldObjects' || unitType.collection === 'cliffs');
 
             if (isStaticEntity) {
@@ -294,7 +308,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
     initializeEntityAnimationState(entityId) {
         // Check if this is a billboard entity with sprite animations
-        const isBillboard = this.game.call('isBillboardWithAnimations', entityId);
+        const isBillboard = this.call.isBillboardWithAnimations( entityId);
 
         // Add animationState component to entity (all values numeric for TypedArray storage)
         // Use null for "not set" values - will be stored as -Infinity in TypedArray
@@ -438,7 +452,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         if (this.game.state?.phase !== this.enums.gamePhase.battle) {
             // Don't override single-play animations even during placement phase
             if (!this.SINGLE_PLAY_ANIMATIONS.has(animState.spriteAnimationType)) {
-                this.game.call('setBillboardAnimation', entityId, this.enums.animationType.idle, true);
+                this.call.setBillboardAnimation( entityId, this.enums.animationType.idle, true);
             }
             // Still update sprite direction based on camera position (important for editor)
             this.updateSpriteDirectionFromRotation(entityId, animState);
@@ -463,7 +477,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Set walk or idle animation based on movement
         const animationType = isMoving ? this.enums.animationType.walk : this.enums.animationType.idle;
-        this.game.call('setBillboardAnimation', entityId, animationType, true);
+        this.call.setBillboardAnimation( entityId, animationType, true);
 
         // Update sprite direction from rotation (set by MovementSystem when moving, or by attack behavior when attacking)
         this.updateSpriteDirectionFromRotation(entityId, animState);
@@ -489,7 +503,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         if (!transform?.position || !transform?.rotation) return;
 
         // Get camera via service
-        const cam = this.game.call('getCamera');
+        const cam = this.call.getCamera();
         if (!cam) return;
 
         const rotationY = transform.rotation.y;
@@ -563,7 +577,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Check if direction changed and apply it
         if (newDirection !== animState.spriteDirection) {
             // Let setBillboardAnimationDirection handle setting the direction and applying the frame
-            this.game.call('setBillboardAnimationDirection', entityId, newDirection);
+            this.call.setBillboardAnimationDirection( entityId, newDirection);
         }
 
         // Calculate camera vertical angle to determine isometric vs ground-level sprite set
@@ -587,13 +601,13 @@ class AnimationSystem extends GUTS.BaseSystem {
             if (animState.spriteCameraAngle !== newCameraAngle) {
                 animState.spriteCameraAngle = newCameraAngle;
                 // Force animation frame update to use correct sprite set
-                this.game.call('applyBillboardAnimationFrame', entityId);
+                this.call.applyBillboardAnimationFrame( entityId);
             }
         } else {
             // Orthographic cameras always use isometric sprites
             if (animState.spriteCameraAngle !== 0) {
                 animState.spriteCameraAngle = 0;
-                this.game.call('applyBillboardAnimationFrame', entityId);
+                this.call.applyBillboardAnimationFrame( entityId);
             }
         }
     }
@@ -750,7 +764,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         }
 
         // Apply the ballistic frame directly using the same logic as applyBillboardAnimationFrame
-        const entityRenderer = this.game.call('getEntityRenderer');
+        const entityRenderer = this.call.getEntityRenderer();
         if (!entityRenderer) {
             console.warn('[Ballistic] No entity renderer');
             return;
@@ -963,7 +977,7 @@ class AnimationSystem extends GUTS.BaseSystem {
                     false,  // don't loop - play once
                     (completedEntityId) => {
                         // Return to idle animation after animation finishes
-                        this.game.call('setBillboardAnimation', completedEntityId, this.enums.animationType.idle, true);
+                        this.call.setBillboardAnimation( completedEntityId, this.enums.animationType.idle, true);
                     },
                     minTime > 0 ? minTime : null  // Pass minTime as custom duration if provided
                 );
@@ -1032,16 +1046,16 @@ class AnimationSystem extends GUTS.BaseSystem {
         }
 
         // For VAT/model entities: freeze at current frame
-        const animationStateData = this.game.call('getEntityAnimationState', entityId);
+        const animationStateData = this.call.getEntityAnimationState( entityId);
 
         if (animationStateData && animationStateData.clipDuration > 0) {
             // Set to 99% through the animation (last frame before loop)
             const lastFrameTime = animationStateData.clipDuration * 0.99;
-            this.game.call('setInstanceAnimationTime', entityId, lastFrameTime);
+            this.call.setInstanceAnimationTime( entityId, lastFrameTime);
         }
 
         // Now freeze it at that frame
-        this.game.call('setInstanceSpeed', entityId, 0);
+        this.call.setInstanceSpeed( entityId, 0);
     }
 
     startCelebration(entityId, teamType = null) {
@@ -1089,7 +1103,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             return false; // Continuous animations never finish
         }
 
-        const animationState = this.game.call('getEntityAnimationState', entityId);
+        const animationState = this.call.getEntityAnimationState( entityId);
         if (!animationState) {
             return true;
         }
@@ -1122,7 +1136,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             return this._clipSetCache.get(batchKey);
         }
 
-        const batchInfo = this.game.call('getBatchInfo', objectType, spawnType);
+        const batchInfo = this.call.getBatchInfo( objectType, spawnType);
         if (!batchInfo?.availableClips) {
             return null;
         }
@@ -1243,7 +1257,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         }
 
         // Tell EntityRenderer to apply the first frame
-        const entityRenderer = this.game.call('getEntityRenderer');
+        const entityRenderer = this.call.getEntityRenderer();
         if (entityRenderer) {
             entityRenderer.applyBillboardAnimationFrame(entityId, animData);
         }
@@ -1284,7 +1298,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             }
 
             // Tell EntityRenderer to apply the new frame immediately
-            const entityRenderer = this.game.call('getEntityRenderer');
+            const entityRenderer = this.call.getEntityRenderer();
             if (entityRenderer) {
                 entityRenderer.applyBillboardAnimationFrame(entityId, animState);
             }
@@ -1297,7 +1311,7 @@ class AnimationSystem extends GUTS.BaseSystem {
      * Update billboard sprite animation frames (called every frame)
      */
     updateBillboardAnimations(deltaTime) {
-        const entityRenderer = this.game.call('getEntityRenderer');
+        const entityRenderer = this.call.getEntityRenderer();
         if (!entityRenderer) return;
 
         // Get rendering data to access sprite animation frame rates
@@ -1368,7 +1382,7 @@ class AnimationSystem extends GUTS.BaseSystem {
                             // Death animations should stay frozen on the last frame
                             if (this.SINGLE_PLAY_ANIMATIONS.has(animState.spriteAnimationType) &&
                                 animState.spriteAnimationType !== this.enums.animationType.death) {
-                                this.game.call('setBillboardAnimation', entityId, this.enums.animationType.idle, true);
+                                this.call.setBillboardAnimation( entityId, this.enums.animationType.idle, true);
                             }
                         }
                         break; // Exit loop for non-looping animations
@@ -1459,7 +1473,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Determine initial direction based on entity type and team
         const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
         const team = this.game.getComponent(entityId, 'team');
         const isBuilding = unitType?.collection === 'buildings';
 
@@ -1498,7 +1512,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Update entity transform now that UV coordinates are set
         // This ensures aspect ratio calculation works correctly
-        const entityRenderer = this.game.call('getEntityRenderer');
+        const entityRenderer = this.call.getEntityRenderer();
         if (entityRenderer) {
             const transform = this.game.getComponent(entityId, 'transform');
             const velocity = this.game.getComponent(entityId, 'velocity');

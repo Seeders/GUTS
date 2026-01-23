@@ -1,0 +1,12 @@
+{
+  "name": "Peasant Mining (Left Team)",
+  "description": "Spawn peasants on left side to mine gold cooperatively.",
+  "rounds": {
+    "1": [
+      { "type": "SPAWN_UNIT", "unitId": "peasant", "collection": "units", "position": { "x": -1200, "z": 0 } },
+      { "type": "SPAWN_UNIT", "unitId": "peasant", "collection": "units", "position": { "x": -1200, "z": -50 } },
+      { "type": "SPAWN_UNIT", "unitId": "peasant", "collection": "units", "position": { "x": -1200, "z": 50 } },
+      { "type": "SPAWN_UNIT", "unitId": "peasant", "collection": "units", "position": { "x": -1200, "z": -100 } }
+    ]
+  }
+}

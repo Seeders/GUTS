@@ -2,6 +2,12 @@
  * ExitSystem - Detects when player reaches the exit and triggers level completion
  */
 class ExitSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'pauseGame',
+        'playSound',
+        'showVictoryScreen'
+    ];
+
     static services = [
         'isLevelComplete',
         'getExitPosition',
@@ -79,7 +85,7 @@ class ExitSystem extends GUTS.BaseSystem {
         this.levelEndTime = Date.now();
 
         // Pause the game immediately
-        this.game.call('pauseGame');
+        this.call.pauseGame();
 
         // Unlock mouse so player can click UI buttons
         if (document.pointerLockElement) {
@@ -102,7 +108,7 @@ class ExitSystem extends GUTS.BaseSystem {
         }
 
         // Play victory sound
-        this.game.call('playSound', 'sounds', 'victory');
+        this.call.playSound('sounds', 'victory');
 
         console.log('[ExitSystem] Level complete!');
 
@@ -111,7 +117,7 @@ class ExitSystem extends GUTS.BaseSystem {
 
         // Show victory screen with stats
         if (this.game.hasService('showVictoryScreen')) {
-            this.game.call('showVictoryScreen', this.getLevelStats());
+            this.call.showVictoryScreen(this.getLevelStats());
         } else {
             // Fallback - show victory overlay
             const victoryOverlay = document.getElementById('victoryOverlay');

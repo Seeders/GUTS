@@ -10,6 +10,29 @@
  * This system calls UnitOrderSystem.applySquadTargetPosition for the core logic.
  */
 class UnitOrderUISystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'getPlacementById',
+        'getUnitTypeDef',
+        'getEntityAbilities',
+        'canAffordCost',
+        'getSelectedSquads',
+        'ui_holdPosition',
+        'createParticleEffect',
+        'clearEntityPath',
+        'ui_hide',
+        'getSpriteAnimationDuration',
+        'ui_transformUnit',
+        'selectEntity',
+        'getWorldPositionFromMouse',
+        'ui_issueHideOrder',
+        'ui_issueMoveOrder',
+        'ui_assignBuilder',
+        'getPlayerGold',
+        'canAffordLevelUp',
+        'getLevelUpCost',
+        'levelSquad'
+    ];
+
     constructor(game) {
         super(game);
         this.game = game;
@@ -48,7 +71,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         const actionPanel = document.getElementById('actionPanel');
         if (!actionPanel) return;
 
-        const placement = this.game.call('getPlacementById', placementId);
+        const placement = this.call.getPlacementById( placementId);
         if (!placement) {
             console.warn(`[UnitOrderUISystem] No placement found for ${placementId}`);
             return;
@@ -58,7 +81,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
         const firstUnit = placement.squadUnits?.[0];
         const unitTypeComp = firstUnit ? this.game.getComponent(firstUnit, "unitType") : null;
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
         let squadPanel = document.createElement('div');
         squadPanel.id = 'squadActionPanel';
@@ -94,7 +117,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
                 const actionsCollection = this.collections.actions;
 
                 // Get unit's abilities to check for ability-based actions
-                const unitAbilities = this.game.call('getEntityAbilities', selectedUnitId) || [];
+                const unitAbilities = this.call.getEntityAbilities( selectedUnitId) || [];
                 const unitAbilityIds = unitAbilities.map(a => a.id);
 
                 // Find all actions that require abilities and add them if the unit has the ability
@@ -128,7 +151,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
                     building.id = buildingId;
                     building.collection = "buildings";
-                    const canAfford = this.game.call('canAffordCost', building.value || 0);
+                    const canAfford = this.call.canAffordCost( building.value || 0);
                     const isLocked = this.game.shopSystem?.isBuildingLocked(buildingId, building);
                     const lockReason = this.game.shopSystem?.getLockReason(buildingId, building);
 
@@ -273,7 +296,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         this.stopTargeting();
 
         // Use game.call - SAME code path as headless mode
-        let placementIds = this.game.call('getSelectedSquads');
+        let placementIds = this.call.getSelectedSquads();
 
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
@@ -281,23 +304,23 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         }
 
         // Use game.call - handles all the logic
-        this.game.call('ui_holdPosition', placementIds, (success) => {
+        this.call.ui_holdPosition( placementIds, (success) => {
             if (success) {
                 // Domain logic (applySquadsTargetPositions) now handled by ClientNetworkSystem
                 // Here we just handle UI concerns: visual feedback
 
                 // Show visual feedback
                 placementIds.forEach((placementId) => {
-                    const placement = this.game.call('getPlacementById', placementId);
+                    const placement = this.call.getPlacementById( placementId);
                     placement.squadUnits.forEach((unitId) => {
                         const transform = this.game.getComponent(unitId, "transform");
                         const position = transform?.position;
                         if (this.game.effectsSystem && position) {
-                            this.game.call('createParticleEffect', position.x, 0, position.z, 'magic', { ...this.pingEffect });
+                            this.call.createParticleEffect( position.x, 0, position.z, 'magic', { ...this.pingEffect });
                         }
 
                         // Clear path in pathfinding system
-                        this.game.call('clearEntityPath', unitId);
+                        this.call.clearEntityPath( unitId);
                     });
                 });
             }
@@ -308,7 +331,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         this.stopTargeting();
 
         // Use game.call - SAME code path as headless mode
-        let placementIds = this.game.call('getSelectedSquads');
+        let placementIds = this.call.getSelectedSquads();
 
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
@@ -316,24 +339,24 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         }
 
         // Use game.call - handles all the logic
-        this.game.call('ui_hide', placementIds, (success) => {
+        this.call.ui_hide( placementIds, (success) => {
             if (success) {
                 // Show visual feedback
                 placementIds.forEach((placementId) => {
-                    const placement = this.game.call('getPlacementById', placementId);
+                    const placement = this.call.getPlacementById( placementId);
                     placement.squadUnits.forEach((unitId) => {
                         const transform = this.game.getComponent(unitId, "transform");
                         const position = transform?.position;
                         if (this.game.effectsSystem && position) {
                             // Use a subtle effect for hiding
-                            this.game.call('createParticleEffect', position.x, 0, position.z, 'magic', {
+                            this.call.createParticleEffect( position.x, 0, position.z, 'magic', {
                                 ...this.pingEffect,
                                 color: 0x444444  // Darker color for stealth
                             });
                         }
 
                         // Clear path in pathfinding system
-                        this.game.call('clearEntityPath', unitId);
+                        this.call.clearEntityPath( unitId);
                     });
                 });
             }
@@ -342,7 +365,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
     placeBearTrap() {
         // Get selected scouts
-        const placementIds = this.game.call('getSelectedSquads') || [];
+        const placementIds = this.call.getSelectedSquads() || [];
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
             return;
@@ -351,11 +374,11 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         // Find a scout unit with BearTrapAbility
         let scoutUnit = null;
         for (const placementId of placementIds) {
-            const placement = this.game.call('getPlacementById', placementId);
+            const placement = this.call.getPlacementById( placementId);
             if (!placement) continue;
 
             for (const unitId of placement.squadUnits) {
-                const abilities = this.game.call('getEntityAbilities', unitId);
+                const abilities = this.call.getEntityAbilities( unitId);
                 if (abilities) {
                     const bearTrapAbility = abilities.find(a => a.id === 'BearTrapAbility');
                     if (bearTrapAbility) {
@@ -396,7 +419,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
     placeExplosiveTrap() {
         // Get selected trappers
-        const placementIds = this.game.call('getSelectedSquads') || [];
+        const placementIds = this.call.getSelectedSquads() || [];
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
             return;
@@ -405,11 +428,11 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         // Find a trapper unit with ExplosiveTrapAbility
         let trapperUnit = null;
         for (const placementId of placementIds) {
-            const placement = this.game.call('getPlacementById', placementId);
+            const placement = this.call.getPlacementById( placementId);
             if (!placement) continue;
 
             for (const unitId of placement.squadUnits) {
-                const abilities = this.game.call('getEntityAbilities', unitId);
+                const abilities = this.call.getEntityAbilities( unitId);
                 if (abilities) {
                     const explosiveTrapAbility = abilities.find(a => a.id === 'ExplosiveTrapAbility');
                     if (explosiveTrapAbility) {
@@ -459,7 +482,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
     }
 
     _executeTransform(targetUnitType, animationType) {
-        const placementIds = this.game.call('getSelectedSquads') || [];
+        const placementIds = this.call.getSelectedSquads() || [];
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
             return;
@@ -467,22 +490,22 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
         // Find first unit in selection
         for (const placementId of placementIds) {
-            const placement = this.game.call('getPlacementById', placementId);
+            const placement = this.call.getPlacementById( placementId);
             if (!placement?.squadUnits?.length) continue;
 
             const entityId = placement.squadUnits[0];
 
             // Get animation duration from sprite data
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
             const spriteAnimationSet = unitDef?.spriteAnimationSet;
             let animationDuration = 1000;
             if (spriteAnimationSet && this.game.hasService('getSpriteAnimationDuration')) {
-                animationDuration = this.game.call('getSpriteAnimationDuration', spriteAnimationSet, animationType);
+                animationDuration = this.call.getSpriteAnimationDuration( spriteAnimationSet, animationType);
             }
 
             // Call network-synced transform via GameInterfaceSystem
-            this.game.call('ui_transformUnit', entityId, targetUnitType, animationType, (success, response) => {
+            this.call.ui_transformUnit( entityId, targetUnitType, animationType, (success, response) => {
                 if (success) {
                     this.game.uiSystem?.showNotification('Transforming...', 'info', animationDuration);
 
@@ -491,7 +514,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
                     if (newEntityId != null && this.game.hasService('selectEntity')) {
                         setTimeout(() => {
                             if (this.game.entityExists(newEntityId)) {
-                                this.game.call('selectEntity', newEntityId);
+                                this.call.selectEntity( newEntityId);
                             }
                         }, animationDuration);
                     }
@@ -521,7 +544,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         }
 
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
         if (unitType && unitType.collection === "units") {
             const placement = this.game.getComponent(entityId, "placement");
             const placementId = placement?.placementId;
@@ -538,11 +561,11 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
     showMoveTargets() {
         if (!this.orderPreview) return;
 
-        const placementIds = this.game.call('getSelectedSquads') || [];
+        const placementIds = this.call.getSelectedSquads() || [];
         const orders = [];
 
         placementIds.forEach((placementId) => {
-            const placement = this.game.call('getPlacementById', placementId);
+            const placement = this.call.getPlacementById( placementId);
             placement.squadUnits.forEach((entityId) => {
                 const playerOrder = this.game.getComponent(entityId, "playerOrder");
                 if (playerOrder && (playerOrder.targetPositionX !== 0 || playerOrder.targetPositionZ !== 0)) {
@@ -575,14 +598,14 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
         // Get raw world position without grid centering offset
         // Move/Hide orders should go exactly where clicked, not snapped to grid center
-        const worldPos = this.game.call('getWorldPositionFromMouse', undefined, undefined, false);
+        const worldPos = this.call.getWorldPositionFromMouse( undefined, undefined, false);
         if (!worldPos) {
             this.game.uiSystem?.showNotification('Could not find ground under cursor.', 'error', 1000);
             this.stopTargeting();
             return;
         }
 
-        let placementIds = this.game.call('getSelectedSquads') || [];
+        let placementIds = this.call.getSelectedSquads() || [];
 
         if (!placementIds || placementIds.length === 0) {
             this.game.uiSystem?.showNotification('No units selected.', 'warning', 800);
@@ -610,12 +633,12 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
         // Use GameInterfaceSystem for the actual order
         if (isHideOrder) {
-            this.game.call('ui_issueHideOrder', placementIds, targetPosition, (success, response) => {
+            this.call.ui_issueHideOrder( placementIds, targetPosition, (success, response) => {
                 this._handleMoveOrderResponse(success, worldPos, effectColor, isHideOrder);
             });
         } else {
             // Pass orderMeta to ui_issueMoveOrder for force move support
-            this.game.call('ui_issueMoveOrder', placementIds, targetPosition, this.orderMeta, (success, response) => {
+            this.call.ui_issueMoveOrder( placementIds, targetPosition, this.orderMeta, (success, response) => {
                 this._handleMoveOrderResponse(success, worldPos, effectColor, isHideOrder);
             });
         }
@@ -625,7 +648,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         if (success) {
             // Show visual feedback
             if (this.game.effectsSystem) {
-                this.game.call('createParticleEffect', worldPos.x, 0, worldPos.z, 'magic', {
+                this.call.createParticleEffect( worldPos.x, 0, worldPos.z, 'magic', {
                     ...this.pingEffect,
                     color: effectColor
                 });
@@ -650,7 +673,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
             if (!placement || !pos || !unitType) continue;
             if (unitType.collection !== 'buildings') continue;
@@ -672,12 +695,12 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
     getBuilderUnitFromSelection(placementIds) {
         for (const placementId of placementIds) {
-            const placement = this.game.call('getPlacementById', placementId);
+            const placement = this.call.getPlacementById( placementId);
             if (!placement) continue;
 
             for (const unitId of placement.squadUnits) {
                 // Check if unit has BuildAbility
-                const abilities = this.game.call('getEntityAbilities', unitId);
+                const abilities = this.call.getEntityAbilities( unitId);
                 if (abilities) {
                     const buildAbility = abilities.find(a => a.id === 'BuildAbility');
                     if (buildAbility) {
@@ -691,12 +714,12 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
     assignBuilderToConstruction(builderEntityId, buildingEntityId) {
         // Use GameInterfaceSystem for the actual builder assignment
-        this.game.call('ui_assignBuilder', builderEntityId, buildingEntityId, (result) => {
+        this.call.ui_assignBuilder( builderEntityId, buildingEntityId, (result) => {
             if (result && result.success) {
                 const { targetPosition } = result.data;
 
                 // Store peasantId in ability for completion tracking
-                const abilities = this.game.call('getEntityAbilities', builderEntityId);
+                const abilities = this.call.getEntityAbilities( builderEntityId);
                 if (abilities) {
                     const buildAbility = abilities.find(a => a.id === 'BuildAbility');
                     if (buildAbility) {
@@ -706,7 +729,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
                 // Show visual feedback
                 if (this.game.effectsSystem && targetPosition) {
-                    this.game.call('createParticleEffect', targetPosition.x, 0, targetPosition.z, 'magic', { count: 8, color: 0xffaa00 });
+                    this.call.createParticleEffect( targetPosition.x, 0, targetPosition.z, 'magic', { count: 8, color: 0xffaa00 });
                 }
 
                 this.game.uiSystem?.showNotification('Peasant assigned to continue construction', 'success', 1000);
@@ -743,7 +766,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         const action = this.collections.actions?.[actionId];
         if (action?.hidden) return false;
 
-        const placementIds = this.game.call('getSelectedSquads') || [];
+        const placementIds = this.call.getSelectedSquads() || [];
         if (!placementIds.length) return actionId !== 'levelUp' && actionId !== 'specialize';
 
         const placementId = placementIds[0];
@@ -763,7 +786,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
      * Level up the selected squad
      */
     levelUpSquadAction() {
-        const placementIds = this.game.call('getSelectedSquads') || [];
+        const placementIds = this.call.getSelectedSquads() || [];
         if (!placementIds.length) return;
 
         const placementId = placementIds[0];
@@ -773,9 +796,9 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
             return;
         }
 
-        const playerGold = this.game.call('getPlayerGold');
-        if (!this.game.call('canAffordLevelUp', placementId, playerGold)) {
-            const cost = this.game.call('getLevelUpCost', placementId);
+        const playerGold = this.call.getPlayerGold();
+        if (!this.call.canAffordLevelUp( placementId, playerGold)) {
+            const cost = this.call.getLevelUpCost( placementId);
             this.game.uiSystem?.showNotification(`Need ${cost} gold`, 'warning', 800);
             return;
         }
@@ -785,7 +808,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         const willBeLevel2 = currentLevel + 1 === 2;
         const hasSpecializations = unitType?.specUnits?.length > 0;
 
-        this.game.call('levelSquad', { placementId }, (success) => {
+        this.call.levelSquad( { placementId }, (success) => {
             if (success) {
                 this.game.uiSystem?.showNotification('Leveled up!', 'success', 1000);
                 this.showSquadActionPanel(placementId);
@@ -806,7 +829,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
      * Show specialization selection for the selected squad
      */
     specializeSquadAction() {
-        const placementIds = this.game.call('getSelectedSquads') || [];
+        const placementIds = this.call.getSelectedSquads() || [];
         if (!placementIds.length) return;
 
         const placementId = placementIds[0];

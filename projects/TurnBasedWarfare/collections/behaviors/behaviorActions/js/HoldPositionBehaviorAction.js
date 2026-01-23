@@ -1,4 +1,8 @@
 class HoldPositionBehaviorAction extends GUTS.BaseBehaviorAction {
+    static serviceDependencies = [
+        'clearEntityPath'
+    ];
+
     /**
      * Action to hold position - prevents unit from moving
      * Activated when player issues a "hold position" order
@@ -20,7 +24,7 @@ class HoldPositionBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Clear pathfinding
-        game.call('clearEntityPath', entityId);
+        this.call.clearEntityPath( entityId);
 
         // Return success - unit is holding position
         // This will prevent combat and other behaviors from taking over

@@ -1,4 +1,10 @@
 class MindControlAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'playEffectSystem',
+        'playEffect'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Mind Control',
@@ -205,11 +211,11 @@ class MindControlAbility extends GUTS.BaseAbility {
 
         // Enhanced mind control success burst (client only) using preset effects
         if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'mind_control_success',
+            this.call.playEffectSystem( 'mind_control_success',
                 new THREE.Vector3(targetPos.x, targetPos.y + 35, targetPos.z));
 
             // Mind control ring around target using preset effect
-            this.game.call('playEffect', 'mind_control_ring',
+            this.call.playEffect( 'mind_control_ring',
                 new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z));
         }
 

@@ -7,6 +7,14 @@ class GameSystem extends GUTS.BaseSystem {
         'exitToMenu'
     ];
 
+    static serviceDependencies = [
+        'showLoadingScreen',
+        'showGameScreen',
+        'pauseScreen',
+        'resumeScreen',
+        'showMainMenu'
+    ];
+
     constructor(game) {
         super(game);
         this.game.gameSystem = this;
@@ -29,7 +37,7 @@ class GameSystem extends GUTS.BaseSystem {
         // Only show loading screen for single-player (multiplayer already showed it)
         if (!multiplayerData) {
             if (this.game.hasService('showLoadingScreen')) {
-                this.game.call('showLoadingScreen');
+                this.call.showLoadingScreen();
             }
 
             // Update loading content based on selected mode
@@ -43,7 +51,7 @@ class GameSystem extends GUTS.BaseSystem {
 
         this.game.state.isPaused = false;
         if (this.game.hasService('showGameScreen')) {
-            this.game.call('showGameScreen');
+            this.call.showGameScreen();
         }
         // Trigger onGameStarted AFTER screen is visible so UI elements are accessible
         console.log('[GameSystem] Triggering onGameStarted event');
@@ -51,7 +59,7 @@ class GameSystem extends GUTS.BaseSystem {
     }
 
     pauseGame() {
-        this.game.call('pauseScreen');
+        this.call.pauseScreen();
         const pauseMenu = document.getElementById('pauseMenu');
         if (pauseMenu) {
             pauseMenu.style.display = 'flex';
@@ -59,7 +67,7 @@ class GameSystem extends GUTS.BaseSystem {
     }
 
     resumeGame() {
-        this.game.call('resumeScreen');
+        this.call.resumeScreen();
         const pauseMenu = document.getElementById('pauseMenu');
         if (pauseMenu) {
             pauseMenu.style.display = 'none';
@@ -82,7 +90,7 @@ class GameSystem extends GUTS.BaseSystem {
 
     exitToMenu() {
         if (confirm('Are you sure you want to exit to the main menu? Your progress will be lost.')) {
-            this.game.call('showMainMenu');
+            this.call.showMainMenu();
         }
     }
 

@@ -4,6 +4,28 @@ class ShopSystem extends GUTS.BaseSystem {
         'updateSquadExperience'
     ];
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'getActivePlayerTeam',
+        'canAffordCost',
+        'canAffordSupply',
+        'getLocalPlayerStats',
+        'upgradeBuildingRequest',
+        'selectEntity',
+        'ui_purchaseUnit',
+        'getPlacementsForSide',
+        'getPlacementById',
+        'worldToPlacementGrid',
+        'purchaseUpgrade',
+        'getSquadsReadyToLevelUp',
+        'levelSquad',
+        'showSpecializationSelection',
+        'cancelBuilding',
+        'addPlayerGold',
+        'removeInstance',
+        'deselectAllUnits'
+    ];
+
     constructor(game) {
         super(game);
         this.game.shopSystem = this;
@@ -38,7 +60,7 @@ class ShopSystem extends GUTS.BaseSystem {
             const placement = this.game.getComponent(entityId, 'placement');
             const teamComp = this.game.getComponent(entityId, 'team');
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
             if (!placement || !unitType) continue;
             if (unitType.collection !== 'buildings') continue;
@@ -65,7 +87,7 @@ class ShopSystem extends GUTS.BaseSystem {
         for (const entityId of entitiesWithTeam) {
             const teamComp = this.game.getComponent(entityId, 'team');
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             const health = this.game.getComponent(entityId, 'health');
 
             if (!unitType || !health) continue;
@@ -89,7 +111,7 @@ class ShopSystem extends GUTS.BaseSystem {
      * @returns {{met: boolean, reason: string|null}}
      */
     checkRequirements(def) {
-        const teamIndex = this.game.call('getActivePlayerTeam');
+        const teamIndex = this.call.getActivePlayerTeam();
 
         if (def.requiresBuildings && def.requiresBuildings.length > 0) {
             const ownedBuildings = this.getOwnedBuildings(teamIndex);
@@ -170,7 +192,7 @@ class ShopSystem extends GUTS.BaseSystem {
         if (!entityId) return;
 
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
         if (unitType && unitType.collection === "buildings") {
             const placement = this.game.getComponent(entityId, "placement");
             this.renderBuildingActions(placement);
@@ -180,7 +202,7 @@ class ShopSystem extends GUTS.BaseSystem {
         // Get unitType from the entity, not from placement
         const buildingId = this.game.state.selectedEntity.entityId;
         const buildingComp = this.game.getComponent(buildingId, 'unitType');
-        const building = this.game.call('getUnitTypeDef', buildingComp);
+        const building = this.call.getUnitTypeDef( buildingComp);
         const container = document.getElementById('actionPanel');
         if (!container) return;
         container.innerHTML = '';
@@ -273,9 +295,9 @@ class ShopSystem extends GUTS.BaseSystem {
         building.units.forEach(unitId => {
             const unit = UnitTypes[unitId];
             const buildTime = unit.buildTime || 1;
-            const canAfford = this.game.call('canAffordCost', unit.value);
+            const canAfford = this.call.canAffordCost( unit.value);
             const hasCapacity = buildTime <= remainingCapacity + 0.001;
-            const hasSupply = this.game.call('canAffordSupply', this.game.call('getActivePlayerTeam'), unit) ?? true;
+            const hasSupply = this.call.canAffordSupply( this.call.getActivePlayerTeam(), unit) ?? true;
             const requirements = this.checkRequirements(unit);
 
             let locked = !canAfford || !hasCapacity || !hasSupply || !requirements.met;
@@ -305,7 +327,7 @@ class ShopSystem extends GUTS.BaseSystem {
 
     addUpgradeButtons(grid, building) {
         // Get local player stats for upgrade checks
-        const playerStats = this.game.call('getLocalPlayerStats');
+        const playerStats = this.call.getLocalPlayerStats();
 
         building.upgrades.forEach(upgradeId => {
             const upgrade = this.collections.upgrades[upgradeId];
@@ -316,7 +338,7 @@ class ShopSystem extends GUTS.BaseSystem {
             const isOwned = upgradeIndex !== undefined && playerStats?.upgrades !== undefined
                 ? (playerStats.upgrades & (1 << upgradeIndex)) !== 0
                 : false;
-            const canAfford = this.game.call('canAffordCost', upgrade.value);
+            const canAfford = this.call.canAffordCost( upgrade.value);
             const requirements = this.checkRequirements(upgrade);
             const locked = isOwned || !canAfford || !requirements.met;
 
@@ -353,7 +375,7 @@ class ShopSystem extends GUTS.BaseSystem {
 
         // Use target building's value as the upgrade cost
         const cost = targetBuilding.value || 0;
-        const canAfford = this.game.call('canAffordCost', cost);
+        const canAfford = this.call.canAffordCost( cost);
         const locked = !canAfford;
 
         const btn = this.createActionButton({
@@ -376,7 +398,7 @@ class ShopSystem extends GUTS.BaseSystem {
             return;
         }
 
-        this.game.call('upgradeBuildingRequest', {
+        this.call.upgradeBuildingRequest( {
             buildingEntityId: buildingId,
             placementId: placementId,
             targetBuildingId: targetBuildingId
@@ -387,7 +409,7 @@ class ShopSystem extends GUTS.BaseSystem {
                 // Auto-select the new building entity
                 const newEntityId = response?.newEntityId;
                 if (newEntityId != null && this.game.hasService('selectEntity')) {
-                    this.game.call('selectEntity', newEntityId);
+                    this.call.selectEntity( newEntityId);
                 } else {
                     // Fallback: clear selection if we can't select the new entity
                     this.clearSelectedEntity();
@@ -447,13 +469,13 @@ class ShopSystem extends GUTS.BaseSystem {
 
     isBuildingLocked(buildingId, building) {
         const requirements = this.checkRequirements(building);
-        return !this.game.call('canAffordCost', building.value) || !requirements.met;
+        return !this.call.canAffordCost( building.value) || !requirements.met;
     }
 
     getLockReason(buildingId, building) {
         const requirements = this.checkRequirements(building);
         if (!requirements.met) return requirements.reason;
-        if (!this.game.call('canAffordCost', building.value)) return "Can't afford";
+        if (!this.call.canAffordCost( building.value)) return "Can't afford";
         return null;
     }
 
@@ -467,7 +489,7 @@ class ShopSystem extends GUTS.BaseSystem {
 
         // Use game.call - SAME code path as headless mode
         // This is the SINGLE source of truth for unit purchasing
-        this.game.call('ui_purchaseUnit', unitId, buildingId, this.game.call('getActivePlayerTeam'), (success, response) => {
+        this.call.ui_purchaseUnit( unitId, buildingId, this.call.getActivePlayerTeam(), (success, response) => {
             if (!success) {
                 // Show error notification from GameActionsInterface response
                 this.showNotification(response?.error || 'Purchase failed', 'error');
@@ -477,8 +499,8 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     getBuildingPlacementId(buildingId) {
-        const myTeam = this.game.call('getActivePlayerTeam');
-        const placements = this.game.call('getPlacementsForSide', myTeam);
+        const myTeam = this.call.getActivePlayerTeam();
+        const placements = this.call.getPlacementsForSide( myTeam);
         if (!placements) return null;
 
         for (const [placementIndex, placement] of Object.entries(placements)) {
@@ -492,7 +514,7 @@ class ShopSystem extends GUTS.BaseSystem {
     }
 
     getBuildingGridPosition(placementId) {
-        const placement = this.game.call('getPlacementById', placementId);
+        const placement = this.call.getPlacementById( placementId);
         if (!placement || !placement.squadUnits || placement.squadUnits.length === 0) return null;
 
         // Get grid position from the building entity's transform
@@ -502,17 +524,17 @@ class ShopSystem extends GUTS.BaseSystem {
         if (!worldPos) return null;
 
         // Convert world position to grid position
-        return this.game.call('worldToPlacementGrid', worldPos.x, worldPos.z);
+        return this.call.worldToPlacementGrid( worldPos.x, worldPos.z);
     }
 
     purchaseUpgrade(upgradeId, upgrade) {
-        this.game.call('purchaseUpgrade', { upgradeId: upgradeId }, (success, response) => {
+        this.call.purchaseUpgrade( { upgradeId: upgradeId }, (success, response) => {
             if (success) {
                 // Domain logic (gold deduction, bitmask) now handled by ClientNetworkSystem
                 // Here we just handle UI concerns: effects, notifications, UI refresh
 
                 // Apply upgrade effects and show notification
-                this.applyUpgradeEffects(this.game.call('getActivePlayerTeam'), upgrade);
+                this.applyUpgradeEffects(this.call.getActivePlayerTeam(), upgrade);
                 this.showNotification(`${upgrade.title} purchased!`, 'success');
                 // Refresh the UI to show the upgrade as owned
                 this.refreshShopUI();
@@ -549,7 +571,7 @@ class ShopSystem extends GUTS.BaseSystem {
 
     onPlacementPhaseStart() {
         // Reset production progress for all completed buildings on my side
-        const ownedBuildings = this.getOwnedBuildings(this.game.call('getActivePlayerTeam'));
+        const ownedBuildings = this.getOwnedBuildings(this.call.getActivePlayerTeam());
         for (const [buildingType, entityIds] of ownedBuildings) {
             for (const entityId of entityIds) {
                 this.setBuildingProductionProgress(entityId, 0);
@@ -563,7 +585,7 @@ class ShopSystem extends GUTS.BaseSystem {
 
         container.innerHTML = '';
 
-        const squadsReadyToLevelUp = this.game.call('getSquadsReadyToLevelUp');
+        const squadsReadyToLevelUp = this.call.getSquadsReadyToLevelUp();
         
         if (squadsReadyToLevelUp.length === 0) return;
 
@@ -640,14 +662,14 @@ class ShopSystem extends GUTS.BaseSystem {
             const willBeLevel2 = squad.level + 1 === 2;
             const hasSpecializations = currentUnitType.specUnits && currentUnitType.specUnits.length > 0;
 
-            this.game.call('levelSquad', { placementId }, (success) => {
+            this.call.levelSquad( { placementId }, (success) => {
                 if (success) {
                     this.game.uiSystem?.showNotification('Leveled up!', 'success', 1000);
                     // If unit just reached level 2 and has specializations, show selection
                     if (willBeLevel2 && hasSpecializations) {
                         const newSquadData = this.game.squadExperienceSystem?.getSquadExperience(placementId);
                         if (newSquadData) {
-                            this.game.call('showSpecializationSelection', placementId, newSquadData, () => {});
+                            this.call.showSpecializationSelection( placementId, newSquadData, () => {});
                         }
                     }
                 }
@@ -661,12 +683,12 @@ class ShopSystem extends GUTS.BaseSystem {
 
     getCurrentUnitType(placementId, team) {
         // Get placement and unitType from entity via placement system
-        const placement = this.game.call('getPlacementById', placementId);
+        const placement = this.call.getPlacementById( placementId);
         if (!placement || !placement.squadUnits || placement.squadUnits.length === 0) {
             return null;
         }
         const unitTypeComp = this.game.getComponent(placement.squadUnits[0], 'unitType');
-        return this.game.call('getUnitTypeDef', unitTypeComp);
+        return this.call.getUnitTypeDef( unitTypeComp);
     }
 
     getSquadDisplayName(placementId) {
@@ -692,7 +714,7 @@ class ShopSystem extends GUTS.BaseSystem {
 
         if (inPlacementPhase) {
             if (this.game.state.now - this.lastExperienceUpdate > 2) {
-                const squadsReadyToLevelUp = this.game.call('getSquadsReadyToLevelUp');
+                const squadsReadyToLevelUp = this.call.getSquadsReadyToLevelUp();
                 const hasReadySquads = squadsReadyToLevelUp && squadsReadyToLevelUp.length > 0;
                 const hasExperiencePanel = document.querySelector('.experience-panel') !== null;
 
@@ -711,7 +733,7 @@ class ShopSystem extends GUTS.BaseSystem {
             return;
         }
 
-        this.game.call('cancelBuilding', {
+        this.call.cancelBuilding( {
             placementId: placement.placementId,
             buildingEntityId: buildingEntityId
         }, (success, response) => {
@@ -730,10 +752,10 @@ class ShopSystem extends GUTS.BaseSystem {
     performLocalCancelConstruction(buildingEntityId, placement) {
         // Refund the gold - get unitType from entity
         const unitTypeComp = this.game.getComponent(buildingEntityId, 'unitType');
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
         const refundAmount = unitType?.value || 0;
         if (refundAmount > 0) {
-            this.game.call('addPlayerGold', this.game.call('getActivePlayerTeam'), refundAmount);
+            this.call.addPlayerGold( this.call.getActivePlayerTeam(), refundAmount);
             this.game.uiSystem?.showNotification(`Refunded ${refundAmount} gold`, 'success', 1500);
         }
 
@@ -762,12 +784,12 @@ class ShopSystem extends GUTS.BaseSystem {
 
         // Destroy the building entity
         if (this.game.renderSystem) {
-            this.game.call('removeInstance', buildingEntityId);
+            this.call.removeInstance( buildingEntityId);
         }
         this.game.destroyEntity(buildingEntityId);
 
         // Deselect all
-        this.game.call('deselectAllUnits');
+        this.call.deselectAllUnits();
     }
 
     reset() {

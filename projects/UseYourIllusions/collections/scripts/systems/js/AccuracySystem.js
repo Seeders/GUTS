@@ -4,6 +4,10 @@ class AccuracySystem extends GUTS.BaseSystem {
         'calculateHitChance'
     ];
 
+    static serviceDependencies = [
+        'getAggregatedDefensiveStats'
+    ];
+
     constructor(game) {
         super(game);
         this.game.accuracySystem = this;
@@ -52,8 +56,8 @@ class AccuracySystem extends GUTS.BaseSystem {
         }
 
         // Get stats from StatAggregationSystem
-        const attackerStats = this.game.call('getAggregatedDefensiveStats', attackerId);
-        const defenderStats = this.game.call('getAggregatedDefensiveStats', defenderId);
+        const attackerStats = this.call.getAggregatedDefensiveStats( attackerId);
+        const defenderStats = this.call.getAggregatedDefensiveStats( defenderId);
 
         const accuracy = attackerStats?.accuracy ?? 100;
         const evasion = defenderStats?.evasion ?? 0;

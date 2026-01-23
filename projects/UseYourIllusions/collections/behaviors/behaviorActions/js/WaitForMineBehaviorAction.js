@@ -15,6 +15,12 @@
  */
 class WaitForMineBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'isNextInMinerQueue',
+        'isMineOccupied',
+        'processNextMinerInQueue'
+    ];
+
     execute(entityId, game) {
         const shared = this.getShared(entityId, game);
         const targetMine = shared.targetMine;
@@ -33,15 +39,15 @@ class WaitForMineBehaviorAction extends GUTS.BaseBehaviorAction {
         const isCurrentMiner = goldMine.currentMiner === entityId;
 
         // Check if we're next in queue and mine is free
-        const isNextInQueue = game.call('isNextInMinerQueue', targetMine, entityId);
-        const isMineOccupied = game.call('isMineOccupied', targetMine);
+        const isNextInQueue = this.call.isNextInMinerQueue( targetMine, entityId);
+        const isMineOccupied = this.call.isMineOccupied( targetMine);
 
       
         if (isCurrentMiner || (isNextInQueue && !isMineOccupied)) {
             // It's our turn!
             if (!isCurrentMiner) {
                 // Process queue to become current miner
-                game.call('processNextMinerInQueue', targetMine);
+                this.call.processNextMinerInQueue( targetMine);
             }
 
             shared.canMine = true;

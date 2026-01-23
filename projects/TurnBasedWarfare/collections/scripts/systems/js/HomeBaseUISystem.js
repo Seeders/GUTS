@@ -21,6 +21,52 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         'returnToCampaignHomeBase'
     ];
 
+    static serviceDependencies = [
+        'isCampaignActive',
+        'processMissionResult',
+        'processPendingLoot',
+        'saveCampaign',
+        'listCampaigns',
+        'exportCampaign',
+        'createCampaign',
+        'loadCampaign',
+        'deleteCampaign',
+        'importCampaign',
+        'getCurrencies',
+        'getCampaignState',
+        'getCurrentQuest',
+        'getQuestProgress',
+        'isQuestNodeUnlocked',
+        'getInventoryItems',
+        'removeItemFromInventory',
+        'addItemToInventory',
+        'applyPermanentUpgrades',
+        'removeFromInventory',
+        'canAfford',
+        'purchaseUpgrade',
+        'deductCurrency',
+        'unlockUnit',
+        'unlockBuilding',
+        'rollScrollModifiers',
+        'rerollScrollModifier',
+        'showNotification',
+        'generateNewQuest',
+        'getNpcLevel',
+        'getNpcUpgradeCost',
+        'canUpgradeNpc',
+        'getAvailableQuests',
+        'upgradeNpc',
+        'selectQuest',
+        'getCollectedTarotCards',
+        'hasTarotCard',
+        'getTarotCardPurchaseCost',
+        'canPurchaseTarotCard',
+        'getCampaignCurrency',
+        'purchaseTarotCard',
+        'addCurrency',
+        'sealScrollProphecy'
+    ];
+
     constructor(game) {
         super(game);
         this.game.homeBaseUISystem = this;
@@ -64,7 +110,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
                     this.processMissionResultsFromGame();
                 }
                 this.displayMissionResults();
-            } else if (this.game.call('isCampaignActive')) {
+            } else if (this.call.isCampaignActive()) {
                 // Campaign is loaded, show home base
                 this.showHomeBase();
             } else {
@@ -87,7 +133,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const scrollData = pending.scrollData || null;
 
         // Process mission result through CampaignSystem
-        const rewards = this.game.call('processMissionResult', {
+        const rewards = this.call.processMissionResult( {
             victory: pending.victory,
             nodeId: pending.nodeId,
             scroll: scrollData,
@@ -97,7 +143,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         // Process any pending loot collected during mission (from monsters)
         let lootRewards = { currencies: {}, items: [] };
         if (this.game.hasService('processPendingLoot')) {
-            lootRewards = this.game.call('processPendingLoot');
+            lootRewards = this.call.processPendingLoot();
         }
 
         // Merge loot currencies with node rewards
@@ -164,7 +210,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const homeBaseSaveBtn = document.getElementById('homeBaseSaveBtn');
         if (homeBaseSaveBtn) {
             homeBaseSaveBtn.addEventListener('click', () => {
-                this.game.call('saveCampaign');
+                this.call.saveCampaign();
                 this.showNotification('Campaign saved!');
             });
         }
@@ -172,7 +218,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const homeBaseExitBtn = document.getElementById('homeBaseExitBtn');
         if (homeBaseExitBtn) {
             homeBaseExitBtn.addEventListener('click', () => {
-                this.game.call('saveCampaign');
+                this.call.saveCampaign();
                 // Show campaign select screen (staying in campaign scene)
                 this.showScreen('campaignSelect');
                 this.refreshCampaignList();
@@ -272,7 +318,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const campaignList = document.getElementById('campaignList');
         if (!campaignList) return;
 
-        const campaigns = this.game.call('listCampaigns');
+        const campaigns = this.call.listCampaigns();
 
         if (campaigns.length === 0) {
             campaignList.innerHTML = '<div class="no-campaigns">No campaigns found. Start a new adventure!</div>';
@@ -304,7 +350,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
 
             card.querySelector('.export-campaign-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.game.call('exportCampaign', campaignId);
+                this.call.exportCampaign( campaignId);
             });
 
             card.querySelector('.delete-campaign-btn').addEventListener('click', (e) => {
@@ -349,7 +395,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const input = document.getElementById('commanderNameInput');
         const commanderName = input ? input.value.trim() : 'Commander';
 
-        this.game.call('createCampaign', commanderName || 'Commander');
+        this.call.createCampaign( commanderName || 'Commander');
         this.hideNewCampaignDialog();
         this.showHomeBase();
     }
@@ -358,7 +404,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Load an existing campaign
      */
     loadCampaign(campaignId) {
-        const campaign = this.game.call('loadCampaign', campaignId);
+        const campaign = this.call.loadCampaign( campaignId);
         if (campaign) {
             this.showHomeBase();
         } else {
@@ -371,7 +417,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      */
     deleteCampaign(campaignId) {
         if (confirm('Are you sure you want to delete this campaign? This cannot be undone.')) {
-            this.game.call('deleteCampaign', campaignId);
+            this.call.deleteCampaign( campaignId);
             this.refreshCampaignList();
         }
     }
@@ -384,7 +430,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         if (!file) return;
 
         try {
-            await this.game.call('importCampaign', file);
+            await this.call.importCampaign( file);
             this.showNotification('Campaign imported successfully!');
             this.refreshCampaignList();
         } catch (error) {
@@ -408,7 +454,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Update the currency display
      */
     updateCurrencyDisplay() {
-        const currencies = this.game.call('getCurrencies');
+        const currencies = this.call.getCurrencies();
         if (!currencies) return;
 
         const valorEl = document.getElementById('valorAmount');
@@ -424,7 +470,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Update commander info display
      */
     updateCommanderInfo() {
-        const campaign = this.game.call('getCampaignState');
+        const campaign = this.call.getCampaignState();
         if (!campaign) return;
 
         const nameEl = document.getElementById('homeBaseCommanderName');
@@ -545,7 +591,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         ctx.fillStyle = '#0d1117';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const campaign = this.game.call('getCampaignState');
+        const campaign = this.call.getCampaignState();
         if (!campaign) {
             ctx.fillStyle = '#ffffff';
             ctx.font = '16px Arial';
@@ -555,7 +601,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         }
 
         // Get current quest nodes (generates quest if none exists)
-        const quest = this.game.call('getCurrentQuest');
+        const quest = this.call.getCurrentQuest();
         if (!quest || !quest.nodes) {
             ctx.fillStyle = '#ffffff';
             ctx.font = '16px Arial';
@@ -686,7 +732,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Draw quest progress header on the atlas canvas
      */
     drawQuestHeader(ctx, canvas, quest) {
-        const progress = this.game.call('getQuestProgress');
+        const progress = this.call.getQuestProgress();
         if (!progress) return;
 
         // Draw background bar
@@ -797,7 +843,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Get node at canvas position - now uses quest nodes
      */
     getNodeAtPosition(x, y) {
-        const quest = this.game.call('getCurrentQuest');
+        const quest = this.call.getCurrentQuest();
         if (!quest || !quest.nodes) return null;
 
         const questNodes = quest.nodes;
@@ -825,9 +871,9 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         this.refreshAtlas();
 
         // Get node from quest instead of static atlas
-        const quest = this.game.call('getCurrentQuest');
+        const quest = this.call.getCurrentQuest();
         const node = quest?.nodes?.[nodeId] || null;
-        const campaign = this.game.call('getCampaignState');
+        const campaign = this.call.getCampaignState();
 
         const titleEl = document.getElementById('selectedNodeTitle');
         const descEl = document.getElementById('selectedNodeDesc');
@@ -895,7 +941,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
 
         // Show start button if node is unlocked (scrolls are optional for prophecy bonuses)
         if (startBtn && quest) {
-            const isUnlocked = this.game.call('isQuestNodeUnlocked', nodeId);
+            const isUnlocked = this.call.isQuestNodeUnlocked( nodeId);
             startBtn.style.display = isUnlocked ? 'block' : 'none';
 
             // Update button text based on whether a prophecy is applied
@@ -927,7 +973,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const nodeInfoPanel = document.getElementById('nodeInfoPanel');
         if (!nodeInfoPanel) return;
 
-        const isUnlocked = this.game.call('isQuestNodeUnlocked', nodeId);
+        const isUnlocked = this.call.isQuestNodeUnlocked( nodeId);
         if (!isUnlocked) return;
 
         const appliedScroll = this.getAppliedScrollForNode(nodeId);
@@ -1004,7 +1050,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Show available scrolls from inventory that can be applied to this node
      */
     showAvailableScrollsUI(nodeId, nodeInfoPanel) {
-        const items = this.game.call('getInventoryItems') || [];
+        const items = this.call.getInventoryItems() || [];
         const availableScrolls = items.filter(item => item.itemType === 'missionScroll');
 
         if (availableScrolls.length === 0) {
@@ -1119,7 +1165,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         this.appliedScrolls[nodeId] = scroll;
 
         // Remove scroll from inventory (it's now bound to this node)
-        this.game.call('removeItemFromInventory', scroll.id);
+        this.call.removeItemFromInventory( scroll.id);
 
         this.pendingMissionScroll = null;
 
@@ -1136,7 +1182,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         if (!scroll) return;
 
         // Return scroll to inventory
-        this.game.call('addItemToInventory', scroll);
+        this.call.addItemToInventory( scroll);
 
         // Remove from applied scrolls
         delete this.appliedScrolls[nodeId];
@@ -1157,14 +1203,14 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
             return;
         }
 
-        const isUnlocked = this.game.call('isQuestNodeUnlocked', this.selectedNode);
+        const isUnlocked = this.call.isQuestNodeUnlocked( this.selectedNode);
         if (!isUnlocked) {
             this.showNotification('This node is locked', 'error');
             return;
         }
 
         // Get node config from current quest (nodes are dynamically generated)
-        const quest = this.game.call('getCurrentQuest');
+        const quest = this.call.getCurrentQuest();
         const node = quest?.nodes?.[this.selectedNode];
 
         if (!node) {
@@ -1190,7 +1236,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
             aiStartingGold: Math.floor(100 * difficultyMultiplier)
         };
 
-        const missionConfig = this.game.call('applyPermanentUpgrades', baseConfig);
+        const missionConfig = this.call.applyPermanentUpgrades( baseConfig);
 
         // Build prophecy modifiers from applied scroll (if any)
         const prophecyModifiers = appliedScroll?.itemData?.modifiers || [];
@@ -1305,7 +1351,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const appliedScroll = this.appliedScrolls[nodeId];
         if (appliedScroll) {
             // Remove from inventory
-            this.game.call('removeFromInventory', appliedScroll.id);
+            this.call.removeFromInventory( appliedScroll.id);
             // Remove from applied scrolls
             delete this.appliedScrolls[nodeId];
         }
@@ -1316,7 +1362,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      */
     refreshUpgrades() {
         const campaignUpgrades = this.collections.campaignUpgrades;
-        const campaign = this.game.call('getCampaignState');
+        const campaign = this.call.getCampaignState();
 
         if (!campaignUpgrades) return;
 
@@ -1339,7 +1385,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
             const currentLevel = Math.floor(currentValue / upgrade.effect.value);
             const isMaxed = upgrade.maxLevel && currentLevel >= upgrade.maxLevel;
 
-            const canAfford = this.game.call('canAfford', upgrade.cost);
+            const canAfford = this.call.canAfford( upgrade.cost);
 
             const card = document.createElement('div');
             card.className = 'upgrade-card' + (isMaxed ? ' maxed' : '');
@@ -1354,7 +1400,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
 
             if (!isMaxed) {
                 card.addEventListener('click', () => {
-                    if (this.game.call('purchaseUpgrade', upgrade.id)) {
+                    if (this.call.purchaseUpgrade( upgrade.id)) {
                         this.updateCurrencyDisplay();
                         this.refreshUpgrades();
                         this.showNotification(`Purchased ${upgrade.title}!`);
@@ -1373,7 +1419,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      */
     refreshUnlocks() {
         const campaignUnlocks = this.collections.campaignUnlocks;
-        const campaign = this.game.call('getCampaignState');
+        const campaign = this.call.getCampaignState();
         const container = document.getElementById('unlocksList');
 
         if (!container || !campaignUnlocks) return;
@@ -1399,21 +1445,21 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
 
             if (!isOwned) {
                 card.addEventListener('click', () => {
-                    if (!this.game.call('canAfford', unlock.cost)) {
+                    if (!this.call.canAfford( unlock.cost)) {
                         this.showNotification('Cannot afford unlock', 'error');
                         return;
                     }
 
                     // Deduct cost
                     for (const [type, amount] of Object.entries(unlock.cost)) {
-                        this.game.call('deductCurrency', type, amount);
+                        this.call.deductCurrency( type, amount);
                     }
 
                     // Add unlock
                     if (unlock.type === 'unit') {
-                        this.game.call('unlockUnit', unlock.unlockId);
+                        this.call.unlockUnit( unlock.unlockId);
                     } else if (unlock.type === 'building') {
-                        this.game.call('unlockBuilding', unlock.unlockId);
+                        this.call.unlockBuilding( unlock.unlockId);
                     }
 
                     this.updateCurrencyDisplay();
@@ -1430,7 +1476,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Refresh the inventory tab
      */
     refreshInventory() {
-        const campaign = this.game.call('getCampaignState');
+        const campaign = this.call.getCampaignState();
         const container = document.getElementById('inventoryGrid');
 
         if (!container || !campaign) return;
@@ -1493,7 +1539,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
             slot.classList.toggle('selected', parseInt(slot.dataset.slotIndex) === slotIndex);
         });
 
-        const campaign = this.game.call('getCampaignState');
+        const campaign = this.call.getCampaignState();
         const item = campaign ? campaign.inventory.items.find(i => i.slotIndex === slotIndex) : null;
 
         const titleEl = document.getElementById('selectedItemTitle');
@@ -1693,7 +1739,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Handle rolling modifiers on a scroll
      */
     handleRollScrollModifiers(scrollId) {
-        const result = this.game.call('rollScrollModifiers', scrollId);
+        const result = this.call.rollScrollModifiers( scrollId);
         if (result) {
             this.showNotification('Modifiers rolled!');
             this.refreshInventory();
@@ -1711,7 +1757,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Handle rerolling a specific modifier
      */
     handleRerollModifier(scrollId, modifierIndex) {
-        const result = this.game.call('rerollScrollModifier', scrollId, modifierIndex);
+        const result = this.call.rerollScrollModifier( scrollId, modifierIndex);
         if (result) {
             this.showNotification('Modifier rerolled!');
             this.refreshInventory();
@@ -1762,7 +1808,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         }
 
         if (confirm(`Are you sure you want to discard ${this.selectedItem.name}?`)) {
-            this.game.call('removeItemFromInventory', this.selectedItem.id);
+            this.call.removeItemFromInventory( this.selectedItem.id);
             this.showNotification('Item discarded');
             this.selectedItem = null;
             this.selectedInventorySlot = undefined;
@@ -1815,7 +1861,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
     showNotification(message, type = 'success') {
         // Use existing notification system if available
         if (this.game.call && this.game.hasService && this.game.hasService('showNotification')) {
-            this.game.call('showNotification', message, type);
+            this.call.showNotification( message, type);
         } else {
             console.log(`[${type.toUpperCase()}] ${message}`);
         }
@@ -1833,7 +1879,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const nodeId = missionInfo?.nodeId || this.game.state.skirmishConfig?.missionNodeId;
 
         // Process mission result through CampaignSystem
-        const rewards = this.game.call('processMissionResult', {
+        const rewards = this.call.processMissionResult( {
             victory,
             nodeId,
             scroll: missionInfo?.scroll || null,
@@ -1843,7 +1889,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         // Process any pending loot collected during mission (from monsters)
         let lootRewards = { currencies: {}, items: [] };
         if (this.game.hasService('processPendingLoot')) {
-            lootRewards = this.game.call('processPendingLoot');
+            lootRewards = this.call.processPendingLoot();
         }
 
         // Merge loot currencies with node rewards
@@ -2027,7 +2073,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
                 continueBtn.textContent = 'Start New Quest';
                 continueBtn.onclick = () => {
                     // Generate new quest before showing home base
-                    this.game.call('generateNewQuest');
+                    this.call.generateNewQuest();
                     this.showNotification('A new quest has begun!');
                     this.showHomeBase();
                 };
@@ -2081,7 +2127,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Refresh the commander tab display
      */
     refreshCommanderTab() {
-        const campaign = this.game.call('getCampaignState');
+        const campaign = this.call.getCampaignState();
         if (!campaign) return;
 
         // Update commander level and upgrade section
@@ -2093,8 +2139,8 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         // Update campaign status
         const statusEl = document.getElementById('campaignStatusInfo');
         if (statusEl) {
-            const quest = this.game.call('getCurrentQuest');
-            const progress = this.game.call('getQuestProgress');
+            const quest = this.call.getCurrentQuest();
+            const progress = this.call.getQuestProgress();
 
             if (quest && progress) {
                 statusEl.innerHTML = `
@@ -2115,7 +2161,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         // Update scroll inventory
         const inventoryEl = document.getElementById('commanderScrollInventory');
         if (inventoryEl) {
-            const items = this.game.call('getInventoryItems') || [];
+            const items = this.call.getInventoryItems() || [];
             const scrolls = items.filter(item => item.itemType === 'missionScroll');
 
             if (scrolls.length === 0) {
@@ -2143,9 +2189,9 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const upgradeEl = document.getElementById('commanderUpgradeSection');
         if (!upgradeEl) return;
 
-        const commanderLevel = this.game.call('getNpcLevel', 'commander') || 1;
-        const upgradeCost = this.game.call('getNpcUpgradeCost', 'commander');
-        const canUpgrade = this.game.call('canUpgradeNpc', 'commander');
+        const commanderLevel = this.call.getNpcLevel( 'commander') || 1;
+        const upgradeCost = this.call.getNpcUpgradeCost( 'commander');
+        const canUpgrade = this.call.canUpgradeNpc( 'commander');
         const essence = campaign.currencies?.essence || 0;
 
         let upgradeHtml = `
@@ -2193,8 +2239,8 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const questsEl = document.getElementById('questSelectionSection');
         if (!questsEl) return;
 
-        const currentQuest = this.game.call('getCurrentQuest');
-        const availableQuests = this.game.call('getAvailableQuests') || [];
+        const currentQuest = this.call.getCurrentQuest();
+        const availableQuests = this.call.getAvailableQuests() || [];
 
         if (currentQuest) {
             // Show current quest info
@@ -2270,7 +2316,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Handle Commander upgrade button
      */
     upgradeCommander() {
-        const result = this.game.call('upgradeNpc', 'commander');
+        const result = this.call.upgradeNpc( 'commander');
         if (result.success) {
             this.showNotification(`Commander upgraded to Level ${result.newLevel}!`, 'success');
             this.updateCurrencyDisplay();
@@ -2284,7 +2330,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Handle quest selection
      */
     selectQuest(questId) {
-        const quest = this.game.call('selectQuest', questId);
+        const quest = this.call.selectQuest( questId);
         if (quest) {
             this.showNotification(`${this.capitalizeFirst(quest.length)} quest started!`, 'success');
             this.refreshCommanderTab();
@@ -2315,7 +2361,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      */
     refreshOracle() {
         // Check if player has enough tarot cards to use the Oracle
-        const collectedCards = this.game.call('getCollectedTarotCards') || [];
+        const collectedCards = this.call.getCollectedTarotCards() || [];
         const oracleContainer = document.querySelector('.oracle-container');
         const oracleLockedOverlay = document.getElementById('oracleLockedOverlay');
 
@@ -2385,17 +2431,17 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const upgradeSection = document.getElementById('oracleUpgradeSection');
         if (!upgradeSection) return;
 
-        const pastLevel = this.game.call('getNpcLevel', 'oracle.past') || 0;
-        const presentLevel = this.game.call('getNpcLevel', 'oracle.present') || 0;
-        const futureLevel = this.game.call('getNpcLevel', 'oracle.future') || 0;
+        const pastLevel = this.call.getNpcLevel( 'oracle.past') || 0;
+        const presentLevel = this.call.getNpcLevel( 'oracle.present') || 0;
+        const futureLevel = this.call.getNpcLevel( 'oracle.future') || 0;
 
-        const pastCost = this.game.call('getNpcUpgradeCost', 'oracle.past');
-        const presentCost = this.game.call('getNpcUpgradeCost', 'oracle.present');
-        const futureCost = this.game.call('getNpcUpgradeCost', 'oracle.future');
+        const pastCost = this.call.getNpcUpgradeCost( 'oracle.past');
+        const presentCost = this.call.getNpcUpgradeCost( 'oracle.present');
+        const futureCost = this.call.getNpcUpgradeCost( 'oracle.future');
 
-        const canUpgradePast = this.game.call('canUpgradeNpc', 'oracle.past');
-        const canUpgradePresent = this.game.call('canUpgradeNpc', 'oracle.present');
-        const canUpgradeFuture = this.game.call('canUpgradeNpc', 'oracle.future');
+        const canUpgradePast = this.call.canUpgradeNpc( 'oracle.past');
+        const canUpgradePresent = this.call.canUpgradeNpc( 'oracle.present');
+        const canUpgradeFuture = this.call.canUpgradeNpc( 'oracle.future');
 
         const branchDescriptions = {
             past: [
@@ -2475,7 +2521,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Handle Oracle branch upgrade
      */
     upgradeOracleBranch(branchId) {
-        const result = this.game.call('upgradeNpc', `oracle.${branchId}`);
+        const result = this.call.upgradeNpc( `oracle.${branchId}`);
         if (result.success) {
             this.showNotification(`Oracle ${branchId} upgraded to level ${result.newLevel}!`, 'success');
             this.updateCurrencyDisplay();
@@ -2507,7 +2553,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const collectionSection = document.getElementById('tarotCollectionSection');
         if (!collectionSection) return;
 
-        const collectedCards = this.game.call('getCollectedTarotCards') || [];
+        const collectedCards = this.call.getCollectedTarotCards() || [];
         const tarotCards = this.collections?.tarotCards || {};
         const allCardIds = Object.keys(tarotCards).sort((a, b) =>
             (tarotCards[a].number || 0) - (tarotCards[b].number || 0)
@@ -2558,10 +2604,10 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         if (!card) return;
 
         const textureUrl = this.getTextureUrl(card.texture);
-        const isCollected = this.game.call('hasTarotCard', cardId);
-        const cost = this.game.call('getTarotCardPurchaseCost', cardId);
-        const canAfford = this.game.call('canPurchaseTarotCard', cardId);
-        const currentEssence = this.game.call('getCampaignCurrency', 'essence') || 0;
+        const isCollected = this.call.hasTarotCard( cardId);
+        const cost = this.call.getTarotCardPurchaseCost( cardId);
+        const canAfford = this.call.canPurchaseTarotCard( cardId);
+        const currentEssence = this.call.getCampaignCurrency( 'essence') || 0;
 
         // Create modal overlay
         const modal = document.createElement('div');
@@ -2647,7 +2693,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Handle tarot card purchase
      */
     purchaseTarotCard(cardId) {
-        const result = this.game.call('purchaseTarotCard', cardId);
+        const result = this.call.purchaseTarotCard( cardId);
         if (result.success) {
             const tarotCards = this.collections?.tarotCards || {};
             const card = tarotCards[cardId];
@@ -2666,7 +2712,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         const scrollsList = document.getElementById('oracleScrollsList');
         if (!scrollsList) return;
 
-        const items = this.game.call('getInventoryItems') || [];
+        const items = this.call.getInventoryItems() || [];
         const scrolls = items.filter(item => item.itemType === 'missionScroll');
 
         if (scrolls.length === 0) {
@@ -2716,7 +2762,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
      * Select a scroll to place on the Oracle's altar
      */
     selectScrollForOracle(scrollId) {
-        const items = this.game.call('getInventoryItems') || [];
+        const items = this.call.getInventoryItems() || [];
         const scroll = items.find(item => item.id === scrollId);
 
         if (!scroll) {
@@ -2789,7 +2835,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
                 if (prophecyCostEl) prophecyCostEl.textContent = prophecyCost;
 
                 // Disable if can't afford
-                const canAfford = this.game.call('canAfford', { valor: prophecyCost });
+                const canAfford = this.call.canAfford( { valor: prophecyCost });
                 readProphecyBtn.disabled = !canAfford;
                 readProphecyBtn.classList.toggle('btn-disabled', !canAfford);
             }
@@ -2812,7 +2858,7 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
                 if (rerollCostEl) rerollCostEl.textContent = rerollCost;
 
                 // Disable if can't afford
-                const canAfford = this.game.call('canAfford', { valor: rerollCost });
+                const canAfford = this.call.canAfford( { valor: rerollCost });
                 rerollProphecyBtn.disabled = !canAfford;
                 rerollProphecyBtn.classList.toggle('btn-disabled', !canAfford);
             }
@@ -2911,25 +2957,25 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
 
         // Check and deduct cost
         const cost = this.calculateProphecyCost(scroll);
-        if (!this.game.call('canAfford', { valor: cost })) {
+        if (!this.call.canAfford( { valor: cost })) {
             this.showNotification('Not enough Valor', 'error');
             return;
         }
 
         // Deduct cost
-        this.game.call('deductCurrency', 'valor', cost);
+        this.call.deductCurrency( 'valor', cost);
 
         // Roll modifiers for the scroll
-        const result = this.game.call('rollScrollModifiers', scroll.id);
+        const result = this.call.rollScrollModifiers( scroll.id);
         if (!result || !result.success) {
             // Refund on failure
-            this.game.call('addCurrency', 'valor', cost);
+            this.call.addCurrency( 'valor', cost);
             this.showNotification(result?.error || 'Failed to read prophecy', 'error');
             return;
         }
 
         // Update our cached scroll with new data
-        const items = this.game.call('getInventoryItems') || [];
+        const items = this.call.getInventoryItems() || [];
         this.oracleSelectedScroll = items.find(item => item.id === scroll.id);
 
         this.showNotification('The Oracle reveals the prophecy...');
@@ -2949,23 +2995,23 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         }
 
         const cost = this.calculateRerollCost(scroll);
-        if (!this.game.call('canAfford', { valor: cost })) {
+        if (!this.call.canAfford( { valor: cost })) {
             this.showNotification('Not enough Valor', 'error');
             return;
         }
 
         // Deduct cost
-        this.game.call('deductCurrency', 'valor', cost);
+        this.call.deductCurrency( 'valor', cost);
 
         // Reroll modifiers
-        const result = this.game.call('rollScrollModifiers', scroll.id);
+        const result = this.call.rollScrollModifiers( scroll.id);
         if (!result || !result.success) {
             this.showNotification(result?.error || 'Failed to reroll prophecy', 'error');
             return;
         }
 
         // Update our cached scroll with new data
-        const items = this.game.call('getInventoryItems') || [];
+        const items = this.call.getInventoryItems() || [];
         this.oracleSelectedScroll = items.find(item => item.id === scroll.id);
 
         this.showNotification('The Oracle reveals a new prophecy...');
@@ -2985,14 +3031,14 @@ class HomeBaseUISystem extends GUTS.BaseSystem {
         }
 
         // Seal the scroll (mark modifiers as permanent)
-        const result = this.game.call('sealScrollProphecy', scroll.id);
+        const result = this.call.sealScrollProphecy( scroll.id);
         if (!result || !result.success) {
             this.showNotification(result?.error || 'Failed to seal prophecy', 'error');
             return;
         }
 
         // Update our cached scroll with new data
-        const items = this.game.call('getInventoryItems') || [];
+        const items = this.call.getInventoryItems() || [];
         this.oracleSelectedScroll = items.find(item => item.id === scroll.id);
 
         this.showNotification('The prophecy has been sealed!');

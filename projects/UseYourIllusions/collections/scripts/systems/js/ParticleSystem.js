@@ -9,6 +9,11 @@ class ParticleSystem extends GUTS.BaseSystem {
     'playEffectSystem'
   ];
 
+    static serviceDependencies = [
+        'playScreenShake',
+        'playScreenFlash'
+    ];
+
   constructor(game) {
     super(game);
     this.game.particleSystem = this;
@@ -814,10 +819,10 @@ class ParticleSystem extends GUTS.BaseSystem {
   _applyScreenEffects(systemData) {
     // Flattened format uses screenShakeDuration/screenShakeIntensity
     if (systemData.screenShakeDuration && this.game.hasService('playScreenShake')) {
-      this.game.call('playScreenShake', systemData.screenShakeDuration, systemData.screenShakeIntensity || 1);
+      this.call.playScreenShake( systemData.screenShakeDuration, systemData.screenShakeIntensity || 1);
     }
     if (systemData.screenFlashColor && this.game.hasService('playScreenFlash')) {
-      this.game.call('playScreenFlash', systemData.screenFlashColor, systemData.screenFlashDuration || 0.2);
+      this.call.playScreenFlash( systemData.screenFlashColor, systemData.screenFlashDuration || 0.2);
     }
   }
 }

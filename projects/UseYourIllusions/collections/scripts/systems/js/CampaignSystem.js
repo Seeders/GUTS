@@ -54,6 +54,14 @@ class CampaignSystem extends GUTS.BaseSystem {
         'getUncollectedTarotCards'
     ];
 
+    static serviceDependencies = [
+        'getCampaignData',
+        'saveCampaign',
+        'getCurrentQuest',
+        'completeQuestNode',
+        'generateAvailableQuests'
+    ];
+
     constructor(game) {
         super(game);
         this.game.campaignSystem = this;
@@ -67,7 +75,7 @@ class CampaignSystem extends GUTS.BaseSystem {
      * @returns {boolean} True if campaign is loaded
      */
     isCampaignActive() {
-        const data = this.game.call('getCampaignData');
+        const data = this.call.getCampaignData();
         return !!data;
     }
 
@@ -76,7 +84,7 @@ class CampaignSystem extends GUTS.BaseSystem {
      * @returns {Object|null} Campaign data or null
      */
     getCampaignState() {
-        return this.game.call('getCampaignData');
+        return this.call.getCampaignData();
     }
 
     /**
@@ -113,7 +121,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         }
 
         data.currencies[type] += amount;
-        this.game.call('saveCampaign');
+        this.call.saveCampaign();
 
         console.log('[CampaignSystem] Added', amount, type, '- New total:', data.currencies[type]);
         return true;
@@ -140,7 +148,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         }
 
         data.currencies[type] -= amount;
-        this.game.call('saveCampaign');
+        this.call.saveCampaign();
 
         console.log('[CampaignSystem] Deducted', amount, type, '- New total:', data.currencies[type]);
         return true;
@@ -175,7 +183,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         for (const [type, amount] of Object.entries(cost)) {
             data.currencies[type] -= amount;
         }
-        this.game.call('saveCampaign');
+        this.call.saveCampaign();
         return true;
     }
 
@@ -228,7 +236,7 @@ class CampaignSystem extends GUTS.BaseSystem {
 
         if (!data.unlocks.units.includes(unitId)) {
             data.unlocks.units.push(unitId);
-            this.game.call('saveCampaign');
+            this.call.saveCampaign();
             console.log('[CampaignSystem] Unlocked unit:', unitId);
         }
         return true;
@@ -245,7 +253,7 @@ class CampaignSystem extends GUTS.BaseSystem {
 
         if (!data.unlocks.buildings.includes(buildingId)) {
             data.unlocks.buildings.push(buildingId);
-            this.game.call('saveCampaign');
+            this.call.saveCampaign();
             console.log('[CampaignSystem] Unlocked building:', buildingId);
         }
         return true;
@@ -294,7 +302,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         data.permanentUpgrades[upgrade.effect.stat] =
             (data.permanentUpgrades[upgrade.effect.stat] || 0) + upgrade.effect.value;
 
-        this.game.call('saveCampaign');
+        this.call.saveCampaign();
         console.log('[CampaignSystem] Purchased upgrade:', upgradeId,
                     '- New', upgrade.effect.stat, ':', data.permanentUpgrades[upgrade.effect.stat]);
 
@@ -372,7 +380,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         // Only award rewards on victory
         if (result.victory) {
             // Get node data from current quest (procedural nodes)
-            const quest = this.game.call('getCurrentQuest');
+            const quest = this.call.getCurrentQuest();
             const node = quest?.nodes?.[result.nodeId] || null;
 
             if (node && node.baseRewards) {
@@ -447,7 +455,7 @@ class CampaignSystem extends GUTS.BaseSystem {
 
             // Mark quest node as completed using quest system
             if (result.nodeId) {
-                const completionResult = this.game.call('completeQuestNode', result.nodeId);
+                const completionResult = this.call.completeQuestNode( result.nodeId);
                 if (completionResult && completionResult.success) {
                     rewards.nodeCompleted = !completionResult.alreadyCompleted;
                     rewards.questComplete = completionResult.questComplete;
@@ -461,7 +469,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         }
 
         // Save updated state
-        this.game.call('saveCampaign');
+        this.call.saveCampaign();
 
         console.log('[CampaignSystem] Processed mission result:',
                     result.victory ? 'VICTORY' : 'DEFEAT',
@@ -645,7 +653,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         this.game.state.pendingLoot = [];
 
         // Save campaign
-        this.game.call('saveCampaign');
+        this.call.saveCampaign();
 
         console.log('[CampaignSystem] Processed pending loot:', result);
         return result;
@@ -732,7 +740,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         if (index === -1) return null;
 
         const removed = items.splice(index, 1)[0];
-        this.game.call('saveCampaign');
+        this.call.saveCampaign();
         return removed;
     }
 
@@ -798,7 +806,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         const addedItem = this.addItemToInventory(scrollItem);
         if (addedItem) {
             console.log('[CampaignSystem] Created mission scroll:', addedItem.name);
-            this.game.call('saveCampaign');
+            this.call.saveCampaign();
         }
 
         return addedItem;
@@ -953,7 +961,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         scroll.name = scroll.name.replace(/ \(.*\)$/, '');
         scroll.name += ` (${drawnCards.length} cards)`;
 
-        this.game.call('saveCampaign');
+        this.call.saveCampaign();
 
         console.log('[CampaignSystem] Drew tarot reading:',
                     drawnCards.map(c => `${c.title} ${c.isReversed ? 'R' : 'U'}`).join(', '));
@@ -1080,7 +1088,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         }
         scroll.itemData.rewardMultiplier = totalRewardMultiplier;
 
-        this.game.call('saveCampaign');
+        this.call.saveCampaign();
 
         console.log('[CampaignSystem] Rerolled card', oldModifier.title, '->',
                     newCard.title, (isReversed ? 'Reversed' : 'Upright'));
@@ -1113,7 +1121,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         // Seal the prophecy
         scroll.itemData.isSealed = true;
 
-        this.game.call('saveCampaign');
+        this.call.saveCampaign();
 
         console.log('[CampaignSystem] Sealed prophecy on scroll:', scrollId);
 
@@ -1283,7 +1291,7 @@ class CampaignSystem extends GUTS.BaseSystem {
             newLevel = data.npcLevels.commander;
 
             // Regenerate available quests at the new tier
-            data.availableQuests = this.game.call('generateAvailableQuests', newLevel);
+            data.availableQuests = this.call.generateAvailableQuests( newLevel);
 
             console.log('[CampaignSystem] Commander upgraded to level', newLevel);
         } else if (npcId.startsWith('oracle.')) {
@@ -1297,7 +1305,7 @@ class CampaignSystem extends GUTS.BaseSystem {
             console.log('[CampaignSystem] Oracle', branch, 'upgraded to level', newLevel);
         }
 
-        this.game.call('saveCampaign');
+        this.call.saveCampaign();
 
         return { success: true, newLevel: newLevel };
     }
@@ -1353,7 +1361,7 @@ class CampaignSystem extends GUTS.BaseSystem {
         data.collectedTarotCards.push(cardId);
         data.statistics.tarotCardsCollected = (data.statistics.tarotCardsCollected || 0) + 1;
 
-        this.game.call('saveCampaign');
+        this.call.saveCampaign();
 
         console.log('[CampaignSystem] Collected tarot card:', cardId,
                     'Total:', data.collectedTarotCards.length);

@@ -1,4 +1,8 @@
 class BehaviorSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'getUnitTypeDef'
+    ];
+
     static services = [
         'getBehaviorMeta',
         'getBehaviorShared',
@@ -26,13 +30,13 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
     init() {
         // Get collection names from behaviorCollection enum (index -> name mapping)
-        const behaviorCollectionEnum = this.game.call('getEnumMap', 'behaviorCollection');
+        const behaviorCollectionEnum = this.game.getEnumMap( 'behaviorCollection');
         this.collectionNames = behaviorCollectionEnum?.toValue || [];
 
         // Cache enum maps for index-to-name lookups (toValue arrays)
         this.behaviorCollectionMaps = {};
         for (const collectionName of this.collectionNames) {
-            this.behaviorCollectionMaps[collectionName] = this.game.call('getEnumMap', collectionName);
+            this.behaviorCollectionMaps[collectionName] = this.game.getEnumMap( collectionName);
         }
 
         this.processor.initializeFromCollections(this.collections);
@@ -110,6 +114,31 @@ class BehaviorSystem extends GUTS.BaseSystem {
      */
     removeBehaviorState(entityId) {
         this.entityBehaviorState.delete(entityId);
+    }
+
+    /**
+     * Called when scene loads - reinitialize behavior nodes from collections
+     */
+    onSceneLoad() {
+        // Reinitialize processor nodes from collections
+        // This ensures nodes are recreated fresh for the new scene
+        this.processor.initializeFromCollections(this.collections);
+    }
+
+    /**
+     * Called when scene unloads - clear all behavior instances and state
+     */
+    onSceneUnload() {
+        // Clear all behavior state
+        this.entityBehaviorState.clear();
+
+        // Clear processor nodes - they'll be recreated when new scene loads
+        this.processor.nodes.clear();
+        this.processor.clearAllDebugData();
+
+        // Reset battle tick tracking
+        this._firstBattleTick = false;
+        this._battleTickCount = 0;
     }
 
     /**
@@ -298,7 +327,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const unitDef = this.game.call('getUnitTypeDef', unitType);
+        const unitDef = this.call.getUnitTypeDef( unitType);
         const unitName = unitDef?.id || 'unknown';
         const teamComp = this.game.getComponent(entityId, 'team');
         const reverseEnums = this.game.getReverseEnums();

@@ -29,6 +29,27 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         'ui_handleBoxSelection'      // Box selection with world bounds
     ];
 
+    static serviceDependencies = [
+        'getPlayerStatsByTeam',
+        'canAffordSupply',
+        'findBuildingSpawnPosition',
+        'sendPlacementRequest',
+        'getPlacementById',
+        'setSquadTargets',
+        'removeInstance',
+        'releaseGridCells',
+        'getActivePlayerTeam',
+        'addPlayerGold',
+        'toggleReadyForBattle',
+        'transformUnit',
+        'getSelectedSquads',
+        'getUnitTypeDef',
+        'worldToPlacementGrid',
+        'getEntityAbilities',
+        'setSquadTarget',
+        'getPlacementGridSize'
+    ];
+
     constructor(game) {
         super(game);
     }
@@ -88,7 +109,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         }
 
         // Check gold for the specified team (not local player)
-        const teamStats = this.game.call('getPlayerStatsByTeam', team);
+        const teamStats = this.call.getPlayerStatsByTeam( team);
         if (!teamStats || teamStats.gold < unitDef.value) {
             callback?.(false, { error: `Cannot afford ${unitDef.title || unitId}` });
             return;
@@ -96,7 +117,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
 
         // Check supply
         if (this.game.hasService('canAffordSupply')) {
-            const canAfford = this.game.call('canAffordSupply', team, unitDef);
+            const canAfford = this.call.canAffordSupply( team, unitDef);
             if (canAfford === false) {
                 callback?.(false, { error: 'Not enough supply' });
                 return;
@@ -105,7 +126,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
 
         // Find spawn position near building
         const unitType = { ...unitDef, id: unitId, collection: 'units' };
-        const spawnPos = this.game.call('findBuildingSpawnPosition', placementId, unitType);
+        const spawnPos = this.call.findBuildingSpawnPosition( placementId, unitType);
         if (!spawnPos) {
             callback?.(false, { error: 'No valid spawn position near building' });
             return;
@@ -116,7 +137,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         const networkUnitData = this._createNetworkUnitData(spawnPos, unitType, team, playerId);
 
         // Send placement request
-        this.game.call('sendPlacementRequest', networkUnitData, (success, response) => {
+        this.call.sendPlacementRequest( networkUnitData, (success, response) => {
             if (success) {
                 // Update production progress
                 const newProgress = productionProgress + buildTime;
@@ -158,7 +179,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
 
         const targetPositions = [];
         for (const placementId of placementIds) {
-            const placement = this.game.call('getPlacementById', placementId);
+            const placement = this.call.getPlacementById( placementId);
             if (placement?.squadUnits?.length > 0) {
                 const firstUnitId = placement.squadUnits[0];
                 const transform = this.game.getComponent(firstUnitId, 'transform');
@@ -170,7 +191,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         }
 
         const meta = { isMoveOrder: false };
-        this.game.call('setSquadTargets', { placementIds, targetPositions, meta }, callback);
+        this.call.setSquadTargets( { placementIds, targetPositions, meta }, callback);
     }
 
     /**
@@ -182,7 +203,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
 
         const targetPositions = [];
         for (const placementId of placementIds) {
-            const placement = this.game.call('getPlacementById', placementId);
+            const placement = this.call.getPlacementById( placementId);
             if (placement?.squadUnits?.length > 0) {
                 const firstUnitId = placement.squadUnits[0];
                 const transform = this.game.getComponent(firstUnitId, 'transform');
@@ -194,7 +215,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         }
 
         const meta = { isMoveOrder: false, isHiding: true };
-        this.game.call('setSquadTargets', { placementIds, targetPositions, meta }, callback);
+        this.call.setSquadTargets( { placementIds, targetPositions, meta }, callback);
     }
 
     /**
@@ -211,7 +232,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
             z: targetPosition.z
         }));
 
-        this.game.call('setSquadTargets', { placementIds, targetPositions, meta }, callback);
+        this.call.setSquadTargets( { placementIds, targetPositions, meta }, callback);
     }
 
     /**
@@ -243,7 +264,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
             z: targetPosition.z
         }));
 
-        this.game.call('setSquadTargets', { placementIds, targetPositions, meta }, callback);
+        this.call.setSquadTargets( { placementIds, targetPositions, meta }, callback);
     }
 
     /**
@@ -281,7 +302,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         const networkUnitData = this.ui_createNetworkUnitData(gridPosition, unitType, team, playerId, peasantInfo);
 
         // Send placement request
-        this.game.call('sendPlacementRequest', networkUnitData, callback);
+        this.call.sendPlacementRequest( networkUnitData, callback);
     }
 
     /**
@@ -302,16 +323,16 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         // Destroy entities
         if (undoInfo.squadUnits) {
             for (const entityId of undoInfo.squadUnits) {
-                this.game.call('removeInstance', entityId);
+                this.call.removeInstance( entityId);
                 this.game.destroyEntity(entityId);
-                this.game.call('releaseGridCells', entityId);
+                this.call.releaseGridCells( entityId);
             }
         }
 
         // Refund gold - use active player team if not specified
-        const team = undoInfo.team ?? this.game.call('getActivePlayerTeam');
+        const team = undoInfo.team ?? this.call.getActivePlayerTeam();
         if (undoInfo.unitType?.value) {
-            this.game.call('addPlayerGold', team, undoInfo.unitType.value);
+            this.call.addPlayerGold( team, undoInfo.unitType.value);
         }
 
         callback?.(true);
@@ -326,9 +347,9 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         // Handle optional team parameter
         if (typeof team === 'function') {
             callback = team;
-            team = this.game.call('getActivePlayerTeam');
+            team = this.call.getActivePlayerTeam();
         }
-        this.game.call('toggleReadyForBattle', team, callback);
+        this.call.toggleReadyForBattle( team, callback);
     }
 
     /**
@@ -346,7 +367,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
             return;
         }
 
-        this.game.call('transformUnit', { entityId, targetUnitType, animationType }, callback);
+        this.call.transformUnit( { entityId, targetUnitType, animationType }, callback);
     }
 
     /**
@@ -416,7 +437,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         }
 
         // Get selected squads
-        const placementIds = this.game.call('getSelectedSquads');
+        const placementIds = this.call.getSelectedSquads();
 
         if (!placementIds || placementIds.length === 0) {
             callback?.({ action: 'none', success: false, error: 'No units selected' });
@@ -437,7 +458,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         const targetPositions = this._getFormationTargetPositions(targetPosition, placementIds);
 
         const meta = { isMoveOrder: true, preventEnemiesInRangeCheck: false };
-        this.game.call('setSquadTargets', { placementIds, targetPositions, meta }, (success, response) => {
+        this.call.setSquadTargets( { placementIds, targetPositions, meta }, (success, response) => {
             callback?.({
                 action: 'move_order',
                 success,
@@ -481,7 +502,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
      */
     _getEntityAtPosition(worldPos, options = {}) {
         const clickRadius = options.radius || 50;
-        const teamFilter = options.teamFilter ?? this.game.call('getActivePlayerTeam');
+        const teamFilter = options.teamFilter ?? this.call.getActivePlayerTeam();
 
         let closestEntity = null;
         let closestDistance = clickRadius;
@@ -506,7 +527,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
 
             // Adjust for unit size
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             const size = unitType?.size || 20;
             distance -= size;
 
@@ -530,7 +551,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
      * @returns {Array} Array of entity IDs
      */
     _getEntitiesInBounds(worldMinX, worldMinZ, worldMaxX, worldMaxZ, options = {}) {
-        const teamFilter = options.teamFilter ?? this.game.call('getActivePlayerTeam');
+        const teamFilter = options.teamFilter ?? this.call.getActivePlayerTeam();
         const prioritizeUnits = options.prioritizeUnits ?? true;
 
         const selectedUnits = [];
@@ -556,7 +577,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
 
                 // Determine collection
                 const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+                const unitType = this.call.getUnitTypeDef( unitTypeComp);
                 const collection = unitType?.collection;
 
                 if (prioritizeUnits) {
@@ -597,8 +618,8 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
      */
     _handlePlacementClick(worldX, worldZ, callback) {
         const unitType = this.game.state.selectedUnitType;
-        const gridPos = this.game.call('worldToPlacementGrid', worldX, worldZ);
-        const team = this.game.call('getActivePlayerTeam');
+        const gridPos = this.call.worldToPlacementGrid( worldX, worldZ);
+        const team = this.call.getActivePlayerTeam();
         const playerId = this.game.clientNetworkManager?.numericPlayerId ?? (team === this.enums.team.left ? 0 : 1);
         const peasantInfo = this.game.state.peasantBuildingPlacement || null;
 
@@ -658,7 +679,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
             const transform = this.game.getComponent(entityId, 'transform');
             const pos = transform?.position;
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
             if (!placement || !pos || !unitType) continue;
             if (unitType.collection !== 'buildings') continue;
@@ -682,11 +703,11 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
      */
     _getBuilderFromSelection(placementIds) {
         for (const placementId of placementIds) {
-            const placement = this.game.call('getPlacementById', placementId);
+            const placement = this.call.getPlacementById( placementId);
             if (!placement) continue;
 
             for (const unitId of placement.squadUnits) {
-                const abilities = this.game.call('getEntityAbilities', unitId);
+                const abilities = this.call.getEntityAbilities( unitId);
                 if (abilities) {
                     for (const ability of abilities) {
                         if (ability.id === 'BuildAbility') {
@@ -720,7 +741,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
             isMoveOrder: false
         };
 
-        this.game.call('setSquadTarget', builderPlacement.placementId, targetPosition, meta, (success, response) => {
+        this.call.setSquadTarget( builderPlacement.placementId, targetPosition, meta, (success, response) => {
             callback?.({
                 action: 'assign_builder',
                 success,
@@ -739,7 +760,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
      */
     _getFormationTargetPositions(targetPosition, placementIds) {
         const targetPositions = [];
-        const placementGridSize = this.game.call('getPlacementGridSize') || 25;
+        const placementGridSize = this.call.getPlacementGridSize() || 25;
         const unitPadding = 1;
 
         const roundPos = (val) => Math.round(val * 100) / 100;

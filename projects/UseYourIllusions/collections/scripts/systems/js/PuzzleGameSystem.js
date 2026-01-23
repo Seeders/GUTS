@@ -11,6 +11,19 @@
  * This system handles puzzle-specific setup on top of those entities.
  */
 class PuzzleGameSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'createEntityFromPrefab',
+        'getBehaviorShared',
+        'getLevelEntityData',
+        'getTerrainHeightAtPosition',
+        'getTerrainSize',
+        'playMusic',
+        'playSound',
+        'setActivePlayer',
+        'showDefeatScreen',
+        'stopMusic'
+    ];
+
     static services = [
         'startPuzzleLevel',
         'restartLevel',
@@ -61,21 +74,18 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         console.log(`[PuzzleGameSystem] isPaused before: ${this.game.state.isPaused}`);
 
         // Play game over sound
-        this.game.call('playSound', 'sounds', 'game_over');
+        this.call.playSound('sounds', 'game_over');
 
         // Show defeat screen with appropriate message
-        if (this.game.hasService('showDefeatScreen')) {
-            this.game.call('showDefeatScreen', defeatInfo);
-        } else {
-            const defeatScreen = document.getElementById('defeatScreen');
-            if (defeatScreen) {
-                defeatScreen.classList.add('active');
-            }
-        }
+
+        this.call.showDefeatScreen(defeatInfo);
+
     }
 
     onSceneLoad(sceneData) {
         this.gameOver = false;
+
+
 
         // Get the current level data from collections
         const levelIndex = this.game.state.level ?? 0;
@@ -100,10 +110,8 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
 
         // Set active player team for fog of war - use 'left' team (index 2)
         const playerTeam = this.enums.team?.left ?? 2;
-        if (this.game.hasService('setActivePlayer')) {
-            this.game.call('setActivePlayer', 0, playerTeam);
-            console.log(`[PuzzleGameSystem] Set active player team to ${playerTeam} (left)`);
-        }
+        this.call.setActivePlayer(0, playerTeam);
+    
 
         // Spawn player at starting location
         const startingLocations = levelData.tileMap?.startingLocations || [];
@@ -125,7 +133,7 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
 
         // Start background music if level has songSound defined
         if (levelData.songSound) {
-            this.game.call('playMusic', levelData.songSound, {
+            this.call.playMusic(levelData.songSound, {
                 volume: 0.4,
                 loop: true,
                 fadeInTime: 2
@@ -141,7 +149,7 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         if (location.gridX !== undefined && location.gridZ !== undefined) {
             // Grid-based position from TerrainMapEditor
             const tileSize = 50; // Standard tile size
-            const terrainSize = this.game.call('getTerrainSize') || 800;
+            const terrainSize = this.call.getTerrainSize() || 800;
             const halfTerrain = terrainSize / 2;
             x = (location.gridX * tileSize) - halfTerrain + (tileSize / 2);
             z = (location.gridZ * tileSize) - halfTerrain + (tileSize / 2);
@@ -159,7 +167,7 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         const z = spawnData.z || 0;
 
         // Get terrain height at spawn position
-        const terrainHeight = this.game.call('getTerrainHeightAtPosition', x, z) ?? 0;
+        const terrainHeight = this.call.getTerrainHeightAtPosition(x, z) ?? 0;
 
         const unitData = this.collections.units?.illusionist;
         if (!unitData) {
@@ -168,7 +176,7 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         }
 
         // Use createEntityFromPrefab with the player prefab (no aiState, has playerController + magicBelt)
-        const playerId = this.game.call('createEntityFromPrefab', {
+        const playerId = this.call.createEntityFromPrefab({
             prefab: 'player',
             type: 'illusionist',
             collection: 'units',
@@ -229,24 +237,23 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
 
             // Get patrol waypoints from level entity data (only if explicitly defined)
             const transform = this.game.getComponent(entityId, 'transform');
-            if (transform && this.game.hasService('getBehaviorShared')) {
-                const shared = this.game.call('getBehaviorShared', entityId);
+            if (transform) {
+                const shared = this.call.getBehaviorShared(entityId);
                 if (shared && !shared.patrolWaypoints) {
                     // Only set patrol waypoints if explicitly defined in level data
-                    if (this.game.hasService('getLevelEntityData')) {
-                        const levelEntityData = this.game.call('getLevelEntityData', entityId);
-                        if (levelEntityData?.patrolWaypoints) {
-                            shared.patrolWaypoints = levelEntityData.patrolWaypoints;
-                            shared.currentWaypointIndex = 0;
-                            console.log(`[PuzzleGameSystem] Using level-defined patrol waypoints for guard ${entityId}`);
-                        } else {
-                            // No patrol waypoints - create a single waypoint at spawn position
-                            // so guard returns here after picking up objects
-                            shared.patrolWaypoints = [{ x: transform.position.x, z: transform.position.z }];
-                            shared.currentWaypointIndex = 0;
-                            console.log(`[PuzzleGameSystem] Guard ${entityId} has no patrol waypoints - standing guard at spawn position`);
-                        }
+                    const levelEntityData = this.call.getLevelEntityData(entityId);
+                    if (levelEntityData?.patrolWaypoints) {
+                        shared.patrolWaypoints = levelEntityData.patrolWaypoints;
+                        shared.currentWaypointIndex = 0;
+                        console.log(`[PuzzleGameSystem] Using level-defined patrol waypoints for guard ${entityId}`);
+                    } else {
+                        // No patrol waypoints - create a single waypoint at spawn position
+                        // so guard returns here after picking up objects
+                        shared.patrolWaypoints = [{ x: transform.position.x, z: transform.position.z }];
+                        shared.currentWaypointIndex = 0;
+                        console.log(`[PuzzleGameSystem] Guard ${entityId} has no patrol waypoints - standing guard at spawn position`);
                     }
+                    
                 }
             }
 
@@ -311,6 +318,7 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         this.gameOver = false;
 
         // Stop background music when leaving level
-        this.game.call('stopMusic', 1);
+        this.call.stopMusic(1);
     }
+
 }

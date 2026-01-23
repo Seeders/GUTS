@@ -14,6 +14,11 @@
  */
 class JoinMineQueueBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getMinerQueuePosition',
+        'addMinerToQueue'
+    ];
+
     execute(entityId, game) {
         const shared = this.getShared(entityId, game);
         const targetMine = shared.targetMine;
@@ -28,12 +33,12 @@ class JoinMineQueueBehaviorAction extends GUTS.BaseBehaviorAction {
 
         if (goldMine) {
             // Check if already current miner or in queue
-            const queuePos = game.call('getMinerQueuePosition', targetMine, entityId);
+            const queuePos = this.call.getMinerQueuePosition( targetMine, entityId);
             if (goldMine.currentMiner === entityId || queuePos >= 0) {
                  return this.success({ targetMine: targetMine });
             }
         }
-        game.call('addMinerToQueue', targetMine, entityId);
+        this.call.addMinerToQueue( targetMine, entityId);
         return this.success({
             targetMine: targetMine
         });

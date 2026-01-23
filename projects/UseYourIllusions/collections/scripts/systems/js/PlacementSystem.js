@@ -31,6 +31,34 @@ class PlacementSystem extends GUTS.BaseSystem {
         'spawnGoldMineForTeam'
     ];
 
+    static serviceDependencies = [
+        'releaseGridCells',
+        'removeSquad',
+        'getUnitTypeDef',
+        'getSquadData',
+        'validateSquadConfig',
+        'calculateUnitPositions',
+        'getSquadCells',
+        'getTerrainHeight',
+        'createPlacement',
+        'reserveGridCells',
+        'buildGoldMine',
+        'initializeSquad',
+        'getEntityAbilities',
+        'incrementSquadsCreated',
+        'tileToWorld',
+        'findNearestGoldVein',
+        'worldToPlacementGrid',
+        'replaceUnit',
+        'canAffordSupply',
+        'isValidGridPlacement',
+        'isValidGoldMinePlacement',
+        'getPlayerStats',
+        'placementGridToWorld',
+        'getPlacementById',
+        'clearBehaviorState'
+    ];
+
     constructor(game) {
         super(game);
         this.game.placementSystem = this;
@@ -201,10 +229,10 @@ class PlacementSystem extends GUTS.BaseSystem {
             // Release grid cells for each entity (use entityId, not placementId)
             if (placement.squadUnits) {
                 for (const entityId of placement.squadUnits) {
-                    this.game.call('releaseGridCells', entityId);
+                    this.call.releaseGridCells( entityId);
                 }
             }
-            this.game.call('removeSquad', placement.placementId);
+            this.call.removeSquad( placement.placementId);
         }
     }
 
@@ -219,7 +247,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             const placementComp = this.game.getComponent(entityId, 'placement');
             if (placementComp?.placementId === placementId) {
                 const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                return this.game.call('getUnitTypeDef', unitTypeComp);
+                return this.call.getUnitTypeDef( unitTypeComp);
             }
         }
         return null;
@@ -244,8 +272,8 @@ class PlacementSystem extends GUTS.BaseSystem {
             const gridPosition = networkUnitData.gridPosition;
 
             // Get squad configuration
-            const squadData = this.game.call('getSquadData', unitType);
-            const validation = this.game.call('validateSquadConfig', squadData);
+            const squadData = this.call.getSquadData( unitType);
+            const validation = this.call.validateSquadConfig( squadData);
 
             if (!validation.valid) {
                 return { success: false, error: 'Invalid squad config' };
@@ -287,13 +315,13 @@ class PlacementSystem extends GUTS.BaseSystem {
             }
 
             // Calculate unit positions within the squad
-            const unitPositions = this.game.call('calculateUnitPositions',
+            const unitPositions = this.call.calculateUnitPositions(
                 gridPosition,
                 unitType
             );
 
             // Calculate cells occupied by the squad
-            const cells = this.game.call('getSquadCells', gridPosition, squadData);
+            const cells = this.call.getSquadCells( gridPosition, squadData);
 
             // Use provided placementId if valid (not null/undefined, from server), otherwise generate new one
             // On server: always generates (client sends null)
@@ -313,7 +341,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             // Create individual units for the squad
             for (let i = 0; i < unitPositions.length; i++) {
                 const pos = unitPositions[i];
-                const terrainHeight = this.game.call('getTerrainHeight', pos.x, pos.z);
+                const terrainHeight = this.call.getTerrainHeight( pos.x, pos.z);
                 const unitY = terrainHeight !== null ? terrainHeight : 0;
 
                 const transform = {
@@ -322,7 +350,7 @@ class PlacementSystem extends GUTS.BaseSystem {
 
                 // Use server-provided entity ID if available, otherwise let server assign
                 const serverEntityId = serverEntityIds ? serverEntityIds[i] : null;
-                const entityId = this.game.call('createPlacement',
+                const entityId = this.call.createPlacement(
                     fullNetworkData,
                     transform,
                     team,
@@ -330,7 +358,7 @@ class PlacementSystem extends GUTS.BaseSystem {
                 );
 
                 squadUnits.push(entityId);
-                this.game.call('reserveGridCells', cells, entityId);
+                this.call.reserveGridCells( cells, entityId);
             }
 
             // Handle gold mine buildings
@@ -340,7 +368,7 @@ class PlacementSystem extends GUTS.BaseSystem {
                 const gridWidth = footprintWidth * 2;
                 const gridHeight = footprintHeight * 2;
 
-                this.game.call('buildGoldMine',
+                this.call.buildGoldMine(
                     squadUnits[0],
                     team,
                     gridPosition,
@@ -350,7 +378,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             }
 
             // Initialize squad in experience system
-            this.game.call('initializeSquad', placementId, unitType, squadUnits);
+            this.call.initializeSquad( placementId, unitType, squadUnits);
 
             // Handle peasant/builder assignment for buildings
             // Two cases: local placement has peasantInfo, synced placement has assignedBuilder
@@ -376,7 +404,7 @@ class PlacementSystem extends GUTS.BaseSystem {
                 if (peasantId && peasantInfo) {
                     // All buildings (including traps) use the same build flow
                     // Scout walks to position, then places trap when "construction" completes
-                    const peasantAbilities = this.game.call('getEntityAbilities', peasantId);
+                    const peasantAbilities = this.call.getEntityAbilities( peasantId);
                     if (peasantAbilities) {
                         const buildAbility = peasantAbilities.find(a => a.id === 'BuildAbility');
                         if (buildAbility) {
@@ -390,7 +418,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             }
 
             // Update squad creation statistics
-            this.game.call('incrementSquadsCreated');
+            this.call.incrementSquadsCreated();
 
             return {
                 success: true,
@@ -437,16 +465,16 @@ class PlacementSystem extends GUTS.BaseSystem {
         const gridPosition = unitData.gridPosition;
 
         // Get squad data for cell calculations
-        const squadData = this.game.call('getSquadData', unitType);
-        const cells = this.game.call('getSquadCells', gridPosition, squadData) || [];
+        const squadData = this.call.getSquadData( unitType);
+        const cells = this.call.getSquadCells( gridPosition, squadData) || [];
 
         // Reserve grid cells for existing entities
         for (const entityId of squadUnits) {
-            this.game.call('reserveGridCells', cells, entityId);
+            this.call.reserveGridCells( cells, entityId);
         }
 
         // Initialize squad in experience system
-        this.game.call('initializeSquad', placementId, unitType, squadUnits);
+        this.call.initializeSquad( placementId, unitType, squadUnits);
 
         // Handle gold mine buildings
         if (unitType.id === 'goldMine' && squadUnits.length > 0) {
@@ -455,7 +483,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             const gridWidth = footprintWidth * 2;
             const gridHeight = footprintHeight * 2;
 
-            this.game.call('buildGoldMine',
+            this.call.buildGoldMine(
                 squadUnits[0],
                 team,
                 gridPosition,
@@ -475,7 +503,7 @@ class PlacementSystem extends GUTS.BaseSystem {
                     buildTime: unitData.buildTime
                 };
 
-                const peasantAbilities = this.game.call('getEntityAbilities', peasantId);
+                const peasantAbilities = this.call.getEntityAbilities( peasantId);
                 if (peasantAbilities) {
                     const buildAbility = peasantAbilities.find(a => a.id === 'BuildAbility');
                     if (buildAbility) {
@@ -498,7 +526,7 @@ class PlacementSystem extends GUTS.BaseSystem {
 
 
         // Resolve numeric collection index to collection name
-        const collectionEnumMap = this.game.call('getEnumMap', 'objectTypeDefinitions');
+        const collectionEnumMap = this.game.getEnumMap('objectTypeDefinitions');
         const collectionName = collectionEnumMap?.toValue?.[placement.collection];
 
         if (!collectionName || !this.collections[collectionName]) {
@@ -506,7 +534,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         }
 
         // Resolve numeric unitTypeId to type name within that collection
-        const typeEnumMap = this.game.call('getEnumMap', collectionName);
+        const typeEnumMap = this.game.getEnumMap(collectionName);
         const typeName = typeEnumMap?.toValue?.[placement.unitTypeId];
 
         if (!typeName) {
@@ -566,11 +594,11 @@ class PlacementSystem extends GUTS.BaseSystem {
             }
 
             // Convert tile coordinates to world coordinates
-            const worldPos = this.game.call('tileToWorld', startingLoc.x, startingLoc.z);
+            const worldPos = this.call.tileToWorld( startingLoc.x, startingLoc.z);
             teamWorldPositions[team] = worldPos;
 
             // Find nearest gold vein to determine spawn direction for units
-            const nearestVein = this.game.call('findNearestGoldVein', worldPos);
+            const nearestVein = this.call.findNearestGoldVein( worldPos);
             const goldVeinPos = nearestVein?.position || null;
 
             const teamResult = this._spawnStartingUnitsForTeamInternal(
@@ -605,7 +633,7 @@ class PlacementSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with spawned gold mine info
      */
     spawnStartingGoldMine(team, startingWorldPos) {
-        const nearestVein = this.game.call('findNearestGoldVein', startingWorldPos);
+        const nearestVein = this.call.findNearestGoldVein( startingWorldPos);
         if (!nearestVein) {
             console.warn('[PlacementSystem] No unclaimed gold vein entity found for team:', team);
             return { success: false, error: 'No unclaimed gold veins' };
@@ -622,7 +650,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         }
 
         // Convert world position to placement grid position
-        const gridPos = this.game.call('worldToPlacementGrid', nearestVeinPos.x, nearestVeinPos.z);
+        const gridPos = this.call.worldToPlacementGrid( nearestVeinPos.x, nearestVeinPos.z);
         // Generate numeric placement ID
         const placementId = this._getNextPlacementId();
 
@@ -649,8 +677,8 @@ class PlacementSystem extends GUTS.BaseSystem {
         const gridWidth = footprintWidth * 2;
         const gridHeight = footprintHeight * 2;
 
-        const squadData = this.game.call('getSquadData', goldMineType);
-        placement.cells = this.game.call('getSquadCells', gridPos, squadData);
+        const squadData = this.call.getSquadData( goldMineType);
+        placement.cells = this.call.getSquadCells( gridPos, squadData);
 
         // Spawn the gold mine building
         const result = this.spawnSquad(placement, team, null, null);
@@ -660,7 +688,7 @@ class PlacementSystem extends GUTS.BaseSystem {
 
             // Register with gold mine system - pass the vein entity ID directly
             // to avoid cell matching issues due to position rounding
-            this.game.call('buildGoldMine', entityId, team, gridPos, gridWidth, gridHeight, nearestVeinEntityId);
+            this.call.buildGoldMine( entityId, team, gridPos, gridWidth, gridHeight, nearestVeinEntityId);
 
             return {
                 success: true,
@@ -688,7 +716,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         }
 
         const startingLoc = startingLocations[team];
-        const worldPos = this.game.call('tileToWorld', startingLoc.x, startingLoc.z);
+        const worldPos = this.call.tileToWorld( startingLoc.x, startingLoc.z);
 
         return this.spawnStartingGoldMine(team, worldPos);
     }
@@ -714,10 +742,10 @@ class PlacementSystem extends GUTS.BaseSystem {
         }
 
         const startingLoc = startingLocations[team];
-        const worldPos = this.game.call('tileToWorld', startingLoc.x, startingLoc.z);
+        const worldPos = this.call.tileToWorld( startingLoc.x, startingLoc.z);
 
         // Find nearest gold vein to determine spawn direction for units
-        const nearestVein = this.game.call('findNearestGoldVein', worldPos);
+        const nearestVein = this.call.findNearestGoldVein( worldPos);
         const goldVeinPos = nearestVein?.position || null;
 
         return this._spawnStartingUnitsForTeamInternal(
@@ -752,7 +780,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             const enums = this.game.getEnums();
             const collectionIndex = enums.objectTypeDefinitions?.[collection] ?? -1;
             const typeIndex = enums[collection]?.[spawnType] ?? -1;
-            const unitType = this.game.call('getUnitTypeDef', { collection: collectionIndex, type: typeIndex });
+            const unitType = this.call.getUnitTypeDef( { collection: collectionIndex, type: typeIndex });
             if (!unitType) {
                 console.error(`[PlacementSystem] Unit type not found: ${collection}/${spawnType}`);
                 continue;
@@ -768,20 +796,20 @@ class PlacementSystem extends GUTS.BaseSystem {
                     const relativePos = prefabDef.components?.transform?.position || { x: 0, y: 0, z: 0 };
                     const worldX = startingWorldPos.x + relativePos.x;
                     const worldZ = startingWorldPos.z + relativePos.z;
-                    gridPos = this.game.call('worldToPlacementGrid', worldX, worldZ);
+                    gridPos = this.call.worldToPlacementGrid( worldX, worldZ);
                 }
             } else {
                 // Get relative position from prefab definition
                 const relativePos = prefabDef.components?.transform?.position || { x: 0, y: 0, z: 0 };
                 const worldX = startingWorldPos.x + relativePos.x;
                 const worldZ = startingWorldPos.z + relativePos.z;
-                gridPos = this.game.call('worldToPlacementGrid', worldX, worldZ);
+                gridPos = this.call.worldToPlacementGrid( worldX, worldZ);
 
                 // Track building position for subsequent unit spawns (same pattern as ShopSystem)
                 if (collection === 'buildings') {
                     buildingGridPos = gridPos;
-                    const buildingSquadData = this.game.call('getSquadData', unitType);
-                    const buildingCells = this.game.call('getSquadCells', gridPos, buildingSquadData);
+                    const buildingSquadData = this.call.getSquadData( unitType);
+                    const buildingCells = this.call.getSquadCells( gridPos, buildingSquadData);
                     buildingCellSet = new Set(buildingCells.map(cell => `${cell.x},${cell.z}`));
                 }
             }
@@ -802,8 +830,8 @@ class PlacementSystem extends GUTS.BaseSystem {
             };
 
             // Calculate cells for grid reservation
-            const squadData = this.game.call('getSquadData', unitType);
-            placement.cells = this.game.call('getSquadCells', gridPos, squadData);
+            const squadData = this.call.getSquadData( unitType);
+            placement.cells = this.call.getSquadCells( gridPos, squadData);
 
             // Spawn the squad
             const result = this.spawnSquad(placement, team, null, null);
@@ -918,7 +946,7 @@ class PlacementSystem extends GUTS.BaseSystem {
                         if (targetUnitTypeId && this.game.hasService('replaceUnit')) {
                             squadUnits.forEach(entityId => {
                                 if (this.game.entityAlive[entityId] === 1) {
-                                    this.game.call('replaceUnit', entityId, targetUnitTypeId);
+                                    this.call.replaceUnit( entityId, targetUnitTypeId);
                                 }
                             });
                         }
@@ -944,7 +972,7 @@ class PlacementSystem extends GUTS.BaseSystem {
                             // Replace each unit in the squad
                             unitData.squadUnits.forEach(entityId => {
                                 if (this.game.entityAlive[entityId] === 1) {
-                                    this.game.call('replaceUnit', entityId, targetUnitTypeId);
+                                    this.call.replaceUnit( entityId, targetUnitTypeId);
                                 }
                             });
                         }
@@ -998,7 +1026,7 @@ class PlacementSystem extends GUTS.BaseSystem {
 
         // Only check supply for units, not buildings (buildings provide supply, not consume it)
         const isBuilding = placement.unitType?.collection === 'buildings' || placement.collection === this.enums?.objectTypeDefinitions?.buildings;
-        if (!isBuilding && this.game.hasService('canAffordSupply') && !this.game.call('canAffordSupply', playerTeam, placement.unitType)) {
+        if (!isBuilding && this.game.hasService('canAffordSupply') && !this.call.canAffordSupply( playerTeam, placement.unitType)) {
             return false;
         }
 
@@ -1007,9 +1035,9 @@ class PlacementSystem extends GUTS.BaseSystem {
         }
 
         // Validate team placement
-        const squadData = this.game.call('getSquadData', placement.unitType);
-        const cells = this.game.call('getSquadCells', placement.gridPosition, squadData);
-        if (!this.game.call('isValidGridPlacement', cells, playerTeam)) {
+        const squadData = this.call.getSquadData( placement.unitType);
+        const cells = this.call.getSquadCells( placement.gridPosition, squadData);
+        if (!this.call.isValidGridPlacement( cells, playerTeam)) {
             return false;
         }
 
@@ -1020,7 +1048,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             const gridWidth = footprintWidth * 2;
             const gridHeight = footprintHeight * 2;
 
-            const validation = this.game.call('isValidGoldMinePlacement',
+            const validation = this.call.isValidGoldMinePlacement(
                 placement.gridPosition,
                 gridWidth,
                 gridHeight
@@ -1062,7 +1090,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         };
 
         // Get player stats
-        const playerStats = this.game.call('getPlayerStats', socketPlayerId);
+        const playerStats = this.call.getPlayerStats( socketPlayerId);
 
         // Validate placement (skip if upgrading - already validated and grid released)
         if (!placement.skipValidation && !this.validatePlacement(fullPlacement, player, playerStats)) {
@@ -1158,7 +1186,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             for (const { entityId } of entitiesToDestroy) {
                 try {
                     // Release grid cells using entityId, not placementId
-                    this.game.call('releaseGridCells', entityId);
+                    this.call.releaseGridCells( entityId);
                     this.game.destroyEntity(entityId);
                 } catch (error) {
                     console.warn(`Error destroying entity ${entityId}:`, error);
@@ -1177,7 +1205,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         const entitiesWithPlacement = this.game.getEntitiesWith('placement');
         for (const entityId of entitiesWithPlacement) {
             // Release grid cells using entityId, not placementId
-            this.game.call('releaseGridCells', entityId);
+            this.call.releaseGridCells( entityId);
             this.game.destroyEntity(entityId);
         }
     }
@@ -1248,7 +1276,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         // Default: west side
         let startSide = 'west';
         if (targetWorldPos) {
-            const buildingWorldPos = this.game.call('placementGridToWorld', buildingGridPos.x, buildingGridPos.z);
+            const buildingWorldPos = this.call.placementGridToWorld( buildingGridPos.x, buildingGridPos.z);
             const dx = targetWorldPos.x - buildingWorldPos.x;
             const dz = targetWorldPos.z - buildingWorldPos.z;
 
@@ -1318,8 +1346,8 @@ class PlacementSystem extends GUTS.BaseSystem {
             }
 
             // Check if unit would overlap building
-            const unitSquadData = this.game.call('getSquadData', unitType);
-            const unitCells = this.game.call('getSquadCells', testPos, unitSquadData);
+            const unitSquadData = this.call.getSquadData( unitType);
+            const unitCells = this.call.getSquadCells( testPos, unitSquadData);
             const overlapsBuilding = unitCells.some(cell =>
                 buildingCellSet?.has(`${cell.x},${cell.z}`)
             );
@@ -1328,7 +1356,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             }
 
             // Check grid occupancy - ensure position isn't already taken by other units
-            const isOccupied = !this.game.call('isValidGridPlacement', unitCells);
+            const isOccupied = !this.call.isValidGridPlacement( unitCells);
             if (isOccupied) {
                 continue;
             }
@@ -1347,24 +1375,24 @@ class PlacementSystem extends GUTS.BaseSystem {
      * @returns {Object|null} Grid position {x, z} or null if no valid position found
      */
     findBuildingSpawnPosition(placementId, unitDef) {
-        const placement = this.game.call('getPlacementById', placementId);
+        const placement = this.call.getPlacementById( placementId);
         if (!placement) return null;
 
         const buildingGridPos = placement.gridPosition;
         if (!buildingGridPos) return null;
 
         // Get building unit type and compute its cells
-        const buildingUnitType = this.game.call('getUnitTypeDef', {
+        const buildingUnitType = this.call.getUnitTypeDef( {
             collection: placement.collection,
             type: placement.unitTypeId
         });
-        const buildingSquadData = buildingUnitType ? this.game.call('getSquadData', buildingUnitType) : null;
-        const buildingCells = buildingSquadData ? this.game.call('getSquadCells', buildingGridPos, buildingSquadData) : [];
+        const buildingSquadData = buildingUnitType ? this.call.getSquadData( buildingUnitType) : null;
+        const buildingCells = buildingSquadData ? this.call.getSquadCells( buildingGridPos, buildingSquadData) : [];
         const buildingCellSet = new Set(buildingCells.map(cell => `${cell.x},${cell.z}`));
 
         // Find nearest gold vein to spawn units toward (include claimed veins)
-        const buildingWorldPos = this.game.call('placementGridToWorld', buildingGridPos.x, buildingGridPos.z);
-        const nearestVein = this.game.call('findNearestGoldVein', buildingWorldPos, false);
+        const buildingWorldPos = this.call.placementGridToWorld( buildingGridPos.x, buildingGridPos.z);
+        const nearestVein = this.call.findNearestGoldVein( buildingWorldPos, false);
         const goldVeinPos = nearestVein?.position || null;
 
         return this.findBuildingAdjacentPosition(buildingGridPos, buildingCellSet, unitDef, goldVeinPos);
@@ -1391,7 +1419,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         const cdx = Math.sin(yaw) * Math.cos(pitch);
         const cdz = Math.cos(yaw) * Math.cos(pitch);
 
-        const worldPos = this.game.call('tileToWorld', tilePosition.x, tilePosition.z);
+        const worldPos = this.call.tileToWorld( tilePosition.x, tilePosition.z);
 
         return {
             position: {
@@ -1418,8 +1446,8 @@ class PlacementSystem extends GUTS.BaseSystem {
         const gridPosition = buildingData.gridPosition;
 
         // Calculate world position from grid position
-        const worldPos = this.game.call('placementGridToWorld', gridPosition.x, gridPosition.z);
-        const terrainHeight = this.game.call('getTerrainHeight', worldPos.x, worldPos.z) || 0;
+        const worldPos = this.call.placementGridToWorld( gridPosition.x, gridPosition.z);
+        const terrainHeight = this.call.getTerrainHeight( worldPos.x, worldPos.z) || 0;
 
         // Set buildingState for the builder with pending building data
         let buildingState = this.game.getComponent(builderId, "buildingState");
@@ -1471,7 +1499,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         if (aiState) {
             aiState.currentAction = null;
             aiState.currentActionCollection = null;
-            this.game.call('clearBehaviorState', builderId);
+            this.call.clearBehaviorState( builderId);
         }
     }
 
@@ -1509,12 +1537,12 @@ class PlacementSystem extends GUTS.BaseSystem {
         }
 
         // Calculate world position
-        const worldPos = this.game.call('placementGridToWorld', gridPosition.x, gridPosition.z);
-        const terrainHeight = this.game.call('getTerrainHeight', worldPos.x, worldPos.z) || 0;
+        const worldPos = this.call.placementGridToWorld( gridPosition.x, gridPosition.z);
+        const terrainHeight = this.call.getTerrainHeight( worldPos.x, worldPos.z) || 0;
 
         // Get squad data for grid cells
-        const squadData = this.game.call('getSquadData', unitType);
-        const cells = this.game.call('getSquadCells', gridPosition, squadData);
+        const squadData = this.call.getSquadData( unitType);
+        const cells = this.call.getSquadCells( gridPosition, squadData);
 
         // Generate new placementId
         const placementId = this._getNextPlacementId();
@@ -1539,7 +1567,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             position: { x: worldPos.x, y: terrainHeight, z: worldPos.z }
         };
 
-        const buildingEntityId = this.game.call('createPlacement',
+        const buildingEntityId = this.call.createPlacement(
             fullNetworkData,
             transform,
             team,
@@ -1547,7 +1575,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         );
 
         // Reserve grid cells
-        this.game.call('reserveGridCells', cells, buildingEntityId);
+        this.call.reserveGridCells( cells, buildingEntityId);
 
         // Handle gold mine buildings - add goldMine component
         if (unitType.id === 'goldMine') {
@@ -1556,7 +1584,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             const gridWidth = footprintWidth * 2;
             const gridHeight = footprintHeight * 2;
 
-            this.game.call('buildGoldMine',
+            this.call.buildGoldMine(
                 buildingEntityId,
                 team,
                 gridPosition,
@@ -1573,7 +1601,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         buildingState.pendingCollection = null;
 
         // Initialize in experience system
-        this.game.call('initializeSquad', placementId, unitType, [buildingEntityId]);
+        this.call.initializeSquad( placementId, unitType, [buildingEntityId]);
 
         return buildingEntityId;
     }

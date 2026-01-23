@@ -308,7 +308,7 @@ class SimulationEditor {
 
         const startingLocations = this.editorContext?.call('getStartingLocationsFromLevel');
         if (startingLocations) {
-            const enums = this.editorContext.call('getEnums');
+            const enums = this.editorContext.game.getEnums();
             const leftLoc = startingLocations[enums.team.left];
             const rightLoc = startingLocations[enums.team.right];
 

@@ -8,6 +8,17 @@ class VisionSystem extends GUTS.BaseSystem {
         'isEntityVisibleToTeam'
     ];
 
+    static serviceDependencies = [
+        'getHeightLevelAtGridPosition',
+        'getGridSize',
+        'getTerrainSize',
+        'getUnitTypeDef',
+        'getTerrainHeightAtPositionSmooth',
+        'getNearbyUnits',
+        'getTerrainTypeAtPosition',
+        'getTileMapTerrainType'
+    ];
+
     constructor(game) {
         super(game);
         this.game.visionSystem = this;
@@ -77,8 +88,8 @@ class VisionSystem extends GUTS.BaseSystem {
         const toGridZ = Math.floor((to.z + terrainSize / 2) / gridSize);
 
         // Get height levels for both positions
-        const fromHeightLevel = this.game.call("getHeightLevelAtGridPosition", fromGridX, fromGridZ);
-        const toHeightLevel = this.game.call("getHeightLevelAtGridPosition", toGridX, toGridZ);
+        const fromHeightLevel = this.call.getHeightLevelAtGridPosition( fromGridX, fromGridZ);
+        const toHeightLevel = this.call.getHeightLevelAtGridPosition( toGridX, toGridZ);
 
         // Cannot see up to tiles with higher heightmap values (e.g., up a cliff)
         return toHeightLevel <= fromHeightLevel;
@@ -89,7 +100,7 @@ class VisionSystem extends GUTS.BaseSystem {
      */
     _getGridSize() {
         if (this._gridSize === null) {
-            this._gridSize = this.game.call('getGridSize');
+            this._gridSize = this.call.getGridSize();
         }
         return this._gridSize;
     }
@@ -99,7 +110,7 @@ class VisionSystem extends GUTS.BaseSystem {
      */
     _getTerrainSize() {
         if (this._terrainSize === null) {
-            this._terrainSize = this.game.call('getTerrainSize');
+            this._terrainSize = this.call.getTerrainSize();
         }
         return this._terrainSize;
     }
@@ -118,7 +129,7 @@ class VisionSystem extends GUTS.BaseSystem {
         let viewerName = 'unknown';
         if (viewerEntityId !== null) {
             const viewerUnitTypeComp = this.game.getComponent(viewerEntityId, 'unitType');
-            const viewerUnitType = this.game.call('getUnitTypeDef', viewerUnitTypeComp);
+            const viewerUnitType = this.call.getUnitTypeDef( viewerUnitTypeComp);
             viewerName = viewerUnitType?.id || viewerEntityId;
         }
 
@@ -137,8 +148,8 @@ class VisionSystem extends GUTS.BaseSystem {
         const toGridX = Math.floor((to.x + terrainSize / 2) / gridSize);
         const toGridZ = Math.floor((to.z + terrainSize / 2) / gridSize);
 
-        const fromHeightLevel = this.game.call("getHeightLevelAtGridPosition", fromGridX, fromGridZ);
-        const toHeightLevel = this.game.call("getHeightLevelAtGridPosition", toGridX, toGridZ);
+        const fromHeightLevel = this.call.getHeightLevelAtGridPosition( fromGridX, fromGridZ);
+        const toHeightLevel = this.call.getHeightLevelAtGridPosition( toGridX, toGridZ);
 
         // If height data is not available (e.g., headless mode without full terrain),
         // assume flat terrain and allow LOS
@@ -157,8 +168,8 @@ class VisionSystem extends GUTS.BaseSystem {
             return false;
         }
 
-        const fromTerrainHeight = this.game.call("getTerrainHeightAtPositionSmooth", from.x, from.z);
-        const toTerrainHeight = this.game.call("getTerrainHeightAtPositionSmooth", to.x, to.z);
+        const fromTerrainHeight = this.call.getTerrainHeightAtPositionSmooth( from.x, from.z);
+        const toTerrainHeight = this.call.getTerrainHeightAtPositionSmooth( to.x, to.z);
 
         // Use unit height from unitType, or fall back to default if not available
         const unitHeight = (unitType && unitType.height) ? unitType.height : this.DEFAULT_UNIT_HEIGHT;
@@ -179,7 +190,7 @@ class VisionSystem extends GUTS.BaseSystem {
         const midX = (from.x + to.x) / 2;
         const midZ = (from.z + to.z) / 2;
         const unitSize = (unitType && unitType.size) ? unitType.size : gridSize;
-        const nearbyTreeIds = this.game.call('getNearbyUnits', { x: midX, y: 0, z: midZ}, distance / 2 + unitSize, viewerEntityId, 'worldObjects');
+        const nearbyTreeIds = this.call.getNearbyUnits( { x: midX, y: 0, z: midZ}, distance / 2 + unitSize, viewerEntityId, 'worldObjects');
 
         if (nearbyTreeIds && nearbyTreeIds.length > 0) {
             const numSamples = Math.max(2, Math.ceil(distance / (gridSize * 0.5)));
@@ -198,7 +209,7 @@ class VisionSystem extends GUTS.BaseSystem {
                     if (!treePos) continue;
 
                     const treeUnitTypeComp = this.game.getComponent(treeId, 'unitType');
-                    const treeUnitType = this.game.call('getUnitTypeDef', treeUnitTypeComp);
+                    const treeUnitType = this.call.getUnitTypeDef( treeUnitTypeComp);
                     const treeSize = treeUnitType?.size || gridSize;
                     const treeHeight = treeUnitType?.height || 0;
 
@@ -244,7 +255,7 @@ class VisionSystem extends GUTS.BaseSystem {
             const tile = this._bresenhamTiles[i];
 
             // Check if this intermediate tile has a higher heightmap level than the viewer
-            const tileHeightLevel = this.game.call('getHeightLevelAtGridPosition', tile.x, tile.z);
+            const tileHeightLevel = this.call.getHeightLevelAtGridPosition( tile.x, tile.z);
             // Only block LOS if we have valid height data and the tile is higher
             if (tileHeightLevel !== null && tileHeightLevel !== undefined &&
                 tileHeightLevel > fromHeightLevel) {
@@ -256,7 +267,7 @@ class VisionSystem extends GUTS.BaseSystem {
             const worldX = tile.x * gridSize - terrainSize / 2;
             const worldZ = tile.z * gridSize - terrainSize / 2;
             const rayHeight = fromEyeHeight + (toTerrainHeight - fromEyeHeight) * t;
-            const terrainHeight = this.game.call('getTerrainHeightAtPositionSmooth', worldX, worldZ);
+            const terrainHeight = this.call.getTerrainHeightAtPositionSmooth( worldX, worldZ);
 
             if (rayHeight <= terrainHeight) {
                 return false;
@@ -319,9 +330,9 @@ class VisionSystem extends GUTS.BaseSystem {
         const targetPos = targetTransform?.position;
         if (targetPos) {
             // Terrain stealth bonus
-            const terrainTypeIndex = this.game.call('getTerrainTypeAtPosition', targetPos.x, targetPos.z);
+            const terrainTypeIndex = this.call.getTerrainTypeAtPosition( targetPos.x, targetPos.z);
             if (terrainTypeIndex !== null && terrainTypeIndex !== undefined) {
-                const terrainType = this.game.call('getTileMapTerrainType', terrainTypeIndex);
+                const terrainType = this.call.getTileMapTerrainType( terrainTypeIndex);
                 if (terrainType?.stealthBonus) {
                     stealth += terrainType.stealthBonus;
                 }
@@ -367,7 +378,7 @@ class VisionSystem extends GUTS.BaseSystem {
         const awareness = combat?.awareness ?? 50;
 
         // Search with extended range to find all potential targets
-        const nearbyEntityIds = this.game.call('getNearbyUnits', pos, range, entityId);
+        const nearbyEntityIds = this.call.getNearbyUnits( pos, range, entityId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return [];
 
         const enums = this.game.getEnums();
@@ -457,7 +468,7 @@ class VisionSystem extends GUTS.BaseSystem {
      */
     _filterByLOS(entityId, pos, enemies) {
         const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
         const NUM_SECTORS = 16;
         const sectorAngle = (Math.PI * 2) / NUM_SECTORS;
@@ -595,7 +606,7 @@ class VisionSystem extends GUTS.BaseSystem {
                 if (!viewerPos) continue;
 
                 const viewerUnitTypeComp = this.game.getComponent(viewerId, 'unitType');
-                const viewerUnitType = this.game.call('getUnitTypeDef', viewerUnitTypeComp);
+                const viewerUnitType = this.call.getUnitTypeDef( viewerUnitTypeComp);
                 const visionRange = viewerUnitType?.visionRange || 500;
 
                 const dx = targetPos.x - viewerPos.x;

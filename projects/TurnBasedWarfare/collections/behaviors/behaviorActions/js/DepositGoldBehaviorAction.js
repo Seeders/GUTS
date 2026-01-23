@@ -22,6 +22,10 @@
  */
 class DepositGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'addPlayerGold'
+    ];
+
     execute(entityId, game) {
         const shared = this.getShared(entityId, game);
         const memory = this.getMemory(entityId);
@@ -31,9 +35,33 @@ class DepositGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const duration = (this.parameters.duration || 1); // Convert to ms
+        const duration = (this.parameters.duration || 1);
         const goldAmount = shared.goldAmount;
 
+        // In round-based mode (no ticks), deposit completes instantly
+        // In tick-based mode, use time-based duration
+        const isRoundBased = game.tickCount === 0 || game.deltaTime === 0;
+
+        if (isRoundBased) {
+            // Round-based: complete deposit instantly
+            this.awardGoldToTeam(entityId, game, goldAmount);
+
+            // Clear gold-related shared state
+            shared.goldAmount = 0;
+            shared.hasGold = false;
+            shared.targetDepot = null;
+            shared.targetDepotPosition = null;
+
+            // Reset memory
+            memory.depositStartTime = null;
+
+            return this.success({
+                goldDeposited: goldAmount,
+                depositComplete: true
+            });
+        }
+
+        // Tick-based mode: use time-based duration
         // Initialize deposit start time
         if (!memory.depositStartTime) {
             memory.depositStartTime = game.state.now;
@@ -77,7 +105,7 @@ class DepositGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         if (!team) return;
 
         // Award gold to player entity
-        game.call('addPlayerGold', team.team, amount);
+        this.call.addPlayerGold( team.team, amount);
     }
 
     onStart(entityId, game) {

@@ -1,0 +1,12 @@
+{
+  "name": "Peasant Mining Test",
+  "description": "Peasants mine gold automatically using their passive MineGoldAbility. Tests cooperative mining queue behavior.",
+  "seed": 123,
+  "startingGold": 100,
+  "level": "forest",
+  "buildOrders": ["basic", "basic"],
+  "aiModes": ["buildOrder", "buildOrder"],
+  "maxRounds": 50,
+  "endOnFirstDeath": false,
+  "skipPlacement": true
+}

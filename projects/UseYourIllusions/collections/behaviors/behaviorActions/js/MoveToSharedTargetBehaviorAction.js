@@ -18,6 +18,10 @@
  */
 class MoveToSharedTargetBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'clearEntityPath'
+    ];
+
     execute(entityId, game) {
         const shared = this.getShared(entityId, game);
         const targetKey = this.parameters.targetKey || 'targetPosition';
@@ -52,7 +56,7 @@ class MoveToSharedTargetBehaviorAction extends GUTS.BaseBehaviorAction {
             shared.targetPosition = null;
 
             // Clear the path so a new one can be requested for the next destination
-            game.call('clearEntityPath', entityId);
+            this.call.clearEntityPath( entityId);
 
             // Reset pathfinding state
             const pathfinding = game.getComponent(entityId, 'pathfinding');

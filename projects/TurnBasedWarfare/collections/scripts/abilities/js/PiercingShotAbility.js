@@ -1,4 +1,10 @@
 class PiercingShotAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'playEffect',
+        'playEffectSystem'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Piercing Shot',
@@ -73,12 +79,12 @@ class PiercingShotAbility extends GUTS.BaseAbility {
                 const trailX = startPos.x + (endPos.x - startPos.x) * t;
                 const trailZ = startPos.z + (endPos.z - startPos.z) * t;
 
-                this.game.call('playEffect', 'piercing_beam_trail',
+                this.call.playEffect( 'piercing_beam_trail',
                     new THREE.Vector3(trailX, startPos.y + 15, trailZ));
             }
 
             // Muzzle flash at start using preset effect system
-            this.game.call('playEffectSystem', 'piercing_muzzle_flash',
+            this.call.playEffectSystem( 'piercing_muzzle_flash',
                 new THREE.Vector3(startPos.x, startPos.y + 15, startPos.z));
         }
 

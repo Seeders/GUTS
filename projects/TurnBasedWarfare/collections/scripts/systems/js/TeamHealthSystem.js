@@ -1,4 +1,13 @@
 class TeamHealthSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'getActivePlayerTeam',
+        'findSquadByUnitId',
+        'getPlacementsForSide',
+        'getUnitTypeDef',
+        'getCurrentUnitTypeForSquad',
+        'getSquadExperienceData'
+    ];
+
     constructor(game) {
         super(game);
         this.game.teamHealthSystem = this;
@@ -24,7 +33,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
     }
 
     getOpponentTeam() {
-        const myTeam = this.game.call('getActivePlayerTeam');
+        const myTeam = this.call.getActivePlayerTeam();
         return myTeam === this.enums.team.left ? this.enums.team.right : this.enums.team.left;
     }
 
@@ -41,7 +50,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
         const opponentFill = document.getElementById('opponentHealthFill');
         const opponentText = document.getElementById('opponentHealthText');
 
-        const myTeam = this.game.call('getActivePlayerTeam');
+        const myTeam = this.call.getActivePlayerTeam();
         let myHealth = this.teamHealth[myTeam] || this.MAX_TEAM_HEALTH;
         let opponentHealth = this.teamHealth[this.getOpponentTeam()] || this.MAX_TEAM_HEALTH;
         if (playerFill && playerText) {
@@ -73,7 +82,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
 
         // Return result object
         return {
-            result: winningTeam === this.game.call('getActivePlayerTeam') ? 'victory' : 'defeat',
+            result: winningTeam === this.call.getActivePlayerTeam() ? 'victory' : 'defeat',
             winningTeam: winningTeam,
             losingTeam: losingTeam,
             damage: damageResult.totalDamage,
@@ -175,7 +184,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
      */
     findSquadForUnit(unitId) {
         // Check with experience system first (most reliable)
-        const squadData = this.game.call('findSquadByUnitId', unitId);
+        const squadData = this.call.findSquadByUnitId( unitId);
         if (squadData) {
             const unitType = this.getCurrentUnitTypeForSquad(squadData.placementId);
             return {
@@ -185,8 +194,8 @@ class TeamHealthSystem extends GUTS.BaseSystem {
         }
 
         // Fallback: search placement system using numeric team values
-        const playerPlacements = this.game.call('getPlacementsForSide', this.game.call('getActivePlayerTeam')) || [];
-        const opponentPlacements = this.game.call('getPlacementsForSide', this.getOpponentTeam()) || [];
+        const playerPlacements = this.call.getPlacementsForSide( this.call.getActivePlayerTeam()) || [];
+        const opponentPlacements = this.call.getPlacementsForSide( this.getOpponentTeam()) || [];
         const allPlacements = [...playerPlacements, ...opponentPlacements];
 
         for (const placement of allPlacements) {
@@ -195,7 +204,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
                 if (unitMatch) {
                     // Get unitType from the entity's unitType component
                     const unitTypeComp = this.game.getComponent(unitMatch, 'unitType');
-                    const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+                    const unitType = this.call.getUnitTypeDef( unitTypeComp);
                     return {
                         placementId: placement.placementId,
                         unitType: unitType
@@ -206,7 +215,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
 
         // Last resort: use unit type component directly
         const unitTypeComp = this.game.getComponent(unitId, "unitType");
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
         if (unitType) {
             return {
                 placementId: null,  // Unknown placement - use null as invalid marker
@@ -223,14 +232,14 @@ class TeamHealthSystem extends GUTS.BaseSystem {
      * @returns {Object|null} Current unit type
      */
     getCurrentUnitTypeForSquad(placementId) {
-        const unitType = this.game.call('getCurrentUnitTypeForSquad', placementId);
+        const unitType = this.call.getCurrentUnitTypeForSquad( placementId);
         if (unitType) {
             return unitType;
         }
 
         // Fallback to placement system - get unitType from entity
-        const playerPlacements = this.game.call('getPlacementsForSide', this.game.call('getActivePlayerTeam')) || [];
-        const opponentPlacements = this.game.call('getPlacementsForSide', this.getOpponentTeam()) || [];
+        const playerPlacements = this.call.getPlacementsForSide( this.call.getActivePlayerTeam()) || [];
+        const opponentPlacements = this.call.getPlacementsForSide( this.getOpponentTeam()) || [];
         const placement = playerPlacements.find(p => p.placementId === placementId) ||
                          opponentPlacements.find(p => p.placementId === placementId);
         if (placement && placement.squadUnits && placement.squadUnits.length > 0) {
@@ -246,14 +255,14 @@ class TeamHealthSystem extends GUTS.BaseSystem {
      */
     getOriginalSquadSize(placementId) {
         // Check experience system first
-        const squadData = this.game.call('getSquadExperienceData', placementId);
+        const squadData = this.call.getSquadExperienceData( placementId);
         if (squadData) {
             return squadData.totalUnitsInSquad || squadData.squadSize;
         }
 
         // Fallback to placement system
-        const playerPlacements = this.game.call('getPlacementsForSide', this.game.call('getActivePlayerTeam')) || [];
-        const opponentPlacements = this.game.call('getPlacementsForSide', this.getOpponentTeam()) || [];
+        const playerPlacements = this.call.getPlacementsForSide( this.call.getActivePlayerTeam()) || [];
+        const opponentPlacements = this.call.getPlacementsForSide( this.getOpponentTeam()) || [];
         const placement = playerPlacements.find(p => p.placementId === placementId) ||
                          opponentPlacements.find(p => p.placementId === placementId);
         if (placement) {

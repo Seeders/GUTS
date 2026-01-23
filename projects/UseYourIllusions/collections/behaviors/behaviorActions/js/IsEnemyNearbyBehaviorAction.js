@@ -12,6 +12,11 @@
  */
 class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getVisibleEnemiesInRange',
+        'findNearestVisibleEnemy'
+    ];
+
     execute(entityId, game) {
         const params = this.parameters || {};
         const minCount = params.minCount || 1;
@@ -21,7 +26,7 @@ class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
         const combat = game.getComponent(entityId, 'combat');
         const range = combat?.visionRange || params.range || 300;
 
-        const enemies = game.call('getVisibleEnemiesInRange', entityId, range);
+        const enemies = this.call.getVisibleEnemiesInRange( entityId, range);
 
         if (enemies && enemies.length >= minCount) {
             const result = {
@@ -30,7 +35,7 @@ class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
             };
 
             if (storeNearest) {
-                const nearestEnemy = game.call('findNearestVisibleEnemy', entityId, range);
+                const nearestEnemy = this.call.findNearestVisibleEnemy( entityId, range);
                 if (nearestEnemy) {
                     const shared = this.getShared(entityId, game);
                     shared[targetKey] = nearestEnemy.id;

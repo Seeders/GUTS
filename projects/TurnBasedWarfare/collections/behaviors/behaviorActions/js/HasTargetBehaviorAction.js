@@ -10,6 +10,10 @@
  */
 class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getUnitTypeDef'
+    ];
+
     execute(entityId, game) {
         const log = GUTS.HeadlessLogger;
         const params = this.parameters || {};
@@ -20,7 +24,7 @@ class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
         const targetId = shared[targetKey];
 
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+        const unitDef = this.call.getUnitTypeDef( unitTypeComp);
         const teamComp = game.getComponent(entityId, 'team');
         const reverseEnums = game.getReverseEnums();
         const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;
@@ -61,7 +65,7 @@ class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
             }
 
             const targetDeathState = game.getComponent(targetId, 'deathState');
-            const enums = game.call('getEnums');
+            const enums = game.getEnums();
             if (targetDeathState && targetDeathState.state !== enums?.deathState?.alive) {
                 log.trace('HasTarget', `${unitName}(${entityId}) [${teamName}] FAILURE - target dying/corpse`, {
                     targetId,

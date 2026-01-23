@@ -12,6 +12,20 @@ class PathfindingSystem extends GUTS.BaseSystem {
         'getRampPositions'
     ];
 
+    static serviceDependencies = [
+        'getLevel',
+        'isTerrainInitialized',
+        'getPlacementGridSize',
+        'getGridSize',
+        'getTerrainSize',
+        'tileToWorld',
+        'getTileMap',
+        'getTerrainTypeAtPosition',
+        'getUnitTypeDef',
+        'placementGridToWorld',
+        'getTerrainHeightAtPosition'
+    ];
+
     constructor(game) {
         super(game);
         this.game.pathfindingSystem = this;
@@ -78,7 +92,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
     onSceneLoad(sceneData) {
         // Check if level changed - if so, we need to re-initialize
-        const levelId = this.game.call('getLevel');
+        const levelId = this.call.getLevel();
         if (this.initialized && this.currentLevelId === levelId) {
             return; // Same level, already initialized
         }
@@ -100,7 +114,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const terrainInitialized = this.game.call('isTerrainInitialized');
+        const terrainInitialized = this.call.isTerrainInitialized();
         if (!terrainInitialized) {
             console.warn('PathfindingSystem: Waiting for terrain system...');
             return;
@@ -121,7 +135,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         }
 
         // Set navigation grid size to half of terrain grid (matches placement grid)
-        this.navGridSize = this.game.call('getPlacementGridSize');
+        this.navGridSize = this.call.getPlacementGridSize();
 
         // Load ramps data
         this.loadRamps(level.tileMap);
@@ -163,8 +177,8 @@ class PathfindingSystem extends GUTS.BaseSystem {
     // Convert nav grid coordinates to terrain grid coordinates
     navGridToTerrainGrid(navGridX, navGridZ) {
         const worldPos = this.navGridToWorld(navGridX, navGridZ);
-        const gridSize = this.game.call('getGridSize');
-        const terrainSize = this.game.call('getTerrainSize');
+        const gridSize = this.call.getGridSize();
+        const terrainSize = this.call.getTerrainSize();
 
         const terrainX = Math.floor((worldPos.x + terrainSize / 2) / gridSize);
         const terrainZ = Math.floor((worldPos.z + terrainSize / 2) / gridSize);
@@ -194,7 +208,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         for (const key of this.ramps) {
             const [gridX, gridZ] = key.split(',').map(Number);
             // Use GridSystem's tileToWorld service (via CoordinateTranslator)
-            const worldPos = this.game.call('tileToWorld', gridX, gridZ);
+            const worldPos = this.call.tileToWorld( gridX, gridZ);
             if (worldPos) {
                 positions.push(worldPos);
             }
@@ -211,7 +225,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
     // Check if movement between terrains is allowed (either through height + ramps or walkableNeighbors)
     canWalkBetweenTerrainsWithRamps(fromTerrainIndex, toTerrainIndex, fromNavGridX, fromNavGridZ, toNavGridX, toNavGridZ) {
-        const tileMap = this.game.call('getTileMap');
+        const tileMap = this.call.getTileMap();
         // NEW: Use height-based walkability if heightMap is available
         if (tileMap.heightMap && tileMap.heightMap.length > 0) {
             const fromHeight = this.getHeightLevelAtNavGrid(fromNavGridX, fromNavGridZ);
@@ -260,7 +274,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
      * - 255: Impassable (marked for worldObjects or other obstacles)
      */
     bakeNavMesh() {
-        const terrainSize = this.game.call('getTerrainSize');
+        const terrainSize = this.call.getTerrainSize();
         
         this.navGridWidth = Math.ceil(terrainSize / this.navGridSize);
         this.navGridHeight = Math.ceil(terrainSize / this.navGridSize);
@@ -275,7 +289,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
                 const worldX = (x * this.navGridSize) - halfTerrain + this.navGridSize / 2;
                 const worldZ = (z * this.navGridSize) - halfTerrain + this.navGridSize / 2;
                 
-                const terrainType = this.game.call('getTerrainTypeAtPosition', worldX, worldZ);
+                const terrainType = this.call.getTerrainTypeAtPosition( worldX, worldZ);
                 
                 const idx = z * this.navGridWidth + x;
                 this.navMesh[idx] = terrainType !== null ? terrainType : 0;
@@ -285,7 +299,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         // Second pass: mark cells occupied by impassable entities as impassable
         // Supports new levelEntities format: { prefab, type, components: { transform } }
         const collections = this.collections;
-        const levelId = this.game.call('getLevel');
+        const levelId = this.call.getLevel();
         const level = collections.levels?.[levelId];
         const tileMap = level?.tileMap;
         const levelEntities = tileMap?.levelEntities || [];
@@ -377,14 +391,14 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     worldToNavGrid(worldX, worldZ) {
-        const halfTerrain = this.game.call('getTerrainSize') / 2;
+        const halfTerrain = this.call.getTerrainSize() / 2;
         const gridX = Math.floor((worldX + halfTerrain) / this.navGridSize);
         const gridZ = Math.floor((worldZ + halfTerrain) / this.navGridSize);
         return { x: gridX, z: gridZ };
     }
 
     navGridToWorld(gridX, gridZ) {
-        const halfTerrain = this.game.call('getTerrainSize') / 2;
+        const halfTerrain = this.call.getTerrainSize() / 2;
         const worldX = (gridX * this.navGridSize) - halfTerrain + this.navGridSize / 2;
         const worldZ = (gridZ * this.navGridSize) - halfTerrain + this.navGridSize / 2;
         return { x: worldX, z: worldZ };
@@ -823,7 +837,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
             // Check if entity is a flying unit - flying units get direct paths
             let path;
             const unitTypeComp = this.game.getComponent(request.entityId, 'unitType');
-            const unitDef = unitTypeComp ? this.game.call('getUnitTypeDef', unitTypeComp) : null;
+            const unitDef = unitTypeComp ? this.call.getUnitTypeDef( unitTypeComp) : null;
 
             if (unitDef?.isFlying) {
                 // Flying units bypass pathfinding - direct line to target
@@ -851,7 +865,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
     }
 
     isGridPositionWalkable(gridPos) {
-        const worldPos = this.game.call('placementGridToWorld', gridPos.x, gridPos.z);
+        const worldPos = this.call.placementGridToWorld( gridPos.x, gridPos.z);
         return this.isPositionWalkable(worldPos);
     }
 
@@ -956,7 +970,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
             let instanceIndex = 0;
             for (const cell of cellData[cellType]) {
                 const worldPos = this.navGridToWorld(cell.x, cell.z);
-                const terrainHeight = this.game.call('getTerrainHeightAtPosition', worldPos.x, worldPos.z);
+                const terrainHeight = this.call.getTerrainHeightAtPosition( worldPos.x, worldPos.z);
 
                 position.set(worldPos.x, terrainHeight + 0.5, worldPos.z);
                 matrix.makeTranslation(position.x, position.y, position.z);

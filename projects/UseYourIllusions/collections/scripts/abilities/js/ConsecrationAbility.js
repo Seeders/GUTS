@@ -1,4 +1,10 @@
 class ConsecrationAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'getUnitTypeDef',
+        'showDamageNumber'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Consecration',
@@ -144,7 +150,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             const health = this.game.getComponent(unitId, "health");
             const team = this.game.getComponent(unitId, "team");
             const unitTypeComp = this.game.getComponent(unitId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
             if (!unitPos || !health || !team || health.current <= 0) return;
 
@@ -174,7 +180,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
                         this.playConfiguredEffects('heal', unitPos);
 
                         if (!this.game.isServer && this.game.hasService('showDamageNumber')) {
-                            this.game.call('showDamageNumber',
+                            this.call.showDamageNumber(
                                 unitPos.x, unitPos.y + 15, unitPos.z,
                                 healAmount, 'heal'
                             );

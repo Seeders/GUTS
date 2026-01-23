@@ -1,4 +1,9 @@
 class TrackingMark extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'getBuffTypeDef'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Tracking Mark',
@@ -88,7 +93,7 @@ class TrackingMark extends GUTS.BaseAbility {
 
         // Check for existing tracking mark
         const enums = this.game.getEnums();
-        const buffTypeDef = this.game.call('getBuffTypeDef', enums.buffTypes.marked);
+        const buffTypeDef = this.call.getBuffTypeDef( enums.buffTypes.marked);
         const maxStacks = buffTypeDef?.maxStacks || this.maxMarks;
         const damagePerStack = buffTypeDef?.damagePerStack || this.markDamageIncrease;
 

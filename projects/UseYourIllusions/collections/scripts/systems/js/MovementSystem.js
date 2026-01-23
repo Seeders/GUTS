@@ -1,4 +1,19 @@
 class MovementSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'clearEntityPath',
+        'getBehaviorMeta',
+        'getBehaviorNodeId',
+        'getBehaviorShared',
+        'getCamera',
+        'getEntityPath',
+        'getGridSize',
+        'getNearbyUnits',
+        'getTerrainHeightAtPosition',
+        'playSynthSound',
+        'requestPath',
+        'setEntityPath'
+    ];
+
     constructor(game) {
         super(game);
         this.game.movementSystem = this;
@@ -79,7 +94,7 @@ class MovementSystem extends GUTS.BaseSystem {
 
         // Get camera position
         let distanceToCamera = 0;
-        const camera = this.game.hasService('getCamera') ? this.game.call('getCamera') : null;
+        const camera = this.game.hasService('getCamera') ? this.call.getCamera() : null;
         if (camera?.position) {
             const dx = guardPos.x - camera.position.x;
             const dz = guardPos.z - camera.position.z;
@@ -135,7 +150,7 @@ class MovementSystem extends GUTS.BaseSystem {
 
             // Pass volume as options parameter - config.volume isn't used by AudioManager
             const finalVolume = config.volume;
-            this.game.call('playSynthSound', `guard_footstep_${entityId}_${Date.now()}`, config, { volume: finalVolume });
+            this.call.playSynthSound( `guard_footstep_${entityId}_${Date.now()}`, config, { volume: finalVolume });
         }
 
         state.lastTime = now;
@@ -211,7 +226,7 @@ class MovementSystem extends GUTS.BaseSystem {
 
                 // Unit should stay still if: anchored (buildings only), or attacking and in range
                 // Check behaviorActions collection (aiState enum index 0)
-                const behaviorMeta = aiState ? this.game.call('getBehaviorMeta', entityId) : null;
+                const behaviorMeta = aiState ? this.call.getBehaviorMeta( entityId) : null;
                 const isAttacking = !!aiState &&
                     aiState.currentActionCollection === this.enums.behaviorCollection.behaviorActions &&
                     (aiState.currentAction === this.enums.behaviorActions.AttackEnemyBehaviorAction || aiState.currentAction === this.enums.behaviorActions.CombatBehaviorAction) &&
@@ -381,7 +396,7 @@ class MovementSystem extends GUTS.BaseSystem {
             this._sortedEntityIds.forEach(entityId => {
                 const data = unitData.get(entityId);
                 // Chasing means: has a target or targetPosition they're moving toward but not in range yet
-                const behaviorShared = data.aiState ? this.game.call('getBehaviorShared', entityId) : null;
+                const behaviorShared = data.aiState ? this.call.getBehaviorShared( entityId) : null;
                 const isChasing = data.aiState &&
                     data.aiState.currentAction >= 0 &&
                     (behaviorShared || behaviorShared?.targetPosition) &&
@@ -458,7 +473,7 @@ class MovementSystem extends GUTS.BaseSystem {
         }
 
         const separationRadius = unitRadius * this.SEPARATION_RADIUS_MULTIPLIER;
-        const nearbyUnits = this.game.call('getNearbyUnits', pos, separationRadius, entityId);
+        const nearbyUnits = this.call.getNearbyUnits( pos, separationRadius, entityId);
 
         let separationForceX = 0;
         let separationForceZ = 0;
@@ -534,7 +549,7 @@ class MovementSystem extends GUTS.BaseSystem {
         const { pos, vel, aiState, unitRadius, isAnchored } = data;
 
         // Only apply avoidance if chasing (has target but not anchored)
-        const behaviorShared = aiState ? this.game.call('getBehaviorShared', entityId) : null;
+        const behaviorShared = aiState ? this.call.getBehaviorShared( entityId) : null;
         const isChasing = aiState &&
             aiState.currentAction >= 0 &&
             (behaviorShared || behaviorShared?.targetPosition) &&
@@ -556,7 +571,7 @@ class MovementSystem extends GUTS.BaseSystem {
         }
 
         // Get target entity ID if available (for excluding from obstacle detection)
-        const behaviorMeta = this.game.call('getBehaviorMeta', entityId);
+        const behaviorMeta = this.call.getBehaviorMeta( entityId);
         const targetEntityId = behaviorShared?.target ?? behaviorMeta?.target ?? null;
 
         const desiredDirection = {
@@ -610,7 +625,7 @@ class MovementSystem extends GUTS.BaseSystem {
         const lookaheadDistance = this.PATHFINDING_LOOKAHEAD;
         const checkRadius = unitRadius * 1.5;
 
-        const nearbyUnits = this.game.call('getNearbyUnits', pos, lookaheadDistance + checkRadius, entityId);
+        const nearbyUnits = this.call.getNearbyUnits( pos, lookaheadDistance + checkRadius, entityId);
 
         let closestObstacle = null;
         let closestDistance = Infinity;
@@ -723,7 +738,7 @@ class MovementSystem extends GUTS.BaseSystem {
     calculateDesiredVelocity(entityId, data) {
         const { pos, vel, aiState, isAnchored } = data;
 
-        const behaviorMeta = aiState ? this.game.call('getBehaviorMeta', entityId) : null;
+        const behaviorMeta = aiState ? this.call.getBehaviorMeta( entityId) : null;
         if (isAnchored || behaviorMeta?.reachedTarget) {
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vy = 0;
@@ -733,7 +748,7 @@ class MovementSystem extends GUTS.BaseSystem {
 
 
         // Get movement target from behaviorMeta or behaviorShared
-        const behaviorShared = aiState ? this.game.call('getBehaviorShared', entityId) : null;
+        const behaviorShared = aiState ? this.call.getBehaviorShared( entityId) : null;
         let targetPos = behaviorMeta?.targetPosition || behaviorShared?.targetPosition;
 
         if (targetPos) {
@@ -743,7 +758,7 @@ class MovementSystem extends GUTS.BaseSystem {
             // Use pathfinding if available and useDirectMovement not set
             if (pathfinding && !pathfinding.useDirectMovement) {
                 // Check if we have a path to follow (paths stored in PathfindingSystem)
-                let path = this.game.call('getEntityPath', entityId);
+                let path = this.call.getEntityPath( entityId);
 
                 // Check if target has changed significantly - if so, clear the stale path
                 if (path && path.length > 0) {
@@ -756,7 +771,7 @@ class MovementSystem extends GUTS.BaseSystem {
 
                     if (targetDistanceSq > TARGET_CHANGE_THRESHOLD_SQ) {
                         // Target has changed significantly - clear old path
-                        this.game.call('clearEntityPath', entityId);
+                        this.call.clearEntityPath( entityId);
                         pathfinding.lastPathRequest = 0;
                         pathfinding.pathIndex = 0;
                         path = null; // Force new path request
@@ -805,7 +820,7 @@ class MovementSystem extends GUTS.BaseSystem {
         const { pos, vel } = data;
 
         // Get target position from behaviorShared
-        const behaviorShared = this.game.call('getBehaviorShared', entityId);
+        const behaviorShared = this.call.getBehaviorShared( entityId);
         const targetPos = behaviorShared?.targetPosition;
 
         if (!targetPos) {
@@ -845,7 +860,7 @@ class MovementSystem extends GUTS.BaseSystem {
         let targetZ = null;
 
         // If targeting an entity, use its current position
-        const behaviorMeta = aiState ? this.game.call('getBehaviorMeta', entityId) : null;
+        const behaviorMeta = aiState ? this.call.getBehaviorMeta( entityId) : null;
         if (behaviorMeta?.target) {
             const targetTransform = this.game.getComponent(behaviorMeta.target, "transform");
             const targetPos = targetTransform?.position;
@@ -868,7 +883,7 @@ class MovementSystem extends GUTS.BaseSystem {
 
             if (targetDistanceSq > TARGET_CHANGE_THRESHOLD_SQ) {
                 // Target has changed significantly - clear old path and reset timer
-                this.game.call('clearEntityPath', entityId);
+                this.call.clearEntityPath( entityId);
                 pathfinding.lastPathRequest = 0;
                 pathfinding.pathIndex = 0;
             }
@@ -877,13 +892,13 @@ class MovementSystem extends GUTS.BaseSystem {
         if (!pathfinding.lastPathRequest || (now - pathfinding.lastPathRequest) > this.PATH_REREQUEST_INTERVAL) {
             pathfinding.lastPathRequest = now;
 
-            const existingPath = this.game.call('getEntityPath', entityId);
+            const existingPath = this.call.getEntityPath( entityId);
             if ((!existingPath || existingPath.length == 0) && targetX != null && targetZ != null) {
                 // Store current target for change detection
                 pathfinding.lastTargetX = targetX;
                 pathfinding.lastTargetZ = targetZ;
 
-                const cachedPath = this.game.call('requestPath',
+                const cachedPath = this.call.requestPath(
                     entityId,
                     pos.x,
                     pos.z,
@@ -894,12 +909,12 @@ class MovementSystem extends GUTS.BaseSystem {
 
                 // If requestPath returned a cached path, store it immediately
                 if (cachedPath && cachedPath.length > 0) {
-                    this.game.call('setEntityPath', entityId, cachedPath);
+                    this.call.setEntityPath( entityId, cachedPath);
                     pathfinding.pathIndex = 0;
                 }
             }
         } else {
-            const existingPath = this.game.call('getEntityPath', entityId);
+            const existingPath = this.call.getEntityPath( entityId);
             const timeSinceLastRequest = now - pathfinding.lastPathRequest;
 
             // If path was just requested (< 0.1s ago), wait for PathfindingSystem to compute it
@@ -908,8 +923,8 @@ class MovementSystem extends GUTS.BaseSystem {
                 return; // Path is being computed, wait for next frame
             }
 
-            const behaviorShared = aiState ? this.game.call('getBehaviorShared', entityId) : null;
-            const actionName = this.game.call('getBehaviorNodeId', aiState?.currentActionCollection, aiState?.currentAction)
+            const behaviorShared = aiState ? this.call.getBehaviorShared( entityId) : null;
+            const actionName = this.call.getBehaviorNodeId( aiState?.currentActionCollection, aiState?.currentAction)
                 ?? aiState?.currentAction;
             // IMPORTANT: Never remove this debug message - it is very useful for debugging pathfinding issues
             // NEVER.  EVER.  THAT MEANS YOU CLAUDE.  DO NOT REMOVE THIS CONSOLE LOG MESSAGE.
@@ -941,7 +956,7 @@ class MovementSystem extends GUTS.BaseSystem {
         }
 
         if (pathfinding.pathIndex >= path.length) {
-            this.game.call('clearEntityPath', entityId);
+            this.call.clearEntityPath( entityId);
             pathfinding.pathIndex = 0;
             data.desiredVelocity.vx = 0;
             data.desiredVelocity.vz = 0;
@@ -956,7 +971,7 @@ class MovementSystem extends GUTS.BaseSystem {
         if (distToWaypoint < this.PATH_REACHED_DISTANCE) {
             pathfinding.pathIndex++;
             if (pathfinding.pathIndex >= path.length) {
-                this.game.call('clearEntityPath', entityId);
+                this.call.clearEntityPath( entityId);
                 pathfinding.pathIndex = 0;
             }
             return;
@@ -1098,7 +1113,7 @@ class MovementSystem extends GUTS.BaseSystem {
     }
     
     handleGroundInteraction(pos, vel) {
-        const terrainHeight = this.game.call('getTerrainHeightAtPosition', pos.x, pos.z);
+        const terrainHeight = this.call.getTerrainHeightAtPosition( pos.x, pos.z);
         
         if (terrainHeight !== null) {
             const targetHeight = terrainHeight;   
@@ -1126,7 +1141,7 @@ class MovementSystem extends GUTS.BaseSystem {
         if (!level?.tileMap) return;
         const tileMap = level.tileMap;
 
-        const terrainSize = tileMap.size * this.game.call('getGridSize');
+        const terrainSize = tileMap.size * this.call.getGridSize();
         const halfTerrain = terrainSize / 2;
         const unitRadius = this.getUnitRadius(collision);
         

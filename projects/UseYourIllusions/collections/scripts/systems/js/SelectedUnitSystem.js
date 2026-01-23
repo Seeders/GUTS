@@ -7,6 +7,20 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         'configureSelectionSystem'
     ];
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'toggleCameraFollow',
+        'getActivePlayerTeam',
+        'getCamera',
+        'getPlacementsForSide',
+        'getSquadInfo',
+        'getPlacementById',
+        'getCameraFollowTarget',
+        'getThirdPersonTarget',
+        'stopThirdPersonCamera',
+        'startThirdPersonCamera'
+    ];
+
     constructor(game) {
         super(game);
         this.game.selectedUnitSystem = this;
@@ -94,7 +108,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
         // Fallback: check unitType component
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
         if (unitType?.collection) {
             return unitType.collection;
         }
@@ -203,7 +217,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         if(unitPortrait){
             unitPortrait.addEventListener('click', () => {
                 if(this.game.state.selectedEntity?.entityId){
-                    const isFollowing = this.game.call('toggleCameraFollow', this.game.state.selectedEntity.entityId);
+                    const isFollowing = this.call.toggleCameraFollow( this.game.state.selectedEntity.entityId);
                     // Update visual indicator
                     if (isFollowing) {
                         unitPortrait.classList.add('following');
@@ -445,7 +459,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                 if (!team) return;
 
                 const unitTeam = team.team || team.side || team.teamId;
-                const myTeam = this.game.call('getActivePlayerTeam');
+                const myTeam = this.call.getActivePlayerTeam();
 
                 if (unitTeam !== myTeam) return;
             }
@@ -498,7 +512,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
      * Uses config.camera if provided, falls back to getCamera service
      */
     getCamera() {
-        return this.config.camera || this.game.call('getCamera');
+        return this.config.camera || this.call.getCamera();
     }
 
     worldToScreen(x, y, z) {
@@ -629,7 +643,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                 if (!team) return;
 
                 const unitTeam = team.team || team.side || team.teamId;
-                const myTeam = this.game.call('getActivePlayerTeam');
+                const myTeam = this.call.getActivePlayerTeam();
 
                 if (unitTeam !== myTeam) return;
             }
@@ -640,7 +654,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
             // Adjust distance based on unit/building size
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             const size = unitType?.size || 20;
             distance -= size;
 
@@ -693,7 +707,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             }
 
             // Stop camera following
-            this.game.call('toggleCameraFollow', null);
+            this.call.toggleCameraFollow( null);
         }
 
         this.game.triggerEvent('onDeSelectAll');
@@ -715,7 +729,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             const pos = transform?.position;
             const placement = this.game.getComponent(entityId, "placement");
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
             if (!pos || !placement) return;
 
@@ -738,7 +752,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
         // If we found an entity but no placementId, try to find it from playerPlacements
         if (closestEntityId && !closestPlacementId) {
-            const placements = this.game.call('getPlacementsForSide', this.game.call('getActivePlayerTeam'));
+            const placements = this.call.getPlacementsForSide( this.call.getActivePlayerTeam());
             if (placements) {
                 for (const placement of placements) {
                     if (placement.squadUnits && placement.squadUnits.includes(closestEntityId)) {
@@ -755,10 +769,10 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     selectUnit(entityId, placementId) {
         if (!entityId) return;
 
-        const squadData = this.game.call('getSquadInfo', placementId);
+        const squadData = this.call.getSquadInfo( placementId);
 
         if (squadData) {
-            const placement = this.game.call('getPlacementById', placementId);
+            const placement = this.call.getPlacementById( placementId);
             squadData.unitIds = placement.squadUnits;
 
             // Populate selectedUnitIds with the squad units
@@ -787,7 +801,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
     update() {
         // Wait for scene to be available
-        if (!this.game.scene || !this.game.call('getCamera')) {
+        if (!this.game.scene || !this.call.getCamera()) {
             return;
         }
         
@@ -854,14 +868,14 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                     container.append(cameraButton);
                 }
                 // Update follow indicator
-                const followTarget = this.game.call('getCameraFollowTarget');
+                const followTarget = this.call.getCameraFollowTarget();
                 if (followTarget === selectedEntityId) {
                     container.classList.add('following');
                 } else {
                     container.classList.remove('following');
                 }
                 // Update third-person indicator
-                const thirdPersonTarget = this.game.call('getThirdPersonTarget');
+                const thirdPersonTarget = this.call.getThirdPersonTarget();
                 if (thirdPersonTarget === selectedEntityId) {
                     container.classList.add('third-person');
                 } else {
@@ -898,7 +912,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     createPortrait(entityId){
         if(document) {
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             const icon = unitType ? this.collections.icons[unitType.icon] : null;
 
             if (icon) {
@@ -915,7 +929,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         container.className = 'unit-stats-overlay';
 
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
         const health = this.game.getComponent(entityId, "health");
         const placement = this.game.getComponent(entityId, "placement");
 
@@ -989,7 +1003,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         button.title = 'Third-person camera (follow unit)';
 
         // Check if already in third-person mode for this entity
-        const currentTarget = this.game.call('getThirdPersonTarget');
+        const currentTarget = this.call.getThirdPersonTarget();
         if (currentTarget === entityId) {
             button.classList.add('active');
         }
@@ -997,16 +1011,16 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         button.addEventListener('click', (e) => {
             e.stopPropagation(); // Don't trigger portrait click (follow mode)
 
-            const currentTarget = this.game.call('getThirdPersonTarget');
+            const currentTarget = this.call.getThirdPersonTarget();
             if (currentTarget === entityId) {
                 // Already following this unit, stop third-person
-                this.game.call('stopThirdPersonCamera');
+                this.call.stopThirdPersonCamera();
                 button.classList.remove('active');
                 const container = document.getElementById('unitPortrait');
                 if (container) container.classList.remove('third-person');
             } else {
                 // Start third-person camera for this unit
-                this.game.call('startThirdPersonCamera', entityId);
+                this.call.startThirdPersonCamera( entityId);
                 button.classList.add('active');
                 const container = document.getElementById('unitPortrait');
                 if (container) container.classList.add('third-person');
@@ -1115,7 +1129,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     getUnitRadius(entityId) {
         // Try to get unit type to determine appropriate radius
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitData = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitData = this.call.getUnitTypeDef( unitTypeComp);
 
         if (unitData && unitData.size) {
             return unitData.size + 2; // Slightly larger than unit

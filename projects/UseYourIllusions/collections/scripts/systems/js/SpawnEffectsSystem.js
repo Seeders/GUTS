@@ -5,6 +5,16 @@
  * this system starts the appropriate effects at the entity's position.
  */
 class SpawnEffectsSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'getAmbientSound',
+        'getCamera',
+        'getUnitTypeDef',
+        'playEffectSystem',
+        'setListenerPosition',
+        'startAmbientSound',
+        'stopAmbientSound'
+    ];
+
     static services = [
         'startSpawnEffect',
         'stopSpawnEffect'
@@ -33,9 +43,9 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
     update() {
         // Update audio listener position based on camera
         if (this.activeAmbientSounds.size > 0) {
-            const camera = this.game.call('getCamera');
+            const camera = this.call.getCamera();
             if (camera?.position) {
-                this.game.call('setListenerPosition', {
+                this.call.setListenerPosition( {
                     x: camera.position.x,
                     y: camera.position.y,
                     z: camera.position.z
@@ -56,7 +66,7 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
         if (!unitTypeComp) return;
 
         // Use the getUnitTypeDef service to get the full definition
-        const entityDef = this.game.call('getUnitTypeDef', unitTypeComp);
+        const entityDef = this.call.getUnitTypeDef( unitTypeComp);
         if (!entityDef) return;
 
         console.log(`[SpawnEffectsSystem] billboardSpawned entity ${entityId}, has ambientSound:`, !!entityDef.ambientSound, entityDef.ambientSound);
@@ -90,7 +100,7 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
             z: transform.position.z + offset.z
         };
 
-        const controller = this.game.call('playEffectSystem', entityDef.particleEffectSystem, effectPos);
+        const controller = this.call.playEffectSystem( entityDef.particleEffectSystem, effectPos);
         if (controller) {
             this.activeEffects.set(entityId, {
                 controller,
@@ -146,7 +156,7 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
         // Get the sound definition from collections
         console.log(`[SpawnEffectsSystem] Looking for ambient sound: ${ambientConfig.sound}`);
 
-        const soundDef = this.game.call('getAmbientSound', ambientConfig.sound);
+        const soundDef = this.call.getAmbientSound( ambientConfig.sound);
         console.log('[SpawnEffectsSystem] Got soundDef:', soundDef);
         if (!soundDef) {
             console.warn(`[SpawnEffectsSystem] Ambient sound not found: ${ambientConfig.sound}`);
@@ -155,7 +165,7 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
 
         // Start the ambient sound
         const ambientId = `entity_${entityId}`;
-        const ambient = this.game.call('startAmbientSound', ambientId, soundDef, soundPos);
+        const ambient = this.call.startAmbientSound( ambientId, soundDef, soundPos);
 
         if (ambient) {
             this.activeAmbientSounds.set(entityId, {
@@ -173,7 +183,7 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
         const soundData = this.activeAmbientSounds.get(entityId);
         if (!soundData) return;
 
-        this.game.call('stopAmbientSound', soundData.ambientId);
+        this.call.stopAmbientSound( soundData.ambientId);
         this.activeAmbientSounds.delete(entityId);
     }
 

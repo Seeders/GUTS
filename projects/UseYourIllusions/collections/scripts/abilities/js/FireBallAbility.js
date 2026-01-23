@@ -1,4 +1,9 @@
 class FireBallAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'fireProjectile'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Fire Ball',
@@ -124,7 +129,7 @@ class FireBallAbility extends GUTS.BaseAbility {
             }
         };
 
-        this.game.call('fireProjectile', casterEntity, targetId, projectileData);
+        this.call.fireProjectile( casterEntity, targetId, projectileData);
     }
 
     // DESYNC SAFE: Handle splash damage deterministically

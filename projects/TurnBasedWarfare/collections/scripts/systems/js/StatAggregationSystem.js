@@ -5,6 +5,11 @@ class StatAggregationSystem extends GUTS.BaseSystem {
         'invalidateModifierCache'
     ];
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'getPlayerStatsByTeam'
+    ];
+
     constructor(game) {
         super(game);
         this.game.statAggregationSystem = this;
@@ -59,7 +64,7 @@ class StatAggregationSystem extends GUTS.BaseSystem {
      */
     collectUnitPassives(entityId, modifiers) {
         const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
         if (unitType?.passives) {
             for (const passive of unitType.passives) {
@@ -79,7 +84,7 @@ class StatAggregationSystem extends GUTS.BaseSystem {
         const team = this.game.getComponent(entityId, 'team');
         if (!team) return;
 
-        const playerStats = this.game.call('getPlayerStatsByTeam', team.team);
+        const playerStats = this.call.getPlayerStatsByTeam( team.team);
         if (playerStats?.upgrades === undefined) return;
 
         for (const [upgradeId, upgradeDef] of Object.entries(this.upgrades)) {
@@ -236,7 +241,7 @@ class StatAggregationSystem extends GUTS.BaseSystem {
     getAggregatedDefensiveStats(entityId) {
         const combat = this.game.getComponent(entityId, 'combat');
         const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
         const stats = {
             armor: combat?.armor || 0,

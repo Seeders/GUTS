@@ -1,4 +1,11 @@
 class LeapSlamAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'triggerSinglePlayAnimation',
+        'getTerrainTypeAtPosition',
+        'getTileMapTerrainType'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Leap Slam',
@@ -122,7 +129,7 @@ class LeapSlamAbility extends GUTS.BaseAbility {
         // Trigger attack animation for the duration of the leap
         // The animation should play once during the entire leap, paced to match the leap duration
         if (this.game.hasService('triggerSinglePlayAnimation')) {
-            this.game.call('triggerSinglePlayAnimation', casterEntity, this.enums.animationType.attack, 1.0, leapDuration);
+            this.call.triggerSinglePlayAnimation( casterEntity, this.enums.animationType.attack, 1.0, leapDuration);
         }
 
         // Complete the leap after duration
@@ -201,9 +208,9 @@ class LeapSlamAbility extends GUTS.BaseAbility {
             let targetStealth = targetCombat?.stealth ?? 0;
 
             // Apply terrain stealth bonus
-            const terrainTypeIndex = this.game.call('getTerrainTypeAtPosition', entityPos.x, entityPos.z);
+            const terrainTypeIndex = this.call.getTerrainTypeAtPosition( entityPos.x, entityPos.z);
             if (terrainTypeIndex !== null && terrainTypeIndex !== undefined) {
-                const terrainType = this.game.call('getTileMapTerrainType', terrainTypeIndex);
+                const terrainType = this.call.getTileMapTerrainType( terrainTypeIndex);
                 if (terrainType?.stealthBonus) {
                     targetStealth += terrainType.stealthBonus;
                 }

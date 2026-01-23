@@ -6,12 +6,19 @@
  */
 class FindPlayerBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'hasLineOfSight',
+        'getCamera',
+        'playSynthSound'
+    ];
+
     execute(entityId, game) {
         const params = this.parameters || {};
 
         // Get vision range from unit type definition (prefab), combat component, or params
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitTypeDef = game.call('getUnitTypeDef', unitTypeComp);
+        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
         const combat = game.getComponent(entityId, 'combat');
         const detectionRange = unitTypeDef?.visionRange || combat?.visionRange || params.detectionRange || 300;
 
@@ -56,7 +63,7 @@ class FindPlayerBehaviorAction extends GUTS.BaseBehaviorAction {
             if (dist > detectionRange) continue;
 
             // Check line of sight
-            const hasLOS = game.call('hasLineOfSight', pos, targetPos);
+            const hasLOS = this.call.hasLineOfSight( pos, targetPos);
             if (!hasLOS) continue;
 
             // Track closest visible target
@@ -81,7 +88,7 @@ class FindPlayerBehaviorAction extends GUTS.BaseBehaviorAction {
                 const soundConfig = game.getCollections()?.sounds?.guard_alert?.audio;
                 if (soundConfig) {
                     // Calculate distance-based volume
-                    const camera = game.hasService('getCamera') ? game.call('getCamera') : null;
+                    const camera = game.hasService('getCamera') ? this.call.getCamera() : null;
                     let volume = soundConfig.volume || 0.2;
                     if (camera?.position && pos) {
                         const dx = pos.x - camera.position.x;
@@ -96,7 +103,7 @@ class FindPlayerBehaviorAction extends GUTS.BaseBehaviorAction {
                         }
                     }
                     if (volume > 0) {
-                        game.call('playSynthSound', `guard_alert_${entityId}`, soundConfig, { volume });
+                        this.call.playSynthSound( `guard_alert_${entityId}`, soundConfig, { volume });
                     }
                 }
             }

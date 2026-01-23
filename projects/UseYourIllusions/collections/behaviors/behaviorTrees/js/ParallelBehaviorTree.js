@@ -29,6 +29,10 @@
  */
 class ParallelBehaviorTree extends GUTS.BaseBehaviorTree {
 
+    static serviceDependencies = [
+        'getNodeByType'
+    ];
+
     constructor(game, config = {}) {
         super(game, config);
 
@@ -130,7 +134,7 @@ class ParallelBehaviorTree extends GUTS.BaseBehaviorTree {
      * Evaluate a single child (unified node lookup)
      */
     evaluateChild(entityId, game, childName) {
-        const node = game.call('getNodeByType', childName);
+        const node = this.call.getNodeByType( childName);
         if (!node) {
             console.warn(`Parallel child not found: ${childName}`);
             return null;

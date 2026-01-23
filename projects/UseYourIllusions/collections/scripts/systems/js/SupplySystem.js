@@ -6,6 +6,11 @@ class SupplySystem extends GUTS.BaseSystem {
         'invalidateSupplyCache'
     ];
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'getActivePlayerTeam'
+    ];
+
     constructor(game) {
         super(game);
         this.game.supplySystem = this;
@@ -60,7 +65,7 @@ class SupplySystem extends GUTS.BaseSystem {
 
         for (const entityId of entities) {
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             const team = this.game.getComponent(entityId, 'team');
             const health = this.game.getComponent(entityId, 'health');
             const deathState = this.game.getComponent(entityId, 'deathState');
@@ -97,7 +102,7 @@ class SupplySystem extends GUTS.BaseSystem {
     updateSupplyDisplay() {
         if (!this.supplyElement) return;
 
-        const team = this.game.call('getActivePlayerTeam');
+        const team = this.call.getActivePlayerTeam();
         if (team === null || team === undefined) return;
 
         const currentPop = this.getCurrentPopulation(team);

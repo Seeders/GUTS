@@ -1,4 +1,9 @@
 class ArenaPresenceAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'getComponents'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Arena Presence',
@@ -118,7 +123,7 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
             return { success: true, wasRefreshed: true };
         } else {
             // Apply new intimidation buff
-            const Components = this.game.call('getComponents');
+            const Components = this.call.getComponents();
 
             this.game.addComponent(enemyId, "buff", {
                 buffType: enums.buffTypes.intimidated,

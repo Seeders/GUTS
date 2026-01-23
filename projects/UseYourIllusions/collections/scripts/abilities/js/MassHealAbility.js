@@ -1,4 +1,9 @@
 class MassHealAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'showDamageNumber'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Mass Heal',
@@ -83,7 +88,7 @@ class MassHealAbility extends GUTS.BaseAbility {
 
                     // Show heal number
                     if (!this.game.isServer && this.game.hasService('showDamageNumber')) {
-                        this.game.call('showDamageNumber',
+                        this.call.showDamageNumber(
                             allyPos.x, allyPos.y + 50, allyPos.z,
                             actualHeal, 'heal'
                         );

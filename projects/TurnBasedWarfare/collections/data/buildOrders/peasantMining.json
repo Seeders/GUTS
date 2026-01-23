@@ -1,0 +1,12 @@
+{
+  "name": "Peasant Mining",
+  "description": "Spawn multiple peasants to test cooperative gold mining behavior. Peasants will automatically mine from nearest gold mine via MineGoldAbility.",
+  "rounds": {
+    "1": [
+      { "type": "SPAWN_UNIT", "unitId": "peasant", "collection": "units", "position": { "x": -1200, "z": 0 } },
+      { "type": "SPAWN_UNIT", "unitId": "peasant", "collection": "units", "position": { "x": -1200, "z": -50 } },
+      { "type": "SPAWN_UNIT", "unitId": "peasant", "collection": "units", "position": { "x": -1200, "z": 50 } },
+      { "type": "SPAWN_UNIT", "unitId": "peasant", "collection": "units", "position": { "x": -1200, "z": -100 } }
+    ]
+  }
+}

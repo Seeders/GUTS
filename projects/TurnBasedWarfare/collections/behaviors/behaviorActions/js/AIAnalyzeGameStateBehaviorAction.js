@@ -11,6 +11,13 @@
  */
 class AIAnalyzeGameStateBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getCurrentSupply',
+        'getCurrentPopulation',
+        'getUnitTypeDef',
+        'getVisibleEnemiesInRange'
+    ];
+
     execute(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiHeuristicState');
         if (!aiState) {
@@ -23,7 +30,7 @@ class AIAnalyzeGameStateBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
         const collections = game.getCollections();
         const round = game.state.round || 1;
 
@@ -138,8 +145,8 @@ class AIAnalyzeGameStateBehaviorAction extends GUTS.BaseBehaviorAction {
     getSupplyInfo(aiTeam, game) {
         // Use the game's SupplySystem services for accurate, dynamic supply tracking
         // This properly accounts for dead units and reflects current ECS state
-        const max = game.call('getCurrentSupply', aiTeam) || 0;
-        const used = game.call('getCurrentPopulation', aiTeam) || 0;
+        const max = this.call.getCurrentSupply( aiTeam) || 0;
+        const used = this.call.getCurrentPopulation( aiTeam) || 0;
 
         return { used, max };
     }
@@ -149,7 +156,7 @@ class AIAnalyzeGameStateBehaviorAction extends GUTS.BaseBehaviorAction {
         const units = {};      // unitType -> count
         let armyPower = 0;
 
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
         const entities = game.getEntitiesWith('unitType', 'team', 'placement');
         for (const entityId of entities) {
             const teamComp = game.getComponent(entityId, 'team');
@@ -166,7 +173,7 @@ class AIAnalyzeGameStateBehaviorAction extends GUTS.BaseBehaviorAction {
             if (placement?.isUnderConstruction) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
             if (!unitDef) continue;
 
             const unitId = unitDef.id;
@@ -200,11 +207,11 @@ class AIAnalyzeGameStateBehaviorAction extends GUTS.BaseBehaviorAction {
             if (viewerTeam?.team !== aiTeam) continue;
 
             const viewerUnitTypeComp = game.getComponent(viewerEntityId, 'unitType');
-            const viewerUnitDef = game.call('getUnitTypeDef', viewerUnitTypeComp);
+            const viewerUnitDef = this.call.getUnitTypeDef( viewerUnitTypeComp);
             const visionRange = viewerUnitDef?.visionRange || 500;
 
             // Use VisionSystem to get visible enemies (respects fog of war, stealth, LOS)
-            const visibleEnemyIds = game.call('getVisibleEnemiesInRange', viewerEntityId, visionRange);
+            const visibleEnemyIds = this.call.getVisibleEnemiesInRange( viewerEntityId, visionRange);
             if (!visibleEnemyIds) continue;
 
             for (const enemyId of visibleEnemyIds) {
@@ -212,7 +219,7 @@ class AIAnalyzeGameStateBehaviorAction extends GUTS.BaseBehaviorAction {
                 seenEntities.add(enemyId);
 
                 const enemyUnitTypeComp = game.getComponent(enemyId, 'unitType');
-                const enemyDef = game.call('getUnitTypeDef', enemyUnitTypeComp);
+                const enemyDef = this.call.getUnitTypeDef( enemyUnitTypeComp);
                 if (!enemyDef) continue;
 
                 const enemyType = enemyDef.id;

@@ -6,6 +6,12 @@ class AbilitySystem extends GUTS.BaseSystem {
         'useAbility'
     ];
 
+    static serviceDependencies = [
+        'useAbility',
+        'calculateAnimationSpeed',
+        'triggerSinglePlayAnimation'
+    ];
+
     constructor(game) {
         super(game);
         this.game.abilitySystem = this;
@@ -165,7 +171,7 @@ class AbilitySystem extends GUTS.BaseSystem {
         // through priority evaluation - no need to manually change state
 
         if (this._availableAbilities.length > 0) {
-            this.game.call('useAbility', entityId, this._availableAbilities[0].id);
+            this.call.useAbility( entityId, this._availableAbilities[0].id);
         }
     }
     
@@ -226,11 +232,10 @@ class AbilitySystem extends GUTS.BaseSystem {
         if (ability && ability.castTime > 0) {
             // Convert cast time to rate (casts per second)
             const castRate = 1 / ability.castTime;
-            animationSpeed = this.game.call('calculateAnimationSpeed', entityId, castRate);
+            animationSpeed = this.call.calculateAnimationSpeed( entityId, castRate);
         }
-        if (this.game.hasService('triggerSinglePlayAnimation')) {
-            this.game.call('triggerSinglePlayAnimation', entityId, anim, animationSpeed, minAnimationTime);
-        }
+        this.call.triggerSinglePlayAnimation( entityId, anim, animationSpeed, minAnimationTime);
+      
     }
 
     faceTarget(entityId, ability) {
@@ -315,7 +320,10 @@ class AbilitySystem extends GUTS.BaseSystem {
     
     createAbility(abilityId) {
         const AbilityClass = GUTS[abilityId];
-        return AbilityClass ? new AbilityClass() : null;
+        if (!AbilityClass) return null;
+
+        const abilityData = this.collections.abilities?.[abilityId] || {};
+        return new AbilityClass(this.game, { ...abilityData, id: abilityId });
     }
     
     getAvailableAbilityIds() {

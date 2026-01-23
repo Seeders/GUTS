@@ -1,6 +1,10 @@
 class DamageNumberSystem extends GUTS.BaseSystem {
     static services = ['showDamageNumber'];
 
+    static serviceDependencies = [
+        'getCamera'
+    ];
+
     constructor(game) {
         super(game);
         this.game.damageNumberSystem = this;
@@ -272,7 +276,7 @@ class DamageNumberSystem extends GUTS.BaseSystem {
     }
     
     updateDamageNumberInstance(damageObj, progress) {
-        if (!this.game.call('getCamera')) return;
+        if (!this.call.getCamera()) return;
 
         // Calculate position with simple upward motion - reuse vector instead of clone()
         const pos = this._currentPos;
@@ -341,7 +345,7 @@ class DamageNumberSystem extends GUTS.BaseSystem {
     }
 
     updateDamageNumbers() {
-        const camera = this.game.call('getCamera');
+        const camera = this.call.getCamera();
         if (!this.game.state || this.damageNumbers.length === 0 || !camera) return;
         // Update camera vectors for billboarding (reuse pre-allocated vectors)
 

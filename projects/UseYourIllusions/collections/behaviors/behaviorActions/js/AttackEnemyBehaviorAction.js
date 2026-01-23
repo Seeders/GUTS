@@ -9,6 +9,16 @@
  */
 class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'setBillboardAnimation',
+        'triggerSinglePlayAnimation',
+        'scheduleDamage',
+        'getEntityAbilities',
+        'fireProjectile',
+        'getItemData'
+    ];
+
     execute(entityId, game) {
         const log = GUTS.HeadlessLogger;
         const params = this.parameters || {};
@@ -18,7 +28,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const targetId = shared[targetKey];
 
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+        const unitDef = this.call.getUnitTypeDef( unitTypeComp);
         const teamComp = game.getComponent(entityId, 'team');
         const reverseEnums = game.getReverseEnums();
         const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;
@@ -66,8 +76,8 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     onEnd(entityId, game) {
         // Reset animation to idle when combat ends
         if (!game.isServer && game.hasService('setBillboardAnimation')) {
-            const enums = game.call('getEnums');
-            game.call('setBillboardAnimation', entityId, enums.animationType.idle, true);
+            const enums = game.getEnums();
+            this.call.setBillboardAnimation( entityId, enums.animationType.idle, true);
         }
     }
 
@@ -118,10 +128,10 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Trigger attack animation (sprite direction is derived from rotation.y set above)
         if (!game.isServer && game.hasService('triggerSinglePlayAnimation') && effectiveAttackSpeed > 0) {
-            const enums = game.call('getEnums');
+            const enums = game.getEnums();
             const animationSpeed = combat.attackSpeed;
             const minAnimationTime = 1 / combat.attackSpeed * 0.8;
-            game.call('triggerSinglePlayAnimation', attackerId, enums.animationType.attack, animationSpeed, minAnimationTime);
+            this.call.triggerSinglePlayAnimation( attackerId, enums.animationType.attack, animationSpeed, minAnimationTime);
         }
 
         // Handle projectile or melee damage
@@ -143,7 +153,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             const damageDelay = effectiveAttackSpeed > 0 ? (1 / combat.attackSpeed) * 0.5 : 0;
             const element = this.getDamageElement(attackerId, game, combat);
 
-            game.call('scheduleDamage',
+            this.call.scheduleDamage(
                 attackerId,
                 targetId,
                 combat.damage,
@@ -158,7 +168,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     useOffensiveAbility(attackerId, targetId, game) {
-        const abilities = game.call('getEntityAbilities', attackerId);
+        const abilities = this.call.getEntityAbilities( attackerId);
         if (!abilities || abilities.length === 0) return;
 
         // Find available offensive abilities
@@ -194,7 +204,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const projectileData = game.getCollections().projectiles?.[projectileName];
         if (projectileData) {
             log.trace('AttackEnemy', `fireProjectile ${projectileName} from ${attackerId} to ${targetId}`);
-            game.call('fireProjectile', attackerId, targetId, {
+            this.call.fireProjectile( attackerId, targetId, {
                 id: projectileName,
                 ...projectileData
             });
@@ -232,7 +242,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         const mainHandItem = equipment.slots?.mainHand;
         if (mainHandItem) {
-            const itemData = game.call('getItemData', mainHandItem);
+            const itemData = this.call.getItemData( mainHandItem);
             if (itemData && itemData.stats && itemData.stats.element) {
                 return itemData.stats.element;
             }
@@ -240,7 +250,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         const offHandItem = equipment.slots?.offHand;
         if (offHandItem) {
-            const itemData = game.call('getItemData', offHandItem);
+            const itemData = this.call.getItemData( offHandItem);
             if (itemData && itemData.stats && itemData.stats.element) {
                 return itemData.stats.element;
             }

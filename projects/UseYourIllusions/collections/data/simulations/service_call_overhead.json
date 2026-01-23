@@ -1,0 +1,9 @@
+{
+  "name": "Service Call Overhead Test",
+  "testType": "puzzle",
+  "description": "Measures overhead of game.call() vs direct property access",
+  "level": "tutorial",
+  "maxTicks": 5,
+  "setup": {},
+  "expectedOutcome": {}
+}

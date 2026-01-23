@@ -4,6 +4,14 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         'serializeAllEntities'
     ];
 
+    static serviceDependencies = [
+        'getBehaviorMeta',
+        'broadcastToRoom',
+        'getPlayerEntities',
+        'addPlayerGold',
+        'broadcastGameEnd'
+    ];
+
     constructor(game) {
         super(game);
         this.engine = this.game.app;
@@ -73,7 +81,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     checkNoCombatActive(aliveEntities) {
         for (const entityId of aliveEntities) {
             // Check behaviorMeta for active target (not aiState component)
-            const behaviorMeta = this.game.call('getBehaviorMeta', entityId);
+            const behaviorMeta = this.call.getBehaviorMeta( entityId);
             if (behaviorMeta?.target !== undefined && behaviorMeta.target !== null && behaviorMeta.target >= 0) {
                 return false;
             }
@@ -138,7 +146,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         // Broadcast with updated health values
         // Include server simulation time so clients can wait until they've caught up
         // Include nextEntityId so clients can sync their entity ID counters
-        this.game.call('broadcastToRoom', null, 'BATTLE_END', {
+        this.call.broadcastToRoom( null, 'BATTLE_END', {
             result: battleResult,
             gameState: this.game.state,
             entitySync: entitySync,
@@ -191,7 +199,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
     getPlayerStatsForBroadcast() {
         const stats = {};
-        const playerEntities = this.game.call('getPlayerEntities');
+        const playerEntities = this.call.getPlayerEntities();
         for (const entityId of playerEntities) {
             const playerStats = this.game.getComponent(entityId, 'playerStats');
             if (playerStats) {
@@ -209,7 +217,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     addGoldForTeam(goldAmt, team) {
-        this.game.call('addPlayerGold', team, goldAmt);
+        this.call.addPlayerGold( team, goldAmt);
     }
 
     /**
@@ -219,7 +227,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         // If game is in battle or placement phase, the remaining player wins
         if (this.game.state.phase === this.enums.gamePhase.battle || this.game.state.phase === this.enums.gamePhase.placement) {
             // Find the remaining player using player entities
-            const playerEntities = this.game.call('getPlayerEntities');
+            const playerEntities = this.call.getPlayerEntities();
             let remainingPlayer = null;
             for (const entityId of playerEntities) {
                 const stats = this.game.getComponent(entityId, 'playerStats');
@@ -237,7 +245,7 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
                     totalRounds: this.game.state.round
                 };
                 // Broadcast to clients then end game locally
-                this.game.call('broadcastGameEnd', result);
+                this.call.broadcastGameEnd( result);
                 this.game.endGame(result);
             }
         }

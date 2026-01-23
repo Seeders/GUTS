@@ -13,6 +13,13 @@
  */
 class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'triggerSinglePlayAnimation',
+        'fireProjectile',
+        'scheduleDamage',
+        'getNearbyUnits'
+    ];
+
     execute(entityId, game) {
         const params = this.parameters || {};
         const targetKey = params.targetKey || 'target';
@@ -158,21 +165,21 @@ class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
         combat.lastAttack = game.state.now;
 
         if (game.has('triggerSinglePlayAnimation')) {
-            const enums = game.call('getEnums');
-            game.call('triggerSinglePlayAnimation', attackerId, enums.animationType.attack, combat.attackSpeed);
+            const enums = game.getEnums();
+            this.call.triggerSinglePlayAnimation( attackerId, enums.animationType.attack, combat.attackSpeed);
         }
 
         if (combat.projectile) {
             const projectileData = game.getCollections().projectiles?.[combat.projectile];
             if (projectileData) {
-                game.call('fireProjectile', attackerId, targetId, {
+                this.call.fireProjectile( attackerId, targetId, {
                     id: combat.projectile,
                     ...projectileData
                 });
             }
         } else if (combat.damage > 0) {
             const damageDelay = (1 / combat.attackSpeed) * 0.5;
-            game.call('scheduleDamage', attackerId, targetId, combat.damage, 'physical', damageDelay);
+            this.call.scheduleDamage( attackerId, targetId, combat.damage, 'physical', damageDelay);
         }
     }
 
@@ -189,7 +196,7 @@ class KiteBehaviorAction extends GUTS.BaseBehaviorAction {
 
     findNearestEnemy(entityId, game, pos, team, range) {
         // Use spatial grid for efficient lookup - returns array of entityIds
-        const nearbyEntityIds = game.call('getNearbyUnits', pos, range, entityId);
+        const nearbyEntityIds = this.call.getNearbyUnits( pos, range, entityId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
         let nearest = null;

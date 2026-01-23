@@ -14,6 +14,10 @@
  */
 class InvestigateAttackerBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getUnitTypeDef'
+    ];
+
     execute(entityId, game) {
         const log = GUTS.HeadlessLogger;
         const params = this.parameters || {};
@@ -21,7 +25,7 @@ class InvestigateAttackerBehaviorAction extends GUTS.BaseBehaviorAction {
         const maxAge = params.maxAge || 5; // seconds
 
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+        const unitDef = this.call.getUnitTypeDef( unitTypeComp);
         const teamComp = game.getComponent(entityId, 'team');
         const reverseEnums = game.getReverseEnums();
         const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;
@@ -89,7 +93,7 @@ class InvestigateAttackerBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Get attacker info for logging
         const attackerUnitTypeComp = game.getComponent(attackerId, 'unitType');
-        const attackerUnitDef = game.call('getUnitTypeDef', attackerUnitTypeComp);
+        const attackerUnitDef = this.call.getUnitTypeDef( attackerUnitTypeComp);
         const attackerName = attackerUnitDef?.id || 'unknown';
         const attackerTeamName = reverseEnums.team?.[attackerTeam?.team] || attackerTeam?.team;
 

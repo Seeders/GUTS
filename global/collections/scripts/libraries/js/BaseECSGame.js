@@ -110,8 +110,6 @@ class BaseECSGame {
         this.componentGenerator = new GUTS.ComponentGenerator(collections.components, collections);
         this.register("getComponents", this.getComponents.bind(this));
         this.register("getComponentSchema", this.getComponentSchema.bind(this));
-        this.register("getEnumMap", this.getEnumMap.bind(this));
-        this.register("getEnums", this.getEnums.bind(this));
         this.register("getReverseEnums", this.getReverseEnums.bind(this));
         this.register("getUnitTypeDef", this.getUnitTypeDef.bind(this));
 
@@ -916,6 +914,53 @@ class BaseECSGame {
         return this._services.has(key);
     }
 
+    getService(key) {
+        if(!this._services.has(key)){
+            console.log('service not found!', key);
+        }
+        return this._services.get(key);
+    }
+
+    /**
+     * Cache service dependencies on a class instance for fast access
+     * Used for systems, abilities, behavior nodes, and other configured classes
+     * Uses lazy caching with getters to ensure services are available when first accessed
+     * @param {Object} instance - The class instance to cache services on
+     */
+    cacheServiceDependencies(instance) {
+        if (!instance) return;
+
+        const ClassConstructor = instance.constructor;
+        const deps = ClassConstructor.serviceDependencies;
+
+        if (deps && deps.length > 0) {
+            // Initialize call object if it doesn't exist
+            if (!instance.call) {
+                instance.call = {};
+            }
+
+            // Use lazy caching with getters so services are resolved when first accessed
+            // This ensures all systems have registered their services before we try to access them
+            for (const serviceName of deps) {
+                const game = this;
+                let cachedService = null;
+                let cached = false;
+
+                Object.defineProperty(instance.call, serviceName, {
+                    get() {
+                        if (!cached) {
+                            cachedService = game.getService(serviceName);
+                            cached = true;
+                        }
+                        return cachedService;
+                    },
+                    configurable: true,
+                    enumerable: true
+                });
+            }
+        }
+    }
+
     call(key, ...args) {
         const result = this._services.call(key, ...args);
         if (this.callLogger) {
@@ -983,6 +1028,7 @@ class BaseECSGame {
         // Check if this system type is available (skip check if no whitelist defined)
         if (this.availableSystemTypes.length > 0 && !this.availableSystemTypes.includes(systemName)) {
             console.warn(`[BaseECSGame] System '${systemName}' not in available systems list`);
+            console.warn(`[BaseECSGame] Available systems:`, this.availableSystemTypes);
             return null;
         }
 
@@ -997,17 +1043,17 @@ class BaseECSGame {
         const systemInst = new GUTS[systemName](this);
         systemInst.enabled = false;
 
+        console.log(`[BaseECSGame]  - registering services for ${systemName}`);
         // Auto-register services from static services array
         const SystemClass = GUTS[systemName];
         if (SystemClass.services && Array.isArray(SystemClass.services)) {
-            for (const serviceName of SystemClass.services) {
+           for (const serviceName of SystemClass.services) {
                 if (typeof systemInst[serviceName] === 'function') {
                     this.register(serviceName, systemInst[serviceName].bind(systemInst));
-                } else {
-                    console.warn(`[BaseECSGame] Service '${serviceName}' not found on ${systemName}`);
                 }
             }
         }
+
 
         if (systemInst.init) {
             systemInst.init(params);
@@ -1225,7 +1271,7 @@ class BaseECSGame {
 
         // Set up storage on first encounter (analyzes schema for numeric optimization)
         const schema = this.call('getComponentSchema', componentId);
-        const enumMap = this.hasService('getEnumMap') ? this.call('getEnumMap', componentId) : null;
+        const enumMap = this.getEnumMap(componentId);
         if (schema) {
             this._setupComponentStorage(componentId, schema, enumMap);
         }
@@ -1256,7 +1302,6 @@ class BaseECSGame {
         }
 
         const componentMethods = this.call('getComponents');
-        const hasEnumService = this.hasService('getEnumMap');
 
         for (const [componentId, data] of Object.entries(componentsData)) {
             // Use factory function if available, otherwise use data directly
@@ -1270,7 +1315,7 @@ class BaseECSGame {
 
             // Set up storage on first encounter (analyzes schema for numeric optimization)
             const schema = this.call('getComponentSchema', componentId);
-            const enumMap = hasEnumService ? this.call('getEnumMap', componentId) : null;
+            const enumMap = this.getEnumMap(componentId);
             if (schema) {
                 this._setupComponentStorage(componentId, schema, enumMap);
             }

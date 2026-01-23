@@ -11,6 +11,10 @@
  */
 class FleeBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getNearbyUnits'
+    ];
+
     execute(entityId, game) {
         const params = this.parameters || {};
         const fleeDistance = params.fleeDistance || 200;
@@ -89,7 +93,7 @@ class FleeBehaviorAction extends GUTS.BaseBehaviorAction {
 
     findNearestEnemy(entityId, game, pos, team, range) {
         // Use spatial grid for efficient lookup - returns array of entityIds
-        const nearbyEntityIds = game.call('getNearbyUnits', pos, range, entityId);
+        const nearbyEntityIds = this.call.getNearbyUnits( pos, range, entityId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
         let nearest = null;

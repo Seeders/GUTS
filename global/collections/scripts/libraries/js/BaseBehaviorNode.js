@@ -26,6 +26,10 @@ class BaseBehaviorNode {
             this.parameters = JSON.parse(this.parameters);
         }
 
+        // Cached service functions for fast access (e.g., this.call.serviceName)
+        // Will be populated later by BehaviorSystem after all systems are loaded
+        this.call = {};
+
         // Children for composite nodes (array of node names)
         this.children = config.children || config.behaviorActions || [];
 

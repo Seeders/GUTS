@@ -6,6 +6,10 @@ class PostProcessingSystem extends GUTS.BaseSystem {
         'getPostProcessingComposer'
     ];
 
+    static serviceDependencies = [
+        'getCamera'
+    ];
+
     constructor(game) {
         super(game);
         this.game.postProcessingSystem = this;
@@ -42,7 +46,7 @@ class PostProcessingSystem extends GUTS.BaseSystem {
             return; // Already initialized
         }
 
-        if (!this.game.renderer || !this.game.scene || !this.game.call('getCamera')) {
+        if (!this.game.renderer || !this.game.scene || !this.call.getCamera()) {
             return;
         }
 
@@ -140,7 +144,7 @@ class PostProcessingSystem extends GUTS.BaseSystem {
             this.composer.render();
 
             if (this.game.uiScene) {
-                const camera = this.game.call('getCamera');
+                const camera = this.call.getCamera();
                 this.game.renderer.autoClear = false;  // Don't clear the screen
                 this.game.renderer.clearDepth();
                 this.game.renderer.render(this.game.uiScene, camera);

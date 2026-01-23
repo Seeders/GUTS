@@ -1,4 +1,12 @@
 class DeathSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'dropLoot',
+        'getBehaviorShared',
+        'getUnitTypeDef',
+        'playDeathAnimation',
+        'setCorpseAnimation'
+    ];
+
     static services = ['startDeathProcess'];
 
     constructor(game) {
@@ -33,7 +41,7 @@ class DeathSystem extends GUTS.BaseSystem {
         this._dyingEntities.forEach(entityId => {
             const deathState = this.game.getComponent(entityId, "deathState");
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
             if (deathState.state === this.enums.deathState.dying) {
                 const timeSinceDeath = this.game.state.now - deathState.deathStartTime;
@@ -56,7 +64,7 @@ class DeathSystem extends GUTS.BaseSystem {
     startDeathProcess(entityId){
         const log = GUTS.HeadlessLogger;
         const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
         const teamComp = this.game.getComponent(entityId, 'team');
         const unitName = unitType?.id || 'unknown';
         const teamName = this.reverseEnums.team?.[teamComp?.team] || teamComp?.team;
@@ -78,12 +86,12 @@ class DeathSystem extends GUTS.BaseSystem {
 
         // Trigger death animation
         if(this.game.hasService('playDeathAnimation')){
-            this.game.call('playDeathAnimation', entityId);
+            this.call.playDeathAnimation( entityId);
         }
 
         // Drop loot if this is a neutral monster (hunt missions)
         if (this.game.hasService('dropLoot') && this.game.hasComponent(entityId, 'neutralMonster')) {
-            this.game.call('dropLoot', entityId);
+            this.call.dropLoot( entityId);
         }
 
         // Trigger onUnitKilled event immediately when unit starts dying
@@ -120,7 +128,7 @@ class DeathSystem extends GUTS.BaseSystem {
         const transform = this.game.getComponent(entityId, "transform");
         const pos = transform?.position;
         const unitType = this.game.getComponent(entityId, "unitType");
-        const unitTypeDef = this.game.call('getUnitTypeDef', unitType);
+        const unitTypeDef = this.call.getUnitTypeDef( unitType);
         const team = this.game.getComponent(entityId, "team");
         const unitName = unitTypeDef?.id || 'unknown';
         const teamName = this.reverseEnums.team?.[team?.team] || team?.team;
@@ -134,7 +142,7 @@ class DeathSystem extends GUTS.BaseSystem {
 
         // CRITICAL: Notify AnimationSystem FIRST to set corpse state
         if(this.game.hasService('setCorpseAnimation')){
-            this.game.call('setCorpseAnimation', entityId);
+            this.call.setCorpseAnimation( entityId);
         }
 
         // Update death state to corpse - keep the component to prevent revival
@@ -238,7 +246,7 @@ class DeathSystem extends GUTS.BaseSystem {
         // Clear shared.target from all behavior states
         const aiEntities = this.game.getEntitiesWith('aiState');
         for (const entityId of aiEntities) {
-            const shared = this.game.call('getBehaviorShared', entityId);
+            const shared = this.call.getBehaviorShared( entityId);
             if (shared) {
                 if (shared.target === deadEntityId) {
                     shared.target = null;

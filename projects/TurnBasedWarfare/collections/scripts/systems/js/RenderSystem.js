@@ -12,6 +12,16 @@ class RenderSystem extends GUTS.BaseSystem {
         'updateInstanceCapacities'
     ];
 
+    static serviceDependencies = [
+        'getTileMap',
+        'getCamera',
+        'getUnitTypeDef',
+        'isVisibleAt',
+        'getLocalPlayerStats',
+        'isEntityVisibleToTeam',
+        'setTerrainDetailLighting'
+    ];
+
     constructor(game) {
         super(game);
         this.game.renderSystem = this;
@@ -119,7 +129,7 @@ class RenderSystem extends GUTS.BaseSystem {
         const capacities = {};
 
         // Get tile map from TerrainSystem via gameManager
-        const tileMap = this.game.call('getTileMap');
+        const tileMap = this.call.getTileMap();
         if (!tileMap) {
             return capacities;
         }
@@ -236,7 +246,7 @@ class RenderSystem extends GUTS.BaseSystem {
 
 
     async update() {
-        if (!this.game.scene || !this.game.call('getCamera') || !this.game.renderer) return;
+        if (!this.game.scene || !this.call.getCamera() || !this.game.renderer) return;
         if (!this.entityRenderer) return;
 
         this._frame++;
@@ -257,7 +267,7 @@ class RenderSystem extends GUTS.BaseSystem {
             const renderable = this.game.getComponent(entityId, "renderable");
             const velocity = this.game.getComponent(entityId, "velocity");
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
             if (!unitType || !transform?.position) {
                 continue;
@@ -267,7 +277,7 @@ class RenderSystem extends GUTS.BaseSystem {
             const angle = transform.rotation?.y || 0;
 
             // Check fog of war visibility (cliffs and worldObjects always visible)
-            const isVisible = this.game.call('isVisibleAt', pos.x, pos.z);
+            const isVisible = this.call.isVisibleAt( pos.x, pos.z);
             const unitTypeCollection = unitTypeComp?.collection;
             const isAlwaysVisible = unitTypeCollection === this.enums.objectTypeDefinitions?.worldObjects ||
                                     unitTypeCollection === this.enums.objectTypeDefinitions?.cliffs;
@@ -281,13 +291,13 @@ class RenderSystem extends GUTS.BaseSystem {
             // Skip this check for always-visible entities (worldObjects, cliffs)
             // Get local player's team from player entity stats
             if (!isAlwaysVisible && this.game.hasService('getLocalPlayerStats') && this.game.hasService('isEntityVisibleToTeam')) {
-                const localPlayerStats = this.game.call('getLocalPlayerStats');
+                const localPlayerStats = this.call.getLocalPlayerStats();
                 const myTeam = localPlayerStats?.team;
                 if (myTeam !== undefined) {
                     const entityTeam = this.game.getComponent(entityId, 'team');
                     // Only check stealth for enemy units (not buildings/decorations without teams)
                     if (entityTeam && entityTeam.team !== myTeam) {
-                        const isVisibleToMyTeam = this.game.call('isEntityVisibleToTeam', entityId, myTeam);
+                        const isVisibleToMyTeam = this.call.isEntityVisibleToTeam( entityId, myTeam);
                         if (!isVisibleToMyTeam) {
                             // Enemy unit is stealthed and we can't see it - skip rendering
                             continue;
@@ -584,7 +594,7 @@ class RenderSystem extends GUTS.BaseSystem {
         this.entityRenderer.setAmbientLightColor(this._combinedColor, 1.0);
 
         // Also apply to TerrainDetailSystem (static terrain sprites like grass/trees)
-        this.game.call('setTerrainDetailLighting', this._combinedColor);
+        this.call.setTerrainDetailLighting( this._combinedColor);
 
         // Apply to liquid surfaces (water, lava) in WorldRenderer
         worldRenderer.setAmbientLightColor(this._combinedColor, 1.0);

@@ -1,5 +1,10 @@
 class RoundSystem extends GUTS.BaseSystem {
 
+    static serviceDependencies = [
+        'removeInstance',
+        'getUnitTypeDef'
+    ];
+
     constructor(game){
         super(game);
         this.game.roundSystem = this;
@@ -68,12 +73,12 @@ class RoundSystem extends GUTS.BaseSystem {
         if (renderComponent) {
             renderComponent.spawnType = unitTypeComponent.type;
             if (this.game.hasService('removeInstance')) {
-                this.game.call('removeInstance', buildingId);
+                this.call.removeInstance( buildingId);
             }
         }
 
         // 2. Restore health to full
-        const unitTypeDef = this.game.call('getUnitTypeDef', unitTypeComponent);
+        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComponent);
         const maxHP = unitTypeDef?.hp || 100;
         const health = this.game.getComponent(buildingId, 'health');
         if (health) {
@@ -87,7 +92,7 @@ class RoundSystem extends GUTS.BaseSystem {
 
         // 4. Change building to idle animation
         if (this.game.animationSystem) {
-            const enums = this.game.call('getEnums');
+            const enums = this.game.getEnums();
             this.game.animationSystem.changeAnimation(buildingId, enums.animationType.idle, 1.0, 0);
         }
     }

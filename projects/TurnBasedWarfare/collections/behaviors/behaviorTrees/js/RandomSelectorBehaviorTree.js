@@ -26,6 +26,12 @@
  */
 class RandomSelectorBehaviorTree extends GUTS.BaseBehaviorTree {
 
+    static serviceDependencies = [
+        'getDebugger',
+        'getNodeByType',
+        'getBehaviorShared'
+    ];
+
     constructor(game, config = {}) {
         super(game, config);
 
@@ -86,7 +92,7 @@ class RandomSelectorBehaviorTree extends GUTS.BaseBehaviorTree {
         }
 
         // Get debugger if available
-        const debugger_ = game.call('getDebugger');
+        const debugger_ = this.call.getDebugger();
         const treeId = this.config.id || this.config.fileName || 'RandomSelectorBehaviorTree';
         const trace = debugger_?.beginEvaluation(entityId, treeId);
 
@@ -202,7 +208,7 @@ class RandomSelectorBehaviorTree extends GUTS.BaseBehaviorTree {
      * Evaluate a single child (unified node lookup)
      */
     evaluateChild(entityId, game, childName) {
-        const node = game.call('getNodeByType', childName);
+        const node = this.call.getNodeByType( childName);
         if (!node) {
             console.warn(`Random selector child not found: ${childName}`);
             return null;
@@ -236,7 +242,7 @@ class RandomSelectorBehaviorTree extends GUTS.BaseBehaviorTree {
      */
     endTrace(debugger_, trace, result, entityId, game) {
         if (debugger_ && trace) {
-            const shared = game.call('getBehaviorShared', entityId);
+            const shared = this.call.getBehaviorShared( entityId);
             const stateSnapshot = shared ? { shared: { ...shared } } : null;
             debugger_.endEvaluation(trace, result, stateSnapshot);
         }

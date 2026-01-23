@@ -11,6 +11,11 @@ class EffectsSystem extends GUTS.BaseSystem {
         'initializeEffectsSystem'
     ];
 
+    static serviceDependencies = [
+        'clearAllParticles',
+        'createParticles'
+    ];
+
     constructor(game) {
         super(game);
         this.game.effectsSystem = this;
@@ -504,7 +509,7 @@ class EffectsSystem extends GUTS.BaseSystem {
         }
 
         // Clear particle effects
-        this.game.call('clearAllParticles');
+        this.call.clearAllParticles();
 
         // Clear notifications
         this.notifications.forEach(notification => {
@@ -663,7 +668,7 @@ class EffectsSystem extends GUTS.BaseSystem {
             visual: options.visual || { fadeOut: true, scaleOverTime: true, blending: 'additive' }
         };
 
-        this.game.call('createParticles', config);
+        this.call.createParticles( config);
     }
     
     showVictoryEffect(x, y, z, options = {}) {
@@ -1021,7 +1026,7 @@ class EffectsSystem extends GUTS.BaseSystem {
             ...auraData.config
         };
 
-        this.game.call('createParticles', particleConfig);
+        this.call.createParticles( particleConfig);
     }
     
     destroy() {

@@ -14,6 +14,13 @@
  */
 class FilterVisibleEnemiesBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'getGridSize',
+        'getTerrainSize',
+        'hasLineOfSight'
+    ];
+
     execute(entityId, game) {
         const params = this.parameters || {};
         const sourceKey = params.sourceKey || 'nearbyEnemies';
@@ -30,7 +37,7 @@ class FilterVisibleEnemiesBehaviorAction extends GUTS.BaseBehaviorAction {
         const transform = game.getComponent(entityId, 'transform');
         const pos = transform?.position;
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitType = game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
         if (!pos) {
             return this.failure();
@@ -69,8 +76,8 @@ class FilterVisibleEnemiesBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Group enemies by direction (angle sector) to optimize raycasting
         // We'll raycast once per unique direction and cache results
-        const gridSize = game.call('getGridSize') || 32;
-        const terrainSize = game.call('getTerrainSize') || 1024;
+        const gridSize = this.call.getGridSize() || 32;
+        const terrainSize = this.call.getTerrainSize() || 1024;
 
         // Track which tiles we've already checked visibility for
         const checkedTiles = new Map(); // "tileX_tileZ" -> boolean (visible)
@@ -98,7 +105,7 @@ class FilterVisibleEnemiesBehaviorAction extends GUTS.BaseBehaviorAction {
             }
 
             // Perform LOS check
-            const hasLOS = game.call('hasLineOfSight',
+            const hasLOS = this.call.hasLineOfSight(
                 { x: unitPos.x, z: unitPos.z },
                 { x: enemy.position.x, z: enemy.position.z },
                 unitType,

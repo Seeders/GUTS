@@ -10,6 +10,15 @@
  */
 class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'hasLineOfSight',
+        'triggerSinglePlayAnimation',
+        'getCamera',
+        'playSynthSound',
+        'scheduleDamage'
+    ];
+
     execute(entityId, game) {
         const transform = game.getComponent(entityId, 'transform');
         const pos = transform?.position;
@@ -86,12 +95,12 @@ class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Get vision range from unit type
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitTypeDef = game.call('getUnitTypeDef', unitTypeComp);
+        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
         const combat = game.getComponent(entityId, 'combat');
         const visionRange = unitTypeDef?.visionRange || combat?.visionRange || 250;
 
         // Check if player is still in vision range with line of sight
-        const hasLOS = game.call('hasLineOfSight', pos, playerPos);
+        const hasLOS = this.call.hasLineOfSight( pos, playerPos);
         const inVisionRange = distance <= visionRange;
 
         if (!inVisionRange || !hasLOS) {
@@ -223,9 +232,9 @@ class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Trigger attack animation
         if (!game.isServer && game.hasService('triggerSinglePlayAnimation')) {
-            const enums = game.call('getEnums');
+            const enums = game.getEnums();
             const minAnimationTime = 1 / attackSpeed * 0.8;
-            game.call('triggerSinglePlayAnimation', attackerId, enums.animationType.attack, attackSpeed, minAnimationTime);
+            this.call.triggerSinglePlayAnimation( attackerId, enums.animationType.attack, attackSpeed, minAnimationTime);
         }
 
         // Play attack sound via AudioSystem service
@@ -233,7 +242,7 @@ class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
             const soundConfig = game.getCollections()?.sounds?.guard_attack?.audio;
             if (soundConfig) {
                 // Calculate distance-based volume
-                const camera = game.hasService('getCamera') ? game.call('getCamera') : null;
+                const camera = game.hasService('getCamera') ? this.call.getCamera() : null;
                 let volume = soundConfig.volume || 0.25;
                 if (camera?.position && attackerPos) {
                     const dx = attackerPos.x - camera.position.x;
@@ -248,7 +257,7 @@ class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
                     }
                 }
                 if (volume > 0) {
-                    game.call('playSynthSound', `guard_attack_${attackerId}_${game.state.now}`, soundConfig, { volume });
+                    this.call.playSynthSound( `guard_attack_${attackerId}_${game.state.now}`, soundConfig, { volume });
                 }
             }
         }
@@ -257,7 +266,7 @@ class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
         const damageDelay = (1 / attackSpeed) * 0.5;
         const element = combat.element || game.getEnums().element?.physical;
 
-        game.call('scheduleDamage',
+        this.call.scheduleDamage(
             attackerId,
             targetId,
             combat.damage,

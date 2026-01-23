@@ -1,4 +1,15 @@
 class DamageSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'applyDamage',
+        'getAggregatedDamageModifiers',
+        'getUnitTypeDef',
+        'grantCombatExperience',
+        'playEffect',
+        'rollHitChance',
+        'showDamageNumber',
+        'startDeathProcess'
+    ];
+
     static services = [
         'applyDamage',
         'applySplashDamage',
@@ -112,7 +123,7 @@ class DamageSystem extends GUTS.BaseSystem {
         const pos = transform?.position;
         if (pos && this.game.hasService('showDamageNumber')) {
             // Show "MISS" text (element -1 indicates miss)
-            this.game.call('showDamageNumber', pos.x, pos.y + 50, pos.z, 'MISS', -1);
+            this.call.showDamageNumber( pos.x, pos.y + 50, pos.z, 'MISS', -1);
         }
     }
 
@@ -139,13 +150,13 @@ class DamageSystem extends GUTS.BaseSystem {
         const targetHealth = this.game.getComponent(targetId, "health");
         const targetDeathState = this.game.getComponent(targetId, "deathState");
         const targetUnitTypeComp = this.game.getComponent(targetId, "unitType");
-        const targetUnitType = this.game.call('getUnitTypeDef', targetUnitTypeComp);
+        const targetUnitType = this.call.getUnitTypeDef( targetUnitTypeComp);
         const targetTransform = this.game.getComponent(targetId, "transform");
         const targetPos = targetTransform?.position;
 
         // Get source info for logging
         const sourceUnitTypeComp = this.game.getComponent(sourceId, "unitType");
-        const sourceUnitType = this.game.call('getUnitTypeDef', sourceUnitTypeComp);
+        const sourceUnitType = this.call.getUnitTypeDef( sourceUnitTypeComp);
         const sourceTeamComp = this.game.getComponent(sourceId, "team");
         const targetTeamComp = this.game.getComponent(targetId, "team");
         const sourceName = sourceUnitType?.id || 'unknown';
@@ -168,7 +179,7 @@ class DamageSystem extends GUTS.BaseSystem {
 
         // STEP 2: Accuracy check (attacks only, spells always hit)
         if (!options.isSpell && this.game.hasService('rollHitChance')) {
-            const hitResult = this.game.call('rollHitChance', sourceId, targetId, false);
+            const hitResult = this.call.rollHitChance( sourceId, targetId, false);
             if (!hitResult.hit) {
                 log.debug('Damage', `MISS! ${sourceName}(${sourceId}) -> ${targetName}(${targetId})`, {
                     accuracy: hitResult.accuracy,
@@ -191,7 +202,7 @@ class DamageSystem extends GUTS.BaseSystem {
         // STEP 3: Get aggregated damage modifiers (increased + more)
         let modifiers = { increased: 0, more: [] };
         if (this.game.hasService('getAggregatedDamageModifiers')) {
-            modifiers = this.game.call('getAggregatedDamageModifiers', sourceId, damageTags);
+            modifiers = this.call.getAggregatedDamageModifiers( sourceId, damageTags);
         }
 
         // STEP 4: Apply "increased" modifiers (additive, then multiply once)
@@ -255,12 +266,12 @@ class DamageSystem extends GUTS.BaseSystem {
 
         // Show damage number
         if (targetPos && targetUnitType) {
-            this.game.call('showDamageNumber', targetPos.x, targetPos.y + targetUnitType.height, targetPos.z, damageResult.finalDamage, element);
+            this.call.showDamageNumber( targetPos.x, targetPos.y + targetUnitType.height, targetPos.z, damageResult.finalDamage, element);
         }
 
         // Grant combat experience (attacker gains XP for dealing damage, target gains XP for taking damage)
         if (this.game.hasService('grantCombatExperience') && damageResult.finalDamage > 0) {
-            this.game.call('grantCombatExperience', sourceId, targetId, damageResult.finalDamage);
+            this.call.grantCombatExperience( sourceId, targetId, damageResult.finalDamage);
         }
 
         return {
@@ -380,7 +391,7 @@ class DamageSystem extends GUTS.BaseSystem {
                 const adjustedDamage = Math.floor(baseDamage * damageMultiplier);
 
                 // Apply damage via game.call for logging (experience will be awarded inside applyDamage)
-                const result = this.game.call('applyDamage', sourceId, entityId, adjustedDamage, element, {
+                const result = this.call.applyDamage( sourceId, entityId, adjustedDamage, element, {
                     ...options,
                     isSplash: true,
                     splashDistance: distance,
@@ -674,7 +685,7 @@ class DamageSystem extends GUTS.BaseSystem {
 
                 if (targetHealth && targetHealth.current > 0 && (!targetDeathState || targetDeathState.state === this.enums.deathState.alive)) {
                     // Apply the delayed damage via game.call for logging
-                     this.game.call('applyDamage', event.sourceId, event.targetId, event.damage, event.element, {
+                     this.call.applyDamage( event.sourceId, event.targetId, event.damage, event.element, {
                         ...event.options,
                         isDelayed: true
                     });
@@ -731,7 +742,7 @@ class DamageSystem extends GUTS.BaseSystem {
             const targetTransform = this.game.getComponent(targetId, "transform");
             if (targetTransform?.position) {
                 const pos = targetTransform.position;
-                this.game.call('playEffect', 'blood_spray', { x: pos.x, y: pos.y, z: pos.z });
+                this.call.playEffect( 'blood_spray', { x: pos.x, y: pos.y, z: pos.z });
             }
         }
     }
@@ -739,7 +750,7 @@ class DamageSystem extends GUTS.BaseSystem {
 
     handleEntityDeath(entityId) {
         // Notify other systems about death
-        this.game.call('startDeathProcess', entityId);
+        this.call.startDeathProcess( entityId);
     }
 
     entityDestroyed(entityId) {

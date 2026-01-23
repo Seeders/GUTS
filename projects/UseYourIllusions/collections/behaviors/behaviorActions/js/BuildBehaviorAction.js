@@ -1,5 +1,12 @@
 class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'removeInstance',
+        'getEntityAbilities',
+        'clearBehaviorState'
+    ];
+
     execute(entityId, game) {
         // Read from buildingState component
         const buildingState = game.getComponent(entityId, 'buildingState');
@@ -173,7 +180,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Get unit def from collections using numeric indices
-        const unitTypeDef = game.call('getUnitTypeDef', unitTypeComponent);
+        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComponent);
 
         // Check if this is a trap - handle differently from regular buildings
         if (unitTypeDef?.isTrap) {
@@ -187,7 +194,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         if (renderComponent) {
             renderComponent.spawnType = unitTypeComponent.type;
             // Remove instance to trigger re-spawn with correct model
-            game.call('removeInstance', buildingId);
+            this.call.removeInstance( buildingId);
         }
 
         // 2. Restore health to full
@@ -206,7 +213,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // 5. Change to idle animation
         if (game.animationSystem) {
-            const enums = game.call('getEnums');
+            const enums = game.getEnums();
             game.animationSystem.changeAnimation(buildingId, enums.animationType.idle, 1.0, 0);
         }
 
@@ -219,7 +226,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         });
 
         // Call the scout's BearTrapAbility.onTrapPlaced to set up ownership and cooldown
-        const scoutAbilities = game.call('getEntityAbilities', entityId);
+        const scoutAbilities = this.call.getEntityAbilities( entityId);
         if (scoutAbilities) {
             const bearTrapAbility = scoutAbilities.find(a => a.id === 'BearTrapAbility');
             if (bearTrapAbility) {
@@ -251,7 +258,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         if (renderComponent && unitTypeComponent) {
             renderComponent.spawnType = unitTypeComponent.type;
             console.log('[BuildBehaviorAction] Calling removeInstance for trap', buildingId);
-            game.call('removeInstance', buildingId);
+            this.call.removeInstance( buildingId);
         }
     }
 
@@ -273,7 +280,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
 
         // Clear all behavior state (like MineGoldBehaviorAction)
-        game.call('clearBehaviorState', entityId);
+        this.call.clearBehaviorState( entityId);
         aiState.currentAction = -1;
         aiState.currentActionCollection = -1;
     }

@@ -10,6 +10,10 @@
  */
 class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'findNearestVisibleEnemy'
+    ];
+
     execute(entityId, game) {
         const log = GUTS.HeadlessLogger;
         const params = this.parameters || {};
@@ -17,7 +21,7 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         const combat = game.getComponent(entityId, 'combat');
         const range = combat?.visionRange || params.range || 300;
-        const nearestEnemy = game.call('findNearestVisibleEnemy', entityId, range);
+        const nearestEnemy = this.call.findNearestVisibleEnemy( entityId, range);
 
         if (nearestEnemy) {
             const shared = this.getShared(entityId, game);

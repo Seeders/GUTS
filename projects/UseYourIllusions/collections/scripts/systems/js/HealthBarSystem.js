@@ -1,4 +1,10 @@
 class HealthBarSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'getCamera',
+        'getUnitTypeDef',
+        'isVisibleAt'
+    ];
+
     constructor(game) {
         super(game);
         this.game.healthBarSystem = this;
@@ -27,7 +33,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
     
     update() {
         // Wait for scene to be available from WorldSystem
-        if (!this.game.scene || !this.game.call('getCamera')) {
+        if (!this.game.scene || !this.call.getCamera()) {
             return;
         }
         
@@ -141,7 +147,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
 
         // Position group above unit
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitData = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitData = this.call.getUnitTypeDef( unitTypeComp);
 
         const baseY   = pos.y || 0;
         const heightY = (unitData && unitData.height != null)
@@ -152,7 +158,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
 
         
         // Make health bar always face camera (billboard effect)
-        const cameraPosition = this.game.call('getCamera').position;
+        const cameraPosition = this.call.getCamera().position;
         group.lookAt(cameraPosition.x, cameraPosition.y, cameraPosition.z);
         
         // Calculate health percentage
@@ -326,7 +332,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
     }
 
     isVisibleAt(pos) {
-        return this.game.call('isVisibleAt', pos.x, pos.z);
+        return this.call.isVisibleAt( pos.x, pos.z);
     }
 
     toggleHealthBars(visible = true) {

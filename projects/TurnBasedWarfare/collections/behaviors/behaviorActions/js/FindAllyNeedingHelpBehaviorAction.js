@@ -13,6 +13,10 @@
  */
 class FindAllyNeedingHelpBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getNearbyUnits'
+    ];
+
     execute(entityId, game) {
         const params = this.parameters || {};
         const targetKey = params.targetKey || 'allyTarget';
@@ -49,7 +53,7 @@ class FindAllyNeedingHelpBehaviorAction extends GUTS.BaseBehaviorAction {
     findAllyNeedingHelp(entityId, game, pos, team, range, healthThreshold, prioritizeLowestHealth, excludeSelf) {
         // Use spatial grid for efficient lookup - returns array of entityIds
         const excludeId = excludeSelf ? entityId : null;
-        const nearbyEntityIds = game.call('getNearbyUnits', pos, range, excludeId);
+        const nearbyEntityIds = this.call.getNearbyUnits( pos, range, excludeId);
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
         const alliesNeedingHelp = [];
@@ -62,7 +66,7 @@ class FindAllyNeedingHelpBehaviorAction extends GUTS.BaseBehaviorAction {
             if (!allyHealth || allyHealth.current <= 0) continue;
 
             const allyDeathState = game.getComponent(allyId, 'deathState');
-            const enums = game.call('getEnums');
+            const enums = game.getEnums();
             if (allyDeathState && allyDeathState.state !== enums?.deathState?.alive) continue;
 
             const allyTransform = game.getComponent(allyId, 'transform');
@@ -110,7 +114,7 @@ class FindAllyNeedingHelpBehaviorAction extends GUTS.BaseBehaviorAction {
 
     isInCombat(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiState');
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
         if (aiState && aiState.currentAction >= 0 &&
             aiState.currentActionCollection === enums.behaviorCollection.behaviorActions &&
             aiState.currentAction === enums.behaviorActions.CombatBehaviorAction) {

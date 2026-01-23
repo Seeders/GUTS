@@ -13,6 +13,25 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
         'replaceUnit'
     ];
 
+    static serviceDependencies = [
+        'placePlacement',
+        'getPlacementById',
+        'applySquadTargetPosition',
+        'getPlayerStats',
+        'getUnitTypeDef',
+        'addPlayerGold',
+        'removeInstance',
+        'releaseGridCells',
+        'getSpriteAnimationDuration',
+        'triggerSinglePlayAnimation',
+        'startHeightAnimation',
+        'scheduleAction',
+        'playEffectSystem',
+        'createPlacement',
+        'validateCheat',
+        'executeCheat'
+    ];
+
     // ==================== BROADCAST ====================
 
     /**
@@ -53,7 +72,7 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with success, squadUnits, placementId, etc.
      */
     processPlacement(socketPlayerId, numericPlayerId, player, placement, serverEntityIds = null) {
-        return this.game.call('placePlacement', socketPlayerId, numericPlayerId, player, placement, serverEntityIds);
+        return this.call.placePlacement( socketPlayerId, numericPlayerId, player, placement, serverEntityIds);
     }
 
     // ==================== SQUAD TARGET ====================
@@ -71,7 +90,7 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
         if (meta?.buildingId != null) {
             const buildingPlacement = this.game.getComponent(meta.buildingId, 'placement');
             if (buildingPlacement) {
-                const placement = this.game.call('getPlacementById', placementId);
+                const placement = this.call.getPlacementById( placementId);
                 const builderEntityId = placement?.squadUnits?.[0];
                 if (builderEntityId) {
                     buildingPlacement.assignedBuilder = builderEntityId;
@@ -93,7 +112,7 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
         }
 
         // Apply target position via UnitOrderSystem
-        this.game.call('applySquadTargetPosition', placementId, targetPosition, meta, serverIssuedTime);
+        this.call.applySquadTargetPosition( placementId, targetPosition, meta, serverIssuedTime);
 
         return { success: true };
     }
@@ -123,7 +142,7 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
      * @returns {Object} Result with success
      */
     processPurchaseUpgrade(playerId, upgradeId, upgrade) {
-        const playerStats = this.game.call('getPlayerStats', playerId);
+        const playerStats = this.call.getPlayerStats( playerId);
         if (!playerStats) {
             return { success: false, error: 'Player not found' };
         }
@@ -174,12 +193,12 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
 
         // Get unitType for refund
         const unitTypeComp = this.game.getComponent(buildingEntityId, 'unitType');
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
         const refundAmount = unitType?.value || 0;
 
         // Refund gold
         if (refundAmount > 0) {
-            this.game.call('addPlayerGold', placement.team, refundAmount);
+            this.call.addPlayerGold( placement.team, refundAmount);
         }
 
         // Clean up builder
@@ -196,7 +215,7 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
         }
 
         // Destroy building
-        this.game.call('removeInstance', buildingEntityId);
+        this.call.removeInstance( buildingEntityId);
         this.game.destroyEntity(buildingEntityId);
 
         return {
@@ -222,7 +241,7 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
      */
     processUpgradeBuilding(socketPlayerId, numericPlayerId, player, buildingEntityId, oldPlacementId, targetBuildingId, serverEntityIds = null, newPlacementId = null) {
         // Get grid position from old placement before destroying
-        const oldPlacement = this.game.call('getPlacementById', oldPlacementId);
+        const oldPlacement = this.call.getPlacementById( oldPlacementId);
         const gridPosition = oldPlacement?.gridPosition;
 
         if (!gridPosition) {
@@ -230,11 +249,11 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
         }
 
         // Release grid cells before destroying the old building (use entityId, not placementId)
-        this.game.call('releaseGridCells', buildingEntityId);
+        this.call.releaseGridCells( buildingEntityId);
 
         // Remove old building visual representation (client only)
         if (this.game.hasService('removeInstance')) {
-            this.game.call('removeInstance', buildingEntityId);
+            this.call.removeInstance( buildingEntityId);
         }
 
         // Destroy old building entity
@@ -344,11 +363,11 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
 
         if (animationType && swapDelay == null) {
             const oldUnitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const oldUnitDef = this.game.call('getUnitTypeDef', oldUnitTypeComp);
+            const oldUnitDef = this.call.getUnitTypeDef( oldUnitTypeComp);
             const spriteAnimationSet = oldUnitDef?.spriteAnimationSet;
 
             if (spriteAnimationSet && this.game.hasService('getSpriteAnimationDuration')) {
-                finalSwapDelay = this.game.call('getSpriteAnimationDuration', spriteAnimationSet, animationType);
+                finalSwapDelay = this.call.getSpriteAnimationDuration( spriteAnimationSet, animationType);
             } else {
                 finalSwapDelay = 1000; // Fallback for animated
             }
@@ -382,7 +401,7 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             if (this.game.hasService('triggerSinglePlayAnimation')) {
                 const animEnum = this.enums.animationType[animationType];
                 if (animEnum !== undefined) {
-                    this.game.call('triggerSinglePlayAnimation', entityId, animEnum, 1.0, 0);
+                    this.call.triggerSinglePlayAnimation( entityId, animEnum, 1.0, 0);
                 }
             }
 
@@ -392,7 +411,7 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
                 const durationSeconds = finalSwapDelay / 1000;
                 console.log('[replaceUnit] Calling startHeightAnimation:', { entityId, heightDelta, durationSeconds, hasService: this.game.hasService('startHeightAnimation') });
                 if (this.game.hasService('startHeightAnimation')) {
-                    this.game.call('startHeightAnimation', entityId, heightDelta, durationSeconds);
+                    this.call.startHeightAnimation( entityId, heightDelta, durationSeconds);
                 }
             }
         }
@@ -442,24 +461,24 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             if (animationType === 'land' && this.game.hasService('playEffectSystem')) {
                 // Schedule the particle effect to play just before the entity swap
                 const particleDelay = Math.max(0, delaySeconds - 0.1);
-                this.game.call('scheduleAction', () => {
-                    this.game.call('playEffectSystem', 'dragon_landing', position);
+                this.call.scheduleAction( () => {
+                    this.call.playEffectSystem( 'dragon_landing', position);
                 }, particleDelay, null);
             }
 
             if (this.game.hasService('scheduleAction')) {
-                this.game.call('scheduleAction', () => {
+                this.call.scheduleAction( () => {
                     // Destroy old entity first, then create new one with same ID
                     if (this.game.entityExists(creationData.reuseEntityId)) {
                         if (this.game.hasService('removeInstance')) {
-                            this.game.call('removeInstance', creationData.reuseEntityId);
+                            this.call.removeInstance( creationData.reuseEntityId);
                         }
                         this.game.destroyEntity(creationData.reuseEntityId);
                     }
 
                     // Create the new entity reusing the same ID
                     if (this.game.hasService('createPlacement')) {
-                        this.game.call('createPlacement', creationData.networkUnitData, creationData.transformData, creationData.team, creationData.reuseEntityId);
+                        this.call.createPlacement( creationData.networkUnitData, creationData.transformData, creationData.team, creationData.reuseEntityId);
                     } else {
                         console.error('[replaceUnit] createPlacement service not available');
                         return;
@@ -479,13 +498,13 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
                 setTimeout(() => {
                     if (this.game.entityExists(creationData.reuseEntityId)) {
                         if (this.game.hasService('removeInstance')) {
-                            this.game.call('removeInstance', creationData.reuseEntityId);
+                            this.call.removeInstance( creationData.reuseEntityId);
                         }
                         this.game.destroyEntity(creationData.reuseEntityId);
                     }
 
                     if (this.game.hasService('createPlacement')) {
-                        this.game.call('createPlacement', creationData.networkUnitData, creationData.transformData, creationData.team, creationData.reuseEntityId);
+                        this.call.createPlacement( creationData.networkUnitData, creationData.transformData, creationData.team, creationData.reuseEntityId);
                     } else {
                         console.error('[replaceUnit] createPlacement service not available');
                         return;
@@ -507,14 +526,14 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
 
         // Non-animated path: destroy old entity, create new one with same ID
         if (this.game.hasService('removeInstance')) {
-            this.game.call('removeInstance', entityId);
+            this.call.removeInstance( entityId);
         }
         this.game.destroyEntity(entityId);
 
         // Create new entity reusing the same ID
         let newEntityId;
         if (this.game.hasService('createPlacement')) {
-            newEntityId = this.game.call('createPlacement', networkUnitData, transformData, team, entityId);
+            newEntityId = this.call.createPlacement( networkUnitData, transformData, team, entityId);
         } else {
             console.error('[replaceUnit] createPlacement service not available');
             return null;
@@ -551,13 +570,13 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
      */
     processCheat(cheatName, params) {
         // Validate cheat
-        const validation = this.game.call('validateCheat', cheatName, params);
+        const validation = this.call.validateCheat( cheatName, params);
         if (!validation.valid) {
             return { success: false, error: validation.error };
         }
 
         // Execute cheat
-        const result = this.game.call('executeCheat', cheatName, params);
+        const result = this.call.executeCheat( cheatName, params);
         if (result.error) {
             return { success: false, error: result.error };
         }

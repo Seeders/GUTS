@@ -1,4 +1,9 @@
 class PhalanxFormationAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'getUnitTypeDef'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Phalanx Formation',
@@ -80,7 +85,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
         allHoplites.forEach((hopliteId, index) => {
             // Validate hoplite still exists and is a hoplite
             const unitTypeComp = this.game.getComponent(hopliteId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             const transform = this.game.getComponent(hopliteId, "transform");
             const position = transform?.position;
 
@@ -136,7 +141,7 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
             if (allyId === casterEntity) return false; // Exclude self
 
             const unitTypeComp = this.game.getComponent(allyId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             return unitType && unitType.id === 'hoplite';
         });
         

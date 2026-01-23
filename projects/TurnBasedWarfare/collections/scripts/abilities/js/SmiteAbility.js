@@ -1,4 +1,9 @@
 class SmiteAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'getUnitTypeDef'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Holy Smite',
@@ -87,7 +92,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         
         // Calculate damage (bonus vs undead)
         const targetUnitTypeComp = this.game.getComponent(targetId, "unitType");
-        const targetUnitType = this.game.call('getUnitTypeDef', targetUnitTypeComp);
+        const targetUnitType = this.call.getUnitTypeDef( targetUnitTypeComp);
         let damage = this.damage;
         let isUndeadTarget = false;
 
@@ -141,7 +146,7 @@ class SmiteAbility extends GUTS.BaseAbility {
     // Helper method to check if target is undead (for potential future use)
     isUndeadTarget(targetId) {
         const targetUnitTypeComp = this.game.getComponent(targetId, "unitType");
-        const targetUnitType = this.game.call('getUnitTypeDef', targetUnitTypeComp);
+        const targetUnitType = this.call.getUnitTypeDef( targetUnitTypeComp);
         if (!targetUnitType) return false;
 
         return targetUnitType.title?.includes('undead') ||

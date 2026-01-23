@@ -17,6 +17,10 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         'getSimulationResults'
     ];
 
+    static serviceDependencies = [
+        'getUnitTypeDef'
+    ];
+
     constructor(game) {
         super(game);
         this.game.headlessSimulationSystem = this;
@@ -230,7 +234,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
 
                 // Log the attack
                 const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+                const unitDef = this.call.getUnitTypeDef( unitTypeComp);
                 const teamName = reverseEnums.team?.[teamComp.team] || teamComp.team;
 
                 this._combatLog.push({
@@ -269,7 +273,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
                 this._lastAbilityState.set(entityId, cooldowns.lastAbilityTime);
 
                 const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+                const unitDef = this.call.getUnitTypeDef( unitTypeComp);
                 const teamName = reverseEnums.team?.[teamComp.team] || teamComp.team;
 
                 // Get ability name from lastAbilityUsed index
@@ -320,7 +324,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         const teamComp = this.game.getComponent(entityId, 'team');
         if (!unitTypeComp || !teamComp) return;
 
-        const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitDef = this.call.getUnitTypeDef( unitTypeComp);
         const unitId = unitDef?.id || 'unknown';
 
         // Non-combat units that don't trigger simulation end
@@ -349,7 +353,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         const teamComp = this.game.getComponent(entityId, 'team');
         if (!unitTypeComp || !teamComp) return;
 
-        const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitDef = this.call.getUnitTypeDef( unitTypeComp);
         const unitId = unitDef?.id || 'unknown';
 
         // Only end if a town hall was destroyed
@@ -375,7 +379,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
 
         if (!unitTypeComp || !teamComp) return;
 
-        const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitDef = this.call.getUnitTypeDef( unitTypeComp);
         const reverseEnums = this.game.getReverseEnums();
 
         this._unitDeaths.push({
@@ -414,7 +418,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
             if (deathState && deathState.state !== this.enums.deathState.alive) continue;
             if (health && health.current <= 0) continue;
 
-            const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             livingUnits.push({
                 entityId,
@@ -553,7 +557,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
             if (deathState && deathState.state !== this.enums.deathState.alive) continue;
 
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
             const unitId = unitDef?.id || 'unknown';
 
             // Skip non-combat units
@@ -588,7 +592,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
             if (deathState && deathState.state !== this.enums.deathState.alive) continue;
 
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
             const unitId = unitDef?.id || 'unknown';
 
             // Skip non-combat units
@@ -627,7 +631,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
             if (deathState && deathState.state !== this.enums.deathState.alive) continue;
 
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             // Check if it's a building (has footprintWidth)
             if (unitDef?.footprintWidth !== undefined) {
@@ -647,7 +651,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
 
         for (const entityId of entities) {
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitDef = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             // Only reset buildings (not units)
             if (!unitDef?.isBuilding) continue;

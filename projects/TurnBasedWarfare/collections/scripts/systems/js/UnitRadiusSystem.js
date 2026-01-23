@@ -1,4 +1,9 @@
 class UnitRadiusSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'getBehaviorShared',
+        'getWorldScene'
+    ];
+
     constructor(game) {
         super(game);
         this.game.unitRadiusSystem = this;
@@ -75,7 +80,7 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
 
         // Show/hide attack circle based on entity action
         const aiState = this.game.getComponent(entityId, "aiState");
-        const behaviorShared = aiState ? this.game.call('getBehaviorShared', entityId) : null;
+        const behaviorShared = aiState ? this.call.getBehaviorShared( entityId) : null;
         const isAttacking = aiState && aiState.currentAction >= 0 &&
             aiState.currentActionCollection === this.enums.behaviorCollection.behaviorActions &&
             (aiState.currentAction === this.enums.behaviorActions.AttackEnemyBehaviorAction || aiState.currentAction === this.enums.behaviorActions.CombatBehaviorAction);
@@ -94,7 +99,7 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
     }
     
     createDebugCircles(entityId) {
-        const scene = this.game.call('getWorldScene');
+        const scene = this.call.getWorldScene();
         if (!scene) {
             console.error('No scene found!');
             return { sizeCircle: null, attackCircle: null };
@@ -153,7 +158,7 @@ class UnitRadiusSystem extends GUTS.BaseSystem {
         for (let i = 0; i < activeEntities.length; i++) {
             this._activeEntitySet.add(activeEntities[i]);
         }
-        const scene = this.game.call('getWorldScene');
+        const scene = this.call.getWorldScene();
 
         for (const [entityId, circles] of this.debugCircles) {
             if (!this._activeEntitySet.has(entityId)) {

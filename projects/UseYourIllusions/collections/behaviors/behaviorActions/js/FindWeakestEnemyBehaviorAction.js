@@ -12,6 +12,10 @@
  */
 class FindWeakestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'findWeakestVisibleEnemy'
+    ];
+
     execute(entityId, game) {
         const params = this.parameters || {};
         const targetKey = params.targetKey || 'target';
@@ -21,7 +25,7 @@ class FindWeakestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const combat = game.getComponent(entityId, 'combat');
         const range = params.range ?? (combat?.visionRange || 300);
 
-        const weakestEnemy = game.call('findWeakestVisibleEnemy', entityId, range, {
+        const weakestEnemy = this.call.findWeakestVisibleEnemy( entityId, range, {
             usePercentage,
             maxHealthPercent
         });

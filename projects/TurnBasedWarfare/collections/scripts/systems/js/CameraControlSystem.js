@@ -14,6 +14,13 @@ class CameraControlSystem extends GUTS.BaseSystem {
     'getThirdPersonTarget'
   ];
 
+    static serviceDependencies = [
+        'getGroundMesh',
+        'getWorldExtendedSize',
+        'getUnitTypeDef',
+        'getActivePlayerTeam'
+    ];
+
   constructor(game) {
     super(game);
     this.game.cameraControlSystem = this;
@@ -36,9 +43,9 @@ class CameraControlSystem extends GUTS.BaseSystem {
         this.activeCamera = camera;
       },
       container: document.body,
-      getGroundMesh: () => this.game.call('getGroundMesh'),
+      getGroundMesh: () => this.call.getGroundMesh(),
       getWorldBounds: () => {
-        const extendedSize = this.game.call('getWorldExtendedSize');
+        const extendedSize = this.call.getWorldExtendedSize();
         const half = extendedSize ? extendedSize * 0.5 : 1000;
         return { min: -half, max: half };
       },
@@ -118,9 +125,9 @@ class CameraControlSystem extends GUTS.BaseSystem {
     for (const entityId of buildings) {
       const team = this.game.getComponent(entityId, 'team');
       const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-      const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+      const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
-      if (team?.team === this.game.call('getActivePlayerTeam') && unitType?.collection === 'buildings') {
+      if (team?.team === this.call.getActivePlayerTeam() && unitType?.collection === 'buildings') {
         const transform = this.game.getComponent(entityId, 'transform');
         if (transform?.position) {
           targetPos = transform.position;

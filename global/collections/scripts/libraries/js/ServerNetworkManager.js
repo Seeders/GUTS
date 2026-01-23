@@ -170,7 +170,7 @@ class ServerNetworkManager {
             }
 
             // Check if room allows joining
-            const enums = room.game.call('getEnums');
+            const enums = room.game.getEnums();
             console.log('[ServerNetworkManager] Room phase:', room.game.state.phase, 'lobby:', enums.gamePhase.lobby);
             if (room.game.state.phase !== enums.gamePhase.lobby) {
                 console.log('[ServerNetworkManager] Rejecting join - game in progress, phase:', room.game.state.phase);

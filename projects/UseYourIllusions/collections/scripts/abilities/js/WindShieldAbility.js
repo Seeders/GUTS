@@ -1,4 +1,9 @@
 class WindShieldAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'playEffect'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Wind Shield',
@@ -131,10 +136,10 @@ class WindShieldAbility extends GUTS.BaseAbility {
             if (!pos) return;
 
             // Play single tornado effect at current position using preset effects
-            this.game.call('playEffect', 'wind_swirl_base', new THREE.Vector3(pos.x, pos.y, pos.z));
-            this.game.call('playEffect', 'wind_swirl_mid', new THREE.Vector3(pos.x, pos.y, pos.z));
-            this.game.call('playEffect', 'wind_swirl_top', new THREE.Vector3(pos.x, pos.y, pos.z));
-            this.game.call('playEffect', 'wind_wisps', new THREE.Vector3(pos.x, pos.y, pos.z));
+            this.call.playEffect( 'wind_swirl_base', new THREE.Vector3(pos.x, pos.y, pos.z));
+            this.call.playEffect( 'wind_swirl_mid', new THREE.Vector3(pos.x, pos.y, pos.z));
+            this.call.playEffect( 'wind_swirl_top', new THREE.Vector3(pos.x, pos.y, pos.z));
+            this.call.playEffect( 'wind_wisps', new THREE.Vector3(pos.x, pos.y, pos.z));
 
             // Schedule next spawn
             this.game.schedulingSystem.scheduleAction(spawnTornadoParticles, interval, entityId);

@@ -1,4 +1,9 @@
 class ResultsSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'showVictoryScreen',
+        'showDefeatScreen'
+    ];
+
     constructor(game) {
         super(game);
         this.game.resultsSystem = this;
@@ -7,13 +12,13 @@ class ResultsSystem extends GUTS.BaseSystem {
     showVictory(stats) {
         this.populateStats('victoryStats', stats, 'victory');
         this.updateButtonForCampaign('victory_MainMenuBtn');
-        this.game.call('showVictoryScreen');
+        this.call.showVictoryScreen();
     }
 
     showDefeat(stats) {
         this.populateStats('defeatStats', stats, 'defeat');
         this.updateButtonForCampaign('defeat_MainMenuBtn');
-        this.game.call('showDefeatScreen');
+        this.call.showDefeatScreen();
     }
 
     /**

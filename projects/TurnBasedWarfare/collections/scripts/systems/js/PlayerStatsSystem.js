@@ -237,15 +237,19 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
 
     /**
      * Create a player entity with playerStats component
-     * @param {string} socketPlayerId - The player's socket ID (server converts to numeric)
+     * @param {string|number} playerId - The player's ID (numeric or socket ID string)
      * @param {Object} statsData - Initial stats data (team should be numeric)
      * @returns {number} The created entity ID (numeric)
      */
-    createPlayerEntity(socketPlayerId, statsData) {
-        // Convert socket ID to numeric for ECS storage
-        let numericId = socketPlayerId;
-        if (typeof socketPlayerId === 'string' && this.game.room) {
-            numericId = this.game.room.getNumericPlayerId(socketPlayerId);
+    createPlayerEntity(playerId, statsData) {
+        // Convert socket ID to numeric if needed (for backwards compatibility)
+        let numericId = playerId;
+        if (typeof playerId === 'string' && this.game.room) {
+            numericId = this.game.room.getNumericPlayerId(playerId);
+        } else if (typeof playerId === 'string') {
+            console.error('[PlayerStatsSystem] createPlayerEntity called with socket ID but no room to convert it:', playerId);
+            // In online matches, playerId should already be numeric from onlinePlayers array
+            return null;
         }
 
         // Check if player entity already exists

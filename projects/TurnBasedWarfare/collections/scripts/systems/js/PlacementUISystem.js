@@ -21,6 +21,34 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'handleReadyForBattleUpdate',
         'handleUnitSelectionChange'
     ];
+
+    static serviceDependencies = [
+        'getPlacementGridSize',
+        'getCamera',
+        'getActivePlayerTeam',
+        'getCameraPositionForTeam',
+        'showNotification',
+        'getUnitTypeDef',
+        'placementGridToWorld',
+        'resetShop',
+        'clearAllDamageEffects',
+        'clearAllEffects',
+        'ui_toggleReadyForBattle',
+        'applyNetworkUnitData',
+        'resyncEntities',
+        'resetAI',
+        'getGroundMesh',
+        'worldToPlacementGrid',
+        'getSquadData',
+        'getSquadCells',
+        'isValidGridPlacement',
+        'isValidGoldMinePlacement',
+        'getSquadSize',
+        'calculateUnitPositions',
+        'updateGoldDisplay',
+        'ui_undoPlacement',
+        'createParticleEffect'
+    ];
     constructor(game) {
         super(game);
         this.game.placementUISystem = this;
@@ -80,12 +108,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     init(params) {
         this.params = params || {};
-
-        const gridSize = this.game.call('getPlacementGridSize');
-        this.mouseWorldOffset = {
-            x: gridSize / 2,
-            z: gridSize / 2
-        };
     }
 
     // Service alias methods
@@ -155,9 +177,13 @@ class PlacementUISystem extends GUTS.BaseSystem {
     onSceneLoad(sceneData) {
         // Update canvas reference - it may not have existed at constructor time
         this.canvas = this.game.canvas;
-
+        const gridSize = this.call.getPlacementGridSize();
+        this.mouseWorldOffset = {
+            x: gridSize / 2,
+            z: gridSize / 2
+        };
         // Initialize RaycastHelper when scene and camera are available
-        const camera = this.game.call('getCamera');
+        const camera = this.call.getCamera();
         if (this.game.scene && camera && !this.raycastHelper) {
             this.raycastHelper = new GUTS.RaycastHelper(camera, this.game.scene);
         }
@@ -183,14 +209,14 @@ class PlacementUISystem extends GUTS.BaseSystem {
      * Set up camera position based on player's side
      */
     setupCameraForMySide() {
-        const myTeam = this.game.call('getActivePlayerTeam');
+        const myTeam = this.call.getActivePlayerTeam();
         if (myTeam === null || myTeam === undefined) {
             console.warn('[PlacementUISystem] Cannot setup camera - active player team not set');
             return;
         }
 
-        const cameraData = this.game.call('getCameraPositionForTeam', myTeam);
-        const camera = this.game.call('getCamera');
+        const cameraData = this.call.getCameraPositionForTeam( myTeam);
+        const camera = this.call.getCamera();
         if (cameraData && camera) {
             const pos = cameraData.position;
             const look = cameraData.lookAt;
@@ -218,7 +244,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 setTimeout(() => {
                     this.elements.undoButton.style.transform = 'scale(1)';
                 }, 150);
-                this.game.call('showNotification', '↶ Last deployment undone', 'info', 2000);
+                this.call.showNotification( '↶ Last deployment undone', 'info', 2000);
             });
 
             this.elements.undoButton.addEventListener('mouseenter', () => {
@@ -324,7 +350,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
      */
     getPendingBuildingPositions() {
         const buildingStateEntities = this.game.getEntitiesWith('buildingState', 'placement');
-        const myTeam = this.game.call('getActivePlayerTeam');
+        const myTeam = this.call.getActivePlayerTeam();
         const allFootprintCells = [];
 
         for (const entityId of buildingStateEntities) {
@@ -336,7 +362,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
             if (!placement || placement.team !== myTeam) continue;
 
             // Get the building definition
-            const buildingUnitType = this.game.call('getUnitTypeDef', {
+            const buildingUnitType = this.call.getUnitTypeDef( {
                 collection: buildingState.pendingCollection,
                 type: buildingState.pendingUnitTypeId
             });
@@ -363,9 +389,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (allFootprintCells.length === 0) return [];
 
         // Convert grid cells to world positions
-        const halfCell = this.game.call('getPlacementGridSize') / 2;
+        const halfCell = this.call.getPlacementGridSize() / 2;
         return allFootprintCells.map(cell => {
-            const pos = this.game.call('placementGridToWorld', cell.x, cell.z);
+            const pos = this.call.placementGridToWorld( cell.x, cell.z);
             return { x: pos.x + halfCell, z: pos.z + halfCell };
         });
     }
@@ -400,9 +426,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.isPlayerReady = false;
         this.hasSubmittedPlacements = false;
 
-        this.game.call('resetShop');
-        this.game.call('clearAllDamageEffects');
-        this.game.call('clearAllEffects');
+        this.call.resetShop();
+        this.call.clearAllDamageEffects();
+        this.call.clearAllEffects();
 
         this.enablePlacementUI();
         if (this.elements.readyButton) {
@@ -434,7 +460,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
 
         // Use ui_toggleReadyForBattle - same code path as headless mode
-        this.game.call('ui_toggleReadyForBattle', (success, response) => {
+        this.call.ui_toggleReadyForBattle( (success, response) => {
             if (success) {
                 this.hasSubmittedPlacements = true;
                 if (this.elements.readyButton) {
@@ -470,7 +496,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
             if (data.gameState?.players && !this.game.state.isLocalGame) {
                 data.gameState.players.forEach((player) => {
                     if (player.id !== myPlayerId) {
-                        this.game.call('applyNetworkUnitData', player.networkUnitData, player.team, player.id);
+                        this.call.applyNetworkUnitData( player.networkUnitData, player.team, player.id);
                     }
                 });
             }
@@ -500,7 +526,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
                     isHuntMission: this.game.state.isHuntMission,
                     entitySyncAliveCount: data.entitySync?.entityAlive ? Object.keys(data.entitySync.entityAlive).length : 0
                 });
-                this.game.call('resyncEntities', data);
+                this.call.resyncEntities( data);
             }
 
             // DEBUG: Check playerOrder.isHiding after resync
@@ -508,10 +534,10 @@ class PlacementUISystem extends GUTS.BaseSystem {
             for (const entityId of allPlayerOrders) {
                 const po = this.game.getComponent(entityId, 'playerOrder');
                 const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                const unitTypeDef = this.game.call('getUnitTypeDef', unitTypeComp);
+                const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
             }
 
-            this.game.call('resetAI');
+            this.call.resetAI();
             this.game.triggerEvent('onBattleStart');
 
             if (this.game.desyncDebugger) {
@@ -534,7 +560,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
 
         // Get ground mesh for raycasting
-        const ground = this.game.call('getGroundMesh');
+        const ground = this.call.getGroundMesh();
 
         // Use RaycastHelper to raycast against ground
         const worldPos = this.raycastHelper.rayCastGround(screenX, screenY, ground);
@@ -573,7 +599,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
 
         const unitType = this.game.state.selectedUnitType;
-        const gridPos = this.game.call('worldToPlacementGrid', this.mouseWorldPos.x, this.mouseWorldPos.z);
+        const gridPos = this.call.worldToPlacementGrid( this.mouseWorldPos.x, this.mouseWorldPos.z);
 
         // Throttle validation checks
         const now = performance.now();
@@ -587,11 +613,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.cachedGridPos = gridPos;
 
         // Check if placement is valid
-        const squadData = this.game.call('getSquadData', unitType);
+        const squadData = this.call.getSquadData( unitType);
         if (!squadData) return;
 
-        const cells = this.game.call('getSquadCells', gridPos, squadData);
-        let isValid = this.game.call('isValidGridPlacement', cells, this.game.call('getActivePlayerTeam'));
+        const cells = this.call.getSquadCells( gridPos, squadData);
+        let isValid = this.call.isValidGridPlacement( cells, this.call.getActivePlayerTeam());
 
         // Gold mines can only be placed on unclaimed gold veins
         if (isValid && unitType.id === 'goldMine' && this.game.hasService('isValidGoldMinePlacement')) {
@@ -600,23 +626,23 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const gridWidth = footprintWidth * 2;
             const gridHeight = footprintHeight * 2;
 
-            const validation = this.game.call('isValidGoldMinePlacement', gridPos, gridWidth, gridHeight);
+            const validation = this.call.isValidGoldMinePlacement( gridPos, gridWidth, gridHeight);
             isValid = validation.valid;
         }
 
         this.cachedValidation = isValid;
 
         // Get world positions for cells (offset by half cell to center on cell)
-        const halfCell = this.game.call('getPlacementGridSize') / 2;
+        const halfCell = this.call.getPlacementGridSize() / 2;
         const worldPositions = cells.map(cell => {
-            const pos = this.game.call('placementGridToWorld', cell.x, cell.z);
+            const pos = this.call.placementGridToWorld( cell.x, cell.z);
             return { x: pos.x + halfCell, z: pos.z + halfCell };
         });
 
         // Get unit positions for squad preview
         let unitPositions = null;
-        if (this.game.call('getSquadSize', squadData) > 1) {
-            unitPositions = this.game.call('calculateUnitPositions', gridPos, unitType);
+        if (this.call.getSquadSize( squadData) > 1) {
+            unitPositions = this.call.calculateUnitPositions( gridPos, unitType);
         }
 
         // Get pending building positions to show alongside current placement
@@ -671,7 +697,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
                     unitType: result.unitType,
                     gridPosition: result.gridPosition,
                     squadUnits: result.data.squadUnits,
-                    team: this.game.call('getActivePlayerTeam')
+                    team: this.call.getActivePlayerTeam()
                 });
 
                 // Create visual effects
@@ -679,7 +705,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
                 // Update UI
                 this.updatePlacementUI();
-                this.game.call('updateGoldDisplay');
+                this.call.updateGoldDisplay();
 
                 // Clear placement mode after successful placement
                 this.game.state.selectedUnitType = null;
@@ -689,7 +715,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 this.updatePendingBuildingPreview();
                 document.body.style.cursor = 'default';
             } else {
-                this.game.call('showNotification', result.data?.error || 'Placement failed', 'error', 2000);
+                this.call.showNotification( result.data?.error || 'Placement failed', 'error', 2000);
             }
         }
     }
@@ -724,7 +750,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (!undoInfo) return false;
 
         // Use ui_undoPlacement - SAME code path as headless mode
-        this.game.call('ui_undoPlacement', undoInfo, (success) => {
+        this.call.ui_undoPlacement( undoInfo, (success) => {
             if (success) {
                 // Create undo visual effect
                 this.createUndoEffects(undoInfo.gridPosition);
@@ -738,9 +764,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
     // ==================== VISUAL EFFECTS ====================
 
     createPlacementEffects(gridPos, unitType) {
-        const worldPos = this.game.call('placementGridToWorld', gridPos.x, gridPos.z);
+        const worldPos = this.call.placementGridToWorld( gridPos.x, gridPos.z);
         if (worldPos) {
-            this.game.call('createParticleEffect',
+            this.call.createParticleEffect(
                 worldPos.x,
                 0,
                 worldPos.z,
@@ -751,9 +777,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
     }
 
     createUndoEffects(gridPos) {
-        const worldPos = this.game.call('placementGridToWorld', gridPos.x, gridPos.z);
+        const worldPos = this.call.placementGridToWorld( gridPos.x, gridPos.z);
         if (worldPos) {
-            this.game.call('createParticleEffect',
+            this.call.createParticleEffect(
                 worldPos.x,
                 0,
                 worldPos.z,
@@ -765,7 +791,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     createRespawnEffect(position, team) {
         const effectType = team === 'player' ? 'magic' : 'heal';
-        this.game.call('createParticleEffect',
+        this.call.createParticleEffect(
             position.x,
             position.y,
             position.z,

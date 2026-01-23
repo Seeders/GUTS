@@ -6,6 +6,13 @@
  * The illusion has a limited duration and then fades away.
  */
 class PlaceIllusionAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'playSound',
+        'getTerrainHeightAtPosition',
+        'createUnit'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Place Illusion',
@@ -159,7 +166,7 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
         this.createVisualEffect(targetPosition, 'cast', { count: 25 });
 
         // Play clone create sound
-        this.game.call('playSound', 'sounds', 'clone_create');
+        this.call.playSound( 'sounds', 'clone_create');
 
         this.logAbilityUsage(casterEntity, `Placed projection clone!`);
         this.game.triggerEvent('onCloneCreated', {
@@ -186,7 +193,7 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
         // Get terrain height at position
         let terrainHeight = position.y || 0;
         if (this.game.hasService('getTerrainHeightAtPosition')) {
-            terrainHeight = this.game.call('getTerrainHeightAtPosition', position.x, position.z) ?? terrainHeight;
+            terrainHeight = this.call.getTerrainHeightAtPosition( position.x, position.z) ?? terrainHeight;
         }
 
         const creatorTransform = this.game.getComponent(creatorEntity, 'transform');
@@ -201,7 +208,7 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
         const teamValue = creatorTeam?.team ?? enums.team?.player ?? 0;
 
         // Create unit using the same type as the creator
-        const cloneId = this.game.call('createUnit',
+        const cloneId = this.call.createUnit(
             creatorUnitType.collection,
             creatorUnitType.type,
             cloneTransform,
@@ -270,7 +277,7 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
         // Get terrain height at position
         let terrainHeight = 0;
         if (this.game.hasService('getTerrainHeightAtPosition')) {
-            terrainHeight = this.game.call('getTerrainHeightAtPosition', position.x, position.z) ?? 0;
+            terrainHeight = this.call.getTerrainHeightAtPosition( position.x, position.z) ?? 0;
         }
 
         const transform = {
@@ -283,7 +290,7 @@ class PlaceIllusionAbility extends GUTS.BaseAbility {
         const neutralTeam = enums.team?.neutral ?? 0;
 
         // Use createUnit to properly set up the entity with all rendering components
-        const illusionId = this.game.call('createUnit', collectionIndex, spawnTypeIndex, transform, neutralTeam);
+        const illusionId = this.call.createUnit( collectionIndex, spawnTypeIndex, transform, neutralTeam);
 
         if (illusionId === null || illusionId === undefined) {
             return null;

@@ -8,6 +8,11 @@ class SquadSystem extends GUTS.BaseSystem {
         'getSquadInfoFromType'
     ];
 
+    static serviceDependencies = [
+        'getPlacementGridSize',
+        'placementGridToWorld'
+    ];
+
     constructor(game) {
         super(game);
         this.game.squadSystem = this;
@@ -112,7 +117,7 @@ class SquadSystem extends GUTS.BaseSystem {
         const squadData = this.getSquadData(unitType);
         const { squadWidth, squadHeight, placementGridWidth, placementGridHeight } = squadData;
         const positions = [];
-        const cellSize = this.game.call('getPlacementGridSize');
+        const cellSize = this.call.getPlacementGridSize();
 
         // Compute the top-left (min) cell of the formation footprint
         const startCellX = gridPos.x - Math.floor(placementGridWidth / 2);
@@ -122,7 +127,7 @@ class SquadSystem extends GUTS.BaseSystem {
         // Example: width=2 -> center at (start + 0.5); width=3 -> center at (start + 1)
         const centerCellX = startCellX + (placementGridWidth - 1) / 2;
         const centerCellZ = startCellZ + (placementGridHeight - 1) / 2;
-        const centerWorldPos = this.game.call('placementGridToWorld', centerCellX, centerCellZ);
+        const centerWorldPos = this.call.placementGridToWorld( centerCellX, centerCellZ);
 
         // If squad footprint matches placement footprint, snap each unit to its cell center.
         if (squadWidth === placementGridWidth && squadHeight === placementGridHeight) {
@@ -130,7 +135,7 @@ class SquadSystem extends GUTS.BaseSystem {
                 for (let col = 0; col < squadWidth; col++) {
                     const cellX = startCellX + col;
                     const cellZ = startCellZ + row;
-                    const wp = this.game.call('placementGridToWorld', cellX, cellZ);
+                    const wp = this.call.placementGridToWorld( cellX, cellZ);
                     positions.push({ x: wp.x, z: wp.z });
                 }
             }

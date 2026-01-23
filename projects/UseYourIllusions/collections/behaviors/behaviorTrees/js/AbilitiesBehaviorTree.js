@@ -1,4 +1,9 @@
 class AbilitiesBehaviorTree extends GUTS.BaseBehaviorTree {
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'getNodeByType'
+    ];
+
     evaluate(entityId, game) {
         if (!game.abilitySystem) {
             return null;
@@ -11,7 +16,7 @@ class AbilitiesBehaviorTree extends GUTS.BaseBehaviorTree {
         }
 
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitType = game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
         const abilities = unitType?.abilities;
 
         if (!abilities || abilities.length === 0) return null;
@@ -23,7 +28,7 @@ class AbilitiesBehaviorTree extends GUTS.BaseBehaviorTree {
                 continue;
             }
 
-            const abilityAction = game.call('getNodeByType', ability.behaviorAction);
+            const abilityAction = this.call.getNodeByType( ability.behaviorAction);
             if (!abilityAction) {
                 continue;
             }

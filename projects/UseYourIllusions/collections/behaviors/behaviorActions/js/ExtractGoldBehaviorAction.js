@@ -21,6 +21,10 @@
  */
 class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'processNextMinerInQueue'
+    ];
+
     execute(entityId, game) {
         const shared = this.getShared(entityId, game);
         const memory = this.getMemory(entityId);
@@ -55,7 +59,7 @@ class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             shared.miningProgress = 1;
 
             // Process next miner in queue
-            game.call('processNextMinerInQueue', targetMine);
+            this.call.processNextMinerInQueue( targetMine);
 
 
             // Clear mine-related shared state

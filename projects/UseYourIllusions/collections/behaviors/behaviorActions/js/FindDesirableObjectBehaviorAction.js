@@ -9,12 +9,18 @@
  */
 class FindDesirableObjectBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getNodeByType',
+        'getUnitTypeDef',
+        'hasLineOfSight'
+    ];
+
     execute(entityId, game) {
         const params = this.parameters || {};
 
         // Check if PickUpObjectBehaviorAction is in waiting state
         // If so, return success to allow the sequence to continue to PickUpObjectBehaviorAction
-        const pickupNode = game.call('getNodeByType', 'PickUpObjectBehaviorAction');
+        const pickupNode = this.call.getNodeByType( 'PickUpObjectBehaviorAction');
         if (pickupNode) {
             const pickupMemory = pickupNode.getMemory(entityId);
             if (pickupMemory && pickupMemory.waitingAfterPickup) {
@@ -25,7 +31,7 @@ class FindDesirableObjectBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Get vision range from unit type definition (prefab), combat component, or params
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitTypeDef = game.call('getUnitTypeDef', unitTypeComp);
+        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
         const combat = game.getComponent(entityId, 'combat');
         const detectionRange = unitTypeDef?.visionRange || combat?.visionRange || params.detectionRange || 300;
 
@@ -77,7 +83,7 @@ class FindDesirableObjectBehaviorAction extends GUTS.BaseBehaviorAction {
             if (dist > detectionRange || dist >= nearestDist) continue;
 
             // Check line of sight - guard must be able to see the object
-            const hasLOS = game.call('hasLineOfSight', pos, targetPos);
+            const hasLOS = this.call.hasLineOfSight( pos, targetPos);
             if (!hasLOS) continue;
 
             nearestDist = dist;

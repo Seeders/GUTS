@@ -7,6 +7,11 @@
  * Supports lighting effects (flicker, pulse, strobe, etc.) via lightingEffects collection.
  */
 class LightingSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'getEntityRenderer',
+        'getUnitTypeDef'
+    ];
+
     static services = [
         'addPointLight',
         'removePointLight',
@@ -169,7 +174,7 @@ class LightingSystem extends GUTS.BaseSystem {
      * Update EntityRenderer with new intensity (optimized to avoid full re-registration)
      */
     _updateEntityRendererIntensity(entityId, lightData, intensity) {
-        const entityRenderer = this.game.call('getEntityRenderer');
+        const entityRenderer = this.call.getEntityRenderer();
         if (!entityRenderer) return;
 
         const lightId = `entity_${entityId}`;
@@ -195,7 +200,7 @@ class LightingSystem extends GUTS.BaseSystem {
         if (!unitTypeComp) return;
 
         // Use the getUnitTypeDef service to get the full definition
-        const entityDef = this.game.call('getUnitTypeDef', unitTypeComp);
+        const entityDef = this.call.getUnitTypeDef( unitTypeComp);
         if (!entityDef?.pointLight) return;
 
         // Get entity position
@@ -283,7 +288,7 @@ class LightingSystem extends GUTS.BaseSystem {
      * Register a light with EntityRenderer for billboard shader lighting
      */
     _registerWithEntityRenderer(entityId, lightConfig, lightPosition) {
-        const entityRenderer = this.game.call('getEntityRenderer');
+        const entityRenderer = this.call.getEntityRenderer();
         if (!entityRenderer) return;
 
         const lightId = `entity_${entityId}`;
@@ -300,7 +305,7 @@ class LightingSystem extends GUTS.BaseSystem {
      * Unregister a light from EntityRenderer
      */
     _unregisterFromEntityRenderer(entityId) {
-        const entityRenderer = this.game.call('getEntityRenderer');
+        const entityRenderer = this.call.getEntityRenderer();
         if (!entityRenderer) return;
 
         const lightId = `entity_${entityId}`;
@@ -340,7 +345,7 @@ class LightingSystem extends GUTS.BaseSystem {
             lightData.config.intensity = intensity;
 
             // Update EntityRenderer as well
-            const entityRenderer = this.game.call('getEntityRenderer');
+            const entityRenderer = this.call.getEntityRenderer();
             if (entityRenderer) {
                 const lightId = `entity_${entityId}`;
                 entityRenderer.addPointLight(lightId, {
@@ -366,7 +371,7 @@ class LightingSystem extends GUTS.BaseSystem {
             lightData.config.color = color;
 
             // Update EntityRenderer as well
-            const entityRenderer = this.game.call('getEntityRenderer');
+            const entityRenderer = this.call.getEntityRenderer();
             if (entityRenderer) {
                 const lightId = `entity_${entityId}`;
                 entityRenderer.addPointLight(lightId, {
@@ -392,7 +397,7 @@ class LightingSystem extends GUTS.BaseSystem {
      */
     onSceneUnload() {
         // Clear all lights from EntityRenderer first
-        const entityRenderer = this.game.call('getEntityRenderer');
+        const entityRenderer = this.call.getEntityRenderer();
         if (entityRenderer) {
             entityRenderer.clearPointLights();
         }

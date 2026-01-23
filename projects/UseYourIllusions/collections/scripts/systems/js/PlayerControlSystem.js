@@ -11,6 +11,23 @@
  * - Click with item selected: Place illusion (triggers PlaceIllusionAbility)
  */
 class PlayerControlSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'canMoveToPosition',
+        'clearEntityPath',
+        'getCamera',
+        'getFacingAngle',
+        'getPreviewPosition',
+        'getTerrainHeightAtPosition',
+        'getWorldPositionFromMouse',
+        'playSound',
+        'playSynthSound',
+        'setBillboardAnimation',
+        'setBillboardAnimationDirection',
+        'setFollowTarget',
+        'storeBeltItem',
+        'useAbility'
+    ];
+
     static services = [
         'getPlayerEntity',
         'setPlayerMoveTarget',
@@ -172,7 +189,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         const playerEntity = this.getPlayerEntity();
         if (!playerEntity) return;
 
-        const worldPos = this.game.call('getWorldPositionFromMouse', event.clientX, event.clientY);
+        const worldPos = this.call.getWorldPositionFromMouse( event.clientX, event.clientY);
         if (!worldPos) return;
 
         // Right-click = move to position
@@ -217,7 +234,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         // Get preview position from IllusionPreviewSystem
         let targetPos = null;
         if (this.game.hasService('getPreviewPosition')) {
-            targetPos = this.game.call('getPreviewPosition');
+            targetPos = this.call.getPreviewPosition();
         }
 
         if (!targetPos || (targetPos.x === 0 && targetPos.z === 0)) {
@@ -226,7 +243,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
             if (!transform || !transform.position) return;
 
             const facingAngle = this.game.hasService('getFacingAngle')
-                ? this.game.call('getFacingAngle')
+                ? this.call.getFacingAngle()
                 : 0;
 
             const distance = 100;
@@ -257,14 +274,14 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         if (this.isWASDMoving) {
             // Set walk animation only when starting to move
             if (!this._wasMoving && this.game.hasService('setBillboardAnimation')) {
-                this.game.call('setBillboardAnimation', controlledEntity, this.enums.animationType.walk, true);
+                this.call.setBillboardAnimation( controlledEntity, this.enums.animationType.walk, true);
             }
             this.updateWASDMovement(controlledEntity);
             this.playFootstepSound();
         } else if (this._wasMoving) {
             // Just stopped moving - set idle animation
             if (this.game.hasService('setBillboardAnimation')) {
-                this.game.call('setBillboardAnimation', controlledEntity, this.enums.animationType.idle, true);
+                this.call.setBillboardAnimation( controlledEntity, this.enums.animationType.idle, true);
             }
         }
         this._wasMoving = this.isWASDMoving;
@@ -298,7 +315,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         if (this._lastCameraTarget !== entityId) {
             this._lastCameraTarget = entityId;
             if (this.game.hasService('setFollowTarget')) {
-                this.game.call('setFollowTarget', entityId);
+                this.call.setFollowTarget( entityId);
             }
         }
     }
@@ -344,7 +361,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         playerController.controllingClone = !playerController.controllingClone;
 
         // Play clone swap sound
-        this.game.call('playSound', 'sounds', 'clone_swap');
+        this.call.playSound( 'sounds', 'clone_swap');
 
         // Play effect at the entity we're switching to
         const targetEntity = playerController.controllingClone
@@ -379,7 +396,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         }
 
         // Play clone disappear sound
-        this.game.call('playSound', 'sounds', 'clone_disappear');
+        this.call.playSound( 'sounds', 'clone_disappear');
 
         // Destroy the clone entity
         this.game.destroyEntity(cloneId);
@@ -405,7 +422,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         ];
 
         for (const point of checkPoints) {
-            if (!this.game.call('canMoveToPosition', fromX, fromZ, point.x, point.z)) {
+            if (!this.call.canMoveToPosition( fromX, fromZ, point.x, point.z)) {
                 return false;
             }
         }
@@ -425,7 +442,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
 
         // Get facing angle from CameraControlSystem (mouse-controlled)
         const facingAngle = this.game.hasService('getFacingAngle')
-            ? this.game.call('getFacingAngle')
+            ? this.call.getFacingAngle()
             : (transform.rotation.y || 0);
 
         // Calculate movement direction
@@ -500,7 +517,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
 
             // Snap to terrain height
             if (this.game.hasService('getTerrainHeightAtPosition')) {
-                const terrainHeight = this.game.call('getTerrainHeightAtPosition', finalX, finalZ);
+                const terrainHeight = this.call.getTerrainHeightAtPosition( finalX, finalZ);
                 if (terrainHeight !== null) {
                     transform.position.y = terrainHeight;
                 }
@@ -548,7 +565,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
 
         let distanceVolume = 1.0;
         if (playerPos) {
-            const camera = this.game.hasService('getCamera') ? this.game.call('getCamera') : null;
+            const camera = this.game.hasService('getCamera') ? this.call.getCamera() : null;
             if (camera?.position) {
                 const dx = playerPos.x - camera.position.x;
                 const dz = playerPos.z - camera.position.z;
@@ -602,7 +619,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
 
             // Pass volume as options parameter - config.volume isn't used by AudioManager
             const finalVolume = config.volume;
-            this.game.call('playSynthSound', `footstep_${Date.now()}`, config, { volume: finalVolume });
+            this.call.playSynthSound( `footstep_${Date.now()}`, config, { volume: finalVolume });
         }
 
         // Update state
@@ -643,7 +660,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         // Only update if direction changed to avoid resetting animation frame
         if (direction !== this._lastDirection) {
             this._lastDirection = direction;
-            this.game.call('setBillboardAnimationDirection', entityId, direction);
+            this.call.setBillboardAnimationDirection( entityId, direction);
         }
     }
 
@@ -670,7 +687,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
 
         // Clear pathfinding to recalculate
         if (this.game.hasService('clearEntityPath')) {
-            this.game.call('clearEntityPath', entityId);
+            this.call.clearEntityPath( entityId);
         }
 
         const pathfinding = this.game.getComponent(entityId, 'pathfinding');
@@ -779,7 +796,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         this.createCollectBeam();
 
         // Play activation sound
-        this.game.call('playSound', 'sounds', 'collect_activate');
+        this.call.playSound( 'sounds', 'collect_activate');
 
         // Notify UI
         this.game.triggerEvent('onCollectModeChanged', { active: true, entityId });
@@ -821,7 +838,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         if (!objectType) return;
 
         // Store in belt
-        const stored = this.game.call('storeBeltItem', entityId, objectType);
+        const stored = this.call.storeBeltItem( entityId, objectType);
         if (!stored) return;
 
         // Get collectible position for effects
@@ -840,7 +857,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         }
 
         // Play collect sound
-        this.game.call('playSound', 'sounds', 'collect_item');
+        this.call.playSound( 'sounds', 'collect_item');
 
         this.game.triggerEvent('onCollectibleCollected', {
             entityId,
@@ -856,7 +873,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         if (!this.highlightedMirror) return;
 
         // Store "clone" item in belt (like other collectibles)
-        const stored = this.game.call('storeBeltItem', entityId, 'clone');
+        const stored = this.call.storeBeltItem( entityId, 'clone');
         if (!stored) {
             console.log('[PlayerControlSystem] Belt full, cannot store clone');
             return;
@@ -876,7 +893,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         }
 
         // Play collect sound
-        this.game.call('playSound', 'sounds', 'collect_item');
+        this.call.playSound( 'sounds', 'collect_item');
 
         this.game.triggerEvent('onCloneStored', { entityId });
     }
@@ -939,7 +956,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
 
         // Get facing angle from camera
         const facingAngle = this.game.hasService('getFacingAngle')
-            ? this.game.call('getFacingAngle')
+            ? this.call.getFacingAngle()
             : 0;
 
         const playerPos = transform.position;
@@ -1168,7 +1185,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
     triggerPlaceIllusionAbility(entityId, targetPosition, itemType) {
         // Use the PlaceIllusionAbility
         if (this.game.hasService('useAbility')) {
-            this.game.call('useAbility', entityId, 'PlaceIllusionAbility', {
+            this.call.useAbility( entityId, 'PlaceIllusionAbility', {
                 targetPosition,
                 itemType
             });

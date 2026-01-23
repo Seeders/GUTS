@@ -1,4 +1,10 @@
 class InfernoAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'playEffectSystem',
+        'playEffect'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Inferno',
@@ -54,11 +60,11 @@ class InfernoAbility extends GUTS.BaseAbility {
 
         // Enhanced massive inferno explosion using preset effect system
         if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'inferno_burst',
+            this.call.playEffectSystem( 'inferno_burst',
                 new THREE.Vector3(centerPos.x, centerPos.y + 30, centerPos.z));
 
             // Fire ring on ground using preset effect
-            this.game.call('playEffect', 'fire_ground_ring',
+            this.call.playEffect( 'fire_ground_ring',
                 new THREE.Vector3(centerPos.x, centerPos.y + 5, centerPos.z));
         }
 

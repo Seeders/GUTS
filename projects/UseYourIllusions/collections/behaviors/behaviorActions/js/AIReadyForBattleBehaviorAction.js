@@ -8,6 +8,10 @@
  */
 class AIReadyForBattleBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'ui_toggleReadyForBattle'
+    ];
+
     execute(entityId, game) {
         // Support both aiOpponent (build order) and aiHeuristicState (heuristic AI)
         const aiOpponent = game.getComponent(entityId, 'aiOpponent');
@@ -33,7 +37,7 @@ class AIReadyForBattleBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Call ui_toggleReadyForBattle
-        game.call('ui_toggleReadyForBattle', aiTeam, (success, response) => {
+        this.call.ui_toggleReadyForBattle( aiTeam, (success, response) => {
             if (!success) {
                 console.warn('[AIReadyForBattle] Failed to toggle ready:', response?.error);
             }

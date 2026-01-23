@@ -7,6 +7,21 @@ class UnitCreationSystem extends GUTS.BaseSystem {
         'incrementSquadsCreated'
     ];
 
+    static serviceDependencies = [
+        'invalidateSupplyCache',
+        'releaseGridCells',
+        'removeSquadExperience',
+        'getSquadInfoFromType',
+        'getSquadData',
+        'isValidGridPosition',
+        'validateSquadConfig',
+        'getSquadCells',
+        'isValidGridPlacement',
+        'equipItem',
+        'addAbilitiesToUnit',
+        'getTerrainHeightAtPosition'
+    ];
+
     constructor(game) {
         super(game);
         this.game.unitCreationSystem = this;
@@ -193,6 +208,23 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             // Pass numeric indices for renderable component
             this.addAllComponents(entity, safeTransform, unitType, team, teamConfig, collectionIndex, spawnTypeIndex);
 
+            // DEBUG: Log entity creation with all component values
+            const renderable = this.game.getComponent(entity, 'renderable');
+            const placement = this.game.getComponent(entity, 'placement');
+            const health = this.game.getComponent(entity, 'health');
+            const combat = this.game.getComponent(entity, 'combat');
+            console.log(`[UnitCreationSystem] Created entity ${entity}:`, {
+                unitTypeId: unitType.id,
+                collection: unitType.collection,
+                collectionIndex: collectionIndex,
+                spawnTypeIndex: spawnTypeIndex,
+                team: team,
+                renderable: renderable ? { objectType: renderable.objectType, spawnType: renderable.spawnType } : null,
+                placement: placement ? { collection: placement.collection, unitTypeId: placement.unitTypeId } : null,
+                health: health ? { current: health.current, max: health.max } : null,
+                combat: combat ? { damage: combat.damage, armor: combat.armor } : null
+            });
+
             // Log component details after creation
             log.trace('UnitCreation', `${spawnType}(${entity}) [${teamName}] components`, {
                 health: { max: unitType.hp, current: unitType.hp },
@@ -211,7 +243,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             this.schedulePostCreationSetup(entity, unitType);
 
             // Update statistics
-            this.game.call('invalidateSupplyCache');
+            this.call.invalidateSupplyCache();
             return entity;
         } catch (error) {
             console.error('Failed to create unit:', error);
@@ -476,12 +508,12 @@ class UnitCreationSystem extends GUTS.BaseSystem {
 
                 // Free grid cells (use entityId, not placementId)
                 for (const unit of squad.squadUnits || []) {
-                    this.game.call('releaseGridCells', unit);
+                    this.call.releaseGridCells( unit);
                 }
 
                 // Remove from experience system
                 if (squad.placementId) {
-                    this.game.call('removeSquadExperience', squad.placementId);
+                    this.call.removeSquadExperience( squad.placementId);
                 }
 
             } catch (error) {
@@ -496,7 +528,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @returns {Object} Squad information
      */
     getSquadInfo(unitType) {
-        const squadInfo = this.game.call('getSquadInfoFromType', unitType);
+        const squadInfo = this.call.getSquadInfoFromType( unitType);
         if (squadInfo) {
             return squadInfo;
         }
@@ -520,19 +552,19 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      */
     canPlaceSquad(gridPosition, unitType, team) {
         try {
-            const squadData = this.game.call('getSquadData', unitType);
+            const squadData = this.call.getSquadData( unitType);
             if (!squadData) {
-                return this.game.call('isValidGridPosition', gridPosition) ?? true;
+                return this.call.isValidGridPosition( gridPosition) ?? true;
             }
 
-            const validation = this.game.call('validateSquadConfig', squadData);
+            const validation = this.call.validateSquadConfig( squadData);
 
             if (!validation?.valid) {
                 return false;
             }
 
-            const cells = this.game.call('getSquadCells', gridPosition, squadData);
-            return this.game.call('isValidGridPlacement', cells, team) ?? true;
+            const cells = this.call.getSquadCells( gridPosition, squadData);
+            return this.call.isValidGridPlacement( cells, team) ?? true;
 
         } catch (error) {
             console.warn('Squad placement validation failed:', error);
@@ -749,7 +781,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 const itemData = this.getItemFromCollection(equippedItem.item);
                 if (itemData) {
                     try {
-                        await this.game.call('equipItem',
+                        await this.call.equipItem(
                             entityId,
                             equippedItem,
                             itemData,
@@ -800,7 +832,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 const hasService = this.game.hasService('addAbilitiesToUnit');
                 console.log('[UnitCreationSystem] hasService addAbilitiesToUnit:', hasService);
                 if (hasService) {
-                    this.game.call('addAbilitiesToUnit', entityId, validAbilities);
+                    this.call.addAbilitiesToUnit( entityId, validAbilities);
                     console.log('[UnitCreationSystem] Called addAbilitiesToUnit for entity', entityId);
                 } else {
                     console.error('[UnitCreationSystem] addAbilitiesToUnit service not available!');
@@ -854,7 +886,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      */
     getTerrainHeight(worldX, worldZ) {
         try {
-            const height = this.game.call('getTerrainHeightAtPosition', worldX, worldZ);
+            const height = this.call.getTerrainHeightAtPosition( worldX, worldZ);
             if (height !== undefined) {
                 return height;
             }

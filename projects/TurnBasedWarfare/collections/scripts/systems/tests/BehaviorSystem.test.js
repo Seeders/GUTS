@@ -9,20 +9,6 @@ describe('BehaviorSystem', () => {
     beforeEach(() => {
         game = new TestGameContext();
 
-        // Register mock services needed by BehaviorSystem
-        game.register('getEnumMap', (enumName) => {
-            if (enumName === 'behaviorCollection') {
-                return { toValue: ['behaviorTrees', 'behaviorActions'] };
-            }
-            if (enumName === 'behaviorTrees') {
-                return { toValue: ['defaultTree'], toIndex: { defaultTree: 0 } };
-            }
-            if (enumName === 'behaviorActions') {
-                return { toValue: ['IdleBehaviorAction', 'AttackAction'], toIndex: { IdleBehaviorAction: 0, AttackAction: 1 } };
-            }
-            return null;
-        });
-
         behaviorSystem = game.createSystem(GUTS.BehaviorSystem);
         enums = game.getEnums();
     });

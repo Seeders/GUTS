@@ -21,6 +21,10 @@
  */
 class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'processNextMinerInQueue'
+    ];
+
     execute(entityId, game) {
         const shared = this.getShared(entityId, game);
         const memory = this.getMemory(entityId);
@@ -34,7 +38,35 @@ class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         const duration = (this.parameters.duration || 2);
         const goldPerTrip = this.parameters.goldPerTrip || 10;
 
-       
+        // In round-based mode (no ticks), mining completes instantly
+        // In tick-based mode, use time-based duration
+        const isRoundBased = game.tickCount === 0 || game.deltaTime === 0;
+
+        if (isRoundBased) {
+            // Round-based: complete mining instantly
+            shared.goldAmount = goldPerTrip;
+            shared.hasGold = true;
+            shared.miningProgress = 1;
+
+            // Process next miner in queue
+            this.call.processNextMinerInQueue( targetMine);
+
+            // Clear mine-related shared state
+            shared.targetMine = null;
+            shared.targetMinePosition = null;
+            shared.inMineQueue = false;
+            shared.canMine = false;
+
+            // Reset memory
+            memory.miningStartTime = null;
+
+            return this.success({
+                goldAmount: goldPerTrip,
+                miningComplete: true
+            });
+        }
+
+        // Tick-based mode: use time-based duration
         // Initialize mining start time
         if (!memory.miningStartTime) {
             memory.miningStartTime = game.state.now;
@@ -45,8 +77,8 @@ class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Update shared state with progress
         shared.miningProgress = progress;
-        shared.goldAmount = goldPerTrip * progress;
-        shared.hasGold = progress > 0;
+        // Don't set goldAmount or hasGold until mining is complete
+        // This prevents DepositGoldSequence from interrupting mid-mining
 
         if (elapsed >= duration) {
             // Mining complete!
@@ -55,7 +87,7 @@ class ExtractGoldBehaviorAction extends GUTS.BaseBehaviorAction {
             shared.miningProgress = 1;
 
             // Process next miner in queue
-            game.call('processNextMinerInQueue', targetMine);
+            this.call.processNextMinerInQueue( targetMine);
 
 
             // Clear mine-related shared state

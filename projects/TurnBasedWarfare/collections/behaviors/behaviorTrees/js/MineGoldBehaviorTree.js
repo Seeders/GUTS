@@ -24,6 +24,11 @@
  */
 class MineGoldBehaviorTree extends GUTS.BaseBehaviorTree {
 
+    static serviceDependencies = [
+        'getNodeByType',
+        'clearBehaviorState'
+    ];
+
     constructor(game, config = {}) {
         super(game, config);
 
@@ -40,7 +45,7 @@ class MineGoldBehaviorTree extends GUTS.BaseBehaviorTree {
      */
     evaluate(entityId, game) {
         // Check for nearby enemies first - if enemies are nearby, skip mining and let combat take over
-        const isEnemyNearby = game.call('getNodeByType', 'IsEnemyNearbyBehaviorAction');
+        const isEnemyNearby = this.call.getNodeByType( 'IsEnemyNearbyBehaviorAction');
         if (isEnemyNearby) {
             const enemyCheckResult = isEnemyNearby.execute(entityId, game);
             if (enemyCheckResult && enemyCheckResult.status === 'success') {
@@ -58,7 +63,7 @@ class MineGoldBehaviorTree extends GUTS.BaseBehaviorTree {
      */
     onEnd(entityId, game) {
         // Clear behavior state via BehaviorSystem
-        game.call('clearBehaviorState', entityId);
+        this.call.clearBehaviorState( entityId);
 
         super.onEnd(entityId, game);
     }

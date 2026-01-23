@@ -1,4 +1,19 @@
 class MiniMapSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'getWorldExtendedSize',
+        'getGridSize',
+        'getCamera',
+        'getTerrainSize',
+        'cameraLookAt',
+        'getExplorationTexture',
+        'getFogTexture',
+        'getGroundTexture',
+        'getActivePlayerTeam',
+        'getUnitTypeDef',
+        'isVisibleAt',
+        'getGoldVeinLocations'
+    ];
+
     constructor(game) {
         super(game);
         this.game.miniMapSystem = this;
@@ -60,7 +75,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
        // this.MINIMAP_SIZE = rect.width; // use actual displayed size
 
         // Use that size for both the canvas and render target
-        this.minimapWorldSize = this.game.call('getWorldExtendedSize');
+        this.minimapWorldSize = this.call.getWorldExtendedSize();
 
         this.createMinimapCamera();
         this.addTerrainBackground();
@@ -154,7 +169,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
 
     createIconMaterials() {
-        const gridSize = this.game.call('getGridSize');
+        const gridSize = this.call.getGridSize();
         // Unit icons - slightly bigger
         this.unitIconGeometry = new THREE.CircleGeometry(gridSize, 4);
 
@@ -345,7 +360,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
 
     handleMinimapClick(event) {
         const rect = this.canvas.getBoundingClientRect();
-        const camera = this.game.call('getCamera');
+        const camera = this.call.getCamera();
 
         // Get click position relative to canvas center (in pixels)
         const clickX = event.clientX - rect.left - rect.width / 2;
@@ -363,12 +378,12 @@ class MiniMapSystem extends GUTS.BaseSystem {
         const nx = (rotatedX + rect.width / 2) / rect.width;
         const ny = (rotatedY + rect.height / 2) / rect.height;
 
-        let worldSize = this.game.call('getTerrainSize') * 2;
+        let worldSize = this.call.getTerrainSize() * 2;
         // Map to world coordinates
         const half = worldSize * 0.5;
         const worldX = nx * worldSize - half;
         const worldZ = ny * worldSize - half;
-        this.game.call('cameraLookAt', worldX, worldZ);
+        this.call.cameraLookAt( worldX, worldZ);
     }
 
     update() {
@@ -384,11 +399,11 @@ class MiniMapSystem extends GUTS.BaseSystem {
         if (!this.game.fogOfWarSystem || !this.fogQuad) return;
 
         this.fogQuad.material.uniforms.explorationTexture.value =
-            this.game.call('getExplorationTexture');
+            this.call.getExplorationTexture();
         this.fogQuad.material.uniforms.visibilityTexture.value =
-            this.game.call('getFogTexture');
+            this.call.getFogTexture();
 
-        const groundTexture = this.game.call('getGroundTexture');
+        const groundTexture = this.call.getGroundTexture();
         if (this.terrainQuad && groundTexture) {
             this.terrainQuad.material.map = groundTexture;
             this.terrainQuad.material.needsUpdate = true;
@@ -396,7 +411,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
 
     updateUnitIcons() {
-        const myTeam = this.game.call('getActivePlayerTeam');
+        const myTeam = this.call.getActivePlayerTeam();
         if (myTeam === null || myTeam === undefined) return;
 
         const allEntities = this.game.getEntitiesWith(
@@ -410,7 +425,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
         for (let i = 0; i < allEntities.length; i++) {
             const id = allEntities[i];
             const unitTypeComp = this.game.getComponent(id, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             if (unitType && (unitType.collection === "units" || unitType.collection === "buildings")) {
                 this._filteredEntities.push(id);
             }
@@ -427,12 +442,12 @@ class MiniMapSystem extends GUTS.BaseSystem {
             const team = this.game.getComponent(entityId, "team");
             const projectile = this.game.getComponent(entityId, "projectile");
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
             if (!pos || !team || projectile || !unitType) continue;
 
             const isMyUnit = team.team === myTeam;
-            const visible = this.game.call('isVisibleAt', pos.x, pos.z);
+            const visible = this.call.isVisibleAt( pos.x, pos.z);
 
             if (!isMyUnit && !visible) continue;
 
@@ -480,7 +495,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
 
     updateGoldVeinIcons() {
-        const goldVeins = this.game.call('getGoldVeinLocations');
+        const goldVeins = this.call.getGoldVeinLocations();
         if (!goldVeins) {
             return;
         }
@@ -507,7 +522,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
 
     updateCameraView() {
-        const camera = this.game.call('getCamera');
+        const camera = this.call.getCamera();
         if (!camera) return;
         const cameraPos = camera.position;
         
@@ -554,7 +569,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
 
     addTerrainBackground() {
         // Get the ground texture from the world system
-        const groundTexture = this.game.call('getGroundTexture');
+        const groundTexture = this.call.getGroundTexture();
         if (!groundTexture) {
             console.warn('MiniMapSystem: Ground texture not available');
             return;
@@ -618,7 +633,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
     }
         
     drawCameraOutline() {
-        const camera = this.game.call('getCamera');
+        const camera = this.call.getCamera();
         if (!camera || !camera.isOrthographicCamera) return;
 
         // Frustum corners in NDC (CCW)

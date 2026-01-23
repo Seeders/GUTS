@@ -45,6 +45,8 @@
     "ProjectileSystem",
     "TeamHealthSystem",
     "DeathSystem",
+    "StatAggregationSystem",
+    "AccuracySystem",
     "DamageSystem",
     "AbilitySystem",
     "SquadExperienceSystem",
@@ -59,7 +61,8 @@
     "GoldMineSystem",
     "VisionSystem",
     "SupplySystem",
-    "CheatCodeSystem"
+    "CheatCodeSystem",
+    "SkirmishGameSystem"
   ],
   "classes": [
     {

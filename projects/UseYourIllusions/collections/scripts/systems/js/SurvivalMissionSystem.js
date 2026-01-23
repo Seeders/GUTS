@@ -14,6 +14,24 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
         'getSurvivalWaveInfo'
     ];
 
+    static serviceDependencies = [
+        'setLocalGame',
+        'showLoadingScreen',
+        'createPlayerEntity',
+        'setActivePlayer',
+        'initializeGame',
+        'spawnGoldMineForTeam',
+        'spawnStartingUnitsForTeam',
+        'ui_toggleReadyForBattle',
+        'getStartingLocationsFromLevel',
+        'ui_placeUnit',
+        'getPlacementById',
+        'ui_issueMoveOrder',
+        'broadcastGameEnd',
+        'getPlayerEntities',
+        'getUnitTypeDef'
+    ];
+
     constructor(game) {
         super(game);
         this.game.survivalMissionSystem = this;
@@ -75,7 +93,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
         this.game.state.debugEntityDestruction = true;
 
         // Enable local game mode
-        this.game.call('setLocalGame', true, 0);
+        this.call.setLocalGame( true, 0);
 
         // Generate game seed
         this.game.state.gameSeed = Date.now() % 1000000;
@@ -96,7 +114,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
         this.game.state.level = validLevelIndex;
         console.log('[SurvivalMissionSystem] Starting mission with level:', levelName, '-> index:', validLevelIndex);
 
-        this.game.call('showLoadingScreen');
+        this.call.showLoadingScreen();
 
         // Update terrain for the scene
         const gameScene = this.collections?.scenes?.survival;
@@ -111,7 +129,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
 
         // Create player entity (human player)
         const startingGold = config.startingGold || 150;
-        this.game.call('createPlayerEntity', 0, {
+        this.call.createPlayerEntity( 0, {
             team: playerTeam,
             gold: startingGold,
             upgrades: 0
@@ -119,7 +137,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
 
         // Create enemy AI player entity (for wave spawning)
         // This allows ui_placeUnit to work for enemy team placements
-        this.game.call('createPlayerEntity', 1, {
+        this.call.createPlayerEntity( 1, {
             team: enemyTeam,
             gold: 999999, // Unlimited gold for spawning waves
             upgrades: 0
@@ -127,7 +145,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
 
         // Set active player (human player)
         if (this.game.hasService('setActivePlayer')) {
-            this.game.call('setActivePlayer', 0, playerTeam);
+            this.call.setActivePlayer( 0, playerTeam);
         }
 
         // Store config for postSceneLoad
@@ -159,7 +177,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
 
         // Initialize the game
         console.log('[SurvivalMissionSystem] Calling initializeGame');
-        this.game.call('initializeGame', null);
+        this.call.initializeGame( null);
 
         // Store enemy team for wave spawning
         this.enemyTeam = this.pendingEnemyTeam;
@@ -184,10 +202,10 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
      */
     spawnStartingState(playerTeam) {
         // Spawn gold mine for player
-        this.game.call('spawnGoldMineForTeam', playerTeam);
+        this.call.spawnGoldMineForTeam( playerTeam);
 
         // Spawn starting units for player
-        this.game.call('spawnStartingUnitsForTeam', playerTeam);
+        this.call.spawnStartingUnitsForTeam( playerTeam);
 
         console.log('[SurvivalMissionSystem] Spawned starting state for player team');
     }
@@ -202,7 +220,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
         if (this.missionComplete || this.missionFailed) return;
 
         // Auto-ready the enemy AI player each round using the UI interface
-        this.game.call('ui_toggleReadyForBattle', this.enemyTeam, () => {
+        this.call.ui_toggleReadyForBattle( this.enemyTeam, () => {
             console.log('[SurvivalMissionSystem] Enemy AI player readied for battle');
         });
 
@@ -267,7 +285,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
         const spawnedPlacements = [];
 
         // Get starting locations from the level data
-        const startingLocations = this.game.call('getStartingLocationsFromLevel');
+        const startingLocations = this.call.getStartingLocationsFromLevel();
         if (!startingLocations) {
             console.error('[SurvivalMissionSystem] No starting locations found in level');
             return;
@@ -301,7 +319,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
 
                 // Use the standard placement pipeline (same as simulations)
                 const playerId = 1; // Enemy player
-                this.game.call('ui_placeUnit',
+                this.call.ui_placeUnit(
                     { x: gridX, z: gridZ },
                     unitType,
                     this.enemyTeam,
@@ -313,7 +331,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
                             spawnedPlacements.push(response.placementId);
 
                             // Apply difficulty scaling to the spawned units
-                            const placement = this.game.call('getPlacementById', response.placementId);
+                            const placement = this.call.getPlacementById( response.placementId);
                             if (placement?.squadUnits) {
                                 for (const entityId of placement.squadUnits) {
                                     this.applyWaveScaling(entityId, waveNumber);
@@ -328,7 +346,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
 
                             // Issue move order toward player's base
                             if (targetWorldPos) {
-                                this.game.call('ui_issueMoveOrder',
+                                this.call.ui_issueMoveOrder(
                                     [response.placementId],
                                     { x: targetWorldPos.x, z: targetWorldPos.z },
                                     {},
@@ -356,7 +374,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
             };
 
             const playerId = 1;
-            this.game.call('ui_placeUnit',
+            this.call.ui_placeUnit(
                 { x: bossGridX, z: bossGridZ },
                 bossUnitType,
                 this.enemyTeam,
@@ -366,7 +384,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
                     if (success && response?.placementId) {
                         console.log('[SurvivalMissionSystem] Boss spawned, placementId:', response.placementId);
 
-                        const placement = this.game.call('getPlacementById', response.placementId);
+                        const placement = this.call.getPlacementById( response.placementId);
                         if (placement?.squadUnits) {
                             for (const entityId of placement.squadUnits) {
                                 this.applyWaveScaling(entityId, waveNumber + 5);
@@ -383,7 +401,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
 
                         // Issue move order toward player's base
                         if (targetWorldPos) {
-                            this.game.call('ui_issueMoveOrder',
+                            this.call.ui_issueMoveOrder(
                                 [response.placementId],
                                 { x: targetWorldPos.x, z: targetWorldPos.z },
                                 {},
@@ -514,7 +532,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
                 wavesCompleted: this.currentWave,
                 totalWaves: this.totalWaves
             };
-            this.game.call('broadcastGameEnd', result);
+            this.call.broadcastGameEnd( result);
             this.game.endGame(result);
             return;
         }
@@ -533,7 +551,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
                     wavesCompleted: this.currentWave,
                     totalWaves: this.totalWaves
                 };
-                this.game.call('broadcastGameEnd', result);
+                this.call.broadcastGameEnd( result);
                 this.game.endGame(result);
                 return;
             }
@@ -547,7 +565,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
      */
     getPlayerStatsForBroadcast() {
         const stats = {};
-        const playerEntities = this.game.call('getPlayerEntities');
+        const playerEntities = this.call.getPlayerEntities();
         for (const entityId of playerEntities) {
             const playerStats = this.game.getComponent(entityId, 'playerStats');
             if (playerStats) {
@@ -574,7 +592,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
         const buildingEntities = this.game.getEntitiesWith('unitType', 'team', 'health');
         for (const entityId of buildingEntities) {
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             if (!unitType || unitType.collection !== 'buildings') continue;
 
             const health = this.game.getComponent(entityId, 'health');

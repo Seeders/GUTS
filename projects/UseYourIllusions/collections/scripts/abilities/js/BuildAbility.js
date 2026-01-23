@@ -1,4 +1,9 @@
 class BuildAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'clearBehaviorState'
+    ];
+
     constructor(game, abilityData) {
         super(game, abilityData);
         this.name = 'Build';
@@ -41,7 +46,7 @@ class BuildAbility extends GUTS.BaseAbility {
         // Set up building visual state - show as under construction immediately
         const renderComponent = this.game.getComponent(buildingEntityId, "renderable");
         if (renderComponent) {
-            const enums = this.game.call('getEnums');
+            const enums = this.game.getEnums();
             renderComponent.spawnType = enums.buildings.underConstruction;
         }
 
@@ -122,7 +127,7 @@ class BuildAbility extends GUTS.BaseAbility {
             aiState.currentAction = null;
             aiState.currentActionCollection = null;
             // Clear behavior state via BehaviorSystem
-            this.game.call('clearBehaviorState', peasantEntityId);
+            this.call.clearBehaviorState( peasantEntityId);
         }
     }
 

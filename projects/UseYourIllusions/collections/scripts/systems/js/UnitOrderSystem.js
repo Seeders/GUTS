@@ -12,6 +12,13 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         'applySquadsTargetPositions'
     ];
 
+    static serviceDependencies = [
+        'getPlacementById',
+        'getUnitTypeDef',
+        'getEntityPath',
+        'clearEntityPath'
+    ];
+
     constructor(game) {
         super(game);
         this.game = game;
@@ -30,7 +37,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
      * @param {number} commandCreatedTime - The issued time from server
      */
     applySquadTargetPosition(placementId, targetPosition, meta, commandCreatedTime) {
-        const placement = this.game.call('getPlacementById', placementId);
+        const placement = this.call.getPlacementById( placementId);
         if (!placement) {
             // Placement doesn't exist yet - entity sync at battle start will handle it
             return;
@@ -49,7 +56,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
                 // DEBUG: Log order changes
                 const unitTypeComp = this.game.getComponent(unitId, 'unitType');
-                const unitTypeDef = this.game.call('getUnitTypeDef', unitTypeComp);
+                const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
                 const unitName = unitTypeDef?.id || unitId;
                 console.log(`[UnitOrderSystem] applySquadTargetPosition entity=${unitId} (${unitName}) placementId=${placementId} isHiding=${!!meta?.isHiding} isMoveOrder=${!!meta?.isMoveOrder} wasHiding=${playerOrder.isHiding}`);
 
@@ -72,10 +79,10 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 if (this.game.hasService('clearEntityPath')) {
                     // DEBUG: Log path clear for archer units
                     if (unitName?.includes('archer')) {
-                        const existingPath = this.game.call('getEntityPath', unitId);
+                        const existingPath = this.call.getEntityPath( unitId);
                         console.log(`[UnitOrderSystem] ARCHER ${unitId} CLEARING path (had ${existingPath ? existingPath.length + ' waypoints' : 'no path'})`);
                     }
-                    this.game.call('clearEntityPath', unitId);
+                    this.call.clearEntityPath( unitId);
                 }
 
                 // Also reset pathfinding component state to force immediate path recalculation

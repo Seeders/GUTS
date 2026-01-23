@@ -22,6 +22,10 @@
  */
 class DepositGoldBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'addPlayerGold'
+    ];
+
     execute(entityId, game) {
         const shared = this.getShared(entityId, game);
         const memory = this.getMemory(entityId);
@@ -77,7 +81,7 @@ class DepositGoldBehaviorAction extends GUTS.BaseBehaviorAction {
         if (!team) return;
 
         // Award gold to player entity
-        game.call('addPlayerGold', team.team, amount);
+        this.call.addPlayerGold( team.team, amount);
     }
 
     onStart(entityId, game) {

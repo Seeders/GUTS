@@ -4,6 +4,18 @@ class ProjectileSystem extends GUTS.BaseSystem {
         'fireProjectile'
     ];
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'getComponents',
+        'addLifetime',
+        'createLayeredEffect',
+        'getTerrainHeightAtPosition',
+        'applyDamage',
+        'applySplashDamage',
+        'getNearbyUnits',
+        'destroyEntityImmediately'
+    ];
+
     constructor(game) {
         super(game);
         this.game.projectileSystem = this;
@@ -59,9 +71,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Get source/target info for logging
         const sourceUnitTypeComp = this.game.getComponent(sourceId, 'unitType');
-        const sourceUnitType = this.game.call('getUnitTypeDef', sourceUnitTypeComp);
+        const sourceUnitType = this.call.getUnitTypeDef( sourceUnitTypeComp);
         const targetUnitTypeComp = this.game.getComponent(targetId, 'unitType');
-        const targetUnitType = this.game.call('getUnitTypeDef', targetUnitTypeComp);
+        const targetUnitType = this.call.getUnitTypeDef( targetUnitTypeComp);
         const sourceTeamComp = this.game.getComponent(sourceId, 'team');
         const targetTeamComp = this.game.getComponent(targetId, 'team');
         const reverseEnums = this.game.getReverseEnums();
@@ -101,7 +113,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // In deterministic lockstep, both client and server execute attacks at the same tick,
         // so the counter produces identical IDs on both sides
         const projectileId = this.game.createEntity();
-        const components = this.game.call('getComponents');
+        const components = this.call.getComponents();
         
         // Determine projectile element (from weapon, combat component, or projectile data)
         const projectileElement = this.determineProjectileElement(sourceId, projectileData);
@@ -179,7 +191,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         
         // Use LifetimeSystem instead of direct component
         if (!this.game.isServer) {
-            this.game.call('addLifetime', projectileId, this.PROJECTILE_LIFETIME, {
+            this.call.addLifetime( projectileId, this.PROJECTILE_LIFETIME, {
                 fadeOutDuration: 1.0, // Fade out in last second
                 onDestroy: (entityId) => {
                     // Custom cleanup for projectiles
@@ -606,7 +618,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         for (const { entityId, entityPos, distance } of this._entitiesWithDistance) {
             // Get entity radius for collision detection
             const entityUnitTypeComp = this.game.getComponent(entityId, "unitType");
-            const entityUnitType = this.game.call('getUnitTypeDef', entityUnitTypeComp);
+            const entityUnitType = this.call.getUnitTypeDef( entityUnitTypeComp);
             const entityRadius = this.getUnitRadius(entityUnitType);
 
             // Check collision for direct hit
@@ -708,7 +720,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
             const targetTransform = this.game.getComponent(targetId, "transform");
             const shieldPos = targetTransform?.position;
             if (shieldPos) {
-                this.game.call('createLayeredEffect', {
+                this.call.createLayeredEffect( {
                     position: new THREE.Vector3(shieldPos.x, shieldPos.y + 25, shieldPos.z),
                     layers: [
                         // Wind deflection burst
@@ -751,7 +763,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         if (!projectile.isBallistic) return;
         
         // Get actual terrain height for projectile impact
-        const terrainHeight = this.game.call('getTerrainHeightAtPosition', pos.x, pos.z);
+        const terrainHeight = this.call.getTerrainHeightAtPosition( pos.x, pos.z);
         const actualGroundLevel = terrainHeight !== null ? terrainHeight : this.game.movementSystem?.GROUND_LEVEL || 0;
         
         // Check if projectile hit the ground
@@ -770,9 +782,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Get source/target info for logging
         const sourceUnitTypeComp = this.game.getComponent(projectile.source, 'unitType');
-        const sourceUnitType = this.game.call('getUnitTypeDef', sourceUnitTypeComp);
+        const sourceUnitType = this.call.getUnitTypeDef( sourceUnitTypeComp);
         const targetUnitTypeComp = this.game.getComponent(targetId, 'unitType');
-        const targetUnitType = this.game.call('getUnitTypeDef', targetUnitTypeComp);
+        const targetUnitType = this.call.getUnitTypeDef( targetUnitTypeComp);
         const targetHealth = this.game.getComponent(targetId, 'health');
         const reverseEnums = this.game.getReverseEnums();
         const sourceName = sourceUnitType?.id || 'unknown';
@@ -785,7 +797,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         });
 
         // Apply damage on both client and server for sync
-        this.game.call('applyDamage', projectile.source, targetId, damage, element, {
+        this.call.applyDamage( projectile.source, targetId, damage, element, {
             isProjectile: true,
             projectileId: projectileId
         });
@@ -817,7 +829,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         const element = projectile.element !== undefined ? projectile.element : this.enums.element.physical;
 
         // Apply splash damage on both client and server for sync
-        this.game.call('applySplashDamage',
+        this.call.applySplashDamage(
             projectile.source,
             pos,
             splashDamage,
@@ -878,7 +890,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Get nearby units using grid system - returns array of entityIds
         const searchRadius = this.HIT_DETECTION_RADIUS + 30; // Include unit radius
-        const nearbyEntityIds = this.game.call('getNearbyUnits', pos, searchRadius, projectile.source);
+        const nearbyEntityIds = this.call.getNearbyUnits( pos, searchRadius, projectile.source);
 
         if (!nearbyEntityIds || nearbyEntityIds.length === 0) return null;
 
@@ -900,7 +912,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
             // Get entity radius for collision detection
             const entityUnitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const entityUnitType = this.game.call('getUnitTypeDef', entityUnitTypeComp);
+            const entityUnitType = this.call.getUnitTypeDef( entityUnitTypeComp);
             const entityRadius = this.getUnitRadius(entityUnitType);
 
             // Check if arrow landed within unit's radius
@@ -982,7 +994,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
         
     destroyProjectile(projectileId) {
-        this.game.call('destroyEntityImmediately', projectileId, true);    
+        this.call.destroyEntityImmediately( projectileId, true);    
         this.game.destroyEntity(projectileId);
         this.cleanupProjectileData(projectileId);
     }

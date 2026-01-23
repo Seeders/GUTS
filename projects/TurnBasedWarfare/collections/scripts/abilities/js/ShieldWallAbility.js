@@ -1,4 +1,10 @@
 class ShieldWallAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'setBehaviorMeta',
+        'clearEntityPath'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Shield Wall',
@@ -130,11 +136,11 @@ class ShieldWallAbility extends GUTS.BaseAbility {
             
             // Force AI to target the shield wall user via behavior state
             const casterTransform = this.game.getComponent(casterEntity, "transform");
-            this.game.call('setBehaviorMeta', enemyId, {
+            this.call.setBehaviorMeta( enemyId, {
                 target: casterEntity,
                 targetPosition: casterTransform?.position
             });
-            this.game.call('clearEntityPath', enemyId);
+            this.call.clearEntityPath( enemyId);
         
             // Schedule staggered taunt effects for visual appeal
             this.game.schedulingSystem.scheduleAction(() => {

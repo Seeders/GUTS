@@ -5,6 +5,15 @@ class LifetimeSystem extends GUTS.BaseSystem {
         'extendLifetime'
     ];
 
+    static serviceDependencies = [
+        'deleteProjectileTrail',
+        'createParticleEffect',
+        'clearBehaviorState',
+        'clearEntityPath',
+        'playScreenShake',
+        'playScreenFlash'
+    ];
+
     constructor(game) {
         super(game);
         this.game.lifetimeSystem = this;
@@ -91,7 +100,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         // Handle projectiles
         if (this.game.hasComponent(entityId, "projectile")) {
             // Clean up projectile-specific data
-            this.game.call('deleteProjectileTrail', entityId);
+            this.call.deleteProjectileTrail( entityId);
 
         }
 
@@ -131,7 +140,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         const summonPos = transform?.position;
         if (summonPos) {
             // Create disappearing effect
-            this.game.call('createParticleEffect',
+            this.call.createParticleEffect(
                 summonPos.x, summonPos.y, summonPos.z,
                 'magic',
                 { count: 3, color: 0x9370DB, scaleMultiplier: 1.5 }
@@ -145,7 +154,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         const imagePos = transform?.position;
         if (imagePos) {
             // Create shimmering dissolution effect
-            this.game.call('createParticleEffect',
+            this.call.createParticleEffect(
                 imagePos.x, imagePos.y, imagePos.z,
                 'magic',
                 { count: 3, color: 0x6495ED, scaleMultiplier: 1.2 }
@@ -158,7 +167,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         const trapPos = transform?.position;
         if (trapPos) {
             // Create fizzling effect for expired trap
-            this.game.call('createParticleEffect',
+            this.call.createParticleEffect(
                 trapPos.x, trapPos.y, trapPos.z,
                 'magic',
                 { count: 3, color: 0x696969, scaleMultiplier: 0.8 }
@@ -173,7 +182,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         const transform = this.game.getComponent(entityId, "transform");
         const effectPos = transform?.position;
         if (effectPos) {
-            this.game.call('createParticleEffect',
+            this.call.createParticleEffect(
                 effectPos.x, effectPos.y, effectPos.z,
                 'magic',
                 { count: 3, color: 0xFFFFFF, scaleMultiplier: 0.5 }
@@ -192,12 +201,12 @@ class LifetimeSystem extends GUTS.BaseSystem {
             targetTeam.team = mindControl.originalTeam;
 
             // Clear AI behavior state
-            this.game.call('clearBehaviorState', entityId);
-            this.game.call('clearEntityPath', entityId);
+            this.call.clearBehaviorState( entityId);
+            this.call.clearEntityPath( entityId);
             
             // Visual effect
             if (targetPos) {
-                this.game.call('createParticleEffect',
+                this.call.createParticleEffect(
                     targetPos.x, targetPos.y, targetPos.z,
                     'magic',
                     { count: 3, color: 0xDA70D6, scaleMultiplier: 1.0 }
@@ -226,7 +235,7 @@ class LifetimeSystem extends GUTS.BaseSystem {
         const effectConfig = lifetime.destructionEffect;
 
         // Create particle effect
-        this.game.call('createParticleEffect',
+        this.call.createParticleEffect(
             pos.x, pos.y, pos.z,
             effectConfig.type || 'magic',
             {
@@ -239,14 +248,14 @@ class LifetimeSystem extends GUTS.BaseSystem {
 
         // Screen effects if specified
         if (effectConfig.screenShake) {
-            this.game.call('playScreenShake',
+            this.call.playScreenShake(
                 effectConfig.screenShake.duration || 0.2,
                 effectConfig.screenShake.intensity || 1
             );
         }
 
         if (effectConfig.screenFlash) {
-            this.game.call('playScreenFlash',
+            this.call.playScreenFlash(
                 effectConfig.screenFlash.color || '#FFFFFF',
                 effectConfig.screenFlash.duration || 0.2
             );

@@ -32,6 +32,11 @@ class GridSystem extends GUTS.BaseSystem {
         'updateCoordinateConfig'
     ];
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'getTerrainHeightAtPosition'
+    ];
+
     constructor(game) {
         super(game);
         this.game.gridSystem = this;
@@ -359,7 +364,7 @@ class GridSystem extends GUTS.BaseSystem {
     getUnitCells(entityId) {
 
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitType = this.call.getUnitTypeDef( unitTypeComp);
         const transform = this.game.getComponent(entityId, "transform");
         const pos = transform?.position;
 
@@ -496,7 +501,7 @@ class GridSystem extends GUTS.BaseSystem {
             // Skip world objects that are not impassable (e.g., gold veins, bushes)
             // Note: getUnitTypeDef still needed for prefab data lookup
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             if (unitType && unitType.impassable === false) continue;
 
             currentEntitySet.add(entityId);
@@ -899,7 +904,7 @@ class GridSystem extends GUTS.BaseSystem {
             const halfSize = this.cellSize / 2;
             const centerX = worldPos.x + halfSize;
             const centerZ = worldPos.z + halfSize;
-            const terrainHeight = this.game.call('getTerrainHeightAtPosition', centerX, centerZ) || 0;
+            const terrainHeight = this.call.getTerrainHeightAtPosition( centerX, centerZ) || 0;
             mesh.position.set(centerX, terrainHeight + 1, centerZ);
             this.debugVisualization.add(mesh);
         }
@@ -933,7 +938,7 @@ class GridSystem extends GUTS.BaseSystem {
                 const cell = this._keyToCell(key);
                 const entityNames = cellState.entities.map(id => {
                     const unitTypeComp = this.game.getComponent(id, 'unitType');
-                    const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+                    const unitType = this.call.getUnitTypeDef( unitTypeComp);
                     const team = this.game.getComponent(id, 'team');
                     const teamValue = team ? JSON.stringify(team.team) : 'NO_TEAM';
                     return `${unitType?.name || 'unknown'}(team=${teamValue})`;

@@ -2,5 +2,5 @@
   "id": "items",
   "name": "Items",
   "singular": "item",
-  "objectTypeCategory": "prefabs"
+  "objectTypeCategory": "spawns"
 }

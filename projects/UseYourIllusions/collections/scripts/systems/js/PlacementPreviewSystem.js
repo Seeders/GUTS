@@ -14,6 +14,16 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
         'getPreviewPosition'
     ];
 
+    static serviceDependencies = [
+        'getPlayerEntity',
+        'createUnit',
+        'getCamera',
+        'getFacingAngle',
+        'getPitchAngle',
+        'getUnitTypeDef',
+        'getTerrainHeightAtPosition'
+    ];
+
     constructor(game) {
         super(game);
         this.game.placementPreviewSystem = this;
@@ -42,7 +52,7 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
     }
 
     update() {
-        const playerEntity = this.game.call('getPlayerEntity');
+        const playerEntity = this.call.getPlayerEntity();
         if (!playerEntity) {
             return;
         }
@@ -118,12 +128,12 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
 
         // Check if this is a clone - use player's unit type for preview
         if (this.currentItemType === 'clone') {
-            const playerEntity = this.game.call('getPlayerEntity');
+            const playerEntity = this.call.getPlayerEntity();
             if (playerEntity) {
                 const playerUnitType = this.game.getComponent(playerEntity, 'unitType');
                 if (playerUnitType) {
                     console.log('[PlacementPreviewSystem] Creating clone preview using player unit type:', playerUnitType);
-                    this.previewEntityId = this.game.call('createUnit', playerUnitType.collection, playerUnitType.type, transform, neutralTeam);
+                    this.previewEntityId = this.call.createUnit( playerUnitType.collection, playerUnitType.type, transform, neutralTeam);
                 }
             }
         } else {
@@ -137,7 +147,7 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
             }
 
             // Use createUnit to properly create the preview entity
-            this.previewEntityId = this.game.call('createUnit', collectionIndex, itemIndex, transform, neutralTeam);
+            this.previewEntityId = this.call.createUnit( collectionIndex, itemIndex, transform, neutralTeam);
         }
         console.log('[PlacementPreviewSystem] Created preview entity:', this.previewEntityId);
 
@@ -185,14 +195,14 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
         const casterPos = playerTransform.position;
 
         // Get camera info for raycast
-        const camera = this.game.hasService('getCamera') ? this.game.call('getCamera') : null;
-        const facingAngle = this.game.hasService('getFacingAngle') ? this.game.call('getFacingAngle') : 0;
-        const pitchAngle = this.game.hasService('getPitchAngle') ? this.game.call('getPitchAngle') : 0;
+        const camera = this.game.hasService('getCamera') ? this.call.getCamera() : null;
+        const facingAngle = this.game.hasService('getFacingAngle') ? this.call.getFacingAngle() : 0;
+        const pitchAngle = this.game.hasService('getPitchAngle') ? this.call.getPitchAngle() : 0;
 
         // Get player's vision range as max placement distance
         const combat = this.game.getComponent(playerEntity, 'combat');
         const unitTypeComp = this.game.getComponent(playerEntity, 'unitType');
-        const unitTypeDef = this.game.call('getUnitTypeDef', unitTypeComp);
+        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
         const visionRange = unitTypeDef?.visionRange || combat?.visionRange || this.config.placementRange;
 
         let targetX, targetY, targetZ;
@@ -237,7 +247,7 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
                         hitX = lastValidX;
                         hitZ = lastValidZ;
                         hitY = this.game.hasService('getTerrainHeightAtPosition')
-                            ? this.game.call('getTerrainHeightAtPosition', hitX, hitZ) || 0
+                            ? this.call.getTerrainHeightAtPosition( hitX, hitZ) || 0
                             : 0;
                     } else {
                         // Clamp to vision range boundary
@@ -245,7 +255,7 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
                         hitX = casterPos.x + dx * scale;
                         hitZ = casterPos.z + dz * scale;
                         hitY = this.game.hasService('getTerrainHeightAtPosition')
-                            ? this.game.call('getTerrainHeightAtPosition', hitX, hitZ) || 0
+                            ? this.call.getTerrainHeightAtPosition( hitX, hitZ) || 0
                             : 0;
                     }
                     break;
@@ -257,7 +267,7 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
 
                 // Get terrain height at this XZ position
                 const terrainHeight = this.game.hasService('getTerrainHeightAtPosition')
-                    ? this.game.call('getTerrainHeightAtPosition', testX, testZ) || 0
+                    ? this.call.getTerrainHeightAtPosition( testX, testZ) || 0
                     : 0;
 
                 // Check if ray has gone below terrain
@@ -278,7 +288,7 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
                 targetX = casterPos.x + Math.cos(facingAngle) * visionRange;
                 targetZ = casterPos.z + Math.sin(facingAngle) * visionRange;
                 targetY = this.game.hasService('getTerrainHeightAtPosition')
-                    ? this.game.call('getTerrainHeightAtPosition', targetX, targetZ) || 0
+                    ? this.call.getTerrainHeightAtPosition( targetX, targetZ) || 0
                     : 0;
             }
         } else {
@@ -287,7 +297,7 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
             targetX = casterPos.x + Math.cos(facingAngle) * distance;
             targetZ = casterPos.z + Math.sin(facingAngle) * distance;
             targetY = this.game.hasService('getTerrainHeightAtPosition')
-                ? this.game.call('getTerrainHeightAtPosition', targetX, targetZ) || 0
+                ? this.call.getTerrainHeightAtPosition( targetX, targetZ) || 0
                 : 0;
         }
 

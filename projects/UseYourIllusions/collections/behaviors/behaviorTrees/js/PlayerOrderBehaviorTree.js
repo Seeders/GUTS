@@ -1,4 +1,8 @@
 class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
+    static serviceDependencies = [
+        'getNodeByType'
+    ];
+
     /**
      * Behavior tree for player-issued orders.
      * Checks for different types of player orders and executes them in priority:
@@ -43,7 +47,7 @@ class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
         if (!isForceMove && !isBuildOrder && !playerOrder.isHiding) {
             // Use FindNearestEnemyBehaviorAction which both checks for enemies AND sets shared.target
             // This ensures CombatBehaviorTree has a target to use
-            const findEnemy = game.call('getNodeByType', 'FindNearestEnemyBehaviorAction');
+            const findEnemy = this.call.getNodeByType( 'FindNearestEnemyBehaviorAction');
             if (findEnemy) {
                 const findResult = findEnemy.execute(entityId, game);
                 if (findResult && findResult.status === 'success') {
@@ -58,7 +62,7 @@ class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
 
             // If no visible enemy, check if we were recently attacked
             // This allows ranged units to respond to attackers they can't see
-            const investigateAttacker = game.call('getNodeByType', 'InvestigateAttackerBehaviorAction');
+            const investigateAttacker = this.call.getNodeByType( 'InvestigateAttackerBehaviorAction');
             if (investigateAttacker) {
                 const investigateResult = investigateAttacker.execute(entityId, game);
                 if (investigateResult && investigateResult.status === 'success') {

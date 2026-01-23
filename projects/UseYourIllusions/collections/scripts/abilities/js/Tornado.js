@@ -1,4 +1,10 @@
 class Tornado extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'playEffectSystem',
+        'playEffect'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Curse',
@@ -66,11 +72,11 @@ class Tornado extends GUTS.BaseAbility {
                 // Enhanced dark curse visual using preset effects
                 if (!this.game.isServer) {
                     // Dark energy swirl around target using preset effect
-                    this.game.call('playEffectSystem', 'curse_apply',
+                    this.call.playEffectSystem( 'curse_apply',
                         new THREE.Vector3(enemyPos.x, enemyPos.y + 30, enemyPos.z));
 
                     // Curse symbols rising using preset effect
-                    this.game.call('playEffect', 'curse_symbols',
+                    this.call.playEffect( 'curse_symbols',
                         new THREE.Vector3(enemyPos.x, enemyPos.y + 5, enemyPos.z));
                 }
 

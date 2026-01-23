@@ -9,6 +9,10 @@ class BehaviorSystem extends GUTS.BaseSystem {
         'getDebugger'
     ];
 
+    static serviceDependencies = [
+        'getUnitTypeDef'
+    ];
+
     constructor(game) {
         super(game);
         this.game.behaviorSystem = this;
@@ -26,16 +30,21 @@ class BehaviorSystem extends GUTS.BaseSystem {
 
     init() {
         // Get collection names from behaviorCollection enum (index -> name mapping)
-        const behaviorCollectionEnum = this.game.call('getEnumMap', 'behaviorCollection');
+        const behaviorCollectionEnum = this.game.getEnumMap('behaviorCollection');
         this.collectionNames = behaviorCollectionEnum?.toValue || [];
 
         // Cache enum maps for index-to-name lookups (toValue arrays)
         this.behaviorCollectionMaps = {};
         for (const collectionName of this.collectionNames) {
-            this.behaviorCollectionMaps[collectionName] = this.game.call('getEnumMap', collectionName);
+            this.behaviorCollectionMaps[collectionName] = this.game.getEnumMap(collectionName);
         }
 
+        // Initialize behavior nodes from collections
         this.processor.initializeFromCollections(this.collections);
+
+        // Cache service dependencies for all behavior nodes after all systems are loaded
+        // This ensures services like ui_toggleReadyForBattle are available
+        this.processor.cacheAllServiceDependencies();
     }
 
     // Delegates to processor for static services registration
@@ -238,9 +247,14 @@ class BehaviorSystem extends GUTS.BaseSystem {
         // Only run for local game (skirmish mode) or headless simulation
         if (!this.game.state.isLocalGame && !this.game.state.isHeadlessSimulation) return;
 
+        if (!this._updateCount) this._updateCount = 0;
+        this._updateCount++;
+
+
         // Update build order AI entities
         const buildOrderEntities = this.game.getEntitiesWith('aiOpponent', 'aiState');
-        for (const entityId of buildOrderEntities) {
+        for (let i = 0; i < buildOrderEntities.length; i++) {
+            const entityId = buildOrderEntities[i];
             this.updateAIOpponent(entityId, dt);
         }
 
@@ -295,7 +309,7 @@ class BehaviorSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const unitDef = this.game.call('getUnitTypeDef', unitType);
+        const unitDef = this.call.getUnitTypeDef( unitType);
         const unitName = unitDef?.id || 'unknown';
         const teamComp = this.game.getComponent(entityId, 'team');
         const reverseEnums = this.game.getReverseEnums();

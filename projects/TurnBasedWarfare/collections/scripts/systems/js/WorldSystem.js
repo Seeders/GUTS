@@ -10,6 +10,18 @@ class WorldSystem extends GUTS.BaseSystem {
         'initWorldFromTerrain'
     ];
 
+    static serviceDependencies = [
+        'setCamera',
+        'updateCoordinateConfig',
+        'updateInstanceCapacities',
+        'getEntityRenderer',
+        'spawnTerrainDetails',
+        'registerPostProcessingPass',
+        'getCamera',
+        'getPostProcessingComposer',
+        'renderPostProcessing'
+    ];
+
     constructor(game) {
         super(game);
         this.game.worldSystem = this;
@@ -224,7 +236,7 @@ class WorldSystem extends GUTS.BaseSystem {
 
         // Register camera via service (CameraControlSystem manages the active camera)
         if (this.game.hasService('setCamera')) {
-            this.game.call('setCamera', this.camera);
+            this.call.setCamera( this.camera);
         }
 
         // Setup world rendering - store promise so postSceneLoad can wait for it
@@ -269,7 +281,7 @@ class WorldSystem extends GUTS.BaseSystem {
 
         // Update extension configuration in GridSystem's CoordinateTranslator if available
         if (terrainDataManager.extensionSize) {
-            this.game.call('updateCoordinateConfig', {
+            this.call.updateCoordinateConfig( {
                 extensionSize: terrainDataManager.extensionSize,
                 extendedSize: terrainDataManager.extendedSize
             });
@@ -300,11 +312,11 @@ class WorldSystem extends GUTS.BaseSystem {
         }
 
         // Update instance capacities now that RenderSystem has initialized EntityRenderer
-        this.game.call('updateInstanceCapacities');
+        this.call.updateInstanceCapacities();
 
         // Spawn cliff entities using WorldRenderer
         // Note: useExtension = false because analyzeCliffs() returns coordinates in tile space (not extended space)
-        const entityRenderer = this.game.call('getEntityRenderer');
+        const entityRenderer = this.call.getEntityRenderer();
         if (entityRenderer) {
             await this.worldRenderer.spawnCliffs(entityRenderer, false);
         } else {
@@ -313,7 +325,7 @@ class WorldSystem extends GUTS.BaseSystem {
 
         // Spawn terrain detail objects (grass, rocks, etc.)
         if (this.game.hasService('spawnTerrainDetails')) {
-            await this.game.call('spawnTerrainDetails');
+            await this.call.spawnTerrainDetails();
         }
     }
 
@@ -331,7 +343,7 @@ class WorldSystem extends GUTS.BaseSystem {
         }
 
         const pixelSize = gameConfig.pixelSize || 1;
-        this.game.call('registerPostProcessingPass', 'render', {
+        this.call.registerPostProcessingPass( 'render', {
             enabled: true,
             create: () => {
                 return {
@@ -343,7 +355,7 @@ class WorldSystem extends GUTS.BaseSystem {
                     render: (renderer, writeBuffer, readBuffer, deltaTime, maskActive) => {
                         renderer.setRenderTarget(writeBuffer);
                         renderer.clear(true, true, true); // Clear color, depth, and stencil
-                        const camera = this.game.call('getCamera');
+                        const camera = this.call.getCamera();
                         renderer.render(this.scene, camera);
                     },
 
@@ -354,7 +366,7 @@ class WorldSystem extends GUTS.BaseSystem {
             }
         });
         // Register pixel pass
-        // this.game.call('registerPostProcessingPass', 'pixel', {
+        // this.call.registerPostProcessingPass( 'pixel', {
         //     enabled: pixelSize !== 1,
         //     create: () => {
         //         const pixelPass = new THREE.RenderPixelatedPass(pixelSize, this.scene, this.camera);
@@ -365,7 +377,7 @@ class WorldSystem extends GUTS.BaseSystem {
         // });
 
         // Register output pass (always last)
-        this.game.call('registerPostProcessingPass', 'output', {
+        this.call.registerPostProcessingPass( 'output', {
             enabled: true,
             create: () => {
                 return new GUTS.OutputPass();
@@ -381,7 +393,7 @@ class WorldSystem extends GUTS.BaseSystem {
 
         // Update composer if exists (PostProcessingSystem may not be loaded)
         if (this.game.hasService('getPostProcessingComposer')) {
-            const composer = this.game.call('getPostProcessingComposer');
+            const composer = this.call.getPostProcessingComposer();
             if (composer && window.innerWidth > 0 && window.innerHeight > 0) {
                 composer.setSize(window.innerWidth, window.innerHeight);
             }
@@ -405,12 +417,12 @@ class WorldSystem extends GUTS.BaseSystem {
 
         // Use post-processing if available, otherwise direct render
         if (this.game.hasService('getPostProcessingComposer')) {
-            const composer = this.game.call('getPostProcessingComposer');
+            const composer = this.call.getPostProcessingComposer();
             if (composer) {
                 // When using post-processing, worldRenderer.render() is bypassed,
                 // so we need to update liquid shaders manually
                 this.worldRenderer.updateLiquidShaders(this.game.state?.deltaTime || 0);
-                this.game.call('renderPostProcessing');
+                this.call.renderPostProcessing();
                 return;
             }
         }

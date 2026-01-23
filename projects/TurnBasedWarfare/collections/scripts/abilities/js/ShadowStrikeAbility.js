@@ -1,4 +1,9 @@
 class ShadowStrikeAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'playEffectSystem'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Shadow Strike',
@@ -94,7 +99,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
 
         // Use preset shadow_teleport effect system at departure (client only)
         if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'shadow_teleport',
+            this.call.playEffectSystem( 'shadow_teleport',
                 new THREE.Vector3(casterPos.x, casterPos.y + 30, casterPos.z));
         }
 
@@ -107,7 +112,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
 
         // Use preset shadow_arrive effect system at arrival (client only)
         if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'shadow_arrive',
+            this.call.playEffectSystem( 'shadow_arrive',
                 new THREE.Vector3(teleportPos.x, teleportPos.y + 30, teleportPos.z));
         }
 
@@ -123,7 +128,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
 
         // Use preset backstab effect system (client only)
         if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'backstab',
+            this.call.playEffectSystem( 'backstab',
                 new THREE.Vector3(targetPos.x, targetPos.y + 25, targetPos.z));
         }
 

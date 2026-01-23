@@ -1,4 +1,10 @@
 class ArmyDisplaySystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'getActivePlayerTeam',
+        'showModal'
+    ];
+
     constructor(game) {
         super(game);
         this.game.armyDisplaySystem = this;
@@ -68,7 +74,7 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
             allUnits.forEach(entityId => {
                 const team = this.game.getComponent(entityId, "team");
                 const unitTypeComp = this.game.getComponent(entityId, "unitType");
-                const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+                const unitType = this.call.getUnitTypeDef( unitTypeComp);
                 const health = this.game.getComponent(entityId, "health");
                 const transform = this.game.getComponent(entityId, "transform");
                 const position = transform?.position;
@@ -85,7 +91,7 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
                     status: this.getUnitStatus(entityId)
                 };
                 
-                const myTeamId = this.game.call('getActivePlayerTeam');
+                const myTeamId = this.call.getActivePlayerTeam();
                 if (team?.team === myTeamId) {
                     playerUnits.push(unitInfo);
                 } else if (team?.team !== myTeamId && team?.team !== undefined) {
@@ -294,7 +300,7 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
         `;
 
         // Use the input handler to show modal
-        this.game.call('showModal', `${armyType === 'player' ? '🛡️' : '⚔️'} Unit Info`, details);
+        this.call.showModal( `${armyType === 'player' ? '🛡️' : '⚔️'} Unit Info`, details);
     }
     
     highlightUnit(unitId) {

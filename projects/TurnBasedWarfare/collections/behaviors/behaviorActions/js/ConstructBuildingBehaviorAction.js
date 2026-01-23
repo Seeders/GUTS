@@ -10,6 +10,18 @@
  */
 class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'spawnPendingBuilding',
+        'getBillboardAnimationState',
+        'removeInstance',
+        'getUnitTypeDef',
+        'getSquadData',
+        'getSquadCells',
+        'findBuildingAdjacentPosition',
+        'placementGridToWorld',
+        'getTerrainHeight'
+    ];
+
     execute(entityId, game) {
         const shared = this.getShared(entityId, game);
         const memory = this.getMemory(entityId);
@@ -20,7 +32,7 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         const buildingState = game.getComponent(entityId, 'buildingState');
         if (buildingState?.pendingUnitTypeId != null && (buildingId === undefined || buildingId === null || buildingId < 0)) {
             // Spawn the pending building now that we've arrived
-            buildingId = game.call('spawnPendingBuilding', entityId);
+            buildingId = this.call.spawnPendingBuilding( entityId);
             if (buildingId != null) {
                 shared.targetBuilding = buildingId;
                 shared.buildTime = buildingState.buildTime;
@@ -119,7 +131,7 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
 
     onBuildComplete(entityId, game) {
         // Clear attack animation - let normal behavior systems take over
-        const animState = game.call('getBillboardAnimationState', entityId);
+        const animState = this.call.getBillboardAnimationState( entityId);
         if (animState && animState.spriteAnimationType === 'attack') {
             animState.spriteAnimationType = null;
         }
@@ -151,12 +163,12 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         if (renderComponent) {
             renderComponent.spawnType = unitTypeComponent.type;
             if (game.hasService('removeInstance')) {
-                game.call('removeInstance', buildingId);
+                this.call.removeInstance( buildingId);
             }
         }
 
         // 2. Restore health to full - get unit def from collections using numeric indices
-        const unitTypeDef = game.call('getUnitTypeDef', unitTypeComponent);
+        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComponent);
         const maxHP = unitTypeDef?.hp || 100;
         const health = game.getComponent(buildingId, 'health');
         if (health) {
@@ -172,7 +184,7 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // 5. Change building to idle animation
         if (game.animationSystem) {
-            const enums = game.call('getEnums');
+            const enums = game.getEnums();
             game.animationSystem.changeAnimation(buildingId, enums.animationType.idle, 1.0, 0);
         }
 
@@ -191,30 +203,30 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         const peasantUnitTypeComp = game.getComponent(entityId, 'unitType');
         if (!peasantUnitTypeComp) return;
 
-        const peasantUnitType = game.call('getUnitTypeDef', peasantUnitTypeComp);
+        const peasantUnitType = this.call.getUnitTypeDef( peasantUnitTypeComp);
         if (!peasantUnitType) return;
 
         // Get building cells to avoid
-        const buildingUnitType = game.call('getUnitTypeDef', {
+        const buildingUnitType = this.call.getUnitTypeDef( {
             collection: buildingPlacement.collection,
             type: buildingPlacement.unitTypeId
         });
-        const buildingSquadData = buildingUnitType ? game.call('getSquadData', buildingUnitType) : null;
-        const buildingCells = buildingSquadData ? game.call('getSquadCells', buildingGridPos, buildingSquadData) : [];
+        const buildingSquadData = buildingUnitType ? this.call.getSquadData( buildingUnitType) : null;
+        const buildingCells = buildingSquadData ? this.call.getSquadCells( buildingGridPos, buildingSquadData) : [];
         const buildingCellSet = new Set(buildingCells.map(cell => `${cell.x},${cell.z}`));
 
         // Find an adjacent position outside the building
-        const adjacentPos = game.call('findBuildingAdjacentPosition', buildingGridPos, buildingCellSet, peasantUnitType, null);
+        const adjacentPos = this.call.findBuildingAdjacentPosition( buildingGridPos, buildingCellSet, peasantUnitType, null);
         if (!adjacentPos) return;
 
         // Convert grid position to world position
-        const worldPos = game.call('placementGridToWorld', adjacentPos.x, adjacentPos.z);
+        const worldPos = this.call.placementGridToWorld( adjacentPos.x, adjacentPos.z);
         if (!worldPos) return;
 
         // Teleport the peasant to the new position
         const transform = game.getComponent(entityId, 'transform');
         if (transform?.position) {
-            const terrainHeight = game.call('getTerrainHeight', worldPos.x, worldPos.z) || 0;
+            const terrainHeight = this.call.getTerrainHeight( worldPos.x, worldPos.z) || 0;
             transform.position.x = worldPos.x;
             transform.position.y = terrainHeight;
             transform.position.z = worldPos.z;

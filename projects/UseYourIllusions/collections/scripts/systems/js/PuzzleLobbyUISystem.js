@@ -2,6 +2,17 @@
  * PuzzleLobbyUISystem - Main menu and level selection UI
  */
 class PuzzleLobbyUISystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'getCurrentLevelId',
+        'pauseGame',
+        'playMusic',
+        'setMasterVolume',
+        'setMusicVolume',
+        'setSfxVolume',
+        'stopAllSounds',
+        'unpauseGame'
+    ];
+
     static services = [
         'showLevelSelect',
         'showMainMenu',
@@ -51,7 +62,7 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
 
         const startMusic = () => {
             console.log('[PuzzleLobbyUISystem] User interaction detected, starting menu music');
-            this.game.call('playMusic', sceneData.backgroundMusicSound, { loop: true, fadeInTime: 1 });
+            this.call.playMusic( sceneData.backgroundMusicSound, { loop: true, fadeInTime: 1 });
             document.removeEventListener('click', startMusic);
             document.removeEventListener('keydown', startMusic);
         };
@@ -174,12 +185,12 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         if (masterSlider) {
             masterSlider.value = savedSettings.master;
             if (masterValue) masterValue.textContent = `${savedSettings.master}%`;
-            this.game.call('setMasterVolume', savedSettings.master / 100);
+            this.call.setMasterVolume( savedSettings.master / 100);
 
             masterSlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 if (masterValue) masterValue.textContent = `${value}%`;
-                this.game.call('setMasterVolume', value / 100);
+                this.call.setMasterVolume( value / 100);
                 this.saveVolumeSettings();
             });
         }
@@ -190,12 +201,12 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         if (musicSlider) {
             musicSlider.value = savedSettings.music;
             if (musicValue) musicValue.textContent = `${savedSettings.music}%`;
-            this.game.call('setMusicVolume', savedSettings.music / 100);
+            this.call.setMusicVolume( savedSettings.music / 100);
 
             musicSlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 if (musicValue) musicValue.textContent = `${value}%`;
-                this.game.call('setMusicVolume', value / 100);
+                this.call.setMusicVolume( value / 100);
                 this.saveVolumeSettings();
             });
         }
@@ -206,12 +217,12 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         if (sfxSlider) {
             sfxSlider.value = savedSettings.sfx;
             if (sfxValue) sfxValue.textContent = `${savedSettings.sfx}%`;
-            this.game.call('setSfxVolume', savedSettings.sfx / 100);
+            this.call.setSfxVolume( savedSettings.sfx / 100);
 
             sfxSlider.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 if (sfxValue) sfxValue.textContent = `${value}%`;
-                this.game.call('setSfxVolume', value / 100);
+                this.call.setSfxVolume( value / 100);
                 this.saveVolumeSettings();
             });
         }
@@ -313,7 +324,7 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
     }
 
     loadNextLevel() {
-        const currentLevelId = this.game.call('getCurrentLevelId');
+        const currentLevelId = this.call.getCurrentLevelId();
         const currentIndex = this.availableLevels.findIndex(l => l.id === currentLevelId);
 
         if (currentIndex >= 0 && currentIndex < this.availableLevels.length - 1) {
@@ -329,9 +340,9 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         if (pauseMenu) {
             pauseMenu.classList.toggle('active');
             if (pauseMenu.classList.contains('active')) {
-                this.game.call('pauseGame');
+                this.call.pauseGame();
             } else {
-                this.game.call('unpauseGame');
+                this.call.unpauseGame();
             }
         }
     }
@@ -340,7 +351,7 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         const pauseMenu = document.getElementById('pauseMenu');
         if (pauseMenu) {
             pauseMenu.classList.remove('active');
-            this.game.call('unpauseGame');
+            this.call.unpauseGame();
         }
     }
 
@@ -423,11 +434,11 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         }
 
         // Pause the game
-        this.game.call('pauseGame');
+        this.call.pauseGame();
         console.log(`[PuzzleLobbyUISystem] isPaused after pauseGame: ${this.game.state.isPaused}`);
 
         // Stop all sound effects (guard attacks, etc.)
-        this.game.call('stopAllSounds');
+        this.call.stopAllSounds();
 
         // Unlock mouse so player can click UI buttons
         if (document.pointerLockElement) {
@@ -460,7 +471,7 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         document.querySelectorAll('.pause-overlay, .puzzle-modal-overlay').forEach(overlay => {
             overlay.classList.remove('active');
         });
-        this.game.call('unpauseGame');
+        this.call.unpauseGame();
     }
 
     onSceneUnload() {

@@ -6,6 +6,13 @@ class GameModeSystem extends GUTS.BaseSystem {
         'onMultiplayerConnected'
     ];
 
+    static serviceDependencies = [
+        'showCampaignSelect',
+        'showSkirmishLobby',
+        'handleMultiplayerModeSelection',
+        'connectToServer'
+    ];
+
     constructor(game) {
         super(game);
         this.game.gameModeSystem = this;
@@ -37,7 +44,7 @@ class GameModeSystem extends GUTS.BaseSystem {
                 maxPlayers: 1,
                 startingGold: 100,
                 onStart: (mode) => {
-                    this.game.call('showCampaignSelect');
+                    this.call.showCampaignSelect();
                 }
             },
             skirmish: {
@@ -52,7 +59,7 @@ class GameModeSystem extends GUTS.BaseSystem {
                 maxPlayers: 1,
                 startingGold: 100,
                 onStart: (mode) => {
-                    this.game.call('showSkirmishLobby', mode);
+                    this.call.showSkirmishLobby( mode);
                 }
             }
         };
@@ -72,7 +79,7 @@ class GameModeSystem extends GUTS.BaseSystem {
                 maxPlayers: 2,
                 startingGold: 100,
                 onStart: (mode) => {
-                    this.game.call('handleMultiplayerModeSelection', mode);
+                    this.call.handleMultiplayerModeSelection( mode);
                 }
             }
         };
@@ -183,7 +190,7 @@ class GameModeSystem extends GUTS.BaseSystem {
 
                 // Connect to server via ClientNetworkSystem service
                 // This establishes the socket connection and gets player ID
-                await this.game.call('connectToServer');
+                await this.call.connectToServer();
 
                 statusEl.textContent = 'Connected!';
                 statusEl.style.color = '#00ff00';

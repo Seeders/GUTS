@@ -32,6 +32,19 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleTransformUnit'
     ];
 
+    static serviceDependencies = [
+        ...GUTS.BaseNetworkSystem.serviceDependencies,
+        'getPlayerStats',
+        'getPlayerEntities',
+        'canAffordLevelUp',
+        'getLevelUpCost',
+        'applySpecialization',
+        'serializeAllEntities',
+        'resetAI',
+        'startBattle',
+        'getSerializedPlayerEntities'
+    ];
+
     constructor(game) {
         super(game);
         this.game.serverNetworkSystem = this;
@@ -56,7 +69,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
      * Check if player exists (has player entity)
      */
     playerExists(playerId) {
-        return this.game.call('getPlayerStats', playerId) !== null;
+        return this.call.getPlayerStats( playerId) !== null;
     }
 
     /**
@@ -98,7 +111,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
      */
     notifyOtherPlayers(excludePlayerId, eventName, data) {
         if (!this.engine?.isServer) return; // Skip in local game
-        const playerEntities = this.game.call('getPlayerEntities');
+        const playerEntities = this.call.getPlayerEntities();
         for (const entityId of playerEntities) {
             const stats = this.game.getComponent(entityId, 'playerStats');
             if (stats && stats.playerId !== excludePlayerId) {
@@ -141,15 +154,26 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const responseName = 'GOT_STARTING_STATE';
 
         try {
-            if (!this.playerExists(playerId)) {
-                return this.respondError(playerId, responseName, 'Player not found', callback);
+            console.log('[ServerNetworkSystem] handleGetStartingState called, playerId:', playerId);
+
+            // Check if player entities have been created yet
+            // In multiplayer, they're created in SkirmishGameSystem.postSceneLoad() via initializeOnlineMatch()
+            const playerEntities = this.call.getPlayerEntities() || [];
+            console.log('[ServerNetworkSystem] Player entities found:', playerEntities.length);
+
+            if (playerEntities.length === 0) {
+                console.warn('[ServerNetworkSystem] GET_STARTING_STATE called but no player entities exist yet!');
+                console.warn('[ServerNetworkSystem] onlinePlayers in game.state:', this.game.state.onlinePlayers);
+                console.warn('[ServerNetworkSystem] isOnlineMatch:', this.game.state.isOnlineMatch);
+                console.warn('[ServerNetworkSystem] This suggests postSceneLoad has not run yet or player creation failed');
             }
 
             const result = this.getStartingStateResponse();
+            console.log('[ServerNetworkSystem] Responding with playerEntities:', result.playerEntities?.length || 0);
             return this.respond(playerId, responseName, result, callback);
 
         } catch (error) {
-            console.error('Error getting starting state:', error);
+            console.error('[ServerNetworkSystem] Error getting starting state:', error);
             return this.respondError(playerId, responseName, 'Server error while getting starting state', callback);
         }
     }
@@ -165,7 +189,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             // In multiplayer, the server validates this matches the authenticated user
             const effectivePlayerId = placement.playerId !== undefined ? placement.playerId : playerId;
 
-            const playerStats = this.game.call('getPlayerStats', effectivePlayerId);
+            const playerStats = this.call.getPlayerStats( effectivePlayerId);
             if (!playerStats) {
                 return this.respondError(playerId, responseName, 'Player not found', callback);
             }
@@ -287,7 +311,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         }
 
         // Get the placement to find the squad's team
-        const placement = this.game.call('getPlacementById', placementId);
+        const placement = this.call.getPlacementById( placementId);
         if (!placement || !placement.squadUnits || placement.squadUnits.length === 0) {
             return this.respondError(playerId, responseName, 'Placement not found', callback);
         }
@@ -302,7 +326,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         // Determine the correct playerId based on the squad's team
         const effectivePlayerId = teamComp.team === this.enums.team.left ? 0 : 1;
 
-        const playerStats = this.game.call('getPlayerStats', effectivePlayerId);
+        const playerStats = this.call.getPlayerStats( effectivePlayerId);
         console.log('[handleLevelSquad] playerStats:', playerStats, 'effectivePlayerId:', effectivePlayerId);
         if (!playerStats) {
             return this.respondError(playerId, responseName, 'Player not found', callback);
@@ -311,7 +335,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const playerGold = playerStats.gold || 0;
         console.log('[handleLevelSquad] playerGold:', playerGold);
 
-        if (!this.game.call('canAffordLevelUp', placementId, playerGold)) {
+        if (!this.call.canAffordLevelUp( placementId, playerGold)) {
             console.log('[handleLevelSquad] cannot afford level up');
             return this.respondError(playerId, responseName, 'gold_low_error', callback);
         }
@@ -325,12 +349,12 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         }
 
         // Get level up cost BEFORE leveling (since cost is based on current squad value)
-        const levelUpCost = this.game.call('getLevelUpCost', placementId);
+        const levelUpCost = this.call.getLevelUpCost( placementId);
         console.log('[handleLevelSquad] levelUpCost:', levelUpCost);
 
         // Apply specialization if provided (entity IDs are preserved by replaceUnit)
         if (specializationId) {
-            this.game.call('applySpecialization', placementId, specializationId);
+            this.call.applySpecialization( placementId, specializationId);
         }
 
         // Perform the level up directly
@@ -380,7 +404,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         }
 
         // Get the placement
-        const placement = this.game.call('getPlacementById', placementId);
+        const placement = this.call.getPlacementById( placementId);
         if (!placement || !placement.squadUnits || placement.squadUnits.length === 0) {
             return this.respondError(playerId, responseName, 'Placement not found', callback);
         }
@@ -396,7 +420,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
         // Apply the specialization
         console.log(`[handleSpecializeSquad] Applying specialization ${specializationId} to placement ${placementId}`);
-        const success = this.game.call('applySpecialization', placementId, specializationId);
+        const success = this.call.applySpecialization( placementId, specializationId);
 
         if (success) {
             // Update queued networkUnitData so opponent sees the specialized unit at battle start
@@ -424,7 +448,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         // If no pending data for this player, create it
         // This handles surviving units from previous rounds that weren't placed this round
         if (!this.pendingNetworkUnitData.has(playerId)) {
-            const playerStats = this.game.call('getPlayerStats', playerId);
+            const playerStats = this.call.getPlayerStats( playerId);
             console.log(`[updateQueuedNetworkUnitData] No pending data for player ${playerId}, creating entry`);
             this.pendingNetworkUnitData.set(playerId, {
                 team: playerStats?.team,
@@ -442,7 +466,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         // If placement doesn't exist in queued data (surviving unit from previous round), add it
         if (!placement) {
             console.log(`[updateQueuedNetworkUnitData] Placement ${placementId} not found, adding entry for surviving unit`);
-            const existingPlacement = this.game.call('getPlacementById', placementId);
+            const existingPlacement = this.call.getPlacementById( placementId);
             if (existingPlacement) {
                 // Get squadUnits from the existing placement
                 const squadUnits = existingPlacement.squadUnits || [];
@@ -497,7 +521,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
                 return this.respondError(playerId, responseName, 'Player not found', callback);
             }
 
-            const placement = this.game.call('getPlacementById', placementId);
+            const placement = this.call.getPlacementById( placementId);
             if (!placement) {
                 return this.respondError(playerId, responseName, 'Placement not found', callback);
             }
@@ -547,7 +571,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             const serverIssuedTime = this.game.state.now;
 
             for (let i = 0; i < placementIds.length; i++) {
-                const placement = this.game.call('getPlacementById', placementIds[i]);
+                const placement = this.call.getPlacementById( placementIds[i]);
                 if (!placement) {
                     return this.respondError(playerId, responseName, 'Placement not found', callback);
                 }
@@ -583,26 +607,31 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const { playerId, data } = eventData;
         const responseName = 'READY_FOR_BATTLE_RESPONSE';
 
+        console.log('[handleReadyForBattle] Called with playerId:', playerId, 'data:', data);
+
         // Derive effective playerId from team if provided (allows AI to ready for its own team)
         let effectivePlayerId = playerId;
         if (data?.team !== undefined) {
             // team.left = 2 -> playerId 0, team.right = 3 -> playerId 1
             effectivePlayerId = data.team === this.enums.team.left ? 0 : 1;
+            console.log('[handleReadyForBattle] Derived effectivePlayerId from team:', effectivePlayerId, 'team:', data.team, 'team.left:', this.enums.team.left);
         }
 
-
-
         if (!this.playerExists(effectivePlayerId)) {
+            console.log('[handleReadyForBattle] Player does not exist:', effectivePlayerId);
             return this.respondError(playerId, responseName, 'Player not found', callback);
         }
 
+        console.log('[handleReadyForBattle] Setting player ready:', effectivePlayerId);
         this.placementReadyStates.set(effectivePlayerId, true);
+        console.log('[handleReadyForBattle] Current ready states:', Array.from(this.placementReadyStates.entries()));
 
         this.respond(playerId, responseName, { success: true }, callback);
 
         // Check if ready to start battle
         // Both local and multiplayer: wait for all players to be ready
         const allReady = this.areAllPlayersReady();
+        console.log('[handleReadyForBattle] Are all players ready?', allReady);
 
        
 
@@ -616,7 +645,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             // CRITICAL: Serialize entities BEFORE resetAI/onBattleStart
             // This ensures the entitySync captures the authoritative pre-battle state
             // (including playerOrder.isHiding) that clients need to match
-            const entitySync = this.game.call('serializeAllEntities');
+            const entitySync = this.call.serializeAllEntities();
             // Build gameState with players array containing networkUnitData
             const gameState = {
                 ...this.game.state,
@@ -632,13 +661,13 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             });
 
             // Now trigger battle start AFTER broadcasting the sync
-            this.game.call('resetAI');
+            this.call.resetAI();
             this.game.triggerEvent("onBattleStart");
 
             // Clear queued data after sending
             this.pendingNetworkUnitData.clear();
             this.placementReadyStates.clear();
-            this.game.call('startBattle');
+            this.call.startBattle();
 
         } else if (this.engine?.isServer) {
             // Multiplayer only - notify that not all players are ready yet
@@ -656,7 +685,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         try {
             const { buildingEntityId } = data;
 
-            const playerStats = this.game.call('getPlayerStats', playerId);
+            const playerStats = this.call.getPlayerStats( playerId);
             if (!playerStats) {
                 return this.respondError(playerId, responseName, 'Player not found', callback);
             }
@@ -719,7 +748,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
             // Find the player entity for the building's team to get correct player stats
             const effectivePlayerId = buildingTeam === this.enums.team.left ? 0 : 1;
-            const playerStats = this.game.call('getPlayerStats', effectivePlayerId);
+            const playerStats = this.call.getPlayerStats( effectivePlayerId);
             if (!playerStats) {
                 return this.respondError(playerId, responseName, 'Player not found for building team', callback);
             }
@@ -856,15 +885,22 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
     areAllPlayersReady() {
         // Get actual player count from ECS player entities
-        const playerEntities = this.game.call('getPlayerEntities') || [];
+        const playerEntities = this.call.getPlayerEntities() || [];
         const numPlayers = playerEntities.length;
 
+        console.log('[areAllPlayersReady] Player entities:', playerEntities, 'numPlayers:', numPlayers);
+        console.log('[areAllPlayersReady] Ready states map:', Array.from(this.placementReadyStates.entries()));
+
         const states = [...this.placementReadyStates.values()];
-        return states.length === numPlayers && states.every(ready => ready === true);
+        const allReady = states.length === numPlayers && states.every(ready => ready === true);
+
+        console.log('[areAllPlayersReady] states.length:', states.length, 'numPlayers:', numPlayers, 'allReady:', allReady);
+
+        return allReady;
     }
 
     getStartingStateResponse() {
-        const playerEntities = this.game.call('getSerializedPlayerEntities') || [];
+        const playerEntities = this.call.getSerializedPlayerEntities() || [];
         return {
             success: true,
             playerEntities
@@ -886,7 +922,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
      * @param {Object} result - Game result data from the scenario system
      */
     broadcastGameEnd(result) {
-        this.game.call('broadcastToRoom', null, 'GAME_END', { result });
+        this.call.broadcastToRoom( null, 'GAME_END', { result });
 
         // Mark room as inactive after delay (multiplayer only)
         if (this.game.room) {

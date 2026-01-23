@@ -7,6 +7,10 @@
  * - Illusion visual effects (shimmer, fade)
  */
 class IllusionSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'createParticleEffect'
+    ];
+
     static services = [
         'getActiveIllusions',
         'removeIllusion',
@@ -56,7 +60,7 @@ class IllusionSystem extends GUTS.BaseSystem {
 
         // Create fade effect via service
         if (illusionPos) {
-            this.game.call('createParticleEffect',
+            this.call.createParticleEffect(
                 illusionPos.x,
                 illusionPos.y,
                 illusionPos.z,

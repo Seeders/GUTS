@@ -14,6 +14,10 @@
  */
 class SetBuildTargetBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'placementGridToWorld'
+    ];
+
     execute(entityId, game) {
         const buildingState = game.getComponent(entityId, 'buildingState');
 
@@ -26,7 +30,7 @@ class SetBuildTargetBehaviorAction extends GUTS.BaseBehaviorAction {
         // Case 1: Pending building (deferred spawn - building will be created when we arrive)
         if (buildingState.pendingUnitTypeId != null) {
             const gridPos = buildingState.pendingGridPosition;
-            const worldPos = game.call('placementGridToWorld', gridPos.x, gridPos.z);
+            const worldPos = this.call.placementGridToWorld( gridPos.x, gridPos.z);
 
             shared.targetBuilding = -1; // No building entity yet
             shared.targetPosition = { x: worldPos.x, z: worldPos.z };

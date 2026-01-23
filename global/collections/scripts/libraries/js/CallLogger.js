@@ -10,7 +10,7 @@ class CallLogger {
         this.entries = [];
         this.enabled = false;
         this.filterFunctions = null; // Set to array of function names to only log those
-        this.excludeFunctions = new Set(['getEnums', 'getReverseEnums', 'getUnitTypeDef', 'getComponentSchema']); // High-frequency calls to exclude by default
+        this.excludeFunctions = new Set(['getUnitTypeDef', 'getComponentSchema']); // High-frequency calls to exclude by default
     }
 
     /**

@@ -8,6 +8,12 @@ class LootSystem extends GUTS.BaseSystem {
         'handleLootClick'
     ];
 
+    static serviceDependencies = [
+        'pickupLoot',
+        'playSound',
+        'createParticles'
+    ];
+
     constructor(game) {
         super(game);
         this.game.lootSystem = this;
@@ -84,7 +90,7 @@ class LootSystem extends GUTS.BaseSystem {
 
         // Call the hunt mission system to process the pickup
         if (this.game.hasService('pickupLoot')) {
-            const success = this.game.call('pickupLoot', entityId);
+            const success = this.call.pickupLoot( entityId);
             if (success) {
                 // Play pickup effect/sound
                 this.playPickupEffect(entityId);
@@ -179,13 +185,13 @@ class LootSystem extends GUTS.BaseSystem {
     playPickupEffect(entityId) {
         // Play a pickup sound and particle effect
         if (this.game.hasService('playSound')) {
-            this.game.call('playSound', 'pickup');
+            this.call.playSound( 'pickup');
         }
 
         // Could add particle effect here
         const transform = this.game.getComponent(entityId, 'transform');
         if (transform && this.game.hasService('createParticles')) {
-            this.game.call('createParticles', {
+            this.call.createParticles( {
                 x: transform.x,
                 y: transform.y + 20,
                 z: transform.z,

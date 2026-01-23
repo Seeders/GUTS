@@ -1,6 +1,13 @@
 // Base class for trap trigger abilities (used by trap buildings like bearTrap, explosiveTrap)
 // Handles enemy detection, damage dealing, and trap destruction
 class BaseTrapTriggerAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'scheduleAction',
+        'applyBuff',
+        'startDeathProcess'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             cooldown: 9999,
@@ -71,7 +78,7 @@ class BaseTrapTriggerAbility extends GUTS.BaseAbility {
             this.logAbilityUsage(casterEntity, this.trapMessage);
 
             // Destroy the trap after triggering
-            this.game.call('scheduleAction', () => {
+            this.call.scheduleAction( () => {
                 this.destroyTrap(casterEntity);
             }, 0.3, casterEntity);
         }
@@ -87,7 +94,7 @@ class BaseTrapTriggerAbility extends GUTS.BaseAbility {
 
         // Apply stun if configured
         if (this.stunDuration > 0 && this.game.hasService('applyBuff')) {
-            this.game.call('applyBuff', targetId, enums.buffTypes.stunned, {
+            this.call.applyBuff( targetId, enums.buffTypes.stunned, {
                 duration: this.stunDuration,
                 source: casterEntity
             });
@@ -184,7 +191,7 @@ class BaseTrapTriggerAbility extends GUTS.BaseAbility {
         }
 
         if (this.game.hasService('startDeathProcess')) {
-            this.game.call('startDeathProcess', trapEntity);
+            this.call.startDeathProcess( trapEntity);
         }
     }
 }

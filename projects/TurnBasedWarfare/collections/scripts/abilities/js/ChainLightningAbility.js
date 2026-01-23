@@ -1,4 +1,9 @@
 class ChainLightningAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'playEffect'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Chain Lightning',
@@ -286,12 +291,12 @@ class ChainLightningAbility extends GUTS.BaseAbility {
         // Create bright particle effects at connection points using presets
         if (!this.game.isServer) {
             // Source point sparks
-            this.game.call('playEffect', 'lightning_sparks',
+            this.call.playEffect( 'lightning_sparks',
                 new THREE.Vector3(fromPos.x, fromPos.y + 50, fromPos.z));
 
             // Target point sparks
             this.game.schedulingSystem.scheduleAction(() => {
-                this.game.call('playEffect', 'lightning_sparks',
+                this.call.playEffect( 'lightning_sparks',
                     new THREE.Vector3(toPos.x, toPos.y + 50, toPos.z));
             }, 0.05, null);
         }

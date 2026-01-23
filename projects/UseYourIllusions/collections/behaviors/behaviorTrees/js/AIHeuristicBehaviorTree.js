@@ -52,6 +52,6 @@ class AIHeuristicBehaviorTree extends GUTS.BaseBehaviorTree {
     }
 
     get enums() {
-        return this.game.call('getEnums');
+        return this.game.getEnums();
     }
 }

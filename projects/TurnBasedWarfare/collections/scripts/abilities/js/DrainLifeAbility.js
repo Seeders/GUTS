@@ -1,4 +1,9 @@
 class DrainLifeAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'showDamageNumber'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Drain Life',
@@ -98,7 +103,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
                 this.playConfiguredEffects('heal', casterPos);
 
                 if (!this.game.isServer && this.game.hasService('showDamageNumber')) {
-                    this.game.call('showDamageNumber',
+                    this.call.showDamageNumber(
                         casterPos.x, casterPos.y + 50, casterPos.z,
                         actualHeal, 'heal'
                     );

@@ -6,6 +6,11 @@
  * The original object remains in the world (copy, not cut).
  */
 class CollectAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'storeBeltItem'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Collect',
@@ -69,7 +74,7 @@ class CollectAbility extends GUTS.BaseAbility {
         if (!objectType) return null;
 
         // Store in belt
-        const stored = this.game.call('storeBeltItem', casterEntity, objectType);
+        const stored = this.call.storeBeltItem( casterEntity, objectType);
         if (!stored) return null;
 
         // Get collectible position for effects

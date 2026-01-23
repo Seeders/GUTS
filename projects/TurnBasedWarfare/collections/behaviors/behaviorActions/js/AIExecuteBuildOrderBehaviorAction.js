@@ -11,6 +11,26 @@
  */
 class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'worldToPlacementGrid',
+        'spawnSquad',
+        'ui_placeUnit',
+        'ui_purchaseUnit',
+        'ui_issueMoveOrder',
+        'ui_hide',
+        'getUnitTypeDef',
+        'getEntityAbilities',
+        'getSquadData',
+        'getSquadCells',
+        'getStartingLocationsFromLevel',
+        'placementGridToWorld',
+        'findBuildingAdjacentPosition',
+        'getPlacementsForSide',
+        'tileToWorld',
+        'getPlacementById',
+        'ui_transformUnit'
+    ];
+
     execute(entityId, game) {
         const aiOpponent = game.getComponent(entityId, 'aiOpponent');
         if (!aiOpponent) {
@@ -33,18 +53,30 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         const round = game.state.round || 1;
         const roundActions = buildOrder.rounds?.[round] || [];
 
+        if (round === 1 && roundActions.length > 0) {
+            console.log('[AIExecuteBuildOrder] Team', aiTeam, 'has', roundActions.length, 'actions for round', round);
+        }
 
         // Execute all remaining actions for this round
         let actionIndex = aiOpponent.actionIndex || 0;
         while (actionIndex < roundActions.length) {
             const action = roundActions[actionIndex];
+            if (round === 1) {
+                console.log('[AIExecuteBuildOrder] Team', aiTeam, 'executing action', actionIndex, ':', action.type);
+            }
             const result = this.executeAction(action, aiTeam, game);
 
             if (result) {
+                if (round === 1) {
+                    console.log('[AIExecuteBuildOrder] Action', actionIndex, 'succeeded');
+                }
                 actionIndex++;
                 aiOpponent.actionIndex = actionIndex;
             } else {
                 // Action failed, skip it
+                if (round === 1) {
+                    console.log('[AIExecuteBuildOrder] Action', actionIndex, 'FAILED, skipping');
+                }
                  actionIndex++;
                 aiOpponent.actionIndex = actionIndex;
             }
@@ -60,7 +92,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     executeAction(action, aiTeam, game) {
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
         const playerId = aiTeam === enums.team.left ? 0 : 1;
 
         switch (action.type) {
@@ -79,6 +111,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
             case 'ACTION_ORDER':
                 return this.executeActionOrder(action, aiTeam, game);
             default:
+                console.warn('[AIExecuteBuildOrder] Unknown action type:', action.type);
                 return false;
         }
     }
@@ -89,15 +122,18 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
      */
     executeSpawnUnit(action, aiTeam, game) {
         const reverseEnums = game.getReverseEnums();
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
         const collections = game.getCollections();
         const teamName = reverseEnums.team?.[aiTeam] || 'left';
         const collection = action.collection || 'units';
         const position = action.position || { x: 0, z: 0 };
 
+        console.log('[executeSpawnUnit] Spawning', action.unitId, 'for team', aiTeam, 'at position', position);
+
         // Get unit definition
         const unitDef = collections[collection]?.[action.unitId];
         if (!unitDef) {
+            console.warn('[executeSpawnUnit] Unit definition not found:', action.unitId, 'in collection:', collection);
             return false;
         }
 
@@ -119,7 +155,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Get grid position from world position
-        const gridPos = game.call('worldToPlacementGrid', position.x, position.z);
+        const gridPos = this.call.worldToPlacementGrid( position.x, position.z);
 
         // Build placement data like PlacementSystem expects
         // Note: UnitCreationSystem expects 'unitTypeId' not 'spawnType'
@@ -136,11 +172,15 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         };
 
         const playerId = aiTeam === enums.team.left ? 0 : 1;
-        const result = game.call('spawnSquad', networkData, aiTeam, playerId);
+        const result = this.call.spawnSquad( networkData, aiTeam, playerId);
+
+        console.log('[executeSpawnUnit] spawnSquad result:', result);
 
         if (result && result.success) {
+            console.log('[executeSpawnUnit] SUCCESS - spawned', action.unitId, 'at', position);
             return true;
         } else {
+            console.warn('[executeSpawnUnit] FAILED - could not spawn', action.unitId, 'result:', result);
             return false;
         }
     }
@@ -173,7 +213,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         };
 
         // Call ui_placeUnit
-        game.call('ui_placeUnit', gridPos, unitType, aiTeam, playerId, peasantInfo, (success, response) => {
+        this.call.ui_placeUnit( gridPos, unitType, aiTeam, playerId, peasantInfo, (success, response) => {
         });
 
         return true;
@@ -187,7 +227,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Call ui_purchaseUnit
-        game.call('ui_purchaseUnit', action.unitId, buildingEntityId, aiTeam, (success, response) => {
+        this.call.ui_purchaseUnit( action.unitId, buildingEntityId, aiTeam, (success, response) => {
             // Callback handled silently
         });
 
@@ -208,7 +248,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Call ui_issueMoveOrder
-        game.call('ui_issueMoveOrder', placementIds, targetPos, (success, response) => {
+        this.call.ui_issueMoveOrder( placementIds, targetPos, (success, response) => {
             // Callback handled silently
         });
 
@@ -223,7 +263,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Call ui_hide
-        game.call('ui_hide', placementIds, (success, response) => {
+        this.call.ui_hide( placementIds, (success, response) => {
             // Callback handled silently
         });
 
@@ -240,7 +280,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         for (const entityId of entities) {
             const teamComp = game.getComponent(entityId, 'team');
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
             const team = teamComp?.team;
             const unitId = unitDef?.id || 'unknown';
 
@@ -253,11 +293,11 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
             if (teamComp.team !== aiTeam) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
             if (unitDef?.id !== 'peasant') continue;
 
             // Check if peasant has build ability and is not already building
-            const abilities = game.call('getEntityAbilities', entityId);
+            const abilities = this.call.getEntityAbilities( entityId);
             if (!abilities) continue;
 
             const buildAbility = abilities.find(a => a.id === 'BuildAbility');
@@ -292,14 +332,14 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
        
         // Get town hall cells to avoid
         const townHallUnitType = game.getComponent(townHall, 'unitType');
-        const townHallDef = game.call('getUnitTypeDef', townHallUnitType);
-        const townHallSquadData = game.call('getSquadData', townHallDef);
-        const townHallCells = game.call('getSquadCells', townHallGridPos, townHallSquadData);
+        const townHallDef = this.call.getUnitTypeDef( townHallUnitType);
+        const townHallSquadData = this.call.getSquadData( townHallDef);
+        const townHallCells = this.call.getSquadCells( townHallGridPos, townHallSquadData);
         const townHallCellSet = new Set(townHallCells.map(cell => `${cell.x},${cell.z}`));
 
         // Find adjacent position for new building
-        const enums = game.call('getEnums');
-        const startingLocations = game.call('getStartingLocationsFromLevel');
+        const enums = game.getEnums();
+        const startingLocations = this.call.getStartingLocationsFromLevel();
 
         let preferredDirX = 0;
         let preferredDirZ = 0;
@@ -318,7 +358,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
             }
         }
 
-        const buildingWorldPos = game.call('placementGridToWorld', townHallGridPos.x, townHallGridPos.z);
+        const buildingWorldPos = this.call.placementGridToWorld( townHallGridPos.x, townHallGridPos.z);
         const targetWorldPos = {
             x: buildingWorldPos.x + preferredDirX * 1000,
             z: buildingWorldPos.z + preferredDirZ * 1000
@@ -327,7 +367,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         // IMPORTANT: Add collection and id to buildingDef so getSquadCells knows to use footprintWidth/Height
         const buildingDefWithCollection = { ...buildingDef, id: buildingId, collection: 'buildings' };
 
-        return game.call('findBuildingAdjacentPosition', townHallGridPos, townHallCellSet, buildingDefWithCollection, targetWorldPos);
+        return this.call.findBuildingAdjacentPosition( townHallGridPos, townHallCellSet, buildingDefWithCollection, targetWorldPos);
     }
 
     findTownHall(aiTeam, game) {
@@ -338,7 +378,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
             if (teamComp.team !== aiTeam) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             if (unitDef?.id === 'townHall' || unitDef?.id === 'keep' || unitDef?.id === 'castle') {
                 return entityId;
@@ -360,7 +400,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
             if (placement?.isUnderConstruction) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             if (unitDef?.id === buildingType) {
                 return entityId;
@@ -371,7 +411,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     findUnitsOfType(unitType, aiTeam, game) {
-        const placements = game.call('getPlacementsForSide', aiTeam) || [];
+        const placements = this.call.getPlacementsForSide( aiTeam) || [];
         const placementIds = [];
 
         for (const placement of placements) {
@@ -379,7 +419,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
 
             const entityId = placement.squadUnits[0];
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             if (unitDef?.id === unitType) {
                 placementIds.push(placement.placementId);
@@ -390,21 +430,21 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     resolveTarget(target, aiTeam, game) {
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
 
         if (target === 'center') {
             return { x: 0, z: 0 };
         }
 
         if (target === 'enemy') {
-            const startingLocations = game.call('getStartingLocationsFromLevel');
+            const startingLocations = this.call.getStartingLocationsFromLevel();
             if (!startingLocations) return null;
 
             const enemyTeam = aiTeam === enums.team.left ? enums.team.right : enums.team.left;
             const enemyLoc = startingLocations[enemyTeam];
             if (!enemyLoc) return null;
 
-            return game.call('tileToWorld', enemyLoc.x, enemyLoc.z);
+            return this.call.tileToWorld( enemyLoc.x, enemyLoc.z);
         }
 
         // If target is an object with x/z, use it directly
@@ -431,17 +471,17 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         if (action.actionId === 'transformToFlying') {
             // Get entity from placement
             for (const placementId of placementIds) {
-                const placement = game.call('getPlacementById', placementId);
+                const placement = this.call.getPlacementById( placementId);
                 if (placement?.squadUnits?.[0]) {
-                    game.call('ui_transformUnit', placement.squadUnits[0], 'dragon_red_flying', 'takeoff', () => {});
+                    this.call.ui_transformUnit( placement.squadUnits[0], 'dragon_red_flying', 'takeoff', () => {});
                 }
             }
             return true;
         } else if (action.actionId === 'transformToGround') {
             for (const placementId of placementIds) {
-                const placement = game.call('getPlacementById', placementId);
+                const placement = this.call.getPlacementById( placementId);
                 if (placement?.squadUnits?.[0]) {
-                    game.call('ui_transformUnit', placement.squadUnits[0], 'dragon_red', 'land', () => {});
+                    this.call.ui_transformUnit( placement.squadUnits[0], 'dragon_red', 'land', () => {});
                 }
             }
             return true;

@@ -7,6 +7,13 @@
  * Original body stays stationary while controlling the clone.
  */
 class ProjectCloneAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'playSound',
+        'getTerrainHeightAtPosition',
+        'createUnit'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Project Clone',
@@ -61,7 +68,7 @@ class ProjectCloneAbility extends GUTS.BaseAbility {
         this.createVisualEffect(casterPos, 'cast', { count: 25 });
 
         // Play clone create sound
-        this.game.call('playSound', 'sounds', 'clone_create');
+        this.call.playSound( 'sounds', 'clone_create');
 
         this.logAbilityUsage(casterEntity, `Created projection clone!`);
         this.game.triggerEvent('onCloneCreated', {
@@ -85,7 +92,7 @@ class ProjectCloneAbility extends GUTS.BaseAbility {
         // Get terrain height at position
         let terrainHeight = position.y || 0;
         if (this.game.hasService('getTerrainHeightAtPosition')) {
-            terrainHeight = this.game.call('getTerrainHeightAtPosition', position.x, position.z) ?? terrainHeight;
+            terrainHeight = this.call.getTerrainHeightAtPosition( position.x, position.z) ?? terrainHeight;
         }
 
         const cloneTransform = {
@@ -99,7 +106,7 @@ class ProjectCloneAbility extends GUTS.BaseAbility {
         const teamValue = creatorTeam?.team ?? enums.team?.player ?? 0;
 
         // Create unit using the same type as the creator
-        const cloneId = this.game.call('createUnit',
+        const cloneId = this.call.createUnit(
             creatorUnitType.collection,
             creatorUnitType.type,
             cloneTransform,
@@ -163,7 +170,7 @@ class ProjectCloneAbility extends GUTS.BaseAbility {
         }
 
         // Play clone disappear sound
-        this.game.call('playSound', 'sounds', 'clone_disappear');
+        this.call.playSound( 'sounds', 'clone_disappear');
 
         this.game.triggerEvent('onCloneExpired', { cloneId, creatorEntity });
 

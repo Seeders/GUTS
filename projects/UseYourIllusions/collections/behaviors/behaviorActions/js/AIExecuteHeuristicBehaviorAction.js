@@ -11,6 +11,29 @@
  */
 class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
+    static serviceDependencies = [
+        'getUnitTypeDef',
+        'getSquadData',
+        'getSquadCells',
+        'ui_placeUnit',
+        'worldToPlacementGrid',
+        'isCellOccupied',
+        'ui_purchaseUnit',
+        'ui_issueMoveOrder',
+        'getPlacementsForSide',
+        'getStartingLocationsFromLevel',
+        'tileToWorld',
+        'getVisibleEnemiesInRange',
+        'getEntityAbilities',
+        'placementGridToWorld',
+        'findBuildingAdjacentPosition',
+        'getLevelUpCost',
+        'getRampPositions',
+        'upgradeBuildingRequest',
+        'purchaseUpgrade',
+        'levelSquad'
+    ];
+
     execute(entityId, game) {
         const aiState = game.getComponent(entityId, 'aiHeuristicState');
         if (!aiState) {
@@ -23,7 +46,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
         const collections = game.getCollections();
         const weights = collections.aiConfig?.heuristicWeights;
         const counters = collections.aiConfig?.counters;
@@ -347,7 +370,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (placement?.isUnderConstruction) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
             if (!unitDef) continue;
 
             // Check if this is a production building
@@ -382,7 +405,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (teamComp?.team !== aiTeam) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             // Only reset buildings (not units) - buildings have footprintWidth
             const isBuilding = unitDef?.footprintWidth !== undefined;
@@ -654,8 +677,8 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Calculate this building's footprint cells to reserve
         const buildingDefWithCollection = { ...buildingDef, id: action.buildingId, collection: 'buildings' };
-        const squadData = game.call('getSquadData', buildingDefWithCollection);
-        const buildingCells = game.call('getSquadCells', gridPos, squadData) || [];
+        const squadData = this.call.getSquadData( buildingDefWithCollection);
+        const buildingCells = this.call.getSquadCells( gridPos, squadData) || [];
         const cellStrings = buildingCells.map(cell => `${cell.x},${cell.z}`);
 
         // Prepare unit type and peasant info
@@ -666,7 +689,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
         };
 
         // Call ui_placeUnit
-        game.call('ui_placeUnit', gridPos, unitType, aiTeam, playerId, peasantInfo, (success, response) => {
+        this.call.ui_placeUnit( gridPos, unitType, aiTeam, playerId, peasantInfo, (success, response) => {
             // Callback handled silently
         });
 
@@ -692,8 +715,8 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Calculate this building's footprint cells to reserve
         const buildingDefWithCollection = { ...buildingDef, id: 'cottage', collection: 'buildings' };
-        const squadData = game.call('getSquadData', buildingDefWithCollection);
-        const buildingCells = game.call('getSquadCells', gridPos, squadData) || [];
+        const squadData = this.call.getSquadData( buildingDefWithCollection);
+        const buildingCells = this.call.getSquadCells( gridPos, squadData) || [];
         const cellStrings = buildingCells.map(cell => `${cell.x},${cell.z}`);
 
         // Prepare unit type and peasant info
@@ -704,7 +727,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
         };
 
         // Call ui_placeUnit
-        game.call('ui_placeUnit', gridPos, unitType, aiTeam, playerId, peasantInfo, (success, response) => {
+        this.call.ui_placeUnit( gridPos, unitType, aiTeam, playerId, peasantInfo, (success, response) => {
             // Callback handled silently
         });
 
@@ -735,8 +758,8 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Calculate this building's footprint cells to reserve
         const buildingDefWithCollection = { ...buildingDef, id: 'sentryTower', collection: 'buildings' };
-        const squadData = game.call('getSquadData', buildingDefWithCollection);
-        const buildingCells = game.call('getSquadCells', gridPos, squadData) || [];
+        const squadData = this.call.getSquadData( buildingDefWithCollection);
+        const buildingCells = this.call.getSquadCells( gridPos, squadData) || [];
         const cellStrings = buildingCells.map(cell => `${cell.x},${cell.z}`);
 
         // Prepare unit type and peasant info
@@ -747,7 +770,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
         };
 
         // Call ui_placeUnit
-        game.call('ui_placeUnit', gridPos, unitType, aiTeam, playerId, peasantInfo, (success, response) => {
+        this.call.ui_placeUnit( gridPos, unitType, aiTeam, playerId, peasantInfo, (success, response) => {
             // Callback handled silently
         });
 
@@ -759,12 +782,12 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
      */
     findSentryTowerPosition(aiTeam, targetWorldPos, buildingDef, game, reservedCells = new Set()) {
         // Convert world position to grid position
-        const targetGridPos = game.call('worldToPlacementGrid', targetWorldPos.x, targetWorldPos.z);
+        const targetGridPos = this.call.worldToPlacementGrid( targetWorldPos.x, targetWorldPos.z);
         if (!targetGridPos) return null;
 
         // Get building squad data for collision checking
         const buildingDefWithCollection = { ...buildingDef, id: 'sentryTower', collection: 'buildings' };
-        const squadData = game.call('getSquadData', buildingDefWithCollection);
+        const squadData = this.call.getSquadData( buildingDefWithCollection);
 
         // Search in expanding rings around the target position
         const maxSearchRadius = 10;
@@ -780,7 +803,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
                     };
 
                     // Check if all cells are available
-                    const buildingCells = game.call('getSquadCells', testPos, squadData) || [];
+                    const buildingCells = this.call.getSquadCells( testPos, squadData) || [];
                     let valid = true;
 
                     for (const cell of buildingCells) {
@@ -793,7 +816,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
                         }
 
                         // Check if cell is already occupied
-                        if (game.call('isCellOccupied', cell.x, cell.z)) {
+                        if (this.call.isCellOccupied( cell.x, cell.z)) {
                             valid = false;
                             break;
                         }
@@ -820,7 +843,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Call ui_purchaseUnit
         let purchaseSuccess = false;
-        game.call('ui_purchaseUnit', action.unitId, buildingEntityId, aiTeam, (success, response) => {
+        this.call.ui_purchaseUnit( action.unitId, buildingEntityId, aiTeam, (success, response) => {
             purchaseSuccess = success;
         });
 
@@ -828,7 +851,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     issueMoveOrders(aiState, aiTeam, game, weights) {
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
         const enemyTeam = aiTeam === enums.team.left ? enums.team.right : enums.team.left;
         const round = game.state.round || 1;
 
@@ -839,7 +862,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
         if (scouts.length > 0) {
             const scoutTarget = this.getEnemyBasePosition(enemyTeam, game);
             if (scoutTarget) {
-                game.call('ui_issueMoveOrder', scouts, scoutTarget, () => {});
+                this.call.ui_issueMoveOrder( scouts, scoutTarget, () => {});
             }
         }
 
@@ -899,7 +922,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             }
 
             if (targetPos) {
-                game.call('ui_issueMoveOrder', mainArmy, targetPos, () => {});
+                this.call.ui_issueMoveOrder( mainArmy, targetPos, () => {});
 
                 // If we weren't attacking before, this is a new wave - increase next wave size
                 if (!aiState.isAttacking) {
@@ -920,7 +943,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             // Rally units at a defensive position while building up
             const rallyPos = this.getDefensiveRallyPoint(aiTeam, game);
             if (rallyPos) {
-                game.call('ui_issueMoveOrder', mainArmy, rallyPos, () => {});
+                this.call.ui_issueMoveOrder( mainArmy, rallyPos, () => {});
             }
             aiState.isAttacking = false;
         }
@@ -940,7 +963,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
         if (!townHallTransform?.position) return null;
 
         const basePos = townHallTransform.position;
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
 
         // Rally point is slightly toward the enemy from our base
         const direction = aiTeam === enums.team.left ? 1 : -1;
@@ -951,7 +974,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     categorizeUnits(aiTeam, game) {
-        const placements = game.call('getPlacementsForSide', aiTeam) || [];
+        const placements = this.call.getPlacementsForSide( aiTeam) || [];
         const scouts = [];
         const mainArmy = [];
 
@@ -960,7 +983,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
             const entityId = placement.squadUnits[0];
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             // Skip buildings
             if (unitDef?.footprintWidth !== undefined) continue;
@@ -983,13 +1006,13 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     getEnemyBasePosition(enemyTeam, game) {
-        const startingLocations = game.call('getStartingLocationsFromLevel');
+        const startingLocations = this.call.getStartingLocationsFromLevel();
         if (!startingLocations) return null;
 
         const enemyLoc = startingLocations[enemyTeam];
         if (!enemyLoc) return null;
 
-        return game.call('tileToWorld', enemyLoc.x, enemyLoc.z);
+        return this.call.tileToWorld( enemyLoc.x, enemyLoc.z);
     }
 
     findEnemyTownHall(enemyTeam, game) {
@@ -1000,7 +1023,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (teamComp?.team !== enemyTeam) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             if (unitDef?.id === 'townHall' || unitDef?.id === 'keep' || unitDef?.id === 'castle') {
                 return entityId;
@@ -1020,15 +1043,15 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (viewerTeam?.team !== aiTeam) continue;
 
             const viewerUnitTypeComp = game.getComponent(viewerEntityId, 'unitType');
-            const viewerUnitDef = game.call('getUnitTypeDef', viewerUnitTypeComp);
+            const viewerUnitDef = this.call.getUnitTypeDef( viewerUnitTypeComp);
             const visionRange = viewerUnitDef?.visionRange || 500;
 
-            const visibleEnemyIds = game.call('getVisibleEnemiesInRange', viewerEntityId, visionRange);
+            const visibleEnemyIds = this.call.getVisibleEnemiesInRange( viewerEntityId, visionRange);
             if (!visibleEnemyIds) continue;
 
             for (const enemyId of visibleEnemyIds) {
                 const enemyUnitTypeComp = game.getComponent(enemyId, 'unitType');
-                const enemyDef = game.call('getUnitTypeDef', enemyUnitTypeComp);
+                const enemyDef = this.call.getUnitTypeDef( enemyUnitTypeComp);
 
                 // Is it a building?
                 if (enemyDef?.footprintWidth !== undefined) {
@@ -1046,7 +1069,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     getAllUnitPlacementIds(aiTeam, game) {
-        const placements = game.call('getPlacementsForSide', aiTeam) || [];
+        const placements = this.call.getPlacementsForSide( aiTeam) || [];
         const placementIds = [];
 
         for (const placement of placements) {
@@ -1055,7 +1078,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             // Check if this is a combat unit (not a building or peasant)
             const entityId = placement.squadUnits[0];
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             // Skip buildings
             if (unitDef?.footprintWidth !== undefined) continue;
@@ -1080,11 +1103,11 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (teamComp.team !== aiTeam) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
             if (unitDef?.id !== 'peasant') continue;
 
             // Check if peasant has build ability and is not already building
-            const abilities = game.call('getEntityAbilities', entityId);
+            const abilities = this.call.getEntityAbilities( entityId);
             if (!abilities) continue;
 
             const buildAbility = abilities.find(a => a.id === 'BuildAbility');
@@ -1119,9 +1142,9 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Get town hall cells to avoid
         const townHallUnitType = game.getComponent(townHall, 'unitType');
-        const townHallDef = game.call('getUnitTypeDef', townHallUnitType);
-        const townHallSquadData = game.call('getSquadData', townHallDef);
-        const townHallCells = game.call('getSquadCells', townHallGridPos, townHallSquadData);
+        const townHallDef = this.call.getUnitTypeDef( townHallUnitType);
+        const townHallSquadData = this.call.getSquadData( townHallDef);
+        const townHallCells = this.call.getSquadCells( townHallGridPos, townHallSquadData);
         const occupiedCellSet = new Set(townHallCells.map(cell => `${cell.x},${cell.z}`));
 
         // Add reserved cells (from other buildings being placed this turn) to occupied set
@@ -1130,8 +1153,8 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Find adjacent position for new building
-        const enums = game.call('getEnums');
-        const startingLocations = game.call('getStartingLocationsFromLevel');
+        const enums = game.getEnums();
+        const startingLocations = this.call.getStartingLocationsFromLevel();
 
         let preferredDirX = 0;
         let preferredDirZ = 0;
@@ -1150,7 +1173,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             }
         }
 
-        const buildingWorldPos = game.call('placementGridToWorld', townHallGridPos.x, townHallGridPos.z);
+        const buildingWorldPos = this.call.placementGridToWorld( townHallGridPos.x, townHallGridPos.z);
         const targetWorldPos = {
             x: buildingWorldPos.x + preferredDirX * 1000,
             z: buildingWorldPos.z + preferredDirZ * 1000
@@ -1158,7 +1181,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
         const buildingDefWithCollection = { ...buildingDef, id: buildingId, collection: 'buildings' };
 
-        return game.call('findBuildingAdjacentPosition', townHallGridPos, occupiedCellSet, buildingDefWithCollection, targetWorldPos);
+        return this.call.findBuildingAdjacentPosition( townHallGridPos, occupiedCellSet, buildingDefWithCollection, targetWorldPos);
     }
 
     findTownHall(aiTeam, game) {
@@ -1169,7 +1192,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (teamComp.team !== aiTeam) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             if (unitDef?.id === 'townHall' || unitDef?.id === 'keep' || unitDef?.id === 'castle') {
                 return entityId;
@@ -1191,7 +1214,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (placement?.isUnderConstruction) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             if (unitDef?.id === buildingType) {
                 return entityId;
@@ -1202,21 +1225,21 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     resolveTarget(target, aiTeam, game) {
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
 
         if (target === 'center') {
             return { x: 0, z: 0 };
         }
 
         if (target === 'enemy') {
-            const startingLocations = game.call('getStartingLocationsFromLevel');
+            const startingLocations = this.call.getStartingLocationsFromLevel();
             if (!startingLocations) return null;
 
             const enemyTeam = aiTeam === enums.team.left ? enums.team.right : enums.team.left;
             const enemyLoc = startingLocations[enemyTeam];
             if (!enemyLoc) return null;
 
-            return game.call('tileToWorld', enemyLoc.x, enemyLoc.z);
+            return this.call.tileToWorld( enemyLoc.x, enemyLoc.z);
         }
 
         // If target is an object with x/z, use it directly
@@ -1241,7 +1264,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
         if (!townHallEntity) return actions;
 
         const unitTypeComp = game.getComponent(townHallEntity, 'unitType');
-        const currentBuildingDef = game.call('getUnitTypeDef', unitTypeComp);
+        const currentBuildingDef = this.call.getUnitTypeDef( unitTypeComp);
         const currentBuildingId = currentBuildingDef?.id;
 
         // Check if there's an upgrade available
@@ -1386,14 +1409,14 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
         const actions = [];
 
         // Get all squads for this team
-        const placements = game.call('getPlacementsForSide', aiTeam) || [];
+        const placements = this.call.getPlacementsForSide( aiTeam) || [];
 
         for (const placement of placements) {
             if (!placement.squadUnits || placement.squadUnits.length === 0) continue;
 
             const entityId = placement.squadUnits[0];
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = game.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
 
             // Skip buildings and peasants
             if (unitDef?.footprintWidth !== undefined) continue;
@@ -1404,7 +1427,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (!squadData) continue;
 
             // Check if can level up
-            const levelUpCost = game.call('getLevelUpCost', placement.placementId);
+            const levelUpCost = this.call.getLevelUpCost( placement.placementId);
             if (levelUpCost < 0 || levelUpCost > gold) continue;
 
             let score = 25; // Base score for leveling up
@@ -1507,10 +1530,10 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
         const basePos = townHallTransform.position;
 
         // Get ramp positions from the level
-        const ramps = game.call('getRampPositions');
+        const ramps = this.call.getRampPositions();
         if (!ramps || ramps.length === 0) {
             // No ramps defined - place defensively between base and center
-            const enums = game.call('getEnums');
+            const enums = game.getEnums();
             const direction = aiTeam === enums.team.left ? 1 : -1;
             return {
                 x: basePos.x + direction * 300,
@@ -1651,7 +1674,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
      * Execute town hall upgrade
      */
     executeUpgradeTownHall(action, aiTeam, game) {
-        game.call('upgradeBuildingRequest', {
+        this.call.upgradeBuildingRequest( {
             buildingEntityId: action.buildingEntityId,
             placementId: action.placementId,
             targetBuildingId: action.targetBuildingId
@@ -1665,7 +1688,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
      * Execute technology upgrade purchase
      */
     executePurchaseUpgrade(action, aiTeam, game) {
-        game.call('purchaseUpgrade', {
+        this.call.purchaseUpgrade( {
             upgradeId: action.upgradeId,
             referenceBuildingId: action.referenceBuildingId // Server derives team from this
         }, (success, response) => {
@@ -1678,7 +1701,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
      * Execute squad level up
      */
     executeLevelUpSquad(action, aiTeam, game) {
-        game.call('levelSquad', {
+        this.call.levelSquad( {
             placementId: action.placementId,
             specializationId: action.specializationId
         }, (success, response) => {

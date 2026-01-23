@@ -14,6 +14,20 @@ class HuntMissionSystem extends GUTS.BaseSystem {
         'pickupLoot'
     ];
 
+    static serviceDependencies = [
+        'setLocalGame',
+        'showLoadingScreen',
+        'createPlayerEntity',
+        'setActivePlayer',
+        'initializeGame',
+        'spawnGoldMineForTeam',
+        'spawnStartingUnitsForTeam',
+        'createEntityFromPrefab',
+        'broadcastGameEnd',
+        'getPlayerEntities',
+        'addCurrency'
+    ];
+
     constructor(game) {
         super(game);
         this.game.huntMissionSystem = this;
@@ -72,7 +86,7 @@ class HuntMissionSystem extends GUTS.BaseSystem {
         this.game.state.debugEntityDestruction = true;
 
         // Enable local game mode
-        this.game.call('setLocalGame', true, 0);
+        this.call.setLocalGame( true, 0);
 
         // Generate game seed
         this.game.state.gameSeed = Date.now() % 1000000;
@@ -99,7 +113,7 @@ class HuntMissionSystem extends GUTS.BaseSystem {
         this.game.state.level = validLevelIndex;
         console.log('[HuntMissionSystem] Starting mission with level:', levelName, '-> index:', validLevelIndex);
 
-        this.game.call('showLoadingScreen');
+        this.call.showLoadingScreen();
 
         // Update terrain for the scene
         const gameScene = this.collections?.scenes?.hunt;
@@ -115,7 +129,7 @@ class HuntMissionSystem extends GUTS.BaseSystem {
 
         // Create player entity only (no AI player entity)
         const startingGold = config.startingGold || 100;
-        this.game.call('createPlayerEntity', 0, {
+        this.call.createPlayerEntity( 0, {
             team: playerTeam,
             gold: startingGold,
             upgrades: 0
@@ -123,7 +137,7 @@ class HuntMissionSystem extends GUTS.BaseSystem {
 
         // Set active player
         if (this.game.hasService('setActivePlayer')) {
-            this.game.call('setActivePlayer', 0, playerTeam);
+            this.call.setActivePlayer( 0, playerTeam);
         }
 
         // Store config for postSceneLoad to spawn monsters and initialize game
@@ -154,7 +168,7 @@ class HuntMissionSystem extends GUTS.BaseSystem {
         this.spawnBoss(config, monsterTeam);
 
         // Now initialize the game - WorldSystem has created uiScene by now
-        this.game.call('initializeGame', null);
+        this.call.initializeGame( null);
 
         // Clear pending config
         this.pendingMissionConfig = null;
@@ -167,10 +181,10 @@ class HuntMissionSystem extends GUTS.BaseSystem {
      */
     spawnStartingState(playerTeam) {
         // Spawn gold mine for player
-        this.game.call('spawnGoldMineForTeam', playerTeam);
+        this.call.spawnGoldMineForTeam( playerTeam);
 
         // Spawn starting units for player
-        this.game.call('spawnStartingUnitsForTeam', playerTeam);
+        this.call.spawnStartingUnitsForTeam( playerTeam);
 
         console.log('[HuntMissionSystem] Spawned starting state for player team');
     }
@@ -212,7 +226,7 @@ class HuntMissionSystem extends GUTS.BaseSystem {
                 if (!worldPos) continue;
 
                 // Create skeleton entity using prefab system
-                const entityId = this.game.call('createEntityFromPrefab', {
+                const entityId = this.call.createEntityFromPrefab( {
                     prefab: 'unit',
                     type: monsterUnit,
                     collection: 'units',
@@ -307,7 +321,7 @@ class HuntMissionSystem extends GUTS.BaseSystem {
         }
 
         // Create boss entity using prefab system
-        const entityId = this.game.call('createEntityFromPrefab', {
+        const entityId = this.call.createEntityFromPrefab( {
             prefab: 'unit',
             type: bossType,
             collection: 'units',
@@ -374,7 +388,7 @@ class HuntMissionSystem extends GUTS.BaseSystem {
                 finalStats: this.getPlayerStatsForBroadcast(),
                 totalRounds: this.game.state.round
             };
-            this.game.call('broadcastGameEnd', result);
+            this.call.broadcastGameEnd( result);
             this.game.endGame(result);
             return;
         }
@@ -387,7 +401,7 @@ class HuntMissionSystem extends GUTS.BaseSystem {
      */
     getPlayerStatsForBroadcast() {
         const stats = {};
-        const playerEntities = this.game.call('getPlayerEntities');
+        const playerEntities = this.call.getPlayerEntities();
         for (const entityId of playerEntities) {
             const playerStats = this.game.getComponent(entityId, 'playerStats');
             if (playerStats) {
@@ -716,7 +730,7 @@ class HuntMissionSystem extends GUTS.BaseSystem {
      */
     pickupCurrency(loot) {
         if (this.game.hasService('addCurrency')) {
-            this.game.call('addCurrency', loot.currency, loot.amount);
+            this.call.addCurrency( loot.currency, loot.amount);
         } else {
             // Store for later if campaign system not available
             this.game.state.pendingLoot = this.game.state.pendingLoot || [];

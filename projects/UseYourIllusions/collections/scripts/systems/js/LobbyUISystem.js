@@ -7,6 +7,18 @@ class LobbyUISystem extends GUTS.BaseSystem {
         'showSkirmishLobby'
     ];
 
+    static serviceDependencies = [
+        'startQuickMatch',
+        'createRoom',
+        'joinRoom',
+        'toggleReady',
+        'leaveRoom',
+        'showChatView',
+        'importSaveFile',
+        'uploadSaveData',
+        'showMainMenu'
+    ];
+
     constructor(game) {
         super(game);
         this.game.lobbyUISystem = this;
@@ -76,7 +88,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
         if (quickMatchBtn) {
             quickMatchBtn.addEventListener('click', () => {
                 this.stopLobbyRefresh();
-                this.game.call('startQuickMatch', getPlayerName());
+                this.call.startQuickMatch( getPlayerName());
                 dialog.remove();
             });
         }
@@ -84,7 +96,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
         if (createRoomBtn) {
             createRoomBtn.addEventListener('click', () => {
                 this.stopLobbyRefresh();
-                this.game.call('createRoom', getPlayerName(), mode.maxPlayers);
+                this.call.createRoom( getPlayerName(), mode.maxPlayers);
                 dialog.remove();
             });
         }
@@ -218,7 +230,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
                                 const roomId = joinBtn.getAttribute('data-room-id');
                                 const playerName = getPlayerName();
                                 this.stopLobbyRefresh();
-                                this.game.call('joinRoom', roomId, playerName);
+                                this.call.joinRoom( roomId, playerName);
                                 dialog.remove();
                             });
 
@@ -255,11 +267,11 @@ class LobbyUISystem extends GUTS.BaseSystem {
             btn.disabled = true;
             btn.textContent = 'Updating...';
         }
-        this.game.call('toggleReady');
+        this.call.toggleReady();
     }
 
     leaveRoom() {
-        this.game.call('leaveRoom');
+        this.call.leaveRoom();
         this.returnToOnlineLobby();
     }
 
@@ -284,7 +296,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
         if (onlineLobby) {
             onlineLobby.classList.add('active');
             // Show chat view by default
-            this.game.call('showChatView');
+            this.call.showChatView();
         }
     }
 
@@ -336,14 +348,14 @@ class LobbyUISystem extends GUTS.BaseSystem {
         if (!file) return;
 
         try {
-            const saveData = await this.game.call('importSaveFile', file);
+            const saveData = await this.call.importSaveFile( file);
 
             if (!saveData) {
                 this.showNotification('Invalid save file', 'error');
                 return;
             }
 
-            this.game.call('uploadSaveData', saveData, (success, response) => {
+            this.call.uploadSaveData( saveData, (success, response) => {
                 if (success) {
                     this.showNotification(`Save uploaded: ${saveData.saveName || 'Unknown'}. Game will load this save.`, 'success', 5000);
 
@@ -577,7 +589,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
         this.currentScreen = null;
         this.roomId = null;
 
-        this.game.call('showMainMenu');
+        this.call.showMainMenu();
         if (!this.game.hasService('showMainMenu')) {
             window.location.reload();
         }
@@ -691,7 +703,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
         if (!file) return;
 
         try {
-            const saveData = await this.game.call('importSaveFile', file);
+            const saveData = await this.call.importSaveFile( file);
             console.log('[LobbyUISystem] Imported save file:', file.name, 'saveData:', saveData ? 'valid' : 'null');
 
             if (!saveData) {

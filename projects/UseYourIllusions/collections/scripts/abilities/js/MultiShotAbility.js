@@ -1,4 +1,9 @@
 class MultiShotAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'playEffectSystem'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Multi Shot',
@@ -58,7 +63,7 @@ class MultiShotAbility extends GUTS.BaseAbility {
 
         // Enhanced volley launch burst using preset effect system
         if (!this.game.isServer) {
-            this.game.call('playEffectSystem', 'multishot_volley',
+            this.call.playEffectSystem( 'multishot_volley',
                 new THREE.Vector3(casterPos.x, casterPos.y + 25, casterPos.z));
         }
 

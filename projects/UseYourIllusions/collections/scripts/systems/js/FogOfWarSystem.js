@@ -6,6 +6,19 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         'isVisibleAt'
     ];
 
+    static serviceDependencies = [
+        'getWorldExtendedSize',
+        'registerPostProcessingPass',
+        'getGridSize',
+        'getTerrainSize',
+        'hasLineOfSight',
+        'getActivePlayerTeam',
+        'getUnitTypeDef',
+        'getZoomLevel',
+        'getCamera',
+        'removePostProcessingPass'
+    ];
+
     constructor(game) {
         super(game);
         this.game.fogOfWarSystem = this;
@@ -81,7 +94,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
 
     onSceneLoad(sceneData) {
         // Get world size now that terrain is loaded
-        this.WORLD_SIZE = this.game.call('getWorldExtendedSize');
+        this.WORLD_SIZE = this.call.getWorldExtendedSize();
 
         if (!this.WORLD_SIZE) {
             console.warn('[FogOfWarSystem] World size not available');
@@ -94,7 +107,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         // Create fog pass now that render targets exist
         if (this.game.postProcessingSystem && !this.fogPass) {
             this.createFogPass();
-            this.game.call('registerPostProcessingPass', 'fog', {
+            this.call.registerPostProcessingPass( 'fog', {
                 enabled: true,
                 pass: this.fogPass
             });
@@ -207,7 +220,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
      */
     _getGridSize() {
         if (this._cachedGridSize === null) {
-            this._cachedGridSize = this.game.call('getGridSize');
+            this._cachedGridSize = this.call.getGridSize();
         }
         return this._cachedGridSize;
     }
@@ -217,7 +230,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
      */
     _getTerrainSize() {
         if (this._cachedTerrainSize === null) {
-            this._cachedTerrainSize = this.game.call('getTerrainSize');
+            this._cachedTerrainSize = this.call.getTerrainSize();
         }
         return this._cachedTerrainSize;
     }
@@ -266,7 +279,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             // First check max distance
             const maxX = unitPos.x + dirX * visionRadius;
             const maxZ = unitPos.z + dirZ * visionRadius;
-            if (!this.game.call('hasLineOfSight',
+            if (!this.call.hasLineOfSight(
                 { x: unitPos.x, z: unitPos.z },
                 { x: maxX, z: maxZ },
                 unitType,
@@ -277,7 +290,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
                     const midDist = (minDist + maxDist) / 2;
                     const midX = unitPos.x + dirX * midDist;
                     const midZ = unitPos.z + dirZ * midDist;
-                    if (this.game.call('hasLineOfSight',
+                    if (this.call.hasLineOfSight(
                         { x: unitPos.x, z: unitPos.z },
                         { x: midX, z: midZ },
                         unitType,
@@ -656,7 +669,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const myTeam = this.game.call('getActivePlayerTeam');
+        const myTeam = this.call.getActivePlayerTeam();
         // myTeam can be 0 (neutral) which is falsy, so check for undefined/null explicitly
         if (myTeam === undefined || myTeam === null) return;
 
@@ -696,7 +709,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             if (!pos) continue;
 
             const visionRadius = unitType?.visionRange || this.VISION_RADIUS;
@@ -769,7 +782,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
     //only available on CLIENT
     isVisibleAt(x, z) {
         // Check if fog of war is disabled (first-person mode)
-        const zoomLevel = this.game.call('getZoomLevel');
+        const zoomLevel = this.call.getZoomLevel();
         if (zoomLevel !== undefined && zoomLevel < 0.1) {
             return true;
         }
@@ -825,7 +838,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         if (this.fogRenderTarget) this.fogRenderTarget.dispose();
         if (this.explorationRenderTarget) this.explorationRenderTarget.dispose();
         if (this.explorationRenderTargetPingPong) this.explorationRenderTargetPingPong.dispose();
-        if (this.game.postProcessingSystem) this.game.call('removePostProcessingPass', 'fog');
+        if (this.game.postProcessingSystem) this.call.removePostProcessingPass( 'fog');
         if (this.accumulationMaterial) this.accumulationMaterial.dispose();
         if (this.accumulationQuad) this.accumulationQuad.geometry.dispose();
         if (this.losMaterial) this.losMaterial.dispose();

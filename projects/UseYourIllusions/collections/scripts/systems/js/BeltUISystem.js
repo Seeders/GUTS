@@ -2,6 +2,13 @@
  * BeltUISystem - Unified ability bar with E (Collect) and 1-2-3 (Belt Slots)
  */
 class BeltUISystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'getPlayerEntity',
+        'setSelectedBeltSlot',
+        'toggleCloneControl',
+        'triggerCollectAbility'
+    ];
+
     static services = [
         'updateBeltUI',
         'refreshBeltDisplay'
@@ -306,9 +313,9 @@ class BeltUISystem extends GUTS.BaseSystem {
             collectSlot._clickHandlerAttached = true;
             collectSlot.addEventListener('click', () => {
                 // Trigger E key action
-                const playerEntity = this.game.call('getPlayerEntity');
+                const playerEntity = this.call.getPlayerEntity();
                 if (playerEntity) {
-                    this.game.call('triggerCollectAbility', playerEntity);
+                    this.call.triggerCollectAbility( playerEntity);
                 }
             });
         }
@@ -319,9 +326,9 @@ class BeltUISystem extends GUTS.BaseSystem {
             cloneStatusSlot._clickHandlerAttached = true;
             cloneStatusSlot.addEventListener('click', () => {
                 // Toggle control between player and clone
-                const playerEntity = this.game.call('getPlayerEntity');
+                const playerEntity = this.call.getPlayerEntity();
                 if (playerEntity) {
-                    this.game.call('toggleCloneControl', playerEntity);
+                    this.call.toggleCloneControl( playerEntity);
                 }
             });
         }
@@ -366,10 +373,10 @@ class BeltUISystem extends GUTS.BaseSystem {
     }
 
     selectSlot(slotIndex) {
-        const playerEntity = this.game.call('getPlayerEntity');
+        const playerEntity = this.call.getPlayerEntity();
         if (!playerEntity) return;
 
-        this.game.call('setSelectedBeltSlot', playerEntity, slotIndex);
+        this.call.setSelectedBeltSlot( playerEntity, slotIndex);
     }
 
     updateSlotSelection(selectedIndex) {
@@ -382,7 +389,7 @@ class BeltUISystem extends GUTS.BaseSystem {
     }
 
     updateBeltUI() {
-        const playerEntity = this.game.call('getPlayerEntity');
+        const playerEntity = this.call.getPlayerEntity();
         if (!playerEntity) return;
 
         const belt = this.game.getComponent(playerEntity, 'magicBelt');
@@ -434,7 +441,7 @@ class BeltUISystem extends GUTS.BaseSystem {
         // For clone items, use the player's sprite animation set
         let spriteAnimationSetName = worldObjectDef.spriteAnimationSet;
         if (itemType === 'clone') {
-            const playerEntity = this.game.call('getPlayerEntity');
+            const playerEntity = this.call.getPlayerEntity();
             if (playerEntity) {
                 const playerUnitType = this.game.getComponent(playerEntity, 'unitType');
                 if (playerUnitType) {
@@ -510,7 +517,7 @@ class BeltUISystem extends GUTS.BaseSystem {
     }
 
     updateCloneAbilityUI() {
-        const playerEntity = this.game.call('getPlayerEntity');
+        const playerEntity = this.call.getPlayerEntity();
         if (!playerEntity) return;
 
         const playerController = this.game.getComponent(playerEntity, 'playerController');

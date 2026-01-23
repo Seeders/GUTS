@@ -103,10 +103,9 @@ class PlayerOrderPreview {
 
             // Get terrain height
             let yPosition = this.config.elevationOffset;
-            if (this.game.hasService('getTerrainHeightAtPosition')) {
-                const terrainHeight = this.game.call('getTerrainHeightAtPosition', order.x, order.z);
-                yPosition = (terrainHeight || 0) + this.config.elevationOffset;
-            }
+            const terrainHeight = this.game.call('getTerrainHeightAtPosition', order.x, order.z);
+            yPosition = (terrainHeight || 0) + this.config.elevationOffset;
+        
 
             // Set materials based on order type
             if (order.isHiding) {

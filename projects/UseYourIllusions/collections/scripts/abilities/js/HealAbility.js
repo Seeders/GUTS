@@ -1,4 +1,10 @@
 class HealAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'curePoison',
+        'showDamageNumber'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Heal',
@@ -60,7 +66,7 @@ class HealAbility extends GUTS.BaseAbility {
 
         // Cure poison - holy magic cleanses toxins
         if (this.game.hasService('curePoison')) {
-            this.game.call('curePoison', targetId);
+            this.call.curePoison( targetId);
         }
 
         // Apply healing
@@ -69,7 +75,7 @@ class HealAbility extends GUTS.BaseAbility {
 
         // Show heal number (client only)
         if (!this.game.isServer && this.game.hasService('showDamageNumber')) {
-            this.game.call('showDamageNumber',
+            this.call.showDamageNumber(
                 targetPos.x, targetPos.y + 50, targetPos.z,
                 actualHeal, 'heal'
             );

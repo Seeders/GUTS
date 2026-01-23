@@ -1515,8 +1515,8 @@ class BehaviorTreeEditor {
         if (!collectionName) return 'Unknown';
 
         // Try to get from mock game's enum maps
-        if (this.mockGame && this.mockGame.hasService && this.mockGame.hasService('getEnumMap')) {
-            const enumMap = this.mockGame.call('getEnumMap', collectionName);
+        if (this.mockGame) {
+            const enumMap = this.mockGame.getEnumMap(collectionName);
             if (enumMap && enumMap.toValue && enumMap.toValue[nodeIndex]) {
                 return enumMap.toValue[nodeIndex];
             }

@@ -1,4 +1,20 @@
 class InputSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'leaveGame',
+        'getWorldPositionFromMouse',
+        'ui_handleCanvasClick',
+        'rotateCamera',
+        'toggleCameraMode',
+        'getCameraMode',
+        'showGameModeSelect',
+        'showMainMenu',
+        'pauseGame',
+        'exitToMenu',
+        'resumeGame',
+        'restartGame',
+        'handleUnitSelectionChange'
+    ];
+
     constructor(game) {
         super(game);
         this.game.inputSystem = this;
@@ -38,7 +54,7 @@ class InputSystem extends GUTS.BaseSystem {
             victoryMainMenuBtn._clickHandlerAttached = true;
             victoryMainMenuBtn.addEventListener('click', () => {
                 console.log('[InputSystem] Victory button clicked, calling leaveGame');
-                this.game.call('leaveGame');
+                this.call.leaveGame();
             });
         }
 
@@ -46,7 +62,7 @@ class InputSystem extends GUTS.BaseSystem {
             defeatMainMenuBtn._clickHandlerAttached = true;
             defeatMainMenuBtn.addEventListener('click', () => {
                 console.log('[InputSystem] Defeat button clicked, calling leaveGame');
-                this.game.call('leaveGame');
+                this.call.leaveGame();
             });
         }
     }
@@ -61,7 +77,7 @@ class InputSystem extends GUTS.BaseSystem {
         this._currentCanvas = canvas;
         this._canvasClickHandler = (event) => {
             // Get world position from screen coordinates
-            const worldPos = this.game.call('getWorldPositionFromMouse', event.clientX, event.clientY);
+            const worldPos = this.call.getWorldPositionFromMouse( event.clientX, event.clientY);
             if (!worldPos) return;
 
             const modifiers = {
@@ -71,7 +87,7 @@ class InputSystem extends GUTS.BaseSystem {
             };
 
             // Forward to GameInterfaceSystem
-            this.game.call('ui_handleCanvasClick', worldPos.x, worldPos.z, modifiers, (result) => {
+            this.call.ui_handleCanvasClick( worldPos.x, worldPos.z, modifiers, (result) => {
                 this.game.triggerEvent('onInputResult', result);
             });
         };
@@ -95,18 +111,18 @@ class InputSystem extends GUTS.BaseSystem {
         const rotateCameraLeftBtn = document.getElementById('rotateCameraLeftBtn');
         const rotateCameraRightBtn = document.getElementById('rotateCameraRightBtn');
         rotateCameraLeftBtn?.addEventListener('click', () => {
-            this.game.call('rotateCamera', 'left');
+            this.call.rotateCamera( 'left');
         });
         rotateCameraRightBtn?.addEventListener('click', () => {
-            this.game.call('rotateCamera', 'right');
+            this.call.rotateCamera( 'right');
         });
 
         // Camera mode toggle button
         const toggleCameraModeBtn = document.getElementById('toggleCameraModeBtn');
         toggleCameraModeBtn?.addEventListener('click', () => {
-            this.game.call('toggleCameraMode');
+            this.call.toggleCameraMode();
             // Update button appearance based on mode
-            const mode = this.game.call('getCameraMode');
+            const mode = this.call.getCameraMode();
             toggleCameraModeBtn.classList.toggle('active', mode === 'free');
             toggleCameraModeBtn.title = mode === 'free' ? 'Switch to game camera' : 'Switch to free camera';
         });
@@ -133,7 +149,7 @@ class InputSystem extends GUTS.BaseSystem {
         const pausedMainMenuBtn = document.getElementById('paused_MainMenuBtn');
 
         mainMenuPlayGameBtn?.addEventListener('click', () => {
-            this.game.call('showGameModeSelect');
+            this.call.showGameModeSelect();
         });
         mainMenuTutorialBtn?.addEventListener('click', () => {
             alert('Tutorial coming soon! Check the battle log for basic instructions when you start playing.');
@@ -146,34 +162,34 @@ class InputSystem extends GUTS.BaseSystem {
         });
 
         gameModeBackBtn?.addEventListener('click', () => {
-            this.game.call('showMainMenu');
+            this.call.showMainMenu();
         });
 
         gamePauseBtn?.addEventListener('click', () => {
-            this.game.call('pauseGame');
+            this.call.pauseGame();
         });
         gameExitBtn?.addEventListener('click', () => {
-            this.game.call('exitToMenu');
+            this.call.exitToMenu();
         });
 
         victoryMainMenuBtn?.addEventListener('click', () => {
             // Use leaveGame to properly clean up multiplayer connection
-            this.game.call('leaveGame');
+            this.call.leaveGame();
         });
 
         defeatMainMenuBtn?.addEventListener('click', () => {
             // Use leaveGame to properly clean up multiplayer connection
-            this.game.call('leaveGame');
+            this.call.leaveGame();
         });
 
         pausedResumeBtn?.addEventListener('click', () => {
-            this.game.call('resumeGame');
+            this.call.resumeGame();
         });
         pausedRestartBtn?.addEventListener('click', () => {
-            this.game.call('restartGame');
+            this.call.restartGame();
         });
         pausedMainMenuBtn?.addEventListener('click', () => {
-            this.game.call('showMainMenu');
+            this.call.showMainMenu();
         });
 
 
@@ -286,7 +302,7 @@ class InputSystem extends GUTS.BaseSystem {
                 selected.classList.remove('selected');
             });
             state.selectedUnitType = null;
-            this.game.call('handleUnitSelectionChange');
+            this.call.handleUnitSelectionChange();
         }
     }
     cycleThroughUnits() {

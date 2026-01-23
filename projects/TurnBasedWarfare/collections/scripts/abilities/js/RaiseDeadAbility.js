@@ -1,4 +1,10 @@
 class RaiseDeadAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'playEffectSystem',
+        'playEffect'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Raise Dead',
@@ -88,11 +94,11 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
 
                 // Enhanced necromantic rising effect (client only) using preset effect system
                 if (!this.game.isServer) {
-                    this.game.call('playEffectSystem', 'raise_dead',
+                    this.call.playEffectSystem( 'raise_dead',
                         new THREE.Vector3(corpseData.position.x, corpseData.position.y + 20, corpseData.position.z));
 
                     // Ground disturbance ring using preset effect
-                    this.game.call('playEffect', 'undead_summon',
+                    this.call.playEffect( 'undead_summon',
                         new THREE.Vector3(corpseData.position.x, corpseData.position.y + 3, corpseData.position.z));
                 }
 

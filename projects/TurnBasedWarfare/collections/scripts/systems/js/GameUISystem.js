@@ -4,6 +4,19 @@ class GameUISystem extends GUTS.BaseSystem {
         'updateGoldDisplay'
     ];
 
+    static serviceDependencies = [
+        'getSaveData',
+        'exportSaveFile',
+        'leaveRoom',
+        'showMainMenu',
+        'initializeParticleSystem',
+        'initializeEffectsSystem',
+        'getPlayerGold',
+        'getSurvivalWaveInfo',
+        'getActivePlayerTeam',
+        'startCelebration'
+    ];
+
     constructor(game) {
         super(game);
         this.game.gameUISystem = this;
@@ -147,12 +160,12 @@ class GameUISystem extends GUTS.BaseSystem {
 
     saveGame() {
         try {
-            const saveData = this.game.call('getSaveData');
+            const saveData = this.call.getSaveData();
             if (!saveData) {
                 this.showNotification('Save system not available', 'error');
                 return;
             }
-            this.game.call('exportSaveFile', saveData);
+            this.call.exportSaveFile( saveData);
             this.showNotification('Game saved! File downloaded.', 'success');
         } catch (error) {
             console.error('[GameUISystem] Error saving game:', error);
@@ -165,7 +178,7 @@ class GameUISystem extends GUTS.BaseSystem {
         console.log('[GameUISystem] skirmishConfig:', this.game.state.skirmishConfig);
 
         if (this.game.hasService('leaveRoom')) {
-            this.game.call('leaveRoom');
+            this.call.leaveRoom();
         }
 
         const menuBtn = document.getElementById('gameMenuBtn');
@@ -234,7 +247,7 @@ class GameUISystem extends GUTS.BaseSystem {
         console.log('[GameUISystem] Switching to lobby scene');
         await this.game.switchScene('lobby');
 
-        this.game.call('showMainMenu');
+        this.call.showMainMenu();
         if (!this.game.hasService('showMainMenu')) {
             window.location.reload();
         }
@@ -264,8 +277,8 @@ class GameUISystem extends GUTS.BaseSystem {
     }
 
     start() {
-        this.game.call('initializeParticleSystem');
-        this.game.call('initializeEffectsSystem');
+        this.call.initializeParticleSystem();
+        this.call.initializeEffectsSystem();
         this.showGameMenu();
     }
 
@@ -301,7 +314,7 @@ class GameUISystem extends GUTS.BaseSystem {
     updateGoldDisplay() {
         const goldDisplay = document.getElementById('playerGold');
         if (goldDisplay) {
-            const gold = this.game.call('getPlayerGold');
+            const gold = this.call.getPlayerGold();
             if (gold !== this._lastGold) {
                 this._lastGold = gold;
                 goldDisplay.textContent = gold;
@@ -318,7 +331,7 @@ class GameUISystem extends GUTS.BaseSystem {
 
                 // For survival missions, show wave X/30 format
                 if (this.game.state.isSurvivalMission && this.game.hasService('getSurvivalWaveInfo')) {
-                    const waveInfo = this.game.call('getSurvivalWaveInfo');
+                    const waveInfo = this.call.getSurvivalWaveInfo();
                     roundNumberEl.textContent = `Wave ${waveInfo.currentWave}/${waveInfo.totalWaves}`;
                 } else {
                     roundNumberEl.textContent = round;
@@ -330,7 +343,7 @@ class GameUISystem extends GUTS.BaseSystem {
     updateSideDisplay() {
         const sideDisplay = document.getElementById('playerSide');
         if (sideDisplay) {
-            const myTeam = this.game.call('getActivePlayerTeam');
+            const myTeam = this.call.getActivePlayerTeam();
             const side = myTeam ?? 0;
             if (side !== this._lastSide) {
                 this._lastSide = side;
@@ -377,7 +390,7 @@ class GameUISystem extends GUTS.BaseSystem {
         const team = this.game.getComponent(firstUnit, "team");
 
         victoriousUnits.forEach(entityId => {
-            this.game.call('startCelebration', entityId, team?.team);
+            this.call.startCelebration( entityId, team?.team);
         });
     }
 

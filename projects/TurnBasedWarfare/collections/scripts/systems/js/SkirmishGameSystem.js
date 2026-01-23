@@ -16,6 +16,19 @@
 class SkirmishGameSystem extends GUTS.BaseSystem {
     static services = [];
 
+    static serviceDependencies = [
+        'setLocalGame',
+        'showLoadingScreen',
+        'setActivePlayer',
+        'initializeGame',
+        'createPlayerEntity',
+        'spawnGoldMineForTeam',
+        'spawnStartingUnitsForTeam',
+        'getUnitTypeDef',
+        'getPlayerEntities',
+        'broadcastGameEnd'
+    ];
+
     constructor(game) {
         super(game);
         this.game.skirmishGameSystem = this;
@@ -34,17 +47,21 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
      * @param {Object} params - Skirmish config passed to switchScene (local) or null (online)
      */
     onSceneLoad(sceneData, params) {
+        console.log('[SkirmishGameSystem] onSceneLoad called, params:', params);
+        console.log('[SkirmishGameSystem] onlinePlayers in game.state:', this.game.state.onlinePlayers);
+
         if (params && params.isSkirmish) {
             // Local skirmish vs AI - store config for postSceneLoad
             this.pendingSkirmishConfig = params;
             this.isOnlineMatch = false;
-        } else if (!params || !params.isSkirmish) {
-            // Online multiplayer match - ServerGameRoom loaded this scene
-            // Check if we're on the server (ServerGameRoom creates player entities)
-            if (this.game.serverNetworkManager) {
-                this.isOnlineMatch = true;
-                this.pendingOnlineMatch = true;
-            }
+            console.log('[SkirmishGameSystem] Local skirmish mode');
+        } else if (this.game.state.onlinePlayers && this.game.state.onlinePlayers.length > 0) {
+            // Online multiplayer match - both client and server use onlinePlayers to detect this
+            this.isOnlineMatch = true;
+            this.pendingOnlineMatch = true;
+            console.log('[SkirmishGameSystem] Online match mode');
+        } else {
+            console.log('[SkirmishGameSystem] No match configuration detected');
         }
     }
 
@@ -53,14 +70,18 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
      * This ensures WorldSystem has created uiScene before we call initializeGame
      */
     postSceneLoad() {
+        console.log('[SkirmishGameSystem] postSceneLoad called, pendingSkirmishConfig:', !!this.pendingSkirmishConfig, 'pendingOnlineMatch:', !!this.pendingOnlineMatch);
+
         if (this.pendingSkirmishConfig) {
             // Local skirmish vs AI
             this.initializeSkirmish(this.pendingSkirmishConfig);
             this.pendingSkirmishConfig = null;
         } else if (this.pendingOnlineMatch) {
-            // Online multiplayer - just spawn starting state
+            // Online multiplayer - spawn starting state on both client and server
+            console.log('[SkirmishGameSystem] Calling initializeOnlineMatch...');
             this.initializeOnlineMatch();
             this.pendingOnlineMatch = false;
+            console.log('[SkirmishGameSystem] initializeOnlineMatch complete');
         }
     }
 
@@ -85,7 +106,7 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         console.log('[SkirmishGameSystem] initializeSkirmish, isLoadingSave:', isLoadingSave, 'pendingSaveData:', saveData ? 'present' : 'null');
 
         // Enable local game mode (sets game.state.isLocalGame and local player ID)
-        this.game.call('setLocalGame', true, 0);
+        this.call.setLocalGame( true, 0);
 
         // Generate game seed for deterministic RNG (use timestamp-based seed)
         // If loading save, preserve saved seed if available
@@ -118,7 +139,7 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         }
         this.game.state.level = levelIndex;
 
-        this.game.call('showLoadingScreen');
+        this.call.showLoadingScreen();
 
         // Update terrain
         const gameScene = this.collections?.scenes?.skirmish;
@@ -146,10 +167,10 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
 
         // Set active player with team - needed for getActivePlayerTeam() to work
         if (this.game.hasService('setActivePlayer')) {
-            this.game.call('setActivePlayer', 0, this.playerTeam);
+            this.call.setActivePlayer( 0, this.playerTeam);
         }
 
-        this.game.call('initializeGame', null);
+        this.call.initializeGame( null);
     }
 
     /**
@@ -216,13 +237,13 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         const startingGold = config.startingGold || 100;
 
         // Create player entities for both human and AI
-        this.game.call('createPlayerEntity', 0, {
+        this.call.createPlayerEntity( 0, {
             team: this.playerTeam,
             gold: startingGold,
             upgrades: 0
         });
 
-        this.game.call('createPlayerEntity', 1, {
+        this.call.createPlayerEntity( 1, {
             team: this.aiTeam,
             gold: startingGold,
             upgrades: 0
@@ -235,12 +256,12 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
      */
     spawnStartingState() {
         // Spawn gold mines for both teams
-        this.game.call('spawnGoldMineForTeam', this.playerTeam);
-        this.game.call('spawnGoldMineForTeam', this.aiTeam);
+        this.call.spawnGoldMineForTeam( this.playerTeam);
+        this.call.spawnGoldMineForTeam( this.aiTeam);
 
         // Spawn starting units for both teams
-        this.game.call('spawnStartingUnitsForTeam', this.playerTeam);
-        this.game.call('spawnStartingUnitsForTeam', this.aiTeam);
+        this.call.spawnStartingUnitsForTeam( this.playerTeam);
+        this.call.spawnStartingUnitsForTeam( this.aiTeam);
 
         console.log('[SkirmishGameSystem] Spawned starting state for both teams');
     }
@@ -249,47 +270,67 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
 
     /**
      * Initialize an online multiplayer match
-     * Creates player entities and spawns starting state for both teams
+     * Both server and client spawn units locally - server's entities sync to client after
      */
     initializeOnlineMatch() {
+        console.log('[SkirmishGameSystem] initializeOnlineMatch called (isServer:', this.game.isServer + ')');
+        console.log('[SkirmishGameSystem] nextEntityId before init:', this.game.nextEntityId);
+
         // Check if we're loading from a save file
         const isLoadingSave = !!this.game.pendingSaveData;
 
         if (isLoadingSave) {
-            console.log('[SkirmishGameSystem] Online match loading from save - skipping player/starting state creation');
+            console.log('[SkirmishGameSystem] Online match loading from save - skipping initialization');
             return;
         }
 
-        // Get player info stored by ServerGameRoom
+        // Both client and server create player entities locally (deterministic)
         const onlinePlayers = this.game.state.onlinePlayers;
+        console.log('[SkirmishGameSystem] onlinePlayers from game.state:', onlinePlayers);
+
         if (!onlinePlayers || onlinePlayers.length === 0) {
             console.error('[SkirmishGameSystem] No online players found in game state');
             return;
         }
 
+        console.log('[SkirmishGameSystem] Creating', onlinePlayers.length, 'player entities...');
+
         // Create player entities for all players in the match
         for (const playerInfo of onlinePlayers) {
-            this.game.call('createPlayerEntity', playerInfo.playerId, {
+            const entityId = this.call.createPlayerEntity( playerInfo.playerId, {
                 team: playerInfo.team,
                 gold: playerInfo.gold,
                 upgrades: 0
             });
-            console.log('[SkirmishGameSystem] Created player entity for online player:', playerInfo.playerId, 'team:', playerInfo.team);
+            console.log('[SkirmishGameSystem] Created player entity:', entityId, 'for playerId:', playerInfo.playerId, 'team:', playerInfo.team);
         }
+
+        // Verify player entities were created
+        const playerEntities = this.call.getPlayerEntities();
+        console.log('[SkirmishGameSystem] Player entities after creation:', playerEntities?.length || 0);
 
         // Teams are always left vs right in online matches
         const leftTeam = this.enums.team.left;
         const rightTeam = this.enums.team.right;
 
-        // Spawn gold mines for both teams
-        this.game.call('spawnGoldMineForTeam', leftTeam);
-        this.game.call('spawnGoldMineForTeam', rightTeam);
+        console.log('[SkirmishGameSystem] About to spawn gold mines - nextEntityId:', this.game.nextEntityId);
 
-        // Spawn starting units for both teams
-        this.game.call('spawnStartingUnitsForTeam', leftTeam);
-        this.game.call('spawnStartingUnitsForTeam', rightTeam);
+        // Both client and server spawn units and gold mines locally (deterministic)
+        const leftMine = this.call.spawnGoldMineForTeam( leftTeam);
+        console.log('[SkirmishGameSystem] Spawned left gold mine:', leftMine?.entityId, 'nextEntityId:', this.game.nextEntityId);
 
-        console.log('[SkirmishGameSystem] Initialized online match with', onlinePlayers.length, 'players');
+        const rightMine = this.call.spawnGoldMineForTeam( rightTeam);
+        console.log('[SkirmishGameSystem] Spawned right gold mine:', rightMine?.entityId, 'nextEntityId:', this.game.nextEntityId);
+
+        console.log('[SkirmishGameSystem] About to spawn starting units - nextEntityId:', this.game.nextEntityId);
+
+        this.call.spawnStartingUnitsForTeam( leftTeam);
+        console.log('[SkirmishGameSystem] Spawned left team units - nextEntityId:', this.game.nextEntityId);
+
+        this.call.spawnStartingUnitsForTeam( rightTeam);
+        console.log('[SkirmishGameSystem] Spawned right team units - nextEntityId:', this.game.nextEntityId);
+
+        console.log('[SkirmishGameSystem] Initialized online match - final nextEntityId:', this.game.nextEntityId);
     }
 
     // ==================== VICTORY CONDITIONS ====================
@@ -307,7 +348,7 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         const buildingEntities = this.game.getEntitiesWith('unitType', 'team', 'health');
         for (const entityId of buildingEntities) {
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             if (!unitType || unitType.collection !== 'buildings') continue;
 
             const health = this.game.getComponent(entityId, 'health');
@@ -332,7 +373,7 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
 
         if (losingTeam !== null) {
             // Find the winner (player on the opposite team)
-            const playerEntities = this.game.call('getPlayerEntities');
+            const playerEntities = this.call.getPlayerEntities();
             for (const entityId of playerEntities) {
                 const stats = this.game.getComponent(entityId, 'playerStats');
                 if (stats && stats.team !== losingTeam) {
@@ -344,7 +385,7 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
                     };
 
                     // Broadcast game end and end game
-                    this.game.call('broadcastGameEnd', result);
+                    this.call.broadcastGameEnd( result);
                     this.game.endGame(result);
                     return;
                 }
@@ -359,7 +400,7 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
      */
     getPlayerStatsForBroadcast() {
         const stats = {};
-        const playerEntities = this.game.call('getPlayerEntities');
+        const playerEntities = this.call.getPlayerEntities();
         for (const entityId of playerEntities) {
             const playerStats = this.game.getComponent(entityId, 'playerStats');
             if (playerStats) {
@@ -381,7 +422,7 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
     onSceneUnload() {
         // Disable local game mode when leaving (only matters for local skirmish)
         if (!this.isOnlineMatch) {
-            this.game.call('setLocalGame', false, 0);
+            this.call.setLocalGame( false, 0);
         }
         this.playerTeam = null;
         this.aiTeam = null;

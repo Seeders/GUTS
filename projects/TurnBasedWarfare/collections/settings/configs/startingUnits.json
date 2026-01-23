@@ -17,19 +17,55 @@
     },
     {
       "spawnType": "peasant",
-      "collection": "units"
+      "collection": "units",
+      "components": {
+        "transform": {
+          "position": {
+            "x": 50,
+            "y": 0,
+            "z": 50
+          }
+        }
+      }
     },
     {
       "spawnType": "peasant",
-      "collection": "units"
+      "collection": "units",
+      "components": {
+        "transform": {
+          "position": {
+            "x": -50,
+            "y": 0,
+            "z": 50
+          }
+        }
+      }
     },
     {
       "spawnType": "peasant",
-      "collection": "units"
+      "collection": "units",
+      "components": {
+        "transform": {
+          "position": {
+            "x": 50,
+            "y": 0,
+            "z": -50
+          }
+        }
+      }
     },
     {
       "spawnType": "peasant",
-      "collection": "units"
+      "collection": "units",
+      "components": {
+        "transform": {
+          "position": {
+            "x": -50,
+            "y": 0,
+            "z": -50
+          }
+        }
+      }
     }
   ]
 }

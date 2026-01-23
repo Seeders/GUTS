@@ -1,6 +1,11 @@
 class UISystem extends GUTS.BaseSystem {
     static services = ['showNotification'];
 
+    static serviceDependencies = [
+        'initializeParticleSystem',
+        'initializeEffectsSystem'
+    ];
+
     constructor(game) {
         super(game);
         this.game.uiSystem = this;
@@ -21,8 +26,8 @@ class UISystem extends GUTS.BaseSystem {
     }
     
     start() {
-        this.game.call('initializeParticleSystem');
-        this.game.call('initializeEffectsSystem');
+        this.call.initializeParticleSystem();
+        this.call.initializeEffectsSystem();
         // Welcome messages
     }
     

@@ -1,4 +1,8 @@
 class TerrainSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'createEntityFromPrefab'
+    ];
+
     static services = [
         'getTerrainHeightAtPosition',
         'getTerrainTypeAtPosition',
@@ -139,7 +143,7 @@ class TerrainSystem extends GUTS.BaseSystem {
         if (!levelData) return;
 
         // Use createEntityFromPrefab for consistent entity creation
-        const entityId = this.game.call('createEntityFromPrefab', {
+        const entityId = this.call.createEntityFromPrefab( {
             prefab: 'terrain',
             type: levelName,
             collection: 'levels',
@@ -184,7 +188,7 @@ class TerrainSystem extends GUTS.BaseSystem {
 
         console.log(`[TerrainSystem] Loading ${levelEntities.length} level entities...`);
 
-        const enums = this.game.call('getEnums');
+        const enums = this.game.getEnums();
         const prefabs = this.collections.prefabs || {};
         const objectTypeDefinitions = this.collections.objectTypeDefinitions || {};
 
@@ -245,7 +249,7 @@ class TerrainSystem extends GUTS.BaseSystem {
                 }
 
                 // Create entity using prefab-driven system
-                const entityId = this.game.call('createEntityFromPrefab', {
+                const entityId = this.call.createEntityFromPrefab( {
                     prefab: prefabName,
                     type: type,
                     collection: collection,

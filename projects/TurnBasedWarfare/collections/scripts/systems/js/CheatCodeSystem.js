@@ -23,6 +23,14 @@ class CheatCodeSystem extends GUTS.BaseSystem {
         'cheats'
     ];
 
+    static serviceDependencies = [
+        'sendCheatRequest',
+        'getTerrainHeightAtPosition',
+        'createPlacement',
+        'addPlayerGold',
+        'broadcastGameEnd'
+    ];
+
     constructor(game) {
         super(game);
         this.game.cheatCodeSystem = this;
@@ -115,7 +123,7 @@ class CheatCodeSystem extends GUTS.BaseSystem {
         }
 
         // Send through network system
-        this.game.call('sendCheatRequest', cheatName, params, callback);
+        this.call.sendCheatRequest( cheatName, params, callback);
         return true;
     }
 
@@ -284,7 +292,7 @@ NOTES
             if (!pos) continue;
 
             // Get terrain height at spawn position
-            const terrainHeight = this.game.call('getTerrainHeightAtPosition', pos.x, pos.z) ?? 0;
+            const terrainHeight = this.call.getTerrainHeightAtPosition( pos.x, pos.z) ?? 0;
 
             // Build transform for this unit
             const transform = {
@@ -307,7 +315,7 @@ NOTES
             const providedEntityId = entityIds?.[i] ?? null;
 
             // Use the standard unit creation pipeline with placement
-            const entityId = this.game.call('createPlacement', placementData, transform, team, providedEntityId);
+            const entityId = this.call.createPlacement( placementData, transform, team, providedEntityId);
 
             spawnedUnits.push(entityId);
         }
@@ -395,7 +403,7 @@ NOTES
     executeAddGold(params) {
         const { amount, team } = params;
 
-        this.game.call('addPlayerGold', team, amount);
+        this.call.addPlayerGold( team, amount);
         return { success: true, amount, team };
     }
 
@@ -440,7 +448,7 @@ NOTES
         };
 
         // Broadcast game end and end game
-        this.game.call('broadcastGameEnd', result);
+        this.call.broadcastGameEnd( result);
         this.game.endGame(result);
 
         return { success: true, winner: myPlayerId };
@@ -465,7 +473,7 @@ NOTES
         };
 
         // Broadcast game end and end game
-        this.game.call('broadcastGameEnd', result);
+        this.call.broadcastGameEnd( result);
         this.game.endGame(result);
 
         return { success: true, winner: winnerId };

@@ -9,6 +9,12 @@ class SaveSystem extends GUTS.BaseSystem {
         'importSaveFile'
     ];
 
+    static serviceDependencies = [
+        'getActivePlayerTeam',
+        'getUnitTypeDef',
+        'addAbilitiesToUnit'
+    ];
+
     constructor(game) {
         super(game);
         this.game.saveSystem = this;
@@ -216,7 +222,7 @@ class SaveSystem extends GUTS.BaseSystem {
                     stats: {
                         gold: state.gold || state.startingGold,
                         health: state.health || state.teamMaxHealth,
-                        team: this.game.call('getActivePlayerTeam') ?? this.enums.team.left
+                        team: this.call.getActivePlayerTeam() ?? this.enums.team.left
                     }
                 });
             }
@@ -523,9 +529,9 @@ class SaveSystem extends GUTS.BaseSystem {
 
         for (const entityId of entitiesWithUnitType) {
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             if (unitType && unitType.abilities && unitType.abilities.length > 0) {
-                this.game.call('addAbilitiesToUnit', entityId, unitType.abilities);
+                this.call.addAbilitiesToUnit( entityId, unitType.abilities);
                 abilitiesInitialized++;
             }
         }

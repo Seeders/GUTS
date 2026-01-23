@@ -1,4 +1,9 @@
 class BloodlustAbility extends GUTS.BaseAbility {
+    static serviceDependencies = [
+        ...GUTS.BaseAbility.serviceDependencies,
+        'getBuffTypeDef'
+    ];
+
     constructor(game, abilityData = {}) {
         super(game, {
             name: 'Bloodlust',
@@ -113,7 +118,7 @@ class BloodlustAbility extends GUTS.BaseAbility {
 
         const enums = this.game.getEnums();
         const buff = this.game.getComponent(killerId, "buff");
-        const buffTypeDef = this.game.call('getBuffTypeDef', buff.buffType);
+        const buffTypeDef = this.call.getBuffTypeDef( buff.buffType);
         if (!buff || buff.buffType !== enums.buffTypes.bloodlust || !buffTypeDef) return;
 
         // Increase kill stacks up to maximum (maxStacks from buffType definition)

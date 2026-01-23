@@ -212,14 +212,16 @@ class SceneManager {
                 system.enabled = true;
             }
         }
-
         // Call postAllInit on any newly created systems
         // (systems that were just instantiated need this called)
         for (const systemName of sceneSystems) {
             const system = this.game.systemsByName.get(systemName);
-            if (system && system.postAllInit && !system._postAllInitCalled) {
-                system.postAllInit();
-                system._postAllInitCalled = true;
+            if(system) {
+                system.getServiceDependencies();
+                if (system.postAllInit && !system._postAllInitCalled) {
+                    system.postAllInit();
+                    system._postAllInitCalled = true;
+                }
             }
         }
     }
@@ -236,7 +238,7 @@ class SceneManager {
 
         const collections = this.game.getCollections();
         const prefabs = collections.prefabs || {};
-        const enums = this.game.call?.('getEnums');
+        const enums = this.game.getEnums();
 
         for (const entityDef of entities) {
             if (!entityDef.prefab || !entityDef.type) {

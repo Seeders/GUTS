@@ -1,4 +1,10 @@
 class StatisticsTrackingSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'getPlayerGold',
+        'getActivePlayerTeam',
+        'getUnitTypeDef'
+    ];
+
     constructor(game) {
         super(game);
         this.game.statisticsTrackingSystem = this;
@@ -37,7 +43,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     }
     
     collectStats() {
-        const gold = this.game.hasService('getPlayerGold') ? this.game.call('getPlayerGold') : 0;
+        const gold = this.game.hasService('getPlayerGold') ? this.call.getPlayerGold() : 0;
         return {
             round: this.game.state?.round || 1,
             goldEarned: gold,
@@ -53,7 +59,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     getUnitsDeployed() {
         try {
             const playerUnits = this.game.getEntitiesWith("team", "unitType") || [];
-            const myTeamId = this.game.call('getActivePlayerTeam');
+            const myTeamId = this.call.getActivePlayerTeam();
 
             return playerUnits.filter(entityId => {
                 const team = this.game.getComponent(entityId, "team");
@@ -69,7 +75,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
             const alivePlayerUnits = this.game.getEntitiesWith(
                 "team", "health", "unitType"
             ) || [];
-            const myTeamId = this.game.call('getActivePlayerTeam');
+            const myTeamId = this.call.getActivePlayerTeam();
 
             return alivePlayerUnits.filter(entityId => {
                 const team = this.game.getComponent(entityId, "team");
@@ -101,12 +107,12 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
     calculateArmyValue() {
         try {
             const playerUnits = this.game.getEntitiesWith("team", "unitType") || [];
-            const myTeamId = this.game.call('getActivePlayerTeam');
+            const myTeamId = this.call.getActivePlayerTeam();
 
             return playerUnits.reduce((total, entityId) => {
                 const team = this.game.getComponent(entityId, "team");
                 const unitTypeComp = this.game.getComponent(entityId, "unitType");
-                const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+                const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
                 if (team?.team === myTeamId && unitType?.value) {
                     return total + unitType.value;
@@ -126,7 +132,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
         if (!this._statsCacheDirty) return;
 
         const playerUnits = this.game.getEntitiesWith("team", "unitType") || [];
-        const myTeamId = this.game.call('getActivePlayerTeam');
+        const myTeamId = this.call.getActivePlayerTeam();
 
         let deployed = 0;
         let remaining = 0;
@@ -145,7 +151,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
             }
 
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             if (unitType?.value) {
                 armyValue += unitType.value;
             }

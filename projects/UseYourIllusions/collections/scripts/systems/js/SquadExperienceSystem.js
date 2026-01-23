@@ -15,6 +15,19 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         'grantCombatExperience'
     ];
 
+    static serviceDependencies = [
+        'getSquadUnitsForPlacement',
+        'getPlacementById',
+        'createParticleEffect',
+        'replaceUnit',
+        'specializeSquad',
+        'getUnitTypeDef',
+        'getPlacementsForSide',
+        'getActivePlayerTeam',
+        'getOpponentPlacements',
+        'updateSquadExperience'
+    ];
+
     constructor(game) {
         super(game);
         this.game.squadExperienceSystem = this;
@@ -105,7 +118,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             seenPlacementIds.add(placement.placementId);
 
             // Get squad units for this placement (dynamically computed)
-            const squadUnits = this.game.call('getSquadUnitsForPlacement', placement.placementId, entitiesWithPlacement);
+            const squadUnits = this.call.getSquadUnitsForPlacement( placement.placementId, entitiesWithPlacement);
             if (squadUnits && squadUnits.length > 0) {
                 const experience = this.game.getComponent(squadUnits[0], 'experience');
                 if (experience) {
@@ -125,7 +138,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      * @returns {Array} Array of unit entity IDs
      */
     getSquadUnits(placementId) {
-        const placement = this.game.call('getPlacementById', placementId);
+        const placement = this.call.getPlacementById( placementId);
         return placement?.squadUnits || [];
     }
 
@@ -272,7 +285,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             const pos = transform?.position;
             if (pos) {
                 const effectType = specializationId ? 'magic' : 'heal';
-                this.game.call('createParticleEffect',
+                this.call.createParticleEffect(
                     pos.x, pos.y + 20, pos.z,
                     effectType,
                     { count: 3, speedMultiplier: specializationId ? 1.5 : 1.2 }
@@ -303,7 +316,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         const specializationUnitType = this.collections.units[specializationId];
 
         // Find the placement in PlacementSystem
-        const placement = this.game.call('getPlacementById', placementId);
+        const placement = this.call.getPlacementById( placementId);
         if (!placement) {
             console.error(`Placement ${placementId} not found`);
             return false;
@@ -321,7 +334,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
 
         unitIds.forEach(entityId => {
             // Use shared replaceUnit - no animation for specialization
-            this.game.call('replaceUnit', entityId, specializationId);
+            this.call.replaceUnit( entityId, specializationId);
         });
 
         // Update squad value based on new unit type
@@ -401,7 +414,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
                     document.body.removeChild(modal);
                     // Send specialization to server so it can update pendingNetworkUnitData for opponents
                     // Use specializeSquad (separate from levelSquad) to avoid trying to level up again
-                    this.game.call('specializeSquad', { placementId, specializationId: specId }, (success) => {
+                    this.call.specializeSquad( { placementId, specializationId: specId }, (success) => {
                         if (callback) callback(success);
                     });
                 });
@@ -454,7 +467,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             if (teamComp?.team !== team) continue;
 
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitTypeDef = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
 
             // Check if this is a building with a units array
             if (unitTypeDef?.units && Array.isArray(unitTypeDef.units)) {
@@ -478,7 +491,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             const placement = this.game.getComponent(entityId, 'placement');
             if (placement && placement.placementId === placementId) {
                 const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                return this.game.call('getUnitTypeDef', unitTypeComp);
+                return this.call.getUnitTypeDef( unitTypeComp);
             }
         }
         return null;
@@ -519,7 +532,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         const unitIds = this.getSquadUnits(placementId);
         unitIds.forEach(entityId => {
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.call.getUnitTypeDef( unitTypeComp);
             if (unitType) {
                 const baseUnitData = unitType;
             
@@ -609,24 +622,24 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
      */
     getSquadDisplayName(placementId) {
         // Try to get the name from placement system - get unitType from entity
-        const playerPlacements = this.game.call('getPlacementsForSide', this.game.call('getActivePlayerTeam'));
+        const playerPlacements = this.call.getPlacementsForSide( this.call.getActivePlayerTeam());
         if (playerPlacements) {
             const placement = playerPlacements.find(p => p.placementId === placementId);
             if (placement && placement.squadUnits && placement.squadUnits.length > 0) {
                 const unitTypeComp = this.game.getComponent(placement.squadUnits[0], 'unitType');
-                const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+                const unitType = this.call.getUnitTypeDef( unitTypeComp);
                 if (unitType) {
                     return unitType.title || unitType.id || 'Squad';
                 }
             }
         }
 
-        const enemyPlacements = this.game.call('getOpponentPlacements');
+        const enemyPlacements = this.call.getOpponentPlacements();
         if (enemyPlacements) {
             const enemyPlacement = enemyPlacements.find(p => p.placementId === placementId);
             if (enemyPlacement && enemyPlacement.squadUnits && enemyPlacement.squadUnits.length > 0) {
                 const unitTypeComp = this.game.getComponent(enemyPlacement.squadUnits[0], 'unitType');
-                const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+                const unitType = this.call.getUnitTypeDef( unitTypeComp);
                 if (unitType) {
                     return unitType.title || unitType.id || 'Enemy Squad';
                 }
@@ -651,7 +664,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
     updateSquadUI() {
         // This method could update a dedicated squad experience panel
         // For now, we'll just ensure the shop system can access this data
-        this.game.call('updateSquadExperience');
+        this.call.updateSquadExperience();
     }
     
     /**
@@ -664,7 +677,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         for (const squad of this.getAllSquadsWithExperience()) {
             const squadData = squad.experience;
             const team = this.getPlacementTeam(squad.placementId);
-            if (squadData.canLevelUp && team === this.game.call('getActivePlayerTeam')) {
+            if (squadData.canLevelUp && team === this.call.getActivePlayerTeam()) {
                 readySquads.push({
                     ...squadData,
                     placementId: squad.placementId,

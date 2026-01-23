@@ -11,6 +11,11 @@ class OnlineLobbyUISystem extends GUTS.BaseSystem {
         'showGamesListView'
     ];
 
+    static serviceDependencies = [
+        'createRoom',
+        'joinRoom'
+    ];
+
     constructor(game) {
         super(game);
         this.refreshInterval = null;
@@ -225,12 +230,12 @@ class OnlineLobbyUISystem extends GUTS.BaseSystem {
 
     createGame() {
         const playerName = this.game.state.playerName || 'Player';
-        this.game.call('createRoom', playerName, 2);
+        this.call.createRoom( playerName, 2);
     }
 
     joinGame(roomId) {
         const playerName = this.game.state.playerName || 'Player';
-        this.game.call('joinRoom', roomId, playerName);
+        this.call.joinRoom( roomId, playerName);
     }
 
     goBackToMenu() {
