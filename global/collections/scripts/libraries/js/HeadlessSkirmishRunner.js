@@ -61,7 +61,7 @@ class HeadlessSkirmishRunner {
         };
 
         const game = this.game;
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
 
         // Reset game state for new simulation
         game.state.gameOver = false;
@@ -82,8 +82,6 @@ class HeadlessSkirmishRunner {
 
         // Set headless simulation mode (allows AI behavior trees to run)
         game.state.isHeadlessSimulation = true;
-        game.state.isLocalGame = true;
-        game.state.localPlayerId = 0;
 
         // Set level
         const levelIndex = enums.levels?.[this.config.level] ?? 0;
@@ -91,6 +89,10 @@ class HeadlessSkirmishRunner {
 
         // Load the headless scene
         await game.switchScene('headless');
+
+        // Set local game mode AFTER scene switch (some systems may reset it during scene load)
+        game.state.isLocalGame = true;
+        game.state.localPlayerId = 0;
 
         // Create player entities
         const leftTeam = enums.team.left;
@@ -115,6 +117,19 @@ class HeadlessSkirmishRunner {
             game.call('initializeGame', null);
         }
 
+        // Spawn starting units and gold mines for both teams
+        if (game.hasService('spawnGoldMineForTeam')) {
+            game.call('spawnGoldMineForTeam', leftTeam);
+            game.call('spawnGoldMineForTeam', rightTeam);
+            console.log('[SkirmishRunner] Spawned gold mines for both teams');
+        }
+
+        if (game.hasService('spawnStartingUnitsForTeam')) {
+            game.call('spawnStartingUnitsForTeam', leftTeam);
+            game.call('spawnStartingUnitsForTeam', rightTeam);
+            console.log('[SkirmishRunner] Spawned starting units for both teams');
+        }
+
         // Spawn AI opponent entities for both teams
         this.spawnAIOpponent(leftTeam, this.config.leftBuildOrder, this.config.leftAiMode);
         this.spawnAIOpponent(rightTeam, this.config.rightBuildOrder, this.config.rightAiMode);
@@ -130,7 +145,7 @@ class HeadlessSkirmishRunner {
      */
     spawnAIOpponent(team, buildOrderId, aiMode = 'buildOrder') {
         const game = this.game;
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
 
         const aiEntityId = game.createEntity();
 
@@ -226,7 +241,7 @@ class HeadlessSkirmishRunner {
      * @returns {Promise<Object>} Result with success status and placementId
      */
     async placeBuilding(team, buildingId, x, z) {
-        const enums = this.game.call('getEnums');
+        const enums = this.game.getEnums();
         const collections = this.game.getCollections();
         const teamEnum = typeof team === 'string' ? enums.team[team] : team;
 
@@ -258,7 +273,7 @@ class HeadlessSkirmishRunner {
      * @returns {Promise<Object>} Result with success status
      */
     async placeUnit(team, unitId, buildingEntityId) {
-        const enums = this.game.call('getEnums');
+        const enums = this.game.getEnums();
         const teamEnum = typeof team === 'string' ? enums.team[team] : team;
 
         // Use ui_purchaseUnit - SAME code path as GUI
@@ -278,7 +293,7 @@ class HeadlessSkirmishRunner {
      * @returns {Promise<Object>} Result with success status
      */
     async placeUnitAt(team, unitId, x, z) {
-        const enums = this.game.call('getEnums');
+        const enums = this.game.getEnums();
         const collections = this.game.getCollections();
         const teamEnum = typeof team === 'string' ? enums.team[team] : team;
 
@@ -307,7 +322,7 @@ class HeadlessSkirmishRunner {
         if (this.game.hasService('startBattle')) {
             this.game.call('startBattle');
         } else {
-            const enums = this.game.call('getEnums');
+            const enums = this.game.getEnums();
             this.game.state.phase = enums.gamePhase.battle;
         }
     }
@@ -488,7 +503,7 @@ class HeadlessSkirmishRunner {
      * Get placements for a team
      */
     getPlacementsForTeam(team) {
-        const enums = this.game.call('getEnums');
+        const enums = this.game.getEnums();
         const teamEnum = typeof team === 'string' ? enums.team[team] : team;
 
         if (this.game.hasService('getPlacementsForSide')) {
@@ -529,7 +544,7 @@ class HeadlessSkirmishRunner {
      */
     getUnits() {
         const units = [];
-        const enums = this.game.call('getEnums');
+        const enums = this.game.getEnums();
         const reverseEnums = this.game.getReverseEnums();
 
         const entities = this.game.getEntitiesWith('unitType', 'team', 'transform');

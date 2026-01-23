@@ -138,6 +138,16 @@ class BehaviorTreeProcessor {
     }
 
     /**
+     * Cache service dependencies for all registered behavior nodes
+     * Called by BehaviorSystem.init() after all systems are loaded
+     */
+    cacheAllServiceDependencies() {
+        for (const nodeInstance of this.nodes.values()) {
+            this.game.cacheServiceDependencies(nodeInstance);
+        }
+    }
+
+    /**
      * Evaluate a registered behavior node for an entity
      * @param {string} nodeId - The behavior node ID to evaluate
      * @param {string} entityId - Entity to evaluate for

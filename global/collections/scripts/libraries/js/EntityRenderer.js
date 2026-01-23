@@ -50,11 +50,11 @@ class EntityRenderer {
         this.defaultFrameRate = 10; // Used when no fps specified in animation data
 
         // Direction names array for converting numeric direction to string
-        const directionEnumMap = this.game?.call('getEnumMap', 'direction');
+        const directionEnumMap = this.game?.getEnumMap('direction');
         this.directionNames = directionEnumMap?.toValue;
 
         // Cache reverseEnums for index-to-name lookups
-        this.reverseEnums = this.game?.call('getReverseEnums');
+        this.reverseEnums = this.game.getReverseEnums();
 
         // Static GLTF model cache
         this.modelCache = new Map(); // collectionType -> { entityType: modelData }
@@ -1547,7 +1547,7 @@ class EntityRenderer {
         }
 
         // Convert numeric animation type to string for lookup
-        const animationTypeEnumMap = this.game?.call('getEnumMap', 'animationType');
+        const animationTypeEnumMap = this.game?.getEnumMap('animationType');
         const animationTypeName = typeof animState.spriteAnimationType === 'number'
             ? animationTypeEnumMap?.toValue?.[animState.spriteAnimationType]
             : animState.spriteAnimationType;

@@ -4,6 +4,10 @@ class BaseSystem {
     // Each method will be auto-registered as game.register('methodName', this.methodName.bind(this))
     static services = [];
 
+    // Static property for services this system depends on (will be cached for fast access)
+    // Format: ['serviceName1', 'serviceName2', ...]
+    static serviceDependencies = [];
+
     constructor(game) {
         this.game = game;
         this.engine = game.app;
@@ -11,13 +15,22 @@ class BaseSystem {
         this.enums = this.game.getEnums();
         this.collections = this.game.getCollections();
         this.reverseEnums = this.game.getReverseEnums();
+
+        // Cached service functions for fast access (e.g., this.call.useAbility)
+        this.call = {};
     }
 
     /**
      * Called after all systems are initialized
+     * Caches service dependencies (e.g., this.call.useAbility)
      */
-    postAllInit() {
-
+    getServiceDependencies() {
+        const deps = this.constructor.serviceDependencies;
+        if (deps && deps.length > 0) {
+            for (const serviceName of deps) {
+                this.call[serviceName] = this.game.getService(serviceName);
+            }
+        }
     }
 
     /**

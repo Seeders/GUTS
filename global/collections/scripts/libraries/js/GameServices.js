@@ -11,6 +11,10 @@ class GameServices {
         return this.services.has(key);
     }
 
+    get(key) {
+        return this.services.get(key) || (() => undefined);
+    }
+
     // Public API
     call(key, ...args) {
         const method = this.services.get(key);

@@ -261,7 +261,7 @@ export default class HeadlessEngine extends BaseEngine {
 
         // Final check - if phase is 'ended', ensure gameOver is true
         const phaseName = reverseEnums.gamePhase?.[game.state.phase];
-        const enums = game.call('getEnums');
+        const enums = game.getEnums();
         const phaseEndedEnum = enums?.gamePhase?.ended;
 
         // Store our own debug check

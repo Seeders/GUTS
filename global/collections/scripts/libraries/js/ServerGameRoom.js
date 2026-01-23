@@ -382,10 +382,13 @@ class ServerGameRoom extends global.GUTS.GameRoom {
 
         // Store player info on game state so SkirmishGameSystem can create player entities
         // This keeps player entity creation consistent across all game modes
+        // Use numeric player IDs so both client and server can create matching entities
         this.game.state.onlinePlayers = [];
-        for (const [playerId, player] of this.players) {
+        for (const [socketId, player] of this.players) {
+            const numericId = this.getNumericPlayerId(socketId);
             this.game.state.onlinePlayers.push({
-                playerId: playerId,
+                playerId: numericId,  // Use numeric ID, not socket ID
+                socketId: socketId,    // Keep socket ID for server-side lookups
                 team: player.team,
                 gold: this.game.state.startingGold
             });
@@ -400,14 +403,16 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         const entityCount = this.game.getEntityCount?.() || 0;
         console.log(`[ServerGameRoom] After startGame. Total entities on server: ${entityCount}`);
 
-        // Broadcast game started with level info, entity sync, and save data flag
+        // Broadcast game started with level info and game state (no entitySync - clients spawn locally)
         if (this.serverNetworkManager) {
             let gameState = this.getGameState();
-            // Include entity sync so client can create player entities
-            const entitySync = this.game.serverBattlePhaseSystem?.serializeAllEntities() || {};
+            console.log('[ServerGameRoom] Broadcasting GAME_STARTED with gameState:', {
+                onlinePlayers: gameState.onlinePlayers,
+                level: level,
+                nextEntityId: this.game.nextEntityId
+            });
             this.serverNetworkManager.broadcastToRoom(this.id, 'GAME_STARTED', {
                 gameState: gameState,
-                entitySync: entitySync,
                 level: level,
                 isLoadingSave: isLoadingSave,
                 saveData: isLoadingSave ? this.pendingSaveData : null,
@@ -453,6 +458,8 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             gameType: this.gameConfig?.type || 'default',
             players: playerData,
             round: this.game.state.round,
+            // Pass onlinePlayers for SkirmishGameSystem initialization
+            onlinePlayers: this.game.state.onlinePlayers,
             // Let the game instance provide additional state if needed
             gameData: this.game.getGameState ? this.game.getGameState() : null
         };

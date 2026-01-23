@@ -1797,7 +1797,7 @@ class TerrainMapEditor {
         console.log(`[TerrainMapEditor] Syncing with ${allEntities.length} ECS entities...`);
 
         // Get reverse enums for converting numeric indices back to strings
-        const reverseEnums = this.editorContext.call?.('getReverseEnums') || {};
+        const reverseEnums = this.editorContext.getReverseEnums() || {};
 
         for (const entityId of allEntities) {
             // Check if this entity belongs to a tracked collection
@@ -3140,7 +3140,7 @@ class TerrainMapEditor {
         if (!prefab || !spawnType) return;
 
         // Get enums for team
-        const enums = this.editorContext.call?.('getEnums');
+        const enums = this.editorContext.getEnums();
         const neutralTeam = enums?.team?.neutral ?? 0;
 
         // Create entity using prefab-driven system

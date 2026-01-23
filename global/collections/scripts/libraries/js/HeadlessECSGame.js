@@ -218,7 +218,7 @@ class HeadlessECSGame extends global.GUTS.ServerECSGame {
      * @returns {number[]} Array of entity IDs
      */
     getLivingUnitsByTeam(team) {
-        const enums = this.call('getEnums');
+        const enums = this.getEnums();
         const entities = this.getEntitiesWith('team', 'unitType', 'health');
         return entities.filter(entityId => {
             const teamComp = this.getComponent(entityId, 'team');
@@ -238,7 +238,7 @@ class HeadlessECSGame extends global.GUTS.ServerECSGame {
      * @returns {Object}
      */
     getGameSummary() {
-        const enums = this.call('getEnums');
+        const enums = this.getEnums();
         const reverseEnums = this.getReverseEnums();
 
         const leftUnits = this.getLivingUnitsByTeam(enums.team.left);

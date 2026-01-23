@@ -1,64 +1,112 @@
-round 2
-
-Jan 15 01:27:11  [ServerNetworkManager] onAny event: READY_FOR_BATTLE from 3-UaetgmNuQICgGtAAAB
-Jan 15 01:27:11  [ServerNetworkManager] sendToPlayer: 3-UaetgmNuQICgGtAAAB READY_FOR_BATTLE_RESPONSE
-Jan 15 01:27:11  [ServerNetworkManager] Event emitted successfully
-Jan 15 01:27:13  [ServerNetworkManager] onAny event: READY_FOR_BATTLE from sNFvkvoRj41GyvhcAAAD
-Jan 15 01:27:13  [ServerNetworkManager] sendToPlayer: sNFvkvoRj41GyvhcAAAD READY_FOR_BATTLE_RESPONSE
-Jan 15 01:27:13  [ServerNetworkManager] Event emitted successfully
-Jan 15 01:27:13  [buildPlayersForBattleStart] pendingNetworkUnitData has 0 entries
-Jan 15 01:27:13  [PathfindingSystem] Processing 1 path requests
-Jan 15 01:27:16  [PathfindingSystem] Processing 1 path requests
-Jan 15 01:27:16  [PathfindingSystem] Processing 1 path requests
-Jan 15 01:27:16  [PathfindingSystem] Processing 1 path requests
-Jan 15 01:27:18  [GameServices] missing method playEffect
-Jan 15 01:27:18  [GameServices] missing method showDamageNumber
-Jan 15 01:27:18  [GameServices] missing method playEffect
-Jan 15 01:27:18  [GameServices] missing method showDamageNumber
-Jan 15 01:27:19  [2026-01-15T01:27:19.281Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"50/50"}
-Jan 15 01:27:19  [GameServices] missing method playEffect
-Jan 15 01:27:19  [GameServices] missing method showDamageNumber
-Jan 15 01:27:19  [GameServices] missing method playEffect
-Jan 15 01:27:19  [GameServices] missing method showDamageNumber
-Jan 15 01:27:19  [GameServices] missing method playEffect
-Jan 15 01:27:19  [GameServices] missing method showDamageNumber
-Jan 15 01:27:20  [GameServices] missing method playEffect
-Jan 15 01:27:20  [GameServices] missing method showDamageNumber
-Jan 15 01:27:20  [2026-01-15T01:27:20.162Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"33/50"}
-Jan 15 01:27:20  [GameServices] missing method playEffect
-Jan 15 01:27:20  [GameServices] missing method showDamageNumber
-Jan 15 01:27:20  [GameServices] missing method playEffect
-Jan 15 01:27:20  [GameServices] missing method showDamageNumber
-Jan 15 01:27:20  [GameServices] missing method playEffect
-Jan 15 01:27:20  [GameServices] missing method showDamageNumber
-Jan 15 01:27:20  [2026-01-15T01:27:20.977Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1549) {"damage":22,"element":"physical","targetHealthBefore":"16/50"}
-Jan 15 01:27:20  [GameServices] missing method playEffect
-Jan 15 01:27:20  [2026-01-15T01:27:20.978Z] [INFO] [Damage] FATAL: 0_skeleton(1549) [neutral] killed by 1_d_archer(1566) [right]
-Jan 15 01:27:20  [2026-01-15T01:27:20.979Z] [INFO] [Death] DYING: 0_skeleton(1549) [neutral] started death process
-Jan 15 01:27:20  [GameServices] missing method showDamageNumber
-Jan 15 01:27:21  [GameServices] missing method playEffect
-Jan 15 01:27:21  [GameServices] missing method showDamageNumber
-Jan 15 01:27:21  [GameServices] missing method playEffect
-Jan 15 01:27:21  [GameServices] missing method showDamageNumber
-Jan 15 01:27:21  [2026-01-15T01:27:21.852Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1550) {"damage":22,"element":"physical","targetHealthBefore":"50/50"}
-Jan 15 01:27:21  [GameServices] missing method playEffect
-Jan 15 01:27:21  [GameServices] missing method showDamageNumber
-Jan 15 01:27:22  [GameServices] missing method playEffect
-Jan 15 01:27:22  [GameServices] missing method showDamageNumber
-Jan 15 01:27:22  [GameServices] missing method playEffect
-Jan 15 01:27:22  [GameServices] missing method showDamageNumber
-Jan 15 01:27:22  [2026-01-15T01:27:22.686Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1550) {"damage":22,"element":"physical","targetHealthBefore":"33/50"}
-Jan 15 01:27:22  [GameServices] missing method playEffect
-Jan 15 01:27:22  [GameServices] missing method showDamageNumber
-Jan 15 01:27:22  [2026-01-15T01:27:22.985Z] [INFO] [Death] CORPSE: 0_skeleton(1549) [neutral] converted to corpse
-Jan 15 01:27:23  [GameServices] missing method playEffect
-Jan 15 01:27:23  [2026-01-15T01:27:23.084Z] [INFO] [Damage] FATAL: 1_d_archer(1566) [right] killed by 0_skeleton(1548) [neutral]
-Jan 15 01:27:23  [2026-01-15T01:27:23.085Z] [INFO] [Death] DYING: 1_d_archer(1566) [right] started death process
-Jan 15 01:27:23  [GameServices] missing method showDamageNumber
-Jan 15 01:27:23  [2026-01-15T01:27:23.552Z] [INFO] [Projectile] HIT! 1_d_archer(1566) -> 0_skeleton(1550) {"damage":22,"element":"physical","targetHealthBefore":"16/50"}
-Jan 15 01:27:23  [GameServices] missing method playEffect
-Jan 15 01:27:23  [2026-01-15T01:27:23.552Z] [INFO] [Damage] FATAL: 0_skeleton(1550) [neutral] killed by 1_d_archer(1566) [right]
-Jan 15 01:27:23  [2026-01-15T01:27:23.552Z] [INFO] [Death] DYING: 0_skeleton(1550) [neutral] started death process
-Jan 15 01:27:23  [GameServices] missing method showDamageNumber
-Jan 15 01:27:25  [2026-01-15T01:27:25.077Z] [INFO] [Death] CORPSE: 1_d_archer(1566) [right] converted to corpse
-Jan 15 01:27:25  [2026-01-15T01:27:25.484Z] [INFO] [Death] CORPSE: 0_skeleton(1550) [neutral] converted to corpse
+[TerrainSystem] onSceneLoad called, game.state.level: 0
+[TerrainSystem] Level name from index: forest
+[TerrainSystem] Initializing terrain for level: forest
+[TerrainSystem] Loading 1549 level entities...
+[TerrainSystem] Loaded 1549 level entities
+[TerrainSystem] Terrain initialized
+[SkirmishGameSystem] onSceneLoad called, params: null
+[SkirmishGameSystem] isServer: true
+[SkirmishGameSystem] onlinePlayers in game.state: [
+  { playerId: 'HLIyUGHq8IoXH92UAAAB', team: 2, gold: 100 },
+  { playerId: 'W_iM5CyklWG5Zte_AAAD', team: 3, gold: 100 }
+]
+[SkirmishGameSystem] Online match detected (server), pendingOnlineMatch = true
+[SkirmishGameSystem] postSceneLoad called, pendingSkirmishConfig: false pendingOnlineMatch: true
+[SkirmishGameSystem] Calling initializeOnlineMatch...
+[SkirmishGameSystem] initializeOnlineMatch called
+[SkirmishGameSystem] onlinePlayers from game.state: [
+  { playerId: 'HLIyUGHq8IoXH92UAAAB', team: 2, gold: 100 },
+  { playerId: 'W_iM5CyklWG5Zte_AAAD', team: 3, gold: 100 }
+]
+[SkirmishGameSystem] Creating 2 player entities...
+[SkirmishGameSystem] Created player entity: 1551 for playerId: HLIyUGHq8IoXH92UAAAB team: 2
+[SkirmishGameSystem] Created player entity: 1552 for playerId: W_iM5CyklWG5Zte_AAAD team: 3
+[SkirmishGameSystem] Player entities after creation: 2
+[UnitCreationSystem] setupAbilities called for entity 1553 unitType.abilities: undefined
+[UnitCreationSystem] No abilities defined for unit type
+[UnitCreationSystem] setupAbilities called for entity 1554 unitType.abilities: undefined
+[UnitCreationSystem] No abilities defined for unit type
+[PlacementSystem] spawnStartingUnitsForTeam called for team: 2
+[UnitCreationSystem] setupAbilities called for entity 1555 unitType.abilities: undefined
+[UnitCreationSystem] No abilities defined for unit type
+[UnitCreationSystem] setupAbilities called for entity 1556 unitType.abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] Checking ability BuildAbility - exists: true
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true
+[UnitCreationSystem] Valid abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] hasService addAbilitiesToUnit: true
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1556
+[UnitCreationSystem] setupAbilities called for entity 1557 unitType.abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] Checking ability BuildAbility - exists: true
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true
+[UnitCreationSystem] Valid abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] hasService addAbilitiesToUnit: true
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1557
+[UnitCreationSystem] setupAbilities called for entity 1558 unitType.abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] Checking ability BuildAbility - exists: true
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true
+[UnitCreationSystem] Valid abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] hasService addAbilitiesToUnit: true
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1558
+[UnitCreationSystem] setupAbilities called for entity 1559 unitType.abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] Checking ability BuildAbility - exists: true
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true
+[UnitCreationSystem] Valid abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] hasService addAbilitiesToUnit: true
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1559
+[PlacementSystem] Spawned 5 starting units for team 2
+[PlacementSystem] spawnStartingUnitsForTeam called for team: 3
+[UnitCreationSystem] setupAbilities called for entity 1560 unitType.abilities: undefined
+[UnitCreationSystem] No abilities defined for unit type
+[UnitCreationSystem] setupAbilities called for entity 1561 unitType.abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] Checking ability BuildAbility - exists: true
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true
+[UnitCreationSystem] Valid abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] hasService addAbilitiesToUnit: true
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1561
+[UnitCreationSystem] setupAbilities called for entity 1562 unitType.abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] Checking ability BuildAbility - exists: true
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true
+[UnitCreationSystem] Valid abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] hasService addAbilitiesToUnit: true
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1562
+[UnitCreationSystem] setupAbilities called for entity 1563 unitType.abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] Checking ability BuildAbility - exists: true
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true
+[UnitCreationSystem] Valid abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] hasService addAbilitiesToUnit: true
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1563
+[UnitCreationSystem] setupAbilities called for entity 1564 unitType.abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] Checking ability BuildAbility - exists: true
+[UnitCreationSystem] Checking ability MineGoldAbility - exists: true
+[UnitCreationSystem] Valid abilities: [ 'BuildAbility', 'MineGoldAbility' ]
+[UnitCreationSystem] hasService addAbilitiesToUnit: true
+[UnitCreationSystem] Called addAbilitiesToUnit for entity 1564
+[PlacementSystem] Spawned 5 starting units for team 3
+[SkirmishGameSystem] Initialized online match with 2 players
+[SkirmishGameSystem] initializeOnlineMatch complete
+[SceneManager] loadScene('game') complete
+GameRoom startGame()
+[ServerGameRoom] After startGame. Total entities on server: 1564
+[ServerGameRoom] entitySync keys: [
+  'nextEntityId',
+  'entityAlive',
+  'entityComponentMask',
+  'numericArrays',
+  'objectComponents',
+  'fullSync'
+]
+[ServerGameRoom] entitySync.fullSync: true
+[ServerGameRoom] entitySync.nextEntityId: 1565
+Game started in room 1000 with level: 0
+[ServerNetworkManager] onAny event: GET_STARTING_STATE from HLIyUGHq8IoXH92UAAAB
+[ServerNetworkSystem] handleGetStartingState called, playerId: HLIyUGHq8IoXH92UAAAB
+[ServerNetworkSystem] Player entities found: 2
+[ServerNetworkSystem] Responding with playerEntities: 2
+[ServerNetworkManager] sendToPlayer: HLIyUGHq8IoXH92UAAAB GOT_STARTING_STATE
+[ServerNetworkManager] Event emitted successfully
+[ServerNetworkManager] onAny event: GET_STARTING_STATE from W_iM5CyklWG5Zte_AAAD
+[ServerNetworkSystem] handleGetStartingState called, playerId: W_iM5CyklWG5Zte_AAAD
+[ServerNetworkSystem] Player entities found: 2
+[ServerNetworkSystem] Responding with playerEntities: 2
+[ServerNetworkManager] sendToPlayer: W_iM5CyklWG5Zte_AAAD GOT_STARTING_STATE
+[ServerNetworkManager] Event emitted successfully
