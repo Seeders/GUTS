@@ -217,7 +217,7 @@ class SceneManager {
         for (const systemName of sceneSystems) {
             const system = this.game.systemsByName.get(systemName);
             if(system) {
-                system.getServiceDependencies();
+                this.game.getServiceDependencies(system);
                 if (system.postAllInit && !system._postAllInitCalled) {
                     system.postAllInit();
                     system._postAllInitCalled = true;
