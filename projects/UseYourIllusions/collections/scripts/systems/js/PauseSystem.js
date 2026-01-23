@@ -22,11 +22,13 @@ class PauseSystem extends GUTS.BaseSystem {
 
     onSceneLoad(sceneData) {
         // Always start a new scene unpaused
+        console.log(`[PauseSystem] onSceneLoad - isPaused was: ${this.game.state.isPaused}, setting to false`);
         this.game.state.isPaused = false;
     }
 
     onSceneUnload() {
         // Reset pause state when leaving a scene
+        console.log(`[PauseSystem] onSceneUnload - isPaused was: ${this.game.state.isPaused}, setting to false`);
         this.game.state.isPaused = false;
     }
 
@@ -34,6 +36,7 @@ class PauseSystem extends GUTS.BaseSystem {
      * Pause the game
      */
     pauseGame() {
+        console.log(`[PauseSystem] pauseGame called`);
         this.game.state.isPaused = true;
     }
 
@@ -41,6 +44,7 @@ class PauseSystem extends GUTS.BaseSystem {
      * Unpause the game
      */
     unpauseGame() {
+        console.log(`[PauseSystem] unpauseGame called`);
         this.game.state.isPaused = false;
     }
 

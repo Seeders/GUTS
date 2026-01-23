@@ -1,0 +1,82 @@
+{
+  "title": "MageTower",
+  "info": "The exit from the level.",
+  "value": 0,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "color": "#ffffff",
+                "id": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "metalness": 0,
+            "roughness": 1,
+            "name": "portal",
+            "model": "mage_tower"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "plane": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "size": 2,
+            "color": "#ff0000",
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "rotationX": 0,
+            "rotationY": 0,
+            "rotationZ": 0,
+            "model": "portal_plane",
+            "shader": "portal"
+          }
+        ],
+        "position": {
+          "x": -4.3,
+          "y": 2.9,
+          "z": 8.5
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 0.3,
+          "y": 0.4,
+          "z": 0.3
+        }
+      }
+    }
+  },
+  "height": 56,
+  "size": 64,
+  "hp": 9999,
+  "exit": true,
+  "exitRadius": 60,
+  "impassable": false,
+  "spriteAnimationSet": "magetower"
+}

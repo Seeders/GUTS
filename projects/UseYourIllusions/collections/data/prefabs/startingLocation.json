@@ -1,0 +1,5 @@
+{
+  "title": "Starting Location",
+  "description": "Visual indicator for player starting position (editor-only)",
+  "components": ["transform", "unitType", "team", "animation", "renderable"]
+}

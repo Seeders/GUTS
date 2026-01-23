@@ -93,11 +93,17 @@ class FogOfWarSystem extends GUTS.BaseSystem {
     }
 
     onSceneLoad(sceneData) {
-        // Get world size now that terrain is loaded
+        // Reset state for fresh scene - actual initialization happens in postSceneLoad
+        // when terrain is guaranteed to be ready
+        this._fowDirty = true;
+    }
+
+    postSceneLoad(sceneData) {
+        // Get world size now that terrain is fully loaded (after all onSceneLoad handlers)
         this.WORLD_SIZE = this.call.getWorldExtendedSize();
 
         if (!this.WORLD_SIZE) {
-            console.warn('[FogOfWarSystem] World size not available');
+            console.warn('[FogOfWarSystem] World size not available in postSceneLoad');
             return;
         }
 
@@ -853,5 +859,34 @@ class FogOfWarSystem extends GUTS.BaseSystem {
      * Note: dispose() is called by SceneManager after onSceneUnload
      */
     onSceneUnload() {
+        // Reset cached visibility state to ensure fresh calculation on next scene load
+        this.visibilityCacheValid = false;
+        this.explorationCacheValid = false;
+        this.lastVisibilityCacheFrame = -1;
+        this.lastExplorationCacheFrame = -1;
+        this.currentFrame = 0;
+
+        // Clear unit position tracking
+        this._unitPositions.clear();
+        this._fowDirty = true; // Force recalculation on next scene
+
+        // Clear LOS cache
+        this._losCache.clear();
+
+        // Clear cached grid/terrain values so they're refetched on next load
+        this._cachedGridSize = null;
+        this._cachedTerrainSize = null;
+
+        // Reset visibility buffers to all-invisible
+        this.cachedVisibilityBuffer.fill(0);
+        this.cachedExplorationBuffer.fill(0);
+
+        // Clear fog pass so it gets recreated on next scene load
+        this.fogPass = null;
+
+        // Clear render targets (they'll be recreated in initRendering)
+        this.fogRenderTarget = null;
+        this.explorationRenderTarget = null;
+        this.explorationRenderTargetPingPong = null;
     }
 }

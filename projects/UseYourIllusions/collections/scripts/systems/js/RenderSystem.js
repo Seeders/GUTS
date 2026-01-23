@@ -9,7 +9,8 @@ class RenderSystem extends GUTS.BaseSystem {
         'removeInstance',
         'isBillboardWithAnimations',
         'getEntityRenderer',
-        'updateInstanceCapacities'
+        'updateInstanceCapacities',
+        'applyBillboardAnimationFrame'
     ];
 
     static serviceDependencies = [
@@ -88,6 +89,8 @@ class RenderSystem extends GUTS.BaseSystem {
      * Uses postSceneLoad to ensure WorldSystem has created the Three.js scene first
      */
     postSceneLoad(sceneData) {
+        console.log('[RenderSystem] postSceneLoad called, spawnedEntities count:', this.spawnedEntities.size);
+
         // Scene should be available now from WorldSystem
         if (!this.game.scene) {
             console.error('[RenderSystem] Scene not available in postSceneLoad - WorldSystem may have failed');
@@ -112,6 +115,8 @@ class RenderSystem extends GUTS.BaseSystem {
             capacitiesByType: capacitiesByType,
             minMovementThreshold: 0.1
         });
+
+        console.log('[RenderSystem] EntityRenderer created, scene:', !!this.game.scene);
 
         // Set initial ambient light color for sprite/billboard rendering
         // Combine ambient light with hemisphere light for overall scene illumination
@@ -259,6 +264,19 @@ class RenderSystem extends GUTS.BaseSystem {
         const entities = this.game.getEntitiesWith("transform", "renderable");
         this._stats.entitiesProcessed = entities.length;
 
+        // Debug: Check if player entity is in the list
+        const playerController = this.game.getEntitiesWith("playerController");
+        if (playerController.length > 0) {
+            const playerId = playerController[0];
+            const playerInList = entities.includes(playerId);
+            const hasTransform = !!this.game.getComponent(playerId, "transform");
+            const hasRenderable = !!this.game.getComponent(playerId, "renderable");
+            const alreadySpawned = this.spawnedEntities.has(playerId);
+            if (!playerInList || !hasTransform || !hasRenderable) {
+                console.warn(`[RenderSystem] Player ${playerId} state: inList=${playerInList}, hasTransform=${hasTransform}, hasRenderable=${hasRenderable}, alreadySpawned=${alreadySpawned}`);
+            }
+        }
+
         // Track which entities should be visible this frame (for cleanup of invisible entities)
         this._currentEntitiesSet.clear();
 
@@ -269,6 +287,12 @@ class RenderSystem extends GUTS.BaseSystem {
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
             const unitType = this.call.getUnitTypeDef( unitTypeComp);
 
+            // Debug: Log if this is the player and why it might be skipped
+            const isPlayer = this.game.getComponent(entityId, "playerController");
+            if (isPlayer && (!unitType || !transform?.position)) {
+                console.warn(`[RenderSystem] Player ${entityId} skipped: unitType=${!!unitType}, hasPosition=${!!transform?.position}`);
+            }
+
             if (!unitType || !transform?.position) {
                 continue;
             }
@@ -276,13 +300,18 @@ class RenderSystem extends GUTS.BaseSystem {
             const pos = transform.position;
             const angle = transform.rotation?.y || 0;
 
-            // Check fog of war visibility (cliffs and worldObjects always visible)
+            // Check fog of war visibility (cliffs and worldObjects always visible, player always visible to self)
             const isVisible = this.call.isVisibleAt( pos.x, pos.z);
             const unitTypeCollection = unitTypeComp?.collection;
             const isAlwaysVisible = unitTypeCollection === this.enums.objectTypeDefinitions?.worldObjects ||
-                                    unitTypeCollection === this.enums.objectTypeDefinitions?.cliffs;
+                                    unitTypeCollection === this.enums.objectTypeDefinitions?.cliffs ||
+                                    isPlayer; // Local player is always visible to themselves
 
             if (!isAlwaysVisible && !isVisible) {
+                // Debug: Log if player is being skipped due to fog of war
+                if (isPlayer) {
+                    console.warn(`[RenderSystem] Player ${entityId} skipped by fog of war: isVisible=${isVisible}, pos=(${pos.x}, ${pos.z})`);
+                }
                 // Entity not currently visible in fog of war - skip entirely (don't spawn or update)
                 continue;
             }
@@ -347,7 +376,10 @@ class RenderSystem extends GUTS.BaseSystem {
 
             // Check if entity already spawned or currently spawning
             if (!this.spawnedEntities.has(entityId)) {
-                // DEBUG: Log when spawning new entity
+                // DEBUG: Log when spawning player entity
+                if (isPlayer) {
+                    console.log(`[RenderSystem] Spawning player ${entityId} to renderer: objectType=${objectType}, spawnType=${spawnType}`);
+                }
 
                 // Mark as spawned immediately to prevent race condition with async spawn
                 this.spawnedEntities.add(entityId);
@@ -429,7 +461,14 @@ class RenderSystem extends GUTS.BaseSystem {
     }
 
     async spawnEntity(entityId, data, opacity = 1.0, tint = null) {
+        // Debug: Check if this is the player
+        const isPlayer = this.game.getComponent(entityId, 'playerController');
+
         const spawned = await this.entityRenderer.spawnEntity(entityId, data);
+        if (isPlayer) {
+            console.log(`[RenderSystem] spawnEntity result for player ${entityId}: spawned=${spawned}`);
+        }
+
         if (spawned) {
             // Note: spawnedEntities is already updated by caller to prevent race conditions
             this._stats.entitiesSpawned++;
@@ -447,10 +486,16 @@ class RenderSystem extends GUTS.BaseSystem {
             // Trigger billboard spawn event for AnimationSystem
             // Use EntityRenderer's indexed lookup (data.collection/type are resolved by EntityRenderer)
             const entityDef = this.entityRenderer.getEntityDefByIndex(data.objectType, data.spawnType);
+            if (isPlayer) {
+                console.log(`[RenderSystem] Player entityDef:`, entityDef?.spriteAnimationSet);
+            }
             if (entityDef?.spriteAnimationSet) {
                 const collections = this.collections;
                 const animSetData = collections?.spriteAnimationSets?.[entityDef.spriteAnimationSet];
                 const spriteAnimationCollection = animSetData?.animationCollection || 'peasantSpritesAnimations';
+                if (isPlayer) {
+                    console.log(`[RenderSystem] Triggering billboardSpawned for player ${entityId}`);
+                }
                 this.game.triggerEvent('billboardSpawned', {
                     entityId,
                     spriteAnimationSet: entityDef.spriteAnimationSet,
@@ -495,6 +540,11 @@ class RenderSystem extends GUTS.BaseSystem {
 
         for (const entityId of this.spawnedEntities) {
             if (!currentEntities.has(entityId)) {
+                // Debug: Check if this is the player being removed
+                const isPlayer = this.game.getComponent(entityId, 'playerController');
+                if (isPlayer) {
+                    console.warn(`[RenderSystem] Player ${entityId} being removed - not in currentEntities!`);
+                }
                 this._toRemove.push(entityId);
             }
         }
@@ -549,6 +599,13 @@ class RenderSystem extends GUTS.BaseSystem {
     isBillboardWithAnimations(entityId) {
         if (!this.entityRenderer) return false;
         return this.entityRenderer.isBillboardWithAnimations(entityId);
+    }
+
+    applyBillboardAnimationFrame(entityId) {
+        if (!this.entityRenderer) return;
+        const animState = this.game.getComponent(entityId, 'animationState');
+        if (!animState) return;
+        this.entityRenderer.applyBillboardAnimationFrame(entityId, animState);
     }
 
     /**
@@ -669,6 +726,8 @@ class RenderSystem extends GUTS.BaseSystem {
      * Called when scene is unloaded - cleanup all Three.js resources
      */
     onSceneUnload() {
+        console.log('[RenderSystem] onSceneUnload called, spawnedEntities:', this.spawnedEntities.size);
+
         // Cleanup EntityRenderer and all its batches/meshes
         if (this.entityRenderer) {
             this.entityRenderer.dispose();
@@ -687,6 +746,7 @@ class RenderSystem extends GUTS.BaseSystem {
             entitiesUpdated: 0
         };
 
+        console.log('[RenderSystem] onSceneUnload complete, tracking data cleared');
     }
 
 }

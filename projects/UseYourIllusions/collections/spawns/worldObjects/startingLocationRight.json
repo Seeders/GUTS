@@ -1,0 +1,58 @@
+{
+  "title": "Starting Location (Right)",
+  "prefab": "startingLocation",
+  "description": "Starting position marker for the right team (editor-only)",
+  "editorOnly": true,
+  "render": {
+    "animations": {
+      "idle": [{}]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "cylinder",
+            "size": 8,
+            "height": 60,
+            "color": "#c62828",
+            "x": 0,
+            "y": 30,
+            "z": 0,
+            "name": "pole"
+          },
+          {
+            "type": "box",
+            "width": 24,
+            "height": 16,
+            "depth": 2,
+            "color": "#ef5350",
+            "x": 14,
+            "y": 52,
+            "z": 0,
+            "name": "flag"
+          },
+          {
+            "type": "cylinder",
+            "size": 16,
+            "height": 4,
+            "color": "#b71c1c",
+            "x": 0,
+            "y": 2,
+            "z": 0,
+            "name": "base"
+          }
+        ],
+        "position": { "x": 0, "y": 0, "z": 0 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 }
+      }
+    }
+  },
+  "height": 64,
+  "size": 32,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "impassable": false,
+  "spriteScale": 64,
+  "hasRandomOffset": false
+}

@@ -410,6 +410,7 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
 
     restartCurrentLevel() {
         const currentLevelId = this.game.state.selectedLevel;
+        console.log(`[PuzzleLobbyUISystem] restartCurrentLevel called, selectedLevel: ${currentLevelId}`);
         if (currentLevelId) {
             // Force interface to reload by clearing the marker
             const appContainer = document.getElementById('appContainer');
@@ -419,6 +420,7 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
 
             this.startLevel(currentLevelId);
         } else {
+            console.warn('[PuzzleLobbyUISystem] No selectedLevel, returning to main menu');
             this.returnToMainMenu();
         }
     }
@@ -468,10 +470,12 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
     }
 
     hideAllOverlays() {
+        console.log(`[PuzzleLobbyUISystem] hideAllOverlays called, isPaused: ${this.game.state.isPaused}`);
         document.querySelectorAll('.pause-overlay, .puzzle-modal-overlay').forEach(overlay => {
             overlay.classList.remove('active');
         });
         this.call.unpauseGame();
+        console.log(`[PuzzleLobbyUISystem] hideAllOverlays after unpause, isPaused: ${this.game.state.isPaused}`);
     }
 
     onSceneUnload() {

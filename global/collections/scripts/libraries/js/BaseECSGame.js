@@ -1015,16 +1015,12 @@ class BaseECSGame {
     }
 
     /**
-     * Get or create a system by name (lazy instantiation)
+     * Create a system instance
+     * Systems are always created fresh - they are destroyed on scene unload
      * @param {string} systemName - The system class name
      * @returns {Object|null} The system instance or null if not available
      */
-    getOrCreateSystem(systemName) {
-        // Check if already instantiated
-        if (this.systemsByName.has(systemName)) {
-            return this.systemsByName.get(systemName);
-        }
-
+    createSystem(systemName) {
         // Check if this system type is available (skip check if no whitelist defined)
         if (this.availableSystemTypes.length > 0 && !this.availableSystemTypes.includes(systemName)) {
             console.warn(`[BaseECSGame] System '${systemName}' not in available systems list`);

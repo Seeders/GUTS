@@ -99,13 +99,17 @@ class CameraControlSystem extends GUTS.BaseSystem {
   _onClick(event) {
     // Request pointer lock on click for mouse control
     const canvas = document.getElementById('gameCanvas');
+    console.log('[CameraControlSystem] _onClick called, canvas:', !!canvas, 'isPointerLocked:', this.isPointerLocked);
     if (canvas && !this.isPointerLocked) {
+      console.log('[CameraControlSystem] Requesting pointer lock');
       canvas.requestPointerLock();
     }
   }
 
   _onPointerLockChange() {
-    this.isPointerLocked = document.pointerLockElement === document.getElementById('gameCanvas');
+    const newState = document.pointerLockElement === document.getElementById('gameCanvas');
+    console.log('[CameraControlSystem] Pointer lock changed:', this.isPointerLocked, '->', newState);
+    this.isPointerLocked = newState;
   }
 
   _onMouseMove(event) {
@@ -284,7 +288,35 @@ class CameraControlSystem extends GUTS.BaseSystem {
   }
 
   onSceneLoad(sceneData) {
-    // Camera setup happens after player spawns
+    console.log('[CameraControlSystem] onSceneLoad called');
+
+    // Reset camera state for fresh scene
+    this.followTargetId = null;
+    this.initialized = false;
+    this.isPointerLocked = false;
+
+    // Try to attach canvas listener (may not be available yet)
+    this._attachCanvasListener();
+
+    // Camera setup happens after player spawns via onPlayerSpawned event
+  }
+
+  postSceneLoad(sceneData) {
+    console.log('[CameraControlSystem] postSceneLoad called');
+
+    // Canvas should definitely be available now - attach listener if not already done
+    this._attachCanvasListener();
+  }
+
+  _attachCanvasListener() {
+    const canvas = document.getElementById('gameCanvas');
+    console.log('[CameraControlSystem] _attachCanvasListener - Canvas element:', !!canvas);
+    if (canvas) {
+      // Remove any existing listener first to avoid duplicates
+      canvas.removeEventListener('click', this._onClick);
+      canvas.addEventListener('click', this._onClick);
+      console.log('[CameraControlSystem] Click listener attached to canvas');
+    }
   }
 
   onPlayerSpawned(data) {

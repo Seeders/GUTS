@@ -1403,6 +1403,12 @@ class AnimationSystem extends GUTS.BaseSystem {
     billboardSpawned(eventData) {
         const { entityId, spriteAnimationSet, spriteAnimationCollection } = eventData;
 
+        // Debug: Check if this is the player
+        const isPlayer = this.game.getComponent(entityId, 'playerController');
+        if (isPlayer) {
+            console.log(`[AnimationSystem] billboardSpawned for player ${entityId}, animationSet: ${spriteAnimationSet}`);
+        }
+
         // Get numeric index for the sprite animation set
         const spriteAnimationSetIndex = this.enums.spriteAnimationSets[spriteAnimationSet];
         if (spriteAnimationSetIndex === undefined) {

@@ -106,6 +106,19 @@
 
        <div id="placementsPanel" style="display: none;">
          <div class="editor-module__section">
+           <h3 class="editor-module__section-title">Starting Locations</h3>
+           <div class="editor-module__form-row">
+             <label class="editor-module__label">Place for team:</label>
+             <div class="terrain-editor__tool-buttons">
+               <button id="te-start-loc-left" class="editor-module__btn editor-module__btn--small">Left</button>
+               <button id="te-start-loc-right" class="editor-module__btn editor-module__btn--small">Right</button>
+             </div>
+           </div>
+           <div id="startingLocationsList" class="editor-module__list" style="margin-top: 8px;">
+             <!-- Starting locations will be listed here -->
+           </div>
+         </div>
+         <div class="editor-module__section">
            <h3 class="editor-module__section-title">Placed Entities</h3>
            <div id="te-entity-hierarchy" class="editor-module__list" style="max-height: 200px; overflow-y: auto;">
              <!-- Placed entities will be populated here -->

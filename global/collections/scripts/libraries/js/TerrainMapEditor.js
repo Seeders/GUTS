@@ -62,6 +62,7 @@ class TerrainMapEditor {
 
         // Entity placements (starting locations, units, buildings)
         this.startingLocations = [];
+        this.startingLocationEntities = {}; // Map of side -> entityId for visual markers
 
         // Entity placement mode state (starts inactive)
         this.entityPlacementMode = {
@@ -282,7 +283,8 @@ class TerrainMapEditor {
 
                 // In placements mode without active placement, let SelectedUnitSystem handle selection
                 // (SelectedUnitSystem has its own mouse handlers for box selection)
-                if (this.placementMode === 'placements') {
+                // But allow starting location placement to proceed
+                if (this.placementMode === 'placements' && this.selectedPlacementType !== 'startingLocation') {
                     // Don't start our own box selection - SelectedUnitSystem handles it
                     return;
                 }
@@ -873,6 +875,29 @@ class TerrainMapEditor {
 
         // Update the entity hierarchy list
         this.updateEntityHierarchy();
+
+        // Setup starting location buttons
+        const leftBtn = document.getElementById('te-start-loc-left');
+        const rightBtn = document.getElementById('te-start-loc-right');
+
+        const activateStartingLocMode = (side) => {
+            this.selectedPlacementType = 'startingLocation';
+            this.selectedEntityType = side;
+            this.cancelEntityPlacementMode(); // Clear entity selection
+
+            // Update button states
+            leftBtn?.classList.toggle('editor-module__btn--active', side === 'left');
+            rightBtn?.classList.toggle('editor-module__btn--active', side === 'right');
+        };
+
+        leftBtn?.addEventListener('click', () => activateStartingLocMode('left'));
+        rightBtn?.addEventListener('click', () => activateStartingLocMode('right'));
+
+        // Initialize starting locations list display
+        const listElement = document.getElementById('startingLocationsList');
+        if (listElement) {
+            this.updateStartingLocationsList(listElement);
+        }
     }
 
     /**
@@ -1162,6 +1187,11 @@ class TerrainMapEditor {
 
             item.querySelector('button').addEventListener('click', (e) => {
                 const idx = parseInt(e.target.dataset.index);
+                const removedLoc = this.startingLocations[idx];
+                // Remove visual marker
+                if (removedLoc) {
+                    this.removeStartingLocationMarker(removedLoc.side);
+                }
                 this.startingLocations.splice(idx, 1);
                 this.updateStartingLocationsList(listElement);
                 this.exportMap();
@@ -1169,6 +1199,83 @@ class TerrainMapEditor {
 
             listElement.appendChild(item);
         });
+    }
+
+    /**
+     * Spawn a visual marker entity for a starting location
+     * @param {string} side - 'left' or 'right'
+     * @param {number} gridX - Grid X coordinate
+     * @param {number} gridZ - Grid Z coordinate
+     */
+    spawnStartingLocationMarker(side, gridX, gridZ) {
+        if (!this.editorContext || !this.terrainDataManager) return;
+
+        // Remove existing marker for this side if it exists
+        this.removeStartingLocationMarker(side);
+
+        // Convert grid to world position
+        const gridSize = this.terrainDataManager.gridSize;
+        const terrainSize = this.terrainDataManager.terrainSize;
+        const halfSize = terrainSize / 2;
+
+        const worldX = (gridX * gridSize) - halfSize + (gridSize / 2);
+        const worldZ = (gridZ * gridSize) - halfSize + (gridSize / 2);
+        const terrainHeight = this.terrainDataManager.getTerrainHeightAtPosition(worldX, worldZ) || 0;
+
+        // Determine which worldObject type to use based on side
+        const spawnType = side === 'left' ? 'startingLocationLeft' : 'startingLocationRight';
+
+        // Get enums for team
+        const enums = this.editorContext.getEnums();
+        const team = side === 'left' ? (enums?.team?.left ?? 0) : (enums?.team?.right ?? 1);
+
+        // Create entity using prefab-driven system
+        const componentOverrides = {
+            transform: {
+                position: { x: worldX, y: terrainHeight, z: worldZ }
+            }
+        };
+
+        const entityId = this.editorContext.call('createEntityFromPrefab', {
+            prefab: 'startingLocation',
+            type: spawnType,
+            collection: 'worldObjects',
+            team: team,
+            componentOverrides: componentOverrides
+        });
+
+        if (entityId) {
+            this.startingLocationEntities[side] = entityId;
+            console.log(`[TerrainMapEditor] Created starting location marker for ${side} at (${gridX}, ${gridZ})`);
+        }
+    }
+
+    /**
+     * Remove the visual marker entity for a starting location
+     * @param {string} side - 'left' or 'right'
+     */
+    removeStartingLocationMarker(side) {
+        const entityId = this.startingLocationEntities[side];
+        if (entityId && this.editorContext) {
+            this.editorContext.destroyEntity(entityId);
+            delete this.startingLocationEntities[side];
+            console.log(`[TerrainMapEditor] Removed starting location marker for ${side}`);
+        }
+    }
+
+    /**
+     * Sync visual markers with startingLocations array (used when loading a level)
+     */
+    syncStartingLocationMarkers() {
+        // Remove all existing markers
+        for (const side of Object.keys(this.startingLocationEntities)) {
+            this.removeStartingLocationMarker(side);
+        }
+
+        // Create markers for all starting locations
+        for (const loc of this.startingLocations) {
+            this.spawnStartingLocationMarker(loc.side, loc.gridX, loc.gridZ);
+        }
     }
 
     // Improved drag and drop handlers
@@ -1678,6 +1785,9 @@ class TerrainMapEditor {
 
         // Sync with existing ECS entities (spawned by TerrainSystem)
         this.syncLevelEntitiesFromECS();
+
+        // Spawn visual markers for starting locations
+        this.syncStartingLocationMarkers();
 
         // Setup SelectedUnitSystem for entity selection
         this.setupSelectionSystem();
@@ -3097,6 +3207,12 @@ class TerrainMapEditor {
             spawnType: spawnType
         };
 
+        // Clear starting location mode
+        this.selectedPlacementType = null;
+        this.selectedEntityType = null;
+        document.getElementById('te-start-loc-left')?.classList.remove('editor-module__btn--active');
+        document.getElementById('te-start-loc-right')?.classList.remove('editor-module__btn--active');
+
         console.log(`[TerrainMapEditor] Entity placement mode activated: ${prefab}/${spawnType}`);
     }
 
@@ -3961,6 +4077,9 @@ class TerrainMapEditor {
                         });
                     }
 
+                    // Spawn or update visual marker entity
+                    this.spawnStartingLocationMarker(this.selectedEntityType, gridX, gridZ);
+
                     // Update the starting locations list display
                     const listElement = document.getElementById('startingLocationsList');
                     if (listElement) {
@@ -4058,9 +4177,9 @@ class TerrainMapEditor {
     showTilePreview(gridX, gridZ) {
         if (!this.placementPreview) return;
 
-        // In entity/placements mode, only show preview if entity placement is active
+        // In entity/placements mode, only show preview if entity or starting location placement is active
         if (this.placementMode === 'placements') {
-            if (!this.entityPlacementMode?.active) {
+            if (!this.entityPlacementMode?.active && this.selectedPlacementType !== 'startingLocation') {
                 this.placementPreview.hide();
                 return;
             }

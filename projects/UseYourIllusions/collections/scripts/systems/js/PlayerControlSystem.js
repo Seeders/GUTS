@@ -75,10 +75,18 @@ class PlayerControlSystem extends GUTS.BaseSystem {
     }
 
     onSceneLoad(sceneData) {
+        console.log(`[PlayerControlSystem] onSceneLoad called, isPaused: ${this.game.state.isPaused}`);
+        this._updateCount = 0; // Reset update counter for logging
+        this._lastCameraTarget = null; // Reset camera target tracking so it gets set on first update
         // Clean up any existing listeners first to prevent duplicates
         this.cleanupEventListeners();
         this.setupKeyboardControls();
         this.setupCanvasClickHandler();
+    }
+
+    postSceneLoad(sceneData) {
+        const playerEntity = this.getPlayerEntity();
+        console.log(`[PlayerControlSystem] postSceneLoad - playerEntity: ${playerEntity}, isPaused: ${this.game.state.isPaused}`);
     }
 
     onSceneUnload() {
@@ -259,6 +267,13 @@ class PlayerControlSystem extends GUTS.BaseSystem {
     }
 
     update() {
+        // Log first few updates to confirm system is running
+        if (!this._updateCount) this._updateCount = 0;
+        if (this._updateCount < 3) {
+            console.log(`[PlayerControlSystem] update #${this._updateCount}, isPaused: ${this.game.state.isPaused}`);
+            this._updateCount++;
+        }
+
         const playerEntity = this.getPlayerEntity();
         if (!playerEntity) return;
 

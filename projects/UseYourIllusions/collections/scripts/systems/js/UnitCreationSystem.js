@@ -845,9 +845,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
      * @param {Object} unitType - Unit type definition
      */
     setupAbilities(entityId, unitType) {
-        console.log('[UnitCreationSystem] setupAbilities called for entity', entityId, 'unitType.abilities:', unitType?.abilities);
         if (!unitType?.abilities) {
-            console.log('[UnitCreationSystem] No abilities defined for unit type');
             return;
         }
 
@@ -855,7 +853,6 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             // Validate abilities exist before adding
             const validAbilities = unitType.abilities.filter(abilityId => {
                 const abilityData = this.getAbilityFromCollection(abilityId);
-                console.log('[UnitCreationSystem] Checking ability', abilityId, '- exists:', !!abilityData);
                 if (!abilityData) {
                     console.warn(`Ability ${abilityId} not found in collections`);
                     this.stats.abilityFailures++;
@@ -864,15 +861,9 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 return true;
             });
 
-            console.log('[UnitCreationSystem] Valid abilities:', validAbilities);
             if (validAbilities.length > 0) {
-                const hasService = this.game.hasService('addAbilitiesToUnit');
-                console.log('[UnitCreationSystem] hasService addAbilitiesToUnit:', hasService);
-                if (hasService) {
+                if (this.game.hasService('addAbilitiesToUnit')) {
                     this.call.addAbilitiesToUnit( entityId, validAbilities);
-                    console.log('[UnitCreationSystem] Called addAbilitiesToUnit for entity', entityId);
-                } else {
-                    console.error('[UnitCreationSystem] addAbilitiesToUnit service not available!');
                 }
             }
         } catch (error) {
