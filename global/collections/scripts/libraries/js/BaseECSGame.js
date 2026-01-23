@@ -927,7 +927,7 @@ class BaseECSGame {
      * Uses lazy caching with getters to ensure services are available when first accessed
      * @param {Object} instance - The class instance to cache services on
      */
-    cacheServiceDependencies(instance) {
+    getServiceDependencies(instance) {
         if (!instance) return;
 
         const ClassConstructor = instance.constructor;

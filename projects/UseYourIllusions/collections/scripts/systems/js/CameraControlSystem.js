@@ -17,6 +17,11 @@ class CameraControlSystem extends GUTS.BaseSystem {
     'getZoomLevel'
   ];
 
+  static serviceDependencies = [
+    'getTerrainHeightAtPositionSmooth',
+    'isTerrainInitialized'
+  ];
+
   constructor(game) {
     super(game);
     this.game.cameraControlSystem = this;
@@ -62,6 +67,11 @@ class CameraControlSystem extends GUTS.BaseSystem {
     this.currentPosition = new THREE.Vector3();
     this.currentAngle = 0; // Smoothed camera angle
     this.initialized = false;
+
+    // Terrain collision settings
+    this.minHeightAboveTerrain = 20; // Minimum camera height above terrain
+    this.wallCollisionSamples = 10;  // Number of samples to check along camera ray
+    this.wallHeightThreshold = 32;   // Height difference that counts as a wall
 
     // Bind event handlers
     this._onWheel = this._onWheel.bind(this);
@@ -200,6 +210,79 @@ class CameraControlSystem extends GUTS.BaseSystem {
     };
   }
 
+  /**
+   * Adjusts camera position to avoid terrain collision.
+   * Returns adjusted position that doesn't clip through terrain or walls.
+   */
+  _adjustForTerrainCollision(targetX, targetY, targetZ, desiredX, desiredY, desiredZ) {
+    // Check if terrain service is available
+    if (!this.call.isTerrainInitialized || !this.call.isTerrainInitialized()) {
+      return { x: desiredX, y: desiredY, z: desiredZ };
+    }
+
+    let adjustedX = desiredX;
+    let adjustedY = desiredY;
+    let adjustedZ = desiredZ;
+
+    // Check for wall collisions along the path from target to camera
+    // Sample points along the ray and check for significant height changes
+    const dx = desiredX - targetX;
+    const dz = desiredZ - targetZ;
+    const horizontalDist = Math.sqrt(dx * dx + dz * dz);
+
+    if (horizontalDist > 1) {
+      let collisionT = 1.0; // Parameter along ray where collision occurs (0=target, 1=camera)
+
+      // Sample along the ray from target to camera
+      for (let i = 1; i <= this.wallCollisionSamples; i++) {
+        const t = i / this.wallCollisionSamples;
+        const sampleX = targetX + dx * t;
+        const sampleZ = targetZ + dz * t;
+
+        // Get terrain height at this sample point
+        const terrainHeight = this.call.getTerrainHeightAtPositionSmooth(sampleX, sampleZ);
+        if (terrainHeight === null || terrainHeight === undefined) continue;
+
+        // Interpolate expected camera height at this point
+        const expectedY = targetY + (desiredY - targetY) * t;
+
+        // Check if terrain is blocking the camera ray
+        const clearance = expectedY - terrainHeight;
+        if (clearance < this.minHeightAboveTerrain) {
+          // Found an obstruction - track closest collision point
+          if (t < collisionT) {
+            collisionT = t;
+          }
+        }
+      }
+
+      // If collision detected before reaching desired position, adjust camera
+      if (collisionT < 1.0) {
+        // Move camera closer to target to avoid wall
+        const safeT = Math.max(0.1, collisionT - 0.1); // Back off a bit from collision
+        adjustedX = targetX + dx * safeT;
+        adjustedZ = targetZ + dz * safeT;
+
+        // Also ensure height is above the obstruction
+        const terrainAtAdjusted = this.call.getTerrainHeightAtPositionSmooth(adjustedX, adjustedZ);
+        if (terrainAtAdjusted !== null && terrainAtAdjusted !== undefined) {
+          adjustedY = Math.max(adjustedY, terrainAtAdjusted + this.minHeightAboveTerrain);
+        }
+      }
+    }
+
+    // Final check: ensure camera is above terrain at its final position
+    const finalTerrainHeight = this.call.getTerrainHeightAtPositionSmooth(adjustedX, adjustedZ);
+    if (finalTerrainHeight !== null && finalTerrainHeight !== undefined) {
+      const minAllowedY = finalTerrainHeight + this.minHeightAboveTerrain;
+      if (adjustedY < minAllowedY) {
+        adjustedY = minAllowedY;
+      }
+    }
+
+    return { x: adjustedX, y: adjustedY, z: adjustedZ };
+  }
+
   onSceneLoad(sceneData) {
     // Camera setup happens after player spawns
   }
@@ -236,9 +319,18 @@ class CameraControlSystem extends GUTS.BaseSystem {
     // Camera should be behind the character (opposite of facing direction)
     const cameraAngle = this.facingAngle;
 
-    const desiredX = target.x - Math.cos(cameraAngle) * horizontalDist;
-    const desiredY = target.y + verticalDist;
-    const desiredZ = target.z - Math.sin(cameraAngle) * horizontalDist;
+    let desiredX = target.x - Math.cos(cameraAngle) * horizontalDist;
+    let desiredY = target.y + verticalDist;
+    let desiredZ = target.z - Math.sin(cameraAngle) * horizontalDist;
+
+    // Adjust camera position to avoid terrain collision
+    const adjusted = this._adjustForTerrainCollision(
+      target.x, target.y, target.z,
+      desiredX, desiredY, desiredZ
+    );
+    desiredX = adjusted.x;
+    desiredY = adjusted.y;
+    desiredZ = adjusted.z;
 
     // Smooth camera movement
     if (!this.initialized) {

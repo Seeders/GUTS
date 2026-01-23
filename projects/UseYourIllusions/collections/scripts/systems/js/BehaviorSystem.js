@@ -40,6 +40,9 @@ class BehaviorSystem extends GUTS.BaseSystem {
         }
 
         this.processor.initializeFromCollections(this.collections);
+
+        // Cache service dependencies for all behavior nodes after all systems are loaded
+        this.processor.cacheAllServiceDependencies();
     }
 
     // Delegates to processor for static services registration
@@ -123,6 +126,9 @@ class BehaviorSystem extends GUTS.BaseSystem {
         // Reinitialize processor nodes from collections
         // This ensures nodes are recreated fresh for the new scene
         this.processor.initializeFromCollections(this.collections);
+
+        // Re-cache service dependencies for all behavior nodes
+        this.processor.cacheAllServiceDependencies();
     }
 
     /**

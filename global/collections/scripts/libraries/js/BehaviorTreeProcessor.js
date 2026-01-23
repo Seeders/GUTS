@@ -143,7 +143,7 @@ class BehaviorTreeProcessor {
      */
     cacheAllServiceDependencies() {
         for (const nodeInstance of this.nodes.values()) {
-            this.game.cacheServiceDependencies(nodeInstance);
+            this.game.getServiceDependencies(nodeInstance);
         }
     }
 

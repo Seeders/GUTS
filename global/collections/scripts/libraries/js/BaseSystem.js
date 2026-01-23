@@ -21,19 +21,6 @@ class BaseSystem {
     }
 
     /**
-     * Called after all systems are initialized
-     * Caches service dependencies (e.g., this.call.useAbility)
-     */
-    getServiceDependencies() {
-        const deps = this.constructor.serviceDependencies;
-        if (deps && deps.length > 0) {
-            for (const serviceName of deps) {
-                this.call[serviceName] = this.game.getService(serviceName);
-            }
-        }
-    }
-
-    /**
      * Called when a scene is loaded
      * @param {Object} sceneData - The scene configuration data
      */

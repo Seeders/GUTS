@@ -20,7 +20,7 @@ class BaseAbility {
         this.call = {};
 
         // Cache service dependencies for fast access
-        this.game.cacheServiceDependencies(this);
+        this.game.getServiceDependencies(this);
 
         this.id = abilityData.id || 'unknown';
         this.name = abilityData.name || 'Unknown Ability';
