@@ -147,7 +147,7 @@ class RenderSystem extends GUTS.BaseSystem {
         const levelEntities = tileMap.levelEntities || [];
         const counts = {};
         for (const entityDef of levelEntities) {
-            const collectionId = prefabToCollection[entityDef.prefab];
+            const collectionId = prefabToCollection[entityDef.spawnType];
             if (!collectionId) continue;
             const key = `${collectionId}_${entityDef.type}`;
             counts[key] = (counts[key] || 0) + 1;

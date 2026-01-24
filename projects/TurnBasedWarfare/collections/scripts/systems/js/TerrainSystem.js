@@ -196,18 +196,18 @@ class TerrainSystem extends GUTS.BaseSystem {
 
         for (const entityDef of levelEntities) {
             try {
-                if (!entityDef.prefab) {
+                if (!entityDef.spawnType) {
                     console.warn(`[TerrainSystem] Entity missing prefab:`, entityDef);
                     continue;
                 }
 
-                const prefabData = prefabs[entityDef.prefab];
+                const prefabData = prefabs[entityDef.spawnType];
                 if (!prefabData) {
-                    console.warn(`[TerrainSystem] Unknown prefab: ${entityDef.prefab}`);
+                    console.warn(`[TerrainSystem] Unknown prefab: ${entityDef.spawnType}`);
                     continue;
                 }
 
-                const prefabName = entityDef.prefab;
+                const prefabName = entityDef.spawnType;
                 // Get collection from objectTypeDefinitions mapping (singular -> id)
                 const collection = prefabToCollection[prefabName];
                 if (!collection) {

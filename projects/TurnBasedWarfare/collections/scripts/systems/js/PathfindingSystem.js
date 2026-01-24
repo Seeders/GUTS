@@ -319,7 +319,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
             for (const entityDef of levelEntities) {
                 // Get collection from prefab name
-                const collectionId = prefabToCollection[entityDef.prefab];
+                const collectionId = prefabToCollection[entityDef.spawnType];
                 if (!collectionId) {
                     skippedObjects++;
                     continue;

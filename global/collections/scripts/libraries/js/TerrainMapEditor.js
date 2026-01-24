@@ -4353,19 +4353,19 @@ class TerrainMapEditor {
         this.tileMap.startingLocations = this.startingLocations;
 
         // Prepare levelEntities for save (strip runtime IDs)
-        // Use prefab format: { prefab: "unit", type: "soldier", components }
+        // Use format: { spawnType: "unit", type: "soldier", components }
         const objectTypeDefinitions = this.collections.objectTypeDefinitions || {};
 
         const levelEntitiesForSave = this.levelEntities.map(entity => {
-            // Get prefab name from objectTypeDefinition's singular field
+            // Get spawnType name from objectTypeDefinition's singular field
             const typeDef = objectTypeDefinitions[entity.collection];
-            const prefabName = typeDef?.singular;
-            if (!prefabName) {
+            const spawnTypeName = typeDef?.singular;
+            if (!spawnTypeName) {
                 console.warn('[TerrainMapEditor] Unknown collection:', entity.collection);
                 return null;
             }
             return {
-                prefab: prefabName,
+                spawnType: spawnTypeName,
                 type: entity.spawnType,
                 components: entity.components
             };

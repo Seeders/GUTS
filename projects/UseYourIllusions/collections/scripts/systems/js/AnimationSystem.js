@@ -29,7 +29,9 @@ class AnimationSystem extends GUTS.BaseSystem {
         'getBatchInfo',
         'getEntityAnimationState',
         'setInstanceAnimationTime',
-        'setInstanceSpeed'
+        'setInstanceSpeed',
+        'getWorldScene',
+        'getRenderer'
     ];
 
     constructor(game) {
@@ -189,7 +191,7 @@ class AnimationSystem extends GUTS.BaseSystem {
     }
 
     update() {
-        if (!this.game.scene || !this.game.renderer) {
+        if (!this.call.getWorldScene() || !this.call.getRenderer()) {
             return;
         }
         this.updateEntityAnimations();

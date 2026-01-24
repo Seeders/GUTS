@@ -1,6 +1,8 @@
 class WorldSystem extends GUTS.BaseSystem {
     static services = [
         'getWorldScene',
+        'getUIScene',
+        'getRenderer',
         'getCamera',
         'getWorldExtendedSize',
         'getGroundTexture',
@@ -149,6 +151,9 @@ class WorldSystem extends GUTS.BaseSystem {
             this.uiScene = null;
         }
 
+        // Clear terrainTileMapper so it gets recreated for the new level
+        this.game.terrainTileMapper = null;
+
         this.scene = null;
         this.camera = null;
         this.renderer = null;
@@ -163,6 +168,14 @@ class WorldSystem extends GUTS.BaseSystem {
     // Service methods for static services registration
     getWorldScene() {
         return this.worldRenderer?.getScene();
+    }
+
+    getUIScene() {
+        return this.uiScene;
+    }
+
+    getRenderer() {
+        return this.worldRenderer?.getRenderer();
     }
 
     getCamera() {
@@ -229,11 +242,6 @@ class WorldSystem extends GUTS.BaseSystem {
         // Create UI scene separately (not part of WorldRenderer)
         this.uiScene = new THREE.Scene();
 
-        // Expose to game object (scene/renderer still needed by other systems)
-        this.game.scene = this.scene;
-        this.game.uiScene = this.uiScene;
-        this.game.renderer = this.renderer;
-
         // Register camera via service (CameraControlSystem manages the active camera)
         if (this.game.hasService('setCamera')) {
             this.call.setCamera( this.camera);
@@ -263,8 +271,12 @@ class WorldSystem extends GUTS.BaseSystem {
         }
 
         // Initialize terrain tile mapper if not already set up (needed for editor context)
+        console.log('[WorldSystem] setupWorldRendering - terrainTileMapper exists:', !!this.game.terrainTileMapper, 'imageManager exists:', !!this.game.imageManager);
         if (!this.game.terrainTileMapper && this.game.imageManager) {
+            console.log('[WorldSystem] Creating new terrainTileMapper for level:', levelName);
             await this.initTerrainTileMapper(levelName, terrainDataManager, gameConfig);
+        } else {
+            console.log('[WorldSystem] Skipping terrainTileMapper creation - already exists or no imageManager');
         }
 
         // Setup lighting
@@ -279,13 +291,14 @@ class WorldSystem extends GUTS.BaseSystem {
         // Setup ground with terrain data
         this.worldRenderer.setupGround(terrainDataManager, this.game.terrainTileMapper, terrainDataManager.heightMapSettings);
 
-        // Update extension configuration in GridSystem's CoordinateTranslator if available
-        if (terrainDataManager.extensionSize) {
-            this.call.updateCoordinateConfig( {
-                extensionSize: terrainDataManager.extensionSize,
-                extendedSize: terrainDataManager.extendedSize
-            });
-        }
+        // Update CoordinateTranslator with actual terrain dimensions from loaded terrain data
+        // This is critical because GridSystem.init() reads tileMapSize from static collection data,
+        // but the actual loaded terrain may have a different size
+        this.call.updateCoordinateConfig({
+            tileMapSize: terrainDataManager.tileMap.size,
+            extensionSize: terrainDataManager.extensionSize || 0,
+            extendedSize: terrainDataManager.extendedSize || 0
+        });
 
         // Render terrain textures
         this.worldRenderer.renderTerrain();
@@ -304,6 +317,7 @@ class WorldSystem extends GUTS.BaseSystem {
      * Used for operations that need other systems to be fully initialized
      */
     async postSceneLoad(sceneData) {
+        console.log('[WorldSystem] postSceneLoad called, worldRenderer exists:', !!this.worldRenderer);
         if (!this.worldRenderer) return;
 
         // Wait for async setupWorldRendering to complete if it's still running
@@ -320,8 +334,11 @@ class WorldSystem extends GUTS.BaseSystem {
         // Spawn cliff entities using WorldRenderer
         // Note: useExtension = false because analyzeCliffs() returns coordinates in tile space (not extended space)
         const entityRenderer = this.call.getEntityRenderer();
+        console.log('[WorldSystem] postSceneLoad - entityRenderer exists:', !!entityRenderer, 'scene:', !!entityRenderer?.scene);
         if (entityRenderer) {
+            console.log('[WorldSystem] Calling spawnCliffs...');
             await this.worldRenderer.spawnCliffs(entityRenderer, false);
+            console.log('[WorldSystem] spawnCliffs complete');
         } else {
             console.warn('[WorldSystem] EntityRenderer not available for cliff spawning');
         }

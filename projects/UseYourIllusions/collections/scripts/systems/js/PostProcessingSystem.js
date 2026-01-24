@@ -7,7 +7,10 @@ class PostProcessingSystem extends GUTS.BaseSystem {
     ];
 
     static serviceDependencies = [
-        'getCamera'
+        'getCamera',
+        'getWorldScene',
+        'getUIScene',
+        'getRenderer'
     ];
 
     constructor(game) {
@@ -46,14 +49,15 @@ class PostProcessingSystem extends GUTS.BaseSystem {
             return; // Already initialized
         }
 
-        if (!this.game.renderer || !this.game.scene || !this.call.getCamera()) {
+        const renderer = this.call.getRenderer();
+        if (!renderer || !this.call.getWorldScene() || !this.call.getCamera()) {
             return;
         }
 
         // Get size first so we can properly initialize depth textures
-        const size = this.game.renderer.getSize(new THREE.Vector2());
+        const size = renderer.getSize(new THREE.Vector2());
 
-        this.composer = new GUTS.EffectComposer(this.game.renderer);
+        this.composer = new GUTS.EffectComposer(renderer);
 
         // Create depth textures for both render targets with explicit size
         const depthTexture1 = new THREE.DepthTexture(size.x, size.y);
@@ -143,12 +147,14 @@ class PostProcessingSystem extends GUTS.BaseSystem {
             // Render main scene with all post-processing (including fog)
             this.composer.render();
 
-            if (this.game.uiScene) {
+            const uiScene = this.call.getUIScene();
+            const renderer = this.call.getRenderer();
+            if (uiScene && renderer) {
                 const camera = this.call.getCamera();
-                this.game.renderer.autoClear = false;  // Don't clear the screen
-                this.game.renderer.clearDepth();
-                this.game.renderer.render(this.game.uiScene, camera);
-                this.game.renderer.autoClear = true;   // Reset for next frame
+                renderer.autoClear = false;  // Don't clear the screen
+                renderer.clearDepth();
+                renderer.render(uiScene, camera);
+                renderer.autoClear = true;   // Reset for next frame
             }
         }
     }

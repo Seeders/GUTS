@@ -789,7 +789,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
         if (gameScene && gameScene.entities) {
             // Update terrain entity with selected level (find by prefab type)
-            const terrainEntity = gameScene.entities.find(e => e.prefab === 'terrain');
+            const terrainEntity = gameScene.entities.find(e => e.spawnType === 'terrain');
             if (terrainEntity) {
                 if (!terrainEntity.components) {
                     terrainEntity.components = {};

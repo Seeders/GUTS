@@ -11,7 +11,8 @@ class ParticleSystem extends GUTS.BaseSystem {
 
     static serviceDependencies = [
         'playScreenShake',
-        'playScreenFlash'
+        'playScreenFlash',
+        'getWorldScene'
     ];
 
   constructor(game) {
@@ -50,7 +51,7 @@ class ParticleSystem extends GUTS.BaseSystem {
   }
 
   initialize() {
-    if (this.initialized || !this.game.scene) return;
+    if (this.initialized || !this.call.getWorldScene()) return;
 
     const geometry = new THREE.PlaneGeometry(0.25, 0.25);
 
@@ -148,7 +149,7 @@ class ParticleSystem extends GUTS.BaseSystem {
     }
 
     this.mesh.frustumCulled = false;
-    this.game.scene.add(this.mesh);
+    this.call.getWorldScene().add(this.mesh);
 
     this.initialized = true;
   }
@@ -337,7 +338,7 @@ class ParticleSystem extends GUTS.BaseSystem {
 
   destroy() {
     if (!this.initialized) return;
-    this.game.scene.remove(this.mesh);
+    this.call.getWorldScene()?.remove(this.mesh);
     this.mesh.geometry.dispose();
     this.material.dispose();
     this.initialized = false;

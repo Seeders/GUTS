@@ -47,7 +47,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'calculateUnitPositions',
         'updateGoldDisplay',
         'ui_undoPlacement',
-        'createParticleEffect'
+        'createParticleEffect',
+        'getWorldScene'
     ];
     constructor(game) {
         super(game);
@@ -186,8 +187,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         // Initialize RaycastHelper when scene and camera are available
         const camera = this.call.getCamera();
-        if (this.game.scene && camera && !this.raycastHelper) {
-            this.raycastHelper = new GUTS.RaycastHelper(camera, this.game.scene);
+        const scene = this.call.getWorldScene();
+        if (scene && camera && !this.raycastHelper) {
+            this.raycastHelper = new GUTS.RaycastHelper(camera, scene);
         }
     }
 

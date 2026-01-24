@@ -10,7 +10,8 @@ class PathfindingSystem extends GUTS.BaseSystem {
         'getUnitTypeDef',
         'isTerrainInitialized',
         'placementGridToWorld',
-        'tileToWorld'
+        'tileToWorld',
+        'getUIScene'
     ];
 
     static services = [
@@ -144,7 +145,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.bakeNavMesh();
 
         // Initialize debug visualization (only on client)
-        if (!this.game.isServer && this.game.uiScene) {
+        if (!this.game.isServer && this.call.getUIScene()) {
             this.initDebugVisualization();
         }
 
@@ -319,8 +320,8 @@ class PathfindingSystem extends GUTS.BaseSystem {
             }
 
             for (const entityDef of levelEntities) {
-                // Get collection from prefab name
-                const collectionId = prefabToCollection[entityDef.prefab];
+                // Get collection from spawnType
+                const collectionId = prefabToCollection[entityDef.spawnType];
                 if (!collectionId) {
                     skippedObjects++;
                     continue;
@@ -1013,7 +1014,8 @@ class PathfindingSystem extends GUTS.BaseSystem {
     initDebugVisualization() {
 
 
-        if (!this.game.uiScene) {
+        const uiScene = this.call.getUIScene();
+        if (!uiScene) {
             console.warn('PathfindingSystem: No uiScene available for debug visualization');
             return;
         }
@@ -1027,7 +1029,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         this.debugVisualization = new THREE.Group();
         this.debugVisualization.name = 'PathfindingDebug';
         this.debugVisualization.visible = false;
-        this.game.uiScene.add(this.debugVisualization);
+        uiScene.add(this.debugVisualization);
 
 
         // Create materials for different cell types
@@ -1117,10 +1119,10 @@ class PathfindingSystem extends GUTS.BaseSystem {
             console.warn('PathfindingSystem: Debug visualization not initialized');
 
             // Try to initialize it now if on client
-            if (!this.game.isServer && this.game.uiScene) {
+            if (!this.game.isServer && this.call.getUIScene()) {
                 this.initDebugVisualization();
             } else {
-                console.error('PathfindingSystem: Cannot initialize - isServer:', this.game.isServer, 'uiScene:', !!this.game.uiScene);
+                console.error('PathfindingSystem: Cannot initialize - isServer:', this.game.isServer, 'uiScene:', !!this.call.getUIScene());
                 return;
             }
         }
@@ -1169,8 +1171,9 @@ class PathfindingSystem extends GUTS.BaseSystem {
                     if (child.material) child.material.dispose();
                 }
             }
-            if (this.game.uiScene) {
-                this.game.uiScene.remove(this.debugVisualization);
+            const uiScene = this.call.getUIScene();
+            if (uiScene) {
+                uiScene.remove(this.debugVisualization);
             }
             this.debugVisualization = null;
         }

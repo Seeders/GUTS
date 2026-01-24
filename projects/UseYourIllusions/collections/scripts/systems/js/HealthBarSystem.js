@@ -2,7 +2,8 @@ class HealthBarSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getCamera',
         'getUnitTypeDef',
-        'isVisibleAt'
+        'isVisibleAt',
+        'getWorldScene'
     ];
 
     constructor(game) {
@@ -26,14 +27,14 @@ class HealthBarSystem extends GUTS.BaseSystem {
     }
     
     initialize() {
-        if (this.initialized || !this.game.scene) return;
+        if (this.initialized || !this.call.getWorldScene()) return;
 
         this.initialized = true;
     }
     
     update() {
         // Wait for scene to be available from WorldSystem
-        if (!this.game.scene || !this.call.getCamera()) {
+        if (!this.call.getWorldScene() || !this.call.getCamera()) {
             return;
         }
         
@@ -118,7 +119,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
         group.add(fill);
         
         // Add to scene
-        this.game.scene.add(group);
+        this.call.getWorldScene().add(group);
         
         // Store references
         this.healthBars.set(entityId, {
@@ -285,8 +286,9 @@ class HealthBarSystem extends GUTS.BaseSystem {
         const healthBarData = this.healthBars.get(entityId);
         if (healthBarData) {
             // Remove group from scene
-            if (this.game.scene) {
-                this.game.scene.remove(healthBarData.group);
+            const scene = this.call.getWorldScene();
+            if (scene) {
+                scene.remove(healthBarData.group);
             }
             
             // Dispose of main geometries and materials

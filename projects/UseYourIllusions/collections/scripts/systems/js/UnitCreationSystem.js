@@ -518,17 +518,13 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 }
                 // Component overrides (from level entity data) take precedence over spawn definition
                 const exitOverrides = overrides?.exitZone || {};
-                console.log('[UnitCreationSystem] exitZone overrides:', overrides);
-                console.log('[UnitCreationSystem] exitOverrides.nextLevel:', exitOverrides.nextLevel);
-                const exitZoneComponent = {
+                return {
                     distance: exitOverrides.distance ?? typeData.exitDistance ?? typeData.exitRadius ?? 60,
                     directionEnum: exitOverrides.directionEnum ?? directionEnumValue,
                     directionTolerance: exitOverrides.directionTolerance ?? typeData.exitDirectionTolerance ?? 0.7,
                     nextLevel: exitOverrides.nextLevel ?? typeData.nextLevel ?? null,
                     isActive: exitOverrides.isActive ?? true
                 };
-                console.log('[UnitCreationSystem] exitZone component created:', exitZoneComponent);
-                return exitZoneComponent;
 
             case 'mirror':
                 return {

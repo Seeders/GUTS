@@ -119,7 +119,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
         // Update terrain for the scene
         const gameScene = this.collections?.scenes?.survival;
         if (gameScene?.entities) {
-            const terrainEntity = gameScene.entities.find(e => e.prefab === 'terrain');
+            const terrainEntity = gameScene.entities.find(e => e.spawnType === 'terrain');
             if (terrainEntity) {
                 terrainEntity.components = terrainEntity.components || {};
                 terrainEntity.components.terrain = terrainEntity.components.terrain || {};

@@ -222,20 +222,20 @@ class SceneManager {
         const enums = this.game.getEnums();
 
         for (const entityDef of entities) {
-            if (!entityDef.prefab || !entityDef.type) {
-                console.warn(`[SceneManager] Entity missing prefab or type:`, entityDef);
+            if (!entityDef.spawnType || !entityDef.type) {
+                console.warn(`[SceneManager] Entity missing spawnType or type:`, entityDef);
                 continue;
             }
 
-            const prefabData = prefabs[entityDef.prefab];
+            const prefabData = prefabs[entityDef.spawnType];
             if (!prefabData) {
-                console.warn(`[SceneManager] Prefab '${entityDef.prefab}' not found`);
+                console.warn(`[SceneManager] SpawnType '${entityDef.spawnType}' not found in prefabs`);
                 continue;
             }
 
             const collection = prefabData.collection;
             if (!collection) {
-                console.warn(`[SceneManager] Prefab '${entityDef.prefab}' missing collection`);
+                console.warn(`[SceneManager] SpawnType '${entityDef.spawnType}' missing collection`);
                 continue;
             }
 
@@ -245,7 +245,7 @@ class SceneManager {
             // Use createEntityFromPrefab service
             if (this.game.hasService?.('createEntityFromPrefab')) {
                 const createdId = this.game.call('createEntityFromPrefab', {
-                    prefab: entityDef.prefab,
+                    prefab: entityDef.spawnType,
                     type: entityDef.type,
                     collection: collection,
                     team: team,

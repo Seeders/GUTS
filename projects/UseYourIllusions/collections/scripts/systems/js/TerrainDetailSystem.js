@@ -13,6 +13,10 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
         'setTerrainDetailLighting'
     ];
 
+    static serviceDependencies = [
+        'getWorldScene'
+    ];
+
     constructor(game) {
         super(game);
         this.game.terrainDetailSystem = this;
@@ -249,7 +253,7 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
      * Create an instanced billboard batch for a detail texture
      */
     async createDetailBatch(textureId, placements) {
-        const scene = this.game.scene;
+        const scene = this.call.getWorldScene();
         if (!scene) {
             console.warn('[TerrainDetailSystem] No scene available');
             return;
@@ -331,7 +335,7 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
     clearDetails() {
         for (const [textureId, batch] of this.detailBatches) {
             if (batch.instancedMesh) {
-                this.game.scene?.remove(batch.instancedMesh);
+                this.call.getWorldScene()?.remove(batch.instancedMesh);
                 batch.instancedMesh.geometry?.dispose();
                 batch.instancedMesh.material?.map?.dispose();
                 batch.instancedMesh.material?.dispose();

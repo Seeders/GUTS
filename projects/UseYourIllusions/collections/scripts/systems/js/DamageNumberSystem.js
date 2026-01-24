@@ -2,7 +2,8 @@ class DamageNumberSystem extends GUTS.BaseSystem {
     static services = ['showDamageNumber'];
 
     static serviceDependencies = [
-        'getCamera'
+        'getCamera',
+        'getWorldScene'
     ];
 
     constructor(game) {
@@ -181,7 +182,7 @@ class DamageNumberSystem extends GUTS.BaseSystem {
         
         this.damageNumberMesh = new THREE.Mesh(this.damageTextGeometry, this.damageTextMaterial);
         this.damageNumberMesh.frustumCulled = false;
-        this.game.scene.add(this.damageNumberMesh);
+        this.call.getWorldScene().add(this.damageNumberMesh);
         
         // Initially hide all instances
         this.damageTextGeometry.instanceCount = 0;
@@ -521,7 +522,7 @@ class DamageNumberSystem extends GUTS.BaseSystem {
     destroy() {
         // Clean up damage number system
         if (this.damageNumberMesh) {
-            this.game.scene.remove(this.damageNumberMesh);
+            this.call.getWorldScene()?.remove(this.damageNumberMesh);
             this.damageTextGeometry.dispose();
             this.damageTextMaterial.dispose();
             this.damageTexture.dispose();

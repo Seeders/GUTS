@@ -13,7 +13,8 @@ class EffectsSystem extends GUTS.BaseSystem {
 
     static serviceDependencies = [
         'clearAllParticles',
-        'createParticles'
+        'createParticles',
+        'getWorldScene'
     ];
 
     constructor(game) {
@@ -212,8 +213,9 @@ class EffectsSystem extends GUTS.BaseSystem {
         
         try {
             // Remove from scene
-            if (this.game?.scene && effect.line) {
-                this.game.scene.remove(effect.line);
+            const scene = this.call.getWorldScene();
+            if (scene && effect.line) {
+                scene.remove(effect.line);
             }
             
             // Return to pools
@@ -262,8 +264,9 @@ class EffectsSystem extends GUTS.BaseSystem {
     
     // Main line effect creation (same interface, better performance)
     createLineEffect(config) {
-        if (!this.game.scene) return null;
-        
+        const scene = this.call.getWorldScene();
+        if (!scene) return null;
+
         const {
             startPos,
             endPos,
@@ -271,22 +274,22 @@ class EffectsSystem extends GUTS.BaseSystem {
             style = {},
             animation = {}
         } = config;
-        
+
         const lineConfig = this.getLineEffectConfig(type);
         const mergedStyle = { ...lineConfig.style, ...style };
         const mergedAnimation = { ...lineConfig.animation, ...animation };
-        
+
         // Generate path based on type
         const points = this.generateLinePath(startPos, endPos, type, mergedStyle);
-        
+
         // Use pooled objects
         const geometry = this.getPooledGeometry(type, points);
         const material = this.getPooledMaterial(mergedStyle);
         const effect = this.getPooledEffect();
-        
+
         // Create line object
         const lineEffect = new THREE.Line(geometry, material);
-        this.game.scene.add(lineEffect);
+        scene.add(lineEffect);
         
         // Setup effect tracking
         effect.line = lineEffect;
@@ -1034,7 +1037,7 @@ class EffectsSystem extends GUTS.BaseSystem {
         
         // Clean up damage number system
         if (this.damageNumberMesh) {
-            this.game.scene.remove(this.damageNumberMesh);
+            this.call.getWorldScene()?.remove(this.damageNumberMesh);
             this.damageTextGeometry.dispose();
             this.damageTextMaterial.dispose();
             this.damageTexture.dispose();

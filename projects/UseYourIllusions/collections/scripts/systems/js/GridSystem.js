@@ -1,7 +1,9 @@
 class GridSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getTerrainHeightAtPosition',
-        'getUnitTypeDef'
+        'getUnitTypeDef',
+        'getWorldScene',
+        'getUIScene'
     ];
 
     static services = [
@@ -66,7 +68,9 @@ class GridSystem extends GUTS.BaseSystem {
 
         const terrainGridSize = collections.configs.game.gridSize;
         const placementGridSize = terrainGridSize / 2; // Placement grid is always half the terrain grid
-        const currentLevelIndex = collections.configs.state.level;
+        // Use runtime state (game.state.level) instead of static config (collections.configs.state.level)
+        // This ensures we get the actual selected level, not the default from JSON
+        const currentLevelIndex = this.game.state.level ?? collections.configs.state.level;
         const levelKey = this.reverseEnums.levels[currentLevelIndex];
         const level = collections.levels[levelKey];
         const tileMapSize = level?.tileMap?.size || 32;
@@ -771,8 +775,9 @@ class GridSystem extends GUTS.BaseSystem {
                 const mesh = this.debugVisualization.children[0];
                 this.debugVisualization.remove(mesh);
             }
-            if (this.game.uiScene) {
-                this.game.uiScene.remove(this.debugVisualization);
+            const uiScene = this.call.getUIScene();
+            if (uiScene) {
+                uiScene.remove(this.debugVisualization);
             }
             this.debugVisualization = null;
         }
@@ -789,8 +794,9 @@ class GridSystem extends GUTS.BaseSystem {
 
         // Clean up grid visualization
         if (this.gridVisualization) {
-            if (this.game.scene) {
-                this.game.scene.remove(this.gridVisualization);
+            const scene = this.call.getWorldScene();
+            if (scene) {
+                scene.remove(this.gridVisualization);
             }
             this.gridVisualization.traverse(child => {
                 if (child.geometry) child.geometry.dispose();
@@ -813,7 +819,8 @@ class GridSystem extends GUTS.BaseSystem {
     initDebugVisualization() {
         if (this.game.isServer) return;
 
-        if (!this.game.uiScene) {
+        const uiScene = this.call.getUIScene();
+        if (!uiScene) {
             console.warn('[GridSystem] No uiScene available for debug visualization');
             return;
         }
@@ -822,7 +829,7 @@ class GridSystem extends GUTS.BaseSystem {
         this.debugVisualization = new THREE.Group();
         this.debugVisualization.name = 'SpatialGridDebug';
         this.debugVisualization.visible = true;
-        this.game.uiScene.add(this.debugVisualization);
+        uiScene.add(this.debugVisualization);
 
         // Create shared geometry and materials
         const cellSize = this.cellSize * 0.9;
@@ -916,10 +923,10 @@ class GridSystem extends GUTS.BaseSystem {
     toggleDebugVisualization() {
 
         if (!this.debugVisualization) {
-            if (!this.game.isServer && this.game.uiScene) {
+            if (!this.game.isServer && this.call.getUIScene()) {
                 this.initDebugVisualization();
             } else {
-                console.error('[GridSystem] Cannot initialize - isServer:', this.game.isServer, 'uiScene:', !!this.game.uiScene);
+                console.error('[GridSystem] Cannot initialize - isServer:', this.game.isServer, 'uiScene:', !!this.call.getUIScene());
                 return;
             }
         }

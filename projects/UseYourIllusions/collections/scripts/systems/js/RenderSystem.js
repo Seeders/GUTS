@@ -21,7 +21,9 @@ class RenderSystem extends GUTS.BaseSystem {
         'getLocalPlayerStats',
         'isEntityVisibleToTeam',
         'getZoomLevel',
-        'setTerrainDetailLighting'
+        'setTerrainDetailLighting',
+        'getWorldScene',
+        'getRenderer'
     ];
 
     constructor(game) {
@@ -91,8 +93,10 @@ class RenderSystem extends GUTS.BaseSystem {
     postSceneLoad(sceneData) {
         console.log('[RenderSystem] postSceneLoad called, spawnedEntities count:', this.spawnedEntities.size);
 
-        // Scene should be available now from WorldSystem
-        if (!this.game.scene) {
+        // Get scene from WorldSystem service (ensures we always get the current scene)
+        const scene = this.call.getWorldScene();
+        console.log('[RenderSystem] postSceneLoad called, scene exists:', !!scene, 'scene.uuid:', scene?.uuid);
+        if (!scene) {
             console.error('[RenderSystem] Scene not available in postSceneLoad - WorldSystem may have failed');
             return;
         }
@@ -104,7 +108,7 @@ class RenderSystem extends GUTS.BaseSystem {
         const capacitiesByType = this.calculateInstanceCapacities();
 
         this.entityRenderer = new GUTS.EntityRenderer({
-            scene: this.game.scene,
+            scene: scene,
             collections: collections,
             projectName: projectName,
             modelManager: this.game.modelManager,
@@ -116,7 +120,7 @@ class RenderSystem extends GUTS.BaseSystem {
             minMovementThreshold: 0.1
         });
 
-        console.log('[RenderSystem] EntityRenderer created, scene:', !!this.game.scene);
+        console.log('[RenderSystem] EntityRenderer created, scene.uuid:', scene?.uuid);
 
         // Set initial ambient light color for sprite/billboard rendering
         // Combine ambient light with hemisphere light for overall scene illumination
@@ -152,7 +156,7 @@ class RenderSystem extends GUTS.BaseSystem {
         const levelEntities = tileMap.levelEntities || [];
         const counts = {};
         for (const entityDef of levelEntities) {
-            const collectionId = prefabToCollection[entityDef.prefab];
+            const collectionId = prefabToCollection[entityDef.spawnType];
             if (!collectionId) continue;
             const key = `${collectionId}_${entityDef.type}`;
             counts[key] = (counts[key] || 0) + 1;
@@ -251,7 +255,7 @@ class RenderSystem extends GUTS.BaseSystem {
 
 
     async update() {
-        if (!this.game.scene || !this.call.getCamera() || !this.game.renderer) return;
+        if (!this.call.getWorldScene() || !this.call.getCamera() || !this.call.getRenderer()) return;
         if (!this.entityRenderer) return;
 
         this._frame++;

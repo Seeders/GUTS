@@ -107,7 +107,6 @@ class ExitSystem extends GUTS.BaseSystem {
         const nextLevelIndex = exitZone?.nextLevel;
         const reverseEnums = this.game.getReverseEnums();
         const nextLevel = typeof nextLevelIndex === 'number' ? reverseEnums.levels?.[nextLevelIndex] : nextLevelIndex;
-        console.log('[ExitSystem] nextLevel from component:', nextLevelIndex, '-> resolved to:', nextLevel);
 
         // Get exit position for effects
         const exitTransform = this.game.getComponent(exitId, 'transform');

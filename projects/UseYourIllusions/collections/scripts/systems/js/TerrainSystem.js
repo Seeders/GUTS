@@ -169,7 +169,7 @@ class TerrainSystem extends GUTS.BaseSystem {
     /**
      * Load level entities from level data
      * Uses prefab-driven entity creation for proper component configuration
-     * Supports prefab format: { prefab: "worldObject", type: "tree_sprite", components: { transform } }
+     * Supports format: { spawnType: "worldObject", type: "tree_sprite", components: { transform } }
      */
     async loadLevelEntities() {
         // Clear any previous spawned entity data
@@ -203,31 +203,31 @@ class TerrainSystem extends GUTS.BaseSystem {
 
         for (const entityDef of levelEntities) {
             try {
-                if (!entityDef.prefab) {
-                    console.warn(`[TerrainSystem] Entity missing prefab:`, entityDef);
+                if (!entityDef.spawnType) {
+                    console.warn(`[TerrainSystem] Entity missing spawnType:`, entityDef);
                     continue;
                 }
 
-                const prefabData = prefabs[entityDef.prefab];
+                const prefabData = prefabs[entityDef.spawnType];
                 if (!prefabData) {
-                    console.warn(`[TerrainSystem] Unknown prefab: ${entityDef.prefab}`);
+                    console.warn(`[TerrainSystem] Unknown spawnType: ${entityDef.spawnType}`);
                     continue;
                 }
 
                 const type = entityDef.type;
 
                 // Get collection from objectTypeDefinitions mapping (singular -> id)
-                const basePrefabName = entityDef.prefab;
-                const collection = prefabToCollection[basePrefabName];
+                const baseSpawnType = entityDef.spawnType;
+                const collection = prefabToCollection[baseSpawnType];
                 if (!collection) {
-                    console.warn(`[TerrainSystem] No collection mapping for prefab: ${basePrefabName}`);
+                    console.warn(`[TerrainSystem] No collection mapping for spawnType: ${baseSpawnType}`);
                     continue;
                 }
 
                 // Check if the type definition specifies a custom prefab
                 // e.g., barrel.json has "prefab": "collectible"
                 const typeData = this.collections[collection]?.[type];
-                const prefabName = typeData?.prefab || basePrefabName;
+                const prefabName = typeData?.prefab || baseSpawnType;
                 const componentOverrides = entityDef.components || {};
 
                 // Adjust terrain height if Y is 0 or undefined

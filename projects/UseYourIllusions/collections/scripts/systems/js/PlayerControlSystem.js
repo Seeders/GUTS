@@ -19,6 +19,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         'getPreviewPosition',
         'getTerrainHeightAtPosition',
         'getWorldPositionFromMouse',
+        'getWorldScene',
         'playSound',
         'playSynthSound',
         'setBillboardAnimation',
@@ -917,7 +918,8 @@ class PlayerControlSystem extends GUTS.BaseSystem {
      * Create the visual collect beam using a cylinder mesh for better visibility
      */
     createCollectBeam() {
-        if (!this.game.scene || typeof THREE === 'undefined') return;
+        const scene = this.call.getWorldScene();
+        if (!scene || typeof THREE === 'undefined') return;
 
         // Clean up any existing beam
         this.removeCollectBeam();
@@ -939,15 +941,16 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         });
 
         this.collectBeamLine = new THREE.Mesh(this.collectBeamGeometry, this.collectBeamMaterial);
-        this.game.scene.add(this.collectBeamLine);
+        scene.add(this.collectBeamLine);
     }
 
     /**
      * Remove the visual collect beam
      */
     removeCollectBeam() {
-        if (this.collectBeamLine && this.game.scene) {
-            this.game.scene.remove(this.collectBeamLine);
+        const scene = this.call.getWorldScene();
+        if (this.collectBeamLine && scene) {
+            scene.remove(this.collectBeamLine);
         }
         if (this.collectBeamGeometry) {
             this.collectBeamGeometry.dispose();

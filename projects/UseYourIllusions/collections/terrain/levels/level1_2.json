@@ -1,5 +1,5 @@
 {
-  "title": "Level 1-2",
+  "title": "Level 1-0",
   "published": true,
   "world": "dungeon",
   "grassShader": "grass",
@@ -599,7 +599,7 @@
     ],
     "levelEntities": [
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "barrel",
         "components": {
           "transform": {
@@ -622,7 +622,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "barrel",
         "components": {
           "transform": {
@@ -645,7 +645,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "barrel",
         "components": {
           "transform": {
@@ -668,7 +668,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "brazier",
         "components": {
           "transform": {
@@ -691,7 +691,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "crate",
         "components": {
           "transform": {
@@ -714,7 +714,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "crate",
         "components": {
           "transform": {
@@ -737,7 +737,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "crate",
         "components": {
           "transform": {
@@ -760,7 +760,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "exit_portal",
         "components": {
           "transform": {
@@ -779,11 +779,14 @@
               "y": 1,
               "z": 1
             }
+          },
+          "exitZone": {
+            "nextLevel": "level1_1"
           }
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "brazier",
         "components": {
           "transform": {
@@ -806,7 +809,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "brazier",
         "components": {
           "transform": {
@@ -829,7 +832,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "brazier",
         "components": {
           "transform": {
@@ -852,7 +855,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "brazier",
         "components": {
           "transform": {
@@ -875,7 +878,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "brazier",
         "components": {
           "transform": {
@@ -898,7 +901,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "brazier",
         "components": {
           "transform": {
@@ -921,7 +924,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "brazier",
         "components": {
           "transform": {
@@ -944,7 +947,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "brazier",
         "components": {
           "transform": {
@@ -967,7 +970,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "brazier",
         "components": {
           "transform": {
@@ -990,7 +993,7 @@
         }
       },
       {
-        "prefab": "unit",
+        "spawnType": "unit",
         "type": "guard",
         "components": {
           "transform": {
@@ -1013,7 +1016,7 @@
         }
       },
       {
-        "prefab": "unit",
+        "spawnType": "unit",
         "type": "guard",
         "components": {
           "transform": {
@@ -1036,7 +1039,7 @@
         }
       },
       {
-        "prefab": "unit",
+        "spawnType": "unit",
         "type": "guard",
         "components": {
           "transform": {
@@ -1059,7 +1062,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "mirror",
         "components": {
           "transform": {

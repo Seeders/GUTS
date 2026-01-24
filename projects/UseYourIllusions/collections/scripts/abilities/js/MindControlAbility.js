@@ -2,7 +2,8 @@ class MindControlAbility extends GUTS.BaseAbility {
     static serviceDependencies = [
         ...GUTS.BaseAbility.serviceDependencies,
         'playEffectSystem',
-        'playEffect'
+        'playEffect',
+        'getWorldScene'
     ];
 
     constructor(game, abilityData = {}) {
@@ -303,10 +304,11 @@ class MindControlAbility extends GUTS.BaseAbility {
         if (!entry) return;
 
         // Clean up all beams for this target
+        const scene = this.call.getWorldScene();
         for (const [casterId, beamEffect] of entry.beams.entries()) {
-            if (beamEffect && this.game.scene) {
+            if (beamEffect && scene) {
                 try {
-                    this.game.scene.remove(beamEffect);
+                    scene.remove(beamEffect);
                     if (beamEffect.geometry) beamEffect.geometry.dispose();
                     if (beamEffect.material) beamEffect.material.dispose();
                 } catch (error) {
@@ -324,9 +326,10 @@ class MindControlAbility extends GUTS.BaseAbility {
         if (!entry) return;
 
         const beamEffect = entry.beams.get(casterId);
-        if (beamEffect && this.game.scene) {
+        const scene = this.call.getWorldScene();
+        if (beamEffect && scene) {
             try {
-                this.game.scene.remove(beamEffect);
+                scene.remove(beamEffect);
                 if (beamEffect.geometry) beamEffect.geometry.dispose();
                 if (beamEffect.material) beamEffect.material.dispose();
             } catch (error) {

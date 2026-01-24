@@ -11,7 +11,8 @@ class MiniMapSystem extends GUTS.BaseSystem {
         'getActivePlayerTeam',
         'getUnitTypeDef',
         'isVisibleAt',
-        'getGoldVeinLocations'
+        'getGoldVeinLocations',
+        'getRenderer'
     ];
 
     constructor(game) {
@@ -597,18 +598,21 @@ class MiniMapSystem extends GUTS.BaseSystem {
             return;
         }
 
-        this.game.renderer.setRenderTarget(this.minimapRenderTarget);
-        this.game.renderer.render(this.minimapScene, this.minimapCamera);
+        const renderer = this.call.getRenderer();
+        if (!renderer) return;
+
+        renderer.setRenderTarget(this.minimapRenderTarget);
+        renderer.render(this.minimapScene, this.minimapCamera);
 
         // Reuse pre-allocated pixel buffer instead of creating new one each frame
-        this.game.renderer.readRenderTargetPixels(
+        renderer.readRenderTargetPixels(
             this.minimapRenderTarget,
             0, 0,
             this.MINIMAP_SIZE, this.MINIMAP_SIZE,
             this._pixelBuffer
         );
 
-        this.game.renderer.setRenderTarget(null);
+        renderer.setRenderTarget(null);
 
         // Lazily create imageData once, then reuse it
         if (!this._imageData) {

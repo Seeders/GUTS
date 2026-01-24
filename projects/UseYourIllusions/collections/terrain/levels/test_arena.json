@@ -598,7 +598,7 @@
     ],
     "levelEntities": [
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "present",
         "components": {
           "transform": {
@@ -621,7 +621,7 @@
         }
       },
       {
-        "prefab": "worldObject",
+        "spawnType": "worldObject",
         "type": "exit_portal",
         "components": {
           "transform": {
@@ -644,7 +644,7 @@
         }
       },
       {
-        "prefab": "unit",
+        "spawnType": "unit",
         "type": "guard",
         "components": {
           "transform": {

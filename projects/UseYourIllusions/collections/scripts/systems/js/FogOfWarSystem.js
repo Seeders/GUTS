@@ -16,7 +16,8 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         'getUnitTypeDef',
         'getZoomLevel',
         'getCamera',
-        'removePostProcessingPass'
+        'removePostProcessingPass',
+        'getRenderer'
     ];
 
     constructor(game) {
@@ -733,23 +734,24 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         }
 
         // Render visibility
-        this.game.renderer.setRenderTarget(this.fogRenderTarget);
-        this.game.renderer.render(this.fogScene, this.fogCamera);
-        
+        const renderer = this.call.getRenderer();
+        renderer.setRenderTarget(this.fogRenderTarget);
+        renderer.render(this.fogScene, this.fogCamera);
+
         // Accumulate exploration
         this.accumulationMaterial.uniforms.currentExploration.value = this.explorationRenderTarget.texture;
         this.accumulationMaterial.uniforms.newVisibility.value = this.fogRenderTarget.texture;
-        
-        this.game.renderer.setRenderTarget(this.explorationRenderTargetPingPong);
-        this.game.renderer.render(this.accumulationScene, this.accumulationCamera);
-        
+
+        renderer.setRenderTarget(this.explorationRenderTargetPingPong);
+        renderer.render(this.accumulationScene, this.accumulationCamera);
+
         const temp = this.explorationRenderTarget;
         this.explorationRenderTarget = this.explorationRenderTargetPingPong;
         this.explorationRenderTargetPingPong = temp;
-        
+
         this.fogPass.uniforms.explorationTexture.value = this.explorationRenderTarget.texture;
-        
-        this.game.renderer.setRenderTarget(null);
+
+        renderer.setRenderTarget(null);
 
         // Increment frame counter - caches will be updated once per frame on first visibility check
         this.currentFrame++;
@@ -759,7 +761,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         // Only read pixels once per frame using frame counter
         if (this.lastVisibilityCacheFrame === this.currentFrame) return;
 
-        this.game.renderer.readRenderTargetPixels(
+        this.call.getRenderer().readRenderTargetPixels(
             this.fogRenderTarget,
             0, 0,
             this.FOG_TEXTURE_SIZE,
@@ -774,7 +776,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         // Only read pixels once per frame using frame counter
         if (this.lastExplorationCacheFrame === this.currentFrame) return;
 
-        this.game.renderer.readRenderTargetPixels(
+        this.call.getRenderer().readRenderTargetPixels(
             this.explorationRenderTarget,
             0, 0,
             this.FOG_TEXTURE_SIZE,
@@ -832,11 +834,12 @@ class FogOfWarSystem extends GUTS.BaseSystem {
     }
 
     resetExploration() {
-        this.game.renderer.setRenderTarget(this.explorationRenderTarget);
-        this.game.renderer.clear();
-        this.game.renderer.setRenderTarget(this.explorationRenderTargetPingPong);
-        this.game.renderer.clear();
-        this.game.renderer.setRenderTarget(null);
+        const renderer = this.call.getRenderer();
+        renderer.setRenderTarget(this.explorationRenderTarget);
+        renderer.clear();
+        renderer.setRenderTarget(this.explorationRenderTargetPingPong);
+        renderer.clear();
+        renderer.setRenderTarget(null);
         this.explorationCacheValid = false;
     }
 
