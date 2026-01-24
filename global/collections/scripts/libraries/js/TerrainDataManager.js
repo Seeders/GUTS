@@ -459,16 +459,53 @@ class TerrainDataManager {
     }
 
     /**
+     * Analyze height map and process each cliff via callback (GC-friendly - reuses single object)
+     * @param {Function} callback - Called for each cliff with reusable descriptor object
+     * @returns {number} Total number of cliffs processed
+     */
+    forEachCliff(callback) {
+        if (!this.tileMap?.heightMap || this.tileMap.heightMap.length === 0) {
+            return 0;
+        }
+
+        // Single reusable cliff descriptor object - avoids thousands of allocations
+        const cliff = { gridX: 0, gridZ: 0, quadrant: '', type: '', rotation: 0, heightDiff: 0 };
+        let count = 0;
+
+        const emitCliff = (x, z, quadrant, type, rotation, heightDiff) => {
+            cliff.gridX = x;
+            cliff.gridZ = z;
+            cliff.quadrant = quadrant;
+            cliff.type = type;
+            cliff.rotation = rotation;
+            cliff.heightDiff = heightDiff;
+            callback(cliff);
+            count++;
+        };
+
+        this._analyzeCliffTiles(emitCliff);
+        return count;
+    }
+
+    /**
      * Analyze height map to identify cliff positions and orientations
-     * Returns array of cliff data for entity spawning
+     * Returns array of cliff data for entity spawning (allocates new objects - use forEachCliff for GC-friendly version)
      * @returns {Array} Array of cliff definitions {gridX, gridZ, direction, type, rotation, heightDiff}
      */
     analyzeCliffs() {
-        if (!this.tileMap?.heightMap || this.tileMap.heightMap.length === 0) {
-            return [];
-        }
-
         const cliffs = [];
+        this.forEachCliff(cliff => {
+            // Must copy since forEachCliff reuses the same object
+            cliffs.push({ ...cliff });
+        });
+        return cliffs;
+    }
+
+    /**
+     * Internal: Analyze cliff tiles and emit each cliff via callback
+     * @param {Function} emit - Callback function(x, z, quadrant, type, rotation, heightDiff)
+     */
+    _analyzeCliffTiles(emit) {
         const heightMap = this.tileMap.heightMap;
         const mapSize = this.tileMap.size || heightMap.length;
 
@@ -517,126 +554,86 @@ class TerrainDataManager {
                 const botRightOccupied = (botLess && rightLess) || (cornerBottomRightLess && !botLess && !rightLess);
 
                 // Place outer corners first (atom_one)
-                // Use the maximum of the two adjacent edge differences to cover the full height
                 if (topLess && leftLess) {
-                    const heightDiff = Math.max(topDiff, leftDiff);
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_one', rotation: Math.PI / 2, heightDiff });
+                    emit(x, z, 'TL', 'atom_one', Math.PI / 2, Math.max(topDiff, leftDiff));
                 }
                 if (topLess && rightLess) {
-                    const heightDiff = Math.max(topDiff, rightDiff);
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_one', rotation: 0, heightDiff });
+                    emit(x, z, 'TR', 'atom_one', 0, Math.max(topDiff, rightDiff));
                 }
                 if (botLess && leftLess) {
-                    const heightDiff = Math.max(botDiff, leftDiff);
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_one', rotation: Math.PI, heightDiff });
+                    emit(x, z, 'BL', 'atom_one', Math.PI, Math.max(botDiff, leftDiff));
                 }
                 if (botLess && rightLess) {
-                    const heightDiff = Math.max(botDiff, rightDiff);
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_one', rotation: -Math.PI/2, heightDiff });
+                    emit(x, z, 'BR', 'atom_one', -Math.PI/2, Math.max(botDiff, rightDiff));
                 }
 
                 // Place inner corners (atom_three)
-                // If corner neighbors a ramp, use atom_three_top instead
                 if (cornerTopLeftLess && !topLess && !leftLess) {
-                    const neighborsRamp = topNeighborHasRamp || leftNeighborHasRamp;
-                    const type = neighborsRamp ? 'atom_three_top' : 'atom_three';
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type, rotation: Math.PI / 2, heightDiff: cornerTopLeftDiff });
+                    const type = (topNeighborHasRamp || leftNeighborHasRamp) ? 'atom_three_top' : 'atom_three';
+                    emit(x, z, 'TL', type, Math.PI / 2, cornerTopLeftDiff);
                 }
                 if (cornerTopRightLess && !topLess && !rightLess) {
-                    const neighborsRamp = topNeighborHasRamp || rightNeighborHasRamp;
-                    const type = neighborsRamp ? 'atom_three_top' : 'atom_three';
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type, rotation: 0, heightDiff: cornerTopRightDiff });
+                    const type = (topNeighborHasRamp || rightNeighborHasRamp) ? 'atom_three_top' : 'atom_three';
+                    emit(x, z, 'TR', type, 0, cornerTopRightDiff);
                 }
                 if (cornerBottomLeftLess && !botLess && !leftLess) {
-                    const neighborsRamp = botNeighborHasRamp || leftNeighborHasRamp;
-                    const type = neighborsRamp ? 'atom_three_top' : 'atom_three';
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type, rotation: Math.PI, heightDiff: cornerBottomLeftDiff });
+                    const type = (botNeighborHasRamp || leftNeighborHasRamp) ? 'atom_three_top' : 'atom_three';
+                    emit(x, z, 'BL', type, Math.PI, cornerBottomLeftDiff);
                 }
                 if (cornerBottomRightLess && !botLess && !rightLess) {
-                    const neighborsRamp = botNeighborHasRamp || rightNeighborHasRamp;
-                    const type = neighborsRamp ? 'atom_three_top' : 'atom_three';
-                    cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type, rotation: -Math.PI / 2, heightDiff: cornerBottomRightDiff });
+                    const type = (botNeighborHasRamp || rightNeighborHasRamp) ? 'atom_three_top' : 'atom_three';
+                    emit(x, z, 'BR', type, -Math.PI / 2, cornerBottomRightDiff);
                 }
 
                 // Place edges in empty quadrants (atom_two)
-                // If side neighbor has ramp, convert to atom_one with one face toward ramp
-                // atom_one rotations: TL=PI/2, TR=0, BL=PI, BR=-PI/2
                 if (topLess) {
                     if (!topLeftOccupied) {
-                        if (leftNeighborHasRamp) {
-                            // Convert to atom_one facing top and left (toward ramp)
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_one', rotation: Math.PI / 2, heightDiff: topDiff });
-                        } else {
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: 0, heightDiff: topDiff });
-                        }
+                        const type = leftNeighborHasRamp ? 'atom_one' : 'atom_two';
+                        const rot = leftNeighborHasRamp ? Math.PI / 2 : 0;
+                        emit(x, z, 'TL', type, rot, topDiff);
                     }
                     if (!topRightOccupied) {
-                        if (rightNeighborHasRamp) {
-                            // Convert to atom_one facing top and right (toward ramp)
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_one', rotation: 0, heightDiff: topDiff });
-                        } else {
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: 0, heightDiff: topDiff });
-                        }
+                        const type = rightNeighborHasRamp ? 'atom_one' : 'atom_two';
+                        emit(x, z, 'TR', type, 0, topDiff);
                     }
                 }
                 if (botLess) {
                     if (!botLeftOccupied) {
-                        if (leftNeighborHasRamp) {
-                            // Convert to atom_one facing bottom and left (toward ramp)
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_one', rotation: Math.PI, heightDiff: botDiff });
-                        } else {
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: -Math.PI, heightDiff: botDiff });
-                        }
+                        const type = leftNeighborHasRamp ? 'atom_one' : 'atom_two';
+                        const rot = leftNeighborHasRamp ? Math.PI : -Math.PI;
+                        emit(x, z, 'BL', type, rot, botDiff);
                     }
                     if (!botRightOccupied) {
-                        if (rightNeighborHasRamp) {
-                            // Convert to atom_one facing bottom and right (toward ramp)
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_one', rotation: -Math.PI / 2, heightDiff: botDiff });
-                        } else {
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: -Math.PI, heightDiff: botDiff });
-                        }
+                        const type = rightNeighborHasRamp ? 'atom_one' : 'atom_two';
+                        const rot = rightNeighborHasRamp ? -Math.PI / 2 : -Math.PI;
+                        emit(x, z, 'BR', type, rot, botDiff);
                     }
                 }
                 if (leftLess) {
                     if (!topLeftOccupied) {
-                        if (topNeighborHasRamp) {
-                            // Convert to atom_one facing left and top (toward ramp)
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_one', rotation: Math.PI / 2, heightDiff: leftDiff });
-                        } else {
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TL', type: 'atom_two', rotation: Math.PI / 2, heightDiff: leftDiff });
-                        }
+                        const type = topNeighborHasRamp ? 'atom_one' : 'atom_two';
+                        emit(x, z, 'TL', type, Math.PI / 2, leftDiff);
                     }
                     if (!botLeftOccupied) {
-                        if (botNeighborHasRamp) {
-                            // Convert to atom_one facing left and bottom (toward ramp)
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_one', rotation: Math.PI, heightDiff: leftDiff });
-                        } else {
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BL', type: 'atom_two', rotation: Math.PI / 2, heightDiff: leftDiff });
-                        }
+                        const type = botNeighborHasRamp ? 'atom_one' : 'atom_two';
+                        const rot = botNeighborHasRamp ? Math.PI : Math.PI / 2;
+                        emit(x, z, 'BL', type, rot, leftDiff);
                     }
                 }
                 if (rightLess) {
                     if (!topRightOccupied) {
-                        if (topNeighborHasRamp) {
-                            // Convert to atom_one facing right and top (toward ramp)
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_one', rotation: 0, heightDiff: rightDiff });
-                        } else {
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'TR', type: 'atom_two', rotation: 3 * Math.PI / 2, heightDiff: rightDiff });
-                        }
+                        const type = topNeighborHasRamp ? 'atom_one' : 'atom_two';
+                        const rot = topNeighborHasRamp ? 0 : 3 * Math.PI / 2;
+                        emit(x, z, 'TR', type, rot, rightDiff);
                     }
                     if (!botRightOccupied) {
-                        if (botNeighborHasRamp) {
-                            // Convert to atom_one facing right and bottom (toward ramp)
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_one', rotation: -Math.PI / 2, heightDiff: rightDiff });
-                        } else {
-                            cliffs.push({ gridX: x, gridZ: z, quadrant: 'BR', type: 'atom_two', rotation: 3 * Math.PI / 2, heightDiff: rightDiff });
-                        }
+                        const type = botNeighborHasRamp ? 'atom_one' : 'atom_two';
+                        const rot = botNeighborHasRamp ? -Math.PI / 2 : 3 * Math.PI / 2;
+                        emit(x, z, 'BR', type, rot, rightDiff);
                     }
                 }
             }
         }
-
-        return cliffs;
     }
 
     /**

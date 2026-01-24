@@ -1098,7 +1098,9 @@ class BaseECSGame {
         return this.app.getCollections();
     }
 
-    async update(deltaTime) { 
+    async update(deltaTime) {
+        // Debug: track slow frames in first 10 seconds after scene load
+        const frameStart = performance.now();
 
         if (!this.state.isPaused) {
             // Start performance frame tracking
@@ -1138,7 +1140,12 @@ class BaseECSGame {
                 }
 
                 if (system.update) {
+                    const updateStart = performance.now();
                     await system.update();
+                    const updateDuration = performance.now() - updateStart;
+                    if (updateDuration > 50) {
+                        console.warn(`[SlowSystem] ${systemName}.update() took ${updateDuration.toFixed(0)}ms`);
+                    }
                 }
 
                 // End update tracking
@@ -1152,7 +1159,12 @@ class BaseECSGame {
                         this.performanceMonitor.startSystemRender(systemName);
                     }
 
+                    const renderStart = performance.now();
                     await system.render();
+                    const renderDuration = performance.now() - renderStart;
+                    if (renderDuration > 50) {
+                        console.warn(`[SlowSystem] ${systemName}.render() took ${renderDuration.toFixed(0)}ms`);
+                    }
 
                     // End render tracking
                     if (this.performanceMonitor) {
@@ -1171,6 +1183,12 @@ class BaseECSGame {
             }
 
             this.postUpdate();
+        }
+
+        // Debug: log slow frames (>100ms) to identify lag sources
+        const frameDuration = performance.now() - frameStart;
+        if (frameDuration > 100) {
+            console.warn(`[SlowFrame] Frame took ${frameDuration.toFixed(0)}ms at tick ${this.tickCount}`);
         }
     }
 
