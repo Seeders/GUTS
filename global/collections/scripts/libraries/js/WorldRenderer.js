@@ -1494,6 +1494,7 @@ class WorldRenderer {
 
     /**
      * Spawn cliff entities based on terrain height analysis
+     * GC-optimized: reuses objects instead of creating new ones per cliff
      * @param {Object} entityRenderer - EntityRenderer instance
      * @param {boolean} useExtension - Whether to account for extension size (true for game, false for editor)
      */
@@ -1506,15 +1507,6 @@ class WorldRenderer {
 
         // Clear existing cliff entities
         entityRenderer.clearEntitiesByType('cliffs');
-
-        // Analyze height map for cliff positions
-        const cliffData = this.terrainDataManager.analyzeCliffs();
-        console.log('[WorldRenderer] cliffData count:', cliffData.length);
-
-        if (cliffData.length === 0) {
-            console.log('[WorldRenderer] No cliff data, returning early');
-            return;
-        }
 
         // Get the cliffSet from the world
         const cliffSetId = this.terrainDataManager.world?.cliffSet;
@@ -1537,157 +1529,141 @@ class WorldRenderer {
         }
 
         const heightStep = this.terrainDataManager.heightStep;
-
-        // Use game services if available, otherwise fallback to manual calculation
         const useGameManager = this.game !== null;
+        const heightMap = this.terrainDataManager.tileMap.heightMap;
 
-        if (!useGameManager) {
-            console.warn('[WorldRenderer] GameManager not set, using fallback coordinate calculations');
-        }
+        // Reusable objects to avoid per-cliff allocations
+        const position = { x: 0, y: 0, z: 0 };
+        const spawnData = { collection: 'cliffs', type: '', position: position, rotation: 0 };
 
-        // Spawn each cliff
-        let spawnedCount = 0;
-        for (const cliff of cliffData) {
-            let tileWorldPos, worldPos;
+        // Fallback calculation values (only computed once if needed)
+        const gridSize = this.terrainDataManager.gridSize;
+        const terrainSize = this.terrainDataManager.tileMap.size * gridSize;
+        const extensionSize = this.terrainDataManager.extensionSize;
+        const extendedSize = this.terrainDataManager.extendedSize;
+        const quarterGrid = gridSize / 4;
+
+        // Z-fighting offsets
+        const cliffOffsetTop = 0.002;
+        const cliffOffsetMid = 0.001;
+        const cliffOffsetBase = 0.0;
+
+        // Use flat arrays instead of object arrays to minimize GC pressure
+        // Each spawn needs: entityId (string), type (string), x, y, z, rotation (numbers)
+        const entityIds = [];
+        const types = [];
+        const xs = [];
+        const ys = [];
+        const zs = [];
+        const rotations = [];
+
+        // Helper to add spawn task without creating objects
+        const addSpawn = (entityId, type, x, y, z, rotation) => {
+            entityIds.push(entityId);
+            types.push(type);
+            xs.push(x);
+            ys.push(y);
+            zs.push(z);
+            rotations.push(rotation);
+        };
+
+        // Process each cliff using GC-friendly iterator (reuses single cliff object)
+        const cliffCount = this.terrainDataManager.forEachCliff(cliff => {
+            // Calculate world position
+            let worldX, worldZ;
 
             if (useGameManager) {
-                // Use GridSystem coordinate transformations via gameManager
-                tileWorldPos = this.game.call('tileToWorld', cliff.gridX, cliff.gridZ, useExtension);
-                worldPos = this.game.call('applyQuadrantOffset', tileWorldPos.x, tileWorldPos.z, cliff.quadrant);
+                const tileWorldPos = this.game.call('tileToWorld', cliff.gridX, cliff.gridZ, useExtension);
+                const worldPos = this.game.call('applyQuadrantOffset', tileWorldPos.x, tileWorldPos.z, cliff.quadrant);
+                worldX = worldPos.x;
+                worldZ = worldPos.z;
             } else {
-                // Fallback: manual calculation
-                const gridSize = this.terrainDataManager.gridSize;
-                const terrainSize = this.terrainDataManager.tileMap.size * gridSize;
-
                 const tileWorldX = useExtension
-                    ? (cliff.gridX + this.terrainDataManager.extensionSize) * gridSize - this.terrainDataManager.extendedSize / 2 + gridSize / 2
+                    ? (cliff.gridX + extensionSize) * gridSize - extendedSize / 2 + gridSize / 2
                     : cliff.gridX * gridSize - terrainSize / 2 + gridSize / 2;
                 const tileWorldZ = useExtension
-                    ? (cliff.gridZ + this.terrainDataManager.extensionSize) * gridSize - this.terrainDataManager.extendedSize / 2 + gridSize / 2
+                    ? (cliff.gridZ + extensionSize) * gridSize - extendedSize / 2 + gridSize / 2
                     : cliff.gridZ * gridSize - terrainSize / 2 + gridSize / 2;
 
-                // Quadrant offsets
-                const quarterGrid = gridSize / 4;
-                let worldX = tileWorldX;
-                let worldZ = tileWorldZ;
+                worldX = tileWorldX;
+                worldZ = tileWorldZ;
 
-                switch (cliff.quadrant) {
-                    case 'TL':
-                        worldX -= quarterGrid;
-                        worldZ -= quarterGrid;
-                        break;
-                    case 'TR':
-                        worldX += quarterGrid;
-                        worldZ -= quarterGrid;
-                        break;
-                    case 'BL':
-                        worldX -= quarterGrid;
-                        worldZ += quarterGrid;
-                        break;
-                    case 'BR':
-                        worldX += quarterGrid;
-                        worldZ += quarterGrid;
-                        break;
-                }
-
-                worldPos = { x: worldX, z: worldZ };
+                // Apply quadrant offset
+                if (cliff.quadrant === 'TL') { worldX -= quarterGrid; worldZ -= quarterGrid; }
+                else if (cliff.quadrant === 'TR') { worldX += quarterGrid; worldZ -= quarterGrid; }
+                else if (cliff.quadrant === 'BL') { worldX -= quarterGrid; worldZ += quarterGrid; }
+                else if (cliff.quadrant === 'BR') { worldX += quarterGrid; worldZ += quarterGrid; }
             }
 
-            // Get height difference (defaults to 1 for backwards compatibility)
             const heightDiff = cliff.heightDiff || 1;
-            const mapHeight = this.terrainDataManager.tileMap.heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
-            // Small offset to prevent z-fighting between stacked cliff pieces
-            // Each piece type gets a slightly different offset
-            const cliffOffsetTop = 0.002;
-            const cliffOffsetMid = 0.001;
-            const cliffOffsetBase = 0.0;
-
-            // Calculate the neighbor's height (where the cliff base should sit)
+            const mapHeight = heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
             const neighborHeight = mapHeight - heightDiff;
 
-            // Spawn cliff pieces based on height difference
-            // heightDiff 1: single original cliff (current behavior)
-            // heightDiff 2: top + base
-            // heightDiff 3+: top + (n-2) mids + base
-            // Exception: atom_three doesn't use mid pieces
-
             if (heightDiff === 1) {
-                // Single level cliff - use original type
-                // Position at the neighbor's height level
-                const cliffBottomHeight = neighborHeight * heightStep;
-                const entityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`;
+                // Single level cliff
                 const cliffPrefab = cliffSet.cliffs[cliff.type];
-                if (!cliffPrefab) continue;
+                if (!cliffPrefab) return;
 
-                const spawned = await entityRenderer.spawnEntity(entityId, {
-                    collection: 'cliffs',
-                    type: cliffPrefab,
-                    position: { x: worldPos.x, y: cliffBottomHeight, z: worldPos.z },
-                    rotation: cliff.rotation
-                });
-
-                if (spawned) spawnedCount++;
+                addSpawn(
+                    `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${cliff.type}`,
+                    cliffPrefab, worldX, neighborHeight * heightStep, worldZ, cliff.rotation
+                );
             } else {
-                // Multi-level cliff - spawn top, mid(s), and base
+                // Multi-level cliff
                 const baseType = cliff.type;
-                const needsMids = baseType !== 'atom_three' && baseType !== 'atom_three_top'; // atom_three variants don't need mid pieces
+                const needsMids = baseType !== 'atom_three' && baseType !== 'atom_three_top';
 
-                // Spawn top piece (at the top of the cliff, one level below tile height)
-                // If baseType already ends with _top, don't add it again
+                // Top piece
                 const topType = baseType.endsWith('_top') ? baseType : `${baseType}_top`;
-                const topHeight = (mapHeight - 1) * heightStep + cliffOffsetTop;
-                const topEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${topType}`;
                 const topPrefab = cliffSet.cliffs[topType];
-
                 if (topPrefab) {
-                    const topSpawned = await entityRenderer.spawnEntity(topEntityId, {
-                        collection: 'cliffs',
-                        type: topPrefab,
-                        position: { x: worldPos.x, y: topHeight, z: worldPos.z },
-                        rotation: cliff.rotation
-                    });
-                    if (topSpawned) spawnedCount++;
+                    addSpawn(
+                        `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${topType}`,
+                        topPrefab, worldX, (mapHeight - 1) * heightStep + cliffOffsetTop, worldZ, cliff.rotation
+                    );
                 }
 
-                // Spawn mid pieces for each level between top and base (if needed)
+                // Mid pieces
                 if (needsMids && heightDiff > 2) {
                     const midType = `${baseType}_mid`;
                     const midPrefab = cliffSet.cliffs[midType];
                     if (midPrefab) {
                         for (let level = 1; level < heightDiff - 1; level++) {
-                            const midHeight = (mapHeight - 1 - level) * heightStep + cliffOffsetMid;
-                            const midEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseType}_mid_${level}`;
-
-                            const midSpawned = await entityRenderer.spawnEntity(midEntityId, {
-                                collection: 'cliffs',
-                                type: midPrefab,
-                                position: { x: worldPos.x, y: midHeight, z: worldPos.z },
-                                rotation: cliff.rotation
-                            });
-                            if (midSpawned) spawnedCount++;
+                            addSpawn(
+                                `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseType}_mid_${level}`,
+                                midPrefab, worldX, (mapHeight - 1 - level) * heightStep + cliffOffsetMid, worldZ, cliff.rotation
+                            );
                         }
                     }
                 }
 
-                // Spawn base piece at the neighbor's height level
-                // Skip base for atom_three_top - it's a top-only cliff type used near ramps
+                // Base piece
                 if (!baseType.endsWith('_top')) {
                     const baseCliffType = `${baseType}_base`;
                     const basePrefab = cliffSet.cliffs[baseCliffType];
                     if (basePrefab) {
-                        const baseHeight = neighborHeight * heightStep + cliffOffsetBase;
-                        const baseEntityId = `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseCliffType}`;
-
-                        const baseSpawned = await entityRenderer.spawnEntity(baseEntityId, {
-                            collection: 'cliffs',
-                            type: basePrefab,
-                            position: { x: worldPos.x, y: baseHeight, z: worldPos.z },
-                            rotation: cliff.rotation
-                        });
-                        if (baseSpawned) spawnedCount++;
+                        addSpawn(
+                            `cliffs_${cliff.gridX}_${cliff.gridZ}_${cliff.quadrant}_${baseCliffType}`,
+                            basePrefab, worldX, neighborHeight * heightStep + cliffOffsetBase, worldZ, cliff.rotation
+                        );
                     }
                 }
             }
+        });
+
+        console.log('[WorldRenderer] cliffCount:', cliffCount, 'spawns:', entityIds.length);
+
+        // Batch spawn all cliffs using flat arrays (reuse position/spawnData objects)
+        let spawnedCount = 0;
+        for (let i = 0; i < entityIds.length; i++) {
+            position.x = xs[i];
+            position.y = ys[i];
+            position.z = zs[i];
+            spawnData.type = types[i];
+            spawnData.rotation = rotations[i];
+
+            const spawned = await entityRenderer.spawnEntity(entityIds[i], spawnData);
+            if (spawned) spawnedCount++;
         }
 
         console.log('[WorldRenderer] spawnCliffs complete, spawned:', spawnedCount, 'cliffs');

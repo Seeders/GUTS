@@ -26,6 +26,20 @@ class TileMap {
 		// Initialize height map canvas
 		this.heightMapCanvas = null;
 		this.heightMapCtx = null;
+
+		// Reusable canvas buffers to avoid GC pressure from per-tile allocations
+		this._tileCanvas = null;
+		this._tileCtx = null;
+		this._atomCanvases = null;
+		this._atomCtxs = null;
+		this._moleculeCanvas = null;
+		this._moleculeCtx = null;
+		this._layerCanvas = null;
+		this._layerCtx = null;
+		this._paintCanvas = null;
+		this._paintCtx = null;
+		this._rotateCanvas = null;
+		this._rotateCtx = null;
 		
 		this.TileAnalysis = class {
 			constructor() {
@@ -166,6 +180,95 @@ class TileMap {
 	getHeightMapImageData() {
 		if (!this.heightMapCtx) return null;
 		return this.heightMapCtx.getImageData(0, 0, this.heightMapCanvas.width, this.heightMapCanvas.height);
+	}
+
+	/**
+	 * Lazily initialize reusable canvas buffers for tile rendering
+	 * These are reused across all tile draws to avoid GC pressure
+	 */
+	_ensureReusableCanvases() {
+		if (this._tileCanvas) return;
+
+		const atomSize = this.tileSize / 2;
+
+		// Main tile canvas
+		this._tileCanvas = document.createElement('canvas');
+		this._tileCanvas.width = this.tileSize;
+		this._tileCanvas.height = this.tileSize;
+		this._tileCtx = this._tileCanvas.getContext('2d');
+
+		// Four atom canvases (TL, TR, BL, BR)
+		this._atomCanvases = [];
+		this._atomCtxs = [];
+		for (let i = 0; i < 4; i++) {
+			const canvas = document.createElement('canvas');
+			canvas.width = atomSize;
+			canvas.height = atomSize;
+			this._atomCanvases.push(canvas);
+			this._atomCtxs.push(canvas.getContext('2d'));
+		}
+
+		// Molecule extraction canvas
+		this._moleculeCanvas = document.createElement('canvas');
+		this._moleculeCanvas.width = this.tileSize;
+		this._moleculeCanvas.height = this.tileSize;
+		this._moleculeCtx = this._moleculeCanvas.getContext('2d');
+
+		// Layer painting canvas (used in paintBaseLowerLayer)
+		this._layerCanvas = document.createElement('canvas');
+		this._layerCanvas.width = atomSize;
+		this._layerCanvas.height = atomSize;
+		this._layerCtx = this._layerCanvas.getContext('2d');
+
+		// Paint canvas (used in paintEdge, paintCorner, drawAtomAtQuadrant)
+		this._paintCanvas = document.createElement('canvas');
+		this._paintCanvas.width = atomSize;
+		this._paintCanvas.height = atomSize;
+		this._paintCtx = this._paintCanvas.getContext('2d');
+
+		// Rotation canvas
+		this._rotateCanvas = document.createElement('canvas');
+		this._rotateCanvas.width = atomSize;
+		this._rotateCanvas.height = atomSize;
+		this._rotateCtx = this._rotateCanvas.getContext('2d');
+	}
+
+	/**
+	 * Put ImageData into a reusable atom canvas
+	 * @param {ImageData} imageData - The image data to put
+	 * @param {number} atomIndex - Which atom canvas to use (0-3)
+	 * @returns {HTMLCanvasElement} The reusable canvas with the image data
+	 */
+	_putImageDataToAtomCanvas(imageData, atomIndex) {
+		this._ensureReusableCanvases();
+		const ctx = this._atomCtxs[atomIndex];
+		ctx.clearRect(0, 0, imageData.width, imageData.height);
+		ctx.putImageData(imageData, 0, 0);
+		return this._atomCanvases[atomIndex];
+	}
+
+	/**
+	 * Put ImageData into the reusable layer canvas (for paintBaseLowerLayer)
+	 * @param {ImageData} imageData - The image data to put
+	 * @returns {HTMLCanvasElement} The reusable layer canvas
+	 */
+	_putImageDataToLayerCanvas(imageData) {
+		this._ensureReusableCanvases();
+		this._layerCtx.clearRect(0, 0, imageData.width, imageData.height);
+		this._layerCtx.putImageData(imageData, 0, 0);
+		return this._layerCanvas;
+	}
+
+	/**
+	 * Put ImageData into the reusable paint canvas (for paintEdge, paintCorner, etc.)
+	 * @param {ImageData} imageData - The image data to put
+	 * @returns {HTMLCanvasElement} The reusable paint canvas
+	 */
+	_putImageDataToPaintCanvas(imageData) {
+		this._ensureReusableCanvases();
+		this._paintCtx.clearRect(0, 0, imageData.width, imageData.height);
+		this._paintCtx.putImageData(imageData, 0, 0);
+		return this._paintCanvas;
 	}
 
 	/**
@@ -317,7 +420,7 @@ class TileMap {
 	drawAtomAtQuadrant(ctx, atoms, atomKey, quadrant, atomSize, offsetAdjust = [0, 0]) {
 		const atom = atoms[atomKey];
 		if (!atom) return;
-		const canvas = this.imageDataToCanvas(atom);
+		const canvas = this._putImageDataToPaintCanvas(atom);
 		const [mx, my] = this.QuadrantPos[quadrant];
 		ctx.drawImage(canvas, mx * atomSize + offsetAdjust[0], my * atomSize + offsetAdjust[1], atomSize, atomSize);
 	}
@@ -326,7 +429,8 @@ class TileMap {
 	 * Paint edge atoms on two quadrants along an edge
 	 */
 	paintEdge(ctx, atoms, atomKey, quads, skipQuads, atomSize, offsetAdjust = [0, 0]) {
-		const canvas = this.rotateCanvas(this.imageDataToCanvas(atoms[atomKey]), 0);
+		// Use reusable canvas - no need to rotate by 0
+		const canvas = this._putImageDataToPaintCanvas(atoms[atomKey]);
 		quads.forEach(q => {
 			if (!skipQuads[q]) {
 				const [mx, my] = this.QuadrantPos[q];
@@ -339,7 +443,8 @@ class TileMap {
 	 * Paint a corner atom at a specific quadrant
 	 */
 	paintCorner(ctx, atoms, atomKey, quadrant, atomSize) {
-		const canvas = this.rotateCanvas(this.imageDataToCanvas(atoms[atomKey]), 0);
+		// Use reusable canvas - no need to rotate by 0
+		const canvas = this._putImageDataToPaintCanvas(atoms[atomKey]);
 		const [mx, my] = this.QuadrantPos[quadrant];
 		ctx.drawImage(canvas, mx * atomSize, my * atomSize, atomSize, atomSize);
 	}
@@ -515,11 +620,10 @@ class TileMap {
 
 	// Extract individual atoms from a molecule ImageData
 	extractAtomsFromMolecule(moleculeImageData) {
+		// Use reusable canvas to avoid GC pressure
+		this._ensureReusableCanvases();
 		const atomSize = this.tileSize / 2;
-		const canvas = document.createElement('canvas');
-		canvas.width = this.tileSize;
-		canvas.height = this.tileSize;
-		const ctx = canvas.getContext('2d');
+		const ctx = this._moleculeCtx;
 
 		// Draw the molecule onto canvas
 		ctx.putImageData(moleculeImageData, 0, 0);
@@ -725,8 +829,8 @@ class TileMap {
 						// First layer: use putImageData (on black background)
 						ctx.putImageData(layerAtom, pos.x, pos.y);
 					} else {
-						// Subsequent layers: use drawImage for alpha blending
-						const atomCanvas = this.imageDataToCanvas(layerAtom);
+						// Subsequent layers: use reusable canvas for alpha blending
+						const atomCanvas = this._putImageDataToLayerCanvas(layerAtom);
 						ctx.drawImage(atomCanvas, pos.x, pos.y);
 					}
 				}
@@ -746,13 +850,12 @@ class TileMap {
 
 	// Draw a single tile with proper atom layering for smooth transitions
 	drawTileWithLayering(analyzedMap, tile, row, col) {
+		// Use reusable canvases to avoid GC pressure from per-tile allocations
+		this._ensureReusableCanvases();
 		const atomSize = this.tileSize / 2;
-		const canvas = document.createElement('canvas');
-		canvas.width = this.tileSize;
-		canvas.height = this.tileSize;
-		const ctx = canvas.getContext('2d');
+		const ctx = this._tileCtx;
 
-		// Fill with black background
+		// Clear and fill with black background
 		ctx.fillStyle = 'black';
 		ctx.fillRect(0, 0, this.tileSize, this.tileSize);
 
@@ -783,19 +886,17 @@ class TileMap {
 			BR: atoms.BR || moleculeAtoms.BR
 		};
 
-		// Convert atoms to canvases and use drawImage for proper alpha blending
-		const atomCanvases = {
-			TL: this.imageDataToCanvas(currentAtoms.TL),
-			TR: this.imageDataToCanvas(currentAtoms.TR),
-			BL: this.imageDataToCanvas(currentAtoms.BL),
-			BR: this.imageDataToCanvas(currentAtoms.BR)
-		};
+		// Use reusable atom canvases instead of creating new ones
+		const atomCanvasTL = this._putImageDataToAtomCanvas(currentAtoms.TL, 0);
+		const atomCanvasTR = this._putImageDataToAtomCanvas(currentAtoms.TR, 1);
+		const atomCanvasBL = this._putImageDataToAtomCanvas(currentAtoms.BL, 2);
+		const atomCanvasBR = this._putImageDataToAtomCanvas(currentAtoms.BR, 3);
 
 		// Draw each atom using drawImage (respects alpha blending)
-		ctx.drawImage(atomCanvases.TL, 0, 0);
-		ctx.drawImage(atomCanvases.TR, atomSize, 0);
-		ctx.drawImage(atomCanvases.BL, 0, atomSize);
-		ctx.drawImage(atomCanvases.BR, atomSize, atomSize);
+		ctx.drawImage(atomCanvasTL, 0, 0);
+		ctx.drawImage(atomCanvasTR, atomSize, 0);
+		ctx.drawImage(atomCanvasBL, 0, atomSize);
+		ctx.drawImage(atomCanvasBR, atomSize, atomSize);
 
 		// Paint cliff-supporting textures if this tile is at the upper edge of a cliff
 		this.paintCliffSupportingTexturesForTile(ctx, analyzedMap, tile, row, col);
@@ -1507,7 +1608,8 @@ class TileMap {
 		const x = col * this.tileSize;
 		const y = row * this.tileSize;
 
-		const atomCanvas = this.imageDataToCanvas(atom);
+		// Use reusable canvas to avoid GC pressure
+		const atomCanvas = this._putImageDataToPaintCanvas(atom);
 
 		let offsetX = 0, offsetY = 0;
 		if (quadrant === 'TR' || quadrant === 'BR') offsetX = atomSize;
@@ -1612,13 +1714,28 @@ class TileMap {
 
 	/**
 	 * Rotate a canvas by the specified angle
+	 * Returns the source canvas unchanged if angle is 0
 	 */
 	rotateCanvas(sourceCanvas, angle) {
+		// Skip rotation if angle is 0
+		if (angle === 0) return sourceCanvas;
+
+		this._ensureReusableCanvases();
 		const size = sourceCanvas.width;
-		const rotatedCanvas = document.createElement('canvas');
-		rotatedCanvas.width = size;
-		rotatedCanvas.height = size;
-		const ctx = rotatedCanvas.getContext('2d');
+
+		// Use reusable canvas if size matches, otherwise create new one
+		let rotatedCanvas, ctx;
+		if (size === this._rotateCanvas.width) {
+			rotatedCanvas = this._rotateCanvas;
+			ctx = this._rotateCtx;
+			ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+			ctx.clearRect(0, 0, size, size);
+		} else {
+			rotatedCanvas = document.createElement('canvas');
+			rotatedCanvas.width = size;
+			rotatedCanvas.height = size;
+			ctx = rotatedCanvas.getContext('2d');
+		}
 
 		// Translate to center, rotate, translate back
 		ctx.translate(size / 2, size / 2);

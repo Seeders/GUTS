@@ -97,6 +97,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         // Reset state for fresh scene - actual initialization happens in postSceneLoad
         // when terrain is guaranteed to be ready
         this._fowDirty = true;
+        this._fogRenderCount = 0; // Reset debug counter
     }
 
     postSceneLoad(sceneData) {
@@ -676,6 +677,10 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             return;
         }
 
+        // Debug timing for first 20 frames
+        this._fogRenderCount = (this._fogRenderCount || 0) + 1;
+        const fogStart = performance.now();
+
         const myTeam = this.call.getActivePlayerTeam();
         // myTeam can be 0 (neutral) which is falsy, so check for undefined/null explicitly
         if (myTeam === undefined || myTeam === null) return;
@@ -755,6 +760,12 @@ class FogOfWarSystem extends GUTS.BaseSystem {
 
         // Increment frame counter - caches will be updated once per frame on first visibility check
         this.currentFrame++;
+
+        // Log timing for first 20 frames to catch initialization lag
+        const fogDuration = performance.now() - fogStart;
+        if (this._fogRenderCount <= 20 || fogDuration > 50) {
+            console.log(`[FogOfWarSystem] renderFogTexture #${this._fogRenderCount}: ${fogDuration.toFixed(1)}ms`);
+        }
     }
 
     updateVisibilityCache() {
