@@ -19,7 +19,8 @@ class CameraControlSystem extends GUTS.BaseSystem {
 
   static serviceDependencies = [
     'getTerrainHeightAtPositionSmooth',
-    'isTerrainInitialized'
+    'isTerrainInitialized',
+    'getCurrentLevelId'
   ];
 
   constructor(game) {
@@ -72,6 +73,9 @@ class CameraControlSystem extends GUTS.BaseSystem {
     this.minHeightAboveTerrain = 20; // Minimum camera height above terrain
     this.wallCollisionSamples = 10;  // Number of samples to check along camera ray
     this.wallHeightThreshold = 32;   // Height difference that counts as a wall
+
+    // Indoor level detection - limits zoom range
+    this.isIndoorLevel = false;
 
     // Bind event handlers
     this._onWheel = this._onWheel.bind(this);
@@ -192,7 +196,10 @@ class CameraControlSystem extends GUTS.BaseSystem {
       newZoom = 0;
     }
 
-    this.zoomLevel = Math.max(this.minZoom, Math.min(this.maxZoom, newZoom));
+    // For indoor levels, limit zoom to first-person or one level out
+    const effectiveMaxZoom = this.isIndoorLevel ? this.firstPersonSnapThreshold : this.maxZoom;
+
+    this.zoomLevel = Math.max(this.minZoom, Math.min(effectiveMaxZoom, newZoom));
     event.preventDefault();
   }
 
@@ -295,10 +302,33 @@ class CameraControlSystem extends GUTS.BaseSystem {
     this.initialized = false;
     this.isPointerLocked = false;
 
+    // Check if this is an indoor level
+    this._detectIndoorLevel();
+
     // Try to attach canvas listener (may not be available yet)
     this._attachCanvasListener();
 
     // Camera setup happens after player spawns via onPlayerSpawned event
+  }
+
+  _detectIndoorLevel() {
+    this.isIndoorLevel = false;
+
+    // Get current level ID and check its indoor property
+    const levelId = this.call.getCurrentLevelId?.();
+    if (!levelId) return;
+
+    const collections = this.game.getCollections();
+    const levelData = collections.levels?.[levelId];
+
+    if (levelData?.indoor) {
+      this.isIndoorLevel = true;
+      // If already zoomed out past the limit, snap back
+      if (this.zoomLevel > this.firstPersonSnapThreshold) {
+        this.zoomLevel = this.firstPersonSnapThreshold;
+      }
+      console.log('[CameraControlSystem] Indoor level detected, limiting zoom');
+    }
   }
 
   postSceneLoad(sceneData) {

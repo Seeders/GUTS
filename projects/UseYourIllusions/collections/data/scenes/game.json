@@ -35,7 +35,6 @@
     "SpawnEffectsSystem",
     "LightingSystem",
     "HealthBarSystem",
-    "FogOfWarSystem",
     "CameraControlSystem",
     "PlayerControlSystem",
     "BeltUISystem",

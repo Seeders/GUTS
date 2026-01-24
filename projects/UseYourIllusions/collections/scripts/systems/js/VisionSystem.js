@@ -16,7 +16,8 @@ class VisionSystem extends GUTS.BaseSystem {
         'getVisibleEnemiesInRange',
         'findNearestVisibleEnemy',
         'findWeakestVisibleEnemy',
-        'isEntityVisibleToTeam'
+        'isEntityVisibleToTeam',
+        'isVisibleAt'
     ];
 
     constructor(game) {
@@ -687,5 +688,16 @@ class VisionSystem extends GUTS.BaseSystem {
             distance: visibleEnemies[0].distance,
             healthPercent: visibleEnemies[0].healthPercent
         };
+    }
+
+    /**
+     * Check if a position is visible (no fog of war)
+     * Always returns true since UseYourIllusions doesn't use FogOfWarSystem
+     * @param {number} x - World X position
+     * @param {number} z - World Z position
+     * @returns {boolean} - Always true
+     */
+    isVisibleAt(x, z) {
+        return true;
     }
 }

@@ -113,7 +113,6 @@
     "SchedulingSystem",
     "GoldMineSystem",
     "PathfindingSystem",
-    "FogOfWarSystem",
     "SelectedUnitSystem",
     "UnitOrderSystem",
     "UnitOrderUISystem",
