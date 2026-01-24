@@ -35,6 +35,7 @@
     "BaseLoader",
     "LoadingProgress",
     "SimpleLoader",
+    "AssetLoader",
     "GameLoader",
     "GameUtils",
     "PlacementPreview",
@@ -166,10 +167,10 @@
   ],
   "fileName": "game",
   "appLibrary": "MultiplayerECSGame",
-  "appLoaderLibrary": "SimpleLoader",
+  "appLoaderLibrary": "AssetLoader",
   "canvasWidth": 3472,
   "canvasHeight": 3472,
   "is3D": true,
-  "palette": "nature",
+  "palette": "main",
   "initialScene": "menu"
 }

@@ -8,6 +8,94 @@ class SceneManager {
         this.currentScene = null;
         this.currentSceneName = null;
         this.spawnedEntityIds = new Set();
+        this.loadingOverlay = null;
+    }
+
+    /**
+     * Show a loading overlay during scene transitions
+     */
+    showLoadingOverlay() {
+        if (this.game.isServer) return;
+
+        // Create overlay if it doesn't exist
+        if (!this.loadingOverlay) {
+            this.loadingOverlay = document.createElement('div');
+            this.loadingOverlay.id = 'sceneLoadingOverlay';
+            this.loadingOverlay.innerHTML = `
+                <div class="scene-loading-content">
+                    <div class="scene-loading-spinner"></div>
+                    <div class="scene-loading-text">Loading...</div>
+                </div>
+            `;
+
+            // Inject styles if not present
+            if (!document.getElementById('scene-loading-styles')) {
+                const style = document.createElement('style');
+                style.id = 'scene-loading-styles';
+                style.textContent = `
+                    #sceneLoadingOverlay {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(10, 10, 26, 0.95);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 10000;
+                        opacity: 0;
+                        transition: opacity 0.2s ease;
+                    }
+                    #sceneLoadingOverlay.visible {
+                        opacity: 1;
+                    }
+                    .scene-loading-content {
+                        text-align: center;
+                    }
+                    .scene-loading-spinner {
+                        width: 50px;
+                        height: 50px;
+                        border: 4px solid rgba(139, 92, 246, 0.2);
+                        border-top-color: #8b5cf6;
+                        border-radius: 50%;
+                        animation: sceneLoadingSpin 1s linear infinite;
+                        margin: 0 auto 15px;
+                    }
+                    .scene-loading-text {
+                        font-size: 18px;
+                        color: #8b5cf6;
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    }
+                    @keyframes sceneLoadingSpin {
+                        to { transform: rotate(360deg); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        document.body.appendChild(this.loadingOverlay);
+        // Force reflow then add visible class for transition
+        this.loadingOverlay.offsetHeight;
+        this.loadingOverlay.classList.add('visible');
+    }
+
+    /**
+     * Hide the loading overlay
+     */
+    hideLoadingOverlay() {
+        if (this.game.isServer) return;
+
+        if (this.loadingOverlay && this.loadingOverlay.parentNode) {
+            this.loadingOverlay.classList.remove('visible');
+            // Remove after transition
+            setTimeout(() => {
+                if (this.loadingOverlay.parentNode) {
+                    this.loadingOverlay.parentNode.removeChild(this.loadingOverlay);
+                }
+            }, 200);
+        }
     }
 
     /**
@@ -25,6 +113,14 @@ class SceneManager {
         if (!sceneData) {
             console.warn(`[SceneManager] Scene '${sceneName}' not found`);
             return;
+        }
+
+        // Show loading overlay during scene transition (only if switching scenes)
+        const isSceneSwitch = this.currentScene !== null;
+        if (isSceneSwitch) {
+            this.showLoadingOverlay();
+            // Allow overlay to render before blocking operations
+            await new Promise(resolve => setTimeout(resolve, 50));
         }
 
         // Unload current scene if one is loaded
@@ -82,6 +178,9 @@ class SceneManager {
 
         // Notify all systems for post-load processing (after all systems have done initial setup)
         this.notifyPostSceneLoad(sceneData, params);
+
+        // Hide loading overlay
+        this.hideLoadingOverlay();
 
         console.log(`[SceneManager] loadScene('${sceneName}') complete`);
     }
