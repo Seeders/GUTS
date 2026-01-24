@@ -136,8 +136,13 @@ class GameLoader extends GUTS.BaseLoader {
         this.game.terrainCanvasBuffer = this.terrainCanvasBuffer;
     }
     async loadAssets() {
-         // Load all images
-        for(let objectType in this.collections) {
+        // Skip loading if already loaded (scene transition vs app startup)
+        if (this.game.assetsLoaded) {
+            return;
+        }
+
+        // Load all images
+        for (let objectType in this.collections) {
             await this.game.imageManager.loadImages(objectType, this.collections[objectType]);
         }
 
@@ -147,12 +152,11 @@ class GameLoader extends GUTS.BaseLoader {
             await this.game.imageManager.loadTextures(this.collections.textures, onTextureProgress);
         }
 
-        this.game.modelManager = new GUTS.ModelManager(this.game.app, {}, { ShapeFactory: GUTS.ShapeFactory, palette: this.game.palette, textures: this.game.getCollections().textures, models: this.game.getCollections().models, animations: this.game.getCollections().animations, shaders: this.game.getCollections().shaders, imageManager: this.game.imageManager });
-
         const onModelProgress = this.progress ? () => this.progress.increment('models') : null;
-        for(let objectType in this.collections) {
+        for (let objectType in this.collections) {
             await this.game.modelManager.loadModels(objectType, this.collections[objectType], onModelProgress);
         }
 
+        this.game.assetsLoaded = true;
     }
 }
