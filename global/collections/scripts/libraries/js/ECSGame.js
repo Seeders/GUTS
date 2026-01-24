@@ -10,7 +10,19 @@ class ECSGame extends GUTS.BaseECSGame {
                 animations: this.getCollections().animations,
                 shaders: this.getCollections().shaders
             }
-        );         
+        );
+
+        const palette = this.getCollections().palettes?.[this.getCollections().configs.game.palette] || null;
+        this.modelManager = new GUTS.ModelManager(app, {}, {
+            ShapeFactory: GUTS.ShapeFactory,
+            palette: palette,
+            textures: this.getCollections().textures,
+            models: this.getCollections().models,
+            animations: this.getCollections().animations,
+            shaders: this.getCollections().shaders,
+            imageManager: this.imageManager
+        });
+
         this.state = new GUTS.GameState(this.getCollections());  
         if(GUTS.DesyncDebugger){
             this.desyncDebugger = new GUTS.DesyncDebugger(this);
