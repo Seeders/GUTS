@@ -271,12 +271,8 @@ class WorldSystem extends GUTS.BaseSystem {
         }
 
         // Initialize terrain tile mapper if not already set up (needed for editor context)
-        console.log('[WorldSystem] setupWorldRendering - terrainTileMapper exists:', !!this.game.terrainTileMapper, 'imageManager exists:', !!this.game.imageManager);
         if (!this.game.terrainTileMapper && this.game.imageManager) {
-            console.log('[WorldSystem] Creating new terrainTileMapper for level:', levelName);
             await this.initTerrainTileMapper(levelName, terrainDataManager, gameConfig);
-        } else {
-            console.log('[WorldSystem] Skipping terrainTileMapper creation - already exists or no imageManager');
         }
 
         // Setup lighting
@@ -317,7 +313,6 @@ class WorldSystem extends GUTS.BaseSystem {
      * Used for operations that need other systems to be fully initialized
      */
     async postSceneLoad(sceneData) {
-        console.log('[WorldSystem] postSceneLoad called, worldRenderer exists:', !!this.worldRenderer);
         if (!this.worldRenderer) return;
 
         // Wait for async setupWorldRendering to complete if it's still running
@@ -334,13 +329,8 @@ class WorldSystem extends GUTS.BaseSystem {
         // Spawn cliff entities using WorldRenderer
         // Note: useExtension = false because analyzeCliffs() returns coordinates in tile space (not extended space)
         const entityRenderer = this.call.getEntityRenderer();
-        console.log('[WorldSystem] postSceneLoad - entityRenderer exists:', !!entityRenderer, 'scene:', !!entityRenderer?.scene);
         if (entityRenderer) {
-            console.log('[WorldSystem] Calling spawnCliffs...');
             await this.worldRenderer.spawnCliffs(entityRenderer, false);
-            console.log('[WorldSystem] spawnCliffs complete');
-        } else {
-            console.warn('[WorldSystem] EntityRenderer not available for cliff spawning');
         }
 
         // Spawn terrain detail objects (grass, rocks, etc.)
