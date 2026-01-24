@@ -1,7 +1,10 @@
 {
   "title": "exitZone",
   "schema": {
-    "radius": 50,
+    "distance": 50,
+    "directionEnum": null,
+    "directionTolerance": 0.7,
+    "nextLevel": null,
     "isActive": true
   }
 }

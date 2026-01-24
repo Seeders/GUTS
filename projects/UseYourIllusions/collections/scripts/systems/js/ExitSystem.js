@@ -5,7 +5,8 @@ class ExitSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'pauseGame',
         'playSound',
-        'showVictoryScreen'
+        'showVictoryScreen',
+        'startLevel'
     ];
 
     static services = [
@@ -69,14 +70,30 @@ class ExitSystem extends GUTS.BaseSystem {
             const exitPos = exitTransform?.position;
             if (!exitPos) continue;
 
+            // Vector from exit to player
             const dx = playerPos.x - exitPos.x;
             const dz = playerPos.z - exitPos.z;
             const dist = Math.sqrt(dx * dx + dz * dz);
 
-            if (dist < exitZone.radius) {
-                this.triggerLevelComplete(playerId, exitId);
-                return;
+            // Check distance
+            const exitDistance = exitZone.distance || exitZone.radius || 50;
+            if (dist >= exitDistance) continue;
+
+            // Check direction constraint if specified
+            // Uses the exit's spriteDirection (how the camera/player sees it)
+            if (exitZone.directionEnum !== null && exitZone.directionEnum !== undefined) {
+                const animState = this.game.getComponent(exitId, 'animationState');
+                if (animState && animState.spriteDirection !== exitZone.directionEnum) {
+                    console.log('[ExitSystem] Direction check failed:', {
+                        spriteDirection: animState.spriteDirection,
+                        requiredDirection: exitZone.directionEnum
+                    });
+                    continue;
+                }
             }
+
+            this.triggerLevelComplete(playerId, exitId);
+            return;
         }
     }
 
@@ -84,13 +101,13 @@ class ExitSystem extends GUTS.BaseSystem {
         this.levelComplete = true;
         this.levelEndTime = Date.now();
 
-        // Pause the game immediately
-        this.call.pauseGame();
-
-        // Unlock mouse so player can click UI buttons
-        if (document.pointerLockElement) {
-            document.exitPointerLock();
-        }
+        // Get exit zone to check for next level
+        const exitZone = this.game.getComponent(exitId, 'exitZone');
+        // nextLevel is stored as an enum index, convert back to level name
+        const nextLevelIndex = exitZone?.nextLevel;
+        const reverseEnums = this.game.getReverseEnums();
+        const nextLevel = typeof nextLevelIndex === 'number' ? reverseEnums.levels?.[nextLevelIndex] : nextLevelIndex;
+        console.log('[ExitSystem] nextLevel from component:', nextLevelIndex, '-> resolved to:', nextLevel);
 
         // Get exit position for effects
         const exitTransform = this.game.getComponent(exitId, 'transform');
@@ -110,12 +127,26 @@ class ExitSystem extends GUTS.BaseSystem {
         // Play victory sound
         this.call.playSound('sounds', 'victory');
 
-        console.log('[ExitSystem] Level complete!');
+        console.log('[ExitSystem] Level complete!', nextLevel ? `Loading next level: ${nextLevel}` : 'No next level specified');
 
         // Trigger event for other systems to handle
-        this.game.triggerEvent('onLevelComplete', { playerId, exitId });
+        this.game.triggerEvent('onLevelComplete', { playerId, exitId, nextLevel });
 
-        // Show victory screen with stats
+        // If next level is specified, load it directly
+        if (nextLevel && this.game.hasService('startLevel')) {
+            this.call.startLevel(nextLevel);
+            return;
+        }
+
+        // Otherwise show victory screen
+        // Pause the game
+        this.call.pauseGame();
+
+        // Unlock mouse so player can click UI buttons
+        if (document.pointerLockElement) {
+            document.exitPointerLock();
+        }
+
         if (this.game.hasService('showVictoryScreen')) {
             this.call.showVictoryScreen(this.getLevelStats());
         } else {

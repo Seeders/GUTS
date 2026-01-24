@@ -5,7 +5,7 @@
   "grassShader": "grass",
   "waterShader": "water",
   "puzzleLevel": true,
-  "songSound": "prison_song",
+  "songSound": "tiptoe_song",
   "tileMap": {
     "size": 128,
     "terrainTypes": [
@@ -33448,7 +33448,7 @@
             "position": {
               "x": 204,
               "y": 80,
-              "z": 168.9199981689453
+              "z": 1152.22998046875
             },
             "rotation": {
               "x": 0,
@@ -33471,7 +33471,7 @@
             "position": {
               "x": 228,
               "y": 80,
-              "z": 216.9199981689453
+              "z": 1200.22998046875
             },
             "rotation": {
               "x": 0,
@@ -33494,7 +33494,7 @@
             "position": {
               "x": 204,
               "y": 80,
-              "z": 264.9200134277344
+              "z": 1248.22998046875
             },
             "rotation": {
               "x": 0,
@@ -48506,8 +48506,8 @@
         }
       },
       {
-        "prefab": "building",
-        "type": "mageTower",
+        "prefab": "worldObject",
+        "type": "exit_mageTower",
         "components": {
           "transform": {
             "position": {
@@ -48525,6 +48525,9 @@
               "y": 2.1600000858306885,
               "z": 2.1600000858306885
             }
+          },
+          "exitZone": {
+            "nextLevel": "level1_2"
           }
         }
       }

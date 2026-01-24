@@ -1,8 +1,8 @@
 {
   "title": "Magetower",
   "spriteSheet": "sprites/magetowerSprites/magetowerSheet.png",
-  "spriteOffset": 192,
-  "groundLevelSpriteOffset": 191,
+  "spriteOffset": 207,
+  "groundLevelSpriteOffset": 206,
   "generatorSettings": {
     "frustumSize": 36,
     "cameraDistance": 100,
@@ -13,10 +13,10 @@
     "borderSize": 1,
     "outlineColor": "#030202",
     "outlineConnectivity": 4,
-    "cameraHeight": 2,
+    "cameraHeight": 1.5,
     "isProjectile": false,
     "generateGroundLevel": true,
-    "groundCameraHeight": 0.4,
+    "groundCameraHeight": 0.3,
     "shaderFrames": 8,
     "animationTypes": [
       "idle"

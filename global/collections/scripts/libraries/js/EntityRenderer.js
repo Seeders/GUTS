@@ -499,6 +499,7 @@ class EntityRenderer {
         const uvScales = new Float32Array(capacity * 2);   // width, height scale per instance
         const opacities = new Float32Array(capacity).fill(1.0);  // opacity per instance
         const tints = new Float32Array(capacity * 3);  // RGB tint per instance (default white = no tint)
+        const isGroundLevel = new Float32Array(capacity).fill(0.0);  // 0.0 = elevated angle, 1.0 = ground-level angle
         for (let i = 0; i < capacity; i++) {
             tints[i * 3] = 1.0;      // R
             tints[i * 3 + 1] = 1.0;  // G
@@ -509,6 +510,7 @@ class EntityRenderer {
         geometry.setAttribute('uvScale', new THREE.InstancedBufferAttribute(uvScales, 2));
         geometry.setAttribute('aOpacity', new THREE.InstancedBufferAttribute(opacities, 1));
         geometry.setAttribute('aTint', new THREE.InstancedBufferAttribute(tints, 3));
+        geometry.setAttribute('aIsGroundLevel', new THREE.InstancedBufferAttribute(isGroundLevel, 1));
 
         // Initialize point light uniform arrays
         const pointLightPositions = [];
@@ -542,6 +544,7 @@ class EntityRenderer {
                 attribute vec2 uvScale;
                 attribute float aOpacity;
                 attribute vec3 aTint;
+                attribute float aIsGroundLevel;
                 varying vec2 vUv;
                 varying float vOpacity;
                 varying vec3 vTint;
@@ -608,9 +611,11 @@ class EntityRenderer {
                         float sinA = sin(snappedAngle);
 
                         // Calculate vertical angle to camera for Y-axis billboarding
+                        // For ground-level sprites (aIsGroundLevel = 1.0), keep perpendicular to ground
+                        // because the sprite is already rendered from a ground-level perspective
                         float dy = cameraPosition.y - worldPos.y;
                         float horizontalDist = sqrt(dx * dx + dz * dz);
-                        float verticalAngle = atan(dy, horizontalDist);
+                        float verticalAngle = aIsGroundLevel > 0.5 ? 0.0 : atan(dy, horizontalDist);
 
                         // Snapped right vector (horizontal, in XZ plane)
                         vec3 snappedRight = vec3(sinA, 0.0, -cosA);
@@ -744,7 +749,8 @@ class EntityRenderer {
                 uvOffset: geometry.attributes.uvOffset,
                 uvScale: geometry.attributes.uvScale,
                 opacity: geometry.attributes.aOpacity,
-                tint: geometry.attributes.aTint
+                tint: geometry.attributes.aTint,
+                isGroundLevel: geometry.attributes.aIsGroundLevel
             },
             animationCache: null  // Will be populated on first entity spawn
         };
@@ -1601,6 +1607,12 @@ class EntityRenderer {
             batch.attributes.uvScale.setXY(instanceIndex, scaleX, scaleY);
             batch.attributes.uvOffset.needsUpdate = true;
             batch.attributes.uvScale.needsUpdate = true;
+
+            // Update ground-level flag for billboard shader
+            // When using ground-level sprites, the billboard stays perpendicular to the ground
+            const isGroundLevel = animState.spriteCameraAngle === 1 ? 1.0 : 0.0;
+            batch.attributes.isGroundLevel.setX(instanceIndex, isGroundLevel);
+            batch.attributes.isGroundLevel.needsUpdate = true;
         }
     }
 

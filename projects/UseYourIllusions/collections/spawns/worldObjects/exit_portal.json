@@ -1,6 +1,7 @@
 {
   "title": "Exit Portal",
   "info": "The exit from the level.",
+  "prefab": "exitZone",
   "value": 0,
   "render": {
     "animations": {
@@ -76,7 +77,7 @@
   "size": 32,
   "hp": 9999,
   "exit": true,
-  "exitRadius": 60,
+  "exitDistance": 60,
   "impassable": false,
   "spriteAnimationSet": "exitportal"
 }

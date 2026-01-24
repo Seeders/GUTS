@@ -310,9 +310,12 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
 
     startLevel(levelId) {
         console.log(`[PuzzleLobbyUISystem] Starting level: ${levelId}`);
+        console.log(`[PuzzleLobbyUISystem] enums.levels:`, this.enums.levels);
+        console.log(`[PuzzleLobbyUISystem] enums.levels[${levelId}]:`, this.enums.levels?.[levelId]);
 
         // Convert level ID to index for GameLoader
         const levelIndex = this.enums.levels?.[levelId] ?? 0;
+        console.log(`[PuzzleLobbyUISystem] levelIndex resolved to:`, levelIndex);
         this.game.state.level = levelIndex;
         this.game.state.selectedLevel = levelId;
 

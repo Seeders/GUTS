@@ -1,5 +1,5 @@
 {
-  "title": "Tutorial",
+  "title": "Level 1-2",
   "published": true,
   "world": "dungeon",
   "grassShader": "grass",
@@ -760,7 +760,7 @@
         }
       },
       {
-        "prefab": "exitZone",
+        "prefab": "worldObject",
         "type": "exit_portal",
         "components": {
           "transform": {

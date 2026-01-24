@@ -1,28 +1,28 @@
 loading SimpleLoader.js:19:13
-Object { app: {…}, state: {…}, entitiesToAdd: [], classes: [], systems: [], sceneManager: null, _services: {…}, MAX_ENTITIES: 65536, entityAlive: Uint8Array(65536), MASK_UINT32_COUNT: 8, … }
+Object { app: {…}, state: {…}, entitiesToAdd: [], classes: [], systems: (35) […], sceneManager: {…}, _services: {…}, MAX_ENTITIES: 65536, entityAlive: Uint8Array(65536), MASK_UINT32_COUNT: 8, … }
 SimpleLoader.js:34:13
 got collections SimpleLoader.js:36:13
 got config 
 Object { gridSize: 48, imageSize: 128, title: "Use Your Illusions", isIsometric: false, libraries: (57) […], systems: (78) […], classes: (5) […], fileName: "game", appLibrary: "MultiplayerECSGame", appLoaderLibrary: "SimpleLoader", … }
 SimpleLoader.js:38:13
 [SceneManager] loadScene('menu') called <empty string> SceneManager.js:25:13
-[BaseECSGame]  - registering services for PauseSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for GameSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for ScreenSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for InputSystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for PauseSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for GameSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for ScreenSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for InputSystem BaseECSGame.js:1006:13
 [AudioSystem] Creating AudioManager... AudioSystem.js:21:13
-[BaseECSGame]  - registering services for AudioSystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for AudioSystem BaseECSGame.js:1006:13
 [AudioSystem] init() called AudioSystem.js:28:13
-[BaseECSGame]  - registering services for PuzzleLobbyUISystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for PuzzleLobbyUISystem BaseECSGame.js:1006:13
 [PauseSystem] onSceneLoad - isPaused was: false, setting to false PauseSystem.js:23:13
-✅ COMPILED_GAME initialized client-entry.js:11738:13
+✅ COMPILED_GAME initialized client-entry.js:11733:13
 [InputSystem] setupResultButtons - victory button: null defeat button: null InputSystem.js:42:13
 [AudioSystem] Playing scene background music: tiptoe_song AudioSystem.js:38:15
 [PuzzleLobbyUISystem] Loaded levels: 2 
-Array [ "level1_1", "puzzle_tutorial" ]
+Array [ "level1_1", "level1_2" ]
 PuzzleLobbyUISystem.js:233:13
 [PuzzleLobbyUISystem] populateLevelGrid: creating 2 level cards PuzzleLobbyUISystem.js:241:13
-[SceneManager] loadScene('menu') complete SceneManager.js:93:13
+[SceneManager] loadScene('menu') complete SceneManager.js:87:13
 service not found! showGameModeSelect BaseECSGame.js:889:15
 [PuzzleLobbyUISystem] User interaction detected, starting menu music PuzzleLobbyUISystem.js:45:15
 [AudioManager] Applied saved volume settings: 
@@ -34,78 +34,96 @@ AudioManager.js:234:17
 [AudioManager] Playing music: tiptoe_song AudioManager.js:1167:15
 [PuzzleLobbyUISystem] Level card clicked: level1_1 PuzzleLobbyUISystem.js:256:19
 [PuzzleLobbyUISystem] Starting level: level1_1 PuzzleLobbyUISystem.js:270:13
+[PuzzleLobbyUISystem] enums.levels: 
+Object { level1_1: 0, level1_2: 1, test_arena: 2 }
+PuzzleLobbyUISystem.js:271:13
+[PuzzleLobbyUISystem] enums.levels[level1_1]: 0 PuzzleLobbyUISystem.js:272:13
+[PuzzleLobbyUISystem] levelIndex resolved to: 0 PuzzleLobbyUISystem.js:276:13
 [SceneManager] loadScene('game') called <empty string> SceneManager.js:25:13
-[SceneManager] Unloading current scene: menu SceneManager.js:41:15
+[SceneManager] Unloading current scene: menu SceneManager.js:35:15
 [PauseSystem] onSceneUnload - isPaused was: false, setting to false PauseSystem.js:28:13
 [AudioManager] Stopping music: tiptoe_song AudioManager.js:1202:13
-[BaseECSGame]  - registering services for GridSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for TerrainSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for PlayerStatsSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for BehaviorSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for MovementSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for UnitCreationSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for DeathSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for DamageSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for AbilitySystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for LifetimeSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for SchedulingSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for PathfindingSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for VisionSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for IllusionSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for ExitSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for PuzzleGameSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for RenderSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for WorldSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for TerrainDetailSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for PostProcessingSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for AnimationSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for EffectsSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for ParticleSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for SpawnEffectsSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for LightingSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for HealthBarSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for FogOfWarSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for CameraControlSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for PlayerControlSystem BaseECSGame.js:1010:13
-[BaseECSGame]  - registering services for BeltUISystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for PauseSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for GridSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for TerrainSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for PlayerStatsSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for BehaviorSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for MovementSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for UnitCreationSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for DeathSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for DamageSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for AbilitySystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for LifetimeSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for SchedulingSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for PathfindingSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for VisionSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for IllusionSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for ExitSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for PuzzleGameSystem BaseECSGame.js:1006:13
+[AudioSystem] Creating AudioManager... AudioSystem.js:21:13
+[BaseECSGame]  - registering services for AudioSystem BaseECSGame.js:1006:13
+[AudioSystem] init() called AudioSystem.js:28:13
+[BaseECSGame]  - registering services for RenderSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for WorldSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for TerrainDetailSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for PostProcessingSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for AnimationSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for EffectsSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for InputSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for ParticleSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for SpawnEffectsSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for LightingSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for HealthBarSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for FogOfWarSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for CameraControlSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for PlayerControlSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for BeltUISystem BaseECSGame.js:1006:13
 [PlacementPreviewSystem] Constructor called PlacementPreviewSystem.js:22:13
-[BaseECSGame]  - registering services for PlacementPreviewSystem BaseECSGame.js:1010:13
+[BaseECSGame]  - registering services for PlacementPreviewSystem BaseECSGame.js:1006:13
 [PlacementPreviewSystem] init() called PlacementPreviewSystem.js:41:13
-[SceneManager] Running loader: GameLoader SceneManager.js:57:15
+[BaseECSGame]  - registering services for PuzzleLobbyUISystem BaseECSGame.js:1006:13
+[SceneManager] Running loader: GameLoader SceneManager.js:51:15
+[AudioManager] Applied saved volume settings: 
+Object { master: 100, music: 49, sfx: 100 }
+AudioManager.js:234:17
 [PlayerControlSystem] update #0, isPaused: false PlayerControlSystem.js:227:15
 [PlayerControlSystem] update #1, isPaused: false PlayerControlSystem.js:227:15
 [PlayerControlSystem] update #2, isPaused: false PlayerControlSystem.js:227:15
 [ImageManager] Loaded 194 textures ImageManager.js:206:13
-[SceneManager] Loader complete: GameLoader SceneManager.js:60:15
+[SceneManager] Loader complete: GameLoader SceneManager.js:54:15
 [PauseSystem] onSceneLoad - isPaused was: false, setting to false PauseSystem.js:23:13
-[InputSystem] setupResultButtons - victory button: null defeat button: null InputSystem.js:42:13
-[PuzzleLobbyUISystem] Loaded levels: 2 
-Array [ "level1_1", "puzzle_tutorial" ]
-PuzzleLobbyUISystem.js:233:13
 [TerrainSystem] onSceneLoad called, game.state.level: 0 TerrainSystem.js:59:13
 [TerrainSystem] Level name from index: level1_1 TerrainSystem.js:70:13
 [TerrainSystem] Initializing terrain for level: level1_1 TerrainSystem.js:75:13
-[TerrainSystem] Loading 663 level entities... TerrainSystem.js:160:13
-[TerrainSystem] Loaded 663 level entities TerrainSystem.js:236:13
+[TerrainSystem] Loading 662 level entities... TerrainSystem.js:160:13
+[UnitCreationSystem] exitZone overrides: 
+Object { transform: {…}, exitZone: {…} }
+UnitCreationSystem.js:502:17
+[UnitCreationSystem] exitOverrides.nextLevel: level1_2 UnitCreationSystem.js:503:17
+[UnitCreationSystem] exitZone component created: 
+Object { distance: 48, directionEnum: 0, directionTolerance: 0.7, nextLevel: "level1_2", isActive: true }
+UnitCreationSystem.js:511:17
+[TerrainSystem] Loaded 662 level entities TerrainSystem.js:236:13
 [TerrainSystem] Terrain initialized TerrainSystem.js:77:13
 [PuzzleGameSystem] onSceneLoad - levelIndex: 0, levelKey: level1_1, puzzleLevel: true PuzzleGameSystem.js:77:13
-[PuzzleGameSystem] Spawned player entity 665 at (-697, 80, -797) PuzzleGameSystem.js:193:13
+[PuzzleGameSystem] Spawned player entity 664 at (-697, 80, -797) PuzzleGameSystem.js:193:13
+[PuzzleGameSystem] Set GuardBehaviorTree for guard 8 PuzzleGameSystem.js:226:17
+[PuzzleGameSystem] Guard 8 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
 [PuzzleGameSystem] Set GuardBehaviorTree for guard 9 PuzzleGameSystem.js:226:17
 [PuzzleGameSystem] Guard 9 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
 [PuzzleGameSystem] Set GuardBehaviorTree for guard 10 PuzzleGameSystem.js:226:17
 [PuzzleGameSystem] Guard 10 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
-[PuzzleGameSystem] Set GuardBehaviorTree for guard 11 PuzzleGameSystem.js:226:17
-[PuzzleGameSystem] Guard 11 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
 [PuzzleGameSystem] Configured 3 guards PuzzleGameSystem.js:254:13
 [PuzzleGameSystem] Initialized level: level1_1 PuzzleGameSystem.js:121:13
+[InputSystem] setupResultButtons - victory button: null defeat button: null InputSystem.js:42:13
 [LightingSystem] onSceneLoad - getCollections keys: 
-Array(62) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
 LightingSystem.js:44:13
 [LightingSystem] collections.lightingEffects: 
 Object { campfire: {…}, flicker: {…}, pulse: {…}, strobe: {…} }
 LightingSystem.js:45:13
 [LightingSystem] this.game.app: 
-Object { plugins: {}, currentTime: 1769207105962, lastTime: 319, deltaTime: 0, accumulator: 0.02199999999999952, engineClasses: [], appClasses: {}, libraries: {}, running: true, collections: {…}, … }
+Object { plugins: {}, currentTime: 1769223709297, lastTime: 298, deltaTime: 0, accumulator: 7.129999999999827, engineClasses: [], appClasses: {}, libraries: {}, running: true, collections: {…}, … }
 LightingSystem.js:46:13
 [LightingSystem] window.COMPILED_GAME?.collections?.lightingEffects: 
 Object { campfire: {…}, flicker: {…}, pulse: {…}, strobe: {…} }
@@ -115,76 +133,138 @@ LightingSystem.js:47:13
 [CameraControlSystem] Click listener attached to canvas CameraControlSystem.js:298:15
 [PlayerControlSystem] onSceneLoad called, isPaused: false PlayerControlSystem.js:56:13
 [PlacementPreviewSystem] onSceneLoad() called PlacementPreviewSystem.js:44:13
+[PuzzleLobbyUISystem] Loaded levels: 2 
+Array [ "level1_1", "level1_2" ]
+PuzzleLobbyUISystem.js:233:13
 [RenderSystem] postSceneLoad called, spawnedEntities count: 0 RenderSystem.js:81:13
 [RenderSystem] EntityRenderer created, scene: true RenderSystem.js:105:13
 [CameraControlSystem] postSceneLoad called CameraControlSystem.js:286:13
 [CameraControlSystem] _attachCanvasListener - Canvas element: true CameraControlSystem.js:293:13
 [CameraControlSystem] Click listener attached to canvas CameraControlSystem.js:298:15
-[PlayerControlSystem] postSceneLoad - playerEntity: 665, isPaused: false PlayerControlSystem.js:66:13
-[SceneManager] loadScene('game') complete SceneManager.js:93:13
+[PlayerControlSystem] postSceneLoad - playerEntity: 664, isPaused: false PlayerControlSystem.js:66:13
+[SceneManager] loadScene('game') complete SceneManager.js:87:13
+[AudioManager] Playing music: tiptoe_song AudioManager.js:1167:15
 [SpawnEffectsSystem] billboardSpawned entity 2, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 3, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 4, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 5, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 6, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 7, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
-[SpawnEffectsSystem] billboardSpawned entity 12, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
-[RenderSystem] Spawning player 665 to renderer: objectType=162, spawnType=34 RenderSystem.js:347:19
-[RenderSystem] spawnEntity result for player 665: spawned=true RenderSystem.js:439:15
+[SpawnEffectsSystem] billboardSpawned entity 11, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 663, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[RenderSystem] Spawning player 664 to renderer: objectType=161, spawnType=34 RenderSystem.js:347:19
+[RenderSystem] spawnEntity result for player 664: spawned=true RenderSystem.js:439:15
 [RenderSystem] Player entityDef: illusionist RenderSystem.js:459:17
-[RenderSystem] Triggering billboardSpawned for player 665 RenderSystem.js:466:19
-[AnimationSystem] billboardSpawned for player 665, animationSet: illusionist AnimationSystem.js:1292:15
-[SpawnEffectsSystem] billboardSpawned entity 665, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[RenderSystem] Triggering billboardSpawned for player 664 RenderSystem.js:466:19
+[AnimationSystem] billboardSpawned for player 664, animationSet: illusionist AnimationSystem.js:1292:15
+[SpawnEffectsSystem] billboardSpawned entity 664, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [PlayerControlSystem] update #0, isPaused: false PlayerControlSystem.js:227:15
 [PlayerControlSystem] update #1, isPaused: false PlayerControlSystem.js:227:15
 [PlayerControlSystem] update #2, isPaused: false PlayerControlSystem.js:227:15
-[AudioManager] Playing music: prison_song AudioManager.js:1167:15
 service not found! getWorldPositionFromMouse BaseECSGame.js:889:15
-[PauseSystem] pauseGame called PauseSystem.js:36:13
-[PauseSystem] unpauseGame called PauseSystem.js:44:13
-[PauseSystem] pauseGame called PauseSystem.js:36:13
-[PauseSystem] unpauseGame called PauseSystem.js:44:13
-[PuzzleLobbyUISystem] restartCurrentLevel called, selectedLevel: level1_1 PuzzleLobbyUISystem.js:359:13
-[PuzzleLobbyUISystem] Starting level: level1_1 PuzzleLobbyUISystem.js:270:13
+[CameraControlSystem] _onClick called, canvas: true isPointerLocked: false CameraControlSystem.js:96:13
+[CameraControlSystem] Requesting pointer lock CameraControlSystem.js:98:15
+[CameraControlSystem] Pointer lock changed: false -> true CameraControlSystem.js:104:13
+[CameraControlSystem] _onClick called, canvas: true isPointerLocked: true 3 CameraControlSystem.js:96:13
+[ExitSystem] exitZone component: 
+Proxy { <target>: {}, <handler>: {…} }
+ExitSystem.js:85:13
+[ExitSystem] nextLevel from component: 1 ExitSystem.js:87:13
+[ExitSystem] Level complete! Loading next level: 1 ExitSystem.js:103:13
+[PuzzleLobbyUISystem] Starting level: 1 PuzzleLobbyUISystem.js:270:13
+[PuzzleLobbyUISystem] enums.levels: 
+Object { level1_1: 0, level1_2: 1, test_arena: 2 }
+PuzzleLobbyUISystem.js:271:13
+[PuzzleLobbyUISystem] enums.levels[1]: undefined PuzzleLobbyUISystem.js:272:13
+[PuzzleLobbyUISystem] levelIndex resolved to: 0 PuzzleLobbyUISystem.js:276:13
 [SceneManager] loadScene('game') called <empty string> SceneManager.js:25:13
-[SceneManager] Unloading current scene: game SceneManager.js:41:15
+[SceneManager] Unloading current scene: game SceneManager.js:35:15
 [PauseSystem] onSceneUnload - isPaused was: false, setting to false PauseSystem.js:28:13
-[AudioManager] Stopping music: prison_song AudioManager.js:1202:13
-[RenderSystem] onSceneUnload called, spawnedEntities: 659 RenderSystem.js:674:13
+[AudioManager] Stopping music: tiptoe_song AudioManager.js:1202:13
+[RenderSystem] onSceneUnload called, spawnedEntities: 660 RenderSystem.js:674:13
 [RenderSystem] onSceneUnload complete, tracking data cleared RenderSystem.js:693:13
-[SceneManager] Running loader: GameLoader SceneManager.js:57:15
+[BaseECSGame]  - registering services for PauseSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for GridSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for TerrainSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for PlayerStatsSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for BehaviorSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for MovementSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for UnitCreationSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for DeathSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for DamageSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for AbilitySystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for LifetimeSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for SchedulingSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for PathfindingSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for VisionSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for IllusionSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for ExitSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for PuzzleGameSystem BaseECSGame.js:1006:13
+[AudioSystem] Creating AudioManager... AudioSystem.js:21:13
+[BaseECSGame]  - registering services for AudioSystem BaseECSGame.js:1006:13
+[AudioSystem] init() called AudioSystem.js:28:13
+[BaseECSGame]  - registering services for RenderSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for WorldSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for TerrainDetailSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for PostProcessingSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for AnimationSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for EffectsSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for InputSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for ParticleSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for SpawnEffectsSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for LightingSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for HealthBarSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for FogOfWarSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for CameraControlSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for PlayerControlSystem BaseECSGame.js:1006:13
+[BaseECSGame]  - registering services for BeltUISystem BaseECSGame.js:1006:13
+[PlacementPreviewSystem] Constructor called PlacementPreviewSystem.js:22:13
+[BaseECSGame]  - registering services for PlacementPreviewSystem BaseECSGame.js:1006:13
+[PlacementPreviewSystem] init() called PlacementPreviewSystem.js:41:13
+[BaseECSGame]  - registering services for PuzzleLobbyUISystem BaseECSGame.js:1006:13
+[SceneManager] Running loader: GameLoader SceneManager.js:51:15
+[PlayerControlSystem] update #0, isPaused: false PlayerControlSystem.js:227:15
+[CameraControlSystem] Pointer lock changed: false -> false CameraControlSystem.js:104:13
 [ImageManager] Loaded 194 textures ImageManager.js:206:13
-[SceneManager] Loader complete: GameLoader SceneManager.js:60:15
+[AudioManager] Applied saved volume settings: 
+Object { master: 100, music: 49, sfx: 100 }
+AudioManager.js:234:17
+[PlayerControlSystem] update #1, isPaused: false PlayerControlSystem.js:227:15
+[PlayerControlSystem] update #2, isPaused: false PlayerControlSystem.js:227:15
+[SceneManager] Loader complete: GameLoader SceneManager.js:54:15
 [PauseSystem] onSceneLoad - isPaused was: false, setting to false PauseSystem.js:23:13
-[InputSystem] setupResultButtons - victory button: null defeat button: null InputSystem.js:42:13
-[PuzzleLobbyUISystem] Loaded levels: 2 
-Array [ "level1_1", "puzzle_tutorial" ]
-PuzzleLobbyUISystem.js:233:13
 [TerrainSystem] onSceneLoad called, game.state.level: 0 TerrainSystem.js:59:13
 [TerrainSystem] Level name from index: level1_1 TerrainSystem.js:70:13
 [TerrainSystem] Initializing terrain for level: level1_1 TerrainSystem.js:75:13
-[TerrainSystem] Loading 663 level entities... TerrainSystem.js:160:13
-[TerrainSystem] Loaded 663 level entities TerrainSystem.js:236:13
+[TerrainSystem] Loading 662 level entities... TerrainSystem.js:160:13
+[UnitCreationSystem] exitZone overrides: 
+Object { transform: {…}, exitZone: {…} }
+UnitCreationSystem.js:502:17
+[UnitCreationSystem] exitOverrides.nextLevel: level1_2 UnitCreationSystem.js:503:17
+[UnitCreationSystem] exitZone component created: 
+Object { distance: 48, directionEnum: 0, directionTolerance: 0.7, nextLevel: "level1_2", isActive: true }
+UnitCreationSystem.js:511:17
+[TerrainSystem] Loaded 662 level entities TerrainSystem.js:236:13
 [TerrainSystem] Terrain initialized TerrainSystem.js:77:13
 [PuzzleGameSystem] onSceneLoad - levelIndex: 0, levelKey: level1_1, puzzleLevel: true PuzzleGameSystem.js:77:13
-[PuzzleGameSystem] Spawned player entity 665 at (-697, 80, -797) PuzzleGameSystem.js:193:13
+[PuzzleGameSystem] Spawned player entity 664 at (-697, 80, -797) PuzzleGameSystem.js:193:13
+[PuzzleGameSystem] Set GuardBehaviorTree for guard 8 PuzzleGameSystem.js:226:17
+[PuzzleGameSystem] Guard 8 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
 [PuzzleGameSystem] Set GuardBehaviorTree for guard 9 PuzzleGameSystem.js:226:17
 [PuzzleGameSystem] Guard 9 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
 [PuzzleGameSystem] Set GuardBehaviorTree for guard 10 PuzzleGameSystem.js:226:17
 [PuzzleGameSystem] Guard 10 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
-[PuzzleGameSystem] Set GuardBehaviorTree for guard 11 PuzzleGameSystem.js:226:17
-[PuzzleGameSystem] Guard 11 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
 [PuzzleGameSystem] Configured 3 guards PuzzleGameSystem.js:254:13
 [PuzzleGameSystem] Initialized level: level1_1 PuzzleGameSystem.js:121:13
-[AudioManager] Playing music: prison_song AudioManager.js:1167:15
+[InputSystem] setupResultButtons - victory button: null defeat button: null InputSystem.js:42:13
 [LightingSystem] onSceneLoad - getCollections keys: 
-Array(62) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
 LightingSystem.js:44:13
 [LightingSystem] collections.lightingEffects: 
 Object { campfire: {…}, flicker: {…}, pulse: {…}, strobe: {…} }
 LightingSystem.js:45:13
 [LightingSystem] this.game.app: 
-Object { plugins: {}, currentTime: 1769207105962, lastTime: 319, deltaTime: 0, accumulator: 0.012999999999994943, engineClasses: [], appClasses: {}, libraries: {}, running: true, collections: {…}, … }
+Object { plugins: {}, currentTime: 1769223709297, lastTime: 298, deltaTime: 0, accumulator: 7.129999999999827, engineClasses: [], appClasses: {}, libraries: {}, running: true, collections: {…}, … }
 LightingSystem.js:46:13
 [LightingSystem] window.COMPILED_GAME?.collections?.lightingEffects: 
 Object { campfire: {…}, flicker: {…}, pulse: {…}, strobe: {…} }
@@ -194,26 +274,31 @@ LightingSystem.js:47:13
 [CameraControlSystem] Click listener attached to canvas CameraControlSystem.js:298:15
 [PlayerControlSystem] onSceneLoad called, isPaused: false PlayerControlSystem.js:56:13
 [PlacementPreviewSystem] onSceneLoad() called PlacementPreviewSystem.js:44:13
+[PuzzleLobbyUISystem] Loaded levels: 2 
+Array [ "level1_1", "level1_2" ]
+PuzzleLobbyUISystem.js:233:13
 [RenderSystem] postSceneLoad called, spawnedEntities count: 0 RenderSystem.js:81:13
 [RenderSystem] EntityRenderer created, scene: true RenderSystem.js:105:13
 [CameraControlSystem] postSceneLoad called CameraControlSystem.js:286:13
 [CameraControlSystem] _attachCanvasListener - Canvas element: true CameraControlSystem.js:293:13
 [CameraControlSystem] Click listener attached to canvas CameraControlSystem.js:298:15
-[PlayerControlSystem] postSceneLoad - playerEntity: 665, isPaused: false PlayerControlSystem.js:66:13
-[SceneManager] loadScene('game') complete SceneManager.js:93:13
+[PlayerControlSystem] postSceneLoad - playerEntity: 664, isPaused: false PlayerControlSystem.js:66:13
+[SceneManager] loadScene('game') complete SceneManager.js:87:13
 [SpawnEffectsSystem] billboardSpawned entity 2, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 3, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 4, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 5, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 6, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 7, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
-[SpawnEffectsSystem] billboardSpawned entity 12, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
-[RenderSystem] Spawning player 665 to renderer: objectType=162, spawnType=34 RenderSystem.js:347:19
-[RenderSystem] spawnEntity result for player 665: spawned=true RenderSystem.js:439:15
+[SpawnEffectsSystem] billboardSpawned entity 11, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 663, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[RenderSystem] Spawning player 664 to renderer: objectType=161, spawnType=34 RenderSystem.js:347:19
+[RenderSystem] spawnEntity result for player 664: spawned=true RenderSystem.js:439:15
 [RenderSystem] Player entityDef: illusionist RenderSystem.js:459:17
-[RenderSystem] Triggering billboardSpawned for player 665 RenderSystem.js:466:19
-[AnimationSystem] billboardSpawned for player 665, animationSet: illusionist AnimationSystem.js:1292:15
-[SpawnEffectsSystem] billboardSpawned entity 665, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[RenderSystem] Triggering billboardSpawned for player 664 RenderSystem.js:466:19
+[AnimationSystem] billboardSpawned for player 664, animationSet: illusionist AnimationSystem.js:1292:15
+[SpawnEffectsSystem] billboardSpawned entity 664, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [PlayerControlSystem] update #0, isPaused: false PlayerControlSystem.js:227:15
 [PlayerControlSystem] update #1, isPaused: false PlayerControlSystem.js:227:15
 [PlayerControlSystem] update #2, isPaused: false PlayerControlSystem.js:227:15
+[AudioManager] Playing music: tiptoe_song AudioManager.js:1167:15
