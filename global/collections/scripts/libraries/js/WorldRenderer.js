@@ -1498,6 +1498,7 @@ class WorldRenderer {
      * @param {boolean} useExtension - Whether to account for extension size (true for game, false for editor)
      */
     async spawnCliffs(entityRenderer, useExtension = false) {
+        console.log('[WorldRenderer] spawnCliffs called, terrainDataManager:', !!this.terrainDataManager, 'entityRenderer:', !!entityRenderer);
         if (!this.terrainDataManager || !entityRenderer) {
             console.warn('[WorldRenderer] Cannot spawn cliffs: missing dependencies');
             return;
@@ -1508,14 +1509,18 @@ class WorldRenderer {
 
         // Analyze height map for cliff positions
         const cliffData = this.terrainDataManager.analyzeCliffs();
+        console.log('[WorldRenderer] cliffData count:', cliffData.length);
 
         if (cliffData.length === 0) {
+            console.log('[WorldRenderer] No cliff data, returning early');
             return;
         }
 
         // Get the cliffSet from the world
         const cliffSetId = this.terrainDataManager.world?.cliffSet;
+        console.log('[WorldRenderer] cliffSetId:', cliffSetId);
         if (!cliffSetId) {
+            console.log('[WorldRenderer] No cliffSetId, returning early');
             return;
         }
         const cliffSet = this.terrainDataManager.collections?.cliffSets?.[cliffSetId];
@@ -1526,6 +1531,7 @@ class WorldRenderer {
 
         // Generate cliff texture from terrain types and assign to entityRenderer
         const generatedCliffTexture = this.generateCliffTexture(cliffSet);
+        console.log('[WorldRenderer] generatedCliffTexture:', !!generatedCliffTexture);
         if (generatedCliffTexture) {
             entityRenderer.cliffTexture = generatedCliffTexture;
         }
@@ -1684,6 +1690,7 @@ class WorldRenderer {
             }
         }
 
+        console.log('[WorldRenderer] spawnCliffs complete, spawned:', spawnedCount, 'cliffs');
     }
 
     /**

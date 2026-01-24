@@ -347,7 +347,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
         const collections = this.game.getCollections();
         const gameScene = collections?.scenes?.game;
         if (gameScene && gameScene.entities) {
-            const terrainEntity = gameScene.entities.find(e => e.prefab === 'terrain');
+            const terrainEntity = gameScene.entities.find(e => e.spawnType === 'terrain');
             if (terrainEntity) {
                 if (!terrainEntity.components) {
                     terrainEntity.components = {};

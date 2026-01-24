@@ -1,5 +1,5 @@
 loading SimpleLoader.js:19:13
-Object { app: {…}, state: {…}, entitiesToAdd: [], classes: [], systems: (35) […], sceneManager: {…}, _services: {…}, MAX_ENTITIES: 65536, entityAlive: Uint8Array(65536), MASK_UINT32_COUNT: 8, … }
+Object { app: {…}, state: {…}, entitiesToAdd: [], classes: [], systems: [], sceneManager: null, _services: {…}, MAX_ENTITIES: 65536, entityAlive: Uint8Array(65536), MASK_UINT32_COUNT: 8, … }
 SimpleLoader.js:34:13
 got collections SimpleLoader.js:36:13
 got config 
@@ -33,12 +33,6 @@ Object { master: 100, music: 49, sfx: 100 }
 AudioManager.js:234:17
 [AudioManager] Playing music: tiptoe_song AudioManager.js:1167:15
 [PuzzleLobbyUISystem] Level card clicked: level1_1 PuzzleLobbyUISystem.js:256:19
-[PuzzleLobbyUISystem] Starting level: level1_1 PuzzleLobbyUISystem.js:270:13
-[PuzzleLobbyUISystem] enums.levels: 
-Object { level1_1: 0, level1_2: 1, test_arena: 2 }
-PuzzleLobbyUISystem.js:271:13
-[PuzzleLobbyUISystem] enums.levels[level1_1]: 0 PuzzleLobbyUISystem.js:272:13
-[PuzzleLobbyUISystem] levelIndex resolved to: 0 PuzzleLobbyUISystem.js:276:13
 [SceneManager] loadScene('game') called <empty string> SceneManager.js:25:13
 [SceneManager] Unloading current scene: menu SceneManager.js:35:15
 [PauseSystem] onSceneUnload - isPaused was: false, setting to false PauseSystem.js:28:13
@@ -96,13 +90,6 @@ AudioManager.js:234:17
 [TerrainSystem] Level name from index: level1_1 TerrainSystem.js:70:13
 [TerrainSystem] Initializing terrain for level: level1_1 TerrainSystem.js:75:13
 [TerrainSystem] Loading 662 level entities... TerrainSystem.js:160:13
-[UnitCreationSystem] exitZone overrides: 
-Object { transform: {…}, exitZone: {…} }
-UnitCreationSystem.js:502:17
-[UnitCreationSystem] exitOverrides.nextLevel: level1_2 UnitCreationSystem.js:503:17
-[UnitCreationSystem] exitZone component created: 
-Object { distance: 48, directionEnum: 0, directionTolerance: 0.7, nextLevel: "level1_2", isActive: true }
-UnitCreationSystem.js:511:17
 [TerrainSystem] Loaded 662 level entities TerrainSystem.js:236:13
 [TerrainSystem] Terrain initialized TerrainSystem.js:77:13
 [PuzzleGameSystem] onSceneLoad - levelIndex: 0, levelKey: level1_1, puzzleLevel: true PuzzleGameSystem.js:77:13
@@ -115,6 +102,8 @@ UnitCreationSystem.js:511:17
 [PuzzleGameSystem] Guard 10 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
 [PuzzleGameSystem] Configured 3 guards PuzzleGameSystem.js:254:13
 [PuzzleGameSystem] Initialized level: level1_1 PuzzleGameSystem.js:121:13
+[WorldSystem] setupWorldRendering - terrainTileMapper exists: true imageManager exists: true WorldSystem.js:239:13
+[WorldSystem] Skipping terrainTileMapper creation - already exists or no imageManager WorldSystem.js:244:15
 [InputSystem] setupResultButtons - victory button: null defeat button: null InputSystem.js:42:13
 [LightingSystem] onSceneLoad - getCollections keys: 
 Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
@@ -123,7 +112,7 @@ LightingSystem.js:44:13
 Object { campfire: {…}, flicker: {…}, pulse: {…}, strobe: {…} }
 LightingSystem.js:45:13
 [LightingSystem] this.game.app: 
-Object { plugins: {}, currentTime: 1769223709297, lastTime: 298, deltaTime: 0, accumulator: 7.129999999999827, engineClasses: [], appClasses: {}, libraries: {}, running: true, collections: {…}, … }
+Object { plugins: {}, currentTime: 1769234551555, lastTime: 381, deltaTime: 0, accumulator: 0.01499999999999968, engineClasses: [], appClasses: {}, libraries: {}, running: true, collections: {…}, … }
 LightingSystem.js:46:13
 [LightingSystem] window.COMPILED_GAME?.collections?.lightingEffects: 
 Object { campfire: {…}, flicker: {…}, pulse: {…}, strobe: {…} }
@@ -137,13 +126,31 @@ LightingSystem.js:47:13
 Array [ "level1_1", "level1_2" ]
 PuzzleLobbyUISystem.js:233:13
 [RenderSystem] postSceneLoad called, spawnedEntities count: 0 RenderSystem.js:81:13
-[RenderSystem] EntityRenderer created, scene: true RenderSystem.js:105:13
+[RenderSystem] postSceneLoad called, scene exists: true scene.uuid: e1fca951-824f-4fb6-b1da-7bf494bbec7b RenderSystem.js:85:13
+[RenderSystem] EntityRenderer created, scene.uuid: e1fca951-824f-4fb6-b1da-7bf494bbec7b RenderSystem.js:107:13
+[WorldSystem] postSceneLoad called, worldRenderer exists: true WorldSystem.js:284:13
 [CameraControlSystem] postSceneLoad called CameraControlSystem.js:286:13
 [CameraControlSystem] _attachCanvasListener - Canvas element: true CameraControlSystem.js:293:13
 [CameraControlSystem] Click listener attached to canvas CameraControlSystem.js:298:15
 [PlayerControlSystem] postSceneLoad - playerEntity: 664, isPaused: false PlayerControlSystem.js:66:13
 [SceneManager] loadScene('game') complete SceneManager.js:87:13
-[AudioManager] Playing music: tiptoe_song AudioManager.js:1167:15
+[WorldSystem] postSceneLoad - entityRenderer exists: true scene: true WorldSystem.js:301:13
+[WorldSystem] Calling spawnCliffs... WorldSystem.js:303:15
+[WorldRenderer] spawnCliffs called, terrainDataManager: true entityRenderer: true WorldRenderer.js:1427:13
+[WorldRenderer] cliffData count: 100 WorldRenderer.js:1438:13
+[WorldRenderer] cliffSetId: grass_dirt WorldRenderer.js:1446:13
+[WorldRenderer] generatedCliffTexture: true WorldRenderer.js:1459:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_one capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_two capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_three capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_one_top capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_one_base capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_two_top capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_two_base capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_three_top capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_three_base capacity: 2056 EntityRenderer.js:434:13
+[WorldRenderer] spawnCliffs complete, spawned: 139 cliffs WorldRenderer.js:1621:13
+[WorldSystem] spawnCliffs complete WorldSystem.js:305:15
 [SpawnEffectsSystem] billboardSpawned entity 2, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 3, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 4, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
@@ -152,37 +159,87 @@ PuzzleLobbyUISystem.js:233:13
 [SpawnEffectsSystem] billboardSpawned entity 7, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 11, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 663, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
-[RenderSystem] Spawning player 664 to renderer: objectType=161, spawnType=34 RenderSystem.js:347:19
-[RenderSystem] spawnEntity result for player 664: spawned=true RenderSystem.js:439:15
-[RenderSystem] Player entityDef: illusionist RenderSystem.js:459:17
-[RenderSystem] Triggering billboardSpawned for player 664 RenderSystem.js:466:19
+[RenderSystem] Spawning player 664 to renderer: objectType=161, spawnType=34 RenderSystem.js:349:19
+[RenderSystem] spawnEntity result for player 664: spawned=true RenderSystem.js:441:15
+[RenderSystem] Player entityDef: illusionist RenderSystem.js:461:17
+[RenderSystem] Triggering billboardSpawned for player 664 RenderSystem.js:468:19
 [AnimationSystem] billboardSpawned for player 664, animationSet: illusionist AnimationSystem.js:1292:15
 [SpawnEffectsSystem] billboardSpawned entity 664, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [PlayerControlSystem] update #0, isPaused: false PlayerControlSystem.js:227:15
 [PlayerControlSystem] update #1, isPaused: false PlayerControlSystem.js:227:15
 [PlayerControlSystem] update #2, isPaused: false PlayerControlSystem.js:227:15
+[AudioManager] Playing music: tiptoe_song AudioManager.js:1167:15
 service not found! getWorldPositionFromMouse BaseECSGame.js:889:15
 [CameraControlSystem] _onClick called, canvas: true isPointerLocked: false CameraControlSystem.js:96:13
 [CameraControlSystem] Requesting pointer lock CameraControlSystem.js:98:15
 [CameraControlSystem] Pointer lock changed: false -> true CameraControlSystem.js:104:13
-[CameraControlSystem] _onClick called, canvas: true isPointerLocked: true 3 CameraControlSystem.js:96:13
-[ExitSystem] exitZone component: 
-Proxy { <target>: {}, <handler>: {…} }
-ExitSystem.js:85:13
-[ExitSystem] nextLevel from component: 1 ExitSystem.js:87:13
-[ExitSystem] Level complete! Loading next level: 1 ExitSystem.js:103:13
-[PuzzleLobbyUISystem] Starting level: 1 PuzzleLobbyUISystem.js:270:13
-[PuzzleLobbyUISystem] enums.levels: 
-Object { level1_1: 0, level1_2: 1, test_arena: 2 }
-PuzzleLobbyUISystem.js:271:13
-[PuzzleLobbyUISystem] enums.levels[1]: undefined PuzzleLobbyUISystem.js:272:13
-[PuzzleLobbyUISystem] levelIndex resolved to: 0 PuzzleLobbyUISystem.js:276:13
+[SpawnEffectsSystem] billboardSpawned entity 8, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 9, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 10, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[RenderSystem] Spawning player 664 to renderer: objectType=161, spawnType=34 RenderSystem.js:349:19
+[RenderSystem] spawnEntity result for player 664: spawned=true RenderSystem.js:441:15
+[RenderSystem] Player entityDef: illusionist RenderSystem.js:461:17
+[RenderSystem] Triggering billboardSpawned for player 664 RenderSystem.js:468:19
+[AnimationSystem] billboardSpawned for player 664, animationSet: illusionist AnimationSystem.js:1292:15
+[SpawnEffectsSystem] billboardSpawned entity 664, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 8, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 9, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 10, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Direction check failed: 
+Object { spriteDirection: 7, requiredDirection: 0 }
+ExitSystem.js:68:19
+[ExitSystem] Level complete! Loading next level: level1_2 ExitSystem.js:104:13
 [SceneManager] loadScene('game') called <empty string> SceneManager.js:25:13
 [SceneManager] Unloading current scene: game SceneManager.js:35:15
 [PauseSystem] onSceneUnload - isPaused was: false, setting to false PauseSystem.js:28:13
 [AudioManager] Stopping music: tiptoe_song AudioManager.js:1202:13
-[RenderSystem] onSceneUnload called, spawnedEntities: 660 RenderSystem.js:674:13
-[RenderSystem] onSceneUnload complete, tracking data cleared RenderSystem.js:693:13
+[RenderSystem] onSceneUnload called, spawnedEntities: 663 RenderSystem.js:676:13
+[RenderSystem] onSceneUnload complete, tracking data cleared RenderSystem.js:695:13
 [BaseECSGame]  - registering services for PauseSystem BaseECSGame.js:1006:13
 [BaseECSGame]  - registering services for GridSystem BaseECSGame.js:1006:13
 [BaseECSGame]  - registering services for TerrainSystem BaseECSGame.js:1006:13
@@ -226,36 +283,29 @@ PuzzleLobbyUISystem.js:271:13
 [PlayerControlSystem] update #0, isPaused: false PlayerControlSystem.js:227:15
 [CameraControlSystem] Pointer lock changed: false -> false CameraControlSystem.js:104:13
 [ImageManager] Loaded 194 textures ImageManager.js:206:13
-[AudioManager] Applied saved volume settings: 
-Object { master: 100, music: 49, sfx: 100 }
-AudioManager.js:234:17
 [PlayerControlSystem] update #1, isPaused: false PlayerControlSystem.js:227:15
 [PlayerControlSystem] update #2, isPaused: false PlayerControlSystem.js:227:15
 [SceneManager] Loader complete: GameLoader SceneManager.js:54:15
 [PauseSystem] onSceneLoad - isPaused was: false, setting to false PauseSystem.js:23:13
-[TerrainSystem] onSceneLoad called, game.state.level: 0 TerrainSystem.js:59:13
-[TerrainSystem] Level name from index: level1_1 TerrainSystem.js:70:13
-[TerrainSystem] Initializing terrain for level: level1_1 TerrainSystem.js:75:13
-[TerrainSystem] Loading 662 level entities... TerrainSystem.js:160:13
-[UnitCreationSystem] exitZone overrides: 
-Object { transform: {…}, exitZone: {…} }
-UnitCreationSystem.js:502:17
-[UnitCreationSystem] exitOverrides.nextLevel: level1_2 UnitCreationSystem.js:503:17
-[UnitCreationSystem] exitZone component created: 
-Object { distance: 48, directionEnum: 0, directionTolerance: 0.7, nextLevel: "level1_2", isActive: true }
-UnitCreationSystem.js:511:17
-[TerrainSystem] Loaded 662 level entities TerrainSystem.js:236:13
+[TerrainSystem] onSceneLoad called, game.state.level: 1 TerrainSystem.js:59:13
+[TerrainSystem] Level name from index: level1_2 TerrainSystem.js:70:13
+[TerrainSystem] Initializing terrain for level: level1_2 TerrainSystem.js:75:13
+[TerrainSystem] Loading 21 level entities... TerrainSystem.js:160:13
+[TerrainSystem] Loaded 21 level entities TerrainSystem.js:236:13
 [TerrainSystem] Terrain initialized TerrainSystem.js:77:13
-[PuzzleGameSystem] onSceneLoad - levelIndex: 0, levelKey: level1_1, puzzleLevel: true PuzzleGameSystem.js:77:13
-[PuzzleGameSystem] Spawned player entity 664 at (-697, 80, -797) PuzzleGameSystem.js:193:13
-[PuzzleGameSystem] Set GuardBehaviorTree for guard 8 PuzzleGameSystem.js:226:17
-[PuzzleGameSystem] Guard 8 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
-[PuzzleGameSystem] Set GuardBehaviorTree for guard 9 PuzzleGameSystem.js:226:17
-[PuzzleGameSystem] Guard 9 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
-[PuzzleGameSystem] Set GuardBehaviorTree for guard 10 PuzzleGameSystem.js:226:17
-[PuzzleGameSystem] Guard 10 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
+[PuzzleGameSystem] onSceneLoad - levelIndex: 1, levelKey: level1_2, puzzleLevel: true PuzzleGameSystem.js:77:13
+[PuzzleGameSystem] Spawned player entity 23 at (-259, 80, -259) PuzzleGameSystem.js:193:13
+[PuzzleGameSystem] Set GuardBehaviorTree for guard 19 PuzzleGameSystem.js:226:17
+[PuzzleGameSystem] Guard 19 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
+[PuzzleGameSystem] Set GuardBehaviorTree for guard 20 PuzzleGameSystem.js:226:17
+[PuzzleGameSystem] Guard 20 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
+[PuzzleGameSystem] Set GuardBehaviorTree for guard 21 PuzzleGameSystem.js:226:17
+[PuzzleGameSystem] Guard 21 has no patrol waypoints - standing guard at spawn position PuzzleGameSystem.js:248:21
 [PuzzleGameSystem] Configured 3 guards PuzzleGameSystem.js:254:13
-[PuzzleGameSystem] Initialized level: level1_1 PuzzleGameSystem.js:121:13
+[PuzzleGameSystem] Initialized level: level1_2 PuzzleGameSystem.js:121:13
+[WorldSystem] setupWorldRendering - terrainTileMapper exists: true imageManager exists: true WorldSystem.js:239:13
+[WorldSystem] Skipping terrainTileMapper creation - already exists or no imageManager WorldSystem.js:244:15
+[WorldRenderer] Created ceiling at height 143 with terrain type 3 WorldRenderer.js:558:13
 [InputSystem] setupResultButtons - victory button: null defeat button: null InputSystem.js:42:13
 [LightingSystem] onSceneLoad - getCollections keys: 
 Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
@@ -264,7 +314,7 @@ LightingSystem.js:44:13
 Object { campfire: {…}, flicker: {…}, pulse: {…}, strobe: {…} }
 LightingSystem.js:45:13
 [LightingSystem] this.game.app: 
-Object { plugins: {}, currentTime: 1769223709297, lastTime: 298, deltaTime: 0, accumulator: 7.129999999999827, engineClasses: [], appClasses: {}, libraries: {}, running: true, collections: {…}, … }
+Object { plugins: {}, currentTime: 1769234551555, lastTime: 381, deltaTime: 0, accumulator: 0.004999999999899682, engineClasses: [], appClasses: {}, libraries: {}, running: true, collections: {…}, … }
 LightingSystem.js:46:13
 [LightingSystem] window.COMPILED_GAME?.collections?.lightingEffects: 
 Object { campfire: {…}, flicker: {…}, pulse: {…}, strobe: {…} }
@@ -278,27 +328,248 @@ LightingSystem.js:47:13
 Array [ "level1_1", "level1_2" ]
 PuzzleLobbyUISystem.js:233:13
 [RenderSystem] postSceneLoad called, spawnedEntities count: 0 RenderSystem.js:81:13
-[RenderSystem] EntityRenderer created, scene: true RenderSystem.js:105:13
+[RenderSystem] postSceneLoad called, scene exists: true scene.uuid: f8c65d3c-5cfc-495b-9bd9-8b9db498c8f1 RenderSystem.js:85:13
+[RenderSystem] EntityRenderer created, scene.uuid: f8c65d3c-5cfc-495b-9bd9-8b9db498c8f1 RenderSystem.js:107:13
+[WorldSystem] postSceneLoad called, worldRenderer exists: true WorldSystem.js:284:13
 [CameraControlSystem] postSceneLoad called CameraControlSystem.js:286:13
 [CameraControlSystem] _attachCanvasListener - Canvas element: true CameraControlSystem.js:293:13
 [CameraControlSystem] Click listener attached to canvas CameraControlSystem.js:298:15
-[PlayerControlSystem] postSceneLoad - playerEntity: 664, isPaused: false PlayerControlSystem.js:66:13
+[PlayerControlSystem] postSceneLoad - playerEntity: 23, isPaused: false PlayerControlSystem.js:66:13
 [SceneManager] loadScene('game') complete SceneManager.js:87:13
+[WorldSystem] postSceneLoad - entityRenderer exists: true scene: true WorldSystem.js:301:13
+[WorldSystem] Calling spawnCliffs... WorldSystem.js:303:15
+[WorldRenderer] spawnCliffs called, terrainDataManager: true entityRenderer: true WorldRenderer.js:1427:13
+[WorldRenderer] cliffData count: 168 WorldRenderer.js:1438:13
+[WorldRenderer] cliffSetId: dungeon WorldRenderer.js:1446:13
+[WorldRenderer] generatedCliffTexture: true WorldRenderer.js:1459:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_three_top capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_three_base capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_two_top capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_two_mid capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_two_base capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_one_top capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_one_mid capacity: 2056 EntityRenderer.js:434:13
+[EntityRenderer] createStaticBatch adding to scene: true batchKey: cliffs_atom_one_base capacity: 2056 EntityRenderer.js:434:13
+[WorldRenderer] spawnCliffs complete, spawned: 656 cliffs WorldRenderer.js:1621:13
+[WorldSystem] spawnCliffs complete WorldSystem.js:305:15
 [SpawnEffectsSystem] billboardSpawned entity 2, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 3, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 4, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
-[SpawnEffectsSystem] billboardSpawned entity 5, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[AudioManager] Applied saved volume settings: 
+Object { master: 100, music: 49, sfx: 100 }
+AudioManager.js:234:17
+[SpawnEffectsSystem] billboardSpawned entity 5, has ambientSound: true 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] startEntityAmbientSound called for entity 5 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:130:13
+[SpawnEffectsSystem] Looking for ambient sound: brazier_fire SpawnEffectsSystem.js:151:13
+[AudioManager] getAmbientSound - collections keys: 
+Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+AudioManager.js:1069:13
+[AudioManager] collections.ambientSounds: 
+Object { brazier_fire: {…} }
+AudioManager.js:1070:13
+[AudioManager] Looking for: brazier_fire AudioManager.js:1071:13
+[AudioManager] Found sound: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+AudioManager.js:1073:15
+[SpawnEffectsSystem] Got soundDef: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+SpawnEffectsSystem.js:153:13
 [SpawnEffectsSystem] billboardSpawned entity 6, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [SpawnEffectsSystem] billboardSpawned entity 7, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
-[SpawnEffectsSystem] billboardSpawned entity 11, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
-[SpawnEffectsSystem] billboardSpawned entity 663, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
-[RenderSystem] Spawning player 664 to renderer: objectType=161, spawnType=34 RenderSystem.js:347:19
-[RenderSystem] spawnEntity result for player 664: spawned=true RenderSystem.js:439:15
-[RenderSystem] Player entityDef: illusionist RenderSystem.js:459:17
-[RenderSystem] Triggering billboardSpawned for player 664 RenderSystem.js:466:19
-[AnimationSystem] billboardSpawned for player 664, animationSet: illusionist AnimationSystem.js:1292:15
-[SpawnEffectsSystem] billboardSpawned entity 664, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 8, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 9, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] billboardSpawned entity 10, has ambientSound: true 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] startEntityAmbientSound called for entity 10 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:130:13
+[SpawnEffectsSystem] Looking for ambient sound: brazier_fire SpawnEffectsSystem.js:151:13
+[AudioManager] getAmbientSound - collections keys: 
+Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+AudioManager.js:1069:13
+[AudioManager] collections.ambientSounds: 
+Object { brazier_fire: {…} }
+AudioManager.js:1070:13
+[AudioManager] Looking for: brazier_fire AudioManager.js:1071:13
+[AudioManager] Found sound: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+AudioManager.js:1073:15
+[SpawnEffectsSystem] Got soundDef: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+SpawnEffectsSystem.js:153:13
+[SpawnEffectsSystem] billboardSpawned entity 11, has ambientSound: true 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] startEntityAmbientSound called for entity 11 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:130:13
+[SpawnEffectsSystem] Looking for ambient sound: brazier_fire SpawnEffectsSystem.js:151:13
+[AudioManager] getAmbientSound - collections keys: 
+Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+AudioManager.js:1069:13
+[AudioManager] collections.ambientSounds: 
+Object { brazier_fire: {…} }
+AudioManager.js:1070:13
+[AudioManager] Looking for: brazier_fire AudioManager.js:1071:13
+[AudioManager] Found sound: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+AudioManager.js:1073:15
+[SpawnEffectsSystem] Got soundDef: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+SpawnEffectsSystem.js:153:13
+[SpawnEffectsSystem] billboardSpawned entity 12, has ambientSound: true 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] startEntityAmbientSound called for entity 12 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:130:13
+[SpawnEffectsSystem] Looking for ambient sound: brazier_fire SpawnEffectsSystem.js:151:13
+[AudioManager] getAmbientSound - collections keys: 
+Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+AudioManager.js:1069:13
+[AudioManager] collections.ambientSounds: 
+Object { brazier_fire: {…} }
+AudioManager.js:1070:13
+[AudioManager] Looking for: brazier_fire AudioManager.js:1071:13
+[AudioManager] Found sound: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+AudioManager.js:1073:15
+[SpawnEffectsSystem] Got soundDef: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+SpawnEffectsSystem.js:153:13
+[SpawnEffectsSystem] billboardSpawned entity 13, has ambientSound: true 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] startEntityAmbientSound called for entity 13 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:130:13
+[SpawnEffectsSystem] Looking for ambient sound: brazier_fire SpawnEffectsSystem.js:151:13
+[AudioManager] getAmbientSound - collections keys: 
+Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+AudioManager.js:1069:13
+[AudioManager] collections.ambientSounds: 
+Object { brazier_fire: {…} }
+AudioManager.js:1070:13
+[AudioManager] Looking for: brazier_fire AudioManager.js:1071:13
+[AudioManager] Found sound: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+AudioManager.js:1073:15
+[SpawnEffectsSystem] Got soundDef: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+SpawnEffectsSystem.js:153:13
+[SpawnEffectsSystem] billboardSpawned entity 14, has ambientSound: true 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] startEntityAmbientSound called for entity 14 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:130:13
+[SpawnEffectsSystem] Looking for ambient sound: brazier_fire SpawnEffectsSystem.js:151:13
+[AudioManager] getAmbientSound - collections keys: 
+Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+AudioManager.js:1069:13
+[AudioManager] collections.ambientSounds: 
+Object { brazier_fire: {…} }
+AudioManager.js:1070:13
+[AudioManager] Looking for: brazier_fire AudioManager.js:1071:13
+[AudioManager] Found sound: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+AudioManager.js:1073:15
+[SpawnEffectsSystem] Got soundDef: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+SpawnEffectsSystem.js:153:13
+[SpawnEffectsSystem] billboardSpawned entity 15, has ambientSound: true 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] startEntityAmbientSound called for entity 15 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:130:13
+[SpawnEffectsSystem] Looking for ambient sound: brazier_fire SpawnEffectsSystem.js:151:13
+[AudioManager] getAmbientSound - collections keys: 
+Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+AudioManager.js:1069:13
+[AudioManager] collections.ambientSounds: 
+Object { brazier_fire: {…} }
+AudioManager.js:1070:13
+[AudioManager] Looking for: brazier_fire AudioManager.js:1071:13
+[AudioManager] Found sound: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+AudioManager.js:1073:15
+[SpawnEffectsSystem] Got soundDef: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+SpawnEffectsSystem.js:153:13
+[SpawnEffectsSystem] billboardSpawned entity 16, has ambientSound: true 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] startEntityAmbientSound called for entity 16 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:130:13
+[SpawnEffectsSystem] Looking for ambient sound: brazier_fire SpawnEffectsSystem.js:151:13
+[AudioManager] getAmbientSound - collections keys: 
+Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+AudioManager.js:1069:13
+[AudioManager] collections.ambientSounds: 
+Object { brazier_fire: {…} }
+AudioManager.js:1070:13
+[AudioManager] Looking for: brazier_fire AudioManager.js:1071:13
+[AudioManager] Found sound: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+AudioManager.js:1073:15
+[SpawnEffectsSystem] Got soundDef: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+SpawnEffectsSystem.js:153:13
+[SpawnEffectsSystem] billboardSpawned entity 17, has ambientSound: true 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] startEntityAmbientSound called for entity 17 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:130:13
+[SpawnEffectsSystem] Looking for ambient sound: brazier_fire SpawnEffectsSystem.js:151:13
+[AudioManager] getAmbientSound - collections keys: 
+Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+AudioManager.js:1069:13
+[AudioManager] collections.ambientSounds: 
+Object { brazier_fire: {…} }
+AudioManager.js:1070:13
+[AudioManager] Looking for: brazier_fire AudioManager.js:1071:13
+[AudioManager] Found sound: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+AudioManager.js:1073:15
+[SpawnEffectsSystem] Got soundDef: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+SpawnEffectsSystem.js:153:13
+[SpawnEffectsSystem] billboardSpawned entity 18, has ambientSound: true 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:62:13
+[SpawnEffectsSystem] startEntityAmbientSound called for entity 18 
+Object { sound: "brazier_fire", offset: {…} }
+SpawnEffectsSystem.js:130:13
+[SpawnEffectsSystem] Looking for ambient sound: brazier_fire SpawnEffectsSystem.js:151:13
+[AudioManager] getAmbientSound - collections keys: 
+Array(61) [ "ambientSounds", "sounds", "behaviorActions", "behaviorDecorators", "behaviorNodeTypes", "behaviorTrees", "sequenceBehaviorTrees", "actions", "actionSets", "aiConfig", … ]
+AudioManager.js:1069:13
+[AudioManager] collections.ambientSounds: 
+Object { brazier_fire: {…} }
+AudioManager.js:1070:13
+[AudioManager] Looking for: brazier_fire AudioManager.js:1071:13
+[AudioManager] Found sound: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+AudioManager.js:1073:15
+[SpawnEffectsSystem] Got soundDef: 
+Object { title: "Brazier Fire", description: "Crackling fire ambient sound for braziers", audio: {…}, ambient: {…}, id: "brazier_fire", collection: "ambientSounds" }
+SpawnEffectsSystem.js:153:13
+[SpawnEffectsSystem] billboardSpawned entity 22, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
+[RenderSystem] Spawning player 23 to renderer: objectType=161, spawnType=34 RenderSystem.js:349:19
+[RenderSystem] spawnEntity result for player 23: spawned=true RenderSystem.js:441:15
+[RenderSystem] Player entityDef: illusionist RenderSystem.js:461:17
+[RenderSystem] Triggering billboardSpawned for player 23 RenderSystem.js:468:19
+[AnimationSystem] billboardSpawned for player 23, animationSet: illusionist AnimationSystem.js:1292:15
+[SpawnEffectsSystem] billboardSpawned entity 23, has ambientSound: false undefined SpawnEffectsSystem.js:62:13
 [PlayerControlSystem] update #0, isPaused: false PlayerControlSystem.js:227:15
 [PlayerControlSystem] update #1, isPaused: false PlayerControlSystem.js:227:15
 [PlayerControlSystem] update #2, isPaused: false PlayerControlSystem.js:227:15
-[AudioManager] Playing music: tiptoe_song AudioManager.js:1167:15
+[AudioManager] Playing music: prison_song AudioManager.js:1167:15

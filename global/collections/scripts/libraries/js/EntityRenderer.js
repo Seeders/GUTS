@@ -449,6 +449,7 @@ class EntityRenderer {
         // and the base geometry's bounding sphere doesn't account for instance positions
         instancedMesh.frustumCulled = false;
 
+        console.log('[EntityRenderer] createStaticBatch adding to scene:', !!this.scene, 'batchKey:', batchKey, 'capacity:', capacity);
         this.scene.add(instancedMesh);
 
         const batch = {
