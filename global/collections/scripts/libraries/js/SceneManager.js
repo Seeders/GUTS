@@ -105,8 +105,6 @@ class SceneManager {
      * @returns {Promise<void>}
      */
     async loadScene(sceneName, params = null) {
-        console.log(`[SceneManager] loadScene('${sceneName}') called`, params ? 'with params' : '');
-
         const collections = this.game.getCollections();
         const sceneData = collections.scenes?.[sceneName];
 
@@ -125,7 +123,6 @@ class SceneManager {
 
         // Unload current scene if one is loaded
         if (this.currentScene) {
-            console.log(`[SceneManager] Unloading current scene: ${this.currentSceneName}`);
             await this.unloadCurrentScene();
         }
 
@@ -138,16 +135,12 @@ class SceneManager {
         }
 
         // Enable/disable systems based on scene configuration (must happen before loader)
-        console.time('[SceneManager] configureSystems');
         this.configureSystems(sceneData);
-        console.timeEnd('[SceneManager] configureSystems');
 
         // Run scene-specific loader if defined (e.g., GameLoader for game scenes)
         if (sceneData.loader && GUTS[sceneData.loader]) {
-            console.time(`[SceneManager] loader:${sceneData.loader}`);
             const loader = new GUTS[sceneData.loader](this.game);
             await loader.load();
-            console.timeEnd(`[SceneManager] loader:${sceneData.loader}`);
         }
 
         // Check if we're loading from a save file
@@ -183,30 +176,6 @@ class SceneManager {
 
         // Hide loading overlay
         this.hideLoadingOverlay();
-
-        console.log(`[SceneManager] loadScene('${sceneName}') complete`);
-
-        // Debug: Log every frame for first 30 frames to see what's happening
-        if (!this.game.isServer) {
-            let lastBeat = performance.now();
-            let beatCount = 0;
-            const heartbeat = () => {
-                const now = performance.now();
-                const gap = now - lastBeat;
-                beatCount++;
-                // Log first 30 frames always, then only log slow ones
-                if (beatCount <= 30) {
-                    console.log(`[Frame ${beatCount}] gap: ${gap.toFixed(0)}ms`);
-                } else if (gap > 100) {
-                    console.warn(`[Frame ${beatCount}] SLOW gap: ${gap.toFixed(0)}ms`);
-                }
-                lastBeat = now;
-                if (beatCount < 100) {
-                    requestAnimationFrame(heartbeat);
-                }
-            };
-            requestAnimationFrame(heartbeat);
-        }
     }
 
     /**
@@ -390,19 +359,11 @@ class SceneManager {
      * @param {Object} [params] - Optional parameters passed to switchScene
      */
     async notifySceneLoaded(sceneData, params = null) {
-        console.time('[SceneManager] notifySceneLoaded total');
         for (const system of this.game.systems) {
             if (system.enabled && system.onSceneLoad) {
-                const systemName = system.constructor.name;
-                const start = performance.now();
                 await system.onSceneLoad(sceneData, params);
-                const duration = performance.now() - start;
-                if (duration > 5) {
-                    console.log(`[SceneManager] onSceneLoad ${systemName}: ${duration.toFixed(1)}ms`);
-                }
             }
         }
-        console.timeEnd('[SceneManager] notifySceneLoaded total');
     }
 
     /**
@@ -412,19 +373,11 @@ class SceneManager {
      * @param {Object} [params] - Optional parameters passed to switchScene
      */
     notifyPostSceneLoad(sceneData, params = null) {
-        console.time('[SceneManager] notifyPostSceneLoad total');
         for (const system of this.game.systems) {
             if (system.enabled && system.postSceneLoad) {
-                const systemName = system.constructor.name;
-                const start = performance.now();
                 system.postSceneLoad(sceneData, params);
-                const duration = performance.now() - start;
-                if (duration > 5) {
-                    console.log(`[SceneManager] postSceneLoad ${systemName}: ${duration.toFixed(1)}ms`);
-                }
             }
         }
-        console.timeEnd('[SceneManager] notifyPostSceneLoad total');
     }
 
     /**
