@@ -15,12 +15,6 @@ class GameSaveSystem extends GUTS.BaseSystem {
         'getSaveData'
     ];
 
-    static eventListeners = {
-        'onLevelComplete': 'handleLevelComplete',
-        'onItemGranted': 'handleItemGranted',
-        'onAbilitySlotsChanged': 'handleAbilitySlotsChanged'
-    };
-
     constructor(game) {
         super(game);
         this.game.gameSaveSystem = this;
@@ -38,7 +32,7 @@ class GameSaveSystem extends GUTS.BaseSystem {
     /**
      * Event handler - called when level is completed
      */
-    handleLevelComplete(data) {
+    onLevelComplete(data) {
         console.log('[GameSaveSystem] Level complete, saving state...');
         this.savePlayerState(data.playerId);
     }
@@ -46,7 +40,7 @@ class GameSaveSystem extends GUTS.BaseSystem {
     /**
      * Event handler - called when item is granted to player
      */
-    handleItemGranted(data) {
+    onItemGranted(data) {
         console.log('[GameSaveSystem] Item granted, saving state...', data);
         this.savePlayerState(data.entityId);
     }
@@ -54,7 +48,7 @@ class GameSaveSystem extends GUTS.BaseSystem {
     /**
      * Event handler - called when ability slots change
      */
-    handleAbilitySlotsChanged(data) {
+    onAbilitySlotsChanged(data) {
         console.log('[GameSaveSystem] Ability slots changed, saving state...');
         this.savePlayerState(data.entityId);
     }

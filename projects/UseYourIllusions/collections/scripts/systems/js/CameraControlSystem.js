@@ -32,16 +32,12 @@ class CameraControlSystem extends GUTS.BaseSystem {
     this.followTargetId = null;
 
     // Zoom controls distance and angle
-    // 0 = first person, 1 = top-down
-    this.zoomLevel = 0.5; // Start at middle zoom
-    this.minZoom = 0;     // First person
-    this.maxZoom = 1;     // Top down
-    this.zoomSpeed = 0.05;
-
-    // Snap threshold for first-person mode
-    // When zooming in below this level, snap to 0 (first person)
-    // When zooming out from 0, snap to this level first
+    // 0 = first person, 0.08 = third person (only two modes)
     this.firstPersonSnapThreshold = 0.08;
+    this.zoomLevel = this.firstPersonSnapThreshold; // Start in third person mode
+    this.minZoom = 0;     // First person
+    this.maxZoom = 1;     // Top down (not used with two-mode system)
+    this.zoomSpeed = 0.05;
 
     // Camera distance at different zoom levels
     this.minDistance = 5;    // First person (close)
@@ -181,25 +177,16 @@ class CameraControlSystem extends GUTS.BaseSystem {
   }
 
   _onWheel(event) {
-    // Zoom in/out with snapping near first-person threshold
-    const delta = event.deltaY > 0 ? this.zoomSpeed : -this.zoomSpeed;
-    const wasAtFirstPerson = this.zoomLevel === 0;
-
-    let newZoom = this.zoomLevel + delta;
-
-    // Snap behavior for first-person mode
-    if (wasAtFirstPerson && delta > 0) {
-      // Zooming out from first-person: snap to threshold first
-      newZoom = this.firstPersonSnapThreshold;
-    } else if (!wasAtFirstPerson && newZoom < this.firstPersonSnapThreshold && delta < 0) {
-      // Zooming in past threshold: snap to first-person
-      newZoom = 0;
+    // Two zoom modes only: first person and third person
+    // Scroll up (negative deltaY) = first person
+    // Scroll down (positive deltaY) = third person
+    if (event.deltaY > 0) {
+      // Scroll down = third person
+      this.zoomLevel = this.firstPersonSnapThreshold;
+    } else {
+      // Scroll up = first person
+      this.zoomLevel = 0;
     }
-
-    // For indoor levels, limit zoom to first-person or one level out
-    const effectiveMaxZoom = this.isIndoorLevel ? this.firstPersonSnapThreshold : this.maxZoom;
-
-    this.zoomLevel = Math.max(this.minZoom, Math.min(effectiveMaxZoom, newZoom));
     event.preventDefault();
   }
 

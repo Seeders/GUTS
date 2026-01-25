@@ -94,7 +94,12 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
 
     setupMainMenuHandlers() {
         document.getElementById('mainMenu_PlayGameBtn')?.addEventListener('click', () => {
-            this.showLevelSelect();
+            // Show intro story on first play, then go to level select
+            if (!this.hasSeenIntro()) {
+                this.showIntroStory();
+            } else {
+                this.showLevelSelect();
+            }
         });
 
         document.getElementById('mainMenu_SettingsBtn')?.addEventListener('click', () => {
@@ -107,6 +112,12 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
 
         document.getElementById('settingsBackBtn')?.addEventListener('click', () => {
             this.hideSettingsOverlay();
+        });
+
+        // Intro story continue button
+        document.getElementById('introStory_ContinueBtn')?.addEventListener('click', () => {
+            this.markIntroSeen();
+            this.showLevelSelect();
         });
 
         // Setup volume controls (shared with game scene)
@@ -306,6 +317,18 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
 
     showMainMenu() {
         this.showScreen('mainMenu');
+    }
+
+    showIntroStory() {
+        this.showScreen('introStory');
+    }
+
+    hasSeenIntro() {
+        return localStorage.getItem('useYourIllusions_introSeen') === 'true';
+    }
+
+    markIntroSeen() {
+        localStorage.setItem('useYourIllusions_introSeen', 'true');
     }
 
     startLevel(levelId) {

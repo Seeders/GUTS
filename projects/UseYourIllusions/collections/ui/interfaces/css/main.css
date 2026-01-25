@@ -790,3 +790,59 @@ body {
         font-size: 12px;
     }
 }
+
+/* ===== Intro Story Screen ===== */
+#introStory {
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0a0a1a 100%);
+}
+
+.intro-story-content {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    padding: 40px;
+}
+
+.story-scroll {
+    background: rgba(20, 20, 40, 0.9);
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    border-radius: 16px;
+    padding: 50px;
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.3);
+}
+
+.story-title {
+    font-size: 36px;
+    color: #8b5cf6;
+    text-align: center;
+    margin-bottom: 30px;
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+.story-text {
+    color: #c0c0d0;
+    font-size: 18px;
+    line-height: 1.8;
+    margin-bottom: 40px;
+}
+
+.story-text p {
+    margin-bottom: 20px;
+    text-indent: 30px;
+}
+
+.story-text p:last-child {
+    margin-bottom: 0;
+    font-style: italic;
+    color: #a78bfa;
+    text-indent: 0;
+    text-align: center;
+}
+
+#introStory .btn {
+    display: block;
+    margin: 0 auto;
+}
