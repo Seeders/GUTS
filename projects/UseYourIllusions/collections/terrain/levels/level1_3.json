@@ -945,6 +945,32 @@
             }
           }
         }
+      },
+      {
+        "spawnType": "worldObject",
+        "type": "signPost",
+        "components": {
+          "signPost": {
+            "message": "Take a moment to reflect."
+          },
+          "transform": {
+            "position": {
+              "x": -227.45254516601562,
+              "y": 90,
+              "z": -312.1651611328125
+            },
+            "rotation": {
+              "x": 0,
+              "y": 1.5707963705062866,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
       }
     ],
     "startingLocations": [

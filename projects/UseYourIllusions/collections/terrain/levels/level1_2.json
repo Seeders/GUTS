@@ -1027,9 +1027,9 @@
         "components": {
           "transform": {
             "position": {
-              "x": 218.46,
+              "x": 218.4600067138672,
               "y": 80,
-              "z": 127.91
+              "z": 127.91000366210938
             },
             "rotation": {
               "x": 0,
@@ -1057,6 +1057,32 @@
             "rotation": {
               "x": 0,
               "y": -3.1415927410125732,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "spawnType": "worldObject",
+        "type": "signPost",
+        "components": {
+          "signPost": {
+            "message": "Use your illusions."
+          },
+          "transform": {
+            "position": {
+              "x": -226.79507446289062,
+              "y": 90,
+              "z": -306.24627685546875
+            },
+            "rotation": {
+              "x": 0,
+              "y": 1.5707963705062866,
               "z": 0
             },
             "scale": {
