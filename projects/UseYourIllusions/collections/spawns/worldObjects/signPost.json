@@ -1,0 +1,58 @@
+{
+  "title": "Sign Post",
+  "prefab": "signPost",
+  "description": "An interactable sign post with a message",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "roughness": 1,
+            "name": "tablet",
+            "model": "tablet",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 9.927200529450694,
+          "z": 0
+        },
+        "rotation": {
+          "x": -0.7817596543678094,
+          "y": -3.143671801606729,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "height": 16,
+  "size": 16,
+  "impassable": false,
+  "hasRandomOffset": false,
+  "spriteAnimationSet": "signpost"
+}

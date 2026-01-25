@@ -17,6 +17,7 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         'getLevelEntityData',
         'getTerrainHeightAtPosition',
         'getTerrainSize',
+        'loadPlayerState',
         'playMusic',
         'playSound',
         'setActivePlayer',
@@ -175,7 +176,7 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
             return null;
         }
 
-        // Use createEntityFromPrefab with the player prefab (no aiState, has playerController + magicBelt)
+        // Use createEntityFromPrefab with the player prefab (no aiState, has playerController + inventory)
         const playerId = this.call.createEntityFromPrefab({
             prefab: 'player',
             type: 'illusionist',
@@ -192,11 +193,13 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
                     movementSpeed: unitData.speed || 60,
                     interactionRadius: 50
                 },
-                magicBelt: {
-                    slot0: null,
-                    slot1: null,
-                    slot2: null,
-                    selectedSlot: -1
+                playerInventory: {
+                    items: []
+                },
+                abilitySlots: {
+                    slotQ: null,
+                    slotE: null,
+                    slotR: null
                 }
             }
         });
@@ -204,6 +207,12 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         this.playerEntityId = playerId;
 
         console.log(`[PuzzleGameSystem] Spawned player entity ${playerId} at (${x}, ${terrainHeight}, ${z})`);
+
+        // Load saved player state (inventory, abilities, belt contents)
+        if (this.game.hasService('loadPlayerState')) {
+            this.call.loadPlayerState(playerId);
+        }
+
         this.game.triggerEvent('onPlayerSpawned', { entityId: playerId, position: { x, y: terrainHeight, z } });
 
         return playerId;

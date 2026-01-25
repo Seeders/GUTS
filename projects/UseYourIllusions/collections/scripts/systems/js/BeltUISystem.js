@@ -1,5 +1,6 @@
 /**
  * BeltUISystem - Unified ability bar with E (Collect) and 1-2-3 (Belt Slots)
+ * Belt slots (1-2-3) only appear after player acquires the magic belt item.
  */
 class BeltUISystem extends GUTS.BaseSystem {
     static serviceDependencies = [
@@ -30,6 +31,27 @@ class BeltUISystem extends GUTS.BaseSystem {
         }
     }
 
+    /**
+     * Event handler - called when player acquires the belt item
+     */
+    onItemGranted(data) {
+        if (data.itemId === 'magicBelt') {
+            this.showBeltSlots();
+        }
+    }
+
+    /**
+     * Event handler - called when player state is loaded from save
+     */
+    onPlayerStateLoaded(data) {
+        // Check if player has magic belt and show UI accordingly
+        const playerId = data.entityId;
+        if (this.game.hasComponent(playerId, 'magicBelt')) {
+            this.showBeltSlots();
+        }
+        this.updateBeltUI();
+    }
+
     setupAbilityBar() {
         let abilityBar = document.getElementById('abilityBarUI');
         if (!abilityBar) {
@@ -38,13 +60,19 @@ class BeltUISystem extends GUTS.BaseSystem {
             abilityBar.className = 'ability-bar-container';
             abilityBar.innerHTML = `
                 <div class="ability-bar">
-                    <!-- E - Collect/Beam Ability -->
-                    <div class="ability-slot ability-action" id="collectAbilitySlot">
-                        <div class="ability-icon">✋</div>
-                        <div class="ability-key">E</div>
-                        <div class="ability-label">Beam</div>
+                    <!-- Q - Item Ability Slot (always visible) -->
+                    <div class="ability-slot ability-action" id="abilitySlotQ">
+                        <div class="ability-icon" id="abilitySlotQIcon">-</div>
+                        <div class="ability-key">Q</div>
+                        <div class="ability-label" id="abilitySlotQLabel">Empty</div>
                     </div>
-                    <!-- Clone Status (shown when clone active, next to E) -->
+                    <!-- E - Interact (always visible) -->
+                    <div class="ability-slot ability-action" id="interactSlotE">
+                        <div class="ability-icon">🖐️</div>
+                        <div class="ability-key">E</div>
+                        <div class="ability-label">Interact</div>
+                    </div>
+                    <!-- Clone Status (shown when clone active) -->
                     <div class="ability-slot ability-action" id="cloneStatusSlot" style="display: none;">
                         <div class="ability-icon">👤</div>
                         <div class="ability-key">R</div>
@@ -52,23 +80,25 @@ class BeltUISystem extends GUTS.BaseSystem {
                         <div class="ability-timer" id="cloneTimer"></div>
                         <div class="ability-progress-bar" id="cloneProgressBar"></div>
                     </div>
-                    <!-- Separator -->
-                    <div class="ability-separator"></div>
-                    <!-- Belt Slots 1-2-3 -->
-                    <div class="ability-slot belt-slot" id="beltSlot0" data-slot="0">
-                        <div class="slot-content"></div>
-                        <div class="ability-key">1</div>
-                    </div>
-                    <div class="ability-slot belt-slot" id="beltSlot1" data-slot="1">
-                        <div class="slot-content"></div>
-                        <div class="ability-key">2</div>
-                    </div>
-                    <div class="ability-slot belt-slot" id="beltSlot2" data-slot="2">
-                        <div class="slot-content"></div>
-                        <div class="ability-key">3</div>
+                    <!-- Separator (hidden until belt acquired) -->
+                    <div class="ability-separator" id="beltSeparator" style="display: none;"></div>
+                    <!-- Belt Slots 1-2-3 (hidden until belt acquired) -->
+                    <div class="belt-slots-container" id="beltSlotsContainer" style="display: none;">
+                        <div class="ability-slot belt-slot" id="beltSlot0" data-slot="0">
+                            <div class="slot-content"></div>
+                            <div class="ability-key">1</div>
+                        </div>
+                        <div class="ability-slot belt-slot" id="beltSlot1" data-slot="1">
+                            <div class="slot-content"></div>
+                            <div class="ability-key">2</div>
+                        </div>
+                        <div class="ability-slot belt-slot" id="beltSlot2" data-slot="2">
+                            <div class="slot-content"></div>
+                            <div class="ability-key">3</div>
+                        </div>
                     </div>
                 </div>
-                <div class="ability-bar-hint">Press E to activate beam</div>
+                <div class="ability-bar-hint" id="abilityBarHint"></div>
             `;
 
             const gameContainer = document.getElementById('gameScreen') || document.body;
@@ -78,6 +108,41 @@ class BeltUISystem extends GUTS.BaseSystem {
         this.addAbilityBarCSS();
         this.setupSlotClickHandlers();
         this.startCloneTimerUpdate();
+
+        // Check if player already has belt (e.g., from save data)
+        this.checkBeltVisibility();
+
+        // Update the Q slot display
+        this.updateAbilitySlotQ();
+    }
+
+    /**
+     * Check if player has the belt and show/hide UI accordingly
+     */
+    checkBeltVisibility() {
+        const playerEntity = this.call.getPlayerEntity?.();
+        if (!playerEntity) return;
+
+        const hasBelt = this.game.hasComponent(playerEntity, 'magicBelt');
+        if (hasBelt) {
+            this.showBeltSlots();
+        }
+    }
+
+    /**
+     * Show the belt-related UI elements (called when belt is acquired)
+     */
+    showBeltSlots() {
+        const separator = document.getElementById('beltSeparator');
+        const beltContainer = document.getElementById('beltSlotsContainer');
+        const hint = document.getElementById('abilityBarHint');
+
+        if (separator) separator.style.display = 'block';
+        if (beltContainer) beltContainer.style.display = 'flex';
+        if (hint) hint.textContent = 'Press Q to use belt ability';
+
+        // Update the belt UI to show current contents
+        this.updateBeltUI();
     }
 
     addAbilityBarCSS() {
@@ -152,6 +217,16 @@ class BeltUISystem extends GUTS.BaseSystem {
                 color: #4080ff;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
+            }
+
+            /* Q ability slot states */
+            #abilitySlotQ.has-ability {
+                border-color: #00ffaa;
+                background: rgba(0, 255, 170, 0.15);
+            }
+
+            #abilitySlotQ.has-ability .ability-label {
+                color: #00ffaa;
             }
 
             .ability-timer {
@@ -246,6 +321,12 @@ class BeltUISystem extends GUTS.BaseSystem {
                 border-radius: 1px;
             }
 
+            /* Belt slots container */
+            .belt-slots-container {
+                display: flex;
+                gap: 8px;
+            }
+
             /* Belt slot styling */
             .belt-slot {
                 border-color: #8b5cf6;
@@ -307,19 +388,6 @@ class BeltUISystem extends GUTS.BaseSystem {
             }
         }
 
-        // Collect/Beam ability slot
-        const collectSlot = document.getElementById('collectAbilitySlot');
-        if (collectSlot && !collectSlot._clickHandlerAttached) {
-            collectSlot._clickHandlerAttached = true;
-            collectSlot.addEventListener('click', () => {
-                // Trigger E key action
-                const playerEntity = this.call.getPlayerEntity();
-                if (playerEntity) {
-                    this.call.triggerCollectAbility( playerEntity);
-                }
-            });
-        }
-
         // Clone status slot (for toggling control when clone is active)
         const cloneStatusSlot = document.getElementById('cloneStatusSlot');
         if (cloneStatusSlot && !cloneStatusSlot._clickHandlerAttached) {
@@ -346,16 +414,11 @@ class BeltUISystem extends GUTS.BaseSystem {
 
     // Event handler - called when collect mode is activated/deactivated
     onCollectModeChanged(data) {
-        const collectSlot = document.getElementById('collectAbilitySlot');
-        if (collectSlot) {
-            collectSlot.classList.toggle('collect-mode-active', data.active);
-        }
-
         // Update the hint text
         const hint = document.querySelector('.ability-bar-hint');
         if (hint) {
             if (data.active) {
-                hint.textContent = 'Aim at object, press E to collect';
+                hint.textContent = 'Aim at object, release Q to collect';
                 hint.style.color = '#00ffaa';
             } else {
                 hint.textContent = 'Left-click to place illusion';
@@ -364,11 +427,42 @@ class BeltUISystem extends GUTS.BaseSystem {
         }
     }
 
-    // Event handler - called when highlighted collectible changes
-    onCollectHighlightChanged(data) {
-        const collectSlot = document.getElementById('collectAbilitySlot');
-        if (collectSlot) {
-            collectSlot.classList.toggle('has-target', !!data.collectibleId);
+    // Event handler - called when ability slots change
+    onAbilitySlotsChanged(data) {
+        this.updateAbilitySlotQ();
+    }
+
+    /**
+     * Update the Q ability slot display
+     */
+    updateAbilitySlotQ() {
+        const playerEntity = this.call.getPlayerEntity?.();
+        if (!playerEntity) return;
+
+        const slots = this.game.getComponent(playerEntity, 'abilitySlots');
+        const slotIcon = document.getElementById('abilitySlotQIcon');
+        const slotLabel = document.getElementById('abilitySlotQLabel');
+        const slotEl = document.getElementById('abilitySlotQ');
+
+        if (!slotIcon || !slotLabel || !slotEl) return;
+
+        const abilityId = slots?.slotQ;
+        if (abilityId) {
+            // Show assigned ability
+            const abilityIcons = {
+                'CollectAbility': '✋'
+            };
+            const abilityNames = {
+                'CollectAbility': 'Collect'
+            };
+            slotIcon.textContent = abilityIcons[abilityId] || '⚡';
+            slotLabel.textContent = abilityNames[abilityId] || abilityId.replace('Ability', '');
+            slotEl.classList.add('has-ability');
+        } else {
+            // Show empty
+            slotIcon.textContent = '-';
+            slotLabel.textContent = 'Empty';
+            slotEl.classList.remove('has-ability');
         }
     }
 
@@ -393,7 +487,12 @@ class BeltUISystem extends GUTS.BaseSystem {
         if (!playerEntity) return;
 
         const belt = this.game.getComponent(playerEntity, 'magicBelt');
-        if (!belt) return;
+        if (!belt) {
+            // No belt - ensure UI is hidden
+            const beltContainer = document.getElementById('beltSlotsContainer');
+            if (beltContainer) beltContainer.style.display = 'none';
+            return;
+        }
 
         const reverseEnums = this.game.getReverseEnums();
         const collections = this.game.getCollections();

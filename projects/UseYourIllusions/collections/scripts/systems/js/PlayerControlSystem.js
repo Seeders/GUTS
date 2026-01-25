@@ -5,13 +5,14 @@
  * - W/S: Move forward/backward relative to facing direction
  * - A/D: Strafe left/right relative to facing direction
  * - Mouse: Control facing direction (via CameraControlSystem)
- * - E: Collect nearby object (triggers CollectAbility)
- * - R: Toggle control between player and clone
- * - 1/2/3: Select belt slot
+ * - Q/E/R: Use assigned ability slots
+ * - 1/2/3: Select belt slot for placing illusions
+ * - I: Toggle inventory UI
  * - Click with item selected: Place illusion (triggers PlaceIllusionAbility)
  */
 class PlayerControlSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
+        'addAbilitiesToUnit',
         'canMoveToPosition',
         'clearEntityPath',
         'getCamera',
@@ -26,6 +27,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         'setBillboardAnimationDirection',
         'setFollowTarget',
         'storeBeltItem',
+        'toggleInventoryUI',
         'useAbility'
     ];
 
@@ -38,7 +40,9 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         'storeBeltItem',
         'consumeBeltItem',
         'toggleCloneControl',
-        'triggerCollectAbility'
+        'triggerCollectAbility',
+        'grantItem',
+        'useAbilitySlot'
     ];
 
     constructor(game) {
@@ -69,6 +73,14 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         this.collectBeamLine = null;
         this.collectBeamGeometry = null;
         this.collectBeamMaterial = null;
+
+        // Container highlighting state (for E key interaction)
+        this.highlightedContainer = null;
+        this.containerHighlightRange = 80; // Range to detect containers
+
+        // Sign post highlighting state
+        this.highlightedSignPost = null;
+        this.signPostHighlightRange = 100; // Range to detect sign posts
     }
 
     init() {
@@ -76,7 +88,6 @@ class PlayerControlSystem extends GUTS.BaseSystem {
     }
 
     onSceneLoad(sceneData) {
-        console.log(`[PlayerControlSystem] onSceneLoad called, isPaused: ${this.game.state.isPaused}`);
         this._updateCount = 0; // Reset update counter for logging
         this._lastCameraTarget = null; // Reset camera target tracking so it gets set on first update
         // Clean up any existing listeners first to prevent duplicates
@@ -86,8 +97,6 @@ class PlayerControlSystem extends GUTS.BaseSystem {
     }
 
     postSceneLoad(sceneData) {
-        const playerEntity = this.getPlayerEntity();
-        console.log(`[PlayerControlSystem] postSceneLoad - playerEntity: ${playerEntity}, isPaused: ${this.game.state.isPaused}`);
     }
 
     onSceneUnload() {
@@ -96,6 +105,18 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         // Clean up collect beam
         this.deactivateCollectMode();
         this.removeCollectBeam();
+
+        // Clean up container highlight
+        if (this.highlightedContainer) {
+            this.setContainerTint(this.highlightedContainer, null);
+            this.highlightedContainer = null;
+        }
+
+        // Clean up sign post highlight
+        if (this.highlightedSignPost) {
+            this.setContainerTint(this.highlightedSignPost, null);
+            this.highlightedSignPost = null;
+        }
     }
 
     setupKeyboardControls() {
@@ -153,8 +174,23 @@ class PlayerControlSystem extends GUTS.BaseSystem {
                 this.wasdInput.strafe = 1; // strafe right
                 this.isWASDMoving = true;
                 break;
+            case 'KeyQ':
+                // Q = ability slot (for item abilities like Collect)
+                this.useAbilitySlot(playerEntity, 'slotQ');
+                break;
             case 'KeyE':
-                this.handleCollectAbility(playerEntity);
+                // E = world interaction (containers, sign posts, doors)
+                this.tryWorldInteraction(playerEntity);
+                break;
+            case 'KeyI':
+                // Toggle inventory UI
+                if (this.game.hasService('toggleInventoryUI')) {
+                    this.call.toggleInventoryUI();
+                }
+                break;
+            case 'KeyR':
+                // R = swap control to clone
+                this.toggleCloneControl(playerEntity);
                 break;
             case 'Digit1':
                 this.setSelectedBeltSlot(playerEntity, 0);
@@ -164,9 +200,6 @@ class PlayerControlSystem extends GUTS.BaseSystem {
                 break;
             case 'Digit3':
                 this.setSelectedBeltSlot(playerEntity, 2);
-                break;
-            case 'KeyR':
-                this.toggleCloneControl(playerEntity);
                 break;
         }
     }
@@ -268,12 +301,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
     }
 
     update() {
-        // Log first few updates to confirm system is running
-        if (!this._updateCount) this._updateCount = 0;
-        if (this._updateCount < 3) {
-            console.log(`[PlayerControlSystem] update #${this._updateCount}, isPaused: ${this.game.state.isPaused}`);
-            this._updateCount++;
-        }
+
 
         const playerEntity = this.getPlayerEntity();
         if (!playerEntity) return;
@@ -307,6 +335,12 @@ class PlayerControlSystem extends GUTS.BaseSystem {
 
         // Update collect beam if in collect mode
         this.updateCollectBeam(controlledEntity);
+
+        // Update container highlighting (for E key interaction)
+        this.updateContainerHighlight(controlledEntity);
+
+        // Update sign post highlighting (for E key interaction)
+        this.updateSignPostHighlight(controlledEntity);
     }
 
     /**
@@ -1195,6 +1229,100 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         });
     }
 
+    /**
+     * Update container highlighting - finds container player is facing and highlights it
+     */
+    updateContainerHighlight(entityId) {
+        const transform = this.game.getComponent(entityId, 'transform');
+        if (!transform?.position) return;
+
+        // Get facing angle from camera
+        const facingAngle = this.game.hasService('getFacingAngle')
+            ? this.call.getFacingAngle()
+            : 0;
+
+        const playerPos = transform.position;
+        const endX = playerPos.x + Math.cos(facingAngle) * this.containerHighlightRange;
+        const endZ = playerPos.z + Math.sin(facingAngle) * this.containerHighlightRange;
+
+        // Find container player is facing
+        const newHighlightedContainer = this.findContainerInFacingDirection(
+            playerPos.x, playerPos.z,
+            endX, endZ
+        );
+
+        // Update highlight if target changed
+        if (newHighlightedContainer !== this.highlightedContainer) {
+            // Clear previous highlight
+            if (this.highlightedContainer) {
+                this.setContainerTint(this.highlightedContainer, null); // Reset to normal
+            }
+            // Set new highlight
+            if (newHighlightedContainer) {
+                this.setContainerTint(newHighlightedContainer, 0xffff88); // Yellow highlight
+            }
+            this.highlightedContainer = newHighlightedContainer;
+        }
+    }
+
+    /**
+     * Set tint color on a container entity's sprite
+     */
+    setContainerTint(entityId, color) {
+        const entityRenderer = this.game.renderSystem?.entityRenderer;
+        if (!entityRenderer) return;
+
+        entityRenderer.setEntityTint(entityId, color);
+    }
+
+    /**
+     * Find a container in the direction the player is facing
+     */
+    findContainerInFacingDirection(startX, startZ, endX, endZ) {
+        const beamWidth = 30; // Width for detection
+        let nearestContainer = null;
+        let nearestDist = Infinity;
+
+        const containers = this.game.getEntitiesWith('container', 'transform');
+        for (const containerId of containers) {
+            const containerComp = this.game.getComponent(containerId, 'container');
+            // Skip already searched containers
+            if (containerComp?.isSearched) continue;
+
+            const containerTransform = this.game.getComponent(containerId, 'transform');
+            if (!containerTransform?.position) continue;
+
+            const pos = containerTransform.position;
+
+            // Calculate distance from point to line segment (facing direction)
+            const dist = this.pointToLineDistance(
+                pos.x, pos.z,
+                startX, startZ,
+                endX, endZ
+            );
+
+            // Check if within beam width
+            if (dist < beamWidth) {
+                // Calculate distance from player
+                const dx = pos.x - startX;
+                const dz = pos.z - startZ;
+                const distFromPlayer = Math.sqrt(dx * dx + dz * dz);
+
+                // Make sure it's in front (dot product positive)
+                const dirX = endX - startX;
+                const dirZ = endZ - startZ;
+                const dotProduct = dx * dirX + dz * dirZ;
+
+                if (dotProduct > 0 && distFromPlayer < this.containerHighlightRange && distFromPlayer < nearestDist) {
+                    nearestDist = distFromPlayer;
+                    nearestContainer = containerId;
+                }
+            }
+        }
+
+        return nearestContainer;
+    }
+
     triggerCollectAbility(entityId) {
         // Legacy method - now use handleCollectAbility
         this.handleCollectAbility(entityId);
@@ -1207,6 +1335,404 @@ class PlayerControlSystem extends GUTS.BaseSystem {
                 targetPosition,
                 itemType
             });
+        }
+    }
+
+    /**
+     * Use an ability assigned to a slot (Q, E, or R)
+     */
+    useAbilitySlot(entityId, slotKey) {
+        const slots = this.game.getComponent(entityId, 'abilitySlots');
+        if (!slots) return;
+
+        const abilityId = slots[slotKey];
+        if (abilityId) {
+            // Special case: CollectAbility uses the beam mode
+            if (abilityId === 'CollectAbility') {
+                this.handleCollectAbility(entityId);
+            } else {
+                this.call.useAbility(entityId, abilityId);
+            }
+        }
+    }
+
+    /**
+     * Try world interaction - handles containers, sign posts, etc.
+     */
+    tryWorldInteraction(entityId) {
+        // Priority 1: Open container if one is highlighted
+        if (this.tryOpenContainer(entityId)) return;
+
+        // Priority 2: Read sign post if one is highlighted
+        if (this.tryReadSignPost(entityId)) return;
+    }
+
+    /**
+     * Try to open the highlighted container. Returns true if container was opened.
+     */
+    tryOpenContainer(entityId) {
+        // Only open the container the player is facing (highlighted)
+        if (!this.highlightedContainer) return false;
+
+        const containerComp = this.game.getComponent(this.highlightedContainer, 'container');
+        if (!containerComp || containerComp.isSearched) return false;
+
+        const container = this.highlightedContainer;
+
+        // Mark as searched
+        containerComp.isSearched = true;
+
+        // Get container position for effects
+        const containerTransform = this.game.getComponent(container, 'transform');
+
+        // Play open sound (reusing collect sound)
+        this.call.playSound('sounds', 'collect_activate');
+
+        // Create effect at container
+        if (containerTransform?.position && this.game.effectsSystem) {
+            this.game.effectsSystem.createParticleEffect(
+                containerTransform.position.x,
+                containerTransform.position.y + 30,
+                containerTransform.position.z,
+                'sparkle',
+                { count: 15, scaleMultiplier: 0.6 }
+            );
+        }
+
+        // Process contents
+        this.processContainerContents(entityId, containerComp.contents);
+
+        // Clear highlight since container is now searched
+        this.setContainerTint(this.highlightedContainer, null);
+        this.highlightedContainer = null;
+
+        return true;
+    }
+
+    /**
+     * Find the nearest unopened container within interaction range
+     */
+    findNearbyContainer(entityId) {
+        const transform = this.game.getComponent(entityId, 'transform');
+        const playerController = this.game.getComponent(entityId, 'playerController');
+        if (!transform?.position) return null;
+
+        const interactionRadius = playerController?.interactionRadius || 50;
+        const px = transform.position.x;
+        const pz = transform.position.z;
+
+        let nearestContainer = null;
+        let nearestDist = Infinity;
+
+        // Find all entities with container component
+        const containers = this.game.getEntitiesWith('container', 'transform');
+        for (const containerId of containers) {
+            const containerComp = this.game.getComponent(containerId, 'container');
+            // Skip already searched containers
+            if (containerComp?.isSearched) continue;
+
+            const containerTransform = this.game.getComponent(containerId, 'transform');
+            if (!containerTransform?.position) continue;
+
+            const dx = containerTransform.position.x - px;
+            const dz = containerTransform.position.z - pz;
+            const dist = Math.sqrt(dx * dx + dz * dz);
+
+            if (dist < interactionRadius && dist < nearestDist) {
+                nearestDist = dist;
+                nearestContainer = containerId;
+            }
+        }
+
+        return nearestContainer;
+    }
+
+    /**
+     * Process the contents of a container, granting items to the player
+     */
+    processContainerContents(entityId, contents) {
+        if (!contents || contents.length === 0) {
+            // Empty container
+            this.game.triggerEvent('onContainerOpened', { entityId, contents: [], message: 'The container is empty.' });
+            return;
+        }
+
+        const grantedItems = [];
+        for (const itemId of contents) {
+            const granted = this.grantItem(entityId, itemId);
+            if (granted) {
+                grantedItems.push(itemId);
+            }
+        }
+
+        // Notify UI
+        this.game.triggerEvent('onContainerOpened', { entityId, contents: grantedItems });
+    }
+
+    /**
+     * Grant an item to the player, adding it to inventory and granting any abilities
+     */
+    grantItem(entityId, itemId) {
+        // Get item data from collections
+        const itemData = this.collections.items?.[itemId];
+        if (!itemData) {
+            console.warn(`[PlayerControlSystem] Unknown item: ${itemId}`);
+            return false;
+        }
+
+        // Add to player inventory
+        const inventory = this.game.getComponent(entityId, 'playerInventory');
+        if (inventory) {
+            if (!inventory.items) inventory.items = [];
+            inventory.items.push(itemId);
+        }
+
+        // Grant component if specified (e.g., magicBelt)
+        if (itemData.grantsComponent) {
+            if (!this.game.hasComponent(entityId, itemData.grantsComponent)) {
+                // Add the component with default values
+                const componentSchema = this.collections.components?.[itemData.grantsComponent]?.schema || {};
+                this.game.addComponent(entityId, itemData.grantsComponent, JSON.parse(JSON.stringify(componentSchema)));
+            }
+        }
+
+        // Grant abilities if specified
+        if (itemData.grantsAbilities && itemData.grantsAbilities.length > 0) {
+            const slots = this.game.getComponent(entityId, 'abilitySlots');
+
+            for (const abilityId of itemData.grantsAbilities) {
+                // Add ability to entity's available abilities
+                if (this.game.hasService('addAbilitiesToUnit')) {
+                    this.call.addAbilitiesToUnit(entityId, [abilityId]);
+                }
+
+                // Auto-assign to first empty slot
+                if (slots) {
+                    const emptySlot = this.getFirstEmptySlot(slots);
+                    if (emptySlot) {
+                        slots[emptySlot] = abilityId;
+                    }
+                }
+            }
+
+            this.game.triggerEvent('onAbilitySlotsChanged', { entityId });
+        }
+
+        // Play item acquired sound (reusing collect sound)
+        this.call.playSound('sounds', 'collect_item');
+
+        // Trigger item granted event
+        this.game.triggerEvent('onItemGranted', { entityId, itemId, itemData });
+
+        console.log(`[PlayerControlSystem] Granted item ${itemId} to entity ${entityId}`);
+        return true;
+    }
+
+    /**
+     * Get the first empty ability slot (only Q slot now)
+     */
+    getFirstEmptySlot(slots) {
+        if (!slots.slotQ) return 'slotQ';
+        return null;
+    }
+
+    /**
+     * Update sign post highlighting - finds sign post player is facing and highlights it
+     */
+    updateSignPostHighlight(entityId) {
+        const transform = this.game.getComponent(entityId, 'transform');
+        if (!transform?.position) return;
+
+        // Get facing angle from camera
+        const facingAngle = this.game.hasService('getFacingAngle')
+            ? this.call.getFacingAngle()
+            : 0;
+
+        const playerPos = transform.position;
+        const endX = playerPos.x + Math.cos(facingAngle) * this.signPostHighlightRange;
+        const endZ = playerPos.z + Math.sin(facingAngle) * this.signPostHighlightRange;
+
+        // Find sign post player is facing
+        const newHighlightedSignPost = this.findSignPostInFacingDirection(
+            playerPos.x, playerPos.z,
+            endX, endZ
+        );
+
+        // Update highlight if target changed
+        if (newHighlightedSignPost !== this.highlightedSignPost) {
+            // Clear previous highlight
+            if (this.highlightedSignPost) {
+                this.setContainerTint(this.highlightedSignPost, null);
+            }
+            // Set new highlight (cyan/teal color for sign posts)
+            if (newHighlightedSignPost) {
+                this.setContainerTint(newHighlightedSignPost, 0x88ffff);
+            }
+            this.highlightedSignPost = newHighlightedSignPost;
+        }
+    }
+
+    /**
+     * Find a sign post in the direction the player is facing
+     */
+    findSignPostInFacingDirection(startX, startZ, endX, endZ) {
+        const beamWidth = 40; // Width for detection
+        let nearestSignPost = null;
+        let nearestDist = Infinity;
+
+        const signPosts = this.game.getEntitiesWith('signPost', 'transform');
+        for (const signPostId of signPosts) {
+            const signPostTransform = this.game.getComponent(signPostId, 'transform');
+            if (!signPostTransform?.position) continue;
+
+            const pos = signPostTransform.position;
+
+            // Calculate distance from point to line segment (facing direction)
+            const dist = this.pointToLineDistance(
+                pos.x, pos.z,
+                startX, startZ,
+                endX, endZ
+            );
+
+            // Check if within beam width
+            if (dist < beamWidth) {
+                // Calculate distance from player
+                const dx = pos.x - startX;
+                const dz = pos.z - startZ;
+                const distFromPlayer = Math.sqrt(dx * dx + dz * dz);
+
+                // Make sure it's in front (dot product positive)
+                const dirX = endX - startX;
+                const dirZ = endZ - startZ;
+                const dotProduct = dx * dirX + dz * dirZ;
+
+                if (dotProduct > 0 && distFromPlayer < this.signPostHighlightRange && distFromPlayer < nearestDist) {
+                    nearestDist = distFromPlayer;
+                    nearestSignPost = signPostId;
+                }
+            }
+        }
+
+        return nearestSignPost;
+    }
+
+    /**
+     * Try to read the highlighted sign post. Returns true if sign was read.
+     */
+    tryReadSignPost(entityId) {
+        // Don't read if message is already displayed
+        if (this.signPostMessageVisible) return false;
+
+        if (!this.highlightedSignPost) return false;
+
+        const signPostComp = this.game.getComponent(this.highlightedSignPost, 'signPost');
+        if (!signPostComp) return false;
+
+        // Play a sound
+        this.call.playSound('sounds', 'collect_activate');
+
+        // Show the message (can be read multiple times)
+        this.showSignPostMessage(signPostComp.message);
+
+        return true;
+    }
+
+    /**
+     * Show a sign post message to the player
+     */
+    showSignPostMessage(message) {
+        // Create or get the sign post message overlay
+        let overlay = document.getElementById('signPostOverlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'signPostOverlay';
+            overlay.className = 'sign-post-overlay';
+            overlay.innerHTML = `
+                <div class="sign-post-content">
+                    <div class="sign-post-message" id="signPostMessage"></div>
+                    <div class="sign-post-hint">Press E or click to close</div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            // Add styles
+            const style = document.createElement('style');
+            style.id = 'sign-post-styles';
+            style.textContent = `
+                .sign-post-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 3000;
+                }
+                .sign-post-content {
+                    max-width: 600px;
+                    padding: 30px 40px;
+                    background: linear-gradient(145deg, rgba(40, 35, 30, 0.98), rgba(30, 25, 20, 0.98));
+                    border: 3px solid #8b7355;
+                    border-radius: 8px;
+                    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(139, 115, 85, 0.1);
+                }
+                .sign-post-message {
+                    color: #e8dcc8;
+                    font-size: 20px;
+                    line-height: 1.6;
+                    text-align: center;
+                    font-family: Georgia, serif;
+                    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+                    white-space: pre-wrap;
+                }
+                .sign-post-hint {
+                    color: #888;
+                    font-size: 12px;
+                    text-align: center;
+                    margin-top: 20px;
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Close on click
+            overlay.addEventListener('click', () => {
+                this.hideSignPostMessage();
+            });
+        }
+
+        // Set the message and show
+        document.getElementById('signPostMessage').textContent = message;
+        overlay.style.display = 'flex';
+
+        // Store that we're showing a sign post message
+        this.signPostMessageVisible = true;
+
+        // Add keydown listener to close on E
+        this._signPostKeyHandler = (e) => {
+            if (e.code === 'KeyE' || e.code === 'Escape') {
+                this.hideSignPostMessage();
+            }
+        };
+        document.addEventListener('keydown', this._signPostKeyHandler);
+    }
+
+    /**
+     * Hide the sign post message
+     */
+    hideSignPostMessage() {
+        const overlay = document.getElementById('signPostOverlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        this.signPostMessageVisible = false;
+
+        // Remove the keydown listener
+        if (this._signPostKeyHandler) {
+            document.removeEventListener('keydown', this._signPostKeyHandler);
+            this._signPostKeyHandler = null;
         }
     }
 }

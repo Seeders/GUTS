@@ -135,6 +135,7 @@
     "IllusionSystem",
     "ExitSystem",
     "BeltUISystem",
+    "InventoryUISystem",
     "PuzzleGameSystem",
     "PuzzleLobbyUISystem",
     "PlacementPreviewSystem",

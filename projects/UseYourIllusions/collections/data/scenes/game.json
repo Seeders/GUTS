@@ -5,6 +5,7 @@
   "loader": "GameLoader",
   "systems": [
     "PauseSystem",
+    "GameSaveSystem",
     "GridSystem",
     "TerrainSystem",
     "PlayerStatsSystem",
@@ -38,6 +39,7 @@
     "CameraControlSystem",
     "PlayerControlSystem",
     "BeltUISystem",
+    "InventoryUISystem",
     "PlacementPreviewSystem",
     "PuzzleLobbyUISystem"
   ]

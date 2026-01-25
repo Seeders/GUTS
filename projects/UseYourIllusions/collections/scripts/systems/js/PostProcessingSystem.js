@@ -44,9 +44,7 @@ class PostProcessingSystem extends GUTS.BaseSystem {
     }
 
     onSceneLoad(sceneData) {
-        // Reset render count for debugging
-        this.renderCount = 0;
-
+  
         // Initialize composer once WorldSystem has created renderer/scene/camera
         if (this.composer) {
             return; // Already initialized
@@ -147,10 +145,7 @@ class PostProcessingSystem extends GUTS.BaseSystem {
 
     render() {
         if (this.composer) {
-            // Track render count for debugging first few frames
-            this.renderCount = (this.renderCount || 0) + 1;
-            const start = performance.now();
-
+ 
             // Render main scene with all post-processing (including fog)
             this.composer.render();
 
@@ -164,11 +159,7 @@ class PostProcessingSystem extends GUTS.BaseSystem {
                 renderer.autoClear = true;   // Reset for next frame
             }
 
-            // Log timing for first 20 renders to catch shader compilation
-            const duration = performance.now() - start;
-            if (this.renderCount <= 20 || duration > 50) {
-                console.log(`[PostProcessingSystem] render #${this.renderCount}: ${duration.toFixed(1)}ms`);
-            }
+
         }
     }
 

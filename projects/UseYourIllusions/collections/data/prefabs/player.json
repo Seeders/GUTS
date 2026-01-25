@@ -18,6 +18,7 @@
     "renderable",
     "unit",
     "playerController",
-    "magicBelt"
+    "playerInventory",
+    "abilitySlots"
   ]
 }

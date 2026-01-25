@@ -1,0 +1,14 @@
+{
+  "title": "Sign Post",
+  "description": "An interactable sign post that displays a message when activated",
+  "components": [
+    "transform",
+    "unitType",
+    "worldObject",
+    "team",
+    "collision",
+    "animation",
+    "renderable",
+    "signPost"
+  ]
+}

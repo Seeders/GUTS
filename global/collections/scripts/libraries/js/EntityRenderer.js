@@ -1706,22 +1706,16 @@ class EntityRenderer {
      * @param {number|{r:number,g:number,b:number}} color - Hex color (0xFF00FF) or RGB object {r:1,g:0,b:1}
      */
     setEntityTint(entityId, color) {
-        console.log('[EntityRenderer] setEntityTint called:', entityId, 'color:', color.toString(16));
         const entity = this.entities.get(entityId);
-        console.log('[EntityRenderer] entity from map:', entity);
         if (!entity) {
-            console.warn(`[EntityRenderer] Entity ${entityId} not found in entities map. Map size: ${this.entities.size}`);
             return false;
         }
         if (entity.type !== 'billboardInstanced') {
-            console.warn(`[EntityRenderer] Entity ${entityId} type is '${entity.type}', not 'billboardInstanced'`);
             return false;
         }
 
         const batch = entity.batch;
-        console.log('[EntityRenderer] batch.attributes keys:', Object.keys(batch.attributes || {}));
         if (!batch.attributes.tint) {
-            console.warn(`[EntityRenderer] No tint attribute on batch for entity ${entityId}, batchKey: ${entity.batchKey}`);
             return false;
         }
 

@@ -248,6 +248,11 @@ class TerrainSystem extends GUTS.BaseSystem {
                         : entityDef.team;
                 }
 
+                // Debug log for signPost
+                if (type === 'signPost') {
+                    console.log(`[TerrainSystem] Spawning signPost - prefab: ${prefabName}, collection: ${collection}, typeData:`, typeData);
+                }
+
                 // Create entity using prefab-driven system
                 const entityId = this.call.createEntityFromPrefab( {
                     prefab: prefabName,
@@ -256,6 +261,11 @@ class TerrainSystem extends GUTS.BaseSystem {
                     team: team,
                     componentOverrides: componentOverrides
                 });
+
+                // Debug log for signPost
+                if (type === 'signPost') {
+                    console.log(`[TerrainSystem] signPost entityId: ${entityId}`);
+                }
 
                 // Store the level entity definition for this entity (for puzzle systems to access extra data)
                 if (entityId !== undefined && entityId !== null) {

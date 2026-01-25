@@ -531,6 +531,22 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                     objectType: typeIndex
                 };
 
+            case 'container':
+                return {
+                    contents: overrides?.container?.contents ?? [],
+                    isSearched: overrides?.container?.isSearched ?? false
+                };
+
+            case 'playerInventory':
+                return {
+                    items: overrides?.playerInventory?.items ?? []
+                };
+
+            case 'abilitySlots':
+                return {
+                    slotQ: overrides?.abilitySlots?.slotQ ?? null
+                };
+
             default:
                 // Check if there's an override for this component
                 if (overrides?.[name]) {

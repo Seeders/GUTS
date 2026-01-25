@@ -1,0 +1,7 @@
+{
+  "title": "Magic Belt",
+  "description": "A magical belt that can store the essence of objects",
+  "itemType": "equipment",
+  "grantsAbilities": ["CollectAbility", "PlaceIllusionAbility"],
+  "grantsComponent": "magicBelt"
+}

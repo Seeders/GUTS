@@ -1894,12 +1894,16 @@ class TerrainMapEditor {
     /**
      * Sync levelEntities array with existing entities in the ECS
      * Entities are already spawned by TerrainSystem, we just need to track them
+     * Preserves original component overrides from tileMap.levelEntities
      */
     syncLevelEntitiesFromECS() {
         if (!this.editorContext) return;
 
         // Get all entities from ECS
         const allEntities = this.editorContext.getAllEntities?.() || [];
+
+        // Store original levelEntities from tileMap for preserving component overrides
+        const originalEntities = this.tileMap?.levelEntities || [];
 
         // Clear existing levelEntities - we'll rebuild from ECS
         this.levelEntities = [];
@@ -1952,18 +1956,42 @@ class TerrainMapEditor {
             // Get transform for this entity
             const transform = this.editorContext.getComponent(entityId, 'transform');
 
+            // Find matching original entity to preserve component overrides
+            // Match by type and approximate position (within 1 unit tolerance)
+            const originalEntity = originalEntities.find(orig => {
+                if (orig.type !== spawnType) return false;
+                if (!orig.components?.transform?.position || !transform?.position) return true;
+                const dx = Math.abs(orig.components.transform.position.x - transform.position.x);
+                const dy = Math.abs(orig.components.transform.position.y - transform.position.y);
+                const dz = Math.abs(orig.components.transform.position.z - transform.position.z);
+                return dx < 1 && dy < 1 && dz < 1;
+            });
+
+            // Build components object preserving original overrides
+            const components = {};
+
+            // Copy all original component overrides (except transform which we update from ECS)
+            if (originalEntity?.components) {
+                for (const [key, value] of Object.entries(originalEntity.components)) {
+                    if (key !== 'transform') {
+                        components[key] = value;
+                    }
+                }
+            }
+
+            // Set transform from current ECS state
+            components.transform = transform ? {
+                position: { ...transform.position },
+                rotation: transform.rotation ? { ...transform.rotation } : { x: 0, y: 0, z: 0 },
+                scale: transform.scale ? { ...transform.scale } : { x: 1, y: 1, z: 1 }
+            } : null;
+
             // Add to levelEntities
             this.levelEntities.push({
                 id: entityId,
                 collection: collection,
                 spawnType: spawnType,
-                components: {
-                    transform: transform ? {
-                        position: { ...transform.position },
-                        rotation: transform.rotation ? { ...transform.rotation } : { x: 0, y: 0, z: 0 },
-                        scale: transform.scale ? { ...transform.scale } : { x: 1, y: 1, z: 1 }
-                    } : null
-                }
+                components: components
             });
         }
 
