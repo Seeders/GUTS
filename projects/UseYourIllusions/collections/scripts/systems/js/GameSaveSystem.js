@@ -1,22 +1,34 @@
-export const schema = {
-    name: 'GameSaveSystem',
-    calls: [
+/**
+ * GameSaveSystem - Saves and loads player progress to localStorage
+ * Persists inventory, ability slots, and belt contents between levels
+ */
+class GameSaveSystem extends GUTS.BaseSystem {
+    static serviceDependencies = [
+        'addAbilitiesToUnit'
+    ];
+
+    static services = [
         'savePlayerState',
         'loadPlayerState',
         'clearSaveData',
         'hasSaveData',
         'getSaveData'
-    ]
-};
+    ];
 
-const SAVE_KEY = 'useYourIllusions_saveData';
+    static eventListeners = {
+        'onLevelComplete': 'handleLevelComplete',
+        'onItemGranted': 'handleItemGranted',
+        'onAbilitySlotsChanged': 'handleAbilitySlotsChanged'
+    };
 
-export default class GameSaveSystem {
-    init(game) {
-        this.game = game;
-        this.call = game.call;
-        this.collections = game.getCollections();
-        this.enums = game.getEnums();
+    constructor(game) {
+        super(game);
+        this.game.gameSaveSystem = this;
+        this.SAVE_KEY = 'useYourIllusions_saveData';
+    }
+
+    init() {
+        this.collections = this.game.getCollections();
     }
 
     start() {
@@ -26,7 +38,7 @@ export default class GameSaveSystem {
     /**
      * Event handler - called when level is completed
      */
-    onLevelComplete(data) {
+    handleLevelComplete(data) {
         console.log('[GameSaveSystem] Level complete, saving state...');
         this.savePlayerState(data.playerId);
     }
@@ -34,15 +46,15 @@ export default class GameSaveSystem {
     /**
      * Event handler - called when item is granted to player
      */
-    onItemGranted(data) {
-        console.log('[GameSaveSystem] Item granted, saving state...');
+    handleItemGranted(data) {
+        console.log('[GameSaveSystem] Item granted, saving state...', data);
         this.savePlayerState(data.entityId);
     }
 
     /**
      * Event handler - called when ability slots change
      */
-    onAbilitySlotsChanged(data) {
+    handleAbilitySlotsChanged(data) {
         console.log('[GameSaveSystem] Ability slots changed, saving state...');
         this.savePlayerState(data.entityId);
     }
@@ -66,7 +78,7 @@ export default class GameSaveSystem {
         if (!saveData) return;
 
         try {
-            localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+            localStorage.setItem(this.SAVE_KEY, JSON.stringify(saveData));
             console.log('[GameSaveSystem] Player state saved:', saveData);
         } catch (e) {
             console.error('[GameSaveSystem] Failed to save to localStorage:', e);
@@ -196,7 +208,7 @@ export default class GameSaveSystem {
      */
     getSaveData() {
         try {
-            const data = localStorage.getItem(SAVE_KEY);
+            const data = localStorage.getItem(this.SAVE_KEY);
             return data ? JSON.parse(data) : null;
         } catch (e) {
             console.error('[GameSaveSystem] Failed to load save data:', e);
@@ -208,7 +220,7 @@ export default class GameSaveSystem {
      * Check if save data exists
      */
     hasSaveData() {
-        return localStorage.getItem(SAVE_KEY) !== null;
+        return localStorage.getItem(this.SAVE_KEY) !== null;
     }
 
     /**
@@ -216,7 +228,7 @@ export default class GameSaveSystem {
      */
     clearSaveData() {
         try {
-            localStorage.removeItem(SAVE_KEY);
+            localStorage.removeItem(this.SAVE_KEY);
             console.log('[GameSaveSystem] Save data cleared');
         } catch (e) {
             console.error('[GameSaveSystem] Failed to clear save data:', e);

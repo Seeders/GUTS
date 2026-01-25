@@ -141,7 +141,8 @@
     "PlacementPreviewSystem",
     "PauseSystem",
     "SpawnEffectsSystem",
-    "LightingSystem"
+    "LightingSystem",
+    "GameSaveSystem"
   ],
   "classes": [
     {
