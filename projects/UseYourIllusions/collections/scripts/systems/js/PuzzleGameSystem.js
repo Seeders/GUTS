@@ -14,6 +14,7 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'createEntityFromPrefab',
         'getBehaviorShared',
+        'getCamera',
         'getLevelEntityData',
         'getTerrainHeightAtPosition',
         'getTerrainSize',
@@ -21,7 +22,9 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         'playMusic',
         'playSound',
         'setActivePlayer',
+        'setFollowTarget',
         'showDefeatScreen',
+        'showNotification',
         'stopMusic'
     ];
 
@@ -37,6 +40,13 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         this.currentLevelId = null;
         this.playerEntityId = null;
         this.gameOver = false;
+
+        // Cinematic state
+        this.cinematicActive = false;
+        this.cinematicWizardId = null;
+        this.dialogLines = [];
+        this.currentDialogIndex = 0;
+        this._dialogAdvanceHandler = null;
     }
 
     init() {
@@ -142,6 +152,13 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         }
 
         console.log(`[PuzzleGameSystem] Initialized level: ${this.currentLevelId}`);
+
+        // Check if this level has a cinematic ending (intro cinematic for final level)
+        if (levelData.hasCinematicEnding) {
+            this.findCinematicWizard();
+            // Short delay to let scene fully render before starting cinematic
+            setTimeout(() => this.startCinematicEnding(), 1000);
+        }
     }
 
     spawnPlayerAtLocation(location, playerTeam) {
@@ -325,9 +342,333 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
     onSceneUnload() {
         this.playerEntityId = null;
         this.gameOver = false;
+        this.cinematicActive = false;
+        this.cinematicWizardId = null;
+
+        // Clean up dialog event listener if present
+        if (this._dialogAdvanceHandler) {
+            document.removeEventListener('keydown', this._dialogAdvanceHandler);
+            document.removeEventListener('click', this._dialogAdvanceHandler);
+            this._dialogAdvanceHandler = null;
+        }
 
         // Stop background music when leaving level
         this.call.stopMusic(1);
+    }
+
+    // ========== CINEMATIC SEQUENCE METHODS ==========
+
+    /**
+     * Find the wizard entity (2_i_elementalist) in the level for the cinematic
+     */
+    findCinematicWizard() {
+        const elementalistTypeIndex = this.enums.units?.['2_i_elementalist'];
+        if (elementalistTypeIndex === undefined) {
+            console.log('[PuzzleGameSystem] No elementalist unit type defined');
+            return;
+        }
+
+        const entities = this.game.getEntitiesWith('unitType', 'transform');
+        for (const entityId of entities) {
+            const unitType = this.game.getComponent(entityId, 'unitType');
+            if (unitType?.type === elementalistTypeIndex) {
+                this.cinematicWizardId = entityId;
+                console.log('[PuzzleGameSystem] Found cinematic wizard:', entityId);
+                return;
+            }
+        }
+
+        console.log('[PuzzleGameSystem] No wizard entity found for cinematic');
+    }
+
+    /**
+     * Start the cinematic ending sequence
+     */
+    startCinematicEnding() {
+        if (this.cinematicActive || !this.cinematicWizardId) {
+            console.log('[PuzzleGameSystem] Cannot start cinematic - already active or no wizard');
+            return;
+        }
+
+        this.cinematicActive = true;
+        console.log('[PuzzleGameSystem] Starting cinematic ending sequence');
+
+        // Disable player controls
+        const playerControlSystem = this.game.playerControlSystem;
+        if (playerControlSystem) {
+            playerControlSystem.controlsDisabled = true;
+            // Reset any movement state
+            playerControlSystem.wasdInput = { forward: 0, strafe: 0 };
+            playerControlSystem.isWASDMoving = false;
+        }
+
+        // Release pointer lock for cinematic viewing
+        if (document.pointerLockElement) {
+            document.exitPointerLock();
+        }
+
+        // Start camera pan to wizard
+        this.cinematicPhase1_CameraPan();
+    }
+
+    /**
+     * Phase 1: Pan camera to look at wizard with smooth transition
+     */
+    cinematicPhase1_CameraPan() {
+        const wizardTransform = this.game.getComponent(this.cinematicWizardId, 'transform');
+        if (!wizardTransform) {
+            console.log('[PuzzleGameSystem] No wizard transform, ending cinematic');
+            this.endCinematic();
+            return;
+        }
+
+        const cameraSystem = this.game.cameraControlSystem;
+        const camera = this.call.getCamera();
+        if (!cameraSystem || !camera) {
+            console.log('[PuzzleGameSystem] No camera system, skipping to dialog');
+            this.cinematicPhase2_WizardTurns();
+            return;
+        }
+
+        // Store original follow target
+        this._originalFollowTarget = cameraSystem.followTargetId;
+
+        // Stop following the player - we'll manually control the camera
+        cameraSystem.followTargetId = null;
+
+        // Get current camera position
+        const startPos = {
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z
+        };
+
+        // Calculate target position - keep current camera height/distance, just rotate to face wizard
+        const wizardPos = wizardTransform.position;
+        const playerTransform = this.game.getComponent(this.playerEntityId, 'transform');
+        const playerPos = playerTransform?.position || startPos;
+
+        // Position camera behind player, looking toward wizard (like a cinematic over-the-shoulder)
+        const dx = wizardPos.x - playerPos.x;
+        const dz = wizardPos.z - playerPos.z;
+        const distToWizard = Math.sqrt(dx * dx + dz * dz);
+
+        // Keep camera at a reasonable viewing distance - closer to wizard for dramatic effect
+        const targetPos = {
+            x: playerPos.x + dx * 0.6,
+            y: startPos.y, // Keep same height to avoid ceiling clipping
+            z: playerPos.z + dz * 0.6
+        };
+
+        // Animate camera over 2 seconds (60 steps at ~33ms each)
+        const duration = 2000;
+        const steps = 60;
+        const stepTime = duration / steps;
+        let currentStep = 0;
+
+        const animateCamera = () => {
+            currentStep++;
+            const t = currentStep / steps;
+            // Ease in-out curve for smooth motion
+            const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+            // Interpolate position
+            camera.position.x = startPos.x + (targetPos.x - startPos.x) * eased;
+            camera.position.y = startPos.y + (targetPos.y - startPos.y) * eased;
+            camera.position.z = startPos.z + (targetPos.z - startPos.z) * eased;
+
+            // Look at wizard (at roughly head height)
+            camera.lookAt(wizardPos.x, wizardPos.y + 20, wizardPos.z);
+
+            if (currentStep < steps) {
+                setTimeout(animateCamera, stepTime);
+            } else {
+                // Animation complete, proceed to next phase
+                this.cinematicPhase2_WizardTurns();
+            }
+        };
+
+        animateCamera();
+    }
+
+    /**
+     * Phase 2: Wizard turns to face the player
+     */
+    cinematicPhase2_WizardTurns() {
+        const wizardTransform = this.game.getComponent(this.cinematicWizardId, 'transform');
+        const playerTransform = this.game.getComponent(this.playerEntityId, 'transform');
+
+        if (wizardTransform && playerTransform) {
+            // Calculate angle from wizard to player
+            const dx = playerTransform.position.x - wizardTransform.position.x;
+            const dz = playerTransform.position.z - wizardTransform.position.z;
+            wizardTransform.rotation.y = Math.atan2(dz, dx);
+            console.log('[PuzzleGameSystem] Wizard turned to face player');
+        }
+
+        // Wait a moment for the turn animation, then show dialog
+        setTimeout(() => this.cinematicPhase3_Dialog(), 1000);
+    }
+
+    /**
+     * Phase 3: Show wizard dialog
+     */
+    cinematicPhase3_Dialog() {
+        // Create dialog overlay HTML
+        const dialogHTML = `
+            <div id="cinematicDialog" class="cinematic-dialog-overlay active">
+                <div class="cinematic-dialog">
+                    <div class="dialog-portrait">
+                        <div class="portrait-frame">🧙</div>
+                    </div>
+                    <div class="dialog-content">
+                        <div class="dialog-speaker">The Wizard</div>
+                        <div class="dialog-text" id="dialogText"></div>
+                        <div class="dialog-continue">[Press E or Click to continue]</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', dialogHTML);
+
+        // Set up dialog lines
+        this.dialogLines = [
+            "At last... a worthy soul has found their way to me.",
+            "You have mastered the art of illusion, walking unseen through shadows and deception.",
+            "The secret I guard is this: True power lies not in strength, but in wisdom. The greatest battles are won without a single blow.",
+            "Go forth now. Use what you have learned to protect the innocent. The world needs those who can see beyond mere appearances.",
+            "Farewell, Illusionist. May your path remain hidden from those who wish you harm."
+        ];
+        this.currentDialogIndex = 0;
+
+        // Type out the first line
+        this.typeDialogLine();
+
+        // Set up input handler for advancing dialog
+        this.setupDialogInput();
+    }
+
+    /**
+     * Type out the current dialog line with typewriter effect
+     */
+    typeDialogLine() {
+        const textEl = document.getElementById('dialogText');
+        if (!textEl) return;
+
+        // Cancel any existing typing
+        if (this._typeTimeoutId) {
+            clearTimeout(this._typeTimeoutId);
+            this._typeTimeoutId = null;
+        }
+
+        const line = this.dialogLines[this.currentDialogIndex];
+        textEl.textContent = '';
+        this._isTyping = true;
+        this._currentLine = line;
+
+        let charIndex = 0;
+        const typeNextChar = () => {
+            if (charIndex < line.length && this._isTyping) {
+                textEl.textContent += line[charIndex];
+                charIndex++;
+                this._typeTimeoutId = setTimeout(typeNextChar, 30); // 30ms per character
+            } else {
+                this._isTyping = false;
+                this._typeTimeoutId = null;
+            }
+        };
+
+        typeNextChar();
+    }
+
+    /**
+     * Complete the current line immediately (skip typewriter)
+     */
+    completeCurrentLine() {
+        if (this._typeTimeoutId) {
+            clearTimeout(this._typeTimeoutId);
+            this._typeTimeoutId = null;
+        }
+        this._isTyping = false;
+
+        const textEl = document.getElementById('dialogText');
+        if (textEl && this._currentLine) {
+            textEl.textContent = this._currentLine;
+        }
+    }
+
+    /**
+     * Set up input handlers for advancing dialog
+     */
+    setupDialogInput() {
+        this._dialogAdvanceHandler = (e) => {
+            // Advance on E key, Space, or click
+            if (e.key === 'e' || e.key === 'E' || e.key === ' ' || e.type === 'click') {
+                this.advanceDialog();
+            }
+        };
+
+        document.addEventListener('keydown', this._dialogAdvanceHandler);
+        document.addEventListener('click', this._dialogAdvanceHandler);
+    }
+
+    /**
+     * Advance to the next dialog line or end the dialog
+     */
+    advanceDialog() {
+        // If still typing, complete current line first
+        if (this._isTyping) {
+            this.completeCurrentLine();
+            return;
+        }
+
+        this.currentDialogIndex++;
+
+        if (this.currentDialogIndex < this.dialogLines.length) {
+            // More lines to show
+            this.typeDialogLine();
+        } else {
+            // Dialog complete
+            this.endCinematic();
+        }
+    }
+
+    /**
+     * End the cinematic sequence and restore control
+     */
+    endCinematic() {
+        console.log('[PuzzleGameSystem] Ending cinematic sequence');
+
+        // Remove dialog overlay
+        const dialog = document.getElementById('cinematicDialog');
+        if (dialog) {
+            dialog.remove();
+        }
+
+        // Clean up event listeners
+        if (this._dialogAdvanceHandler) {
+            document.removeEventListener('keydown', this._dialogAdvanceHandler);
+            document.removeEventListener('click', this._dialogAdvanceHandler);
+            this._dialogAdvanceHandler = null;
+        }
+
+        // Restore camera to follow player
+        const cameraSystem = this.game.cameraControlSystem;
+        if (cameraSystem && this.playerEntityId) {
+            cameraSystem.setFollowTarget(this.playerEntityId);
+        }
+
+        // Re-enable player controls
+        const playerControlSystem = this.game.playerControlSystem;
+        if (playerControlSystem) {
+            playerControlSystem.controlsDisabled = false;
+        }
+
+        this.cinematicActive = false;
+
+        // Show a notification that the game is complete
+        this.call.showNotification('You have completed the wizard\'s trials!', 'success', 5000);
     }
 
 }

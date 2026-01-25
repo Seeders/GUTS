@@ -43,6 +43,9 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
         this.loadAvailableLevels();
 
         if (sceneName === 'menu') {
+            // Clear saved game state (but keep audio settings)
+            localStorage.removeItem('useYourIllusions_saveData');
+
             this.setupMainMenuHandlers();
             this.populateLevelGrid();
             this.showScreen('mainMenu');
@@ -94,12 +97,8 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
 
     setupMainMenuHandlers() {
         document.getElementById('mainMenu_PlayGameBtn')?.addEventListener('click', () => {
-            // Show intro story on first play, then go to level select
-            if (!this.hasSeenIntro()) {
-                this.showIntroStory();
-            } else {
-                this.showLevelSelect();
-            }
+            // Always show intro story before starting the game
+            this.showIntroStory();
         });
 
         document.getElementById('mainMenu_SettingsBtn')?.addEventListener('click', () => {
@@ -114,10 +113,12 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
             this.hideSettingsOverlay();
         });
 
-        // Intro story continue button
+        // Intro story continue button - go straight to level 1
         document.getElementById('introStory_ContinueBtn')?.addEventListener('click', () => {
-            this.markIntroSeen();
-            this.showLevelSelect();
+            // Start the first level directly
+            if (this.availableLevels.length > 0) {
+                this.startLevel(this.availableLevels[0].id);
+            }
         });
 
         // Setup volume controls (shared with game scene)
@@ -321,14 +322,6 @@ class PuzzleLobbyUISystem extends GUTS.BaseSystem {
 
     showIntroStory() {
         this.showScreen('introStory');
-    }
-
-    hasSeenIntro() {
-        return localStorage.getItem('useYourIllusions_introSeen') === 'true';
-    }
-
-    markIntroSeen() {
-        localStorage.setItem('useYourIllusions_introSeen', 'true');
     }
 
     startLevel(levelId) {

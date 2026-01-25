@@ -8497,84 +8497,6 @@
         }
       },
       {
-        "spawnType": "unit",
-        "type": "guard",
-        "components": {
-          "transform": {
-            "position": {
-              "x": 204,
-              "y": 80,
-              "z": 288.8343200683594
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          },
-          "team": {
-            "team": 1
-          }
-        }
-      },
-      {
-        "spawnType": "unit",
-        "type": "guard",
-        "components": {
-          "transform": {
-            "position": {
-              "x": 228,
-              "y": 80,
-              "z": 254.36532592773438
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          },
-          "team": {
-            "team": 1
-          }
-        }
-      },
-      {
-        "spawnType": "unit",
-        "type": "guard",
-        "components": {
-          "transform": {
-            "position": {
-              "x": 204,
-              "y": 80,
-              "z": 394.4503479003906
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            }
-          },
-          "team": {
-            "team": 1
-          }
-        }
-      },
-      {
         "spawnType": "worldObject",
         "type": "exit_portal",
         "components": {
@@ -8609,9 +8531,9 @@
           },
           "transform": {
             "position": {
-              "x": 434.8699951171875,
+              "x": 444,
               "y": 80,
-              "z": 325.4599914550781
+              "z": 324
             },
             "rotation": {
               "x": 0,
@@ -17398,6 +17320,213 @@
               "x": -10.712132453918457,
               "y": 96,
               "z": -1103.19287109375
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "spawnType": "unit",
+        "type": "guard",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 300,
+              "y": 80,
+              "z": 60
+            },
+            "rotation": {
+              "x": 0,
+              "y": -1.5800000429153442,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "spawnType": "unit",
+        "type": "guard",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 372,
+              "y": 80,
+              "z": 564
+            },
+            "rotation": {
+              "x": 0,
+              "y": -0.8600000143051147,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "spawnType": "unit",
+        "type": "guard",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 252,
+              "y": 80,
+              "z": 444
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "spawnType": "unit",
+        "type": "guard",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 252,
+              "y": 80,
+              "z": 228
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "spawnType": "unit",
+        "type": "guard",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 252,
+              "y": 80,
+              "z": 396
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "spawnType": "unit",
+        "type": "guard",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 420,
+              "y": 80,
+              "z": 108
+            },
+            "rotation": {
+              "x": 0,
+              "y": -5.159999847412109,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "spawnType": "unit",
+        "type": "guard",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 252,
+              "y": 80,
+              "z": 132
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0.5799999833106995,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "spawnType": "unit",
+        "type": "guard",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 252,
+              "y": 80,
+              "z": 516
+            },
+            "rotation": {
+              "x": 0,
+              "y": -0.87,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      },
+      {
+        "spawnType": "unit",
+        "type": "guard",
+        "components": {
+          "transform": {
+            "position": {
+              "x": 252,
+              "y": 80,
+              "z": 276
             },
             "rotation": {
               "x": 0,

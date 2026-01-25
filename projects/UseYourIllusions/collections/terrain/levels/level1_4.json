@@ -5,6 +5,7 @@
   "grassShader": "grass",
   "waterShader": "water",
   "puzzleLevel": true,
+  "hasCinematicEnding": true,
   "songSound": "prison_song",
   "tileMap": {
     "size": 16,

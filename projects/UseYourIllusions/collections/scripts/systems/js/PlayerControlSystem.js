@@ -81,6 +81,9 @@ class PlayerControlSystem extends GUTS.BaseSystem {
         // Sign post highlighting state
         this.highlightedSignPost = null;
         this.signPostHighlightRange = 100; // Range to detect sign posts
+
+        // Cinematic mode - disables all player controls
+        this.controlsDisabled = false;
     }
 
     init() {
@@ -154,6 +157,8 @@ class PlayerControlSystem extends GUTS.BaseSystem {
     }
 
     handleKeyDown(event) {
+        if (this.controlsDisabled) return;
+
         const playerEntity = this.getPlayerEntity();
         if (!playerEntity) return;
 
@@ -228,6 +233,8 @@ class PlayerControlSystem extends GUTS.BaseSystem {
     handleCanvasClick(event) {
         event.preventDefault();
 
+        if (this.controlsDisabled) return;
+
         const playerEntity = this.getPlayerEntity();
         if (!playerEntity) return;
 
@@ -301,7 +308,7 @@ class PlayerControlSystem extends GUTS.BaseSystem {
     }
 
     update() {
-
+        if (this.controlsDisabled) return;
 
         const playerEntity = this.getPlayerEntity();
         if (!playerEntity) return;
