@@ -20,22 +20,31 @@ export default class GameSaveSystem {
     }
 
     start() {
-        // Listen for level complete to auto-save
-        this.game.events.on('onLevelComplete', (data) => {
-            this.savePlayerState(data.playerId);
-        });
-
-        // Listen for item granted to auto-save
-        this.game.events.on('onItemGranted', (data) => {
-            this.savePlayerState(data.entityId);
-        });
-
-        // Listen for ability slot changed to auto-save
-        this.game.events.on('onAbilitySlotsChanged', (data) => {
-            this.savePlayerState(data.entityId);
-        });
-
         console.log('[GameSaveSystem] Initialized');
+    }
+
+    /**
+     * Event handler - called when level is completed
+     */
+    onLevelComplete(data) {
+        console.log('[GameSaveSystem] Level complete, saving state...');
+        this.savePlayerState(data.playerId);
+    }
+
+    /**
+     * Event handler - called when item is granted to player
+     */
+    onItemGranted(data) {
+        console.log('[GameSaveSystem] Item granted, saving state...');
+        this.savePlayerState(data.entityId);
+    }
+
+    /**
+     * Event handler - called when ability slots change
+     */
+    onAbilitySlotsChanged(data) {
+        console.log('[GameSaveSystem] Ability slots changed, saving state...');
+        this.savePlayerState(data.entityId);
     }
 
     /**
