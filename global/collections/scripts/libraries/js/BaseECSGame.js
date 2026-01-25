@@ -1039,7 +1039,6 @@ class BaseECSGame {
         const systemInst = new GUTS[systemName](this);
         systemInst.enabled = false;
 
-        console.log(`[BaseECSGame]  - registering services for ${systemName}`);
         // Auto-register services from static services array
         const SystemClass = GUTS[systemName];
         if (SystemClass.services && Array.isArray(SystemClass.services)) {
