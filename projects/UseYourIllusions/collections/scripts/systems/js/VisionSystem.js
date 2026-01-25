@@ -415,16 +415,20 @@ class VisionSystem extends GUTS.BaseSystem {
 
         const enums = this.game.getEnums();
         const aliveState = enums.deathState?.alive ?? 0;
+        const TEAM_NEUTRAL = enums.team?.neutral ?? 0;
         const enemies = [];
+
+        // Neutral team never has enemies
+        if (myTeam === TEAM_NEUTRAL) return [];
 
         // Get deathState array for fast checks
         const deathStateArr = this.game.getFieldArray('deathState', 'state');
 
         for (const targetId of nearbyEntityIds) {
             // HOT PATH: Direct array access for common checks
-            // Team check - must be enemy
+            // Team check - must be enemy (neutral team is never an enemy)
             const targetTeam = teamArr ? teamArr[targetId] : undefined;
-            if (targetTeam === undefined || targetTeam === myTeam) continue;
+            if (targetTeam === undefined || targetTeam === myTeam || targetTeam === TEAM_NEUTRAL) continue;
 
             // Health check - must be alive
             const targetHealthCurrent = healthCurrentArr ? healthCurrentArr[targetId] : undefined;

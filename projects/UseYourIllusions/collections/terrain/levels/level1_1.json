@@ -8516,6 +8516,9 @@
               "y": 1,
               "z": 1
             }
+          },
+          "team": {
+            "team": 1
           }
         }
       },
@@ -8539,6 +8542,9 @@
               "y": 1,
               "z": 1
             }
+          },
+          "team": {
+            "team": 1
           }
         }
       },
@@ -8562,6 +8568,9 @@
               "y": 1,
               "z": 1
             }
+          },
+          "team": {
+            "team": 1
           }
         }
       },
@@ -8595,6 +8604,9 @@
         "spawnType": "worldObject",
         "type": "exit_mageTower",
         "components": {
+          "exitZone": {
+            "nextLevel": "level1_4"
+          },
           "transform": {
             "position": {
               "x": 434.8699951171875,

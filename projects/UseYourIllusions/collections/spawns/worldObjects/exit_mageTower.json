@@ -44,6 +44,9 @@
   "height": 56,
   "size": 54,
   "hp": 9999,
-  "impassable": true,
+  "exit": true,
+  "exitDistance": 60,
+  "exitDirection": "down",
+  "impassable": true,  
   "spriteAnimationSet": "magetower"
 }
