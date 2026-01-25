@@ -1,7 +1,7 @@
 {
   "title": "MageTower",
   "info": "The exit from the level.",
-  "prefab": "worldObject",
+  "prefab": "exitZone",
   "value": 0,
   "render": {
     "animations": {
