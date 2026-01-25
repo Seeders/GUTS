@@ -1,0 +1,88 @@
+{
+  "title": "Item Fanfare",
+  "audio": {
+    "duration": 0.5,
+    "volume": 0.25,
+    "layers": [
+      {
+        "source": "sine",
+        "frequency": 392,
+        "volume": 0.7,
+        "envelope": {
+          "attack": 0.01,
+          "decay": 0.15,
+          "sustain": 0.4,
+          "release": 0.3
+        }
+      },
+      {
+        "source": "sine",
+        "frequency": 494,
+        "volume": 0.7,
+        "startTime": 0.15,
+        "envelope": {
+          "attack": 0.01,
+          "decay": 0.15,
+          "sustain": 0.4,
+          "release": 0.3
+        }
+      },
+      {
+        "source": "sine",
+        "frequency": 587,
+        "volume": 0.7,
+        "startTime": 0.3,
+        "envelope": {
+          "attack": 0.01,
+          "decay": 0.15,
+          "sustain": 0.4,
+          "release": 0.3
+        }
+      },
+      {
+        "source": "sine",
+        "frequency": 784,
+        "volume": 0.8,
+        "startTime": 0.45,
+        "envelope": {
+          "attack": 0.01,
+          "decay": 0.3,
+          "sustain": 0.6,
+          "release": 0.8
+        }
+      },
+      {
+        "source": "triangle",
+        "frequency": 784,
+        "volume": 0.4,
+        "startTime": 0.45,
+        "envelope": {
+          "attack": 0.01,
+          "decay": 0.4,
+          "sustain": 0.5,
+          "release": 1.0
+        }
+      },
+      {
+        "source": "sine",
+        "frequency": 1568,
+        "volume": 0.2,
+        "startTime": 0.5,
+        "envelope": {
+          "attack": 0.05,
+          "decay": 0.5,
+          "sustain": 0.3,
+          "release": 0.8
+        }
+      }
+    ],
+    "effects": {
+      "reverb": 0.5,
+      "filter": {
+        "type": "lowpass",
+        "frequency": 6000,
+        "Q": 0.3
+      }
+    }
+  }
+}

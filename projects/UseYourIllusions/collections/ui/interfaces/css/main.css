@@ -940,3 +940,115 @@ body {
     0%, 50% { opacity: 1; }
     51%, 100% { opacity: 0.3; }
 }
+
+/* ===== Item Acquisition Modal ===== */
+.item-acquisition-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.item-acquisition-overlay.active {
+    opacity: 1;
+}
+
+.item-acquisition-overlay.dismissing {
+    opacity: 0;
+}
+
+.item-acquisition-content {
+    text-align: center;
+    position: relative;
+    background: linear-gradient(145deg, rgba(30, 20, 50, 0.95), rgba(15, 10, 30, 0.98));
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    border-radius: 16px;
+    padding: 40px 50px;
+    max-width: 450px;
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.3), inset 0 0 30px rgba(139, 92, 246, 0.1);
+    animation: itemModalPop 0.4s ease-out;
+}
+
+@keyframes itemModalPop {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.item-acquisition-glow {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(139, 92, 246, 0) 70%);
+    border-radius: 50%;
+    animation: itemGlow 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes itemGlow {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+    }
+}
+
+.item-acquisition-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: itemFloat 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.6));
+}
+
+@keyframes itemFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.item-acquisition-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.item-acquisition-description {
+    font-size: 14px;
+    color: #b0b0b0;
+    line-height: 1.5;
+    margin-bottom: 25px;
+}
+
+.item-acquisition-continue {
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+    animation: blink 1.5s infinite;
+    margin-top: 10px;
+}

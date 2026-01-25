@@ -78,6 +78,91 @@ class PuzzleGameSystem extends GUTS.BaseSystem {
         }
     }
 
+    /**
+     * Event handler for when player acquires an item
+     */
+    onItemGranted(data) {
+        // Show cinematic for special items
+        if (data.itemId === 'magicBelt') {
+            this.showItemAcquisitionCinematic({
+                itemName: 'Belt of Illusions',
+                itemIcon: '🔮',
+                description: 'A magical belt capable of copying particular objects and creating illusions of them.'
+            });
+        }
+    }
+
+    /**
+     * Show a Zelda-style item acquisition cinematic
+     */
+    showItemAcquisitionCinematic(itemInfo) {
+        // Disable player controls
+        if (this.game.playerControlSystem) {
+            this.game.playerControlSystem.controlsDisabled = true;
+        }
+
+        // Release pointer lock
+        if (document.pointerLockElement) {
+            document.exitPointerLock();
+        }
+
+        // Create the cinematic overlay
+        const overlayHTML = `
+            <div id="itemAcquisitionOverlay" class="item-acquisition-overlay">
+                <div class="item-acquisition-content">
+                    <div class="item-acquisition-glow"></div>
+                    <div class="item-acquisition-icon">${itemInfo.itemIcon}</div>
+                    <div class="item-acquisition-name">${itemInfo.itemName}</div>
+                    <div class="item-acquisition-description">${itemInfo.description}</div>
+                    <div class="item-acquisition-continue">[Press any key or click to continue]</div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', overlayHTML);
+
+        // Animate in
+        requestAnimationFrame(() => {
+            const overlay = document.getElementById('itemAcquisitionOverlay');
+            if (overlay) overlay.classList.add('active');
+        });
+
+        // Play item fanfare sound
+        this.call.playSound('sounds', 'item_fanfare');
+
+        // Set up dismissal handler
+        const dismissHandler = (e) => {
+            // Ignore if it's just a modifier key
+            if (e.type === 'keydown' && ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) {
+                return;
+            }
+
+            document.removeEventListener('keydown', dismissHandler);
+            document.removeEventListener('click', dismissHandler);
+
+            // Animate out and remove
+            const overlay = document.getElementById('itemAcquisitionOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                overlay.classList.add('dismissing');
+                setTimeout(() => {
+                    overlay.remove();
+
+                    // Re-enable player controls
+                    if (this.game.playerControlSystem) {
+                        this.game.playerControlSystem.controlsDisabled = false;
+                    }
+                }, 300);
+            }
+        };
+
+        // Small delay before accepting input (prevent accidental dismiss)
+        setTimeout(() => {
+            document.addEventListener('keydown', dismissHandler);
+            document.addEventListener('click', dismissHandler);
+        }, 500);
+    }
+
     triggerDefeat(defeatInfo) {
         this.gameOver = true;
 

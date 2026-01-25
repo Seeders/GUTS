@@ -1,5 +1,5 @@
 /**
- * BeltUISystem - Unified ability bar with E (Collect) and 1-2-3 (Belt Slots)
+ * BeltUISystem - Unified ability bar with Q (Copy) and 1-2-3 (Belt Slots)
  * Belt slots (1-2-3) only appear after player acquires the magic belt item.
  */
 class BeltUISystem extends GUTS.BaseSystem {
@@ -139,7 +139,7 @@ class BeltUISystem extends GUTS.BaseSystem {
 
         if (separator) separator.style.display = 'block';
         if (beltContainer) beltContainer.style.display = 'flex';
-        if (hint) hint.textContent = 'Press Q to use belt ability';
+        if (hint) hint.textContent = 'Q to copy objects, 1-2-3 to select, click to place';
 
         // Update the belt UI to show current contents
         this.updateBeltUI();
@@ -418,7 +418,7 @@ class BeltUISystem extends GUTS.BaseSystem {
         const hint = document.querySelector('.ability-bar-hint');
         if (hint) {
             if (data.active) {
-                hint.textContent = 'Aim at object, release Q to collect';
+                hint.textContent = 'Aim at object and press Q to copy';
                 hint.style.color = '#00ffaa';
             } else {
                 hint.textContent = 'Left-click to place illusion';
@@ -453,7 +453,7 @@ class BeltUISystem extends GUTS.BaseSystem {
                 'CollectAbility': '✋'
             };
             const abilityNames = {
-                'CollectAbility': 'Collect'
+                'CollectAbility': 'Copy'
             };
             slotIcon.textContent = abilityIcons[abilityId] || '⚡';
             slotLabel.textContent = abilityNames[abilityId] || abilityId.replace('Ability', '');
