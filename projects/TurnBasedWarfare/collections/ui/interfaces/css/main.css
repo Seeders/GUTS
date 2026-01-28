@@ -2137,14 +2137,46 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     z-index: 3000;
     backdrop-filter: blur(5px);
 }
+/* Camera Controls - Consolidated button group */
+#cameraControls {
+    position: absolute;
+    bottom: 1em;
+    right: 1em;
+    display: flex;
+    gap: 0;
+    background: rgba(26, 13, 26, 0.85);
+    border: 2px solid var(--mystic-blue);
+    border-radius: 8px;
+    padding: 4px;
+    backdrop-filter: blur(5px);
+    z-index: 100;
+}
+#cameraControls button {
+    background: transparent;
+    border: none;
+    color: var(--parchment);
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 36px;
+}
+#cameraControls button:hover {
+    background: rgba(21, 101, 192, 0.3);
+    color: var(--primary-gold);
+}
+#cameraControls button:active {
+    background: rgba(21, 101, 192, 0.5);
+}
 #rotateCameraLeftBtn {
-    width: 6.5em;
+    border-radius: 4px 0 0 4px;
 }
 #rotateCameraRightBtn {
-    width: 6.5em;
+    border-radius: 0 4px 4px 0;
 }
 #toggleCameraModeBtn {
-    width: 3em;
+    border-left: 1px solid rgba(21, 101, 192, 0.5);
+    border-right: 1px solid rgba(21, 101, 192, 0.5);
 }
 #toggleCameraModeBtn.active {
     background: var(--primary-gold);

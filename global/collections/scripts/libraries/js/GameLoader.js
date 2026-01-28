@@ -32,7 +32,12 @@ class GameLoader extends GUTS.BaseLoader {
         // Setup canvas - should be available since scene interface loads before loader runs
         this.setupCanvas(this.collections.configs.game.canvasWidth, this.collections.configs.game.canvasHeight);
 
-        const terrainImages = this.game.imageManager.getImages("levels", levelKey);
+        // Load terrain images if not already loaded (needed when not using AssetLoader)
+        let terrainImages = this.game.imageManager.getImages("levels", levelKey);
+        if (!terrainImages || terrainImages.length === 0) {
+            await this.game.imageManager.loadImages("levels", { [levelKey]: level });
+            terrainImages = this.game.imageManager.getImages("levels", levelKey);
+        }
         const terrainTypeNames = level?.tileMap?.terrainTypes || [];
 
         // Get cliff border terrain from cliffSet (if available)

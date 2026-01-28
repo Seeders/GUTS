@@ -39,6 +39,7 @@
     "InputSystem",
     "RenderSystem",
     "WorldSystem",
+    "PlacementPreviewSystem",
     "TerrainDetailSystem",
     "PostProcessingSystem",
     "AnimationSystem",
@@ -55,7 +56,7 @@
     "SelectedUnitSystem",
     "UnitOrderUISystem",
     "MiniMapSystem",
-    "CameraControlSystem",
+    "RTSCameraSystem",
     "DamageNumberSystem",
     "LootSystem"
   ],

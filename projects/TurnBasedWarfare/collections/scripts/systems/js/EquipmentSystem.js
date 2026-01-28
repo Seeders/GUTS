@@ -4,6 +4,10 @@ class EquipmentSystem extends GUTS.BaseSystem {
         'equipItem'
     ];
 
+    static serviceDependencies = [
+        'getWorldScene'
+    ];
+
     constructor(game) {
         super(game);
         this.game.equipmentSystem = this;
@@ -346,11 +350,12 @@ class EquipmentSystem extends GUTS.BaseSystem {
             instancedMesh.setMatrixAt(i, hiddenMatrix);
         }
         instancedMesh.instanceMatrix.needsUpdate = true;
-        
-        if (this.game.scene) {
-            this.game.scene.add(instancedMesh);
+
+        const scene = this.call.getWorldScene();
+        if (scene) {
+            scene.add(instancedMesh);
         }
-        
+
         const batch = {
             mesh: instancedMesh,
             capacity: this.DEFAULT_CAPACITY,
@@ -456,10 +461,11 @@ class EquipmentSystem extends GUTS.BaseSystem {
     }
     
     destroy() {
+        const scene = this.call.getWorldScene();
         for (const [batchKey, batch] of this.equipmentBatches.entries()) {
             if (batch.mesh) {
-                if (this.game.scene) {
-                    this.game.scene.remove(batch.mesh);
+                if (scene) {
+                    scene.remove(batch.mesh);
                 }
                 batch.mesh.geometry.dispose();
                 if (Array.isArray(batch.mesh.material)) {

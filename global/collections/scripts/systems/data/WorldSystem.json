@@ -1,0 +1,16 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/WorldSystem.js",
+  "fileName": "WorldSystem",
+  "services": [
+    "getWorldScene",
+    "getUIScene",
+    "getRenderer",
+    "getCamera",
+    "getWorldExtendedSize",
+    "getGroundTexture",
+    "getGroundMesh",
+    "getHeightStep",
+    "getBaseTerrainHeight",
+    "initWorldFromTerrain"
+  ]
+}

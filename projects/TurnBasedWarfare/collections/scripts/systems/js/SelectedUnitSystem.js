@@ -18,7 +18,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         'getCameraFollowTarget',
         'getThirdPersonTarget',
         'stopThirdPersonCamera',
-        'startThirdPersonCamera'
+        'startThirdPersonCamera',
+        'getWorldScene'
     ];
 
     constructor(game) {
@@ -197,7 +198,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     }
 
     initialize() {
-        if (this.initialized || !this.game.scene) return;
+        if (this.initialized || !this.call.getWorldScene()) return;
 
         // Update canvas reference (may not have been available in constructor)
         this.canvas = this.game.canvas;
@@ -801,7 +802,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
     update() {
         // Wait for scene to be available
-        if (!this.game.scene || !this.call.getCamera()) {
+        if (!this.call.getWorldScene() || !this.call.getCamera()) {
             return;
         }
         
@@ -825,7 +826,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         }
 
         // Wait for scene before creating visual elements
-        if (!this.game.scene) {
+        if (!this.call.getWorldScene()) {
             console.warn('[SelectedUnitSystem] highlightUnits called before scene ready, deferring...');
             return;
         }
@@ -1058,7 +1059,8 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         if (this.selectionCircles.has(entityId)) return;
 
         // Need scene to add circles
-        if (!this.game.scene) {
+        const scene = this.call.getWorldScene();
+        if (!scene) {
             console.warn('[SelectedUnitSystem] Cannot create selection circle - scene not available');
             return;
         }
@@ -1067,17 +1069,17 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const transform = this.game.getComponent(entityId, "transform");
         const pos = transform?.position;
         if (!pos) return;
-        
+
         // Determine radius based on unit type
         const radius = this.getUnitRadius(entityId);
-        
+
         // Create ring geometry (donut shape)
         const geometry = new THREE.RingGeometry(
             radius - this.CIRCLE_THICKNESS / 2,
             radius + this.CIRCLE_THICKNESS / 2,
             this.CIRCLE_SEGMENTS
         );
-        
+
         // Create material
         const material = new THREE.MeshBasicMaterial({
             color: this.CIRCLE_COLOR,
@@ -1085,18 +1087,18 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             opacity: 0.8,
             side: THREE.DoubleSide
         });
-        
+
         // Create mesh
         const circle = new THREE.Mesh(geometry, material);
         circle.rotation.x = -Math.PI / 2; // Lay flat on ground
         circle.renderOrder = 9998; // Render before health bars
-        
+
         // Create group to hold circle
         const group = new THREE.Group();
         group.add(circle);
-        
-        // Add to UI scene
-        this.game.scene.add(group);
+
+        // Add to scene
+        scene.add(group);
         
         // Store reference
         this.selectionCircles.set(entityId, {
@@ -1158,19 +1160,20 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     removeSelectionCircle(entityId) {
         const circleData = this.selectionCircles.get(entityId);
         if (!circleData) return;
-        
+
         // Remove from scene
-        if (this.game.scene) {
-            this.game.scene.remove(circleData.group);
+        const scene = this.call.getWorldScene();
+        if (scene) {
+            scene.remove(circleData.group);
         }
-        
+
         // Dispose of resources
         circleData.geometry.dispose();
         circleData.material.dispose();
-        
+
         // Remove from map
         this.selectionCircles.delete(entityId);
-        
+
     }
     
     // Configuration methods

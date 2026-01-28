@@ -1,7 +1,8 @@
 class ChainLightningAbility extends GUTS.BaseAbility {
     static serviceDependencies = [
         ...GUTS.BaseAbility.serviceDependencies,
-        'playEffect'
+        'playEffect',
+        'getWorldScene'
     ];
 
     constructor(game, abilityData = {}) {
@@ -180,12 +181,13 @@ class ChainLightningAbility extends GUTS.BaseAbility {
     }
     
     createLightningArc(fromPos, toPos) {
-        if (!this.game.scene) return;
-        
+        const scene = this.call.getWorldScene();
+        if (!scene) return;
+
         // Create lightning bolt geometry with deterministic path (no random)
         const points = this.generateDeterministicLightningPath(fromPos, toPos);
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        
+
         // Create lightning material
         const material = new THREE.LineBasicMaterial({
             color: 0x00ddff,
@@ -194,10 +196,10 @@ class ChainLightningAbility extends GUTS.BaseAbility {
             opacity: 1.0,
             blending: THREE.AdditiveBlending
         });
-        
+
         // Create the lightning line
         const lightningLine = new THREE.Line(geometry, material);
-        this.game.scene.add(lightningLine);
+        scene.add(lightningLine);
         
         // Animate the lightning arc
         this.animateLightningArc(lightningLine, material);
@@ -280,8 +282,9 @@ class ChainLightningAbility extends GUTS.BaseAbility {
     
     fadeLightningArc(lightningLine, material) {
         // Quick cleanup instead of complex fade animation for multiplayer safety
-        if (this.game.scene && lightningLine.parent) {
-            this.game.scene.remove(lightningLine);
+        const scene = this.call.getWorldScene();
+        if (scene && lightningLine.parent) {
+            scene.remove(lightningLine);
             lightningLine.geometry.dispose();
             lightningLine.material.dispose();
         }

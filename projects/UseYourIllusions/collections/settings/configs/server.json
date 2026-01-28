@@ -40,7 +40,7 @@
     "GridSystem",
     "TerrainSystem",
     "RoundSystem",
-    "BehaviorSystem",
+    "BaseBehaviorSystem",
     "MovementSystem",
     "ProjectileSystem",
     "TeamHealthSystem",

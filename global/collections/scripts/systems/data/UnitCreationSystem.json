@@ -1,0 +1,9 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/UnitCreationSystem.js",
+  "fileName": "UnitCreationSystem",
+  "services": [
+    "createUnitFromType",
+    "createEntityFromPrefab",
+    "destroyUnit"
+  ]
+}

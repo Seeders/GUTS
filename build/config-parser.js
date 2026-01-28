@@ -509,18 +509,39 @@ class ConfigParser {
 
     /**
      * Get script paths for specified script names (managers, systems)
+     * Checks project collections first, then falls back to global/editor collections
      */
     getScriptPaths(collectionName, scriptNames) {
         const paths = [];
 
-        const collection = this.collections[collectionName];
-        if (!collection) {
+        const projectCollection = this.collections[collectionName];
+        const globalCollection = this.editorCollections[collectionName];
+
+        if (!projectCollection && !globalCollection) {
             console.warn(`    Collection not found: ${collectionName}`);
             return paths;
         }
 
         for (const scriptName of scriptNames) {
-            const file = collection.files.find(f => f.name === scriptName || f.fileName === scriptName);
+            let file = null;
+            let source = null;
+
+            // Check project collection first (higher priority for project-specific overrides)
+            if (projectCollection) {
+                file = projectCollection.files.find(f => f.name === scriptName || f.fileName === scriptName);
+                if (file) {
+                    source = 'project';
+                }
+            }
+
+            // Fall back to global/editor collection if not found in project
+            if (!file && globalCollection) {
+                file = globalCollection.files.find(f => f.name === scriptName || f.fileName === scriptName);
+                if (file) {
+                    source = 'global';
+                }
+            }
+
             if (file) {
                 paths.push(file);
             } else {

@@ -1,8 +1,0 @@
-{
-  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/UnitOrderSystem.js",
-  "fileName": "UnitOrderSystem",
-  "services": [
-    "applySquadTargetPosition",
-    "applySquadsTargetPositions"
-  ]
-}

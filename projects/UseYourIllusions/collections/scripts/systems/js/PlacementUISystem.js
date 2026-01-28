@@ -48,7 +48,10 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'updateGoldDisplay',
         'ui_undoPlacement',
         'createParticleEffect',
-        'getWorldScene'
+        'getWorldScene',
+        'showPreviewMultiplePositionSets',
+        'hidePreview',
+        'clearPreview'
     ];
     constructor(game) {
         super(game);
@@ -177,7 +180,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
             this.squadValidationCache.clear();
         }
 
-        this.placementPreview?.clear();
+        this.call.clearPreview?.();
         document.body.style.cursor = 'default';
     }
 
@@ -197,16 +200,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
      * Called when game scene is fully loaded and ready
      */
     onGameStarted() {
-        this.initializeSubsystems();
         this.setupEventListeners();
         this.setupCameraForMySide();
         this.onPlacementPhaseStart();
-    }
-
-    initializeSubsystems() {
-        if (this.config.enablePreview) {
-            this.placementPreview = new GUTS.PlacementPreview(this.game);
-        }
     }
 
     /**
@@ -280,7 +276,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
 
         // Mouse tracking for preview
-        if (this.config.enablePreview && this.placementPreview && this.canvas) {
+        if (this.config.enablePreview && this.canvas) {
             this._canvasMouseMoveHandler = (event) => {
                 const rect = this.canvas.getBoundingClientRect();
                 this.mouseScreenPos.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -405,7 +401,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
      * This provides visual feedback when a builder is ordered to construct a building
      */
     updatePendingBuildingPreview() {
-        if (!this.placementPreview) return;
+        if (!this.config.enablePreview) return;
 
         // Throttle updates
         const now = performance.now();
@@ -416,11 +412,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         if (pendingPositions.length > 0) {
             // Show with yellow color to indicate pending construction
-            this.placementPreview.showMultiplePositionSets([
+            this.call.showPreviewMultiplePositionSets([
                 { positions: pendingPositions, state: 'pending' }
             ], false);
         } else {
-            this.placementPreview.hide();
+            this.call.hidePreview();
         }
     }
 
@@ -590,7 +586,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
     // ==================== PREVIEW ====================
 
     updatePlacementPreview() {
-        if (!this.placementPreview || !this.game.state.selectedUnitType) {
+        if (!this.config.enablePreview || !this.game.state.selectedUnitType) {
             return;
         }
 
@@ -664,14 +660,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         positionSets.push({ positions: worldPositions, state: isValid ? 'valid' : 'invalid' });
 
         // Update preview with multiple position sets
-        if (unitPositions && unitPositions.length > 0) {
-            // For unit markers, we need the original method - show current placement only with markers
-            // and pending buildings separately
-            this.placementPreview.showMultiplePositionSets(positionSets, false);
-            // TODO: Could extend showMultiplePositionSets to support unit markers if needed
-        } else {
-            this.placementPreview.showMultiplePositionSets(positionSets, false);
-        }
+        this.call.showPreviewMultiplePositionSets(positionSets, false);
 
         this.updateCursorState(isValid);
     }
@@ -832,10 +821,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         this.cachedValidation = null;
         this.cachedGridPos = null;
-
-        if (this.placementPreview) {
-            this.placementPreview.dispose();
-        }
 
         this.undoStack = [];
     }

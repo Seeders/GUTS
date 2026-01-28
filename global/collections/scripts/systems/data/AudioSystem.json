@@ -1,0 +1,20 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/AudioSystem.js",
+  "fileName": "AudioSystem",
+  "services": [
+    "playSound",
+    "playSynthSound",
+    "startAmbientSound",
+    "stopAmbientSound",
+    "getAmbientSound",
+    "setListenerPosition",
+    "playMusic",
+    "stopMusic",
+    "stopAllSounds",
+    "setMasterVolume",
+    "setMusicVolume",
+    "setSfxVolume",
+    "getVolumeSettings",
+    "getAudioManager"
+  ]
+}

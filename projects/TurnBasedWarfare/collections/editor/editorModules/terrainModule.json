@@ -6,10 +6,21 @@
     "CanvasUtility",
     "TerrainImageProcessor",
     "RaycastHelper",
-    "PlacementPreview",
     "SE_GizmoManager",
     "HeadlessLogger",
     "TerrainMapEditor"
+  ],
+  "systems": [
+    "GridSystem",
+    "TerrainSystem",
+    "WorldSystem",
+    "PlacementPreviewSystem",
+    "RenderSystem",
+    "AnimationSystem",
+    "UnitCreationSystem",
+    "SelectedUnitSystem",
+    "ParticleSystem",
+    "SchedulingSystem"
   ],
   "scene": "terrainMapEditor",
   "propertyName": "tileMap",

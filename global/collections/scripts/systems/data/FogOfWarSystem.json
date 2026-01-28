@@ -1,0 +1,9 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/FogOfWarSystem.js",
+  "fileName": "FogOfWarSystem",
+  "services": [
+    "isVisibleAt",
+    "revealArea",
+    "hideArea"
+  ]
+}

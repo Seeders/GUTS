@@ -5,7 +5,7 @@
 class PlayerOrderPreview {
     constructor(game) {
         this.game = game;
-        this.scene = game.uiScene;
+        this.scene = game.worldSystem?.getUIScene();
 
         this.config = {
             radius: 12,

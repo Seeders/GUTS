@@ -1,0 +1,9 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/MiniMapSystem.js",
+  "fileName": "MiniMapSystem",
+  "services": [
+    "updateMinimap",
+    "showMinimap",
+    "hideMinimap"
+  ]
+}

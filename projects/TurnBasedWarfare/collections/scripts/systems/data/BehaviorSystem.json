@@ -1,13 +1,4 @@
 {
   "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/BehaviorSystem.js",
-  "fileName": "BehaviorSystem",
-  "services": [
-    "getBehaviorMeta",
-    "getBehaviorShared",
-    "setBehaviorMeta",
-    "clearBehaviorState",
-    "getBehaviorNodeId",
-    "getNodeByType",
-    "getDebugger"
-  ]
+  "fileName": "BehaviorSystem"
 }

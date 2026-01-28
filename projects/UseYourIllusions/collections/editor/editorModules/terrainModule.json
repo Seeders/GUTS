@@ -6,7 +6,6 @@
     "CanvasUtility",
     "TerrainImageProcessor",
     "RaycastHelper",
-    "PlacementPreview",
     "SE_GizmoManager",
     "HeadlessLogger",
     "TerrainMapEditor"
@@ -15,6 +14,7 @@
     "GridSystem",
     "TerrainSystem",
     "WorldSystem",
+    "PlacementPreviewSystem",
     "RenderSystem",
     "AnimationSystem",
     "UnitCreationSystem",
