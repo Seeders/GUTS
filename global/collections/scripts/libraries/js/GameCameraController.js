@@ -31,6 +31,9 @@ class GameCameraController {
         // Optional: camera height from settings
         this.getCameraHeight = options.getCameraHeight || (() => 512);
 
+        // Optional: callback to get the player's starting position for free camera initialization
+        this.getPlayerStartPosition = options.getPlayerStartPosition || (() => null);
+
         // Optional: callback when mode changes
         this.onModeChange = options.onModeChange || null;
 
@@ -446,22 +449,26 @@ class GameCameraController {
             this.pitch = this.freeCameraState.pitch;
             this.yaw = this.freeCameraState.yaw;
         } else {
-            // First time switching to free mode - position camera to view the current target
-            // Get the lookAt point from the orthographic camera
-            const lookAtPoint = this.orthographicCamera?.userData?.lookAt?.clone() || new THREE.Vector3(0, 0, 0);
+            // First time switching to free mode - position camera to view the player's starting location
+            // Try to get from the service callback first, fall back to orthographic camera userData
+            const startPos = this.getPlayerStartPosition();
+            const lookAtPoint = startPos
+                ? new THREE.Vector3(startPos.x, startPos.y || 0, startPos.z)
+                : (this.orthographicCamera?.userData?.lookAt?.clone() || new THREE.Vector3(0, 0, 0));
 
-            // Position camera at a reasonable distance and height to view the target
-            // Use a ~45 degree angle looking down at the target
-            const viewDistance = 300; // Distance from target
-            const viewHeight = 200;   // Height above target
+            console.log('[GameCameraController] Free camera lookAt point:', lookAtPoint.toArray(), 'from service:', !!startPos);
 
-            // Use the current game camera yaw to determine which direction to view from
+            // Position camera behind and above the target point
+            const viewDistance = 350;  // Horizontal distance from target
+            const viewHeight = 400;    // Height above ground
+
+            // Use the current game camera yaw to position camera behind the view direction
             const offsetX = Math.sin(this.cameraYaw) * viewDistance;
             const offsetZ = Math.cos(this.cameraYaw) * viewDistance;
 
             camera.position.set(
                 lookAtPoint.x + offsetX,
-                lookAtPoint.y + viewHeight,
+                viewHeight,
                 lookAtPoint.z + offsetZ
             );
 
@@ -472,7 +479,6 @@ class GameCameraController {
             const horizontalDist = Math.sqrt(dx * dx + dz * dz);
 
             this.yaw = Math.atan2(dx, dz);
-            // Negative pitch looks down in THREE.js with YXZ euler order
             this.pitch = Math.atan2(dy, horizontalDist);
         }
 
@@ -743,7 +749,8 @@ class GameCameraController {
         camera.lookAt(worldX, 0, worldZ);
 
         this._lookAtTarget.set(worldX, 0, worldZ);
-        camera.userData.lookAt = this._lookAtTarget;
+        // Clone the target so each camera gets its own copy (not a shared reference)
+        camera.userData.lookAt = this._lookAtTarget.clone();
     }
 
     _clampCamera(camera) {
