@@ -28,7 +28,8 @@ class RTSCameraSystem extends GUTS.BaseSystem {
         'getGroundMesh',
         'getWorldExtendedSize',
         'getUnitTypeDef',
-        'getActivePlayerTeam'
+        'getActivePlayerTeam',
+        'getCameraPositionForTeam'
     ];
 
   constructor(game) {
@@ -60,6 +61,13 @@ class RTSCameraSystem extends GUTS.BaseSystem {
         return { min: -half, max: half };
       },
       getCameraHeight: () => this.getCameraHeight(),
+      getPlayerStartPosition: () => {
+        // Get the active player's starting position directly from PlacementSystem
+        const team = this.call.getActivePlayerTeam?.();
+        if (team === null || team === undefined) return null;
+        const cameraData = this.call.getCameraPositionForTeam?.(team);
+        return cameraData?.lookAt || null;
+      },
       onModeChange: (newMode, prevMode) => {
         // Stop following when switching modes
         if (this.followingEntityId) {

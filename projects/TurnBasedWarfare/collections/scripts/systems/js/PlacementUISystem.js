@@ -25,6 +25,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getPlacementGridSize',
         'getCamera',
+        'cameraLookAt',
         'getActivePlayerTeam',
         'getCameraPositionForTeam',
         'showNotification',
@@ -213,13 +214,12 @@ class PlacementUISystem extends GUTS.BaseSystem {
             return;
         }
 
-        const cameraData = this.call.getCameraPositionForTeam( myTeam);
-        const camera = this.call.getCamera();
-        if (cameraData && camera) {
-            const pos = cameraData.position;
+        const cameraData = this.call.getCameraPositionForTeam(myTeam);
+        if (cameraData) {
             const look = cameraData.lookAt;
-            camera.position.set(pos.x, pos.y, pos.z);
-            camera.lookAt(look.x, look.y, look.z);
+            // Use cameraLookAt service to properly set camera position and store lookAt target
+            // This ensures free camera mode starts at the correct position
+            this.call.cameraLookAt?.(look.x, look.z);
         }
     }
 

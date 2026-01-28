@@ -2140,8 +2140,8 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 /* Camera Controls - Consolidated button group */
 #cameraControls {
     position: absolute;
-    bottom: 1em;
-    right: 1em;
+    top: 15px;
+    left: 75px;
     display: flex;
     gap: 0;
     background: rgba(26, 13, 26, 0.85);
