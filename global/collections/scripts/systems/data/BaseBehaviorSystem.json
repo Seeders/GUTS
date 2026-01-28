@@ -1,0 +1,13 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/BaseBehaviorSystem.js",
+  "fileName": "BaseBehaviorSystem",
+  "services": [
+    "getBehaviorMeta",
+    "getBehaviorShared",
+    "setBehaviorMeta",
+    "clearBehaviorState",
+    "getBehaviorNodeId",
+    "getNodeByType",
+    "getDebugger"
+  ]
+}

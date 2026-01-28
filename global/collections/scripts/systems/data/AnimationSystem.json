@@ -1,0 +1,10 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/AnimationSystem.js",
+  "fileName": "AnimationSystem",
+  "services": [
+    "setAnimation",
+    "playAnimation",
+    "stopAnimation",
+    "getAnimationState"
+  ]
+}

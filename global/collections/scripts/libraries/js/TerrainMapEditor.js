@@ -28,7 +28,7 @@ class TerrainMapEditor {
         this.mouseOverCanvas = false; // Track if mouse is over canvas
         this.isCameraControlActive = false; // Track if camera is being controlled
         this.entityRenderer = null; // Shared EntityRenderer for spawning cliffs and other entities
-        this.placementPreview = null; // Placement preview for tile editing
+        // PlacementPreviewSystem is now used via editorContext.call() instead of library instance
 
         // Camera system (dual mode: scene/game)
         this.cameraMode = 'scene'; // 'scene' (perspective) or 'game' (orthographic)
@@ -296,9 +296,7 @@ class TerrainMapEditor {
             } else if (e.button === 1 || e.button === 2) { // Middle or right click - camera controls
                 this.isCameraControlActive = true;
                 // Hide preview during camera movement
-                if (this.placementPreview) {
-                    this.placementPreview.hide();
-                }
+                this.editorContext.call('hidePreview');
             }
         });
 
@@ -318,9 +316,7 @@ class TerrainMapEditor {
             this.mouseOverCanvas = false;
             this.cachedGridPosition = null;
             // Hide 3D placement preview
-            if (this.placementPreview) {
-                this.placementPreview.hide();
-            }
+            this.editorContext?.call('hidePreview');
         });
 
         // Add keyboard shortcuts for undo/redo and escape
@@ -1091,9 +1087,7 @@ class TerrainMapEditor {
         });
 
         // Hide preview if any
-        if (this.placementPreview) {
-            this.placementPreview.hide();
-        }
+        this.editorContext?.call('hidePreview');
 
         console.log('[TerrainMapEditor] Entity placement mode cancelled');
     }
@@ -1671,10 +1665,7 @@ class TerrainMapEditor {
             this.editorContext.destroy();
             this.editorContext = null;
         }
-        if (this.placementPreview) {
-            this.placementPreview.dispose();
-            this.placementPreview = null;
-        }
+        // PlacementPreviewSystem cleanup handled by editorContext destruction
         if (this.gizmoManager) {
             this.gizmoManager.detach();
             this.gizmoManager.dispose();
@@ -1753,19 +1744,8 @@ class TerrainMapEditor {
             this.worldRenderer.getScene()
         );
 
-        // Recreate PlacementPreview for each level to ensure correct scene and grid size
-        if (this.placementPreview) {
-            this.placementPreview.dispose();
-        }
-
-        this.placementPreview = new GUTS.PlacementPreview({
-            scene: this.worldRenderer.getScene(),
-            gridSize: gameConfig.gridSize,
-            getTerrainHeight: (x, z) => this.terrainDataManager.getTerrainHeightAtPosition(x, z)
-        });
-
-        // Configure for editor use
-        this.placementPreview.updateConfig({
+        // Configure PlacementPreviewSystem for editor use
+        this.editorContext.call('updatePreviewConfig', {
             cellOpacity: 0.7,
             borderOpacity: 1.0,
             elevationOffset: 5.0 // Higher above terrain for visibility
@@ -3509,9 +3489,7 @@ class TerrainMapEditor {
 
         if (!this.mouseOverCanvas || !this.raycastHelper || !this.worldRenderer || !this.terrainDataManager) {
             this.cachedGridPosition = null;
-            if (this.placementPreview) {
-                this.placementPreview.hide();
-            }
+            this.editorContext?.call('hidePreview');
             return;
         }
 
@@ -3524,9 +3502,7 @@ class TerrainMapEditor {
 
         if (!worldPos) {
             this.cachedGridPosition = null;
-            if (this.placementPreview) {
-                this.placementPreview.hide();
-            }
+            this.editorContext?.call('hidePreview');
             return;
         }
 
@@ -3540,9 +3516,7 @@ class TerrainMapEditor {
         // Check bounds
         if (gridX < 0 || gridX >= this.mapSize || gridZ < 0 || gridZ >= this.mapSize) {
             this.cachedGridPosition = null;
-            if (this.placementPreview) {
-                this.placementPreview.hide();
-            }
+            this.editorContext?.call('hidePreview');
             return;
         }
 
@@ -4203,19 +4177,19 @@ class TerrainMapEditor {
      * Show preview for tiles that will be affected by current tool
      */
     showTilePreview(gridX, gridZ) {
-        if (!this.placementPreview) return;
+        if (!this.editorContext) return;
 
         // In entity/placements mode, only show preview if entity or starting location placement is active
         if (this.placementMode === 'placements') {
             if (!this.entityPlacementMode?.active && this.selectedPlacementType !== 'startingLocation') {
-                this.placementPreview.hide();
+                this.editorContext.call('hidePreview');
                 return;
             }
         }
 
         const affectedTiles = this.getAffectedTiles(gridX, gridZ);
         if (affectedTiles.length === 0) {
-            this.placementPreview.hide();
+            this.editorContext.call('hidePreview');
             return;
         }
 
@@ -4242,7 +4216,7 @@ class TerrainMapEditor {
         }
 
         // Show preview (green if valid, red if invalid)
-        this.placementPreview.showAtWorldPositions(worldPositions, isValid, true);
+        this.editorContext.call('showPreviewAtWorldPositions', worldPositions, isValid, true);
     }
 
     /**
@@ -4430,10 +4404,7 @@ class TerrainMapEditor {
         console.log('[TerrainMapEditor] Unloading terrain data');
 
         // Clean up placement preview
-        if (this.placementPreview) {
-            this.placementPreview.dispose();
-            this.placementPreview = null;
-        }
+        this.editorContext?.call('clearPreview');
 
         // Clean up raycast helper
         this.raycastHelper = null;

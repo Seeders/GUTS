@@ -1,0 +1,12 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/RenderSystem.js",
+  "fileName": "RenderSystem",
+  "services": [
+    "getEntityRenderer",
+    "spawnEntity",
+    "despawnEntity",
+    "updateEntityTransform",
+    "updateInstanceCapacities",
+    "applyBillboardAnimationFrame"
+  ]
+}

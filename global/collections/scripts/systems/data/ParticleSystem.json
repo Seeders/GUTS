@@ -1,0 +1,9 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/ParticleSystem.js",
+  "fileName": "ParticleSystem",
+  "services": [
+    "createParticleEffect",
+    "playScreenShake",
+    "playScreenFlash"
+  ]
+}

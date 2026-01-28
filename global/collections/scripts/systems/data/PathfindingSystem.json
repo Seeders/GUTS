@@ -1,0 +1,12 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/PathfindingSystem.js",
+  "fileName": "PathfindingSystem",
+  "services": [
+    "findPath",
+    "hasLineOfSight",
+    "hasDirectWalkablePath",
+    "bakeNavMesh",
+    "getNearestWalkablePosition",
+    "isPositionWalkable"
+  ]
+}

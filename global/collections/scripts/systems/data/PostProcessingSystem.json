@@ -1,0 +1,10 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/PostProcessingSystem.js",
+  "fileName": "PostProcessingSystem",
+  "services": [
+    "registerPostProcessingPass",
+    "removePostProcessingPass",
+    "getPostProcessingComposer",
+    "renderPostProcessing"
+  ]
+}

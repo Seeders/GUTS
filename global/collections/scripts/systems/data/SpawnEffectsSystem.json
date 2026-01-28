@@ -1,0 +1,8 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/SpawnEffectsSystem.js",
+  "fileName": "SpawnEffectsSystem",
+  "services": [
+    "startSpawnEffect",
+    "stopSpawnEffect"
+  ]
+}

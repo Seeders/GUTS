@@ -1,0 +1,13 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/PlacementPreviewSystem.js",
+  "fileName": "PlacementPreviewSystem",
+  "services": [
+    "showPreviewAtWorldPositions",
+    "showPreviewMultiplePositionSets",
+    "showPreviewAtGridPositions",
+    "showPreviewWithUnitMarkers",
+    "hidePreview",
+    "clearPreview",
+    "updatePreviewConfig"
+  ]
+}

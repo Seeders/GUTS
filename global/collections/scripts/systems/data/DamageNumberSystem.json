@@ -1,0 +1,7 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/DamageNumberSystem.js",
+  "fileName": "DamageNumberSystem",
+  "services": [
+    "showDamageNumber"
+  ]
+}

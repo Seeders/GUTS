@@ -1,0 +1,9 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/EffectsSystem.js",
+  "fileName": "EffectsSystem",
+  "services": [
+    "playEffect",
+    "createLinearEffect",
+    "createParticles"
+  ]
+}
