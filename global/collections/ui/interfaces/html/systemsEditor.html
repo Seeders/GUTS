@@ -74,6 +74,11 @@
             <span id="systems-zoom-level">100%</span>
             <button id="systems-zoom-out-btn" class="editor-module__btn editor-module__btn--small">-</button>
             <button id="systems-reset-layout-btn" class="editor-module__btn editor-module__btn--small">Reset Layout</button>
+            <span class="systems-editor__toolbar-divider"></span>
+            <label class="systems-editor__slider-label">
+                Row Width: <span id="systems-row-width-value">10000</span>px
+                <input type="range" id="systems-row-width" min="1000" max="50000" value="10000" class="systems-editor__slider">
+            </label>
         </div>
         <canvas id="systems-graph-canvas" class="systems-editor__canvas"></canvas>
         <div class="systems-editor__legend">
