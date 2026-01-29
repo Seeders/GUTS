@@ -15,7 +15,6 @@
 class FilterVisibleEnemiesBehaviorAction extends GUTS.BaseBehaviorAction {
 
     static serviceDependencies = [
-        'getUnitTypeDef',
         'getGridSize',
         'getTerrainSize',
         'hasLineOfSight'
@@ -37,7 +36,7 @@ class FilterVisibleEnemiesBehaviorAction extends GUTS.BaseBehaviorAction {
         const transform = game.getComponent(entityId, 'transform');
         const pos = transform?.position;
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = game.getUnitTypeDef( unitTypeComp);
 
         if (!pos) {
             return this.failure();

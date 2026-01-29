@@ -11,7 +11,6 @@ class SaveSystem extends GUTS.BaseSystem {
 
     static serviceDependencies = [
         'getActivePlayerTeam',
-        'getUnitTypeDef',
         'addAbilitiesToUnit'
     ];
 
@@ -529,7 +528,7 @@ class SaveSystem extends GUTS.BaseSystem {
 
         for (const entityId of entitiesWithUnitType) {
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             if (unitType && unitType.abilities && unitType.abilities.length > 0) {
                 this.call.addAbilitiesToUnit( entityId, unitType.abilities);
                 abilitiesInitialized++;

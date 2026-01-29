@@ -7,7 +7,6 @@ class PathfindingSystem extends GUTS.BaseSystem {
         'getTerrainSize',
         'getTerrainTypeAtPosition',
         'getTileMap',
-        'getUnitTypeDef',
         'isTerrainInitialized',
         'placementGridToWorld',
         'tileToWorld',
@@ -931,7 +930,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
             // Check if entity is a flying unit - flying units get direct paths
             let path;
             const unitTypeComp = this.game.getComponent(request.entityId, 'unitType');
-            const unitDef = unitTypeComp ? this.call.getUnitTypeDef( unitTypeComp) : null;
+            const unitDef = unitTypeComp ? this.game.getUnitTypeDef( unitTypeComp) : null;
 
             if (unitDef?.isFlying) {
                 // Flying units bypass pathfinding - direct line to target

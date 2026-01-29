@@ -17,3 +17,4 @@ class CameraSystem extends CameraCoordinatorSystem {
 }
 
 export default CameraSystem;
+export { CameraSystem };

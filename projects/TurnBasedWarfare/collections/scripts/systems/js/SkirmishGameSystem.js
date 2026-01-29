@@ -24,7 +24,6 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         'createPlayerEntity',
         'spawnGoldMineForTeam',
         'spawnStartingUnitsForTeam',
-        'getUnitTypeDef',
         'getPlayerEntities',
         'broadcastGameEnd'
     ];
@@ -348,7 +347,7 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         const buildingEntities = this.game.getEntitiesWith('unitType', 'team', 'health');
         for (const entityId of buildingEntities) {
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             if (!unitType || unitType.collection !== 'buildings') continue;
 
             const health = this.game.getComponent(entityId, 'health');

@@ -495,7 +495,7 @@ class ServerGameRoom extends global.GUTS.GameRoom {
             // Calculate cells for grid reservation on client
             // Look up unitType using getUnitTypeDef since placement stores numeric indices
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.game.getUnitTypeDef(unitTypeComp);
             let cells = [];
             if (unitType && this.game.squadSystem && placementComp.gridPosition) {
                 const squadData = this.game.squadSystem.getSquadData(unitType);

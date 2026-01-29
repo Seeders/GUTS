@@ -5,7 +5,6 @@ class ShopSystem extends GUTS.BaseSystem {
     ];
 
     static serviceDependencies = [
-        'getUnitTypeDef',
         'getActivePlayerTeam',
         'canAffordCost',
         'canAffordSupply',
@@ -60,7 +59,7 @@ class ShopSystem extends GUTS.BaseSystem {
             const placement = this.game.getComponent(entityId, 'placement');
             const teamComp = this.game.getComponent(entityId, 'team');
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
             if (!placement || !unitType) continue;
             if (unitType.collection !== 'buildings') continue;
@@ -87,7 +86,7 @@ class ShopSystem extends GUTS.BaseSystem {
         for (const entityId of entitiesWithTeam) {
             const teamComp = this.game.getComponent(entityId, 'team');
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             const health = this.game.getComponent(entityId, 'health');
 
             if (!unitType || !health) continue;
@@ -192,7 +191,7 @@ class ShopSystem extends GUTS.BaseSystem {
         if (!entityId) return;
 
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
         if (unitType && unitType.collection === "buildings") {
             const placement = this.game.getComponent(entityId, "placement");
             this.renderBuildingActions(placement);
@@ -202,7 +201,7 @@ class ShopSystem extends GUTS.BaseSystem {
         // Get unitType from the entity, not from placement
         const buildingId = this.game.state.selectedEntity.entityId;
         const buildingComp = this.game.getComponent(buildingId, 'unitType');
-        const building = this.call.getUnitTypeDef( buildingComp);
+        const building = this.game.getUnitTypeDef( buildingComp);
         const container = document.getElementById('actionPanel');
         if (!container) return;
         container.innerHTML = '';
@@ -688,7 +687,7 @@ class ShopSystem extends GUTS.BaseSystem {
             return null;
         }
         const unitTypeComp = this.game.getComponent(placement.squadUnits[0], 'unitType');
-        return this.call.getUnitTypeDef( unitTypeComp);
+        return this.game.getUnitTypeDef( unitTypeComp);
     }
 
     getSquadDisplayName(placementId) {
@@ -752,7 +751,7 @@ class ShopSystem extends GUTS.BaseSystem {
     performLocalCancelConstruction(buildingEntityId, placement) {
         // Refund the gold - get unitType from entity
         const unitTypeComp = this.game.getComponent(buildingEntityId, 'unitType');
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
         const refundAmount = unitType?.value || 0;
         if (refundAmount > 0) {
             this.call.addPlayerGold( this.call.getActivePlayerTeam(), refundAmount);

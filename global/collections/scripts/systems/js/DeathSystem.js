@@ -2,7 +2,6 @@ class DeathSystem extends GUTS.BaseSystem {
     static services = ['startDeathProcess'];
 
     static serviceDependencies = [
-        'getUnitTypeDef',
         'playDeathAnimation',
         'dropLoot',
         'setCorpseAnimation',
@@ -41,7 +40,7 @@ class DeathSystem extends GUTS.BaseSystem {
         this._dyingEntities.forEach(entityId => {
             const deathState = this.game.getComponent(entityId, "deathState");
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
             if (deathState.state === this.enums.deathState.dying) {
                 const timeSinceDeath = this.game.state.now - deathState.deathStartTime;
@@ -64,7 +63,7 @@ class DeathSystem extends GUTS.BaseSystem {
     startDeathProcess(entityId){
         const log = GUTS.HeadlessLogger;
         const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
         const teamComp = this.game.getComponent(entityId, 'team');
         const unitName = unitType?.id || 'unknown';
         const teamName = this.reverseEnums.team?.[teamComp?.team] || teamComp?.team;
@@ -128,7 +127,7 @@ class DeathSystem extends GUTS.BaseSystem {
         const transform = this.game.getComponent(entityId, "transform");
         const pos = transform?.position;
         const unitType = this.game.getComponent(entityId, "unitType");
-        const unitTypeDef = this.call.getUnitTypeDef( unitType);
+        const unitTypeDef = this.game.getUnitTypeDef( unitType);
         const team = this.game.getComponent(entityId, "team");
         const unitName = unitTypeDef?.id || 'unknown';
         const teamName = this.reverseEnums.team?.[team?.team] || team?.team;

@@ -43,7 +43,6 @@
     "ClientNetworkManager",
     "ChatManager",
     "socket.io.min.js",
-    "BaseSystem",
     "SeededRandom",
     "DesyncDebugger",
     "FantasyUIEnhancements",

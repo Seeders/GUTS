@@ -11,7 +11,6 @@ class FindDesirableObjectBehaviorAction extends GUTS.BaseBehaviorAction {
 
     static serviceDependencies = [
         'getNodeByType',
-        'getUnitTypeDef',
         'hasLineOfSight'
     ];
 
@@ -31,7 +30,7 @@ class FindDesirableObjectBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Get vision range from unit type definition (prefab), combat component, or params
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitTypeDef = this.call.getUnitTypeDef(unitTypeComp);
+        const unitTypeDef = game.getUnitTypeDef(unitTypeComp);
         const combat = game.getComponent(entityId, 'combat');
         const detectionRange = unitTypeDef?.visionRange || combat?.visionRange || params.detectionRange || 300;
 

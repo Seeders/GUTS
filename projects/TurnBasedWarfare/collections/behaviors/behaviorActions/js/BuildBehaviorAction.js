@@ -1,7 +1,6 @@
 class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
 
     static serviceDependencies = [
-        'getUnitTypeDef',
         'removeInstance',
         'getEntityAbilities',
         'clearBehaviorState'
@@ -180,7 +179,7 @@ class BuildBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Get unit def from collections using numeric indices
-        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComponent);
+        const unitTypeDef = game.getUnitTypeDef( unitTypeComponent);
 
         // Check if this is a trap - handle differently from regular buildings
         if (unitTypeDef?.isTrap) {

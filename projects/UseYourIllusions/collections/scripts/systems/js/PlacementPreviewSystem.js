@@ -20,7 +20,6 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
         'getCamera',
         'getFacingAngle',
         'getPitchAngle',
-        'getUnitTypeDef',
         'getTerrainHeightAtPosition'
     ];
 
@@ -202,7 +201,7 @@ class PlacementPreviewSystem extends GUTS.BaseSystem {
         // Get player's vision range as max placement distance
         const combat = this.game.getComponent(playerEntity, 'combat');
         const unitTypeComp = this.game.getComponent(playerEntity, 'unitType');
-        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
+        const unitTypeDef = this.game.getUnitTypeDef( unitTypeComp);
         const visionRange = unitTypeDef?.visionRange || combat?.visionRange || this.config.placementRange;
 
         let targetX, targetY, targetZ;

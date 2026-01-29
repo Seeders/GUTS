@@ -22,7 +22,6 @@
     "ECSGame",
     "BaseLoader",
     "GameLoader",
-    "BaseSystem",
     "SeededRandom",
     "ComponentGenerator",
     "SceneManager"

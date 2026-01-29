@@ -18,7 +18,6 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         'ui_purchaseUnit',
         'ui_issueMoveOrder',
         'ui_hide',
-        'getUnitTypeDef',
         'getEntityAbilities',
         'getSquadData',
         'getSquadCells',
@@ -280,7 +279,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
         for (const entityId of entities) {
             const teamComp = game.getComponent(entityId, 'team');
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
             const team = teamComp?.team;
             const unitId = unitDef?.id || 'unknown';
 
@@ -293,7 +292,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
             if (teamComp.team !== aiTeam) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
             if (unitDef?.id !== 'peasant') continue;
 
             // Check if peasant has build ability and is not already building
@@ -332,7 +331,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
        
         // Get town hall cells to avoid
         const townHallUnitType = game.getComponent(townHall, 'unitType');
-        const townHallDef = this.call.getUnitTypeDef( townHallUnitType);
+        const townHallDef = game.getUnitTypeDef( townHallUnitType);
         const townHallSquadData = this.call.getSquadData( townHallDef);
         const townHallCells = this.call.getSquadCells( townHallGridPos, townHallSquadData);
         const townHallCellSet = new Set(townHallCells.map(cell => `${cell.x},${cell.z}`));
@@ -378,7 +377,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
             if (teamComp.team !== aiTeam) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
 
             if (unitDef?.id === 'townHall' || unitDef?.id === 'keep' || unitDef?.id === 'castle') {
                 return entityId;
@@ -400,7 +399,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
             if (placement?.isUnderConstruction) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
 
             if (unitDef?.id === buildingType) {
                 return entityId;
@@ -419,7 +418,7 @@ class AIExecuteBuildOrderBehaviorAction extends GUTS.BaseBehaviorAction {
 
             const entityId = placement.squadUnits[0];
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
 
             if (unitDef?.id === unitType) {
                 placementIds.push(placement.placementId);

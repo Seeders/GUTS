@@ -62,7 +62,6 @@
     "SaveSystem"
   ],
   "serverSystems": [
-    "SkirmishGameSystem",
     "ServerBattlePhaseSystem",
     "ServerNetworkSystem",
     "SaveSystem"

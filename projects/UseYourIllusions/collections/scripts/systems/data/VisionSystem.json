@@ -1,8 +1,0 @@
-{
-  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/VisionSystem.js",
-  "fileName": "VisionSystem",
-  "services": [
-    "hasLineOfSight",
-    "canSeePosition"
-  ]
-}

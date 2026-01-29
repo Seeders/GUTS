@@ -3,7 +3,6 @@ class WorldSystem extends GUTS.BaseSystem {
         'getWorldScene',
         'getUIScene',
         'getRenderer',
-        'getCamera',
         'getWorldExtendedSize',
         'getGroundTexture',
         'getGroundMesh',
@@ -14,12 +13,12 @@ class WorldSystem extends GUTS.BaseSystem {
 
     static serviceDependencies = [
         'setCamera',
+        'getCamera',
         'updateCoordinateConfig',
         'updateInstanceCapacities',
         'getEntityRenderer',
         'spawnTerrainDetails',
         'registerPostProcessingPass',
-        'getCamera',
         'getPostProcessingComposer',
         'renderPostProcessing'
     ];

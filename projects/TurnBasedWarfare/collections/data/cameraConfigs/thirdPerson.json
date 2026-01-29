@@ -1,0 +1,37 @@
+{
+  "id": "thirdPerson",
+  "mode": "thirdPerson",
+  "projection": "perspective",
+  "fov": 60,
+  "follow": {
+    "smoothing": 8,
+    "heightOffset": {
+      "min": 25,
+      "max": 35
+    }
+  },
+  "distance": {
+    "min": 5,
+    "max": 800,
+    "default": 150
+  },
+  "pitch": {
+    "min": -89,
+    "max": 89,
+    "default": 0
+  },
+  "mouse": {
+    "sensitivity": 0.003,
+    "invertY": false
+  },
+  "zoom": {
+    "firstPersonThreshold": 0.08,
+    "twoModeOnly": true
+  },
+  "collision": {
+    "enabled": true,
+    "minHeightAboveTerrain": 20,
+    "wallSamples": 10,
+    "wallHeightThreshold": 32
+  }
+}

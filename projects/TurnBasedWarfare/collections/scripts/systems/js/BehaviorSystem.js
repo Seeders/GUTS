@@ -25,3 +25,6 @@ class BehaviorSystem extends BaseBehaviorSystem {
         }
     }
 }
+
+export default BehaviorSystem;
+export { BehaviorSystem };

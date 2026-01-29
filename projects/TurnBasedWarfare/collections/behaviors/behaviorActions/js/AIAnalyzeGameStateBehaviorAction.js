@@ -14,7 +14,6 @@ class AIAnalyzeGameStateBehaviorAction extends GUTS.BaseBehaviorAction {
     static serviceDependencies = [
         'getCurrentSupply',
         'getCurrentPopulation',
-        'getUnitTypeDef',
         'getVisibleEnemiesInRange'
     ];
 
@@ -173,7 +172,7 @@ class AIAnalyzeGameStateBehaviorAction extends GUTS.BaseBehaviorAction {
             if (placement?.isUnderConstruction) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
             if (!unitDef) continue;
 
             const unitId = unitDef.id;
@@ -207,7 +206,7 @@ class AIAnalyzeGameStateBehaviorAction extends GUTS.BaseBehaviorAction {
             if (viewerTeam?.team !== aiTeam) continue;
 
             const viewerUnitTypeComp = game.getComponent(viewerEntityId, 'unitType');
-            const viewerUnitDef = this.call.getUnitTypeDef( viewerUnitTypeComp);
+            const viewerUnitDef = game.getUnitTypeDef( viewerUnitTypeComp);
             const visionRange = viewerUnitDef?.visionRange || 500;
 
             // Use VisionSystem to get visible enemies (respects fog of war, stealth, LOS)
@@ -219,7 +218,7 @@ class AIAnalyzeGameStateBehaviorAction extends GUTS.BaseBehaviorAction {
                 seenEntities.add(enemyId);
 
                 const enemyUnitTypeComp = game.getComponent(enemyId, 'unitType');
-                const enemyDef = this.call.getUnitTypeDef( enemyUnitTypeComp);
+                const enemyDef = game.getUnitTypeDef( enemyUnitTypeComp);
                 if (!enemyDef) continue;
 
                 const enemyType = enemyDef.id;

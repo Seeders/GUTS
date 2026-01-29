@@ -16,9 +16,7 @@
  */
 class FindNearestDepotBehaviorAction extends GUTS.BaseBehaviorAction {
 
-    static serviceDependencies = [
-        'getUnitTypeDef'
-    ];
+    static serviceDependencies = [];
 
     execute(entityId, game) {
         const transform = game.getComponent(entityId, 'transform');
@@ -46,7 +44,7 @@ class FindNearestDepotBehaviorAction extends GUTS.BaseBehaviorAction {
         for (const depotId of depotEntities) {
             const depotTeam = game.getComponent(depotId, 'team');
             const depotUnitTypeComp = game.getComponent(depotId, 'unitType');
-            const depotUnitType = this.call.getUnitTypeDef( depotUnitTypeComp);
+            const depotUnitType = game.getUnitTypeDef(depotUnitTypeComp);
             const depotTransform = game.getComponent(depotId, 'transform');
             const depotPos = depotTransform?.position;
 

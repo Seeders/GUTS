@@ -15,7 +15,6 @@ class GoldMineSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'isVisibleAt',
         'worldToPlacementGrid',
-        'getUnitTypeDef',
         'destroyGoldMine'
     ];
 
@@ -114,7 +113,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
             const gridPos = this.call.worldToPlacementGrid( pos.x, pos.z);
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             const gridWidth = (unitType?.placementGridWidth || 2) * 2;
             const gridHeight = (unitType?.placementGridHeight || 2) * 2;
 
@@ -465,7 +464,7 @@ class GoldMineSystem extends GUTS.BaseSystem {
 
     onDestroyBuilding(entityId){
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
         if (unitType?.id === 'goldMine') {
             this.call.destroyGoldMine( entityId);
         }

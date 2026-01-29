@@ -432,7 +432,7 @@ class HeadlessSkirmishRunner {
 
             // Adjust for unit size
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+            const unitType = this.game.getUnitTypeDef(unitTypeComp);
             const size = unitType?.size || 20;
             distance -= size;
 
@@ -481,7 +481,7 @@ class HeadlessSkirmishRunner {
                 pos.z >= worldMinZ && pos.z <= worldMaxZ) {
 
                 const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                const unitType = this.game.call('getUnitTypeDef', unitTypeComp);
+                const unitType = this.game.getUnitTypeDef(unitTypeComp);
                 const collection = unitType?.collection;
 
                 if (prioritizeUnits) {
@@ -555,7 +555,7 @@ class HeadlessSkirmishRunner {
             const transform = this.game.getComponent(entityId, 'transform');
             const health = this.game.getComponent(entityId, 'health');
 
-            const unitDef = this.game.call('getUnitTypeDef', unitType);
+            const unitDef = this.game.getUnitTypeDef(unitType);
 
             units.push({
                 id: entityId,

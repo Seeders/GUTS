@@ -3,7 +3,6 @@ class TeamHealthSystem extends GUTS.BaseSystem {
         'getActivePlayerTeam',
         'findSquadByUnitId',
         'getPlacementsForSide',
-        'getUnitTypeDef',
         'getCurrentUnitTypeForSquad',
         'getSquadExperienceData'
     ];
@@ -204,7 +203,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
                 if (unitMatch) {
                     // Get unitType from the entity's unitType component
                     const unitTypeComp = this.game.getComponent(unitMatch, 'unitType');
-                    const unitType = this.call.getUnitTypeDef( unitTypeComp);
+                    const unitType = this.game.getUnitTypeDef( unitTypeComp);
                     return {
                         placementId: placement.placementId,
                         unitType: unitType
@@ -215,7 +214,7 @@ class TeamHealthSystem extends GUTS.BaseSystem {
 
         // Last resort: use unit type component directly
         const unitTypeComp = this.game.getComponent(unitId, "unitType");
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
         if (unitType) {
             return {
                 placementId: null,  // Unknown placement - use null as invalid marker

@@ -1,7 +1,6 @@
 class HealthBarSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getCamera',
-        'getUnitTypeDef',
         'isVisibleAt',
         'getWorldScene'
     ];
@@ -148,7 +147,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
 
         // Position group above unit
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitData = this.call.getUnitTypeDef( unitTypeComp);
+        const unitData = this.game.getUnitTypeDef( unitTypeComp);
 
         const baseY   = pos.y || 0;
         const heightY = (unitData && unitData.height != null)

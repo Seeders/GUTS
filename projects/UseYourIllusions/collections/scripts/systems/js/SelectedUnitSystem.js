@@ -8,7 +8,6 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     ];
 
     static serviceDependencies = [
-        'getUnitTypeDef',
         'toggleCameraFollow',
         'getActivePlayerTeam',
         'getCamera',
@@ -109,7 +108,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
         // Fallback: check unitType component
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
         if (unitType?.collection) {
             return unitType.collection;
         }
@@ -655,7 +654,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
             // Adjust distance based on unit/building size
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             const size = unitType?.size || 20;
             distance -= size;
 
@@ -730,7 +729,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             const pos = transform?.position;
             const placement = this.game.getComponent(entityId, "placement");
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
             if (!pos || !placement) return;
 
@@ -913,7 +912,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     createPortrait(entityId){
         if(document) {
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             const icon = unitType ? this.collections.icons[unitType.icon] : null;
 
             if (icon) {
@@ -930,7 +929,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         container.className = 'unit-stats-overlay';
 
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
         const health = this.game.getComponent(entityId, "health");
         const placement = this.game.getComponent(entityId, "placement");
 
@@ -1131,7 +1130,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
     getUnitRadius(entityId) {
         // Try to get unit type to determine appropriate radius
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitData = this.call.getUnitTypeDef( unitTypeComp);
+        const unitData = this.game.getUnitTypeDef( unitTypeComp);
 
         if (unitData && unitData.size) {
             return unitData.size + 2; // Slightly larger than unit

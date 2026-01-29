@@ -34,7 +34,6 @@ class PlacementSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'releaseGridCells',
         'removeSquad',
-        'getUnitTypeDef',
         'getSquadData',
         'validateSquadConfig',
         'calculateUnitPositions',
@@ -247,7 +246,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             const placementComp = this.game.getComponent(entityId, 'placement');
             if (placementComp?.placementId === placementId) {
                 const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                return this.call.getUnitTypeDef( unitTypeComp);
+                return this.game.getUnitTypeDef( unitTypeComp);
             }
         }
         return null;
@@ -781,7 +780,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             const enums = this.game.getEnums();
             const collectionIndex = enums.objectTypeDefinitions?.[collection] ?? -1;
             const typeIndex = enums[collection]?.[spawnType] ?? -1;
-            const unitType = this.call.getUnitTypeDef( { collection: collectionIndex, type: typeIndex });
+            const unitType = this.game.getUnitTypeDef( { collection: collectionIndex, type: typeIndex });
             if (!unitType) {
                 console.error(`[PlacementSystem] Unit type not found: ${collection}/${spawnType}`);
                 continue;
@@ -1384,7 +1383,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         if (!buildingGridPos) return null;
 
         // Get building unit type and compute its cells
-        const buildingUnitType = this.call.getUnitTypeDef( {
+        const buildingUnitType = this.game.getUnitTypeDef( {
             collection: placement.collection,
             type: placement.unitTypeId
         });

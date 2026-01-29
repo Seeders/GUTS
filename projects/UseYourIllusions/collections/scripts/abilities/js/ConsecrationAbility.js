@@ -1,7 +1,6 @@
 class ConsecrationAbility extends GUTS.BaseAbility {
     static serviceDependencies = [
         ...GUTS.BaseAbility.serviceDependencies,
-        'getUnitTypeDef',
         'showDamageNumber'
     ];
 
@@ -150,7 +149,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
             const health = this.game.getComponent(unitId, "health");
             const team = this.game.getComponent(unitId, "team");
             const unitTypeComp = this.game.getComponent(unitId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
             if (!unitPos || !health || !team || health.current <= 0) return;
 

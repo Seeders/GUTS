@@ -1,0 +1,20 @@
+{
+  "id": "free",
+  "mode": "free",
+  "projection": "perspective",
+  "fov": 60,
+  "movement": {
+    "speed": 500,
+    "fastMultiplier": 2.5,
+    "slowMultiplier": 0.3,
+    "minHeight": 10
+  },
+  "mouse": {
+    "sensitivity": 0.002,
+    "requireRightClick": true
+  },
+  "pitch": {
+    "min": -89,
+    "max": 89
+  }
+}

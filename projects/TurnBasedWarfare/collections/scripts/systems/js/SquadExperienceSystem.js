@@ -21,7 +21,6 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         'createParticleEffect',
         'replaceUnit',
         'specializeSquad',
-        'getUnitTypeDef',
         'getPlacementsForSide',
         'getActivePlayerTeam',
         'getOpponentPlacements',
@@ -467,7 +466,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             if (teamComp?.team !== team) continue;
 
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitTypeDef = this.game.getUnitTypeDef( unitTypeComp);
 
             // Check if this is a building with a units array
             if (unitTypeDef?.units && Array.isArray(unitTypeDef.units)) {
@@ -491,7 +490,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             const placement = this.game.getComponent(entityId, 'placement');
             if (placement && placement.placementId === placementId) {
                 const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                return this.call.getUnitTypeDef( unitTypeComp);
+                return this.game.getUnitTypeDef( unitTypeComp);
             }
         }
         return null;
@@ -532,7 +531,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
         const unitIds = this.getSquadUnits(placementId);
         unitIds.forEach(entityId => {
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             if (unitType) {
                 const baseUnitData = unitType;
             
@@ -627,7 +626,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             const placement = playerPlacements.find(p => p.placementId === placementId);
             if (placement && placement.squadUnits && placement.squadUnits.length > 0) {
                 const unitTypeComp = this.game.getComponent(placement.squadUnits[0], 'unitType');
-                const unitType = this.call.getUnitTypeDef( unitTypeComp);
+                const unitType = this.game.getUnitTypeDef( unitTypeComp);
                 if (unitType) {
                     return unitType.title || unitType.id || 'Squad';
                 }
@@ -639,7 +638,7 @@ class SquadExperienceSystem extends GUTS.BaseSystem {
             const enemyPlacement = enemyPlacements.find(p => p.placementId === placementId);
             if (enemyPlacement && enemyPlacement.squadUnits && enemyPlacement.squadUnits.length > 0) {
                 const unitTypeComp = this.game.getComponent(enemyPlacement.squadUnits[0], 'unitType');
-                const unitType = this.call.getUnitTypeDef( unitTypeComp);
+                const unitType = this.game.getUnitTypeDef( unitTypeComp);
                 if (unitType) {
                     return unitType.title || unitType.id || 'Enemy Squad';
                 }

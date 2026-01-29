@@ -237,7 +237,7 @@ class SimulationEditor {
         for (const entityId of placementEntities) {
             const unitTypeComp = this.editorContext.getComponent(entityId, 'unitType');
             const teamComp = this.editorContext.getComponent(entityId, 'team');
-            const unitDef = this.editorContext.call('getUnitTypeDef', unitTypeComp);
+            const unitDef = this.editorContext.getUnitTypeDef(unitTypeComp);
             console.log('[SimulationEditor] Entity', entityId, '- type:', unitDef?.id, 'team:', teamComp?.team);
         }
 
@@ -714,7 +714,7 @@ class SimulationEditor {
             // Skip dead units
             if (deathState && deathState.state !== enums.deathState?.alive) continue;
 
-            const unitDef = game.call?.('getUnitTypeDef', unitTypeComp);
+            const unitDef = game.getUnitTypeDef?.(unitTypeComp);
             const isBuilding = unitDef?.isBuilding || unitDef?.collection === 'buildings';
 
             const teamKey = teamComp.team === leftTeam ? 'left' : 'right';

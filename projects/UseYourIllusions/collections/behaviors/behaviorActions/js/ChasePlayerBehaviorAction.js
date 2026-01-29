@@ -11,7 +11,6 @@
 class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
 
     static serviceDependencies = [
-        'getUnitTypeDef',
         'hasLineOfSight',
         'triggerSinglePlayAnimation',
         'getCamera',
@@ -95,7 +94,7 @@ class ChasePlayerBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Get vision range from unit type
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
+        const unitTypeDef = game.getUnitTypeDef(unitTypeComp);
         const combat = game.getComponent(entityId, 'combat');
         const visionRange = unitTypeDef?.visionRange || combat?.visionRange || 250;
 

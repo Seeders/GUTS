@@ -7,7 +7,6 @@ class SupplySystem extends GUTS.BaseSystem {
     ];
 
     static serviceDependencies = [
-        'getUnitTypeDef',
         'getActivePlayerTeam'
     ];
 
@@ -65,7 +64,7 @@ class SupplySystem extends GUTS.BaseSystem {
 
         for (const entityId of entities) {
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             const team = this.game.getComponent(entityId, 'team');
             const health = this.game.getComponent(entityId, 'health');
             const deathState = this.game.getComponent(entityId, 'deathState');

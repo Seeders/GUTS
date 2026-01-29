@@ -1,8 +1,7 @@
 class RoundSystem extends GUTS.BaseSystem {
 
     static serviceDependencies = [
-        'removeInstance',
-        'getUnitTypeDef'
+        'removeInstance'
     ];
 
     constructor(game){
@@ -78,7 +77,7 @@ class RoundSystem extends GUTS.BaseSystem {
         }
 
         // 2. Restore health to full
-        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComponent);
+        const unitTypeDef = this.game.getUnitTypeDef( unitTypeComponent);
         const maxHP = unitTypeDef?.hp || 100;
         const health = this.game.getComponent(buildingId, 'health');
         if (health) {

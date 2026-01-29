@@ -18,7 +18,6 @@ class AnimationSystem extends GUTS.BaseSystem {
     ];
 
     static serviceDependencies = [
-        'getUnitTypeDef',
         'isBillboardWithAnimations',
         'getCamera',
         'getZoomLevel',
@@ -279,7 +278,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
             // Check if this is a static entity (worldObjects, cliffs)
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             const isStaticEntity = unitType && (unitType.collection === 'worldObjects' || unitType.collection === 'cliffs');
 
             if (isStaticEntity) {
@@ -1480,7 +1479,7 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         // Determine initial direction based on entity type and team
         const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
         const team = this.game.getComponent(entityId, 'team');
         const isBuilding = unitType?.collection === 'buildings';
 

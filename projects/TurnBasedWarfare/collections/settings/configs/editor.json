@@ -15,7 +15,8 @@
     "behaviorTreeModule",
     "particleEffectSystemModule",
     "particleEffectModule",
-    "simulationModule"
+    "simulationModule",
+    "systemsEditor"
   ],
   "path": "/",
   "fileName": "editor"

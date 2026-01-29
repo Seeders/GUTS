@@ -9,7 +9,6 @@ class MiniMapSystem extends GUTS.BaseSystem {
         'getFogTexture',
         'getGroundTexture',
         'getActivePlayerTeam',
-        'getUnitTypeDef',
         'isVisibleAt',
         'getGoldVeinLocations',
         'getRenderer'
@@ -426,7 +425,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
         for (let i = 0; i < allEntities.length; i++) {
             const id = allEntities[i];
             const unitTypeComp = this.game.getComponent(id, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             if (unitType && (unitType.collection === "units" || unitType.collection === "buildings")) {
                 this._filteredEntities.push(id);
             }
@@ -443,7 +442,7 @@ class MiniMapSystem extends GUTS.BaseSystem {
             const team = this.game.getComponent(entityId, "team");
             const projectile = this.game.getComponent(entityId, "projectile");
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
             if (!pos || !team || projectile || !unitType) continue;
 

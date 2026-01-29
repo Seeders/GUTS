@@ -14,7 +14,6 @@ class DamageSystem extends GUTS.BaseSystem {
 
     static serviceDependencies = [
         'showDamageNumber',
-        'getUnitTypeDef',
         'rollHitChance',
         'getAggregatedDamageModifiers',
         'grantCombatExperience',
@@ -150,13 +149,13 @@ class DamageSystem extends GUTS.BaseSystem {
         const targetHealth = this.game.getComponent(targetId, "health");
         const targetDeathState = this.game.getComponent(targetId, "deathState");
         const targetUnitTypeComp = this.game.getComponent(targetId, "unitType");
-        const targetUnitType = this.call.getUnitTypeDef( targetUnitTypeComp);
+        const targetUnitType = this.game.getUnitTypeDef( targetUnitTypeComp);
         const targetTransform = this.game.getComponent(targetId, "transform");
         const targetPos = targetTransform?.position;
 
         // Get source info for logging
         const sourceUnitTypeComp = this.game.getComponent(sourceId, "unitType");
-        const sourceUnitType = this.call.getUnitTypeDef( sourceUnitTypeComp);
+        const sourceUnitType = this.game.getUnitTypeDef( sourceUnitTypeComp);
         const sourceTeamComp = this.game.getComponent(sourceId, "team");
         const targetTeamComp = this.game.getComponent(targetId, "team");
         const sourceName = sourceUnitType?.id || 'unknown';

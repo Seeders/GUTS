@@ -12,7 +12,6 @@
 class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
     static serviceDependencies = [
-        'getUnitTypeDef',
         'getSquadData',
         'getSquadCells',
         'ui_placeUnit',
@@ -370,7 +369,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (placement?.isUnderConstruction) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
             if (!unitDef) continue;
 
             // Check if this is a production building
@@ -405,7 +404,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (teamComp?.team !== aiTeam) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
 
             // Only reset buildings (not units) - buildings have footprintWidth
             const isBuilding = unitDef?.footprintWidth !== undefined;
@@ -983,7 +982,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
             const entityId = placement.squadUnits[0];
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
 
             // Skip buildings
             if (unitDef?.footprintWidth !== undefined) continue;
@@ -1023,7 +1022,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (teamComp?.team !== enemyTeam) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
 
             if (unitDef?.id === 'townHall' || unitDef?.id === 'keep' || unitDef?.id === 'castle') {
                 return entityId;
@@ -1043,7 +1042,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (viewerTeam?.team !== aiTeam) continue;
 
             const viewerUnitTypeComp = game.getComponent(viewerEntityId, 'unitType');
-            const viewerUnitDef = this.call.getUnitTypeDef( viewerUnitTypeComp);
+            const viewerUnitDef = game.getUnitTypeDef( viewerUnitTypeComp);
             const visionRange = viewerUnitDef?.visionRange || 500;
 
             const visibleEnemyIds = this.call.getVisibleEnemiesInRange( viewerEntityId, visionRange);
@@ -1051,7 +1050,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
             for (const enemyId of visibleEnemyIds) {
                 const enemyUnitTypeComp = game.getComponent(enemyId, 'unitType');
-                const enemyDef = this.call.getUnitTypeDef( enemyUnitTypeComp);
+                const enemyDef = game.getUnitTypeDef( enemyUnitTypeComp);
 
                 // Is it a building?
                 if (enemyDef?.footprintWidth !== undefined) {
@@ -1078,7 +1077,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             // Check if this is a combat unit (not a building or peasant)
             const entityId = placement.squadUnits[0];
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
 
             // Skip buildings
             if (unitDef?.footprintWidth !== undefined) continue;
@@ -1103,7 +1102,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (teamComp.team !== aiTeam) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
             if (unitDef?.id !== 'peasant') continue;
 
             // Check if peasant has build ability and is not already building
@@ -1142,7 +1141,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
         // Get town hall cells to avoid
         const townHallUnitType = game.getComponent(townHall, 'unitType');
-        const townHallDef = this.call.getUnitTypeDef( townHallUnitType);
+        const townHallDef = game.getUnitTypeDef( townHallUnitType);
         const townHallSquadData = this.call.getSquadData( townHallDef);
         const townHallCells = this.call.getSquadCells( townHallGridPos, townHallSquadData);
         const occupiedCellSet = new Set(townHallCells.map(cell => `${cell.x},${cell.z}`));
@@ -1192,7 +1191,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (teamComp.team !== aiTeam) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
 
             if (unitDef?.id === 'townHall' || unitDef?.id === 'keep' || unitDef?.id === 'castle') {
                 return entityId;
@@ -1214,7 +1213,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
             if (placement?.isUnderConstruction) continue;
 
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
 
             if (unitDef?.id === buildingType) {
                 return entityId;
@@ -1264,7 +1263,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
         if (!townHallEntity) return actions;
 
         const unitTypeComp = game.getComponent(townHallEntity, 'unitType');
-        const currentBuildingDef = this.call.getUnitTypeDef( unitTypeComp);
+        const currentBuildingDef = game.getUnitTypeDef( unitTypeComp);
         const currentBuildingId = currentBuildingDef?.id;
 
         // Check if there's an upgrade available
@@ -1416,7 +1415,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
 
             const entityId = placement.squadUnits[0];
             const unitTypeComp = game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = game.getUnitTypeDef( unitTypeComp);
 
             // Skip buildings and peasants
             if (unitDef?.footprintWidth !== undefined) continue;

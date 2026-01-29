@@ -59,8 +59,8 @@ if (!entries.editor) {
     process.exit(1);
 }
 
-// Output directory
-const editorOutput = path.resolve(__dirname, '..', 'dist');
+// Output directory - must match webpack.config.js (projects/Editor/dist)
+const editorOutput = path.resolve(__dirname, '..', 'projects', 'Editor', 'dist');
 
 // Base webpack configuration
 const baseConfig = {

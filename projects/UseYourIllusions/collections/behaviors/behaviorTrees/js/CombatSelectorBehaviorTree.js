@@ -10,14 +10,13 @@
 class CombatSelectorBehaviorTree extends GUTS.BaseBehaviorTree {
 
     static serviceDependencies = [
-        'getUnitTypeDef',
         'getBehaviorShared'
     ];
 
     evaluate(entityId, game) {
         const log = GUTS.HeadlessLogger;
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
+        const unitTypeDef = game.getUnitTypeDef(unitTypeComp);
         const teamComp = game.getComponent(entityId, 'team');
         const reverseEnums = game.getReverseEnums();
         const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;

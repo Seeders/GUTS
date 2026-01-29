@@ -1,8 +1,7 @@
 class StatisticsTrackingSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getPlayerGold',
-        'getActivePlayerTeam',
-        'getUnitTypeDef'
+        'getActivePlayerTeam'
     ];
 
     constructor(game) {
@@ -112,7 +111,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
             return playerUnits.reduce((total, entityId) => {
                 const team = this.game.getComponent(entityId, "team");
                 const unitTypeComp = this.game.getComponent(entityId, "unitType");
-                const unitType = this.call.getUnitTypeDef( unitTypeComp);
+                const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
                 if (team?.team === myTeamId && unitType?.value) {
                     return total + unitType.value;
@@ -151,7 +150,7 @@ class StatisticsTrackingSystem extends GUTS.BaseSystem {
             }
 
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             if (unitType?.value) {
                 armyValue += unitType.value;
             }

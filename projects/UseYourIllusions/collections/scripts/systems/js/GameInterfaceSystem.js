@@ -43,7 +43,6 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
         'toggleReadyForBattle',
         'transformUnit',
         'getSelectedSquads',
-        'getUnitTypeDef',
         'worldToPlacementGrid',
         'getEntityAbilities',
         'setSquadTarget',
@@ -527,7 +526,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
 
             // Adjust for unit size
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             const size = unitType?.size || 20;
             distance -= size;
 
@@ -577,7 +576,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
 
                 // Determine collection
                 const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                const unitType = this.call.getUnitTypeDef( unitTypeComp);
+                const unitType = this.game.getUnitTypeDef( unitTypeComp);
                 const collection = unitType?.collection;
 
                 if (prioritizeUnits) {
@@ -679,7 +678,7 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
             const transform = this.game.getComponent(entityId, 'transform');
             const pos = transform?.position;
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
             if (!placement || !pos || !unitType) continue;
             if (unitType.collection !== 'buildings') continue;

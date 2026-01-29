@@ -1,7 +1,6 @@
 class CorruptingAuraAbility extends GUTS.BaseAbility {
     static serviceDependencies = [
-        ...GUTS.BaseAbility.serviceDependencies,
-        'getUnitTypeDef'
+        ...GUTS.BaseAbility.serviceDependencies
     ];
 
     constructor(game, abilityData = {}) {
@@ -105,7 +104,7 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
         // Process allies - empower undead
         sortedAllies.forEach(allyId => {
             const unitTypeComp = this.game.getComponent(allyId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             const transform = this.game.getComponent(allyId, "transform");
             const allyPos = transform?.position;
 

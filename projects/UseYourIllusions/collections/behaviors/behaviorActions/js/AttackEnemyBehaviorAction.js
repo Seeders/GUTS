@@ -10,7 +10,6 @@
 class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
     static serviceDependencies = [
-        'getUnitTypeDef',
         'setBillboardAnimation',
         'triggerSinglePlayAnimation',
         'scheduleDamage',
@@ -28,7 +27,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const targetId = shared[targetKey];
 
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+        const unitDef = game.getUnitTypeDef(unitTypeComp);
         const teamComp = game.getComponent(entityId, 'team');
         const reverseEnums = game.getReverseEnums();
         const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;

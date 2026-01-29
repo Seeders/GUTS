@@ -5,8 +5,6 @@ class ProjectileSystem extends GUTS.BaseSystem {
     ];
 
     static serviceDependencies = [
-        'getUnitTypeDef',
-        'getComponents',
         'addLifetime',
         'createLayeredEffect',
         'getTerrainHeightAtPosition',
@@ -71,9 +69,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Get source/target info for logging
         const sourceUnitTypeComp = this.game.getComponent(sourceId, 'unitType');
-        const sourceUnitType = this.call.getUnitTypeDef( sourceUnitTypeComp);
+        const sourceUnitType = this.game.getUnitTypeDef( sourceUnitTypeComp);
         const targetUnitTypeComp = this.game.getComponent(targetId, 'unitType');
-        const targetUnitType = this.call.getUnitTypeDef( targetUnitTypeComp);
+        const targetUnitType = this.game.getUnitTypeDef( targetUnitTypeComp);
         const sourceTeamComp = this.game.getComponent(sourceId, 'team');
         const targetTeamComp = this.game.getComponent(targetId, 'team');
         const reverseEnums = this.game.getReverseEnums();
@@ -113,7 +111,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // In deterministic lockstep, both client and server execute attacks at the same tick,
         // so the counter produces identical IDs on both sides
         const projectileId = this.game.createEntity();
-        const components = this.call.getComponents();
+        const components = this.game.getComponents();
         
         // Determine projectile element (from weapon, combat component, or projectile data)
         const projectileElement = this.determineProjectileElement(sourceId, projectileData);
@@ -620,7 +618,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         for (const { entityId, entityPos, distance } of this._entitiesWithDistance) {
             // Get entity radius for collision detection
             const entityUnitTypeComp = this.game.getComponent(entityId, "unitType");
-            const entityUnitType = this.call.getUnitTypeDef( entityUnitTypeComp);
+            const entityUnitType = this.game.getUnitTypeDef( entityUnitTypeComp);
             const entityRadius = this.getUnitRadius(entityUnitType);
 
             // Check collision for direct hit
@@ -784,9 +782,9 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Get source/target info for logging
         const sourceUnitTypeComp = this.game.getComponent(projectile.source, 'unitType');
-        const sourceUnitType = this.call.getUnitTypeDef( sourceUnitTypeComp);
+        const sourceUnitType = this.game.getUnitTypeDef( sourceUnitTypeComp);
         const targetUnitTypeComp = this.game.getComponent(targetId, 'unitType');
-        const targetUnitType = this.call.getUnitTypeDef( targetUnitTypeComp);
+        const targetUnitType = this.game.getUnitTypeDef( targetUnitTypeComp);
         const targetHealth = this.game.getComponent(targetId, 'health');
         const reverseEnums = this.game.getReverseEnums();
         const sourceName = sourceUnitType?.id || 'unknown';
@@ -914,7 +912,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
             // Get entity radius for collision detection
             const entityUnitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const entityUnitType = this.call.getUnitTypeDef( entityUnitTypeComp);
+            const entityUnitType = this.game.getUnitTypeDef( entityUnitTypeComp);
             const entityRadius = this.getUnitRadius(entityUnitType);
 
             // Check if arrow landed within unit's radius

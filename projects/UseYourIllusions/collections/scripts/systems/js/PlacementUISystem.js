@@ -29,7 +29,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'getActivePlayerTeam',
         'getCameraPositionForTeam',
         'showNotification',
-        'getUnitTypeDef',
         'placementGridToWorld',
         'resetShop',
         'clearAllDamageEffects',
@@ -362,7 +361,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
             if (!placement || placement.team !== myTeam) continue;
 
             // Get the building definition
-            const buildingUnitType = this.call.getUnitTypeDef( {
+            const buildingUnitType = this.game.getUnitTypeDef( {
                 collection: buildingState.pendingCollection,
                 type: buildingState.pendingUnitTypeId
             });
@@ -534,7 +533,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
             for (const entityId of allPlayerOrders) {
                 const po = this.game.getComponent(entityId, 'playerOrder');
                 const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
+                const unitTypeDef = this.game.getUnitTypeDef( unitTypeComp);
             }
 
             this.call.resetAI();

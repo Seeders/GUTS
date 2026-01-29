@@ -1,0 +1,14 @@
+{
+  "title": "Systems Editor",
+  "container": "systems-editor-container",
+  "propertyName": "systems",
+  "interface": "systemsEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "loadHook": "editSystems",
+  "saveHook": "saveSystems",
+  "unloadHook": "unloadSystems",
+  "libraries": [
+    "SystemsEditor"
+  ]
+}

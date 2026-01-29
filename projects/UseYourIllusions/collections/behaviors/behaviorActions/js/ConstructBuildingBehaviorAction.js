@@ -14,7 +14,6 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         'spawnPendingBuilding',
         'getBillboardAnimationState',
         'removeInstance',
-        'getUnitTypeDef',
         'getSquadData',
         'getSquadCells',
         'findBuildingAdjacentPosition',
@@ -168,7 +167,7 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // 2. Restore health to full - get unit def from collections using numeric indices
-        const unitTypeDef = this.call.getUnitTypeDef( unitTypeComponent);
+        const unitTypeDef = game.getUnitTypeDef( unitTypeComponent);
         const maxHP = unitTypeDef?.hp || 100;
         const health = game.getComponent(buildingId, 'health');
         if (health) {
@@ -203,11 +202,11 @@ class ConstructBuildingBehaviorAction extends GUTS.BaseBehaviorAction {
         const peasantUnitTypeComp = game.getComponent(entityId, 'unitType');
         if (!peasantUnitTypeComp) return;
 
-        const peasantUnitType = this.call.getUnitTypeDef( peasantUnitTypeComp);
+        const peasantUnitType = game.getUnitTypeDef( peasantUnitTypeComp);
         if (!peasantUnitType) return;
 
         // Get building cells to avoid
-        const buildingUnitType = this.call.getUnitTypeDef( {
+        const buildingUnitType = game.getUnitTypeDef( {
             collection: buildingPlacement.collection,
             type: buildingPlacement.unitTypeId
         });

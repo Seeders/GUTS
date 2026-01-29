@@ -12,9 +12,7 @@
  */
 class IsInRangeBehaviorAction extends GUTS.BaseBehaviorAction {
 
-    static serviceDependencies = [
-        'getUnitTypeDef'
-    ];
+    static serviceDependencies = [];
 
     execute(entityId, game) {
         const log = GUTS.HeadlessLogger;
@@ -25,7 +23,7 @@ class IsInRangeBehaviorAction extends GUTS.BaseBehaviorAction {
         const minRange = params.minRange || 0;
 
         const unitTypeComp = game.getComponent(entityId, 'unitType');
-        const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+        const unitDef = game.getUnitTypeDef(unitTypeComp);
         const teamComp = game.getComponent(entityId, 'team');
         const reverseEnums = game.getReverseEnums();
         const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;

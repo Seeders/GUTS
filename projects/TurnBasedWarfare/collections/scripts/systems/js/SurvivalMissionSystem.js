@@ -28,8 +28,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
         'getPlacementById',
         'ui_issueMoveOrder',
         'broadcastGameEnd',
-        'getPlayerEntities',
-        'getUnitTypeDef'
+        'getPlayerEntities'
     ];
 
     constructor(game) {
@@ -592,7 +591,7 @@ class SurvivalMissionSystem extends GUTS.BaseSystem {
         const buildingEntities = this.game.getEntitiesWith('unitType', 'team', 'health');
         for (const entityId of buildingEntities) {
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             if (!unitType || unitType.collection !== 'buildings') continue;
 
             const health = this.game.getComponent(entityId, 'health');

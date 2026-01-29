@@ -1,6 +1,5 @@
 class ArmyDisplaySystem extends GUTS.BaseSystem {
     static serviceDependencies = [
-        'getUnitTypeDef',
         'getActivePlayerTeam',
         'showModal'
     ];
@@ -74,7 +73,7 @@ class ArmyDisplaySystem extends GUTS.BaseSystem {
             allUnits.forEach(entityId => {
                 const team = this.game.getComponent(entityId, "team");
                 const unitTypeComp = this.game.getComponent(entityId, "unitType");
-                const unitType = this.call.getUnitTypeDef( unitTypeComp);
+                const unitType = this.game.getUnitTypeDef( unitTypeComp);
                 const health = this.game.getComponent(entityId, "health");
                 const transform = this.game.getComponent(entityId, "transform");
                 const position = transform?.position;

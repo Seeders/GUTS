@@ -9,7 +9,6 @@
   "libraries": [
     "GameServices",
     "CallLogger",
-    "BaseSystem",
     "BaseLoader",
     "ServerGameLoader",
     "GameRoom",
