@@ -6,8 +6,7 @@ class VisionSystem extends GUTS.BaseSystem {
         'getTerrainHeightAtPositionSmooth',
         'getTerrainSize',
         'getTerrainTypeAtPosition',
-        'getTileMapTerrainType',
-        'getUnitTypeDef'
+        'getTileMapTerrainType'
     ];
 
     static services = [
@@ -113,7 +112,7 @@ class VisionSystem extends GUTS.BaseSystem {
         let viewerName = 'unknown';
         if (viewerEntityId !== null) {
             const viewerUnitTypeComp = this.game.getComponent(viewerEntityId, 'unitType');
-            const viewerUnitType = this.call.getUnitTypeDef( viewerUnitTypeComp);
+            const viewerUnitType = this.game.getUnitTypeDef( viewerUnitTypeComp);
             viewerName = viewerUnitType?.id || viewerEntityId;
         }
 
@@ -194,7 +193,7 @@ class VisionSystem extends GUTS.BaseSystem {
                     if (!treePos) continue;
 
                     const treeUnitTypeComp = this.game.getComponent(treeId, 'unitType');
-                    const treeUnitType = this.call.getUnitTypeDef( treeUnitTypeComp);
+                    const treeUnitType = this.game.getUnitTypeDef( treeUnitTypeComp);
                     const treeSize = treeUnitType?.size || gridSize;
                     const treeHeight = treeUnitType?.height || 0;
 
@@ -504,7 +503,7 @@ class VisionSystem extends GUTS.BaseSystem {
      */
     _filterByLOS(entityId, pos, enemies) {
         const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
         const NUM_SECTORS = 16;
         const sectorAngle = (Math.PI * 2) / NUM_SECTORS;
@@ -642,7 +641,7 @@ class VisionSystem extends GUTS.BaseSystem {
                 if (!viewerPos) continue;
 
                 const viewerUnitTypeComp = this.game.getComponent(viewerId, 'unitType');
-                const viewerUnitType = this.call.getUnitTypeDef( viewerUnitTypeComp);
+                const viewerUnitType = this.game.getUnitTypeDef( viewerUnitTypeComp);
                 const visionRange = viewerUnitType?.visionRange || 500;
 
                 const dx = targetPos.x - viewerPos.x;

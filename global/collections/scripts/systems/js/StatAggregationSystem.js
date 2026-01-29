@@ -6,7 +6,6 @@ class StatAggregationSystem extends GUTS.BaseSystem {
     ];
 
     static serviceDependencies = [
-        'getUnitTypeDef',
         'getPlayerStatsByTeam'
     ];
 
@@ -64,7 +63,7 @@ class StatAggregationSystem extends GUTS.BaseSystem {
      */
     collectUnitPassives(entityId, modifiers) {
         const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
         if (unitType?.passives) {
             for (const passive of unitType.passives) {
@@ -241,7 +240,7 @@ class StatAggregationSystem extends GUTS.BaseSystem {
     getAggregatedDefensiveStats(entityId) {
         const combat = this.game.getComponent(entityId, 'combat');
         const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
         const stats = {
             armor: combat?.armor || 0,

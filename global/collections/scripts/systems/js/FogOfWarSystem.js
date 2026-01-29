@@ -3,7 +3,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         'getExplorationTexture',
         'getFogTexture',
         'invalidateLOSCache',
-        'isVisibleAt'
+        'isVisibleInFogAt'
     ];
 
     static serviceDependencies = [
@@ -13,7 +13,6 @@ class FogOfWarSystem extends GUTS.BaseSystem {
         'getTerrainSize',
         'hasLineOfSight',
         'getActivePlayerTeam',
-        'getUnitTypeDef',
         'getZoomLevel',
         'getCamera',
         'removePostProcessingPass',
@@ -721,7 +720,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
             if (!pos) continue;
 
             const visionRadius = unitType?.visionRange || this.VISION_RADIUS;
@@ -799,7 +798,7 @@ class FogOfWarSystem extends GUTS.BaseSystem {
     }
 
     //only available on CLIENT
-    isVisibleAt(x, z) {
+    isVisibleInFogAt(x, z) {
         // Check if fog of war is disabled (first-person mode)
         const zoomLevel = this.call.getZoomLevel();
         if (zoomLevel !== undefined && zoomLevel < 0.1) {

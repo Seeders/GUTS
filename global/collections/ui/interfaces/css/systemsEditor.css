@@ -1,0 +1,356 @@
+/* =============================================================================
+   SYSTEMS EDITOR - MODULE-SPECIFIC STYLES
+   ============================================================================= */
+
+/* Override sidebar width for systems editor - narrower to show more graph */
+#systems-editor-container {
+    --editor-sidebar-width: 200px;
+}
+
+#systems-editor-container > .editor-module__sidebar {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    flex: 0 0 200px !important;
+}
+
+#systems-editor-container > .editor-module__sidebar--right {
+    width: 220px !important;
+    min-width: 220px !important;
+    max-width: 220px !important;
+    flex: 0 0 220px !important;
+}
+
+/* Compact section padding for narrower sidebars */
+#systems-editor-container .editor-module__section {
+    padding: 10px 12px;
+}
+
+#systems-editor-container .editor-module__scroll-y {
+    padding: 10px 12px;
+}
+
+/* Add controls section */
+.systems-editor__add-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--editor-spacing-sm);
+}
+
+.systems-editor__add-controls .editor-module__select {
+    width: 100%;
+}
+
+/* Section headers with source indicators */
+.systems-editor__section-header {
+    display: flex;
+    align-items: center;
+    gap: var(--editor-spacing-sm);
+}
+
+/* Source color indicators */
+.systems-editor__source-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.systems-editor__source-indicator--systems {
+    background-color: #6366f1;
+}
+
+.systems-editor__source-indicator--client {
+    background-color: #22c55e;
+}
+
+.systems-editor__source-indicator--server {
+    background-color: #f97316;
+}
+
+/* System list styling */
+.systems-editor__system-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.systems-editor__system-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background-color: var(--editor-bg-light);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.systems-editor__system-item:hover {
+    background-color: var(--editor-bg-medium);
+}
+
+.systems-editor__system-item--selected {
+    background-color: var(--editor-primary);
+    color: white;
+}
+
+.systems-editor__system-item--missing {
+    border: 1px dashed var(--editor-danger);
+    opacity: 0.7;
+}
+
+.systems-editor__system-name {
+    font-size: 12px;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.systems-editor__remove-btn {
+    background: none;
+    border: none;
+    color: var(--editor-text-secondary);
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 14px;
+    line-height: 1;
+    border-radius: 3px;
+    transition: all 0.15s ease;
+}
+
+.systems-editor__remove-btn:hover {
+    background-color: var(--editor-danger);
+    color: white;
+}
+
+/* Graph area */
+.systems-editor__graph-area {
+    position: relative;
+    background-color: var(--editor-bg-dark);
+    background-image:
+        radial-gradient(circle, var(--editor-bg-light) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.systems-editor__canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Legend */
+.systems-editor__legend {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    display: flex;
+    gap: 16px;
+    background-color: rgba(15, 23, 42, 0.9);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+}
+
+.systems-editor__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--editor-text-secondary);
+}
+
+.systems-editor__legend-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+.systems-editor__legend-color--systems {
+    background-color: #6366f1;
+}
+
+.systems-editor__legend-color--client {
+    background-color: #22c55e;
+}
+
+.systems-editor__legend-color--server {
+    background-color: #f97316;
+}
+
+.systems-editor__legend-line {
+    width: 20px;
+    height: 3px;
+}
+
+.systems-editor__legend-line--satisfied {
+    background-color: #22c55e;
+}
+
+.systems-editor__legend-line--missing {
+    background: repeating-linear-gradient(
+        90deg,
+        #ef4444 0px,
+        #ef4444 4px,
+        transparent 4px,
+        transparent 8px
+    );
+}
+
+/* Details panel */
+.systems-editor__details-content {
+    font-size: 12px;
+}
+
+.systems-editor__no-selection {
+    color: var(--editor-text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.systems-editor__detail-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--editor-bg-light);
+}
+
+.systems-editor__detail-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--editor-text-primary);
+}
+
+.systems-editor__detail-source {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background-color: var(--editor-bg-light);
+    color: var(--editor-text-secondary);
+}
+
+.systems-editor__detail-section {
+    margin-bottom: 12px;
+}
+
+.systems-editor__detail-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--editor-text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.systems-editor__service-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.systems-editor__service-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    font-family: monospace;
+    font-size: 11px;
+}
+
+.systems-editor__service-item--provided {
+    color: #22c55e;
+}
+
+.systems-editor__service-item--satisfied {
+    color: #22c55e;
+}
+
+.systems-editor__service-item--missing {
+    color: #ef4444;
+}
+
+.systems-editor__service-status {
+    font-size: 10px;
+}
+
+.systems-editor__provider-name {
+    font-size: 10px;
+    color: var(--editor-text-muted);
+    margin-left: auto;
+}
+
+/* Empty state */
+.systems-editor__empty-list {
+    color: var(--editor-text-muted);
+    font-style: italic;
+    font-size: 11px;
+    padding: 8px;
+    text-align: center;
+}
+
+/* Hover tooltip for connections */
+.systems-editor__tooltip {
+    position: absolute;
+    background-color: rgba(15, 23, 42, 0.95);
+    color: var(--editor-text-primary);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    pointer-events: none;
+    z-index: 1000;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Clickable service items in details panel */
+.systems-editor__service-item--clickable {
+    cursor: pointer;
+    padding: 4px 6px;
+    margin: -4px -6px;
+    border-radius: 3px;
+    transition: background-color 0.15s ease;
+}
+
+.systems-editor__service-item--clickable:hover {
+    background-color: var(--editor-bg-light);
+}
+
+.systems-editor__service-item--selected {
+    background-color: var(--editor-primary) !important;
+    color: white !important;
+}
+
+.systems-editor__service-item--selected .systems-editor__provider-name {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Back button for service view */
+.systems-editor__back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    margin-bottom: 12px;
+    background-color: var(--editor-bg-light);
+    border: none;
+    border-radius: 4px;
+    color: var(--editor-text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.systems-editor__back-btn:hover {
+    background-color: var(--editor-bg-lighter);
+    color: var(--editor-text-primary);
+}
+
+/* Service view indicator in legend */
+.systems-editor__legend-color--service {
+    background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+}

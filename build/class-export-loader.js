@@ -8,6 +8,7 @@ module.exports = function(source) {
     // Match: class ClassName { or class ClassName extends
     const classRegex = /^class\s+(\w+)(?:\s+extends|\s*\{)/gm;
     const classMatches = [...source.matchAll(classRegex)];
+    const resourcePath = this.resourcePath || '';
 
     if (!classMatches || classMatches.length === 0) {
         // No classes found, return as-is
@@ -20,7 +21,6 @@ module.exports = function(source) {
     // Check the context to determine if we should use ES6 or CommonJS
     // For server bundles (using CommonJS), add conditional exports
     // For client bundles (using ES6), add ES6 exports
-    const resourcePath = this.resourcePath || '';
     const isServerBundle = resourcePath.includes('.temp/server-entry');
 
     // Check if the file already has exports
@@ -45,7 +45,9 @@ module.exports = function(source) {
     } else {
         // For client bundles, ALWAYS assign to window.GUTS
         // This ensures classes are available for inheritance before other modules are evaluated
-        exportCode += 'if (typeof window !== \'undefined\' && window.GUTS) {\n';
+        // Create window.GUTS if it doesn't exist (important for ES6 module evaluation order)
+        exportCode += 'if (typeof window !== \'undefined\') {\n';
+        exportCode += '  if (!window.GUTS) window.GUTS = {};\n';
         classNames.forEach(className => {
             // Assign to top-level GUTS namespace only (no more app.appClasses)
             exportCode += `  window.GUTS.${className} = ${className};\n`;

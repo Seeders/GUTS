@@ -16,7 +16,6 @@ class RenderSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getTileMap',
         'getCamera',
-        'getUnitTypeDef',
         'isVisibleAt',
         'getLocalPlayerStats',
         'isEntityVisibleToTeam',
@@ -289,7 +288,7 @@ class RenderSystem extends GUTS.BaseSystem {
             const renderable = this.game.getComponent(entityId, "renderable");
             const velocity = this.game.getComponent(entityId, "velocity");
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
             // Debug: Log if this is the player and why it might be skipped
             const isPlayer = this.game.getComponent(entityId, "playerController");

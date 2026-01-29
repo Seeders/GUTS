@@ -795,7 +795,33 @@ class ConfigParser {
             }
         }
 
-        console.log(`    Editor libraries: ${allLibraries.length}, systems: ${allSystems.length}`);
+        // Auto-include ALL systems from global and project collections
+        // This ensures the editor has access to all system classes for tools like SystemsEditor
+        const existingSystemNames = new Set(allSystems.map(s => s.name || s.fileName));
+
+        // Add all global systems
+        const globalSystems = this.editorCollections['systems'];
+        if (globalSystems && globalSystems.files) {
+            for (const file of globalSystems.files) {
+                if (!existingSystemNames.has(file.name)) {
+                    allSystems.push(file);
+                    existingSystemNames.add(file.name);
+                }
+            }
+        }
+
+        // Add all project systems
+        const projectSystems = this.collections['systems'];
+        if (projectSystems && projectSystems.files) {
+            for (const file of projectSystems.files) {
+                if (!existingSystemNames.has(file.name)) {
+                    allSystems.push(file);
+                    existingSystemNames.add(file.name);
+                }
+            }
+        }
+
+        console.log(`    Editor libraries: ${allLibraries.length}, systems: ${allSystems.length} (including all global+project)`);
 
         return {
             libraries: allLibraries,

@@ -73,10 +73,6 @@ export class TestGameContext extends BaseGameClass {
             });
         }
 
-        // Unit type lookup - only mock if not already provided by the game
-        if (!this.hasService('getUnitTypeDef')) {
-            this.register('getUnitTypeDef', () => null);
-        }
     }
 
     /**

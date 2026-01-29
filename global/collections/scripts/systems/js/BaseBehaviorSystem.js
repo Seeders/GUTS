@@ -1,8 +1,6 @@
-class BaseBehaviorSystem extends GUTS.BaseSystem {
-    static serviceDependencies = [
-        'getUnitTypeDef'
-    ];
+import BaseSystem from './BaseSystem.js';
 
+class BaseBehaviorSystem extends BaseSystem {
     static services = [
         'getBehaviorMeta',
         'getBehaviorShared',
@@ -345,7 +343,7 @@ class BaseBehaviorSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const unitDef = this.call.getUnitTypeDef( unitType);
+        const unitDef = this.game.getUnitTypeDef( unitType);
         const unitName = unitDef?.id || 'unknown';
         const teamComp = this.game.getComponent(entityId, 'team');
         const reverseEnums = this.game.getReverseEnums();
@@ -457,6 +455,11 @@ class BaseBehaviorSystem extends GUTS.BaseSystem {
 }
 
 // Register on GUTS namespace for subclassing
-if (typeof GUTS !== 'undefined') {
-    GUTS.BaseBehaviorSystem = BaseBehaviorSystem;
+if (typeof window !== 'undefined') {
+    if (!window.GUTS) window.GUTS = {};
+    window.GUTS.BaseBehaviorSystem = BaseBehaviorSystem;
 }
+
+// ES6 exports for import statements
+export default BaseBehaviorSystem;
+export { BaseBehaviorSystem };

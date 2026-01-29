@@ -145,9 +145,11 @@ class EntryGenerator {
         }
 
         // Import systems (always define Systems object, even if empty)
+        // Sort systems based on inheritance - base classes first
         sections.push('// ========== SYSTEMS ==========');
         if (client.systems.length > 0) {
-            const { imports, exports } = this.generateImports(client.systems, 'sys');
+            const sortedSystems = this.sortByInheritance(client.systems);
+            const { imports, exports } = this.generateImports(sortedSystems, 'sys');
             sections.push(...imports);
             sections.push('');
             sections.push('const Systems = {');
@@ -417,6 +419,72 @@ class EntryGenerator {
     sanitizeVarName(name) {
         // Replace hyphens, dots, and other special characters with underscores
         return name.replace(/[^a-zA-Z0-9_$]/g, '_');
+    }
+
+    /**
+     * Sort modules by inheritance - base classes come before derived classes
+     * Reads each file to detect 'extends' keyword and builds dependency order
+     */
+    sortByInheritance(modules) {
+        // Build a map of class name -> parent class name
+        const inheritance = new Map();
+        const moduleByName = new Map();
+
+        modules.forEach(mod => {
+            const name = mod.name || mod.fileName || mod.requireName;
+            moduleByName.set(name, mod);
+
+            // Read the file and check for extends
+            try {
+                const source = fs.readFileSync(mod.path, 'utf8');
+                // Match: class ClassName extends ParentClass
+                const match = source.match(/class\s+(\w+)\s+extends\s+(\w+)/);
+                if (match) {
+                    const className = match[1];
+                    const parentClass = match[2];
+                    inheritance.set(className, parentClass);
+                }
+            } catch (err) {
+                // File read error - skip inheritance check
+            }
+        });
+
+        // Topological sort - base classes first
+        const sorted = [];
+        const visited = new Set();
+        const visiting = new Set();
+
+        const visit = (name) => {
+            if (visited.has(name)) return;
+            if (visiting.has(name)) {
+                console.warn(`⚠️ Circular inheritance detected involving ${name}`);
+                return;
+            }
+
+            visiting.add(name);
+
+            // Visit parent first if it exists in our modules
+            const parentName = inheritance.get(name);
+            if (parentName && moduleByName.has(parentName)) {
+                visit(parentName);
+            }
+
+            visiting.delete(name);
+            visited.add(name);
+
+            const mod = moduleByName.get(name);
+            if (mod) {
+                sorted.push(mod);
+            }
+        };
+
+        // Visit all modules
+        modules.forEach(mod => {
+            const name = mod.name || mod.fileName || mod.requireName;
+            visit(name);
+        });
+
+        return sorted;
     }
 
     /**
@@ -723,10 +791,11 @@ class EntryGenerator {
             sections.push('');
         }
 
-        // Import systems from editor modules
+        // Import systems from editor modules (sorted by inheritance)
         if (editor.systems && editor.systems.length > 0) {
             sections.push('// ========== SYSTEMS (from editor modules) ==========');
-            const { imports, exports } = this.generateImports(editor.systems, 'sys');
+            const sortedSystems = this.sortByInheritance(editor.systems);
+            const { imports, exports } = this.generateImports(sortedSystems, 'sys');
             sections.push(...imports);
             sections.push('');
             sections.push('const Systems = {');

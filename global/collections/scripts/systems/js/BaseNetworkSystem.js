@@ -18,7 +18,6 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
         'getPlacementById',
         'applySquadTargetPosition',
         'getPlayerStats',
-        'getUnitTypeDef',
         'addPlayerGold',
         'removeInstance',
         'releaseGridCells',
@@ -193,7 +192,7 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
 
         // Get unitType for refund
         const unitTypeComp = this.game.getComponent(buildingEntityId, 'unitType');
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
         const refundAmount = unitType?.value || 0;
 
         // Refund gold
@@ -363,7 +362,7 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
 
         if (animationType && swapDelay == null) {
             const oldUnitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const oldUnitDef = this.call.getUnitTypeDef( oldUnitTypeComp);
+            const oldUnitDef = this.game.getUnitTypeDef( oldUnitTypeComp);
             const spriteAnimationSet = oldUnitDef?.spriteAnimationSet;
 
             if (spriteAnimationSet && this.game.hasService('getSpriteAnimationDuration')) {

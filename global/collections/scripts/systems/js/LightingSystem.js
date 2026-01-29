@@ -8,8 +8,7 @@
  */
 class LightingSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
-        'getEntityRenderer',
-        'getUnitTypeDef'
+        'getEntityRenderer'
     ];
 
     static services = [
@@ -200,7 +199,7 @@ class LightingSystem extends GUTS.BaseSystem {
         if (!unitTypeComp) return;
 
         // Use the getUnitTypeDef service to get the full definition
-        const entityDef = this.call.getUnitTypeDef( unitTypeComp);
+        const entityDef = this.game.getUnitTypeDef( unitTypeComp);
         if (!entityDef?.pointLight) return;
 
         // Get entity position

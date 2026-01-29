@@ -14,12 +14,9 @@
  * - CameraCoordinatorSystem: Coordinates between multiple camera systems
  */
 class BaseCameraSystem extends GUTS.BaseSystem {
+    // Note: Camera services (getCamera, getCameraMode, etc.) are provided by CameraCoordinatorSystem
+    // Individual camera systems have these methods but don't register them as services
     static services = [
-        'getCamera',
-        'setCamera',
-        'getCameraMode',
-        'setCameraMode',
-        'toggleCameraMode',
         'getZoomLevel',
         'positionCameraAtStart'
     ];

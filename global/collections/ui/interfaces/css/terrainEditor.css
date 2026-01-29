@@ -292,6 +292,236 @@
     color: var(--editor-text-primary);
 }
 
+/* =============================================================================
+   TERRAIN EDITOR - COMPACT UI STYLES
+   ============================================================================= */
+
+/* === HEADER === */
+.te-header {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--editor-border-color);
+}
+
+.te-header__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.te-header__row:last-child {
+    margin-bottom: 0;
+}
+
+.te-header__label {
+    font-size: 12px;
+    color: var(--editor-text-secondary);
+    min-width: 70px;
+    flex-shrink: 0;
+}
+
+.te-header__select {
+    flex: 1;
+    min-width: 0;
+    padding: 4px 8px;
+    background-color: var(--editor-bg-dark);
+    border: 1px solid var(--editor-border-color);
+    border-radius: var(--editor-border-radius-sm);
+    color: var(--editor-text-primary);
+    font-size: 12px;
+}
+
+/* === PANELS === */
+.te-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.te-panel__section {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--editor-border-color);
+}
+
+.te-panel__section:last-child {
+    border-bottom: none;
+}
+
+.te-panel__section--fixed {
+    flex-shrink: 0;
+}
+
+.te-panel__section--flex {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.te-panel__title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--editor-text-muted);
+    margin: 0 0 8px 0;
+}
+
+.te-panel__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.te-panel__row:last-child {
+    margin-bottom: 0;
+}
+
+/* === ENTITY LIST === */
+.te-list--compact {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.te-list--compact .editor-module__item {
+    padding: 4px 8px;
+    font-size: 11px;
+    border-radius: 2px;
+}
+
+/* === ENTITY FOLDER (GROUPED HIERARCHY) === */
+.te-entity-folder {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--editor-border-color);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s;
+}
+
+.te-entity-folder:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.te-entity-folder__toggle {
+    font-size: 8px;
+    color: var(--editor-text-muted);
+    width: 10px;
+}
+
+.te-entity-folder__name {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--editor-text-primary);
+}
+
+.te-entity-folder__collection {
+    font-size: 10px;
+    color: var(--editor-text-muted);
+}
+
+.te-entity-folder__count {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--editor-primary);
+    background-color: rgba(99, 102, 241, 0.15);
+    padding: 1px 6px;
+    border-radius: 8px;
+}
+
+.te-entity-folder__contents {
+    padding-left: 16px;
+    border-left: 1px solid var(--editor-border-color);
+    margin-left: 4px;
+}
+
+.te-entity-item {
+    padding: 3px 8px !important;
+    font-size: 10px !important;
+}
+
+.te-entity-item__pos {
+    color: var(--editor-text-muted);
+    font-family: monospace;
+}
+
+/* === SPAWN GRID === */
+.te-grid--spawn {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding: 4px 0;
+}
+
+.te-grid--spawn .editor-module__grid-item {
+    aspect-ratio: 1;
+}
+
+/* === UTILITIES === */
+.te-select {
+    width: 100%;
+    padding: 4px 8px;
+    font-size: 12px;
+    background-color: var(--editor-bg-dark);
+    border: 1px solid var(--editor-border-color);
+    border-radius: var(--editor-border-radius-sm);
+    color: var(--editor-text-primary);
+}
+
+.te-badge {
+    font-size: 10px;
+    font-weight: normal;
+    color: var(--editor-text-muted);
+    margin-left: 4px;
+}
+
+.te-hint {
+    font-size: 11px;
+    color: var(--editor-text-muted);
+    margin: 0 0 8px 0;
+}
+
+.te-input--small {
+    width: 60px;
+    padding: 4px 8px;
+    background-color: var(--editor-bg-dark);
+    border: 1px solid var(--editor-border-color);
+    border-radius: var(--editor-border-radius-sm);
+    color: var(--editor-text-primary);
+    font-size: 12px;
+}
+
+/* === COMPACT TERRAIN LIST === */
+.te-terrain-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.te-terrain-list .terrain-editor__terrain-item {
+    padding: 6px 8px;
+    gap: 8px;
+}
+
+.te-terrain-list .terrain-editor__color-option {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+}
+
+.te-terrain-list .terrain-editor__terrain-label {
+    font-size: 12px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .terrain-editor__environment-items {

@@ -14,7 +14,6 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
     static serviceDependencies = [
         'getPlacementById',
-        'getUnitTypeDef',
         'getEntityPath',
         'clearEntityPath'
     ];
@@ -56,7 +55,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
 
                 // DEBUG: Log order changes
                 const unitTypeComp = this.game.getComponent(unitId, 'unitType');
-                const unitTypeDef = this.call.getUnitTypeDef( unitTypeComp);
+                const unitTypeDef = this.game.getUnitTypeDef( unitTypeComp);
                 const unitName = unitTypeDef?.id || unitId;
                 console.log(`[UnitOrderSystem] applySquadTargetPosition entity=${unitId} (${unitName}) placementId=${placementId} isHiding=${!!meta?.isHiding} isMoveOrder=${!!meta?.isMoveOrder} wasHiding=${playerOrder.isHiding}`);
 

@@ -1,3 +1,6 @@
+// Import BaseSystem to ensure it's available before any systems are created
+import BaseSystem from '../../systems/js/BaseSystem.js';
+
 class BaseECSGame {
     constructor(app) {
         this.app = app;
@@ -108,10 +111,6 @@ class BaseECSGame {
 
         const collections = this.getCollections();
         this.componentGenerator = new GUTS.ComponentGenerator(collections.components, collections);
-        this.register("getComponents", this.getComponents.bind(this));
-        this.register("getComponentSchema", this.getComponentSchema.bind(this));
-        this.register("getReverseEnums", this.getReverseEnums.bind(this));
-        this.register("getUnitTypeDef", this.getUnitTypeDef.bind(this));
 
         // Pre-register all component types in alphabetical order for deterministic type IDs
         // This ensures server and client have identical type ID mappings
@@ -1249,7 +1248,7 @@ class BaseECSGame {
             throw new Error(`Entity ${entityId} does not exist`);
         }
 
-        const componentMethods = this.call('getComponents');
+        const componentMethods = this.getComponents();
         if (!componentMethods[componentId]) {
             console.warn(`[BaseECSGame] No component factory for '${componentId}'. Add it to the components collection.`);
         }
@@ -1264,7 +1263,7 @@ class BaseECSGame {
         this._setComponentBit(entityId, typeId);
 
         // Set up storage on first encounter (analyzes schema for numeric optimization)
-        const schema = this.call('getComponentSchema', componentId);
+        const schema = this.getComponentSchema( componentId);
         const enumMap = this.getEnumMap(componentId);
         if (schema) {
             this._setupComponentStorage(componentId, schema, enumMap);
@@ -1295,7 +1294,7 @@ class BaseECSGame {
             throw new Error(`Entity ${entityId} does not exist`);
         }
 
-        const componentMethods = this.call('getComponents');
+        const componentMethods = this.getComponents();
 
         for (const [componentId, data] of Object.entries(componentsData)) {
             // Use factory function if available, otherwise use data directly
@@ -1308,7 +1307,7 @@ class BaseECSGame {
             this._setComponentBit(entityId, typeId);
 
             // Set up storage on first encounter (analyzes schema for numeric optimization)
-            const schema = this.call('getComponentSchema', componentId);
+            const schema = this.getComponentSchema( componentId);
             const enumMap = this.getEnumMap(componentId);
             if (schema) {
                 this._setupComponentStorage(componentId, schema, enumMap);

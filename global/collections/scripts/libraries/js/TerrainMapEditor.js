@@ -155,10 +155,11 @@ class TerrainMapEditor {
 
     setupEventListeners() {
 
-        document.getElementById('terrainColor').addEventListener('change', (el) => {                    
-            document.getElementById('terrainColorText').value = el.target.value;
+        document.getElementById('terrainColor')?.addEventListener('change', (el) => {
+            const colorText = document.getElementById('terrainColorText');
+            if (colorText) colorText.value = el.target.value;
         });
-        document.getElementById('terrainTexture').addEventListener('change', (ev) => {
+        document.getElementById('terrainTexture')?.addEventListener('change', (ev) => {
             const textureName = ev.target.value;
             if (textureName) {
                 // Get terrain type ID and update in collections
@@ -174,7 +175,7 @@ class TerrainMapEditor {
                 }
             }
         });
-        document.getElementById('terrainMapSize').addEventListener('change', async (ev) => {    
+        document.getElementById('terrainMapSize')?.addEventListener('change', async (ev) => {    
             const newGridSize = parseInt(ev.target.value);
             const oldGridSize = this.tileMap.size;
             
@@ -215,13 +216,13 @@ class TerrainMapEditor {
             await this.initGridCanvas();
             this.exportMap();
         });
-        document.getElementById('extensionTerrainType').addEventListener('change', (ev) => {
+        document.getElementById('extensionTerrainType')?.addEventListener('change', (ev) => {
             const newTerrainType = parseInt(ev.target.value);
             this.tileMap.extensionTerrainType = newTerrainType;
             this.initGridCanvas();
             this.exportMap();
         });
-        document.getElementById('extensionHeight').addEventListener('change', (ev) => {
+        document.getElementById('extensionHeight')?.addEventListener('change', (ev) => {
             const newHeight = parseInt(ev.target.value);
             this.tileMap.extensionHeight = newHeight;
             this.initGridCanvas();
@@ -229,26 +230,27 @@ class TerrainMapEditor {
         });
 
         // Indoor level checkbox
-        document.getElementById('indoorLevel').addEventListener('change', (ev) => {
+        document.getElementById('indoorLevel')?.addEventListener('change', (ev) => {
             this.tileMap.indoor = ev.target.checked;
-            document.getElementById('ceilingSettings').style.display = ev.target.checked ? 'block' : 'none';
+            const ceilingSettings = document.getElementById('ceilingSettings');
+            if (ceilingSettings) ceilingSettings.style.display = ev.target.checked ? 'block' : 'none';
             this.exportMap();
         });
 
         // Ceiling terrain type dropdown
-        document.getElementById('ceilingTerrainType').addEventListener('change', (ev) => {
+        document.getElementById('ceilingTerrainType')?.addEventListener('change', (ev) => {
             this.tileMap.ceilingTerrainType = parseInt(ev.target.value);
             this.exportMap();
         });
 
         // Ceiling height input
-        document.getElementById('ceilingHeight').addEventListener('change', (ev) => {
+        document.getElementById('ceilingHeight')?.addEventListener('change', (ev) => {
             this.tileMap.ceilingHeight = parseInt(ev.target.value);
             this.exportMap();
         });
 
         // Save button - manual save only
-        document.getElementById('saveMapBtn').addEventListener('click', () => {
+        document.getElementById('saveMapBtn')?.addEventListener('click', () => {
             this.exportMap();
             // Show feedback
             const btn = document.getElementById('saveMapBtn');
@@ -560,7 +562,7 @@ class TerrainMapEditor {
         this.setEditorMode('entities');
 
         // Clear all ramps button
-        document.getElementById('clear-all-ramps-btn').addEventListener('click', () => {
+        document.getElementById('clear-all-ramps-btn')?.addEventListener('click', () => {
             if (this.tileMap.ramps) {
                 this.tileMap.ramps = [];
                 this.updateRampCount();
@@ -568,7 +570,7 @@ class TerrainMapEditor {
         });
 
         // Height level input
-        document.getElementById('heightLevel').addEventListener('change', (e) => {
+        document.getElementById('heightLevel')?.addEventListener('change', (e) => {
             this.currentHeightLevel = parseInt(e.target.value);
             this.placementModeIndicator.textContent = `Painting Height Level: ${this.currentHeightLevel}`;
             this.placementModeIndicator.style.opacity = '1';
@@ -581,22 +583,23 @@ class TerrainMapEditor {
         });
 
         // Global brush size slider
-        document.getElementById('globalBrushSize').addEventListener('input', (e) => {
+        document.getElementById('globalBrushSize')?.addEventListener('input', (e) => {
             this.brushSize = parseInt(e.target.value);
-            document.getElementById('globalBrushSizeValue').textContent = this.brushSize;
+            const brushSizeValue = document.getElementById('globalBrushSizeValue');
+            if (brushSizeValue) brushSizeValue.textContent = this.brushSize;
         });
 
         // Global tool buttons
-        document.getElementById('globalBrushBtn').addEventListener('click', () => {
+        document.getElementById('globalBrushBtn')?.addEventListener('click', () => {
             this.terrainTool = 'brush';
-            document.getElementById('globalBrushBtn').classList.add('editor-module__btn--active');
-            document.getElementById('globalFillBtn').classList.remove('editor-module__btn--active');
+            document.getElementById('globalBrushBtn')?.classList.add('editor-module__btn--active');
+            document.getElementById('globalFillBtn')?.classList.remove('editor-module__btn--active');
         });
 
-        document.getElementById('globalFillBtn').addEventListener('click', () => {
+        document.getElementById('globalFillBtn')?.addEventListener('click', () => {
             this.terrainTool = 'fill';
-            document.getElementById('globalFillBtn').classList.add('editor-module__btn--active');
-            document.getElementById('globalBrushBtn').classList.remove('editor-module__btn--active');
+            document.getElementById('globalFillBtn')?.classList.add('editor-module__btn--active');
+            document.getElementById('globalBrushBtn')?.classList.remove('editor-module__btn--active');
         });
 
         this.canvasEl.addEventListener('contextmenu', (e) => {
@@ -760,8 +763,8 @@ class TerrainMapEditor {
     
         terrainsPanel.appendChild(this.terrainTypesContainer);
     
-        document.getElementById('saveTerrainBtn').addEventListener('click', this.saveTerrainType.bind(this));
-        document.getElementById('cancelTerrainBtn').addEventListener('click', this.hideTerrainForm.bind(this));
+        document.getElementById('saveTerrainBtn')?.addEventListener('click', this.saveTerrainType.bind(this));
+        document.getElementById('cancelTerrainBtn')?.addEventListener('click', this.hideTerrainForm.bind(this));
     }
 
     setupHeightLevelsUI() {
@@ -785,7 +788,8 @@ class TerrainMapEditor {
 
             button.addEventListener('click', () => {
                 this.currentHeightLevel = level;
-                document.getElementById('heightLevel').value = level;
+                const heightLevelEl = document.getElementById('heightLevel');
+                if (heightLevelEl) heightLevelEl.value = level;
 
                 // Update active states
                 buttonsContainer.querySelectorAll('.terrain-editor__height-btn').forEach(btn => {

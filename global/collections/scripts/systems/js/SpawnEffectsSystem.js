@@ -8,7 +8,6 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getAmbientSound',
         'getCamera',
-        'getUnitTypeDef',
         'playEffectSystem',
         'setListenerPosition',
         'startAmbientSound',
@@ -66,7 +65,7 @@ class SpawnEffectsSystem extends GUTS.BaseSystem {
         if (!unitTypeComp) return;
 
         // Use the getUnitTypeDef service to get the full definition
-        const entityDef = this.call.getUnitTypeDef( unitTypeComp);
+        const entityDef = this.game.getUnitTypeDef( unitTypeComp);
         if (!entityDef) return;
 
         console.log(`[SpawnEffectsSystem] billboardSpawned entity ${entityId}, has ambientSound:`, !!entityDef.ambientSound, entityDef.ambientSound);

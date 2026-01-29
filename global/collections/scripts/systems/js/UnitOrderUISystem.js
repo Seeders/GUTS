@@ -12,7 +12,6 @@
 class UnitOrderUISystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getPlacementById',
-        'getUnitTypeDef',
         'getEntityAbilities',
         'canAffordCost',
         'getSelectedSquads',
@@ -80,7 +79,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
         const firstUnit = placement.squadUnits?.[0];
         const unitTypeComp = firstUnit ? this.game.getComponent(firstUnit, "unitType") : null;
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
         let squadPanel = document.createElement('div');
         squadPanel.id = 'squadActionPanel';
@@ -494,7 +493,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
 
             // Get animation duration from sprite data
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitDef = this.call.getUnitTypeDef( unitTypeComp);
+            const unitDef = this.game.getUnitTypeDef( unitTypeComp);
             const spriteAnimationSet = unitDef?.spriteAnimationSet;
             let animationDuration = 1000;
             if (spriteAnimationSet && this.game.hasService('getSpriteAnimationDuration')) {
@@ -541,7 +540,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
         }
 
         const unitTypeComp = this.game.getComponent(entityId, "unitType");
-        const unitType = this.call.getUnitTypeDef( unitTypeComp);
+        const unitType = this.game.getUnitTypeDef( unitTypeComp);
         if (unitType && unitType.collection === "units") {
             const placement = this.game.getComponent(entityId, "placement");
             const placementId = placement?.placementId;
@@ -670,7 +669,7 @@ class UnitOrderUISystem extends GUTS.BaseSystem {
             const transform = this.game.getComponent(entityId, "transform");
             const pos = transform?.position;
             const unitTypeComp = this.game.getComponent(entityId, "unitType");
-            const unitType = this.call.getUnitTypeDef( unitTypeComp);
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
 
             if (!placement || !pos || !unitType) continue;
             if (unitType.collection !== 'buildings') continue;

@@ -10,7 +10,6 @@
   "unloadHook": "unloadBehaviorTree",
   "libraries": [
     "BaseECSGame",
-    "BaseSystem",
     "BehaviorTreeDebugger",
     "ComponentGenerator",
     "GameServices",
