@@ -1,0 +1,24 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/CameraCoordinatorSystem.js",
+  "fileName": "CameraCoordinatorSystem",
+  "services": [
+    "getCamera",
+    "setCamera",
+    "getCameraMode",
+    "setCameraMode",
+    "toggleCameraMode",
+    "getZoomLevel",
+    "positionCameraAtStart",
+    "cameraLookAt",
+    "rotateCamera",
+    "toggleCameraFollow",
+    "getCameraFollowTarget",
+    "startThirdPersonCamera",
+    "stopThirdPersonCamera",
+    "getThirdPersonTarget",
+    "setFollowTarget",
+    "getFollowTarget",
+    "getFacingAngle",
+    "getPitchAngle"
+  ]
+}
