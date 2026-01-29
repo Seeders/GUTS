@@ -52,7 +52,7 @@ class SystemsEditor {
 
         // Hierarchical layout nodes for 3-layer view
         this.hierarchyNodes = {
-            unconsumedServiceNodes: [], // Layer 0: Services provided but not consumed (above providers)
+            dependencyNodes: [],  // Services this system needs (inputs) - shown above providers
             providerNodes: [],    // Layer 1: Systems that provide active services
             serviceNodes: [],     // Layer 2: Service nodes (only active ones)
             consumerGroups: []    // Layer 3: Groups of consumers per service
@@ -87,9 +87,13 @@ class SystemsEditor {
         // Tooltip
         this.tooltip = null;
         this.hoveredConnection = null;
+        this.hoveredDependency = null;
 
         // Loading flag
         this._isLoading = false;
+
+        // Layout settings
+        this.maxRowWidth = 10000;
 
         this.setupEventListeners();
     }
@@ -131,9 +135,23 @@ class SystemsEditor {
         });
 
         // Zoom controls
-        document.getElementById('systems-zoom-in-btn')?.addEventListener('click', () => this.setZoom(this.zoom + 0.1));
-        document.getElementById('systems-zoom-out-btn')?.addEventListener('click', () => this.setZoom(this.zoom - 0.1));
+        document.getElementById('systems-zoom-in-btn')?.addEventListener('click', () => this.setZoom(this.zoom + 0.05));
+        document.getElementById('systems-zoom-out-btn')?.addEventListener('click', () => this.setZoom(this.zoom - 0.05));
         document.getElementById('systems-reset-layout-btn')?.addEventListener('click', () => this.resetLayout());
+
+        // Row width slider
+        const rowWidthSlider = document.getElementById('systems-row-width');
+        const rowWidthValue = document.getElementById('systems-row-width-value');
+        if (rowWidthSlider) {
+            rowWidthSlider.addEventListener('input', (e) => {
+                this.maxRowWidth = parseInt(e.target.value, 10);
+                if (rowWidthValue) {
+                    rowWidthValue.textContent = this.maxRowWidth;
+                }
+                this.calculateHierarchicalLayout();
+                this.render();
+            });
+        }
 
         // Setup canvas after a short delay to ensure DOM is ready
         setTimeout(() => this.setupCanvas(), 100);
@@ -315,7 +333,7 @@ class SystemsEditor {
         this.connections = [];
         this.activeServices = [];
         this.hierarchyNodes = {
-            unconsumedServiceNodes: [],
+            dependencyNodes: [],
             providerNodes: [],
             serviceNodes: [],
             consumerGroups: []
@@ -573,191 +591,239 @@ class SystemsEditor {
     }
 
     /**
-     * Calculate hierarchical layout with 4 layers:
-     * Layer 0 (above providers): Unconsumed services - services provided but not consumed
-     * Layer 1 (top): Provider systems - centered over their services
-     * Layer 2 (middle): Service nodes - primary reference layer
-     * Layer 3 (bottom): Consumer groups - directly below each service
+     * Calculate hierarchical layout organized by source (server/shared/client):
+     * - Three horizontal bands for serverSystems, systems (shared), clientSystems
+     * - Systems are atomic blocks - all services from one provider stay together
+     * - When a system block won't fit in the row, the entire system moves to next row
+     * - Dependency nodes (inputs) appear above each provider
      */
     calculateHierarchicalLayout() {
         this.hierarchyNodes = {
-            unconsumedServiceNodes: [],
+            dependencyNodes: [],  // Services this system needs (inputs)
             providerNodes: [],
             serviceNodes: [],
             consumerGroups: []
         };
 
-        // Build list of all provided services with their consumption status
-        const allProvidedServices = new Map(); // serviceName -> { providers: [], consumers: [] }
-
-        Object.entries(this.serviceProviders).forEach(([serviceName, providers]) => {
-            const consumers = this.resolvedSystems
-                .filter(sys => (sys.serviceDependencies || []).includes(serviceName))
-                .map(sys => sys.name);
-
-            allProvidedServices.set(serviceName, {
-                providers: [...providers],
-                consumers: consumers
-            });
-        });
-
-        // If no services at all, return
-        if (allProvidedServices.size === 0) return;
+        if (this.activeServices.length === 0) return;
 
         const canvasWidth = this.canvas?.width || 800;
-        const canvasHeight = this.canvas?.height || 600;
 
         // Dimensions for different node types
         const PROVIDER_WIDTH = 140;
         const PROVIDER_HEIGHT = 36;
         const SERVICE_WIDTH = 120;
         const SERVICE_HEIGHT = 28;
-        const UNCONSUMED_SERVICE_WIDTH = 100;
-        const UNCONSUMED_SERVICE_HEIGHT = 22;
+        const DEPENDENCY_WIDTH = 120;
+        const DEPENDENCY_HEIGHT = 24;
         const GROUP_MIN_WIDTH = 160;
         const GROUP_LINE_HEIGHT = 18;
         const GROUP_PADDING = 12;
         const NODE_GAP = 20;
+        const ROW_GAP = 100; // Gap between source bands
+        const BAND_INTERNAL_GAP = 60; // Gap between provider/service/consumer within a band
+        const INTERNAL_ROW_GAP = 40; // Gap between rows within a band
+        const SYSTEM_GAP = 30; // Gap between system blocks
 
-        // Layer Y positions - adjusted to make room for unconsumed services
-        const unconsumedY = 20;
-        const providerY = 80;
-        const serviceY = canvasHeight * 0.40;
-        const consumerY = canvasHeight * 0.65;
-
-        // Step 1: Position service nodes first (the primary/widest layer)
-        // Use the larger of SERVICE_WIDTH or GROUP_MIN_WIDTH for column spacing
-        const columnWidth = Math.max(SERVICE_WIDTH, GROUP_MIN_WIDTH) + NODE_GAP;
-        const serviceTotalWidth = this.activeServices.length * columnWidth;
-        const serviceStartX = (canvasWidth - serviceTotalWidth) / 2;
-
-        this.activeServices.forEach((svc, i) => {
-            const columnCenterX = serviceStartX + i * columnWidth + columnWidth / 2;
-
-            this.hierarchyNodes.serviceNodes.push({
-                name: svc.name,
-                type: 'service',
-                x: columnCenterX - SERVICE_WIDTH / 2,
-                y: serviceY,
-                width: SERVICE_WIDTH,
-                height: SERVICE_HEIGHT,
-                providers: svc.providers,
-                consumers: svc.consumers,
-                columnIndex: i,
-                columnCenterX: columnCenterX
-            });
-        });
-
-        // Step 2: Position consumer groups directly below each service
-        this.activeServices.forEach((svc, i) => {
-            const serviceNode = this.hierarchyNodes.serviceNodes[i];
-            const columnCenterX = serviceNode.columnCenterX;
-
-            // Calculate group height based on number of consumers
-            const groupHeight = GROUP_PADDING * 2 + 20 + (svc.consumers.length * GROUP_LINE_HEIGHT);
-
-            this.hierarchyNodes.consumerGroups.push({
-                name: svc.name,
-                type: 'consumerGroup',
-                x: columnCenterX - GROUP_MIN_WIDTH / 2,
-                y: consumerY,
-                width: GROUP_MIN_WIDTH,
-                height: groupHeight,
-                consumers: svc.consumers,
-                serviceName: svc.name
-            });
-        });
-
-        // Step 3: Position provider nodes centered over the services they provide
-        const providerSystems = new Set();
+        // Step 1: Group active services by their primary provider
+        const servicesByProvider = {};
         this.activeServices.forEach(svc => {
-            svc.providers.forEach(p => providerSystems.add(p));
-        });
-
-        const providerList = [...providerSystems];
-
-        providerList.forEach(sysName => {
-            const sys = this.resolvedSystems.find(s => s.name === sysName);
-
-            // Find all services this provider provides
-            const providedServices = this.hierarchyNodes.serviceNodes.filter(
-                sn => sn.providers.includes(sysName)
-            );
-
-            if (providedServices.length === 0) return;
-
-            // Calculate center X based on the span of services this provider covers
-            const minX = Math.min(...providedServices.map(s => s.columnCenterX));
-            const maxX = Math.max(...providedServices.map(s => s.columnCenterX));
-            const centerX = (minX + maxX) / 2;
-
-            this.hierarchyNodes.providerNodes.push({
-                name: sysName,
-                source: sys?.source || 'systems',
-                type: 'provider',
-                x: centerX - PROVIDER_WIDTH / 2,
-                y: providerY,
-                width: PROVIDER_WIDTH,
-                height: PROVIDER_HEIGHT,
-                found: sys?.found ?? false,
-                providedServices: providedServices.map(s => s.name)
-            });
-        });
-
-        // Step 4: Resolve overlapping provider nodes
-        this.resolveProviderOverlaps(PROVIDER_WIDTH, NODE_GAP);
-
-        // Step 5: Position unconsumed service nodes above their providers
-        // These are services that are provided but have no consumers
-        this.hierarchyNodes.providerNodes.forEach(providerNode => {
-            const sys = this.resolvedSystems.find(s => s.name === providerNode.name);
-            if (!sys || !sys.services) return;
-
-            // Find services this system provides that are NOT consumed (not in activeServices)
-            const activeServiceNames = new Set(this.activeServices.map(s => s.name));
-            const unconsumedServices = sys.services.filter(svcName => !activeServiceNames.has(svcName));
-
-            if (unconsumedServices.length === 0) return;
-
-            // Position unconsumed services in a row above the provider node
-            const totalWidth = unconsumedServices.length * (UNCONSUMED_SERVICE_WIDTH + 8);
-            const startX = providerNode.x + providerNode.width / 2 - totalWidth / 2;
-
-            unconsumedServices.forEach((svcName, i) => {
-                this.hierarchyNodes.unconsumedServiceNodes.push({
-                    name: svcName,
-                    type: 'unconsumedService',
-                    x: startX + i * (UNCONSUMED_SERVICE_WIDTH + 8),
-                    y: unconsumedY,
-                    width: UNCONSUMED_SERVICE_WIDTH,
-                    height: UNCONSUMED_SERVICE_HEIGHT,
-                    providerName: providerNode.name
-                });
-            });
-        });
-    }
-
-    /**
-     * Resolve overlapping provider nodes by shifting them apart
-     */
-    resolveProviderOverlaps(nodeWidth, gap) {
-        const nodes = this.hierarchyNodes.providerNodes;
-        if (nodes.length < 2) return;
-
-        // Sort by X position
-        nodes.sort((a, b) => a.x - b.x);
-
-        // Push overlapping nodes apart
-        for (let i = 1; i < nodes.length; i++) {
-            const prev = nodes[i - 1];
-            const curr = nodes[i];
-            const minX = prev.x + nodeWidth + gap;
-
-            if (curr.x < minX) {
-                curr.x = minX;
+            const primaryProvider = svc.providers[0];
+            if (!servicesByProvider[primaryProvider]) {
+                servicesByProvider[primaryProvider] = [];
             }
-        }
+            servicesByProvider[primaryProvider].push(svc);
+        });
+
+        // Step 2: Create system blocks (provider + its services)
+        const systemBlocksBySource = {
+            serverSystems: [],
+            systems: [],
+            clientSystems: []
+        };
+
+        Object.entries(servicesByProvider).forEach(([providerName, services]) => {
+            const sys = this.resolvedSystems.find(s => s.name === providerName);
+            const source = sys?.source || 'systems';
+
+            // Get dependencies for this system
+            const dependencies = sys?.serviceDependencies || [];
+
+            systemBlocksBySource[source].push({
+                providerName,
+                services,
+                serviceCount: services.length,
+                dependencies,
+                sys
+            });
+        });
+
+        // Step 3: Calculate layout for each source band
+        const columnWidth = Math.max(SERVICE_WIDTH, GROUP_MIN_WIDTH) + NODE_GAP;
+        let currentY = 60; // Start Y position
+
+        const sourceBands = [
+            { source: 'serverSystems', label: 'Server Systems', color: '#f97316' },
+            { source: 'systems', label: 'Shared Systems', color: '#6366f1' },
+            { source: 'clientSystems', label: 'Client Systems', color: '#22c55e' }
+        ];
+
+        sourceBands.forEach(band => {
+            const systemBlocks = systemBlocksBySource[band.source];
+            if (systemBlocks.length === 0) return;
+
+            // Calculate actual block widths (max of services, dependencies, consumer groups)
+            systemBlocks.forEach(block => {
+                const servicesWidth = block.serviceCount * columnWidth;
+                const depsWidth = block.dependencies.length * (DEPENDENCY_WIDTH + 8);
+                block.actualWidth = Math.max(servicesWidth, depsWidth, PROVIDER_WIDTH) + SYSTEM_GAP;
+            });
+
+            // Arrange system blocks into rows based on maxRowWidth
+            const rows = [];
+            let currentRow = [];
+            let currentRowWidth = 0;
+
+            systemBlocks.forEach(block => {
+                // If adding this block would exceed the limit AND the row isn't empty, start new row
+                if (currentRowWidth + block.actualWidth > this.maxRowWidth && currentRow.length > 0) {
+                    rows.push(currentRow);
+                    currentRow = [];
+                    currentRowWidth = 0;
+                }
+                currentRow.push(block);
+                currentRowWidth += block.actualWidth;
+            });
+            if (currentRow.length > 0) {
+                rows.push(currentRow);
+            }
+
+            // Process each row within this band
+            rows.forEach((rowBlocks, rowIndex) => {
+                // Calculate max consumer group height for this row
+                let maxGroupHeight = 0;
+                rowBlocks.forEach(block => {
+                    block.services.forEach(svc => {
+                        const groupHeight = GROUP_PADDING * 2 + 20 + (svc.consumers.length * GROUP_LINE_HEIGHT);
+                        maxGroupHeight = Math.max(maxGroupHeight, groupHeight);
+                    });
+                });
+
+                // Calculate row positions (dependency nodes above provider)
+                const dependencyY = currentY;
+                const providerY = currentY + DEPENDENCY_HEIGHT + 20;
+                const serviceY = providerY + PROVIDER_HEIGHT + BAND_INTERNAL_GAP;
+                const consumerY = serviceY + SERVICE_HEIGHT + BAND_INTERNAL_GAP;
+
+                // Calculate total width needed (using actual widths)
+                const totalBlockWidth = rowBlocks.reduce((sum, block) => {
+                    return sum + block.actualWidth;
+                }, -SYSTEM_GAP); // Remove last gap (actualWidth includes SYSTEM_GAP)
+
+                let currentX = (canvasWidth - totalBlockWidth) / 2;
+
+                // Position each system block
+                rowBlocks.forEach(block => {
+                    const blockStartX = currentX;
+                    const blockContentWidth = block.actualWidth - SYSTEM_GAP; // Width without the gap
+                    const providerCenterX = blockStartX + blockContentWidth / 2;
+
+                    // Position dependency nodes above the provider
+                    if (block.dependencies.length > 0) {
+                        const depTotalWidth = block.dependencies.length * (DEPENDENCY_WIDTH + 8);
+                        const depStartX = providerCenterX - depTotalWidth / 2;
+
+                        block.dependencies.forEach((depName, i) => {
+                            // Find who provides this service
+                            const providers = this.serviceProviders[depName] || [];
+                            const isFulfilled = providers.length > 0;
+                            const providerSystemName = isFulfilled ? providers[0] : null;
+
+                            this.hierarchyNodes.dependencyNodes.push({
+                                name: depName,
+                                type: 'dependency',
+                                x: depStartX + i * (DEPENDENCY_WIDTH + 8),
+                                y: dependencyY,
+                                width: DEPENDENCY_WIDTH,
+                                height: DEPENDENCY_HEIGHT,
+                                consumerName: block.providerName,
+                                isFulfilled,
+                                providerSystemName,
+                                source: band.source,
+                                rowIndex: rowIndex
+                            });
+                        });
+                    }
+
+                    // Position services for this block (centered within block)
+                    const servicesWidth = block.serviceCount * columnWidth;
+                    const servicesStartX = blockStartX + (blockContentWidth - servicesWidth) / 2;
+
+                    block.services.forEach((svc, i) => {
+                        const columnCenterX = servicesStartX + i * columnWidth + columnWidth / 2;
+
+                        // Service node
+                        this.hierarchyNodes.serviceNodes.push({
+                            name: svc.name,
+                            type: 'service',
+                            source: band.source,
+                            x: columnCenterX - SERVICE_WIDTH / 2,
+                            y: serviceY,
+                            width: SERVICE_WIDTH,
+                            height: SERVICE_HEIGHT,
+                            providers: svc.providers,
+                            consumers: svc.consumers,
+                            columnIndex: i,
+                            columnCenterX: columnCenterX,
+                            rowIndex: rowIndex,
+                            providerName: block.providerName
+                        });
+
+                        // Consumer group
+                        const groupHeight = GROUP_PADDING * 2 + 20 + (svc.consumers.length * GROUP_LINE_HEIGHT);
+                        this.hierarchyNodes.consumerGroups.push({
+                            name: svc.name,
+                            type: 'consumerGroup',
+                            source: band.source,
+                            x: columnCenterX - GROUP_MIN_WIDTH / 2,
+                            y: consumerY,
+                            width: GROUP_MIN_WIDTH,
+                            height: groupHeight,
+                            consumers: svc.consumers,
+                            serviceName: svc.name,
+                            rowIndex: rowIndex,
+                            providerName: block.providerName
+                        });
+                    });
+
+                    // Position provider centered above its services
+                    this.hierarchyNodes.providerNodes.push({
+                        name: block.providerName,
+                        source: band.source,
+                        type: 'provider',
+                        x: providerCenterX - PROVIDER_WIDTH / 2,
+                        y: providerY,
+                        width: PROVIDER_WIDTH,
+                        height: PROVIDER_HEIGHT,
+                        found: block.sys?.found ?? false,
+                        providedServices: block.services.map(s => s.name),
+                        dependencies: block.dependencies,
+                        rowIndex: rowIndex
+                    });
+
+                    // Move X position for next block
+                    currentX += block.actualWidth;
+                });
+
+                // Move to next row within band
+                currentY = consumerY + maxGroupHeight + INTERNAL_ROW_GAP;
+            });
+
+            // Add extra gap after the band
+            currentY += (ROW_GAP - INTERNAL_ROW_GAP);
+        });
     }
+
 
     /**
      * Main render function
@@ -1131,26 +1197,7 @@ class SystemsEditor {
         ctx.setLineDash([]);
         ctx.strokeStyle = SystemsEditor.COLORS.satisfied;
 
-        // Draw connections from unconsumed services to their providers (dashed, grayed)
-        this.hierarchyNodes.unconsumedServiceNodes.forEach(unconsumedNode => {
-            const providerNode = this.hierarchyNodes.providerNodes.find(n => n.name === unconsumedNode.providerName);
-            if (!providerNode) return;
-
-            const fromX = unconsumedNode.x + unconsumedNode.width / 2;
-            const fromY = unconsumedNode.y + unconsumedNode.height;
-            const toX = providerNode.x + providerNode.width / 2;
-            const toY = providerNode.y;
-
-            ctx.beginPath();
-            ctx.moveTo(fromX, fromY);
-            ctx.lineTo(toX, toY);
-
-            ctx.strokeStyle = '#64748b'; // Muted gray
-            ctx.lineWidth = 1;
-            ctx.setLineDash([3, 3]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-        });
+        // Dependency nodes don't need connection lines - they display inline text showing provider or "MISSING"
 
         // Reset for main connections
         ctx.lineWidth = 2;
@@ -1222,36 +1269,158 @@ class SystemsEditor {
     }
 
     /**
+     * Get the bounding box for a provider block (provider + dependencies + services + consumer groups)
+     * @param {Object} provider - The provider node
+     * @param {number} padding - Padding around the box
+     * @returns {Object|null} - { minX, maxX, minY, maxY, width, height } or null if no nodes
+     */
+    getProviderBlockBounds(provider, padding = 12) {
+        // Find all services this provider provides
+        const providerServices = this.hierarchyNodes.serviceNodes.filter(
+            sn => sn.providerName === provider.name && sn.rowIndex === provider.rowIndex
+        );
+
+        // Find consumer groups for those services
+        const consumerGroups = this.hierarchyNodes.consumerGroups.filter(
+            cg => cg.providerName === provider.name && cg.rowIndex === provider.rowIndex
+        );
+
+        // Find dependency nodes for this provider
+        const dependencyNodes = this.hierarchyNodes.dependencyNodes.filter(
+            dn => dn.consumerName === provider.name && dn.rowIndex === provider.rowIndex
+        );
+
+        // Calculate bounding box
+        const allNodes = [provider, ...providerServices, ...consumerGroups, ...dependencyNodes];
+        if (allNodes.length === 0) return null;
+
+        const minX = Math.min(...allNodes.map(n => n.x)) - padding;
+        const maxX = Math.max(...allNodes.map(n => n.x + n.width)) + padding;
+        const minY = Math.min(...allNodes.map(n => n.y)) - padding;
+        const maxY = Math.max(...allNodes.map(n => n.y + n.height)) + padding;
+
+        return {
+            minX,
+            maxX,
+            minY,
+            maxY,
+            width: maxX - minX,
+            height: maxY - minY
+        };
+    }
+
+    /**
+     * Render boxes around each provider block (provider + dependencies + services + consumer groups)
+     */
+    renderProviderBoxes(ctx) {
+        const PADDING = 12;
+        const sourceColors = {
+            serverSystems: 'rgba(249, 115, 22, 0.08)',  // Orange tint
+            systems: 'rgba(99, 102, 241, 0.08)',        // Indigo tint
+            clientSystems: 'rgba(34, 197, 94, 0.08)'    // Green tint
+        };
+        const borderColors = {
+            serverSystems: 'rgba(249, 115, 22, 0.25)',
+            systems: 'rgba(99, 102, 241, 0.25)',
+            clientSystems: 'rgba(34, 197, 94, 0.25)'
+        };
+
+        // Group nodes by provider
+        this.hierarchyNodes.providerNodes.forEach(provider => {
+            const bounds = this.getProviderBlockBounds(provider, PADDING);
+            if (!bounds) return;
+
+            // Draw filled box
+            ctx.fillStyle = sourceColors[provider.source] || sourceColors.systems;
+            this.roundRect(ctx, bounds.minX, bounds.minY, bounds.width, bounds.height, 10);
+            ctx.fill();
+
+            // Draw border
+            ctx.strokeStyle = borderColors[provider.source] || borderColors.systems;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([]);
+            this.roundRect(ctx, bounds.minX, bounds.minY, bounds.width, bounds.height, 10);
+            ctx.stroke();
+        });
+    }
+
+    /**
      * Render nodes for 4-layer hierarchical view
      */
     renderHierarchicalNodes(ctx) {
-        // Layer 0: Unconsumed service nodes (above providers, small pills, grayed out)
-        this.hierarchyNodes.unconsumedServiceNodes.forEach(node => {
-            // Muted background
-            ctx.fillStyle = '#334155'; // Slate gray
-            this.roundRect(ctx, node.x, node.y, node.width, node.height, node.height / 2);
-            ctx.fill();
+        // First, render boxes around each provider block (provider + its services + consumers)
+        this.renderProviderBoxes(ctx);
 
-            // Dashed border to indicate "unused"
-            ctx.strokeStyle = '#64748b';
-            ctx.lineWidth = 1;
-            ctx.setLineDash([2, 2]);
-            this.roundRect(ctx, node.x, node.y, node.width, node.height, node.height / 2);
-            ctx.stroke();
-            ctx.setLineDash([]);
+        // Layer 0: Dependency nodes (inputs - services this system needs)
+        this.hierarchyNodes.dependencyNodes.forEach(node => {
+            const isHovered = this.hoveredDependency === node;
 
-            // Muted text
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '10px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            if (node.isFulfilled) {
+                // Fulfilled dependency - green/teal background
+                ctx.fillStyle = isHovered ? '#065f46' : '#134e4a';
+                this.roundRect(ctx, node.x, node.y, node.width, node.height, 4);
+                ctx.fill();
 
-            let displayName = node.name;
-            const maxWidth = node.width - 12;
-            while (ctx.measureText(displayName).width > maxWidth && displayName.length > 3) {
-                displayName = displayName.slice(0, -4) + '...';
+                // Border
+                ctx.strokeStyle = '#14b8a6';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([]);
+                this.roundRect(ctx, node.x, node.y, node.width, node.height, 4);
+                ctx.stroke();
+
+                // Service name (top line, smaller)
+                ctx.fillStyle = '#5eead4';
+                ctx.font = '9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                let serviceName = node.name;
+                const maxServiceWidth = node.width - 8;
+                while (ctx.measureText(serviceName).width > maxServiceWidth && serviceName.length > 3) {
+                    serviceName = serviceName.slice(0, -4) + '...';
+                }
+                ctx.fillText(serviceName, node.x + node.width / 2, node.y + 3);
+
+                // Provider name (bottom line, clickable indicator)
+                ctx.fillStyle = isHovered ? '#fff' : '#99f6e4';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textBaseline = 'bottom';
+                let providerName = '→ ' + node.providerSystemName;
+                while (ctx.measureText(providerName).width > maxServiceWidth && providerName.length > 5) {
+                    providerName = providerName.slice(0, -4) + '...';
+                }
+                ctx.fillText(providerName, node.x + node.width / 2, node.y + node.height - 2);
+            } else {
+                // Missing dependency - red background
+                ctx.fillStyle = '#7f1d1d';
+                this.roundRect(ctx, node.x, node.y, node.width, node.height, 4);
+                ctx.fill();
+
+                // Dashed border to indicate missing
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([3, 3]);
+                this.roundRect(ctx, node.x, node.y, node.width, node.height, 4);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Service name
+                ctx.fillStyle = '#fca5a5';
+                ctx.font = '10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                let serviceName = node.name;
+                const maxServiceWidth = node.width - 8;
+                while (ctx.measureText(serviceName).width > maxServiceWidth && serviceName.length > 3) {
+                    serviceName = serviceName.slice(0, -4) + '...';
+                }
+                ctx.fillText(serviceName, node.x + node.width / 2, node.y + 3);
+
+                // "Missing" indicator
+                ctx.fillStyle = '#ef4444';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText('MISSING', node.x + node.width / 2, node.y + node.height - 2);
             }
-            ctx.fillText(displayName, node.x + node.width / 2, node.y + node.height / 2);
         });
 
         // Layer 1: Provider nodes
@@ -1437,8 +1606,8 @@ class SystemsEditor {
                 }
             }
 
-            // Check unconsumed service nodes
-            for (const node of this.hierarchyNodes.unconsumedServiceNodes) {
+            // Check dependency nodes
+            for (const node of this.hierarchyNodes.dependencyNodes) {
                 if (x >= node.x && x <= node.x + node.width &&
                     y >= node.y && y <= node.y + node.height) {
                     return node;
@@ -1513,6 +1682,27 @@ class SystemsEditor {
             this.lastMousePos = { x: e.clientX, y: e.clientY };
             this.render();
         } else {
+            // Check for hover on dependency nodes
+            let newHoveredDep = null;
+            if (this.viewMode === 'hierarchy') {
+                for (const dep of this.hierarchyNodes.dependencyNodes) {
+                    if (pos.x >= dep.x && pos.x <= dep.x + dep.width &&
+                        pos.y >= dep.y && pos.y <= dep.y + dep.height) {
+                        newHoveredDep = dep;
+                        break;
+                    }
+                }
+            }
+
+            if (newHoveredDep !== this.hoveredDependency) {
+                this.hoveredDependency = newHoveredDep;
+                // Update cursor style
+                if (this.canvas) {
+                    this.canvas.style.cursor = (newHoveredDep && newHoveredDep.isFulfilled) ? 'pointer' : 'default';
+                }
+                this.render();
+            }
+
             // Check for hover on connections
             this.updateConnectionHover(pos);
         }
@@ -1533,9 +1723,11 @@ class SystemsEditor {
                         // Just highlight/select the service for now
                         this.selectedService = node.name;
                         this.render();
-                    } else if (node.type === 'unconsumedService') {
-                        // Clicking on unconsumed service selects its provider
-                        this.selectSystem(node.providerName);
+                    } else if (node.type === 'dependency') {
+                        // Clicking on a fulfilled dependency zooms to its provider
+                        if (node.isFulfilled && node.providerSystemName) {
+                            this.selectSystem(node.providerSystemName);
+                        }
                     } else if (node.type === 'consumerGroup') {
                         // If clicked on a specific consumer, select it
                         if (node.clickedConsumer) {
@@ -1567,8 +1759,8 @@ class SystemsEditor {
         const worldX = (mouseX - this.pan.x) / this.zoom;
         const worldY = (mouseY - this.pan.y) / this.zoom;
 
-        // Calculate new zoom
-        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        // Calculate new zoom (smaller increments for smoother scrolling)
+        const delta = e.deltaY > 0 ? -0.03 : 0.03;
         const newZoom = Math.max(0.1, Math.min(2, this.zoom + delta));
 
         // Adjust pan so the world position stays under the mouse
@@ -1636,67 +1828,46 @@ class SystemsEditor {
     zoomToSystem(systemName) {
         if (!this.canvas || this.viewMode !== 'hierarchy') return;
 
-        const relatedNodes = [];
+        let bounds = null;
 
-        // Check if it's a provider
+        // Check if it's a provider - use the same bounds as renderProviderBoxes
         const providerNode = this.hierarchyNodes.providerNodes.find(n => n.name === systemName);
 
         if (providerNode) {
-            // Add the provider node
-            relatedNodes.push(providerNode);
-
-            // Add service nodes that this system PROVIDES
-            this.hierarchyNodes.serviceNodes.forEach(sn => {
-                if (sn.providers.includes(systemName)) {
-                    relatedNodes.push(sn);
-                }
-            });
-
-            // Add unconsumed services above this provider
-            this.hierarchyNodes.unconsumedServiceNodes.forEach(usn => {
-                if (usn.providerName === systemName) {
-                    relatedNodes.push(usn);
-                }
-            });
+            // Use the same bounding box calculation as renderProviderBoxes
+            bounds = this.getProviderBlockBounds(providerNode, 12);
         } else {
             // System is only a consumer - find where it appears in consumer groups
+            const consumerGroups = [];
             this.hierarchyNodes.consumerGroups.forEach(group => {
                 if (group.consumers.includes(systemName)) {
-                    relatedNodes.push(group);
+                    consumerGroups.push(group);
                 }
             });
+
+            if (consumerGroups.length > 0) {
+                const minX = Math.min(...consumerGroups.map(n => n.x));
+                const maxX = Math.max(...consumerGroups.map(n => n.x + n.width));
+                const minY = Math.min(...consumerGroups.map(n => n.y));
+                const maxY = Math.max(...consumerGroups.map(n => n.y + n.height));
+                bounds = { minX, maxX, minY, maxY, width: maxX - minX, height: maxY - minY };
+            }
         }
 
-        // If system not in hierarchy, don't change view
-        if (relatedNodes.length === 0) return;
-
-        // Filter out any nodes with invalid positions
-        const validNodes = relatedNodes.filter(n =>
-            typeof n.x === 'number' && !isNaN(n.x) &&
-            typeof n.y === 'number' && !isNaN(n.y) &&
-            typeof n.width === 'number' && !isNaN(n.width) &&
-            typeof n.height === 'number' && !isNaN(n.height)
-        );
-
-        if (validNodes.length === 0) return;
-
-        // Calculate bounding box
-        const minX = Math.min(...validNodes.map(n => n.x));
-        const maxX = Math.max(...validNodes.map(n => n.x + n.width));
-        const minY = Math.min(...validNodes.map(n => n.y));
-        const maxY = Math.max(...validNodes.map(n => n.y + n.height));
+        // If no bounds found, don't change view
+        if (!bounds) return;
 
         // Validate bounding box
-        if (isNaN(minX) || isNaN(maxX) || isNaN(minY) || isNaN(maxY)) return;
+        if (isNaN(bounds.minX) || isNaN(bounds.maxX) || isNaN(bounds.minY) || isNaN(bounds.maxY)) return;
 
         // Ensure canvas has valid dimensions
         const canvasWidth = this.canvas.width || 800;
         const canvasHeight = this.canvas.height || 600;
 
-        // Add padding
-        const padding = 80;
-        const contentWidth = Math.max(maxX - minX + padding * 2, 100);
-        const contentHeight = Math.max(maxY - minY + padding * 2, 100);
+        // Add padding for zoom (beyond the box padding)
+        const zoomPadding = 40;
+        const contentWidth = Math.max(bounds.width + zoomPadding * 2, 100);
+        const contentHeight = Math.max(bounds.height + zoomPadding * 2, 100);
 
         // Calculate zoom to fit
         const zoomX = canvasWidth / contentWidth;
@@ -1705,8 +1876,8 @@ class SystemsEditor {
         this.zoom = Math.max(this.zoom, 0.1); // Don't zoom out past 10%
 
         // Center on content
-        const centerX = (minX + maxX) / 2;
-        const centerY = (minY + maxY) / 2;
+        const centerX = (bounds.minX + bounds.maxX) / 2;
+        const centerY = (bounds.minY + bounds.maxY) / 2;
         this.pan.x = canvasWidth / 2 - centerX * this.zoom;
         this.pan.y = canvasHeight / 2 - centerY * this.zoom;
 

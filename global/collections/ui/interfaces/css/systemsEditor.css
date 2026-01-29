@@ -354,3 +354,51 @@
 .systems-editor__legend-color--service {
     background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
 }
+
+/* Toolbar divider */
+.systems-editor__toolbar-divider {
+    display: inline-block;
+    width: 1px;
+    height: 20px;
+    background-color: var(--editor-bg-light);
+    margin: 0 8px;
+    vertical-align: middle;
+}
+
+/* Slider control */
+.systems-editor__slider-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--editor-text-secondary);
+}
+
+.systems-editor__slider {
+    width: 100px;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--editor-bg-light);
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.systems-editor__slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--editor-primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.systems-editor__slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--editor-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
