@@ -1,0 +1,17 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/OrthographicCameraSystem.js",
+  "fileName": "OrthographicCameraSystem",
+  "services": [
+    "getCamera",
+    "setCamera",
+    "getCameraMode",
+    "setCameraMode",
+    "toggleCameraMode",
+    "getZoomLevel",
+    "positionCameraAtStart",
+    "cameraLookAt",
+    "rotateCamera",
+    "toggleCameraFollow",
+    "getCameraFollowTarget"
+  ]
+}

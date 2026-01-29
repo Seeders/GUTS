@@ -53,7 +53,10 @@
     "SelectedUnitSystem",
     "UnitOrderUISystem",
     "MiniMapSystem",
-    "RTSCameraSystem",
+    "OrthographicCameraSystem",
+    "FreeCameraSystem",
+    "ThirdPersonCameraSystem",
+    "CameraSystem",
     "DamageNumberSystem",
     "GameChatSystem",
     "SaveSystem"

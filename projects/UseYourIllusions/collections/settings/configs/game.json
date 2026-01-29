@@ -60,7 +60,8 @@
     "SceneManager",
     "HeadlessLogger",
     "ChatSystem",
-    "GameCameraController"
+    "BaseCameraSystem",
+    "ThirdPersonCameraSystem"
   ],
   "systems": [
     "AudioSystem",
@@ -116,7 +117,7 @@
     "UnitOrderSystem",
     "UnitOrderUISystem",
     "MiniMapSystem",
-    "ThirdPersonCameraSystem",
+    "CameraSystem",
     "DamageNumberSystem",
     "VisionSystem",
     "SupplySystem",

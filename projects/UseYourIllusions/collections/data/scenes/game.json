@@ -37,7 +37,7 @@
     "SpawnEffectsSystem",
     "LightingSystem",
     "HealthBarSystem",
-    "ThirdPersonCameraSystem",
+    "CameraSystem",
     "PlayerControlSystem",
     "BeltUISystem",
     "InventoryUISystem",

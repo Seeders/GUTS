@@ -58,7 +58,11 @@
     "SceneManager",
     "HeadlessLogger",
     "ChatSystem",
-    "GameCameraController"
+    "BaseCameraSystem",
+    "OrthographicCameraSystem",
+    "FreeCameraSystem",
+    "ThirdPersonCameraSystem",
+    "CameraCoordinatorSystem"
   ],
   "systems": [
     "GameSystem",
@@ -115,7 +119,10 @@
     "UnitOrderSystem",
     "UnitOrderUISystem",
     "MiniMapSystem",
-    "RTSCameraSystem",
+    "OrthographicCameraSystem",
+    "FreeCameraSystem",
+    "ThirdPersonCameraSystem",
+    "CameraSystem",
     "DamageNumberSystem",
     "VisionSystem",
     "SupplySystem",
