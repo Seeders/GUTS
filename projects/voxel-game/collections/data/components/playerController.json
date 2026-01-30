@@ -1,0 +1,24 @@
+{
+  "title": "playerController",
+  "schema": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0,
+    "pitch": 0,
+    "yaw": 0,
+    "groundedTimer": 0,
+    "sizeX": 0.6,
+    "sizeY": 1.8,
+    "sizeZ": 0.6,
+    "walkSpeed": 7.0,
+    "gravity": -36.0,
+    "jumpVelocity": 13.0,
+    "groundAccel": 140.0,
+    "airAccel": 70.0,
+    "groundFriction": 0.91,
+    "airFriction": 0.98,
+    "coyoteTime": 0.075,
+    "maxJumps": 2,
+    "jumpsRemaining": 2
+  }
+}

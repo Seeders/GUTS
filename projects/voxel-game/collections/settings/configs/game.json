@@ -1,0 +1,30 @@
+{
+  "title": "Voxel World",
+  "interface": "main",
+  "libraries": [
+    "GameServices",
+    "threejs",
+    "BaseECSGame",
+    "GameState",
+    "SeededRandom",
+    "ComponentGenerator",
+    "SceneManager",
+    "PerlinNoise",
+    "VoxelLoader"
+  ],
+  "systems": [
+    "VoxelWorldSystem",
+    "ChunkGenerationSystem",
+    "ChunkMeshingSystem",
+    "PlayerControllerSystem",
+    "CollisionSystem",
+    "BlockInteractionSystem",
+    "ChunkRenderSystem"
+  ],
+  "maxEntities": 65536,
+  "is3D": true,
+  "tickRate": 60,
+  "appLibrary": "BaseECSGame",
+  "appLoaderLibrary": "VoxelLoader",
+  "initialScene": "world"
+}

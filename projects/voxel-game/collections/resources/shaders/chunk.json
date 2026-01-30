@@ -1,0 +1,8 @@
+{
+  "title": "Chunk",
+  "vertexScript": "varying vec2 vTexCoord;\nvarying float vAO;\nvarying float vTextureIndex;\nattribute float aPackedData;\nattribute float aTextureIndex;\n\nvoid main() {\n    uint packed = uint(aPackedData);\n    float x = float((packed >> 26u) & 0x3Fu);\n    float y = float((packed >> 20u) & 0x3Fu);\n    float z = float((packed >> 14u) & 0x3Fu);\n    float u = float((packed >> 13u) & 0x01u);\n    float v = float((packed >> 12u) & 0x01u);\n    float ao = float((packed >> 10u) & 0x03u);\n    \n    vTexCoord = vec2(u, v);\n    vAO = 0.7 + ao * 0.1;\n    vTextureIndex = aTextureIndex;\n    \n    gl_Position = projectionMatrix * modelViewMatrix * vec4(x, y, z, 1.0);\n}",
+  "fragmentScript": "uniform sampler2D uTextureAtlas;\nvarying vec2 vTexCoord;\nvarying float vAO;\nvarying float vTextureIndex;\n\nvoid main() {\n    vec4 texColor = texture2D(uTextureAtlas, vTexCoord);\n    gl_FragColor = vec4(texColor.rgb * vAO, texColor.a);\n}",
+  "uniforms": {
+    "uTextureAtlas": { "value": null }
+  }
+}

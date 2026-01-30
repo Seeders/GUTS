@@ -1,0 +1,16 @@
+{
+  "title": "Voxel World",
+  "description": "Main voxel world scene with terrain generation and player control",
+  "interface": "main",
+  "systems": [
+    "VoxelWorldSystem",
+    "ChunkGenerationSystem",
+    "ChunkMeshingSystem",
+    "PlayerControllerSystem",
+    "CollisionSystem",
+    "BlockInteractionSystem",
+    "ChunkRenderSystem"
+  ],
+  "clientSystems": [],
+  "serverSystems": []
+}

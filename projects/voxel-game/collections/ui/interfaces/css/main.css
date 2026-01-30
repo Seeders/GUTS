@@ -1,0 +1,95 @@
+#gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #87CEEB;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 24px;
+    font-family: monospace;
+    text-shadow: 1px 1px 2px black;
+    pointer-events: none;
+}
+
+#debugInfo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-family: monospace;
+    font-size: 14px;
+    text-shadow: 1px 1px 2px black;
+    pointer-events: none;
+}
+
+#debugInfo div {
+    margin-bottom: 5px;
+}
+
+#instructions {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-family: monospace;
+    font-size: 14px;
+    text-shadow: 1px 1px 2px black;
+    pointer-events: none;
+    text-align: center;
+}
+
+#settingsPanel {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(30, 30, 30, 0.85);
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 10px 15px;
+    font-family: sans-serif;
+    font-size: 13px;
+    color: #eee;
+    min-width: 200px;
+}
+
+.settings-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #555;
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.settings-row label {
+    flex: 1;
+}
+
+.settings-row input[type="range"] {
+    width: 100px;
+    cursor: pointer;
+}
+
+.settings-row span {
+    min-width: 24px;
+    text-align: right;
+}

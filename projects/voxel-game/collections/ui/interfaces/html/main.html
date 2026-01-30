@@ -1,0 +1,20 @@
+<div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+    <div id="crosshair">+</div>
+    <div id="debugInfo">
+        <div id="fps">FPS: 0</div>
+        <div id="position">Position: 0, 0, 0</div>
+        <div id="chunks">Chunks: 0</div>
+    </div>
+    <div id="settingsPanel">
+        <div class="settings-title">Settings</div>
+        <div class="settings-row">
+            <label for="radiusSlider">Generation Radius</label>
+            <input type="range" id="radiusSlider" min="1" max="32" value="16">
+            <span id="radiusValue">16</span>
+        </div>
+    </div>
+    <div id="instructions">
+        Click to capture mouse | WASD to move | Space to jump | Mouse to look | ESC to release
+    </div>
+</div>

@@ -1,0 +1,11 @@
+{
+  "title": "worldConfig",
+  "schema": {
+    "centerX": 0,
+    "centerY": 0,
+    "centerZ": 0,
+    "generationRadius": 8,
+    "chunkSize": 32,
+    "seed": 1337
+  }
+}
