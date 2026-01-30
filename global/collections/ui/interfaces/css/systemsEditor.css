@@ -350,6 +350,26 @@
     color: var(--editor-text-primary);
 }
 
+/* Isolate view button */
+.systems-editor__isolate-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    background-color: var(--editor-primary);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.systems-editor__isolate-btn:hover {
+    background-color: var(--editor-primary-hover, #4f46e5);
+}
+
 /* Service view indicator in legend */
 .systems-editor__legend-color--service {
     background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
