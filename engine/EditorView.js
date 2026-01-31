@@ -660,7 +660,12 @@ class EditorView {
         this.activeModule = matchingModule;
 
         // Show the matching module's container
-        document.getElementById(matchingModule.container).classList.add('show');
+        const moduleContainer = document.getElementById(matchingModule.container);
+        if (!moduleContainer) {
+            console.warn(`Editor module container not found: ${matchingModule.container}. The interface may not be loaded for this project.`);
+            return;
+        }
+        moduleContainer.classList.add('show');
 
         requestAnimationFrame(() => {
             // Create and dispatch the event with the matching property
