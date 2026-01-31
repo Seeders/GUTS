@@ -12,7 +12,6 @@ class LayoutSystem extends GUTS.BaseSystem {
 
     constructor(game) {
         super(game);
-        this.game.layoutSystem = this;
 
         // Positions
         this.foundationPositions = [];

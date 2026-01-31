@@ -8,7 +8,6 @@ class TutorialSystem extends GUTS.BaseSystem {
 
     constructor(game) {
         super(game);
-        this.game.tutorialSystem = this;
         this.active = false;
         this.currentStep = 0;
         this.overlay = null;
@@ -83,22 +82,22 @@ class TutorialSystem extends GUTS.BaseSystem {
             },
             {
                 title: "Card Flow",
-                text: "Your hand always holds 5 cards. When you draw, the oldest card (leftmost) is pushed out to an empty tableau column. Play cards before they get pushed out!",
+                text: "Your hand always holds 5 cards. When you draw from the deck, the oldest card (leftmost) is pushed out to an empty tableau column. Play cards before they get pushed out!",
                 highlight: "#handArea",
                 waitFor: null,
                 position: "above"
             },
             {
                 title: "Drawing Cards",
-                text: "Click the Draw button to get a new card from the deck.",
-                highlight: "#nextCardBtn",
+                text: "Click the deck to draw a new card.",
+                highlight: "#deckArea",
                 waitFor: null,
                 position: "above"
             },
             {
                 title: "Try Drawing a Card",
-                text: "Click the Draw button to draw a card from the deck.",
-                highlight: "#nextCardBtn",
+                text: "Click the deck to draw a card.",
+                highlight: "#deckArea",
                 waitFor: { type: 'draw', description: 'Draw a card from the deck' },
                 position: "above",
                 isActionStep: true
@@ -134,10 +133,10 @@ class TutorialSystem extends GUTS.BaseSystem {
     }
 
     hookCardActions() {
-        // Hook the Draw button to detect card draws
-        const nextCardBtn = document.getElementById('nextCardBtn');
-        if (nextCardBtn) {
-            nextCardBtn.addEventListener('click', () => {
+        // Hook the deck button to detect card draws
+        const deckArea = document.getElementById('deckArea');
+        if (deckArea) {
+            deckArea.addEventListener('click', () => {
                 if (this.active && this.waitingForAction?.type === 'draw') {
                     setTimeout(() => this.completeAction('draw'), 100);
                 }
@@ -203,7 +202,8 @@ class TutorialSystem extends GUTS.BaseSystem {
     }
 
     isTutorialActive() {
-        return this.active;
+        // Service only exists in tutorial scene
+        return true;
     }
 
     startTutorial() {

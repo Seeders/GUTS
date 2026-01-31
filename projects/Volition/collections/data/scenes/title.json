@@ -1,0 +1,7 @@
+{
+  "title": "Title Screen",
+  "interface": "title",
+  "systems": [
+    "TitleSystem"
+  ]
+}

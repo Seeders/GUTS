@@ -11,6 +11,7 @@
     "VolitionGame"
   ],
   "systems": [
+    "TitleSystem",
     "LayoutSystem",
     "VolitionGameSystem",
     "DeckSystem",
@@ -20,12 +21,13 @@
     "FoundationSystem",
     "InputSystem",
     "RenderSystem",
-    "TutorialSystem"
+    "TutorialSystem",
+    "HarbingerSystem"
   ],
   "interface": "main",
   "appLibrary": "VolitionGame",
   "appLoaderLibrary": "BaseLoader",
-  "initialScene": "game",
+  "initialScene": "title",
   "maxEntities": 1024,
   "handCapacity": 5,
   "tableauColumns": 6,

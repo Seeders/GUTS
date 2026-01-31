@@ -7,7 +7,6 @@ class FoundationSystem extends GUTS.BaseSystem {
 
     constructor(game) {
         super(game);
-        this.game.foundationSystem = this;
     }
 
     init() {
@@ -88,6 +87,13 @@ class FoundationSystem extends GUTS.BaseSystem {
 
         // Check win condition
         this.checkWin();
+
+        // Trigger event for other systems to react to
+        this.game.triggerEvent('onCardPlayedToFoundation', {
+            cardEid,
+            rank: card.rank,
+            suit: card.suit
+        });
 
         // Notify tutorial system if active
         if (this.call.onCardPlayed) {

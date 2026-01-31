@@ -2,12 +2,11 @@
  * HandSystem - Manages the player's hand as a FIFO queue
  */
 class HandSystem extends GUTS.BaseSystem {
-    static services = ['getHandCards', 'pushToHand', 'popFromHand', 'removeFromHand', 'isHandFull', 'getHandCapacity', 'getOldestHandCard', 'updateHandLayout'];
+    static services = ['getHandCards', 'pushToHand', 'popFromHand', 'popFromHandRaw', 'removeFromHand', 'isHandFull', 'getHandCapacity', 'getOldestHandCard', 'updateHandLayout'];
     static serviceDependencies = ['dealCard', 'getHandPosition', 'getCardWidth', 'getCardHeight', 'getDeckPosition'];
 
     constructor(game) {
         super(game);
-        this.game.handSystem = this;
         this.handCapacity = 5;
     }
 
@@ -113,6 +112,21 @@ class HandSystem extends GUTS.BaseSystem {
         // Re-index remaining cards
         this.reindexHand();
 
+        return oldestCard;
+    }
+
+    popFromHandRaw() {
+        // Remove oldest card WITHOUT reindexing - caller handles animations manually
+        const handCards = this.getHandCards();
+        if (handCards.length === 0) return null;
+
+        const oldestCard = handCards[0];
+        const loc = this.game.getComponent(oldestCard, 'cardLocation');
+
+        // Mark as transitioning (caller will set final location)
+        loc.location = -1;
+
+        // Don't reindex - caller will animate cards sequentially
         return oldestCard;
     }
 

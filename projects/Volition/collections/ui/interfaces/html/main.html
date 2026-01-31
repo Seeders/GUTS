@@ -1,13 +1,13 @@
 <div id="gameScreen">
+    <!-- Harbinger's mocking messages -->
+    <div id="harbingerMessage" class="harbinger-message hidden"></div>
+
     <!-- Compact Header -->
     <header id="gameHeader">
         <div class="header-left">
             <span id="gameTimer">0:00</span>
             <span class="divider">|</span>
             <span id="foundationProgress">0/52</span>
-        </div>
-        <div class="header-center">
-            <button id="nextCardBtn" class="btn-primary">Draw</button>
         </div>
         <div class="header-right">
             <span class="deck-count"><span id="deckCount">52</span> left</span>
@@ -49,8 +49,8 @@
                 <div class="hand-slot" id="hand-slot-3"></div>
                 <div class="hand-slot" id="hand-slot-4"></div>
             </div>
-            <!-- Deck visual (right of hand) -->
-            <div id="deckArea">
+            <!-- Deck visual (clickable to draw) -->
+            <button id="deckArea" class="deck-button">
                 <div id="deckVisual">
                     <div class="deck-card deck-layer-5"></div>
                     <div class="deck-card deck-layer-4"></div>
@@ -59,8 +59,8 @@
                     <div class="deck-card deck-layer-1"></div>
                     <div class="deck-card deck-layer-0"></div>
                 </div>
-                <span id="deckCountLabel">52</span>
-            </div>
+                <span id="deckCountLabel">Draw</span>
+            </button>
         </div>
         <div id="handIndicator">
             <span class="oldest-label">oldest</span>
@@ -93,7 +93,7 @@
         <div class="overlay-box">
             <h1>Victory!</h1>
             <p class="stat-line">Time: <span id="finalTime">0:00</span></p>
-            <button id="playAgainBtn" class="btn-large">Play Again</button>
+            <button id="playAgainBtn" class="btn-primary btn-large">Play Again</button>
         </div>
     </div>
 
@@ -102,7 +102,7 @@
         <div class="overlay-box loss">
             <h1>No Moves</h1>
             <p class="stat-line">Progress: <span id="finalProgress">0/52</span></p>
-            <button id="tryAgainBtn" class="btn-large">Try Again</button>
+            <button id="tryAgainBtn" class="btn-primary btn-large">Try Again</button>
         </div>
     </div>
 

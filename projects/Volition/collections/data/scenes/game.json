@@ -10,6 +10,7 @@
     "TableauSystem",
     "FoundationSystem",
     "InputSystem",
-    "RenderSystem"
+    "RenderSystem",
+    "HarbingerSystem"
   ]
 }

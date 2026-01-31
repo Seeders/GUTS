@@ -7,12 +7,12 @@ class VolitionGameSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getDeckCount', 'getHandCards', 'getTableauColumns', 'getColumnCards',
         'canPlayToFoundation', 'canPlayToTableau', 'isValidSequence', 'getCardsBelow',
-        'getTotalFoundationCards', 'flowCard', 'getCardElement'
+        'getTotalFoundationCards', 'flowCard', 'getCardElement', 'isTutorialActive',
+        'isAwaitingColumnSelection', 'cancelColumnSelection'
     ];
 
     constructor(game) {
         super(game);
-        this.game.volitionGameSystem = this;
 
         // Game state
         this.gameOver = false;
@@ -70,6 +70,9 @@ class VolitionGameSystem extends GUTS.BaseSystem {
     }
 
     checkFirstTimeUser() {
+        // Skip if in tutorial scene (service only exists there)
+        if (this.call.isTutorialActive?.()) return;
+
         try {
             const tutorialSeen = localStorage.getItem('volitionTutorialSeen');
             if (!tutorialSeen) {
@@ -104,9 +107,9 @@ class VolitionGameSystem extends GUTS.BaseSystem {
             checkMoveBtn.addEventListener('click', () => this.checkMove());
         }
 
-        const nextCardBtn = document.getElementById('nextCardBtn');
-        if (nextCardBtn) {
-            nextCardBtn.addEventListener('click', () => this.dealNextCard());
+        const deckArea = document.getElementById('deckArea');
+        if (deckArea) {
+            deckArea.addEventListener('click', () => this.dealNextCard());
         }
 
         const tutorialBtn = document.getElementById('tutorialBtn');

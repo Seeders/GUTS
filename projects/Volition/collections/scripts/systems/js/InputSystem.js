@@ -9,12 +9,12 @@ class InputSystem extends GUTS.BaseSystem {
         'getHandCards', 'getTableauColumns', 'getColumnCards',
         'isValidSequence', 'getCardsBelow', 'moveTableauToTableau',
         'flowCard', 'updateHandLayout',
-        'getFoundationPosition', 'getTableauPosition', 'getCardWidth', 'getCardHeight', 'getStackOffset'
+        'getFoundationPosition', 'getTableauPosition', 'getCardWidth', 'getCardHeight', 'getStackOffset',
+        'isAwaitingColumnSelection'
     ];
 
     constructor(game) {
         super(game);
-        this.game.inputSystem = this;
         this.selectedCard = null;
         this.draggedCards = []; // Array of cards being dragged (for stack moves)
         this.dragStartPositions = []; // Original positions for each dragged card
@@ -181,6 +181,9 @@ class InputSystem extends GUTS.BaseSystem {
         // Ignore synthesized mouse events after touch
         if (Date.now() - this.lastTouchTime < 500) return;
 
+        // Block dragging during column selection mode
+        if (this.call.isAwaitingColumnSelection?.()) return;
+
         const cardInfo = this.getCardAtPosition(e.clientX, e.clientY);
         if (cardInfo) {
             this.startDrag(cardInfo, e.clientX, e.clientY);
@@ -236,6 +239,9 @@ class InputSystem extends GUTS.BaseSystem {
         this.touchStartY = y;
         this.touchStartTime = now;
 
+        // Block dragging during column selection mode
+        if (this.call.isAwaitingColumnSelection?.()) return;
+
         const cardInfo = this.getCardAtPosition(x, y);
         if (cardInfo) {
             e.preventDefault();
@@ -280,6 +286,9 @@ class InputSystem extends GUTS.BaseSystem {
     onDoubleClick(e) {
         if (this.game.gameInstance?.state?.gameOver) return;
 
+        // Block during column selection mode
+        if (this.call.isAwaitingColumnSelection?.()) return;
+
         const cardInfo = this.getCardAtPosition(e.clientX, e.clientY);
         if (cardInfo) {
             // Try to auto-play to foundation (only single cards)
@@ -296,6 +305,9 @@ class InputSystem extends GUTS.BaseSystem {
 
     handleDoubleTap(x, y) {
         if (this.game.gameInstance?.state?.gameOver) return;
+
+        // Block during column selection mode
+        if (this.call.isAwaitingColumnSelection?.()) return;
 
         // Cancel any ongoing drag
         if (this.isDragging && this.selectedCard) {

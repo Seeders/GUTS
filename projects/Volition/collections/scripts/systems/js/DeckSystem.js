@@ -6,7 +6,6 @@ class DeckSystem extends GUTS.BaseSystem {
 
     constructor(game) {
         super(game);
-        this.game.deckSystem = this;
         this.deckOrder = []; // Array of entity IDs in deck order (index 0 = top of deck)
     }
 
@@ -190,15 +189,10 @@ class DeckSystem extends GUTS.BaseSystem {
     update() {
         const count = this.getDeckCount();
 
-        // Update deck count displays
+        // Update deck count display in header
         const deckCountEl = document.getElementById('deckCount');
         if (deckCountEl) {
             deckCountEl.textContent = count;
-        }
-
-        const deckCountLabel = document.getElementById('deckCountLabel');
-        if (deckCountLabel) {
-            deckCountLabel.textContent = count;
         }
 
         // Update deck visual layers

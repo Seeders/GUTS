@@ -12,6 +12,5 @@
     "InputSystem",
     "RenderSystem",
     "TutorialSystem"
-  ],
-  "isTutorial": true
+  ]
 }

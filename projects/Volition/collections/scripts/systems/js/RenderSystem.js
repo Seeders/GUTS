@@ -2,12 +2,11 @@
  * RenderSystem - Renders cards to the DOM and handles animations
  */
 class RenderSystem extends GUTS.BaseSystem {
-    static services = ['createCardElement', 'updateCardPosition', 'getCardElement'];
+    static services = ['createCardElement', 'updateCardPosition', 'getCardElement', 'flipCard'];
     static serviceDependencies = ['isValidSequence', 'canPlayToFoundation', 'getTotalFoundationCards'];
 
     constructor(game) {
         super(game);
-        this.game.renderSystem = this;
         this.cardElements = new Map();
         this.suitSymbols = ['\u2665', '\u2666', '\u2663', '\u2660']; // hearts, diamonds, clubs, spades
         this.rankNames = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -48,16 +47,22 @@ class RenderSystem extends GUTS.BaseSystem {
         const rankName = this.rankNames[card.rank];
         const centerContent = this.getPipPattern(card.rank, suitSymbol);
 
+        // Card has both front and back faces for flip animation
         el.innerHTML = `
-            <div class="card-inner">
-                <div class="card-corner top-left">
-                    <span class="card-rank">${rankName}</span>
-                    <span class="card-suit">${suitSymbol}</span>
+            <div class="card-flipper">
+                <div class="card-front">
+                    <div class="card-corner top-left">
+                        <span class="card-rank">${rankName}</span>
+                        <span class="card-suit">${suitSymbol}</span>
+                    </div>
+                    <div class="card-pips">${centerContent}</div>
+                    <div class="card-corner bottom-right">
+                        <span class="card-rank">${rankName}</span>
+                        <span class="card-suit">${suitSymbol}</span>
+                    </div>
                 </div>
-                <div class="card-pips">${centerContent}</div>
-                <div class="card-corner bottom-right">
-                    <span class="card-rank">${rankName}</span>
-                    <span class="card-suit">${suitSymbol}</span>
+                <div class="card-back">
+                    <div class="card-back-pattern"></div>
                 </div>
             </div>
         `;
@@ -65,6 +70,11 @@ class RenderSystem extends GUTS.BaseSystem {
         el.style.left = visual.x + 'px';
         el.style.top = visual.y + 'px';
         el.style.zIndex = visual.zIndex;
+
+        // Set initial face state
+        if (card.faceUp === 0) {
+            el.classList.add('face-down');
+        }
 
         this.cardContainer.appendChild(el);
         this.cardElements.set(cardEid, el);
@@ -120,12 +130,27 @@ class RenderSystem extends GUTS.BaseSystem {
         el.style.zIndex = visual.zIndex;
     }
 
+    flipCard(cardEid) {
+        const el = this.cardElements.get(cardEid);
+        if (!el) return;
+
+        // Add flipping animation class
+        el.classList.add('flipping');
+        el.classList.remove('face-down');
+
+        // Remove animation class after it completes
+        setTimeout(() => {
+            el.classList.remove('flipping');
+        }, 400);
+    }
+
     update() {
         const dt = 0.016; // ~60fps
         const entities = this.game.getEntitiesWith('card', 'cardVisual', 'cardLocation');
 
         for (const eid of entities) {
             const loc = this.game.getComponent(eid, 'cardLocation');
+            const card = this.game.getComponent(eid, 'card');
             const visual = this.game.getComponent(eid, 'cardVisual');
             const draggable = this.game.getComponent(eid, 'draggable');
 
@@ -170,6 +195,11 @@ class RenderSystem extends GUTS.BaseSystem {
 
             // Update classes
             el.classList.toggle('dragging', draggable.isDragging === 1);
+
+            // Update face-down state (unless actively flipping)
+            if (!el.classList.contains('flipping')) {
+                el.classList.toggle('face-down', card.faceUp === 0);
+            }
 
             // Highlight oldest card in hand
             if (loc.location === 1 && loc.index === 0) {

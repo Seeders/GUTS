@@ -1,0 +1,208 @@
+/* ============================================
+   VOLITION TITLE SCREEN
+   ============================================ */
+
+/* CSS Variables - matching the game theme */
+:root {
+    --color-bg: #1a1a2e;
+    --color-bg-dark: #0f0f1a;
+    --color-primary: #4ecdc4;
+    --color-primary-dim: rgba(78, 205, 196, 0.5);
+    --color-primary-glow: rgba(78, 205, 196, 0.25);
+    --color-secondary: #ff6b6b;
+    --color-secondary-dim: rgba(255, 107, 107, 0.5);
+    --color-secondary-glow: rgba(255, 107, 107, 0.25);
+    --color-text: #e8e8e8;
+    --color-text-dim: rgba(232, 232, 232, 0.6);
+}
+
+/* Reset */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Base */
+body {
+    background: var(--color-bg);
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--color-text);
+    overflow: hidden;
+}
+
+#appContainer {
+    width: 100vw;
+    height: 100vh;
+}
+
+/* ============================================
+   TITLE SCREEN
+   ============================================ */
+#titleScreen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: var(--color-bg);
+    position: relative;
+    overflow: hidden;
+}
+
+.title-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 20px;
+    animation: title-fade-in 1s ease-out;
+}
+
+.title-cover {
+    max-width: 90vw;
+    max-height: 60vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.title-tagline {
+    font-size: 14px;
+    color: var(--color-text-dim);
+    font-style: italic;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.play-button {
+    background: transparent;
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
+    font-size: 20px;
+    font-weight: 600;
+    padding: 16px 64px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.play-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--color-primary-glow), transparent);
+    transition: left 0.5s ease;
+}
+
+.play-button:hover {
+    background: var(--color-primary);
+    color: var(--color-bg-dark);
+    box-shadow: 0 0 30px var(--color-primary-glow);
+}
+
+.play-button:hover::before {
+    left: 100%;
+}
+
+.play-button:active {
+    transform: scale(0.98);
+}
+
+.tutorial-link {
+    background: transparent;
+    border: none;
+    color: var(--color-text-dim);
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s ease;
+    padding: 8px 16px;
+}
+
+.tutorial-link:hover {
+    color: var(--color-primary);
+}
+
+.title-footer {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.harbinger-quote {
+    font-size: 13px;
+    color: var(--color-secondary-dim);
+    font-style: italic;
+    opacity: 0;
+    animation: quote-fade-in 1s ease-out 0.5s forwards;
+}
+
+@keyframes title-fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes quote-fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Tablet and desktop - larger text */
+@media (min-width: 600px) {
+    .title-tagline {
+        font-size: 16px;
+    }
+
+    .play-button {
+        font-size: 24px;
+        padding: 18px 80px;
+    }
+
+    .harbinger-quote {
+        font-size: 15px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .title-tagline {
+        font-size: 18px;
+    }
+
+    .play-button {
+        font-size: 28px;
+        padding: 20px 100px;
+    }
+
+    .harbinger-quote {
+        font-size: 16px;
+    }
+}
+
+@media (min-width: 1440px) {
+    .title-tagline {
+        font-size: 20px;
+    }
+}

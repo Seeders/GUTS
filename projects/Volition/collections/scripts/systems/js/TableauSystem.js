@@ -8,7 +8,6 @@ class TableauSystem extends GUTS.BaseSystem {
 
     constructor(game) {
         super(game);
-        this.game.tableauSystem = this;
         this.numColumns = 4;
     }
 
@@ -141,6 +140,21 @@ class TableauSystem extends GUTS.BaseSystem {
         visual.targetY = pos.y + loc.index * stackOffset;
         visual.zIndex = 50 + loc.index;
         visual.animating = 1;
+
+        // Trigger event for other systems to react to
+        const card = this.game.getComponent(cardEid, 'card');
+        const bottomCardRank = landedCards.length > 0
+            ? this.game.getComponent(landedCards[landedCards.length - 1], 'card').rank
+            : null;
+
+        this.game.triggerEvent('onCardPlayedToTableau', {
+            cardEid,
+            rank: card.rank,
+            suit: card.suit,
+            columnIndex,
+            wasEmptyColumn: landedCards.length === 0,
+            bottomCardRank
+        });
 
         // Notify tutorial system if active
         if (this.call.onCardPlayed) {
