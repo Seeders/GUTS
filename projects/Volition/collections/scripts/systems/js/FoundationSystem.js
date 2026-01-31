@@ -2,8 +2,8 @@
  * FoundationSystem - Manages the four foundation piles (Ace to King by suit)
  */
 class FoundationSystem extends GUTS.BaseSystem {
-    static services = ['canPlayToFoundation', 'playToFoundation', 'getFoundationCards', 'getTopFoundationRank', 'getTotalFoundationCards', 'checkWin'];
-    static serviceDependencies = ['removeFromHand', 'showWinScreen', 'getFoundationPosition'];
+    static services = ['canPlayToFoundation', 'playToFoundation', 'getFoundationCards', 'getTopFoundationRank', 'getTotalFoundationCards', 'checkWin', 'refreshFoundationPositions'];
+    static serviceDependencies = ['removeFromHand', 'showWinScreen', 'getFoundationPosition', 'onCardPlayed'];
 
     constructor(game) {
         super(game);
@@ -89,6 +89,11 @@ class FoundationSystem extends GUTS.BaseSystem {
         // Check win condition
         this.checkWin();
 
+        // Notify tutorial system if active
+        if (this.call.onCardPlayed) {
+            this.call.onCardPlayed('foundation', cardEid);
+        }
+
         return true;
     }
 
@@ -100,7 +105,7 @@ class FoundationSystem extends GUTS.BaseSystem {
         }
     }
 
-    refreshAllCardPositions() {
+    refreshFoundationPositions() {
         for (let suit = 0; suit < 4; suit++) {
             const pos = this.call.getFoundationPosition(suit);
             const cards = this.getFoundationCards(suit);

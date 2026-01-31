@@ -1,0 +1,17 @@
+{
+  "title": "Tutorial",
+  "interface": "main",
+  "systems": [
+    "LayoutSystem",
+    "VolitionGameSystem",
+    "DeckSystem",
+    "CardFlowSystem",
+    "HandSystem",
+    "TableauSystem",
+    "FoundationSystem",
+    "InputSystem",
+    "RenderSystem",
+    "TutorialSystem"
+  ],
+  "isTutorial": true
+}

@@ -7,7 +7,7 @@ class VolitionGameSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getDeckCount', 'getHandCards', 'getTableauColumns', 'getColumnCards',
         'canPlayToFoundation', 'canPlayToTableau', 'isValidSequence', 'getCardsBelow',
-        'getTotalFoundationCards', 'flowCard'
+        'getTotalFoundationCards', 'flowCard', 'getCardElement'
     ];
 
     constructor(game) {
@@ -66,6 +66,21 @@ class VolitionGameSystem extends GUTS.BaseSystem {
     postAllInit() {
         this.setupEventListeners();
         this.setupSettingsModal();
+        this.checkFirstTimeUser();
+    }
+
+    checkFirstTimeUser() {
+        try {
+            const tutorialSeen = localStorage.getItem('volitionTutorialSeen');
+            if (!tutorialSeen) {
+                // First time user - show tutorial automatically
+                setTimeout(() => {
+                    this.game.sceneManager?.switchScene('tutorial');
+                }, 100);
+            }
+        } catch (e) {
+            console.warn('Failed to check tutorial state:', e);
+        }
     }
 
     setupEventListeners() {
@@ -92,6 +107,13 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         const nextCardBtn = document.getElementById('nextCardBtn');
         if (nextCardBtn) {
             nextCardBtn.addEventListener('click', () => this.dealNextCard());
+        }
+
+        const tutorialBtn = document.getElementById('tutorialBtn');
+        if (tutorialBtn) {
+            tutorialBtn.addEventListener('click', () => {
+                this.game.sceneManager?.switchScene('tutorial');
+            });
         }
     }
 
@@ -198,59 +220,130 @@ class VolitionGameSystem extends GUTS.BaseSystem {
     checkMove() {
         if (this.gameOver) return;
 
-        const hasValidMove = this.hasAnyValidMove();
+        const moveInfo = this.findValidMove();
         const deckEmpty = this.call.getDeckCount() <= 0;
 
-        if (!hasValidMove && deckEmpty) {
+        if (!moveInfo && deckEmpty) {
             // No moves and deck is empty - game over
             this.showLossScreen();
-        } else if (hasValidMove) {
-            this.showMessage('Valid moves available!');
+        } else if (moveInfo) {
+            this.showMessage(moveInfo.message);
+            // Highlight the card if possible
+            if (moveInfo.cardEid) {
+                this.highlightCard(moveInfo.cardEid);
+            }
         } else {
             // No moves but deck has cards
             this.showMessage('No moves - draw more cards!');
         }
     }
 
-    hasAnyValidMove() {
-        // Check hand cards
+    getCardName(cardEid) {
+        const card = this.game.getComponent(cardEid, 'card');
+        const ranks = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        const suits = ['♥', '♦', '♣', '♠'];
+        return ranks[card.rank] + suits[card.suit];
+    }
+
+    highlightCard(cardEid) {
+        // Remove previous highlight
+        document.querySelectorAll('.card.hint-highlight').forEach(el => {
+            el.classList.remove('hint-highlight');
+        });
+
+        // Add highlight to the card
+        const el = this.call.getCardElement(cardEid);
+        if (el) {
+            el.classList.add('hint-highlight');
+            // Remove highlight after 3 seconds
+            setTimeout(() => el.classList.remove('hint-highlight'), 3000);
+        }
+    }
+
+    findValidMove() {
+        // Check hand cards for foundation plays
         const handCards = this.call.getHandCards();
         for (const cardEid of handCards) {
             if (this.call.canPlayToFoundation(cardEid)) {
-                return true;
+                return {
+                    cardEid,
+                    message: `${this.getCardName(cardEid)} can go to foundation`
+                };
             }
+        }
 
-            const numCols = this.call.getTableauColumns();
+        // Check hand cards for tableau plays
+        const numCols = this.call.getTableauColumns();
+        for (const cardEid of handCards) {
             for (let col = 0; col < numCols; col++) {
                 if (this.call.canPlayToTableau(cardEid, col)) {
-                    return true;
+                    return {
+                        cardEid,
+                        message: `${this.getCardName(cardEid)} can play to column ${col + 1}`
+                    };
                 }
             }
         }
 
-        // Check tableau cards
-        const numCols = this.call.getTableauColumns();
+        // Check tableau cards for foundation plays (bottom cards only)
         for (let col = 0; col < numCols; col++) {
             const colCards = this.call.getColumnCards(col);
             for (const cardEid of colCards) {
                 if (this.call.canPlayToFoundation(cardEid)) {
                     const cardsBelow = this.call.getCardsBelow(cardEid);
                     if (cardsBelow.length === 1) {
-                        return true;
+                        return {
+                            cardEid,
+                            message: `${this.getCardName(cardEid)} can go to foundation`
+                        };
                     }
                 }
+            }
+        }
+
+        // Check tableau cards for tableau-to-tableau moves
+        // Only count moves that EXPOSE a new card (i.e., there are cards above the moved stack)
+        for (let col = 0; col < numCols; col++) {
+            const colCards = this.call.getColumnCards(col);
+            for (const cardEid of colCards) {
+                const loc = this.game.getComponent(cardEid, 'cardLocation');
+
+                // Skip if this is the top card of the column (index 0)
+                // Moving it wouldn't expose anything new
+                if (loc.index === 0) continue;
 
                 if (this.call.isValidSequence(cardEid)) {
                     for (let targetCol = 0; targetCol < numCols; targetCol++) {
                         if (targetCol !== col && this.call.canPlayToTableau(cardEid, targetCol)) {
-                            return true;
+                            const cardsBelow = this.call.getCardsBelow(cardEid);
+                            const stackSize = cardsBelow.length;
+
+                            // Get the card that would be exposed
+                            const exposedCard = colCards[loc.index - 1];
+                            const exposedName = this.getCardName(exposedCard);
+
+                            if (stackSize === 1) {
+                                return {
+                                    cardEid,
+                                    message: `Move ${this.getCardName(cardEid)} to column ${targetCol + 1} (exposes ${exposedName})`
+                                };
+                            } else {
+                                return {
+                                    cardEid,
+                                    message: `Move ${this.getCardName(cardEid)} + ${stackSize - 1} to column ${targetCol + 1} (exposes ${exposedName})`
+                                };
+                            }
                         }
                     }
                 }
             }
         }
 
-        return false;
+        return null;
+    }
+
+    hasAnyValidMove() {
+        return this.findValidMove() !== null;
     }
 
     showLossScreen() {

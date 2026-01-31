@@ -8,7 +8,7 @@ class InputSystem extends GUTS.BaseSystem {
         'canPlayToTableau', 'playToTableau',
         'getHandCards', 'getTableauColumns', 'getColumnCards',
         'isValidSequence', 'getCardsBelow', 'moveTableauToTableau',
-        'flowCard',
+        'flowCard', 'updateHandLayout',
         'getFoundationPosition', 'getTableauPosition', 'getCardWidth', 'getCardHeight', 'getStackOffset'
     ];
 
@@ -23,6 +23,22 @@ class InputSystem extends GUTS.BaseSystem {
         this.isDragging = false;
         this.dragStartX = 0;
         this.dragStartY = 0;
+
+        // Double-tap detection for mobile
+        this.lastTapTime = 0;
+        this.lastTapX = 0;
+        this.lastTapY = 0;
+        this.doubleTapThreshold = 300; // ms between taps
+        this.doubleTapDistance = 30; // max pixels between taps
+
+        // Drop preview element
+        this.dropPreview = null;
+
+        // Track last touch to ignore synthesized mouse events
+        this.lastTouchTime = 0;
+
+        // Store bound handlers for cleanup
+        this.boundHandlers = null;
     }
 
     getCardDimensions() {
@@ -36,7 +52,7 @@ class InputSystem extends GUTS.BaseSystem {
         console.log('InputSystem initializing...');
     }
 
-    postAllInit() {
+    onSceneLoad() {
         this.setupEventListeners();
     }
 
@@ -47,18 +63,49 @@ class InputSystem extends GUTS.BaseSystem {
             return;
         }
 
+        // Store bound handlers for cleanup
+        this.boundHandlers = {
+            mousedown: this.onMouseDown.bind(this),
+            mousemove: this.onMouseMove.bind(this),
+            mouseup: this.onMouseUp.bind(this),
+            touchstart: this.onTouchStart.bind(this),
+            touchmove: this.onTouchMove.bind(this),
+            touchend: this.onTouchEnd.bind(this),
+            dblclick: this.onDoubleClick.bind(this)
+        };
+
         // Mouse events
-        document.addEventListener('mousedown', this.onMouseDown.bind(this));
-        document.addEventListener('mousemove', this.onMouseMove.bind(this));
-        document.addEventListener('mouseup', this.onMouseUp.bind(this));
+        document.addEventListener('mousedown', this.boundHandlers.mousedown);
+        document.addEventListener('mousemove', this.boundHandlers.mousemove);
+        document.addEventListener('mouseup', this.boundHandlers.mouseup);
 
         // Touch events
-        document.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
-        document.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
-        document.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: false });
+        document.addEventListener('touchstart', this.boundHandlers.touchstart, { passive: false });
+        document.addEventListener('touchmove', this.boundHandlers.touchmove, { passive: false });
+        document.addEventListener('touchend', this.boundHandlers.touchend, { passive: false });
 
         // Double-click for auto-play
-        document.addEventListener('dblclick', this.onDoubleClick.bind(this));
+        document.addEventListener('dblclick', this.boundHandlers.dblclick);
+    }
+
+    onSceneUnload() {
+        // Remove event listeners when scene is unloaded
+        if (this.boundHandlers) {
+            document.removeEventListener('mousedown', this.boundHandlers.mousedown);
+            document.removeEventListener('mousemove', this.boundHandlers.mousemove);
+            document.removeEventListener('mouseup', this.boundHandlers.mouseup);
+            document.removeEventListener('touchstart', this.boundHandlers.touchstart);
+            document.removeEventListener('touchmove', this.boundHandlers.touchmove);
+            document.removeEventListener('touchend', this.boundHandlers.touchend);
+            document.removeEventListener('dblclick', this.boundHandlers.dblclick);
+            this.boundHandlers = null;
+        }
+
+        // Remove drop preview element
+        if (this.dropPreview && this.dropPreview.parentNode) {
+            this.dropPreview.parentNode.removeChild(this.dropPreview);
+            this.dropPreview = null;
+        }
     }
 
     getCardAtPosition(x, y) {
@@ -131,6 +178,9 @@ class InputSystem extends GUTS.BaseSystem {
     onMouseDown(e) {
         if (this.game.gameInstance?.state?.gameOver) return;
 
+        // Ignore synthesized mouse events after touch
+        if (Date.now() - this.lastTouchTime < 500) return;
+
         const cardInfo = this.getCardAtPosition(e.clientX, e.clientY);
         if (cardInfo) {
             this.startDrag(cardInfo, e.clientX, e.clientY);
@@ -138,12 +188,18 @@ class InputSystem extends GUTS.BaseSystem {
     }
 
     onMouseMove(e) {
+        // Ignore synthesized mouse events after touch
+        if (Date.now() - this.lastTouchTime < 500) return;
+
         if (this.isDragging && this.selectedCard) {
             this.updateDrag(e.clientX, e.clientY);
         }
     }
 
     onMouseUp(e) {
+        // Ignore synthesized mouse events after touch
+        if (Date.now() - this.lastTouchTime < 500) return;
+
         if (this.isDragging && this.selectedCard) {
             this.endDrag(e.clientX, e.clientY);
         }
@@ -152,11 +208,38 @@ class InputSystem extends GUTS.BaseSystem {
     onTouchStart(e) {
         if (this.game.gameInstance?.state?.gameOver) return;
 
+        // Track touch time to ignore synthesized mouse events
+        this.lastTouchTime = Date.now();
+
         const touch = e.touches[0];
-        const cardInfo = this.getCardAtPosition(touch.clientX, touch.clientY);
+        const now = Date.now();
+        const x = touch.clientX;
+        const y = touch.clientY;
+
+        // Check for double-tap
+        const timeDiff = now - this.lastTapTime;
+        const distX = Math.abs(x - this.lastTapX);
+        const distY = Math.abs(y - this.lastTapY);
+
+        if (timeDiff < this.doubleTapThreshold &&
+            distX < this.doubleTapDistance &&
+            distY < this.doubleTapDistance) {
+            // Double-tap detected
+            e.preventDefault();
+            this.lastTapTime = 0; // Reset to prevent triple-tap
+            this.handleDoubleTap(x, y);
+            return;
+        }
+
+        // Record this touch as potential first tap
+        this.touchStartX = x;
+        this.touchStartY = y;
+        this.touchStartTime = now;
+
+        const cardInfo = this.getCardAtPosition(x, y);
         if (cardInfo) {
             e.preventDefault();
-            this.startDrag(cardInfo, touch.clientX, touch.clientY);
+            this.startDrag(cardInfo, x, y);
         }
     }
 
@@ -169,10 +252,28 @@ class InputSystem extends GUTS.BaseSystem {
     }
 
     onTouchEnd(e) {
+        // Track touch time to ignore synthesized mouse events
+        this.lastTouchTime = Date.now();
+
+        const touch = e.changedTouches[0];
+        const x = touch.clientX;
+        const y = touch.clientY;
+
+        // Check if this was a tap (minimal movement from start)
+        const movedX = Math.abs(x - (this.touchStartX || 0));
+        const movedY = Math.abs(y - (this.touchStartY || 0));
+        const wasTap = movedX < this.doubleTapDistance && movedY < this.doubleTapDistance;
+
+        if (wasTap) {
+            // Record this as a tap for double-tap detection
+            this.lastTapTime = Date.now();
+            this.lastTapX = x;
+            this.lastTapY = y;
+        }
+
         if (this.isDragging && this.selectedCard) {
             e.preventDefault();
-            const touch = e.changedTouches[0];
-            this.endDrag(touch.clientX, touch.clientY);
+            this.endDrag(x, y);
         }
     }
 
@@ -193,6 +294,35 @@ class InputSystem extends GUTS.BaseSystem {
         }
     }
 
+    handleDoubleTap(x, y) {
+        if (this.game.gameInstance?.state?.gameOver) return;
+
+        // Cancel any ongoing drag
+        if (this.isDragging && this.selectedCard) {
+            this.draggedCards.forEach(cardEid => {
+                const d = this.game.getComponent(cardEid, 'draggable');
+                d.isDragging = 0;
+            });
+            this.selectedCard = null;
+            this.draggedCards = [];
+            this.dragStartPositions = [];
+            this.isDragging = false;
+        }
+
+        const cardInfo = this.getCardAtPosition(x, y);
+        if (cardInfo) {
+            // Try to auto-play to foundation (only single cards)
+            if (this.call.canPlayToFoundation(cardInfo.eid)) {
+                const wasFromHand = cardInfo.source === 'hand';
+                this.call.playToFoundation(cardInfo.eid);
+                // Auto-refill hand in manual mode
+                if (wasFromHand) {
+                    this.tryAutoRefill();
+                }
+            }
+        }
+    }
+
     tryAutoRefill() {
         // Automatically draw next card when playing from hand
         this.call.flowCard();
@@ -200,6 +330,9 @@ class InputSystem extends GUTS.BaseSystem {
 
     startDrag(cardInfo, x, y) {
         const { eid, source, column } = cardInfo;
+
+        // Clear any previous highlights
+        this.clearDropHighlights();
 
         this.selectedCard = eid;
         this.sourceLocation = source;
@@ -262,10 +395,74 @@ class InputSystem extends GUTS.BaseSystem {
             v.x = baseX;
             v.y = baseY + idx * stackOffset;
         });
+
+        // Update drop target highlights
+        this.updateDropHighlights(x, y);
+    }
+
+    updateDropHighlights(x, y) {
+        // Clear previous preview
+        this.clearDropHighlights();
+
+        if (!this.selectedCard) return;
+
+        // Find what we're hovering over
+        const target = this.getDropTarget(x, y);
+        if (!target) return;
+
+        const card = this.game.getComponent(this.selectedCard, 'card');
+        const isSingleCard = this.draggedCards.length === 1;
+        const dims = this.getCardDimensions();
+        const stackOffset = this.call.getStackOffset();
+
+        if (target.type === 'foundation') {
+            if (isSingleCard && card.suit === target.suit && this.call.canPlayToFoundation(this.selectedCard)) {
+                const pos = this.call.getFoundationPosition(target.suit);
+                this.showDropPreview(pos.x, pos.y, dims.width, dims.height);
+            }
+        } else if (target.type === 'tableau') {
+            // Skip source column for tableau cards
+            if (this.sourceLocation === 'tableau' && this.sourceColumn === target.column) return;
+
+            if (this.call.canPlayToTableau(this.selectedCard, target.column)) {
+                const pos = this.call.getTableauPosition(target.column);
+                const columnCards = this.call.getColumnCards(target.column, false); // landed cards only
+                const dropY = pos.y + columnCards.length * stackOffset;
+                this.showDropPreview(pos.x, dropY, dims.width, dims.height);
+            }
+        }
+    }
+
+    showDropPreview(x, y, width, height) {
+        if (!this.dropPreview) {
+            this.dropPreview = document.createElement('div');
+            this.dropPreview.className = 'drop-preview';
+            document.body.appendChild(this.dropPreview);
+        }
+
+        this.dropPreview.style.left = x + 'px';
+        this.dropPreview.style.top = y + 'px';
+        this.dropPreview.style.width = width + 'px';
+        this.dropPreview.style.height = height + 'px';
+        this.dropPreview.style.display = 'block';
+    }
+
+    clearDropHighlights() {
+        document.querySelectorAll('.drop-hover').forEach(el => {
+            el.classList.remove('drop-hover');
+        });
+
+        // Hide drop preview
+        if (this.dropPreview) {
+            this.dropPreview.style.display = 'none';
+        }
     }
 
     endDrag(x, y) {
         if (!this.selectedCard) return;
+
+        // Clear drop highlights
+        this.clearDropHighlights();
 
         // Reset dragging state on all dragged cards
         this.draggedCards.forEach(cardEid => {
@@ -319,11 +516,6 @@ class InputSystem extends GUTS.BaseSystem {
                 v.zIndex = startPos.zIndex;
                 v.animating = 1;
             });
-
-            // Restore z-index via hand layout update if from hand
-            if (this.sourceLocation === 'hand' && this.game.handSystem) {
-                this.game.handSystem.updateHandLayout();
-            }
         }
 
         this.selectedCard = null;

@@ -2,8 +2,8 @@
  * HandSystem - Manages the player's hand as a FIFO queue
  */
 class HandSystem extends GUTS.BaseSystem {
-    static services = ['getHandCards', 'pushToHand', 'popFromHand', 'removeFromHand', 'isHandFull', 'getHandCapacity', 'getOldestHandCard'];
-    static serviceDependencies = ['dealCard', 'getHandPosition', 'getCardWidth', 'getCardHeight'];
+    static services = ['getHandCards', 'pushToHand', 'popFromHand', 'removeFromHand', 'isHandFull', 'getHandCapacity', 'getOldestHandCard', 'updateHandLayout'];
+    static serviceDependencies = ['dealCard', 'getHandPosition', 'getCardWidth', 'getCardHeight', 'getDeckPosition'];
 
     constructor(game) {
         super(game);
@@ -88,6 +88,11 @@ class HandSystem extends GUTS.BaseSystem {
 
         // Face up
         card.faceUp = 1;
+
+        // Set initial position to deck (so card animates FROM deck)
+        const deckPos = this.call.getDeckPosition();
+        visual.x = deckPos.x;
+        visual.y = deckPos.y;
 
         // Set target position
         this.updateHandLayout();

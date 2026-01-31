@@ -17,8 +17,61 @@ class DeckSystem extends GUTS.BaseSystem {
     postAllInit() {
         console.log('DeckSystem postAllInit called');
         this.createDeck();
-        this.shuffleDeck();
+
+        // Use fixed deck if TutorialSystem is present (tutorial scene only)
+        if (this.game.systemsByName?.has('TutorialSystem')) {
+            this.setupTutorialDeck();
+        } else {
+            this.shuffleDeck();
+        }
         console.log('DeckSystem: Deck created and shuffled, total cards:', this.deckOrder.length);
+    }
+
+    /**
+     * Set up a fixed deck order for the tutorial
+     * Ensures the first 5 cards (initial hand) include an Ace and useful cards
+     */
+    setupTutorialDeck() {
+        // Find specific cards to put at the front
+        // Ace for foundation, King for tableau, and other cards
+        // This gives a good mix for demonstrating plays
+
+        const findCard = (suit, rank) => {
+            return this.deckOrder.find(eid => {
+                const card = this.game.getComponent(eid, 'card');
+                return card.suit === suit && card.rank === rank;
+            });
+        };
+
+        // Desired initial hand (first 5 cards dealt)
+        const tutorialHand = [
+            findCard(0, 1),   // Ace of Hearts - can play to foundation
+            findCard(3, 13),  // King of Spades - can start empty tableau column
+            findCard(1, 5),   // 5 of Diamonds
+            findCard(2, 10),  // 10 of Clubs
+            findCard(0, 3),   // 3 of Hearts
+        ];
+
+        // Remove these from deck and add to front
+        for (const eid of tutorialHand) {
+            if (eid) {
+                const idx = this.deckOrder.indexOf(eid);
+                if (idx > -1) {
+                    this.deckOrder.splice(idx, 1);
+                }
+            }
+        }
+
+        // Add tutorial hand cards to front (they'll be dealt first)
+        this.deckOrder = [...tutorialHand.filter(e => e), ...this.deckOrder];
+
+        // Update indices
+        this.deckOrder.forEach((eid, idx) => {
+            const loc = this.game.getComponent(eid, 'cardLocation');
+            loc.index = idx;
+        });
+
+        console.log('TutorialDeck: Set up fixed deck order for tutorial');
     }
 
     createDeck() {
@@ -135,10 +188,52 @@ class DeckSystem extends GUTS.BaseSystem {
     }
 
     update() {
-        // Update deck count display
+        const count = this.getDeckCount();
+
+        // Update deck count displays
         const deckCountEl = document.getElementById('deckCount');
         if (deckCountEl) {
-            deckCountEl.textContent = this.getDeckCount();
+            deckCountEl.textContent = count;
+        }
+
+        const deckCountLabel = document.getElementById('deckCountLabel');
+        if (deckCountLabel) {
+            deckCountLabel.textContent = count;
+        }
+
+        // Update deck visual layers
+        this.updateDeckVisual(count);
+    }
+
+    updateDeckVisual(count) {
+        const deckVisual = document.getElementById('deckVisual');
+        if (!deckVisual) return;
+
+        // Show/hide layers based on remaining cards
+        // 6 layers, each represents ~9 cards (52/6 ≈ 9)
+        const layers = deckVisual.querySelectorAll('.deck-card');
+        const cardsPerLayer = 52 / layers.length;
+
+        layers.forEach((layer, idx) => {
+            // Layer 0 is on top (shows when any cards remain)
+            // Layer 5 is bottom (shows only when many cards remain)
+            const layerIndex = layers.length - 1 - idx; // Reverse: 5,4,3,2,1,0
+            const threshold = Math.ceil((layerIndex) * cardsPerLayer);
+
+            if (count > threshold) {
+                layer.style.opacity = '1';
+                layer.style.transform = 'scale(1)';
+            } else {
+                layer.style.opacity = '0';
+                layer.style.transform = 'scale(0.95)';
+            }
+        });
+
+        // Mark as empty when no cards left
+        if (count === 0) {
+            deckVisual.classList.add('empty');
+        } else {
+            deckVisual.classList.remove('empty');
         }
     }
 }

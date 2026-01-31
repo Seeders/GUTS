@@ -14,19 +14,22 @@
         </div>
     </header>
 
-    <!-- Foundation piles -->
-    <div id="foundationArea">
-        <div class="foundation-pile" id="foundation-0" data-suit="0">
-            <span class="suit-icon hearts"></span>
-        </div>
-        <div class="foundation-pile" id="foundation-1" data-suit="1">
-            <span class="suit-icon diamonds"></span>
-        </div>
-        <div class="foundation-pile" id="foundation-2" data-suit="2">
-            <span class="suit-icon clubs"></span>
-        </div>
-        <div class="foundation-pile" id="foundation-3" data-suit="3">
-            <span class="suit-icon spades"></span>
+    <!-- Foundation area -->
+    <div id="topArea">
+        <!-- Foundation piles -->
+        <div id="foundationArea">
+            <div class="foundation-pile" id="foundation-0" data-suit="0">
+                <span class="suit-icon hearts"></span>
+            </div>
+            <div class="foundation-pile" id="foundation-1" data-suit="1">
+                <span class="suit-icon diamonds"></span>
+            </div>
+            <div class="foundation-pile" id="foundation-2" data-suit="2">
+                <span class="suit-icon clubs"></span>
+            </div>
+            <div class="foundation-pile" id="foundation-3" data-suit="3">
+                <span class="suit-icon spades"></span>
+            </div>
         </div>
     </div>
 
@@ -36,14 +39,28 @@
     <!-- Card container for absolute positioned cards -->
     <div id="cardContainer"></div>
 
-    <!-- Hand area -->
+    <!-- Hand area with deck -->
     <div id="handWrapper">
-        <div id="handArea">
-            <div class="hand-slot" id="hand-slot-0"></div>
-            <div class="hand-slot" id="hand-slot-1"></div>
-            <div class="hand-slot" id="hand-slot-2"></div>
-            <div class="hand-slot" id="hand-slot-3"></div>
-            <div class="hand-slot" id="hand-slot-4"></div>
+        <div id="handRow">
+            <div id="handArea">
+                <div class="hand-slot" id="hand-slot-0"></div>
+                <div class="hand-slot" id="hand-slot-1"></div>
+                <div class="hand-slot" id="hand-slot-2"></div>
+                <div class="hand-slot" id="hand-slot-3"></div>
+                <div class="hand-slot" id="hand-slot-4"></div>
+            </div>
+            <!-- Deck visual (right of hand) -->
+            <div id="deckArea">
+                <div id="deckVisual">
+                    <div class="deck-card deck-layer-5"></div>
+                    <div class="deck-card deck-layer-4"></div>
+                    <div class="deck-card deck-layer-3"></div>
+                    <div class="deck-card deck-layer-2"></div>
+                    <div class="deck-card deck-layer-1"></div>
+                    <div class="deck-card deck-layer-0"></div>
+                </div>
+                <span id="deckCountLabel">52</span>
+            </div>
         </div>
         <div id="handIndicator">
             <span class="oldest-label">oldest</span>
@@ -53,6 +70,10 @@
 
     <!-- Bottom toolbar -->
     <nav id="toolbar">
+        <button id="tutorialBtn" class="toolbar-btn">
+            <span class="icon">i</span>
+            <span class="label">How to</span>
+        </button>
         <button id="checkMoveBtn" class="toolbar-btn">
             <span class="icon">?</span>
             <span class="label">Check</span>
@@ -93,9 +114,9 @@
             <div class="setting-group">
                 <label>Card Speed</label>
                 <div class="speed-options">
-                    <button class="speed-btn" data-speed="2500">Slow</button>
+                    <button class="speed-btn" data-speed="2000">Slow</button>
                     <button class="speed-btn active" data-speed="4000">Normal</button>
-                    <button class="speed-btn" data-speed="6000">Fast</button>
+                    <button class="speed-btn" data-speed="8000">Fast</button>
                 </div>
             </div>
 

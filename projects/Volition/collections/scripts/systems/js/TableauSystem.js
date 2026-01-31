@@ -3,8 +3,8 @@
  * Rules: Alternating colors, descending rank (K->Q->J->10...->A)
  */
 class TableauSystem extends GUTS.BaseSystem {
-    static services = ['canPlayToTableau', 'playToTableau', 'dumpToTableau', 'getColumnCards', 'getTableauColumns', 'getBottomCard', 'getCardsBelow', 'isValidSequence', 'moveTableauToTableau', 'findEmptyColumn'];
-    static serviceDependencies = ['removeFromHand', 'getTableauPosition', 'getStackOffset'];
+    static services = ['canPlayToTableau', 'playToTableau', 'dumpToTableau', 'getColumnCards', 'getTableauColumns', 'getBottomCard', 'getCardsBelow', 'isValidSequence', 'moveTableauToTableau', 'findEmptyColumn', 'refreshTableauPositions'];
+    static serviceDependencies = ['removeFromHand', 'getTableauPosition', 'getStackOffset', 'refreshLayout', 'onCardPlayed'];
 
     constructor(game) {
         super(game);
@@ -38,9 +38,7 @@ class TableauSystem extends GUTS.BaseSystem {
         }
 
         // Notify LayoutSystem to refresh after creating columns
-        if (this.game.layoutSystem) {
-            this.game.layoutSystem.refreshLayout();
-        }
+        this.call.refreshLayout();
     }
 
     getTableauColumns() {
@@ -97,7 +95,7 @@ class TableauSystem extends GUTS.BaseSystem {
         const columnCards = this.getColumnCards(columnIndex, false);
 
         if (columnCards.length === 0) {
-            // Empty column - only Kings can be placed by player
+            // Empty column - only Kings can be placed
             return card.rank === 13;
         }
 
@@ -143,6 +141,11 @@ class TableauSystem extends GUTS.BaseSystem {
         visual.targetY = pos.y + loc.index * stackOffset;
         visual.zIndex = 50 + loc.index;
         visual.animating = 1;
+
+        // Notify tutorial system if active
+        if (this.call.onCardPlayed) {
+            this.call.onCardPlayed('tableau', cardEid);
+        }
 
         return true;
     }
@@ -297,7 +300,7 @@ class TableauSystem extends GUTS.BaseSystem {
         });
     }
 
-    refreshAllCardPositions() {
+    refreshTableauPositions() {
         const stackOffset = this.call.getStackOffset();
         for (let col = 0; col < this.numColumns; col++) {
             const pos = this.call.getTableauPosition(col);

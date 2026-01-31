@@ -1,0 +1,347 @@
+/**
+ * TutorialSystem - Interactive walkthrough tutorial with fixed scenario
+ * Guides the player through actual gameplay moves
+ */
+class TutorialSystem extends GUTS.BaseSystem {
+    static services = ['startTutorial', 'endTutorial', 'isTutorialActive', 'onCardPlayed'];
+    static serviceDependencies = ['getHandCards', 'getColumnCards', 'getFoundationCards', 'getDeckCount', 'flowCard'];
+
+    constructor(game) {
+        super(game);
+        this.game.tutorialSystem = this;
+        this.active = false;
+        this.currentStep = 0;
+        this.overlay = null;
+        this.waitingForAction = null;
+
+        // Tutorial steps - each step explains something and optionally waits for an action
+        this.steps = [
+            {
+                title: "Welcome to Volition!",
+                text: "Let's learn how to play. Your goal is to move all 52 cards to the foundation piles sorted by suit from Ace to King.",
+                highlight: null,
+                waitFor: null, // No action required, just click Next
+                position: "center"
+            },
+            {
+                title: "Your Hand",
+                text: "These are your cards. You can drag any card from your hand to play it.",
+                highlight: "#handArea",
+                waitFor: null,
+                position: "above"
+            },
+            {
+                title: "The Foundation",
+                text: "Each suit has its own pile. Start with Aces, then build up to Kings. The piles are Hearts, Diamonds, Clubs, and Spades.",
+                highlight: "#foundationArea",
+                waitFor: null,
+                position: "below"
+            },
+            {
+                title: "Discard Preview",
+                text: "The orange outline on the tableau shows where your oldest card will go when it's pushed out of your hand.",
+                highlight: "#tableauArea",
+                waitFor: null,
+                position: "below"
+            },
+            {
+                title: "Discard Order",
+                text: "Cards are discarded to empty columns first (left to right). If all columns have cards, it cycles through them in order.",
+                highlight: "#tableauArea",
+                waitFor: null,
+                position: "below"
+            },
+            {
+                title: "Play an Ace!",
+                text: "Look for an Ace in your hand. Drag it to its matching foundation pile, or double-tap it to auto-play.",
+                highlight: "#handArea",
+                waitFor: { type: 'foundation', description: 'Play any Ace to the foundation' },
+                position: "above",
+                isActionStep: true
+            },
+            {
+                title: "Great!",
+                text: "Nice work! You just played a card to the foundation. Keep building each suit up to King to win.",
+                highlight: "#foundationArea",
+                waitFor: null,
+                position: "below"
+            },
+            {
+                title: "The Tableau",
+                text: "These columns are for temporary storage. Stack cards in descending order with alternating colors (red on black, black on red).",
+                highlight: "#tableauArea",
+                waitFor: null,
+                position: "below"
+            },
+            {
+                title: "Play to the Tableau",
+                text: "Try placing a card on the tableau. Remember: descending order, alternating colors. Only Kings can start an empty column.",
+                highlight: "#tableauArea",
+                waitFor: { type: 'tableau', description: 'Play a card to the tableau' },
+                position: "below",
+                isActionStep: true
+            },
+            {
+                title: "Card Flow",
+                text: "Your hand always holds 5 cards. When you draw, the oldest card (leftmost) is pushed out to an empty tableau column. Play cards before they get pushed out!",
+                highlight: "#handArea",
+                waitFor: null,
+                position: "above"
+            },
+            {
+                title: "Drawing Cards",
+                text: "Click the Draw button to get a new card from the deck.",
+                highlight: "#nextCardBtn",
+                waitFor: null,
+                position: "above"
+            },
+            {
+                title: "Try Drawing a Card",
+                text: "Click the Draw button to draw a card from the deck.",
+                highlight: "#nextCardBtn",
+                waitFor: { type: 'draw', description: 'Draw a card from the deck' },
+                position: "above",
+                isActionStep: true
+            },
+            {
+                title: "Check for Moves",
+                text: "Stuck? Click the '?' button to highlight a valid move if one exists.",
+                highlight: "#checkMoveBtn",
+                waitFor: null,
+                position: "above"
+            },
+            {
+                title: "You're Ready!",
+                text: "Build all four suits from Ace to King to win. Play cards wisely and manage your hand. Good luck!",
+                highlight: null,
+                waitFor: null,
+                position: "center",
+                isFinalStep: true
+            }
+        ];
+    }
+
+    init() {
+        console.log('TutorialSystem initializing...');
+    }
+
+    postAllInit() {
+        this.createOverlay();
+        this.hookCardActions();
+
+        // Auto-start tutorial (this system is only loaded in tutorial scene)
+        setTimeout(() => this.startTutorial(), 500);
+    }
+
+    hookCardActions() {
+        // Hook the Draw button to detect card draws
+        const nextCardBtn = document.getElementById('nextCardBtn');
+        if (nextCardBtn) {
+            nextCardBtn.addEventListener('click', () => {
+                if (this.active && this.waitingForAction?.type === 'draw') {
+                    setTimeout(() => this.completeAction('draw'), 100);
+                }
+            });
+        }
+    }
+
+    // Called by FoundationSystem and TableauSystem when a card is played
+    onCardPlayed(location, cardEid) {
+        if (!this.active || !this.waitingForAction) return;
+
+        if (this.waitingForAction.type === 'foundation' && location === 'foundation') {
+            this.completeAction('foundation');
+        } else if (this.waitingForAction.type === 'tableau' && location === 'tableau') {
+            this.completeAction('tableau');
+        }
+    }
+
+    completeAction(actionType) {
+        if (!this.active || !this.waitingForAction) return;
+        if (this.waitingForAction.type !== actionType) return;
+
+        // Action completed, advance to next step
+        this.waitingForAction = null;
+        setTimeout(() => this.nextStep(), 300);
+    }
+
+    createOverlay() {
+        this.overlay = document.createElement('div');
+        this.overlay.id = 'tutorialOverlay';
+        this.overlay.className = 'tutorial-overlay hidden';
+        this.overlay.innerHTML = `
+            <div class="tutorial-backdrop"></div>
+            <div class="tutorial-highlight"></div>
+            <div class="tutorial-box">
+                <h3 class="tutorial-title"></h3>
+                <p class="tutorial-text"></p>
+                <div class="tutorial-nav">
+                    <span class="tutorial-progress"></span>
+                    <div class="tutorial-buttons">
+                        <button class="tutorial-skip">Skip Tutorial</button>
+                        <button class="tutorial-next">Next</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(this.overlay);
+
+        this.highlightEl = this.overlay.querySelector('.tutorial-highlight');
+        this.boxEl = this.overlay.querySelector('.tutorial-box');
+        this.titleEl = this.overlay.querySelector('.tutorial-title');
+        this.textEl = this.overlay.querySelector('.tutorial-text');
+        this.progressEl = this.overlay.querySelector('.tutorial-progress');
+        this.nextBtn = this.overlay.querySelector('.tutorial-next');
+        this.skipBtn = this.overlay.querySelector('.tutorial-skip');
+
+        this.nextBtn.addEventListener('click', () => {
+            if (!this.waitingForAction) {
+                this.nextStep();
+            }
+        });
+        this.skipBtn.addEventListener('click', () => this.endTutorial());
+    }
+
+    isTutorialActive() {
+        return this.active;
+    }
+
+    startTutorial() {
+        this.active = true;
+        this.currentStep = 0;
+        this.waitingForAction = null;
+        this.overlay.classList.remove('hidden');
+        this.showStep(this.currentStep);
+    }
+
+    endTutorial() {
+        this.active = false;
+        this.waitingForAction = null;
+        this.overlay.classList.add('hidden');
+        this.clearHighlight();
+
+        // Mark tutorial as seen
+        try {
+            localStorage.setItem('volitionTutorialSeen', 'true');
+        } catch (e) {
+            console.warn('Failed to save tutorial state:', e);
+        }
+
+        // Switch back to the main game scene
+        this.game.sceneManager?.switchScene('game');
+    }
+
+    nextStep() {
+        this.currentStep++;
+        if (this.currentStep >= this.steps.length) {
+            this.endTutorial();
+        } else {
+            this.showStep(this.currentStep);
+        }
+    }
+
+    showStep(stepIndex) {
+        const step = this.steps[stepIndex];
+
+        // Update content
+        this.titleEl.textContent = step.title;
+        this.textEl.textContent = step.text;
+        this.progressEl.textContent = `${stepIndex + 1} / ${this.steps.length}`;
+
+        // Update button based on step type
+        if (step.isActionStep) {
+            this.nextBtn.textContent = "Waiting...";
+            this.nextBtn.disabled = true;
+            this.nextBtn.classList.add('waiting');
+            this.overlay.classList.add('action-step');
+            this.waitingForAction = step.waitFor;
+        } else if (step.isFinalStep) {
+            this.nextBtn.textContent = "Start Playing";
+            this.nextBtn.disabled = false;
+            this.nextBtn.classList.remove('waiting');
+            this.overlay.classList.remove('action-step');
+            this.waitingForAction = null;
+        } else {
+            this.nextBtn.textContent = "Next";
+            this.nextBtn.disabled = false;
+            this.nextBtn.classList.remove('waiting');
+            this.overlay.classList.remove('action-step');
+            this.waitingForAction = null;
+        }
+
+        // Handle highlight
+        this.clearHighlight();
+        if (step.highlight) {
+            this.highlightElement(step.highlight, step.position);
+        } else {
+            this.centerBox();
+        }
+    }
+
+    highlightElement(selector, position) {
+        const target = document.querySelector(selector);
+        if (!target) {
+            this.centerBox();
+            return;
+        }
+
+        const rect = target.getBoundingClientRect();
+        const padding = 8;
+
+        // Position highlight
+        this.highlightEl.style.display = 'block';
+        this.highlightEl.style.left = (rect.left - padding) + 'px';
+        this.highlightEl.style.top = (rect.top - padding) + 'px';
+        this.highlightEl.style.width = (rect.width + padding * 2) + 'px';
+        this.highlightEl.style.height = (rect.height + padding * 2) + 'px';
+
+        // Position box relative to highlight
+        const boxWidth = 320;
+        const boxHeight = this.boxEl.offsetHeight || 180;
+        let boxX, boxY;
+
+        if (position === 'above') {
+            boxX = rect.left + rect.width / 2 - boxWidth / 2;
+            boxY = rect.top - boxHeight - 20;
+        } else if (position === 'below') {
+            boxX = rect.left + rect.width / 2 - boxWidth / 2;
+            boxY = rect.bottom + 20;
+        } else {
+            boxX = window.innerWidth / 2 - boxWidth / 2;
+            boxY = window.innerHeight / 2 - boxHeight / 2;
+        }
+
+        // Keep within viewport
+        boxX = Math.max(10, Math.min(window.innerWidth - boxWidth - 10, boxX));
+        boxY = Math.max(10, Math.min(window.innerHeight - boxHeight - 10, boxY));
+
+        this.boxEl.style.left = boxX + 'px';
+        this.boxEl.style.top = boxY + 'px';
+        this.boxEl.style.transform = 'none';
+    }
+
+    centerBox() {
+        this.highlightEl.style.display = 'none';
+        this.boxEl.style.left = '50%';
+        this.boxEl.style.top = '50%';
+        this.boxEl.style.transform = 'translate(-50%, -50%)';
+    }
+
+    clearHighlight() {
+        this.highlightEl.style.display = 'none';
+    }
+
+    update() {
+        // Tutorial is event-driven, but we can update highlight positions if window resizes
+        if (this.active && this.steps[this.currentStep]?.highlight) {
+            const step = this.steps[this.currentStep];
+            const target = document.querySelector(step.highlight);
+            if (target) {
+                const rect = target.getBoundingClientRect();
+                const padding = 8;
+                this.highlightEl.style.left = (rect.left - padding) + 'px';
+                this.highlightEl.style.top = (rect.top - padding) + 'px';
+            }
+        }
+    }
+}

@@ -4,11 +4,11 @@
  */
 class LayoutSystem extends GUTS.BaseSystem {
     static services = [
-        'getFoundationPosition', 'getTableauPosition', 'getHandPosition',
+        'getFoundationPosition', 'getTableauPosition', 'getHandPosition', 'getDeckPosition',
         'getCardWidth', 'getCardHeight', 'getStackOffset',
         'refreshLayout'
     ];
-    static serviceDependencies = [];
+    static serviceDependencies = ['updateHandLayout', 'refreshTableauPositions', 'refreshFoundationPositions'];
 
     constructor(game) {
         super(game);
@@ -18,6 +18,7 @@ class LayoutSystem extends GUTS.BaseSystem {
         this.foundationPositions = [];
         this.tableauPositions = [];
         this.handPositions = [];
+        this.deckPosition = { x: 0, y: 0 };
 
         // Card dimensions
         this.cardWidth = 48;
@@ -77,19 +78,20 @@ class LayoutSystem extends GUTS.BaseSystem {
                 this.handPositions[i] = { x: rect.left, y: rect.top };
             }
         }
+
+        // Read deck position
+        const deckEl = document.getElementById('deckVisual');
+        if (deckEl) {
+            const rect = deckEl.getBoundingClientRect();
+            this.deckPosition = { x: rect.left, y: rect.top };
+        }
     }
 
     notifyLayoutChange() {
-        // Notify other systems to update card positions
-        if (this.game.handSystem) {
-            this.game.handSystem.updateHandLayout();
-        }
-        if (this.game.tableauSystem) {
-            this.game.tableauSystem.refreshAllCardPositions();
-        }
-        if (this.game.foundationSystem) {
-            this.game.foundationSystem.refreshAllCardPositions();
-        }
+        // Notify other systems to update card positions via services
+        this.call.updateHandLayout();
+        this.call.refreshTableauPositions();
+        this.call.refreshFoundationPositions();
     }
 
     getFoundationPosition(suit) {
@@ -102,6 +104,10 @@ class LayoutSystem extends GUTS.BaseSystem {
 
     getHandPosition(slot) {
         return this.handPositions[slot] || { x: 0, y: 0 };
+    }
+
+    getDeckPosition() {
+        return this.deckPosition;
     }
 
     getCardWidth() {

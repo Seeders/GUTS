@@ -19,7 +19,8 @@
     "TableauSystem",
     "FoundationSystem",
     "InputSystem",
-    "RenderSystem"
+    "RenderSystem",
+    "TutorialSystem"
   ],
   "interface": "main",
   "appLibrary": "VolitionGame",
