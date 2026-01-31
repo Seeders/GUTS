@@ -1,0 +1,15 @@
+{
+  "title": "Volition Game",
+  "interface": "main",
+  "systems": [
+    "LayoutSystem",
+    "VolitionGameSystem",
+    "DeckSystem",
+    "CardFlowSystem",
+    "HandSystem",
+    "TableauSystem",
+    "FoundationSystem",
+    "InputSystem",
+    "RenderSystem"
+  ]
+}

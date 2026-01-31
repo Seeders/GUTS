@@ -1,0 +1,11 @@
+{
+  "title": "cardVisual",
+  "schema": {
+    "x": 0,
+    "y": 0,
+    "targetX": 0,
+    "targetY": 0,
+    "zIndex": 0,
+    "animating": 0
+  }
+}

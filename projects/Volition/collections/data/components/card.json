@@ -1,0 +1,8 @@
+{
+  "title": "card",
+  "schema": {
+    "suit": 0,
+    "rank": 0,
+    "faceUp": 1
+  }
+}

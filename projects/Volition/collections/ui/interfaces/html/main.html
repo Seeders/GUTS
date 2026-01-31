@@ -1,0 +1,116 @@
+<div id="gameScreen">
+    <!-- Compact Header -->
+    <header id="gameHeader">
+        <div class="header-left">
+            <span id="gameTimer">0:00</span>
+            <span class="divider">|</span>
+            <span id="foundationProgress">0/52</span>
+        </div>
+        <div class="header-center">
+            <button id="nextCardBtn" class="btn-primary">Draw</button>
+        </div>
+        <div class="header-right">
+            <span class="deck-count"><span id="deckCount">52</span> left</span>
+        </div>
+    </header>
+
+    <!-- Foundation piles -->
+    <div id="foundationArea">
+        <div class="foundation-pile" id="foundation-0" data-suit="0">
+            <span class="suit-icon hearts"></span>
+        </div>
+        <div class="foundation-pile" id="foundation-1" data-suit="1">
+            <span class="suit-icon diamonds"></span>
+        </div>
+        <div class="foundation-pile" id="foundation-2" data-suit="2">
+            <span class="suit-icon clubs"></span>
+        </div>
+        <div class="foundation-pile" id="foundation-3" data-suit="3">
+            <span class="suit-icon spades"></span>
+        </div>
+    </div>
+
+    <!-- Tableau columns -->
+    <div id="tableauArea"></div>
+
+    <!-- Card container for absolute positioned cards -->
+    <div id="cardContainer"></div>
+
+    <!-- Hand area -->
+    <div id="handWrapper">
+        <div id="handArea">
+            <div class="hand-slot" id="hand-slot-0"></div>
+            <div class="hand-slot" id="hand-slot-1"></div>
+            <div class="hand-slot" id="hand-slot-2"></div>
+            <div class="hand-slot" id="hand-slot-3"></div>
+            <div class="hand-slot" id="hand-slot-4"></div>
+        </div>
+        <div id="handIndicator">
+            <span class="oldest-label">oldest</span>
+            <span class="newest-label">newest</span>
+        </div>
+    </div>
+
+    <!-- Bottom toolbar -->
+    <nav id="toolbar">
+        <button id="checkMoveBtn" class="toolbar-btn">
+            <span class="icon">?</span>
+            <span class="label">Check</span>
+        </button>
+        <button id="settingsBtn" class="toolbar-btn">
+            <span class="icon">*</span>
+            <span class="label">Settings</span>
+        </button>
+        <button id="newGameBtn" class="toolbar-btn">
+            <span class="icon">+</span>
+            <span class="label">New</span>
+        </button>
+    </nav>
+
+    <!-- Win overlay -->
+    <div id="winOverlay" class="overlay hidden">
+        <div class="overlay-box">
+            <h1>Victory!</h1>
+            <p class="stat-line">Time: <span id="finalTime">0:00</span></p>
+            <button id="playAgainBtn" class="btn-large">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Loss overlay -->
+    <div id="lossOverlay" class="overlay hidden">
+        <div class="overlay-box loss">
+            <h1>No Moves</h1>
+            <p class="stat-line">Progress: <span id="finalProgress">0/52</span></p>
+            <button id="tryAgainBtn" class="btn-large">Try Again</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="overlay hidden">
+        <div class="modal-box">
+            <h2>Settings</h2>
+
+            <div class="setting-group">
+                <label>Card Speed</label>
+                <div class="speed-options">
+                    <button class="speed-btn" data-speed="2500">Slow</button>
+                    <button class="speed-btn active" data-speed="4000">Normal</button>
+                    <button class="speed-btn" data-speed="6000">Fast</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>Columns</label>
+                <div class="slider-row">
+                    <input type="range" id="tableauColumnsSlider" min="4" max="8" step="1" value="6">
+                    <span id="tableauColumnsValue">6</span>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="closeSettingsBtn" class="btn-secondary">Cancel</button>
+                <button id="applySettingsBtn" class="btn-primary">Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
