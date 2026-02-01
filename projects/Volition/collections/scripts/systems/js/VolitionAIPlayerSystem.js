@@ -19,7 +19,9 @@ class VolitionAIPlayerSystem extends GUTS.BaseSystem {
         'isGameOver',
         // Game action services (same as InputSystem uses)
         'playToKingdom', 'playToField', 'moveFieldToField',
-        'flowAfterHandPlay', 'flowCard', 'isFlowAnimating'
+        'flowAfterHandPlay', 'flowCard', 'isFlowAnimating',
+        // Game over services
+        'showLossScreen', 'showWinScreen'
     ];
 
     constructor(game) {
@@ -34,12 +36,20 @@ class VolitionAIPlayerSystem extends GUTS.BaseSystem {
 
     init() {
         console.log('[AI] VolitionAIPlayerSystem initializing...');
-        // Detect headless mode
+        // Detect headless mode and scale move delay based on animation speed
         const config = this.game.getConfig?.() || {};
         this._isHeadless = config.isHeadless || false;
         if (this._isHeadless) {
             console.log('[AI] Running in headless mode');
         }
+
+        // Scale AI move delay based on animation speed
+        // Default speed is 4000, scale delay inversely (faster animations = shorter delay)
+        const animSpeed = config.animationSpeed !== undefined ? config.animationSpeed : 4000;
+        const speedMultiplier = 4000 / Math.max(animSpeed, 1);
+        this._moveDelay = Math.max(1000 * speedMultiplier, 100); // Min 100ms delay
+        this._isInstant = animSpeed >= 10000; // Consider "instant" if speed >= 10000
+        console.log(`[AI] Move delay set to ${this._moveDelay}ms based on animation speed ${animSpeed}`);
     }
 
     postAllInit() {
@@ -226,18 +236,18 @@ class VolitionAIPlayerSystem extends GUTS.BaseSystem {
 
             // Moving to empty column
             if (targetCards.length === 0) {
-                // Only Kings should go to empty columns
-                if (move.rank === 13) {
-                    // Only move King to empty column if it exposes something useful
-                    if (exposesUsefulCard) {
-                        score = 5000; // Good - exposes playable card
-                    } else if (cardIndex > 0) {
-                        score = 1000; // OK - at least exposes some cards
-                    } else {
-                        score = -10000; // Pointless - King alone, nothing to expose
-                    }
+                // Lone card to empty column = pointless (just shuffling between columns)
+                if (sourceCards.length === 1) {
+                    return -10000;
+                }
+                // Moving stack to empty column - only Kings should do this
+                if (exposesUsefulCard) {
+                    score = 5000; // Good - exposes kingdom-playable card
+                } else if (move.rank === 13 && cardIndex > 0) {
+                    score = 1500; // King claims empty column and exposes cards
                 } else {
-                    score = -5000; // Don't waste empty columns with non-Kings
+                    // Non-kings should NOT use empty columns (prefer drawing)
+                    return -6000;
                 }
             } else {
                 // Building sequences on existing stacks - this is always good!
@@ -265,14 +275,15 @@ class VolitionAIPlayerSystem extends GUTS.BaseSystem {
             const targetCards = this.call.getColumnCards(move.targetColumn);
 
             if (targetCards.length === 0) {
-                // Only Kings should go to empty columns
+                // Empty column - only Kings should go here from hand
                 if (move.rank === 13) {
-                    score = 1000;
+                    score = 800; // Kings claim empty columns well
                 } else {
-                    score = -5000;
+                    // Non-kings should NOT use empty columns (last resort only)
+                    return -6000;
                 }
             } else {
-                // Building on existing stacks
+                // Building on existing stacks - preferred for non-kings
                 score = 500;
 
                 // Prefer playing high cards (they're harder to place later)
@@ -384,12 +395,15 @@ class VolitionAIPlayerSystem extends GUTS.BaseSystem {
         if (!this._active) return;
         if (this.call.isGameOver?.()) {
             this._active = false;
-            if (!this._isHeadless) console.log('[AI] Game over - stopping');
+            if (!this._isHeadless) {
+                console.log('[AI] Game won!');
+                this.call.showWinScreen?.();
+            }
             return;
         }
 
-        // In headless mode, skip all animation/timing checks
-        if (!this._isHeadless) {
+        // In headless or instant mode, skip animation checks
+        if (!this._isHeadless && !this._isInstant) {
             // Wait for CardFlowSystem animations to complete
             if (this.call.isFlowAnimating?.()) return;
 
@@ -397,6 +411,11 @@ class VolitionAIPlayerSystem extends GUTS.BaseSystem {
             if (this._isAnyCardAnimating()) return;
 
             // Wait for move delay
+            const now = performance.now();
+            if (now - this._lastMoveTime < this._moveDelay) return;
+            this._lastMoveTime = now;
+        } else if (this._isInstant) {
+            // In instant mode, still use a small delay to prevent UI freeze
             const now = performance.now();
             if (now - this._lastMoveTime < this._moveDelay) return;
             this._lastMoveTime = now;
@@ -429,12 +448,16 @@ class VolitionAIPlayerSystem extends GUTS.BaseSystem {
             if (!this._isHeadless) console.log(`[AI] Move ${this._moveCount}: Draw card`);
             this.call.flowCard();
         } else {
-            // Stuck - no cards anywhere
+            // Stuck - no cards anywhere to draw
             if (this._isHeadless) {
                 console.log(`[AI DEBUG] STUCK! hand=${handLen} deck=${this.call.getDeckCount()} kingdom=${this.call.getTotalKingdomCards()}`);
             }
-            if (!this._isHeadless) console.log('[AI] No valid moves available - stuck!');
+            if (!this._isHeadless) console.log('[AI] No valid moves available - game lost!');
             this._active = false;
+            // Show loss screen (visual mode only)
+            if (!this._isHeadless) {
+                this.call.showLossScreen?.();
+            }
         }
     }
 

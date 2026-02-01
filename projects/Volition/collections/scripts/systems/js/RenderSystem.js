@@ -17,7 +17,7 @@ class RenderSystem extends GUTS.BaseSystem {
     init() {
         console.log('RenderSystem initializing...');
         const config = this.game.gameInstance?.getConfig() || {};
-        this.animationSpeed = config.animationSpeed || 2000;
+        this.animationSpeed = config.animationSpeed !== undefined ? config.animationSpeed : 2000;
     }
 
     postAllInit() {
@@ -176,6 +176,7 @@ class RenderSystem extends GUTS.BaseSystem {
                 const dy = visual.targetY - visual.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
+                // Close enough - snap to target
                 if (dist < 2) {
                     visual.x = visual.targetX;
                     visual.y = visual.targetY;

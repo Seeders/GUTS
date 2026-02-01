@@ -98,8 +98,8 @@ class FieldSystem extends GUTS.BaseSystem {
         const columnCards = this.getColumnCards(columnIndex, false);
 
         if (columnCards.length === 0) {
-            // Empty column - only Kings can be placed
-            return card.rank === 13;
+            // Empty column - any card can be placed
+            return true;
         }
 
         // Get the bottom (top visually) landed card of the column

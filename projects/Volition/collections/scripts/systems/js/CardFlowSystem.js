@@ -53,12 +53,20 @@ class CardFlowSystem extends GUTS.BaseSystem {
 
     init() {
         console.log('CardFlowSystem initializing...');
-        // Detect headless mode
+        // Detect headless mode and animation speed
         const config = this.game.getConfig?.() || {};
         this._isHeadless = config.isHeadless || false;
         if (this._isHeadless) {
             console.log('[CardFlowSystem] Running in headless mode');
         }
+
+        // Scale animation durations based on animation speed setting
+        // Default speed is 4000, scale durations inversely
+        const animSpeed = config.animationSpeed !== undefined ? config.animationSpeed : 4000;
+        const speedMultiplier = 4000 / Math.max(animSpeed, 1); // Inverse relationship
+        this.flipDuration = Math.max(400 * speedMultiplier, 10);
+        this.shiftDuration = Math.max(250 * speedMultiplier, 10);
+        this.shiftLandingGap = Math.max(80 * speedMultiplier, 5);
     }
 
     postAllInit() {
@@ -188,8 +196,6 @@ class CardFlowSystem extends GUTS.BaseSystem {
         const handCards = this.call.getHandCards();
         const hasHandCards = handCards.length > 0;
 
-        console.log(`[FLOW DEBUG] flowCard: hand=${handCards.length} deck=${this.call.getDeckCount()} handFull=${this.call.isHandFull()}`);
-
         // If hand is full, discard oldest card to field
         if (this.call.isHandFull()) {
             const dumpedCard = this.call.popFromHandRaw();
@@ -243,7 +249,6 @@ class CardFlowSystem extends GUTS.BaseSystem {
             if (cardEid) {
                 const loc = this.game.getComponent(cardEid, 'cardLocation');
                 const card = this.game.getComponent(cardEid, 'card');
-                const visual = this.game.getComponent(cardEid, 'cardVisual');
 
                 // Set location to hand
                 const currentHand = this.call.getHandCards();
@@ -253,9 +258,6 @@ class CardFlowSystem extends GUTS.BaseSystem {
 
                 // Face up immediately
                 card.faceUp = 1;
-
-                // No animation needed in headless
-                visual.animating = 0;
             }
         }
 
@@ -325,9 +327,8 @@ class CardFlowSystem extends GUTS.BaseSystem {
      * Headless version of flowAfterHandPlay - reindex hand and draw immediately
      */
     _flowAfterHandPlayHeadless(playedFromIndex) {
-        // Reindex remaining hand cards (they've already been shifted logically)
+        // Reindex remaining hand cards
         const handCards = this.call.getHandCards();
-        console.log(`[FLOW DEBUG] flowAfterHandPlay: hand=${handCards.length} deck=${this.call.getDeckCount()}`);
 
         for (let i = 0; i < handCards.length; i++) {
             const loc = this.game.getComponent(handCards[i], 'cardLocation');
@@ -340,7 +341,6 @@ class CardFlowSystem extends GUTS.BaseSystem {
             if (cardEid) {
                 const loc = this.game.getComponent(cardEid, 'cardLocation');
                 const card = this.game.getComponent(cardEid, 'card');
-                const visual = this.game.getComponent(cardEid, 'cardVisual');
 
                 // Set location to hand
                 const currentHand = this.call.getHandCards();
@@ -350,9 +350,6 @@ class CardFlowSystem extends GUTS.BaseSystem {
 
                 // Face up immediately
                 card.faceUp = 1;
-
-                // No animation needed in headless
-                visual.animating = 0;
             }
         }
 

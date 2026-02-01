@@ -13,7 +13,9 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         // Music services
         'toggleMusic', 'isMusicEnabled', 'getMusicVolume', 'setMusicVolume',
         // SFX services
-        'getSfxVolume', 'setSfxVolume'
+        'getSfxVolume', 'setSfxVolume',
+        // AI services
+        'startAISimulation', 'stopAISimulation', 'setAISpeed', 'isActive'
     ];
 
     constructor(game) {
@@ -77,6 +79,32 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         if (this.call.playCardShuffle) {
             this.call.playCardShuffle();
         }
+
+        // Check if AI mode was requested
+        this.checkAIMode();
+    }
+
+    checkAIMode() {
+        try {
+            const aiMode = localStorage.getItem('volitionAIMode');
+            if (aiMode === 'true') {
+                // Clear the flag
+                localStorage.removeItem('volitionAIMode');
+                // Update button to show AI is active
+                const aiPlayBtn = document.getElementById('aiPlayBtn');
+                if (aiPlayBtn) {
+                    aiPlayBtn.querySelector('.label').textContent = 'AI On';
+                    aiPlayBtn.classList.add('active');
+                }
+                // Start AI after a delay for cards to be dealt
+                setTimeout(() => {
+                    console.log('[Game] Starting AI simulation');
+                    this.call.startAISimulation?.();
+                }, 2000);
+            }
+        } catch (e) {
+            console.warn('Failed to check AI mode:', e);
+        }
     }
 
     checkFirstTimeUser() {
@@ -134,6 +162,22 @@ class VolitionGameSystem extends GUTS.BaseSystem {
                 this.game.sceneManager?.switchScene('tutorial');
             });
         }
+
+        // AI Play button - restart with AI playing
+        const aiPlayBtn = document.getElementById('aiPlayBtn');
+        if (aiPlayBtn) {
+            aiPlayBtn.addEventListener('click', () => this.startAIPlay());
+        }
+    }
+
+    startAIPlay() {
+        // Store that we want AI mode, then restart
+        try {
+            localStorage.setItem('volitionAIMode', 'true');
+        } catch (e) {
+            console.warn('Failed to save AI mode:', e);
+        }
+        this.restartGame();
     }
 
     dealNextCard() {
