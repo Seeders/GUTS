@@ -2,11 +2,19 @@
  * DeckSystem - Creates and manages the 52-card deck
  */
 class DeckSystem extends GUTS.BaseSystem {
-    static services = ['createDeck', 'shuffleDeck', 'dealCard', 'getDeckCount'];
+    static services = ['createDeck', 'shuffleDeck', 'dealCard', 'getDeckCount', 'setSeed'];
 
     constructor(game) {
         super(game);
         this.deckOrder = []; // Array of entity IDs in deck order (index 0 = top of deck)
+        this.seed = null; // Optional seed for reproducible shuffles
+    }
+
+    /**
+     * Set seed for reproducible shuffles (headless mode)
+     */
+    setSeed(seed) {
+        this.seed = seed;
     }
 
     init() {
@@ -115,10 +123,33 @@ class DeckSystem extends GUTS.BaseSystem {
         console.log(`DeckSystem: Created ${this.deckOrder.length} cards`);
     }
 
-    shuffleDeck() {
+    shuffleDeck(seed = null) {
+        // Use provided seed, instance seed, or random
+        const useSeed = seed !== null ? seed : this.seed;
+
+        // Create random function (seeded or Math.random)
+        let random;
+        if (useSeed !== null && this.game.gameInstance?.seededRandom) {
+            // Use SeededRandom library if available
+            this.game.gameInstance.seededRandom.seed(useSeed);
+            random = () => this.game.gameInstance.seededRandom.random();
+        } else if (useSeed !== null) {
+            // Simple seeded random fallback (mulberry32)
+            let state = useSeed;
+            random = () => {
+                state |= 0;
+                state = state + 0x6D2B79F5 | 0;
+                let t = Math.imul(state ^ state >>> 15, 1 | state);
+                t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+                return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            };
+        } else {
+            random = Math.random;
+        }
+
         // Fisher-Yates shuffle
         for (let i = this.deckOrder.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
+            const j = Math.floor(random() * (i + 1));
             [this.deckOrder[i], this.deckOrder[j]] = [this.deckOrder[j], this.deckOrder[i]];
         }
 
@@ -187,6 +218,10 @@ class DeckSystem extends GUTS.BaseSystem {
     }
 
     update() {
+        // Skip DOM updates in headless mode
+        const config = this.game.gameInstance?.getConfig() || {};
+        if (config.isHeadless) return;
+
         const count = this.getDeckCount();
 
         // Update deck count display in header

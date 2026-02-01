@@ -107,7 +107,12 @@ class KingdomSystem extends GUTS.BaseSystem {
         const total = this.getTotalKingdomCards();
         if (total === 52) {
             console.log('WIN!');
-            this.call.showWinScreen();
+            // In headless mode, showWinScreen may not exist
+            if (this.call.showWinScreen) {
+                this.call.showWinScreen();
+            }
+            // Trigger win event for headless simulation system
+            this.game.triggerEvent('onGameWon', { totalCards: total });
         }
     }
 

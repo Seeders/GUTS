@@ -7,11 +7,29 @@ class VolitionGame extends GUTS.BaseECSGame {
         super(app);
         this.gameInstance = this;
 
+        // Check if running in headless mode
+        this.isHeadless = app?.isHeadless || false;
+
         // Minimal state for systems to check
         this.state.gameOver = false;
 
         // Load settings for config
         this.settings = this.loadSettings();
+    }
+
+    /**
+     * Override init to pass headless config when in headless mode
+     */
+    async init(isServer = false, config) {
+        // In headless mode, explicitly pass the headless config
+        if (this.isHeadless && !config) {
+            const collections = this.getCollections();
+            const headlessConfig = collections?.configs?.headless;
+            if (headlessConfig) {
+                return super.init(isServer, headlessConfig);
+            }
+        }
+        return super.init(isServer, config);
     }
 
     loadSettings() {
@@ -31,7 +49,9 @@ class VolitionGame extends GUTS.BaseECSGame {
     }
 
     getConfig() {
-        const baseConfig = this.getCollections()?.configs?.game || {};
+        // In headless mode, prefer headless config
+        const configs = this.getCollections()?.configs || {};
+        const baseConfig = configs.headless || configs.game || {};
         return {
             ...baseConfig,
             animationSpeed: this.settings.cardSpeed,

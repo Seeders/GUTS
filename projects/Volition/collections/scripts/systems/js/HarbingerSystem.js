@@ -580,30 +580,31 @@ class HarbingerSystem extends GUTS.BaseSystem {
     }
 
     createMessageElement() {
-        this.overlayElement = document.getElementById('harbingerOverlay');
-        this.messageElement = document.getElementById('harbingerMessage');
-
-        if (!this.overlayElement) {
-            // Create overlay structure if it doesn't exist
-            this.overlayElement = document.createElement('div');
-            this.overlayElement.id = 'harbingerOverlay';
-            this.overlayElement.className = 'harbinger-overlay hidden';
-
-            const container = document.createElement('div');
-            container.className = 'harbinger-container';
-
-            const img = document.createElement('div');
-            img.className = 'harbinger-image';
-
-            this.messageElement = document.createElement('div');
-            this.messageElement.id = 'harbingerMessage';
-            this.messageElement.className = 'harbinger-text';
-
-            container.appendChild(img);
-            container.appendChild(this.messageElement);
-            this.overlayElement.appendChild(container);
-            document.body.appendChild(this.overlayElement);
+        // Remove any existing overlay (might be from HTML template in wrong state)
+        const existing = document.getElementById('harbingerOverlay');
+        if (existing) {
+            existing.remove();
         }
+
+        // Always create fresh overlay structure
+        this.overlayElement = document.createElement('div');
+        this.overlayElement.id = 'harbingerOverlay';
+        this.overlayElement.className = 'harbinger-overlay hidden';
+
+        const container = document.createElement('div');
+        container.className = 'harbinger-container';
+
+        const img = document.createElement('div');
+        img.className = 'harbinger-image';
+
+        this.messageElement = document.createElement('div');
+        this.messageElement.id = 'harbingerMessage';
+        this.messageElement.className = 'harbinger-text';
+
+        container.appendChild(img);
+        container.appendChild(this.messageElement);
+        this.overlayElement.appendChild(container);
+        document.body.appendChild(this.overlayElement);
     }
 
     /**

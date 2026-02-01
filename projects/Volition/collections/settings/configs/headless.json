@@ -1,0 +1,30 @@
+{
+  "title": "Volition Headless",
+  "libraries": [
+    "GameServices",
+    "BaseECSGame",
+    "GameState",
+    "SeededRandom",
+    "ComponentGenerator",
+    "SceneManager",
+    "BaseLoader",
+    "VolitionGame",
+    "VolitionHeadlessRunner"
+  ],
+  "systems": [
+    "VolitionHeadlessSimulationSystem",
+    "HeadlessLayoutSystem",
+    "DeckSystem",
+    "HandSystem",
+    "FieldSystem",
+    "KingdomSystem"
+  ],
+  "appLibrary": "VolitionGame",
+  "appLoaderLibrary": "BaseLoader",
+  "initialScene": "headless",
+  "maxEntities": 1024,
+  "handCapacity": 5,
+  "fieldColumns": 6,
+  "animationSpeed": 4000,
+  "isHeadless": true
+}

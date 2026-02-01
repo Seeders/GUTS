@@ -22,6 +22,10 @@ class FieldSystem extends GUTS.BaseSystem {
     }
 
     createFieldColumns() {
+        // Skip DOM creation in headless mode
+        const config = this.game.gameInstance?.getConfig() || {};
+        if (config.isHeadless) return;
+
         const fieldArea = document.getElementById('fieldArea');
         if (!fieldArea) return;
 
@@ -139,7 +143,10 @@ class FieldSystem extends GUTS.BaseSystem {
         visual.targetX = pos.x;
         visual.targetY = pos.y + loc.index * stackOffset;
         visual.zIndex = 50 + loc.index;
-        visual.animating = 1;
+
+        // In headless mode, don't set animating (no render system to clear it)
+        const config = this.game.gameInstance?.getConfig() || {};
+        visual.animating = config.isHeadless ? 0 : 1;
 
         // Trigger event for other systems to react to
         const card = this.game.getComponent(cardEid, 'card');
@@ -190,9 +197,10 @@ class FieldSystem extends GUTS.BaseSystem {
         visual.targetX = pos.x;
         visual.targetY = pos.y + loc.index * stackOffset;
         visual.zIndex = 50 + loc.index;
-        visual.animating = 1;
 
-        console.log(`Dumped card to field column ${columnIndex}, index ${loc.index}`);
+        // In headless mode, don't set animating (no render system to clear it)
+        const config = this.game.gameInstance?.getConfig() || {};
+        visual.animating = config.isHeadless ? 0 : 1;
     }
 
     /**
@@ -270,6 +278,10 @@ class FieldSystem extends GUTS.BaseSystem {
         const targetCards = this.getColumnCards(targetColumn, false);
         let targetIndex = targetCards.length;
 
+        // In headless mode, don't set animating (no render system to clear it)
+        const config = this.game.gameInstance?.getConfig() || {};
+        const isHeadless = config.isHeadless || false;
+
         // Move each card
         for (const moveEid of cardsToMove) {
             const moveLoc = this.game.getComponent(moveEid, 'cardLocation');
@@ -284,7 +296,7 @@ class FieldSystem extends GUTS.BaseSystem {
             moveVisual.targetX = pos.x;
             moveVisual.targetY = pos.y + targetIndex * stackOffset;
             moveVisual.zIndex = 50 + targetIndex;
-            moveVisual.animating = 1;
+            moveVisual.animating = isHeadless ? 0 : 1;
 
             targetIndex++;
         }

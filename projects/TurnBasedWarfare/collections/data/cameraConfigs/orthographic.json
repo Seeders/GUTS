@@ -9,9 +9,7 @@
   },
   "movement": {
     "edgePan": {
-      "enabled": true,
-      "speed": 900,
-      "threshold": 10
+      "enabled": false
     },
     "keyboard": {
       "enabled": true,
