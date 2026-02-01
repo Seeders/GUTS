@@ -1226,6 +1226,126 @@ body {
     pointer-events: auto;
 }
 
+/* Tutorial Choice Screen */
+.tutorial-choice {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 502;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 32px;
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-primary);
+    border-radius: 8px;
+    max-width: 90vw;
+}
+
+.choice-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0;
+}
+
+.choice-text {
+    font-size: 16px;
+    color: var(--color-text-dim);
+    margin: 0;
+}
+
+.choice-buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.choice-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 24px;
+    background: transparent;
+    border: 1px solid var(--color-primary-dim);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 160px;
+}
+
+.choice-btn:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-glow);
+    box-shadow: 0 0 20px var(--color-primary-glow);
+}
+
+.choice-icon {
+    font-size: 32px;
+}
+
+.choice-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.choice-desc {
+    font-size: 13px;
+    color: var(--color-text-dim);
+}
+
+.choice-skip {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    color: var(--color-text-dim);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.choice-skip:hover {
+    color: var(--color-primary);
+}
+
+@media (min-width: 600px) {
+    .tutorial-choice {
+        padding: 40px 48px;
+        gap: 28px;
+    }
+
+    .choice-title {
+        font-size: 28px;
+    }
+
+    .choice-text {
+        font-size: 18px;
+    }
+
+    .choice-btn {
+        padding: 24px 32px;
+        min-width: 180px;
+    }
+
+    .choice-icon {
+        font-size: 40px;
+    }
+
+    .choice-label {
+        font-size: 18px;
+    }
+
+    .choice-desc {
+        font-size: 14px;
+    }
+}
+
 /* ============================================
    HARBINGER OVERLAY & MESSAGES
    ============================================ */

@@ -46,14 +46,25 @@ class CardFlowSystem extends GUTS.BaseSystem {
         this.awaitingColumnSelection = false;
         this.pendingDiscardCard = null;
         this.columnClickHandlers = [];
+
+        // Headless mode
+        this._isHeadless = false;
     }
 
     init() {
         console.log('CardFlowSystem initializing...');
+        // Detect headless mode
+        const config = this.game.getConfig?.() || {};
+        this._isHeadless = config.isHeadless || false;
+        if (this._isHeadless) {
+            console.log('[CardFlowSystem] Running in headless mode');
+        }
     }
 
     postAllInit() {
-        this.createGhostCard();
+        if (!this._isHeadless) {
+            this.createGhostCard();
+        }
     }
 
     createGhostCard() {
@@ -145,6 +156,11 @@ class CardFlowSystem extends GUTS.BaseSystem {
             return false;
         }
 
+        // Headless mode: execute immediately without animations
+        if (this._isHeadless) {
+            return this._flowCardHeadless();
+        }
+
         // Hide ghost card during animation
         if (this.ghostCard) {
             this.ghostCard.style.display = 'none';
@@ -165,6 +181,88 @@ class CardFlowSystem extends GUTS.BaseSystem {
     }
 
     /**
+     * Headless version of flowCard - executes immediately without animations
+     */
+    _flowCardHeadless() {
+        const deckEmpty = this.call.getDeckCount() <= 0;
+        const handCards = this.call.getHandCards();
+        const hasHandCards = handCards.length > 0;
+
+        console.log(`[FLOW DEBUG] flowCard: hand=${handCards.length} deck=${this.call.getDeckCount()} handFull=${this.call.isHandFull()}`);
+
+        // If hand is full, discard oldest card to field
+        if (this.call.isHandFull()) {
+            const dumpedCard = this.call.popFromHandRaw();
+            if (dumpedCard) {
+                // Determine target column
+                const numColumns = this.call.getFieldColumns();
+                const emptyColumn = this.call.findEmptyColumn();
+                let targetColumn;
+
+                if (emptyColumn >= 0) {
+                    targetColumn = emptyColumn;
+                    this.nextDumpColumn = (emptyColumn + 1) % numColumns;
+                } else {
+                    targetColumn = this.nextDumpColumn;
+                    this.nextDumpColumn = (this.nextDumpColumn + 1) % numColumns;
+                }
+
+                // Dump to field
+                this.call.dumpToField(dumpedCard, targetColumn);
+
+                // Reindex remaining hand cards
+                const remainingHand = this.call.getHandCards();
+                for (let i = 0; i < remainingHand.length; i++) {
+                    const loc = this.game.getComponent(remainingHand[i], 'cardLocation');
+                    loc.index = i;
+                }
+            }
+        } else if (deckEmpty && hasHandCards) {
+            // Deck empty but hand has cards - just discard
+            const dumpedCard = this.call.popFromHandRaw();
+            if (dumpedCard) {
+                const numColumns = this.call.getFieldColumns();
+                const emptyColumn = this.call.findEmptyColumn();
+                let targetColumn = emptyColumn >= 0 ? emptyColumn : this.nextDumpColumn;
+                this.nextDumpColumn = (targetColumn + 1) % numColumns;
+                this.call.dumpToField(dumpedCard, targetColumn);
+
+                // Reindex remaining hand cards
+                const remainingHand = this.call.getHandCards();
+                for (let i = 0; i < remainingHand.length; i++) {
+                    const loc = this.game.getComponent(remainingHand[i], 'cardLocation');
+                    loc.index = i;
+                }
+            }
+            return true;
+        }
+
+        // Draw a new card if deck not empty
+        if (!deckEmpty) {
+            const cardEid = this.call.dealCard();
+            if (cardEid) {
+                const loc = this.game.getComponent(cardEid, 'cardLocation');
+                const card = this.game.getComponent(cardEid, 'card');
+                const visual = this.game.getComponent(cardEid, 'cardVisual');
+
+                // Set location to hand
+                const currentHand = this.call.getHandCards();
+                loc.location = 1; // hand
+                loc.index = currentHand.length;
+                loc.columnIndex = -1;
+
+                // Face up immediately
+                card.faceUp = 1;
+
+                // No animation needed in headless
+                visual.animating = 0;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Called after a card is played from hand (to kingdom or field)
      * Waits for the played card animation, then shifts remaining hand cards, then draws
      * @param {number} playedCardEid - The card that was played
@@ -175,6 +273,11 @@ class CardFlowSystem extends GUTS.BaseSystem {
         // Don't start if already animating
         if (this.animState !== CardFlowSystem.IDLE) {
             return false;
+        }
+
+        // Headless mode: execute immediately without animations
+        if (this._isHeadless) {
+            return this._flowAfterHandPlayHeadless(playedFromIndex);
         }
 
         // Hide ghost card during animation
@@ -214,6 +317,44 @@ class CardFlowSystem extends GUTS.BaseSystem {
 
         this.shiftIndex = 0;
         this.shiftFromIndex = playedFromIndex; // Track where shifting starts
+
+        return true;
+    }
+
+    /**
+     * Headless version of flowAfterHandPlay - reindex hand and draw immediately
+     */
+    _flowAfterHandPlayHeadless(playedFromIndex) {
+        // Reindex remaining hand cards (they've already been shifted logically)
+        const handCards = this.call.getHandCards();
+        console.log(`[FLOW DEBUG] flowAfterHandPlay: hand=${handCards.length} deck=${this.call.getDeckCount()}`);
+
+        for (let i = 0; i < handCards.length; i++) {
+            const loc = this.game.getComponent(handCards[i], 'cardLocation');
+            loc.index = i;
+        }
+
+        // Draw a new card if deck not empty
+        if (this.call.getDeckCount() > 0) {
+            const cardEid = this.call.dealCard();
+            if (cardEid) {
+                const loc = this.game.getComponent(cardEid, 'cardLocation');
+                const card = this.game.getComponent(cardEid, 'card');
+                const visual = this.game.getComponent(cardEid, 'cardVisual');
+
+                // Set location to hand
+                const currentHand = this.call.getHandCards();
+                loc.location = 1; // hand
+                loc.index = currentHand.length;
+                loc.columnIndex = -1;
+
+                // Face up immediately
+                card.faceUp = 1;
+
+                // No animation needed in headless
+                visual.animating = 0;
+            }
+        }
 
         return true;
     }
@@ -627,6 +768,9 @@ class CardFlowSystem extends GUTS.BaseSystem {
 
     update() {
         if (this.game.gameInstance?.state?.gameOver) return;
+
+        // In headless mode, no animation state machine needed
+        if (this._isHeadless) return;
 
         // Handle animation state machine - wait for actual animations to complete
         switch (this.animState) {

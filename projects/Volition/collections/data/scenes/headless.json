@@ -2,11 +2,12 @@
   "title": "Volition Headless Scene",
   "description": "Scene for running headless solitaire simulations",
   "systems": [
-    "VolitionHeadlessSimulationSystem",
     "HeadlessLayoutSystem",
     "DeckSystem",
+    "CardFlowSystem",
     "HandSystem",
     "FieldSystem",
-    "KingdomSystem"
+    "KingdomSystem",
+    "VolitionAIPlayerSystem"
   ]
 }

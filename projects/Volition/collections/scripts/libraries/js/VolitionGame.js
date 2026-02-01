@@ -49,9 +49,9 @@ class VolitionGame extends GUTS.BaseECSGame {
     }
 
     getConfig() {
-        // In headless mode, prefer headless config
         const configs = this.getCollections()?.configs || {};
-        const baseConfig = configs.headless || configs.game || {};
+        // Only use headless config if actually in headless mode
+        const baseConfig = this.isHeadless ? (configs.headless || {}) : (configs.game || {});
         return {
             ...baseConfig,
             animationSpeed: this.settings.cardSpeed,

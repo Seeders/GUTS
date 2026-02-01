@@ -4,7 +4,7 @@
  */
 class TutorialSystem extends GUTS.BaseSystem {
     static services = ['startTutorial', 'endTutorial', 'isTutorialActive', 'onCardPlayed'];
-    static serviceDependencies = ['getHandCards', 'getColumnCards', 'getKingdomCards', 'getDeckCount', 'flowCard'];
+    static serviceDependencies = ['getHandCards', 'getColumnCards', 'getKingdomCards', 'getDeckCount', 'flowCard', 'startAISimulation', 'stopAISimulation', 'setAISpeed', 'shuffleDeck', 'dealInitialHand'];
 
     constructor(game) {
         super(game);
@@ -13,6 +13,7 @@ class TutorialSystem extends GUTS.BaseSystem {
         this.overlay = null;
         this.waitingForAction = null;
         this.drawCount = 0; // Track draws for the discard demonstration
+        this.cardsDealt = false; // Track if initial hand has been dealt
 
         // Tutorial steps - each step explains something and optionally waits for an action
         this.steps = [
@@ -205,6 +206,23 @@ class TutorialSystem extends GUTS.BaseSystem {
         this.overlay.innerHTML = `
             <div class="tutorial-backdrop"></div>
             <div class="tutorial-highlight"></div>
+            <div class="tutorial-choice" style="display: none;">
+                <h2 class="choice-title">Welcome to Volition!</h2>
+                <p class="choice-text">How would you like to learn?</p>
+                <div class="choice-buttons">
+                    <button class="choice-btn choice-tutorial">
+                        <span class="choice-icon">📖</span>
+                        <span class="choice-label">Interactive Tutorial</span>
+                        <span class="choice-desc">Step-by-step guidance</span>
+                    </button>
+                    <button class="choice-btn choice-watch">
+                        <span class="choice-icon">🤖</span>
+                        <span class="choice-label">Watch AI Play</span>
+                        <span class="choice-desc">Learn by observation</span>
+                    </button>
+                </div>
+                <button class="choice-skip">Skip - I know how to play</button>
+            </div>
             <div class="tutorial-box">
                 <h3 class="tutorial-title"></h3>
                 <p class="tutorial-text"></p>
@@ -219,6 +237,7 @@ class TutorialSystem extends GUTS.BaseSystem {
         `;
         document.body.appendChild(this.overlay);
 
+        this.choiceEl = this.overlay.querySelector('.tutorial-choice');
         this.highlightEl = this.overlay.querySelector('.tutorial-highlight');
         this.boxEl = this.overlay.querySelector('.tutorial-box');
         this.titleEl = this.overlay.querySelector('.tutorial-title');
@@ -226,6 +245,15 @@ class TutorialSystem extends GUTS.BaseSystem {
         this.progressEl = this.overlay.querySelector('.tutorial-progress');
         this.nextBtn = this.overlay.querySelector('.tutorial-next');
         this.skipBtn = this.overlay.querySelector('.tutorial-skip');
+
+        // Choice screen buttons
+        const tutorialBtn = this.overlay.querySelector('.choice-tutorial');
+        const watchBtn = this.overlay.querySelector('.choice-watch');
+        const choiceSkipBtn = this.overlay.querySelector('.choice-skip');
+
+        tutorialBtn.addEventListener('click', () => this.startInteractiveTutorial());
+        watchBtn.addEventListener('click', () => this.startWatchAI());
+        choiceSkipBtn.addEventListener('click', () => this.skipToGame());
 
         this.nextBtn.addEventListener('click', () => {
             if (!this.waitingForAction) {
@@ -241,15 +269,62 @@ class TutorialSystem extends GUTS.BaseSystem {
     }
 
     startTutorial() {
+        // Show the choice screen first
+        this.overlay.classList.remove('hidden');
+        this.choiceEl.style.display = 'flex';
+        this.boxEl.style.display = 'none';
+        this.highlightEl.style.display = 'none';
+    }
+
+    startInteractiveTutorial() {
+        // User chose the interactive tutorial
+        this.choiceEl.style.display = 'none';
+        this.boxEl.style.display = 'block';
         this.active = true;
         this.currentStep = 0;
         this.waitingForAction = null;
         this.drawCount = 0;
-        this.overlay.classList.remove('hidden');
+
+        // Deal the initial hand (uses fixed tutorial deck already set up by DeckSystem)
+        this.call.dealInitialHand();
+        this.cardsDealt = true;
+
         this.showStep(this.currentStep);
     }
 
+    startWatchAI() {
+        // User chose to watch the AI play
+        this.choiceEl.style.display = 'none';
+        this.boxEl.style.display = 'none';
+        this.overlay.classList.add('hidden');
+        this.active = false;
+
+        // Shuffle deck randomly (overrides the fixed tutorial deck)
+        this.call.shuffleDeck();
+
+        // Deal the initial hand
+        this.call.dealInitialHand();
+        this.cardsDealt = true;
+
+        // Start the AI at a comfortable watching speed
+        this.call.setAISpeed(800);
+        this.call.startAISimulation();
+    }
+
+    skipToGame() {
+        // User clicked "Skip - I know how to play" from choice screen
+        // Just go to the game scene
+        try {
+            localStorage.setItem('volitionTutorialSeen', 'true');
+        } catch (e) {
+            console.warn('Failed to save tutorial state:', e);
+        }
+
+        this.game.sceneManager?.switchScene('game');
+    }
+
     endTutorial() {
+        // Called when user finishes tutorial or clicks "Skip Tutorial" during tutorial
         this.active = false;
         this.waitingForAction = null;
         this.overlay.classList.add('hidden');
@@ -262,8 +337,7 @@ class TutorialSystem extends GUTS.BaseSystem {
             console.warn('Failed to save tutorial state:', e);
         }
 
-        // Switch back to the main game scene
-        this.game.sceneManager?.switchScene('game');
+        // Stay in current scene - cards are already dealt, let them play
     }
 
     nextStep() {

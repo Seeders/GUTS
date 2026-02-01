@@ -25,7 +25,12 @@ class VolitionHeadlessSimulationSystem extends GUTS.BaseSystem {
         'headless_drawCard',
 
         // Win screen stub for service dependency
-        'showWinScreen'
+        'showWinScreen',
+
+        // AI compatibility services (aliases for headless versions)
+        'flowCard',
+        'flowAfterHandPlay',
+        'isFlowAnimating'
     ];
 
     static serviceDependencies = [
@@ -114,6 +119,23 @@ class VolitionHeadlessSimulationSystem extends GUTS.BaseSystem {
     showWinScreen() {
         // No-op in headless mode - win is handled by event
         console.log('[Headless] Game won!');
+    }
+
+    // === AI compatibility services (same interface as visual mode) ===
+
+    flowCard() {
+        // Alias for headless_drawCard
+        return this.headless_drawCard();
+    }
+
+    flowAfterHandPlay(cardEid, destination, originalIndex) {
+        // In headless mode, hand refill is handled automatically by the play methods
+        // No-op - just for API compatibility with visual AI
+    }
+
+    isFlowAnimating() {
+        // No animations in headless mode
+        return false;
     }
 
     // === Query Interface ===
@@ -235,14 +257,16 @@ class VolitionHeadlessSimulationSystem extends GUTS.BaseSystem {
             if (bottomCard !== cardEid) return false;
         }
 
+        // Call the actual game service - this handles removal and reindexing via removeFromHand
         const success = this.call.playToKingdom(cardEid);
         if (success) {
             this._moveCount++;
             this._moveLog.push({ type: 'kingdom', cardEid, source });
 
-            // Reindex hand if played from hand
+            // Auto-refill hand if played from hand
+            // This mirrors CardFlowSystem.flowAfterHandPlay behavior in graphical mode
             if (source === 'hand') {
-                this._reindexHand();
+                this._autoRefillHand();
             }
         }
         return success;
@@ -251,11 +275,13 @@ class VolitionHeadlessSimulationSystem extends GUTS.BaseSystem {
     headless_playToField(cardEid, columnIndex) {
         if (!this.call.canPlayToField(cardEid, columnIndex)) return false;
 
+        // Call the actual game service - playToField calls removeFromHand which reindexes
         const success = this.call.playToField(cardEid, columnIndex);
         if (success) {
             this._moveCount++;
             this._moveLog.push({ type: 'field', cardEid, targetColumn: columnIndex });
-            this._reindexHand();
+            // Auto-refill hand - mirrors CardFlowSystem.flowAfterHandPlay in graphical mode
+            this._autoRefillHand();
         }
         return success;
     }
@@ -333,6 +359,19 @@ class VolitionHeadlessSimulationSystem extends GUTS.BaseSystem {
     }
 
     // === Internal Helpers ===
+
+    /**
+     * Auto-refill hand from deck after playing a card
+     * This matches the graphical game behavior where hand auto-refills
+     */
+    _autoRefillHand() {
+        if (this.call.getDeckCount() === 0) return; // No cards left to draw
+
+        const cardEid = this.call.dealCard();
+        if (cardEid) {
+            this.call.pushToHand(cardEid);
+        }
+    }
 
     _reindexHand() {
         const handCards = this.call.getHandCards();

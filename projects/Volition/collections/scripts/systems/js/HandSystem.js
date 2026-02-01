@@ -2,8 +2,8 @@
  * HandSystem - Manages the player's hand as a FIFO queue
  */
 class HandSystem extends GUTS.BaseSystem {
-    static services = ['getHandCards', 'pushToHand', 'popFromHand', 'popFromHandRaw', 'removeFromHand', 'isHandFull', 'getHandCapacity', 'getOldestHandCard', 'updateHandLayout'];
-    static serviceDependencies = ['dealCard', 'getHandPosition', 'getCardWidth', 'getCardHeight', 'getDeckPosition'];
+    static services = ['getHandCards', 'pushToHand', 'popFromHand', 'popFromHandRaw', 'removeFromHand', 'isHandFull', 'getHandCapacity', 'getOldestHandCard', 'updateHandLayout', 'dealInitialHand'];
+    static serviceDependencies = ['dealCard', 'getHandPosition', 'getCardWidth', 'getCardHeight', 'getDeckPosition', 'isTutorialActive'];
 
     constructor(game) {
         super(game);
@@ -19,6 +19,12 @@ class HandSystem extends GUTS.BaseSystem {
 
     postAllInit() {
         console.log('HandSystem postAllInit called');
+
+        // Skip dealing if TutorialSystem is present - it will trigger the deal after user chooses
+        if (this.call.isTutorialActive?.()) {
+            console.log('HandSystem: Tutorial active, waiting for tutorial choice before dealing');
+            return;
+        }
 
         // Deal initial hand
         this.dealInitialHand();

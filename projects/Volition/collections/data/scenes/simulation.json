@@ -1,5 +1,5 @@
 {
-  "title": "Volition Game",
+  "title": "Volition AI Simulation",
   "interface": "main",
   "systems": [
     "LayoutSystem",

@@ -5,6 +5,7 @@
     "LayoutSystem",
     "VolitionGameSystem",
     "VolitionAudioSystem",
+    "VolitionMusicSystem",
     "DeckSystem",
     "CardFlowSystem",
     "HandSystem",
@@ -12,6 +13,7 @@
     "KingdomSystem",
     "InputSystem",
     "RenderSystem",
-    "TutorialSystem"
+    "TutorialSystem",
+    "VolitionAIPlayerSystem"
   ]
 }

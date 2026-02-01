@@ -2,7 +2,7 @@
  * KingdomSystem - Manages the four kingdom piles (Ace to King by suit)
  */
 class KingdomSystem extends GUTS.BaseSystem {
-    static services = ['canPlayToKingdom', 'playToKingdom', 'getKingdomCards', 'getTopKingdomRank', 'getTotalKingdomCards', 'checkWin', 'refreshKingdomPositions'];
+    static services = ['canPlayToKingdom', 'playToKingdom', 'getKingdomCards', 'getTopKingdomRank', 'getTotalKingdomCards', 'checkWin', 'refreshKingdomPositions', 'isGameOver', 'isWon'];
     static serviceDependencies = ['removeFromHand', 'showWinScreen', 'getKingdomPosition', 'onCardPlayed'];
 
     constructor(game) {
@@ -107,6 +107,8 @@ class KingdomSystem extends GUTS.BaseSystem {
         const total = this.getTotalKingdomCards();
         if (total === 52) {
             console.log('WIN!');
+            this._gameOver = true;
+            this._won = true;
             // In headless mode, showWinScreen may not exist
             if (this.call.showWinScreen) {
                 this.call.showWinScreen();
@@ -114,6 +116,14 @@ class KingdomSystem extends GUTS.BaseSystem {
             // Trigger win event for headless simulation system
             this.game.triggerEvent('onGameWon', { totalCards: total });
         }
+    }
+
+    isWon() {
+        return this.getTotalKingdomCards() === 52;
+    }
+
+    isGameOver() {
+        return this.isWon();
     }
 
     refreshKingdomPositions() {

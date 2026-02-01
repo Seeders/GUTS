@@ -25,7 +25,8 @@
     "InputSystem",
     "RenderSystem",
     "TutorialSystem",
-    "HarbingerSystem"
+    "HarbingerSystem",
+    "VolitionAIPlayerSystem"
   ],
   "interface": "main",
   "appLibrary": "VolitionGame",

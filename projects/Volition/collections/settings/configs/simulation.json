@@ -1,5 +1,5 @@
 {
-  "title": "Volition Headless",
+  "title": "Volition AI Simulation",
   "libraries": [
     "GameServices",
     "BaseECSGame",
@@ -8,24 +8,31 @@
     "ComponentGenerator",
     "SceneManager",
     "BaseLoader",
-    "VolitionGame",
-    "VolitionHeadlessRunner"
+    "AudioManager",
+    "VolitionGame"
   ],
   "systems": [
-    "HeadlessLayoutSystem",
+    "LayoutSystem",
+    "VolitionGameSystem",
+    "VolitionAudioSystem",
+    "VolitionMusicSystem",
     "DeckSystem",
     "CardFlowSystem",
     "HandSystem",
     "FieldSystem",
     "KingdomSystem",
+    "InputSystem",
+    "RenderSystem",
+    "HarbingerSystem",
     "VolitionAIPlayerSystem"
   ],
+  "interface": "main",
   "appLibrary": "VolitionGame",
   "appLoaderLibrary": "BaseLoader",
-  "initialScene": "headless",
+  "initialScene": "simulation",
   "maxEntities": 1024,
   "handCapacity": 5,
   "fieldColumns": 6,
   "animationSpeed": 4000,
-  "isHeadless": true
+  "isSimulation": true
 }
