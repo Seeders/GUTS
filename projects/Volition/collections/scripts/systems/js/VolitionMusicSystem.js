@@ -176,6 +176,9 @@ class VolitionMusicSystem extends MusicSystem {
             // Resolve after fade completes
             setTimeout(() => {
                 this.stopTrack();
+                // Reset flag so music can start again in new scene
+                this.hasStartedMusic = false;
+
                 resolve();
             }, duration * 1000);
         });

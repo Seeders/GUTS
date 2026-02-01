@@ -12,6 +12,7 @@ class TutorialSystem extends GUTS.BaseSystem {
         this.currentStep = 0;
         this.overlay = null;
         this.waitingForAction = null;
+        this.drawCount = 0; // Track draws for the discard demonstration
 
         // Tutorial steps - each step explains something and optionally waits for an action
         this.steps = [
@@ -89,18 +90,58 @@ class TutorialSystem extends GUTS.BaseSystem {
             },
             {
                 title: "Try Drawing a Card",
-                text: "Click the deck to draw a card.",
+                text: "Click the deck to draw a card. Watch where your oldest card goes!",
                 highlight: "#deckArea",
                 waitFor: { type: 'draw', description: 'Draw a card from the deck' },
                 position: "above",
                 isActionStep: true
             },
             {
-                title: "Check for Moves",
-                text: "Stuck? Click the '?' button to highlight a valid move if one exists.",
-                highlight: "#checkMoveBtn",
+                title: "Keep Drawing",
+                text: "Keep clicking the deck. Watch each column fill up one by one.",
+                highlight: "#deckArea",
+                waitFor: { type: 'draw', description: 'Draw another card' },
+                position: "above",
+                isActionStep: true
+            },
+            {
+                title: "Columns Filling",
+                text: "Draw again! You won't always have a lot of moves at the start of the game.  That's ok!",
+                highlight: "#deckArea",
+                waitFor: { type: 'draw', description: 'Draw another card' },
+                position: "above",
+                isActionStep: true
+            },
+            {
+                title: "Keep Going",
+                text: "There are still no moves!  Nobody chooses where they begin in life.  But there is still hope!",
+                highlight: "#deckArea",
+                waitFor: { type: 'draw', description: 'Draw another card' },
+                position: "above",
+                isActionStep: true
+            },
+            {
+                title: "Almost Full",
+                text: "Draw again.  Soon all of the columns will be full, and discards will loop to the start again.",
+                highlight: "#deckArea",
+                waitFor: { type: 'draw', description: 'Draw another card' },
+                position: "above",
+                isActionStep: true
+            },
+            {
+                title: "All Columns Full",
+                text: "Last draw for the tutorial.  Stick with me, there is a point to this!",
+                highlight: "#deckArea",
+                waitFor: { type: 'draw', description: 'Draw one more card' },
+                position: "above",
+                isActionStep: true
+            },
+            {
+                title: "Important: Discard Rules!",
+                text: "Notice the discard ignored placement rules! Unlike when YOU play cards, discards ignore constraints. They don't need alternating colors or descending order. This is why you should play cards before they get pushed out!",
+                highlight: "#fieldArea",
                 waitFor: null,
-                position: "above"
+                position: "below"
             },
             {
                 title: "You're Ready!",
@@ -203,6 +244,7 @@ class TutorialSystem extends GUTS.BaseSystem {
         this.active = true;
         this.currentStep = 0;
         this.waitingForAction = null;
+        this.drawCount = 0;
         this.overlay.classList.remove('hidden');
         this.showStep(this.currentStep);
     }
@@ -281,6 +323,9 @@ class TutorialSystem extends GUTS.BaseSystem {
         const rect = target.getBoundingClientRect();
         const padding = 8;
 
+        // Hide backdrop when showing highlight (highlight's box-shadow creates the overlay with a hole)
+        this.overlay.querySelector('.tutorial-backdrop').style.display = 'none';
+
         // Position highlight
         this.highlightEl.style.display = 'block';
         this.highlightEl.style.left = (rect.left - padding) + 'px';
@@ -314,6 +359,8 @@ class TutorialSystem extends GUTS.BaseSystem {
     }
 
     centerBox() {
+        // Show backdrop when no highlight (centered messages need full overlay)
+        this.overlay.querySelector('.tutorial-backdrop').style.display = 'block';
         this.highlightEl.style.display = 'none';
         this.boxEl.style.left = '50%';
         this.boxEl.style.top = '50%';
