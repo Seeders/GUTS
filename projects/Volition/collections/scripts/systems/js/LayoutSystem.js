@@ -4,18 +4,18 @@
  */
 class LayoutSystem extends GUTS.BaseSystem {
     static services = [
-        'getFoundationPosition', 'getTableauPosition', 'getHandPosition', 'getDeckPosition',
+        'getKingdomPosition', 'getFieldPosition', 'getHandPosition', 'getDeckPosition',
         'getCardWidth', 'getCardHeight', 'getStackOffset',
         'refreshLayout'
     ];
-    static serviceDependencies = ['updateHandLayout', 'refreshTableauPositions', 'refreshFoundationPositions'];
+    static serviceDependencies = ['updateHandLayout', 'refreshFieldPositions', 'refreshKingdomPositions'];
 
     constructor(game) {
         super(game);
 
         // Positions
-        this.foundationPositions = [];
-        this.tableauPositions = [];
+        this.kingdomPositions = [];
+        this.fieldPositions = [];
         this.handPositions = [];
         this.deckPosition = { x: 0, y: 0 };
 
@@ -47,24 +47,24 @@ class LayoutSystem extends GUTS.BaseSystem {
         this.cardHeight = parseInt(style.getPropertyValue('--card-height')) || 67;
         this.stackOffset = parseInt(style.getPropertyValue('--stack-offset')) || 16;
 
-        // Read foundation positions
-        this.foundationPositions = [];
+        // Read kingdom positions
+        this.kingdomPositions = [];
         for (let i = 0; i < 4; i++) {
-            const el = document.getElementById(`foundation-${i}`);
+            const el = document.getElementById(`kingdom-${i}`);
             if (el) {
                 const rect = el.getBoundingClientRect();
-                this.foundationPositions[i] = { x: rect.left, y: rect.top };
+                this.kingdomPositions[i] = { x: rect.left, y: rect.top };
             }
         }
 
-        // Read tableau positions
-        this.tableauPositions = [];
+        // Read field positions
+        this.fieldPositions = [];
         let i = 0;
         while (true) {
-            const el = document.getElementById(`tableau-${i}`);
+            const el = document.getElementById(`field-${i}`);
             if (!el) break;
             const rect = el.getBoundingClientRect();
-            this.tableauPositions[i] = { x: rect.left, y: rect.top };
+            this.fieldPositions[i] = { x: rect.left, y: rect.top };
             i++;
         }
 
@@ -89,16 +89,16 @@ class LayoutSystem extends GUTS.BaseSystem {
     notifyLayoutChange() {
         // Notify other systems to update card positions via services
         this.call.updateHandLayout();
-        this.call.refreshTableauPositions();
-        this.call.refreshFoundationPositions();
+        this.call.refreshFieldPositions();
+        this.call.refreshKingdomPositions();
     }
 
-    getFoundationPosition(suit) {
-        return this.foundationPositions[suit] || { x: 0, y: 0 };
+    getKingdomPosition(suit) {
+        return this.kingdomPositions[suit] || { x: 0, y: 0 };
     }
 
-    getTableauPosition(column) {
-        return this.tableauPositions[column] || { x: 0, y: 0 };
+    getFieldPosition(column) {
+        return this.fieldPositions[column] || { x: 0, y: 0 };
     }
 
     getHandPosition(slot) {

@@ -4,7 +4,7 @@
  */
 class TutorialSystem extends GUTS.BaseSystem {
     static services = ['startTutorial', 'endTutorial', 'isTutorialActive', 'onCardPlayed'];
-    static serviceDependencies = ['getHandCards', 'getColumnCards', 'getFoundationCards', 'getDeckCount', 'flowCard'];
+    static serviceDependencies = ['getHandCards', 'getColumnCards', 'getKingdomCards', 'getDeckCount', 'flowCard'];
 
     constructor(game) {
         super(game);
@@ -17,7 +17,7 @@ class TutorialSystem extends GUTS.BaseSystem {
         this.steps = [
             {
                 title: "Welcome to Volition!",
-                text: "Let's learn how to play. Your goal is to move all 52 cards to the foundation piles sorted by suit from Ace to King.",
+                text: "Let's learn how to play. Your goal is to move all 52 cards to the kingdoms sorted by suit from Ace to King.",
                 highlight: null,
                 waitFor: null, // No action required, just click Next
                 position: "center"
@@ -30,59 +30,59 @@ class TutorialSystem extends GUTS.BaseSystem {
                 position: "above"
             },
             {
-                title: "The Foundation",
-                text: "Each suit has its own pile. Start with Aces, then build up to Kings. The piles are Hearts, Diamonds, Clubs, and Spades.",
-                highlight: "#foundationArea",
+                title: "The Kingdoms",
+                text: "Each suit has its own kingdom. Start with Aces, then build up to Kings. The kingdoms are Hearts, Diamonds, Clubs, and Spades.",
+                highlight: "#kingdomArea",
                 waitFor: null,
                 position: "below"
             },
             {
                 title: "Discard Preview",
-                text: "The orange outline on the tableau shows where your oldest card will go when it's pushed out of your hand.",
-                highlight: "#tableauArea",
+                text: "The orange outline on the field shows where your oldest card will go when it's pushed out of your hand.",
+                highlight: "#fieldArea",
                 waitFor: null,
                 position: "below"
             },
             {
                 title: "Discard Order",
                 text: "Cards are discarded to empty columns first (left to right). If all columns have cards, it cycles through them in order.",
-                highlight: "#tableauArea",
+                highlight: "#fieldArea",
                 waitFor: null,
                 position: "below"
             },
             {
                 title: "Play an Ace!",
-                text: "Look for an Ace in your hand. Drag it to its matching foundation pile, or double-tap it to auto-play.",
+                text: "Look for an Ace in your hand. Drag it to its matching kingdom, or double-tap it to auto-play.",
                 highlight: "#handArea",
-                waitFor: { type: 'foundation', description: 'Play any Ace to the foundation' },
+                waitFor: { type: 'kingdom', description: 'Play any Ace to the kingdom' },
                 position: "above",
                 isActionStep: true
             },
             {
                 title: "Great!",
-                text: "Nice work! You just played a card to the foundation. Keep building each suit up to King to win.",
-                highlight: "#foundationArea",
+                text: "Nice work! You just played a card to the kingdom. Keep building each suit up to King to win.",
+                highlight: "#kingdomArea",
                 waitFor: null,
                 position: "below"
             },
             {
-                title: "The Tableau",
+                title: "The Field",
                 text: "These columns are for temporary storage. Stack cards in descending order with alternating colors (red on black, black on red).",
-                highlight: "#tableauArea",
+                highlight: "#fieldArea",
                 waitFor: null,
                 position: "below"
             },
             {
-                title: "Play to the Tableau",
-                text: "Try placing a card on the tableau. Remember: descending order, alternating colors. Only Kings can start an empty column.",
-                highlight: "#tableauArea",
-                waitFor: { type: 'tableau', description: 'Play a card to the tableau' },
+                title: "Play to the Field",
+                text: "Try placing a card on the field. Remember: descending order, alternating colors. Only Kings can start an empty column.",
+                highlight: "#fieldArea",
+                waitFor: { type: 'field', description: 'Play a card to the field' },
                 position: "below",
                 isActionStep: true
             },
             {
                 title: "Card Flow",
-                text: "Your hand always holds 5 cards. When you draw from the deck, the oldest card (leftmost) is pushed out to an empty tableau column. Play cards before they get pushed out!",
+                text: "Your hand always holds 5 cards. When you draw from the deck, the oldest card (leftmost) is pushed out to an empty field column. Play cards before they get pushed out!",
                 highlight: "#handArea",
                 waitFor: null,
                 position: "above"
@@ -111,7 +111,7 @@ class TutorialSystem extends GUTS.BaseSystem {
             },
             {
                 title: "You're Ready!",
-                text: "Build all four suits from Ace to King to win. Play cards wisely and manage your hand. Good luck!",
+                text: "Build all four kingdoms from Ace to King to win. Play cards wisely and manage your hand. Good luck!",
                 highlight: null,
                 waitFor: null,
                 position: "center",
@@ -144,14 +144,14 @@ class TutorialSystem extends GUTS.BaseSystem {
         }
     }
 
-    // Called by FoundationSystem and TableauSystem when a card is played
+    // Called by KingdomSystem and FieldSystem when a card is played
     onCardPlayed(location, cardEid) {
         if (!this.active || !this.waitingForAction) return;
 
-        if (this.waitingForAction.type === 'foundation' && location === 'foundation') {
-            this.completeAction('foundation');
-        } else if (this.waitingForAction.type === 'tableau' && location === 'tableau') {
-            this.completeAction('tableau');
+        if (this.waitingForAction.type === 'kingdom' && location === 'kingdom') {
+            this.completeAction('kingdom');
+        } else if (this.waitingForAction.type === 'field' && location === 'field') {
+            this.completeAction('field');
         }
     }
 

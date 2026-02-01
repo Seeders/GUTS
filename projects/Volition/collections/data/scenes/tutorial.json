@@ -8,8 +8,8 @@
     "DeckSystem",
     "CardFlowSystem",
     "HandSystem",
-    "TableauSystem",
-    "FoundationSystem",
+    "FieldSystem",
+    "KingdomSystem",
     "InputSystem",
     "RenderSystem",
     "TutorialSystem"

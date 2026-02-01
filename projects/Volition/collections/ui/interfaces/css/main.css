@@ -27,8 +27,8 @@
 
     --header-height: 44px;
     --toolbar-height: 56px;
-    --foundation-top: 64px;
-    --tableau-top: 132px;
+    --kingdom-top: 64px;
+    --field-top: 132px;
 }
 
 /* Reset */
@@ -124,11 +124,11 @@ body {
 
 
 /* ============================================
-   TOP AREA (Foundation)
+   TOP AREA (Kingdom)
    ============================================ */
 #topArea {
     position: fixed;
-    top: var(--foundation-top);
+    top: var(--kingdom-top);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -242,14 +242,14 @@ body {
 }
 
 /* ============================================
-   FOUNDATION PILES
+   KINGDOM PILES
    ============================================ */
-#foundationArea {
+#kingdomArea {
     display: flex;
     gap: 6px;
 }
 
-.foundation-pile {
+.kingdom-pile {
     width: var(--card-width);
     height: var(--card-height);
     border: 1px solid var(--color-primary-dim);
@@ -261,7 +261,7 @@ body {
     transition: all 0.15s;
 }
 
-.foundation-pile.drop-hover {
+.kingdom-pile.drop-hover {
     border-color: var(--color-primary);
     background-color: var(--color-primary-glow);
     box-shadow: 0 0 10px var(--color-primary-glow);
@@ -285,11 +285,11 @@ body {
 .suit-icon.spades::before { content: '\2660'; }
 
 /* ============================================
-   TABLEAU
+   FIELD
    ============================================ */
-#tableauArea {
+#fieldArea {
     position: fixed;
-    top: var(--tableau-top);
+    top: var(--field-top);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -297,7 +297,7 @@ body {
     z-index: 5;
 }
 
-.tableau-column {
+.field-column {
     width: var(--card-width);
     min-height: var(--card-height);
     border: 1px solid var(--color-primary-dim);
@@ -307,7 +307,7 @@ body {
     transition: all 0.15s;
 }
 
-.tableau-column.drop-hover {
+.field-column.drop-hover {
     border-color: var(--color-primary);
     border-style: solid;
     background-color: var(--color-primary-glow);
@@ -315,14 +315,14 @@ body {
 }
 
 /* Column selection mode - clickable columns */
-.tableau-column.selectable {
+.field-column.selectable {
     border-color: var(--color-primary);
     border-style: solid;
     cursor: pointer;
     animation: column-pulse 1s ease-in-out infinite;
 }
 
-.tableau-column.selectable:hover {
+.field-column.selectable:hover {
     background-color: var(--color-primary-glow);
     box-shadow: 0 0 15px var(--color-primary);
 }
@@ -951,8 +951,8 @@ body {
         --stack-offset: 22px;
         --header-height: 50px;
         --toolbar-height: 60px;
-        --foundation-top: 70px;
-        --tableau-top: 180px;
+        --kingdom-top: 70px;
+        --field-top: 180px;
         --pip-size: 11px;
         --pip-ace-size: 24px;
         --pip-face-size: 20px;
@@ -976,11 +976,11 @@ body {
         height: 6px;
     }
 
-    #foundationArea {
+    #kingdomArea {
         gap: 16px;
     }
 
-    #tableauArea {
+    #fieldArea {
         gap: 12px;
     }
 
@@ -1037,18 +1037,18 @@ body {
         --card-radius: 2px;
         --card-spacing: 100px;
         --stack-offset: 25px;
-        --foundation-top: 80px;
-        --tableau-top: 210px;
+        --kingdom-top: 80px;
+        --field-top: 210px;
         --pip-size: 13px;
         --pip-ace-size: 28px;
         --pip-face-size: 24px;
     }
 
-    #foundationArea {
+    #kingdomArea {
         gap: 20px;
     }
 
-    #tableauArea {
+    #fieldArea {
         gap: 20px;
     }
 

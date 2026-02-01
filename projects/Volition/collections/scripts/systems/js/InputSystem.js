@@ -4,12 +4,12 @@
 class InputSystem extends GUTS.BaseSystem {
     static services = ['selectCard', 'deselectCard'];
     static serviceDependencies = [
-        'canPlayToFoundation', 'playToFoundation',
-        'canPlayToTableau', 'playToTableau',
-        'getHandCards', 'getTableauColumns', 'getColumnCards',
-        'isValidSequence', 'getCardsBelow', 'moveTableauToTableau',
+        'canPlayToKingdom', 'playToKingdom',
+        'canPlayToField', 'playToField',
+        'getHandCards', 'getFieldColumns', 'getColumnCards',
+        'isValidSequence', 'getCardsBelow', 'moveFieldToField',
         'flowCard', 'flowAfterHandPlay', 'isFlowAnimating', 'updateHandLayout',
-        'getFoundationPosition', 'getTableauPosition', 'getCardWidth', 'getCardHeight', 'getStackOffset',
+        'getKingdomPosition', 'getFieldPosition', 'getCardWidth', 'getCardHeight', 'getStackOffset',
         'isAwaitingColumnSelection',
         'playCardPickup', 'playCardPlace', 'playCardInvalid'
     ];
@@ -19,8 +19,8 @@ class InputSystem extends GUTS.BaseSystem {
         this.selectedCard = null;
         this.draggedCards = []; // Array of cards being dragged (for stack moves)
         this.dragStartPositions = []; // Original positions for each dragged card
-        this.sourceLocation = null; // 'hand' or 'tableau'
-        this.sourceColumn = -1; // Column index if from tableau
+        this.sourceLocation = null; // 'hand' or 'field'
+        this.sourceColumn = -1; // Column index if from field
         this.isDragging = false;
         this.dragStartX = 0;
         this.dragStartY = 0;
@@ -110,7 +110,7 @@ class InputSystem extends GUTS.BaseSystem {
     }
 
     getCardAtPosition(x, y) {
-        // Collect all playable cards (hand + tableau)
+        // Collect all playable cards (hand + field)
         const allCards = [];
 
         // Get hand cards
@@ -119,12 +119,12 @@ class InputSystem extends GUTS.BaseSystem {
             allCards.push({ eid, source: 'hand', column: -1 });
         }
 
-        // Get tableau cards
-        const numCols = this.call.getTableauColumns();
+        // Get field cards
+        const numCols = this.call.getFieldColumns();
         for (let col = 0; col < numCols; col++) {
             const colCards = this.call.getColumnCards(col);
             for (const eid of colCards) {
-                allCards.push({ eid, source: 'tableau', column: col });
+                allCards.push({ eid, source: 'field', column: col });
             }
         }
 
@@ -151,25 +151,25 @@ class InputSystem extends GUTS.BaseSystem {
         const dims = this.getCardDimensions();
         const stackOffset = this.call.getStackOffset();
 
-        // Check foundation piles
+        // Check kingdom piles
         for (let suit = 0; suit < 4; suit++) {
-            const pos = this.call.getFoundationPosition(suit);
+            const pos = this.call.getKingdomPosition(suit);
             if (x >= pos.x && x <= pos.x + dims.width &&
                 y >= pos.y && y <= pos.y + dims.height) {
-                return { type: 'foundation', suit: suit };
+                return { type: 'kingdom', suit: suit };
             }
         }
 
-        // Check tableau columns
-        const numCols = this.call.getTableauColumns();
+        // Check field columns
+        const numCols = this.call.getFieldColumns();
         for (let col = 0; col < numCols; col++) {
-            const pos = this.call.getTableauPosition(col);
+            const pos = this.call.getFieldPosition(col);
             const colCards = this.call.getColumnCards(col);
             const colHeight = dims.height + colCards.length * stackOffset;
 
             if (x >= pos.x && x <= pos.x + dims.width &&
                 y >= pos.y && y <= pos.y + colHeight) {
-                return { type: 'tableau', column: col };
+                return { type: 'field', column: col };
             }
         }
 
@@ -301,8 +301,8 @@ class InputSystem extends GUTS.BaseSystem {
 
         const cardInfo = this.getCardAtPosition(e.clientX, e.clientY);
         if (cardInfo) {
-            // Try to auto-play to foundation (only single cards)
-            if (this.call.canPlayToFoundation(cardInfo.eid)) {
+            // Try to auto-play to kingdom (only single cards)
+            if (this.call.canPlayToKingdom(cardInfo.eid)) {
                 const wasFromHand = cardInfo.source === 'hand';
                 const cardEid = cardInfo.eid;
                 // Get original index before playing
@@ -315,10 +315,10 @@ class InputSystem extends GUTS.BaseSystem {
                 if (wasFromHand && this.call.playCardPickup) {
                     this.call.playCardPickup();
                 }
-                this.call.playToFoundation(cardEid);
+                this.call.playToKingdom(cardEid);
                 // Start flow sequence after playing from hand
                 if (wasFromHand) {
-                    this.call.flowAfterHandPlay(cardEid, 'foundation', originalIndex);
+                    this.call.flowAfterHandPlay(cardEid, 'kingdom', originalIndex);
                 }
             }
         }
@@ -347,8 +347,8 @@ class InputSystem extends GUTS.BaseSystem {
 
         const cardInfo = this.getCardAtPosition(x, y);
         if (cardInfo) {
-            // Try to auto-play to foundation (only single cards)
-            if (this.call.canPlayToFoundation(cardInfo.eid)) {
+            // Try to auto-play to kingdom (only single cards)
+            if (this.call.canPlayToKingdom(cardInfo.eid)) {
                 const wasFromHand = cardInfo.source === 'hand';
                 const cardEid = cardInfo.eid;
                 // Get original index before playing
@@ -361,10 +361,10 @@ class InputSystem extends GUTS.BaseSystem {
                 if (wasFromHand && this.call.playCardPickup) {
                     this.call.playCardPickup();
                 }
-                this.call.playToFoundation(cardEid);
+                this.call.playToKingdom(cardEid);
                 // Start flow sequence after playing from hand
                 if (wasFromHand) {
-                    this.call.flowAfterHandPlay(cardEid, 'foundation', originalIndex);
+                    this.call.flowAfterHandPlay(cardEid, 'kingdom', originalIndex);
                 }
             }
         }
@@ -408,7 +408,7 @@ class InputSystem extends GUTS.BaseSystem {
             if (this.call.playCardPickup) {
                 this.call.playCardPickup();
             }
-        } else if (source === 'tableau') {
+        } else if (source === 'field') {
             // Check if we can drag this card (must be valid sequence)
             if (this.call.isValidSequence(eid)) {
                 // Get all cards below this one
@@ -472,17 +472,17 @@ class InputSystem extends GUTS.BaseSystem {
         const dims = this.getCardDimensions();
         const stackOffset = this.call.getStackOffset();
 
-        if (target.type === 'foundation') {
-            if (isSingleCard && card.suit === target.suit && this.call.canPlayToFoundation(this.selectedCard)) {
-                const pos = this.call.getFoundationPosition(target.suit);
+        if (target.type === 'kingdom') {
+            if (isSingleCard && card.suit === target.suit && this.call.canPlayToKingdom(this.selectedCard)) {
+                const pos = this.call.getKingdomPosition(target.suit);
                 this.showDropPreview(pos.x, pos.y, dims.width, dims.height);
             }
-        } else if (target.type === 'tableau') {
-            // Skip source column for tableau cards
-            if (this.sourceLocation === 'tableau' && this.sourceColumn === target.column) return;
+        } else if (target.type === 'field') {
+            // Skip source column for field cards
+            if (this.sourceLocation === 'field' && this.sourceColumn === target.column) return;
 
-            if (this.call.canPlayToTableau(this.selectedCard, target.column)) {
-                const pos = this.call.getTableauPosition(target.column);
+            if (this.call.canPlayToField(this.selectedCard, target.column)) {
+                const pos = this.call.getFieldPosition(target.column);
                 const columnCards = this.call.getColumnCards(target.column, false); // landed cards only
                 const dropY = pos.y + columnCards.length * stackOffset;
                 this.showDropPreview(pos.x, dropY, dims.width, dims.height);
@@ -543,29 +543,29 @@ class InputSystem extends GUTS.BaseSystem {
         }
 
         if (target) {
-            if (target.type === 'foundation') {
-                // Foundation only accepts single cards
+            if (target.type === 'kingdom') {
+                // Kingdom only accepts single cards
                 if (this.draggedCards.length === 1) {
                     const card = this.game.getComponent(this.selectedCard, 'card');
-                    if (card.suit === target.suit && this.call.canPlayToFoundation(this.selectedCard)) {
-                        played = this.call.playToFoundation(this.selectedCard);
-                        playedTargetType = 'foundation';
+                    if (card.suit === target.suit && this.call.canPlayToKingdom(this.selectedCard)) {
+                        played = this.call.playToKingdom(this.selectedCard);
+                        playedTargetType = 'kingdom';
                     }
                 }
-            } else if (target.type === 'tableau') {
+            } else if (target.type === 'field') {
                 // Don't allow dropping on the same column
-                if (this.sourceLocation === 'tableau' && this.sourceColumn === target.column) {
+                if (this.sourceLocation === 'field' && this.sourceColumn === target.column) {
                     played = false;
                 } else if (this.sourceLocation === 'hand') {
-                    // Hand to tableau - single card
-                    if (this.call.canPlayToTableau(this.selectedCard, target.column)) {
-                        played = this.call.playToTableau(this.selectedCard, target.column);
-                        playedTargetType = 'tableau';
+                    // Hand to field - single card
+                    if (this.call.canPlayToField(this.selectedCard, target.column)) {
+                        played = this.call.playToField(this.selectedCard, target.column);
+                        playedTargetType = 'field';
                     }
-                } else if (this.sourceLocation === 'tableau') {
-                    // Tableau to tableau - use moveTableauToTableau for stacks
-                    played = this.call.moveTableauToTableau(this.selectedCard, target.column);
-                    // Play place sound immediately for tableau-to-tableau moves
+                } else if (this.sourceLocation === 'field') {
+                    // Field to field - use moveFieldToField for stacks
+                    played = this.call.moveFieldToField(this.selectedCard, target.column);
+                    // Play place sound immediately for field-to-field moves
                     if (played && this.call.playCardPlace) {
                         this.call.playCardPlace();
                     }

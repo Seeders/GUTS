@@ -99,7 +99,7 @@ class HandSystem extends GUTS.BaseSystem {
 
     popFromHand() {
         // Remove oldest card (index 0) and return it
-        // Caller is responsible for placing the card somewhere (e.g., tableau dump)
+        // Caller is responsible for placing the card somewhere (e.g., field dump)
         const handCards = this.getHandCards();
         if (handCards.length === 0) return null;
 

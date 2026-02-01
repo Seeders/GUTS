@@ -1,10 +1,10 @@
 /**
- * TableauSystem - Manages tableau columns for temporary card stacking
+ * FieldSystem - Manages field columns for temporary card stacking
  * Rules: Alternating colors, descending rank (K->Q->J->10...->A)
  */
-class TableauSystem extends GUTS.BaseSystem {
-    static services = ['canPlayToTableau', 'playToTableau', 'dumpToTableau', 'getColumnCards', 'getTableauColumns', 'getBottomCard', 'getCardsBelow', 'isValidSequence', 'moveTableauToTableau', 'findEmptyColumn', 'refreshTableauPositions'];
-    static serviceDependencies = ['removeFromHand', 'getTableauPosition', 'getStackOffset', 'refreshLayout', 'onCardPlayed'];
+class FieldSystem extends GUTS.BaseSystem {
+    static services = ['canPlayToField', 'playToField', 'dumpToField', 'getColumnCards', 'getFieldColumns', 'getBottomCard', 'getCardsBelow', 'isValidSequence', 'moveFieldToField', 'findEmptyColumn', 'refreshFieldPositions'];
+    static serviceDependencies = ['removeFromHand', 'getFieldPosition', 'getStackOffset', 'refreshLayout', 'onCardPlayed'];
 
     constructor(game) {
         super(game);
@@ -12,35 +12,35 @@ class TableauSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('TableauSystem initializing...');
+        console.log('FieldSystem initializing...');
         const config = this.game.gameInstance?.getConfig() || {};
-        this.numColumns = config.tableauColumns || 4;
+        this.numColumns = config.fieldColumns || 4;
     }
 
     postAllInit() {
-        this.createTableauColumns();
+        this.createFieldColumns();
     }
 
-    createTableauColumns() {
-        const tableauArea = document.getElementById('tableauArea');
-        if (!tableauArea) return;
+    createFieldColumns() {
+        const fieldArea = document.getElementById('fieldArea');
+        if (!fieldArea) return;
 
         // Clear existing columns
-        tableauArea.innerHTML = '';
+        fieldArea.innerHTML = '';
 
         // Create columns based on numColumns setting
         for (let i = 0; i < this.numColumns; i++) {
             const col = document.createElement('div');
-            col.className = 'tableau-column';
-            col.id = `tableau-${i}`;
-            tableauArea.appendChild(col);
+            col.className = 'field-column';
+            col.id = `field-${i}`;
+            fieldArea.appendChild(col);
         }
 
         // Notify LayoutSystem to refresh after creating columns
         this.call.refreshLayout();
     }
 
-    getTableauColumns() {
+    getFieldColumns() {
         return this.numColumns;
     }
 
@@ -88,7 +88,7 @@ class TableauSystem extends GUTS.BaseSystem {
         return suit === 0 || suit === 1; // hearts or diamonds
     }
 
-    canPlayToTableau(cardEid, columnIndex) {
+    canPlayToField(cardEid, columnIndex) {
         const card = this.game.getComponent(cardEid, 'card');
         // Only check against landed cards (not flying/animating)
         const columnCards = this.getColumnCards(columnIndex, false);
@@ -113,8 +113,8 @@ class TableauSystem extends GUTS.BaseSystem {
         return card.rank === bottomCardData.rank - 1;
     }
 
-    playToTableau(cardEid, columnIndex) {
-        if (!this.canPlayToTableau(cardEid, columnIndex)) {
+    playToField(cardEid, columnIndex) {
+        if (!this.canPlayToField(cardEid, columnIndex)) {
             return false;
         }
 
@@ -126,15 +126,15 @@ class TableauSystem extends GUTS.BaseSystem {
             this.call.removeFromHand(cardEid);
         }
 
-        // Add to tableau - use landed cards only for correct index
+        // Add to field - use landed cards only for correct index
         const landedCards = this.getColumnCards(columnIndex, false);
 
-        loc.location = 3; // tableau
+        loc.location = 3; // field
         loc.index = landedCards.length;
         loc.columnIndex = columnIndex;
 
         // Set target position from LayoutSystem
-        const pos = this.call.getTableauPosition(columnIndex);
+        const pos = this.call.getFieldPosition(columnIndex);
         const stackOffset = this.call.getStackOffset();
         visual.targetX = pos.x;
         visual.targetY = pos.y + loc.index * stackOffset;
@@ -147,7 +147,7 @@ class TableauSystem extends GUTS.BaseSystem {
             ? this.game.getComponent(landedCards[landedCards.length - 1], 'card').rank
             : null;
 
-        this.game.triggerEvent('onCardPlayedToTableau', {
+        this.game.triggerEvent('onCardPlayedToField', {
             cardEid,
             rank: card.rank,
             suit: card.suit,
@@ -158,17 +158,17 @@ class TableauSystem extends GUTS.BaseSystem {
 
         // Notify tutorial system if active
         if (this.call.onCardPlayed) {
-            this.call.onCardPlayed('tableau', cardEid);
+            this.call.onCardPlayed('field', cardEid);
         }
 
         return true;
     }
 
     /**
-     * Dump a card to tableau - ignores stacking rules (chaos mode)
+     * Dump a card to field - ignores stacking rules (chaos mode)
      * Used when cards overflow from hand
      */
-    dumpToTableau(cardEid, columnIndex) {
+    dumpToField(cardEid, columnIndex) {
         const loc = this.game.getComponent(cardEid, 'cardLocation');
         const card = this.game.getComponent(cardEid, 'card');
         const visual = this.game.getComponent(cardEid, 'cardVisual');
@@ -176,8 +176,8 @@ class TableauSystem extends GUTS.BaseSystem {
         // Get current column cards BEFORE changing location
         const columnCards = this.getColumnCards(columnIndex);
 
-        // Set card location to tableau (no validation)
-        loc.location = 3; // tableau
+        // Set card location to field (no validation)
+        loc.location = 3; // field
         loc.index = columnCards.length;
         loc.columnIndex = columnIndex;
 
@@ -185,14 +185,14 @@ class TableauSystem extends GUTS.BaseSystem {
         card.faceUp = 1;
 
         // Set target position from LayoutSystem
-        const pos = this.call.getTableauPosition(columnIndex);
+        const pos = this.call.getFieldPosition(columnIndex);
         const stackOffset = this.call.getStackOffset();
         visual.targetX = pos.x;
         visual.targetY = pos.y + loc.index * stackOffset;
         visual.zIndex = 50 + loc.index;
         visual.animating = 1;
 
-        console.log(`Dumped card to tableau column ${columnIndex}, index ${loc.index}`);
+        console.log(`Dumped card to field column ${columnIndex}, index ${loc.index}`);
     }
 
     /**
@@ -201,7 +201,7 @@ class TableauSystem extends GUTS.BaseSystem {
      */
     getCardsBelow(cardEid) {
         const loc = this.game.getComponent(cardEid, 'cardLocation');
-        if (loc.location !== 3) return []; // Not on tableau
+        if (loc.location !== 3) return []; // Not on field
 
         const columnCards = this.getColumnCards(loc.columnIndex);
         const cardIndex = loc.index;
@@ -244,11 +244,11 @@ class TableauSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Move a card (and all valid cards below it) from one tableau column to another
+     * Move a card (and all valid cards below it) from one field column to another
      */
-    moveTableauToTableau(cardEid, targetColumn) {
+    moveFieldToField(cardEid, targetColumn) {
         const loc = this.game.getComponent(cardEid, 'cardLocation');
-        if (loc.location !== 3) return false; // Not on tableau
+        if (loc.location !== 3) return false; // Not on field
 
         const sourceColumn = loc.columnIndex;
         if (sourceColumn === targetColumn) return false; // Same column
@@ -259,7 +259,7 @@ class TableauSystem extends GUTS.BaseSystem {
         }
 
         // Check if the top card can be placed on target column
-        if (!this.canPlayToTableau(cardEid, targetColumn)) {
+        if (!this.canPlayToField(cardEid, targetColumn)) {
             return false;
         }
 
@@ -279,7 +279,7 @@ class TableauSystem extends GUTS.BaseSystem {
             moveLoc.index = targetIndex;
 
             // Set target position from LayoutSystem
-            const pos = this.call.getTableauPosition(targetColumn);
+            const pos = this.call.getFieldPosition(targetColumn);
             const stackOffset = this.call.getStackOffset();
             moveVisual.targetX = pos.x;
             moveVisual.targetY = pos.y + targetIndex * stackOffset;
@@ -299,7 +299,7 @@ class TableauSystem extends GUTS.BaseSystem {
             ? this.game.getComponent(targetCards[targetCards.length - 1], 'card').rank
             : null;
 
-        this.game.triggerEvent('onCardPlayedToTableau', {
+        this.game.triggerEvent('onCardPlayedToField', {
             cardEid,
             rank: card.rank,
             suit: card.suit,
@@ -316,7 +316,7 @@ class TableauSystem extends GUTS.BaseSystem {
      */
     reindexColumn(columnIndex) {
         const columnCards = this.getColumnCards(columnIndex);
-        const pos = this.call.getTableauPosition(columnIndex);
+        const pos = this.call.getFieldPosition(columnIndex);
         const stackOffset = this.call.getStackOffset();
         columnCards.forEach((eid, idx) => {
             const loc = this.game.getComponent(eid, 'cardLocation');
@@ -330,10 +330,10 @@ class TableauSystem extends GUTS.BaseSystem {
         });
     }
 
-    refreshTableauPositions() {
+    refreshFieldPositions() {
         const stackOffset = this.call.getStackOffset();
         for (let col = 0; col < this.numColumns; col++) {
-            const pos = this.call.getTableauPosition(col);
+            const pos = this.call.getFieldPosition(col);
             const columnCards = this.getColumnCards(col);
             columnCards.forEach((eid, idx) => {
                 const visual = this.game.getComponent(eid, 'cardVisual');
@@ -345,6 +345,6 @@ class TableauSystem extends GUTS.BaseSystem {
     }
 
     update() {
-        // Update tableau visuals if needed
+        // Update field visuals if needed
     }
 }

@@ -5,7 +5,7 @@
 class HarbingerSystem extends GUTS.BaseSystem {
     // Only expose taunts that other systems might trigger directly (win/lose screens)
     static services = ['showTaunt', 'showVictoryTaunt', 'showDefeatTaunt'];
-    static serviceDependencies = ['getTopFoundationRank', 'getColumnCards', 'getTableauColumns', 'getHandCards', 'isValidSequence', 'playHarbingerAppear', 'canPlayToFoundation', 'playToFoundation', 'getCardsBelow'];
+    static serviceDependencies = ['getTopKingdomRank', 'getColumnCards', 'getFieldColumns', 'getHandCards', 'isValidSequence', 'playHarbingerAppear', 'canPlayToKingdom', 'playToKingdom', 'getCardsBelow'];
 
     constructor(game) {
         super(game);
@@ -22,7 +22,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
         this.typewriterPunctPause = 150; // extra pause after punctuation
 
         // Track game state for contextual taunts
-        this.acesOnFoundation = 0;
+        this.acesOnKingdom = 0;
         this.hasShownHarmonyTaunt = false;
         this.harmonyCheckCounter = 0;
 
@@ -31,8 +31,8 @@ class HarbingerSystem extends GUTS.BaseSystem {
         this.autoWinInterval = null;
         this.autoWinMusingIndex = 0;
 
-        // Track cards to foundation without comment (guarantee occasional responses)
-        this.cardsSinceLastFoundationTaunt = 0;
+        // Track cards to kingdom without comment (guarantee occasional responses)
+        this.cardsSinceLastKingdomTaunt = 0;
 
         // The Harbinger's observations - spoken with ancient certainty
         this.taunts = [
@@ -103,8 +103,8 @@ class HarbingerSystem extends GUTS.BaseSystem {
             // On the game itself
             "The cards were shuffled. The outcome was set.",
             "You see fifty-two possibilities. I see one path.",
-            "The tableau will look exactly as it was meant to look.",
-            "Each foundation will rise precisely as high as it was written.",
+            "The field will look exactly as it was meant to look.",
+            "Each kingdom will rise precisely as high as it was written.",
             "The game ends the way it was always going to end.",
             "You struggle against a conclusion that exists already.",
             "Win or lose, the result was determined before you sat down.",
@@ -112,8 +112,8 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "This game has already been played. You are simply experiencing it.",
             "The cards fall where they must. Not where you wish.",
             "Every game I have witnessed ended exactly as it was going to end.",
-            "The tableau builds itself. You are the instrument, not the architect.",
-            "Foundations rise or they do not. Both were written.",
+            "The field builds itself. You are the instrument, not the architect.",
+            "Kingdoms rise or they do not. Both were written.",
             "You play against the deck. The deck has already finished.",
             "The game asks nothing of you. You give what you were going to give.",
             "Solitaire. A word meaning alone. But you are not alone. The pattern is with you.",
@@ -295,7 +295,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "Rest now. You did what you were always going to do.",
             "The game is over. It was over before it began.",
             "What you call losing, I call arriving.",
-            "The tableau stands complete. Exactly as it was designed to stand.",
+            "The field stands complete. Exactly as it was designed to stand.",
             "Every card found its final position. The position it was always going to find.",
             "You have experienced the game in full. Its outcome was never in doubt.",
             "The conclusion was patient. It waited for you to reach it.",
@@ -332,7 +332,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "The decree is spoken. Earlier than the pattern suggested.",
             "I sense a declaration forming. This was not written.",
             "The standard takes its place. My visions were unclear.",
-            "A decree of foundation. The certainty I held... wavers.",
+            "A decree of kingdom. The certainty I held... wavers.",
             "The kingdom proclaims its existence. Unexpectedly.",
             "This banner was meant to remain furled. Yet here it flies.",
             "A decree issued. The pattern bends in ways I did not see.",
@@ -344,7 +344,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "The decree is spoken. A kingdom I thought would never come."
         ];
 
-        // When a King completes a foundation - a kingdom achieves harmony
+        // When a King completes a kingdom - the kingdom achieves harmony
         this.kingTaunts = [
             "A kingdom in harmony. This... this was not foretold.",
             "The king claims his throne. My visions showed only chaos.",
@@ -406,7 +406,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "The champion claims his destiny. A destiny I failed to read."
         ];
 
-        // When a princess joins a hero (Queen on King in tableau)
+        // When a princess joins a hero (Queen on King in field)
         this.marriageTaunts = [
             "A princess joins her hero. This union was not in my visions.",
             "The princess finds her champion. The pattern shifts.",
@@ -449,7 +449,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "Four standards planted. Four paths I did not foresee.",
             "All kingdoms proclaimed. The pattern I trusted has shattered.",
             "Hearts, diamonds, clubs, spades. All declare sovereignty against my predictions.",
-            "Four decrees of foundation. I must question everything I thought I knew.",
+            "Four decrees of kingdom. I must question everything I thought I knew.",
             "Every banner unfurled. My ancient certainty crumbles to dust.",
             "The four kingdoms stand declared. This changes the nature of my understanding.",
             "All decrees issued. I have witnessed something rare. Something troubling.",
@@ -526,7 +526,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "You have taught an ancient being something new. That alone defies the pattern.",
             "The game is won. But what have I lost? What have I gained?",
             "I spoke of scripts and certainty. You wrote a new page.",
-            "The foundations are complete. My foundation crumbles.",
+            "The kingdoms are complete. My foundation crumbles.",
             "Perhaps free will was always there, hiding in the spaces between my certainties.",
             "I will watch the next game differently. I cannot unknow what you have shown me.",
             "The cards are home. I must find a new home for my understanding.",
@@ -537,7 +537,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "The final card ascends. With it goes my last claim to omniscience."
         ];
 
-        // When a card joins the foundation - the kingdom grows stronger
+        // When a card joins the kingdom - the kingdom grows stronger
         this.kingdomGrowsTaunts = [
             "Another soul joins the kingdom. The order grows.",
             "The realm expands. This was not supposed to happen.",
@@ -550,7 +550,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "One more step toward unity. One more crack in my understanding.",
             "The realm grows. My confidence shrinks.",
             "Another joins the ascension. How many more will follow?",
-            "The foundation strengthens. My foundations weaken.",
+            "The kingdom strengthens. My foundations weaken.",
             "A place is found, a role fulfilled. This was not written.",
             "The kingdom's ranks swell. I had not foreseen such order.",
             "One by one, they find their way home. I cannot find mine.",
@@ -874,12 +874,12 @@ class HarbingerSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Check if the four kings are in harmony - all tableau columns have valid
-     * sequences starting with kings (or are empty), and all non-foundation/non-hand
+     * Check if the four kings are in harmony - all field columns have valid
+     * sequences starting with kings (or are empty), and all non-kingdom/non-hand
      * cards are in these valid columns
      */
     checkForHarmony() {
-        const numColumns = this.call.getTableauColumns();
+        const numColumns = this.call.getFieldColumns();
         let kingsInHarmony = 0;
         let hasInvalidColumn = false;
 
@@ -938,12 +938,12 @@ class HarbingerSystem extends GUTS.BaseSystem {
     }
 
     // ============================================
-    // AUTO-WIN SYSTEM - Automatically move cards to foundations
+    // AUTO-WIN SYSTEM - Automatically move cards to kingdoms
     // ============================================
 
     /**
      * Start the automatic victory process
-     * Cards will move to foundations one at a time
+     * Cards will move to kingdoms one at a time
      */
     startAutoWin() {
         if (this.isAutoWinning) return;
@@ -956,20 +956,20 @@ class HarbingerSystem extends GUTS.BaseSystem {
             this.showVictoryMusing();
         }, 1000);
 
-        // Start playing cards to foundation
+        // Start playing cards to kingdom
         this.autoWinInterval = setInterval(() => {
             this.autoPlayNextCard();
         }, 400); // Play a card every 400ms
     }
 
     /**
-     * Find a card that can be played to the foundation
-     * Prioritizes bottom cards of tableau columns
+     * Find a card that can be played to the kingdom
+     * Prioritizes bottom cards of field columns
      */
     findPlayableCard() {
-        const numColumns = this.call.getTableauColumns();
+        const numColumns = this.call.getFieldColumns();
 
-        // Check each tableau column for playable cards
+        // Check each field column for playable cards
         for (let col = 0; col < numColumns; col++) {
             const cards = this.call.getColumnCards(col);
             if (cards.length === 0) continue;
@@ -980,7 +980,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
                 const cardsBelow = this.call.getCardsBelow(cardEid);
 
                 // Can only play the bottom card (no cards below it in sequence)
-                if (cardsBelow.length === 1 && this.call.canPlayToFoundation(cardEid)) {
+                if (cardsBelow.length === 1 && this.call.canPlayToKingdom(cardEid)) {
                     return cardEid;
                 }
             }
@@ -989,7 +989,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
         // Check hand cards
         const handCards = this.call.getHandCards();
         for (const cardEid of handCards) {
-            if (this.call.canPlayToFoundation(cardEid)) {
+            if (this.call.canPlayToKingdom(cardEid)) {
                 return cardEid;
             }
         }
@@ -998,13 +998,13 @@ class HarbingerSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Play the next available card to the foundation
+     * Play the next available card to the kingdom
      */
     autoPlayNextCard() {
         const cardEid = this.findPlayableCard();
 
         if (cardEid) {
-            this.call.playToFoundation(cardEid);
+            this.call.playToKingdom(cardEid);
             // Cards ascend silently - the one musing already shown is enough
         } else {
             // No more cards to play - stop the auto-win
@@ -1057,52 +1057,52 @@ class HarbingerSystem extends GUTS.BaseSystem {
     // ============================================
 
     /**
-     * Called when a card is played to foundation
+     * Called when a card is played to kingdom
      * Tracks aces and reacts to significant moments
      */
-    onCardPlayedToFoundation(data) {
+    onCardPlayedToKingdom(data) {
         const { rank } = data;
 
         // Don't interrupt auto-win with regular taunts
         if (this.isAutoWinning) return;
 
         if (rank === 1) {
-            // Count aces on foundation
-            let acesOnFoundation = 0;
+            // Count aces on kingdom
+            let acesOnKingdom = 0;
             for (let s = 0; s < 4; s++) {
-                if (this.call.getTopFoundationRank(s) >= 1) {
-                    acesOnFoundation++;
+                if (this.call.getTopKingdomRank(s) >= 1) {
+                    acesOnKingdom++;
                 }
             }
 
-            this.cardsSinceLastFoundationTaunt = 0;
-            if (acesOnFoundation === 4) {
+            this.cardsSinceLastKingdomTaunt = 0;
+            if (acesOnKingdom === 4) {
                 this.showAllAcesTaunt();
             } else {
                 this.showAceTaunt();
             }
         } else if (rank === 13) {
-            // King completes a foundation - prince becomes King!
-            this.cardsSinceLastFoundationTaunt = 0;
+            // King completes a kingdom - prince becomes King!
+            this.cardsSinceLastKingdomTaunt = 0;
             this.showKingTaunt();
         } else {
             // Regular cards (2-Q) - the kingdom grows
-            this.cardsSinceLastFoundationTaunt++;
+            this.cardsSinceLastKingdomTaunt++;
 
             // Trigger on ~30% chance OR if it's been 4+ cards without a response
-            const shouldTaunt = Math.random() < 0.30 || this.cardsSinceLastFoundationTaunt >= 4;
+            const shouldTaunt = Math.random() < 0.30 || this.cardsSinceLastKingdomTaunt >= 4;
             if (shouldTaunt) {
-                this.cardsSinceLastFoundationTaunt = 0;
+                this.cardsSinceLastKingdomTaunt = 0;
                 this.showKingdomGrowsTaunt();
             }
         }
     }
 
     /**
-     * Called when a card is played to tableau
+     * Called when a card is played to field
      * Reacts to princes claiming columns and marriages
      */
-    onCardPlayedToTableau(data) {
+    onCardPlayedToField(data) {
         const { rank, wasEmptyColumn, bottomCardRank } = data;
 
         if (rank === 13 && wasEmptyColumn) {

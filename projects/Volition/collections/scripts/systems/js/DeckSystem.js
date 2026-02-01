@@ -32,7 +32,7 @@ class DeckSystem extends GUTS.BaseSystem {
      */
     setupTutorialDeck() {
         // Find specific cards to put at the front
-        // Ace for foundation, King for tableau, and other cards
+        // Ace for kingdom, King for field, and other cards
         // This gives a good mix for demonstrating plays
 
         const findCard = (suit, rank) => {
@@ -44,8 +44,8 @@ class DeckSystem extends GUTS.BaseSystem {
 
         // Desired initial hand (first 5 cards dealt)
         const tutorialHand = [
-            findCard(0, 1),   // Ace of Hearts - can play to foundation
-            findCard(3, 13),  // King of Spades - can start empty tableau column
+            findCard(0, 1),   // Ace of Hearts - can play to kingdom
+            findCard(3, 13),  // King of Spades - can start empty field column
             findCard(1, 5),   // 5 of Diamonds
             findCard(2, 10),  // 10 of Clubs
             findCard(0, 3),   // 3 of Hearts

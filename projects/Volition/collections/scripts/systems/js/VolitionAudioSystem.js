@@ -9,7 +9,7 @@ class VolitionAudioSystem extends AudioSystem {
         // Inherit base services
         ...AudioSystem.services,
         // Add Volition-specific services
-        'playCardPickup', 'playCardPlace', 'playCardFoundation', 'playCardDraw',
+        'playCardPickup', 'playCardPlace', 'playCardKingdom', 'playCardDraw',
         'playCardFlip', 'playCardInvalid', 'playCardShuffle', 'playVictory', 'playHarbingerAppear',
         'getSfxVolume', 'setSfxVolume'
     ];
@@ -115,7 +115,7 @@ class VolitionAudioSystem extends AudioSystem {
         this.playSoundEffect('card_place');
     }
 
-    playCardFoundation() {
+    playCardKingdom() {
         // Disabled for now - needs better sound design
     }
 
@@ -147,7 +147,7 @@ class VolitionAudioSystem extends AudioSystem {
     // EVENT HANDLERS - React to game events
     // ============================================
 
-    onCardPlayedToTableau(data) {
+    onCardPlayedToField(data) {
         this.playCardPlace();
     }
 

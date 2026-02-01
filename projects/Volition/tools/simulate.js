@@ -6,9 +6,9 @@
  * Human players who can plan ahead will likely win much more often.
  *
  * Key game mechanics modeled:
- * - 5-card hand, oldest card pushed to tableau when drawing with full hand
+ * - 5-card hand, oldest card pushed to field when drawing with full hand
  * - Discards go to empty columns first, then round-robin (ignoring stacking rules!)
- * - Valid sequences can be moved between tableau columns
+ * - Valid sequences can be moved between field columns
  * - Only Kings can start empty columns
  */
 
@@ -46,7 +46,7 @@ class SolitaireSimulator {
 
         // Game state
         this.hand = [];
-        this.tableau = [[], [], [], []]; // 4 columns
+        this.field = [[], [], [], []]; // 4 columns
         this.foundation = [0, 0, 0, 0]; // Top rank for each suit (0 = empty)
         this.handCapacity = 5;
         this.gameOver = false;
@@ -72,15 +72,15 @@ class SolitaireSimulator {
         return card.rank === this.foundation[card.suit] + 1;
     }
 
-    playToFoundation(card, fromHand = true, handIndex = -1, tableauCol = -1, tableauIdx = -1) {
+    playToFoundation(card, fromHand = true, handIndex = -1, fieldCol = -1, fieldIdx = -1) {
         if (!this.canPlayToFoundation(card)) return false;
 
         this.foundation[card.suit] = card.rank;
 
         if (fromHand && handIndex >= 0) {
             this.hand.splice(handIndex, 1);
-        } else if (tableauCol >= 0 && tableauIdx >= 0) {
-            this.tableau[tableauCol].splice(tableauIdx, 1);
+        } else if (fieldCol >= 0 && fieldIdx >= 0) {
+            this.field[fieldCol].splice(fieldIdx, 1);
         }
 
         // Check win
@@ -92,8 +92,8 @@ class SolitaireSimulator {
         return true;
     }
 
-    canPlayToTableau(card, columnIndex) {
-        const column = this.tableau[columnIndex];
+    canPlayToField(card, columnIndex) {
+        const column = this.field[columnIndex];
 
         if (column.length === 0) {
             return card.rank === 13; // Only Kings on empty
@@ -110,7 +110,7 @@ class SolitaireSimulator {
      * Check if cards from startIdx to end of column form a valid sequence
      */
     isValidSequence(col, startIdx) {
-        const column = this.tableau[col];
+        const column = this.field[col];
         if (startIdx >= column.length) return false;
         if (startIdx === column.length - 1) return true; // Single card is valid
 
@@ -133,7 +133,7 @@ class SolitaireSimulator {
      * Returns the index of the topmost card that starts a valid sequence to bottom
      */
     findValidSequenceStart(col) {
-        const column = this.tableau[col];
+        const column = this.field[col];
         if (column.length === 0) return -1;
 
         // Start from top and find where valid sequence begins
@@ -145,39 +145,39 @@ class SolitaireSimulator {
         return column.length - 1; // At minimum, bottom card is valid
     }
 
-    playToTableau(card, columnIndex, fromHand = true, handIndex = -1, fromTableauCol = -1, fromTableauIdx = -1) {
-        if (!this.canPlayToTableau(card, columnIndex)) return false;
+    playToField(card, columnIndex, fromHand = true, handIndex = -1, fromFieldCol = -1, fromFieldIdx = -1) {
+        if (!this.canPlayToField(card, columnIndex)) return false;
 
-        this.tableau[columnIndex].push(card);
+        this.field[columnIndex].push(card);
 
         if (fromHand && handIndex >= 0) {
             this.hand.splice(handIndex, 1);
-        } else if (fromTableauCol >= 0 && fromTableauIdx >= 0) {
-            this.tableau[fromTableauCol].splice(fromTableauIdx, 1);
+        } else if (fromFieldCol >= 0 && fromFieldIdx >= 0) {
+            this.field[fromFieldCol].splice(fromFieldIdx, 1);
         }
 
         return true;
     }
 
     /**
-     * Move a stack of cards from one tableau column to another
+     * Move a stack of cards from one field column to another
      */
     moveStack(fromCol, startIdx, toCol) {
         if (!this.isValidSequence(fromCol, startIdx)) return false;
 
-        const topCard = this.tableau[fromCol][startIdx];
-        if (!this.canPlayToTableau(topCard, toCol)) return false;
+        const topCard = this.field[fromCol][startIdx];
+        if (!this.canPlayToField(topCard, toCol)) return false;
 
         // Move the entire stack
-        const cardsToMove = this.tableau[fromCol].splice(startIdx);
-        this.tableau[toCol].push(...cardsToMove);
+        const cardsToMove = this.field[fromCol].splice(startIdx);
+        this.field[toCol].push(...cardsToMove);
 
         return true;
     }
 
     findEmptyColumn() {
         for (let i = 0; i < 4; i++) {
-            if (this.tableau[i].length === 0) return i;
+            if (this.field[i].length === 0) return i;
         }
         return -1;
     }
@@ -185,18 +185,18 @@ class SolitaireSimulator {
     drawCard() {
         if (this.deck.length === 0) return false;
 
-        // If hand is full, dump oldest to tableau (IGNORING stacking rules)
+        // If hand is full, dump oldest to field (IGNORING stacking rules)
         if (this.hand.length >= this.handCapacity) {
             const discarded = this.hand.shift();
 
             // Find column to dump (empty first, then round-robin)
             const emptyCol = this.findEmptyColumn();
             if (emptyCol >= 0) {
-                this.tableau[emptyCol].push(discarded);
+                this.field[emptyCol].push(discarded);
                 this.nextDumpColumn = (emptyCol + 1) % 4;
             } else {
                 // Round-robin - just dump it (no stacking rules!)
-                this.tableau[this.nextDumpColumn].push(discarded);
+                this.field[this.nextDumpColumn].push(discarded);
                 this.nextDumpColumn = (this.nextDumpColumn + 1) % 4;
             }
         }
@@ -216,11 +216,11 @@ class SolitaireSimulator {
             }
         }
 
-        // Priority 2: Play to foundation from tableau (bottom cards only)
+        // Priority 2: Play to foundation from field (bottom cards only)
         for (let col = 0; col < 4; col++) {
-            if (this.tableau[col].length > 0) {
-                const idx = this.tableau[col].length - 1;
-                const card = this.tableau[col][idx];
+            if (this.field[col].length > 0) {
+                const idx = this.field[col].length - 1;
+                const card = this.field[col][idx];
                 if (this.canPlayToFoundation(card)) {
                     this.playToFoundation(card, false, -1, col, idx);
                     return true;
@@ -235,13 +235,13 @@ class SolitaireSimulator {
 
             // Check if moving this stack would expose a foundation-playable card
             if (seqStart > 0) {
-                const exposedCard = this.tableau[fromCol][seqStart - 1];
+                const exposedCard = this.field[fromCol][seqStart - 1];
                 if (this.canPlayToFoundation(exposedCard)) {
                     // Try to move the stack somewhere
-                    const topCard = this.tableau[fromCol][seqStart];
+                    const topCard = this.field[fromCol][seqStart];
                     for (let toCol = 0; toCol < 4; toCol++) {
                         if (toCol === fromCol) continue;
-                        if (this.canPlayToTableau(topCard, toCol)) {
+                        if (this.canPlayToField(topCard, toCol)) {
                             this.moveStack(fromCol, seqStart, toCol);
                             return true;
                         }
@@ -258,15 +258,15 @@ class SolitaireSimulator {
             const seqStart = this.findValidSequenceStart(fromCol);
             if (seqStart < 0) continue;
 
-            const fromSeqLen = this.tableau[fromCol].length - seqStart;
-            const topCard = this.tableau[fromCol][seqStart];
+            const fromSeqLen = this.field[fromCol].length - seqStart;
+            const topCard = this.field[fromCol][seqStart];
 
             for (let toCol = 0; toCol < 4; toCol++) {
                 if (toCol === fromCol) continue;
-                if (!this.canPlayToTableau(topCard, toCol)) continue;
+                if (!this.canPlayToField(topCard, toCol)) continue;
 
                 const toSeqStart = this.findValidSequenceStart(toCol);
-                const toSeqLen = toSeqStart >= 0 ? this.tableau[toCol].length - toSeqStart : 0;
+                const toSeqLen = toSeqStart >= 0 ? this.field[toCol].length - toSeqStart : 0;
                 const newLen = fromSeqLen + toSeqLen + 1; // Combined sequence length
 
                 // Only move if it creates a longer sequence than we had
@@ -287,13 +287,13 @@ class SolitaireSimulator {
             if (this.hand[i].rank === 13) {
                 const emptyCol = this.findEmptyColumn();
                 if (emptyCol >= 0) {
-                    this.playToTableau(this.hand[i], emptyCol, true, i);
+                    this.playToField(this.hand[i], emptyCol, true, i);
                     return true;
                 }
             }
         }
 
-        // Priority 6: Play hand cards to tableau - prefer extending longest sequences
+        // Priority 6: Play hand cards to field - prefer extending longest sequences
         const sortedIndices = this.hand
             .map((c, i) => ({ card: c, index: i }))
             .sort((a, b) => b.card.rank - a.card.rank);
@@ -304,9 +304,9 @@ class SolitaireSimulator {
             let bestSeqLen = -1;
 
             for (let col = 0; col < 4; col++) {
-                if (this.canPlayToTableau(card, col)) {
+                if (this.canPlayToField(card, col)) {
                     const seqStart = this.findValidSequenceStart(col);
-                    const seqLen = seqStart >= 0 ? this.tableau[col].length - seqStart : 0;
+                    const seqLen = seqStart >= 0 ? this.field[col].length - seqStart : 0;
                     if (seqLen > bestSeqLen) {
                         bestSeqLen = seqLen;
                         bestCol = col;
@@ -315,7 +315,7 @@ class SolitaireSimulator {
             }
 
             if (bestCol >= 0) {
-                this.playToTableau(card, bestCol, true, index);
+                this.playToField(card, bestCol, true, index);
                 return true;
             }
         }

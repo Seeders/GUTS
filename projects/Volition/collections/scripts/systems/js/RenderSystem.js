@@ -3,7 +3,7 @@
  */
 class RenderSystem extends GUTS.BaseSystem {
     static services = ['createCardElement', 'updateCardPosition', 'getCardElement', 'flipCard'];
-    static serviceDependencies = ['isValidSequence', 'canPlayToFoundation', 'getTotalFoundationCards'];
+    static serviceDependencies = ['isValidSequence', 'canPlayToKingdom', 'getTotalKingdomCards'];
 
     constructor(game) {
         super(game);
@@ -208,13 +208,13 @@ class RenderSystem extends GUTS.BaseSystem {
                 el.classList.remove('oldest-in-hand');
             }
 
-            // Check if playable (can go to foundation)
+            // Check if playable (can go to kingdom)
             if (loc.location === 1) {
-                const canPlay = this.call.canPlayToFoundation(eid);
+                const canPlay = this.call.canPlayToKingdom(eid);
                 el.classList.toggle('playable', canPlay);
             }
 
-            // Mark chaotic cards in tableau (not part of valid alternating sequence)
+            // Mark chaotic cards in field (not part of valid alternating sequence)
             if (loc.location === 3) {
                 const isValid = this.call.isValidSequence(eid);
                 el.classList.toggle('chaotic', !isValid);
@@ -223,14 +223,14 @@ class RenderSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Update foundation progress
+        // Update kingdom progress
         this.updateProgress();
     }
 
     updateProgress() {
-        const progressEl = document.getElementById('foundationProgress');
+        const progressEl = document.getElementById('kingdomProgress');
         if (progressEl) {
-            const count = this.call.getTotalFoundationCards();
+            const count = this.call.getTotalKingdomCards();
             progressEl.textContent = `${count}/52`;
         }
     }

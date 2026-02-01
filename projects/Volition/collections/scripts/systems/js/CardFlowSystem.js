@@ -5,9 +5,9 @@
 class CardFlowSystem extends GUTS.BaseSystem {
     static services = ['flowCard', 'flowAfterHandPlay', 'getNextDumpColumn', 'isFlowAnimating', 'isAwaitingColumnSelection', 'cancelColumnSelection', 'completeDiscard'];
     static serviceDependencies = [
-        'dealCard', 'popFromHandRaw', 'isHandFull', 'getDeckCount', 'dumpToTableau',
-        'getTableauColumns', 'findEmptyColumn', 'getOldestHandCard', 'getColumnCards',
-        'getTableauPosition', 'getStackOffset', 'getCardWidth', 'getCardHeight',
+        'dealCard', 'popFromHandRaw', 'isHandFull', 'getDeckCount', 'dumpToField',
+        'getFieldColumns', 'findEmptyColumn', 'getOldestHandCard', 'getColumnCards',
+        'getFieldPosition', 'getStackOffset', 'getCardWidth', 'getCardHeight',
         'getHandCards', 'getHandPosition', 'getDeckPosition', 'flipCard', 'getCardElement',
         'playCardDraw', 'playCardPlace', 'playCardFlip', 'playCardPickup'
     ];
@@ -18,8 +18,8 @@ class CardFlowSystem extends GUTS.BaseSystem {
     static SHIFTING = 2;
     static DRAWING = 3;
     static FLIPPING = 4;
-    static PLAYING_TO_FOUNDATION = 5;
-    static PLAYING_TO_TABLEAU = 6;
+    static PLAYING_TO_KINGDOM = 5;
+    static PLAYING_TO_FIELD = 6;
 
     constructor(game) {
         super(game);
@@ -165,13 +165,13 @@ class CardFlowSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Called after a card is played from hand (to foundation or tableau)
+     * Called after a card is played from hand (to kingdom or field)
      * Waits for the played card animation, then shifts remaining hand cards, then draws
      * @param {number} playedCardEid - The card that was played
-     * @param {string} targetType - 'foundation' or 'tableau'
+     * @param {string} targetType - 'kingdom' or 'field'
      * @param {number} playedFromIndex - The original hand index of the played card
      */
-    flowAfterHandPlay(playedCardEid, targetType = 'foundation', playedFromIndex = 0) {
+    flowAfterHandPlay(playedCardEid, targetType = 'kingdom', playedFromIndex = 0) {
         // Don't start if already animating
         if (this.animState !== CardFlowSystem.IDLE) {
             return false;
@@ -184,10 +184,10 @@ class CardFlowSystem extends GUTS.BaseSystem {
 
         this.animatingCard = playedCardEid;
 
-        if (targetType === 'foundation') {
-            this.animState = CardFlowSystem.PLAYING_TO_FOUNDATION;
+        if (targetType === 'kingdom') {
+            this.animState = CardFlowSystem.PLAYING_TO_KINGDOM;
         } else {
-            this.animState = CardFlowSystem.PLAYING_TO_TABLEAU;
+            this.animState = CardFlowSystem.PLAYING_TO_FIELD;
         }
 
         // Store the cards that need to shift (current hand after the card was removed)
@@ -230,7 +230,7 @@ class CardFlowSystem extends GUTS.BaseSystem {
         this.animState = CardFlowSystem.DISCARDING;
 
         // Determine target column
-        const numColumns = this.call.getTableauColumns();
+        const numColumns = this.call.getFieldColumns();
         const emptyColumn = this.call.findEmptyColumn();
         let targetColumn;
 
@@ -242,8 +242,8 @@ class CardFlowSystem extends GUTS.BaseSystem {
             this.nextDumpColumn = (this.nextDumpColumn + 1) % numColumns;
         }
 
-        // Dump to tableau (sets target position and animating = 1)
-        this.call.dumpToTableau(dumpedCard, targetColumn);
+        // Dump to field (sets target position and animating = 1)
+        this.call.dumpToField(dumpedCard, targetColumn);
 
         // Play liftoff sound when card leaves hand
         if (this.call.playCardPickup) {
@@ -274,7 +274,7 @@ class CardFlowSystem extends GUTS.BaseSystem {
         this.skipDrawAfterShift = true; // Don't draw after shifting
 
         // Determine target column
-        const numColumns = this.call.getTableauColumns();
+        const numColumns = this.call.getFieldColumns();
         const emptyColumn = this.call.findEmptyColumn();
         let targetColumn;
 
@@ -286,8 +286,8 @@ class CardFlowSystem extends GUTS.BaseSystem {
             this.nextDumpColumn = (this.nextDumpColumn + 1) % numColumns;
         }
 
-        // Dump to tableau (sets target position and animating = 1)
-        this.call.dumpToTableau(dumpedCard, targetColumn);
+        // Dump to field (sets target position and animating = 1)
+        this.call.dumpToField(dumpedCard, targetColumn);
 
         // Play liftoff sound when card leaves hand
         if (this.call.playCardPickup) {
@@ -359,11 +359,11 @@ class CardFlowSystem extends GUTS.BaseSystem {
         this.animState = CardFlowSystem.DISCARDING;
 
         // Update nextDumpColumn for future reference
-        const numColumns = this.call.getTableauColumns();
+        const numColumns = this.call.getFieldColumns();
         this.nextDumpColumn = (columnIndex + 1) % numColumns;
 
         // Dump to the selected column
-        this.call.dumpToTableau(dumpedCard, columnIndex);
+        this.call.dumpToField(dumpedCard, columnIndex);
 
         // Store the cards that need to shift
         this.cardsToShift = [...this.call.getHandCards()];
@@ -371,9 +371,9 @@ class CardFlowSystem extends GUTS.BaseSystem {
     }
 
     highlightSelectableColumns(show) {
-        const numColumns = this.call.getTableauColumns();
+        const numColumns = this.call.getFieldColumns();
         for (let i = 0; i < numColumns; i++) {
-            const col = document.getElementById(`tableau-${i}`);
+            const col = document.getElementById(`field-${i}`);
             if (col) {
                 col.classList.toggle('selectable', show);
             }
@@ -383,9 +383,9 @@ class CardFlowSystem extends GUTS.BaseSystem {
     setupColumnClickHandlers() {
         this.removeColumnClickHandlers(); // Clear any existing
 
-        const numColumns = this.call.getTableauColumns();
+        const numColumns = this.call.getFieldColumns();
         for (let i = 0; i < numColumns; i++) {
-            const col = document.getElementById(`tableau-${i}`);
+            const col = document.getElementById(`field-${i}`);
             if (col) {
                 const handler = (e) => {
                     e.stopPropagation();
@@ -600,7 +600,7 @@ class CardFlowSystem extends GUTS.BaseSystem {
         const card = this.game.getComponent(oldestCardEid, 'card');
         const nextCol = this.getNextDumpColumn();
 
-        const pos = this.call.getTableauPosition(nextCol);
+        const pos = this.call.getFieldPosition(nextCol);
         const columnCards = this.call.getColumnCards(nextCol);
         const stackOffset = this.call.getStackOffset();
         const cardWidth = this.call.getCardWidth();
@@ -680,8 +680,8 @@ class CardFlowSystem extends GUTS.BaseSystem {
                 }
                 break;
 
-            case CardFlowSystem.PLAYING_TO_FOUNDATION:
-            case CardFlowSystem.PLAYING_TO_TABLEAU:
+            case CardFlowSystem.PLAYING_TO_KINGDOM:
+            case CardFlowSystem.PLAYING_TO_FIELD:
                 // Wait for played card to finish animating to its destination
                 if (this.isCardDoneAnimating(this.animatingCard)) {
                     // Play place sound when card lands

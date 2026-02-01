@@ -1,33 +1,33 @@
 /**
- * FoundationSystem - Manages the four foundation piles (Ace to King by suit)
+ * KingdomSystem - Manages the four kingdom piles (Ace to King by suit)
  */
-class FoundationSystem extends GUTS.BaseSystem {
-    static services = ['canPlayToFoundation', 'playToFoundation', 'getFoundationCards', 'getTopFoundationRank', 'getTotalFoundationCards', 'checkWin', 'refreshFoundationPositions'];
-    static serviceDependencies = ['removeFromHand', 'showWinScreen', 'getFoundationPosition', 'onCardPlayed'];
+class KingdomSystem extends GUTS.BaseSystem {
+    static services = ['canPlayToKingdom', 'playToKingdom', 'getKingdomCards', 'getTopKingdomRank', 'getTotalKingdomCards', 'checkWin', 'refreshKingdomPositions'];
+    static serviceDependencies = ['removeFromHand', 'showWinScreen', 'getKingdomPosition', 'onCardPlayed'];
 
     constructor(game) {
         super(game);
     }
 
     init() {
-        console.log('FoundationSystem initializing...');
+        console.log('KingdomSystem initializing...');
     }
 
     postAllInit() {
         // Layout managed by LayoutSystem
     }
 
-    getFoundationCards(suit) {
+    getKingdomCards(suit) {
         const entities = this.game.getEntitiesWith('card', 'cardLocation');
         return entities.filter(eid => {
             const loc = this.game.getComponent(eid, 'cardLocation');
             const card = this.game.getComponent(eid, 'card');
-            return loc.location === 2 && card.suit === suit; // foundation
+            return loc.location === 2 && card.suit === suit; // kingdom
         });
     }
 
-    getTopFoundationRank(suit) {
-        const cards = this.getFoundationCards(suit);
+    getTopKingdomRank(suit) {
+        const cards = this.getKingdomCards(suit);
         if (cards.length === 0) return 0;
 
         let maxRank = 0;
@@ -40,24 +40,24 @@ class FoundationSystem extends GUTS.BaseSystem {
         return maxRank;
     }
 
-    getTotalFoundationCards() {
+    getTotalKingdomCards() {
         let total = 0;
         for (let suit = 0; suit < 4; suit++) {
-            total += this.getFoundationCards(suit).length;
+            total += this.getKingdomCards(suit).length;
         }
         return total;
     }
 
-    canPlayToFoundation(cardEid) {
+    canPlayToKingdom(cardEid) {
         const card = this.game.getComponent(cardEid, 'card');
-        const topRank = this.getTopFoundationRank(card.suit);
+        const topRank = this.getTopKingdomRank(card.suit);
 
         // Must be exactly one higher than current top (or Ace if empty)
         return card.rank === topRank + 1;
     }
 
-    playToFoundation(cardEid) {
-        if (!this.canPlayToFoundation(cardEid)) {
+    playToKingdom(cardEid) {
+        if (!this.canPlayToKingdom(cardEid)) {
             return false;
         }
 
@@ -70,16 +70,16 @@ class FoundationSystem extends GUTS.BaseSystem {
             this.call.removeFromHand(cardEid);
         }
 
-        // Add to foundation
+        // Add to kingdom
         const suit = card.suit;
-        const foundationCards = this.getFoundationCards(suit);
+        const kingdomCards = this.getKingdomCards(suit);
 
-        loc.location = 2; // foundation
-        loc.index = foundationCards.length;
+        loc.location = 2; // kingdom
+        loc.index = kingdomCards.length;
         loc.columnIndex = suit;
 
         // Set target position from LayoutSystem
-        const pos = this.call.getFoundationPosition(suit);
+        const pos = this.call.getKingdomPosition(suit);
         visual.targetX = pos.x;
         visual.targetY = pos.y;
         visual.zIndex = 100 + loc.index;
@@ -89,7 +89,7 @@ class FoundationSystem extends GUTS.BaseSystem {
         this.checkWin();
 
         // Trigger event for other systems to react to
-        this.game.triggerEvent('onCardPlayedToFoundation', {
+        this.game.triggerEvent('onCardPlayedToKingdom', {
             cardEid,
             rank: card.rank,
             suit: card.suit
@@ -97,24 +97,24 @@ class FoundationSystem extends GUTS.BaseSystem {
 
         // Notify tutorial system if active
         if (this.call.onCardPlayed) {
-            this.call.onCardPlayed('foundation', cardEid);
+            this.call.onCardPlayed('kingdom', cardEid);
         }
 
         return true;
     }
 
     checkWin() {
-        const total = this.getTotalFoundationCards();
+        const total = this.getTotalKingdomCards();
         if (total === 52) {
             console.log('WIN!');
             this.call.showWinScreen();
         }
     }
 
-    refreshFoundationPositions() {
+    refreshKingdomPositions() {
         for (let suit = 0; suit < 4; suit++) {
-            const pos = this.call.getFoundationPosition(suit);
-            const cards = this.getFoundationCards(suit);
+            const pos = this.call.getKingdomPosition(suit);
+            const cards = this.getKingdomCards(suit);
             cards.forEach((eid, idx) => {
                 const visual = this.game.getComponent(eid, 'cardVisual');
                 visual.targetX = pos.x;
@@ -125,6 +125,6 @@ class FoundationSystem extends GUTS.BaseSystem {
     }
 
     update() {
-        // Update foundation pile visuals if needed
+        // Update kingdom pile visuals if needed
     }
 }

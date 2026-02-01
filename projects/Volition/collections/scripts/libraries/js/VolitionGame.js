@@ -17,7 +17,7 @@ class VolitionGame extends GUTS.BaseECSGame {
     loadSettings() {
         const defaults = {
             cardSpeed: 4000,
-            tableauColumns: 6
+            fieldColumns: 6
         };
         try {
             const saved = localStorage.getItem('volitionSettings');
@@ -35,7 +35,7 @@ class VolitionGame extends GUTS.BaseECSGame {
         return {
             ...baseConfig,
             animationSpeed: this.settings.cardSpeed,
-            tableauColumns: this.settings.tableauColumns
+            fieldColumns: this.settings.fieldColumns
         };
     }
 }

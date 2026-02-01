@@ -12,34 +12,34 @@
         <div class="header-left">
             <span id="gameTimer">0:00</span>
             <span class="divider">|</span>
-            <span id="foundationProgress">0/52</span>
+            <span id="kingdomProgress">0/52</span>
         </div>
         <div class="header-right">
             <span class="deck-count"><span id="deckCount">52</span> left</span>
         </div>
     </header>
 
-    <!-- Foundation area -->
+    <!-- Kingdom area -->
     <div id="topArea">
-        <!-- Foundation piles -->
-        <div id="foundationArea">
-            <div class="foundation-pile" id="foundation-0" data-suit="0">
+        <!-- Kingdom piles -->
+        <div id="kingdomArea">
+            <div class="kingdom-pile" id="kingdom-0" data-suit="0">
                 <span class="suit-icon hearts"></span>
             </div>
-            <div class="foundation-pile" id="foundation-1" data-suit="1">
+            <div class="kingdom-pile" id="kingdom-1" data-suit="1">
                 <span class="suit-icon diamonds"></span>
             </div>
-            <div class="foundation-pile" id="foundation-2" data-suit="2">
+            <div class="kingdom-pile" id="kingdom-2" data-suit="2">
                 <span class="suit-icon clubs"></span>
             </div>
-            <div class="foundation-pile" id="foundation-3" data-suit="3">
+            <div class="kingdom-pile" id="kingdom-3" data-suit="3">
                 <span class="suit-icon spades"></span>
             </div>
         </div>
     </div>
 
-    <!-- Tableau columns -->
-    <div id="tableauArea"></div>
+    <!-- Field columns -->
+    <div id="fieldArea"></div>
 
     <!-- Card container for absolute positioned cards -->
     <div id="cardContainer"></div>
@@ -124,8 +124,8 @@
             <div class="setting-group">
                 <label>Columns</label>
                 <div class="slider-row">
-                    <input type="range" id="tableauColumnsSlider" min="4" max="8" step="1" value="6">
-                    <span id="tableauColumnsValue">6</span>
+                    <input type="range" id="fieldColumnsSlider" min="4" max="8" step="1" value="6">
+                    <span id="fieldColumnsValue">6</span>
                 </div>
             </div>
 

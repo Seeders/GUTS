@@ -5,9 +5,9 @@
 class VolitionGameSystem extends GUTS.BaseSystem {
     static services = ['checkMove', 'showWinScreen', 'showLossScreen', 'getSettings', 'dealNextCard'];
     static serviceDependencies = [
-        'getDeckCount', 'getHandCards', 'getTableauColumns', 'getColumnCards',
-        'canPlayToFoundation', 'canPlayToTableau', 'isValidSequence', 'getCardsBelow',
-        'getTotalFoundationCards', 'flowCard', 'getCardElement', 'isTutorialActive',
+        'getDeckCount', 'getHandCards', 'getFieldColumns', 'getColumnCards',
+        'canPlayToKingdom', 'canPlayToField', 'isValidSequence', 'getCardsBelow',
+        'getTotalKingdomCards', 'flowCard', 'getCardElement', 'isTutorialActive',
         'isAwaitingColumnSelection', 'cancelColumnSelection',
         'playVictory', 'playCardShuffle', 'playCardPlace',
         // Music services
@@ -32,7 +32,7 @@ class VolitionGameSystem extends GUTS.BaseSystem {
     loadSettings() {
         const defaults = {
             cardSpeed: 4000,
-            tableauColumns: 6
+            fieldColumns: 6
         };
         try {
             const saved = localStorage.getItem('volitionSettings');
@@ -148,8 +148,8 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         const applySettingsBtn = document.getElementById('applySettingsBtn');
 
         const speedBtns = document.querySelectorAll('.speed-btn');
-        const tableauColumnsSlider = document.getElementById('tableauColumnsSlider');
-        const tableauColumnsValue = document.getElementById('tableauColumnsValue');
+        const fieldColumnsSlider = document.getElementById('fieldColumnsSlider');
+        const fieldColumnsValue = document.getElementById('fieldColumnsValue');
 
         // Track selected speed
         let selectedSpeed = this.settings.cardSpeed;
@@ -170,11 +170,11 @@ class VolitionGameSystem extends GUTS.BaseSystem {
             });
         });
 
-        if (tableauColumnsSlider) {
-            tableauColumnsSlider.value = this.settings.tableauColumns;
-            tableauColumnsValue.textContent = this.settings.tableauColumns;
-            tableauColumnsSlider.addEventListener('input', () => {
-                tableauColumnsValue.textContent = tableauColumnsSlider.value;
+        if (fieldColumnsSlider) {
+            fieldColumnsSlider.value = this.settings.fieldColumns;
+            fieldColumnsValue.textContent = this.settings.fieldColumns;
+            fieldColumnsSlider.addEventListener('input', () => {
+                fieldColumnsValue.textContent = fieldColumnsSlider.value;
             });
         }
 
@@ -248,15 +248,15 @@ class VolitionGameSystem extends GUTS.BaseSystem {
 
         if (applySettingsBtn) {
             applySettingsBtn.addEventListener('click', () => {
-                const newColumns = parseInt(tableauColumnsSlider.value);
-                const columnsChanged = newColumns !== this.settings.tableauColumns;
+                const newColumns = parseInt(fieldColumnsSlider.value);
+                const columnsChanged = newColumns !== this.settings.fieldColumns;
 
                 if (columnsChanged) {
                     // Column count changed - warn user before restarting
                     if (confirm('Changing the column count will restart your current game. Continue?')) {
                         this.saveSettings({
                             cardSpeed: selectedSpeed,
-                            tableauColumns: newColumns
+                            fieldColumns: newColumns
                         });
                         this.restartGame();
                     }
@@ -264,7 +264,7 @@ class VolitionGameSystem extends GUTS.BaseSystem {
                     // Only card speed or audio settings changed - no restart needed
                     this.saveSettings({
                         cardSpeed: selectedSpeed,
-                        tableauColumns: newColumns
+                        fieldColumns: newColumns
                     });
                     settingsModal?.classList.add('hidden');
                 }
@@ -366,31 +366,31 @@ class VolitionGameSystem extends GUTS.BaseSystem {
             return null;
         }
 
-        // Prioritize moves: foundation plays first, then useful tableau moves
+        // Prioritize moves: kingdom plays first, then useful field moves
         // Filter out circular moves (moves that only lead back to original position)
 
-        // 1. Foundation plays from hand - always good
-        const foundationFromHand = validMoves.filter(m => m.type === 'hand-foundation');
-        if (foundationFromHand.length > 0) {
-            return foundationFromHand[0];
+        // 1. Kingdom plays from hand - always good
+        const kingdomFromHand = validMoves.filter(m => m.type === 'hand-kingdom');
+        if (kingdomFromHand.length > 0) {
+            return kingdomFromHand[0];
         }
 
-        // 2. Foundation plays from tableau - always good
-        const foundationFromTableau = validMoves.filter(m => m.type === 'tableau-foundation');
-        if (foundationFromTableau.length > 0) {
-            return foundationFromTableau[0];
+        // 2. Kingdom plays from field - always good
+        const kingdomFromField = validMoves.filter(m => m.type === 'field-kingdom');
+        if (kingdomFromField.length > 0) {
+            return kingdomFromField[0];
         }
 
-        // 3. Hand to tableau plays
-        const handToTableau = validMoves.filter(m => m.type === 'hand-tableau');
-        if (handToTableau.length > 0) {
-            return handToTableau[0];
+        // 3. Hand to field plays
+        const handToField = validMoves.filter(m => m.type === 'hand-field');
+        if (handToField.length > 0) {
+            return handToField[0];
         }
 
-        // 4. Tableau-to-tableau moves - check if they're useful
-        const tableauMoves = validMoves.filter(m => m.type === 'tableau-tableau');
+        // 4. Field-to-field moves - check if they're useful
+        const fieldMoves = validMoves.filter(m => m.type === 'field-field');
 
-        for (const move of tableauMoves) {
+        for (const move of fieldMoves) {
             // Check if this is a useful move (exposed card can be played somewhere)
             if (move.exposedCard) {
                 const isUseful = this.isExposedCardUseful(move.exposedCard, move.sourceCol, move.targetCol);
@@ -401,18 +401,18 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         }
 
         // 5. If only circular/useless moves remain, check if we're truly stuck
-        // If there's only one tableau move and it would just oscillate, it's not useful
-        if (tableauMoves.length === 1) {
-            const move = tableauMoves[0];
+        // If there's only one field move and it would just oscillate, it's not useful
+        if (fieldMoves.length === 1) {
+            const move = fieldMoves[0];
             if (this.isCircularMove(move)) {
                 // This is a dead-end - the only move leads back to where we started
                 return null;
             }
         }
 
-        // Return the first tableau move even if not ideal (player might see something we don't)
-        if (tableauMoves.length > 0) {
-            const move = tableauMoves[0];
+        // Return the first field move even if not ideal (player might see something we don't)
+        if (fieldMoves.length > 0) {
+            const move = fieldMoves[0];
             move.message += " (limited options)";
             return move;
         }
@@ -426,25 +426,25 @@ class VolitionGameSystem extends GUTS.BaseSystem {
     findAllValidMoves() {
         const moves = [];
         const handCards = this.call.getHandCards();
-        const numCols = this.call.getTableauColumns();
+        const numCols = this.call.getFieldColumns();
 
-        // Check hand cards for foundation plays
+        // Check hand cards for kingdom plays
         for (const cardEid of handCards) {
-            if (this.call.canPlayToFoundation(cardEid)) {
+            if (this.call.canPlayToKingdom(cardEid)) {
                 moves.push({
-                    type: 'hand-foundation',
+                    type: 'hand-kingdom',
                     cardEid,
-                    message: `${this.getCardName(cardEid)} can go to foundation`
+                    message: `${this.getCardName(cardEid)} can go to kingdom`
                 });
             }
         }
 
-        // Check hand cards for tableau plays
+        // Check hand cards for field plays
         for (const cardEid of handCards) {
             for (let col = 0; col < numCols; col++) {
-                if (this.call.canPlayToTableau(cardEid, col)) {
+                if (this.call.canPlayToField(cardEid, col)) {
                     moves.push({
-                        type: 'hand-tableau',
+                        type: 'hand-field',
                         cardEid,
                         targetCol: col,
                         message: `${this.getCardName(cardEid)} can play to column ${col + 1}`
@@ -453,25 +453,25 @@ class VolitionGameSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Check tableau cards for foundation plays (bottom cards only)
+        // Check field cards for kingdom plays (bottom cards only)
         for (let col = 0; col < numCols; col++) {
             const colCards = this.call.getColumnCards(col);
             for (const cardEid of colCards) {
-                if (this.call.canPlayToFoundation(cardEid)) {
+                if (this.call.canPlayToKingdom(cardEid)) {
                     const cardsBelow = this.call.getCardsBelow(cardEid);
                     if (cardsBelow.length === 1) {
                         moves.push({
-                            type: 'tableau-foundation',
+                            type: 'field-kingdom',
                             cardEid,
                             sourceCol: col,
-                            message: `${this.getCardName(cardEid)} can go to foundation`
+                            message: `${this.getCardName(cardEid)} can go to kingdom`
                         });
                     }
                 }
             }
         }
 
-        // Check tableau cards for tableau-to-tableau moves
+        // Check field cards for field-to-field moves
         for (let col = 0; col < numCols; col++) {
             const colCards = this.call.getColumnCards(col);
             for (const cardEid of colCards) {
@@ -482,7 +482,7 @@ class VolitionGameSystem extends GUTS.BaseSystem {
 
                 if (this.call.isValidSequence(cardEid)) {
                     for (let targetCol = 0; targetCol < numCols; targetCol++) {
-                        if (targetCol !== col && this.call.canPlayToTableau(cardEid, targetCol)) {
+                        if (targetCol !== col && this.call.canPlayToField(cardEid, targetCol)) {
                             const cardsBelow = this.call.getCardsBelow(cardEid);
                             const stackSize = cardsBelow.length;
                             const exposedCard = colCards[loc.index - 1];
@@ -496,7 +496,7 @@ class VolitionGameSystem extends GUTS.BaseSystem {
                             }
 
                             moves.push({
-                                type: 'tableau-tableau',
+                                type: 'field-field',
                                 cardEid,
                                 sourceCol: col,
                                 targetCol,
@@ -518,17 +518,17 @@ class VolitionGameSystem extends GUTS.BaseSystem {
      */
     isExposedCardUseful(exposedCardEid, sourceCol, targetCol) {
         const card = this.game.getComponent(exposedCardEid, 'card');
-        const numCols = this.call.getTableauColumns();
+        const numCols = this.call.getFieldColumns();
 
-        // Can it go to foundation?
-        if (this.call.canPlayToFoundation(exposedCardEid)) {
+        // Can it go to kingdom?
+        if (this.call.canPlayToKingdom(exposedCardEid)) {
             return true;
         }
 
         // Can it play to any OTHER column (not source, not target)?
         for (let col = 0; col < numCols; col++) {
             if (col !== sourceCol && col !== targetCol) {
-                if (this.call.canPlayToTableau(exposedCardEid, col)) {
+                if (this.call.canPlayToField(exposedCardEid, col)) {
                     return true;
                 }
             }
@@ -563,7 +563,7 @@ class VolitionGameSystem extends GUTS.BaseSystem {
      * Check if a move would just lead to an oscillating/circular situation
      */
     isCircularMove(move) {
-        if (move.type !== 'tableau-tableau') return false;
+        if (move.type !== 'field-field') return false;
 
         const { cardEid, sourceCol, targetCol, exposedCard } = move;
         if (!exposedCard) return false;
@@ -588,18 +588,18 @@ class VolitionGameSystem extends GUTS.BaseSystem {
             // The exposed card could receive the moved card back
             // Check if that's the ONLY option for the exposed card
 
-            const numCols = this.call.getTableauColumns();
+            const numCols = this.call.getFieldColumns();
             let exposedHasOtherOptions = false;
 
-            // Can exposed go to foundation?
-            if (this.call.canPlayToFoundation(exposedCard)) {
+            // Can exposed go to kingdom?
+            if (this.call.canPlayToKingdom(exposedCard)) {
                 exposedHasOtherOptions = true;
             }
 
             // Can exposed play to any other column?
             for (let col = 0; col < numCols; col++) {
                 if (col !== sourceCol && col !== targetCol) {
-                    if (this.call.canPlayToTableau(exposedCard, col)) {
+                    if (this.call.canPlayToField(exposedCard, col)) {
                         exposedHasOtherOptions = true;
                         break;
                     }
@@ -635,7 +635,7 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         }
 
         if (finalProgress) {
-            const count = this.call.getTotalFoundationCards();
+            const count = this.call.getTotalKingdomCards();
             finalProgress.textContent = `${count}/52`;
         }
     }

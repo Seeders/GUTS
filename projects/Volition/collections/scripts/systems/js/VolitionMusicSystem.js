@@ -24,6 +24,9 @@ class VolitionMusicSystem extends MusicSystem {
         // Default music volume
         this.musicVolume = 0.4;
 
+        // Fade-in duration in seconds
+        this.fadeInDuration = 3.0;
+
         // Load saved music preference and volume
         this.loadMusicPreference();
     }
@@ -102,6 +105,24 @@ class VolitionMusicSystem extends MusicSystem {
     }
 
     /**
+     * Fade in the music from silence to target volume
+     */
+    fadeInMusic() {
+        if (!this.musicGain || !this.audioContext) return;
+
+        // Start at silence
+        this.musicGain.gain.setValueAtTime(0, this.audioContext.currentTime);
+
+        // Fade to target volume over fadeInDuration
+        // Using setTargetAtTime with time constant = duration/3 reaches ~95% in duration
+        this.musicGain.gain.setTargetAtTime(
+            this.musicVolume,
+            this.audioContext.currentTime,
+            this.fadeInDuration / 3
+        );
+    }
+
+    /**
      * Start the title music (same as game music)
      */
     async startTitleMusic() {
@@ -109,6 +130,7 @@ class VolitionMusicSystem extends MusicSystem {
 
         // Play the war track
         await this.playTrack('volition_war');
+        this.fadeInMusic();
         this.hasStartedMusic = true;
     }
 
@@ -120,6 +142,7 @@ class VolitionMusicSystem extends MusicSystem {
 
         // Play the war track
         await this.playTrack('volition_war');
+        this.fadeInMusic();
         this.hasStartedMusic = true;
     }
 

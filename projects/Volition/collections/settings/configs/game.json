@@ -20,8 +20,8 @@
     "DeckSystem",
     "CardFlowSystem",
     "HandSystem",
-    "TableauSystem",
-    "FoundationSystem",
+    "FieldSystem",
+    "KingdomSystem",
     "InputSystem",
     "RenderSystem",
     "TutorialSystem",
@@ -33,6 +33,6 @@
   "initialScene": "title",
   "maxEntities": 1024,
   "handCapacity": 5,
-  "tableauColumns": 6,
+  "fieldColumns": 6,
   "animationSpeed": 4000
 }
