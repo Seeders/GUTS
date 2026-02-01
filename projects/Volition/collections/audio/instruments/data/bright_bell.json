@@ -1,0 +1,17 @@
+{
+  "title": "Bright Bell",
+  "description": "Sharp, ringing bell for accents",
+  "oscillator": "triangle",
+  "envelope": {
+    "attack": 0.001,
+    "decay": 0.3,
+    "sustain": 0.2,
+    "release": 0.5
+  },
+  "filter": {
+    "type": "highpass",
+    "frequency": 1000,
+    "Q": 1
+  },
+  "duration": 0.6
+}

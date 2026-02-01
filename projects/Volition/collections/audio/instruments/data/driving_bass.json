@@ -1,0 +1,17 @@
+{
+  "title": "Driving Bass",
+  "description": "Punchy bass with fast attack for driving rhythms",
+  "oscillator": "square",
+  "envelope": {
+    "attack": 0.005,
+    "decay": 0.15,
+    "sustain": 0.5,
+    "release": 0.1
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 600,
+    "Q": 2
+  },
+  "duration": 0.35
+}

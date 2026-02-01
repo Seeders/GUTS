@@ -1,0 +1,17 @@
+{
+  "title": "Fanfare Brass",
+  "description": "Bright, triumphant brass for fanfare calls",
+  "oscillator": "sawtooth",
+  "envelope": {
+    "attack": 0.005,
+    "decay": 0.08,
+    "sustain": 0.8,
+    "release": 0.1
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 5000,
+    "Q": 3
+  },
+  "duration": 0.3
+}

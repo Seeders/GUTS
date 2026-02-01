@@ -1,0 +1,17 @@
+{
+  "title": "Strike Lead",
+  "description": "Sharp, cutting lead for melodies",
+  "oscillator": "sawtooth",
+  "envelope": {
+    "attack": 0.002,
+    "decay": 0.05,
+    "sustain": 0.45,
+    "release": 0.06
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 6000,
+    "Q": 0.7
+  },
+  "duration": 0.2
+}

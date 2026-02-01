@@ -1,0 +1,17 @@
+{
+  "title": "Brass Lead",
+  "description": "Bright, punchy brass-like lead for triumphant melodies",
+  "oscillator": "sawtooth",
+  "envelope": {
+    "attack": 0.01,
+    "decay": 0.1,
+    "sustain": 0.7,
+    "release": 0.15
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 4000,
+    "Q": 2
+  },
+  "duration": 0.4
+}

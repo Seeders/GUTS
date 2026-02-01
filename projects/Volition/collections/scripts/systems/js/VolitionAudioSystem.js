@@ -10,13 +10,57 @@ class VolitionAudioSystem extends AudioSystem {
         ...AudioSystem.services,
         // Add Volition-specific services
         'playCardPickup', 'playCardPlace', 'playCardFoundation', 'playCardDraw',
-        'playCardFlip', 'playCardInvalid', 'playCardShuffle', 'playVictory', 'playHarbingerAppear'
+        'playCardFlip', 'playCardInvalid', 'playCardShuffle', 'playVictory', 'playHarbingerAppear',
+        'getSfxVolume', 'setSfxVolume'
     ];
 
     constructor(game) {
         super(game);
         this.soundsEnabled = true;
-        this.masterVolume = 0.5; // Reduced to leave headroom for music
+        this.masterVolume = 0.5; // Default SFX volume
+
+        // Load saved SFX volume
+        this.loadSfxVolume();
+    }
+
+    /**
+     * Load SFX volume from localStorage
+     */
+    loadSfxVolume() {
+        try {
+            const saved = localStorage.getItem('volitionSfxVolume');
+            if (saved !== null) {
+                this.masterVolume = parseFloat(saved);
+            }
+        } catch (e) {
+            // Ignore localStorage errors
+        }
+    }
+
+    /**
+     * Save SFX volume to localStorage
+     */
+    saveSfxVolume() {
+        try {
+            localStorage.setItem('volitionSfxVolume', this.masterVolume.toString());
+        } catch (e) {
+            // Ignore localStorage errors
+        }
+    }
+
+    /**
+     * Get current SFX volume (0-1)
+     */
+    getSfxVolume() {
+        return this.masterVolume;
+    }
+
+    /**
+     * Set SFX volume (0-1)
+     */
+    setSfxVolume(volume) {
+        this.masterVolume = Math.max(0, Math.min(1, volume));
+        this.saveSfxVolume();
     }
 
     init() {

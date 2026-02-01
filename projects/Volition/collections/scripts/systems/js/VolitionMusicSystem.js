@@ -9,7 +9,11 @@ class VolitionMusicSystem extends MusicSystem {
         ...MusicSystem.services,
         'toggleMusic',
         'isMusicEnabled',
-        'startGameMusic'
+        'startTitleMusic',
+        'startGameMusic',
+        'playTriumphMusic',
+        'getMusicVolume',
+        'setMusicVolume'
     ];
 
     constructor(game) {
@@ -17,10 +21,10 @@ class VolitionMusicSystem extends MusicSystem {
         this.musicEnabled = true;
         this.hasStartedMusic = false;
 
-        // Override music volume to be very low to avoid clipping with SFX
-        this.musicVolume = 0.15;
+        // Default music volume
+        this.musicVolume = 0.4;
 
-        // Load saved music preference
+        // Load saved music preference and volume
         this.loadMusicPreference();
     }
 
@@ -33,6 +37,10 @@ class VolitionMusicSystem extends MusicSystem {
             if (saved !== null) {
                 this.musicEnabled = saved === 'true';
             }
+            const savedVolume = localStorage.getItem('volitionMusicVolume');
+            if (savedVolume !== null) {
+                this.musicVolume = parseFloat(savedVolume);
+            }
         } catch (e) {
             // Ignore localStorage errors
         }
@@ -44,8 +52,29 @@ class VolitionMusicSystem extends MusicSystem {
     saveMusicPreference() {
         try {
             localStorage.setItem('volitionMusicEnabled', this.musicEnabled.toString());
+            localStorage.setItem('volitionMusicVolume', this.musicVolume.toString());
         } catch (e) {
             // Ignore localStorage errors
+        }
+    }
+
+    /**
+     * Get current music volume (0-1)
+     */
+    getMusicVolume() {
+        return this.musicVolume;
+    }
+
+    /**
+     * Set music volume (0-1) and apply it immediately
+     */
+    setMusicVolume(volume) {
+        this.musicVolume = Math.max(0, Math.min(1, volume));
+        this.saveMusicPreference();
+
+        // Apply to current music gain if playing
+        if (this.musicGain && this.audioContext) {
+            this.musicGain.gain.setTargetAtTime(this.musicVolume, this.audioContext.currentTime, 0.05);
         }
     }
 
@@ -73,14 +102,32 @@ class VolitionMusicSystem extends MusicSystem {
     }
 
     /**
-     * Start the ambient game music
+     * Start the title music (same as game music)
+     */
+    async startTitleMusic() {
+        if (!this.musicEnabled) return;
+
+        // Play the war track
+        await this.playTrack('volition_war');
+        this.hasStartedMusic = true;
+    }
+
+    /**
+     * Start the intense game music
      */
     async startGameMusic() {
         if (!this.musicEnabled) return;
 
-        // Play the ambient track
-        await this.playTrack('volition_ambient');
+        // Play the war track
+        await this.playTrack('volition_war');
         this.hasStartedMusic = true;
+    }
+
+    /**
+     * Play the triumphant victory music (plays war track)
+     */
+    async playTriumphMusic() {
+        // Just keep playing war track
     }
 
     /**
@@ -109,10 +156,11 @@ class VolitionMusicSystem extends MusicSystem {
     }
 
     /**
-     * React to game won event - music continues
+     * React to game won event - play triumphant music
      */
     onGameWon() {
-        // Keep playing ambient music on win
+        // Switch to triumphant victory music
+        this.playTriumphMusic();
     }
 }
 

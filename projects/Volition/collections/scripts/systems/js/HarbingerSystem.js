@@ -31,6 +31,9 @@ class HarbingerSystem extends GUTS.BaseSystem {
         this.autoWinInterval = null;
         this.autoWinMusingIndex = 0;
 
+        // Track cards to foundation without comment (guarantee occasional responses)
+        this.cardsSinceLastFoundationTaunt = 0;
+
         // The Harbinger's observations - spoken with ancient certainty
         this.taunts = [
             // On the nature of the draw
@@ -1072,6 +1075,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
                 }
             }
 
+            this.cardsSinceLastFoundationTaunt = 0;
             if (acesOnFoundation === 4) {
                 this.showAllAcesTaunt();
             } else {
@@ -1079,11 +1083,16 @@ class HarbingerSystem extends GUTS.BaseSystem {
             }
         } else if (rank === 13) {
             // King completes a foundation - prince becomes King!
+            this.cardsSinceLastFoundationTaunt = 0;
             this.showKingTaunt();
         } else {
             // Regular cards (2-Q) - the kingdom grows
-            // Only trigger occasionally (25% chance) to avoid being annoying
-            if (Math.random() < 0.25) {
+            this.cardsSinceLastFoundationTaunt++;
+
+            // Trigger on ~30% chance OR if it's been 4+ cards without a response
+            const shouldTaunt = Math.random() < 0.30 || this.cardsSinceLastFoundationTaunt >= 4;
+            if (shouldTaunt) {
+                this.cardsSinceLastFoundationTaunt = 0;
                 this.showKingdomGrowsTaunt();
             }
         }

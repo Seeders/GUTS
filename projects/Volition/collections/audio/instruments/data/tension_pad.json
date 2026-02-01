@@ -1,0 +1,17 @@
+{
+  "title": "Tension Pad",
+  "description": "Clear, ominous sustained pad",
+  "oscillator": "sawtooth",
+  "envelope": {
+    "attack": 0.05,
+    "decay": 0.1,
+    "sustain": 0.4,
+    "release": 0.1
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 2500,
+    "Q": 0.5
+  },
+  "duration": 0.8
+}

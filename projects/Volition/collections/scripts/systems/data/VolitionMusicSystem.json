@@ -12,6 +12,7 @@
     "getCurrentTrack",
     "toggleMusic",
     "isMusicEnabled",
-    "startGameMusic"
+    "startGameMusic",
+    "playTriumphMusic"
   ]
 }

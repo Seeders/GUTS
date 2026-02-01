@@ -147,18 +147,20 @@ class TreeDataSystem extends GUTS.BaseSystem {
             this.animationQueue.push(step);
         }
 
-        // Insert the node
+        // Insert the node and run fix-up immediately
         this.animationQueue.push({
             type: AnimationType.INSERT_NODE,
             data: { value, parentValue: insertionPath.parentValue, isLeft: insertionPath.isLeft },
             action: () => {
                 this._createNodeEntity(value, insertionPath.parentValue, insertionPath.isLeft);
+                // Run fix-up immediately to ensure correct colors
+                const nodeId = this.valueToEntity.get(value);
+                if (nodeId) {
+                    this._fixInsertImmediate(nodeId);
+                }
                 this.recalculatePositions();
             }
         });
-
-        // Queue fix-up operations
-        this._queueInsertFixup(value);
 
         this.animationQueue.push({
             type: AnimationType.COMPLETE,
@@ -569,14 +571,35 @@ class TreeDataSystem extends GUTS.BaseSystem {
         if (!nodeId) return;
 
         const node = this.game.getComponent(nodeId, 'treeNode');
+        let originalColor = node.color;
+        let fixupNodeId = null;
+        let fixupParentId = null;
+        let fixupIsLeft = false;
 
-        // Simple BST delete - find replacement
         if (!node.leftId && !node.rightId) {
-            // Leaf node
+            // Leaf node - need fixup if black
+            fixupParentId = node.parentId;
+            if (fixupParentId) {
+                const parent = this.game.getComponent(fixupParentId, 'treeNode');
+                fixupIsLeft = (parent.leftId === nodeId);
+            }
             this._transplant(nodeId, null);
+            // fixupNodeId stays null (NIL node)
         } else if (!node.leftId) {
+            fixupNodeId = node.rightId;
+            fixupParentId = node.parentId;
+            if (fixupParentId) {
+                const parent = this.game.getComponent(fixupParentId, 'treeNode');
+                fixupIsLeft = (parent.leftId === nodeId);
+            }
             this._transplant(nodeId, node.rightId);
         } else if (!node.rightId) {
+            fixupNodeId = node.leftId;
+            fixupParentId = node.parentId;
+            if (fixupParentId) {
+                const parent = this.game.getComponent(fixupParentId, 'treeNode');
+                fixupIsLeft = (parent.leftId === nodeId);
+            }
             this._transplant(nodeId, node.leftId);
         } else {
             // Two children - find in-order successor
@@ -587,7 +610,15 @@ class TreeDataSystem extends GUTS.BaseSystem {
                 successor = this.game.getComponent(successorId, 'treeNode');
             }
 
-            if (successor.parentId !== nodeId) {
+            originalColor = successor.color;
+            fixupNodeId = successor.rightId;
+
+            if (successor.parentId === nodeId) {
+                fixupParentId = successorId;
+                fixupIsLeft = false; // successor's right child position
+            } else {
+                fixupParentId = successor.parentId;
+                fixupIsLeft = true; // successor was always left child of its parent
                 this._transplant(successorId, successor.rightId);
                 successor.rightId = node.rightId;
                 if (successor.rightId) {
@@ -605,6 +636,139 @@ class TreeDataSystem extends GUTS.BaseSystem {
 
         this.valueToEntity.delete(value);
         this.game.destroyEntity(nodeId);
+
+        // Fix Red-Black Tree properties if we removed a black node
+        if (originalColor === NODE_COLOR.BLACK) {
+            this._fixDeleteImmediate(fixupNodeId, fixupParentId, fixupIsLeft);
+        }
+    }
+
+    _fixDeleteImmediate(nodeId, parentId, isLeft) {
+        // Fix double-black violation after deletion
+        // nodeId can be null (representing NIL)
+
+        while (nodeId !== this.rootEntityId) {
+            const node = nodeId ? this.game.getComponent(nodeId, 'treeNode') : null;
+
+            // If node is red, just color it black and we're done
+            if (node && node.color === NODE_COLOR.RED) {
+                node.color = NODE_COLOR.BLACK;
+                return;
+            }
+
+            // Node is black (or NIL which is black) - we have double-black
+            if (!parentId) break; // reached root
+
+            const parent = this.game.getComponent(parentId, 'treeNode');
+            const siblingId = isLeft ? parent.rightId : parent.leftId;
+
+            if (!siblingId) {
+                // No sibling, move up
+                nodeId = parentId;
+                if (parent.parentId) {
+                    const grandparent = this.game.getComponent(parent.parentId, 'treeNode');
+                    isLeft = (grandparent.leftId === parentId);
+                }
+                parentId = parent.parentId;
+                continue;
+            }
+
+            let sibling = this.game.getComponent(siblingId, 'treeNode');
+
+            // Case 1: Sibling is red
+            if (sibling.color === NODE_COLOR.RED) {
+                sibling.color = NODE_COLOR.BLACK;
+                parent.color = NODE_COLOR.RED;
+                if (isLeft) {
+                    this._rotateLeft(parentId);
+                } else {
+                    this._rotateRight(parentId);
+                }
+                // Update sibling after rotation
+                const newSiblingId = isLeft ? parent.rightId : parent.leftId;
+                sibling = newSiblingId ? this.game.getComponent(newSiblingId, 'treeNode') : null;
+                if (!sibling) {
+                    nodeId = parentId;
+                    if (parent.parentId) {
+                        const grandparent = this.game.getComponent(parent.parentId, 'treeNode');
+                        isLeft = (grandparent.leftId === parentId);
+                    }
+                    parentId = parent.parentId;
+                    continue;
+                }
+            }
+
+            // Sibling is black
+            const leftChild = sibling.leftId ? this.game.getComponent(sibling.leftId, 'treeNode') : null;
+            const rightChild = sibling.rightId ? this.game.getComponent(sibling.rightId, 'treeNode') : null;
+            const leftIsBlack = !leftChild || leftChild.color === NODE_COLOR.BLACK;
+            const rightIsBlack = !rightChild || rightChild.color === NODE_COLOR.BLACK;
+
+            // Case 2: Sibling is black with two black children
+            if (leftIsBlack && rightIsBlack) {
+                sibling.color = NODE_COLOR.RED;
+                nodeId = parentId;
+                if (parent.parentId) {
+                    const grandparent = this.game.getComponent(parent.parentId, 'treeNode');
+                    isLeft = (grandparent.leftId === parentId);
+                }
+                parentId = parent.parentId;
+
+                // If parent was red, color it black and we're done
+                if (parent.color === NODE_COLOR.RED) {
+                    parent.color = NODE_COLOR.BLACK;
+                    return;
+                }
+                continue;
+            }
+
+            // Case 3 & 4: Sibling has at least one red child
+            if (isLeft) {
+                // Case 3: Sibling's left child is red, right child is black
+                if (rightIsBlack && !leftIsBlack) {
+                    leftChild.color = NODE_COLOR.BLACK;
+                    sibling.color = NODE_COLOR.RED;
+                    this._rotateRight(isLeft ? parent.rightId : parent.leftId);
+                    // Update sibling reference
+                    const newSiblingId = parent.rightId;
+                    sibling = this.game.getComponent(newSiblingId, 'treeNode');
+                }
+
+                // Case 4: Sibling's right child is red
+                sibling.color = parent.color;
+                parent.color = NODE_COLOR.BLACK;
+                if (sibling.rightId) {
+                    this.game.getComponent(sibling.rightId, 'treeNode').color = NODE_COLOR.BLACK;
+                }
+                this._rotateLeft(parentId);
+            } else {
+                // Mirror case 3: Sibling's right child is red, left child is black
+                if (leftIsBlack && !rightIsBlack) {
+                    rightChild.color = NODE_COLOR.BLACK;
+                    sibling.color = NODE_COLOR.RED;
+                    this._rotateLeft(isLeft ? parent.rightId : parent.leftId);
+                    // Update sibling reference
+                    const newSiblingId = parent.leftId;
+                    sibling = this.game.getComponent(newSiblingId, 'treeNode');
+                }
+
+                // Mirror case 4: Sibling's left child is red
+                sibling.color = parent.color;
+                parent.color = NODE_COLOR.BLACK;
+                if (sibling.leftId) {
+                    this.game.getComponent(sibling.leftId, 'treeNode').color = NODE_COLOR.BLACK;
+                }
+                this._rotateRight(parentId);
+            }
+
+            return; // Done after case 4
+        }
+
+        // Ensure root is black
+        if (this.rootEntityId) {
+            const root = this.game.getComponent(this.rootEntityId, 'treeNode');
+            if (root) root.color = NODE_COLOR.BLACK;
+        }
     }
 
     _transplant(u, v) {

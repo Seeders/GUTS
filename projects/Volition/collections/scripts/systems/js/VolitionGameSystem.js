@@ -9,9 +9,11 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         'canPlayToFoundation', 'canPlayToTableau', 'isValidSequence', 'getCardsBelow',
         'getTotalFoundationCards', 'flowCard', 'getCardElement', 'isTutorialActive',
         'isAwaitingColumnSelection', 'cancelColumnSelection',
-        'playVictory', 'playCardShuffle',
+        'playVictory', 'playCardShuffle', 'playCardPlace',
         // Music services
-        'toggleMusic', 'isMusicEnabled'
+        'toggleMusic', 'isMusicEnabled', 'getMusicVolume', 'setMusicVolume',
+        // SFX services
+        'getSfxVolume', 'setSfxVolume'
     ];
 
     constructor(game) {
@@ -123,6 +125,12 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         const tutorialBtn = document.getElementById('tutorialBtn');
         if (tutorialBtn) {
             tutorialBtn.addEventListener('click', () => {
+                // Warn if game is in progress (not game over)
+                if (!this.gameOver) {
+                    if (!confirm('Starting the tutorial will end your current game. Continue?')) {
+                        return;
+                    }
+                }
                 this.game.sceneManager?.switchScene('tutorial');
             });
         }
@@ -185,6 +193,47 @@ class VolitionGameSystem extends GUTS.BaseSystem {
             });
         }
 
+        // Set up music volume slider
+        const musicVolumeSlider = document.getElementById('musicVolumeSlider');
+        const musicVolumeValue = document.getElementById('musicVolumeValue');
+        if (musicVolumeSlider && musicVolumeValue) {
+            // Set initial value from saved preference
+            const currentMusicVolume = this.call.getMusicVolume?.() ?? 0.4;
+            musicVolumeSlider.value = Math.round(currentMusicVolume * 100);
+            musicVolumeValue.textContent = `${musicVolumeSlider.value}%`;
+
+            musicVolumeSlider.addEventListener('input', () => {
+                const volume = parseInt(musicVolumeSlider.value) / 100;
+                musicVolumeValue.textContent = `${musicVolumeSlider.value}%`;
+                this.call.setMusicVolume?.(volume);
+            });
+        }
+
+        // Set up SFX volume slider
+        const sfxVolumeSlider = document.getElementById('sfxVolumeSlider');
+        const sfxVolumeValue = document.getElementById('sfxVolumeValue');
+        if (sfxVolumeSlider && sfxVolumeValue) {
+            // Set initial value from saved preference
+            const currentSfxVolume = this.call.getSfxVolume?.() ?? 0.5;
+            sfxVolumeSlider.value = Math.round(currentSfxVolume * 100);
+            sfxVolumeValue.textContent = `${sfxVolumeSlider.value}%`;
+
+            // Debounce timer for test sound
+            let sfxTestTimer = null;
+
+            sfxVolumeSlider.addEventListener('input', () => {
+                const volume = parseInt(sfxVolumeSlider.value) / 100;
+                sfxVolumeValue.textContent = `${sfxVolumeSlider.value}%`;
+                this.call.setSfxVolume?.(volume);
+
+                // Play a test sound (debounced) so user can hear the volume
+                clearTimeout(sfxTestTimer);
+                sfxTestTimer = setTimeout(() => {
+                    this.call.playCardPlace?.();
+                }, 150);
+            });
+        }
+
         if (settingsBtn) {
             settingsBtn.addEventListener('click', () => {
                 settingsModal?.classList.remove('hidden');
@@ -199,11 +248,26 @@ class VolitionGameSystem extends GUTS.BaseSystem {
 
         if (applySettingsBtn) {
             applySettingsBtn.addEventListener('click', () => {
-                this.saveSettings({
-                    cardSpeed: selectedSpeed,
-                    tableauColumns: parseInt(tableauColumnsSlider.value)
-                });
-                this.restartGame();
+                const newColumns = parseInt(tableauColumnsSlider.value);
+                const columnsChanged = newColumns !== this.settings.tableauColumns;
+
+                if (columnsChanged) {
+                    // Column count changed - warn user before restarting
+                    if (confirm('Changing the column count will restart your current game. Continue?')) {
+                        this.saveSettings({
+                            cardSpeed: selectedSpeed,
+                            tableauColumns: newColumns
+                        });
+                        this.restartGame();
+                    }
+                } else {
+                    // Only card speed or audio settings changed - no restart needed
+                    this.saveSettings({
+                        cardSpeed: selectedSpeed,
+                        tableauColumns: newColumns
+                    });
+                    settingsModal?.classList.add('hidden');
+                }
             });
         }
 
