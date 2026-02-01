@@ -1,0 +1,26 @@
+{
+  "title": "Tree Edge",
+  "render": {
+    "animations": {
+      "idle": [{}]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "name": "edgeCylinder",
+            "type": "cylinder",
+            "size": 4,
+            "height": 1,
+            "color": "#666666",
+            "metalness": 0.2,
+            "roughness": 0.8
+          }
+        ],
+        "position": { "x": 0, "y": 0, "z": 0 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 }
+      }
+    }
+  }
+}

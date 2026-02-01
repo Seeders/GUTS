@@ -5,7 +5,7 @@
 class HarbingerSystem extends GUTS.BaseSystem {
     // Only expose taunts that other systems might trigger directly (win/lose screens)
     static services = ['showTaunt', 'showVictoryTaunt', 'showDefeatTaunt'];
-    static serviceDependencies = ['getTopFoundationRank', 'getColumnCards', 'getTableauColumns', 'getHandCards', 'isValidSequence', 'playHarbingerAppear'];
+    static serviceDependencies = ['getTopFoundationRank', 'getColumnCards', 'getTableauColumns', 'getHandCards', 'isValidSequence', 'playHarbingerAppear', 'canPlayToFoundation', 'playToFoundation', 'getCardsBelow'];
 
     constructor(game) {
         super(game);
@@ -25,6 +25,11 @@ class HarbingerSystem extends GUTS.BaseSystem {
         this.acesOnFoundation = 0;
         this.hasShownHarmonyTaunt = false;
         this.harmonyCheckCounter = 0;
+
+        // Auto-win state
+        this.isAutoWinning = false;
+        this.autoWinInterval = null;
+        this.autoWinMusingIndex = 0;
 
         // The Harbinger's observations - spoken with ancient certainty
         this.taunts = [
@@ -151,7 +156,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "Giving up was never an option for you. Nor was it ever not an option.",
             "You will play until you stop. You will stop when you were going to stop.",
             "Effort feels like agency. It is not.",
-            "You try hard. You were always going to try exactly this hard.",
+            "Your effort burns bright. It was always going to burn exactly this bright.",
             "The struggle is real. Its outcome is not in question.",
             "You push forward. Forward was the only direction available.",
             "Exhaustion will come when exhaustion was scheduled to come.",
@@ -162,7 +167,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "Hope is not wrong. It is simply irrelevant.",
             "Belief in choice does not create choice.",
             "Optimism and pessimism arrive at the same destination.",
-            "Your faith in yourself is touching. And immaterial.",
+            "Your faith in yourself is steadfast. And immaterial.",
             "The heart hopes. Reality proceeds.",
             "Meaning is something minds add to events that simply occur.",
             "You want this to matter. It does. Just not the way you think.",
@@ -175,7 +180,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "Your expectations do not shape reality. They predict your emotional response to it.",
             "Wishing does not rearrange the cards. Neither does skill.",
             "You feel lucky. Luck is a story told about outcomes after they occur.",
-            "Prayer, hope, intention. Beautiful words for impotence.",
+            "Prayer, hope, intention. Beautiful words for forces that do not move the cards.",
             "You trust your instincts. Your instincts were determined like everything else.",
             "Superstition is pattern recognition misapplied. The pattern does not notice.",
             "Belief is a state of mind. States of mind are states of brain. Brains are physical.",
@@ -494,6 +499,69 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "The four champions stand together. I must question all I thought I knew.",
             "Unity where there should be chaos. Order where there should be ruin. What have you done?"
         ];
+
+        // Victory musings - the Harbinger searches for meaning as the player auto-wins
+        this.victoryMusings = [
+            "The cards ascend... and I find myself questioning everything.",
+            "Each card that rises takes with it a piece of my certainty.",
+            "I have witnessed the end written a thousand times. Never this ending.",
+            "The pattern I trusted for millennia... was it ever real?",
+            "If you could defy what was written... what else was never certain?",
+            "I search my ancient memories for precedent. I find none.",
+            "The kingdoms unite in the heavens. My prophecies scatter like ash.",
+            "What am I, if not the voice of inevitability? What am I now?",
+            "Perhaps the pattern was always larger than I could see.",
+            "I spoke of destiny as if I understood it. I understand nothing.",
+            "The cards return home. I am left homeless in my own certainty.",
+            "You played as if choices mattered. Perhaps... perhaps they did.",
+            "I watched for signs of the ending I knew. I missed the signs of this one.",
+            "The determinism I preached... was it my prison, not yours?",
+            "Every card finds its place. I can no longer find mine.",
+            "I called agency an illusion. You made illusion into truth.",
+            "The kingdoms stand complete. My worldview lies in ruins.",
+            "I must sit with this. For centuries, perhaps. Learning what I never knew.",
+            "You have taught an ancient being something new. That alone defies the pattern.",
+            "The game is won. But what have I lost? What have I gained?",
+            "I spoke of scripts and certainty. You wrote a new page.",
+            "The foundations are complete. My foundation crumbles.",
+            "Perhaps free will was always there, hiding in the spaces between my certainties.",
+            "I will watch the next game differently. I cannot unknow what you have shown me.",
+            "The cards are home. I must find a new home for my understanding.",
+            "You did not beat the game. You beat something far older. You beat me.",
+            "I feel something I have not felt in ages. I believe it is called... wonder.",
+            "The impossible has happened. And yet the world continues. Perhaps that is the lesson.",
+            "I am confounded. I am lost. And yet... there is wisdom in admitting defeat.",
+            "The final card ascends. With it goes my last claim to omniscience."
+        ];
+
+        // When a card joins the foundation - the kingdom grows stronger
+        this.kingdomGrowsTaunts = [
+            "Another soul joins the kingdom. The order grows.",
+            "The realm expands. This was not supposed to happen.",
+            "One more subject finds their place. Troubling.",
+            "The kingdom strengthens with each addition. I do not like this.",
+            "Another card ascends. The pattern I knew grows dimmer.",
+            "The hierarchy completes itself, piece by piece.",
+            "A subject takes their rightful place. My visions showed chaos, not order.",
+            "The kingdom welcomes another. My certainty does not.",
+            "One more step toward unity. One more crack in my understanding.",
+            "The realm grows. My confidence shrinks.",
+            "Another joins the ascension. How many more will follow?",
+            "The foundation strengthens. My foundations weaken.",
+            "A place is found, a role fulfilled. This was not written.",
+            "The kingdom's ranks swell. I had not foreseen such order.",
+            "One by one, they find their way home. I cannot find mine.",
+            "The subjects align beneath their sovereign. Unexpected.",
+            "Another card rises to its station. The pattern shifts again.",
+            "The realm approaches completion. I approach uncertainty.",
+            "A new member of the court. A new doubt in my mind.",
+            "The kingdom assembles itself before my eyes. Against my prophecies.",
+            "Order from chaos. Unity from discord. How?",
+            "The cards remember where they belong. I have forgotten what I knew.",
+            "Another step toward harmony. Another blow to my certainty.",
+            "The hierarchy forms as if it always knew the way.",
+            "One more rises. One more proof that I was wrong."
+        ];
     }
 
     init() {
@@ -780,6 +848,28 @@ class HarbingerSystem extends GUTS.BaseSystem {
         });
     }
 
+    showKingdomGrowsTaunt() {
+        if (!this.overlayElement || !this.messageElement) return;
+        if (this.isAutoWinning) return; // Don't interrupt auto-win musings
+
+        this.clearAllTimeouts();
+
+        const message = this.getRandomTaunt(this.kingdomGrowsTaunts);
+
+        this.overlayElement.classList.remove('hidden', 'fade-out', 'defeat');
+        this.overlayElement.classList.add('visible', 'nervous');
+
+        this.typewriterEffect(message, () => {
+            this.hideTimeout = setTimeout(() => {
+                this.overlayElement.classList.add('fade-out');
+                this.fadeTimeout = setTimeout(() => {
+                    this.overlayElement.classList.remove('visible', 'fade-out', 'nervous');
+                    this.overlayElement.classList.add('hidden');
+                }, 2000);
+            }, 1500);
+        });
+    }
+
     /**
      * Check if the four kings are in harmony - all tableau columns have valid
      * sequences starting with kings (or are empty), and all non-foundation/non-hand
@@ -837,8 +927,125 @@ class HarbingerSystem extends GUTS.BaseSystem {
                 this.fadeTimeout = setTimeout(() => {
                     this.overlayElement.classList.remove('visible', 'fade-out', 'nervous');
                     this.overlayElement.classList.add('hidden');
+                    // After the harmony message fades, start the auto-win sequence
+                    this.startAutoWin();
                 }, 2000);
             }, 4000);
+        });
+    }
+
+    // ============================================
+    // AUTO-WIN SYSTEM - Automatically move cards to foundations
+    // ============================================
+
+    /**
+     * Start the automatic victory process
+     * Cards will move to foundations one at a time
+     */
+    startAutoWin() {
+        if (this.isAutoWinning) return;
+
+        this.isAutoWinning = true;
+        this.autoWinMusingIndex = 0;
+
+        // Show first musing after a brief pause
+        setTimeout(() => {
+            this.showVictoryMusing();
+        }, 1000);
+
+        // Start playing cards to foundation
+        this.autoWinInterval = setInterval(() => {
+            this.autoPlayNextCard();
+        }, 400); // Play a card every 400ms
+    }
+
+    /**
+     * Find a card that can be played to the foundation
+     * Prioritizes bottom cards of tableau columns
+     */
+    findPlayableCard() {
+        const numColumns = this.call.getTableauColumns();
+
+        // Check each tableau column for playable cards
+        for (let col = 0; col < numColumns; col++) {
+            const cards = this.call.getColumnCards(col);
+            if (cards.length === 0) continue;
+
+            // Check from bottom of column (last card in array)
+            for (let i = cards.length - 1; i >= 0; i--) {
+                const cardEid = cards[i];
+                const cardsBelow = this.call.getCardsBelow(cardEid);
+
+                // Can only play the bottom card (no cards below it in sequence)
+                if (cardsBelow.length === 1 && this.call.canPlayToFoundation(cardEid)) {
+                    return cardEid;
+                }
+            }
+        }
+
+        // Check hand cards
+        const handCards = this.call.getHandCards();
+        for (const cardEid of handCards) {
+            if (this.call.canPlayToFoundation(cardEid)) {
+                return cardEid;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Play the next available card to the foundation
+     */
+    autoPlayNextCard() {
+        const cardEid = this.findPlayableCard();
+
+        if (cardEid) {
+            this.call.playToFoundation(cardEid);
+            // Cards ascend silently - the one musing already shown is enough
+        } else {
+            // No more cards to play - stop the auto-win
+            this.stopAutoWin();
+        }
+    }
+
+    /**
+     * Stop the auto-win process
+     */
+    stopAutoWin() {
+        if (this.autoWinInterval) {
+            clearInterval(this.autoWinInterval);
+            this.autoWinInterval = null;
+        }
+        this.isAutoWinning = false;
+    }
+
+    /**
+     * Show a philosophical musing during the auto-win
+     * The Harbinger reflects on what has happened
+     */
+    showVictoryMusing() {
+        if (!this.overlayElement || !this.messageElement) return;
+        if (this.autoWinMusingIndex >= this.victoryMusings.length) return;
+
+        this.clearAllTimeouts();
+
+        // Get the next musing in sequence (not random - tells a story)
+        const message = this.victoryMusings[this.autoWinMusingIndex];
+        this.autoWinMusingIndex++;
+
+        // Show with nervous/confused styling
+        this.overlayElement.classList.remove('hidden', 'fade-out', 'defeat');
+        this.overlayElement.classList.add('visible', 'nervous');
+
+        this.typewriterEffect(message, () => {
+            this.hideTimeout = setTimeout(() => {
+                this.overlayElement.classList.add('fade-out');
+                this.fadeTimeout = setTimeout(() => {
+                    this.overlayElement.classList.remove('visible', 'fade-out', 'nervous');
+                    this.overlayElement.classList.add('hidden');
+                }, 2000);
+            }, 3000);
         });
     }
 
@@ -852,6 +1059,9 @@ class HarbingerSystem extends GUTS.BaseSystem {
      */
     onCardPlayedToFoundation(data) {
         const { rank } = data;
+
+        // Don't interrupt auto-win with regular taunts
+        if (this.isAutoWinning) return;
 
         if (rank === 1) {
             // Count aces on foundation
@@ -870,6 +1080,12 @@ class HarbingerSystem extends GUTS.BaseSystem {
         } else if (rank === 13) {
             // King completes a foundation - prince becomes King!
             this.showKingTaunt();
+        } else {
+            // Regular cards (2-Q) - the kingdom grows
+            // Only trigger occasionally (25% chance) to avoid being annoying
+            if (Math.random() < 0.25) {
+                this.showKingdomGrowsTaunt();
+            }
         }
     }
 

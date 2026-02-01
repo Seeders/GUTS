@@ -5,6 +5,7 @@
     "LayoutSystem",
     "VolitionGameSystem",
     "VolitionAudioSystem",
+    "VolitionMusicSystem",
     "DeckSystem",
     "CardFlowSystem",
     "HandSystem",

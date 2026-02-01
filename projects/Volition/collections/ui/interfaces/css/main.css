@@ -901,6 +901,34 @@ body {
     color: var(--color-bg-dark);
 }
 
+.toggle-row {
+    display: flex;
+    gap: 8px;
+}
+
+.toggle-btn {
+    padding: 12px 24px;
+    border: 1px solid var(--color-primary-dim);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-text-dim);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.toggle-btn.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-bg-dark);
+}
+
 .modal-actions {
     display: flex;
     gap: 12px;

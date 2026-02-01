@@ -1,0 +1,17 @@
+{
+  "filePath": "/projects/Volition/collections/scripts/systems/js/VolitionMusicSystem.js",
+  "fileName": "VolitionMusicSystem",
+  "services": [
+    "playTrack",
+    "stopTrack",
+    "pauseTrack",
+    "resumeTrack",
+    "isPlaying",
+    "setMusicVolume",
+    "getMusicVolume",
+    "getCurrentTrack",
+    "toggleMusic",
+    "isMusicEnabled",
+    "startGameMusic"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "title": "treeNode",
+  "schema": {
+    "value": 0,
+    "color": "RED",
+    "parentId": null,
+    "leftId": null,
+    "rightId": null,
+    "isRoot": false,
+    "depth": 0,
+    "highlighted": false
+  }
+}

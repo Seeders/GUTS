@@ -9,7 +9,9 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         'canPlayToFoundation', 'canPlayToTableau', 'isValidSequence', 'getCardsBelow',
         'getTotalFoundationCards', 'flowCard', 'getCardElement', 'isTutorialActive',
         'isAwaitingColumnSelection', 'cancelColumnSelection',
-        'playVictory', 'playCardShuffle'
+        'playVictory', 'playCardShuffle',
+        // Music services
+        'toggleMusic', 'isMusicEnabled'
     ];
 
     constructor(game) {
@@ -165,6 +167,21 @@ class VolitionGameSystem extends GUTS.BaseSystem {
             tableauColumnsValue.textContent = this.settings.tableauColumns;
             tableauColumnsSlider.addEventListener('input', () => {
                 tableauColumnsValue.textContent = tableauColumnsSlider.value;
+            });
+        }
+
+        // Set up music toggle
+        const musicToggleBtn = document.getElementById('musicToggleBtn');
+        if (musicToggleBtn) {
+            // Set initial state
+            const musicEnabled = this.call.isMusicEnabled?.() ?? true;
+            musicToggleBtn.textContent = musicEnabled ? 'On' : 'Off';
+            musicToggleBtn.classList.toggle('active', musicEnabled);
+
+            musicToggleBtn.addEventListener('click', () => {
+                const nowEnabled = this.call.toggleMusic?.();
+                musicToggleBtn.textContent = nowEnabled ? 'On' : 'Off';
+                musicToggleBtn.classList.toggle('active', nowEnabled);
             });
         }
 

@@ -1,0 +1,58 @@
+{
+  "title": "Against the Pattern",
+  "description": "Music of quiet defiance - the player challenges what the Harbinger believes is certain. Eight evolving sections with recurring themes.",
+  "bpm": 66,
+  "stepsPerBeat": 4,
+  "totalSteps": 512,
+  "voices": [
+    {
+      "name": "determination",
+      "instrument": "soft_pad",
+      "pattern": "ambient_chords",
+      "volume": 0.18,
+      "octaveShift": 0
+    },
+    {
+      "name": "foundation",
+      "instrument": "soft_pad",
+      "pattern": "chord_layer",
+      "volume": 0.12,
+      "octaveShift": 1
+    },
+    {
+      "name": "defiance",
+      "instrument": "gentle_lead",
+      "pattern": "gentle_melody",
+      "volume": 0.1,
+      "octaveShift": 0
+    },
+    {
+      "name": "echoes",
+      "instrument": "echo_lead",
+      "pattern": "counter_melody",
+      "volume": 0.07,
+      "octaveShift": 0
+    },
+    {
+      "name": "resolve",
+      "instrument": "soft_bass",
+      "pattern": "ambient_bass",
+      "volume": 0.14,
+      "octaveShift": 0
+    },
+    {
+      "name": "pulse",
+      "instrument": "soft_bass",
+      "pattern": "bass_pulse",
+      "volume": 0.08,
+      "octaveShift": 1
+    },
+    {
+      "name": "hope",
+      "instrument": "bell",
+      "pattern": "bell_arpeggio",
+      "volume": 0.06,
+      "octaveShift": 0
+    }
+  ]
+}

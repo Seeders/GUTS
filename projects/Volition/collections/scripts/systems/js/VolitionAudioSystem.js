@@ -16,7 +16,7 @@ class VolitionAudioSystem extends AudioSystem {
     constructor(game) {
         super(game);
         this.soundsEnabled = true;
-        this.masterVolume = 1.0;
+        this.masterVolume = 0.5; // Reduced to leave headroom for music
     }
 
     init() {
@@ -131,3 +131,5 @@ class VolitionAudioSystem extends AudioSystem {
         this.playCardShuffle();
     }
 }
+
+export default VolitionAudioSystem;

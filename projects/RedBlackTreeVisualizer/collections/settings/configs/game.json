@@ -1,0 +1,35 @@
+{
+    "title": "Red-Black Tree Visualizer",
+    "libraries": [
+        "GameServices",
+        "threejs",
+        "BaseECSGame",
+        "ShapeFactory",
+        "ImageManager",
+        "ModelManager",
+        "CanvasUtility",
+        "GameState",
+        "three_OrbitControls",
+        "GLTFLoader",
+        "ECSGame",
+        "BaseLoader",
+        "ThreeDAppLoader",
+        "SeededRandom",
+        "ComponentGenerator",
+        "SceneManager"
+    ],
+    "systems": [
+        "TreeDataSystem",
+        "TreeRenderSystem",
+        "TreeInputSystem"
+    ],
+    "classes": [],
+    "fileName": "game",
+    "interface": "main",
+    "appLibrary": "ECSGame",
+    "canvasWidth": 1280,
+    "canvasHeight": 720,
+    "is3D": true,
+    "appLoaderLibrary": "ThreeDAppLoader",
+    "initialScene": "main"
+}

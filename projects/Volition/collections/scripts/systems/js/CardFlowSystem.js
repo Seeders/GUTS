@@ -32,6 +32,7 @@ class CardFlowSystem extends GUTS.BaseSystem {
         this.shiftFromIndex = 0; // Starting index for shift animation
         this.cardsToShift = [];
         this.newCardEid = null;
+        this.skipDrawAfterShift = false; // When true, don't draw after shifting (deck empty)
 
         // Timing for animations
         this.flipStartTime = 0;
@@ -135,8 +136,12 @@ class CardFlowSystem extends GUTS.BaseSystem {
             return false;
         }
 
-        // Don't flow if deck is empty
-        if (this.call.getDeckCount() <= 0) {
+        const deckEmpty = this.call.getDeckCount() <= 0;
+        const handCards = this.call.getHandCards();
+        const hasHandCards = handCards.length > 0;
+
+        // Don't flow if deck is empty AND hand is empty
+        if (deckEmpty && !hasHandCards) {
             return false;
         }
 
@@ -145,8 +150,11 @@ class CardFlowSystem extends GUTS.BaseSystem {
             this.ghostCard.style.display = 'none';
         }
 
-        if (this.call.isHandFull()) {
-            // Start the discard sequence
+        if (deckEmpty && hasHandCards) {
+            // Deck is empty but hand has cards - just discard without drawing
+            this.startDiscardOnlySequence();
+        } else if (this.call.isHandFull()) {
+            // Start the discard sequence (followed by draw)
             this.startDiscardSequence();
         } else {
             // Just draw a card directly
@@ -248,6 +256,48 @@ class CardFlowSystem extends GUTS.BaseSystem {
         this.shiftFromIndex = 0; // Discard always removes from index 0
 
         // update() will check when animation completes
+    }
+
+    /**
+     * Discard from hand without drawing - used when deck is empty
+     */
+    startDiscardOnlySequence() {
+        // Pop the oldest card without auto-reindexing (we animate manually)
+        const dumpedCard = this.call.popFromHandRaw();
+        if (!dumpedCard) {
+            this.animState = CardFlowSystem.IDLE;
+            return;
+        }
+
+        this.animatingCard = dumpedCard;
+        this.animState = CardFlowSystem.DISCARDING;
+        this.skipDrawAfterShift = true; // Don't draw after shifting
+
+        // Determine target column
+        const numColumns = this.call.getTableauColumns();
+        const emptyColumn = this.call.findEmptyColumn();
+        let targetColumn;
+
+        if (emptyColumn >= 0) {
+            targetColumn = emptyColumn;
+            this.nextDumpColumn = (emptyColumn + 1) % numColumns;
+        } else {
+            targetColumn = this.nextDumpColumn;
+            this.nextDumpColumn = (this.nextDumpColumn + 1) % numColumns;
+        }
+
+        // Dump to tableau (sets target position and animating = 1)
+        this.call.dumpToTableau(dumpedCard, targetColumn);
+
+        // Play liftoff sound when card leaves hand
+        if (this.call.playCardPickup) {
+            this.call.playCardPickup();
+        }
+
+        // Store the cards that need to shift (current hand after pop)
+        this.cardsToShift = [...this.call.getHandCards()];
+        this.shiftIndex = 0;
+        this.shiftFromIndex = 0; // Discard always removes from index 0
     }
 
     isAwaitingColumnSelection() {
@@ -368,8 +418,14 @@ class CardFlowSystem extends GUTS.BaseSystem {
 
     startShiftSequence() {
         if (this.cardsToShift.length === 0) {
-            // No cards to shift, go straight to drawing
-            this.startDrawSequence();
+            // No cards to shift
+            if (this.skipDrawAfterShift) {
+                // Deck is empty - just finish
+                this.finishFlowSequence();
+            } else {
+                // Go straight to drawing
+                this.startDrawSequence();
+            }
             return;
         }
 
@@ -380,8 +436,14 @@ class CardFlowSystem extends GUTS.BaseSystem {
 
     shiftCurrentCard() {
         if (this.shiftIndex >= this.cardsToShift.length) {
-            // All cards shifted, now draw the new card
-            this.startDrawSequence();
+            // All cards shifted
+            if (this.skipDrawAfterShift) {
+                // Deck is empty - just finish
+                this.finishFlowSequence();
+            } else {
+                // Draw the new card
+                this.startDrawSequence();
+            }
             return;
         }
 
@@ -496,6 +558,7 @@ class CardFlowSystem extends GUTS.BaseSystem {
         this.newCardEid = null;
         this.cardsToShift = [];
         this.shiftIndex = 0;
+        this.skipDrawAfterShift = false;
     }
 
     getNextDumpColumn() {
@@ -515,8 +578,15 @@ class CardFlowSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Only show if hand is full and deck has cards
-        if (!this.call.isHandFull() || this.call.getDeckCount() <= 0) {
+        const deckEmpty = this.call.getDeckCount() <= 0;
+        const handCards = this.call.getHandCards();
+        const hasHandCards = handCards.length > 0;
+
+        // Show ghost card when:
+        // - Hand is full and deck has cards (normal discard preview), OR
+        // - Deck is empty but hand has cards (emptying hand preview)
+        const shouldShowGhost = (this.call.isHandFull() && !deckEmpty) || (deckEmpty && hasHandCards);
+        if (!shouldShowGhost) {
             this.ghostCard.style.display = 'none';
             return;
         }
@@ -627,10 +697,15 @@ class CardFlowSystem extends GUTS.BaseSystem {
         // Update dump column highlight
         this.updateDumpHighlight();
 
-        // Disable the deck button if deck is empty OR animating
+        // Disable the deck button if:
+        // - Currently animating, OR
+        // - Deck is empty AND hand is empty (nothing left to discard)
         const deckArea = document.getElementById('deckArea');
         if (deckArea) {
-            deckArea.disabled = this.call.getDeckCount() <= 0 || this.animState !== CardFlowSystem.IDLE;
+            const deckEmpty = this.call.getDeckCount() <= 0;
+            const handEmpty = this.call.getHandCards().length === 0;
+            const isAnimating = this.animState !== CardFlowSystem.IDLE;
+            deckArea.disabled = isAnimating || (deckEmpty && handEmpty);
         }
     }
 }

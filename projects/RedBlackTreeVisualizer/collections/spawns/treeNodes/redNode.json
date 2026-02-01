@@ -1,0 +1,25 @@
+{
+  "title": "Red Node",
+  "render": {
+    "animations": {
+      "idle": [{}]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "name": "nodeSphere",
+            "type": "sphere",
+            "size": 32,
+            "color": "#c0392b",
+            "metalness": 0.3,
+            "roughness": 0.7
+          }
+        ],
+        "position": { "x": 0, "y": 0, "z": 0 },
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 }
+      }
+    }
+  }
+}

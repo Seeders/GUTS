@@ -1,0 +1,62 @@
+<div id="visualizerContainer">
+    <div id="header">
+        <h1>Red-Black Tree Visualizer</h1>
+        <p id="status">Ready</p>
+    </div>
+
+    <div id="controls">
+        <div class="control-group">
+            <input type="number" id="valueInput" placeholder="Enter value (1-99)" min="1" max="999">
+            <button id="addBtn" class="btn btn-add">Add</button>
+            <button id="removeBtn" class="btn btn-remove">Remove</button>
+            <button id="searchBtn" class="btn btn-search">Search</button>
+        </div>
+        <div class="control-group">
+            <button id="randomBtn" class="btn btn-random">Random</button>
+            <button id="sampleBtn" class="btn btn-sample">Sample Data</button>
+            <button id="clearBtn" class="btn btn-clear">Clear</button>
+        </div>
+        <div class="control-group speed-control">
+            <label for="speedSlider">Animation Speed:</label>
+            <input type="range" id="speedSlider" min="1" max="100" value="50">
+            <span id="speedValue">50</span>
+        </div>
+    </div>
+
+    <div id="canvasContainer">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div id="infoPanel">
+        <div id="stepInfo">Use the controls above to interact with the tree</div>
+        <div id="legend">
+            <div class="legend-item">
+                <span class="legend-color red"></span>
+                <span>Red Node</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color black"></span>
+                <span>Black Node</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color highlight"></span>
+                <span>Active/Found</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color compare"></span>
+                <span>Comparing</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="rulesPanel">
+        <h3>Red-Black Tree Properties</h3>
+        <ol>
+            <li>Every node is either red or black</li>
+            <li>The root is always black</li>
+            <li>Every leaf (NIL) is black</li>
+            <li>Red nodes cannot have red children</li>
+            <li>All paths have the same black depth</li>
+        </ol>
+    </div>
+</div>

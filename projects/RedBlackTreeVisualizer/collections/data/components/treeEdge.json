@@ -1,0 +1,8 @@
+{
+  "title": "treeEdge",
+  "schema": {
+    "fromNodeId": null,
+    "toNodeId": null,
+    "edgeType": "child"
+  }
+}

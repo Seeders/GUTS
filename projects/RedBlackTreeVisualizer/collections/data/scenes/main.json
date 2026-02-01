@@ -1,0 +1,12 @@
+{
+    "title": "Main",
+    "description": "Red-Black Tree Visualizer main scene",
+    "interface": "main",
+    "systems": [
+        "TreeDataSystem",
+        "TreeRenderSystem",
+        "TreeInputSystem"
+    ],
+    "clientSystems": [],
+    "serverSystems": []
+}
