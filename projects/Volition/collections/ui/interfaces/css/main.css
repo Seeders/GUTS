@@ -280,8 +280,8 @@ body {
 .suit-icon.spades { color: var(--color-primary); }
 
 .suit-icon.hearts::before { content: '\2665'; }
-.suit-icon.diamonds::before { content: '\2666'; }
-.suit-icon.clubs::before { content: '\2663'; }
+.suit-icon.diamonds::before { content: '\2662'; }
+.suit-icon.clubs::before { content: '\2667'; }
 .suit-icon.spades::before { content: '\2660'; }
 
 /* ============================================
@@ -639,14 +639,6 @@ body {
     border-color: var(--color-primary-dim);
 }
 
-#handIndicator {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 2px 0;
-    font-size: 13px;
-    color: var(--color-text-dim);
-}
-
 /* ============================================
    TOOLBAR
    ============================================ */
@@ -994,11 +986,6 @@ body {
         margin-left: 20px;
     }
 
-    #handIndicator {
-        font-size: 14px;
-        padding-top: 6px;
-    }
-
     .toolbar-btn {
         padding: 10px 24px;
     }
@@ -1055,10 +1042,6 @@ body {
 
     #deckArea {
         margin-left: 25px;
-    }
-
-    #handIndicator {
-        font-size: 15px;
     }
 
     .card:hover {
@@ -1216,76 +1199,151 @@ body {
 }
 
 /* ============================================
-   HARBINGER MESSAGES
+   HARBINGER OVERLAY & MESSAGES
    ============================================ */
-.harbinger-message {
+.harbinger-overlay {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(15, 15, 26, 0.95);
-    border: 1px solid var(--color-secondary);
-    padding: 16px 28px;
-    font-size: 16px;
-    font-style: italic;
-    color: var(--color-secondary);
-    text-align: center;
-    max-width: 85%;
-    z-index: 150;
+    inset: 0;
+    z-index: 50;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.3s ease-out;
-    box-shadow: 0 0 30px rgba(255, 107, 107, 0.2);
+    transition: opacity 1.5s ease-out;
 }
 
-.harbinger-message.hidden {
+.harbinger-overlay.hidden {
     display: none;
 }
 
-.harbinger-message.visible {
+.harbinger-overlay.visible {
     opacity: 1;
-    animation: harbinger-appear 0.4s ease-out;
+    animation: harbinger-appear 0.15s ease-out;
 }
 
-.harbinger-message.fade-out {
+.harbinger-overlay.fade-out {
     opacity: 0;
+    transition: opacity 2s ease-out;
 }
 
-.harbinger-message.nervous {
+.harbinger-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.harbinger-image {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 392px;
+    height: 256px;
+    background-image: url('./resources/images/harbinger_small_color.png');
+    background-size: 392px 256px;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    opacity: 0.3;
+    animation: harbinger-float 3s ease-in-out infinite;
+}
+
+.harbinger-text {
+    position: absolute;
+    bottom: calc(var(--header-height) + var(--card-height) + 70px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 15, 26, 0.95);
+    border: 1px solid var(--color-secondary);
+    padding: 12px 20px;
+    font-size: 14px;
+    font-style: italic;
+    color: var(--color-secondary);
+    text-align: center;
+    max-width: 85vw;
+    min-height: 1.5em;
+    box-shadow: 0 0 30px rgba(255, 107, 107, 0.2);
+}
+
+/* Typewriter cursor */
+.harbinger-text.typing::after {
+    content: '|';
+    animation: cursor-blink 0.6s step-end infinite;
+    margin-left: 2px;
+}
+
+@keyframes cursor-blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* Nervous state - when player is doing well */
+.harbinger-overlay.nervous .harbinger-text {
     color: var(--color-primary);
     border-color: var(--color-primary);
     box-shadow: 0 0 30px var(--color-primary-glow);
 }
 
-.harbinger-message.defeat {
+.harbinger-overlay.nervous .harbinger-image {
+    background-image: url('./resources/images/harbinger_small_confused.png');
+    background-size: contain;
+    background-position: center;
+    opacity: 0.25;
+}
+
+/* Defeat state - calm vindication */
+.harbinger-overlay.defeat .harbinger-text {
     color: var(--color-text-dim);
     border-color: var(--color-text-dim);
+}
+
+.harbinger-overlay.defeat .harbinger-image {
+    opacity: 0.2;
 }
 
 @keyframes harbinger-appear {
     0% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(0.9);
     }
     100% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
     }
 }
 
-/* Tablet and desktop - larger text */
+@keyframes harbinger-float {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-8px);
+    }
+}
+
+/* Tablet and desktop - larger background image */
 @media (min-width: 600px) {
-    .harbinger-message {
-        font-size: 18px;
-        padding: 20px 36px;
+    .harbinger-image {
+        width: 588px;
+        height: 384px;
+        background-size: 588px 384px;
+        bottom: 150px;
+    }
+
+    .harbinger-text {
+        font-size: 16px;
+        padding: 16px 28px;
         max-width: 500px;
     }
 }
 
 @media (min-width: 1024px) {
-    .harbinger-message {
-        font-size: 20px;
-        padding: 24px 44px;
+    .harbinger-image {
+        width: 784px;
+        height: 512px;
+        background-size: 784px 512px;
+        bottom: 180px;
+    }
+
+    .harbinger-text {
+        font-size: 18px;
+        padding: 20px 36px;
         max-width: 600px;
     }
 }

@@ -1,6 +1,11 @@
 <div id="gameScreen">
     <!-- Harbinger's mocking messages -->
-    <div id="harbingerMessage" class="harbinger-message hidden"></div>
+    <div id="harbingerOverlay" class="harbinger-overlay hidden">
+        <div class="harbinger-container">
+            <div class="harbinger-image"></div>
+            <div id="harbingerMessage" class="harbinger-text"></div>
+        </div>
+    </div>
 
     <!-- Compact Header -->
     <header id="gameHeader">
@@ -61,10 +66,6 @@
                 </div>
                 <span id="deckCountLabel">Draw</span>
             </button>
-        </div>
-        <div id="handIndicator">
-            <span class="oldest-label">oldest</span>
-            <span class="newest-label">newest</span>
         </div>
     </div>
 

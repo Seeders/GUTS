@@ -62,11 +62,39 @@ body {
 }
 
 .title-cover {
-    max-width: 90vw;
-    max-height: 60vh;
-    width: auto;
-    height: auto;
-    object-fit: contain;
+    width: 320px;
+    height: 180px;
+    background-image: url('resources/images/cover_itch.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Tablet - 2x scale and switch to full cover */
+@media (min-width: 600px) {
+    .title-cover {
+        width: 640px;
+        height: 360px;
+        background-image: url('resources/images/cover.png');
+    }
+}
+
+/* Desktop - larger cover */
+@media (min-width: 1024px) {
+    .title-cover {
+        width: 800px;
+        height: 450px;
+    }
+}
+
+/* Large desktop */
+@media (min-width: 1440px) {
+    .title-cover {
+        width: 960px;
+        height: 540px;
+    }
 }
 
 .title-tagline {

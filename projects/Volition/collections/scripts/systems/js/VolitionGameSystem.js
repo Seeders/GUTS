@@ -8,7 +8,8 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         'getDeckCount', 'getHandCards', 'getTableauColumns', 'getColumnCards',
         'canPlayToFoundation', 'canPlayToTableau', 'isValidSequence', 'getCardsBelow',
         'getTotalFoundationCards', 'flowCard', 'getCardElement', 'isTutorialActive',
-        'isAwaitingColumnSelection', 'cancelColumnSelection'
+        'isAwaitingColumnSelection', 'cancelColumnSelection',
+        'playVictory', 'playCardShuffle'
     ];
 
     constructor(game) {
@@ -67,6 +68,11 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         this.setupEventListeners();
         this.setupSettingsModal();
         this.checkFirstTimeUser();
+
+        // Play shuffle sound when game starts
+        if (this.call.playCardShuffle) {
+            this.call.playCardShuffle();
+        }
     }
 
     checkFirstTimeUser() {
@@ -205,6 +211,11 @@ class VolitionGameSystem extends GUTS.BaseSystem {
             this.game.gameInstance.state.gameOver = true;
         }
 
+        // Play victory sound
+        if (this.call.playVictory) {
+            this.call.playVictory();
+        }
+
         const overlay = document.getElementById('winOverlay');
         const finalTime = document.getElementById('finalTime');
 
@@ -248,6 +259,10 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         return ranks[card.rank] + suits[card.suit];
     }
 
+    isRedSuit(suit) {
+        return suit === 0 || suit === 1; // hearts (0) or diamonds (1)
+    }
+
     highlightCard(cardEid) {
         // Remove previous highlight
         document.querySelectorAll('.card.hint-highlight').forEach(el => {
@@ -264,26 +279,95 @@ class VolitionGameSystem extends GUTS.BaseSystem {
     }
 
     findValidMove() {
-        // Check hand cards for foundation plays
+        const validMoves = this.findAllValidMoves();
+
+        if (validMoves.length === 0) {
+            return null;
+        }
+
+        // Prioritize moves: foundation plays first, then useful tableau moves
+        // Filter out circular moves (moves that only lead back to original position)
+
+        // 1. Foundation plays from hand - always good
+        const foundationFromHand = validMoves.filter(m => m.type === 'hand-foundation');
+        if (foundationFromHand.length > 0) {
+            return foundationFromHand[0];
+        }
+
+        // 2. Foundation plays from tableau - always good
+        const foundationFromTableau = validMoves.filter(m => m.type === 'tableau-foundation');
+        if (foundationFromTableau.length > 0) {
+            return foundationFromTableau[0];
+        }
+
+        // 3. Hand to tableau plays
+        const handToTableau = validMoves.filter(m => m.type === 'hand-tableau');
+        if (handToTableau.length > 0) {
+            return handToTableau[0];
+        }
+
+        // 4. Tableau-to-tableau moves - check if they're useful
+        const tableauMoves = validMoves.filter(m => m.type === 'tableau-tableau');
+
+        for (const move of tableauMoves) {
+            // Check if this is a useful move (exposed card can be played somewhere)
+            if (move.exposedCard) {
+                const isUseful = this.isExposedCardUseful(move.exposedCard, move.sourceCol, move.targetCol);
+                if (isUseful) {
+                    return move;
+                }
+            }
+        }
+
+        // 5. If only circular/useless moves remain, check if we're truly stuck
+        // If there's only one tableau move and it would just oscillate, it's not useful
+        if (tableauMoves.length === 1) {
+            const move = tableauMoves[0];
+            if (this.isCircularMove(move)) {
+                // This is a dead-end - the only move leads back to where we started
+                return null;
+            }
+        }
+
+        // Return the first tableau move even if not ideal (player might see something we don't)
+        if (tableauMoves.length > 0) {
+            const move = tableauMoves[0];
+            move.message += " (limited options)";
+            return move;
+        }
+
+        return null;
+    }
+
+    /**
+     * Find all valid moves without filtering
+     */
+    findAllValidMoves() {
+        const moves = [];
         const handCards = this.call.getHandCards();
+        const numCols = this.call.getTableauColumns();
+
+        // Check hand cards for foundation plays
         for (const cardEid of handCards) {
             if (this.call.canPlayToFoundation(cardEid)) {
-                return {
+                moves.push({
+                    type: 'hand-foundation',
                     cardEid,
                     message: `${this.getCardName(cardEid)} can go to foundation`
-                };
+                });
             }
         }
 
         // Check hand cards for tableau plays
-        const numCols = this.call.getTableauColumns();
         for (const cardEid of handCards) {
             for (let col = 0; col < numCols; col++) {
                 if (this.call.canPlayToTableau(cardEid, col)) {
-                    return {
+                    moves.push({
+                        type: 'hand-tableau',
                         cardEid,
+                        targetCol: col,
                         message: `${this.getCardName(cardEid)} can play to column ${col + 1}`
-                    };
+                    });
                 }
             }
         }
@@ -295,24 +379,24 @@ class VolitionGameSystem extends GUTS.BaseSystem {
                 if (this.call.canPlayToFoundation(cardEid)) {
                     const cardsBelow = this.call.getCardsBelow(cardEid);
                     if (cardsBelow.length === 1) {
-                        return {
+                        moves.push({
+                            type: 'tableau-foundation',
                             cardEid,
+                            sourceCol: col,
                             message: `${this.getCardName(cardEid)} can go to foundation`
-                        };
+                        });
                     }
                 }
             }
         }
 
         // Check tableau cards for tableau-to-tableau moves
-        // Only count moves that EXPOSE a new card (i.e., there are cards above the moved stack)
         for (let col = 0; col < numCols; col++) {
             const colCards = this.call.getColumnCards(col);
             for (const cardEid of colCards) {
                 const loc = this.game.getComponent(cardEid, 'cardLocation');
 
                 // Skip if this is the top card of the column (index 0)
-                // Moving it wouldn't expose anything new
                 if (loc.index === 0) continue;
 
                 if (this.call.isValidSequence(cardEid)) {
@@ -320,29 +404,134 @@ class VolitionGameSystem extends GUTS.BaseSystem {
                         if (targetCol !== col && this.call.canPlayToTableau(cardEid, targetCol)) {
                             const cardsBelow = this.call.getCardsBelow(cardEid);
                             const stackSize = cardsBelow.length;
-
-                            // Get the card that would be exposed
                             const exposedCard = colCards[loc.index - 1];
                             const exposedName = this.getCardName(exposedCard);
 
+                            let message;
                             if (stackSize === 1) {
-                                return {
-                                    cardEid,
-                                    message: `Move ${this.getCardName(cardEid)} to column ${targetCol + 1} (exposes ${exposedName})`
-                                };
+                                message = `Move ${this.getCardName(cardEid)} to column ${targetCol + 1} (exposes ${exposedName})`;
                             } else {
-                                return {
-                                    cardEid,
-                                    message: `Move ${this.getCardName(cardEid)} + ${stackSize - 1} to column ${targetCol + 1} (exposes ${exposedName})`
-                                };
+                                message = `Move ${this.getCardName(cardEid)} + ${stackSize - 1} to column ${targetCol + 1} (exposes ${exposedName})`;
                             }
+
+                            moves.push({
+                                type: 'tableau-tableau',
+                                cardEid,
+                                sourceCol: col,
+                                targetCol,
+                                exposedCard,
+                                stackSize,
+                                message
+                            });
                         }
                     }
                 }
             }
         }
 
-        return null;
+        return moves;
+    }
+
+    /**
+     * Check if an exposed card would be useful after a move
+     */
+    isExposedCardUseful(exposedCardEid, sourceCol, targetCol) {
+        const card = this.game.getComponent(exposedCardEid, 'card');
+        const numCols = this.call.getTableauColumns();
+
+        // Can it go to foundation?
+        if (this.call.canPlayToFoundation(exposedCardEid)) {
+            return true;
+        }
+
+        // Can it play to any OTHER column (not source, not target)?
+        for (let col = 0; col < numCols; col++) {
+            if (col !== sourceCol && col !== targetCol) {
+                if (this.call.canPlayToTableau(exposedCardEid, col)) {
+                    return true;
+                }
+            }
+        }
+
+        // Check if the exposed card could receive the moved stack back
+        // This would indicate a circular move situation
+        // If the only option is to move back, it's not useful
+
+        // Get target column's current bottom card (before the move)
+        const targetColCards = this.call.getColumnCards(targetCol);
+        if (targetColCards.length > 0) {
+            const targetBottom = targetColCards[targetColCards.length - 1];
+            const targetCard = this.game.getComponent(targetBottom, 'card');
+
+            // Check if exposed card is same color as target bottom
+            // If so, the exposed card can't play to the target column anyway
+            const exposedIsRed = this.isRedSuit(card.suit);
+            const targetIsRed = this.isRedSuit(targetCard.suit);
+
+            if (exposedIsRed === targetIsRed) {
+                // Same color - exposed card has limited options
+                // But might still be useful if it can go elsewhere
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if a move would just lead to an oscillating/circular situation
+     */
+    isCircularMove(move) {
+        if (move.type !== 'tableau-tableau') return false;
+
+        const { cardEid, sourceCol, targetCol, exposedCard } = move;
+        if (!exposedCard) return false;
+
+        const card = this.game.getComponent(cardEid, 'card');
+        const exposed = this.game.getComponent(exposedCard, 'card');
+
+        // After the move, could the exposed card only play back to where we came from?
+        // This happens when:
+        // 1. The moved card was rank N
+        // 2. The exposed card is rank N+1 and opposite color
+        // 3. After moving, the only play for exposed is to receive the moved stack back
+
+        // Check if exposed card would want to receive the moved card back
+        const cardIsRed = this.isRedSuit(card.suit);
+        const exposedIsRed = this.isRedSuit(exposed.suit);
+
+        // For the exposed card to receive the moved card back:
+        // - Must be opposite color (which it is, since they were stacked)
+        // - Must be one rank higher
+        if (cardIsRed !== exposedIsRed && exposed.rank === card.rank + 1) {
+            // The exposed card could receive the moved card back
+            // Check if that's the ONLY option for the exposed card
+
+            const numCols = this.call.getTableauColumns();
+            let exposedHasOtherOptions = false;
+
+            // Can exposed go to foundation?
+            if (this.call.canPlayToFoundation(exposedCard)) {
+                exposedHasOtherOptions = true;
+            }
+
+            // Can exposed play to any other column?
+            for (let col = 0; col < numCols; col++) {
+                if (col !== sourceCol && col !== targetCol) {
+                    if (this.call.canPlayToTableau(exposedCard, col)) {
+                        exposedHasOtherOptions = true;
+                        break;
+                    }
+                }
+            }
+
+            // If the exposed card has no other options, this is a circular move
+            if (!exposedHasOtherOptions) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     hasAnyValidMove() {

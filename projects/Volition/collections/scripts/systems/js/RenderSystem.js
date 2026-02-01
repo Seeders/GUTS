@@ -8,7 +8,7 @@ class RenderSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.cardElements = new Map();
-        this.suitSymbols = ['\u2665', '\u2666', '\u2663', '\u2660']; // hearts, diamonds, clubs, spades
+        this.suitSymbols = ['\u2665', '\u2662', '\u2667', '\u2660']; // hearts, diamonds (outline), clubs (outline), spades
         this.rankNames = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
         this.cardContainer = null;
         this.animationSpeed = 2000; // pixels per second

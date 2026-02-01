@@ -1,3 +1,8 @@
+// Initialize window.GUTS immediately for browser (before class definition)
+if (typeof window !== 'undefined') {
+    if (!window.GUTS) window.GUTS = {};
+}
+
 class BaseSystem {
     // Static property that subclasses can override to define services to register
     // Format: ['methodName1', 'methodName2', ...]
@@ -62,8 +67,14 @@ class BaseSystem {
 
 
 // Assign to global.GUTS for server
-if (typeof global !== 'undefined' && global.GUTS) {
+if (typeof global !== 'undefined') {
+    if (!global.GUTS) global.GUTS = {};
     global.GUTS.BaseSystem = BaseSystem;
+}
+
+// Assign to window.GUTS for browser (runs during module evaluation, before other systems)
+if (typeof window !== 'undefined') {
+    window.GUTS.BaseSystem = BaseSystem;
 }
 
 // ES6 exports for webpack bundling

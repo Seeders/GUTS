@@ -1,0 +1,34 @@
+{
+  "title": "Harbinger Appear",
+  "description": "Eerie sound when the Harbinger appears to mock the player",
+  "audio": {
+    "duration": 0.4,
+    "volume": 0.2,
+    "layers": [
+      {
+        "source": "sine",
+        "frequency": 150,
+        "volume": 0.5,
+        "envelope": { "attack": 0.05, "decay": 0.15, "sustain": 0.3, "release": 0.15 },
+        "pitchEnvelope": { "start": 0.8, "end": 1.0, "time": 0.2 }
+      },
+      {
+        "source": "sawtooth",
+        "frequency": 75,
+        "volume": 0.2,
+        "envelope": { "attack": 0.08, "decay": 0.12, "sustain": 0.2, "release": 0.12 },
+        "filter": { "type": "lowpass", "frequency": 300, "Q": 2.0 }
+      },
+      {
+        "source": "white",
+        "volume": 0.1,
+        "envelope": { "attack": 0.1, "decay": 0.15, "sustain": 0.1, "release": 0.1 },
+        "filter": { "type": "bandpass", "frequency": 800, "Q": 2.0 }
+      }
+    ],
+    "effects": {
+      "reverb": 0.5,
+      "filter": { "type": "lowpass", "frequency": 2000, "Q": 0.8 }
+    }
+  }
+}

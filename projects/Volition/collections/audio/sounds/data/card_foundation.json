@@ -1,0 +1,33 @@
+{
+  "title": "Card Foundation",
+  "description": "Satisfying sound when placing a card on foundation - slightly positive",
+  "audio": {
+    "duration": 0.15,
+    "volume": 0.3,
+    "layers": [
+      {
+        "source": "sine",
+        "frequency": 600,
+        "volume": 0.5,
+        "envelope": { "attack": 0.002, "decay": 0.08, "sustain": 0.1, "release": 0.06 },
+        "pitchEnvelope": { "start": 0.9, "end": 1.0, "time": 0.08 }
+      },
+      {
+        "source": "triangle",
+        "frequency": 1200,
+        "volume": 0.25,
+        "envelope": { "attack": 0.002, "decay": 0.06, "sustain": 0.05, "release": 0.05 }
+      },
+      {
+        "source": "brown",
+        "volume": 0.4,
+        "envelope": { "attack": 0.001, "decay": 0.04, "sustain": 0.0, "release": 0.03 },
+        "filter": { "type": "lowpass", "frequency": 400, "Q": 0.5 }
+      }
+    ],
+    "effects": {
+      "filter": { "type": "lowpass", "frequency": 5000, "Q": 0.5 },
+      "reverb": 0.15
+    }
+  }
+}

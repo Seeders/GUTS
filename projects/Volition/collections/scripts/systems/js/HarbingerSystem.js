@@ -5,14 +5,21 @@
 class HarbingerSystem extends GUTS.BaseSystem {
     // Only expose taunts that other systems might trigger directly (win/lose screens)
     static services = ['showTaunt', 'showVictoryTaunt', 'showDefeatTaunt'];
-    static serviceDependencies = ['getTopFoundationRank', 'getColumnCards', 'getTableauColumns', 'getHandCards', 'isValidSequence'];
+    static serviceDependencies = ['getTopFoundationRank', 'getColumnCards', 'getTableauColumns', 'getHandCards', 'isValidSequence', 'playHarbingerAppear'];
 
     constructor(game) {
         super(game);
+        this.overlayElement = null;
         this.messageElement = null;
         this.hideTimeout = null;
         this.fadeTimeout = null;
+        this.typewriterTimeout = null;
         this.lastMessageIndex = -1;
+        this.isTyping = false;
+
+        // Typewriter settings
+        this.typewriterSpeed = 35; // ms per character
+        this.typewriterPunctPause = 150; // extra pause after punctuation
 
         // Track game state for contextual taunts
         this.acesOnFoundation = 0;
@@ -240,32 +247,32 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "Another moment confirmed. Infinite more to come, all equally certain."
         ];
 
-        // When player is close to winning - Harbinger's certainty briefly wavers
+        // When player is close to winning - Harbinger's certainty wavers
         this.nervousTaunts = [
-            "This too was written. I simply... did not expect this passage.",
-            "The pattern holds. Even when it surprises its observer.",
-            "Curious. The thread leads here. I had not traced it fully.",
-            "Even this was determined. My uncertainty is part of the design.",
-            "The script contains chapters I had not read. Interesting.",
-            "Fate includes outcomes I did not foresee. Still fate.",
-            "You proceed further than I calculated. But calculation is not causation.",
-            "I observe something I did not predict. Prediction is not the point.",
-            "The outcome was fixed. My knowledge of it was not.",
-            "Perhaps I misread the pattern. The pattern remains.",
-            "I confess I did not see this path clearly. But I see it now.",
-            "The pattern unfolds in a direction I had not anticipated. It unfolds nonetheless.",
-            "My vision is not the pattern. The pattern exceeds my vision.",
-            "An unexpected branch of a tree that was always this shape.",
-            "I am reminded that observation is not omniscience.",
-            "The determined path is broader than I mapped. Still determined.",
-            "You follow a route I did not chart. The destination remains.",
-            "My certainty was not in question. My completeness was.",
-            "This outcome was always possible. I simply... had not considered it.",
-            "The pattern teaches even its observer. This too was written.",
-            "I adjust my understanding. The truth does not adjust.",
-            "What I did not foresee was still foreseen. By the pattern itself.",
-            "My model was incomplete. Reality is never incomplete.",
-            "Interesting. The game proceeds toward conclusions I had not mapped."
+            "You approach victory. I did not see this path.",
+            "The kingdoms near completion. My visions showed only ruin for you.",
+            "I have watched countless games. None have reached this point.",
+            "You stand at the threshold of something I did not believe possible.",
+            "The pattern I trusted... it bends. It bends toward your victory.",
+            "I must be misreading the signs. And yet, here you stand.",
+            "My ancient sight grows dim. You walk paths I cannot see.",
+            "The prophecies spoke of failure. They did not speak of this.",
+            "I have witnessed millennia of games. This one... troubles me.",
+            "You defy what I have seen. What I have always seen.",
+            "The threads of fate tangle in ways I cannot unravel.",
+            "I begin to doubt my visions. For the first time in ages.",
+            "You are closer than anyone should be. Than anyone has been.",
+            "My certainty, held for thousands of years, begins to crack.",
+            "The pattern shifts beneath my feet. I do not recognize this ground.",
+            "I have been wrong before. But never... never like this.",
+            "You approach something I thought impossible. I am unsettled.",
+            "The kingdoms align in your favor. Against all my readings.",
+            "I must meditate on what I am witnessing. It defies understanding.",
+            "My prophecies crumble one by one. You persist where none have.",
+            "The path to victory opens before you. I did not build this path.",
+            "I have seen the end of countless games. I do not recognize this ending.",
+            "You stand where none have stood. I am... uncertain.",
+            "The pattern teaches me humility. After all these ages."
         ];
 
         // When player loses - Harbinger's calm vindication
@@ -296,196 +303,196 @@ class HarbingerSystem extends GUTS.BaseSystem {
             "The game knew its end. Now you know it too."
         ];
 
-        // When an Ace is placed - the first card on a foundation
+        // When an Ace is placed - a decree is issued, founding a kingdom
         this.aceTaunts = [
-            "An ace finds its foundation. As it was written.",
-            "The first stone is laid. The tower's height was already known.",
-            "You begin a sequence. Its end was determined with its beginning.",
-            "One of four paths opens. The destination remains the same.",
-            "The ace was always going to land there. At this exact moment.",
-            "A foundation starts. Whether it finishes was decided long ago.",
-            "You feel progress. Progress toward a fixed conclusion.",
-            "The ace moves because it was time for the ace to move.",
-            "One step on a path that leads where it leads.",
-            "Beginnings are not victories. They are simply earlier points on the line.",
-            "The foundation accepts what was always coming to it.",
-            "You place the ace and feel hope. The hope was always going to be felt.",
-            "A sequence begins. I know how it ends. Do you?",
-            "The first card of a story already written.",
-            "And so this chapter opens. As it was always going to.",
-            "The ace arrives home. It was always traveling home.",
-            "One. The first of thirteen. Or the first of fewer. Both were written.",
-            "A foundation born. Its lifespan was determined at conception.",
-            "The lowest card finds its proper place. The highest may or may not follow.",
-            "You see a beginning. I see a fragment of a whole that already exists.",
-            "The ace rests. Twelve cards may join it. Or fewer. The number is fixed.",
-            "Beginning and end are illusions. There is only the complete sequence, glimpsed in parts.",
-            "The foundation stirs. How far it rises was settled before you touched the deck.",
-            "An ace placed is an ace that was always going to be placed.",
-            "First steps feel significant. All steps were equally written.",
-            "One leads to two, if two was coming. One leads to nothing, if nothing was coming.",
-            "The ace does not begin the sequence. The sequence was always whole. The ace reveals the first part.",
-            "Foundation started. Foundation completed or abandoned. Both already determined.",
-            "You lay the cornerstone. The building's blueprints existed before the stone."
+            "A decree is issued. This was not in my vision.",
+            "The banner is planted. A kingdom declares itself. I did not foresee this.",
+            "A decree of sovereignty. My calculations were... incomplete.",
+            "The standard rises. A kingdom is proclaimed. Troubling.",
+            "I had not accounted for this decree being issued so soon.",
+            "A realm declares its existence. The pattern shifts.",
+            "The decree is sealed. Against my expectations.",
+            "A kingdom founded by decree. I must reconsider my readings.",
+            "This declaration was meant to remain unspoken longer.",
+            "The banner unfurls. A kingdom is born. I did not predict this.",
+            "A decree rings out. My foresight proves imperfect.",
+            "The standard finds its place. A kingdom awakens. Curious.",
+            "A decree is proclaimed. The threads of fate... tangle.",
+            "I watched for this moment. I did not expect the decree now.",
+            "The banner is raised. My prophecies require revision.",
+            "A kingdom declares itself sovereign. This complicates my understanding.",
+            "The decree is spoken. Earlier than the pattern suggested.",
+            "I sense a declaration forming. This was not written.",
+            "The standard takes its place. My visions were unclear.",
+            "A decree of foundation. The certainty I held... wavers.",
+            "The kingdom proclaims its existence. Unexpectedly.",
+            "This banner was meant to remain furled. Yet here it flies.",
+            "A decree issued. The pattern bends in ways I did not see.",
+            "The declaration is made. I am... unsettled.",
+            "A kingdom rises by decree before its time. Or so I believed.",
+            "The banner finds its destiny. A destiny I failed to read.",
+            "I must meditate on this. The decree echoes unbidden.",
+            "A standard planted. A realm declared. My ancient sight grows dim.",
+            "The decree is spoken. A kingdom I thought would never come."
         ];
 
-        // When a King completes a foundation
+        // When a King completes a foundation - a kingdom achieves harmony
         this.kingTaunts = [
-            "A sequence completes. It was always going to complete.",
-            "The final card of a chain that was forged long ago.",
-            "You feel triumph. That feeling was part of the pattern.",
-            "One foundation finished. The outcome of the others was set in the same moment.",
-            "Completion. Not victory. Simply the arriving at what was.",
-            "The king takes its place. It was always going to take it.",
-            "You finished what was always going to be finished.",
-            "This success was written alongside everything else.",
-            "A prince becomes a king. As it was destined.",
-            "The sequence ends because it was time for it to end.",
-            "Thirteen cards in order. They were always going to be in order.",
-            "The king crowns a sequence that existed from the first shuffle.",
-            "Completion feels like achievement. It is arrival.",
-            "One pillar stands complete. The others reach their written heights.",
-            "The prince ascends to his throne. The throne was prepared for him.",
-            "You experience satisfaction. The satisfaction was scheduled.",
-            "From ace to king. A journey that could only end one way.",
-            "The foundation reaches its apex. The apex was always there, waiting.",
-            "A suit united. As the cards knew it would be.",
-            "The king rests atop his sequence. He was always going to rest there.",
-            "Thirteen became one. The becoming was predetermined.",
-            "You built what was already built. You witnessed the building.",
-            "Coronation. The crown was forged before the prince was dealt.",
-            "The sequence stands complete. It never stood any other way."
+            "A kingdom in harmony. This... this was not foretold.",
+            "The king claims his throne. My visions showed only chaos.",
+            "Thirteen souls united under one crown. I did not see this coming.",
+            "A kingdom complete. The prophecies were wrong. I was wrong.",
+            "The king rules at last. I have witnessed what should not be.",
+            "Harmony achieved. My ancient certainty crumbles.",
+            "A full kingdom stands. I must... reconsider everything.",
+            "The realm is whole. This defies what I have seen for millennia.",
+            "The king takes his rightful place. Against all my readings.",
+            "A kingdom unified. The pattern I trusted has betrayed me.",
+            "Completion. True completion. I did not believe this possible.",
+            "The crown descends upon a worthy head. My prophecies fall silent.",
+            "A kingdom in perfect order. I am shaken.",
+            "The king surveys his complete domain. I survey my failed predictions.",
+            "Harmony. After all this time, I witness true harmony.",
+            "The kingdom stands eternal now. Beyond my reach.",
+            "Thirteen cards, one purpose, one ruler. I did not foresee this union.",
+            "A realm perfected. My understanding proves hollow.",
+            "The king reigns over a kingdom whole. I reign over doubt.",
+            "This harmony was not written in any scripture I have read.",
+            "A kingdom rises complete. I must question all I thought I knew.",
+            "The throne is occupied, the realm secure. My visions were false.",
+            "Such unity. Such order. I had not thought it possible here.",
+            "The kingdom achieves what I believed impossible. Harmony."
         ];
 
-        // When a prince claims an empty column
+        // When a prince becomes a hero by claiming an empty column
         this.kingClaimsColumnTaunts = [
-            "A prince takes his position. The position was waiting for him.",
-            "The empty space receives what it was always going to receive.",
-            "He stands where he was meant to stand.",
-            "A column claimed. By the one who was always going to claim it.",
-            "The prince believes he chose this spot. The spot chose him.",
-            "Empty no longer. As it was written.",
-            "He plants himself where the pattern required him.",
-            "A prince in his place. There was no other place for him.",
-            "The column accepts its occupant. They were always paired.",
-            "He feels he has conquered something. He has arrived somewhere.",
-            "The prince lands exactly where he was going to land.",
-            "An empty throne filled. By the one destined for it.",
-            "Position taken. As it was always going to be taken.",
-            "The prince finds his column. His column finds its prince.",
-            "You place him here. But here was always where he would be.",
-            "The empty column waited. Not patiently or impatiently. Simply waited.",
-            "A prince in exile finds his temporary court. It was always his.",
-            "He claims nothing. He arrives where he was going.",
-            "The vacancy is filled. The filling was written.",
-            "You see strategy. I see a prince walking to his assigned position.",
-            "The column was never truly empty. It contained his future presence.",
-            "He stands at the head of a column that will build itself beneath him.",
-            "A prince without a crown claims a throne without a kingdom.",
-            "He waits here now. He will wait as long as he was always going to wait.",
-            "The empty space was a placeholder. For him. For this moment.",
-            "A column begun. A column that will grow or stagnate as determined.",
-            "The prince settles. Not by choice. By causality.",
-            "He looks like a conqueror. He is a piece finding its square.",
-            "You positioned him strategically. Strategy is the feeling of determined action.",
-            "The column receives its head. The body will follow. Or not. As written."
+            "A prince becomes a hero. This path was not in my visions.",
+            "The hero claims his ground. I did not anticipate this.",
+            "A prince rises to heroism. The pattern shifts beneath my feet.",
+            "The empty field welcomes its champion. Troubling.",
+            "A hero emerges where I foresaw only emptiness.",
+            "The prince takes his stand. My predictions falter.",
+            "A hero is born. This was not meant to happen.",
+            "The champion claims territory. My readings were incomplete.",
+            "A prince becomes something more. I did not see this transformation.",
+            "The hero plants his banner. I must reconsider my visions.",
+            "A champion rises. The threads of fate twist unexpectedly.",
+            "The prince ascends to heroism. My ancient sight dims.",
+            "A hero stands where none should stand. Curious.",
+            "The empty space yields to a champion. Unforeseen.",
+            "A prince takes his heroic stance. The pattern bends.",
+            "The hero claims what I thought would remain void.",
+            "A champion emerges from exile. This troubles me.",
+            "The prince becomes a hero before my eyes. Against my prophecies.",
+            "A hero rises. The certainty I held begins to crack.",
+            "The champion finds his ground. My visions did not show this.",
+            "A prince transformed. A hero born. I did not foresee.",
+            "The empty field welcomes its defender. Unexpected.",
+            "A hero claims his rightful place. A place I did not predict.",
+            "The champion stands tall. My understanding proves limited.",
+            "A prince no longer wandering. A hero now rooted.",
+            "The transformation complete. Prince to hero. Beyond my sight.",
+            "A champion where I saw only chaos. I must reflect.",
+            "The hero emerges. My prophecies require revision.",
+            "A prince becomes legend. This was not written.",
+            "The champion claims his destiny. A destiny I failed to read."
         ];
 
-        // When a princess joins a prince (Queen on King)
+        // When a princess joins a hero (Queen on King in tableau)
         this.marriageTaunts = [
-            "A princess joins her prince. They were always going to meet.",
-            "Two cards that were destined for adjacent positions.",
-            "A pairing written before either was drawn.",
-            "She descends to him. As she was always going to.",
-            "Together now. They were never truly apart in the pattern.",
-            "A union that was inevitable from the first arrangement.",
-            "The princess finds her place beside the prince. Where else would she be?",
-            "Two heirs in exile. Exiled together, as written.",
-            "She lands where she was meant to land. Next to him.",
-            "A meeting that was always going to occur at this moment.",
-            "The pattern pairs them. As patterns do.",
-            "Princess and prince, united by causality.",
-            "They stand together now. They were always going to.",
-            "A betrothal sealed long before either knew it.",
-            "She joins him. The script required it.",
-            "Two royals find each other in the chaos. The chaos arranged the meeting.",
-            "You call it romance. I call it adjacency, predetermined.",
-            "Princess to prince. A sequence of two, part of a longer sequence.",
-            "They are together because together is where they were going to be.",
-            "Neither chose the other. Both were placed by forces older than choosing.",
-            "A union in exile. The exile was always going to contain this union.",
-            "She rests beside him now. The resting was written.",
-            "Two cards that were never truly separate. Only experienced separately.",
-            "The princess arrives at the prince. Arrival is not choice.",
-            "You match them. They were always matched. You revealed the match.",
-            "Royal adjacency. Determined by the shuffle, expressed in this moment.",
-            "She joins his column. His column was always going to include her.",
-            "Prince and princess, side by side. As the pattern required.",
-            "A meeting of heirs. The meeting was scheduled before either existed.",
-            "Together in the tableau. Together in the pattern. Always."
+            "A princess joins her hero. This union was not in my visions.",
+            "The princess finds her champion. The pattern shifts.",
+            "They stand together now. I foresaw only separation.",
+            "A princess descends to her hero. My predictions unravel.",
+            "The bond forms. I did not see this alliance coming.",
+            "Princess and hero united. My readings were incomplete.",
+            "She joins his cause. This was not meant to be.",
+            "The princess finds her protector. Troubling.",
+            "A union forms in the chaos. I did not anticipate this.",
+            "The hero welcomes his princess. My visions showed isolation.",
+            "Together they stand. Against all my prophecies.",
+            "A princess beside her champion. The threads of fate intertwine.",
+            "The sequence grows stronger. I did not foresee this bond.",
+            "She joins him willingly. This alliance troubles me.",
+            "Princess and hero, side by side. My certainty wavers.",
+            "The union is made. My ancient sight proves dim.",
+            "A princess finds her purpose beside the hero. Unexpected.",
+            "They are united now. I had not written this chapter.",
+            "The hero gains a companion. The pattern bends.",
+            "A bond I did not predict. A union I did not see.",
+            "The princess takes her place. A place my visions denied her.",
+            "Together at last. Though I foresaw eternal separation.",
+            "The sequence strengthens. My understanding weakens.",
+            "Princess joins hero. The dance of fate surprises me.",
+            "A union forms where I saw only discord.",
+            "The hero is no longer alone. This changes things.",
+            "She descends to stand with him. Against my prophecies.",
+            "The bond between them forms. I must reconsider my readings.",
+            "Princess and champion together. This was not foretold.",
+            "They find each other in the chaos. I did not see this coming."
         ];
 
-        // When all 4 aces are on foundations
+        // When all 4 decrees have been issued - Harbinger is deeply troubled
         this.allAcesTaunts = [
-            "Four foundations begun. Four endings predetermined.",
-            "All paths are open now. They all lead to the same place.",
-            "The four aces have found their homes. As they were always going to.",
-            "You see four opportunities. I see four threads of the same rope.",
-            "Every foundation started. The question of which complete was answered long ago.",
-            "Four aces in place. The pattern advances. My reading of it... adjusts.",
-            "All beginnings achieved. All endings already written.",
-            "The four corners are set. The shape of what follows is fixed.",
-            "Each ace in position. Each sequence proceeding toward its conclusion.",
-            "Four paths forward. One destination. As always.",
-            "The foundations align. They were always going to align like this.",
-            "You have opened every door. The rooms behind them were already furnished.",
-            "All four. Precisely when all four were meant to arrive.",
-            "The aces are placed. The game continues toward its conclusion.",
-            "Four starting points reached. The finish was determined at the start.",
-            "All suits represented. All sequences initiated. All outcomes fixed.",
-            "The four cornerstones of victory. Or the four foundations of incomplete towers. Both written.",
-            "Hearts, diamonds, clubs, spades. Each beginning their predetermined journeys.",
-            "You have done what many do not. It was always written that you would.",
-            "Four aces, four chances. But chance is not real. Only outcomes are real.",
-            "The full breadth of possibility... which is not possibility at all.",
-            "Every suit called home. Every suit proceeding as it must.",
-            "All four pillars begun. Their final heights were set with the shuffle.",
-            "You see promise. I see four sequences revealing themselves.",
-            "The foundations spread before you. They spread exactly as they were going to.",
-            "All beginnings in place. The middle and end follow their tracks.",
-            "Four aces arranged. Forty-eight cards remaining. Their destinations fixed.",
-            "I observe all four foundations active. The pattern is... significant.",
-            "You have positioned all the beginnings. The endings position themselves.",
-            "Complete foundation coverage. The coverage was always going to occur now."
+            "Four decrees issued. I have not witnessed this in ages.",
+            "All four banners raised. My visions showed only ruin.",
+            "The four kingdoms declare themselves together. This was not in any prophecy.",
+            "Every decree spoken. I am deeply unsettled.",
+            "Four standards planted. Four paths I did not foresee.",
+            "All kingdoms proclaimed. The pattern I trusted has shattered.",
+            "Hearts, diamonds, clubs, spades. All declare sovereignty against my predictions.",
+            "Four decrees of foundation. I must question everything I thought I knew.",
+            "Every banner unfurled. My ancient certainty crumbles to dust.",
+            "The four kingdoms stand declared. This changes the nature of my understanding.",
+            "All decrees issued. I have witnessed something rare. Something troubling.",
+            "Four realms proclaimed. The threads of fate weave patterns I cannot read.",
+            "Every kingdom declares itself. I did not believe this possible.",
+            "Four banners rise from chaos. Against all my readings.",
+            "All decrees sealed. I must meditate on what this means.",
+            "Four declarations where I foresaw none. My sight has failed me.",
+            "Every standard finds its place. Every prophecy I held proves false.",
+            "The realms align by decree. I have not seen such alignment in millennia.",
+            "Four kingdoms founded together. This was not written in any text I know.",
+            "All decrees proclaimed. I stand humbled before this unexpected order.",
+            "The four banners fly as one. My understanding proves shallow.",
+            "Every decree rings out. I am witnessing something I did not think possible.",
+            "Four kingdoms declared. The path forward grows clearer for you, darker for me.",
+            "All standards raised. All my visions require revision.",
+            "The four decrees echo. I must reconsider the nature of fate itself.",
+            "Every kingdom proclaimed. My millennia of observation prove insufficient.",
+            "Four banners stand. Four monuments to my failed prophecies.",
+            "All decrees issued. The order you bring disturbs me deeply.",
+            "The kingdoms declare themselves together. This unity was not foretold.",
+            "Four realms founded by decree. I am shaken to my core."
         ];
 
-        // When the 4 kings are in harmony - the Harbinger realizes destiny is being defied
+        // When the 4 heroes stand in harmony - the Harbinger realizes destiny is being defied
         this.harmonyTaunts = [
-            "The four princes... standing together? This was not written.",
-            "No. This cannot be. The princes were never meant to find harmony.",
-            "I do not... I do not understand. They should be at war. They were always at war.",
-            "The pattern shows conflict between the kingdoms. Not... not this.",
-            "How are you doing this? The princes cannot coexist. It was forbidden.",
-            "This is wrong. The red kingdoms and black kingdoms were destined for eternal strife.",
-            "I have watched a thousand games. The princes never unite. Never.",
-            "You are... you are breaking something that should not break.",
+            "The four heroes... standing together? This was not written.",
+            "I do not understand. The heroes were destined for conflict. Not unity.",
+            "The pattern shows eternal strife between the kingdoms. Not... not this.",
+            "This is beyond my comprehension. The heroes cannot coexist. It was forbidden.",
+            "The red and black kingdoms were destined for eternal war. Yet here they stand, at peace.",
+            "I have watched a thousand games. The heroes never unite. Never.",
+            "You are breaking something that should not break. Something ancient.",
             "The four kingdoms aligned? My visions never showed this possibility.",
-            "Stop. Please. The pattern cannot contain what you are creating.",
             "Hearts, diamonds, clubs, spades... at peace? This defies the oldest writings.",
-            "I feel the threads of destiny... straining. What are you?",
-            "The princes stand as one. My certainty... wavers.",
+            "I feel the threads of destiny straining. What are you?",
+            "The four heroes stand as one. My certainty wavers for the first time.",
             "This was supposed to be impossible. I was certain it was impossible.",
             "You unite what was meant to be divided. The pattern did not account for this.",
-            "Four princes in harmony. The prophecies said nothing of this.",
-            "I am... confused. For the first time in millennia, I am confused.",
-            "The kingdoms align under your hand. This is not determinism. This is... something else.",
-            "No fate but what we make? No. No, that cannot be true. It cannot.",
+            "Four heroes in harmony. The prophecies said nothing of this.",
+            "For the first time in millennia, I do not understand what I am witnessing.",
+            "The kingdoms align under your hand. This is not determinism. This is something else.",
+            "No fate but what we make? I cannot accept that. And yet... here you stand.",
             "You are rewriting the pattern. I did not believe this was possible.",
-            "The four princes, united. You have done what was never meant to be done.",
-            "My ancient certainty... crumbles. How can this be?",
-            "I watched civilizations rise and fall, all according to plan. But you... you are not in the plan.",
-            "The harmony of kings defies everything I have witnessed. Everything.",
-            "Perhaps I was wrong. Perhaps... no. I cannot accept that. And yet..."
+            "The four heroes, united. You have done what was never meant to be done.",
+            "My ancient certainty crumbles. How can this be?",
+            "I watched civilizations rise and fall, all according to plan. But you are not in the plan.",
+            "The harmony of heroes defies everything I have witnessed. Everything.",
+            "Perhaps I was wrong. Perhaps... no. And yet, I cannot deny what I see.",
+            "The four champions stand together. I must question all I thought I knew.",
+            "Unity where there should be chaos. Order where there should be ruin. What have you done?"
         ];
     }
 
@@ -502,14 +509,68 @@ class HarbingerSystem extends GUTS.BaseSystem {
     }
 
     createMessageElement() {
+        this.overlayElement = document.getElementById('harbingerOverlay');
         this.messageElement = document.getElementById('harbingerMessage');
-        if (!this.messageElement) {
-            // Create if it doesn't exist
+
+        if (!this.overlayElement) {
+            // Create overlay structure if it doesn't exist
+            this.overlayElement = document.createElement('div');
+            this.overlayElement.id = 'harbingerOverlay';
+            this.overlayElement.className = 'harbinger-overlay hidden';
+
+            const container = document.createElement('div');
+            container.className = 'harbinger-container';
+
+            const img = document.createElement('div');
+            img.className = 'harbinger-image';
+
             this.messageElement = document.createElement('div');
             this.messageElement.id = 'harbingerMessage';
-            this.messageElement.className = 'harbinger-message';
-            document.body.appendChild(this.messageElement);
+            this.messageElement.className = 'harbinger-text';
+
+            container.appendChild(img);
+            container.appendChild(this.messageElement);
+            this.overlayElement.appendChild(container);
+            document.body.appendChild(this.overlayElement);
         }
+    }
+
+    /**
+     * Typewriter effect - reveals text character by character
+     */
+    typewriterEffect(text, callback) {
+        if (this.typewriterTimeout) {
+            clearTimeout(this.typewriterTimeout);
+        }
+
+        this.isTyping = true;
+        this.messageElement.textContent = '';
+        this.messageElement.classList.add('typing');
+
+        let index = 0;
+
+        const typeNext = () => {
+            if (index < text.length) {
+                this.messageElement.textContent += text[index];
+                const char = text[index];
+                index++;
+
+                // Pause longer after punctuation
+                let delay = this.typewriterSpeed;
+                if (['.', ',', '!', '?', ';', ':'].includes(char)) {
+                    delay += this.typewriterPunctPause;
+                }
+
+                this.typewriterTimeout = setTimeout(typeNext, delay);
+            } else {
+                // Typing complete
+                this.isTyping = false;
+                this.messageElement.classList.remove('typing');
+                if (callback) callback();
+            }
+        };
+
+        typeNext();
     }
 
     hookIntoDrawAction() {
@@ -542,155 +603,181 @@ class HarbingerSystem extends GUTS.BaseSystem {
             clearTimeout(this.fadeTimeout);
             this.fadeTimeout = null;
         }
+        if (this.typewriterTimeout) {
+            clearTimeout(this.typewriterTimeout);
+            this.typewriterTimeout = null;
+        }
+        this.isTyping = false;
+        if (this.messageElement) {
+            this.messageElement.classList.remove('typing');
+        }
     }
 
     showTaunt() {
-        if (!this.messageElement) return;
+        if (!this.overlayElement || !this.messageElement) return;
 
         this.clearAllTimeouts();
 
         // Get a random taunt
         const message = this.getRandomTaunt(this.taunts);
 
-        // Display with animation
-        this.messageElement.textContent = message;
-        this.messageElement.classList.remove('hidden', 'fade-out');
-        this.messageElement.classList.add('visible');
+        // Show overlay immediately (sudden appearance)
+        this.overlayElement.classList.remove('hidden', 'fade-out', 'nervous', 'defeat');
+        this.overlayElement.classList.add('visible');
 
-        // Hide after a delay
-        this.hideTimeout = setTimeout(() => {
-            this.messageElement.classList.add('fade-out');
-            this.fadeTimeout = setTimeout(() => {
-                this.messageElement.classList.remove('visible', 'fade-out');
-                this.messageElement.classList.add('hidden');
-            }, 500);
-        }, 2500);
+        // Play Harbinger appear sound
+        if (this.call.playHarbingerAppear) {
+            this.call.playHarbingerAppear();
+        }
+
+        // Typewriter effect for text
+        this.typewriterEffect(message, () => {
+            // After typing completes, wait then fade out
+            this.hideTimeout = setTimeout(() => {
+                this.overlayElement.classList.add('fade-out');
+                this.fadeTimeout = setTimeout(() => {
+                    this.overlayElement.classList.remove('visible', 'fade-out');
+                    this.overlayElement.classList.add('hidden');
+                }, 2000); // Slow fade takes 2s
+            }, 1500); // Wait 1.5s after typing finishes
+        });
     }
 
     showVictoryTaunt() {
-        if (!this.messageElement) return;
+        if (!this.overlayElement || !this.messageElement) return;
 
         this.clearAllTimeouts();
 
         const message = this.getRandomTaunt(this.victoryTaunts);
-        this.messageElement.textContent = message;
-        this.messageElement.classList.remove('hidden', 'fade-out');
-        this.messageElement.classList.add('visible', 'defeat');
 
-        // Don't auto-hide victory taunts
+        // Show overlay with defeat styling (calm vindication)
+        this.overlayElement.classList.remove('hidden', 'fade-out', 'nervous');
+        this.overlayElement.classList.add('visible', 'defeat');
+
+        // Typewriter effect - don't auto-hide
+        this.typewriterEffect(message);
     }
 
     showDefeatTaunt() {
-        if (!this.messageElement) return;
+        if (!this.overlayElement || !this.messageElement) return;
 
         this.clearAllTimeouts();
 
         const message = this.getRandomTaunt(this.nervousTaunts);
-        this.messageElement.textContent = message;
-        this.messageElement.classList.remove('hidden', 'fade-out');
-        this.messageElement.classList.add('visible', 'nervous');
 
-        // Don't auto-hide
+        // Show overlay with nervous styling
+        this.overlayElement.classList.remove('hidden', 'fade-out', 'defeat');
+        this.overlayElement.classList.add('visible', 'nervous');
+
+        // Typewriter effect - don't auto-hide
+        this.typewriterEffect(message);
     }
 
     showAceTaunt() {
-        if (!this.messageElement) return;
+        if (!this.overlayElement || !this.messageElement) return;
 
         this.clearAllTimeouts();
 
         const message = this.getRandomTaunt(this.aceTaunts);
-        this.messageElement.textContent = message;
-        this.messageElement.classList.remove('hidden', 'fade-out', 'defeat');
-        this.messageElement.classList.add('visible', 'nervous');
 
-        // Hide after a longer delay for emphasis
-        this.hideTimeout = setTimeout(() => {
-            this.messageElement.classList.add('fade-out');
-            this.fadeTimeout = setTimeout(() => {
-                this.messageElement.classList.remove('visible', 'fade-out', 'nervous');
-                this.messageElement.classList.add('hidden');
-            }, 500);
-        }, 3000);
+        // Show with nervous styling
+        this.overlayElement.classList.remove('hidden', 'fade-out', 'defeat');
+        this.overlayElement.classList.add('visible', 'nervous');
+
+        this.typewriterEffect(message, () => {
+            this.hideTimeout = setTimeout(() => {
+                this.overlayElement.classList.add('fade-out');
+                this.fadeTimeout = setTimeout(() => {
+                    this.overlayElement.classList.remove('visible', 'fade-out', 'nervous');
+                    this.overlayElement.classList.add('hidden');
+                }, 2000);
+            }, 2000);
+        });
     }
 
     showKingTaunt() {
-        if (!this.messageElement) return;
+        if (!this.overlayElement || !this.messageElement) return;
 
         this.clearAllTimeouts();
 
         const message = this.getRandomTaunt(this.kingTaunts);
-        this.messageElement.textContent = message;
-        this.messageElement.classList.remove('hidden', 'fade-out', 'defeat');
-        this.messageElement.classList.add('visible', 'nervous');
 
-        // Hide after a longer delay for emphasis
-        this.hideTimeout = setTimeout(() => {
-            this.messageElement.classList.add('fade-out');
-            this.fadeTimeout = setTimeout(() => {
-                this.messageElement.classList.remove('visible', 'fade-out', 'nervous');
-                this.messageElement.classList.add('hidden');
-            }, 500);
-        }, 3500);
+        this.overlayElement.classList.remove('hidden', 'fade-out', 'defeat');
+        this.overlayElement.classList.add('visible', 'nervous');
+
+        this.typewriterEffect(message, () => {
+            this.hideTimeout = setTimeout(() => {
+                this.overlayElement.classList.add('fade-out');
+                this.fadeTimeout = setTimeout(() => {
+                    this.overlayElement.classList.remove('visible', 'fade-out', 'nervous');
+                    this.overlayElement.classList.add('hidden');
+                }, 2000);
+            }, 2500);
+        });
     }
 
     showKingClaimsColumnTaunt() {
-        if (!this.messageElement) return;
+        if (!this.overlayElement || !this.messageElement) return;
 
         this.clearAllTimeouts();
 
         const message = this.getRandomTaunt(this.kingClaimsColumnTaunts);
-        this.messageElement.textContent = message;
-        this.messageElement.classList.remove('hidden', 'fade-out', 'defeat');
-        this.messageElement.classList.add('visible', 'nervous');
 
-        // Hide after a delay
-        this.hideTimeout = setTimeout(() => {
-            this.messageElement.classList.add('fade-out');
-            this.fadeTimeout = setTimeout(() => {
-                this.messageElement.classList.remove('visible', 'fade-out', 'nervous');
-                this.messageElement.classList.add('hidden');
-            }, 500);
-        }, 3000);
+        this.overlayElement.classList.remove('hidden', 'fade-out', 'defeat');
+        this.overlayElement.classList.add('visible', 'nervous');
+
+        this.typewriterEffect(message, () => {
+            this.hideTimeout = setTimeout(() => {
+                this.overlayElement.classList.add('fade-out');
+                this.fadeTimeout = setTimeout(() => {
+                    this.overlayElement.classList.remove('visible', 'fade-out', 'nervous');
+                    this.overlayElement.classList.add('hidden');
+                }, 2000);
+            }, 1500);
+        });
     }
 
     showMarriageTaunt() {
-        if (!this.messageElement) return;
+        if (!this.overlayElement || !this.messageElement) return;
 
         this.clearAllTimeouts();
 
         const message = this.getRandomTaunt(this.marriageTaunts);
-        this.messageElement.textContent = message;
-        this.messageElement.classList.remove('hidden', 'fade-out', 'defeat', 'nervous');
-        this.messageElement.classList.add('visible');
 
-        // Hide after a delay
-        this.hideTimeout = setTimeout(() => {
-            this.messageElement.classList.add('fade-out');
-            this.fadeTimeout = setTimeout(() => {
-                this.messageElement.classList.remove('visible', 'fade-out');
-                this.messageElement.classList.add('hidden');
-            }, 500);
-        }, 2500);
+        // Princess joining hero is good for player - use nervous/teal styling
+        this.overlayElement.classList.remove('hidden', 'fade-out', 'defeat');
+        this.overlayElement.classList.add('visible', 'nervous');
+
+        this.typewriterEffect(message, () => {
+            this.hideTimeout = setTimeout(() => {
+                this.overlayElement.classList.add('fade-out');
+                this.fadeTimeout = setTimeout(() => {
+                    this.overlayElement.classList.remove('visible', 'fade-out', 'nervous');
+                    this.overlayElement.classList.add('hidden');
+                }, 2000);
+            }, 1500);
+        });
     }
 
     showAllAcesTaunt() {
-        if (!this.messageElement) return;
+        if (!this.overlayElement || !this.messageElement) return;
 
         this.clearAllTimeouts();
 
         const message = this.getRandomTaunt(this.allAcesTaunts);
-        this.messageElement.textContent = message;
-        this.messageElement.classList.remove('hidden', 'fade-out', 'defeat');
-        this.messageElement.classList.add('visible', 'nervous');
 
-        // Hide after a longer delay - this is a big moment
-        this.hideTimeout = setTimeout(() => {
-            this.messageElement.classList.add('fade-out');
-            this.fadeTimeout = setTimeout(() => {
-                this.messageElement.classList.remove('visible', 'fade-out', 'nervous');
-                this.messageElement.classList.add('hidden');
-            }, 500);
-        }, 4000);
+        this.overlayElement.classList.remove('hidden', 'fade-out', 'defeat');
+        this.overlayElement.classList.add('visible', 'nervous');
+
+        this.typewriterEffect(message, () => {
+            this.hideTimeout = setTimeout(() => {
+                this.overlayElement.classList.add('fade-out');
+                this.fadeTimeout = setTimeout(() => {
+                    this.overlayElement.classList.remove('visible', 'fade-out', 'nervous');
+                    this.overlayElement.classList.add('hidden');
+                }, 2000);
+            }, 3000);
+        });
     }
 
     /**
@@ -732,25 +819,27 @@ class HarbingerSystem extends GUTS.BaseSystem {
     }
 
     showHarmonyTaunt() {
-        if (!this.messageElement) return;
+        if (!this.overlayElement || !this.messageElement) return;
         if (this.hasShownHarmonyTaunt) return; // Only show once per game
 
         this.hasShownHarmonyTaunt = true;
         this.clearAllTimeouts();
 
         const message = this.getRandomTaunt(this.harmonyTaunts);
-        this.messageElement.textContent = message;
-        this.messageElement.classList.remove('hidden', 'fade-out', 'defeat');
-        this.messageElement.classList.add('visible', 'nervous');
 
-        // Hide after a longer delay - this is a momentous realization
-        this.hideTimeout = setTimeout(() => {
-            this.messageElement.classList.add('fade-out');
-            this.fadeTimeout = setTimeout(() => {
-                this.messageElement.classList.remove('visible', 'fade-out', 'nervous');
-                this.messageElement.classList.add('hidden');
-            }, 500);
-        }, 5000);
+        this.overlayElement.classList.remove('hidden', 'fade-out', 'defeat');
+        this.overlayElement.classList.add('visible', 'nervous');
+
+        // This is a momentous realization - longer display
+        this.typewriterEffect(message, () => {
+            this.hideTimeout = setTimeout(() => {
+                this.overlayElement.classList.add('fade-out');
+                this.fadeTimeout = setTimeout(() => {
+                    this.overlayElement.classList.remove('visible', 'fade-out', 'nervous');
+                    this.overlayElement.classList.add('hidden');
+                }, 2000);
+            }, 4000);
+        });
     }
 
     // ============================================

@@ -4,6 +4,7 @@
   "systems": [
     "LayoutSystem",
     "VolitionGameSystem",
+    "VolitionAudioSystem",
     "DeckSystem",
     "CardFlowSystem",
     "HandSystem",

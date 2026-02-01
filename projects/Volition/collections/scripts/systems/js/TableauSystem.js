@@ -292,6 +292,22 @@ class TableauSystem extends GUTS.BaseSystem {
         // Re-index source column
         this.reindexColumn(sourceColumn);
 
+        // Trigger event for other systems to react to (e.g., king claiming empty column)
+        const card = this.game.getComponent(cardEid, 'card');
+        const wasEmptyColumn = targetCards.length === 0;
+        const bottomCardRank = targetCards.length > 0
+            ? this.game.getComponent(targetCards[targetCards.length - 1], 'card').rank
+            : null;
+
+        this.game.triggerEvent('onCardPlayedToTableau', {
+            cardEid,
+            rank: card.rank,
+            suit: card.suit,
+            columnIndex: targetColumn,
+            wasEmptyColumn,
+            bottomCardRank
+        });
+
         return true;
     }
 

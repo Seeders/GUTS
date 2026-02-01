@@ -1,0 +1,38 @@
+{
+  "title": "Victory",
+  "description": "Triumphant sound when winning the game",
+  "audio": {
+    "duration": 0.5,
+    "volume": 0.35,
+    "layers": [
+      {
+        "source": "sine",
+        "frequency": 523,
+        "volume": 0.5,
+        "envelope": { "attack": 0.01, "decay": 0.15, "sustain": 0.3, "release": 0.2 }
+      },
+      {
+        "source": "sine",
+        "frequency": 659,
+        "volume": 0.4,
+        "envelope": { "attack": 0.02, "decay": 0.12, "sustain": 0.25, "release": 0.18 }
+      },
+      {
+        "source": "sine",
+        "frequency": 784,
+        "volume": 0.35,
+        "envelope": { "attack": 0.03, "decay": 0.1, "sustain": 0.2, "release": 0.15 }
+      },
+      {
+        "source": "triangle",
+        "frequency": 1047,
+        "volume": 0.2,
+        "envelope": { "attack": 0.05, "decay": 0.15, "sustain": 0.15, "release": 0.15 }
+      }
+    ],
+    "effects": {
+      "reverb": 0.4,
+      "filter": { "type": "lowpass", "frequency": 6000, "Q": 0.5 }
+    }
+  }
+}

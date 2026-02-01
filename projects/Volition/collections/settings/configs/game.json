@@ -8,12 +8,14 @@
     "ComponentGenerator",
     "SceneManager",
     "BaseLoader",
+    "AudioManager",
     "VolitionGame"
   ],
   "systems": [
     "TitleSystem",
     "LayoutSystem",
     "VolitionGameSystem",
+    "VolitionAudioSystem",
     "DeckSystem",
     "CardFlowSystem",
     "HandSystem",

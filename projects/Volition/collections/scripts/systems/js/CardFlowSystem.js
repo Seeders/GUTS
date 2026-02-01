@@ -3,12 +3,13 @@
  * When drawing: oldest card discards, then cards shift one by one, then new card drawn
  */
 class CardFlowSystem extends GUTS.BaseSystem {
-    static services = ['flowCard', 'getNextDumpColumn', 'isFlowAnimating', 'isAwaitingColumnSelection', 'cancelColumnSelection', 'completeDiscard'];
+    static services = ['flowCard', 'flowAfterHandPlay', 'getNextDumpColumn', 'isFlowAnimating', 'isAwaitingColumnSelection', 'cancelColumnSelection', 'completeDiscard'];
     static serviceDependencies = [
         'dealCard', 'popFromHandRaw', 'isHandFull', 'getDeckCount', 'dumpToTableau',
         'getTableauColumns', 'findEmptyColumn', 'getOldestHandCard', 'getColumnCards',
         'getTableauPosition', 'getStackOffset', 'getCardWidth', 'getCardHeight',
-        'getHandCards', 'getHandPosition', 'getDeckPosition', 'flipCard', 'getCardElement'
+        'getHandCards', 'getHandPosition', 'getDeckPosition', 'flipCard', 'getCardElement',
+        'playCardDraw', 'playCardPlace', 'playCardFlip', 'playCardPickup'
     ];
 
     // Animation states
@@ -17,6 +18,8 @@ class CardFlowSystem extends GUTS.BaseSystem {
     static SHIFTING = 2;
     static DRAWING = 3;
     static FLIPPING = 4;
+    static PLAYING_TO_FOUNDATION = 5;
+    static PLAYING_TO_TABLEAU = 6;
 
     constructor(game) {
         super(game);
@@ -26,6 +29,7 @@ class CardFlowSystem extends GUTS.BaseSystem {
         this.animState = CardFlowSystem.IDLE;
         this.animatingCard = null;
         this.shiftIndex = 0;
+        this.shiftFromIndex = 0; // Starting index for shift animation
         this.cardsToShift = [];
         this.newCardEid = null;
 
@@ -34,6 +38,8 @@ class CardFlowSystem extends GUTS.BaseSystem {
         this.flipDuration = 400; // ms for flip animation
         this.shiftStartTime = 0;
         this.shiftDuration = 250; // ms per card shift (slower than flight)
+        this.shiftSoundPlayed = false; // Track if sound has been played for current shift
+        this.shiftLandingGap = 80; // ms gap after sound before next card starts
 
         // Column selection state
         this.awaitingColumnSelection = false;
@@ -104,7 +110,7 @@ class CardFlowSystem extends GUTS.BaseSystem {
     }
 
     getSuitSymbol(suit) {
-        const suits = ['\u2665', '\u2666', '\u2663', '\u2660'];
+        const suits = ['\u2665', '\u2662', '\u2667', '\u2660'];
         return suits[suit] || '';
     }
 
@@ -150,6 +156,60 @@ class CardFlowSystem extends GUTS.BaseSystem {
         return true;
     }
 
+    /**
+     * Called after a card is played from hand (to foundation or tableau)
+     * Waits for the played card animation, then shifts remaining hand cards, then draws
+     * @param {number} playedCardEid - The card that was played
+     * @param {string} targetType - 'foundation' or 'tableau'
+     * @param {number} playedFromIndex - The original hand index of the played card
+     */
+    flowAfterHandPlay(playedCardEid, targetType = 'foundation', playedFromIndex = 0) {
+        // Don't start if already animating
+        if (this.animState !== CardFlowSystem.IDLE) {
+            return false;
+        }
+
+        // Hide ghost card during animation
+        if (this.ghostCard) {
+            this.ghostCard.style.display = 'none';
+        }
+
+        this.animatingCard = playedCardEid;
+
+        if (targetType === 'foundation') {
+            this.animState = CardFlowSystem.PLAYING_TO_FOUNDATION;
+        } else {
+            this.animState = CardFlowSystem.PLAYING_TO_TABLEAU;
+        }
+
+        // Store the cards that need to shift (current hand after the card was removed)
+        // Only cards that were AFTER the played card need to shift
+        const allHandCards = this.call.getHandCards();
+        this.cardsToShift = [];
+
+        // Cards at indices >= playedFromIndex need to shift left
+        // They're now at indices playedFromIndex, playedFromIndex+1, etc.
+        // But their visual positions were already updated by updateHandLayout, so restore them
+        for (let i = playedFromIndex; i < allHandCards.length; i++) {
+            const cardEid = allHandCards[i];
+            this.cardsToShift.push(cardEid);
+
+            // Restore visual position to one slot to the right (where it was before shift)
+            const visual = this.game.getComponent(cardEid, 'cardVisual');
+            const oldPos = this.call.getHandPosition(i + 1);
+            visual.x = oldPos.x;
+            visual.y = oldPos.y;
+            visual.targetX = oldPos.x;
+            visual.targetY = oldPos.y;
+            visual.animating = 0; // Stop RenderSystem animation - we'll use CSS transitions
+        }
+
+        this.shiftIndex = 0;
+        this.shiftFromIndex = playedFromIndex; // Track where shifting starts
+
+        return true;
+    }
+
     startDiscardSequence() {
         // Pop the oldest card without auto-reindexing (we animate manually)
         const dumpedCard = this.call.popFromHandRaw();
@@ -177,9 +237,15 @@ class CardFlowSystem extends GUTS.BaseSystem {
         // Dump to tableau (sets target position and animating = 1)
         this.call.dumpToTableau(dumpedCard, targetColumn);
 
+        // Play liftoff sound when card leaves hand
+        if (this.call.playCardPickup) {
+            this.call.playCardPickup();
+        }
+
         // Store the cards that need to shift (current hand after pop)
         this.cardsToShift = [...this.call.getHandCards()];
         this.shiftIndex = 0;
+        this.shiftFromIndex = 0; // Discard always removes from index 0
 
         // update() will check when animation completes
     }
@@ -322,22 +388,26 @@ class CardFlowSystem extends GUTS.BaseSystem {
         const cardEid = this.cardsToShift[this.shiftIndex];
         this.animatingCard = cardEid;
         this.shiftStartTime = performance.now();
+        this.shiftSoundPlayed = false;
 
         const loc = this.game.getComponent(cardEid, 'cardLocation');
         const visual = this.game.getComponent(cardEid, 'cardVisual');
 
-        // Update the card's index (shift left by 1)
-        loc.index = this.shiftIndex;
+        // Calculate target index (shiftFromIndex + current shift step)
+        const targetIndex = this.shiftFromIndex + this.shiftIndex;
+
+        // Update the card's index
+        loc.index = targetIndex;
 
         // Get target position for this card's new slot
-        const pos = this.call.getHandPosition(this.shiftIndex);
+        const pos = this.call.getHandPosition(targetIndex);
 
         // Set position directly - CSS transition will animate it
         visual.x = pos.x;
         visual.y = pos.y;
         visual.targetX = pos.x;
         visual.targetY = pos.y;
-        visual.zIndex = 10 + this.shiftIndex;
+        visual.zIndex = 10 + targetIndex;
         visual.animating = 0; // Don't use RenderSystem animation
 
         // Add shifting class to card element for CSS transition
@@ -355,6 +425,11 @@ class CardFlowSystem extends GUTS.BaseSystem {
 
     startDrawSequence() {
         this.animState = CardFlowSystem.DRAWING;
+
+        // Play draw sound
+        if (this.call.playCardDraw) {
+            this.call.playCardDraw();
+        }
 
         // Deal card from deck
         const cardEid = this.call.dealCard();
@@ -397,6 +472,11 @@ class CardFlowSystem extends GUTS.BaseSystem {
     startFlipSequence() {
         this.animState = CardFlowSystem.FLIPPING;
         this.flipStartTime = performance.now();
+
+        // Play flip sound
+        if (this.call.playCardFlip) {
+            this.call.playCardFlip();
+        }
 
         // Flip the card face up
         const card = this.game.getComponent(this.newCardEid, 'card');
@@ -483,13 +563,28 @@ class CardFlowSystem extends GUTS.BaseSystem {
             case CardFlowSystem.DISCARDING:
                 // Wait for discard card to finish animating
                 if (this.isCardDoneAnimating(this.animatingCard)) {
+                    // Play place sound when card lands
+                    if (this.call.playCardPlace) {
+                        this.call.playCardPlace();
+                    }
                     this.startShiftSequence();
                 }
                 break;
 
             case CardFlowSystem.SHIFTING:
                 // Wait for shift duration (time-based, not position-based)
-                if (performance.now() - this.shiftStartTime >= this.shiftDuration) {
+                const shiftElapsed = performance.now() - this.shiftStartTime;
+
+                // Play sound when card lands (at shiftDuration)
+                if (!this.shiftSoundPlayed && shiftElapsed >= this.shiftDuration) {
+                    if (this.call.playCardPlace) {
+                        this.call.playCardPlace();
+                    }
+                    this.shiftSoundPlayed = true;
+                }
+
+                // Wait for landing gap after sound, then start next card
+                if (shiftElapsed >= this.shiftDuration + this.shiftLandingGap) {
                     this.shiftIndex++;
                     if (this.shiftIndex >= this.cardsToShift.length) {
                         // All shifted, start drawing
@@ -512,6 +607,19 @@ class CardFlowSystem extends GUTS.BaseSystem {
                 // Wait for flip animation duration
                 if (performance.now() - this.flipStartTime >= this.flipDuration) {
                     this.finishFlowSequence();
+                }
+                break;
+
+            case CardFlowSystem.PLAYING_TO_FOUNDATION:
+            case CardFlowSystem.PLAYING_TO_TABLEAU:
+                // Wait for played card to finish animating to its destination
+                if (this.isCardDoneAnimating(this.animatingCard)) {
+                    // Play place sound when card lands
+                    if (this.call.playCardPlace) {
+                        this.call.playCardPlace();
+                    }
+                    // Now shift remaining hand cards and draw
+                    this.startShiftSequence();
                 }
                 break;
         }

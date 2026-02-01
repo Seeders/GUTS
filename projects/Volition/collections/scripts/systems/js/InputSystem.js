@@ -8,9 +8,10 @@ class InputSystem extends GUTS.BaseSystem {
         'canPlayToTableau', 'playToTableau',
         'getHandCards', 'getTableauColumns', 'getColumnCards',
         'isValidSequence', 'getCardsBelow', 'moveTableauToTableau',
-        'flowCard', 'updateHandLayout',
+        'flowCard', 'flowAfterHandPlay', 'isFlowAnimating', 'updateHandLayout',
         'getFoundationPosition', 'getTableauPosition', 'getCardWidth', 'getCardHeight', 'getStackOffset',
-        'isAwaitingColumnSelection'
+        'isAwaitingColumnSelection',
+        'playCardPickup', 'playCardPlace', 'playCardInvalid'
     ];
 
     constructor(game) {
@@ -181,6 +182,9 @@ class InputSystem extends GUTS.BaseSystem {
         // Ignore synthesized mouse events after touch
         if (Date.now() - this.lastTouchTime < 500) return;
 
+        // Block input during flow animation
+        if (this.call.isFlowAnimating?.()) return;
+
         // Block dragging during column selection mode
         if (this.call.isAwaitingColumnSelection?.()) return;
 
@@ -210,6 +214,9 @@ class InputSystem extends GUTS.BaseSystem {
 
     onTouchStart(e) {
         if (this.game.gameInstance?.state?.gameOver) return;
+
+        // Block input during flow animation
+        if (this.call.isFlowAnimating?.()) return;
 
         // Track touch time to ignore synthesized mouse events
         this.lastTouchTime = Date.now();
@@ -286,6 +293,9 @@ class InputSystem extends GUTS.BaseSystem {
     onDoubleClick(e) {
         if (this.game.gameInstance?.state?.gameOver) return;
 
+        // Block input during flow animation
+        if (this.call.isFlowAnimating?.()) return;
+
         // Block during column selection mode
         if (this.call.isAwaitingColumnSelection?.()) return;
 
@@ -294,10 +304,21 @@ class InputSystem extends GUTS.BaseSystem {
             // Try to auto-play to foundation (only single cards)
             if (this.call.canPlayToFoundation(cardInfo.eid)) {
                 const wasFromHand = cardInfo.source === 'hand';
-                this.call.playToFoundation(cardInfo.eid);
-                // Auto-refill hand in manual mode
+                const cardEid = cardInfo.eid;
+                // Get original index before playing
+                let originalIndex = 0;
                 if (wasFromHand) {
-                    this.tryAutoRefill();
+                    const loc = this.game.getComponent(cardEid, 'cardLocation');
+                    originalIndex = loc.index;
+                }
+                // Play pickup sound when card starts moving
+                if (wasFromHand && this.call.playCardPickup) {
+                    this.call.playCardPickup();
+                }
+                this.call.playToFoundation(cardEid);
+                // Start flow sequence after playing from hand
+                if (wasFromHand) {
+                    this.call.flowAfterHandPlay(cardEid, 'foundation', originalIndex);
                 }
             }
         }
@@ -305,6 +326,9 @@ class InputSystem extends GUTS.BaseSystem {
 
     handleDoubleTap(x, y) {
         if (this.game.gameInstance?.state?.gameOver) return;
+
+        // Block input during flow animation
+        if (this.call.isFlowAnimating?.()) return;
 
         // Block during column selection mode
         if (this.call.isAwaitingColumnSelection?.()) return;
@@ -326,10 +350,21 @@ class InputSystem extends GUTS.BaseSystem {
             // Try to auto-play to foundation (only single cards)
             if (this.call.canPlayToFoundation(cardInfo.eid)) {
                 const wasFromHand = cardInfo.source === 'hand';
-                this.call.playToFoundation(cardInfo.eid);
-                // Auto-refill hand in manual mode
+                const cardEid = cardInfo.eid;
+                // Get original index before playing
+                let originalIndex = 0;
                 if (wasFromHand) {
-                    this.tryAutoRefill();
+                    const loc = this.game.getComponent(cardEid, 'cardLocation');
+                    originalIndex = loc.index;
+                }
+                // Play pickup sound when card starts moving
+                if (wasFromHand && this.call.playCardPickup) {
+                    this.call.playCardPickup();
+                }
+                this.call.playToFoundation(cardEid);
+                // Start flow sequence after playing from hand
+                if (wasFromHand) {
+                    this.call.flowAfterHandPlay(cardEid, 'foundation', originalIndex);
                 }
             }
         }
@@ -368,6 +403,11 @@ class InputSystem extends GUTS.BaseSystem {
             this.dragStartPositions = [{ x: visual.x, y: visual.y, zIndex: visual.zIndex }];
             draggable.isDragging = 1;
             visual.zIndex = 1000;
+
+            // Play pickup sound
+            if (this.call.playCardPickup) {
+                this.call.playCardPickup();
+            }
         } else if (source === 'tableau') {
             // Check if we can drag this card (must be valid sequence)
             if (this.call.isValidSequence(eid)) {
@@ -383,6 +423,11 @@ class InputSystem extends GUTS.BaseSystem {
                     d.isDragging = 1;
                     v.zIndex = 1000 + idx;
                 });
+
+                // Play pickup sound
+                if (this.call.playCardPickup) {
+                    this.call.playCardPickup();
+                }
             } else {
                 // Can't drag chaotic stack
                 this.isDragging = false;
@@ -485,8 +530,17 @@ class InputSystem extends GUTS.BaseSystem {
         // Check drop target
         const target = this.getDropTarget(x, y);
         let played = false;
+        let playedTargetType = null;
 
         const wasFromHand = this.sourceLocation === 'hand';
+        const playedCardEid = this.selectedCard;
+
+        // Get original index before playing (needed for shift animation)
+        let originalIndex = 0;
+        if (wasFromHand) {
+            const loc = this.game.getComponent(playedCardEid, 'cardLocation');
+            originalIndex = loc.index;
+        }
 
         if (target) {
             if (target.type === 'foundation') {
@@ -495,6 +549,7 @@ class InputSystem extends GUTS.BaseSystem {
                     const card = this.game.getComponent(this.selectedCard, 'card');
                     if (card.suit === target.suit && this.call.canPlayToFoundation(this.selectedCard)) {
                         played = this.call.playToFoundation(this.selectedCard);
+                        playedTargetType = 'foundation';
                     }
                 }
             } else if (target.type === 'tableau') {
@@ -505,17 +560,22 @@ class InputSystem extends GUTS.BaseSystem {
                     // Hand to tableau - single card
                     if (this.call.canPlayToTableau(this.selectedCard, target.column)) {
                         played = this.call.playToTableau(this.selectedCard, target.column);
+                        playedTargetType = 'tableau';
                     }
                 } else if (this.sourceLocation === 'tableau') {
                     // Tableau to tableau - use moveTableauToTableau for stacks
                     played = this.call.moveTableauToTableau(this.selectedCard, target.column);
+                    // Play place sound immediately for tableau-to-tableau moves
+                    if (played && this.call.playCardPlace) {
+                        this.call.playCardPlace();
+                    }
                 }
             }
         }
 
-        // Auto-refill hand in manual mode after playing from hand
-        if (played && wasFromHand) {
-            this.tryAutoRefill();
+        // Start flow sequence after playing from hand (handles sound and shift/draw)
+        if (played && wasFromHand && playedTargetType) {
+            this.call.flowAfterHandPlay(playedCardEid, playedTargetType, originalIndex);
         }
 
         // If not played, return all cards to original positions
@@ -528,6 +588,18 @@ class InputSystem extends GUTS.BaseSystem {
                 v.zIndex = startPos.zIndex;
                 v.animating = 1;
             });
+
+            // Play invalid sound only if we actually dragged (not just clicked)
+            // Check if card moved significantly from start position
+            const startPos = this.dragStartPositions[0];
+            const visual = this.game.getComponent(this.draggedCards[0], 'cardVisual');
+            const dragDistX = Math.abs(visual.x - startPos.x);
+            const dragDistY = Math.abs(visual.y - startPos.y);
+            const wasDragged = dragDistX > this.doubleTapDistance || dragDistY > this.doubleTapDistance;
+
+            if (target && wasDragged && this.call.playCardInvalid) {
+                this.call.playCardInvalid();
+            }
         }
 
         this.selectedCard = null;

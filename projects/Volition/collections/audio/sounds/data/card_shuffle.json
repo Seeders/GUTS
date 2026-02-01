@@ -1,0 +1,31 @@
+{
+  "title": "Card Shuffle",
+  "description": "Quick shuffle sound for new game",
+  "audio": {
+    "duration": 0.25,
+    "volume": 0.3,
+    "layers": [
+      {
+        "source": "pink",
+        "volume": 0.6,
+        "envelope": { "attack": 0.01, "decay": 0.1, "sustain": 0.2, "release": 0.1 },
+        "filter": { "type": "bandpass", "frequency": 1200, "Q": 0.8 }
+      },
+      {
+        "source": "white",
+        "volume": 0.25,
+        "envelope": { "attack": 0.005, "decay": 0.08, "sustain": 0.15, "release": 0.08 },
+        "filter": { "type": "highpass", "frequency": 2500, "Q": 0.5 }
+      },
+      {
+        "source": "brown",
+        "volume": 0.35,
+        "envelope": { "attack": 0.01, "decay": 0.12, "sustain": 0.1, "release": 0.08 },
+        "filter": { "type": "lowpass", "frequency": 400, "Q": 0.5 }
+      }
+    ],
+    "effects": {
+      "filter": { "type": "lowpass", "frequency": 4000, "Q": 0.5 }
+    }
+  }
+}
