@@ -437,8 +437,8 @@ class EntryGenerator {
             // Read the file and check for extends
             try {
                 const source = fs.readFileSync(mod.path, 'utf8');
-                // Match: class ClassName extends ParentClass
-                const match = source.match(/class\s+(\w+)\s+extends\s+(\w+)/);
+                // Match: class ClassName extends ParentClass or class ClassName extends GUTS.ParentClass
+                const match = source.match(/class\s+(\w+)\s+extends\s+(?:GUTS\.)?(\w+)/);
                 if (match) {
                     const className = match[1];
                     const parentClass = match[2];
