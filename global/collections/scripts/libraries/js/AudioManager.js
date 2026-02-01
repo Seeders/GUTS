@@ -84,12 +84,8 @@ class AudioManager {
                 source.distortion.curve = null;
                 source.distortion.oversample = '4x';
 
-                // Gentle limiting to prevent clipping, not for dynamics control
-                source.compressor.threshold.setValueAtTime(-6, this.audioContext.currentTime);
-                source.compressor.knee.setValueAtTime(10, this.audioContext.currentTime);
-                source.compressor.ratio.setValueAtTime(4, this.audioContext.currentTime);
-                source.compressor.attack.setValueAtTime(0.01, this.audioContext.currentTime);
-                source.compressor.release.setValueAtTime(0.1, this.audioContext.currentTime);
+                // Compressor disabled - was causing music to duck when SFX played
+                // source.compressor is kept in the object but not in the chain
 
                 source.pannerNode.pan.setValueAtTime(0, this.audioContext.currentTime);
 
@@ -98,12 +94,12 @@ class AudioManager {
 
                 source.reverbGain.gain.setValueAtTime(0, this.audioContext.currentTime);
 
+                // Chain without compressor - distortion connects directly to panner
                 const chain = [
                     source.envelopeGain,
                     source.gainNode,
                     source.filter,
                     source.distortion,
-                    source.compressor,
                     source.pannerNode
                 ];
 
@@ -210,11 +206,12 @@ class AudioManager {
             }
         }
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        this.masterBus = this.createAudioBus('master');
-        this.musicBus = this.createAudioBus('music');
-        this.sfxBus = this.createAudioBus('sfx');
-        this.ambientBus = this.createAudioBus('ambient', true); // Bypass compressor for ambient
-        this.uiBus = this.createAudioBus('ui');
+        // Bypass ALL compressors to diagnose choppiness issue
+        this.masterBus = this.createAudioBus('master', true);
+        this.musicBus = this.createAudioBus('music', true);
+        this.sfxBus = this.createAudioBus('sfx', true);
+        this.ambientBus = this.createAudioBus('ambient', true);
+        this.uiBus = this.createAudioBus('ui', true);
         this.musicBus.connect(this.masterBus);
         this.sfxBus.connect(this.masterBus);
         this.ambientBus.connect(this.masterBus);
@@ -276,17 +273,18 @@ class AudioManager {
         };
 
         if (bypassCompressor) {
-            // Direct connection for buses that don't need dynamics processing (e.g., ambient)
+            // Direct connection for buses that don't need dynamics processing
             bus.input.connect(bus.output);
         } else {
-            // Configure bus compressor as a gentle limiter only (prevents clipping)
-            // High threshold means it only kicks in to prevent distortion
+            // Configure bus compressor as a transparent safety limiter only
+            // Very high threshold and slow response so it only catches extreme peaks
+            // This prevents audible pumping while still preventing hard clipping
             const now = this.audioContext.currentTime;
-            bus.compressor.threshold.setValueAtTime(-3, now);
-            bus.compressor.knee.setValueAtTime(6, now);
-            bus.compressor.ratio.setValueAtTime(8, now);
-            bus.compressor.attack.setValueAtTime(0.001, now);
-            bus.compressor.release.setValueAtTime(0.05, now);
+            bus.compressor.threshold.setValueAtTime(-1, now); // Only catch peaks near 0dB
+            bus.compressor.knee.setValueAtTime(10, now); // Soft knee for transparent limiting
+            bus.compressor.ratio.setValueAtTime(4, now); // Lower ratio, less aggressive
+            bus.compressor.attack.setValueAtTime(0.01, now); // 10ms attack - slow enough to avoid pumping
+            bus.compressor.release.setValueAtTime(0.25, now); // 250ms release - slow to avoid choppiness
 
             bus.input.connect(bus.compressor);
             bus.compressor.connect(bus.output);
