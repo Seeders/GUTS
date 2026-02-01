@@ -38,7 +38,7 @@ class TutorialSystem extends GUTS.BaseSystem {
             },
             {
                 title: "Discard Preview",
-                text: "The orange outline on the field shows where your oldest card will go when it's pushed out of your hand.",
+                text: "The red outline on the field shows where your oldest card will go when it's pushed out of your hand.",
                 highlight: "#fieldArea",
                 waitFor: null,
                 position: "below"
@@ -67,14 +67,14 @@ class TutorialSystem extends GUTS.BaseSystem {
             },
             {
                 title: "The Field",
-                text: "These columns are for temporary storage. Stack cards in descending order with alternating colors (red on black, black on red).",
+                text: "These columns are the main play area.  Stack cards in descending order with alternating colors (red on black, black on red).",
                 highlight: "#fieldArea",
                 waitFor: null,
                 position: "below"
             },
             {
                 title: "Play to the Field",
-                text: "Try placing a card on the field. Remember: descending order, alternating colors. Only Kings can start an empty column.",
+                text: "Try placing a card on the field. Remember: descending order, alternating colors. Only Kings can start an empty column.  These rules do NOT apply to discards!  Watch out!",
                 highlight: "#fieldArea",
                 waitFor: { type: 'field', description: 'Play a card to the field' },
                 position: "below",
@@ -82,15 +82,8 @@ class TutorialSystem extends GUTS.BaseSystem {
             },
             {
                 title: "Card Flow",
-                text: "Your hand always holds 5 cards. When you draw from the deck, the oldest card (leftmost) is pushed out to an empty field column. Play cards before they get pushed out!",
+                text: "Your hand always holds 5 cards. When you draw from the deck, the oldest card (leftmost) is pushed out to the next field column regardless of what is there. Try to play cards before they get pushed out!",
                 highlight: "#handArea",
-                waitFor: null,
-                position: "above"
-            },
-            {
-                title: "Drawing Cards",
-                text: "Click the deck to draw a new card.",
-                highlight: "#deckArea",
                 waitFor: null,
                 position: "above"
             },

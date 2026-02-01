@@ -13,7 +13,8 @@ class VolitionMusicSystem extends MusicSystem {
         'startGameMusic',
         'playTriumphMusic',
         'getMusicVolume',
-        'setMusicVolume'
+        'setMusicVolume',
+        'fadeOutMusic'
     ];
 
     constructor(game) {
@@ -105,45 +106,152 @@ class VolitionMusicSystem extends MusicSystem {
     }
 
     /**
+     * Override initAudio to start with gain at 0 for fade-in
+     */
+    async initAudio() {
+        console.log('[VolitionMusic] initAudio called, isInitialized:', this.isInitialized);
+        const result = await super.initAudio();
+
+        // After parent creates musicGain, force it to 0 for fade-in
+        if (result && this.musicGain) {
+            console.log('[VolitionMusic] initAudio: setting musicGain to 0');
+            this.musicGain.gain.value = 0;
+        } else {
+            console.warn('[VolitionMusic] initAudio: no musicGain!', { result, musicGain: this.musicGain });
+        }
+
+        return result;
+    }
+
+    /**
      * Fade in the music from silence to target volume
      */
     fadeInMusic() {
-        if (!this.musicGain || !this.audioContext) return;
+        if (!this.musicGain || !this.audioContext) {
+            console.warn('[VolitionMusic] fadeInMusic: no musicGain or audioContext');
+            return;
+        }
 
-        // Start at silence
-        this.musicGain.gain.setValueAtTime(0, this.audioContext.currentTime);
+        const now = this.audioContext.currentTime;
 
-        // Fade to target volume over fadeInDuration
-        // Using setTargetAtTime with time constant = duration/3 reaches ~95% in duration
-        this.musicGain.gain.setTargetAtTime(
-            this.musicVolume,
-            this.audioContext.currentTime,
-            this.fadeInDuration / 3
-        );
+        console.log('[VolitionMusic] fadeInMusic: starting fade from 0 to', this.musicVolume, 'over', this.fadeInDuration, 'seconds');
+
+        // Cancel any existing automation
+        this.musicGain.gain.cancelScheduledValues(0);
+
+        // Force gain to 0 immediately
+        this.musicGain.gain.value = 0;
+        this.musicGain.gain.setValueAtTime(0, now);
+
+        // Use linear ramp for more predictable fade
+        this.musicGain.gain.linearRampToValueAtTime(this.musicVolume, now + this.fadeInDuration);
+
+        console.log('[VolitionMusic] fadeInMusic: scheduled ramp to', this.musicVolume, 'at time', now + this.fadeInDuration);
+    }
+
+    /**
+     * Fade out the music over the specified duration
+     * @param {number} duration - Fade duration in seconds (default: 1)
+     * @returns {Promise} Resolves when fade is complete
+     */
+    fadeOutMusic(duration = 1.0) {
+        return new Promise((resolve) => {
+            if (!this.musicGain || !this.audioContext || !this.playing) {
+                resolve();
+                return;
+            }
+
+            const now = this.audioContext.currentTime;
+            const currentVolume = this.musicGain.gain.value;
+
+            console.log('[VolitionMusic] fadeOutMusic: fading from', currentVolume, 'to 0 over', duration, 'seconds');
+
+            // Cancel any existing automation
+            this.musicGain.gain.cancelScheduledValues(now);
+
+            // Start from current volume and fade to 0
+            this.musicGain.gain.setValueAtTime(currentVolume, now);
+            this.musicGain.gain.linearRampToValueAtTime(0, now + duration);
+
+            // Resolve after fade completes
+            setTimeout(() => {
+                this.stopTrack();
+                resolve();
+            }, duration * 1000);
+        });
     }
 
     /**
      * Start the title music (same as game music)
      */
     async startTitleMusic() {
-        if (!this.musicEnabled) return;
+        console.log('[VolitionMusic] startTitleMusic called, hasStartedMusic:', this.hasStartedMusic);
+
+        // Prevent multiple calls - set flag FIRST to avoid race condition
+        if (this.hasStartedMusic) {
+            console.log('[VolitionMusic] startTitleMusic: already started, returning');
+            return;
+        }
+        this.hasStartedMusic = true;
+
+        if (!this.musicEnabled) {
+            console.log('[VolitionMusic] startTitleMusic: music disabled, returning');
+            return;
+        }
+
+        // Initialize audio first so musicGain exists
+        if (!this.isInitialized) {
+            console.log('[VolitionMusic] startTitleMusic: calling initAudio');
+            await this.initAudio();
+        }
+
+        // Force gain to 0 before playing
+        if (this.musicGain) {
+            console.log('[VolitionMusic] startTitleMusic: setting gain to 0');
+            this.musicGain.gain.cancelScheduledValues(0);
+            this.musicGain.gain.value = 0;
+        }
 
         // Play the war track
+        console.log('[VolitionMusic] startTitleMusic: calling playTrack');
         await this.playTrack('volition_war');
+
+        // Now fade in
+        console.log('[VolitionMusic] startTitleMusic: calling fadeInMusic');
         this.fadeInMusic();
-        this.hasStartedMusic = true;
     }
 
     /**
      * Start the intense game music
      */
     async startGameMusic() {
+        console.log('[VolitionMusic] startGameMusic called, hasStartedMusic:', this.hasStartedMusic);
+
+        // Prevent multiple calls - set flag FIRST to avoid race condition
+        if (this.hasStartedMusic) {
+            console.log('[VolitionMusic] startGameMusic: already started, returning');
+            return;
+        }
+        this.hasStartedMusic = true;
+
         if (!this.musicEnabled) return;
+
+        // Initialize audio first so musicGain exists
+        if (!this.isInitialized) {
+            await this.initAudio();
+        }
+
+        // Force gain to 0 before playing
+        if (this.musicGain) {
+            this.musicGain.gain.cancelScheduledValues(0);
+            this.musicGain.gain.value = 0;
+        }
 
         // Play the war track
         await this.playTrack('volition_war');
+
+        // Now fade in
         this.fadeInMusic();
-        this.hasStartedMusic = true;
     }
 
     /**

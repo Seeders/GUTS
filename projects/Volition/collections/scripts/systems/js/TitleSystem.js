@@ -3,7 +3,7 @@
  */
 class TitleSystem extends GUTS.BaseSystem {
     static services = [];
-    static serviceDependencies = ['startTitleMusic', 'startGameMusic', 'isMusicEnabled'];
+    static serviceDependencies = ['startTitleMusic', 'startGameMusic', 'isMusicEnabled', 'fadeOutMusic'];
 
     constructor(game) {
         super(game);
@@ -48,19 +48,23 @@ class TitleSystem extends GUTS.BaseSystem {
         }
     }
 
-    startGame() {
-        // Switch to battle music when starting the game
-        this.call.startGameMusic?.();
-        // Switch to the game scene
+    async startGame() {
+        // Fade out music before switching
+        const fadeDuration = 1.0;
+        this.call.fadeOutMusic?.(fadeDuration);
+        await new Promise(resolve => setTimeout(resolve, fadeDuration * 1000));
+
         if (this.game.sceneManager) {
             this.game.sceneManager.switchScene('game');
         }
     }
 
-    startTutorial() {
-        // Switch to battle music when starting tutorial
-        this.call.startGameMusic?.();
-        // Switch to the tutorial scene
+    async startTutorial() {
+        // Fade out music before switching
+        const fadeDuration = 1.0;
+        this.call.fadeOutMusic?.(fadeDuration);
+        await new Promise(resolve => setTimeout(resolve, fadeDuration * 1000));
+
         if (this.game.sceneManager) {
             this.game.sceneManager.switchScene('tutorial');
         }
