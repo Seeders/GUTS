@@ -1,0 +1,261 @@
+<div id="music-editor-container" class="editor-module">
+  <!-- Left Sidebar -->
+  <div class="editor-module__sidebar editor-module__sidebar--left">
+    <div class="me-header">
+      <!-- Mode Tabs -->
+      <div class="me-tabs">
+        <button id="me-tab-instruments" class="me-tab">Instruments</button>
+        <button id="me-tab-patterns" class="me-tab me-tab--active">Patterns</button>
+        <button id="me-tab-tracks" class="me-tab">Tracks</button>
+      </div>
+
+      <!-- Transport Controls -->
+      <div class="me-transport">
+        <button id="me-play-btn" class="editor-module__btn editor-module__btn--small me-transport__btn" title="Play (Space)">&#9654;</button>
+        <button id="me-stop-btn" class="editor-module__btn editor-module__btn--small me-transport__btn" title="Stop">&#9632;</button>
+        <label class="me-transport__loop">
+          <input type="checkbox" id="me-loop-toggle">
+          <span>Loop</span>
+        </label>
+      </div>
+
+      <button id="me-save-btn" class="editor-module__btn editor-module__btn--success" style="width: 100%; margin-top: 8px;">Save</button>
+    </div>
+
+    <div class="editor-module__scroll-y">
+      <!-- INSTRUMENTS PANEL -->
+      <div id="me-instruments-panel" class="me-panel" style="display: none;">
+        <div class="me-panel__section">
+          <h3 class="me-panel__title">Oscillator</h3>
+          <div class="me-panel__row">
+            <label class="me-label">Type:</label>
+            <select id="me-inst-oscillator" class="me-select">
+              <option value="sine">Sine</option>
+              <option value="square">Square</option>
+              <option value="sawtooth">Sawtooth</option>
+              <option value="triangle">Triangle</option>
+            </select>
+          </div>
+          <div class="me-panel__row">
+            <label class="me-label">Duration:</label>
+            <input type="range" id="me-inst-duration" class="editor-module__slider" min="0.05" max="2" step="0.05" value="0.5">
+            <span id="me-inst-duration-val" class="me-value">0.50s</span>
+          </div>
+        </div>
+        <div class="me-panel__section">
+          <h3 class="me-panel__title">Envelope (ADSR)</h3>
+          <div class="me-panel__row">
+            <label class="me-label">Attack:</label>
+            <input type="range" id="me-inst-attack" class="editor-module__slider" min="0.001" max="2" step="0.001" value="0.01">
+            <span id="me-inst-attack-val" class="me-value">0.01s</span>
+          </div>
+          <div class="me-panel__row">
+            <label class="me-label">Decay:</label>
+            <input type="range" id="me-inst-decay" class="editor-module__slider" min="0" max="2" step="0.01" value="0.1">
+            <span id="me-inst-decay-val" class="me-value">0.10s</span>
+          </div>
+          <div class="me-panel__row">
+            <label class="me-label">Sustain:</label>
+            <input type="range" id="me-inst-sustain" class="editor-module__slider" min="0" max="1" step="0.01" value="0.5">
+            <span id="me-inst-sustain-val" class="me-value">50%</span>
+          </div>
+          <div class="me-panel__row">
+            <label class="me-label">Release:</label>
+            <input type="range" id="me-inst-release" class="editor-module__slider" min="0.001" max="5" step="0.001" value="0.3">
+            <span id="me-inst-release-val" class="me-value">0.30s</span>
+          </div>
+        </div>
+        <div class="me-panel__section">
+          <h3 class="me-panel__title">Filter</h3>
+          <div class="me-panel__row">
+            <label class="me-label">Type:</label>
+            <select id="me-inst-filter-type" class="me-select">
+              <option value="none">None</option>
+              <option value="lowpass">Low Pass</option>
+              <option value="highpass">High Pass</option>
+              <option value="bandpass">Band Pass</option>
+            </select>
+          </div>
+          <div class="me-panel__row">
+            <label class="me-label">Frequency:</label>
+            <input type="range" id="me-inst-filter-freq" class="editor-module__slider" min="20" max="20000" step="10" value="2000">
+            <span id="me-inst-filter-freq-val" class="me-value">2000Hz</span>
+          </div>
+          <div class="me-panel__row">
+            <label class="me-label">Q:</label>
+            <input type="range" id="me-inst-filter-q" class="editor-module__slider" min="0.1" max="20" step="0.1" value="1">
+            <span id="me-inst-filter-q-val" class="me-value">1.0</span>
+          </div>
+        </div>
+        <button id="me-preview-note-btn" class="editor-module__btn editor-module__btn--small" style="width: 100%;">Preview Note (A4)</button>
+      </div>
+
+      <!-- PATTERNS PANEL -->
+      <div id="me-patterns-panel" class="me-panel">
+        <div class="me-panel__section">
+          <h3 class="me-panel__title">Grid Settings</h3>
+          <div class="me-panel__row">
+            <label class="me-label">BPM:</label>
+            <input type="number" id="me-pattern-bpm" class="me-input--small" value="120" min="40" max="300">
+          </div>
+          <div class="me-panel__row">
+            <label class="me-label">Steps/Beat:</label>
+            <select id="me-pattern-steps" class="me-select">
+              <option value="2">2</option>
+              <option value="4" selected>4</option>
+              <option value="8">8</option>
+            </select>
+          </div>
+          <div class="me-panel__row">
+            <label class="me-label">Length:</label>
+            <input type="number" id="me-pattern-length" class="me-input--small" value="64" min="4" max="512" step="4">
+          </div>
+        </div>
+        <div class="me-panel__section">
+          <h3 class="me-panel__title">Octave</h3>
+          <div class="me-panel__row">
+            <label class="me-label">Current:</label>
+            <span id="me-octave-display" class="me-value me-value--large">4</span>
+          </div>
+          <div class="me-octave-buttons">
+            <button id="me-octave-down" class="editor-module__btn editor-module__btn--small">- (Z)</button>
+            <button id="me-octave-up" class="editor-module__btn editor-module__btn--small">+ (X)</button>
+          </div>
+        </div>
+        <div class="me-panel__section">
+          <h3 class="me-panel__title">Preview Instrument</h3>
+          <select id="me-preview-instrument" class="me-select">
+            <!-- Populated dynamically from instruments collection -->
+          </select>
+        </div>
+      </div>
+
+      <!-- TRACKS PANEL -->
+      <div id="me-tracks-panel" class="me-panel" style="display: none;">
+        <div class="me-panel__section">
+          <h3 class="me-panel__title">Track Settings</h3>
+          <div class="me-panel__row">
+            <label class="me-label">BPM:</label>
+            <input type="number" id="me-track-bpm" class="me-input--small" value="120" min="40" max="300">
+          </div>
+          <div class="me-panel__row">
+            <label class="me-label">Steps/Beat:</label>
+            <select id="me-track-steps" class="me-select">
+              <option value="2">2</option>
+              <option value="4" selected>4</option>
+              <option value="8">8</option>
+            </select>
+          </div>
+        </div>
+        <div class="me-panel__section">
+          <h3 class="me-panel__title">Sections <span id="me-section-count" class="me-badge">0</span></h3>
+          <div id="me-sections-list" class="me-list">
+            <!-- Section list populated dynamically -->
+          </div>
+          <button id="me-add-section-btn" class="editor-module__btn editor-module__btn--small" style="width: 100%; margin-top: 8px;">+ Add Section</button>
+        </div>
+        <div class="me-panel__section">
+          <h3 class="me-panel__title">Voices <span id="me-voice-count" class="me-badge">0</span></h3>
+          <div id="me-voices-list" class="me-list">
+            <!-- Voice list populated dynamically -->
+          </div>
+          <button id="me-add-voice-btn" class="editor-module__btn editor-module__btn--small" style="width: 100%; margin-top: 8px;">+ Add Voice</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Center Canvas Area -->
+  <div class="editor-module__canvas-area me-canvas-area">
+    <!-- Canvas Toolbar -->
+    <div class="editor-module__canvas-toolbar">
+      <div class="editor-module__toolbar-group">
+        <button id="me-tool-select" class="editor-module__btn editor-module__btn--small editor-module__btn--active" title="Select">Select</button>
+        <button id="me-tool-pencil" class="editor-module__btn editor-module__btn--small" title="Pencil (P)">Pencil</button>
+        <button id="me-tool-erase" class="editor-module__btn editor-module__btn--small" title="Erase (E)">Erase</button>
+      </div>
+      <div class="editor-module__toolbar-separator"></div>
+      <div class="editor-module__toolbar-group">
+        <button id="me-zoom-in" class="editor-module__btn editor-module__btn--small" title="Zoom In">+</button>
+        <button id="me-zoom-out" class="editor-module__btn editor-module__btn--small" title="Zoom Out">-</button>
+        <button id="me-zoom-fit" class="editor-module__btn editor-module__btn--small" title="Fit to View">Fit</button>
+      </div>
+      <div class="editor-module__toolbar-separator"></div>
+      <div class="editor-module__toolbar-group">
+        <button id="me-undo" class="editor-module__btn editor-module__btn--small" title="Undo (Ctrl+Z)">Undo</button>
+        <button id="me-redo" class="editor-module__btn editor-module__btn--small" title="Redo (Ctrl+Y)">Redo</button>
+      </div>
+    </div>
+
+    <canvas id="me-main-canvas" class="me-canvas"></canvas>
+    <div id="me-playhead" class="me-playhead"></div>
+
+    <div class="editor-module__status-bar">
+      <span id="me-status-position">Step: 0</span> |
+      <span id="me-status-note">Note: --</span> |
+      <span id="me-status-zoom">Zoom: 100%</span>
+    </div>
+  </div>
+
+  <!-- Right Sidebar - Inspector -->
+  <div id="me-inspector-sidebar" class="editor-module__sidebar editor-module__sidebar--right">
+    <div class="me-panel__section">
+      <h3 class="me-panel__title">Properties</h3>
+      <div class="me-panel__row">
+        <label class="me-label">Title:</label>
+        <input type="text" id="me-prop-title" class="me-input">
+      </div>
+      <div class="me-panel__row">
+        <label class="me-label">Description:</label>
+        <textarea id="me-prop-description" class="me-textarea" rows="2"></textarea>
+      </div>
+    </div>
+
+    <!-- Section Inspector (shown when section selected in track mode) -->
+    <div id="me-section-inspector" class="me-panel__section" style="display: none;">
+      <h3 class="me-panel__title">Section</h3>
+      <div class="me-panel__row">
+        <label class="me-label">Name:</label>
+        <input type="text" id="me-section-name" class="me-input">
+      </div>
+      <div class="me-panel__row">
+        <label class="me-label">Start Step:</label>
+        <input type="number" id="me-section-start" class="me-input--small" min="0">
+      </div>
+      <div class="me-panel__row">
+        <label class="me-label">End Step:</label>
+        <input type="number" id="me-section-end" class="me-input--small" min="0">
+      </div>
+      <h4 class="me-panel__subtitle">Voice Patterns</h4>
+      <div id="me-section-voice-patterns">
+        <!-- Voice pattern assignments populated dynamically -->
+      </div>
+      <button id="me-remove-section-btn" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" style="width: 100%; margin-top: 8px;">Remove Section</button>
+    </div>
+
+    <!-- Voice Inspector (shown when voice selected in track mode) -->
+    <div id="me-voice-inspector" class="me-panel__section" style="display: none;">
+      <h3 class="me-panel__title">Voice</h3>
+      <div class="me-panel__row">
+        <label class="me-label">Name:</label>
+        <input type="text" id="me-voice-name" class="me-input">
+      </div>
+      <div class="me-panel__row">
+        <label class="me-label">Instrument:</label>
+        <select id="me-voice-instrument" class="me-select">
+          <!-- Populated from instruments collection -->
+        </select>
+      </div>
+      <div class="me-panel__row">
+        <label class="me-label">Volume:</label>
+        <input type="range" id="me-voice-volume" class="editor-module__slider" min="0" max="1" step="0.01" value="1">
+        <span id="me-voice-volume-val" class="me-value">100%</span>
+      </div>
+      <div class="me-panel__row">
+        <label class="me-label">Octave Shift:</label>
+        <input type="number" id="me-voice-octave-shift" class="me-input--small" min="-3" max="3" value="0">
+      </div>
+      <button id="me-remove-voice-btn" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" style="width: 100%; margin-top: 8px;">Remove Voice</button>
+    </div>
+  </div>
+</div>

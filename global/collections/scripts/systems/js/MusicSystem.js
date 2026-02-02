@@ -192,13 +192,20 @@ class MusicSystem extends GUTS.BaseSystem {
             this.stopTrack();
         }
 
+        // Calculate totalSteps - from sections if present, otherwise from track data
+        let totalSteps = track.totalSteps || 64;
+        if (track.sections && track.sections.length > 0) {
+            totalSteps = Math.max(...track.sections.map(s => s.endStep));
+        }
+
         // Set up track
         this.currentTrack = {
             name: trackName,
             data: track,
             bpm: track.bpm || 120,
             stepsPerBeat: track.stepsPerBeat || 4,
-            totalSteps: track.totalSteps || 64
+            totalSteps: totalSteps,
+            sections: track.sections || null
         };
 
         // Parse track instruments
@@ -218,6 +225,7 @@ class MusicSystem extends GUTS.BaseSystem {
 
     /**
      * Parse track voices (instruments + patterns)
+     * Supports both old format (voice.pattern) and new sections format (sections[].voicePatterns)
      */
     parseTrackVoices(track) {
         const voices = [];
@@ -228,22 +236,63 @@ class MusicSystem extends GUTS.BaseSystem {
             // Get instrument definition
             const instrument = this.instruments[voiceConfig.instrument] || this.getDefaultInstrument();
 
-            // Get or parse pattern
-            let pattern = voiceConfig.pattern;
-            if (typeof pattern === 'string') {
-                pattern = this.patterns[pattern]?.notes || [];
+            // For old format: get pattern directly from voice
+            // For new sections format: pattern will be looked up dynamically in scheduleStep
+            let pattern = null;
+            if (voiceConfig.pattern) {
+                pattern = voiceConfig.pattern;
+                if (typeof pattern === 'string') {
+                    pattern = this.patterns[pattern]?.notes || [];
+                }
             }
 
             voices.push({
                 name: voiceConfig.name || 'voice',
                 instrument: instrument,
-                pattern: pattern,
+                pattern: pattern, // null for sections format
                 volume: voiceConfig.volume ?? 1.0,
                 octaveShift: voiceConfig.octaveShift || 0
             });
         }
 
         return voices;
+    }
+
+    /**
+     * Get the section containing a given step
+     */
+    getSectionAtStep(step) {
+        if (!this.currentTrack?.sections) return null;
+
+        for (const section of this.currentTrack.sections) {
+            if (step >= section.startStep && step < section.endStep) {
+                return section;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the pattern for a voice at a given step (handles sections)
+     */
+    getPatternForVoiceAtStep(voice, step) {
+        // If voice has a direct pattern (old format), use it
+        if (voice.pattern) {
+            return voice.pattern;
+        }
+
+        // For sections format, look up pattern from current section
+        const section = this.getSectionAtStep(step);
+        if (!section || !section.voicePatterns) {
+            return null;
+        }
+
+        const patternName = section.voicePatterns[voice.name];
+        if (!patternName) {
+            return null;
+        }
+
+        return this.patterns[patternName]?.notes || null;
     }
 
     /**
@@ -357,8 +406,12 @@ class MusicSystem extends GUTS.BaseSystem {
         if (!this.currentTrack?.voices) return;
 
         for (const voice of this.currentTrack.voices) {
-            const patternStep = step % voice.pattern.length;
-            const note = voice.pattern[patternStep];
+            // Get pattern for this voice at this step (handles both old and sections format)
+            const pattern = this.getPatternForVoiceAtStep(voice, step);
+            if (!pattern || pattern.length === 0) continue;
+
+            const patternStep = step % pattern.length;
+            const note = pattern[patternStep];
 
             if (note && note !== '-' && note !== null) {
                 this.playNote(voice, note, time);
