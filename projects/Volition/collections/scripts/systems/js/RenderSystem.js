@@ -15,16 +15,12 @@ class RenderSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('RenderSystem initializing...');
         const config = this.game.gameInstance?.getConfig() || {};
         this.animationSpeed = config.animationSpeed !== undefined ? config.animationSpeed : 2000;
     }
 
     postAllInit() {
         this.cardContainer = document.getElementById('cardContainer');
-        if (!this.cardContainer) {
-            console.error('RenderSystem: cardContainer not found');
-        }
     }
 
     createCardElement(cardEid) {
@@ -53,12 +49,16 @@ class RenderSystem extends GUTS.BaseSystem {
                 <div class="card-front">
                     <div class="card-corner top-left">
                         <span class="card-rank">${rankName}</span>
-                        <span class="card-suit">${suitSymbol}</span>
+                    </div>
+                    <div class="card-corner top-right">
+                        <span class="card-suit-large">${suitSymbol}</span>
                     </div>
                     <div class="card-pips">${centerContent}</div>
+                    <div class="card-corner bottom-left">
+                        <span class="card-suit-large">${suitSymbol}</span>
+                    </div>
                     <div class="card-corner bottom-right">
                         <span class="card-rank">${rankName}</span>
-                        <span class="card-suit">${suitSymbol}</span>
                     </div>
                 </div>
                 <div class="card-back">
@@ -142,6 +142,10 @@ class RenderSystem extends GUTS.BaseSystem {
         setTimeout(() => {
             el.classList.remove('flipping');
         }, 400);
+    }
+
+    onAnimationSpeedChanged(data) {
+        this.animationSpeed = data.speed;
     }
 
     update() {

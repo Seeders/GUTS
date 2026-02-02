@@ -11,7 +11,6 @@ class TitleSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('TitleSystem initializing...');
     }
 
     postAllInit() {
@@ -55,7 +54,13 @@ class TitleSystem extends GUTS.BaseSystem {
         await new Promise(resolve => setTimeout(resolve, fadeDuration * 1000));
 
         if (this.game.sceneManager) {
-            this.game.sceneManager.switchScene('game');
+            // Check if user has seen the tutorial - if not, go to tutorial instead
+            const tutorialSeen = localStorage.getItem('volitionTutorialSeen');
+            if (!tutorialSeen) {
+                this.game.sceneManager.switchScene('tutorial');
+            } else {
+                this.game.sceneManager.switchScene('game');
+            }
         }
     }
 

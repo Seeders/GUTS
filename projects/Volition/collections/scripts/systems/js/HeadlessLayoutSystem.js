@@ -25,8 +25,6 @@ class HeadlessLayoutSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('[Headless] HeadlessLayoutSystem initializing...');
-
         // Read config for field columns
         const config = this.game.gameInstance?.getConfig() || {};
         const numColumns = config.fieldColumns || 6;

@@ -568,7 +568,6 @@ class HarbingerSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('HarbingerSystem initializing...');
     }
 
     postAllInit() {
@@ -651,8 +650,6 @@ class HarbingerSystem extends GUTS.BaseSystem {
             deckArea.addEventListener('click', () => {
                 this.showTaunt();
             });
-        } else {
-            console.warn('HarbingerSystem: deckArea not found');
         }
     }
 

@@ -10,7 +10,6 @@ class KingdomSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('KingdomSystem initializing...');
     }
 
     postAllInit() {
@@ -106,7 +105,6 @@ class KingdomSystem extends GUTS.BaseSystem {
     checkWin() {
         const total = this.getTotalKingdomCards();
         if (total === 52) {
-            console.log('WIN!');
             this._gameOver = true;
             this._won = true;
             // In headless mode, showWinScreen may not exist

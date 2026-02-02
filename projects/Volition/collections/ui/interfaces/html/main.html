@@ -7,17 +7,23 @@
         </div>
     </div>
 
-    <!-- Compact Header -->
-    <header id="gameHeader">
-        <div class="header-left">
+    <!-- Footer with stats and speed controls -->
+    <footer id="gameFooter">
+        <div class="footer-left">
             <span id="gameTimer">0:00</span>
             <span class="divider">|</span>
             <span id="kingdomProgress">0/52</span>
         </div>
-        <div class="header-right">
+        <div class="footer-speed">
+            <button class="speed-toggle" data-speed="2000">Slow</button>
+            <button class="speed-toggle active" data-speed="4000">Normal</button>
+            <button class="speed-toggle" data-speed="8000">Fast</button>
+            <button class="speed-toggle" data-speed="99999">Instant</button>
+        </div>
+        <div class="footer-right">
             <span class="deck-count"><span id="deckCount">52</span> left</span>
         </div>
-    </header>
+    </footer>
 
     <!-- Kingdom area -->
     <div id="topArea">
@@ -69,7 +75,7 @@
         </div>
     </div>
 
-    <!-- Bottom toolbar -->
+    <!-- Top toolbar -->
     <nav id="toolbar">
         <button id="tutorialBtn" class="toolbar-btn">
             <span class="icon">i</span>
@@ -78,10 +84,6 @@
         <button id="checkMoveBtn" class="toolbar-btn">
             <span class="icon">?</span>
             <span class="label">Check</span>
-        </button>
-        <button id="aiPlayBtn" class="toolbar-btn">
-            <span class="icon">▶</span>
-            <span class="label">AI Play</span>
         </button>
         <button id="settingsBtn" class="toolbar-btn">
             <span class="icon">*</span>

@@ -26,7 +26,6 @@ class LayoutSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('LayoutSystem initializing...');
     }
 
     postAllInit() {

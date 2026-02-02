@@ -4,7 +4,7 @@
  */
 class TutorialSystem extends GUTS.BaseSystem {
     static services = ['startTutorial', 'endTutorial', 'isTutorialActive', 'onCardPlayed'];
-    static serviceDependencies = ['getHandCards', 'getColumnCards', 'getKingdomCards', 'getDeckCount', 'flowCard', 'startAISimulation', 'stopAISimulation', 'setAISpeed', 'shuffleDeck', 'dealInitialHand'];
+    static serviceDependencies = ['getHandCards', 'getColumnCards', 'getKingdomCards', 'getDeckCount', 'flowCard', 'startAISimulation', 'stopAISimulation', 'setAISpeed', 'shuffleDeck', 'dealInitialHand', 'resetDeck', 'getFieldColumns', 'pushToHand', 'dealCard', 'getHandCapacity'];
 
     constructor(game) {
         super(game);
@@ -12,7 +12,6 @@ class TutorialSystem extends GUTS.BaseSystem {
         this.currentStep = 0;
         this.overlay = null;
         this.waitingForAction = null;
-        this.drawCount = 0; // Track draws for the discard demonstration
         this.cardsDealt = false; // Track if initial hand has been dealt
 
         // Tutorial steps - each step explains something and optionally waits for an action
@@ -21,62 +20,48 @@ class TutorialSystem extends GUTS.BaseSystem {
                 title: "Welcome to Volition!",
                 text: "Let's learn how to play. Your goal is to move all 52 cards to the kingdoms sorted by suit from Ace to King.",
                 highlight: null,
-                waitFor: null, // No action required, just click Next
+                waitFor: null,
                 position: "center"
             },
             {
-                title: "Your Hand",
-                text: "These are your cards. You can drag any card from your hand to play it.",
-                highlight: "#handArea",
-                waitFor: null,
-                position: "above"
-            },
-            {
                 title: "The Kingdoms",
-                text: "Each suit has its own kingdom. Start with Aces, then build up to Kings. The kingdoms are Hearts, Diamonds, Clubs, and Spades.",
-                highlight: "#kingdomArea",
-                waitFor: null,
-                position: "below"
-            },
-            {
-                title: "Discard Preview",
-                text: "The red outline on the field shows where your oldest card will go when it's pushed out of your hand.",
-                highlight: "#fieldArea",
-                waitFor: null,
-                position: "below"
-            },
-            {
-                title: "Discard Order",
-                text: "Cards are discarded to empty columns first (left to right). If all columns have cards, it cycles through them in order.",
-                highlight: "#fieldArea",
-                waitFor: null,
-                position: "below"
-            },
-            {
-                title: "Play an Ace!",
-                text: "Look for an Ace in your hand. Drag it to its matching kingdom, or double-tap it to auto-play.",
-                highlight: "#handArea",
-                waitFor: { type: 'kingdom', description: 'Play any Ace to the kingdom' },
-                position: "above",
-                isActionStep: true
-            },
-            {
-                title: "Great!",
-                text: "Nice work! You just played a card to the kingdom. Keep building each suit up to King to win.",
+                text: "Each suit has its own kingdom. Start with Aces, then build up to Kings.",
                 highlight: "#kingdomArea",
                 waitFor: null,
                 position: "below"
             },
             {
                 title: "The Field",
-                text: "These columns are the main play area.  Stack cards in descending order with alternating colors (red on black, black on red).",
+                text: "The field has 6 columns that hold cards still in play.",
                 highlight: "#fieldArea",
                 waitFor: null,
                 position: "below"
             },
             {
-                title: "Play to the Field",
-                text: "Try placing a card on the field. Remember: descending order, alternating colors. Only Kings can start an empty column.  These rules do NOT apply to discards!  Watch out!",
+                title: "Play the Ace!",
+                text: "Drag the Ace from the field to its matching kingdom, or double-tap it to auto-play.",
+                highlight: "#fieldArea",
+                waitFor: { type: 'kingdom', description: 'Play the Ace to the kingdom' },
+                position: "below",
+                isActionStep: true
+            },
+            {
+                title: "Great!",
+                text: "Nice work! Cards can be played to kingdoms from your hand or the field.",
+                highlight: "#kingdomArea",
+                waitFor: null,
+                position: "below"
+            },
+            {
+                title: "Your Hand",
+                text: "This is your hand. You can play cards to empty columns, or stack them in descending order with alternating colors.",
+                highlight: "#handArea",
+                waitFor: null,
+                position: "above"
+            },
+            {
+                title: "Fill the Empty Column!",
+                text: "The Ace left an empty column. Drag any card from your hand to fill it!",
                 highlight: "#fieldArea",
                 waitFor: { type: 'field', description: 'Play a card to the field' },
                 position: "below",
@@ -84,69 +69,29 @@ class TutorialSystem extends GUTS.BaseSystem {
             },
             {
                 title: "Card Flow",
-                text: "Your hand always holds 5 cards. When you draw from the deck, the oldest card (leftmost) is pushed out to the next field column regardless of what is there. Try to play cards before they get pushed out!",
-                highlight: "#handArea",
+                text: "When you draw from the deck, your oldest card (leftmost) gets pushed out to the field as a discard.",
+                highlight: "#deckArea",
                 waitFor: null,
                 position: "above"
             },
             {
-                title: "Try Drawing a Card",
-                text: "Click the deck to draw a card. Watch where your oldest card goes!",
+                title: "Watch What Happens",
+                text: "Draw a card and watch where the discard goes. It will ignore placement rules!",
                 highlight: "#deckArea",
-                waitFor: { type: 'draw', description: 'Draw a card from the deck' },
+                waitFor: { type: 'draw', description: 'Draw a card' },
                 position: "above",
                 isActionStep: true
             },
             {
-                title: "Keep Drawing",
-                text: "Keep clicking the deck. Watch each column fill up one by one.",
-                highlight: "#deckArea",
-                waitFor: { type: 'draw', description: 'Draw another card' },
-                position: "above",
-                isActionStep: true
-            },
-            {
-                title: "Columns Filling",
-                text: "Draw again! You won't always have a lot of moves at the start of the game.  That's ok!",
-                highlight: "#deckArea",
-                waitFor: { type: 'draw', description: 'Draw another card' },
-                position: "above",
-                isActionStep: true
-            },
-            {
-                title: "Keep Going",
-                text: "There are still no moves!  Nobody chooses where they begin in life.  But there is still hope!",
-                highlight: "#deckArea",
-                waitFor: { type: 'draw', description: 'Draw another card' },
-                position: "above",
-                isActionStep: true
-            },
-            {
-                title: "Almost Full",
-                text: "Draw again.  Soon all of the columns will be full, and discards will loop to the start again.",
-                highlight: "#deckArea",
-                waitFor: { type: 'draw', description: 'Draw another card' },
-                position: "above",
-                isActionStep: true
-            },
-            {
-                title: "All Columns Full",
-                text: "Last draw for the tutorial.  Stick with me, there is a point to this!",
-                highlight: "#deckArea",
-                waitFor: { type: 'draw', description: 'Draw one more card' },
-                position: "above",
-                isActionStep: true
-            },
-            {
-                title: "Important: Discard Rules!",
-                text: "Notice the discard ignored placement rules! Unlike when YOU play cards, discards ignore constraints. They don't need alternating colors or descending order. This is why you should play cards before they get pushed out!",
+                title: "Discards Ignore Rules!",
+                text: "See how that red card stacked on another red card? Discards can block important cards, so play wisely!",
                 highlight: "#fieldArea",
                 waitFor: null,
                 position: "below"
             },
             {
                 title: "You're Ready!",
-                text: "Build all four kingdoms from Ace to King to win. Play cards wisely and manage your hand. Good luck!",
+                text: "Build all four kingdoms from Ace to King to win. Good luck!",
                 highlight: null,
                 waitFor: null,
                 position: "center",
@@ -156,7 +101,6 @@ class TutorialSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('TutorialSystem initializing...');
     }
 
     postAllInit() {
@@ -172,8 +116,13 @@ class TutorialSystem extends GUTS.BaseSystem {
         const deckArea = document.getElementById('deckArea');
         if (deckArea) {
             deckArea.addEventListener('click', () => {
-                if (this.active && this.waitingForAction?.type === 'draw') {
-                    setTimeout(() => this.completeAction('draw'), 100);
+                if (this.active && this.waitingForAction) {
+                    // Handle draw action immediately
+                    if (this.waitingForAction?.type === 'draw') {
+                        setTimeout(() => this.completeAction('draw'), 200);
+                    }
+                    // Start polling for fill_columns completion
+                    this.startFillColumnsPolling();
                 }
             });
         }
@@ -188,6 +137,36 @@ class TutorialSystem extends GUTS.BaseSystem {
         } else if (this.waitingForAction.type === 'field' && location === 'field') {
             this.completeAction('field');
         }
+
+        // Start polling for fill_columns completion after field plays
+        if (location === 'field') {
+            this.startFillColumnsPolling();
+        }
+    }
+
+    /**
+     * Start polling to check if fill_columns is complete
+     * Polls every 300ms until all columns have landed cards
+     */
+    startFillColumnsPolling() {
+        if (this._fillColumnsInterval) return; // Already polling
+        if (!this.active || !this.waitingForAction) return;
+        if (this.waitingForAction.type !== 'fill_columns') return;
+
+        this._fillColumnsInterval = setInterval(() => {
+            if (!this.active || !this.waitingForAction || this.waitingForAction.type !== 'fill_columns') {
+                clearInterval(this._fillColumnsInterval);
+                this._fillColumnsInterval = null;
+                return;
+            }
+
+            if (this.areAllColumnsFilled()) {
+                clearInterval(this._fillColumnsInterval);
+                this._fillColumnsInterval = null;
+                this.waitingForAction = null;
+                setTimeout(() => this.nextStep(), 300);
+            }
+        }, 300);
     }
 
     completeAction(actionType) {
@@ -197,6 +176,75 @@ class TutorialSystem extends GUTS.BaseSystem {
         // Action completed, advance to next step
         this.waitingForAction = null;
         setTimeout(() => this.nextStep(), 300);
+    }
+
+    /**
+     * Check if all field columns have at least one card
+     */
+    areAllColumnsFilled() {
+        const numColumns = this.call.getFieldColumns?.() || 6;
+        let filledCount = 0;
+        for (let col = 0; col < numColumns; col++) {
+            const colCards = this.call.getColumnCards?.(col) || [];
+            if (colCards.length > 0) {
+                filledCount++;
+            }
+        }
+        return filledCount === numColumns;
+    }
+
+    /**
+     * Fill hand to capacity before the draw demonstration
+     * This ensures a discard happens when the user draws
+     */
+    fillHandForDemo() {
+        const capacity = this.call.getHandCapacity?.() || 5;
+        const handCards = this.call.getHandCards?.() || [];
+        const cardsNeeded = capacity - handCards.length;
+
+        for (let i = 0; i < cardsNeeded; i++) {
+            const cardEid = this.call.dealCard?.();
+            if (!cardEid) break;
+            this.call.pushToHand?.(cardEid);
+        }
+    }
+
+    /**
+     * Check if an action was already completed before we reached this step
+     * This handles cases where user performs actions out of order
+     */
+    isActionAlreadyCompleted(waitFor) {
+        if (!waitFor) return false;
+
+        if (waitFor.type === 'kingdom') {
+            // Check if any cards are in the kingdom (tutorial starts with empty kingdoms)
+            for (let suit = 0; suit < 4; suit++) {
+                const cards = this.call.getKingdomCards?.(suit) || [];
+                if (cards.length > 0) {
+                    return true; // At least one card played to kingdom
+                }
+            }
+            return false;
+        }
+
+        if (waitFor.type === 'field') {
+            // Check if any field column has MORE than 1 card (indicating stacking)
+            // Columns are pre-filled with 1 card each during initial deal
+            const numColumns = this.call.getFieldColumns?.() || 6;
+            for (let col = 0; col < numColumns; col++) {
+                const colCards = this.call.getColumnCards?.(col) || [];
+                if (colCards.length > 1) {
+                    return true; // Stacking has occurred
+                }
+            }
+            return false;
+        }
+
+        if (waitFor.type === 'fill_columns') {
+            return this.areAllColumnsFilled();
+        }
+
+        return false;
     }
 
     createOverlay() {
@@ -283,7 +331,6 @@ class TutorialSystem extends GUTS.BaseSystem {
         this.active = true;
         this.currentStep = 0;
         this.waitingForAction = null;
-        this.drawCount = 0;
 
         // Deal the initial hand (uses fixed tutorial deck already set up by DeckSystem)
         this.call.dealInitialHand();
@@ -298,6 +345,13 @@ class TutorialSystem extends GUTS.BaseSystem {
         this.boxEl.style.display = 'none';
         this.overlay.classList.add('hidden');
         this.active = false;
+
+        // Mark tutorial as seen (watching AI counts as learning)
+        try {
+            localStorage.setItem('volitionTutorialSeen', 'true');
+        } catch (e) {
+            // Ignore localStorage errors
+        }
 
         // Shuffle deck randomly (overrides the fixed tutorial deck)
         this.call.shuffleDeck();
@@ -317,10 +371,17 @@ class TutorialSystem extends GUTS.BaseSystem {
         try {
             localStorage.setItem('volitionTutorialSeen', 'true');
         } catch (e) {
-            console.warn('Failed to save tutorial state:', e);
+            // Ignore localStorage errors
         }
 
-        this.game.sceneManager?.switchScene('game');
+        // Hide the overlay before switching
+        this.overlay.classList.add('hidden');
+
+        if (this.game.sceneManager) {
+            this.game.sceneManager.switchScene('game');
+        } else {
+            console.error('SceneManager not found on game object');
+        }
     }
 
     endTutorial() {
@@ -334,10 +395,15 @@ class TutorialSystem extends GUTS.BaseSystem {
         try {
             localStorage.setItem('volitionTutorialSeen', 'true');
         } catch (e) {
-            console.warn('Failed to save tutorial state:', e);
+            // Ignore localStorage errors
         }
 
-        // Stay in current scene - cards are already dealt, let them play
+        // Go to game scene
+        if (this.game.sceneManager) {
+            this.game.sceneManager.switchScene('game');
+        } else {
+            console.error('SceneManager not found on game object');
+        }
     }
 
     nextStep() {
@@ -352,6 +418,11 @@ class TutorialSystem extends GUTS.BaseSystem {
     showStep(stepIndex) {
         const step = this.steps[stepIndex];
 
+        // Before draw demonstration, fill hand so discard happens
+        if (step.waitFor?.type === 'draw') {
+            this.fillHandForDemo();
+        }
+
         // Update content
         this.titleEl.textContent = step.title;
         this.textEl.textContent = step.text;
@@ -359,6 +430,13 @@ class TutorialSystem extends GUTS.BaseSystem {
 
         // Update button based on step type
         if (step.isActionStep) {
+            // Check if action was already completed before we got to this step
+            if (this.isActionAlreadyCompleted(step.waitFor)) {
+                // Auto-advance since the action was already done
+                setTimeout(() => this.nextStep(), 300);
+                return;
+            }
+
             this.nextBtn.textContent = "Waiting...";
             this.nextBtn.disabled = true;
             this.nextBtn.classList.add('waiting');

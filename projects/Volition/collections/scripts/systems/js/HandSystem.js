@@ -3,7 +3,7 @@
  */
 class HandSystem extends GUTS.BaseSystem {
     static services = ['getHandCards', 'pushToHand', 'popFromHand', 'popFromHandRaw', 'removeFromHand', 'isHandFull', 'getHandCapacity', 'getOldestHandCard', 'updateHandLayout', 'dealInitialHand'];
-    static serviceDependencies = ['dealCard', 'getHandPosition', 'getCardWidth', 'getCardHeight', 'getDeckPosition', 'isTutorialActive'];
+    static serviceDependencies = ['dealCard', 'getHandPosition', 'getCardWidth', 'getCardHeight', 'getDeckPosition', 'isTutorialActive', 'getFieldColumns', 'findEmptyColumn', 'dumpToField', 'getFieldPosition', 'getStackOffset'];
 
     constructor(game) {
         super(game);
@@ -11,34 +11,83 @@ class HandSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('HandSystem init called');
         const config = this.game.gameInstance?.getConfig() || {};
         this.handCapacity = config.handCapacity || 5;
-        console.log('HandSystem: handCapacity =', this.handCapacity);
     }
 
     postAllInit() {
-        console.log('HandSystem postAllInit called');
-
         // Skip dealing if TutorialSystem is present - it will trigger the deal after user chooses
         if (this.call.isTutorialActive?.()) {
-            console.log('HandSystem: Tutorial active, waiting for tutorial choice before dealing');
             return;
         }
 
         // Deal initial hand
         this.dealInitialHand();
-        console.log('HandSystem: initial hand dealt, hand cards =', this.getHandCards().length);
+    }
+
+    onSceneLoad(sceneData, params) {
+        // sceneData is the full scene object, get name from sceneManager
+        const sceneName = this.game.sceneManager?.currentSceneName;
+        console.log('[HandSystem] onSceneLoad called, sceneName:', sceneName);
+        // When game scene loads (e.g., from tutorial), deal cards if hand is empty
+        if (sceneName === 'game') {
+            const handCards = this.getHandCards();
+            console.log('[HandSystem] Hand cards count:', handCards.length);
+            if (handCards.length === 0) {
+                console.log('[HandSystem] Dealing initial hand...');
+                this.dealInitialHand();
+            } else {
+                console.log('[HandSystem] Hand not empty, skipping deal');
+            }
+        }
     }
 
     dealInitialHand() {
-        // Fill hand with cards
+        // First, fill all empty field columns
+        const numColumns = this.call.getFieldColumns?.() || 4;
+        for (let col = 0; col < numColumns; col++) {
+            const cardEid = this.call.dealCard();
+            if (cardEid) {
+                this.dealToField(cardEid, col);
+            }
+        }
+
+        // Then, fill hand with cards
         for (let i = 0; i < this.handCapacity; i++) {
             const cardEid = this.call.dealCard();
             if (cardEid) {
                 this.pushToHand(cardEid);
             }
         }
+    }
+
+    /**
+     * Deal a card directly to a field column (initial deal, no stacking rules)
+     */
+    dealToField(cardEid, columnIndex) {
+        const loc = this.game.getComponent(cardEid, 'cardLocation');
+        const card = this.game.getComponent(cardEid, 'card');
+        const visual = this.game.getComponent(cardEid, 'cardVisual');
+
+        // Set card location to field
+        loc.location = 3; // field
+        loc.index = 0; // first card in column
+        loc.columnIndex = columnIndex;
+
+        // Face up
+        card.faceUp = 1;
+
+        // Set initial position to deck (so card animates FROM deck)
+        const deckPos = this.call.getDeckPosition();
+        visual.x = deckPos.x;
+        visual.y = deckPos.y;
+
+        // Set target position
+        const pos = this.call.getFieldPosition(columnIndex);
+        visual.targetX = pos.x;
+        visual.targetY = pos.y;
+        visual.zIndex = 50;
+        visual.animating = 1;
     }
 
     getHandCards(includeAnimating = true) {

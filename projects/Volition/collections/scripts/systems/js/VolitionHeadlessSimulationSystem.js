@@ -55,7 +55,6 @@ class VolitionHeadlessSimulationSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('[Headless] VolitionHeadlessSimulationSystem initializing...');
     }
 
     postAllInit() {
@@ -118,7 +117,6 @@ class VolitionHeadlessSimulationSystem extends GUTS.BaseSystem {
     // === Stub for service dependency (called by KingdomSystem in headless mode) ===
     showWinScreen() {
         // No-op in headless mode - win is handled by event
-        console.log('[Headless] Game won!');
     }
 
     // === AI compatibility services (same interface as visual mode) ===

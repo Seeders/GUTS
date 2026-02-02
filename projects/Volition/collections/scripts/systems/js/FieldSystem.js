@@ -4,7 +4,7 @@
  */
 class FieldSystem extends GUTS.BaseSystem {
     static services = ['canPlayToField', 'playToField', 'dumpToField', 'getColumnCards', 'getFieldColumns', 'getBottomCard', 'getCardsBelow', 'isValidSequence', 'moveFieldToField', 'findEmptyColumn', 'refreshFieldPositions'];
-    static serviceDependencies = ['removeFromHand', 'getFieldPosition', 'getStackOffset', 'refreshLayout', 'onCardPlayed'];
+    static serviceDependencies = ['removeFromHand', 'getFieldPosition', 'getStackOffset', 'refreshLayout', 'onCardPlayed', 'setNextDumpColumn'];
 
     constructor(game) {
         super(game);
@@ -12,7 +12,6 @@ class FieldSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('FieldSystem initializing...');
         const config = this.game.gameInstance?.getConfig() || {};
         this.numColumns = config.fieldColumns || 4;
     }
@@ -168,6 +167,11 @@ class FieldSystem extends GUTS.BaseSystem {
             this.call.onCardPlayed('field', cardEid);
         }
 
+        // Update round-robin discard column so next discard goes after this column
+        if (this.call.setNextDumpColumn) {
+            this.call.setNextDumpColumn(columnIndex);
+        }
+
         return true;
     }
 
@@ -319,6 +323,11 @@ class FieldSystem extends GUTS.BaseSystem {
             wasEmptyColumn,
             bottomCardRank
         });
+
+        // Update round-robin discard column so next discard goes after this column
+        if (this.call.setNextDumpColumn) {
+            this.call.setNextDumpColumn(targetColumn);
+        }
 
         return true;
     }

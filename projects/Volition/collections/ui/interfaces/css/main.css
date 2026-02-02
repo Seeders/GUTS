@@ -63,9 +63,9 @@ body {
 }
 
 /* ============================================
-   HEADER
+   FOOTER (Stats and Speed Controls)
    ============================================ */
-#gameHeader {
+#gameFooter {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -80,8 +80,8 @@ body {
     z-index: 100;
 }
 
-.header-left,
-.header-right {
+.footer-left,
+.footer-right {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -90,8 +90,13 @@ body {
     letter-spacing: 0.5px;
 }
 
-.header-left .divider {
+.footer-left .divider {
     color: var(--color-text-dim);
+}
+
+.footer-speed {
+    display: flex;
+    gap: 4px;
 }
 
 .deck-count {
@@ -453,6 +458,7 @@ body {
 /* Chaotic cards (not part of valid sequence) - muted but still show suit color */
 .card.chaotic.black .card-rank,
 .card.chaotic.black .card-suit,
+.card.chaotic.black .card-suit-large,
 .card.chaotic.black .pip,
 .card.chaotic.black .face-letter {
     color: #2a6a66 !important; /* Muted teal */
@@ -460,6 +466,7 @@ body {
 
 .card.chaotic.red .card-rank,
 .card.chaotic.red .card-suit,
+.card.chaotic.red .card-suit-large,
 .card.chaotic.red .pip,
 .card.chaotic.red .face-letter {
     color: #8a4444 !important; /* Muted coral */
@@ -488,6 +495,17 @@ body {
     left: 3px;
 }
 
+.card-corner.top-right {
+    top: 2px;
+    right: 3px;
+}
+
+.card-corner.bottom-left {
+    bottom: 2px;
+    left: 3px;
+    transform: rotate(180deg);
+}
+
 .card-corner.bottom-right {
     bottom: 2px;
     right: 3px;
@@ -501,6 +519,10 @@ body {
 
 .card-suit {
     font-size: 11px;
+}
+
+.card-suit-large {
+    font-size: 16px;
 }
 
 /* Pip container */
@@ -562,6 +584,7 @@ body {
 /* Black suits (clubs/spades) use cyan */
 .card.black .card-rank,
 .card.black .card-suit,
+.card.black .card-suit-large,
 .card.black .pip,
 .card.black .face-letter {
     color: var(--color-primary);
@@ -570,6 +593,7 @@ body {
 /* Red suits (hearts/diamonds) use magenta */
 .card.red .card-rank,
 .card.red .card-suit,
+.card.red .card-suit-large,
 .card.red .pip,
 .card.red .face-letter {
     color: var(--color-secondary);
@@ -586,6 +610,7 @@ body {
 
 .ghost-card.black .card-rank,
 .ghost-card.black .card-suit,
+.ghost-card.black .card-suit-large,
 .ghost-card.black .pip,
 .ghost-card.black .face-letter {
     color: var(--color-primary-dim) !important;
@@ -593,6 +618,7 @@ body {
 
 .ghost-card.red .card-rank,
 .ghost-card.red .card-suit,
+.ghost-card.red .card-suit-large,
 .ghost-card.red .pip,
 .ghost-card.red .face-letter {
     color: var(--color-secondary-dim) !important;
@@ -640,7 +666,7 @@ body {
 }
 
 /* ============================================
-   TOOLBAR
+   TOOLBAR (Top)
    ============================================ */
 #toolbar {
     position: fixed;
@@ -651,8 +677,9 @@ body {
     background: var(--color-bg-dark);
     border-bottom: 1px solid var(--color-primary);
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
+    gap: 8px;
     padding: 0 16px;
     z-index: 100;
 }
@@ -685,6 +712,29 @@ body {
 
 #checkMoveBtn {
     color: var(--color-primary);
+}
+
+/* Speed toggle buttons (in footer) */
+.speed-toggle {
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid var(--color-text-dim);
+    color: var(--color-text-dim);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 4px;
+}
+
+.speed-toggle:hover {
+    border-color: var(--color-text);
+    color: var(--color-text);
+}
+
+.speed-toggle.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-bg);
 }
 
 /* ============================================
@@ -958,12 +1008,12 @@ body {
         --pip-face-size: 20px;
     }
 
-    #gameHeader {
+    #gameFooter {
         padding: 0 20px;
     }
 
-    .header-left,
-    .header-right {
+    .footer-left,
+    .footer-right {
         font-size: 18px;
         gap: 12px;
     }
@@ -996,8 +1046,22 @@ body {
         font-size: 13px;
     }
 
+    .card-suit-large {
+        font-size: 18px;
+    }
+
     .card-corner.top-left {
         top: 4px;
+        left: 4px;
+    }
+
+    .card-corner.top-right {
+        top: 4px;
+        right: 4px;
+    }
+
+    .card-corner.bottom-left {
+        bottom: 4px;
         left: 4px;
     }
 
@@ -1062,6 +1126,10 @@ body {
 
     .card-suit {
         font-size: 15px;
+    }
+
+    .card-suit-large {
+        font-size: 20px;
     }
 
     #handArea {

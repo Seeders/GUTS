@@ -43,7 +43,7 @@ class VolitionGame extends GUTS.BaseECSGame {
                 return { ...defaults, ...JSON.parse(saved) };
             }
         } catch (e) {
-            console.warn('Failed to load settings:', e);
+            // Silently ignore localStorage errors
         }
         return defaults;
     }

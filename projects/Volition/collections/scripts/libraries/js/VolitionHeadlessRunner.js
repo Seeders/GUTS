@@ -66,9 +66,6 @@ class VolitionHeadlessRunner {
             handSystem.dealInitialHand();
         }
 
-        if (this.verbose) {
-            console.log(`[Runner] Game setup with seed: ${this.seed}`);
-        }
     }
 
     /**
@@ -104,10 +101,6 @@ class VolitionHeadlessRunner {
         }
 
         const results = this.getResults();
-        if (this.verbose) {
-            console.log(`[Runner] Game ${results.won ? 'WON' : 'LOST'} - ${results.kingdomCards}/52 cards, ${results.moveCount} moves`);
-        }
-
         return results;
     }
 

@@ -18,11 +18,9 @@ class DeckSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('DeckSystem init called');
     }
 
     postAllInit() {
-        console.log('DeckSystem postAllInit called');
         this.createDeck();
 
         // Use fixed deck if TutorialSystem is present (tutorial scene only)
@@ -31,18 +29,64 @@ class DeckSystem extends GUTS.BaseSystem {
         } else {
             this.shuffleDeck();
         }
-        console.log('DeckSystem: Deck created and shuffled, total cards:', this.deckOrder.length);
+    }
+
+    onSceneLoad(sceneData, params) {
+        // sceneData is the full scene object, get name from sceneManager
+        const sceneName = this.game.sceneManager?.currentSceneName;
+        console.log('[DeckSystem] onSceneLoad called, sceneName:', sceneName);
+        // When game scene loads (e.g., from tutorial), reset all cards to deck and shuffle
+        if (sceneName === 'game') {
+            console.log('[DeckSystem] Resetting deck...');
+            this.resetDeck();
+            console.log('[DeckSystem] Shuffling deck...');
+            this.shuffleDeck();
+            console.log('[DeckSystem] Deck ready, count:', this.getDeckCount());
+        }
+    }
+
+    /**
+     * Return all cards to the deck
+     */
+    resetDeck() {
+        const allCards = this.game.getEntitiesWith('card', 'cardLocation');
+        for (const eid of allCards) {
+            const loc = this.game.getComponent(eid, 'cardLocation');
+            const card = this.game.getComponent(eid, 'card');
+            loc.location = 0; // deck
+            loc.index = 0;
+            loc.columnIndex = -1;
+            card.faceUp = 0;
+        }
+        // Rebuild deck order
+        this.deckOrder = [...allCards];
     }
 
     /**
      * Set up a fixed deck order for the tutorial
-     * Ensures the first 5 cards (initial hand) include an Ace and useful cards
+     * Creates a fully controlled scenario:
+     *
+     * Field cards (first 6 dealt to columns 0-5) - ALL RED so no stacking possible:
+     * - Column 0: Ace of Hearts (red) - user plays to kingdom, leaves empty column
+     * - Column 1: 9 of Hearts (red) - discard target
+     * - Column 2: 7 of Diamonds (red)
+     * - Column 3: 5 of Hearts (red)
+     * - Column 4: 3 of Diamonds (red)
+     * - Column 5: 2 of Hearts (red)
+     *
+     * Hand cards (next 5 dealt) - ALL RED so can't stack on red field:
+     * - 8 of Hearts: plays to empty col 0 after Ace removed
+     * - 6 of Hearts: can't stack (red on red)
+     * - 4 of Diamonds: can't stack (red on red)
+     * - 10 of Hearts: can't stack (red on red)
+     * - King of Diamonds: can't stack (red on red)
+     *
+     * After Ace played to kingdom and 8♥ played to empty column:
+     * - No valid moves remain (all red cards)
+     * - When user draws with full hand, 6♥ discards to col 1 (9♥)
+     * - Red on red = invalid placement, demonstrating discards ignore rules
      */
     setupTutorialDeck() {
-        // Find specific cards to put at the front
-        // Ace for kingdom, King for field, and other cards
-        // This gives a good mix for demonstrating plays
-
         const findCard = (suit, rank) => {
             return this.deckOrder.find(eid => {
                 const card = this.game.getComponent(eid, 'card');
@@ -50,17 +94,29 @@ class DeckSystem extends GUTS.BaseSystem {
             });
         };
 
-        // Desired initial hand (first 5 cards dealt)
-        const tutorialHand = [
-            findCard(0, 1),   // Ace of Hearts - can play to kingdom
-            findCard(3, 13),  // King of Spades - can start empty field column
-            findCard(1, 5),   // 5 of Diamonds
-            findCard(2, 10),  // 10 of Clubs
-            findCard(0, 3),   // 3 of Hearts
+        // Suits: 0=hearts, 1=diamonds, 2=clubs, 3=spades
+        const tutorialSequence = [
+            // Field cards (first 6, dealt to columns 0-5) - ALL RED
+            findCard(0, 1),   // Col 0: Ace of Hearts (red) - user plays to kingdom
+            findCard(0, 9),   // Col 1: 9 of Hearts (red) - discard target
+            findCard(1, 7),   // Col 2: 7 of Diamonds (red)
+            findCard(0, 5),   // Col 3: 5 of Hearts (red)
+            findCard(1, 3),   // Col 4: 3 of Diamonds (red)
+            findCard(0, 2),   // Col 5: 2 of Hearts (red)
+            // Hand cards (next 5) - ALL RED, can't stack on red field
+            findCard(0, 8),   // 8 of Hearts - plays to empty col 0
+            findCard(0, 6),   // 6 of Hearts (can't stack)
+            findCard(1, 4),   // 4 of Diamonds (can't stack)
+            findCard(0, 10),  // 10 of Hearts (can't stack)
+            findCard(1, 13),  // King of Diamonds (can't stack)
+            // Draw cards (used to fill hand before discard demonstration)
+            findCard(1, 12),  // Queen of Diamonds
+            findCard(0, 4),   // 4 of Hearts
+            findCard(1, 6),   // 6 of Diamonds
         ];
 
-        // Remove these from deck and add to front
-        for (const eid of tutorialHand) {
+        // Remove these from deck
+        for (const eid of tutorialSequence) {
             if (eid) {
                 const idx = this.deckOrder.indexOf(eid);
                 if (idx > -1) {
@@ -69,16 +125,14 @@ class DeckSystem extends GUTS.BaseSystem {
             }
         }
 
-        // Add tutorial hand cards to front (they'll be dealt first)
-        this.deckOrder = [...tutorialHand.filter(e => e), ...this.deckOrder];
+        // Add tutorial sequence to front (they'll be dealt/drawn in order)
+        this.deckOrder = [...tutorialSequence.filter(e => e), ...this.deckOrder];
 
         // Update indices
         this.deckOrder.forEach((eid, idx) => {
             const loc = this.game.getComponent(eid, 'cardLocation');
             loc.index = idx;
         });
-
-        console.log('TutorialDeck: Set up fixed deck order for tutorial');
     }
 
     createDeck() {
@@ -119,8 +173,6 @@ class DeckSystem extends GUTS.BaseSystem {
                 this.deckOrder.push(entityId);
             }
         }
-
-        console.log(`DeckSystem: Created ${this.deckOrder.length} cards`);
     }
 
     shuffleDeck(seed = null) {

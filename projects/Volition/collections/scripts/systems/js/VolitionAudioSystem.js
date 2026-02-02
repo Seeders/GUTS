@@ -65,7 +65,6 @@ class VolitionAudioSystem extends AudioSystem {
 
     init() {
         super.init();
-        console.log('VolitionAudioSystem initializing...');
         this.loadSoundConfigs();
     }
 
@@ -83,7 +82,6 @@ class VolitionAudioSystem extends AudioSystem {
 
         const soundData = this.sounds[soundId];
         if (!soundData || !soundData.audio) {
-            console.warn(`AudioSystem: Sound '${soundId}' not found`);
             return;
         }
 
@@ -99,7 +97,7 @@ class VolitionAudioSystem extends AudioSystem {
         try {
             this.playSynthSound(uniqueId, config);
         } catch (e) {
-            console.warn(`AudioSystem: Failed to play sound '${soundId}':`, e);
+            // Ignore audio errors
         }
     }
 

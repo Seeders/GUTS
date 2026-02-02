@@ -3,7 +3,7 @@
  * When drawing: oldest card discards, then cards shift one by one, then new card drawn
  */
 class CardFlowSystem extends GUTS.BaseSystem {
-    static services = ['flowCard', 'flowAfterHandPlay', 'getNextDumpColumn', 'isFlowAnimating', 'isAwaitingColumnSelection', 'cancelColumnSelection', 'completeDiscard'];
+    static services = ['flowCard', 'flowAfterHandPlay', 'getNextDumpColumn', 'setNextDumpColumn', 'isFlowAnimating', 'isAwaitingColumnSelection', 'cancelColumnSelection', 'completeDiscard'];
     static serviceDependencies = [
         'dealCard', 'popFromHandRaw', 'isHandFull', 'getDeckCount', 'dumpToField',
         'getFieldColumns', 'findEmptyColumn', 'getOldestHandCard', 'getColumnCards',
@@ -52,13 +52,9 @@ class CardFlowSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('CardFlowSystem initializing...');
         // Detect headless mode and animation speed
         const config = this.game.getConfig?.() || {};
         this._isHeadless = config.isHeadless || false;
-        if (this._isHeadless) {
-            console.log('[CardFlowSystem] Running in headless mode');
-        }
 
         // Scale animation durations based on animation speed setting
         // Default speed is 4000, scale durations inversely
@@ -75,6 +71,14 @@ class CardFlowSystem extends GUTS.BaseSystem {
         }
     }
 
+    onAnimationSpeedChanged(data) {
+        // Scale animation durations based on animation speed setting
+        const speedMultiplier = 4000 / Math.max(data.speed, 1);
+        this.flipDuration = Math.max(400 * speedMultiplier, 10);
+        this.shiftDuration = Math.max(250 * speedMultiplier, 10);
+        this.shiftLandingGap = Math.max(80 * speedMultiplier, 5);
+    }
+
     createGhostCard() {
         this.ghostCard = document.createElement('div');
         this.ghostCard.className = 'card ghost-card';
@@ -83,12 +87,16 @@ class CardFlowSystem extends GUTS.BaseSystem {
                 <div class="card-front">
                     <div class="card-corner top-left">
                         <span class="card-rank"></span>
-                        <span class="card-suit"></span>
+                    </div>
+                    <div class="card-corner top-right">
+                        <span class="card-suit-large"></span>
                     </div>
                     <div class="card-pips"></div>
+                    <div class="card-corner bottom-left">
+                        <span class="card-suit-large"></span>
+                    </div>
                     <div class="card-corner bottom-right">
                         <span class="card-rank"></span>
-                        <span class="card-suit"></span>
                     </div>
                 </div>
             </div>
@@ -489,7 +497,6 @@ class CardFlowSystem extends GUTS.BaseSystem {
         // Pop the card from hand
         const dumpedCard = this.call.popFromHandRaw();
         if (!dumpedCard || dumpedCard !== cardEid) {
-            console.warn('Card mismatch during discard');
             return;
         }
 
@@ -707,6 +714,11 @@ class CardFlowSystem extends GUTS.BaseSystem {
         return this.nextDumpColumn;
     }
 
+    setNextDumpColumn(columnIndex) {
+        const numColumns = this.call.getFieldColumns();
+        this.nextDumpColumn = (columnIndex + 1) % numColumns;
+    }
+
     updateDumpHighlight() {
         if (!this.ghostCard) return;
 
@@ -753,7 +765,7 @@ class CardFlowSystem extends GUTS.BaseSystem {
 
         this.ghostCard.className = `card ghost-card ${isRed ? 'red' : 'black'}`;
         this.ghostCard.querySelectorAll('.card-rank').forEach(el => el.textContent = rankDisplay);
-        this.ghostCard.querySelectorAll('.card-suit').forEach(el => el.textContent = suitSymbol);
+        this.ghostCard.querySelectorAll('.card-suit-large').forEach(el => el.textContent = suitSymbol);
         this.ghostCard.querySelector('.card-pips').innerHTML = this.getPipPattern(card.rank, suitSymbol);
 
         this.ghostCard.style.display = 'block';

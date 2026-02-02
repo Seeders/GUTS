@@ -13,9 +13,7 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         // Music services
         'toggleMusic', 'isMusicEnabled', 'getMusicVolume', 'setMusicVolume',
         // SFX services
-        'getSfxVolume', 'setSfxVolume',
-        // AI services
-        'startAISimulation', 'stopAISimulation', 'setAISpeed', 'isActive'
+        'getSfxVolume', 'setSfxVolume'
     ];
 
     constructor(game) {
@@ -42,7 +40,7 @@ class VolitionGameSystem extends GUTS.BaseSystem {
                 return { ...defaults, ...JSON.parse(saved) };
             }
         } catch (e) {
-            console.warn('Failed to load settings:', e);
+            // Ignore localStorage errors
         }
         return defaults;
     }
@@ -52,7 +50,7 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         try {
             localStorage.setItem('volitionSettings', JSON.stringify(settings));
         } catch (e) {
-            console.warn('Failed to save settings:', e);
+            // Ignore localStorage errors
         }
     }
 
@@ -61,7 +59,6 @@ class VolitionGameSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('VolitionGameSystem initializing...');
         this.startTime = performance.now();
 
         // Apply settings to game config
@@ -80,31 +77,6 @@ class VolitionGameSystem extends GUTS.BaseSystem {
             this.call.playCardShuffle();
         }
 
-        // Check if AI mode was requested
-        this.checkAIMode();
-    }
-
-    checkAIMode() {
-        try {
-            const aiMode = localStorage.getItem('volitionAIMode');
-            if (aiMode === 'true') {
-                // Clear the flag
-                localStorage.removeItem('volitionAIMode');
-                // Update button to show AI is active
-                const aiPlayBtn = document.getElementById('aiPlayBtn');
-                if (aiPlayBtn) {
-                    aiPlayBtn.querySelector('.label').textContent = 'AI On';
-                    aiPlayBtn.classList.add('active');
-                }
-                // Start AI after a delay for cards to be dealt
-                setTimeout(() => {
-                    console.log('[Game] Starting AI simulation');
-                    this.call.startAISimulation?.();
-                }, 2000);
-            }
-        } catch (e) {
-            console.warn('Failed to check AI mode:', e);
-        }
     }
 
     checkFirstTimeUser() {
@@ -120,7 +92,7 @@ class VolitionGameSystem extends GUTS.BaseSystem {
                 }, 100);
             }
         } catch (e) {
-            console.warn('Failed to check tutorial state:', e);
+            // Ignore localStorage errors
         }
     }
 
@@ -163,21 +135,40 @@ class VolitionGameSystem extends GUTS.BaseSystem {
             });
         }
 
-        // AI Play button - restart with AI playing
-        const aiPlayBtn = document.getElementById('aiPlayBtn');
-        if (aiPlayBtn) {
-            aiPlayBtn.addEventListener('click', () => this.startAIPlay());
-        }
+        // Toolbar speed toggles
+        this.setupToolbarSpeed();
     }
 
-    startAIPlay() {
-        // Store that we want AI mode, then restart
-        try {
-            localStorage.setItem('volitionAIMode', 'true');
-        } catch (e) {
-            console.warn('Failed to save AI mode:', e);
-        }
-        this.restartGame();
+    setupToolbarSpeed() {
+        const speedToggles = document.querySelectorAll('.speed-toggle');
+        speedToggles.forEach(btn => {
+            const speed = parseInt(btn.dataset.speed);
+            // Set initial active state based on saved settings
+            if (speed === this.settings.cardSpeed) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+
+            btn.addEventListener('click', () => {
+                // Update active state
+                speedToggles.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Save and apply immediately
+                this.saveSettings({
+                    cardSpeed: speed,
+                    fieldColumns: this.settings.fieldColumns
+                });
+                this.game.triggerEvent('onAnimationSpeedChanged', { speed });
+
+                // Also update settings modal buttons to stay in sync
+                const modalSpeedBtns = document.querySelectorAll('.speed-btn');
+                modalSpeedBtns.forEach(b => {
+                    b.classList.toggle('active', parseInt(b.dataset.speed) === speed);
+                });
+            });
+        });
     }
 
     dealNextCard() {
@@ -305,10 +296,17 @@ class VolitionGameSystem extends GUTS.BaseSystem {
                         this.restartGame();
                     }
                 } else {
-                    // Only card speed or audio settings changed - no restart needed
+                    // Only card speed or audio settings changed - apply immediately
                     this.saveSettings({
                         cardSpeed: selectedSpeed,
                         fieldColumns: newColumns
+                    });
+                    // Trigger event so all systems can update their speed
+                    this.game.triggerEvent('onAnimationSpeedChanged', { speed: selectedSpeed });
+                    // Sync toolbar speed buttons
+                    const toolbarToggles = document.querySelectorAll('.speed-toggle');
+                    toolbarToggles.forEach(b => {
+                        b.classList.toggle('active', parseInt(b.dataset.speed) === selectedSpeed);
                     });
                     settingsModal?.classList.add('hidden');
                 }

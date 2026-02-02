@@ -50,7 +50,6 @@ class InputSystem extends GUTS.BaseSystem {
     }
 
     init() {
-        console.log('InputSystem initializing...');
     }
 
     onSceneLoad() {
@@ -301,24 +300,40 @@ class InputSystem extends GUTS.BaseSystem {
 
         const cardInfo = this.getCardAtPosition(e.clientX, e.clientY);
         if (cardInfo) {
-            // Try to auto-play to kingdom (only single cards)
-            if (this.call.canPlayToKingdom(cardInfo.eid)) {
-                const wasFromHand = cardInfo.source === 'hand';
-                const cardEid = cardInfo.eid;
-                // Get original index before playing
-                let originalIndex = 0;
-                if (wasFromHand) {
-                    const loc = this.game.getComponent(cardEid, 'cardLocation');
-                    originalIndex = loc.index;
-                }
-                // Play pickup sound when card starts moving
+            const wasFromHand = cardInfo.source === 'hand';
+            const cardEid = cardInfo.eid;
+
+            // Get original index before playing
+            let originalIndex = 0;
+            if (wasFromHand) {
+                const loc = this.game.getComponent(cardEid, 'cardLocation');
+                originalIndex = loc.index;
+            }
+
+            // Try to auto-play to kingdom first
+            if (this.call.canPlayToKingdom(cardEid)) {
                 if (wasFromHand && this.call.playCardPickup) {
                     this.call.playCardPickup();
                 }
                 this.call.playToKingdom(cardEid);
-                // Start flow sequence after playing from hand
                 if (wasFromHand) {
                     this.call.flowAfterHandPlay(cardEid, 'kingdom', originalIndex);
+                }
+                return;
+            }
+
+            // If from hand, try to find a valid field column
+            if (wasFromHand) {
+                const numCols = this.call.getFieldColumns();
+                for (let col = 0; col < numCols; col++) {
+                    if (this.call.canPlayToField(cardEid, col)) {
+                        if (this.call.playCardPickup) {
+                            this.call.playCardPickup();
+                        }
+                        this.call.playToField(cardEid, col);
+                        this.call.flowAfterHandPlay(cardEid, 'field', originalIndex);
+                        return;
+                    }
                 }
             }
         }
@@ -347,24 +362,40 @@ class InputSystem extends GUTS.BaseSystem {
 
         const cardInfo = this.getCardAtPosition(x, y);
         if (cardInfo) {
-            // Try to auto-play to kingdom (only single cards)
-            if (this.call.canPlayToKingdom(cardInfo.eid)) {
-                const wasFromHand = cardInfo.source === 'hand';
-                const cardEid = cardInfo.eid;
-                // Get original index before playing
-                let originalIndex = 0;
-                if (wasFromHand) {
-                    const loc = this.game.getComponent(cardEid, 'cardLocation');
-                    originalIndex = loc.index;
-                }
-                // Play pickup sound when card starts moving
+            const wasFromHand = cardInfo.source === 'hand';
+            const cardEid = cardInfo.eid;
+
+            // Get original index before playing
+            let originalIndex = 0;
+            if (wasFromHand) {
+                const loc = this.game.getComponent(cardEid, 'cardLocation');
+                originalIndex = loc.index;
+            }
+
+            // Try to auto-play to kingdom first
+            if (this.call.canPlayToKingdom(cardEid)) {
                 if (wasFromHand && this.call.playCardPickup) {
                     this.call.playCardPickup();
                 }
                 this.call.playToKingdom(cardEid);
-                // Start flow sequence after playing from hand
                 if (wasFromHand) {
                     this.call.flowAfterHandPlay(cardEid, 'kingdom', originalIndex);
+                }
+                return;
+            }
+
+            // If from hand, try to find a valid field column
+            if (wasFromHand) {
+                const numCols = this.call.getFieldColumns();
+                for (let col = 0; col < numCols; col++) {
+                    if (this.call.canPlayToField(cardEid, col)) {
+                        if (this.call.playCardPickup) {
+                            this.call.playCardPickup();
+                        }
+                        this.call.playToField(cardEid, col);
+                        this.call.flowAfterHandPlay(cardEid, 'field', originalIndex);
+                        return;
+                    }
                 }
             }
         }
