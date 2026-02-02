@@ -8,7 +8,7 @@ class VolitionGameSystem extends GUTS.BaseSystem {
         'getDeckCount', 'getHandCards', 'getFieldColumns', 'getColumnCards',
         'canPlayToKingdom', 'canPlayToField', 'isValidSequence', 'getCardsBelow',
         'getTotalKingdomCards', 'flowCard', 'getCardElement', 'isTutorialActive',
-        'isAwaitingColumnSelection', 'cancelColumnSelection',
+        'isAwaitingColumnSelection', 'cancelColumnSelection', 'isAutoWinning',
         'playVictory', 'playCardShuffle', 'playCardPlace',
         // Music services
         'toggleMusic', 'isMusicEnabled', 'getMusicVolume', 'setMusicVolume',
@@ -173,6 +173,8 @@ class VolitionGameSystem extends GUTS.BaseSystem {
 
     dealNextCard() {
         if (this.gameOver) return;
+        // Block deck clicks during auto-win sequence
+        if (this.call.isAutoWinning?.()) return;
         this.call.flowCard();
     }
 

@@ -614,7 +614,7 @@ class CardFlowSystem extends GUTS.BaseSystem {
         visual.y = pos.y;
         visual.targetX = pos.x;
         visual.targetY = pos.y;
-        visual.zIndex = 10 + targetIndex;
+        visual.zIndex = 200 + targetIndex; // Higher than field cards so hand is always on top
         visual.animating = 0; // Don't use RenderSystem animation
 
         // Add shifting class to card element for CSS transition
@@ -670,7 +670,7 @@ class CardFlowSystem extends GUTS.BaseSystem {
         const handPos = this.call.getHandPosition(loc.index);
         visual.targetX = handPos.x;
         visual.targetY = handPos.y;
-        visual.zIndex = 10 + loc.index;
+        visual.zIndex = 200 + loc.index; // Higher than field cards so hand is always on top
         visual.animating = 1;
 
         // update() will check when animation completes

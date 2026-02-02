@@ -215,7 +215,7 @@ class HandSystem extends GUTS.BaseSystem {
 
             visual.targetX = pos.x;
             visual.targetY = pos.y;
-            visual.zIndex = 10 + idx;
+            visual.zIndex = 200 + idx; // Higher than field cards (50+) so hand is always on top
             visual.animating = 1;
         });
     }

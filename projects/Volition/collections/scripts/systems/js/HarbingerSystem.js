@@ -4,7 +4,7 @@
  */
 class HarbingerSystem extends GUTS.BaseSystem {
     // Only expose taunts that other systems might trigger directly (win/lose screens)
-    static services = ['showTaunt', 'showVictoryTaunt', 'showDefeatTaunt'];
+    static services = ['showTaunt', 'showVictoryTaunt', 'showDefeatTaunt', 'isAutoWinning'];
     static serviceDependencies = ['getTopKingdomRank', 'getColumnCards', 'getFieldColumns', 'getHandCards', 'isValidSequence', 'playHarbingerAppear', 'canPlayToKingdom', 'playToKingdom', 'getCardsBelow'];
 
     constructor(game) {
@@ -27,7 +27,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
         this.harmonyCheckCounter = 0;
 
         // Auto-win state
-        this.isAutoWinning = false;
+        this._isAutoWinning = false;
         this.autoWinInterval = null;
         this.autoWinMusingIndex = 0;
 
@@ -851,7 +851,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
 
     showKingdomGrowsTaunt() {
         if (!this.overlayElement || !this.messageElement) return;
-        if (this.isAutoWinning) return; // Don't interrupt auto-win musings
+        if (this._isAutoWinning) return; // Don't interrupt auto-win musings
 
         this.clearAllTimeouts();
 
@@ -872,11 +872,16 @@ class HarbingerSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Check if the four kings are in harmony - all field columns have valid
-     * sequences starting with kings (or are empty), and all non-kingdom/non-hand
-     * cards are in these valid columns
+     * Check if all remaining field cards form valid sequences starting with kings
+     * This triggers auto-win when victory is guaranteed
      */
     checkForHarmony() {
+        // Hand must be empty for auto-win
+        const handCards = this.call.getHandCards?.() || [];
+        if (handCards.length > 0) {
+            return false;
+        }
+
         const numColumns = this.call.getFieldColumns();
         let kingsInHarmony = 0;
         let hasInvalidColumn = false;
@@ -905,8 +910,9 @@ class HarbingerSystem extends GUTS.BaseSystem {
             kingsInHarmony++;
         }
 
-        // Need all 4 kings in harmony with no invalid columns
-        return !hasInvalidColumn && kingsInHarmony === 4;
+        // All non-empty columns must have valid king sequences, and at least one king
+        // (Some kings may already be in kingdom if their suit is complete)
+        return !hasInvalidColumn && kingsInHarmony >= 1;
     }
 
     showHarmonyTaunt() {
@@ -944,9 +950,9 @@ class HarbingerSystem extends GUTS.BaseSystem {
      * Cards will move to kingdoms one at a time
      */
     startAutoWin() {
-        if (this.isAutoWinning) return;
+        if (this._isAutoWinning) return;
 
-        this.isAutoWinning = true;
+        this._isAutoWinning = true;
         this.autoWinMusingIndex = 0;
 
         // Show first musing after a brief pause
@@ -1018,7 +1024,14 @@ class HarbingerSystem extends GUTS.BaseSystem {
             clearInterval(this.autoWinInterval);
             this.autoWinInterval = null;
         }
-        this.isAutoWinning = false;
+        this._isAutoWinning = false;
+    }
+
+    /**
+     * Check if auto-win is in progress (service for InputSystem)
+     */
+    isAutoWinning() {
+        return this._isAutoWinning;
     }
 
     /**
@@ -1062,7 +1075,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
         const { rank } = data;
 
         // Don't interrupt auto-win with regular taunts
-        if (this.isAutoWinning) return;
+        if (this._isAutoWinning) return;
 
         if (rank === 1) {
             // Count aces on kingdom

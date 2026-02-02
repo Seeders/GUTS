@@ -6,11 +6,11 @@ class InputSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'canPlayToKingdom', 'playToKingdom',
         'canPlayToField', 'playToField',
-        'getHandCards', 'getFieldColumns', 'getColumnCards',
+        'getHandCards', 'getFieldColumns', 'getColumnCards', 'getBottomCard',
         'isValidSequence', 'getCardsBelow', 'moveFieldToField',
         'flowCard', 'flowAfterHandPlay', 'isFlowAnimating', 'updateHandLayout',
         'getKingdomPosition', 'getFieldPosition', 'getCardWidth', 'getCardHeight', 'getStackOffset',
-        'isAwaitingColumnSelection',
+        'isAwaitingColumnSelection', 'isAutoWinning',
         'playCardPickup', 'playCardPlace', 'playCardInvalid'
     ];
 
@@ -178,6 +178,9 @@ class InputSystem extends GUTS.BaseSystem {
     onMouseDown(e) {
         if (this.game.gameInstance?.state?.gameOver) return;
 
+        // Block input during auto-win sequence
+        if (this.call.isAutoWinning?.()) return;
+
         // Ignore synthesized mouse events after touch
         if (Date.now() - this.lastTouchTime < 500) return;
 
@@ -213,6 +216,9 @@ class InputSystem extends GUTS.BaseSystem {
 
     onTouchStart(e) {
         if (this.game.gameInstance?.state?.gameOver) return;
+
+        // Block input during auto-win sequence
+        if (this.call.isAutoWinning?.()) return;
 
         // Block input during flow animation
         if (this.call.isFlowAnimating?.()) return;
@@ -292,6 +298,9 @@ class InputSystem extends GUTS.BaseSystem {
     onDoubleClick(e) {
         if (this.game.gameInstance?.state?.gameOver) return;
 
+        // Block input during auto-win sequence
+        if (this.call.isAutoWinning?.()) return;
+
         // Block input during flow animation
         if (this.call.isFlowAnimating?.()) return;
 
@@ -312,6 +321,13 @@ class InputSystem extends GUTS.BaseSystem {
 
             // Try to auto-play to kingdom first
             if (this.call.canPlayToKingdom(cardEid)) {
+                // If from field, only allow if it's the bottom (uncovered) card
+                if (!wasFromHand) {
+                    const bottomCard = this.call.getBottomCard(cardInfo.column);
+                    if (bottomCard !== cardEid) {
+                        return; // Card is covered, can't play it
+                    }
+                }
                 if (wasFromHand && this.call.playCardPickup) {
                     this.call.playCardPickup();
                 }
@@ -341,6 +357,9 @@ class InputSystem extends GUTS.BaseSystem {
 
     handleDoubleTap(x, y) {
         if (this.game.gameInstance?.state?.gameOver) return;
+
+        // Block input during auto-win sequence
+        if (this.call.isAutoWinning?.()) return;
 
         // Block input during flow animation
         if (this.call.isFlowAnimating?.()) return;
@@ -374,6 +393,13 @@ class InputSystem extends GUTS.BaseSystem {
 
             // Try to auto-play to kingdom first
             if (this.call.canPlayToKingdom(cardEid)) {
+                // If from field, only allow if it's the bottom (uncovered) card
+                if (!wasFromHand) {
+                    const bottomCard = this.call.getBottomCard(cardInfo.column);
+                    if (bottomCard !== cardEid) {
+                        return; // Card is covered, can't play it
+                    }
+                }
                 if (wasFromHand && this.call.playCardPickup) {
                     this.call.playCardPickup();
                 }

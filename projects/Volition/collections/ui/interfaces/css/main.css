@@ -300,6 +300,17 @@ body {
     display: flex;
     gap: 4px;
     z-index: 5;
+    /* Constrain field height to leave room for hand */
+    max-height: calc(100vh - var(--field-top) - var(--header-height) - var(--card-height) - 50px);
+    overflow-y: auto;
+    overflow-x: visible;
+    /* Hide scrollbar but allow scrolling */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#fieldArea::-webkit-scrollbar {
+    display: none;
 }
 
 .field-column {
@@ -359,7 +370,7 @@ body {
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 50;
+    z-index: 70; /* Above hand wrapper so cards show */
 }
 
 /* ============================================
@@ -634,9 +645,15 @@ body {
 #handWrapper {
     position: fixed;
     bottom: calc(var(--header-height) + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    z-index: 60;
+    /* Background to ensure hand is always visible above field cards */
+    background: linear-gradient(to bottom, transparent 0%, var(--color-bg) 20%);
+    padding-top: 20px;
+    padding-bottom: 0;
 }
 
 #handRow {

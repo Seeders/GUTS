@@ -167,8 +167,8 @@ class FieldSystem extends GUTS.BaseSystem {
             this.call.onCardPlayed('field', cardEid);
         }
 
-        // Update round-robin discard column so next discard goes after this column
-        if (this.call.setNextDumpColumn) {
+        // Update round-robin discard column ONLY when filling an empty column
+        if (landedCards.length === 0 && this.call.setNextDumpColumn) {
             this.call.setNextDumpColumn(columnIndex);
         }
 
@@ -324,8 +324,8 @@ class FieldSystem extends GUTS.BaseSystem {
             bottomCardRank
         });
 
-        // Update round-robin discard column so next discard goes after this column
-        if (this.call.setNextDumpColumn) {
+        // Update round-robin discard column ONLY when filling an empty column
+        if (wasEmptyColumn && this.call.setNextDumpColumn) {
             this.call.setNextDumpColumn(targetColumn);
         }
 
