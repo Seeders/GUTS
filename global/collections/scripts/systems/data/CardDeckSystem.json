@@ -1,0 +1,26 @@
+{
+  "filePath": "/global/collections/scripts/systems/js/CardDeckSystem.js",
+  "fileName": "CardDeckSystem",
+  "description": "Global system for creating and managing standard playing card decks",
+  "services": [
+    "createStandardDeck",
+    "createDeck",
+    "shuffleDeck",
+    "dealCard",
+    "dealCards",
+    "returnToDeck",
+    "returnAllToDeck",
+    "getDeckCount",
+    "getDeckCards",
+    "getDeckOrder",
+    "getAllCards",
+    "getCardsBySuit",
+    "getCardsByRank",
+    "findCard",
+    "findCards",
+    "setDeckOrder",
+    "moveToFront",
+    "setSeed",
+    "getCard"
+  ]
+}

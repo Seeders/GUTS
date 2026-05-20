@@ -1,0 +1,5 @@
+{
+  "title": "ranks",
+  "description": "Standard playing card ranks (1=Ace, 11=Jack, 12=Queen, 13=King)",
+  "values": ["none", "ace", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king"]
+}

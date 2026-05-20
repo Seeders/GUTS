@@ -1,0 +1,14 @@
+{
+  "title": "cardVisual",
+  "description": "Visual positioning and animation state for a card",
+  "schema": {
+    "x": 0,
+    "y": 0,
+    "targetX": 0,
+    "targetY": 0,
+    "zIndex": 0,
+    "animating": 0,
+    "scale": 1,
+    "rotation": 0
+  }
+}
