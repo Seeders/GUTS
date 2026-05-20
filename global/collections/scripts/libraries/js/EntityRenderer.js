@@ -1434,7 +1434,7 @@ class EntityRenderer {
 
         // Debug ground level offset
         if (entity.entityType?.includes('dragon')) {
-            console.log(`[SpriteOffset] ${entity.entityType}: cameraAngle=${animState?.spriteCameraAngle}, isGroundLevel=${isGroundLevel}, offset=${spriteOffset}, groundOffset=${animSetData?.groundLevelSpriteOffset}, normalOffset=${animSetData?.spriteOffset}`);
+       //     console.log(`[SpriteOffset] ${entity.entityType}: cameraAngle=${animState?.spriteCameraAngle}, isGroundLevel=${isGroundLevel}, offset=${spriteOffset}, groundOffset=${animSetData?.groundLevelSpriteOffset}, normalOffset=${animSetData?.spriteOffset}`);
         }
 
         // Calculate dimensions based on texture aspect ratio
