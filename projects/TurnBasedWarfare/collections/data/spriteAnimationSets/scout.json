@@ -8,7 +8,7 @@
     "cameraDistance": 100,
     "spriteSize": 64,
     "fps": 4,
-    "brightness": 4,
+    "brightness": 10,
     "palette": "main",
     "borderSize": 1,
     "outlineColor": "#030202",
@@ -16,6 +16,8 @@
     "cameraHeight": 1.5,
     "isProjectile": false,
     "generateGroundLevel": true,
+    "groundCameraHeight": 0,
+    "shaderFrames": 0,
     "animationTypes": [
       "idle",
       "walk",
