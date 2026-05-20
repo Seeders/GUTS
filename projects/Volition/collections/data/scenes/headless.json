@@ -2,6 +2,7 @@
   "title": "Volition Headless Scene",
   "description": "Scene for running headless solitaire simulations",
   "systems": [
+    "CardDeckSystem",
     "HeadlessLayoutSystem",
     "DeckSystem",
     "CardFlowSystem",

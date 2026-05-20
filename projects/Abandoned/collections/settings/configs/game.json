@@ -1,0 +1,42 @@
+{
+  "title": "Abandoned",
+  "libraries": [
+    "GameServices",
+    "BaseECSGame",
+    "GameState",
+    "SeededRandom",
+    "ComponentGenerator",
+    "SceneManager",
+    "BaseLoader",
+    "AudioManager",
+    "AbandonedGame"
+  ],
+  "systems": [
+    "CardDeckSystem",
+    "CardRenderSystem",
+    "CardDragSystem",
+    "TitleSystem",
+    "LayoutSystem",
+    "AbandonedGameSystem",
+    "AbandonedAudioSystem",
+    "AbandonedMusicSystem",
+    "DeckSystem",
+    "DamageSystem",
+    "ThreatLineSystem",
+    "RefugeSystem",
+    "ThreatSystem",
+    "SurvivalSystem",
+    "InputSystem",
+    "RenderSystem",
+    "NarratorSystem"
+  ],
+  "interface": "main",
+  "appLibrary": "AbandonedGame",
+  "appLoaderLibrary": "BaseLoader",
+  "initialScene": "title",
+  "maxEntities": 1024,
+  "refugeSlots": 6,
+  "damageThreshold": 10,
+  "threatTriggerCount": 3,
+  "animationSpeed": 4000
+}

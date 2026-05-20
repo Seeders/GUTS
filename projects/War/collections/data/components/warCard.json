@@ -1,0 +1,8 @@
+{
+  "title": "warCard",
+  "schema": {
+    "owner": 0,
+    "inPile": 1,
+    "onTable": 0
+  }
+}

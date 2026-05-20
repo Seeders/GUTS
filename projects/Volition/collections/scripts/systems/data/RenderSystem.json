@@ -1,4 +1,19 @@
 {
   "filePath": "/projects/Volition/collections/scripts/systems/js/RenderSystem.js",
-  "fileName": "RenderSystem"
+  "fileName": "RenderSystem",
+  "extends": "CardRenderSystem",
+  "services": [
+    "createCardElement",
+    "removeCardElement",
+    "getCardElement",
+    "updateCardPosition",
+    "flipCard",
+    "setCardFaceUp",
+    "getCardWidth",
+    "getCardHeight",
+    "getSuitSymbol",
+    "getSuitName",
+    "getRankName",
+    "isRedSuit"
+  ]
 }

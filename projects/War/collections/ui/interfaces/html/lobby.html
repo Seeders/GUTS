@@ -1,0 +1,31 @@
+<div id="lobbyScreen">
+    <div class="lobby-title-section">
+        <h1 class="lobby-game-title">WAR</h1>
+        <p class="lobby-subtitle">The Classic Card Game</p>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="lobbyMenu" class="lobby-screen">
+        <div class="lobby-menu">
+            <button id="singlePlayerBtn" class="lobby-btn lobby-btn-primary">Single Player</button>
+            <button id="multiplayerBtn" class="lobby-btn lobby-btn-secondary">Multiplayer</button>
+        </div>
+    </div>
+
+    <!-- Name Entry Screen -->
+    <div id="nameScreen" class="lobby-screen" style="display:none">
+        <div class="lobby-panel">
+            <h2 class="lobby-panel-title">Enter Your Name</h2>
+            <input id="playerNameInput" class="lobby-input" type="text" placeholder="Your name" maxlength="20" autocomplete="off" />
+            <button id="connectBtn" class="lobby-btn lobby-btn-primary">Connect</button>
+            <button id="nameBackBtn" class="lobby-btn lobby-btn-secondary">Back</button>
+        </div>
+    </div>
+
+    <!-- Status message -->
+    <p id="lobbyStatus" class="lobby-status"></p>
+
+    <div class="lobby-footer">
+        <p class="lobby-rules">Deal 26 cards each. Flip cards — higher rank wins both. Ties trigger War. Collect all 52 to win.</p>
+    </div>
+</div>

@@ -1,9 +1,12 @@
 /**
- * InputSystem - Handles mouse/touch input for card dragging and playing
+ * InputSystem - Game-specific input handling for Volition
+ * Manages complex card dragging with stack support for field cards
+ * Disables global CardDragSystem and handles all input locally
  */
 class InputSystem extends GUTS.BaseSystem {
     static services = ['selectCard', 'deselectCard'];
     static serviceDependencies = [
+        'setDraggableFilter',
         'canPlayToKingdom', 'playToKingdom',
         'canPlayToField', 'playToField',
         'getHandCards', 'getFieldColumns', 'getColumnCards', 'getBottomCard',
@@ -17,35 +20,27 @@ class InputSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.selectedCard = null;
-        this.draggedCards = []; // Array of cards being dragged (for stack moves)
-        this.dragStartPositions = []; // Original positions for each dragged card
-        this.sourceLocation = null; // 'hand' or 'field'
-        this.sourceColumn = -1; // Column index if from field
+        this.draggedCards = [];
+        this.dragStartPositions = [];
+        this.sourceLocation = null;
+        this.sourceColumn = -1;
         this.isDragging = false;
         this.dragStartX = 0;
         this.dragStartY = 0;
-
-        // Double-tap detection for mobile
         this.lastTapTime = 0;
         this.lastTapX = 0;
         this.lastTapY = 0;
-        this.doubleTapThreshold = 300; // ms between taps
-        this.doubleTapDistance = 30; // max pixels between taps
-
-        // Drop preview element
+        this.doubleTapThreshold = 300;
+        this.doubleTapDistance = 30;
         this.dropPreview = null;
-
-        // Track last touch to ignore synthesized mouse events
         this.lastTouchTime = 0;
-
-        // Store bound handlers for cleanup
         this.boundHandlers = null;
     }
 
     getCardDimensions() {
         return {
-            width: this.call.getCardWidth(),
-            height: this.call.getCardHeight()
+            width: this.call.getCardWidth?.() || 70,
+            height: this.call.getCardHeight?.() || 98
         };
     }
 
@@ -53,6 +48,8 @@ class InputSystem extends GUTS.BaseSystem {
     }
 
     onSceneLoad() {
+        // Disable global CardDragSystem - Volition handles its own complex drag logic
+        this.call.setDraggableFilter?.(() => false);
         this.setupEventListeners();
     }
 
@@ -63,7 +60,6 @@ class InputSystem extends GUTS.BaseSystem {
             return;
         }
 
-        // Store bound handlers for cleanup
         this.boundHandlers = {
             mousedown: this.onMouseDown.bind(this),
             mousemove: this.onMouseMove.bind(this),
@@ -74,22 +70,16 @@ class InputSystem extends GUTS.BaseSystem {
             dblclick: this.onDoubleClick.bind(this)
         };
 
-        // Mouse events
         document.addEventListener('mousedown', this.boundHandlers.mousedown);
         document.addEventListener('mousemove', this.boundHandlers.mousemove);
         document.addEventListener('mouseup', this.boundHandlers.mouseup);
-
-        // Touch events
         document.addEventListener('touchstart', this.boundHandlers.touchstart, { passive: false });
         document.addEventListener('touchmove', this.boundHandlers.touchmove, { passive: false });
         document.addEventListener('touchend', this.boundHandlers.touchend, { passive: false });
-
-        // Double-click for auto-play
         document.addEventListener('dblclick', this.boundHandlers.dblclick);
     }
 
     onSceneUnload() {
-        // Remove event listeners when scene is unloaded
         if (this.boundHandlers) {
             document.removeEventListener('mousedown', this.boundHandlers.mousedown);
             document.removeEventListener('mousemove', this.boundHandlers.mousemove);
@@ -101,7 +91,6 @@ class InputSystem extends GUTS.BaseSystem {
             this.boundHandlers = null;
         }
 
-        // Remove drop preview element
         if (this.dropPreview && this.dropPreview.parentNode) {
             this.dropPreview.parentNode.removeChild(this.dropPreview);
             this.dropPreview = null;
@@ -109,35 +98,31 @@ class InputSystem extends GUTS.BaseSystem {
     }
 
     getCardAtPosition(x, y) {
-        // Collect all playable cards (hand + field)
         const allCards = [];
 
-        // Get hand cards
-        const handCards = this.call.getHandCards();
+        const handCards = this.call.getHandCards?.() || [];
         for (const eid of handCards) {
             allCards.push({ eid, source: 'hand', column: -1 });
         }
 
-        // Get field cards
-        const numCols = this.call.getFieldColumns();
+        const numCols = this.call.getFieldColumns?.() || 0;
         for (let col = 0; col < numCols; col++) {
-            const colCards = this.call.getColumnCards(col);
+            const colCards = this.call.getColumnCards?.(col) || [];
             for (const eid of colCards) {
                 allCards.push({ eid, source: 'field', column: col });
             }
         }
 
-        // Sort by z-index (highest first)
         allCards.sort((a, b) => {
             const va = this.game.getComponent(a.eid, 'cardVisual');
             const vb = this.game.getComponent(b.eid, 'cardVisual');
-            return vb.zIndex - va.zIndex;
+            return (vb?.zIndex || 0) - (va?.zIndex || 0);
         });
 
-        // Find the card at position
         const dims = this.getCardDimensions();
         for (const cardInfo of allCards) {
             const visual = this.game.getComponent(cardInfo.eid, 'cardVisual');
+            if (!visual) continue;
             if (x >= visual.x && x <= visual.x + dims.width &&
                 y >= visual.y && y <= visual.y + dims.height) {
                 return cardInfo;
@@ -148,22 +133,21 @@ class InputSystem extends GUTS.BaseSystem {
 
     getDropTarget(x, y) {
         const dims = this.getCardDimensions();
-        const stackOffset = this.call.getStackOffset();
+        const stackOffset = this.call.getStackOffset?.() || 20;
 
-        // Check kingdom piles
         for (let suit = 0; suit < 4; suit++) {
-            const pos = this.call.getKingdomPosition(suit);
-            if (x >= pos.x && x <= pos.x + dims.width &&
+            const pos = this.call.getKingdomPosition?.(suit);
+            if (pos && x >= pos.x && x <= pos.x + dims.width &&
                 y >= pos.y && y <= pos.y + dims.height) {
                 return { type: 'kingdom', suit: suit };
             }
         }
 
-        // Check field columns
-        const numCols = this.call.getFieldColumns();
+        const numCols = this.call.getFieldColumns?.() || 0;
         for (let col = 0; col < numCols; col++) {
-            const pos = this.call.getFieldPosition(col);
-            const colCards = this.call.getColumnCards(col);
+            const pos = this.call.getFieldPosition?.(col);
+            if (!pos) continue;
+            const colCards = this.call.getColumnCards?.(col) || [];
             const colHeight = dims.height + colCards.length * stackOffset;
 
             if (x >= pos.x && x <= pos.x + dims.width &&
@@ -177,17 +161,9 @@ class InputSystem extends GUTS.BaseSystem {
 
     onMouseDown(e) {
         if (this.game.gameInstance?.state?.gameOver) return;
-
-        // Block input during auto-win sequence
         if (this.call.isAutoWinning?.()) return;
-
-        // Ignore synthesized mouse events after touch
         if (Date.now() - this.lastTouchTime < 500) return;
-
-        // Block input during flow animation
         if (this.call.isFlowAnimating?.()) return;
-
-        // Block dragging during column selection mode
         if (this.call.isAwaitingColumnSelection?.()) return;
 
         const cardInfo = this.getCardAtPosition(e.clientX, e.clientY);
@@ -197,18 +173,14 @@ class InputSystem extends GUTS.BaseSystem {
     }
 
     onMouseMove(e) {
-        // Ignore synthesized mouse events after touch
         if (Date.now() - this.lastTouchTime < 500) return;
-
         if (this.isDragging && this.selectedCard) {
             this.updateDrag(e.clientX, e.clientY);
         }
     }
 
     onMouseUp(e) {
-        // Ignore synthesized mouse events after touch
         if (Date.now() - this.lastTouchTime < 500) return;
-
         if (this.isDragging && this.selectedCard) {
             this.endDrag(e.clientX, e.clientY);
         }
@@ -216,22 +188,15 @@ class InputSystem extends GUTS.BaseSystem {
 
     onTouchStart(e) {
         if (this.game.gameInstance?.state?.gameOver) return;
-
-        // Block input during auto-win sequence
         if (this.call.isAutoWinning?.()) return;
-
-        // Block input during flow animation
         if (this.call.isFlowAnimating?.()) return;
 
-        // Track touch time to ignore synthesized mouse events
         this.lastTouchTime = Date.now();
-
         const touch = e.touches[0];
         const now = Date.now();
         const x = touch.clientX;
         const y = touch.clientY;
 
-        // Check for double-tap
         const timeDiff = now - this.lastTapTime;
         const distX = Math.abs(x - this.lastTapX);
         const distY = Math.abs(y - this.lastTapY);
@@ -239,19 +204,16 @@ class InputSystem extends GUTS.BaseSystem {
         if (timeDiff < this.doubleTapThreshold &&
             distX < this.doubleTapDistance &&
             distY < this.doubleTapDistance) {
-            // Double-tap detected
             e.preventDefault();
-            this.lastTapTime = 0; // Reset to prevent triple-tap
+            this.lastTapTime = 0;
             this.handleDoubleTap(x, y);
             return;
         }
 
-        // Record this touch as potential first tap
         this.touchStartX = x;
         this.touchStartY = y;
         this.touchStartTime = now;
 
-        // Block dragging during column selection mode
         if (this.call.isAwaitingColumnSelection?.()) return;
 
         const cardInfo = this.getCardAtPosition(x, y);
@@ -270,20 +232,16 @@ class InputSystem extends GUTS.BaseSystem {
     }
 
     onTouchEnd(e) {
-        // Track touch time to ignore synthesized mouse events
         this.lastTouchTime = Date.now();
-
         const touch = e.changedTouches[0];
         const x = touch.clientX;
         const y = touch.clientY;
 
-        // Check if this was a tap (minimal movement from start)
         const movedX = Math.abs(x - (this.touchStartX || 0));
         const movedY = Math.abs(y - (this.touchStartY || 0));
         const wasTap = movedX < this.doubleTapDistance && movedY < this.doubleTapDistance;
 
         if (wasTap) {
-            // Record this as a tap for double-tap detection
             this.lastTapTime = Date.now();
             this.lastTapX = x;
             this.lastTapY = y;
@@ -297,81 +255,23 @@ class InputSystem extends GUTS.BaseSystem {
 
     onDoubleClick(e) {
         if (this.game.gameInstance?.state?.gameOver) return;
-
-        // Block input during auto-win sequence
         if (this.call.isAutoWinning?.()) return;
-
-        // Block input during flow animation
         if (this.call.isFlowAnimating?.()) return;
-
-        // Block during column selection mode
         if (this.call.isAwaitingColumnSelection?.()) return;
 
-        const cardInfo = this.getCardAtPosition(e.clientX, e.clientY);
-        if (cardInfo) {
-            const wasFromHand = cardInfo.source === 'hand';
-            const cardEid = cardInfo.eid;
-
-            // Get original index before playing
-            let originalIndex = 0;
-            if (wasFromHand) {
-                const loc = this.game.getComponent(cardEid, 'cardLocation');
-                originalIndex = loc.index;
-            }
-
-            // Try to auto-play to kingdom first
-            if (this.call.canPlayToKingdom(cardEid)) {
-                // If from field, only allow if it's the bottom (uncovered) card
-                if (!wasFromHand) {
-                    const bottomCard = this.call.getBottomCard(cardInfo.column);
-                    if (bottomCard !== cardEid) {
-                        return; // Card is covered, can't play it
-                    }
-                }
-                if (wasFromHand && this.call.playCardPickup) {
-                    this.call.playCardPickup();
-                }
-                this.call.playToKingdom(cardEid);
-                if (wasFromHand) {
-                    this.call.flowAfterHandPlay(cardEid, 'kingdom', originalIndex);
-                }
-                return;
-            }
-
-            // If from hand, try to find a valid field column
-            if (wasFromHand) {
-                const numCols = this.call.getFieldColumns();
-                for (let col = 0; col < numCols; col++) {
-                    if (this.call.canPlayToField(cardEid, col)) {
-                        if (this.call.playCardPickup) {
-                            this.call.playCardPickup();
-                        }
-                        this.call.playToField(cardEid, col);
-                        this.call.flowAfterHandPlay(cardEid, 'field', originalIndex);
-                        return;
-                    }
-                }
-            }
-        }
+        this.handleAutoPlay(e.clientX, e.clientY);
     }
 
     handleDoubleTap(x, y) {
         if (this.game.gameInstance?.state?.gameOver) return;
-
-        // Block input during auto-win sequence
         if (this.call.isAutoWinning?.()) return;
-
-        // Block input during flow animation
         if (this.call.isFlowAnimating?.()) return;
-
-        // Block during column selection mode
         if (this.call.isAwaitingColumnSelection?.()) return;
 
-        // Cancel any ongoing drag
         if (this.isDragging && this.selectedCard) {
             this.draggedCards.forEach(cardEid => {
                 const d = this.game.getComponent(cardEid, 'draggable');
-                d.isDragging = 0;
+                if (d) d.isDragging = 0;
             });
             this.selectedCard = null;
             this.draggedCards = [];
@@ -379,65 +279,50 @@ class InputSystem extends GUTS.BaseSystem {
             this.isDragging = false;
         }
 
+        this.handleAutoPlay(x, y);
+    }
+
+    handleAutoPlay(x, y) {
         const cardInfo = this.getCardAtPosition(x, y);
-        if (cardInfo) {
-            const wasFromHand = cardInfo.source === 'hand';
-            const cardEid = cardInfo.eid;
+        if (!cardInfo) return;
 
-            // Get original index before playing
-            let originalIndex = 0;
-            if (wasFromHand) {
-                const loc = this.game.getComponent(cardEid, 'cardLocation');
-                originalIndex = loc.index;
+        const wasFromHand = cardInfo.source === 'hand';
+        const cardEid = cardInfo.eid;
+
+        let originalIndex = 0;
+        if (wasFromHand) {
+            const loc = this.game.getComponent(cardEid, 'cardLocation');
+            if (loc) originalIndex = loc.index;
+        }
+
+        if (this.call.canPlayToKingdom?.(cardEid)) {
+            if (!wasFromHand) {
+                const bottomCard = this.call.getBottomCard?.(cardInfo.column);
+                if (bottomCard !== cardEid) return;
             }
+            if (wasFromHand) this.call.playCardPickup?.();
+            this.call.playToKingdom?.(cardEid);
+            if (wasFromHand) this.call.flowAfterHandPlay?.(cardEid, 'kingdom', originalIndex);
+            return;
+        }
 
-            // Try to auto-play to kingdom first
-            if (this.call.canPlayToKingdom(cardEid)) {
-                // If from field, only allow if it's the bottom (uncovered) card
-                if (!wasFromHand) {
-                    const bottomCard = this.call.getBottomCard(cardInfo.column);
-                    if (bottomCard !== cardEid) {
-                        return; // Card is covered, can't play it
-                    }
-                }
-                if (wasFromHand && this.call.playCardPickup) {
-                    this.call.playCardPickup();
-                }
-                this.call.playToKingdom(cardEid);
-                if (wasFromHand) {
-                    this.call.flowAfterHandPlay(cardEid, 'kingdom', originalIndex);
-                }
-                return;
-            }
-
-            // If from hand, try to find a valid field column
-            if (wasFromHand) {
-                const numCols = this.call.getFieldColumns();
-                for (let col = 0; col < numCols; col++) {
-                    if (this.call.canPlayToField(cardEid, col)) {
-                        if (this.call.playCardPickup) {
-                            this.call.playCardPickup();
-                        }
-                        this.call.playToField(cardEid, col);
-                        this.call.flowAfterHandPlay(cardEid, 'field', originalIndex);
-                        return;
-                    }
+        if (wasFromHand) {
+            const numCols = this.call.getFieldColumns?.() || 0;
+            for (let col = 0; col < numCols; col++) {
+                if (this.call.canPlayToField?.(cardEid, col)) {
+                    this.call.playCardPickup?.();
+                    this.call.playToField?.(cardEid, col);
+                    this.call.flowAfterHandPlay?.(cardEid, 'field', originalIndex);
+                    return;
                 }
             }
         }
     }
 
-    tryAutoRefill() {
-        // Automatically draw next card when playing from hand
-        this.call.flowCard();
-    }
-
     startDrag(cardInfo, x, y) {
         const { eid, source, column } = cardInfo;
 
-        // Clear any previous highlights
         this.clearDropHighlights();
-
         this.selectedCard = eid;
         this.sourceLocation = source;
         this.sourceColumn = column;
@@ -447,49 +332,41 @@ class InputSystem extends GUTS.BaseSystem {
 
         const visual = this.game.getComponent(eid, 'cardVisual');
         const draggable = this.game.getComponent(eid, 'draggable');
+        if (!visual || !draggable) {
+            this.isDragging = false;
+            this.selectedCard = null;
+            return;
+        }
 
         this.dragStartX = visual.x;
         this.dragStartY = visual.y;
-
         draggable.offsetX = x - visual.x;
         draggable.offsetY = y - visual.y;
 
         if (source === 'hand') {
-            // Single card drag from hand
             this.draggedCards = [eid];
             this.dragStartPositions = [{ x: visual.x, y: visual.y, zIndex: visual.zIndex }];
             draggable.isDragging = 1;
             visual.zIndex = 1000;
-
-            // Play pickup sound
-            if (this.call.playCardPickup) {
-                this.call.playCardPickup();
-            }
+            this.call.playCardPickup?.();
         } else if (source === 'field') {
-            // Check if we can drag this card (must be valid sequence)
-            if (this.call.isValidSequence(eid)) {
-                // Get all cards below this one
-                const cardsBelow = this.call.getCardsBelow(eid);
+            if (this.call.isValidSequence?.(eid)) {
+                const cardsBelow = this.call.getCardsBelow?.(eid) || [eid];
                 this.draggedCards = cardsBelow;
 
-                // Store start positions and set dragging state
                 cardsBelow.forEach((cardEid, idx) => {
                     const v = this.game.getComponent(cardEid, 'cardVisual');
                     const d = this.game.getComponent(cardEid, 'draggable');
-                    this.dragStartPositions.push({ x: v.x, y: v.y, zIndex: v.zIndex });
-                    d.isDragging = 1;
-                    v.zIndex = 1000 + idx;
+                    if (v && d) {
+                        this.dragStartPositions.push({ x: v.x, y: v.y, zIndex: v.zIndex });
+                        d.isDragging = 1;
+                        v.zIndex = 1000 + idx;
+                    }
                 });
-
-                // Play pickup sound
-                if (this.call.playCardPickup) {
-                    this.call.playCardPickup();
-                }
+                this.call.playCardPickup?.();
             } else {
-                // Can't drag chaotic stack
                 this.isDragging = false;
                 this.selectedCard = null;
-                return;
             }
         }
     }
@@ -498,49 +375,46 @@ class InputSystem extends GUTS.BaseSystem {
         if (!this.selectedCard || this.draggedCards.length === 0) return;
 
         const draggable = this.game.getComponent(this.selectedCard, 'draggable');
+        if (!draggable) return;
+
         const baseX = x - draggable.offsetX;
         const baseY = y - draggable.offsetY;
-
-        // Move all dragged cards, maintaining their relative positions
-        const stackOffset = this.call.getStackOffset();
+        const stackOffset = this.call.getStackOffset?.() || 20;
 
         this.draggedCards.forEach((cardEid, idx) => {
             const v = this.game.getComponent(cardEid, 'cardVisual');
-            v.x = baseX;
-            v.y = baseY + idx * stackOffset;
+            if (v) {
+                v.x = baseX;
+                v.y = baseY + idx * stackOffset;
+            }
         });
 
-        // Update drop target highlights
         this.updateDropHighlights(x, y);
     }
 
     updateDropHighlights(x, y) {
-        // Clear previous preview
         this.clearDropHighlights();
-
         if (!this.selectedCard) return;
 
-        // Find what we're hovering over
         const target = this.getDropTarget(x, y);
         if (!target) return;
 
         const card = this.game.getComponent(this.selectedCard, 'card');
         const isSingleCard = this.draggedCards.length === 1;
         const dims = this.getCardDimensions();
-        const stackOffset = this.call.getStackOffset();
+        const stackOffset = this.call.getStackOffset?.() || 20;
 
         if (target.type === 'kingdom') {
-            if (isSingleCard && card.suit === target.suit && this.call.canPlayToKingdom(this.selectedCard)) {
-                const pos = this.call.getKingdomPosition(target.suit);
-                this.showDropPreview(pos.x, pos.y, dims.width, dims.height);
+            if (isSingleCard && card.suit === target.suit && this.call.canPlayToKingdom?.(this.selectedCard)) {
+                const pos = this.call.getKingdomPosition?.(target.suit);
+                if (pos) this.showDropPreview(pos.x, pos.y, dims.width, dims.height);
             }
         } else if (target.type === 'field') {
-            // Skip source column for field cards
             if (this.sourceLocation === 'field' && this.sourceColumn === target.column) return;
 
-            if (this.call.canPlayToField(this.selectedCard, target.column)) {
-                const pos = this.call.getFieldPosition(target.column);
-                const columnCards = this.call.getColumnCards(target.column, false); // landed cards only
+            if (this.call.canPlayToField?.(this.selectedCard, target.column)) {
+                const pos = this.call.getFieldPosition?.(target.column);
+                const columnCards = this.call.getColumnCards?.(target.column, false) || [];
                 const dropY = pos.y + columnCards.length * stackOffset;
                 this.showDropPreview(pos.x, dropY, dims.width, dims.height);
             }
@@ -565,8 +439,6 @@ class InputSystem extends GUTS.BaseSystem {
         document.querySelectorAll('.drop-hover').forEach(el => {
             el.classList.remove('drop-hover');
         });
-
-        // Hide drop preview
         if (this.dropPreview) {
             this.dropPreview.style.display = 'none';
         }
@@ -575,16 +447,13 @@ class InputSystem extends GUTS.BaseSystem {
     endDrag(x, y) {
         if (!this.selectedCard) return;
 
-        // Clear drop highlights
         this.clearDropHighlights();
 
-        // Reset dragging state on all dragged cards
         this.draggedCards.forEach(cardEid => {
             const d = this.game.getComponent(cardEid, 'draggable');
-            d.isDragging = 0;
+            if (d) d.isDragging = 0;
         });
 
-        // Check drop target
         const target = this.getDropTarget(x, y);
         let played = false;
         let playedTargetType = null;
@@ -592,70 +461,64 @@ class InputSystem extends GUTS.BaseSystem {
         const wasFromHand = this.sourceLocation === 'hand';
         const playedCardEid = this.selectedCard;
 
-        // Get original index before playing (needed for shift animation)
         let originalIndex = 0;
         if (wasFromHand) {
             const loc = this.game.getComponent(playedCardEid, 'cardLocation');
-            originalIndex = loc.index;
+            if (loc) originalIndex = loc.index;
         }
 
         if (target) {
             if (target.type === 'kingdom') {
-                // Kingdom only accepts single cards
                 if (this.draggedCards.length === 1) {
                     const card = this.game.getComponent(this.selectedCard, 'card');
-                    if (card.suit === target.suit && this.call.canPlayToKingdom(this.selectedCard)) {
-                        played = this.call.playToKingdom(this.selectedCard);
+                    if (card.suit === target.suit && this.call.canPlayToKingdom?.(this.selectedCard)) {
+                        played = this.call.playToKingdom?.(this.selectedCard) || false;
                         playedTargetType = 'kingdom';
                     }
                 }
             } else if (target.type === 'field') {
-                // Don't allow dropping on the same column
                 if (this.sourceLocation === 'field' && this.sourceColumn === target.column) {
                     played = false;
                 } else if (this.sourceLocation === 'hand') {
-                    // Hand to field - single card
-                    if (this.call.canPlayToField(this.selectedCard, target.column)) {
-                        played = this.call.playToField(this.selectedCard, target.column);
+                    if (this.call.canPlayToField?.(this.selectedCard, target.column)) {
+                        played = this.call.playToField?.(this.selectedCard, target.column) || false;
                         playedTargetType = 'field';
                     }
                 } else if (this.sourceLocation === 'field') {
-                    // Field to field - use moveFieldToField for stacks
-                    played = this.call.moveFieldToField(this.selectedCard, target.column);
-                    // Play place sound immediately for field-to-field moves
-                    if (played && this.call.playCardPlace) {
-                        this.call.playCardPlace();
-                    }
+                    played = this.call.moveFieldToField?.(this.selectedCard, target.column) || false;
+                    if (played) this.call.playCardPlace?.();
                 }
             }
         }
 
-        // Start flow sequence after playing from hand (handles sound and shift/draw)
         if (played && wasFromHand && playedTargetType) {
-            this.call.flowAfterHandPlay(playedCardEid, playedTargetType, originalIndex);
+            this.call.flowAfterHandPlay?.(playedCardEid, playedTargetType, originalIndex);
         }
 
-        // If not played, return all cards to original positions
         if (!played) {
             this.draggedCards.forEach((cardEid, idx) => {
                 const v = this.game.getComponent(cardEid, 'cardVisual');
                 const startPos = this.dragStartPositions[idx];
-                v.targetX = startPos.x;
-                v.targetY = startPos.y;
-                v.zIndex = startPos.zIndex;
-                v.animating = 1;
+                if (v && startPos) {
+                    v.targetX = startPos.x;
+                    v.targetY = startPos.y;
+                    v.zIndex = startPos.zIndex;
+                    v.animating = 1;
+                }
             });
 
-            // Play invalid sound only if we actually dragged (not just clicked)
-            // Check if card moved significantly from start position
-            const startPos = this.dragStartPositions[0];
-            const visual = this.game.getComponent(this.draggedCards[0], 'cardVisual');
-            const dragDistX = Math.abs(visual.x - startPos.x);
-            const dragDistY = Math.abs(visual.y - startPos.y);
-            const wasDragged = dragDistX > this.doubleTapDistance || dragDistY > this.doubleTapDistance;
+            if (this.dragStartPositions.length > 0 && this.draggedCards.length > 0) {
+                const startPos = this.dragStartPositions[0];
+                const visual = this.game.getComponent(this.draggedCards[0], 'cardVisual');
+                if (visual && startPos) {
+                    const dragDistX = Math.abs(visual.x - startPos.x);
+                    const dragDistY = Math.abs(visual.y - startPos.y);
+                    const wasDragged = dragDistX > this.doubleTapDistance || dragDistY > this.doubleTapDistance;
 
-            if (target && wasDragged && this.call.playCardInvalid) {
-                this.call.playCardInvalid();
+                    if (target && wasDragged) {
+                        this.call.playCardInvalid?.();
+                    }
+                }
             }
         }
 

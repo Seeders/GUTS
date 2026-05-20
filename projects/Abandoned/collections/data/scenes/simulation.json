@@ -1,0 +1,19 @@
+{
+  "title": "Abandoned AI Simulation",
+  "interface": "main",
+  "systems": [
+    "LayoutSystem",
+    "DeckSystem",
+    "DamageSystem",
+    "ThreatLineSystem",
+    "RefugeSystem",
+    "ThreatSystem",
+    "SurvivalSystem",
+    "AbandonedGameSystem",
+    "AbandonedAudioSystem",
+    "AbandonedMusicSystem",
+    "InputSystem",
+    "RenderSystem",
+    "NarratorSystem"
+  ]
+}

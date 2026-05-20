@@ -1,4 +1,27 @@
 {
   "filePath": "/projects/Volition/collections/scripts/systems/js/DeckSystem.js",
-  "fileName": "DeckSystem"
+  "fileName": "DeckSystem",
+  "extends": "CardDeckSystem",
+  "services": [
+    "createStandardDeck",
+    "createDeck",
+    "shuffleDeck",
+    "dealCard",
+    "dealCards",
+    "returnToDeck",
+    "returnAllToDeck",
+    "getDeckCount",
+    "getDeckCards",
+    "getDeckOrder",
+    "getAllCards",
+    "getCardsBySuit",
+    "getCardsByRank",
+    "findCard",
+    "findCards",
+    "setDeckOrder",
+    "moveToFront",
+    "setSeed",
+    "getCard",
+    "resetDeck"
+  ]
 }

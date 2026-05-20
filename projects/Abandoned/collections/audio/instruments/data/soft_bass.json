@@ -1,0 +1,17 @@
+{
+  "title": "Soft Bass",
+  "description": "A warm sine bass for low-end support",
+  "oscillator": "sine",
+  "envelope": {
+    "attack": 0.02,
+    "decay": 0.2,
+    "sustain": 0.5,
+    "release": 0.5
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 200,
+    "Q": 0.7
+  },
+  "duration": 0.8
+}

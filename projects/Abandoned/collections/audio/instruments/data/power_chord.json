@@ -1,0 +1,17 @@
+{
+  "title": "Power Chord",
+  "description": "Bold, bright chord pad for triumphant harmonies",
+  "oscillator": "sawtooth",
+  "envelope": {
+    "attack": 0.02,
+    "decay": 0.2,
+    "sustain": 0.6,
+    "release": 0.3
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 3000,
+    "Q": 1.5
+  },
+  "duration": 1.5
+}

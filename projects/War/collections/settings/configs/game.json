@@ -1,0 +1,34 @@
+{
+  "title": "War",
+  "libraries": [
+    "GameServices",
+    "BaseECSGame",
+    "GameState",
+    "SeededRandom",
+    "ComponentGenerator",
+    "SceneManager",
+    "BaseLoader",
+    "ClientNetworkManager",
+    "ChatManager",
+    "socket.io.min.js",
+    "WarGame"
+  ],
+  "systems": [
+    "CardDeckSystem",
+    "CardRenderSystem",
+    "WarLobbySystem",
+    "WarOnlineLobbySystem",
+    "WarRoomLobbySystem",
+    "WarDeckSystem",
+    "WarGameSystem",
+    "WarRenderSystem",
+    "BaseWarNetworkSystem",
+    "ClientWarNetworkSystem",
+    "ServerWarNetworkSystem"
+  ],
+  "interface": "main",
+  "appLibrary": "WarGame",
+  "appLoaderLibrary": "BaseLoader",
+  "initialScene": "lobby",
+  "maxEntities": 128
+}

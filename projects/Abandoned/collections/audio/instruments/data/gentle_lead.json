@@ -1,0 +1,17 @@
+{
+  "title": "Gentle Lead",
+  "description": "A soft triangle wave for melodies",
+  "oscillator": "triangle",
+  "envelope": {
+    "attack": 0.05,
+    "decay": 0.15,
+    "sustain": 0.4,
+    "release": 0.4
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 2000,
+    "Q": 1
+  },
+  "duration": 0.5
+}

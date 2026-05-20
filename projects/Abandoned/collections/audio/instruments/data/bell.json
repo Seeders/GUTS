@@ -1,0 +1,17 @@
+{
+  "title": "Bell",
+  "description": "A soft bell-like arpeggio tone",
+  "oscillator": "sine",
+  "envelope": {
+    "attack": 0.01,
+    "decay": 0.3,
+    "sustain": 0.1,
+    "release": 0.5
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 3000,
+    "Q": 0.5
+  },
+  "duration": 0.4
+}

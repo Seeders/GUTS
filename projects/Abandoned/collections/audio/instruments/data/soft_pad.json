@@ -1,0 +1,17 @@
+{
+  "title": "Soft Pad",
+  "description": "A warm, sustained pad sound for ambient backgrounds",
+  "oscillator": "sine",
+  "envelope": {
+    "attack": 0.8,
+    "decay": 0.3,
+    "sustain": 0.6,
+    "release": 1.0
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 800,
+    "Q": 0.5
+  },
+  "duration": 3.5
+}

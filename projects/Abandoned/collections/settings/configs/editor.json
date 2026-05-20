@@ -1,0 +1,16 @@
+{
+  "title": "Editor Config",
+  "theme": "claude2",
+  "editorModules": [
+    "graphicsModule",
+    "spriteAnimationModule",
+    "scriptModule",
+    "aiPromptModule",
+    "audioModule",
+    "musicModule",
+    "exportScriptModule",
+    "systemsEditor"
+  ],
+  "path": "/",
+  "fileName": "editor"
+}

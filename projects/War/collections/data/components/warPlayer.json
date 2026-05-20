@@ -1,0 +1,9 @@
+{
+  "title": "warPlayer",
+  "schema": {
+    "playerId": 0,
+    "pileCount": 26,
+    "ready": 0,
+    "isLocal": 0
+  }
+}

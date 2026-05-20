@@ -1,0 +1,61 @@
+<div id="gameScreen">
+    <!-- Header with player info -->
+    <header id="gameHeader">
+        <div class="header-section">
+            <span class="player-label">Opponent</span>
+            <span id="player2Count" class="card-count">26</span>
+            <span class="count-label">cards</span>
+        </div>
+    </header>
+
+    <!-- Player 2 Pile Area (top) -->
+    <div id="player2Area" class="pile-area">
+        <div id="player2Pile" class="pile"></div>
+    </div>
+
+    <!-- Battle Area (center) -->
+    <div id="battleArea">
+        <div id="player2Table" class="table-cards"></div>
+        <div id="vsLabel" class="vs-label">VS</div>
+        <div id="player1Table" class="table-cards"></div>
+    </div>
+
+    <!-- Card container for absolute positioned cards -->
+    <div id="cardContainer"></div>
+
+    <!-- Player 1 Pile Area (bottom) -->
+    <div id="player1Area" class="pile-area">
+        <div id="player1Pile" class="pile"></div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls">
+        <button id="flipButton" class="flip-button">FLIP</button>
+    </div>
+
+    <!-- Footer with player info -->
+    <footer id="gameFooter">
+        <div class="footer-section">
+            <span class="player-label">You</span>
+            <span id="player1Count" class="card-count">26</span>
+            <span class="count-label">cards</span>
+        </div>
+    </footer>
+
+    <!-- Message Display -->
+    <div id="message" class="message-overlay" style="display: none;"></div>
+
+    <!-- Game Over Overlay -->
+    <div id="gameOverOverlay" class="overlay hidden">
+        <div class="overlay-box">
+            <h1 id="winnerMessage">Player 1 Wins!</h1>
+            <p class="subtitle" id="endReason">Collected all cards</p>
+            <button id="playAgainBtn" class="btn-primary">Play Again</button>
+        </div>
+    </div>
+
+    <!-- War Animation Overlay -->
+    <div id="warOverlay" class="overlay hidden">
+        <div class="war-text">WAR!</div>
+    </div>
+</div>

@@ -1,0 +1,152 @@
+<div id="gameScreen">
+    <!-- Narrator overlay -->
+    <div id="narratorOverlay" class="narrator-overlay hidden">
+        <div class="narrator-container">
+            <div id="narratorMessage" class="narrator-text"></div>
+        </div>
+    </div>
+
+    <!-- Header with damage and turn info -->
+    <header id="gameHeader">
+        <div class="header-left">
+            <span class="damage-label">Damage:</span>
+            <div id="damageBar" class="damage-meter">
+                <div id="damageFill" class="damage-fill"></div>
+            </div>
+            <span id="damageAmount" class="damage-value">0/10</span>
+        </div>
+        <div class="header-center">
+            <span id="turnCounter">Turn 0</span>
+        </div>
+        <div class="header-right">
+            <span id="deckCount">46</span>
+            <span class="deck-label">remaining</span>
+        </div>
+    </header>
+
+    <!-- Threat Line Area -->
+    <div id="threatArea">
+        <div class="area-label">Active Threats</div>
+        <div id="threatLine"></div>
+    </div>
+
+    <!-- Card container for absolute positioned cards -->
+    <div id="cardContainer"></div>
+
+    <!-- Refuge Area -->
+    <div id="refugeArea">
+        <div class="area-label">Refuge</div>
+        <div id="refugeSlots">
+            <div class="refuge-slot" id="refuge-0"></div>
+            <div class="refuge-slot" id="refuge-1"></div>
+            <div class="refuge-slot" id="refuge-2"></div>
+            <div class="refuge-slot" id="refuge-3"></div>
+            <div class="refuge-slot" id="refuge-4"></div>
+            <div class="refuge-slot" id="refuge-5"></div>
+        </div>
+    </div>
+
+    <!-- Deck Area -->
+    <div id="deckWrapper">
+        <button id="deckArea" class="deck-button">
+            <div id="deckVisual">
+                <div class="deck-card deck-layer-5"></div>
+                <div class="deck-card deck-layer-4"></div>
+                <div class="deck-card deck-layer-3"></div>
+                <div class="deck-card deck-layer-2"></div>
+                <div class="deck-card deck-layer-1"></div>
+                <div class="deck-card deck-layer-0"></div>
+            </div>
+            <span id="deckLabel">Draw</span>
+        </button>
+    </div>
+
+    <!-- Heart Choice UI -->
+    <div id="heartChoiceUI" class="choice-overlay hidden">
+        <div class="choice-box">
+            <h3>Heart Drawn!</h3>
+            <p>Heal <span id="healAmount">0</span> damage now, or store for later?</p>
+            <div class="choice-buttons">
+                <button id="healNowBtn" class="btn-heal">Heal Now</button>
+                <button id="storeHeartBtn" class="btn-store">Store in Refuge</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <nav id="toolbar">
+        <button id="settingsBtn" class="toolbar-btn">
+            <span class="icon">*</span>
+            <span class="label">Settings</span>
+        </button>
+        <button id="newGameBtn" class="toolbar-btn">
+            <span class="icon">+</span>
+            <span class="label">New</span>
+        </button>
+    </nav>
+
+    <!-- Footer with speed controls -->
+    <footer id="gameFooter">
+        <div class="footer-speed">
+            <button class="speed-toggle" data-speed="2000">Slow</button>
+            <button class="speed-toggle active" data-speed="4000">Normal</button>
+            <button class="speed-toggle" data-speed="8000">Fast</button>
+            <button class="speed-toggle" data-speed="99999">Instant</button>
+        </div>
+    </footer>
+
+    <!-- Survival (Win) Overlay -->
+    <div id="survivalOverlay" class="overlay hidden">
+        <div class="overlay-box survival">
+            <h1>Survived!</h1>
+            <p class="subtitle">You endured the night</p>
+            <p class="stat-line">Final Damage: <span id="finalDamage">0/10</span></p>
+            <p class="stat-line">Turns: <span id="finalTurns">0</span></p>
+            <button id="playAgainBtn" class="btn-primary btn-large">Survive Again</button>
+        </div>
+    </div>
+
+    <!-- Death (Loss) Overlay -->
+    <div id="deathOverlay" class="overlay hidden">
+        <div class="overlay-box death">
+            <h1>Abandoned</h1>
+            <p class="subtitle">The night claimed you</p>
+            <p class="stat-line">Survived: <span id="survivalTurns">0</span> turns</p>
+            <button id="tryAgainBtn" class="btn-primary btn-large">Try Again</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="overlay hidden">
+        <div class="modal-box">
+            <h2>Settings</h2>
+
+            <div class="setting-group">
+                <label>Music</label>
+                <div class="toggle-row">
+                    <button id="musicToggleBtn" class="toggle-btn active">On</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>Music Volume</label>
+                <div class="slider-row">
+                    <input type="range" id="musicVolumeSlider" min="0" max="100" step="5" value="40">
+                    <span id="musicVolumeValue">40%</span>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>SFX Volume</label>
+                <div class="slider-row">
+                    <input type="range" id="sfxVolumeSlider" min="0" max="100" step="5" value="50">
+                    <span id="sfxVolumeValue">50%</span>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="closeSettingsBtn" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

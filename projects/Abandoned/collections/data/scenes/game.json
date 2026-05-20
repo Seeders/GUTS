@@ -1,0 +1,20 @@
+{
+  "title": "Abandoned Game",
+  "interface": "main",
+  "systems": [
+    "CardDragSystem",
+    "LayoutSystem",
+    "DeckSystem",
+    "DamageSystem",
+    "ThreatLineSystem",
+    "RefugeSystem",
+    "ThreatSystem",
+    "SurvivalSystem",
+    "AbandonedGameSystem",
+    "AbandonedAudioSystem",
+    "AbandonedMusicSystem",
+    "InputSystem",
+    "RenderSystem",
+    "NarratorSystem"
+  ]
+}

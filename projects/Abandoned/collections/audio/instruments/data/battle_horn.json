@@ -1,0 +1,17 @@
+{
+  "title": "Battle Horn",
+  "description": "Bright aggressive brass call",
+  "oscillator": "sawtooth",
+  "envelope": {
+    "attack": 0.003,
+    "decay": 0.06,
+    "sustain": 0.6,
+    "release": 0.05
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 5500,
+    "Q": 1
+  },
+  "duration": 0.25
+}

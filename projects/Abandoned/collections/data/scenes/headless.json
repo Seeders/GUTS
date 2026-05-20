@@ -1,0 +1,14 @@
+{
+  "title": "Abandoned Headless Scene",
+  "description": "Scene for running headless survival simulations",
+  "systems": [
+    "CardDeckSystem",
+    "HeadlessLayoutSystem",
+    "DeckSystem",
+    "DamageSystem",
+    "ThreatLineSystem",
+    "RefugeSystem",
+    "ThreatSystem",
+    "SurvivalSystem"
+  ]
+}

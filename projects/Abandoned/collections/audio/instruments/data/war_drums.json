@@ -1,0 +1,17 @@
+{
+  "title": "War Drums",
+  "description": "Tight, punchy bass for war rhythms",
+  "oscillator": "triangle",
+  "envelope": {
+    "attack": 0.001,
+    "decay": 0.1,
+    "sustain": 0.15,
+    "release": 0.02
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 500,
+    "Q": 0.7
+  },
+  "duration": 0.15
+}

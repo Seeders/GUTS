@@ -1,0 +1,25 @@
+{
+  "title": "Card Flip",
+  "description": "Subtle sound when card flips face up",
+  "audio": {
+    "duration": 0.08,
+    "volume": 0.25,
+    "layers": [
+      {
+        "source": "white",
+        "volume": 0.3,
+        "envelope": { "attack": 0.001, "decay": 0.04, "sustain": 0.01, "release": 0.03 },
+        "filter": { "type": "bandpass", "frequency": 2000, "Q": 0.8 }
+      },
+      {
+        "source": "brown",
+        "volume": 0.5,
+        "envelope": { "attack": 0.001, "decay": 0.035, "sustain": 0.02, "release": 0.02 },
+        "filter": { "type": "lowpass", "frequency": 500, "Q": 0.5 }
+      }
+    ],
+    "effects": {
+      "filter": { "type": "lowpass", "frequency": 3500, "Q": 0.5 }
+    }
+  }
+}

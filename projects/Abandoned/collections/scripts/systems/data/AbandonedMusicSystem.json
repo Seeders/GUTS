@@ -1,0 +1,17 @@
+{
+  "filePath": "/projects/Abandoned/collections/scripts/systems/js/AbandonedMusicSystem.js",
+  "fileName": "AbandonedMusicSystem",
+  "services": [
+    "playTrack",
+    "stopTrack",
+    "pauseTrack",
+    "resumeTrack",
+    "isPlaying",
+    "setMusicVolume",
+    "getMusicVolume",
+    "getCurrentTrack",
+    "toggleMusic",
+    "isMusicEnabled",
+    "startGameMusic"
+  ]
+}

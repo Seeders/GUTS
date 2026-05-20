@@ -1,0 +1,17 @@
+{
+  "title": "War Game",
+  "interface": "main",
+  "systems": [
+    "WarDeckSystem",
+    "WarGameSystem",
+    "BaseWarNetworkSystem"
+  ],
+  "clientSystems": [
+    "CardRenderSystem",
+    "WarRenderSystem",
+    "ClientWarNetworkSystem"
+  ],
+  "serverSystems": [
+    "ServerWarNetworkSystem"
+  ]
+}

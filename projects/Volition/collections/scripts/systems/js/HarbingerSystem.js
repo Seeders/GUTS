@@ -872,8 +872,9 @@ class HarbingerSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Check if all remaining field cards form valid sequences starting with kings
-     * This triggers auto-win when victory is guaranteed
+     * Check if the four kings are in harmony - all field columns have valid
+     * sequences starting with kings (or are empty), and all non-kingdom/non-hand
+     * cards are in these valid columns
      */
     checkForHarmony() {
         // Hand must be empty for auto-win
@@ -885,6 +886,7 @@ class HarbingerSystem extends GUTS.BaseSystem {
         const numColumns = this.call.getFieldColumns();
         let kingsInHarmony = 0;
         let hasInvalidColumn = false;
+        let failReason = null;
 
         for (let i = 0; i < numColumns; i++) {
             const cards = this.call.getColumnCards(i);
@@ -898,21 +900,29 @@ class HarbingerSystem extends GUTS.BaseSystem {
             const topCard = this.game.getComponent(cards[0], 'card');
             if (topCard.rank !== 13) {
                 hasInvalidColumn = true;
+                failReason = `Column ${i} top card is rank ${topCard.rank}, not King`;
                 break;
             }
 
             // Check if the entire column is a valid sequence
             if (!this.call.isValidSequence(cards[0])) {
                 hasInvalidColumn = true;
+                failReason = `Column ${i} has invalid sequence`;
                 break;
             }
 
             kingsInHarmony++;
         }
 
-        // All non-empty columns must have valid king sequences, and at least one king
-        // (Some kings may already be in kingdom if their suit is complete)
-        return !hasInvalidColumn && kingsInHarmony >= 1;
+        const result = !hasInvalidColumn && kingsInHarmony === 4;
+
+        // Debug logging
+        if (kingsInHarmony > 0 && !result) {
+            console.log(`Harmony check: kings=${kingsInHarmony}, invalid=${hasInvalidColumn}, reason=${failReason}`);
+        }
+
+        // Need all 4 kings in harmony with no invalid columns
+        return result;
     }
 
     showHarmonyTaunt() {

@@ -1,0 +1,26 @@
+{
+  "title": "Card Invalid",
+  "description": "Subtle negative feedback for invalid moves",
+  "audio": {
+    "duration": 0.12,
+    "volume": 0.2,
+    "layers": [
+      {
+        "source": "square",
+        "frequency": 200,
+        "volume": 0.4,
+        "envelope": { "attack": 0.002, "decay": 0.06, "sustain": 0.0, "release": 0.05 },
+        "pitchEnvelope": { "start": 1.0, "end": 0.8, "time": 0.08 }
+      },
+      {
+        "source": "brown",
+        "volume": 0.3,
+        "envelope": { "attack": 0.002, "decay": 0.05, "sustain": 0.0, "release": 0.04 },
+        "filter": { "type": "lowpass", "frequency": 200, "Q": 1.0 }
+      }
+    ],
+    "effects": {
+      "filter": { "type": "lowpass", "frequency": 1000, "Q": 0.5 }
+    }
+  }
+}

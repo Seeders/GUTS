@@ -797,8 +797,13 @@ app.post('/api/save-isometric-sprites', async (req, res) => {
 
 // ===== GAME SERVER API ENDPOINTS =====
 
+function getGameServer(projectName) {
+    if (projectName) return gameServers.get(projectName);
+    return gameServers.values().next().value;
+}
+
 app.get('/api/server-status', (req, res) => {
-    const gameServer = gameServers.get('TurnBasedWarfare');
+    const gameServer = getGameServer(req.query.project);
     if (!gameServer) {
         return res.json({ status: 'not_initialized', rooms: 0, activePlayers: 0 });
     }
@@ -811,7 +816,7 @@ app.get('/api/server-status', (req, res) => {
 });
 
 app.get('/api/rooms', (req, res) => {
-    const gameServer = gameServers.get('TurnBasedWarfare');
+    const gameServer = getGameServer(req.query.project);
     if (!gameServer) {
         return res.json([]);
     }
@@ -823,7 +828,6 @@ app.get('/api/rooms', (req, res) => {
             maxPlayers: room.maxPlayers,
             isActive: room.isActive
         }));
-    // Only log when there are rooms to reduce noise
     if (rooms.length > 0) {
         console.log('[/api/rooms] Returning rooms:', rooms.map(r => r.id));
     }
@@ -831,7 +835,7 @@ app.get('/api/rooms', (req, res) => {
 });
 
 app.get('/api/stats', (req, res) => {
-    const gameServer = gameServers.get('TurnBasedWarfare');
+    const gameServer = getGameServer(req.query.project);
     if (!gameServer || !gameServer.serverNetworkManager) {
         return res.json({ connectedPlayers: 0 });
     }
@@ -843,7 +847,9 @@ app.get('/api/stats', (req, res) => {
 // ===== START SERVER =====
 
 async function startServer() {
-    const defaultProject = 'TurnBasedWarfare';
+    // Support --project=Name CLI arg, default to TurnBasedWarfare
+    const projectArg = args.find(arg => arg.startsWith('--project='));
+    const defaultProject = projectArg ? projectArg.split('=')[1] : 'TurnBasedWarfare';
 
     console.log(`
 ╔═══════════════════════════════════════════════════════════╗
@@ -851,10 +857,11 @@ async function startServer() {
 ╟───────────────────────────────────────────────────────────╢
 ║  Port:    ${String(PORT).padEnd(47)}║
 ║  Mode:    ${(isProduction ? 'Production' : 'Development').padEnd(47)}║
+║  Project: ${defaultProject.padEnd(47)}║
 ╚═══════════════════════════════════════════════════════════╝
 `);
 
-    // Initialize game server for TurnBasedWarfare
+    // Initialize game server for the specified project
     try {
         await initGameServer(defaultProject);
         console.log(`Game server ready for ${defaultProject}`);
@@ -869,7 +876,7 @@ async function startServer() {
     server.listen(PORT, () => {
         console.log(`\nServer running on port ${PORT}`);
         console.log(`Editor: http://localhost:${PORT}/projects/Editor/index.html`);
-        console.log(`Game:   http://localhost:${PORT}/projects/TurnBasedWarfare/index.html`);
+        console.log(`Game:   http://localhost:${PORT}/projects/${defaultProject}/index.html`);
     });
 }
 

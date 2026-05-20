@@ -1,0 +1,154 @@
+#lobbyScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    user-select: none;
+}
+
+.lobby-title-section {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.lobby-game-title {
+    font-size: 96px;
+    font-weight: 900;
+    letter-spacing: 24px;
+    color: #e94560;
+    text-shadow: 0 0 40px rgba(233, 69, 96, 0.5), 0 4px 8px rgba(0, 0, 0, 0.5);
+    margin: 0;
+}
+
+.lobby-subtitle {
+    font-size: 18px;
+    color: #aaa;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 8px;
+}
+
+.lobby-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.lobby-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 280px;
+}
+
+.lobby-btn {
+    padding: 16px 32px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lobby-btn-primary {
+    background: #e94560;
+    color: #fff;
+    border-color: #e94560;
+}
+
+.lobby-btn-primary:hover {
+    background: #ff6b81;
+    border-color: #ff6b81;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(233, 69, 96, 0.4);
+}
+
+.lobby-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.lobby-btn-secondary {
+    background: transparent;
+    color: #888;
+    border-color: #444;
+}
+
+.lobby-btn-secondary:hover {
+    color: #fff;
+    border-color: #e94560;
+}
+
+/* Panel */
+.lobby-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 320px;
+    padding: 32px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid #333;
+    border-radius: 12px;
+    align-items: center;
+}
+
+.lobby-panel-title {
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    margin: 0 0 8px 0;
+    color: #ddd;
+}
+
+.lobby-input {
+    padding: 12px 16px;
+    font-size: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid #444;
+    border-radius: 8px;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.lobby-input:focus {
+    border-color: #e94560;
+}
+
+.lobby-input::placeholder {
+    color: #666;
+}
+
+/* Status */
+.lobby-status {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #aaa;
+    min-height: 20px;
+}
+
+/* Footer */
+.lobby-footer {
+    position: absolute;
+    bottom: 40px;
+    text-align: center;
+    max-width: 500px;
+    padding: 0 20px;
+}
+
+.lobby-rules {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+}

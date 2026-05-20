@@ -1,0 +1,10 @@
+{
+  "title": "Online Lobby",
+  "interface": "onlineLobby",
+  "systems": [
+    "BaseWarNetworkSystem",
+    "ClientWarNetworkSystem",
+    "WarOnlineLobbySystem",
+    "WarRoomLobbySystem"
+  ]
+}

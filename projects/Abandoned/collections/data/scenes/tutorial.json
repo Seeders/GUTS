@@ -1,0 +1,22 @@
+{
+  "title": "Tutorial",
+  "interface": "main",
+  "systems": [
+    "CardDeckSystem",
+    "CardRenderSystem",
+    "CardDragSystem",
+    "LayoutSystem",
+    "DeckSystem",
+    "DamageSystem",
+    "ThreatLineSystem",
+    "RefugeSystem",
+    "ThreatSystem",
+    "SurvivalSystem",
+    "AbandonedGameSystem",
+    "AbandonedAudioSystem",
+    "AbandonedMusicSystem",
+    "InputSystem",
+    "RenderSystem",
+    "NarratorSystem"
+  ]
+}

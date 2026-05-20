@@ -1,0 +1,52 @@
+{
+  "title": "Into the Fray",
+  "description": "Aggressive war music - pounding drums, battle horns, relentless combat",
+  "bpm": 140,
+  "stepsPerBeat": 4,
+  "voices": [
+    {
+      "name": "dread",
+      "instrument": "tension_pad",
+      "volume": 0.18,
+      "octaveShift": 0
+    },
+    {
+      "name": "battle",
+      "instrument": "strike_lead",
+      "volume": 0.16,
+      "octaveShift": 0
+    },
+    {
+      "name": "horns",
+      "instrument": "battle_horn",
+      "volume": 0.14,
+      "octaveShift": 0
+    },
+    {
+      "name": "drums",
+      "instrument": "war_drums",
+      "volume": 0.25,
+      "octaveShift": 0
+    },
+    {
+      "name": "pulse",
+      "instrument": "war_drums",
+      "volume": 0.15,
+      "octaveShift": 1
+    }
+  ],
+  "sections": [
+    {
+      "name": "main",
+      "startStep": 0,
+      "endStep": 2048,
+      "voicePatterns": {
+        "dread": "war_chords",
+        "battle": "war_melody",
+        "horns": "war_horns",
+        "drums": "war_bass",
+        "pulse": "war_pulse"
+      }
+    }
+  ]
+}

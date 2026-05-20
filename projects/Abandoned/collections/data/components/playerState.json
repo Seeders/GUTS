@@ -1,0 +1,8 @@
+{
+  "title": "playerState",
+  "schema": {
+    "damage": 0,
+    "turnsElapsed": 0,
+    "threatsDefeated": 0
+  }
+}

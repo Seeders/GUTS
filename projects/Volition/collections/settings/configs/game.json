@@ -12,6 +12,9 @@
     "VolitionGame"
   ],
   "systems": [
+    "CardDeckSystem",
+    "CardRenderSystem",
+    "CardDragSystem",
     "TitleSystem",
     "LayoutSystem",
     "VolitionGameSystem",

@@ -1,0 +1,17 @@
+{
+  "title": "Echo Lead",
+  "description": "A softer, more distant lead for counter-melodies",
+  "oscillator": "triangle",
+  "envelope": {
+    "attack": 0.15,
+    "decay": 0.2,
+    "sustain": 0.3,
+    "release": 0.8
+  },
+  "filter": {
+    "type": "lowpass",
+    "frequency": 1200,
+    "Q": 0.7
+  },
+  "duration": 0.6
+}

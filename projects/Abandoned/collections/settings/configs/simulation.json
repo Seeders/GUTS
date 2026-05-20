@@ -1,0 +1,38 @@
+{
+  "title": "Volition AI Simulation",
+  "libraries": [
+    "GameServices",
+    "BaseECSGame",
+    "GameState",
+    "SeededRandom",
+    "ComponentGenerator",
+    "SceneManager",
+    "BaseLoader",
+    "AudioManager",
+    "VolitionGame"
+  ],
+  "systems": [
+    "LayoutSystem",
+    "VolitionGameSystem",
+    "VolitionAudioSystem",
+    "VolitionMusicSystem",
+    "DeckSystem",
+    "CardFlowSystem",
+    "HandSystem",
+    "FieldSystem",
+    "KingdomSystem",
+    "InputSystem",
+    "RenderSystem",
+    "HarbingerSystem",
+    "VolitionAIPlayerSystem"
+  ],
+  "interface": "main",
+  "appLibrary": "VolitionGame",
+  "appLoaderLibrary": "BaseLoader",
+  "initialScene": "simulation",
+  "maxEntities": 1024,
+  "handCapacity": 5,
+  "fieldColumns": 6,
+  "animationSpeed": 4000,
+  "isSimulation": true
+}

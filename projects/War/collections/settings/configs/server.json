@@ -1,0 +1,31 @@
+{
+  "title": "Server Game",
+  "projectName": "War",
+  "tickRate": 20,
+  "seed": "auto",
+  "appLoaderLibrary": "ServerGameLoader",
+  "appLibrary": "ServerECSGame",
+  "initialScene": "game",
+  "libraries": [
+    "GameServices",
+    "BaseLoader",
+    "ServerGameLoader",
+    "GameRoom",
+    "ServerGameRoom",
+    "GameState",
+    "BaseECSGame",
+    "ServerECSGame",
+    "ServerEventManager",
+    "ServerNetworkManager",
+    "SeededRandom",
+    "ComponentGenerator",
+    "SceneManager"
+  ],
+  "systems": [
+    "CardDeckSystem",
+    "WarDeckSystem",
+    "WarGameSystem",
+    "BaseWarNetworkSystem",
+    "ServerWarNetworkSystem"
+  ]
+}

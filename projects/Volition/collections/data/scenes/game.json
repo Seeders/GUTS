@@ -2,6 +2,7 @@
   "title": "Volition Game",
   "interface": "main",
   "systems": [
+    "CardDragSystem",
     "LayoutSystem",
     "VolitionGameSystem",
     "VolitionAudioSystem",
