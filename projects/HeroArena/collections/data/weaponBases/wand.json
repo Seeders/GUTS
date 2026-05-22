@@ -1,0 +1,8 @@
+{
+  "id": "wand",
+  "name": "Wand",
+  "tier": 1,
+  "baseDamage": 3,
+  "isTwoHanded": false,
+  "weaponType": "wand"
+}

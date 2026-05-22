@@ -1,0 +1,11 @@
+{
+  "title": "Wind Shield",
+  "damageMultiplier": 1,
+  "attackSpeedMultiplier": 1,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 1,
+  "damageReduction": 0,
+  "accuracyReduction": 0,
+  "deflectionChance": 0.5,
+  "projectileReflection": 1
+}

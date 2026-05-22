@@ -1,0 +1,7 @@
+{
+  "id": "woodShield",
+  "name": "Wood Shield",
+  "tier": 1,
+  "offhandType": "shield",
+  "baseArmor": 4
+}

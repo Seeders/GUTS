@@ -1,0 +1,14 @@
+{
+  "title": "playerStats",
+  "schema": {
+    "playerId": null,
+    "team": 2,
+    "gold": 0,
+    "hp": 100,
+    "leaderId": null,
+    "heroRoster": [],
+    "winStreak": 0,
+    "lossStreak": 0,
+    "inventory": []
+  }
+}

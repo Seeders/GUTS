@@ -1,0 +1,11 @@
+{
+  "fileName": "TakeOffAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/TakeOffAbility.js",
+  "name": "Take Off",
+  "description": "Launch into the air to become a flying unit",
+  "cooldown": 0,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "autoTrigger": null
+}

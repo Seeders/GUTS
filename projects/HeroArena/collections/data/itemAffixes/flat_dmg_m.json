@@ -1,0 +1,12 @@
+{
+  "id": "flat_dmg_m",
+  "affixGroup": "item",
+  "label": "Wicked",
+  "stat": "flatDamage",
+  "min": 5,
+  "max": 12,
+  "isPrefix": true,
+  "itemTypes": [
+    "weapon"
+  ]
+}

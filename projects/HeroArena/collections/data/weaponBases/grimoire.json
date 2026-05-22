@@ -1,0 +1,8 @@
+{
+  "id": "grimoire",
+  "name": "Grimoire",
+  "tier": 3,
+  "baseDamage": 11,
+  "isTwoHanded": true,
+  "weaponType": "staff"
+}

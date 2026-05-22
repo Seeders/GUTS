@@ -1,0 +1,11 @@
+{
+  "title": "OrbType",
+  "enum": [
+    "transmutation",
+    "alteration",
+    "alchemy",
+    "chance",
+    "scouring",
+    "resonator"
+  ]
+}

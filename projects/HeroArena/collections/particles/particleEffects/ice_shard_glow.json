@@ -1,0 +1,31 @@
+{
+  "title": "Ice Shard Glow",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "shard",
+    "glow"
+  ],
+  "particleEffectData": {
+    "count": 4,
+    "lifetime": 0.15,
+    "scale": 30,
+    "scaleMultiplier": 0.8,
+    "startColor": "#88ccff",
+    "endColor": "#2266ff",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 0,
+    "velocityXMin": -8,
+    "velocityXMax": 8,
+    "velocityYMin": 5,
+    "velocityYMax": 15,
+    "velocityZMin": -8,
+    "velocityZMax": 8,
+    "gravity": 0,
+    "drag": 0.85,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

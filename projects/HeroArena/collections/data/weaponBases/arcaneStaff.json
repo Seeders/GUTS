@@ -1,0 +1,8 @@
+{
+  "id": "arcaneStaff",
+  "name": "Arcane Staff",
+  "tier": 2,
+  "baseDamage": 8,
+  "isTwoHanded": true,
+  "weaponType": "staff"
+}

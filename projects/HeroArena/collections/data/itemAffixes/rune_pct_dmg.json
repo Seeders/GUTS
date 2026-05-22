@@ -1,0 +1,9 @@
+{
+  "id": "rune_pct_dmg",
+  "affixGroup": "rune",
+  "label": "Empowered",
+  "stat": "percentDamage",
+  "min": 8,
+  "max": 15,
+  "isPrefix": true
+}

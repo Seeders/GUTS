@@ -1,0 +1,8 @@
+{
+  "title": "abilityQueue",
+  "schema": {
+    "abilityId": null,
+    "targetData": null,
+    "executeTime": 0
+  }
+}

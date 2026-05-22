@@ -1,0 +1,20 @@
+{
+  "fileName": "RaiseDeadAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/RaiseDeadAbility.js",
+  "name": "Raise Dead",
+  "description": "Convert corpses into skeleton warriors",
+  "cooldown": 1.0,
+  "range": 150,
+  "manaCost": 0,
+  "targetType": "auto",
+  "animation": "cast",
+  "priority": 1,
+  "castTime": 1.0,
+  "autoTrigger": "corpses_available",
+  "maxCorpsesToRaise": 4,
+  "raisedUnitType": "0_skeleton",
+  "element": "dark",
+  "castParticleEffectSystems": ["dark_energy", "dark_sparkles"],
+  "summonParticleEffectSystems": ["dark_burst", "dark_energy"],
+  "impactParticleEffectSystems": ["dark_sparkles"]
+}

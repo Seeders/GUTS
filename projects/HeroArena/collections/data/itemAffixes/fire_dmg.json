@@ -1,0 +1,12 @@
+{
+  "id": "fire_dmg",
+  "affixGroup": "item",
+  "label": "of Flame",
+  "stat": "fireDamage",
+  "min": 2,
+  "max": 8,
+  "isPrefix": false,
+  "itemTypes": [
+    "weapon"
+  ]
+}

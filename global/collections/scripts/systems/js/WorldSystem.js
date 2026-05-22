@@ -228,7 +228,9 @@ class WorldSystem extends GUTS.BaseSystem {
 
         // Initialize Three.js through WorldRenderer
         // Never enable OrbitControls here - game uses CameraControlSystem, editors call setupOrbitControls manually
+        const _tInit3D = performance.now();
         this.worldRenderer.initializeThreeJS(gameCanvas, cameraSettings, false);
+        console.log(`[LoadProfiler] worldRenderer.initializeThreeJS: ${(performance.now() - _tInit3D).toFixed(1)} ms`);
 
         // Add window resize listener
         window.addEventListener('resize', this.onWindowResizeHandler);
@@ -256,6 +258,22 @@ class WorldSystem extends GUTS.BaseSystem {
      * @param {string} worldName - The world name
      */
     async setupWorldRendering(levelName, worldName) {
+        // ── LoadProfiler: trace synchronous-blocking work inside async setup ──
+        const _subs = {};
+        const _tick = async (label, fn) => {
+            const _t = performance.now();
+            const r = await fn();
+            _subs[label] = +(performance.now() - _t).toFixed(1);
+            return r;
+        };
+        const _tickSync = (label, fn) => {
+            const _t = performance.now();
+            const r = fn();
+            _subs[label] = +(performance.now() - _t).toFixed(1);
+            return r;
+        };
+        const _tAll = performance.now();
+
         const world = this.collections.worlds?.[worldName];
         const gameConfig = this.collections.configs?.game || {};
 
@@ -271,40 +289,54 @@ class WorldSystem extends GUTS.BaseSystem {
 
         // Initialize terrain tile mapper if not already set up (needed for editor context)
         if (!this.game.terrainTileMapper && this.game.imageManager) {
-            await this.initTerrainTileMapper(levelName, terrainDataManager, gameConfig);
+            await _tick('initTerrainTileMapper', () => this.initTerrainTileMapper(levelName, terrainDataManager, gameConfig));
         }
 
         // Setup lighting
         const lightingSettings = this.collections.lightings?.[world?.lighting];
         const shadowSettings = this.collections.shadows?.[world?.shadow];
-        this.worldRenderer.setupLighting(lightingSettings, shadowSettings, terrainDataManager.extendedSize);
+        _tickSync('setupLighting', () => this.worldRenderer.setupLighting(lightingSettings, shadowSettings, terrainDataManager.extendedSize));
 
         // Setup fog
         const fogSettings = this.collections.fogs?.[world?.fog];
-        this.worldRenderer.setupFog(fogSettings);
+        _tickSync('setupFog', () => this.worldRenderer.setupFog(fogSettings));
 
         // Setup ground with terrain data
-        this.worldRenderer.setupGround(terrainDataManager, this.game.terrainTileMapper, terrainDataManager.heightMapSettings);
+        _tickSync('setupGround', () => this.worldRenderer.setupGround(terrainDataManager, this.game.terrainTileMapper, terrainDataManager.heightMapSettings));
 
         // Update CoordinateTranslator with actual terrain dimensions from loaded terrain data
         // This is critical because GridSystem.init() reads tileMapSize from static collection data,
         // but the actual loaded terrain may have a different size
-        this.call.updateCoordinateConfig({
+        _tickSync('updateCoordinateConfig', () => this.call.updateCoordinateConfig({
             tileMapSize: terrainDataManager.tileMap.size,
             extensionSize: terrainDataManager.extensionSize || 0,
             extendedSize: terrainDataManager.extendedSize || 0
-        });
+        }));
 
-        // Render terrain textures
-        this.worldRenderer.renderTerrain();
+        // Render terrain textures (async — yields periodically so the browser stays
+        // responsive and the loading progress bar can repaint as tiles are painted).
+        const sceneManager = this.game.sceneManager;
+        const onTileProgress = sceneManager
+            ? (fraction) => sceneManager.setLoadingProgress(fraction, `Painting terrain... ${Math.round(fraction * 100)}%`)
+            : null;
+        const _tRender = performance.now();
+        await this.worldRenderer.renderTerrain(onTileProgress);
+        _subs['renderTerrain'] = +(performance.now() - _tRender).toFixed(1);
 
         // Create extension planes
-        this.worldRenderer.createExtensionPlanes();
+        _tickSync('createExtensionPlanes', () => this.worldRenderer.createExtensionPlanes());
 
         // Note: updateInstanceCapacities moved to postSceneLoad (RenderSystem needs to init first)
         // Note: Cliff spawning moved to postSceneLoad to ensure EntityRenderer is available
 
         this.initialized = true;
+
+        const _total = +(performance.now() - _tAll).toFixed(1);
+        const _rows = Object.entries(_subs)
+            .sort((a, b) => b[1] - a[1])
+            .map(([step, ms]) => ({ step, ms, pct: +(ms / _total * 100).toFixed(1) }));
+        console.log(`[LoadProfiler] WorldSystem.setupWorldRendering: ${_total} ms`);
+        console.table(_rows);
     }
 
     /**

@@ -1,0 +1,153 @@
+{
+  "title": "Sentry Tower",
+  "info": "Defensive sentry tower",
+  "value": 250,
+  "range": 4,
+  "damage": 10,
+  "attackSpeed": 0.5,
+  "projectile": "arrow",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "cylinder",
+            "size": 20,
+            "height": 4,
+            "color": "#78909c",
+            "x": 0,
+            "y": 2,
+            "z": 0,
+            "name": "base",
+            "scaleX": 1,
+            "scaleY": 1,
+            "scaleZ": 1
+          },
+          {
+            "type": "cylinder",
+            "size": 14,
+            "height": 26,
+            "color": "#78909c",
+            "x": 0,
+            "y": 17,
+            "z": 0,
+            "name": "body"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "rampart": {
+        "shapes": [
+          {
+            "type": "cylinder",
+            "size": 12,
+            "height": 8,
+            "color": "#3e4f57",
+            "x": 0,
+            "y": 30,
+            "z": 0,
+            "name": "rampartbase"
+          },
+          {
+            "type": "box",
+            "width": 3,
+            "height": 5,
+            "depth": 3,
+            "color": "#3e4f57",
+            "x": 4,
+            "y": 34,
+            "z": 4,
+            "name": "rampartblock1"
+          },
+          {
+            "type": "box",
+            "width": 3,
+            "height": 5,
+            "depth": 3,
+            "color": "#3e4f57",
+            "x": -4,
+            "y": 34,
+            "z": 4,
+            "name": "rampartblock2"
+          },
+          {
+            "type": "box",
+            "width": 3,
+            "height": 5,
+            "depth": 3,
+            "color": "#3e4f57",
+            "x": 4,
+            "y": 34,
+            "z": -4,
+            "name": "rampartblock3"
+          },
+          {
+            "type": "box",
+            "width": 3,
+            "height": 5,
+            "depth": 3,
+            "color": "#3e4f57",
+            "x": -4,
+            "y": 34,
+            "z": -4,
+            "name": "rampartblock4"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1.5,
+          "y": 1,
+          "z": 1.5
+        }
+      },
+      "attacker": {
+        "shapes": [],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "requiresUnits": [],
+  "requiresBuildings": []
+}

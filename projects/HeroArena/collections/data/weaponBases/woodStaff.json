@@ -1,0 +1,8 @@
+{
+  "id": "woodStaff",
+  "name": "Wood Staff",
+  "tier": 1,
+  "baseDamage": 5,
+  "isTwoHanded": true,
+  "weaponType": "staff"
+}

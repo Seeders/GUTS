@@ -1,0 +1,7 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/AutobattlerEconomySystem.js",
+  "fileName": "AutobattlerEconomySystem",
+  "services": [
+    "grantRoundIncome"
+  ]
+}

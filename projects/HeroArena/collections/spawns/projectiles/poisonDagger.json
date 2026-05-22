@@ -1,0 +1,49 @@
+{
+  "damageType": "poison",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#00FF00",
+            "metalness": "0",
+            "roughness": "1",
+            "model": "projectile_arrow"
+          }
+        ],
+        "scale": {
+          "y": 0.4,
+          "x": 0.4,
+          "z": 0.4
+        }
+      }
+    }
+  },
+  "speed": 800,
+  "title": "Poison Dagger",
+  "attackSound": "",
+  "hitSound": "",
+  "homing": false,
+  "homingStrength": 0,
+  "ballistic": false,
+  "sticksInGround": false,
+  "stickDuration": 0,
+  "spriteAnimationSet": "arrow"
+}

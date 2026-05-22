@@ -1,0 +1,24 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/PlacementSystem.js",
+  "fileName": "PlacementSystem",
+  "services": [
+    "getPlacementsForSide",
+    "getPlacementById",
+    "placePlacement",
+    "validatePlacement",
+    "spawnSquad",
+    "resetAI",
+    "clearPlayerPlacements",
+    "clearAllPlacements",
+    "getCameraPositionForTeam",
+    "applyNetworkUnitData",
+    "findBuildingSpawnPosition",
+    "findBuildingAdjacentPosition",
+    "getStartingLocationsFromLevel",
+    "spawnPendingBuilding",
+    "getSquadUnitsForPlacement",
+    "spawnStartingUnitsForTeam",
+    "spawnGoldMineForTeam",
+    "spawnHeroUnitsForTeam"
+  ]
+}

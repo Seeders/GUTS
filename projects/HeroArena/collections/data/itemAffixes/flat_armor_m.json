@@ -1,0 +1,14 @@
+{
+  "id": "flat_armor_m",
+  "affixGroup": "item",
+  "label": "Tempered",
+  "stat": "flatArmor",
+  "min": 8,
+  "max": 18,
+  "isPrefix": true,
+  "itemTypes": [
+    "bodyArmor",
+    "helmet",
+    "offhand-shield"
+  ]
+}

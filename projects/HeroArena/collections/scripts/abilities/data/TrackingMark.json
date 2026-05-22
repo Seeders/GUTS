@@ -1,0 +1,21 @@
+{
+  "fileName": "TrackingMark",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/TrackingMark.js",
+  "name": "Tracking Mark",
+  "description": "Mark an enemy for increased damage - multiple Rangers can mark the same target for stacking effect",
+  "cooldown": 8.0,
+  "range": 200,
+  "manaCost": 20,
+  "targetType": "enemy",
+  "animation": "cast",
+  "priority": 7,
+  "castTime": 1.0,
+  "markDamageIncrease": 0.25,
+  "maxMarks": 4,
+  "markDuration": 15.0,
+  "element": "physical",
+  "castParticleEffectSystems": ["fire_burst_core"],
+  "debuffParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary"],
+  "stackParticleEffectSystems": ["fire_burst_core", "dark_sparkles"],
+  "trailParticleEffectSystems": ["fire_trail"]
+}

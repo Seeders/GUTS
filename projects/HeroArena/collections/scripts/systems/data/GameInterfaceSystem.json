@@ -1,0 +1,19 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/GameInterfaceSystem.js",
+  "fileName": "GameInterfaceSystem",
+  "services": [
+    "ui_purchaseUnit",
+    "ui_placeUnit",
+    "ui_undoPlacement",
+    "ui_holdPosition",
+    "ui_hide",
+    "ui_issueHideOrder",
+    "ui_issueMoveOrder",
+    "ui_assignBuilder",
+    "ui_toggleReadyForBattle",
+    "ui_transformUnit",
+    "ui_handleCanvasClick",
+    "ui_handleCanvasRightClick",
+    "ui_handleBoxSelection"
+  ]
+}

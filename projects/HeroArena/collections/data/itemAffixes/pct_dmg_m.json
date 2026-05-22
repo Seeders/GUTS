@@ -1,0 +1,13 @@
+{
+  "id": "pct_dmg_m",
+  "affixGroup": "item",
+  "label": "Razor",
+  "stat": "percentDamage",
+  "min": 14,
+  "max": 25,
+  "isPrefix": true,
+  "itemTypes": [
+    "weapon",
+    "offhand-orb"
+  ]
+}

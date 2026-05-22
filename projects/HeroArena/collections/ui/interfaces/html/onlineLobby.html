@@ -1,0 +1,151 @@
+<!-- Online Lobby Screen -->
+<div id="onlineLobbyScreen" class="screen active">
+    <div class="online-lobby-wrapper">
+        <!-- Top Bar -->
+        <div class="online-lobby-topbar">
+            <button id="onlineLobbyBackBtn" class="topbar-btn retreat-btn">Back to Menu</button>
+            <h1 class="online-lobby-title">Online Arena</h1>
+            <div class="online-stats-bar">
+                <div class="stat-badge">
+                    <span id="onlinePlayersCount">0</span>
+                    <span>Online</span>
+                </div>
+                <div class="stat-badge">
+                    <span id="availableGamesCount">0</span>
+                    <span>Open</span>
+                </div>
+                <div class="stat-badge">
+                    <span id="activeGamesCount">0</span>
+                    <span>Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat View (default view) -->
+        <div id="chatLobbyView" class="online-lobby-view active">
+            <div class="online-lobby-content">
+                <!-- Left: Action Panel -->
+                <div class="action-panel">
+                    <div class="action-panel-header">
+                        <h2>Find a Match</h2>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="createGameBtn" class="action-btn primary">
+                            <span class="action-btn-icon">+</span>
+                            <span class="action-btn-text">Create Game</span>
+                            <span class="action-btn-desc">Host a new battle</span>
+                        </button>
+                        <button id="joinGameBtn" class="action-btn secondary">
+                            <span class="action-btn-icon">&#8594;</span>
+                            <span class="action-btn-text">Join Game</span>
+                            <span class="action-btn-desc">Browse open games</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Global Chat -->
+                <div class="global-chat-panel">
+                    <div class="chat-panel-header">
+                        <h2>Global Chat</h2>
+                    </div>
+                    <div class="chat-panel-messages" id="lobbyChatMessages">
+                        <div class="chat-empty">No messages yet. Say hello!</div>
+                    </div>
+                    <div class="chat-panel-input">
+                        <input type="text" id="lobbyChatInput" placeholder="Type a message..." maxlength="500" autocomplete="off">
+                        <button id="lobbyChatSendBtn" class="chat-send-btn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Games List View (shown when Join Game clicked) -->
+        <div id="gamesListView" class="online-lobby-view">
+            <div class="games-list-panel">
+                <div class="games-list-header">
+                    <button id="gamesListBackBtn" class="topbar-btn">Back</button>
+                    <h2>Available Games</h2>
+                    <button id="refreshGamesBtn" class="topbar-btn">Refresh</button>
+                </div>
+                <div id="gamesListContainer" class="games-list-content">
+                    <div class="games-loading">Loading games...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Multiplayer Game Lobby (shown after creating/joining a room) -->
+<div id="multiplayerLobby" class="screen">
+    <div class="game-lobby-container">
+        <!-- Top Bar: Room Info & Controls -->
+        <div class="game-lobby-topbar">
+            <button id="leaveLobbyBtn" class="topbar-btn retreat-btn">Retreat</button>
+            <div class="room-badge">
+                <span class="room-badge-label">Room</span>
+                <span id="lobbyRoomId" class="room-badge-id">------</span>
+                <button id="copyRoomIdBtn" class="copy-btn">Copy</button>
+            </div>
+            <div class="topbar-actions">
+                <button id="loadGameBtn" class="topbar-btn">Load Save</button>
+                <input type="file" id="loadGameFileInput" accept=".json" style="display: none;">
+            </div>
+        </div>
+
+        <!-- Main Content: Two Column Layout -->
+        <div class="game-lobby-main">
+            <!-- Left Column: Players & Settings -->
+            <div class="game-lobby-sidebar">
+                <!-- Player Cards -->
+                <div class="player-cards-container">
+                    <div class="player-card" id="player1Card">
+                        <div class="player-card-header">
+                            <span class="player-label">You</span>
+                            <span class="player-status waiting" id="player1Status">Preparing</span>
+                        </div>
+                        <div class="player-name" id="player1Name">Player 1</div>
+                    </div>
+                    <div class="vs-divider">VS</div>
+                    <div class="player-card empty" id="player2Card">
+                        <div class="player-card-header">
+                            <span class="player-label">Opponent</span>
+                            <span class="player-status empty" id="player2Status">Waiting</span>
+                        </div>
+                        <div class="player-name" id="player2Name">Waiting...</div>
+                    </div>
+                </div>
+
+                <!-- Compact Settings -->
+                <div class="game-settings-compact">
+                    <div class="setting-row">
+                        <span class="setting-label">Map</span>
+                        <select id="levelSelect" class="setting-select"></select>
+                    </div>
+                </div>
+
+                <!-- Status Message -->
+                <div class="lobby-status-compact">
+                    <span id="lobbyStatusMessage">Waiting for opponent...</span>
+                    <span id="playerCount" style="display:none;">1</span>
+                </div>
+
+                <!-- Ready Button -->
+                <button id="player1ReadyBtn" class="ready-btn-large">READY FOR BATTLE</button>
+            </div>
+
+            <!-- Right Column: Chat (Primary Focus) -->
+            <div class="game-lobby-chat">
+                <div class="chat-panel-header">
+                    <h2>Room Chat</h2>
+                </div>
+                <div class="chat-panel-messages" id="roomChatMessages">
+                    <div class="chat-empty">Chat with your opponent while waiting...</div>
+                </div>
+                <div class="chat-panel-input">
+                    <input type="text" id="roomChatInput" placeholder="Type a message..." maxlength="500" autocomplete="off">
+                    <button id="roomChatSendBtn" class="chat-send-btn">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

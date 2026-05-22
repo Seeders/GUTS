@@ -1,0 +1,6 @@
+{
+  "id": "charge_gem",
+  "name": "Charge Gem",
+  "abilityId": "ChargeAbility",
+  "description": "Charge forward and bowl through enemies"
+}

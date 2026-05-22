@@ -1,0 +1,15 @@
+{
+  "id": "flat_hp_s",
+  "affixGroup": "item",
+  "label": "Sturdy",
+  "stat": "flatHP",
+  "min": 10,
+  "max": 25,
+  "isPrefix": true,
+  "itemTypes": [
+    "bodyArmor",
+    "helmet",
+    "offhand-shield",
+    "offhand-tome"
+  ]
+}

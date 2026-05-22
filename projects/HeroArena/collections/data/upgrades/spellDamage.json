@@ -1,0 +1,12 @@
+{
+  "title": "Spell Damage",
+  "description": "25% increased Spell Damage",
+  "value": 100,
+  "damageModifiers": [
+    { "type": "increased", "tags": ["spell"], "value": 0.25 }
+  ],
+  "icon": "elemental_damage",
+  "requiresBuildings": [
+    "keep"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "damageType": "fire",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "main": {
+        "shapes": [
+          {
+            "name": "core",
+            "type": "sphere",
+            "size": 5,
+            "color": {
+              "paletteColor": "Orange14Color"
+            },
+            "emissive": {
+              "paletteColor": "Orange14Color"
+            },
+            "emissiveIntensity": 3
+          },
+          {
+            "name": "outerFlame",
+            "type": "sphere",
+            "size": 8,
+            "color": {
+              "paletteColor": "Orange18Color"
+            },
+            "emissive": {
+              "paletteColor": "Orange18Color"
+            },
+            "emissiveIntensity": 2,
+            "opacity": 0.6,
+            "scale": {
+              "y": 0.8
+            }
+          },
+          {
+            "name": "glow",
+            "type": "sphere",
+            "size": 12,
+            "color": {
+              "paletteColor": "Orange19Color"
+            },
+            "emissive": {
+              "paletteColor": "Orange19Color"
+            },
+            "emissiveIntensity": 1.5,
+            "opacity": 0.25
+          }
+        ],
+        "position": {
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "speed": 120,
+  "title": "Fireball",
+  "ballistic": true,
+  "homing": false,
+  "homingStrength": 0,
+  "particle": "fire",
+  "shadows": false,
+  "hitSound": "explosion",
+  "attackSound": "missileLaunch"
+}

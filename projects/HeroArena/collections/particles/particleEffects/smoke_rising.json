@@ -1,0 +1,31 @@
+{
+  "title": "Smoke Rising",
+  "category": "smoke",
+  "tags": [
+    "smoke",
+    "fire",
+    "aftermath"
+  ],
+  "particleEffectData": {
+    "count": 10,
+    "lifetime": 2,
+    "scale": 30,
+    "scaleMultiplier": 2.5,
+    "startColor": "#555555",
+    "endColor": "#222222",
+    "emitterShape": "disk",
+    "emitterRadius": 15,
+    "heightOffset": 20,
+    "velocityXMin": -20,
+    "velocityXMax": 20,
+    "velocityYMin": 40,
+    "velocityYMax": 80,
+    "velocityZMin": -20,
+    "velocityZMax": 20,
+    "gravity": -15,
+    "drag": 0.97,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "id": "barrage_rune",
+  "name": "Barrage Rune",
+  "modifiers": {
+    "projectileCount": 3
+  },
+  "description": "Fires 3 additional projectiles"
+}

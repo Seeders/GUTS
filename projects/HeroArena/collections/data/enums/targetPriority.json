@@ -1,0 +1,11 @@
+{
+  "title": "TargetPriority",
+  "enum": [
+    "nearest",
+    "lowest_health",
+    "highest_health",
+    "lowest_armor",
+    "highest_damage",
+    "random"
+  ]
+}

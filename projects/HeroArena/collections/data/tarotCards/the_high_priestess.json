@@ -1,0 +1,45 @@
+{
+  "id": "the_high_priestess",
+  "number": 3,
+  "title": "The High Priestess",
+  "texture": "tarot_3_the_high_priestess",
+  "past": {
+    "upright": {
+      "name": "Intuition",
+      "description": "See enemy positions from start",
+      "effects": [{ "target": "player", "stat": "revealEnemies", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Secrets",
+      "description": "Your units start hidden",
+      "effects": [{ "target": "player_units", "stat": "startHidden", "operation": "set", "value": true }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Mystery",
+      "description": "Enemy types hidden until engaged",
+      "effects": [{ "target": "mission", "stat": "hiddenEnemyTypes", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Hidden Knowledge",
+      "description": "Enemies gain stealth after dealing damage",
+      "effects": [{ "target": "enemy_units", "stat": "stealthOnHit", "operation": "set", "value": true }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Wisdom",
+      "description": "+25% experience gain",
+      "effects": [{ "target": "rewards", "stat": "expMultiplier", "operation": "add", "value": 0.25 }]
+    },
+    "reversed": {
+      "name": "Withdrawn",
+      "description": "No gold but double experience",
+      "effects": [
+        { "target": "rewards", "stat": "goldMultiplier", "operation": "set", "value": 0 },
+        { "target": "rewards", "stat": "expMultiplier", "operation": "multiply", "value": 2 }
+      ]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "id": "mace",
+  "weaponCategory": "melee",
+  "range": 60,
+  "attackSpeed": 0.7,
+  "projectile": null,
+  "element": "physical"
+}

@@ -1,0 +1,12 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/ItemGeneratorSystem.js",
+  "fileName": "ItemGeneratorSystem",
+  "services": [
+    "generateItem",
+    "getAffix",
+    "getItemColor",
+    "rollAffixesForItem",
+    "getUniqueForBase",
+    "buildItemName"
+  ]
+}

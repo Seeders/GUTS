@@ -1,0 +1,16 @@
+{
+  "title": "Lobby Scene",
+  "description": "Main menu and lobby — no terrain or world loading",
+  "interface": "main",
+  "systems": [
+    "GameSystem",
+    "ScreenSystem",
+    "GameModeSystem",
+    "InputSystem",
+    "LobbyUISystem",
+    "BaseNetworkSystem",
+    "ClientNetworkSystem",
+    "SkirmishGameSystem",
+    "SaveSystem"
+  ]
+}

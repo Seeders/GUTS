@@ -1,0 +1,6 @@
+{
+  "id": "shadow_strike_gem",
+  "name": "Shadow Strike Gem",
+  "abilityId": "ShadowStrikeAbility",
+  "description": "Teleport behind a target and strike"
+}

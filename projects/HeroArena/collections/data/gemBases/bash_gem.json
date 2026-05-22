@@ -1,0 +1,6 @@
+{
+  "id": "bash_gem",
+  "name": "Bash Gem",
+  "abilityId": "BashAbility",
+  "description": "Unleash a powerful melee bash"
+}

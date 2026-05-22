@@ -1,0 +1,23 @@
+{
+  "fileName": "MultiShotAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/MultiShotAbility.js",
+  "name": "Multi Shot",
+  "description": "Fire multiple arrows at different targets",
+  "cooldown": 7.0,
+  "range": 180,
+  "manaCost": 25,
+  "targetType": "enemies",
+  "animation": "attack",
+  "priority": 6,
+  "castTime": 1.0,
+  "requiresWeaponCategory": "ranged",
+  "maxTargets": 3,
+  "arrowDamage": 35,
+  "shotInterval": 0.2,
+  "element": "physical",
+  "castParticleEffectSystems": ["dust_burst"],
+  "burstParticleEffectSystems": ["dust_burst"],
+  "launchParticleEffectSystems": ["dust_burst"],
+  "impactParticleEffectSystems": ["dust_burst"],
+  "trailParticleEffectSystems": ["dust_trail"]
+}

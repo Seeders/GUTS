@@ -1,0 +1,14 @@
+{
+  "fileName": "ExplosiveTrapTrigger",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/ExplosiveTrapTrigger.js",
+  "name": "Explosive Trap Trigger",
+  "description": "Explodes when enemies approach, dealing AoE fire damage",
+  "trapDamage": 80,
+  "stunDuration": 0,
+  "isExplosive": true,
+  "explosionRadius": 100,
+  "element": "fire",
+  "trapMessage": "Explosive trap detonates!",
+  "impactParticleEffectSystems": ["explosion_fire"],
+  "expirationParticleEffectSystems": ["explosion_smoke"]
+}

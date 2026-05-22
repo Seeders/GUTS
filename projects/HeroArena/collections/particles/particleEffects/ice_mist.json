@@ -1,0 +1,31 @@
+{
+  "title": "Ice Mist",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "cold",
+    "mist"
+  ],
+  "particleEffectData": {
+    "count": 12,
+    "lifetime": 1.5,
+    "scale": 25,
+    "scaleMultiplier": 2,
+    "startColor": "#aaddff",
+    "endColor": "#66aadd",
+    "emitterShape": "disk",
+    "emitterRadius": 30,
+    "heightOffset": 5,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 10,
+    "velocityYMax": 40,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": -10,
+    "drag": 0.98,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

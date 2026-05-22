@@ -1,0 +1,8 @@
+{
+  "id": "battleAxe",
+  "name": "Battle Axe",
+  "tier": 2,
+  "baseDamage": 12,
+  "isTwoHanded": true,
+  "weaponType": "axe"
+}

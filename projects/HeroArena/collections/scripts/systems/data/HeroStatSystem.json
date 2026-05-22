@@ -1,0 +1,15 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/HeroStatSystem.js",
+  "fileName": "HeroStatSystem",
+  "services": [
+    "recalculateHeroStats",
+    "equipGearItem",
+    "unequipGearItem",
+    "socketGem",
+    "unsocketGem",
+    "socketRune",
+    "unsocketRune",
+    "getHeroEquipmentSummary",
+    "getUnlockedAbilitySlotCount"
+  ]
+}

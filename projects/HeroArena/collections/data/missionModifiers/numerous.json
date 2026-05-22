@@ -1,0 +1,17 @@
+{
+  "id": "numerous",
+  "title": "Numerous",
+  "description": "Enemy starts with 20% more gold",
+  "tier": 1,
+  "category": "enemy_buff",
+  "effects": [
+    {
+      "target": "enemy",
+      "stat": "startingGold",
+      "operation": "multiply",
+      "value": 1.2
+    }
+  ],
+  "rewardBonus": 0.2,
+  "weight": 80
+}

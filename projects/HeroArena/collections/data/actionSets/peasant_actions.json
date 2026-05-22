@@ -1,0 +1,9 @@
+{
+  "title": "Peasant Actions",
+  "actions": [
+    "move",
+    "hold",
+    "hide",
+    "build"
+  ]
+}

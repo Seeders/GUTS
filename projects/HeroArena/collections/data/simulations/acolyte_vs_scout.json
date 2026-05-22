@@ -1,0 +1,10 @@
+{
+  "name": "Acolyte vs Scout",
+  "description": "Acolyte (intel/dex healer) vs Scout (dex/intel hybrid ranged). Support vs hybrid ranged.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "forest",
+  "buildOrders": ["acolyte", "scout"],
+  "maxRounds": 10,
+  "endOnFirstDeath": false
+}

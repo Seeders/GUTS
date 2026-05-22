@@ -1,0 +1,91 @@
+{
+  "title": "Hero Arena Server",
+  "projectName": "HeroArena",
+  "tickRate": 20,
+  "seed": "auto",
+  "appLoaderLibrary": "ServerGameLoader",
+  "appLibrary": "ServerECSGame",
+  "initialScene": "game",
+  "libraries": [
+    "GameServices",
+    "CallLogger",
+    "BaseLoader",
+    "ServerGameLoader",
+    "GameRoom",
+    "ServerGameRoom",
+    "GameState",
+    "BaseECSGame",
+    "GameUtils",
+    "ServerECSGame",
+    "ServerEventManager",
+    "ServerNetworkManager",
+    "SeededRandom",
+    "MinHeap",
+    "DesyncDebugger",
+    "TerrainDataManager",
+    "CoordinateTranslator",
+    "ComponentGenerator",
+    "BehaviorTreeProcessor",
+    "BaseBehaviorNode",
+    "SceneManager",
+    "HeadlessLogger"
+  ],
+  "systems": [
+    "GameSystem",
+    "SaveSystem",
+    "PlayerStatsSystem",
+    "UnitCreationSystem",
+    "SquadSystem",
+    "GridSystem",
+    "TerrainSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "TeamHealthSystem",
+    "DeathSystem",
+    "StatAggregationSystem",
+    "AccuracySystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "ServerBattlePhaseSystem",
+    "PlacementSystem",
+    "BaseNetworkSystem",
+    "ServerNetworkSystem",
+    "LifetimeSystem",
+    "SchedulingSystem",
+    "PathfindingSystem",
+    "CheatCodeSystem",
+    "SkirmishGameSystem",
+    "AutobattlerRoundSystem",
+    "HeroRosterSystem",
+    "LeaderSystem",
+    "ItemGeneratorSystem",
+    "LootDropSystem",
+    "HeroStatSystem",
+    "AutobattlerEconomySystem",
+    "OrbCraftingSystem",
+    "AbilityGemSystem"
+  ],
+  "classes": [
+    {
+      "collection": "abilities",
+      "baseClass": "BaseAbility"
+    },
+    {
+      "collection": "behaviorActions",
+      "baseClass": "BaseBehaviorAction"
+    },
+    {
+      "collection": "behaviorDecorators",
+      "baseClass": "BaseBehaviorDecorator"
+    },
+    {
+      "collection": "behaviorTrees",
+      "baseClass": "BaseBehaviorTree"
+    },
+    {
+      "collection": "sequenceBehaviorTrees",
+      "baseClass": "SequenceBehaviorTree"
+    }
+  ]
+}

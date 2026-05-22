@@ -1,0 +1,16 @@
+{
+  "title": "terrain",
+  "enum": [
+    "levels",
+    "worlds"
+  ],
+  "schema": {
+    "level": null,
+    "world": null,
+    "cliffsEnabled": true,
+    "liquidsEnabled": true,
+    "grassEnabled": false,
+    "fogEnabled": true,
+    "shadowsEnabled": true
+  }
+}

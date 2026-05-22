@@ -1,0 +1,11 @@
+{
+  "fileName": "LandAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/LandAbility.js",
+  "name": "Land",
+  "description": "Land on the ground to become a ground unit",
+  "cooldown": 0,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "autoTrigger": null
+}

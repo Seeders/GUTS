@@ -1,0 +1,32 @@
+{
+  "title": "Undead Summon",
+  "category": "shadow",
+  "tags": [
+    "undead",
+    "summon",
+    "dark",
+    "necromancy"
+  ],
+  "particleEffectData": {
+    "count": 15,
+    "lifetime": 0.8,
+    "scale": 15,
+    "scaleMultiplier": 1.5,
+    "startColor": "#44aa44",
+    "endColor": "#112211",
+    "emitterShape": "ring",
+    "emitterRadius": 25,
+    "heightOffset": 0,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 40,
+    "velocityYMax": 100,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": -30,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

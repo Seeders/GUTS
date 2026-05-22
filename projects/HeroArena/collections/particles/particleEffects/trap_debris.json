@@ -1,0 +1,31 @@
+{
+  "title": "Trap Debris",
+  "category": "explosion",
+  "tags": [
+    "trap",
+    "explosion",
+    "debris"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 0.8,
+    "scale": 8,
+    "scaleMultiplier": 0.6,
+    "startColor": "#a0522d",
+    "endColor": "#654321",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 20,
+    "velocityXMin": -120,
+    "velocityXMax": 120,
+    "velocityYMin": 100,
+    "velocityYMax": 250,
+    "velocityZMin": -120,
+    "velocityZMax": 120,
+    "gravity": 500,
+    "drag": 0.97,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "normal"
+  }
+}

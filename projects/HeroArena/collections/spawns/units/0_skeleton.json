@@ -1,0 +1,143 @@
+{
+  "title": "Skeleton",
+  "size": 25,
+  "height": 50,
+  "value": -1,
+  "hp": 50,
+  "speed": 65,
+  "damage": 10,
+  "attackSpeed": 1,
+  "element": "physical",
+  "armor": 5,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0,
+                "animation": "idle_short"
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0,
+                "animation": "walk_bow"
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "scale": {
+                  "z": 1,
+                  "y": 1,
+                  "x": 1
+                },
+                "id": 0,
+                "animation": "sword_slash"
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "death_fallback"
+              }
+            ],
+            "loops": false
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "scale": {
+              "z": 1,
+              "y": 1,
+              "x": 1
+            },
+            "model": "skeleton"
+          }
+        ]
+      }
+    },
+    "equipment": [
+      {
+        "slot": "mainHand",
+        "item": "knightSword",
+        "attachmentData": {
+          "bone": "RightHand",
+          "offset": {
+            "x": -8,
+            "y": -5,
+            "z": 3
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        }
+      }
+    ]
+  },
+  "buyable": false,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "spriteAnimationSet": "skeleton",
+  "requiresUnits": [],
+  "requiresBuildings": []
+}

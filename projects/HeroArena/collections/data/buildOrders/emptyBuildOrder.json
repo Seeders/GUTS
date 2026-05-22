@@ -1,0 +1,14 @@
+{
+  "name": "Empty Build Order",
+  "description": "Does nothing - used as opponent placeholder for single-team tests",
+  "rounds": {
+    "1": [],
+    "2": [],
+    "3": [],
+    "4": [],
+    "5": [],
+    "6": [],
+    "7": [],
+    "8": []
+  }
+}

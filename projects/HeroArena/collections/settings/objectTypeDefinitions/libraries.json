@@ -1,0 +1,7 @@
+{
+  "id": "libraries",
+  "name": "Libraries",
+  "singular": "Library",
+  "objectTypeCategory": "scripts",
+  "isCore": true
+}

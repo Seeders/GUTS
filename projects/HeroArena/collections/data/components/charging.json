@@ -1,0 +1,12 @@
+{
+  "title": "charging",
+  "schema": {
+    "target": null,
+    "chargeSpeed": 100,
+    "chargeDamage": 50,
+    "chargeStartTime": 0,
+    "chargeDistance": 0,
+    "maxChargeDistance": 150,
+    "isCharging": true
+  }
+}

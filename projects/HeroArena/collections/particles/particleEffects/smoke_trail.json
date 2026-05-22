@@ -1,0 +1,31 @@
+{
+  "title": "Smoke Trail",
+  "category": "smoke",
+  "tags": [
+    "smoke",
+    "trail",
+    "projectile"
+  ],
+  "particleEffectData": {
+    "count": 2,
+    "lifetime": 1.2,
+    "scale": 15,
+    "scaleMultiplier": 2.0,
+    "startColor": "#666666",
+    "endColor": "#333333",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 0,
+    "velocityXMin": -8,
+    "velocityXMax": 8,
+    "velocityYMin": 5,
+    "velocityYMax": 20,
+    "velocityZMin": -8,
+    "velocityZMax": 8,
+    "gravity": -5,
+    "drag": 0.98,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

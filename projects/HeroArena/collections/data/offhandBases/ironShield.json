@@ -1,0 +1,7 @@
+{
+  "id": "ironShield",
+  "name": "Iron Shield",
+  "tier": 2,
+  "offhandType": "shield",
+  "baseArmor": 8
+}

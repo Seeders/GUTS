@@ -1,0 +1,6 @@
+{
+  "id": "blizzard_gem",
+  "name": "Blizzard Gem",
+  "abilityId": "BlizzardAbility",
+  "description": "Conjure a freezing blizzard"
+}

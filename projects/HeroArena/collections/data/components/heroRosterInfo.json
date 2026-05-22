@@ -1,0 +1,8 @@
+{
+  "title": "heroRosterInfo",
+  "schema": {
+    "playerId": null,
+    "rosterIndex": null,
+    "level": 1
+  }
+}

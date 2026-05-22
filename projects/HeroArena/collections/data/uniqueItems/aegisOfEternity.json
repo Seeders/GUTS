@@ -1,0 +1,30 @@
+{
+  "id": "aegisOfEternity",
+  "name": "Aegis of Eternity",
+  "itemType": "bodyArmor",
+  "baseType": "plateMail",
+  "baseName": "Plate Mail",
+  "affixes": [
+    {
+      "id": "u_4",
+      "label": "",
+      "stat": "flatHP",
+      "value": 60,
+      "isPrefix": true
+    },
+    {
+      "id": "u_5",
+      "label": "",
+      "stat": "fireResistance",
+      "value": 20,
+      "isPrefix": false
+    },
+    {
+      "id": "u_6",
+      "label": "",
+      "stat": "coldResistance",
+      "value": 20,
+      "isPrefix": false
+    }
+  ]
+}

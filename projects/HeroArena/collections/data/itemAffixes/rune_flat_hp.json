@@ -1,0 +1,9 @@
+{
+  "id": "rune_flat_hp",
+  "affixGroup": "rune",
+  "label": "Resilient",
+  "stat": "flatHP",
+  "min": 10,
+  "max": 20,
+  "isPrefix": true
+}

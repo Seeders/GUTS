@@ -1,0 +1,55 @@
+{
+  "id": "magic",
+  "order": 1,
+  "color": "#8888ff",
+  "maxPrefixes": 1,
+  "maxSuffixes": 1,
+  "gemMaxPrefixes": 1,
+  "gemMaxSuffixes": 1,
+  "runeMaxPrefixes": 1,
+  "runeMaxSuffixes": 0,
+  "itemWeights": [
+    {
+      "minLevel": 1,
+      "weight": 28
+    },
+    {
+      "minLevel": 5,
+      "weight": 35
+    },
+    {
+      "minLevel": 10,
+      "weight": 40
+    },
+    {
+      "minLevel": 15,
+      "weight": 38
+    },
+    {
+      "minLevel": 20,
+      "weight": 32
+    }
+  ],
+  "gemWeights": [
+    {
+      "minLevel": 1,
+      "weight": 18
+    },
+    {
+      "minLevel": 5,
+      "weight": 32
+    },
+    {
+      "minLevel": 10,
+      "weight": 40
+    },
+    {
+      "minLevel": 15,
+      "weight": 42
+    },
+    {
+      "minLevel": 20,
+      "weight": 40
+    }
+  ]
+}

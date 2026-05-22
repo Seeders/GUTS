@@ -1,0 +1,19 @@
+{
+  "title": "Simulation Editor",
+  "container": "simulation-editor-container",
+  "propertyName": "buildOrders",
+  "interface": "simulationEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "loadHook": "editSimulation",
+  "saveHook": "saveSimulation",
+  "unloadHook": "unloadSimulation",
+  "scene": "simulationEditor",
+  "libraries": [
+    "CoordinateTranslator",
+    "CanvasUtility",
+    "RaycastHelper",
+    "HeadlessLogger",
+    "SimulationEditor"
+  ]
+}

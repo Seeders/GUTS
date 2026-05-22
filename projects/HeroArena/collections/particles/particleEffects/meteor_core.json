@@ -1,0 +1,31 @@
+{
+  "title": "Meteor Core",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "meteor",
+    "core"
+  ],
+  "particleEffectData": {
+    "count": 8,
+    "lifetime": 0.15,
+    "scale": 40,
+    "scaleMultiplier": 1.2,
+    "startColor": "#ffffff",
+    "endColor": "#ffaa00",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 0,
+    "velocityXMin": -10,
+    "velocityXMax": 10,
+    "velocityYMin": -10,
+    "velocityYMax": 10,
+    "velocityZMin": -10,
+    "velocityZMax": 10,
+    "gravity": 0,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

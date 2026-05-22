@@ -1,0 +1,32 @@
+{
+  "title": "Rage Aura",
+  "category": "buff",
+  "tags": [
+    "rage",
+    "buff",
+    "red",
+    "aura"
+  ],
+  "particleEffectData": {
+    "count": 15,
+    "lifetime": 0.8,
+    "scale": 12,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ff4400",
+    "endColor": "#880000",
+    "emitterShape": "ring",
+    "emitterRadius": 25,
+    "heightOffset": 0,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 60,
+    "velocityYMax": 120,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": -40,
+    "drag": 0.92,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "rampartOfAges",
+  "name": "Rampart of Ages",
+  "itemType": "offhand",
+  "offhandType": "shield",
+  "baseType": "towerShield",
+  "baseName": "Tower Shield",
+  "affixes": [
+    {
+      "id": "u_10",
+      "label": "",
+      "stat": "flatArmor",
+      "value": 20,
+      "isPrefix": true
+    },
+    {
+      "id": "u_11",
+      "label": "",
+      "stat": "blockChance",
+      "value": 15,
+      "isPrefix": false
+    },
+    {
+      "id": "u_12",
+      "label": "",
+      "stat": "flatHP",
+      "value": 40,
+      "isPrefix": true
+    }
+  ]
+}

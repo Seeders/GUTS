@@ -1,0 +1,28 @@
+════════════════════════════════════════════════════════════
+                    SIMULATION RESULTS                      
+════════════════════════════════════════════════════════════
+  Simulation: Peasant Mining Test
+  Matchup: peasantMining vs peasantMining
+────────────────────────────────────────────────────────────
+  Result: NO WINNER (timeout)
+  Completed: No (timeout)
+────────────────────────────────────────────────────────────
+  DEBUG INFO
+────────────────────────────────────────────────────────────
+  ERROR PATH: Cannot read properties of undefined (reading 'call')
+  Raw Phase: 1
+  Phase Name: placement
+  game.state.winner: null
+  game.state.gameOver: false
+  Entity Counts - Left: undefined, Right: undefined
+  Final Winner: undefined
+────────────────────────────────────────────────────────────
+  BATTLE STATISTICS
+────────────────────────────────────────────────────────────
+  Final Round: 1
+  Final Phase: placement
+  Total Ticks: 1
+  Game Time: 0.05s
+  Real Time: 7ms
+  Performance: 143 ticks/sec
+════════════════════════════════════════════════════════════

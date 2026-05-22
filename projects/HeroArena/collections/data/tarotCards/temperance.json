@@ -1,0 +1,48 @@
+{
+  "id": "temperance",
+  "number": 15,
+  "title": "Temperance",
+  "texture": "tarot_15_temperance",
+  "past": {
+    "upright": {
+      "name": "Balance",
+      "description": "Your units have +2 armor",
+      "effects": [{ "target": "player_units", "stat": "armor", "operation": "add", "value": 2 }]
+    },
+    "reversed": {
+      "name": "Moderation",
+      "description": "Abilities cost -30% but deal -15% damage",
+      "effects": [
+        { "target": "player_units", "stat": "abilityCost", "operation": "multiply", "value": 0.7 },
+        { "target": "player_units", "stat": "abilityDamage", "operation": "multiply", "value": 0.85 }
+      ]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Patience",
+      "description": "Combat is slower for all units",
+      "effects": [{ "target": "all_units", "stat": "attackSpeed", "operation": "multiply", "value": 0.8 }]
+    },
+    "reversed": {
+      "name": "Excess",
+      "description": "All abilities cost more but hit harder",
+      "effects": [
+        { "target": "all_units", "stat": "abilityCost", "operation": "multiply", "value": 1.5 },
+        { "target": "all_units", "stat": "abilityDamage", "operation": "multiply", "value": 1.4 }
+      ]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Healing",
+      "description": "All surviving units fully healed",
+      "effects": [{ "target": "rewards", "stat": "fullHeal", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Addiction",
+      "description": "Units need rest before next mission",
+      "effects": [{ "target": "rewards", "stat": "unitFatigue", "operation": "set", "value": true }]
+    }
+  }
+}

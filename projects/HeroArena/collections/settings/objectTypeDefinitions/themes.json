@@ -1,0 +1,7 @@
+{
+  "id": "themes",
+  "name": "Themes",
+  "singular": "Theme",
+  "objectTypeCategory": "editor",
+  "isCore": true
+}

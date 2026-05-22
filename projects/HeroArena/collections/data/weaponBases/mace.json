@@ -1,0 +1,8 @@
+{
+  "id": "mace",
+  "name": "Mace",
+  "tier": 2,
+  "baseDamage": 8,
+  "isTwoHanded": false,
+  "weaponType": "mace"
+}

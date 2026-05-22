@@ -1,0 +1,18 @@
+{
+  "title": "Curse Apply",
+  "category": "shadow",
+  "layers": [
+    {
+      "effect": "curse_dark_mist",
+      "delay": 0
+    },
+    {
+      "effect": "curse_purple_energy",
+      "delay": 0.05
+    },
+    {
+      "effect": "curse_sickly_sparks",
+      "delay": 0.1
+    }
+  ]
+}

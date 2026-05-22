@@ -1,0 +1,14 @@
+{
+  "id": "lightning_res",
+  "affixGroup": "item",
+  "label": "of the Storm",
+  "stat": "lightningResistance",
+  "min": 8,
+  "max": 20,
+  "isPrefix": false,
+  "itemTypes": [
+    "bodyArmor",
+    "helmet",
+    "offhand-shield"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "title": "Drain Life Target",
+  "category": "shadow",
+  "tags": [
+    "shadow",
+    "drain",
+    "target"
+  ],
+  "layers": [
+    {
+      "effect": "drain_extraction",
+      "delay": 0
+    },
+    {
+      "effect": "shadow_wisps",
+      "delay": 0.05,
+      "countMultiplier": 0.8
+    }
+  ]
+}

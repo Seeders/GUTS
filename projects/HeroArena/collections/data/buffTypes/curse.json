@@ -1,0 +1,11 @@
+{
+  "title": "Curse",
+  "damageModifiers": [
+    { "type": "more", "tags": [], "value": -0.15 }
+  ],
+  "attackSpeedMultiplier": 1,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 1.2,
+  "damageReduction": 0,
+  "accuracyReduction": 0
+}

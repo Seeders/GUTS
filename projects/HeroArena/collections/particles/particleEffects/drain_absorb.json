@@ -1,0 +1,32 @@
+{
+  "title": "Drain Absorb",
+  "category": "shadow",
+  "tags": [
+    "shadow",
+    "drain",
+    "heal",
+    "absorb"
+  ],
+  "particleEffectData": {
+    "count": 15,
+    "lifetime": 1,
+    "scale": 18,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ff88ff",
+    "endColor": "#9900cc",
+    "emitterShape": "ring",
+    "emitterRadius": 15,
+    "heightOffset": 50,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 30,
+    "velocityYMax": 80,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": -60,
+    "drag": 0.92,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

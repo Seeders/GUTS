@@ -1,0 +1,8 @@
+{
+  "id": "shockwave_rune",
+  "name": "Shockwave Rune",
+  "modifiers": {
+    "aoeRadius": 2
+  },
+  "description": "Ability ripples outward (AOE +2)"
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Campaign Home Base",
+  "description": "Campaign hub for atlas, upgrades, unlocks, and inventory management",
+  "interface": "campaign",
+  "systems": [
+    "GameSystem",
+    "ScreenSystem",
+    "InputSystem",
+    "CampaignSaveSystem",
+    "CampaignSystem",
+    "HomeBaseUISystem"
+  ]
+}

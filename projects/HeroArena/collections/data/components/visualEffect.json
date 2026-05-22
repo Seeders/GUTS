@@ -1,0 +1,10 @@
+{
+  "title": "visualEffect",
+  "schema": {
+    "effectType": 0,
+    "duration": 1,
+    "startTime": 0,
+    "attachedTo": null,
+    "isActive": true
+  }
+}

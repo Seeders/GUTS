@@ -1,0 +1,11 @@
+{
+  "title": "Dark Empowerment",
+  "damageModifiers": [
+    { "type": "more", "tags": [], "value": 0.3 }
+  ],
+  "attackSpeedMultiplier": 1.2,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 1,
+  "damageReduction": 0,
+  "accuracyReduction": 0
+}

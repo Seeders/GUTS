@@ -1,0 +1,13 @@
+{
+  "id": "unit_ranger",
+  "title": "Ranger",
+  "description": "Unlock the Ranger unit - expert marksman with deadly precision",
+  "type": "unit",
+  "unlockId": "2_d_ranger",
+  "cost": { "glory": 100 },
+  "requires": {
+    "units": ["1_d_archer"],
+    "atlasProgress": 3
+  },
+  "icon": "unit_ranger"
+}

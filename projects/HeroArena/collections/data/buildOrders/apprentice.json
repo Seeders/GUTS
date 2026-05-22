@@ -1,0 +1,17 @@
+{
+  "name": "Apprentice Build",
+  "description": "Build mage tower, wait for opponent, then produce apprentice for fair 1v1 combat test",
+  "rounds": {
+    "1": [
+      { "type": "PLACE_BUILDING", "buildingId": "mageTower" }
+    ],
+    "2": [],
+    "3": [
+      { "type": "PURCHASE_UNIT", "unitId": "1_i_apprentice", "building": "mageTower" },
+      { "type": "MOVE_ORDER", "unitType": "1_i_apprentice", "target": "center" }
+    ],
+    "4": [
+      { "type": "MOVE_ORDER", "unitType": "1_i_apprentice", "target": "enemy" }
+    ]
+  }
+}

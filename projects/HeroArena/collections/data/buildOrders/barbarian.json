@@ -1,0 +1,17 @@
+{
+  "name": "Barbarian Build",
+  "description": "Build barracks, wait for opponent, then produce barbarian for fair 1v1 combat test",
+  "rounds": {
+    "1": [
+      { "type": "PLACE_BUILDING", "buildingId": "barracks" }
+    ],
+    "2": [],
+    "3": [
+      { "type": "PURCHASE_UNIT", "unitId": "1_s_barbarian", "building": "barracks" },
+      { "type": "MOVE_ORDER", "unitType": "1_s_barbarian", "target": "center" }
+    ],
+    "4": [
+      { "type": "MOVE_ORDER", "unitType": "1_s_barbarian", "target": "enemy" }
+    ]
+  }
+}

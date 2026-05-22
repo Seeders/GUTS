@@ -1,0 +1,31 @@
+{
+  "title": "Holy Sparkles",
+  "category": "holy",
+  "tags": [
+    "holy",
+    "sparkles",
+    "light"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 0.7,
+    "scale": 8,
+    "scaleMultiplier": 0.6,
+    "startColor": "#ffffff",
+    "endColor": "#ffffcc",
+    "emitterShape": "sphere",
+    "emitterRadius": 20,
+    "heightOffset": 20,
+    "velocityXMin": -60,
+    "velocityXMax": 60,
+    "velocityYMin": 80,
+    "velocityYMax": 180,
+    "velocityZMin": -60,
+    "velocityZMax": 60,
+    "gravity": -50,
+    "drag": 0.92,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

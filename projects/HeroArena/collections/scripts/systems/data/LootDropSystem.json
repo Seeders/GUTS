@@ -1,0 +1,9 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/LootDropSystem.js",
+  "fileName": "LootDropSystem",
+  "services": [
+    "dropLootForRound",
+    "claimLootItem",
+    "skipLoot"
+  ]
+}

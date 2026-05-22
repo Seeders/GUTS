@@ -1,0 +1,9 @@
+{
+  "title": "MiningState",
+  "enum": [
+    "idle",
+    "mining",
+    "carrying",
+    "depositing"
+  ]
+}

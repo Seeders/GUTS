@@ -1924,7 +1924,7 @@ class WorldRenderer {
     /**
      * Render terrain using tile mapper
      */
-    renderTerrain() {
+    async renderTerrain(onProgress = null) {
         if (!this.tileMapper || !this.terrainDataManager.tileMap?.terrainMap) {
             console.warn('WorldRenderer: No tile mapper or terrain map data');
             return;
@@ -1937,7 +1937,9 @@ class WorldRenderer {
         const ramps = this.terrainDataManager.tileMap.ramps || [];
         this.tileMapper.setRamps(ramps);
 
-        this.tileMapper.draw(this.terrainDataManager.tileMap.terrainMap, heightMap);
+        // tileMapper.draw is async and yields periodically; onProgress is called
+        // with 0..1 between yields so the loading UI can update.
+        await this.tileMapper.draw(this.terrainDataManager.tileMap.terrainMap, heightMap, onProgress);
 
         // Update ground texture
         this.updateGroundTexture();

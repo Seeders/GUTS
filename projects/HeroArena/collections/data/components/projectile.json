@@ -1,0 +1,21 @@
+{
+  "title": "projectile",
+  "schema": {
+    "damage": 10,
+    "speed": 200,
+    "range": 100,
+    "target": null,
+    "source": null,
+    "startTime": 0,
+    "element": 0,
+    "lastTrailTime": 0,
+    "isBallistic": false,
+    "launchAngle": 0,
+    "timeToTarget": 0,
+    "weaponRange": 0,
+    "splashRadius": 0,
+    "sticksInGround": false,
+    "stickDuration": 3,
+    "isStuck": false
+  }
+}

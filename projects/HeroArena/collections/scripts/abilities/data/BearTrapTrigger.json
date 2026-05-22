@@ -1,0 +1,13 @@
+{
+  "fileName": "BearTrapTrigger",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/BearTrapTrigger.js",
+  "name": "Bear Trap Trigger",
+  "description": "Snaps shut on nearby enemies, dealing damage and stunning them",
+  "trapDamage": 50,
+  "stunDuration": 3.0,
+  "isExplosive": false,
+  "element": "physical",
+  "trapMessage": "Bear trap snaps shut!",
+  "impactParticleEffectSystems": ["snap_trap_trigger"],
+  "expirationParticleEffectSystems": ["snap_trap_trigger"]
+}

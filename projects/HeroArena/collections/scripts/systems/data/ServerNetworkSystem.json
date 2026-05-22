@@ -1,0 +1,30 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/ServerNetworkSystem.js",
+  "fileName": "ServerNetworkSystem",
+  "services": [
+    "sendToPlayer",
+    "broadcastGameEnd",
+    "handleSubmitPlacement",
+    "handleSetSquadTarget",
+    "handleSetSquadTargets",
+    "handleCancelBuilding",
+    "handleUpgradeBuilding",
+    "handlePurchaseUpgrade",
+    "handleReadyForBattle",
+    "handleGetStartingState",
+    "handleLevelSquad",
+    "handleSpecializeSquad",
+    "handleExecuteCheat",
+    "handleTransformUnit",
+    "handleHeroSelected",
+    "handleClaimLoot",
+    "handleSkipLoot",
+    "handleEquipGear",
+    "handleUnequipGear",
+    "handleSocketGem",
+    "handleUnsocketGem",
+    "handleSocketRune",
+    "handleUnsocketRune",
+    "handleApplyOrb"
+  ]
+}

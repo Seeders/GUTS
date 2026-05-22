@@ -1,0 +1,31 @@
+{
+  "title": "Lightning Flash",
+  "category": "lightning",
+  "tags": [
+    "lightning",
+    "electric",
+    "flash"
+  ],
+  "particleEffectData": {
+    "count": 12,
+    "lifetime": 0.15,
+    "scale": 25,
+    "scaleMultiplier": 2,
+    "startColor": "#ffffff",
+    "endColor": "#ffffaa",
+    "emitterShape": "sphere",
+    "emitterRadius": 10,
+    "heightOffset": 30,
+    "velocityXMin": -80,
+    "velocityXMax": 80,
+    "velocityYMin": 20,
+    "velocityYMax": 100,
+    "velocityZMin": -80,
+    "velocityZMax": 80,
+    "gravity": 0,
+    "drag": 0.8,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

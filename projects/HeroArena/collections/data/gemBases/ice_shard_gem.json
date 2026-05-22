@@ -1,0 +1,6 @@
+{
+  "id": "ice_shard_gem",
+  "name": "Ice Shard Gem",
+  "abilityId": "IceShardAbility",
+  "description": "Launch shards of ice"
+}

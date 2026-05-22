@@ -1,0 +1,8 @@
+{
+  "id": "longBow",
+  "name": "Long Bow",
+  "tier": 2,
+  "baseDamage": 10,
+  "isTwoHanded": true,
+  "weaponType": "bow"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "flat_hp_m",
+  "affixGroup": "item",
+  "label": "Reinforced",
+  "stat": "flatHP",
+  "min": 22,
+  "max": 45,
+  "isPrefix": true,
+  "itemTypes": [
+    "bodyArmor",
+    "helmet",
+    "offhand-tome"
+  ]
+}

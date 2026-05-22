@@ -1,0 +1,8 @@
+{
+  "id": "axe",
+  "weaponCategory": "melee",
+  "range": 60,
+  "attackSpeed": 0.8,
+  "projectile": null,
+  "element": "physical"
+}

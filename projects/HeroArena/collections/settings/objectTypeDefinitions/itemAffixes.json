@@ -1,0 +1,6 @@
+{
+  "id": "itemAffixes",
+  "name": "Item Affixes",
+  "singular": "itemAffix",
+  "objectTypeCategory": "data"
+}

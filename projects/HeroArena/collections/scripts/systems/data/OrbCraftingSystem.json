@@ -1,0 +1,7 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/OrbCraftingSystem.js",
+  "fileName": "OrbCraftingSystem",
+  "services": [
+    "applyOrb"
+  ]
+}

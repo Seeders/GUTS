@@ -1,0 +1,45 @@
+{
+  "id": "the_hierophant",
+  "number": 6,
+  "title": "The Hierophant",
+  "texture": "tarot_6_the_hierophant",
+  "past": {
+    "upright": {
+      "name": "Tradition",
+      "description": "Your melee units have +15% defense",
+      "effects": [{ "target": "player_units", "stat": "meleeDefense", "operation": "multiply", "value": 1.15 }]
+    },
+    "reversed": {
+      "name": "Rebellion",
+      "description": "No formation bonuses but +20% move speed",
+      "effects": [
+        { "target": "player_units", "stat": "formationBonus", "operation": "set", "value": false },
+        { "target": "player_units", "stat": "moveSpeed", "operation": "multiply", "value": 1.2 }
+      ]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Conformity",
+      "description": "All enemies are the same type",
+      "effects": [{ "target": "mission", "stat": "uniformEnemies", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Subversion",
+      "description": "Enemy units can convert yours on kill",
+      "effects": [{ "target": "enemy_units", "stat": "convertOnKill", "operation": "set", "value": true }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Blessing",
+      "description": "Unlock a permanent upgrade",
+      "effects": [{ "target": "rewards", "stat": "permanentUpgrade", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Dogma",
+      "description": "Rewards locked to specific unit type",
+      "effects": [{ "target": "rewards", "stat": "unitTypeRewards", "operation": "set", "value": true }]
+    }
+  }
+}

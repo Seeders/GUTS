@@ -1,0 +1,22 @@
+{
+  "fileName": "MirrorImagesAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/MirrorImagesAbility.js",
+  "name": "Mirror Images",
+  "description": "Creates 2 weaker illusions of self",
+  "cooldown": 10.0,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "animation": "cast",
+  "priority": 6,
+  "castTime": 1.5,
+  "autoTrigger": "low_health",
+  "imageCount": 2,
+  "imageDuration": 5.0,
+  "imageHealthRatio": 0.4,
+  "imageDamageRatio": 0.6,
+  "castParticleEffectSystems": ["ice_shards", "ice_sparkles"],
+  "burstParticleEffectSystems": ["ice_ring", "ice_sparkles"],
+  "summonParticleEffectSystems": ["ice_shards", "holy_sparkles"],
+  "expirationParticleEffectSystems": ["ice_sparkles"]
+}

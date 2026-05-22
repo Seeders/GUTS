@@ -1,0 +1,13 @@
+{
+  "id": "pct_hp",
+  "affixGroup": "item",
+  "label": "Plated",
+  "stat": "percentHP",
+  "min": 5,
+  "max": 15,
+  "isPrefix": true,
+  "itemTypes": [
+    "bodyArmor",
+    "offhand-tome"
+  ]
+}

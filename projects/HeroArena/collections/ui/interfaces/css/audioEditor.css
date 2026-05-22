@@ -1,0 +1,35 @@
+/* =============================================================================
+   AUDIO EDITOR - MODULE-SPECIFIC STYLES
+   ============================================================================= */
+
+/* Value display for sliders */
+.audio-editor__value-display {
+    float: right;
+    font-weight: 600;
+    color: var(--editor-primary);
+    font-size: 12px;
+}
+
+/* Waveform display area */
+.audio-editor__waveform-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--editor-bg-dark);
+    position: relative;
+}
+
+.audio-editor__waveform-display::before {
+    content: '🎵 Waveform Visualization';
+    color: var(--editor-text-muted);
+    font-size: 24px;
+}
+
+/* Status container */
+#status-container {
+    background-color: var(--editor-bg-light);
+    padding: var(--editor-spacing-sm) var(--editor-spacing-md);
+    text-align: center;
+    font-size: 12px;
+    color: var(--editor-text-secondary);
+}

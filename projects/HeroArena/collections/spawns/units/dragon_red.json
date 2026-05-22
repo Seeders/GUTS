@@ -1,0 +1,147 @@
+{
+  "title": "Dragon Red",
+  "size": 25,
+  "height": 100,
+  "value": 280,
+  "hp": 600,
+  "speed": 32,
+  "damage": 55,
+  "attackSpeed": 0.7,
+  "element": "fire",
+  "armor": 6,
+  "fireResistance": 1,
+  "coldResistance": -0.25,
+  "lightningResistance": 0.1,
+  "render": {
+    "animations": {
+      "idle": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "dragon_idle"
+              }
+            ]
+          }
+        }
+      ],
+      "walk": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "type": "gltf",
+                "width": 2,
+                "height": 0.2,
+                "depth": 1,
+                "color": "#FFFFFF",
+                "metalness": "0",
+                "roughness": "1",
+                "model": "dragon",
+                "id": 0,
+                "animation": "dragon_walk"
+              }
+            ]
+          }
+        }
+      ],
+      "attack": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "dragon_attack"
+              }
+            ]
+          }
+        }
+      ],
+      "death": [
+        {
+          "main": {
+            "loops": false,
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "dragon_death"
+              }
+            ]
+          }
+        }
+      ],
+      "cast": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "dragon_cast"
+              }
+            ]
+          }
+        }
+      ],
+      "takeoff": [
+        {
+          "main": {
+            "shapes": [
+              {
+                "id": 0,
+                "animation": "dragon_takeoff"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "model": {
+      "main": {
+        "position": {
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 2,
+          "y": 2,
+          "z": 2
+        },
+        "shapes": [
+          {
+            "type": "gltf",
+            "width": 2,
+            "height": 0.2,
+            "depth": 1,
+            "color": "#FFFFFF",
+            "metalness": "0",
+            "roughness": "1",
+            "model": "dragon"
+          }
+        ]
+      }
+    }
+  },
+  "buyable": true,
+  "squadWidth": 1,
+  "squadHeight": 1,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "abilities": [
+    "FireBallAbility",
+    "TakeOffAbility"
+  ],
+  "spriteAnimationSet": "dragonred",
+  "spriteYOffset": -48,
+  "range": 10,
+  "requiresUnits": [],
+  "requiresBuildings": [
+    "castle"
+  ],
+  "icon": "dragon"
+}

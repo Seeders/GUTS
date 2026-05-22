@@ -1,0 +1,15 @@
+{
+  "id": "crit_chance",
+  "affixGroup": "item",
+  "label": "of Precision",
+  "stat": "critChance",
+  "min": 3,
+  "max": 10,
+  "isPrefix": false,
+  "itemTypes": [
+    "weapon",
+    "offhand-orb",
+    "offhand-quiver",
+    "helmet"
+  ]
+}

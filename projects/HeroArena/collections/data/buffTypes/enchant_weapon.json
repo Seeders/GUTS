@@ -1,0 +1,11 @@
+{
+  "title": "Enchant Weapon",
+  "damageMultiplier": 1,
+  "attackSpeedMultiplier": 1,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 1,
+  "damageReduction": 0,
+  "accuracyReduction": 0,
+  "elementalDamage": 15,
+  "glowing": 1
+}

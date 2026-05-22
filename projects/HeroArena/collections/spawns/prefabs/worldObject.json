@@ -1,0 +1,5 @@
+{
+  "title": "World Object",
+  "description": "Base prefab for world objects (trees, rocks, etc.)",
+  "components": ["transform", "unitType", "worldObject", "team", "collision", "animation", "renderable"]
+}

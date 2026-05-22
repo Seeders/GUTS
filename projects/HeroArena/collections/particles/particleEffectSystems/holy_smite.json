@@ -1,0 +1,24 @@
+{
+  "title": "Holy Smite",
+  "category": "holy",
+  "tags": [
+    "holy",
+    "damage",
+    "magic"
+  ],
+  "layers": [
+    {
+      "effect": "explosion_flash",
+      "delay": 0
+    },
+    {
+      "effect": "holy_light",
+      "delay": 0
+    },
+    {
+      "effect": "holy_light",
+      "delay": 0.2,
+      "countMultiplier": 0.6
+    }
+  ]
+}

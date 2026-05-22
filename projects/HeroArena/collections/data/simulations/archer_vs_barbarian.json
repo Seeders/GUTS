@@ -1,0 +1,10 @@
+{
+  "name": "Archer vs Barbarian",
+  "description": "Archer (pure dexterity ranged) vs Barbarian (pure strength melee). Tests ranged vs melee combat.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "forest",
+  "buildOrders": ["archer", "barbarian"],
+  "maxRounds": 10,
+  "endOnFirstDeath": false
+}

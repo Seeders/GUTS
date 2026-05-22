@@ -1,0 +1,7 @@
+{
+  "id": "towerShield",
+  "name": "Tower Shield",
+  "tier": 3,
+  "offhandType": "shield",
+  "baseArmor": 14
+}

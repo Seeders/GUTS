@@ -1,0 +1,31 @@
+{
+  "title": "Heal Sparkles",
+  "category": "heal",
+  "tags": [
+    "heal",
+    "sparkles",
+    "magic"
+  ],
+  "particleEffectData": {
+    "count": 8,
+    "lifetime": 0.6,
+    "scale": 8,
+    "scaleMultiplier": 0.8,
+    "startColor": "#ffffff",
+    "endColor": "#aaffaa",
+    "emitterShape": "sphere",
+    "emitterRadius": 30,
+    "heightOffset": 20,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 50,
+    "velocityYMax": 100,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": -60,
+    "drag": 0.92,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  }
+}

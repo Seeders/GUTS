@@ -1,0 +1,9 @@
+{
+  "title": "ItemRarity",
+  "enum": [
+    "normal",
+    "magic",
+    "rare",
+    "unique"
+  ]
+}

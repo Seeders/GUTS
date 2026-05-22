@@ -1,0 +1,12 @@
+{
+  "id": "flat_dmg_s",
+  "affixGroup": "item",
+  "label": "Serrated",
+  "stat": "flatDamage",
+  "min": 2,
+  "max": 6,
+  "isPrefix": true,
+  "itemTypes": [
+    "weapon"
+  ]
+}

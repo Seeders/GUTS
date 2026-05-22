@@ -1,0 +1,12 @@
+{
+  "title": "Element",
+  "enum": [
+    "physical",
+    "fire",
+    "cold",
+    "lightning",
+    "poison",
+    "holy",
+    "shadow"
+  ]
+}

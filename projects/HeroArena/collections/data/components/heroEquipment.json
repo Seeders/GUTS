@@ -1,0 +1,10 @@
+{
+  "title": "heroEquipment",
+  "schema": {
+    "mainWeapon": null,
+    "offhand": null,
+    "bodyArmor": null,
+    "helmet": null,
+    "abilitySlots": [null, null, null, null]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "id": "heal_gem",
+  "name": "Heal Gem",
+  "abilityId": "HealAbility",
+  "description": "Restore health to a nearby ally"
+}

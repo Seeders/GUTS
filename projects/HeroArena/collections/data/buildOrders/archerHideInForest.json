@@ -1,0 +1,19 @@
+{
+  "name": "Archer Hide Then Unhide",
+  "description": "Spawn archer in forest, hide, then move out to test isHiding clear on move order",
+  "rounds": {
+    "1": [
+      { "type": "SPAWN_UNIT", "unitId": "1_d_archer", "collection": "units", "position": { "x": -200, "z": 0 } },
+      { "type": "HIDE_ORDER", "unitType": "1_d_archer" }
+    ],
+    "2": [],
+    "3": [
+      { "type": "MOVE_ORDER", "unitType": "1_d_archer", "target": "center" }
+    ],
+    "4": [],
+    "5": [],
+    "6": [],
+    "7": [],
+    "8": []
+  }
+}

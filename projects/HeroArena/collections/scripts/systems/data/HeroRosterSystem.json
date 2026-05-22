@@ -1,0 +1,10 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/HeroRosterSystem.js",
+  "fileName": "HeroRosterSystem",
+  "services": [
+    "spawnHeroesForRound",
+    "despawnBattleHeroes",
+    "getHeroEntityId",
+    "getRosterEntryForEntity"
+  ]
+}

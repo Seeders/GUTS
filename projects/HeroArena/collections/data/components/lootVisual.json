@@ -1,0 +1,8 @@
+{
+  "title": "lootVisual",
+  "schema": {
+    "icon": "coin",
+    "color": "#ffd700",
+    "scale": 1.0
+  }
+}

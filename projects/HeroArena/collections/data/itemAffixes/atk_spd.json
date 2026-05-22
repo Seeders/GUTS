@@ -1,0 +1,13 @@
+{
+  "id": "atk_spd",
+  "affixGroup": "item",
+  "label": "of Fury",
+  "stat": "percentAttackSpeed",
+  "min": 5,
+  "max": 15,
+  "isPrefix": false,
+  "itemTypes": [
+    "weapon",
+    "offhand-quiver"
+  ]
+}

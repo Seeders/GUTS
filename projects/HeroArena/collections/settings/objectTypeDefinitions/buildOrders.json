@@ -1,0 +1,6 @@
+{
+  "id": "buildOrders",
+  "name": "Build Orders",
+  "singular": "buildOrder",
+  "objectTypeCategory": "data"
+}

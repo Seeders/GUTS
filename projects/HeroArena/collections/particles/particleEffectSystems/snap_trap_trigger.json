@@ -1,0 +1,15 @@
+{
+  "title": "Snap Trap Trigger",
+  "category": "physical",
+  "tags": ["trap", "snap", "trigger"],
+  "layers": [
+    {
+      "effect": "dust_explosion",
+      "delay": 0
+    },
+    {
+      "effect": "metal_debris",
+      "delay": 0.05
+    }
+  ]
+}

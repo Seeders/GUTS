@@ -1,0 +1,31 @@
+{
+  "title": "Battle Cry",
+  "category": "buff",
+  "tags": [
+    "buff",
+    "morale",
+    "gold"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 0.6,
+    "scale": 15,
+    "scaleMultiplier": 2,
+    "startColor": "#ffdd00",
+    "endColor": "#ff8800",
+    "emitterShape": "ring",
+    "emitterRadius": 20,
+    "heightOffset": 40,
+    "velocityXMin": -80,
+    "velocityXMax": 80,
+    "velocityYMin": 20,
+    "velocityYMax": 80,
+    "velocityZMin": -80,
+    "velocityZMax": 80,
+    "gravity": -30,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

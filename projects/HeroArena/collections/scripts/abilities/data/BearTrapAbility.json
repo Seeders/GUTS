@@ -1,0 +1,13 @@
+{
+  "fileName": "BearTrapAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/BearTrapAbility.js",
+  "name": "Bear Trap",
+  "description": "Place a hidden trap that snares enemies",
+  "maxTraps": 2,
+  "trapComponentName": "trap",
+  "placementMessage": "Scout sets a bear trap!",
+  "castParticleEffectSystems": ["dust_burst"],
+  "targetParticleEffectSystems": ["dust_burst"],
+  "impactParticleEffectSystems": ["dust_burst"],
+  "expirationParticleEffectSystems": ["dust_burst"]
+}

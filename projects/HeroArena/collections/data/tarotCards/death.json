@@ -1,0 +1,45 @@
+{
+  "id": "death",
+  "number": 14,
+  "title": "Death",
+  "texture": "tarot_14_death",
+  "past": {
+    "upright": {
+      "name": "Transformation",
+      "description": "+50% experience from kills",
+      "effects": [{ "target": "player_units", "stat": "killExperience", "operation": "multiply", "value": 1.5 }]
+    },
+    "reversed": {
+      "name": "Decay",
+      "description": "Units slowly lose health over time",
+      "effects": [{ "target": "player_units", "stat": "healthDecay", "operation": "set", "value": true }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Endings",
+      "description": "Killed enemies explode damaging nearby",
+      "effects": [{ "target": "enemy_units", "stat": "deathExplosion", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Undeath",
+      "description": "Enemies resurrect once with half health",
+      "effects": [{ "target": "enemy_units", "stat": "resurrection", "operation": "set", "value": true }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Rebirth",
+      "description": "One fallen unit returns permanently",
+      "effects": [{ "target": "rewards", "stat": "resurrectUnit", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Finality",
+      "description": "Permadeath for fallen units, +50% rewards",
+      "effects": [
+        { "target": "rewards", "stat": "permadeath", "operation": "set", "value": true },
+        { "target": "rewards", "stat": "multiplier", "operation": "add", "value": 0.5 }
+      ]
+    }
+  }
+}

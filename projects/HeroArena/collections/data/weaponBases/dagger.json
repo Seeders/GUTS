@@ -1,0 +1,8 @@
+{
+  "id": "dagger",
+  "name": "Dagger",
+  "tier": 1,
+  "baseDamage": 3,
+  "isTwoHanded": false,
+  "weaponType": "dagger"
+}

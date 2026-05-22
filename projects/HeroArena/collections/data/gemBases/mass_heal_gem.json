@@ -1,0 +1,6 @@
+{
+  "id": "mass_heal_gem",
+  "name": "Mass Heal Gem",
+  "abilityId": "MassHealAbility",
+  "description": "Heal nearby allies"
+}

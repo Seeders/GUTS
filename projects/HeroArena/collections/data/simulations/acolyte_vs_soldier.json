@@ -1,0 +1,10 @@
+{
+  "name": "Acolyte vs Soldier",
+  "description": "Acolyte (intel/dex healer) vs Soldier (strength/dex hybrid melee). Support vs hybrid melee.",
+  "seed": 42,
+  "startingGold": 500,
+  "level": "forest",
+  "buildOrders": ["acolyte", "soldier"],
+  "maxRounds": 10,
+  "endOnFirstDeath": false
+}

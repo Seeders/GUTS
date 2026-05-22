@@ -1,0 +1,45 @@
+{
+  "id": "the_chariot",
+  "number": 8,
+  "title": "The Chariot",
+  "texture": "tarot_8_the_chariot",
+  "past": {
+    "upright": {
+      "name": "Victory",
+      "description": "Your units move 15% faster",
+      "effects": [{ "target": "player_units", "stat": "moveSpeed", "operation": "multiply", "value": 1.15 }]
+    },
+    "reversed": {
+      "name": "Recklessness",
+      "description": "Units charge but can't retreat",
+      "effects": [{ "target": "player_units", "stat": "noRetreat", "operation": "set", "value": true }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Momentum",
+      "description": "Enemies charge faster and hit harder",
+      "effects": [
+        { "target": "enemy_units", "stat": "moveSpeed", "operation": "multiply", "value": 1.2 },
+        { "target": "enemy_units", "stat": "damage", "operation": "multiply", "value": 1.1 }
+      ]
+    },
+    "reversed": {
+      "name": "Pursuit",
+      "description": "Enemies relentlessly chase wounded units",
+      "effects": [{ "target": "enemy_units", "stat": "focusWounded", "operation": "set", "value": true }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Triumph",
+      "description": "+30% rewards if no units lost",
+      "effects": [{ "target": "rewards", "stat": "perfectBonus", "operation": "set", "value": 0.3 }]
+    },
+    "reversed": {
+      "name": "Exhaustion",
+      "description": "Surviving units start next mission wounded",
+      "effects": [{ "target": "rewards", "stat": "woundedSurvivors", "operation": "set", "value": true }]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "id": "warHammer",
+  "name": "War Hammer",
+  "tier": 3,
+  "baseDamage": 16,
+  "isTwoHanded": true,
+  "weaponType": "mace"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "shortSword",
+  "name": "Short Sword",
+  "tier": 1,
+  "baseDamage": 4,
+  "isTwoHanded": false,
+  "weaponType": "sword"
+}

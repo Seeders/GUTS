@@ -1,0 +1,6 @@
+{
+  "id": "fireball_gem",
+  "name": "Fireball Gem",
+  "abilityId": "FireBallAbility",
+  "description": "Hurl a blazing fireball"
+}

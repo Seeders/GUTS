@@ -1,0 +1,148 @@
+<!-- Game Screen -->
+<div id="gameScreen" class="screen active">
+    <div id="gameContainer">
+        <div id="canvasContainer">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- HUD: top bar -->
+        <div id="arenaHUD">
+            <div id="playerHPSection" class="hud-hp-section">
+                <span class="hud-label">YOUR HP</span>
+                <div class="hud-hp-bar-wrap">
+                    <div class="hud-hp-bar" id="playerHPBar" style="width:100%"></div>
+                </div>
+                <span class="hud-hp-value" id="playerHPValue">100</span>
+            </div>
+            <div id="hudCenter">
+                <div class="hud-round" id="roundDisplay">Round 1</div>
+                <div class="hud-phase" id="phaseDisplay">–</div>
+                <div class="hud-gold">💰 <span id="playerGold">0</span></div>
+            </div>
+            <div id="opponentHPSection" class="hud-hp-section hud-hp-right">
+                <span class="hud-label">OPPONENT HP</span>
+                <div class="hud-hp-bar-wrap">
+                    <div class="hud-hp-bar hud-hp-enemy" id="opponentHPBar" style="width:100%"></div>
+                </div>
+                <span class="hud-hp-value" id="opponentHPValue">100</span>
+            </div>
+        </div>
+
+        <!-- Prep phase: ready button -->
+        <div id="prepControls" class="hidden">
+            <button id="placementReadyBtn" class="btn btn-primary">Ready for Battle!</button>
+        </div>
+
+        <!-- Hero roster + equipment panel (visible during prep) -->
+        <div id="heroRosterPanel" class="hidden">
+            <div class="hero-roster-title">YOUR HEROES</div>
+            <div id="heroRosterCards"></div>
+        </div>
+
+        <!-- Inventory panel (visible during prep) -->
+        <div id="inventoryPanel" class="hidden">
+            <div class="hero-roster-title">INVENTORY</div>
+            <div class="inventory-hint" id="inventoryHint">Click an item, then click a hero slot to equip.</div>
+            <div id="inventoryItems"></div>
+        </div>
+
+        <!-- Gem detail panel (opens when a socketed gem is clicked) -->
+        <div id="gemDetailPanel" class="hidden">
+            <div class="gem-detail-header">
+                <span id="gemDetailTitle">Gem</span>
+                <button class="gem-detail-close" id="gemDetailClose">×</button>
+            </div>
+            <div class="gem-detail-meta" id="gemDetailMeta"></div>
+            <div class="gem-detail-section">RUNES</div>
+            <div id="gemDetailRunes"></div>
+        </div>
+
+        <!-- Combat log (scrolling event feed during battle) -->
+        <div id="combatLog">
+            <div class="combat-log-title">COMBAT LOG</div>
+            <div id="combatLogEntries"></div>
+        </div>
+
+        <!-- Item details panel (always visible during prep — shows last tapped item) -->
+        <div id="itemDetailsPanel" class="hidden">
+            <div class="hero-roster-title">ITEM DETAILS</div>
+            <div id="itemDetailsContent" class="item-details-empty">Tap an item or hero slot to see details.</div>
+        </div>
+
+        <!-- Camera controls -->
+        <div id="cameraControls">
+            <button id="rotateCameraLeftBtn" title="Rotate camera left (Q)">◀</button>
+            <button id="toggleCameraModeBtn" title="Toggle free camera mode">🎥</button>
+            <button id="rotateCameraRightBtn" title="Rotate camera right (E)">▶</button>
+        </div>
+
+        <!-- In-Game Chat -->
+        <div id="gameChat" class="game-chat">
+            <div id="gameChatMessages" class="game-chat-messages"></div>
+            <div id="gameChatInputContainer" class="game-chat-input-container hidden">
+                <input type="text" id="gameChatInput" class="game-chat-input" placeholder="" maxlength="200" autocomplete="off">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leader Select Overlay -->
+<div id="leaderSelectOverlay" class="arena-overlay hidden">
+    <div class="arena-overlay-panel">
+        <h2 class="arena-overlay-title">Choose Your Leader</h2>
+        <p class="arena-overlay-subtitle">Your leader provides passive bonuses throughout the match</p>
+        <div id="leaderOptions" class="arena-option-grid"></div>
+    </div>
+</div>
+
+<!-- Hero Select Overlay -->
+<div id="heroSelectOverlay" class="arena-overlay hidden">
+    <div class="arena-overlay-panel">
+        <h2 class="arena-overlay-title" id="heroSelectTitle">Choose Your Starting Hero</h2>
+        <p class="arena-overlay-subtitle" id="heroSelectSubtitle">Pick a class to begin your roster</p>
+        <div id="heroOptions" class="arena-option-grid"></div>
+    </div>
+</div>
+
+<!-- Victory Screen -->
+<div id="victoryScreen" class="screen">
+    <div class="result-content">
+        <div class="result-title victory-title">VICTORY!</div>
+        <div class="stats-grid" id="victoryStats"></div>
+        <div>
+            <button id="victory_MainMenuBtn" class="btn">RETURN TO MAIN MENU</button>
+        </div>
+    </div>
+</div>
+
+<!-- Defeat Screen -->
+<div id="defeatScreen" class="screen">
+    <div class="result-content">
+        <div class="result-title defeat-title">DEFEAT</div>
+        <div class="stats-grid" id="defeatStats"></div>
+        <div>
+            <button id="defeat_MainMenuBtn" class="btn">RETURN TO MAIN MENU</button>
+        </div>
+    </div>
+</div>
+
+<!-- Pause Menu -->
+<div id="pauseMenu" class="pause-overlay">
+    <div class="pause-content">
+        <h2>PAUSED</h2>
+        <button id="paused_ResumeBtn" class="btn">RESUME</button>
+        <button id="paused_MainMenuBtn" class="btn btn-secondary">RETURN TO MENU</button>
+    </div>
+</div>
+
+<!-- Loading Screen -->
+<div id="loadingScreen" class="screen" style="display:flex;position:absolute;top:0;left:0;width:100%;height:100vh;z-index:9999;background:#1a1a2e;justify-content:center;align-items:center;">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Loading...</div>
+        <div class="loading-progress-container">
+            <div class="loading-progress-bar" id="loadingProgressBar"></div>
+        </div>
+        <div class="loading-progress-text" id="loadingProgressText">0%</div>
+    </div>
+</div>

@@ -1,0 +1,12 @@
+{
+  "id": "leech",
+  "affixGroup": "item",
+  "label": "of Leeching",
+  "stat": "lifeLeech",
+  "min": 1,
+  "max": 4,
+  "isPrefix": false,
+  "itemTypes": [
+    "weapon"
+  ]
+}

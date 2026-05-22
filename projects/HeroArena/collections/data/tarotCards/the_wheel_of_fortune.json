@@ -1,0 +1,42 @@
+{
+  "id": "the_wheel_of_fortune",
+  "number": 11,
+  "title": "Wheel of Fortune",
+  "texture": "tarot_11_the_wheel_of_fortune",
+  "past": {
+    "upright": {
+      "name": "Luck",
+      "description": "+15% critical hit chance",
+      "effects": [{ "target": "player_units", "stat": "critChance", "operation": "add", "value": 0.15 }]
+    },
+    "reversed": {
+      "name": "Chaos",
+      "description": "Random stat bonuses and penalties",
+      "effects": [{ "target": "player_units", "stat": "randomStats", "operation": "set", "value": true }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Fate",
+      "description": "Random mission events occur",
+      "effects": [{ "target": "mission", "stat": "randomEvents", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Misfortune",
+      "description": "Unpredictable enemy spawns and types",
+      "effects": [{ "target": "mission", "stat": "randomSpawns", "operation": "set", "value": true }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Fortune",
+      "description": "Double all rewards",
+      "effects": [{ "target": "rewards", "stat": "multiplier", "operation": "multiply", "value": 2 }]
+    },
+    "reversed": {
+      "name": "Gamble",
+      "description": "50% chance for triple or no rewards",
+      "effects": [{ "target": "rewards", "stat": "gambling", "operation": "set", "value": true }]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "id": "cascade_rune",
+  "name": "Cascade Rune",
+  "modifiers": {
+    "chainCount": 1
+  },
+  "description": "Ability chains to 1 additional target"
+}

@@ -1,0 +1,10 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/LobbyUISystem.js",
+  "fileName": "LobbyUISystem",
+  "services": [
+    "showLobby",
+    "updateLobby",
+    "getSelectedLevel",
+    "handleMultiplayerModeSelection"
+  ]
+}

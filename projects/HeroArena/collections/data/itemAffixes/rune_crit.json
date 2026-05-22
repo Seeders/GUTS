@@ -1,0 +1,9 @@
+{
+  "id": "rune_crit",
+  "affixGroup": "rune",
+  "label": "of Striking",
+  "stat": "critChance",
+  "min": 4,
+  "max": 8,
+  "isPrefix": false
+}

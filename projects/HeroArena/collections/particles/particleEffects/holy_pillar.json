@@ -1,0 +1,32 @@
+{
+  "title": "Holy Pillar",
+  "category": "holy",
+  "tags": [
+    "holy",
+    "light",
+    "pillar",
+    "smite"
+  ],
+  "particleEffectData": {
+    "count": 15,
+    "lifetime": 0.4,
+    "scale": 20,
+    "scaleMultiplier": 1.8,
+    "startColor": "#ffffff",
+    "endColor": "#ffa500",
+    "emitterShape": "ring",
+    "emitterRadius": 15,
+    "heightOffset": 0,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": -150,
+    "velocityYMax": -80,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": 100,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

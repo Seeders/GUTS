@@ -1,0 +1,55 @@
+{
+  "id": "normal",
+  "order": 0,
+  "color": "#ffffff",
+  "maxPrefixes": 0,
+  "maxSuffixes": 0,
+  "gemMaxPrefixes": 0,
+  "gemMaxSuffixes": 0,
+  "runeMaxPrefixes": 0,
+  "runeMaxSuffixes": 0,
+  "itemWeights": [
+    {
+      "minLevel": 1,
+      "weight": 70
+    },
+    {
+      "minLevel": 5,
+      "weight": 55
+    },
+    {
+      "minLevel": 10,
+      "weight": 35
+    },
+    {
+      "minLevel": 15,
+      "weight": 20
+    },
+    {
+      "minLevel": 20,
+      "weight": 10
+    }
+  ],
+  "gemWeights": [
+    {
+      "minLevel": 1,
+      "weight": 80
+    },
+    {
+      "minLevel": 5,
+      "weight": 60
+    },
+    {
+      "minLevel": 10,
+      "weight": 45
+    },
+    {
+      "minLevel": 15,
+      "weight": 30
+    },
+    {
+      "minLevel": 20,
+      "weight": 20
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "title": "Trap Scorch Ring",
+  "category": "explosion",
+  "tags": [
+    "trap",
+    "explosion",
+    "scorch"
+  ],
+  "particleEffectData": {
+    "count": 24,
+    "lifetime": 0.6,
+    "scale": 18,
+    "scaleMultiplier": 2,
+    "startColor": "#aa8866",
+    "endColor": "#553322",
+    "emitterShape": "ring",
+    "emitterRadius": 50,
+    "heightOffset": 3,
+    "velocityXMin": -60,
+    "velocityXMax": 60,
+    "velocityYMin": 5,
+    "velocityYMax": 20,
+    "velocityZMin": -60,
+    "velocityZMax": 60,
+    "gravity": 20,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

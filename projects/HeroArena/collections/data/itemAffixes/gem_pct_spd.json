@@ -1,0 +1,9 @@
+{
+  "id": "gem_pct_spd",
+  "affixGroup": "gem",
+  "label": "of Haste",
+  "stat": "percentAttackSpeed",
+  "min": 8,
+  "max": 18,
+  "isPrefix": false
+}

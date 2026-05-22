@@ -1,0 +1,11 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/OnlineLobbyUISystem.js",
+  "fileName": "OnlineLobbyUISystem",
+  "services": [
+    "refreshGamesList",
+    "showOnlineLobby",
+    "hideOnlineLobby",
+    "showChatView",
+    "showGamesListView"
+  ]
+}

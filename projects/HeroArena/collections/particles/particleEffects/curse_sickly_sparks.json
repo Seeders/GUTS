@@ -1,0 +1,31 @@
+{
+  "title": "Curse Sickly Sparks",
+  "category": "shadow",
+  "tags": [
+    "curse",
+    "sickly",
+    "sparks"
+  ],
+  "particleEffectData": {
+    "count": 10,
+    "lifetime": 0.5,
+    "scale": 8,
+    "scaleMultiplier": 0.8,
+    "startColor": "#66cc44",
+    "endColor": "#226611",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 30,
+    "velocityXMin": -50,
+    "velocityXMax": 50,
+    "velocityYMin": 30,
+    "velocityYMax": 80,
+    "velocityZMin": -50,
+    "velocityZMax": 50,
+    "gravity": 50,
+    "drag": 0.94,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

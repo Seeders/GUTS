@@ -1,0 +1,6 @@
+{
+  "id": "piercing_gem",
+  "name": "Piercing Shot Gem",
+  "abilityId": "PiercingShotAbility",
+  "description": "Fire a shot that pierces enemies in a line"
+}

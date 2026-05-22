@@ -1,0 +1,8 @@
+{
+  "id": "longSword",
+  "name": "Long Sword",
+  "tier": 2,
+  "baseDamage": 7,
+  "isTwoHanded": false,
+  "weaponType": "sword"
+}

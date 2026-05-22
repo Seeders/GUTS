@@ -1,0 +1,7 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/LootSystem.js",
+  "fileName": "LootSystem",
+  "services": [
+    "handleLootClick"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Marked",
+  "damageMultiplier": 1,
+  "attackSpeedMultiplier": 1,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 1.25,
+  "damageReduction": 0,
+  "accuracyReduction": 0,
+  "revealed": 1,
+  "stackable": 1,
+  "maxStacks": 4,
+  "damagePerStack": 0.25
+}

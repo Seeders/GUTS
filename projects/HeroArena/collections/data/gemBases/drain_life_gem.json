@@ -1,0 +1,6 @@
+{
+  "id": "drain_life_gem",
+  "name": "Drain Life Gem",
+  "abilityId": "DrainLifeAbility",
+  "description": "Drain life from an enemy"
+}

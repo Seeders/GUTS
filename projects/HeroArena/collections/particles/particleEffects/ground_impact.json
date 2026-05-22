@@ -1,0 +1,31 @@
+{
+  "title": "Ground Impact",
+  "category": "physical",
+  "tags": [
+    "impact",
+    "slam",
+    "ground"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 0.6,
+    "scale": 18,
+    "scaleMultiplier": 1.5,
+    "startColor": "#aa8866",
+    "endColor": "#664422",
+    "emitterShape": "ring",
+    "emitterRadius": 30,
+    "heightOffset": 5,
+    "velocityXMin": -100,
+    "velocityXMax": 100,
+    "velocityYMin": 30,
+    "velocityYMax": 80,
+    "velocityZMin": -100,
+    "velocityZMax": 100,
+    "gravity": 200,
+    "drag": 0.92,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

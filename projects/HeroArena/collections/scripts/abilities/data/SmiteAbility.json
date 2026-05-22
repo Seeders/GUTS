@@ -1,0 +1,22 @@
+{
+  "fileName": "SmiteAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/SmiteAbility.js",
+  "name": "Holy Smite",
+  "description": "Calls down holy wrath upon the strongest enemy",
+  "cooldown": 6.0,
+  "range": 400,
+  "manaCost": 65,
+  "targetType": "auto",
+  "animation": "cast",
+  "priority": 9,
+  "castTime": 1.8,
+  "autoTrigger": "strong_enemy",
+  "damage": 80,
+  "bonusDamageVsUndead": 2.0,
+  "pillarDelay": 0.5,
+  "element": "holy",
+  "castParticleEffectSystems": ["holy_light", "holy_sparkles"],
+  "pillarParticleEffectSystems": ["holy_pillar", "holy_light"],
+  "warningParticleEffectSystems": ["holy_ring"],
+  "impactParticleEffectSystems": ["holy_explosion", "holy_sparkles"]
+}

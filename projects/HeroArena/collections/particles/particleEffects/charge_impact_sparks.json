@@ -1,0 +1,31 @@
+{
+  "title": "Charge Impact Sparks",
+  "category": "physical",
+  "tags": [
+    "charge",
+    "impact",
+    "sparks"
+  ],
+  "particleEffectData": {
+    "count": 30,
+    "lifetime": 0.6,
+    "scale": 12,
+    "scaleMultiplier": 1,
+    "startColor": "#ffaa44",
+    "endColor": "#cc4400",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 20,
+    "velocityXMin": -120,
+    "velocityXMax": 120,
+    "velocityYMin": 60,
+    "velocityYMax": 180,
+    "velocityZMin": -120,
+    "velocityZMax": 120,
+    "gravity": 300,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "id": "shortBow",
+  "name": "Short Bow",
+  "tier": 1,
+  "baseDamage": 3,
+  "isTwoHanded": false,
+  "weaponType": "bow"
+}

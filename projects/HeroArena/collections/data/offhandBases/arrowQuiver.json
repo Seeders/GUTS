@@ -1,0 +1,7 @@
+{
+  "id": "arrowQuiver",
+  "name": "Arrow Quiver",
+  "tier": 1,
+  "offhandType": "quiver",
+  "baseArmor": 0
+}

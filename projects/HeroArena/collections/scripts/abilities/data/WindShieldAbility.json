@@ -1,0 +1,17 @@
+{
+  "fileName": "WindShieldAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/WindShieldAbility.js",
+  "name": "Wind Shield",
+  "description": "Creates a swirling tornado that reflects projectiles back at attackers",
+  "cooldown": 8.0,
+  "range": 200,
+  "manaCost": 60,
+  "targetType": "defensive",
+  "animation": "cast",
+  "priority": 4,
+  "castTime": 1.2,
+  "autoTrigger": "projectiles_incoming",
+  "shieldDuration": 15.0,
+  "castParticleEffectSystems": ["wind_swirl_base", "wind_wisps"],
+  "expirationParticleEffectSystems": ["wind_swirl_base", "wind_wisps"]
+}

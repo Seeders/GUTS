@@ -1,0 +1,628 @@
+/* Game Interface Styles */
+/* Most styles are inherited from main.css which loads as the base stylesheet */
+/* This file contains game-specific overrides if needed */
+
+/* Ensure game screen starts as active when this interface loads */
+#gameScreen.screen {
+    display: flex;
+}
+
+/* ===================== IN-GAME CHAT (WC3/Dota Style) ===================== */
+.game-chat {
+    position: absolute;
+    left: 15px;
+    bottom: 280px; /* Above the minimap area */
+    width: 400px;
+    max-width: 35vw;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.game-chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 200px;
+    overflow: hidden;
+    padding: 5px 0;
+}
+
+.game-chat-message {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 13px;
+    line-height: 1.3;
+    animation: chatFadeIn 0.2s ease-out;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+
+.game-chat-message.fading {
+    opacity: 0;
+}
+
+.game-chat-message .chat-time {
+    color: #888;
+    font-size: 11px;
+    margin-right: 6px;
+}
+
+.game-chat-message .chat-sender {
+    color: #d4af37;
+    font-weight: bold;
+    margin-right: 6px;
+}
+
+.game-chat-message .chat-sender.ally {
+    color: #4fc3f7;
+}
+
+.game-chat-message .chat-sender.enemy {
+    color: #ef5350;
+}
+
+.game-chat-message .chat-text {
+    color: #e0e0e0;
+}
+
+.game-chat-message.system {
+    background: rgba(212, 175, 55, 0.15);
+    border-left: 2px solid #d4af37;
+}
+
+.game-chat-message.system .chat-system-text {
+    color: #d4af37;
+    font-style: italic;
+}
+
+@keyframes chatFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Chat Input */
+.game-chat-input-container {
+    pointer-events: all;
+    margin-top: 5px;
+    transition: opacity 0.15s ease;
+}
+
+.game-chat-input-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.game-chat-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: #e0e0e0;
+    font-size: 13px;
+    outline: none;
+}
+
+.game-chat-input:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.game-chat-input::placeholder {
+    color: #666;
+}
+
+/* ===================== ARENA HUD ===================== */
+#arenaHUD {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 100%);
+    pointer-events: none;
+    z-index: 50;
+    gap: 16px;
+}
+.hud-hp-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+.hud-hp-right {
+    flex-direction: row-reverse;
+}
+.hud-label {
+    font-size: 10px;
+    color: #aaa;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+.hud-hp-bar-wrap {
+    flex: 1;
+    height: 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 5px;
+    overflow: hidden;
+}
+.hud-hp-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #43a047, #66bb6a);
+    border-radius: 5px;
+    transition: width 0.4s ease;
+}
+.hud-hp-enemy {
+    background: linear-gradient(90deg, #e53935, #ef5350);
+    margin-left: auto;
+}
+.hud-hp-value {
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    min-width: 28px;
+    text-align: center;
+}
+#hudCenter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+.hud-round {
+    font-size: 16px;
+    font-weight: bold;
+    color: #d4af37;
+    letter-spacing: 2px;
+}
+.hud-phase {
+    font-size: 11px;
+    color: #aaa;
+    letter-spacing: 1px;
+}
+.hud-gold {
+    font-size: 14px;
+    color: #ffd54f;
+    font-weight: bold;
+}
+
+/* ===================== PREP CONTROLS ===================== */
+#prepControls {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: flex;
+    gap: 12px;
+}
+#prepControls.hidden {
+    display: none;
+}
+
+/* ===================== ARENA OVERLAYS (leader/hero select) ===================== */
+.arena-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 26, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+.arena-overlay.hidden {
+    display: none;
+}
+.arena-overlay-panel {
+    background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    padding: 40px 48px;
+    max-width: 860px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(212, 175, 55, 0.1);
+}
+.arena-overlay-title {
+    font-size: 28px;
+    color: #d4af37;
+    letter-spacing: 3px;
+    margin: 0 0 8px;
+    text-transform: uppercase;
+}
+.arena-overlay-subtitle {
+    font-size: 13px;
+    color: #888;
+    margin: 0 0 32px;
+}
+.arena-option-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+.arena-option-card {
+    background: rgba(255,255,255,0.04);
+    border: 2px solid rgba(212, 175, 55, 0.2);
+    border-radius: 8px;
+    padding: 20px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+.arena-option-card:hover {
+    border-color: #d4af37;
+    background: rgba(212, 175, 55, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.2);
+}
+.arena-option-card.selected {
+    border-color: #d4af37;
+    background: rgba(212, 175, 55, 0.15);
+}
+.arena-option-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #e0e0e0;
+    margin-bottom: 6px;
+}
+.arena-option-tag {
+    font-size: 11px;
+    color: #d4af37;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+.arena-option-desc {
+    font-size: 12px;
+    color: #888;
+    line-height: 1.5;
+}
+
+/* ============ Hero Roster Panel ============ */
+#heroRosterPanel {
+    position: absolute;
+    top: 80px;
+    right: 12px;
+    width: 260px;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    background: rgba(20, 20, 32, 0.92);
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 10px;
+    z-index: 100;
+    pointer-events: auto;
+}
+.hero-roster-title {
+    color: #ddd;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+.hero-card {
+    background: rgba(40, 40, 56, 0.9);
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 8px;
+}
+.hero-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #333;
+}
+.hero-card-name {
+    color: #fff;
+    font-weight: bold;
+    font-size: 13px;
+}
+.hero-card-level {
+    color: #ffc857;
+    font-size: 11px;
+}
+.hero-equipment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+}
+.hero-slot {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #333;
+    border-radius: 3px;
+    padding: 4px 6px;
+    font-size: 11px;
+    color: #aaa;
+}
+.hero-slot-label {
+    color: #777;
+    font-size: 10px;
+    text-transform: uppercase;
+    display: block;
+}
+.hero-slot-value {
+    color: #ddd;
+    display: block;
+}
+.hero-slot.filled .hero-slot-value {
+    color: #6fb3ff;
+}
+.hero-slot.rarity-magic .hero-slot-value   { color: #6fb3ff; }
+.hero-slot.rarity-rare .hero-slot-value    { color: #ffd54a; }
+.hero-slot.rarity-unique .hero-slot-value  { color: #d97c2c; }
+.hero-ability-slots {
+    grid-column: 1 / span 2;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3px;
+    margin-top: 4px;
+}
+.hero-ability-slots .hero-slot {
+    text-align: center;
+    padding: 4px 2px;
+}
+
+/* Make every hero slot clickable so it can be an equip target */
+.hero-slot.equip-target {
+    cursor: pointer;
+}
+.hero-slot.equip-target:hover {
+    border-color: #6fb3ff;
+    background: rgba(0, 0, 0, 0.5);
+}
+.hero-slot.equip-active {
+    border-color: #ffd54a;
+    box-shadow: 0 0 4px rgba(255, 213, 74, 0.7);
+}
+
+/* ============ Inventory Panel ============ */
+#inventoryPanel {
+    position: absolute;
+    top: 80px;
+    left: 12px;
+    width: 240px;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    background: rgba(20, 20, 32, 0.92);
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 10px;
+    z-index: 100;
+    pointer-events: auto;
+}
+.inventory-hint {
+    color: #888;
+    font-size: 10px;
+    margin-bottom: 8px;
+    line-height: 1.4;
+    text-align: center;
+}
+.inventory-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(40, 40, 56, 0.9);
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.inventory-item:hover {
+    border-color: #6fb3ff;
+    background: rgba(60, 60, 80, 0.95);
+}
+.inventory-item.selected {
+    border-color: #ffd54a;
+    box-shadow: 0 0 6px rgba(255, 213, 74, 0.7);
+    background: rgba(80, 70, 30, 0.6);
+}
+.inventory-item-name {
+    flex: 1;
+    color: #ddd;
+}
+.inventory-item-type {
+    color: #888;
+    font-size: 10px;
+    margin-left: 6px;
+    text-transform: uppercase;
+}
+.inventory-item.rarity-magic  .inventory-item-name { color: #6fb3ff; }
+.inventory-item.rarity-rare   .inventory-item-name { color: #ffd54a; }
+.inventory-item.rarity-unique .inventory-item-name { color: #d97c2c; }
+
+/* ============ Gem Detail Panel ============ */
+#gemDetailPanel {
+    position: absolute;
+    top: 80px;
+    right: 290px;
+    width: 240px;
+    background: rgba(20, 20, 32, 0.96);
+    border: 1px solid #6fb3ff;
+    border-radius: 6px;
+    padding: 10px;
+    z-index: 110;
+    pointer-events: auto;
+    box-shadow: 0 0 8px rgba(111, 179, 255, 0.4);
+}
+.gem-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #444;
+}
+#gemDetailTitle {
+    color: #6fb3ff;
+    font-weight: bold;
+    font-size: 13px;
+}
+.gem-detail-close {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 6px;
+    line-height: 1;
+}
+.gem-detail-close:hover { color: #fff; }
+.gem-detail-meta {
+    color: #aaa;
+    font-size: 11px;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+.gem-detail-section {
+    color: #777;
+    font-size: 10px;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+.rune-slot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #333;
+    border-radius: 3px;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    font-size: 11px;
+    color: #888;
+}
+.rune-slot.empty {
+    border-style: dashed;
+    color: #555;
+}
+.rune-slot.equip-target {
+    cursor: pointer;
+}
+.rune-slot.equip-target:hover {
+    border-color: #6fb3ff;
+    background: rgba(0, 0, 0, 0.5);
+}
+.rune-slot.filled.rarity-magic  { color: #6fb3ff; }
+.rune-slot.filled.rarity-rare   { color: #ffd54a; }
+.rune-slot.filled.rarity-unique { color: #d97c2c; }
+
+/* ============ Combat Log ============ */
+#combatLog {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    width: 320px;
+    max-height: 180px;
+    background: rgba(10, 10, 20, 0.85);
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 6px 8px;
+    z-index: 95;
+    pointer-events: none;
+    overflow: hidden;
+    font-family: monospace;
+    font-size: 11px;
+    color: #bbb;
+}
+.combat-log-title {
+    color: #888;
+    font-size: 9px;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 3px;
+}
+#combatLogEntries {
+    max-height: 150px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse; /* newest at top */
+}
+.combat-log-entry {
+    padding: 1px 0;
+    line-height: 1.35;
+}
+.combat-log-entry.type-ability { color: #ffb86c; }
+.combat-log-entry.type-death   { color: #ff5555; }
+.combat-log-entry.type-battle  { color: #8be9fd; font-weight: bold; }
+.combat-log-entry.type-system  { color: #6272a4; font-style: italic; }
+
+/* ============ Item Details Panel ============ */
+#itemDetailsPanel {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 280px;
+    max-height: 280px;
+    overflow-y: auto;
+    background: rgba(20, 20, 32, 0.92);
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 10px;
+    z-index: 100;
+    pointer-events: auto;
+    font-size: 11px;
+    color: #ddd;
+}
+#itemDetailsPanel.rarity-normal { border-color: #777; }
+#itemDetailsPanel.rarity-magic  { border-color: #6fb3ff; }
+#itemDetailsPanel.rarity-rare   { border-color: #ffd54a; }
+#itemDetailsPanel.rarity-unique { border-color: #d97c2c; }
+.item-details-empty {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 16px 4px;
+    line-height: 1.4;
+}
+.tt-name {
+    font-weight: bold;
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+#itemDetailsPanel.rarity-normal .tt-name { color: #ddd; }
+#itemDetailsPanel.rarity-magic  .tt-name { color: #6fb3ff; }
+#itemDetailsPanel.rarity-rare   .tt-name { color: #ffd54a; }
+#itemDetailsPanel.rarity-unique .tt-name { color: #d97c2c; }
+.tt-subtitle {
+    color: #888;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+.tt-section {
+    border-top: 1px solid #333;
+    margin-top: 6px;
+    padding-top: 5px;
+}
+.tt-stat {
+    color: #ccc;
+    display: flex;
+    justify-content: space-between;
+}
+.tt-stat-name  { color: #888; }
+.tt-stat-value { color: #fff; }
+.tt-affix {
+    color: #6fb3ff;
+    padding: 1px 0;
+}
+.tt-description {
+    color: #aaa;
+    font-style: italic;
+    line-height: 1.4;
+    margin-top: 4px;
+}

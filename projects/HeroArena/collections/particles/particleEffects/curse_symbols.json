@@ -1,0 +1,31 @@
+{
+  "title": "Curse Symbols",
+  "category": "shadow",
+  "tags": [
+    "curse",
+    "symbols",
+    "rising"
+  ],
+  "particleEffectData": {
+    "count": 12,
+    "lifetime": 1,
+    "scale": 10,
+    "scaleMultiplier": 0.6,
+    "startColor": "#882288",
+    "endColor": "#440044",
+    "emitterShape": "ring",
+    "emitterRadius": 20,
+    "heightOffset": 5,
+    "velocityXMin": -15,
+    "velocityXMax": 15,
+    "velocityYMin": 30,
+    "velocityYMax": 80,
+    "velocityZMin": -15,
+    "velocityZMax": 15,
+    "gravity": -40,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

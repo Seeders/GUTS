@@ -1,0 +1,8 @@
+{
+  "id": "sword",
+  "weaponCategory": "melee",
+  "range": 60,
+  "attackSpeed": 1,
+  "projectile": null,
+  "element": "physical"
+}
