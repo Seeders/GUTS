@@ -1748,6 +1748,17 @@ class TerrainMapEditor {
             this.worldRenderer.getScene()
         );
 
+        // Register services normally provided by gameplay systems but missing in the editor scene.
+        // RenderSystem.update() bails out if `getCamera` is missing, leaving entities un-rendered;
+        // `isVisibleAt` (from VisionSystem) is also required so non-worldObject entities pass the
+        // fog-of-war check. The editor has no fog of war, so always return true.
+        if (!this.editorContext.hasService('getCamera')) {
+            this.editorContext.register('getCamera', () => this.worldRenderer?.getCamera() || null);
+        }
+        if (!this.editorContext.hasService('isVisibleAt')) {
+            this.editorContext.register('isVisibleAt', () => true);
+        }
+
         // Configure PlacementPreviewSystem for editor use
         this.editorContext.call('updatePreviewConfig', {
             cellOpacity: 0.7,

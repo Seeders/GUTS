@@ -24,7 +24,11 @@ class SceneManager {
             this.loadingOverlay.innerHTML = `
                 <div class="scene-loading-content">
                     <div class="scene-loading-spinner"></div>
-                    <div class="scene-loading-text">Loading...</div>
+                    <div class="scene-loading-text" id="sceneLoadingText">Loading...</div>
+                    <div class="scene-loading-progress-track">
+                        <div class="scene-loading-progress-fill" id="sceneLoadingProgressFill"></div>
+                    </div>
+                    <div class="scene-loading-progress-pct" id="sceneLoadingProgressPct"></div>
                 </div>
             `;
 
@@ -52,6 +56,7 @@ class SceneManager {
                     }
                     .scene-loading-content {
                         text-align: center;
+                        min-width: 320px;
                     }
                     .scene-loading-spinner {
                         width: 50px;
@@ -66,6 +71,28 @@ class SceneManager {
                         font-size: 18px;
                         color: #8b5cf6;
                         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        margin-bottom: 12px;
+                    }
+                    .scene-loading-progress-track {
+                        width: 280px;
+                        height: 6px;
+                        background: rgba(139, 92, 246, 0.15);
+                        border-radius: 3px;
+                        margin: 0 auto;
+                        overflow: hidden;
+                    }
+                    .scene-loading-progress-fill {
+                        width: 0%;
+                        height: 100%;
+                        background: linear-gradient(90deg, #8b5cf6, #c4b5fd);
+                        transition: width 0.12s ease-out;
+                    }
+                    .scene-loading-progress-pct {
+                        font-size: 11px;
+                        color: #8b5cf6;
+                        font-family: monospace;
+                        margin-top: 6px;
+                        min-height: 14px;
                     }
                     @keyframes sceneLoadingSpin {
                         to { transform: rotate(360deg); }
@@ -76,9 +103,28 @@ class SceneManager {
         }
 
         document.body.appendChild(this.loadingOverlay);
+        // Reset progress for fresh load
+        this.setLoadingProgress(0, 'Loading...');
         // Force reflow then add visible class for transition
         this.loadingOverlay.offsetHeight;
         this.loadingOverlay.classList.add('visible');
+    }
+
+    /**
+     * Update the loading overlay's progress bar and label. Callable from anywhere
+     * during scene load via `game.sceneManager.setLoadingProgress(...)`.
+     * @param {number} fraction - 0..1
+     * @param {string} [label]  - optional label shown above the bar
+     */
+    setLoadingProgress(fraction, label) {
+        if (!this.loadingOverlay) return;
+        const pct = Math.max(0, Math.min(1, fraction || 0));
+        const fill = this.loadingOverlay.querySelector('#sceneLoadingProgressFill');
+        const txt  = this.loadingOverlay.querySelector('#sceneLoadingProgressPct');
+        const lbl  = this.loadingOverlay.querySelector('#sceneLoadingText');
+        if (fill) fill.style.width = `${Math.round(pct * 100)}%`;
+        if (txt)  txt.textContent = pct > 0 ? `${Math.round(pct * 100)}%` : '';
+        if (lbl && label) lbl.textContent = label;
     }
 
     /**
@@ -113,6 +159,12 @@ class SceneManager {
             return;
         }
 
+        // ── Load profiler ──────────────────────────────────────────────
+        const _t0 = performance.now();
+        const _phases = {};
+        const _mark = (label, startedAt) => { _phases[label] = performance.now() - startedAt; };
+        console.log(`[LoadProfiler] === Loading scene '${sceneName}' ===`);
+
         // Show loading overlay during scene transition (only if switching scenes)
         const isSceneSwitch = this.currentScene !== null;
         if (isSceneSwitch) {
@@ -123,7 +175,9 @@ class SceneManager {
 
         // Unload current scene if one is loaded
         if (this.currentScene) {
+            const _tUnload = performance.now();
             await this.unloadCurrentScene();
+            _mark('unloadCurrentScene', _tUnload);
         }
 
         this.currentScene = sceneData;
@@ -131,16 +185,22 @@ class SceneManager {
 
         // Load scene-specific interface if defined (must happen first so DOM elements exist)
         if (!this.game.isServer && sceneData.interface) {
+            const _tIface = performance.now();
             this.loadSceneInterface(sceneData.interface, collections);
+            _mark('loadSceneInterface', _tIface);
         }
 
         // Enable/disable systems based on scene configuration (must happen before loader)
+        const _tConfig = performance.now();
         this.configureSystems(sceneData);
+        _mark('configureSystems', _tConfig);
 
         // Run scene-specific loader if defined (e.g., GameLoader for game scenes)
         if (sceneData.loader && GUTS[sceneData.loader]) {
+            const _tLoader = performance.now();
             const loader = new GUTS[sceneData.loader](this.game);
             await loader.load();
+            _mark(`loader:${sceneData.loader}`, _tLoader);
         }
 
         // Check if we're loading from a save file
@@ -153,13 +213,17 @@ class SceneManager {
 
         // Spawn entities from scene definition (skip if loading save - save has all entities)
         if (!isLoadingSave) {
+            const _tSpawn = performance.now();
             await this.spawnSceneEntities(sceneData);
+            _mark('spawnSceneEntities', _tSpawn);
         }
 
         // Inject saved entities if there's pending save data
         if (isLoadingSave) {
             if (this.game.saveSystem) {
+                const _tSave = performance.now();
                 this.game.saveSystem.loadSavedEntities();
+                _mark('loadSavedEntities', _tSave);
             } else {
                 console.error('[SceneManager] SaveSystem not available but pendingSaveData exists!');
             }
@@ -169,13 +233,27 @@ class SceneManager {
         this.currentSceneParams = params;
 
         // Notify all systems that scene has loaded (initial setup)
+        const _tNotify = performance.now();
         await this.notifySceneLoaded(sceneData, params);
+        _mark('notifySceneLoaded (total)', _tNotify);
 
         // Notify all systems for post-load processing (after all systems have done initial setup)
-        this.notifyPostSceneLoad(sceneData, params);
+        // Await so async post-load work (e.g. WorldSystem awaiting terrain tile painting)
+        // completes before we hide the loading overlay.
+        const _tPost = performance.now();
+        await this.notifyPostSceneLoad(sceneData, params);
+        _mark('notifyPostSceneLoad (total)', _tPost);
 
         // Hide loading overlay
         this.hideLoadingOverlay();
+
+        // ── Print summary ──────────────────────────────────────────────
+        const _total = performance.now() - _t0;
+        const _phaseRows = Object.entries(_phases)
+            .sort((a, b) => b[1] - a[1])
+            .map(([name, ms]) => ({ phase: name, ms: +ms.toFixed(1), pct: +(ms / _total * 100).toFixed(1) }));
+        console.log(`[LoadProfiler] Total: ${_total.toFixed(1)} ms`);
+        console.table(_phaseRows);
     }
 
     /**
@@ -359,10 +437,18 @@ class SceneManager {
      * @param {Object} [params] - Optional parameters passed to switchScene
      */
     async notifySceneLoaded(sceneData, params = null) {
+        const _perSystem = [];
         for (const system of this.game.systems) {
             if (system.enabled && system.onSceneLoad) {
+                const _t = performance.now();
                 await system.onSceneLoad(sceneData, params);
+                _perSystem.push({ system: system.constructor.name, ms: +(performance.now() - _t).toFixed(1) });
             }
+        }
+        const _slow = _perSystem.filter(r => r.ms >= 5).sort((a, b) => b.ms - a.ms);
+        if (_slow.length) {
+            console.log('[LoadProfiler] onSceneLoad per-system (≥5ms, sorted desc):');
+            console.table(_slow);
         }
     }
 
@@ -372,11 +458,21 @@ class SceneManager {
      * @param {Object} sceneData - The scene configuration
      * @param {Object} [params] - Optional parameters passed to switchScene
      */
-    notifyPostSceneLoad(sceneData, params = null) {
+    async notifyPostSceneLoad(sceneData, params = null) {
+        const _perSystem = [];
         for (const system of this.game.systems) {
             if (system.enabled && system.postSceneLoad) {
-                system.postSceneLoad(sceneData, params);
+                const _t = performance.now();
+                // await so async post-load (e.g. terrain tile painting) completes
+                // before we move on and hide the loading overlay.
+                await system.postSceneLoad(sceneData, params);
+                _perSystem.push({ system: system.constructor.name, ms: +(performance.now() - _t).toFixed(1) });
             }
+        }
+        const _slow = _perSystem.filter(r => r.ms >= 5).sort((a, b) => b.ms - a.ms);
+        if (_slow.length) {
+            console.log('[LoadProfiler] postSceneLoad per-system (≥5ms, sorted desc):');
+            console.table(_slow);
         }
     }
 

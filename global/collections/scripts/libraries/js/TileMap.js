@@ -191,11 +191,11 @@ class TileMap {
 
 		const atomSize = this.tileSize / 2;
 
-		// Main tile canvas
+		// Main tile canvas — read via getImageData once per tile in drawTileWithLayering
 		this._tileCanvas = document.createElement('canvas');
 		this._tileCanvas.width = this.tileSize;
 		this._tileCanvas.height = this.tileSize;
-		this._tileCtx = this._tileCanvas.getContext('2d');
+		this._tileCtx = this._tileCanvas.getContext('2d', { willReadFrequently: true });
 
 		// Four atom canvases (TL, TR, BL, BR)
 		this._atomCanvases = [];
@@ -208,11 +208,11 @@ class TileMap {
 			this._atomCtxs.push(canvas.getContext('2d'));
 		}
 
-		// Molecule extraction canvas
+		// Molecule extraction canvas — read 4× per tile in extractAtomsFromMolecule
 		this._moleculeCanvas = document.createElement('canvas');
 		this._moleculeCanvas.width = this.tileSize;
 		this._moleculeCanvas.height = this.tileSize;
-		this._moleculeCtx = this._moleculeCanvas.getContext('2d');
+		this._moleculeCtx = this._moleculeCanvas.getContext('2d', { willReadFrequently: true });
 
 		// Layer painting canvas (used in paintBaseLowerLayer)
 		this._layerCanvas = document.createElement('canvas');
@@ -449,9 +449,18 @@ class TileMap {
 		ctx.drawImage(canvas, mx * atomSize, my * atomSize, atomSize, atomSize);
 	}
 
-    draw(map, heightMap = null){
+    /**
+     * Draws the terrain tilemap. Async because drawMap yields periodically to
+     * keep the browser responsive on large maps.
+     * @param {Array} map
+     * @param {Array} [heightMap]
+     * @param {(fraction: number) => void} [onProgress] - called between yields with 0..1
+     */
+    async draw(map, heightMap = null, onProgress = null) {
+		const _tAll = performance.now();
+
 		this.tileMap = map;
-		this.heightMap = heightMap; // NEW: Store heightMap separately
+		this.heightMap = heightMap;
 		this.numColumns = this.tileMap.length;
 
 		// Initialize height map canvas if not already done
@@ -463,8 +472,8 @@ class TileMap {
 		this.heightMapCtx.fillStyle = 'black';
 		this.heightMapCtx.fillRect(0, 0, this.heightMapCanvas.width, this.heightMapCanvas.height);
 
-		// Load all textures
-		if(this.layerTextures.length == 0 && this.layerSpriteSheets) {
+		// Load all textures (one-time setup)
+		if (this.layerTextures.length == 0 && this.layerSpriteSheets) {
 			this.layerSpriteSheets.forEach((layerSprites, index) => {
 				const result = this.buildBaseMolecules(layerSprites.sprites);
 				this.layerTextures[index] = result.molecules;
@@ -472,11 +481,10 @@ class TileMap {
 			});
 		}
 
-		let analyzedMap = this.analyzeMap();
-		this.drawMap(analyzedMap);
-        if(this.isometric){
-          //  this.drawIsometric();
-        }
+		const analyzedMap = this.analyzeMap();
+		await this.drawMap(analyzedMap, onProgress);
+
+		console.log(`[LoadProfiler] TileMap.draw: ${(performance.now() - _tAll).toFixed(1)} ms (${this.tileMap[0]?.length || 0}x${this.tileMap.length} tiles)`);
     }
 
     drawIsometric() {
@@ -900,10 +908,8 @@ class TileMap {
 
 		// Paint cliff-supporting textures if this tile is at the upper edge of a cliff
 		this.paintCliffSupportingTexturesForTile(ctx, analyzedMap, tile, row, col);
-
 		// Paint cliff-base textures if this tile is at the lower edge of a cliff
 		this.paintCliffBaseTexturesForTile(ctx, analyzedMap, tile, row, col);
-
 		// Paint ramp textures with dirt on ramp tiles and adjacent lower tiles
 		this.paintRampTexturesForTile(ctx, analyzedMap, tile, row, col);
 
@@ -1495,45 +1501,60 @@ class TileMap {
 		});
 	}
 
-	drawMap(analyzedMap) {
+	/**
+	 * Paints every tile to the main canvas. Yields to the browser every YIELD_EVERY
+	 * tiles so the page stays responsive (no "page unresponsive" warning) and the
+	 * loading progress bar can repaint.
+	 *
+	 * @param {Array} analyzedMap - flat array of analyzed tiles
+	 * @param {(fraction: number) => void} [onProgress] - 0..1, called per chunk
+	 */
+	async drawMap(analyzedMap, onProgress = null) {
 		const ctx = this.canvas.getContext('2d');
 
 		// Clear the canvas with black background
 		ctx.fillStyle = 'black';
 		ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-		// Draw each tile with atom-level layering for smooth transitions
-		analyzedMap.forEach((tile, index) => {
+		const total = analyzedMap.length;
+		// Yield ~32 times across the whole map (every ~3% of tiles). Each yield via
+		// setTimeout costs ~4ms minimum, so 32 yields ≈ 128ms total overhead.
+		const YIELD_EVERY = Math.max(1, Math.floor(total / 32));
+
+		for (let index = 0; index < total; index++) {
+			const tile = analyzedMap[index];
 			const col = index % this.numColumns;
 			const row = Math.floor(index / this.numColumns);
 			const x = col * this.tileSize;
 			const y = row * this.tileSize;
 
 			let imageData;
-
 			if (tile.terrainIndex >= 0) {
-				// Use the new atom-based layering system for smooth transitions
 				imageData = this.drawTileWithLayering(analyzedMap, tile, row, col);
 			} else {
-				// Create transparent/black tile for invalid terrain
-				let numPixels = this.tileSize * this.tileSize;
+				const numPixels = this.tileSize * this.tileSize;
 				const blackData = new Uint8ClampedArray(numPixels * 4);
 				blackData.fill(0);
 				imageData = new ImageData(blackData, this.tileSize, this.tileSize);
 			}
 
-			// Update height map for this tile
 			this.updateHeightMapForTile(x, y, tile.heightAnalysis.heightIndex);
-
-			// Draw the tile to the main canvas
 			ctx.putImageData(imageData, x, y);
-		});
+
+			// Yield + report progress periodically so the browser stays responsive
+			if ((index + 1) % YIELD_EVERY === 0) {
+				if (onProgress) onProgress((index + 1) / total);
+				await new Promise(resolve => setTimeout(resolve, 0));
+			}
+		}
 
 		// Store terrain data for height mapping
 		this.terrainData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height).data;
 
 		// Second pass: paint top ramp support textures
 		this.paintTopRampSupportTextures(ctx);
+
+		if (onProgress) onProgress(1);
 	}
 
 	/**
