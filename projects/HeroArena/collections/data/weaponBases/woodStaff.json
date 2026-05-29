@@ -4,5 +4,10 @@
   "tier": 1,
   "baseDamage": 5,
   "isTwoHanded": true,
-  "weaponType": "staff"
+  "weaponType": "staff",
+  "abilities": [
+    "HealAbility",
+    "IceShardAbility",
+    "FireBallAbility"
+  ]
 }

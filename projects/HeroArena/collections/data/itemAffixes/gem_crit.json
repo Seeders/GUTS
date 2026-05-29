@@ -1,9 +1,0 @@
-{
-  "id": "gem_crit",
-  "affixGroup": "gem",
-  "label": "of Striking",
-  "stat": "critChance",
-  "min": 5,
-  "max": 12,
-  "isPrefix": false
-}

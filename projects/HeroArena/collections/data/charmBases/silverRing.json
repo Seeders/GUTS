@@ -1,0 +1,11 @@
+{
+  "id": "silverRing",
+  "name": "Silver Ring",
+  "tier": 2,
+  "baseValue": 0,
+  "abilities": [
+    "HealAbility",
+    "EnchantWeaponAbility",
+    "RegenerationAbility"
+  ]
+}

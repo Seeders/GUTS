@@ -5,11 +5,6 @@
     "recalculateHeroStats",
     "equipGearItem",
     "unequipGearItem",
-    "socketGem",
-    "unsocketGem",
-    "socketRune",
-    "unsocketRune",
-    "getHeroEquipmentSummary",
-    "getUnlockedAbilitySlotCount"
+    "getHeroEquipmentSummary"
   ]
 }

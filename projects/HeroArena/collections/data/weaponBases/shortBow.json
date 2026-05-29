@@ -4,5 +4,10 @@
   "tier": 1,
   "baseDamage": 3,
   "isTwoHanded": false,
-  "weaponType": "bow"
+  "weaponType": "bow",
+  "abilities": [
+    "MultiShotAbility",
+    "TrackingMark",
+    "AimedShotAbility"
+  ]
 }

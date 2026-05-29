@@ -12,7 +12,7 @@
   "castTime": 1.0,
   "requiresWeaponCategory": "ranged",
   "maxTargets": 3,
-  "arrowDamage": 35,
+  "arrowDamage": 22,
   "shotInterval": 0.2,
   "element": "physical",
   "castParticleEffectSystems": ["dust_burst"],

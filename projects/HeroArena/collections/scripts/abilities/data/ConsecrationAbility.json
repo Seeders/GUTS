@@ -13,7 +13,7 @@
   "consecrationRadius": 120,
   "duration": 15.0,
   "tickInterval": 2.0,
-  "tickDamage": 12,
+  "tickDamage": 6,
   "tickHeal": 8,
   "castParticleEffectSystems": ["holy_light", "holy_sparkles"],
   "burstParticleEffectSystems": ["holy_explosion", "holy_ring"],

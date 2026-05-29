@@ -36,10 +36,11 @@
     "LeaderSystem",
     "ItemGeneratorSystem",
     "LootDropSystem",
+    "ItemShopSystem",
     "HeroStatSystem",
     "AutobattlerEconomySystem",
     "OrbCraftingSystem",
-    "AbilityGemSystem"
+    "BuffEffectsSystem"
   ],
   "clientSystems": [
     "GameInterfaceSystem",

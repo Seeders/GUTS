@@ -1,0 +1,12 @@
+{
+  "title": "Polymorphed",
+  "damageMultiplier": 1,
+  "attackSpeedMultiplier": 0,
+  "armorMultiplier": 0.5,
+  "damageTakenMultiplier": 1.2,
+  "damageReduction": 0,
+  "accuracyReduction": 0,
+  "movementSpeedMultiplier": 0.3,
+  "attackDisabled": 1,
+  "castDisabled": 1
+}

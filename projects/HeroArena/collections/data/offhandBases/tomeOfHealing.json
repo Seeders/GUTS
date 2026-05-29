@@ -3,5 +3,10 @@
   "name": "Tome of Healing",
   "tier": 1,
   "offhandType": "tome",
-  "baseArmor": 0
+  "baseArmor": 0,
+  "abilities": [
+    "HealAbility",
+    "MassHealAbility",
+    "ResurrectionAbility"
+  ]
 }

@@ -4,5 +4,10 @@
   "tier": 3,
   "baseDamage": 14,
   "isTwoHanded": true,
-  "weaponType": "sword"
+  "weaponType": "sword",
+  "abilities": [
+    "LeapSlamAbility",
+    "BashAbility",
+    "ChargeAbility"
+  ]
 }

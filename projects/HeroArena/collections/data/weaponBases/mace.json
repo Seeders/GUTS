@@ -4,5 +4,10 @@
   "tier": 2,
   "baseDamage": 8,
   "isTwoHanded": false,
-  "weaponType": "mace"
+  "weaponType": "mace",
+  "abilities": [
+    "SmiteAbility",
+    "BashAbility",
+    "ConsecrationAbility"
+  ]
 }

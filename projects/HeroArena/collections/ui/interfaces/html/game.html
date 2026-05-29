@@ -46,17 +46,6 @@
             <div id="inventoryItems"></div>
         </div>
 
-        <!-- Gem detail panel (opens when a socketed gem is clicked) -->
-        <div id="gemDetailPanel" class="hidden">
-            <div class="gem-detail-header">
-                <span id="gemDetailTitle">Gem</span>
-                <button class="gem-detail-close" id="gemDetailClose">×</button>
-            </div>
-            <div class="gem-detail-meta" id="gemDetailMeta"></div>
-            <div class="gem-detail-section">RUNES</div>
-            <div id="gemDetailRunes"></div>
-        </div>
-
         <!-- Combat log (scrolling event feed during battle) -->
         <div id="combatLog">
             <div class="combat-log-title">COMBAT LOG</div>
@@ -101,6 +90,44 @@
         <h2 class="arena-overlay-title" id="heroSelectTitle">Choose Your Starting Hero</h2>
         <p class="arena-overlay-subtitle" id="heroSelectSubtitle">Pick a class to begin your roster</p>
         <div id="heroOptions" class="arena-option-grid"></div>
+    </div>
+</div>
+
+<!-- Item Shop Overlay (start of every prep phase) -->
+<div id="shopOverlay" class="arena-overlay hidden">
+    <div class="arena-overlay-panel shop-panel">
+        <div class="shop-header">
+            <h2 class="arena-overlay-title">Item Shop</h2>
+            <div class="shop-meta">
+                <span class="shop-gold">💰 <span id="shopGold">0</span></span>
+                <span class="shop-level">Shop Lv <span id="shopLevelDisplay">1</span>/5</span>
+            </div>
+        </div>
+        <p class="arena-overlay-subtitle">Buying a duplicate base upgrades the item you already own.</p>
+        <div id="shopOffers" class="shop-offers"></div>
+        <div class="shop-controls">
+            <button id="shopRerollBtn" class="btn btn-secondary">Reroll (1g)</button>
+            <button id="shopUpgradeBtn" class="btn btn-secondary">Upgrade Shop (20g)</button>
+            <button id="shopCloseBtn" class="btn btn-primary">Done Shopping</button>
+        </div>
+    </div>
+</div>
+
+<!-- Affix Choice Overlay (when an item hits lvl 3 or lvl 6) -->
+<div id="affixChoiceOverlay" class="arena-overlay hidden">
+    <div class="arena-overlay-panel">
+        <h2 class="arena-overlay-title" id="affixChoiceTitle">Item Upgraded!</h2>
+        <p class="arena-overlay-subtitle" id="affixChoiceSubtitle">Choose your affixes</p>
+        <div id="affixChoiceOptions" class="arena-option-grid"></div>
+    </div>
+</div>
+
+<!-- Ability Choice Overlay (when a new base type is acquired) -->
+<div id="abilityChoiceOverlay" class="arena-overlay hidden">
+    <div class="arena-overlay-panel">
+        <h2 class="arena-overlay-title" id="abilityChoiceTitle">Select Ability</h2>
+        <p class="arena-overlay-subtitle" id="abilityChoiceSubtitle">Pick the ability this item grants</p>
+        <div id="abilityChoiceOptions" class="arena-option-grid"></div>
     </div>
 </div>
 

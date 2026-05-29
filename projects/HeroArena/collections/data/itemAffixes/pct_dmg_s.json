@@ -8,6 +8,7 @@
   "isPrefix": true,
   "itemTypes": [
     "weapon",
-    "offhand-orb"
+    "offhand-orb",
+    "offhand-quiver"
   ]
 }

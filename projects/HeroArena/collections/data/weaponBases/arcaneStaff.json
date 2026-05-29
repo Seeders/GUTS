@@ -4,5 +4,10 @@
   "tier": 2,
   "baseDamage": 8,
   "isTwoHanded": true,
-  "weaponType": "staff"
+  "weaponType": "staff",
+  "abilities": [
+    "BlizzardAbility",
+    "FireStormAbility",
+    "Tornado"
+  ]
 }

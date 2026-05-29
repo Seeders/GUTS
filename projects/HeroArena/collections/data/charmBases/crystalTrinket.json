@@ -1,0 +1,11 @@
+{
+  "id": "crystalTrinket",
+  "name": "Crystal Trinket",
+  "tier": 2,
+  "baseValue": 0,
+  "abilities": [
+    "WindShieldAbility",
+    "MirrorImagesAbility",
+    "BlinkAbility"
+  ]
+}

@@ -4,5 +4,10 @@
   "tier": 1,
   "baseDamage": 4,
   "isTwoHanded": false,
-  "weaponType": "sword"
+  "weaponType": "sword",
+  "abilities": [
+    "BashAbility",
+    "ChargeAbility",
+    "EnchantWeaponAbility"
+  ]
 }

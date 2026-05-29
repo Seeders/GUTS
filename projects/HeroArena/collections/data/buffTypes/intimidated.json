@@ -5,5 +5,5 @@
   "armorMultiplier": 1,
   "damageTakenMultiplier": 1,
   "damageReduction": -10,
-  "accuracyReduction": 0.15
+  "accuracyModifier": -15
 }

@@ -9,6 +9,14 @@
     "heroRoster": [],
     "winStreak": 0,
     "lossStreak": 0,
-    "inventory": []
+    "inventory": [],
+    "shopLevel": 1,
+    "shopUpgrades": 0,
+    "shopLastUpgradeRound": 1,
+    "shopDiscount": 0,
+    "shopOffers": [],
+    "shopBought": [],
+    "pendingAffixChoice": null,
+    "pendingAbilityChoice": null
   }
 }

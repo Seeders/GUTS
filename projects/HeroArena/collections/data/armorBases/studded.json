@@ -2,5 +2,10 @@
   "id": "studded",
   "name": "Studded Leather",
   "tier": 2,
-  "baseArmor": 5
+  "baseArmor": 5,
+  "abilities": [
+    "MirrorImagesAbility",
+    "SmokeBombAbility",
+    "BloodlustAbility"
+  ]
 }

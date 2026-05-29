@@ -1,9 +1,0 @@
-{
-  "id": "gem_pct_hp",
-  "affixGroup": "gem",
-  "label": "Fortified",
-  "stat": "percentHP",
-  "min": 10,
-  "max": 20,
-  "isPrefix": true
-}

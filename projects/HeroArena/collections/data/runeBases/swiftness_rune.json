@@ -1,8 +1,0 @@
-{
-  "id": "swiftness_rune",
-  "name": "Swiftness Rune",
-  "modifiers": {
-    "cooldownReduction": 0.75
-  },
-  "description": "Reduces ability cooldown by 25%"
-}

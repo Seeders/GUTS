@@ -10,7 +10,7 @@
   "animation": "attack",
   "priority": 7,
   "castTime": 0.3,
-  "leapDamage": 40,
+  "leapDamage": 25,
   "splashRadius": 60,
   "leapHeight": 120,
   "launchParticleEffectSystems": ["leap_slam_launch"],

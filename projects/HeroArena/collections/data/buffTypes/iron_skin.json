@@ -1,0 +1,9 @@
+{
+  "title": "Iron Skin",
+  "damageMultiplier": 1,
+  "attackSpeedMultiplier": 0.85,
+  "armorMultiplier": 2,
+  "damageTakenMultiplier": 1,
+  "damageReduction": 0,
+  "accuracyReduction": 0
+}

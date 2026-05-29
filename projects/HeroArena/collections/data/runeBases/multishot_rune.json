@@ -1,8 +1,0 @@
-{
-  "id": "multishot_rune",
-  "name": "Multishot Rune",
-  "modifiers": {
-    "projectileCount": 2
-  },
-  "description": "Fires 2 additional projectiles"
-}

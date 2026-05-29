@@ -59,8 +59,7 @@
     "SkirmishGameSystem",
     "AutobattlerRoundSystem",
     "HeroRosterSystem",
-    "HeroStatSystem",
-    "AbilityGemSystem"
+    "HeroStatSystem"
   ],
   "classes": [
     {

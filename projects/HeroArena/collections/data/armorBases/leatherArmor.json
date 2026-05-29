@@ -2,5 +2,10 @@
   "id": "leatherArmor",
   "name": "Leather Armor",
   "tier": 1,
-  "baseArmor": 2
+  "baseArmor": 2,
+  "abilities": [
+    "BloodlustAbility",
+    "RageAbility",
+    "DrainLifeAbility"
+  ]
 }

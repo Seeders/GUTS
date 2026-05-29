@@ -10,7 +10,7 @@
   "animation": "cast",
   "priority": 7,
   "castTime": 1,
-  "initialDamage": 60,
+  "initialDamage": 25,
   "maxJumps": 5,
   "jumpRange": 70,
   "damageReduction": 0.8,

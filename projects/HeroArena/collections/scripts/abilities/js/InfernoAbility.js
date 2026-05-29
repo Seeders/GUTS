@@ -82,7 +82,7 @@ class InfernoAbility extends GUTS.BaseAbility {
             const results = this.game.damageSystem.applySplashDamage(
                 casterEntity,
                 centerPos,
-                this.damage,
+                this.scaledDamage(this.damage),
                 this.element,
                 this.infernoRadius,
                 { allowFriendlyFire: false, isSpell: true }

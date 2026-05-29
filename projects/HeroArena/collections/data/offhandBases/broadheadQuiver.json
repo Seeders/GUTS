@@ -3,5 +3,10 @@
   "name": "Broadhead Quiver",
   "tier": 2,
   "offhandType": "quiver",
-  "baseArmor": 0
+  "baseArmor": 0,
+  "abilities": [
+    "PiercingShotAbility",
+    "ExplosiveTrapAbility",
+    "AimedShotAbility"
+  ]
 }

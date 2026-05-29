@@ -1,8 +1,0 @@
-{
-  "id": "reach_rune",
-  "name": "Reach Rune",
-  "modifiers": {
-    "rangeBonus": 1
-  },
-  "description": "Extends ability range by 1 tile"
-}

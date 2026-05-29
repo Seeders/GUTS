@@ -32,10 +32,14 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'submitHeroMove',
         'submitEquipGear',
         'submitUnequipGear',
-        'submitSocketGem',
-        'submitUnsocketGem',
-        'submitSocketRune',
-        'submitUnsocketRune'
+        'submitBuyShopItem',
+        'submitRerollShop',
+        'submitUpgradeShop',
+        'submitSellItem',
+        'submitAffixChoice',
+        'submitIdentifyItem',
+        'submitSelectAbility',
+        'submitAbilityChoice'
     ];
 
     static serviceDependencies = [
@@ -303,6 +307,14 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                 if (data?.entityId != null) {
                     this.game.placementSystem?.moveHero(data.entityId, data.x, data.z);
                 }
+            }),
+
+            // HeroArena: item shop
+            nm.listen('SHOP_OPENED', (data) => {
+                this.game.triggerEvent('onShopOpened', data);
+            }),
+            nm.listen('SHOP_UPDATE', (data) => {
+                this.game.triggerEvent('onShopUpdate', data);
             })
         );
     }
@@ -1453,7 +1465,73 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         this.networkManager?.send('SKIP_LOOT', {});
     }
 
-    // Gear slots (mainWeapon / offhand / bodyArmor / helmet)
+    // ── Item shop (round-start) ──────────────────────────────────────────────
+
+    submitBuyShopItem(slotIdx) {
+        this.networkRequest({
+            eventName: 'BUY_SHOP_ITEM',
+            responseName: 'BUY_SHOP_ITEM_ACK',
+            data: { slotIdx }
+        }, () => {});
+    }
+
+    submitRerollShop() {
+        this.networkRequest({
+            eventName: 'REROLL_SHOP',
+            responseName: 'REROLL_SHOP_ACK',
+            data: {}
+        }, () => {});
+    }
+
+    submitUpgradeShop() {
+        this.networkRequest({
+            eventName: 'UPGRADE_SHOP',
+            responseName: 'UPGRADE_SHOP_ACK',
+            data: {}
+        }, () => {});
+    }
+
+    submitSellItem(itemId) {
+        this.networkRequest({
+            eventName: 'SELL_ITEM',
+            responseName: 'SELL_ITEM_ACK',
+            data: { itemId }
+        }, () => {});
+    }
+
+    submitAffixChoice(choiceIdx) {
+        this.networkRequest({
+            eventName: 'AFFIX_CHOICE',
+            responseName: 'AFFIX_CHOICE_ACK',
+            data: { choiceIdx }
+        }, () => {});
+    }
+
+    submitIdentifyItem(itemId) {
+        this.networkRequest({
+            eventName: 'IDENTIFY_ITEM',
+            responseName: 'IDENTIFY_ITEM_ACK',
+            data: { itemId }
+        }, () => {});
+    }
+
+    submitSelectAbility(itemId) {
+        this.networkRequest({
+            eventName: 'SELECT_ABILITY',
+            responseName: 'SELECT_ABILITY_ACK',
+            data: { itemId }
+        }, () => {});
+    }
+
+    submitAbilityChoice(choiceIdx) {
+        this.networkRequest({
+            eventName: 'ABILITY_CHOICE',
+            responseName: 'ABILITY_CHOICE_ACK',
+            data: { choiceIdx }
+        }, () => {});
+    }
+
+    // Gear slots (mainWeapon / offhand / bodyArmor / charm)
     // Note: renamed from equipGearItem to avoid colliding with HeroStatSystem.equipGearItem,
     // which is the server-side implementation that actually mutates heroEquipment.
     submitEquipGear(heroRosterIndex, slot, inventoryIndex) {
@@ -1469,40 +1547,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             eventName: 'UNEQUIP_GEAR',
             responseName: 'UNEQUIP_GEAR_ACK',
             data: { heroRosterIndex, slot }
-        }, () => {});
-    }
-
-    // Ability gem slots
-    submitSocketGem(heroRosterIndex, abilitySlotIndex, inventoryIndex) {
-        this.networkRequest({
-            eventName: 'SOCKET_GEM',
-            responseName: 'SOCKET_GEM_ACK',
-            data: { heroRosterIndex, abilitySlotIndex, inventoryIndex }
-        }, () => {});
-    }
-
-    submitUnsocketGem(heroRosterIndex, abilitySlotIndex) {
-        this.networkRequest({
-            eventName: 'UNSOCKET_GEM',
-            responseName: 'UNSOCKET_GEM_ACK',
-            data: { heroRosterIndex, abilitySlotIndex }
-        }, () => {});
-    }
-
-    // Rune socketing (carved into an ability gem) — renamed to avoid collision with HeroStatSystem.socketRune
-    submitSocketRune(heroRosterIndex, abilitySlotIndex, runeSlotIndex, inventoryIndex) {
-        this.networkRequest({
-            eventName: 'SOCKET_RUNE',
-            responseName: 'SOCKET_RUNE_ACK',
-            data: { heroRosterIndex, abilitySlotIndex, runeSlotIndex, inventoryIndex }
-        }, () => {});
-    }
-
-    submitUnsocketRune(heroRosterIndex, abilitySlotIndex, runeSlotIndex) {
-        this.networkRequest({
-            eventName: 'UNSOCKET_RUNE',
-            responseName: 'UNSOCKET_RUNE_ACK',
-            data: { heroRosterIndex, abilitySlotIndex, runeSlotIndex }
         }, () => {});
     }
 

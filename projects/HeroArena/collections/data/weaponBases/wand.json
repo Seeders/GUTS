@@ -4,5 +4,10 @@
   "tier": 1,
   "baseDamage": 3,
   "isTwoHanded": false,
-  "weaponType": "wand"
+  "weaponType": "wand",
+  "abilities": [
+    "LightningBoltAbility",
+    "FireBallAbility",
+    "IceShardAbility"
+  ]
 }

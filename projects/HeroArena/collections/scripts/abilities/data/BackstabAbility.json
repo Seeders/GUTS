@@ -1,0 +1,22 @@
+{
+  "cooldown": 7,
+  "range": 60,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "attack",
+  "priority": 9,
+  "castTime": 0.2,
+  "castParticleEffectSystems": [],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "blood_burst"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "BackstabAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/BackstabAbility.js",
+  "name": "Backstab",
+  "description": "A vicious strike from behind for massive damage.",
+  "damage": 50,
+  "element": "physical",
+  "requiresWeaponType": "dagger"
+}

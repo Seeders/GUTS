@@ -1,0 +1,13 @@
+{
+  "title": "Banished",
+  "damageMultiplier": 1,
+  "attackSpeedMultiplier": 0,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 0,
+  "damageReduction": 0,
+  "accuracyReduction": 0,
+  "movementDisabled": 1,
+  "attackDisabled": 1,
+  "castDisabled": 1,
+  "invulnerable": 1
+}

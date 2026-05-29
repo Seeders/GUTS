@@ -30,19 +30,26 @@ class AbilitySystem extends GUTS.BaseSystem {
     init() {
     }
 
+    // Each entry can be a bare ability ID (legacy) or { id, itemLevel } so
+    // gear-granted abilities can scale their damage with the source item's level.
     addAbilitiesToUnit(entityId, abilityIds) {
         if (!Array.isArray(abilityIds)) {
             abilityIds = [abilityIds];
         }
         const unitAbilities = [];
 
-        abilityIds.forEach(abilityId => {
+        abilityIds.forEach(entry => {
+            const abilityId = typeof entry === 'string' ? entry : entry?.id;
+            const sourceItemLevel = typeof entry === 'string' ? 1 : (entry?.itemLevel || 1);
+            if (!abilityId) return;
+
             const AbilityClass = GUTS[abilityId];
             if (AbilityClass) {
                 // Get ability data from collections, or empty object if not found
                 // Ensure id is set (compiler generates it from filename)
                 const abilityData = this.collections.abilities?.[abilityId] || {};
                 const abilityInstance = new AbilityClass(this.game, { ...abilityData, id: abilityId });
+                abilityInstance.sourceItemLevel = sourceItemLevel;
                 unitAbilities.push(abilityInstance);
             } else {
                 console.warn(`Ability '${abilityId}' not found in GUTS namespace!`);
@@ -98,10 +105,6 @@ class AbilitySystem extends GUTS.BaseSystem {
                     if (ability) {
                         // targetData is null when no target
                         const targetData = queuedAbility.targetData;
-                        // Apply gem behavioral modifiers once per ability instance per battle
-                        if (this.game.abilityGemSystem) {
-                            this.game.abilityGemSystem.applyGemBehavior(entityId, ability);
-                        }
                         // Execute ability and get potential callback
                         const abilityAction = ability.execute(entityId, targetData);
 
@@ -195,6 +198,11 @@ class AbilitySystem extends GUTS.BaseSystem {
         // Don't allow dead/dying entities to use abilities
         const deathState = this.game.getComponent(entityId, "deathState");
         if (deathState && deathState.state !== this.enums.deathState.alive) return false;
+
+        // Silenced / polymorphed / hard-CC'd entities can't cast abilities.
+        const buffFx = this.game.buffEffectsSystem;
+        if (buffFx?.isSilenced?.(entityId)) return false;
+        if (buffFx?.isHardCC?.(entityId))   return false;
 
         if (!this.isAbilityOffCooldown(entityId, abilityId)) return false;
 

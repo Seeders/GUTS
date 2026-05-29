@@ -1,9 +1,0 @@
-{
-  "id": "gem_pct_dmg",
-  "affixGroup": "gem",
-  "label": "Empowered",
-  "stat": "percentDamage",
-  "min": 10,
-  "max": 20,
-  "isPrefix": true
-}

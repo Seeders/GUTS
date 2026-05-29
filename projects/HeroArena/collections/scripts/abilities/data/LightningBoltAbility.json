@@ -11,7 +11,7 @@
   "priority": 7,
   "castTime": 0.5,
   "autoTrigger": "enemy_in_range",
-  "damage": 55,
+  "damage": 22,
   "criticalChance": 0.3,
   "element": "lightning",
   "castParticleEffectSystems": ["lightning_flash"],

@@ -1,9 +1,0 @@
-{
-  "id": "gem_flat_dmg",
-  "affixGroup": "gem",
-  "label": "Potent",
-  "stat": "flatDamage",
-  "min": 4,
-  "max": 10,
-  "isPrefix": true
-}

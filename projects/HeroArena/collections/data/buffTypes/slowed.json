@@ -1,0 +1,10 @@
+{
+  "title": "Slowed",
+  "damageMultiplier": 1,
+  "attackSpeedMultiplier": 0.7,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 1,
+  "damageReduction": 0,
+  "accuracyReduction": 0,
+  "movementSpeedMultiplier": 0.5
+}

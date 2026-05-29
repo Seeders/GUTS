@@ -83,10 +83,22 @@ class IceShardAbility extends GUTS.BaseAbility {
             }
         }
 
-        // Deal damage with slowing effect
+        // Deal damage
         this.dealDamageWithEffects(casterEntity, targetId, this.damage, this.element, {
-            isIceShard: true,
-            slowDuration: this.slowDuration
+            isIceShard: true
+        });
+
+        // Apply slow buff (BuffEffectsSystem reads slowed.movementSpeedMultiplier
+        // and attackSpeedMultiplier and applies them each tick).
+        const enums = this.game.getEnums();
+        const existing = this.game.getComponent(targetId, "buff");
+        if (existing) this.game.removeComponent(targetId, "buff");
+        this.game.addComponent(targetId, "buff", {
+            buffType: enums.buffTypes.slowed,
+            endTime: this.game.state.now + this.slowDuration,
+            appliedTime: this.game.state.now,
+            stacks: 1,
+            sourceEntity: casterEntity
         });
 
         // Impact effect at target

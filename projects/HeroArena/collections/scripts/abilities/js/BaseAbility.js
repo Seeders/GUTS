@@ -40,6 +40,22 @@ class BaseAbility {
 
         // Reusable array to avoid allocations in getTargetForFacing
         this._sortedCandidates = [];
+
+        // Source item level — set by AbilitySystem.addAbilitiesToUnit when this
+        // ability comes from a gear slot. Used by scaledDamage() so leveling
+        // the item (via buying duplicates) also scales the granted ability's
+        // damage. Defaults to 1 for abilities not granted by items.
+        this.sourceItemLevel = 1;
+    }
+
+    // Mirrors HeroStatSystem.itemLevelMultiplier — scales ability damage with
+    // the level of the item that granted it. Use this to multiply any base
+    // damage value before applying it: scheduleDamage, applyDamage, splash, DoT.
+    scaledDamage(baseDamage) {
+        const lvl = Math.max(1, this.sourceItemLevel || 1);
+        const perLevel = (typeof GUTS !== 'undefined' && GUTS.HeroStatSystem?.LEVEL_SCALING_PER_LEVEL)
+            ?? 0.15;
+        return baseDamage * (1 + (lvl - 1) * perLevel);
     }
 
     _resolveTargetType(targetTypeConfig) {
@@ -122,9 +138,12 @@ class BaseAbility {
         if (element === null) {
             element = this.enums.element.physical;
         }
+        // Auto-scale by the source item's level so all abilities going through
+        // this helper benefit from item leveling without per-ability changes.
+        const scaled = this.scaledDamage(damage);
         if (this.game.hasService('applyDamage')) {
             // Use game.call to ensure damage is logged by CallLogger
-            const result = this.call.applyDamage( sourceId, targetId, damage, element, { isSpell: true, ...options });
+            const result = this.call.applyDamage( sourceId, targetId, scaled, element, { isSpell: true, ...options });
 
             const transform = this.game.getComponent(targetId, "transform");
             const targetPos = transform?.position;

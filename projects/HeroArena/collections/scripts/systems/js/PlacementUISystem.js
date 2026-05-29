@@ -56,8 +56,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'submitHeroMove',
         'getPlayerEntities',
         'submitEquipGear',
-        'submitSocketGem',
-        'submitSocketRune'
+        'submitUnequipGear',
+        'submitBuyShopItem',
+        'submitRerollShop',
+        'submitUpgradeShop',
+        'submitSellItem',
+        'submitAffixChoice',
+        'submitIdentifyItem',
+        'submitSelectAbility',
+        'submitAbilityChoice'
     ];
     constructor(game) {
         super(game);
@@ -125,8 +132,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         // Inventory → equip state: which inventory item the player has currently selected
         this.selectedInventoryIndex = null;
-        // Gem detail panel state: which socketed gem we're inspecting (for rune sockets)
-        this.openGem = null;  // { rosterIndex, abilitySlotIndex }
     }
 
     init(params) {
@@ -259,23 +264,34 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.elements.heroRosterCards = document.getElementById('heroRosterCards');
         this.elements.inventoryPanel  = document.getElementById('inventoryPanel');
         this.elements.inventoryItems  = document.getElementById('inventoryItems');
-        this.elements.gemDetailPanel  = document.getElementById('gemDetailPanel');
-        this.elements.gemDetailTitle  = document.getElementById('gemDetailTitle');
-        this.elements.gemDetailMeta   = document.getElementById('gemDetailMeta');
-        this.elements.gemDetailRunes  = document.getElementById('gemDetailRunes');
-        this.elements.gemDetailClose  = document.getElementById('gemDetailClose');
         this.elements.combatLogEntries     = document.getElementById('combatLogEntries');
         this.elements.itemDetailsPanel     = document.getElementById('itemDetailsPanel');
         this.elements.itemDetailsContent   = document.getElementById('itemDetailsContent');
 
-        // Delegated click handler: handles inventory item selection + equip/socket on hero slots
+        // Item-shop overlay elements
+        this.elements.shopOverlay        = document.getElementById('shopOverlay');
+        this.elements.shopOffers         = document.getElementById('shopOffers');
+        this.elements.shopGold           = document.getElementById('shopGold');
+        this.elements.shopLevelDisplay   = document.getElementById('shopLevelDisplay');
+        this.elements.shopRerollBtn      = document.getElementById('shopRerollBtn');
+        this.elements.shopUpgradeBtn     = document.getElementById('shopUpgradeBtn');
+        this.elements.shopCloseBtn       = document.getElementById('shopCloseBtn');
+        this.elements.affixChoiceOverlay = document.getElementById('affixChoiceOverlay');
+        this.elements.affixChoiceTitle   = document.getElementById('affixChoiceTitle');
+        this.elements.affixChoiceSubtitle= document.getElementById('affixChoiceSubtitle');
+        this.elements.affixChoiceOptions = document.getElementById('affixChoiceOptions');
+
+        // Delegated click handler: handles inventory item selection + equip on hero slots,
+        // plus Identify/Unequip/Select-Ability buttons rendered in the item details panel.
         if (!this._prepClickHandler) {
             this._prepClickHandler = (event) => this._onPrepClick(event);
             this.elements.heroRosterCards?.addEventListener('click', this._prepClickHandler);
             this.elements.inventoryItems?.addEventListener('click', this._prepClickHandler);
-            this.elements.gemDetailRunes?.addEventListener('click', this._prepClickHandler);
-            this.elements.gemDetailClose?.addEventListener('click', () => this._closeGemDetail());
+            this.elements.itemDetailsContent?.addEventListener('click', this._prepClickHandler);
         }
+
+        // Shop overlay button wiring is now done lazily by _wireShopHandlers,
+        // called from onShopOpened — survives DOM-not-yet-loaded scenarios.
     }
 
     // Called by game.triggerEvent('onLeaderSelectStart', data)
@@ -332,6 +348,313 @@ class PlacementUISystem extends GUTS.BaseSystem {
     // Called by game.triggerEvent('onHeroSelectComplete')
     onHeroSelectComplete() {
         document.getElementById('heroSelectOverlay')?.classList.add('hidden');
+    }
+
+    // ==================== ITEM SHOP ====================
+
+    // Filters event to our local player. Server sends per-player payloads with
+    // targetPlayerId; opponents' shop updates also fire but we ignore them.
+    _isOurShopEvent(data) {
+        const myId = this.game.clientNetworkManager?.numericPlayerId
+            ?? this.game.state?.localPlayerId ?? 0;
+        return !data?.targetPlayerId || data.targetPlayerId === myId;
+    }
+
+    // Called by ItemShopSystem at start of every prep phase.
+    onShopOpened(data) {
+        if (!this._isOurShopEvent(data)) return;
+        // Lazy element lookup — handler can fire before setupArenaOverlays cached refs.
+        this._ensureShopElements();
+        this._wireShopHandlers();
+        this._renderShop(data);
+        const overlay = document.getElementById('shopOverlay');
+        if (overlay) overlay.classList.remove('hidden');
+        this._maybeShowAffixChoice(data);
+        this._maybeShowAbilityChoice(data);
+    }
+
+    // Called after every buy/reroll/upgrade/affixChoice. Refresh whatever the
+    // shop overlay is currently showing AND the persistent inventory panel.
+    onShopUpdate(data) {
+        if (!this._isOurShopEvent(data)) return;
+        this._ensureShopElements();
+        this._renderShop(data);
+        this._maybeShowAffixChoice(data);
+        this._maybeShowAbilityChoice(data);
+        // Refresh inventory + hero roster so newly-bought / upgraded items appear
+        if (typeof this.renderInventory === 'function')  this.renderInventory();
+        if (typeof this.renderHeroRoster === 'function') this.renderHeroRoster();
+        // Refresh the details panel if it's showing an item whose data changed
+        // (e.g. itemLevel bump from a duplicate buy, or affixes added by identify)
+        this._refreshDetailsPanel();
+    }
+
+    // Idempotent: looks up shop overlay DOM refs the first time it's needed.
+    // Defends against the case where the shop event fires before setupArenaOverlays
+    // had a chance to cache element references (e.g. if onGameStarted ordering shifts).
+    _ensureShopElements() {
+        if (!this.elements) this.elements = {};
+        const ids = [
+            'shopOverlay', 'shopOffers', 'shopGold', 'shopLevelDisplay',
+            'shopRerollBtn', 'shopUpgradeBtn', 'shopCloseBtn',
+            'affixChoiceOverlay', 'affixChoiceTitle', 'affixChoiceSubtitle', 'affixChoiceOptions',
+            'abilityChoiceOverlay', 'abilityChoiceTitle', 'abilityChoiceSubtitle', 'abilityChoiceOptions'
+        ];
+        for (const id of ids) {
+            if (!this.elements[id]) this.elements[id] = document.getElementById(id);
+        }
+    }
+
+    // Idempotent: wire shop button handlers once.
+    _wireShopHandlers() {
+        if (this._shopWired) return;
+        const offers       = document.getElementById('shopOffers');
+        const reroll       = document.getElementById('shopRerollBtn');
+        const upgrade      = document.getElementById('shopUpgradeBtn');
+        const close        = document.getElementById('shopCloseBtn');
+        const affixChoices = document.getElementById('affixChoiceOptions');
+        const abilChoices  = document.getElementById('abilityChoiceOptions');
+        if (!offers && !reroll && !upgrade && !close) return; // DOM not present yet
+        offers?.addEventListener('click', (e) => this._onShopOfferClick(e));
+        reroll?.addEventListener('click', () => this.call.submitRerollShop());
+        upgrade?.addEventListener('click', () => this.call.submitUpgradeShop());
+        close?.addEventListener('click', () => this._closeShopOverlay());
+        affixChoices?.addEventListener('click', (e) => this._onAffixChoiceClick(e));
+        abilChoices?.addEventListener('click', (e) => this._onAbilityChoiceClick(e));
+        this._shopWired = true;
+    }
+
+    _renderShop(data) {
+        if (this.elements.shopGold)         this.elements.shopGold.textContent = data.gold ?? 0;
+        if (this.elements.shopLevelDisplay) this.elements.shopLevelDisplay.textContent = data.shopLevel ?? 1;
+
+        // Reroll button
+        if (this.elements.shopRerollBtn) {
+            this.elements.shopRerollBtn.disabled = (data.gold ?? 0) < 1;
+            this.elements.shopRerollBtn.textContent = `Reroll (1g)`;
+        }
+
+        // Upgrade button: hide if maxed, else show current cost
+        if (this.elements.shopUpgradeBtn) {
+            const maxed = (data.shopUpgrades ?? 0) >= 4;
+            if (maxed) {
+                this.elements.shopUpgradeBtn.textContent = 'Shop Max Level';
+                this.elements.shopUpgradeBtn.disabled = true;
+            } else {
+                const cost = data.upgradeCost ?? 20;
+                this.elements.shopUpgradeBtn.textContent = `Upgrade Shop (${cost}g)`;
+                this.elements.shopUpgradeBtn.disabled = (data.gold ?? 0) < cost;
+            }
+        }
+
+        // Offer grid
+        const grid = this.elements.shopOffers;
+        if (!grid) return;
+        grid.innerHTML = '';
+        const offers = data.offers || [];
+        const bought = data.bought || [];
+        const gold   = data.gold ?? 0;
+
+        offers.forEach((offer, idx) => {
+            const card = document.createElement('div');
+            card.className = 'shop-offer-card';
+            if (bought[idx])             card.classList.add('bought');
+            else if (gold < 3)           card.classList.add('disabled');
+            card.dataset.slotIdx = idx;
+
+            const ownedLevel = this._ownedLevelForBase(offer?.baseType);
+            const ownedBadge = ownedLevel
+                ? `<div class="shop-offer-owned">Owned Lv${ownedLevel}</div>` : '';
+
+            const baseStat = this._shopOfferBaseStat(offer);
+            const baseStatHtml = baseStat
+                ? `<div class="shop-offer-stat">${baseStat}</div>` : '';
+
+            card.innerHTML = `
+                ${ownedBadge}
+                <div class="shop-offer-name">${offer?.name || '—'}</div>
+                <div class="shop-offer-type">${this._friendlyItemType(offer)}</div>
+                ${baseStatHtml}
+                <div class="shop-offer-cost">${bought[idx] ? 'SOLD' : '3g'}</div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // Headline base stat shown on a shop card (so the player can compare items
+    // before buying). Weapons show base damage; body armor / offhand shields show armor.
+    // Charms are utility slots with no headline stat.
+    _shopOfferBaseStat(offer) {
+        if (!offer) return '';
+        if (offer.itemType === 'weapon')   return `${offer.baseValue ?? 0} dmg`;
+        if (offer.itemType === 'bodyArmor') return `${offer.baseValue ?? 0} armor`;
+        if (offer.itemType === 'offhand' && offer.baseValue) {
+            return `${offer.baseValue} armor`;
+        }
+        return '';
+    }
+
+    _onShopOfferClick(event) {
+        const card = event.target.closest('.shop-offer-card');
+        if (!card || card.classList.contains('bought') || card.classList.contains('disabled')) return;
+        const slotIdx = Number(card.dataset.slotIdx);
+        if (!Number.isInteger(slotIdx)) return;
+        this.call.submitBuyShopItem(slotIdx);
+    }
+
+    _closeShopOverlay() {
+        this.elements.shopOverlay?.classList.add('hidden');
+    }
+
+    _maybeShowAffixChoice(data) {
+        const pending = data.pendingAffixChoice;
+        const overlay = this.elements.affixChoiceOverlay;
+        if (!overlay) return;
+        if (!pending) {
+            overlay.classList.add('hidden');
+            return;
+        }
+        if (this.elements.affixChoiceTitle) {
+            const tier = pending.newLevel >= 9 ? 'Legendary'
+                       : pending.newLevel >= 6 ? 'Rare'
+                       : 'Magic';
+            this.elements.affixChoiceTitle.textContent = `Identify ${tier} Item`;
+        }
+        if (this.elements.affixChoiceSubtitle) {
+            this.elements.affixChoiceSubtitle.textContent =
+                `Your ${pending.baseType} (Lv${pending.newLevel}) — pick an affix set:`;
+        }
+        const grid = this.elements.affixChoiceOptions;
+        if (grid) {
+            grid.innerHTML = '';
+            (pending.options || []).forEach((set, idx) => {
+                const card = document.createElement('div');
+                card.className = 'affix-choice-card';
+                card.dataset.choiceIdx = idx;
+                card.innerHTML = (set || []).map(a => `
+                    <div class="affix-choice-affix${a.isLegendary ? ' legendary' : ''}">
+                        ${this._formatAffix(a)}
+                    </div>`).join('');
+                grid.appendChild(card);
+            });
+        }
+        overlay.classList.remove('hidden');
+    }
+
+    _onAffixChoiceClick(event) {
+        const card = event.target.closest('.affix-choice-card');
+        if (!card) return;
+        const choiceIdx = Number(card.dataset.choiceIdx);
+        if (!Number.isInteger(choiceIdx)) return;
+        this.call.submitAffixChoice(choiceIdx);
+    }
+
+    // Shows the ability-choice modal when the server sets a pendingAbilityChoice.
+    _maybeShowAbilityChoice(data) {
+        const pending = data.pendingAbilityChoice;
+        const overlay = this.elements.abilityChoiceOverlay;
+        if (!overlay) return;
+        if (!pending) {
+            overlay.classList.add('hidden');
+            return;
+        }
+        if (this.elements.abilityChoiceSubtitle) {
+            this.elements.abilityChoiceSubtitle.textContent =
+                `Choose the ability your ${pending.baseType} will grant:`;
+        }
+        const grid = this.elements.abilityChoiceOptions;
+        if (grid) {
+            grid.innerHTML = '';
+            (pending.options || []).forEach((abilityId, idx) => {
+                const meta = this._abilityMeta(abilityId);
+                const card = document.createElement('div');
+                card.className = 'ability-choice-card';
+                card.dataset.choiceIdx = idx;
+                card.innerHTML = `
+                    <div class="ability-choice-name">${meta.name}</div>
+                    <div class="ability-choice-desc">${meta.description}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        overlay.classList.remove('hidden');
+    }
+
+    _onAbilityChoiceClick(event) {
+        const card = event.target.closest('.ability-choice-card');
+        if (!card) return;
+        const choiceIdx = Number(card.dataset.choiceIdx);
+        if (!Number.isInteger(choiceIdx)) return;
+        this.call.submitAbilityChoice(choiceIdx);
+    }
+
+    // Look up an ability's display metadata from the abilities collection
+    _abilityMeta(abilityId) {
+        // Defensive: non-string IDs mean data is corrupted somewhere (e.g. a
+        // field-name endsWith match in ComponentGenerator.deepMerge converted
+        // the string to a numeric enum index). Render gracefully instead of
+        // crashing — a crash here leaves the slot looking permanently "Empty".
+        if (typeof abilityId !== 'string' || !abilityId) {
+            return { name: '—', description: '' };
+        }
+        const def = this.game.getCollections?.()?.abilities?.[abilityId] || {};
+        return {
+            name: def.name || abilityId.replace(/Ability$/, ''),
+            description: def.description || ''
+        };
+    }
+
+    _formatAffix(a) {
+        if (!a) return '';
+        const sign = (a.value || 0) >= 0 ? '+' : '';
+        const labelPrefix = a.label ? `<em>${a.label}</em> — ` : '';
+        return `${labelPrefix}${sign}${a.value} ${a.stat}`;
+    }
+
+    _friendlyItemType(offer) {
+        if (!offer) return '';
+        if (offer.itemType === 'weapon')    return offer.weaponType ? offer.weaponType : 'weapon';
+        if (offer.itemType === 'offhand')   return offer.offhandType ? offer.offhandType : 'offhand';
+        if (offer.itemType === 'bodyArmor') return 'body armor';
+        return offer.itemType;
+    }
+
+    _readLocalInventory() {
+        const myId = this.game.clientNetworkManager?.numericPlayerId
+            ?? this.game.state?.localPlayerId ?? 0;
+        const playerEntities = this.game.getEntitiesWith('playerStats');
+        for (const eid of playerEntities) {
+            const s = this.game.getComponent(eid, 'playerStats');
+            if (s && s.playerId === myId) return s.inventory || [];
+        }
+        return [];
+    }
+
+    // Returns the highest itemLevel for any owned item with the given baseType,
+    // looking across inventory AND every hero's equipped gear slots. Used to
+    // render the "Owned LvX" badge on shop offer cards so the player can see
+    // duplicates of items they've already equipped, not just unequipped ones.
+    _ownedLevelForBase(baseType) {
+        if (!baseType) return 0;
+        const stats = this._getMyPlayerStats();
+        if (!stats) return 0;
+        let best = 0;
+        const consider = (it) => {
+            if (it?.baseType === baseType) {
+                const lvl = it.itemLevel || 1;
+                if (lvl > best) best = lvl;
+            }
+        };
+        for (const it of (stats.inventory || [])) consider(it);
+        for (const entry of (stats.heroRoster || [])) {
+            const eq = entry?.equipment;
+            if (!eq) continue;
+            consider(eq.mainWeapon);
+            consider(eq.offhand);
+            consider(eq.bodyArmor);
+            consider(eq.charm);
+        }
+        return best;
     }
 
     updateHUD() {
@@ -510,37 +833,44 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const className = heroClass.charAt(0).toUpperCase() + heroClass.slice(1);
         const level = this._calcHeroLevel(entry.roundsPlayed || 0);
         const eq = entry.equipment || {};
-        const abilities = Array.isArray(eq.abilitySlots) ? eq.abilitySlots : [null, null, null, null];
 
         // Map slot name → required itemType (must match HeroStatSystem.SLOT_ITEM_TYPE)
-        const SLOT_TYPE = { mainWeapon: 'weapon', offhand: 'offhand', bodyArmor: 'bodyArmor', helmet: 'helmet' };
+        const SLOT_TYPE = { mainWeapon: 'weapon', offhand: 'offhand', bodyArmor: 'bodyArmor', charm: 'charm' };
         const selectedItem = this._getSelectedInventoryItem();
-        // A gear slot is a valid equip target if the selected item's itemType matches.
-        // A gem slot is a valid target if the selected item is a gem.
-        // Filled gem slots are ALWAYS clickable so the player can open the gem detail panel.
+
+        // 2H weapons lock the offhand slot — show "Locked by 2H" instead of "Empty"
+        // and don't render it as a valid equip target.
+        const offhandBlocked = !eq.offhand && eq.mainWeapon?.isTwoHanded;
 
         const slot = (label, slotName, item) => {
             const filled = !!item;
             const rarity = item?.rarity || '';
-            const name = item?.baseName || item?.name || (filled ? 'Item' : 'Empty');
-            const isTarget = selectedItem && selectedItem.itemType === SLOT_TYPE[slotName];
+            const blocked = slotName === 'offhand' && offhandBlocked;
+            const name = blocked
+                ? 'Locked (2H)'
+                : (item?.baseName || item?.name || (filled ? 'Item' : 'Empty'));
+            const isTarget = !blocked && selectedItem && selectedItem.itemType === SLOT_TYPE[slotName];
             const targetCls = isTarget ? 'equip-target' : '';
-            return `<div class="hero-slot ${filled ? 'filled' : ''} ${rarity ? 'rarity-' + rarity : ''} ${targetCls}"
+            const blockedCls = blocked ? 'blocked' : '';
+            return `<div class="hero-slot ${filled ? 'filled' : ''} ${rarity ? 'rarity-' + rarity : ''} ${targetCls} ${blockedCls}"
                 data-action="equip-gear" data-roster-index="${index}" data-slot="${slotName}">
                 <span class="hero-slot-label">${label}</span>
                 <span class="hero-slot-value">${name}</span>
             </div>`;
         };
 
-        const gemSlot = (item, i) => {
-            const filled = !!item;
+        // One ability slot per gear piece. Shows the chosen ability's display
+        // name; carries data attributes used by the cooldown overlay tick.
+        const abilitySlot = (slotName, item) => {
+            const abilityId = item?.chosenAbilityId || null;
             const rarity = item?.rarity || '';
-            const name = item?.baseName || item?.name || `Gem ${i + 1}`;
-            const isTarget = filled || (selectedItem && selectedItem.itemType === 'gem');
-            const targetCls = isTarget ? 'equip-target' : '';
-            return `<div class="hero-slot ${filled ? 'filled' : ''} ${rarity ? 'rarity-' + rarity : ''} ${targetCls}"
-                data-action="socket-gem" data-roster-index="${index}" data-slot-index="${i}">
-                <span class="hero-slot-value">${filled ? name : '—'}</span>
+            const display = abilityId ? this._abilityMeta(abilityId).name : '—';
+            const cdAttrs = abilityId
+                ? `data-ability-id="${abilityId}" data-roster-index="${index}"`
+                : '';
+            return `<div class="hero-slot ability-slot ${abilityId ? 'filled' : ''} ${rarity ? 'rarity-' + rarity : ''}" ${cdAttrs}>
+                <span class="hero-slot-value">${display}</span>
+                <div class="hero-ability-cooldown" style="height:0%"></div>
             </div>`;
         };
 
@@ -552,10 +882,13 @@ class PlacementUISystem extends GUTS.BaseSystem {
             <div class="hero-equipment-grid">
                 ${slot('Weapon',  'mainWeapon', eq.mainWeapon)}
                 ${slot('Offhand', 'offhand',    eq.offhand)}
-                ${slot('Body',    'bodyArmor',  eq.bodyArmor)}
-                ${slot('Helmet',  'helmet',     eq.helmet)}
+                ${slot('Armor',   'bodyArmor',  eq.bodyArmor)}
+                ${slot('Charm',   'charm',      eq.charm)}
                 <div class="hero-ability-slots">
-                    ${abilities.map((g, i) => gemSlot(g, i)).join('')}
+                    ${abilitySlot('mainWeapon', eq.mainWeapon)}
+                    ${abilitySlot('offhand',    eq.offhand)}
+                    ${abilitySlot('bodyArmor',  eq.bodyArmor)}
+                    ${abilitySlot('charm',      eq.charm)}
                 </div>
             </div>
         </div>`;
@@ -619,113 +952,39 @@ class PlacementUISystem extends GUTS.BaseSystem {
             this.renderHeroRoster();
             this.renderInventory();
             this._showDetailsForItem(this._getSelectedInventoryItem());
-            if (this.openGem) this._renderGemDetail();
         } else if (action === 'equip-gear') {
             const rosterIndex = parseInt(target.dataset.rosterIndex, 10);
             const slot        = target.dataset.slot;
             const stats       = this._getMyPlayerStats();
             const equipped    = stats?.heroRoster?.[rosterIndex]?.equipment?.[slot] || null;
             // If the player has an inventory item selected, equip it. Otherwise show
-            // the currently-equipped item's details (mobile-friendly inspection).
+            // the currently-equipped item's details (mobile-friendly inspection)
+            // with an Unequip button.
             if (this.selectedInventoryIndex !== null) {
                 this.call.submitEquipGear(rosterIndex, slot, this.selectedInventoryIndex);
                 this.selectedInventoryIndex = null;
                 setTimeout(() => { this.renderHeroRoster(); this.renderInventory(); this._showDetailsForItem(null); }, 50);
             } else if (equipped) {
-                this._showDetailsForItem(equipped);
+                this._showDetailsForItem(equipped, { rosterIndex, slot });
             }
-        } else if (action === 'socket-gem') {
+        } else if (action === 'unequip-gear') {
             const rosterIndex = parseInt(target.dataset.rosterIndex, 10);
-            const slotIndex   = parseInt(target.dataset.slotIndex, 10);
-            const gem         = this._getGemAt(rosterIndex, slotIndex);
-            // If the player has an inventory item selected, socket it. Otherwise, if this slot
-            // already has a gem, both show its details AND open the gem detail panel for runes.
-            if (this.selectedInventoryIndex !== null) {
-                this.call.submitSocketGem(rosterIndex, slotIndex, this.selectedInventoryIndex);
-                this.selectedInventoryIndex = null;
-                setTimeout(() => { this.renderHeroRoster(); this.renderInventory(); this._showDetailsForItem(null); }, 50);
-            } else if (gem) {
-                this._showDetailsForItem(gem);
-                this._openGemDetail(rosterIndex, slotIndex);
-            }
-        } else if (action === 'socket-rune') {
-            const rosterIndex   = parseInt(target.dataset.rosterIndex, 10);
-            const slotIndex     = parseInt(target.dataset.slotIndex, 10);
-            const runeSlotIndex = parseInt(target.dataset.runeSlotIndex, 10);
-            const stats         = this._getMyPlayerStats();
-            const existingRune  = stats?.heroRoster?.[rosterIndex]?.equipment?.abilitySlots?.[slotIndex]?.runes?.[runeSlotIndex] || null;
-            if (this.selectedInventoryIndex !== null) {
-                this.call.submitSocketRune(rosterIndex, slotIndex, runeSlotIndex, this.selectedInventoryIndex);
-                this.selectedInventoryIndex = null;
-                setTimeout(() => {
-                    this.renderHeroRoster();
-                    this.renderInventory();
-                    this._showDetailsForItem(null);
-                    if (this.openGem) this._renderGemDetail();
-                }, 50);
-            } else if (existingRune) {
-                this._showDetailsForItem(existingRune);
-            }
+            const slot        = target.dataset.slot;
+            this.call.submitUnequipGear(rosterIndex, slot);
+            setTimeout(() => { this.renderHeroRoster(); this.renderInventory(); this._showDetailsForItem(null); }, 50);
+        } else if (action === 'identify-item') {
+            const itemId = target.dataset.itemId;
+            if (itemId) this.call.submitIdentifyItem(itemId);
+        } else if (action === 'select-ability') {
+            const itemId = target.dataset.itemId;
+            if (itemId) this.call.submitSelectAbility(itemId);
+        } else if (action === 'sell-item') {
+            const itemId = target.dataset.itemId;
+            if (!itemId) return;
+            this.call.submitSellItem(itemId);
+            this.selectedInventoryIndex = null;
+            setTimeout(() => { this.renderInventory(); this._showDetailsForItem(null); }, 50);
         }
-    }
-
-    // ==================== GEM DETAIL PANEL ====================
-
-    _getGemAt(rosterIndex, abilitySlotIndex) {
-        const stats = this._getMyPlayerStats();
-        const roster = stats?.heroRoster?.[rosterIndex];
-        return roster?.equipment?.abilitySlots?.[abilitySlotIndex] || null;
-    }
-
-    _openGemDetail(rosterIndex, abilitySlotIndex) {
-        this.openGem = { rosterIndex, abilitySlotIndex };
-        this._renderGemDetail();
-        this.elements.gemDetailPanel?.classList.remove('hidden');
-    }
-
-    _closeGemDetail() {
-        this.openGem = null;
-        this.elements.gemDetailPanel?.classList.add('hidden');
-    }
-
-    _renderGemDetail() {
-        if (!this.openGem || !this.elements.gemDetailPanel) return;
-        const { rosterIndex, abilitySlotIndex } = this.openGem;
-        const gem = this._getGemAt(rosterIndex, abilitySlotIndex);
-
-        if (!gem) {
-            // Gem was unsocketed externally; close panel
-            this._closeGemDetail();
-            return;
-        }
-
-        const name     = gem.baseName || gem.name || 'Gem';
-        const ability  = gem.abilityId || '—';
-        const runes    = Array.isArray(gem.runes) ? gem.runes : [];
-        const slotsAvailable = Math.max(gem.runeSlots ?? 1, runes.length);
-
-        if (this.elements.gemDetailTitle) this.elements.gemDetailTitle.textContent = name;
-        if (this.elements.gemDetailMeta)  this.elements.gemDetailMeta.textContent  = `Grants: ${ability}`;
-
-        const selectedItem = this._getSelectedInventoryItem();
-        const isRuneTarget = selectedItem?.itemType === 'rune';
-        let html = '';
-        for (let i = 0; i < slotsAvailable; i++) {
-            const rune = runes[i];
-            const filled = !!rune;
-            const rarity = rune?.rarity || '';
-            const label  = filled ? (rune.baseName || rune.name || 'Rune') : 'Empty';
-            const targetCls = isRuneTarget ? 'equip-target' : '';
-            html += `<div class="rune-slot ${filled ? 'filled' : 'empty'} ${rarity ? 'rarity-' + rarity : ''} ${targetCls}"
-                data-action="socket-rune"
-                data-roster-index="${rosterIndex}"
-                data-slot-index="${abilitySlotIndex}"
-                data-rune-slot-index="${i}">
-                <span>${label}</span>
-                <span style="color:#555;">#${i + 1}</span>
-            </div>`;
-        }
-        if (this.elements.gemDetailRunes) this.elements.gemDetailRunes.innerHTML = html;
     }
 
     _calcHeroLevel(roundsPlayed) {
@@ -733,6 +992,47 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (roundsPlayed >= 5) return 5;
         if (roundsPlayed >= 3) return 3;
         return 1;
+    }
+
+    // Walks every visible ability slot in the hero roster panel, computes the
+    // remaining cooldown for that hero/ability, and resizes the overlay div.
+    // The overlay's height percent = remaining / total. Starts full when an
+    // ability fires and shrinks to 0 as it tracks down.
+    _updateAbilityCooldownOverlays() {
+        const panel = this.elements.heroRosterPanel;
+        if (!panel || panel.classList.contains('hidden')) return;
+        const abilitySystem = this.game.abilitySystem;
+        const rosterSystem  = this.game.heroRosterSystem;
+        if (!abilitySystem || !rosterSystem) return;
+
+        const myPlayerId = this.game.clientNetworkManager?.numericPlayerId
+            ?? this.game.state?.localPlayerId ?? 0;
+
+        const slots = panel.querySelectorAll('.ability-slot[data-ability-id]');
+        for (const slotEl of slots) {
+            const rosterIndex = Number(slotEl.dataset.rosterIndex);
+            const abilityId   = slotEl.dataset.abilityId;
+            if (!abilityId || !Number.isInteger(rosterIndex)) continue;
+
+            const heroId = rosterSystem.getHeroEntityId?.(myPlayerId, rosterIndex);
+            const overlay = slotEl.querySelector('.hero-ability-cooldown');
+            if (!overlay) continue;
+
+            // No live hero entity (e.g. mid-respawn) → empty the overlay.
+            if (heroId == null) {
+                if (overlay.style.height !== '0%') overlay.style.height = '0%';
+                continue;
+            }
+
+            const remaining = abilitySystem.getRemainingCooldown(heroId, abilityId);
+            const ability   = (abilitySystem.entityAbilities.get(heroId) || [])
+                .find(a => a?.id === abilityId);
+            const total = ability ? ((ability.castTime || 0) + (ability.cooldown || 0)) : 0;
+
+            const pct = total > 0 ? Math.max(0, Math.min(100, (remaining / total) * 100)) : 0;
+            const pctStr = `${pct.toFixed(1)}%`;
+            if (overlay.style.height !== pctStr) overlay.style.height = pctStr;
+        }
     }
 
     _findHeroAtWorldPos(worldX, worldZ) {
@@ -825,6 +1125,10 @@ class PlacementUISystem extends GUTS.BaseSystem {
         // changes made by AutobattlerRoundSystem after each battle.
         this.updateHUD();
 
+        // Tick ability cooldown overlays in the hero roster (works during battle
+        // when cooldowns actually change; harmless during prep).
+        this._updateAbilityCooldownOverlays();
+
         // Keep inventory + hero roster panels in sync with server state during prep.
         // Cheap DOM update; the selected-item state is held in this.selectedInventoryIndex
         // (not DOM-derived) so it survives re-renders.
@@ -838,7 +1142,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 this._lastPrepFingerprint = fp;
                 this.renderInventory();
                 this.renderHeroRoster();
-                if (this.openGem) this._renderGemDetail();
             }
         }
 
@@ -986,10 +1289,14 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     // Hide the prep panels when leaving placement phase
     onBattleStart() {
-        if (this.elements.heroRosterPanel)  this.elements.heroRosterPanel.classList.add('hidden');
+        // Keep the hero roster panel visible during battle so the player can see
+        // ability cooldown overlays. Hide inventory + details panel since they
+        // aren't actionable mid-battle.
         if (this.elements.inventoryPanel)   this.elements.inventoryPanel.classList.add('hidden');
         if (this.elements.itemDetailsPanel) this.elements.itemDetailsPanel.classList.add('hidden');
-        this._closeGemDetail();
+        if (this.elements.shopOverlay)          this.elements.shopOverlay.classList.add('hidden');
+        if (this.elements.affixChoiceOverlay)   this.elements.affixChoiceOverlay.classList.add('hidden');
+        if (this.elements.abilityChoiceOverlay) this.elements.abilityChoiceOverlay.classList.add('hidden');
         this._logEvent(`Round ${this.game.state.round ?? 1} — battle begins!`, 'battle');
     }
 
@@ -1025,10 +1332,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     // ==================== ITEM DETAILS PANEL (click/tap-driven, no hover) ====================
 
-    _showDetailsForItem(item) {
+    // context: optional { rosterIndex, slot } — when present, an Unequip button is shown.
+    _showDetailsForItem(item, context = null) {
         const panel   = this.elements.itemDetailsPanel;
         const content = this.elements.itemDetailsContent;
         if (!panel || !content) return;
+        // Remember the last shown item so onShopUpdate can refresh affixes
+        // (e.g. after the player identifies an item).
+        this._currentDetailsItemId = item?.id || null;
+        this._currentDetailsContext = item ? context : null;
         if (!item) {
             panel.className = '';
             content.className = 'item-details-empty';
@@ -1037,16 +1349,101 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
         panel.className = `rarity-${item.rarity || 'normal'}`;
         content.className = '';
-        content.innerHTML = this._renderItemTooltip(item);
+        content.innerHTML = this._renderItemTooltip(item)
+            + this._renderSelectAbilityButton(item)
+            + this._renderIdentifyButton(item)
+            + this._renderSellButton(item, context)
+            + this._renderUnequipButton(context);
+    }
+
+    // Re-render the currently shown details panel using the latest server data.
+    _refreshDetailsPanel() {
+        const id = this._currentDetailsItemId;
+        if (!id) return;
+        const stats = this._getMyPlayerStats();
+        if (!stats) return;
+        // Find the item by id in inventory or any equipped slot
+        const fromInv = (stats.inventory || []).find(it => it?.id === id);
+        if (fromInv) { this._showDetailsForItem(fromInv, this._currentDetailsContext); return; }
+        for (const entry of (stats.heroRoster || [])) {
+            for (const slot of ['mainWeapon', 'offhand', 'bodyArmor', 'charm']) {
+                if (entry?.equipment?.[slot]?.id === id) {
+                    this._showDetailsForItem(entry.equipment[slot], this._currentDetailsContext);
+                    return;
+                }
+            }
+        }
+    }
+
+    _renderIdentifyButton(item) {
+        if (!this._itemNeedsIdentify(item)) return '';
+        return `<button class="tt-identify-btn" data-action="identify-item" data-item-id="${item.id}">Identify</button>`;
+    }
+
+    _renderSelectAbilityButton(item) {
+        if (!this._itemNeedsAbilitySelect(item)) return '';
+        return `<button class="tt-select-ability-btn" data-action="select-ability" data-item-id="${item.id}">Select Ability</button>`;
+    }
+
+    // True for gear items whose base offers abilities and which haven't picked yet.
+    _itemNeedsAbilitySelect(item) {
+        if (!item || item.chosenAbilityId) return false;
+        if (!['weapon', 'offhand', 'bodyArmor', 'charm'].includes(item.itemType)) return false;
+        const base = this._lookupBaseFor(item);
+        return Array.isArray(base?.abilities) && base.abilities.length > 0;
+    }
+
+    _lookupBaseFor(item) {
+        const c = this.game.getCollections?.() || {};
+        const dicts = [c.weaponBases, c.armorBases, c.charmBases, c.offhandBases];
+        for (const d of dicts) {
+            if (d?.[item.baseType]) return d[item.baseType];
+        }
+        return null;
+    }
+
+    // Mirrors ItemShopSystem._needsIdentification so the UI can show the button
+    // without round-tripping to the server.
+    _itemNeedsIdentify(item) {
+        if (!item) return false;
+        const level = item.itemLevel || 1;
+        const have = (item.affixes || []).length;
+        if (level >= 9) return have < 7;
+        if (level >= 6) return have < 6;
+        if (level >= 3) return have < 2;
+        return false;
+    }
+
+    _renderUnequipButton(context) {
+        if (!context) return '';
+        const { rosterIndex, slot } = context;
+        if (slot) {
+            return `<button class="tt-unequip-btn" data-action="unequip-gear" data-roster-index="${rosterIndex}" data-slot="${slot}">Unequip</button>`;
+        }
+        return '';
+    }
+
+    // Sell button — only shown for INVENTORY items (context.slot is empty for
+    // those; equipped items must be unequipped before being sellable).
+    _renderSellButton(item, context) {
+        if (!item || context?.slot) return '';
+        if (!this._itemInInventory(item.id)) return '';
+        return `<button class="tt-sell-btn" data-action="sell-item" data-item-id="${item.id}">Sell (1g)</button>`;
+    }
+
+    _itemInInventory(itemId) {
+        const stats = this._getMyPlayerStats();
+        return !!(stats?.inventory || []).find(it => it?.id === itemId);
     }
 
     _renderItemTooltip(item) {
         const name     = item.name || item.baseName || 'Item';
         const baseName = item.baseName || '';
         const subtitle = this._tooltipSubtitle(item);
+        const level    = item.itemLevel ?? 1;
 
         let parts = [
-            `<div class="tt-name">${name}</div>`,
+            `<div class="tt-name-row"><span class="tt-name">${name}</span><span class="tt-item-level">Lv ${level}</span></div>`,
             `<div class="tt-subtitle">${subtitle}</div>`
         ];
         if (baseName && baseName !== name) {
@@ -1061,17 +1458,10 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const affixesHtml = this._tooltipAffixes(item);
         if (affixesHtml) parts.push(`<div class="tt-section">${affixesHtml}</div>`);
 
-        // Gem: socketed runes preview + ability stats from the abilities collection
-        if (item.itemType === 'gem') {
-            const abilityHtml = this._tooltipGemAbility(item);
+        // Gear: show the chosen ability's details (cooldown, range, damage)
+        if (item.chosenAbilityId) {
+            const abilityHtml = this._tooltipAbilityFor(item.chosenAbilityId);
             if (abilityHtml) parts.push(`<div class="tt-section">${abilityHtml}</div>`);
-
-            if (Array.isArray(item.runes)) {
-                const runesPreview = item.runes
-                    .map((r, i) => `<div class="tt-stat"><span class="tt-stat-name">Rune ${i + 1}</span><span class="tt-stat-value">${r?.baseName || r?.name || '<em>empty</em>'}</span></div>`)
-                    .join('');
-                parts.push(`<div class="tt-section">${runesPreview}</div>`);
-            }
         }
 
         // Free-text description
@@ -1084,9 +1474,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     // Pull the ability's stats (cooldown, range, damage, etc.) from the abilities
     // collection — abilities are data-driven, NOT hardcoded in JS classes anymore.
-    _tooltipGemAbility(item) {
-        if (!item.abilityId) return '';
-        const abilityData = this.collections?.abilities?.[item.abilityId];
+    _tooltipAbilityFor(abilityId) {
+        if (!abilityId) return '';
+        const abilityData = this.collections?.abilities?.[abilityId];
         if (!abilityData) return '';
 
         const stat = (label, value) => `<div class="tt-stat"><span class="tt-stat-name">${label}</span><span class="tt-stat-value">${value}</span></div>`;
@@ -1131,10 +1521,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
         switch (item.itemType) {
             case 'weapon':    return `${r} ${item.weaponType ? item.weaponType.toUpperCase() : 'WEAPON'}${item.isTwoHanded ? ' (2H)' : ''}`;
             case 'offhand':   return `${r} ${(item.offhandType || 'OFFHAND').toUpperCase()}`;
-            case 'bodyArmor': return `${r} BODY ARMOR`;
-            case 'helmet':    return `${r} HELMET`;
-            case 'gem':       return `${r} ABILITY GEM`;
-            case 'rune':      return `${r} RUNE`;
+            case 'bodyArmor': return `${r} ARMOR`;
+            case 'charm':     return `${r} CHARM`;
             default:          return r.toUpperCase();
         }
     }
@@ -1149,16 +1537,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
             if (item.range != null)       lines.push(stat('Range',        item.range));
             if (item.projectile != null)  lines.push(stat('Projectile',   item.projectile));
             if (item.element)             lines.push(stat('Element',      item.element));
-        } else if (item.itemType === 'bodyArmor' || item.itemType === 'helmet' || item.itemType === 'offhand') {
+        } else if (item.itemType === 'bodyArmor' || item.itemType === 'offhand') {
             if (item.baseValue)           lines.push(stat('Armor',        item.baseValue));
-        } else if (item.itemType === 'gem') {
-            if (item.abilityId)           lines.push(stat('Grants',       item.abilityId.replace(/Ability$/, '')));
-            if (item.runeSlots != null)   lines.push(stat('Rune Slots',   item.runeSlots));
-        } else if (item.itemType === 'rune') {
-            const mods = item.modifiers || {};
-            for (const [k, v] of Object.entries(mods)) {
-                lines.push(stat(this._humanizeModName(k), this._humanizeModValue(k, v)));
-            }
+        } else if (item.itemType === 'charm') {
+            // Charms are utility slots — no inherent base stat; affixes carry the value.
+        }
+        // Show the chosen ability (if any) on gear items
+        if (['weapon', 'offhand', 'bodyArmor', 'charm'].includes(item.itemType) && item.chosenAbilityId) {
+            const meta = this._abilityMeta(item.chosenAbilityId);
+            lines.push(stat('Ability', meta.name));
         }
         return lines.join('');
     }
@@ -1186,26 +1573,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
             percentAttackSpeed:  '% Attack Speed'
         };
         return m[stat] || stat;
-    }
-
-    _humanizeModName(k) {
-        const m = {
-            cooldownReduction: 'Cooldown',
-            rangeBonus:        'Range',
-            aoeRadius:         'AoE Radius',
-            chainCount:        'Chains',
-            projectileCount:   'Projectiles'
-        };
-        return m[k] || k;
-    }
-
-    _humanizeModValue(k, v) {
-        if (k === 'cooldownReduction') return `${Math.round((1 - v) * 100)}% reduced`;
-        if (k === 'rangeBonus')        return `+${v}`;
-        if (k === 'aoeRadius')         return `+${v}`;
-        if (k === 'chainCount')        return `+${v}`;
-        if (k === 'projectileCount')   return `+${v - 1}`;
-        return String(v);
     }
 
     _logEvent(message, type = 'system') {

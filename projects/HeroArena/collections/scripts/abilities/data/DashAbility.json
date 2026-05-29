@@ -1,0 +1,24 @@
+{
+  "cooldown": 10,
+  "range": 180,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "attack",
+  "priority": 5,
+  "castTime": 0.2,
+  "castParticleEffectSystems": [
+    "dust_burst"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "dust_burst"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "DashAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/DashAbility.js",
+  "name": "Dash",
+  "description": "Dash forward, damaging anyone in your path.",
+  "damage": 20,
+  "dashDistance": 140,
+  "element": "physical"
+}

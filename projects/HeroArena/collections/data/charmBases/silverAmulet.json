@@ -1,0 +1,11 @@
+{
+  "id": "silverAmulet",
+  "name": "Silver Amulet",
+  "tier": 2,
+  "baseValue": 0,
+  "abilities": [
+    "HealAbility",
+    "RegenerationAbility",
+    "ResurrectionAbility"
+  ]
+}

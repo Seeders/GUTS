@@ -126,6 +126,23 @@
             "z": 0
           }
         }
+      },
+      {
+        "slot": "back",
+        "item": "tunic",
+        "attachmentData": {
+          "bone": "Spine2",
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        }
       }
     ]
   },

@@ -17,7 +17,7 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         'broadcastGameEnd',
         'spawnHeroesForRound',
         'despawnBattleHeroes',
-        'dropLootForRound',
+        'openShopForRound',
         'grantRoundIncome',
         'selectLeader'
     ];
@@ -31,16 +31,6 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         { id: 'soldier',    label: 'Soldier',    archetype: 'STR/DEX', spawnType: '1_sd_soldier'   },
         { id: 'scout',      label: 'Scout',      archetype: 'INT/DEX', spawnType: '1_di_scout'     }
     ];
-
-    // Starting weapon per hero class (white-rarity, no affixes). Maps to WEAPON_BASES.id.
-    static STARTING_WEAPONS = {
-        barbarian:  'shortSword',
-        soldier:    'shortSword',
-        archer:     'shortBow',
-        scout:      'shortBow',
-        apprentice: 'woodStaff',
-        acolyte:    'woodStaff'
-    };
 
     static LEADERS = [
         { id: 'commander',  label: 'The Commander',  bonus: '+10% HP to all STR heroes' },
@@ -135,13 +125,7 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
 
         this.pendingHeroSelections[numericPlayerId] = heroClassId;
 
-        // Generate the class-default starting weapon (white rarity, no affixes)
-        const starterBaseId = AutobattlerRoundSystem.STARTING_WEAPONS[heroClassId] || null;
-        const starterWeapon = (starterBaseId && this.game.itemGeneratorSystem)
-            ? this.game.itemGeneratorSystem.generateBaseWeapon(starterBaseId)
-            : null;
-
-        // Add to this player's roster on playerStats
+        // Heroes start with empty equipment — all items come from the shop.
         const playerEntities = this.call.getPlayerEntities();
         for (const entityId of playerEntities) {
             const stats = this.game.getComponent(entityId, 'playerStats');
@@ -151,11 +135,10 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
                     heroClass:    heroClassId,
                     roundsPlayed: 0,
                     equipment: {
-                        mainWeapon:   starterWeapon,
-                        offhand:      null,
-                        bodyArmor:    null,
-                        helmet:       null,
-                        abilitySlots: [null, null, null, null]
+                        mainWeapon: null,
+                        offhand:    null,
+                        bodyArmor:  null,
+                        charm:      null
                     }
                 });
                 break;
@@ -172,9 +155,10 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
 
     startPrep() {
         if (!this.game.isServer && !this.game.state?.isLocalGame) return;
-        // Grant income then drop loot — players craft and equip during prep phase
+        // Grant income, then open the round-start shop — players spend gold to buy items
+        // (stacking on bases they already own), reroll, or upgrade the shop.
         this.call.grantRoundIncome();
-        this.call.dropLootForRound(this.game.state.round);
+        this.call.openShopForRound();
         this.game.state.phase = this.enums.gamePhase.placement;
         this.call.spawnHeroesForRound();
         this.call.broadcastToRoom(null, 'PREP_PHASE_START', {

@@ -3,5 +3,10 @@
   "name": "Tome of Shadows",
   "tier": 2,
   "offhandType": "tome",
-  "baseArmor": 0
+  "baseArmor": 0,
+  "abilities": [
+    "CurseAbility",
+    "DrainLifeAbility",
+    "PolymorphAbility"
+  ]
 }

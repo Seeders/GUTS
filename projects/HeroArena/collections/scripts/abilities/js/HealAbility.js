@@ -57,8 +57,10 @@ class HealAbility extends GUTS.BaseAbility {
             this.call.curePoison( targetId);
         }
 
-        // Apply healing
-        const actualHeal = Math.min(this.healAmount, targetHealth.max - targetHealth.current);
+        // Apply healing — scaled by source item level so heal-focused builds
+        // also benefit from item leveling.
+        const scaledHeal = this.scaledDamage(this.healAmount);
+        const actualHeal = Math.min(scaledHeal, targetHealth.max - targetHealth.current);
         targetHealth.current += actualHeal;
 
         // Show heal number (client only)

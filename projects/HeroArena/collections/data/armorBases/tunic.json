@@ -2,5 +2,10 @@
   "id": "tunic",
   "name": "Tunic",
   "tier": 1,
-  "baseArmor": 3
+  "baseArmor": 3,
+  "abilities": [
+    "HealAbility",
+    "BattleCryAbility",
+    "EnchantWeaponAbility"
+  ]
 }

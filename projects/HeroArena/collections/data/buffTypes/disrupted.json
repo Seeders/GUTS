@@ -5,7 +5,7 @@
   "armorMultiplier": 1,
   "damageTakenMultiplier": 1,
   "damageReduction": 0,
-  "accuracyReduction": 0.3,
+  "accuracyModifier": -30,
   "abilitiesDisabled": 1,
-  "movementSlowed": 0.5
+  "movementSpeedMultiplier": 0.5
 }

@@ -1,0 +1,22 @@
+{
+  "cooldown": 18,
+  "range": 200,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "attack",
+  "priority": 5,
+  "castTime": 0.6,
+  "castParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "PolymorphAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/PolymorphAbility.js",
+  "name": "Polymorph",
+  "description": "Transform an enemy into a harmless creature.",
+  "duration": 6
+}

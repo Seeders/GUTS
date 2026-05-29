@@ -1,8 +1,0 @@
-{
-  "id": "echo_rune",
-  "name": "Echo Rune",
-  "modifiers": {
-    "chainCount": 1
-  },
-  "description": "Ability echoes to another nearby enemy"
-}

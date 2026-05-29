@@ -1,7 +1,0 @@
-{
-  "filePath": "/projects/HeroArena/collections/scripts/systems/js/AbilityGemSystem.js",
-  "fileName": "AbilityGemSystem",
-  "services": [
-    "applyGemBehavior"
-  ]
-}

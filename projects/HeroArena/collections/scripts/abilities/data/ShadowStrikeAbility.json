@@ -10,7 +10,7 @@
   "animation": "attack",
   "priority": 8,
   "castTime": 0.5,
-  "backstabDamage": 65,
+  "backstabDamage": 75,
   "castParticleEffectSystems": ["dark_energy"],
   "launchParticleEffectSystems": ["dark_burst", "dark_sparkles"],
   "targetParticleEffectSystems": ["dark_burst", "dark_sparkles"],

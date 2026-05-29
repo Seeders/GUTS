@@ -2,14 +2,13 @@
 //
 // All catalog data (bases, profiles, affixes, uniques, rarities) lives in the
 // data/ collections — no hardcoded tables in this file:
-//   data/weaponBases, data/weaponProfiles, data/armorBases, data/helmetBases,
-//   data/offhandBases, data/gemBases, data/runeBases, data/itemAffixes,
-//   data/uniqueItems, data/itemRarities
+//   data/weaponBases, data/weaponProfiles, data/armorBases, data/charmBases,
+//   data/offhandBases, data/itemAffixes, data/uniqueItems, data/itemRarities
 //
 // Items are plain JS objects (not ECS entities) stored on playerStats.inventory
 // and heroEquipment slots.
 //
-// Item types: weapon, offhand, bodyArmor, helmet, gem, rune
+// Item types: weapon, offhand, bodyArmor, charm
 class ItemGeneratorSystem extends GUTS.BaseSystem {
 
     static services = [
@@ -39,10 +38,8 @@ class ItemGeneratorSystem extends GUTS.BaseSystem {
 
         this._weaponBases  = Object.values(c.weaponBases  || {});
         this._armorBases   = Object.values(c.armorBases   || {});
-        this._helmetBases  = Object.values(c.helmetBases  || {});
+        this._charmBases   = Object.values(c.charmBases   || {});
         this._offhandBases = Object.values(c.offhandBases || {});
-        this._gemBases     = Object.values(c.gemBases     || {});
-        this._runeBases    = Object.values(c.runeBases    || {});
         this._uniqueItems  = Object.values(c.uniqueItems  || {});
         this._allAffixes   = Object.values(c.itemAffixes  || {});
         this._rarities     = Object.values(c.itemRarities || {})
@@ -55,10 +52,7 @@ class ItemGeneratorSystem extends GUTS.BaseSystem {
             this._weaponProfiles[p.id] = p;
         }
 
-        // Affixes split by group so we never accidentally roll a gem affix on a weapon
         this._itemAffixes = this._allAffixes.filter(a => (a.affixGroup || 'item') === 'item');
-        this._gemAffixes  = this._allAffixes.filter(a => a.affixGroup === 'gem');
-        this._runeAffixes = this._allAffixes.filter(a => a.affixGroup === 'rune');
 
         // Rarity lookup by id
         this._rarityById = {};
@@ -69,18 +63,16 @@ class ItemGeneratorSystem extends GUTS.BaseSystem {
 
     // ─── Public API ──────────────────────────────────────────────────────────
 
-    // Main entry point. options: { itemType?, dropLevel?, forcedRarity?, offhandType?, gemId?, runeId? }
+    // Main entry point. options: { itemType?, dropLevel?, forcedRarity?, offhandType? }
     generateItem(options = {}) {
         this._ensureCatalog();
         const itemType  = options.itemType  || 'weapon';
         const dropLevel = options.dropLevel || 1;
 
         switch (itemType) {
-            case 'gem':       return this._generateGem(dropLevel, options.forcedRarity, options.gemId);
-            case 'rune':      return this._generateRune(dropLevel, options.forcedRarity, options.runeId);
             case 'offhand':   return this._generateOffhand(dropLevel, options.forcedRarity, options.offhandType);
             case 'bodyArmor': return this._generateArmor(dropLevel, options.forcedRarity);
-            case 'helmet':    return this._generateHelmet(dropLevel, options.forcedRarity);
+            case 'charm':     return this._generateCharm(dropLevel, options.forcedRarity);
             case 'weapon':    return this._generateWeapon(dropLevel, options.forcedRarity);
             default:          return this._generateWeapon(dropLevel, options.forcedRarity);
         }
@@ -98,8 +90,6 @@ class ItemGeneratorSystem extends GUTS.BaseSystem {
 
     rollAffixesForItem(itemType, rarity) {
         this._ensureCatalog();
-        if (itemType === 'gem')  return this._rollGemAffixes(rarity);
-        if (itemType === 'rune') return this._rollRuneAffixes(rarity);
         return this._rollAffixes(itemType, rarity);
     }
 
@@ -145,7 +135,9 @@ class ItemGeneratorSystem extends GUTS.BaseSystem {
             rarity:         'normal',
             name:           base.name,
             affixes:        [],
-            baseValue:      base.baseDamage
+            baseValue:      base.baseDamage,
+            // chosenAbilityId is picked by the player from this base's 3 candidates
+            chosenAbilityId:  null
         };
     }
 
@@ -219,64 +211,20 @@ class ItemGeneratorSystem extends GUTS.BaseSystem {
         };
     }
 
-    _generateHelmet(dropLevel, forcedRarity) {
+    _generateCharm(dropLevel, forcedRarity) {
         const rarity = forcedRarity || this._rollRarity(dropLevel, 'itemWeights');
 
-        const base    = this._pickBase(this._helmetBases, dropLevel);
-        const affixes = this._rollAffixes('helmet', rarity);
+        const base    = this._pickBase(this._charmBases, dropLevel);
+        const affixes = this._rollAffixes('charm', rarity);
         return {
             id:        `item_${this._nextItemId++}`,
-            itemType:  'helmet',
+            itemType:  'charm',
             baseType:  base.id,
             baseName:  base.name,
             rarity,
             name:      this._buildName(base.name, affixes, rarity),
             affixes,
-            baseValue: base.baseArmor
-        };
-    }
-
-    _generateGem(dropLevel, forcedRarity, gemId) {
-        const rarity = forcedRarity || this._rollRarity(dropLevel, 'gemWeights');
-        const bases  = this._gemBases;
-        const base   = gemId
-            ? (bases.find(b => b.id === gemId) || bases[Math.floor(Math.random() * bases.length)])
-            : bases[Math.floor(Math.random() * bases.length)];
-        const affixes = this._rollGemAffixes(rarity);
-        const name    = rarity === 'normal' ? base.name : this._buildGemRuneName(base.name, affixes);
-        return {
-            id:          `item_${this._nextItemId++}`,
-            itemType:    'gem',
-            baseType:    base.id,
-            baseName:    base.name,
-            rarity,
-            name,
-            affixes,
-            abilityId:   base.abilityId,
-            runeSlots:   1,
-            runes:       [null],
-            description: base.description
-        };
-    }
-
-    _generateRune(dropLevel, forcedRarity, runeId) {
-        const rarity = forcedRarity || this._rollRarity(dropLevel, 'gemWeights');
-        const bases  = this._runeBases;
-        const base   = runeId
-            ? (bases.find(b => b.id === runeId) || bases[Math.floor(Math.random() * bases.length)])
-            : bases[Math.floor(Math.random() * bases.length)];
-        const affixes = this._rollRuneAffixes(rarity);
-        const name    = rarity === 'normal' ? base.name : this._buildGemRuneName(base.name, affixes);
-        return {
-            id:          `item_${this._nextItemId++}`,
-            itemType:    'rune',
-            baseType:    base.id,
-            baseName:    base.name,
-            rarity,
-            name,
-            affixes,
-            modifiers:   { ...base.modifiers },
-            description: base.description
+            baseValue: 0
         };
     }
 
@@ -297,8 +245,8 @@ class ItemGeneratorSystem extends GUTS.BaseSystem {
 
     // ─── Private: rarity rolling ─────────────────────────────────────────────
 
-    // weightField is 'itemWeights' for normal items, 'gemWeights' for gems/runes
-    // (the gem table excludes uniques because gems can't roll unique).
+    // weightField is 'itemWeights' (other weight fields existed for gems/runes
+    // before they were removed). Drives the per-droplevel rarity distribution.
     _rollRarity(dropLevel, weightField) {
         const weighted = [];
         let total = 0;
@@ -346,22 +294,6 @@ class ItemGeneratorSystem extends GUTS.BaseSystem {
         return this._pickAffixes(prefixes, suffixes, rarityDef.maxPrefixes || 0, rarityDef.maxSuffixes || 0);
     }
 
-    _rollGemAffixes(rarity) {
-        const rarityDef = this._rarityById[rarity] || {};
-        const pool      = this._gemAffixes;
-        const prefixes  = pool.filter(a => a.isPrefix);
-        const suffixes  = pool.filter(a => !a.isPrefix);
-        return this._pickAffixes(prefixes, suffixes, rarityDef.gemMaxPrefixes || 0, rarityDef.gemMaxSuffixes || 0);
-    }
-
-    _rollRuneAffixes(rarity) {
-        const rarityDef = this._rarityById[rarity] || {};
-        const pool      = this._runeAffixes;
-        const prefixes  = pool.filter(a => a.isPrefix);
-        const suffixes  = pool.filter(a => !a.isPrefix);
-        return this._pickAffixes(prefixes, suffixes, rarityDef.runeMaxPrefixes || 0, rarityDef.runeMaxSuffixes || 0);
-    }
-
     _pickAffixes(prefixes, suffixes, maxPrefixes, maxSuffixes) {
         const picked  = [];
         const usedIds = new Set();
@@ -401,9 +333,4 @@ class ItemGeneratorSystem extends GUTS.BaseSystem {
         return name.trim();
     }
 
-    // Gems and runes use prefix-only naming (base name is already distinctive)
-    _buildGemRuneName(baseName, affixes) {
-        const prefix = affixes.find(a => a.isPrefix);
-        return prefix ? `${prefix.label} ${baseName}` : baseName;
-    }
 }

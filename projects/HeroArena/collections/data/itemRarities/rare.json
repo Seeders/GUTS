@@ -4,10 +4,6 @@
   "color": "#ffff44",
   "maxPrefixes": 3,
   "maxSuffixes": 3,
-  "gemMaxPrefixes": 2,
-  "gemMaxSuffixes": 2,
-  "runeMaxPrefixes": 1,
-  "runeMaxSuffixes": 1,
   "itemWeights": [
     {
       "minLevel": 1,
@@ -28,28 +24,6 @@
     {
       "minLevel": 20,
       "weight": 50
-    }
-  ],
-  "gemWeights": [
-    {
-      "minLevel": 1,
-      "weight": 2
-    },
-    {
-      "minLevel": 5,
-      "weight": 8
-    },
-    {
-      "minLevel": 10,
-      "weight": 15
-    },
-    {
-      "minLevel": 15,
-      "weight": 28
-    },
-    {
-      "minLevel": 20,
-      "weight": 40
     }
   ]
 }

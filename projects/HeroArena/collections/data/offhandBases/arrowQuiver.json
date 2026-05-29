@@ -3,5 +3,10 @@
   "name": "Arrow Quiver",
   "tier": 1,
   "offhandType": "quiver",
-  "baseArmor": 0
+  "baseArmor": 0,
+  "abilities": [
+    "MultiShotAbility",
+    "BearTrapAbility",
+    "CripplingShotAbility"
+  ]
 }

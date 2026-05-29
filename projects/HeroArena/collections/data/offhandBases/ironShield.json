@@ -3,5 +3,10 @@
   "name": "Iron Shield",
   "tier": 2,
   "offhandType": "shield",
-  "baseArmor": 8
+  "baseArmor": 8,
+  "abilities": [
+    "ShieldWallAbility",
+    "TauntAbility",
+    "RetaliateAbility"
+  ]
 }

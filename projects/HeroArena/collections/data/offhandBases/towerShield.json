@@ -3,5 +3,10 @@
   "name": "Tower Shield",
   "tier": 3,
   "offhandType": "shield",
-  "baseArmor": 14
+  "baseArmor": 14,
+  "abilities": [
+    "ShieldWallAbility",
+    "PhalanxFormationAbility",
+    "IronSkinAbility"
+  ]
 }

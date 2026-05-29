@@ -61,10 +61,10 @@
     "LeaderSystem",
     "ItemGeneratorSystem",
     "LootDropSystem",
+    "ItemShopSystem",
     "HeroStatSystem",
     "AutobattlerEconomySystem",
-    "OrbCraftingSystem",
-    "AbilityGemSystem"
+    "OrbCraftingSystem"
   ],
   "classes": [
     {

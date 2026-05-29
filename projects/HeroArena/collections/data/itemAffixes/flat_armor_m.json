@@ -8,7 +8,6 @@
   "isPrefix": true,
   "itemTypes": [
     "bodyArmor",
-    "helmet",
     "offhand-shield"
   ]
 }

@@ -36,6 +36,13 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             this.game.state.isPaused = false;
             this.game.state.phase = this.enums.gamePhase.battle;
 
+            // Close the shop and tally leftover gold (1-2g carries forward as a
+            // shop-upgrade discount; 3+ is lost). Runs before snapshotting so the
+            // gold state is finalized before battle.
+            if (this.game.itemShopSystem?.closeShop) {
+                this.game.itemShopSystem.closeShop();
+            }
+
             // Snapshot hero positions BEFORE combat begins. These positions are
             // saved on each hero's roster entry so they respawn here next round
             // instead of reverting to the team's default starting location.

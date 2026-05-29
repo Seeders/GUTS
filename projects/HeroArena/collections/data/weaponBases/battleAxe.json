@@ -4,5 +4,10 @@
   "tier": 2,
   "baseDamage": 12,
   "isTwoHanded": true,
-  "weaponType": "axe"
+  "weaponType": "axe",
+  "abilities": [
+    "RageAbility",
+    "LeapSlamAbility",
+    "ChargeAbility"
+  ]
 }

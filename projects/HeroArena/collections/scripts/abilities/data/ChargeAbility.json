@@ -10,7 +10,7 @@
   "animation": "attack",
   "priority": 8,
   "castTime": 0.5,
-  "chargeDamage": 55,
+  "chargeDamage": 30,
   "chargeSpeed": 300,
   "chargeDuration": 0.8,
   "stunDuration": 2.0,

@@ -1,0 +1,11 @@
+{
+  "id": "woodenAmulet",
+  "name": "Wooden Amulet",
+  "tier": 1,
+  "baseValue": 0,
+  "abilities": [
+    "SummonWolfAbility",
+    "EntangleAbility",
+    "TrackingMark"
+  ]
+}

@@ -714,7 +714,11 @@ class BaseMovementSystem extends GUTS.BaseSystem {
                 return;
             }
 
-            const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
+            // Honor maxSpeed === 0 (rooted / frozen / stunned via BuffEffectsSystem CC)
+            // by skipping the Math.max floor — otherwise the floor reverts the unit
+            // to DEFAULT_AI_SPEED and the CC has no effect.
+            const baseSpeed = vel.maxSpeed != null ? vel.maxSpeed : this.DEFAULT_AI_SPEED;
+            const moveSpeed = baseSpeed === 0 ? 0 : Math.max(baseSpeed * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
             data.desiredVelocity.vx = (dx / distToTarget) * moveSpeed;
             data.desiredVelocity.vz = (dz / distToTarget) * moveSpeed;
             data.desiredVelocity.vy = 0;
@@ -750,7 +754,9 @@ class BaseMovementSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
+        // Honor maxSpeed === 0 (rooted etc.) — see note in moveTowardsTarget.
+        const baseSpeed = vel.maxSpeed != null ? vel.maxSpeed : this.DEFAULT_AI_SPEED;
+        const moveSpeed = baseSpeed === 0 ? 0 : Math.max(baseSpeed * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
         data.desiredVelocity.vx = (dx / distToTarget) * moveSpeed;
         data.desiredVelocity.vz = (dz / distToTarget) * moveSpeed;
         data.desiredVelocity.vy = 0;
@@ -813,6 +819,10 @@ class BaseMovementSystem extends GUTS.BaseSystem {
                 if (cachedPath && cachedPath.length > 0) {
                     this.call.setEntityPath(entityId, cachedPath);
                     pathfinding.pathIndex = 0;
+                    // Skip waypoints behind the unit's current heading so a freshly
+                    // recomputed path doesn't snap the unit backward toward a node
+                    // it just passed (the "hiccup" when chasing a moving target).
+                    this._skipBackwardWaypoints(entityId, cachedPath, pathfinding, data);
                 }
             }
         } else {
@@ -875,10 +885,40 @@ class BaseMovementSystem extends GUTS.BaseSystem {
             return;
         }
 
-        const moveSpeed = Math.max((vel.maxSpeed || this.DEFAULT_AI_SPEED) * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
+        // Honor maxSpeed === 0 (rooted etc.) — see note in moveTowardsTarget.
+        const baseSpeed = vel.maxSpeed != null ? vel.maxSpeed : this.DEFAULT_AI_SPEED;
+        const moveSpeed = baseSpeed === 0 ? 0 : Math.max(baseSpeed * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
         data.desiredVelocity.vx = (dx / distToWaypoint) * moveSpeed;
         data.desiredVelocity.vz = (dz / distToWaypoint) * moveSpeed;
         data.desiredVelocity.vy = 0;
+    }
+
+    // Advance pathfinding.pathIndex past any waypoints that are behind the unit's
+    // current heading. Prevents the unit from snapping backward when a freshly
+    // recomputed path's first waypoint is a node the unit just walked past.
+    // Always leaves at least the final waypoint so the unit still has a goal.
+    _skipBackwardWaypoints(entityId, path, pathfinding, data) {
+        if (!path || path.length <= 1) return;
+        const { pos, vel } = data;
+
+        // Forward vector: prefer current velocity, fall back to facing rotation
+        let fwdX = vel?.vx || 0;
+        let fwdZ = vel?.vz || 0;
+        if (fwdX * fwdX + fwdZ * fwdZ < 0.01) {
+            const transform = this.game.getComponent(entityId, "transform");
+            const yaw = transform?.rotation?.y || 0;
+            fwdX = Math.cos(yaw);
+            fwdZ = Math.sin(yaw);
+        }
+
+        while (pathfinding.pathIndex < path.length - 1) {
+            const wp = path[pathfinding.pathIndex];
+            const dx = wp.x - pos.x;
+            const dz = wp.z - pos.z;
+            // Positive dot product = waypoint is ahead of the unit; stop skipping.
+            if (dx * fwdX + dz * fwdZ >= 0) break;
+            pathfinding.pathIndex++;
+        }
     }
 
     applyUnitMovementWithSmoothing(entityId, data) {

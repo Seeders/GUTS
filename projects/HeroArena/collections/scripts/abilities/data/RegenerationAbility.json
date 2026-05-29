@@ -1,0 +1,22 @@
+{
+  "cooldown": 14,
+  "range": 200,
+  "manaCost": 0,
+  "targetType": "ally",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.5,
+  "castParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "RegenerationAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/RegenerationAbility.js",
+  "name": "Regeneration",
+  "description": "Grant an ally regeneration over time.",
+  "duration": 12
+}

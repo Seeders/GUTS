@@ -1,9 +1,0 @@
-{
-  "id": "rune_spd",
-  "affixGroup": "rune",
-  "label": "of Haste",
-  "stat": "percentAttackSpeed",
-  "min": 5,
-  "max": 12,
-  "isPrefix": false
-}

@@ -1,0 +1,10 @@
+{
+  "title": "Magic Shield",
+  "damageMultiplier": 1,
+  "attackSpeedMultiplier": 1,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 0.6,
+  "damageReduction": 0,
+  "accuracyReduction": 0,
+  "elementalDamageReduction": 0.5
+}

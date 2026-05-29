@@ -4,5 +4,10 @@
   "tier": 2,
   "baseDamage": 10,
   "isTwoHanded": true,
-  "weaponType": "bow"
+  "weaponType": "bow",
+  "abilities": [
+    "PiercingShotAbility",
+    "AimedShotAbility",
+    "RapidFireAbility"
+  ]
 }

@@ -1,0 +1,11 @@
+{
+  "id": "goldenAmulet",
+  "name": "Golden Amulet",
+  "tier": 3,
+  "baseValue": 0,
+  "abilities": [
+    "ArenaPresenceAbility",
+    "BattleCryAbility",
+    "EnchantWeaponAbility"
+  ]
+}

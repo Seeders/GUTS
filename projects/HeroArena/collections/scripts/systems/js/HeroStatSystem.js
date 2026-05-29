@@ -1,47 +1,47 @@
 // Recalculates a hero entity's combat and health stats from:
 //   1. Base class stats (from unitType definition)
-//   2. Gear item affixes  (mainWeapon, offhand, bodyArmor, helmet)
-//   3. Gem affixes        (ability gems in abilitySlots[])
-//   4. Rune affixes       (runes socketed inside each gem)
+//   2. Gear item affixes  (mainWeapon, offhand, bodyArmor, charm)
 //
-// All mutation methods (equipGearItem, socketGem, socketRune, …) automatically
-// sync the change to the persistent heroRoster entry on playerStats so equipment
-// survives between rounds.
+// All mutation methods (equipGearItem / unequipGearItem) automatically sync the
+// change to the persistent heroRoster entry on playerStats so equipment survives
+// between rounds.
 class HeroStatSystem extends GUTS.BaseSystem {
 
     static services = [
         'recalculateHeroStats',
         'equipGearItem',
         'unequipGearItem',
-        'socketGem',
-        'unsocketGem',
-        'socketRune',
-        'unsocketRune',
-        'getHeroEquipmentSummary',
-        'getUnlockedAbilitySlotCount'
+        'getHeroEquipmentSummary'
     ];
 
     static serviceDependencies = [
         'getPlayerEntities'
     ];
 
-    // Ability slot unlock thresholds (checked in descending order)
-    static SLOT_UNLOCK = [
-        { level: 7, slots: 4 },
-        { level: 5, slots: 3 },
-        { level: 3, slots: 2 },
-        { level: 1, slots: 1 }
-    ];
-
-    static GEAR_SLOTS = ['mainWeapon', 'offhand', 'bodyArmor', 'helmet'];
+    static GEAR_SLOTS = ['mainWeapon', 'offhand', 'bodyArmor', 'charm'];
 
     // Each gear slot only accepts items of a matching itemType.
     static SLOT_ITEM_TYPE = {
         mainWeapon: 'weapon',
         offhand:    'offhand',
         bodyArmor:  'bodyArmor',
-        helmet:     'helmet'
+        charm:      'charm'
     };
+
+    // Returns the canonical string itemType for an item, regardless of whether
+    // the item's `itemType` field is stored as a string ('offhand') or as a
+    // numeric enum index (1). The conversion to numeric happens when an item
+    // round-trips through heroEquipment's deepMerge (data/enums/itemType.json),
+    // so a displaced inventory item often carries a numeric itemType.
+    static itemTypeString(item, game) {
+        const v = item?.itemType;
+        if (typeof v === 'string') return v;
+        if (typeof v === 'number') {
+            const enumDef = game?.getCollections?.()?.enums?.itemType;
+            if (enumDef && Array.isArray(enumDef.enum)) return enumDef.enum[v] || null;
+        }
+        return null;
+    }
 
     static STAT_MAP = {
         // ── Weapon / offhand ────────────────────────────────────────────────
@@ -52,7 +52,7 @@ class HeroStatSystem extends GUTS.BaseSystem {
         fireDamage:           { component: 'combat', field: 'fireDamage',           type: 'flat'    },
         coldDamage:           { component: 'combat', field: 'coldDamage',           type: 'flat'    },
         lifeLeech:            { component: 'combat', field: 'lifeLeech',            type: 'flat'    },
-        // ── Armor / helmet / offhand-shield ─────────────────────────────────
+        // ── Armor / charm / offhand ─────────────────────────────────────────
         flatArmor:            { component: 'combat', field: 'armor',                type: 'flat'    },
         evasion:              { component: 'combat', field: 'evasion',              type: 'flat'    },
         fireResistance:       { component: 'combat', field: 'fireResistance',       type: 'flat'    },
@@ -67,6 +67,16 @@ class HeroStatSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.heroStatSystem = this;
+    }
+
+    // Items get stronger as the player buys duplicates (see ItemShopSystem._addItemToInventory).
+    // Per-level multiplier applies to: weapon damage, armor / shield baseValue, and the damage
+    // of any ability granted by that item (via BaseAbility.sourceItemLevel).
+    //   L1 = 1.00, L3 = 1.30, L6 = 1.75, L9 = 2.20
+    static LEVEL_SCALING_PER_LEVEL = 0.15;
+    static itemLevelMultiplier(itemLevel) {
+        const lvl = Math.max(1, itemLevel || 1);
+        return 1 + (lvl - 1) * HeroStatSystem.LEVEL_SCALING_PER_LEVEL;
     }
 
     // ─── Public services ─────────────────────────────────────────────────────
@@ -107,7 +117,9 @@ class HeroStatSystem extends GUTS.BaseSystem {
                 weapon.element     = weapon.element     || profile.element     || 'physical';
             }
         }
-        const weaponBaseDamage = weapon?.baseValue || 0;
+        // Weapon damage scales with itemLevel: a level-3 sword hits harder than a level-1 one.
+        const weaponBaseDamage = (weapon?.baseValue || 0)
+            * HeroStatSystem.itemLevelMultiplier(weapon?.itemLevel);
 
         // Helper: combat.projectile is a numeric enum index, not a string.
         // Convert "arrow" → numeric index via the projectiles enum.
@@ -141,12 +153,11 @@ class HeroStatSystem extends GUTS.BaseSystem {
         }
         // Item-driven defenses: ignore unitType base armor/evasion/resistances/crit/block.
         // All defensive stats come from equipped gear affixes only.
-        // Base armor: sum baseValue from body armor, helmet, and shield-type offhands
-        // (orbs/quivers/tomes have baseValue: 0 so they contribute nothing).
+        // Base armor: sum scaled baseValue from body armor and shield-type offhands
+        // (charms are utility slots and don't carry baseValue; orbs/quivers/tomes also 0).
         const baseArmor =
-            (heroEquipment?.bodyArmor?.baseValue || 0) +
-            (heroEquipment?.helmet?.baseValue    || 0) +
-            (heroEquipment?.offhand?.baseValue   || 0);
+            (heroEquipment?.bodyArmor?.baseValue || 0) * HeroStatSystem.itemLevelMultiplier(heroEquipment?.bodyArmor?.itemLevel) +
+            (heroEquipment?.offhand?.baseValue   || 0) * HeroStatSystem.itemLevelMultiplier(heroEquipment?.offhand?.itemLevel);
         combat.armor               = baseArmor + (flats.flatArmor || 0);
         combat.evasion             = flats.evasion              || 0;
         combat.criticalChance      = flats.critChance           || 0;
@@ -161,16 +172,18 @@ class HeroStatSystem extends GUTS.BaseSystem {
         health.current = Math.round(newMaxHP * (health.current / prevMax));
     }
 
-    // Equip a gear item (mainWeapon / offhand / bodyArmor / helmet).
+    // Equip a gear item (mainWeapon / offhand / bodyArmor / charm).
     // Enforces 2H weapon constraint: equipping a 2H main weapon removes the offhand;
     // equipping an offhand while a 2H is in mainWeapon is blocked (returns null).
     // Returns the displaced item so the caller can return it to inventory.
     equipGearItem(heroEntityId, slot, item) {
         if (!HeroStatSystem.GEAR_SLOTS.includes(slot)) return null;
 
-        // Reject items whose itemType doesn't match this slot (e.g. body armor into offhand)
+        // Reject items whose itemType doesn't match this slot (e.g. body armor into offhand).
+        // Normalize because itemType may be a numeric enum index after deepMerge.
         const expectedType = HeroStatSystem.SLOT_ITEM_TYPE[slot];
-        if (item?.itemType && expectedType && item.itemType !== expectedType) {
+        const itemType = HeroStatSystem.itemTypeString(item, this.game);
+        if (itemType && expectedType && itemType !== expectedType) {
             return null;
         }
 
@@ -197,6 +210,7 @@ class HeroStatSystem extends GUTS.BaseSystem {
         heroEquipment[slot] = item;
         this._syncToRoster(heroEntityId);
         this.recalculateHeroStats(heroEntityId);
+        this._reregisterGearAbilities(heroEntityId);
         return displaced;
     }
 
@@ -208,103 +222,47 @@ class HeroStatSystem extends GUTS.BaseSystem {
         heroEquipment[slot] = null;
         this._syncToRoster(heroEntityId);
         this.recalculateHeroStats(heroEntityId);
+        this._reregisterGearAbilities(heroEntityId);
         return item;
     }
 
-    // Socket a gem into an ability slot (index 0–3).
-    // Blocked if the slot is not yet unlocked for this hero's level.
-    // Returns the displaced gem (if any).
-    socketGem(heroEntityId, abilitySlotIndex, gem) {
-        let heroEquipment = this.game.getComponent(heroEntityId, 'heroEquipment');
-        if (!heroEquipment) {
-            this.game.addComponent(heroEntityId, 'heroEquipment', this._emptyEquipment());
-            heroEquipment = this.game.getComponent(heroEntityId, 'heroEquipment');
-        }
-        if (!Array.isArray(heroEquipment.abilitySlots)) {
-            heroEquipment.abilitySlots = [null, null, null, null];
-        }
-
-        const rosterInfo     = this.game.getComponent(heroEntityId, 'heroRosterInfo');
-        const unlockedSlots  = this._getUnlockedSlots(rosterInfo?.level || 1);
-        if (abilitySlotIndex >= unlockedSlots) return null;
-
-        const displaced = heroEquipment.abilitySlots[abilitySlotIndex] || null;
-        heroEquipment.abilitySlots[abilitySlotIndex] = gem;
-        this._syncToRoster(heroEntityId);
-        this.recalculateHeroStats(heroEntityId);
-
-        // Live-register the gem's ability so the hero can cast it this round (not just next respawn).
-        // HeroRosterSystem already registers gems at spawn; this handles mid-prep socketing.
-        if (gem?.abilityId && this.game.abilitySystem) {
-            const existing = this.game.abilitySystem.entityAbilities?.get(heroEntityId) || [];
-            const alreadyHas = existing.some(a => a.id === gem.abilityId);
-            if (!alreadyHas) {
-                this.game.abilitySystem.addAbilitiesToUnit(heroEntityId, [gem.abilityId]);
-            }
-        }
-
-        return displaced;
-    }
-
-    unsocketGem(heroEntityId, abilitySlotIndex) {
+    // AbilitySystem.addAbilitiesToUnit REPLACES the entity's ability list, so any
+    // live equip/unequip mid-prep must pass the FULL list of currently-equipped
+    // gear abilities — otherwise prior abilities get silently wiped.
+    _reregisterGearAbilities(heroEntityId) {
+        const abilitySystem = this.game.abilitySystem;
+        if (!abilitySystem) return;
         const heroEquipment = this.game.getComponent(heroEntityId, 'heroEquipment');
-        if (!heroEquipment?.abilitySlots) return null;
-        const gem = heroEquipment.abilitySlots[abilitySlotIndex] || null;
-        if (gem) heroEquipment.abilitySlots[abilitySlotIndex] = null;
-        this._syncToRoster(heroEntityId);
-        this.recalculateHeroStats(heroEntityId);
-        return gem;
-    }
-
-    // Socket a rune into slot runeSlotIndex of the gem in abilitySlotIndex.
-    // Returns the displaced rune or null.
-    socketRune(heroEntityId, abilitySlotIndex, runeSlotIndex, rune) {
-        const heroEquipment = this.game.getComponent(heroEntityId, 'heroEquipment');
-        if (!heroEquipment) return null;
-        const gem = heroEquipment.abilitySlots?.[abilitySlotIndex];
-        if (!gem) return null;
-        if (!Array.isArray(gem.runes)) {
-            gem.runes = Array(gem.runeSlots || 1).fill(null);
+        if (!heroEquipment) return;
+        // Pass each ability with its source item's level so damage can scale.
+        // addAbilitiesToUnit accepts either bare IDs (legacy) or {id, itemLevel} pairs.
+        const abilityRegistrations = HeroStatSystem.GEAR_SLOTS
+            .map(slot => {
+                const item = heroEquipment[slot];
+                if (!item?.chosenAbilityId) return null;
+                return { id: item.chosenAbilityId, itemLevel: item.itemLevel || 1 };
+            })
+            .filter(Boolean);
+        if (abilityRegistrations.length > 0) {
+            abilitySystem.addAbilitiesToUnit(heroEntityId, abilityRegistrations);
+        } else {
+            // addAbilitiesToUnit skips an empty list, so clear directly to avoid
+            // leaving stale ability instances on a fully-unequipped hero.
+            abilitySystem.entityAbilities?.set(heroEntityId, []);
         }
-        if (runeSlotIndex >= gem.runes.length) return null;
-        const displaced = gem.runes[runeSlotIndex] || null;
-        gem.runes[runeSlotIndex] = rune;
-        this._syncToRoster(heroEntityId);
-        this.recalculateHeroStats(heroEntityId);
-        return displaced;
-    }
-
-    unsocketRune(heroEntityId, abilitySlotIndex, runeSlotIndex) {
-        const heroEquipment = this.game.getComponent(heroEntityId, 'heroEquipment');
-        if (!heroEquipment) return null;
-        const gem = heroEquipment.abilitySlots?.[abilitySlotIndex];
-        if (!gem?.runes) return null;
-        const rune = gem.runes[runeSlotIndex] || null;
-        if (rune) gem.runes[runeSlotIndex] = null;
-        this._syncToRoster(heroEntityId);
-        this.recalculateHeroStats(heroEntityId);
-        return rune;
     }
 
     getHeroEquipmentSummary(heroEntityId) {
         const heroEquipment  = this.game.getComponent(heroEntityId, 'heroEquipment');
         const rosterInfo     = this.game.getComponent(heroEntityId, 'heroRosterInfo');
         const level          = rosterInfo?.level || 1;
-        const unlockedSlots  = this._getUnlockedSlots(level);
         return {
-            mainWeapon:   heroEquipment?.mainWeapon   || null,
-            offhand:      heroEquipment?.offhand      || null,
-            bodyArmor:    heroEquipment?.bodyArmor    || null,
-            helmet:       heroEquipment?.helmet       || null,
-            abilitySlots: (heroEquipment?.abilitySlots || [null, null, null, null]).slice(),
-            unlockedSlots,
+            mainWeapon: heroEquipment?.mainWeapon || null,
+            offhand:    heroEquipment?.offhand    || null,
+            bodyArmor:  heroEquipment?.bodyArmor  || null,
+            charm:      heroEquipment?.charm      || null,
             level
         };
-    }
-
-    getUnlockedAbilitySlotCount(heroEntityId) {
-        const rosterInfo = this.game.getComponent(heroEntityId, 'heroRosterInfo');
-        return this._getUnlockedSlots(rosterInfo?.level || 1);
     }
 
     // ─── Event hooks ─────────────────────────────────────────────────────────
@@ -318,24 +276,15 @@ class HeroStatSystem extends GUTS.BaseSystem {
 
     // ─── Private helpers ─────────────────────────────────────────────────────
 
-    // Collects every item that contributes affixes: gear + gems + runes inside gems
+    // Collects every item that contributes affixes — just the 4 gear pieces.
     _collectAllItems(heroEquipment) {
         if (!heroEquipment) return [];
-        const items = [
+        return [
             heroEquipment.mainWeapon,
             heroEquipment.offhand,
             heroEquipment.bodyArmor,
-            heroEquipment.helmet
+            heroEquipment.charm
         ].filter(Boolean);
-
-        for (const gem of (heroEquipment.abilitySlots || [])) {
-            if (!gem) continue;
-            items.push(gem);
-            for (const rune of (gem.runes || [])) {
-                if (rune) items.push(rune);
-            }
-        }
-        return items;
     }
 
     // Persist current heroEquipment component back to the roster entry on playerStats.
@@ -363,20 +312,12 @@ class HeroStatSystem extends GUTS.BaseSystem {
         this.game.triggerEvent('onOffhandDisplaced', { heroEntityId, item: offhandItem });
     }
 
-    _getUnlockedSlots(level) {
-        for (const { level: threshold, slots } of HeroStatSystem.SLOT_UNLOCK) {
-            if (level >= threshold) return slots;
-        }
-        return 1;
-    }
-
     _emptyEquipment() {
         return {
-            mainWeapon:   null,
-            offhand:      null,
-            bodyArmor:    null,
-            helmet:       null,
-            abilitySlots: [null, null, null, null]
+            mainWeapon: null,
+            offhand:    null,
+            bodyArmor:  null,
+            charm:      null
         };
     }
 

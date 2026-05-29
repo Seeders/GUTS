@@ -1,0 +1,11 @@
+{
+  "id": "ironRing",
+  "name": "Iron Ring",
+  "tier": 1,
+  "baseValue": 0,
+  "abilities": [
+    "BattleCryAbility",
+    "BloodlustAbility",
+    "SprintAbility"
+  ]
+}

@@ -43,7 +43,7 @@ class FireStormAbility extends GUTS.BaseAbility {
             const results = this.game.damageSystem.applySplashDamage(
                 casterEntity,
                 targetPos,
-                this.damage,
+                this.scaledDamage(this.damage),
                 this.element,
                 this.stormRadius,
                 { allowFriendlyFire: false, isSpell: true }

@@ -1,0 +1,20 @@
+{
+  "cooldown": 16,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.2,
+  "castParticleEffectSystems": [
+    "dust_burst"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [],
+  "expirationParticleEffectSystems": [],
+  "fileName": "SprintAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/SprintAbility.js",
+  "name": "Sprint",
+  "description": "Run with great speed for a short time.",
+  "duration": 6
+}

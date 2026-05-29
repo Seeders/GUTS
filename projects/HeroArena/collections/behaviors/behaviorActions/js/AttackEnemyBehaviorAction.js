@@ -47,6 +47,24 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
+        // Hard CC (stun / freeze / polymorph / banish) blocks any attack action.
+        // Stop velocity too so the unit doesn't drift while stunned.
+        if (game.buffEffectsSystem?.isHardCC?.(entityId)) {
+            const v = game.getComponent(entityId, 'velocity');
+            if (v) { v.vx = 0; v.vz = 0; }
+            return this.running({ target: targetId, attacking: false, ccLocked: true });
+        }
+
+        // Taunt: if this entity is taunted, force the target to be the taunt's
+        // source instead of whatever the behavior tree picked.
+        const tauntTarget = game.buffEffectsSystem?.getTauntForcedTarget?.(entityId);
+        if (tauntTarget != null) {
+            // Mutate the shared state so subsequent steps (and any frame the
+            // behavior tree reads shared state) also see the forced target.
+            shared[targetKey] = tauntTarget;
+        }
+        const effectiveTargetId = tauntTarget != null ? tauntTarget : targetId;
+
         log.debug('AttackEnemy', `${unitName}(${entityId}) [${teamName}] ATTACKING target`, {
             targetId,
             damage: combat.damage,
@@ -63,11 +81,11 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         // Perform attack
-        this.performAttack(entityId, targetId, game, combat, log, unitName, teamName);
+        this.performAttack(entityId, effectiveTargetId, game, combat, log, unitName, teamName);
 
         // Return running - attacking is a continuous action
         return this.running({
-            target: targetId,
+            target: effectiveTargetId,
             attacking: true
         });
     }
@@ -133,29 +151,40 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             this.call.triggerSinglePlayAnimation( attackerId, enums.animationType.attack, animationSpeed, minAnimationTime);
         }
 
+        // Bloodlust bonus damage is baked into the outgoing damage value so it
+        // flows through both melee and projectile paths. On-hit side-effects
+        // (poison, lifesteal, enchant elemental, thorns reflect) are handled by
+        // BuffEffectsSystem watching combatState.lastAttackTime per tick, so they
+        // fire when damage actually lands regardless of delivery method.
+        const bonusDamage = this._getBloodlustBonusDamage(attackerId, game);
+        const totalDamage = (combat.damage || 0) + bonusDamage;
+
         // Handle projectile or melee damage
         // Note: projectile index 0 is valid, only -1 means "no projectile"
         if (hasProjectile) {
             log.trace('AttackEnemy', `${unitName}(${attackerId}) [${teamName}] firing projectile at target ${targetId}`, {
-                projectileIndex: combat.projectile
+                projectileIndex: combat.projectile,
+                damage: totalDamage,
+                bonus: bonusDamage
             });
             // Schedule projectile to fire at 50% through the attack animation (release point)
             const projectileDelay = effectiveAttackSpeed > 0 ? (1 / combat.attackSpeed) * 0.5 : 0;
             game.schedulingSystem.scheduleAction(() => {
-                this.fireProjectile(attackerId, targetId, game, combat);
+                this.fireProjectile(attackerId, targetId, game, combat, totalDamage);
             }, projectileDelay, attackerId);
         } else if (combat.damage > 0) {
-            log.trace('AttackEnemy', `${unitName}(${attackerId}) [${teamName}] melee attack on target ${targetId}`, {
-                damage: combat.damage
-            });
-            // Melee attack - schedule damage
             const damageDelay = effectiveAttackSpeed > 0 ? (1 / combat.attackSpeed) * 0.5 : 0;
             const element = this.getDamageElement(attackerId, game, combat);
+
+            log.trace('AttackEnemy', `${unitName}(${attackerId}) [${teamName}] melee attack on target ${targetId}`, {
+                damage: totalDamage,
+                bonus: bonusDamage
+            });
 
             this.call.scheduleDamage(
                 attackerId,
                 targetId,
-                combat.damage,
+                totalDamage,
                 element,
                 damageDelay,
                 {
@@ -164,6 +193,28 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
                 }
             );
         }
+    }
+
+    // Looks up a buff type definition from its numeric enum index. Walks the
+    // sorted collection keys the same way DamageSystem.getBuffTypeDef does.
+    _getBuffDefByIndex(game, buffTypeIndex) {
+        const buffTypes = game.getCollections()?.buffTypes;
+        if (!buffTypes) return null;
+        const key = Object.keys(buffTypes).sort()[buffTypeIndex];
+        return buffTypes[key] || null;
+    }
+
+    // Bloodlust stacks grant flat bonus damage per stack (damagePerKill field).
+    // Stacks are awarded by BuffEffectsSystem when an enemy dies.
+    _getBloodlustBonusDamage(attackerId, game) {
+        const buff = game.getComponent(attackerId, 'buff');
+        if (!buff) return 0;
+        const enums = game.getEnums();
+        if (buff.buffType !== enums.buffTypes?.bloodlust) return 0;
+        const buffTypeDef = this._getBuffDefByIndex(game, buff.buffType);
+        if (!buffTypeDef) return 0;
+        const perStack = buffTypeDef.damagePerKill ?? 0;
+        return (buff.stacks || 0) * perStack;
     }
 
     useOffensiveAbility(attackerId, targetId, game) {
@@ -182,11 +233,19 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         }
     }
 
-    fireProjectile(attackerId, targetId, game, combat) {
+    fireProjectile(attackerId, targetId, game, combat, damageOverride) {
         const log = GUTS.HeadlessLogger;
         const targetHealth = game.getComponent(targetId, 'health');
         if (!targetHealth || targetHealth.current <= 0) {
             log.trace('AttackEnemy', `fireProjectile cancelled - target ${targetId} dead`);
+            return;
+        }
+
+        const projectileDamage = damageOverride ?? combat.damage;
+
+        // Wind shield: target may deflect projectiles, optionally reflecting damage.
+        if (this._tryDeflectProjectile(attackerId, targetId, game, projectileDamage)) {
+            log.trace('AttackEnemy', `fireProjectile deflected by wind_shield on target ${targetId}`);
             return;
         }
 
@@ -202,12 +261,43 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         const projectileData = game.getCollections().projectiles?.[projectileName];
         if (projectileData) {
-            log.trace('AttackEnemy', `fireProjectile ${projectileName} from ${attackerId} to ${targetId}`);
+            log.trace('AttackEnemy', `fireProjectile ${projectileName} from ${attackerId} to ${targetId} dmg=${projectileDamage}`);
             this.call.fireProjectile( attackerId, targetId, {
                 id: projectileName,
-                ...projectileData
+                ...projectileData,
+                damage: projectileDamage
             });
         }
+    }
+
+    // Returns true if the projectile is deflected (caller should skip the fire).
+    // When projectileReflection is enabled on the buff, deflection also schedules
+    // damage back at the attacker for the projectile's damage value.
+    _tryDeflectProjectile(attackerId, targetId, game, projectileDamage) {
+        const targetBuff = game.getComponent(targetId, 'buff');
+        if (!targetBuff) return false;
+
+        const enums = game.getEnums();
+        if (targetBuff.buffType !== enums.buffTypes?.wind_shield) return false;
+
+        const buffTypeDef = this._getBuffDefByIndex(game, targetBuff.buffType);
+        if (!buffTypeDef) return false;
+
+        const chance = buffTypeDef.deflectionChance ?? 0;
+        if (chance <= 0) return false;
+
+        // Deterministic per-(attacker,target,attack-time) roll.
+        const seed = attackerId * 9301 + targetId * 49297 + Math.floor(game.state.now * 1000);
+        const roll = ((seed % 233280) + 233280) % 233280 / 233280;
+        if (roll >= chance) return false;
+
+        if (buffTypeDef.projectileReflection) {
+            const reflectDmg = projectileDamage || 0;
+            if (reflectDmg > 0) {
+                this.call.scheduleDamage(targetId, attackerId, reflectDmg, enums.element.physical, 0.2, {});
+            }
+        }
+        return true;
     }
 
     getEffectiveAttackSpeed(entityId, game, baseAttackSpeed) {

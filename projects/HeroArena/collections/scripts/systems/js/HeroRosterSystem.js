@@ -87,13 +87,13 @@ class HeroRosterSystem extends GUTS.BaseSystem {
                         combat.awareness   = 100;
                     }
 
-                    // Register gem-granted abilities so AbilitySystem can execute them.
-                    // The hero keeps their default abilities and gains one additional ability per socketed gem.
-                    const gemAbilityIds = (equipment.abilitySlots || [])
-                        .filter(gem => gem?.abilityId)
-                        .map(gem => gem.abilityId);
-                    if (gemAbilityIds.length > 0) {
-                        this.call.addAbilitiesToUnit(entityId, gemAbilityIds);
+                    // Register granted abilities so AbilitySystem can execute them.
+                    // Each equipped gear item contributes its chosenAbilityId.
+                    const gearAbilityIds = ['mainWeapon', 'offhand', 'bodyArmor', 'charm']
+                        .map(slot => equipment[slot]?.chosenAbilityId)
+                        .filter(Boolean);
+                    if (gearAbilityIds.length > 0) {
+                        this.call.addAbilitiesToUnit(entityId, gearAbilityIds);
                     }
 
                     // If the player positioned this hero last round (via drag), respawn
@@ -165,6 +165,14 @@ class HeroRosterSystem extends GUTS.BaseSystem {
 
         this.battleHeroEntities = [];
         this._entityToRoster.clear();
+
+        // Also clean up any summoned units (wolves, etc) so they don't stack
+        // round after round. Anything tagged with the `summoned` component is
+        // a per-battle entity owned by a hero ability — it should not persist.
+        const summoned = this.game.getEntitiesWith('summoned') || [];
+        for (const eid of summoned) {
+            try { this.game.destroyEntity(eid); } catch (_) {}
+        }
     }
 
     // Returns the current entityId for a player's hero at the given roster index.
@@ -193,11 +201,10 @@ class HeroRosterSystem extends GUTS.BaseSystem {
 
     _emptyEquipment() {
         return {
-            mainWeapon:   null,
-            offhand:      null,
-            bodyArmor:    null,
-            helmet:       null,
-            abilitySlots: [null, null, null, null]
+            mainWeapon: null,
+            offhand:    null,
+            bodyArmor:  null,
+            charm:      null
         };
     }
 }

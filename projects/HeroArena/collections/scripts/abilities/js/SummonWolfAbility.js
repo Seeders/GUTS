@@ -163,7 +163,10 @@ class SummonWolfAbility extends GUTS.BaseAbility {
                 coldResistance: 0,
                 lightningResistance: 0,
                 poisonResistance: 0,
-                visionRange: 300
+                // HeroArena: see the whole battlefield so the wolf chases enemies
+                // regardless of distance (heroes use the same 99999 in HeroRosterSystem).
+                visionRange: 99999,
+                awareness: 100
             });
 
             this.game.addComponent(creatureId, "collision", {
@@ -180,12 +183,25 @@ class SummonWolfAbility extends GUTS.BaseAbility {
                 type: enums.units[unitDefId] ?? -1
             });
 
+            // aiState needs an actual rootBehaviorTree pointer or the BehaviorSystem
+            // has nothing to execute — the wolf would just stand in place.
+            // UnitBattleBehaviorTree drives combat (find target, move into range, attack).
             this.game.addComponent(creatureId, "aiState", {
                 currentAction: null,
                 currentActionCollection: null,
-                rootBehaviorTree: null,
-                rootBehaviorTreeCollection: null
+                rootBehaviorTree: enums.behaviorTrees?.UnitBattleBehaviorTree,
+                rootBehaviorTreeCollection: enums.behaviorCollection?.behaviorTrees
             });
+
+            // Pathfinding + aiMovement are required for the wolf to actually move
+            // toward enemies (BaseMovementSystem reads these to drive velocity).
+            this.game.addComponent(creatureId, "pathfinding", {
+                path: null,
+                pathIndex: 0,
+                lastPathRequest: 0,
+                useDirectMovement: false
+            });
+            this.game.addComponent(creatureId, "aiMovement", {});
 
             this.game.addComponent(creatureId, "animation", {
                 scale: 1,

@@ -231,7 +231,9 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
     }
 
     createLocalRoom(config) {
-        const startingGold = config.startingGold || 100;
+        // HeroArena: players start with 0 gold; income is granted at the start of
+        // each prep phase by AutobattlerEconomySystem.
+        const startingGold = config.startingGold ?? 0;
 
         // Create player entities for both human and AI
         this.call.createPlayerEntity( 0, {

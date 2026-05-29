@@ -2,5 +2,10 @@
   "id": "arcaneRobes",
   "name": "Arcane Robes",
   "tier": 2,
-  "baseArmor": 3
+  "baseArmor": 3,
+  "abilities": [
+    "MagicShieldAbility",
+    "WindShieldAbility",
+    "FreezingAuraAbility"
+  ]
 }

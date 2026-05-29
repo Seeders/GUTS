@@ -11,7 +11,7 @@
   "priority": 6,
   "castTime": 1.5,
   "requiresWeaponCategory": "ranged",
-  "piercingDamage": 45,
+  "piercingDamage": 30,
   "lineWidth": 20,
   "element": "physical",
   "castParticleEffectSystems": ["ice_shards"],

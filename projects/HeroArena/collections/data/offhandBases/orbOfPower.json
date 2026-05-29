@@ -3,5 +3,10 @@
   "name": "Orb of Power",
   "tier": 1,
   "offhandType": "orb",
-  "baseArmor": 0
+  "baseArmor": 0,
+  "abilities": [
+    "FireBallAbility",
+    "LightningBoltAbility",
+    "IceShardAbility"
+  ]
 }

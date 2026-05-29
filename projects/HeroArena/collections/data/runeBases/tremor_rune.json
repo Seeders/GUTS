@@ -1,8 +1,0 @@
-{
-  "id": "tremor_rune",
-  "name": "Tremor Rune",
-  "modifiers": {
-    "aoeRadius": 1.5
-  },
-  "description": "Ability shakes the ground (AOE +1.5)"
-}

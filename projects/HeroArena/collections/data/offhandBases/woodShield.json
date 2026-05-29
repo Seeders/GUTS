@@ -3,5 +3,10 @@
   "name": "Wood Shield",
   "tier": 1,
   "offhandType": "shield",
-  "baseArmor": 4
+  "baseArmor": 4,
+  "abilities": [
+    "ShieldWallAbility",
+    "BashAbility",
+    "BattleCryAbility"
+  ]
 }

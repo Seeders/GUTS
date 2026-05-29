@@ -37,11 +37,15 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleSkipLoot',
         'handleEquipGear',
         'handleUnequipGear',
-        'handleSocketGem',
-        'handleUnsocketGem',
-        'handleSocketRune',
-        'handleUnsocketRune',
-        'handleApplyOrb'
+        'handleApplyOrb',
+        'handleBuyShopItem',
+        'handleRerollShop',
+        'handleUpgradeShop',
+        'handleSellItem',
+        'handleAffixChoice',
+        'handleIdentifyItem',
+        'handleSelectAbility',
+        'handleAbilityChoice'
     ];
 
     static serviceDependencies = [
@@ -60,12 +64,16 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'confirmHeroSelection',
         'claimLootItem',
         'skipLoot',
+        'buyShopItem',
+        'rerollShop',
+        'upgradeShop',
+        'sellInventoryItem',
+        'applyAffixChoice',
+        'requestIdentify',
+        'requestAbilityChoice',
+        'applyAbilityChoice',
         'equipGearItem',
         'unequipGearItem',
-        'socketGem',
-        'unsocketGem',
-        'socketRune',
-        'unsocketRune',
         'applyOrb',
         'getHeroEntityId',
         'moveHero'
@@ -175,20 +183,23 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         // HeroArena: hero reposition during prep
         this.game.serverEventManager.subscribe('HERO_MOVED', this.handleHeroMoved.bind(this));
 
-        // HeroArena: loot claiming
+        // HeroArena: loot claiming (deprecated — kept so legacy clients don't crash)
         this.game.serverEventManager.subscribe('CLAIM_LOOT', this.handleClaimLoot.bind(this));
         this.game.serverEventManager.subscribe('SKIP_LOOT',  this.handleSkipLoot.bind(this));
+
+        // HeroArena: item shop
+        this.game.serverEventManager.subscribe('BUY_SHOP_ITEM',  this.handleBuyShopItem.bind(this));
+        this.game.serverEventManager.subscribe('REROLL_SHOP',    this.handleRerollShop.bind(this));
+        this.game.serverEventManager.subscribe('UPGRADE_SHOP',   this.handleUpgradeShop.bind(this));
+        this.game.serverEventManager.subscribe('SELL_ITEM',      this.handleSellItem.bind(this));
+        this.game.serverEventManager.subscribe('AFFIX_CHOICE',   this.handleAffixChoice.bind(this));
+        this.game.serverEventManager.subscribe('IDENTIFY_ITEM',  this.handleIdentifyItem.bind(this));
+        this.game.serverEventManager.subscribe('SELECT_ABILITY', this.handleSelectAbility.bind(this));
+        this.game.serverEventManager.subscribe('ABILITY_CHOICE', this.handleAbilityChoice.bind(this));
 
         // HeroArena: gear equipping
         this.game.serverEventManager.subscribe('EQUIP_GEAR',    this.handleEquipGear.bind(this));
         this.game.serverEventManager.subscribe('UNEQUIP_GEAR',  this.handleUnequipGear.bind(this));
-        // HeroArena: gem socketing
-        this.game.serverEventManager.subscribe('SOCKET_GEM',    this.handleSocketGem.bind(this));
-        this.game.serverEventManager.subscribe('UNSOCKET_GEM',  this.handleUnsocketGem.bind(this));
-        // HeroArena: rune socketing
-        this.game.serverEventManager.subscribe('SOCKET_RUNE',   this.handleSocketRune.bind(this));
-        this.game.serverEventManager.subscribe('UNSOCKET_RUNE', this.handleUnsocketRune.bind(this));
-
         // HeroArena: orb crafting
         this.game.serverEventManager.subscribe('APPLY_ORB', this.handleApplyOrb.bind(this));
 
@@ -1045,6 +1056,62 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         return this.respond(playerId, 'SKIP_LOOT_ACK', result ?? { success: false }, callback);
     }
 
+    // ── Item shop ─────────────────────────────────────────────────────────────
+
+    handleBuyShopItem(eventData, callback) {
+        const { playerId } = eventData;
+        const d = eventData.data || eventData;
+        const result = this.call.buyShopItem(playerId, d.slotIdx);
+        return this.respond(playerId, 'BUY_SHOP_ITEM_ACK', result ?? { success: false }, callback);
+    }
+
+    handleRerollShop(eventData, callback) {
+        const { playerId } = eventData;
+        const result = this.call.rerollShop(playerId);
+        return this.respond(playerId, 'REROLL_SHOP_ACK', result ?? { success: false }, callback);
+    }
+
+    handleUpgradeShop(eventData, callback) {
+        const { playerId } = eventData;
+        const result = this.call.upgradeShop(playerId);
+        return this.respond(playerId, 'UPGRADE_SHOP_ACK', result ?? { success: false }, callback);
+    }
+
+    handleSellItem(eventData, callback) {
+        const { playerId } = eventData;
+        const d = eventData.data || eventData;
+        const result = this.call.sellInventoryItem(playerId, d.itemId);
+        return this.respond(playerId, 'SELL_ITEM_ACK', result ?? { success: false }, callback);
+    }
+
+    handleAffixChoice(eventData, callback) {
+        const { playerId } = eventData;
+        const d = eventData.data || eventData;
+        const result = this.call.applyAffixChoice(playerId, d.choiceIdx);
+        return this.respond(playerId, 'AFFIX_CHOICE_ACK', result ?? { success: false }, callback);
+    }
+
+    handleIdentifyItem(eventData, callback) {
+        const { playerId } = eventData;
+        const d = eventData.data || eventData;
+        const result = this.call.requestIdentify(playerId, d.itemId);
+        return this.respond(playerId, 'IDENTIFY_ITEM_ACK', result ?? { success: false }, callback);
+    }
+
+    handleSelectAbility(eventData, callback) {
+        const { playerId } = eventData;
+        const d = eventData.data || eventData;
+        const result = this.call.requestAbilityChoice(playerId, d.itemId);
+        return this.respond(playerId, 'SELECT_ABILITY_ACK', result ?? { success: false }, callback);
+    }
+
+    handleAbilityChoice(eventData, callback) {
+        const { playerId } = eventData;
+        const d = eventData.data || eventData;
+        const result = this.call.applyAbilityChoice(playerId, d.choiceIdx);
+        return this.respond(playerId, 'ABILITY_CHOICE_ACK', result ?? { success: false }, callback);
+    }
+
     // ── Gear slot equipping ───────────────────────────────────────────────────
 
     handleEquipGear(eventData, callback) {
@@ -1064,7 +1131,10 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         // so a rejected equip doesn't destroy the item.
         const item = stats.inventory[inventoryIndex];
         const expectedType = GUTS.HeroStatSystem?.SLOT_ITEM_TYPE?.[slot];
-        if (item?.itemType && expectedType && item.itemType !== expectedType) {
+        // Normalize item.itemType — a displaced item carries a numeric enum
+        // index here (set by heroEquipment's deepMerge), not the original string.
+        const itemType = GUTS.HeroStatSystem?.itemTypeString?.(item, this.game) ?? item?.itemType;
+        if (itemType && expectedType && itemType !== expectedType) {
             return this.respond(playerId, 'EQUIP_GEAR_ACK', { success: false, reason: 'wrong_slot' }, callback);
         }
         // 2H weapon blocks offhand
@@ -1093,78 +1163,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     // ── Gem socketing ─────────────────────────────────────────────────────────
-
-    handleSocketGem(eventData, callback) {
-        const { playerId } = eventData;
-        const d = eventData.data || eventData;
-        const { heroRosterIndex, abilitySlotIndex, inventoryIndex } = d;
-        const heroEntityId = this._getHeroEntityId(playerId, heroRosterIndex);
-        if (!heroEntityId) {
-            return this.respond(playerId, 'SOCKET_GEM_ACK', { success: false, reason: 'hero_not_found' }, callback);
-        }
-        const stats = this._getPlayerStatsObj(playerId);
-        if (!stats || !Array.isArray(stats.inventory) || inventoryIndex >= stats.inventory.length) {
-            return this.respond(playerId, 'SOCKET_GEM_ACK', { success: false, reason: 'invalid_index' }, callback);
-        }
-        const gem = stats.inventory[inventoryIndex];
-        if (gem.itemType !== 'gem') {
-            return this.respond(playerId, 'SOCKET_GEM_ACK', { success: false, reason: 'not_a_gem' }, callback);
-        }
-        stats.inventory.splice(inventoryIndex, 1);
-        const displaced = this.call.socketGem(heroEntityId, abilitySlotIndex, gem);
-        if (displaced) stats.inventory.push(displaced);
-        return this.respond(playerId, 'SOCKET_GEM_ACK', { success: true, gem, displaced: displaced || null }, callback);
-    }
-
-    handleUnsocketGem(eventData, callback) {
-        const { playerId } = eventData;
-        const d = eventData.data || eventData;
-        const { heroRosterIndex, abilitySlotIndex } = d;
-        const heroEntityId = this._getHeroEntityId(playerId, heroRosterIndex);
-        if (!heroEntityId) {
-            return this.respond(playerId, 'UNSOCKET_GEM_ACK', { success: false, reason: 'hero_not_found' }, callback);
-        }
-        const gem = this.call.unsocketGem(heroEntityId, abilitySlotIndex);
-        if (gem) this._addItemToInventory(playerId, gem);
-        return this.respond(playerId, 'UNSOCKET_GEM_ACK', { success: true, gem: gem || null }, callback);
-    }
-
-    // ── Rune socketing ────────────────────────────────────────────────────────
-
-    handleSocketRune(eventData, callback) {
-        const { playerId } = eventData;
-        const d = eventData.data || eventData;
-        const { heroRosterIndex, abilitySlotIndex, runeSlotIndex, inventoryIndex } = d;
-        const heroEntityId = this._getHeroEntityId(playerId, heroRosterIndex);
-        if (!heroEntityId) {
-            return this.respond(playerId, 'SOCKET_RUNE_ACK', { success: false, reason: 'hero_not_found' }, callback);
-        }
-        const stats = this._getPlayerStatsObj(playerId);
-        if (!stats || !Array.isArray(stats.inventory) || inventoryIndex >= stats.inventory.length) {
-            return this.respond(playerId, 'SOCKET_RUNE_ACK', { success: false, reason: 'invalid_index' }, callback);
-        }
-        const rune = stats.inventory[inventoryIndex];
-        if (rune.itemType !== 'rune') {
-            return this.respond(playerId, 'SOCKET_RUNE_ACK', { success: false, reason: 'not_a_rune' }, callback);
-        }
-        stats.inventory.splice(inventoryIndex, 1);
-        const displaced = this.call.socketRune(heroEntityId, abilitySlotIndex, runeSlotIndex, rune);
-        if (displaced) stats.inventory.push(displaced);
-        return this.respond(playerId, 'SOCKET_RUNE_ACK', { success: true, rune, displaced: displaced || null }, callback);
-    }
-
-    handleUnsocketRune(eventData, callback) {
-        const { playerId } = eventData;
-        const d = eventData.data || eventData;
-        const { heroRosterIndex, abilitySlotIndex, runeSlotIndex } = d;
-        const heroEntityId = this._getHeroEntityId(playerId, heroRosterIndex);
-        if (!heroEntityId) {
-            return this.respond(playerId, 'UNSOCKET_RUNE_ACK', { success: false, reason: 'hero_not_found' }, callback);
-        }
-        const rune = this.call.unsocketRune(heroEntityId, abilitySlotIndex, runeSlotIndex);
-        if (rune) this._addItemToInventory(playerId, rune);
-        return this.respond(playerId, 'UNSOCKET_RUNE_ACK', { success: true, rune: rune || null }, callback);
-    }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 

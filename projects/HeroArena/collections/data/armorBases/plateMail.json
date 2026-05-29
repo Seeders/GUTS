@@ -2,5 +2,10 @@
   "id": "plateMail",
   "name": "Plate Mail",
   "tier": 3,
-  "baseArmor": 12
+  "baseArmor": 12,
+  "abilities": [
+    "ShieldWallAbility",
+    "ConsecrationAbility",
+    "PhalanxFormationAbility"
+  ]
 }

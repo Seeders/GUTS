@@ -1,9 +1,0 @@
-{
-  "id": "gem_flat_hp",
-  "affixGroup": "gem",
-  "label": "Resilient",
-  "stat": "flatHP",
-  "min": 15,
-  "max": 30,
-  "isPrefix": true
-}

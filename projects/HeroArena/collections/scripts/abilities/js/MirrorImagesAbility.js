@@ -5,7 +5,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
         this.imageCount       = abilityData.imageCount       ?? 2;
         this.imageDuration    = abilityData.imageDuration    ?? 5.0;
         this.imageHealthRatio = abilityData.imageHealthRatio ?? 0.4;
-        this.imageDamageRatio = abilityData.imageDamageRatio ?? 0.6;
+        this.imageDamageRatio = abilityData.imageDamageRatio ?? 0.3;
     }
     
     canExecute(casterEntity) {
@@ -92,13 +92,15 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
 
 
         try {
-            // Add components in deterministic order (alphabetical by component type)
+            const enums = this.game.getEnums();
+
+            // aiState needs rootBehaviorTree pointer or BehaviorSystem won't drive
+            // the illusion. UnitBattleBehaviorTree handles find-target/move/attack.
             this.game.addComponent(imageId, "aiState", {
-                state: 'idle',
-                targetPosition: null,
-                target: null,
-                aiControllerId: null,
-                meta: {}
+                currentAction: null,
+                currentActionCollection: null,
+                rootBehaviorTree: enums.behaviorTrees?.UnitBattleBehaviorTree,
+                rootBehaviorTreeCollection: enums.behaviorCollection?.behaviorTrees
             });
 
             this.game.addComponent(imageId, "animation", {
@@ -112,19 +114,24 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
                 height: collision?.height || 50
             });
 
+            // Projectile and element are numeric enum indices. Use ?? not ||
+            // because projectile index 0 (the first projectile alphabetically —
+            // "arrow") and element 0 ("physical") are both valid values that
+            // || would clobber to null, making an archer's illusion fire nothing.
             this.game.addComponent(imageId, "combat", {
                 damage: Math.floor(combat.damage * this.imageDamageRatio),
                 range: combat.range,
                 attackSpeed: combat.attackSpeed,
-                projectile: combat.projectile || null,
+                projectile: combat.projectile ?? null,
                 lastAttack: 0,
-                element: combat.element || 'physical',
+                element: combat.element ?? enums.element?.physical ?? 0,
                 armor: Math.floor((combat.armor || 0) * 0.5),
                 fireResistance: combat.fireResistance || 0,
                 coldResistance: combat.coldResistance || 0,
                 lightningResistance: combat.lightningResistance || 0,
                 poisonResistance: 0,
-                visionRange: 300
+                visionRange: 99999,
+                awareness: 100
             });
 
             this.game.addComponent(imageId, "equipment", {
@@ -156,8 +163,6 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
                 scale: { x: 1, y: 1, z: 1 }
             });
 
-            // Get enums to look up collection and type names
-            const enums = this.game.getEnums();
             // Use unitType's numeric indices directly for renderable
             this.game.addComponent(imageId, "renderable", {
                 objectType: unitType.collection,
@@ -181,6 +186,25 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
                 maxSpeed: velocity?.maxSpeed || 40,
                 affectedByGravity: true,
                 anchored: false
+            });
+
+            // Pathfinding + aiMovement are required for the illusion to navigate
+            // toward enemies (BaseMovementSystem reads these to drive velocity).
+            this.game.addComponent(imageId, "pathfinding", {
+                path: null,
+                pathIndex: 0,
+                lastPathRequest: 0,
+                useDirectMovement: false
+            });
+            this.game.addComponent(imageId, "aiMovement", {});
+
+            // Tag as summoned so HeroRosterSystem cleans illusions up at round end.
+            this.game.addComponent(imageId, "summoned", {
+                summoner: originalId,
+                summonType: unitType.type,
+                originalStats: null,
+                createdTime: this.game.state.now || 0,
+                isSummoned: true
             });
 
             return imageId;

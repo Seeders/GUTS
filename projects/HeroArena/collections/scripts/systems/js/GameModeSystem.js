@@ -57,7 +57,9 @@ class GameModeSystem extends GUTS.BaseSystem {
                 difficultyClass: 'pve',
                 isMultiplayer: false,
                 maxPlayers: 1,
-                startingGold: 100,
+                // HeroArena: players start with 0 gold. Per-round income is granted by
+                // AutobattlerEconomySystem.grantRoundIncome at the start of each prep phase.
+                startingGold: 0,
                 onStart: (mode) => {
                     this.call.showSkirmishLobby( mode);
                 }

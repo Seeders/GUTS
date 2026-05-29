@@ -14,7 +14,7 @@
   "imageCount": 2,
   "imageDuration": 5.0,
   "imageHealthRatio": 0.4,
-  "imageDamageRatio": 0.6,
+  "imageDamageRatio": 0.3,
   "castParticleEffectSystems": ["ice_shards", "ice_sparkles"],
   "burstParticleEffectSystems": ["ice_ring", "ice_sparkles"],
   "summonParticleEffectSystems": ["ice_shards", "holy_sparkles"],

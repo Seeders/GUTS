@@ -249,9 +249,12 @@ class TerrainMapEditor {
             this.exportMap();
         });
 
-        // Save button - manual save only
+        // Save button - manual save only. Also bakes the painted terrain canvas
+        // to a PNG (every other exportMap call is auto-save and skips the bake
+        // so we don't thrash the filesystem on every paint stroke).
         document.getElementById('saveMapBtn')?.addEventListener('click', () => {
             this.exportMap();
+            this._saveBakedTerrainPng();
             // Show feedback
             const btn = document.getElementById('saveMapBtn');
             const originalText = btn.textContent;
@@ -4409,6 +4412,88 @@ class TerrainMapEditor {
 
         // Dispatch the event
         document.body.dispatchEvent(myCustomEvent);
+    }
+
+    // Writes the full-resolution painted terrain canvas to disk as a PNG. The
+    // canvas (this.terrainCanvasBuffer, sized tileMap.size * gridSize per axis)
+    // is kept in sync by the live paint loop, so toDataURL captures the current
+    // state directly with no re-render needed.
+    async _saveBakedTerrainPng() {
+        console.log('[TerrainMapEditor] _saveBakedTerrainPng start');
+        try {
+            // The 3D editor paints onto worldRenderer.groundCanvas (which is the
+            // CanvasTexture for the ground mesh — playable tiles + extension area).
+            // The legacy 2D terrainCanvasBuffer exists but is blank in 3D mode.
+            const sourceCanvas = this.worldRenderer?.groundCanvas
+                               || this.worldRenderer?.tileMapper?.canvas
+                               || this.terrainCanvasBuffer;
+            if (!sourceCanvas) {
+                console.warn('[TerrainMapEditor] PNG save skipped: no source canvas (worldRenderer.groundCanvas / tileMapper.canvas / terrainCanvasBuffer all missing)');
+                return;
+            }
+            console.log('[TerrainMapEditor] using source canvas:',
+                sourceCanvas === this.worldRenderer?.groundCanvas ? 'groundCanvas'
+                : sourceCanvas === this.worldRenderer?.tileMapper?.canvas ? 'tileMapper.canvas'
+                : 'terrainCanvasBuffer',
+                'size', sourceCanvas.width, 'x', sourceCanvas.height);
+
+            const collections = this.gameEditor.getCollections?.();
+            if (!collections?.levels) {
+                console.warn('[TerrainMapEditor] PNG save skipped: no collections.levels');
+                return;
+            }
+
+            // Reverse-lookup the level key by matching the objectData reference.
+            let levelName = Object.keys(collections.levels).find(
+                key => collections.levels[key] === this.objectData
+            );
+            if (!levelName) {
+                // Fallback: match by title field if the reference identity check fails.
+                levelName = Object.keys(collections.levels).find(
+                    key => collections.levels[key]?.title === this.objectData?.title
+                );
+            }
+            if (!levelName) {
+                console.warn('[TerrainMapEditor] PNG save skipped: could not resolve level name',
+                    { objectDataTitle: this.objectData?.title, levelKeys: Object.keys(collections.levels) });
+                return;
+            }
+            console.log('[TerrainMapEditor] resolved level name:', levelName);
+
+            const projectId = this.gameEditor.getCurrentProject?.()
+                           || this.gameEditor.model?.getCurrentProject?.();
+            if (!projectId) {
+                console.warn('[TerrainMapEditor] PNG save skipped: no projectId',
+                    { hasGetCurrentProject: typeof this.gameEditor.getCurrentProject,
+                      hasModel: !!this.gameEditor.model });
+                return;
+            }
+            console.log('[TerrainMapEditor] projectId:', projectId);
+
+            const dataUrl = sourceCanvas.toDataURL('image/png');
+            const base64  = dataUrl.split(',')[1];
+            if (!base64) {
+                console.warn('[TerrainMapEditor] PNG save skipped: empty dataURL');
+                return;
+            }
+            console.log('[TerrainMapEditor] PNG base64 length:', base64.length);
+
+            const filePath = `${projectId}/resources/levels/${levelName}.png`;
+            console.log('[TerrainMapEditor] POST /save-file ->', filePath);
+            const response = await fetch('/save-file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: filePath, content: base64, encoding: 'base64' })
+            });
+            const body = await response.json().catch(() => null);
+            if (!response.ok) {
+                console.warn('[TerrainMapEditor] Baked PNG save failed:', response.status, body);
+            } else {
+                console.log('[TerrainMapEditor] Baked PNG saved OK:', body);
+            }
+        } catch (err) {
+            console.warn('[TerrainMapEditor] Could not save baked terrain PNG:', err);
+        }
     }
 
     /**

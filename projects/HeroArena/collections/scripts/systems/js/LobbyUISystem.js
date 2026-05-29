@@ -751,7 +751,8 @@ class LobbyUISystem extends GUTS.BaseSystem {
             isSkirmish: true,
             selectedLevel: this.skirmishSelectedLevel,
             selectedTeam: this.skirmishSelectedTeam || 'left',
-            startingGold: this.skirmishMode?.startingGold || 100
+            // HeroArena: players start with 0 gold; per-round income handles the rest.
+            startingGold: this.skirmishMode?.startingGold ?? 0
         };
 
         // Store game mode
@@ -761,7 +762,7 @@ class LobbyUISystem extends GUTS.BaseSystem {
             description: 'Battle against an AI opponent',
             isMultiplayer: false,
             maxPlayers: 1,
-            startingGold: this.skirmishMode?.startingGold || 100
+            startingGold: this.skirmishMode?.startingGold ?? 0
         };
 
         // Switch to skirmish scene with config
