@@ -1949,6 +1949,61 @@ class WorldRenderer {
     }
 
     /**
+     * Fast path: load a pre-baked terrain PNG and paint it directly onto the
+     * ground canvas, skipping the per-tile paint loop (tileMapper.draw).
+     *
+     * The cached PNG is produced by TerrainMapEditor when the user clicks
+     * Save Map — its dimensions match groundCanvas (extendedSize × extendedSize,
+     * including the extension border).
+     *
+     * Falls through with `false` if the image can't be loaded so the caller
+     * can fall back to the per-tile paint path.
+     *
+     * Note: tileMapper.layerSpriteSheets must still be initialized (via
+     * tileMapper.init) before this — needed by createCeiling, cliff meshes,
+     * and any in-game terrain modifications.
+     */
+    async renderTerrainFromCache(imageUrl) {
+        if (!this.groundCtx || !this.groundCanvas) return false;
+
+        let img;
+        try {
+            img = await new Promise((resolve, reject) => {
+                const im = new Image();
+                im.onload  = () => resolve(im);
+                im.onerror = (e) => reject(e);
+                im.src = imageUrl;
+            });
+        } catch (err) {
+            return false;
+        }
+        if (!img.width || !img.height) return false;
+
+        // Pass ramps data to tileMapper so cliff meshes still get the right
+        // texture suppression info (we skip tileMapper.draw but cliffs are
+        // separate meshes that read ramps independently).
+        const ramps = this.terrainDataManager.tileMap?.ramps || [];
+        this.tileMapper?.setRamps(ramps);
+
+        // Blit the cached image onto the ground canvas. Scale if the cached
+        // image is a different resolution than the current ground canvas.
+        this.groundCtx.clearRect(0, 0, this.groundCanvas.width, this.groundCanvas.height);
+        this.groundCtx.drawImage(img, 0, 0, this.groundCanvas.width, this.groundCanvas.height);
+        this.groundTexture.needsUpdate = true;
+
+        // Height map + liquid surfaces still need to be (re)built from data.
+        if (this.terrainDataManager.heightMapSettings?.enabled) {
+            this.updateHeightMap();
+        }
+        this.generateAllLiquidSurfaces();
+
+        // Ceiling depends on tileMapper sprite sheets (already initialized).
+        this.createCeilingFromTerrainType();
+
+        return true;
+    }
+
+    /**
      * Update specific terrain tiles (localized update for performance)
      * @param {Array} modifiedTiles - Array of {x, y} grid coordinates
      */

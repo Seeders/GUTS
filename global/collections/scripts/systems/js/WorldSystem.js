@@ -313,14 +313,31 @@ class WorldSystem extends GUTS.BaseSystem {
             extendedSize: terrainDataManager.extendedSize || 0
         }));
 
-        // Render terrain textures (async — yields periodically so the browser stays
-        // responsive and the loading progress bar can repaint as tiles are painted).
+        // Render terrain textures. Fast path: load a baked PNG cached by
+        // TerrainMapEditor (resources/levels/<level>.png) and blit it directly
+        // onto the ground canvas. Fall back to the per-tile paint path if the
+        // cache is missing or fails to load.
         const sceneManager = this.game.sceneManager;
         const onTileProgress = sceneManager
             ? (fraction) => sceneManager.setLoadingProgress(fraction, `Painting terrain... ${Math.round(fraction * 100)}%`)
             : null;
         const _tRender = performance.now();
-        await this.worldRenderer.renderTerrain(onTileProgress);
+        const resourcesPath = this.game.app?.getResourcesPath?.() || './resources/';
+        const cacheUrl = `${resourcesPath}levels/${levelName}.png`;
+        let usedCache = false;
+        if (sceneManager) sceneManager.setLoadingProgress(0, 'Loading baked terrain...');
+        try {
+            usedCache = await this.worldRenderer.renderTerrainFromCache(cacheUrl);
+        } catch (err) {
+            console.warn('[WorldSystem] terrain cache load error', err);
+        }
+        if (usedCache) {
+            console.log('[WorldSystem] Used baked terrain PNG:', cacheUrl);
+            if (sceneManager) sceneManager.setLoadingProgress(1, 'Loaded baked terrain');
+        } else {
+            console.log('[WorldSystem] No baked terrain — painting from scratch');
+            await this.worldRenderer.renderTerrain(onTileProgress);
+        }
         _subs['renderTerrain'] = +(performance.now() - _tRender).toFixed(1);
 
         // Create extension planes

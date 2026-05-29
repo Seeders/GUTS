@@ -531,10 +531,13 @@ class DamageSystem extends GUTS.BaseSystem {
         const previousStacks = poison.stacks;
         poison.stacks = Math.min(poison.stacks + 1, poison.maxStacks);
 
-        // Refresh duration and update damage (average of existing + new)
+        // Refresh duration and update damage (average of existing + new).
+        // Use Math.round so applications equal to the existing value don't
+        // monotonically inflate damagePerStack via ceil rounding — without this,
+        // every hit at max stacks would bump damagePerStack by 1 forever.
         if (previousStacks > 0) {
-            // Weighted average: keep most of existing damage, blend in new
-            poison.damagePerStack = Math.ceil((poison.damagePerStack * previousStacks + damagePerStack) / poison.stacks);
+            const blended = (poison.damagePerStack * previousStacks + damagePerStack) / poison.stacks;
+            poison.damagePerStack = Math.max(1, Math.round(blended));
         } else {
             poison.damagePerStack = damagePerStack;
         }

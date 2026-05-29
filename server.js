@@ -334,7 +334,7 @@ app.post('/upload-model', upload.single('gltfFile'), async (req, res) => {
 });
 
 app.post('/save-file', async (req, res) => {
-    let { path: filePath, content } = req.body;
+    let { path: filePath, content, encoding } = req.body;
     filePath = path.join(PROJS_DIR, filePath);
     console.log('Resolved save path:', filePath);
     try {
@@ -343,7 +343,10 @@ app.post('/save-file', async (req, res) => {
             console.log('Creating directory:', dir);
             await fs.mkdir(dir, { recursive: true });
         }
-        await fs.writeFile(filePath, content);
+        // encoding: 'base64' lets callers send binary payloads (e.g. baked
+        // terrain PNGs from TerrainMapEditor) through the same endpoint.
+        const data = encoding === 'base64' ? Buffer.from(content, 'base64') : content;
+        await fs.writeFile(filePath, data);
         fileTimestamps.set(filePath, Date.now());
         console.log('File successfully saved at:', filePath);
         res.send({ success: true, message: 'File saved' });
