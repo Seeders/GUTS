@@ -160,8 +160,16 @@ class VisionSystem extends GUTS.BaseSystem {
         const fromEyeHeight = fromTerrainHeight + unitHeight;
         const toEyeHeight = toTerrainHeight + unitHeight;
 
+        // When looking DOWN to a lower height level, a unit on high ground should be
+        // able to see lower terrain freely — its own cliff edge must not occlude the
+        // ground below it. We still block on genuinely HIGHER terrain between the two
+        // (the discrete height-level check inside checkTileBasedLOS), but skip the
+        // smooth ray-below-terrain test that otherwise clips downhill sightlines.
+        const lookingDown = (toHeightLevel !== null && toHeightLevel !== undefined &&
+            toHeightLevel < fromHeightLevel);
+
         // Check for terrain blocking along the path (for same-level or downward vision)
-        if (!this.checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel)) {
+        if (!this.checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel, lookingDown)) {
             log.trace('Vision', `${viewerName} LOS check: BLOCKED (terrain)`, {
                 from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
                 to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
@@ -275,7 +283,7 @@ class VisionSystem extends GUTS.BaseSystem {
         return true;
     }
 
-    checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel) {
+    checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel, skipSmoothDip = false) {
         const terrainSize = this._getTerrainSize();
         const gridSize = this._getGridSize();
 
@@ -298,15 +306,19 @@ class VisionSystem extends GUTS.BaseSystem {
                 return false;
             }
 
-            // Also check if the ray goes below the terrain at this point (for smooth terrain variations)
-            const t = i / (tileCount - 1);
-            const worldX = tile.x * gridSize - terrainSize / 2;
-            const worldZ = tile.z * gridSize - terrainSize / 2;
-            const rayHeight = fromEyeHeight + (toTerrainHeight - fromEyeHeight) * t;
-            const terrainHeight = this.call.getTerrainHeightAtPositionSmooth(worldX, worldZ);
+            // Also check if the ray goes below the terrain at this point (for smooth
+            // terrain variations). Skipped when looking down to a lower level so a
+            // high-ground unit's own cliff edge doesn't occlude the ground below it.
+            if (!skipSmoothDip) {
+                const t = i / (tileCount - 1);
+                const worldX = tile.x * gridSize - terrainSize / 2;
+                const worldZ = tile.z * gridSize - terrainSize / 2;
+                const rayHeight = fromEyeHeight + (toTerrainHeight - fromEyeHeight) * t;
+                const terrainHeight = this.call.getTerrainHeightAtPositionSmooth(worldX, worldZ);
 
-            if (rayHeight <= terrainHeight) {
-                return false;
+                if (rayHeight <= terrainHeight) {
+                    return false;
+                }
             }
         }
 

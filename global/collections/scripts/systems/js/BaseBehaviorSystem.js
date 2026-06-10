@@ -178,6 +178,7 @@ class BaseBehaviorSystem extends BaseSystem {
         const entities = this.getBehaviorEntities();
         for (const entityId of entities) {
             const aiState = this.game.getComponent(entityId, "aiState");
+            if (!aiState) continue;   // entity may be mid-sync (mask set, object not yet populated)
             const rootTreeId = this.getNodeId(aiState.rootBehaviorTreeCollection, aiState.rootBehaviorTree);
             const rootTree = this.processor.getNodeByType(rootTreeId);
             if (rootTree) {
@@ -194,6 +195,7 @@ class BaseBehaviorSystem extends BaseSystem {
         const entities = this.getBehaviorEntities();
         for (const entityId of entities) {
             const aiState = this.game.getComponent(entityId, "aiState");
+            if (!aiState) continue;   // entity may be mid-sync (mask set, object not yet populated)
             // Clear behavior state (meta/shared now stored in BehaviorSystem)
             this.clearBehaviorState(entityId);
             aiState.currentAction = this.enums.behaviorActions.IdleBehaviorAction;
@@ -211,6 +213,7 @@ class BaseBehaviorSystem extends BaseSystem {
 
         for (const entityId of entities) {
             const aiState = this.game.getComponent(entityId, "aiState");
+            if (!aiState) continue;   // entity may be mid-sync (mask set, object not yet populated)
             const rootTreeId = this.getNodeId(aiState.rootBehaviorTreeCollection, aiState.rootBehaviorTree);
             const rootTree = this.processor.getNodeByType(rootTreeId);
             if (rootTree) {
@@ -325,6 +328,7 @@ class BaseBehaviorSystem extends BaseSystem {
     updateUnit(entityId, dt) {
         const log = GUTS.HeadlessLogger;
         const aiState = this.game.getComponent(entityId, "aiState");
+        if (!aiState) return;   // entity may be mid-sync (mask set, object not yet populated)
         const unitType = this.game.getComponent(entityId, "unitType");
         const deathState = this.game.getComponent(entityId, "deathState");
 
