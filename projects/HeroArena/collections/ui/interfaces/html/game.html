@@ -8,23 +8,24 @@
         <!-- HUD: top bar -->
         <div id="arenaHUD">
             <div id="playerHPSection" class="hud-hp-section">
-                <span class="hud-label">YOUR HP</span>
+                <span class="hud-label">🏰 Your Town Hall</span>
                 <div class="hud-hp-bar-wrap">
                     <div class="hud-hp-bar" id="playerHPBar" style="width:100%"></div>
+                    <span class="hud-hp-text" id="playerHPValue">–</span>
                 </div>
-                <span class="hud-hp-value" id="playerHPValue">100</span>
             </div>
             <div id="hudCenter">
                 <div class="hud-round" id="roundDisplay">Round 1</div>
                 <div class="hud-phase" id="phaseDisplay">–</div>
+                <div class="hud-timer hidden" id="battleTimer"></div>
                 <div class="hud-gold">💰 <span id="playerGold">0</span></div>
             </div>
             <div id="opponentHPSection" class="hud-hp-section hud-hp-right">
-                <span class="hud-label">OPPONENT HP</span>
+                <span class="hud-label">Enemy Town Hall 🏰</span>
                 <div class="hud-hp-bar-wrap">
                     <div class="hud-hp-bar hud-hp-enemy" id="opponentHPBar" style="width:100%"></div>
+                    <span class="hud-hp-text" id="opponentHPValue">–</span>
                 </div>
-                <span class="hud-hp-value" id="opponentHPValue">100</span>
             </div>
         </div>
 
@@ -33,29 +34,32 @@
             <button id="placementReadyBtn" class="btn btn-primary">Ready for Battle!</button>
         </div>
 
-        <!-- Hero roster + equipment panel (visible during prep) -->
-        <div id="heroRosterPanel" class="hidden">
-            <div class="hero-roster-title">YOUR HEROES</div>
-            <div id="heroRosterCards"></div>
+        <!-- Army shop (5 offers + reroll, visible during prep) -->
+        <div id="shopPanel" class="hidden">
+            <div class="shop-header">
+                <span class="shop-title">⚔ Shop</span>
+                <button id="shopRerollBtn" class="shop-reroll-btn">Reroll</button>
+            </div>
+            <div id="shopOffers" class="shop-offers"></div>
+            <div id="shopPendingBanner" class="shop-pending-banner hidden">
+                <div class="shop-pending-row">
+                    <span id="shopPendingText">Click one of your units to receive the ability.</span>
+                    <button id="shopPendingCancel" class="pending-cancel-btn">Cancel</button>
+                </div>
+                <div id="shopPendingTargets" class="shop-pending-targets"></div>
+            </div>
         </div>
 
-        <!-- Inventory panel (visible during prep) -->
-        <div id="inventoryPanel" class="hidden">
-            <div class="hero-roster-title">INVENTORY</div>
-            <div class="inventory-hint" id="inventoryHint">Click an item, then click a hero slot to equip.</div>
-            <div id="inventoryItems"></div>
+        <!-- Unlocked units re-buy panel (visible during prep) -->
+        <div id="unlockedUnitsPanel" class="hidden">
+            <div class="panel-title">Your Units</div>
+            <div id="unlockedUnitsCards" class="unlocked-units-cards"></div>
         </div>
 
         <!-- Combat log (scrolling event feed during battle) -->
         <div id="combatLog">
-            <div class="combat-log-title">COMBAT LOG</div>
+            <div class="panel-title">Combat Log</div>
             <div id="combatLogEntries"></div>
-        </div>
-
-        <!-- Item details panel (always visible during prep — shows last tapped item) -->
-        <div id="itemDetailsPanel" class="hidden">
-            <div class="hero-roster-title">ITEM DETAILS</div>
-            <div id="itemDetailsContent" class="item-details-empty">Tap an item or hero slot to see details.</div>
         </div>
 
         <!-- Camera controls -->
@@ -93,41 +97,12 @@
     </div>
 </div>
 
-<!-- Item Shop Overlay (start of every prep phase) -->
-<div id="shopOverlay" class="arena-overlay hidden">
-    <div class="arena-overlay-panel shop-panel">
-        <div class="shop-header">
-            <h2 class="arena-overlay-title">Item Shop</h2>
-            <div class="shop-meta">
-                <span class="shop-gold">💰 <span id="shopGold">0</span></span>
-                <span class="shop-level">Shop Lv <span id="shopLevelDisplay">1</span>/5</span>
-            </div>
-        </div>
-        <p class="arena-overlay-subtitle">Buying a duplicate base upgrades the item you already own.</p>
-        <div id="shopOffers" class="shop-offers"></div>
-        <div class="shop-controls">
-            <button id="shopRerollBtn" class="btn btn-secondary">Reroll (1g)</button>
-            <button id="shopUpgradeBtn" class="btn btn-secondary">Upgrade Shop (20g)</button>
-            <button id="shopCloseBtn" class="btn btn-primary">Done Shopping</button>
-        </div>
-    </div>
-</div>
-
-<!-- Affix Choice Overlay (when an item hits lvl 3 or lvl 6) -->
-<div id="affixChoiceOverlay" class="arena-overlay hidden">
+<!-- Specialization Select Overlay (a unit reached the specialization level) -->
+<div id="specializeOverlay" class="arena-overlay hidden">
     <div class="arena-overlay-panel">
-        <h2 class="arena-overlay-title" id="affixChoiceTitle">Item Upgraded!</h2>
-        <p class="arena-overlay-subtitle" id="affixChoiceSubtitle">Choose your affixes</p>
-        <div id="affixChoiceOptions" class="arena-option-grid"></div>
-    </div>
-</div>
-
-<!-- Ability Choice Overlay (when a new base type is acquired) -->
-<div id="abilityChoiceOverlay" class="arena-overlay hidden">
-    <div class="arena-overlay-panel">
-        <h2 class="arena-overlay-title" id="abilityChoiceTitle">Select Ability</h2>
-        <p class="arena-overlay-subtitle" id="abilityChoiceSubtitle">Pick the ability this item grants</p>
-        <div id="abilityChoiceOptions" class="arena-option-grid"></div>
+        <h2 class="arena-overlay-title" id="specializeTitle">Choose a Specialization</h2>
+        <p class="arena-overlay-subtitle" id="specializeSubtitle">Your unit can transform into one of these</p>
+        <div id="specializeOptions" class="arena-option-grid"></div>
     </div>
 </div>
 

@@ -1,5 +1,9 @@
 {
   "title": "Oathbreaker (2) [IS]",
+  "strength": 3,
+  "dexterity": 0,
+  "intelligence": 3,
+  "weaponType": "sword",
   "size": 25,
   "height": 50,
   "value": 100,

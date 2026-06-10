@@ -29,12 +29,11 @@
     "AutobattlerRoundSystem",
     "HeroRosterSystem",
     "LeaderSystem",
-    "ItemGeneratorSystem",
     "LootDropSystem",
-    "ItemShopSystem",
-    "HeroStatSystem",
     "AutobattlerEconomySystem",
-    "OrbCraftingSystem",
+    "ArmyShopSystem",
+    "BuildingSystem",
+    "HeroExperienceSystem",
     "BuffEffectsSystem"
   ],
   "clientSystems": [
@@ -55,7 +54,6 @@
     "SelectedUnitSystem",
     "GameUISystem",
     "HealthBarSystem",
-    "EquipmentSystem",
     "ParticleSystem",
     "OrthographicCameraSystem",
     "FreeCameraSystem",

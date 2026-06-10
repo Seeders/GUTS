@@ -75,7 +75,9 @@ class WeightedSelectorBehaviorTree extends GUTS.BaseBehaviorTree {
             return 0; // Fallback to first
         }
 
-        let random = Math.random() * totalWeight;
+        // Draw from the shared 'battle' strand: this runs inside the lockstep battle
+        // simulation on both client and server, so Math.random here would desync.
+        let random = this.game.rng.strand('battle').next() * totalWeight;
 
         for (let i = 0; i < weights.length; i++) {
             random -= weights[i];

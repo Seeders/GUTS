@@ -1,246 +1,584 @@
-/* Game Interface Styles */
-/* Most styles are inherited from main.css which loads as the base stylesheet */
-/* This file contains game-specific overrides if needed */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Hero Arena — Game Scene UI
+   Builds on the fantasy theme tokens defined in main.css
+   (--primary-gold, --parchment, --font-title, --font-decorative, ...).
 
-/* Ensure game screen starts as active when this interface loads */
+   Layout map (prep phase):
+     top        : arena HUD bar (HP / round / phase / gold)
+     left       : camera controls, then YOUR UNITS panel
+     bottom-left: combat log (chat floats above it)
+     bottom-mid : shop dock (offers + reroll + pending banner)
+     bot-right  : Ready button
+   Battle phase keeps only HUD, combat log, chat and camera controls.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 #gameScreen.screen {
     display: flex;
 }
 
-/* ===================== IN-GAME CHAT (WC3/Dota Style) ===================== */
-.game-chat {
+/* ── Shared panel chrome ──────────────────────────────────────────────────── */
+#shopPanel,
+#unlockedUnitsPanel,
+#combatLog {
+    background: linear-gradient(165deg, rgba(28, 22, 14, 0.92), rgba(14, 11, 8, 0.95));
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 10px;
+    box-shadow:
+        0 6px 24px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(245, 230, 179, 0.08);
+    backdrop-filter: blur(6px);
+}
+
+.panel-title {
+    font-family: var(--font-title);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--primary-gold);
+    text-align: center;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+    position: relative;
+}
+.panel-title::after {
+    content: '';
     position: absolute;
-    left: 15px;
-    bottom: 280px; /* Above the minimap area */
-    width: 400px;
-    max-width: 35vw;
-    pointer-events: none;
-    z-index: 100;
+    left: 10%;
+    right: 10%;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.6), transparent);
 }
 
-.game-chat-messages {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    max-height: 200px;
-    overflow: hidden;
-    padding: 5px 0;
+/* Themed scrollbars for the scrolling panels */
+#unlockedUnitsCards::-webkit-scrollbar,
+#combatLogEntries::-webkit-scrollbar {
+    width: 6px;
 }
-
-.game-chat-message {
-    background: rgba(0, 0, 0, 0.6);
-    padding: 4px 10px;
+#unlockedUnitsCards::-webkit-scrollbar-thumb,
+#combatLogEntries::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.35);
     border-radius: 3px;
-    font-size: 13px;
-    line-height: 1.3;
-    animation: chatFadeIn 0.2s ease-out;
-    opacity: 1;
-    transition: opacity 0.5s ease-out;
+}
+#unlockedUnitsCards::-webkit-scrollbar-track,
+#combatLogEntries::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
 }
 
-.game-chat-message.fading {
-    opacity: 0;
-}
-
-.game-chat-message .chat-time {
-    color: #888;
-    font-size: 11px;
-    margin-right: 6px;
-}
-
-.game-chat-message .chat-sender {
-    color: #d4af37;
-    font-weight: bold;
-    margin-right: 6px;
-}
-
-.game-chat-message .chat-sender.ally {
-    color: #4fc3f7;
-}
-
-.game-chat-message .chat-sender.enemy {
-    color: #ef5350;
-}
-
-.game-chat-message .chat-text {
-    color: #e0e0e0;
-}
-
-.game-chat-message.system {
-    background: rgba(212, 175, 55, 0.15);
-    border-left: 2px solid #d4af37;
-}
-
-.game-chat-message.system .chat-system-text {
-    color: #d4af37;
-    font-style: italic;
-}
-
-@keyframes chatFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(5px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Chat Input */
-.game-chat-input-container {
-    pointer-events: all;
-    margin-top: 5px;
-    transition: opacity 0.15s ease;
-}
-
-.game-chat-input-container.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.game-chat-input {
-    width: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid rgba(212, 175, 55, 0.5);
-    border-radius: 4px;
-    padding: 8px 12px;
-    color: #e0e0e0;
-    font-size: 13px;
-    outline: none;
-}
-
-.game-chat-input:focus {
-    border-color: #d4af37;
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
-}
-
-.game-chat-input::placeholder {
-    color: #666;
-}
-
-/* ===================== ARENA HUD ===================== */
+/* ── Arena HUD (top bar) ──────────────────────────────────────────────────── */
 #arenaHUD {
     position: absolute;
     top: 0; left: 0; right: 0;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    padding: 8px 16px;
-    background: linear-gradient(180deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 100%);
+    /* Side padding clears the corner buttons (menu top-left) so labels never
+       sit underneath them. */
+    padding: 10px 56px 16px;
+    background: linear-gradient(180deg, rgba(10, 8, 5, 0.88) 0%, rgba(10, 8, 5, 0.45) 60%, rgba(0, 0, 0, 0) 100%);
     pointer-events: none;
     z-index: 50;
-    gap: 16px;
+    gap: 24px;
 }
 .hud-hp-section {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
     flex: 1;
+    max-width: 400px;
+    min-width: 180px;
 }
 .hud-hp-right {
-    flex-direction: row-reverse;
+    align-items: flex-end;
 }
 .hud-label {
-    font-size: 10px;
-    color: #aaa;
-    letter-spacing: 1px;
+    font-family: var(--font-title);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary-gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
     white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 .hud-hp-bar-wrap {
-    flex: 1;
-    height: 10px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 5px;
+    position: relative;
+    width: 100%;
+    height: 22px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(20, 16, 10, 0.6));
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    border-radius: 11px;
     overflow: hidden;
+    box-shadow:
+        inset 0 2px 5px rgba(0, 0, 0, 0.7),
+        0 1px 0 rgba(245, 230, 179, 0.08);
 }
 .hud-hp-bar {
     height: 100%;
-    background: linear-gradient(90deg, #43a047, #66bb6a);
-    border-radius: 5px;
+    background: linear-gradient(180deg, #7ccc80 0%, #43a047 45%, #1e6b23 100%);
+    border-radius: 10px;
     transition: width 0.4s ease;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+/* Glass sheen across the top half of the bar */
+.hud-hp-bar-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0));
+    border-radius: 10px 10px 0 0;
+    pointer-events: none;
 }
 .hud-hp-enemy {
-    background: linear-gradient(90deg, #e53935, #ef5350);
+    background: linear-gradient(180deg, #f47c79 0%, #e53935 45%, #8e1410 100%);
     margin-left: auto;
 }
-.hud-hp-value {
-    font-size: 14px;
-    font-weight: bold;
+/* Health numbers centered ON the bar */
+.hud-hp-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-title);
+    font-size: 12px;
+    font-weight: 700;
     color: #fff;
-    min-width: 28px;
-    text-align: center;
+    letter-spacing: 0.5px;
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.95),
+        0 0 4px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
 }
 #hudCenter {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 3px;
 }
 .hud-round {
-    font-size: 16px;
-    font-weight: bold;
-    color: #d4af37;
-    letter-spacing: 2px;
+    font-family: var(--font-decorative);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-gold);
+    letter-spacing: 3px;
+    text-shadow: 0 0 14px rgba(212, 175, 55, 0.45), 0 2px 3px rgba(0, 0, 0, 0.8);
+    white-space: nowrap;
 }
 .hud-phase {
-    font-size: 11px;
-    color: #aaa;
-    letter-spacing: 1px;
+    font-family: var(--font-title);
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(245, 230, 179, 0.7);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 1px 10px;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 9px;
+    background: rgba(0, 0, 0, 0.4);
+    white-space: nowrap;
 }
 .hud-gold {
+    font-family: var(--font-title);
     font-size: 14px;
+    font-weight: 700;
     color: #ffd54f;
-    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 213, 79, 0.4), 0 1px 2px rgba(0, 0, 0, 0.8);
+    white-space: nowrap;
+}
+/* Battle countdown — appears under the phase pill during battle */
+.hud-timer {
+    font-family: var(--font-title);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--parchment);
+    letter-spacing: 1px;
+    padding: 1px 12px;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+}
+.hud-timer.hidden {
+    display: none;
+}
+.hud-timer.hud-timer-low {
+    color: #ff8a80;
+    border-color: rgba(229, 57, 53, 0.7);
+    animation: timerUrgent 0.8s ease-in-out infinite;
+}
+@keyframes timerUrgent {
+    0%, 100% { box-shadow: 0 0 4px rgba(229, 57, 53, 0.3); }
+    50%      { box-shadow: 0 0 14px rgba(229, 57, 53, 0.7); }
 }
 
-/* ===================== PREP CONTROLS ===================== */
+/* ── Camera controls (position override; chrome comes from main.css) ─────── */
+#cameraControls {
+    top: 64px;
+    left: 14px;
+}
+
+/* ── YOUR UNITS panel (left column, under the camera controls) ───────────── */
+#unlockedUnitsPanel {
+    position: absolute;
+    top: 116px;
+    left: 14px;
+    width: 210px;
+    max-height: calc(100vh - 380px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    z-index: 100;
+    pointer-events: auto;
+}
+.unlocked-units-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+}
+.unlocked-unit-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(61, 47, 31, 0.7), rgba(35, 27, 18, 0.85));
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-left: 3px solid rgba(111, 179, 255, 0.6);
+    border-radius: 6px;
+    padding: 7px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.15s ease;
+}
+.unlocked-unit-card:hover:not(.unaffordable) {
+    border-color: var(--primary-gold);
+    border-left-color: #6fb3ff;
+    background: linear-gradient(135deg, rgba(75, 60, 40, 0.85), rgba(45, 35, 24, 0.95));
+    transform: translateX(2px);
+    box-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);
+}
+.unlocked-unit-card.unaffordable {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(0.6);
+}
+.unlocked-unit-name {
+    color: var(--parchment);
+    font-family: var(--font-title);
+    font-size: 12px;
+}
+.unlocked-unit-cost {
+    color: #ffd54f;
+    font-weight: bold;
+    margin-left: 8px;
+    white-space: nowrap;
+}
+
+/* ── Combat log (bottom-left) ─────────────────────────────────────────────── */
+#combatLog {
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    width: 320px;
+    max-height: 185px;
+    padding: 10px 12px;
+    z-index: 95;
+    pointer-events: none;
+    overflow: hidden;
+    font-family: monospace;
+    font-size: 11px;
+    color: #c9bda4;
+    opacity: 0.92;
+}
+#combatLog .panel-title {
+    font-size: 10px;
+    margin-bottom: 5px;
+    padding-bottom: 4px;
+    text-align: left;
+}
+#combatLog .panel-title::after {
+    left: 0;
+    right: 30%;
+}
+#combatLogEntries {
+    max-height: 140px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse; /* newest at top */
+}
+.combat-log-entry {
+    padding: 1px 0;
+    line-height: 1.4;
+}
+.combat-log-entry.type-ability { color: #ffb86c; }
+.combat-log-entry.type-death   { color: #ff6e6e; }
+.combat-log-entry.type-battle  { color: #8be9fd; font-weight: bold; }
+.combat-log-entry.type-system  { color: #8a93b8; font-style: italic; }
+
+/* ── Shop dock (bottom-center) ────────────────────────────────────────────── */
+#shopPanel {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    max-width: min(64vw, 760px);
+    padding: 10px 14px 12px;
+    z-index: 100;
+    pointer-events: auto;
+}
+.shop-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+}
+.shop-title {
+    font-family: var(--font-title);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--primary-gold);
+}
+.shop-reroll-btn {
+    background: linear-gradient(135deg, rgba(65, 105, 225, 0.25), rgba(30, 50, 110, 0.4));
+    border: 1px solid rgba(65, 105, 225, 0.7);
+    border-radius: 6px;
+    color: var(--parchment);
+    font-family: var(--font-title);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 5px 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+.shop-reroll-btn:hover:not(:disabled) {
+    border-color: #7fa3ff;
+    background: linear-gradient(135deg, rgba(65, 105, 225, 0.45), rgba(30, 50, 110, 0.6));
+    box-shadow: 0 0 12px rgba(65, 105, 225, 0.35);
+}
+.shop-reroll-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.shop-offers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+.shop-offer-card {
+    width: 116px;
+    background: linear-gradient(160deg, rgba(50, 40, 28, 0.85), rgba(28, 22, 15, 0.95));
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-top: 3px solid #888;
+    border-radius: 7px;
+    padding: 8px 8px 9px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    text-align: left;
+}
+.shop-offer-card:hover:not(.consumed):not(.unaffordable) {
+    border-color: var(--primary-gold);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), 0 0 14px rgba(212, 175, 55, 0.25);
+}
+/* Kind accent = top edge color */
+.shop-offer-card.kind-unit              { border-top-color: #6fb3ff; }
+.shop-offer-card.kind-upgrade           { border-top-color: #7fd17f; }
+.shop-offer-card.kind-ability           { border-top-color: #c98bff; }
+.shop-offer-card.kind-building          { border-top-color: #ffa94d; }
+.shop-offer-card.kind-townhall_upgrade  { border-top-color: var(--primary-gold); }
+.shop-offer-card.consumed {
+    opacity: 0.3;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+.shop-offer-card.unaffordable {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.5);
+}
+.shop-offer-kind {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(245, 230, 179, 0.5);
+}
+.shop-offer-card.kind-unit    .shop-offer-kind { color: #6fb3ff; }
+.shop-offer-card.kind-upgrade .shop-offer-kind { color: #7fd17f; }
+.shop-offer-card.kind-ability .shop-offer-kind { color: #c98bff; }
+.shop-offer-card.kind-building .shop-offer-kind { color: #ffa94d; }
+.shop-offer-card.kind-townhall_upgrade .shop-offer-kind { color: var(--primary-gold); }
+.shop-offer-name {
+    font-family: var(--font-title);
+    font-size: 12px;
+    color: var(--parchment);
+    font-weight: 700;
+    line-height: 1.25;
+    min-height: 2.5em;
+}
+.shop-offer-cost {
+    font-size: 12px;
+    color: #ffd54f;
+    font-weight: bold;
+    align-self: flex-start;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 213, 79, 0.35);
+    border-radius: 9px;
+    padding: 1px 9px;
+}
+
+/* ── Pending banner (ability targeting / building placement) ─────────────── */
+.shop-pending-banner {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: rgba(138, 43, 226, 0.12);
+    border: 1px solid rgba(201, 139, 255, 0.7);
+    border-radius: 7px;
+    color: #e8d5ff;
+    font-size: 12px;
+    box-shadow: 0 0 14px rgba(138, 43, 226, 0.2);
+}
+/* flex above would beat the generic .hidden (same specificity, later source
+   order), so the banner must be explicitly hidden when toggled off. */
+.shop-pending-banner.hidden { display: none; }
+.shop-pending-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+.shop-pending-targets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+}
+.shop-pending-targets:empty { display: none; }
+.pending-target-btn {
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.3), rgba(70, 20, 115, 0.5));
+    border: 1px solid #c98bff;
+    border-radius: 6px;
+    color: #f0e4ff;
+    font-family: var(--font-title);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.pending-target-btn:hover {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.5), rgba(100, 40, 160, 0.7));
+    box-shadow: 0 0 12px rgba(201, 139, 255, 0.5);
+    transform: translateY(-1px);
+}
+.pending-target-level {
+    color: #c9a4ef;
+    font-size: 10px;
+    font-weight: 400;
+    margin-left: 4px;
+}
+.pending-cancel-btn {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(201, 139, 255, 0.5);
+    border-radius: 6px;
+    color: #cbb3e3;
+    font-size: 11px;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+.pending-cancel-btn:hover {
+    border-color: #c98bff;
+    color: #f0e4ff;
+}
+
+/* ── Ready button (bottom-right) ──────────────────────────────────────────── */
 #prepControls {
     position: absolute;
     bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 50;
+    right: 24px;
+    z-index: 110;
     display: flex;
     gap: 12px;
 }
 #prepControls.hidden {
     display: none;
 }
+#placementReadyBtn {
+    /* main.css sizes this for an old stacked layout — reset for the corner dock */
+    width: auto;
+    margin-top: 0;
+    font-size: 15px;
+    padding: 14px 34px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), 0 0 22px rgba(212, 175, 55, 0.25);
+    animation: readyPulse 2.4s ease-in-out infinite;
+}
+#placementReadyBtn:disabled {
+    animation: none;
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+@keyframes readyPulse {
+    0%, 100% { box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), 0 0 14px rgba(212, 175, 55, 0.2); }
+    50%      { box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), 0 0 28px rgba(212, 175, 55, 0.45); }
+}
 
-/* ===================== ARENA OVERLAYS (leader/hero select) ===================== */
+/* ── Arena overlays (leader / hero / specialization select) ──────────────── */
 .arena-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(10, 10, 26, 0.92);
+    background: radial-gradient(ellipse at center, rgba(20, 16, 10, 0.88) 0%, rgba(8, 6, 4, 0.96) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 200;
+    backdrop-filter: blur(4px);
 }
 .arena-overlay.hidden {
     display: none;
 }
 .arena-overlay-panel {
-    background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    border-radius: 12px;
+    background: linear-gradient(165deg, rgba(38, 30, 18, 0.97), rgba(18, 14, 9, 0.99));
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    border-radius: 14px;
     padding: 40px 48px;
     max-width: 860px;
     width: 90%;
     text-align: center;
-    box-shadow: 0 0 60px rgba(212, 175, 55, 0.1);
+    box-shadow: 0 0 60px rgba(212, 175, 55, 0.12), 0 20px 50px rgba(0, 0, 0, 0.6);
 }
 .arena-overlay-title {
+    font-family: var(--font-decorative);
     font-size: 28px;
-    color: #d4af37;
+    color: var(--primary-gold);
     letter-spacing: 3px;
     margin: 0 0 8px;
     text-transform: uppercase;
+    text-shadow: 0 0 18px rgba(212, 175, 55, 0.4);
 }
 .arena-overlay-subtitle {
     font-size: 13px;
-    color: #888;
+    color: rgba(245, 230, 179, 0.55);
     margin: 0 0 32px;
 }
 .arena-option-grid {
@@ -249,547 +587,130 @@
     gap: 16px;
 }
 .arena-option-card {
-    background: rgba(255,255,255,0.04);
+    background: linear-gradient(160deg, rgba(61, 47, 31, 0.5), rgba(30, 23, 15, 0.7));
     border: 2px solid rgba(212, 175, 55, 0.2);
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 20px 16px;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: center;
 }
 .arena-option-card:hover {
-    border-color: #d4af37;
-    background: rgba(212, 175, 55, 0.08);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.2);
+    border-color: var(--primary-gold);
+    background: linear-gradient(160deg, rgba(80, 62, 40, 0.6), rgba(40, 31, 20, 0.8));
+    transform: translateY(-3px);
+    box-shadow: 0 6px 24px rgba(212, 175, 55, 0.25);
 }
 .arena-option-card.selected {
-    border-color: #d4af37;
+    border-color: var(--primary-gold);
     background: rgba(212, 175, 55, 0.15);
+    box-shadow: inset 0 0 18px rgba(212, 175, 55, 0.15);
 }
 .arena-option-name {
+    font-family: var(--font-title);
     font-size: 16px;
     font-weight: bold;
-    color: #e0e0e0;
+    color: var(--parchment);
     margin-bottom: 6px;
 }
 .arena-option-tag {
     font-size: 11px;
-    color: #d4af37;
+    color: var(--primary-gold);
     letter-spacing: 1px;
     margin-bottom: 10px;
+    text-transform: uppercase;
 }
 .arena-option-desc {
     font-size: 12px;
-    color: #888;
+    color: rgba(245, 230, 179, 0.55);
     line-height: 1.5;
 }
 
-/* ============ Item Shop Overlay ============ */
-.shop-panel {
-    max-width: 920px;
-}
-.shop-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
-}
-.shop-header .arena-overlay-title { margin: 0; }
-.shop-meta {
-    display: flex;
-    gap: 16px;
-    font-size: 14px;
-    color: #e0e0e0;
-}
-.shop-meta .shop-gold {
-    color: #f0c040;
-    font-weight: bold;
-}
-.shop-meta .shop-level {
-    color: #888;
-}
-.shop-offers {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-    margin: 24px 0;
-}
-.shop-offer-card {
-    background: rgba(255,255,255,0.04);
-    border: 2px solid rgba(212, 175, 55, 0.2);
-    border-radius: 8px;
-    padding: 14px 12px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-align: center;
-    position: relative;
-}
-.shop-offer-card:hover:not(.bought):not(.disabled) {
-    border-color: #d4af37;
-    background: rgba(212, 175, 55, 0.08);
-    transform: translateY(-2px);
-}
-.shop-offer-card.bought {
-    opacity: 0.35;
-    cursor: not-allowed;
-    background: rgba(0,0,0,0.4);
-}
-.shop-offer-card.disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
-.shop-offer-name {
-    font-size: 13px;
-    font-weight: bold;
-    color: #e0e0e0;
-    margin-bottom: 4px;
-    min-height: 32px;
-}
-.shop-offer-type {
-    font-size: 10px;
-    color: #888;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-}
-.shop-offer-stat {
-    font-size: 11px;
-    color: #b8c5d6;
-    margin-bottom: 6px;
-}
-.shop-offer-cost {
-    font-size: 12px;
-    color: #f0c040;
-    font-weight: bold;
-}
-.shop-offer-owned {
+/* ── In-game chat (WC3/Dota style, floats above the combat log) ──────────── */
+.game-chat {
     position: absolute;
-    top: 4px;
-    right: 6px;
-    font-size: 10px;
-    background: rgba(80, 160, 80, 0.85);
-    color: #fff;
-    padding: 1px 6px;
-    border-radius: 4px;
-}
-.shop-controls {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-.shop-controls .btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-/* Affix-choice card: shows the affix list of one upgrade option */
-.affix-choice-card {
-    background: rgba(255,255,255,0.04);
-    border: 2px solid rgba(212, 175, 55, 0.2);
-    border-radius: 8px;
-    padding: 16px 14px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-align: left;
-}
-.affix-choice-card:hover {
-    border-color: #d4af37;
-    background: rgba(212, 175, 55, 0.08);
-    transform: translateY(-2px);
-}
-.affix-choice-affix {
-    font-size: 12px;
-    color: #b8c5d6;
-    margin: 4px 0;
-}
-.affix-choice-affix.legendary { color: #af6025; font-weight: bold; }
-
-/* ============ Hero Roster Panel ============ */
-#heroRosterPanel {
-    position: absolute;
-    top: 80px;
-    right: 12px;
-    width: 260px;
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
-    background: rgba(20, 20, 32, 0.92);
-    border: 1px solid #444;
-    border-radius: 6px;
-    padding: 10px;
+    left: 14px;
+    bottom: 215px; /* clears the combat log */
+    width: 400px;
+    max-width: 35vw;
+    pointer-events: none;
     z-index: 100;
-    pointer-events: auto;
 }
-.hero-roster-title {
-    color: #ddd;
-    font-size: 13px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-    text-align: center;
-}
-.hero-card {
-    background: rgba(40, 40, 56, 0.9);
-    border: 1px solid #555;
-    border-radius: 4px;
-    padding: 8px;
-    margin-bottom: 8px;
-}
-.hero-card-header {
+.game-chat-messages {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid #333;
-}
-.hero-card-name {
-    color: #fff;
-    font-weight: bold;
-    font-size: 13px;
-}
-.hero-card-level {
-    color: #ffc857;
-    font-size: 11px;
-}
-.hero-equipment-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-}
-.hero-slot {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid #333;
-    border-radius: 3px;
-    padding: 4px 6px;
-    font-size: 11px;
-    color: #aaa;
-    /* needed so .hero-ability-cooldown can position absolutely inside the slot */
-    position: relative;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 200px;
     overflow: hidden;
+    padding: 5px 0;
 }
-.hero-slot-label {
-    color: #777;
-    font-size: 10px;
-    text-transform: uppercase;
-    display: block;
+.game-chat-message {
+    background: rgba(10, 8, 5, 0.65);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 13px;
+    line-height: 1.3;
+    animation: chatFadeIn 0.2s ease-out;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
 }
-.hero-slot-value {
-    color: #ddd;
-    display: block;
+.game-chat-message.fading {
+    opacity: 0;
 }
-.hero-slot.filled .hero-slot-value           { color: #fff; }
-.hero-slot.rarity-normal .hero-slot-value    { color: #fff; }
-.hero-slot.rarity-magic .hero-slot-value     { color: #6fb3ff; }
-.hero-slot.rarity-rare .hero-slot-value      { color: #ffd54a; }
-.hero-slot.rarity-unique .hero-slot-value    { color: #d97c2c; }
-.hero-slot.rarity-legendary .hero-slot-value { color: #d97c2c; }
-.hero-ability-slots {
-    grid-column: 1 / span 2;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 3px;
-    margin-top: 4px;
-}
-.hero-ability-slots .hero-slot {
-    text-align: center;
-    padding: 4px 2px;
-}
-
-/* Make every hero slot clickable so it can be an equip target */
-.hero-slot.equip-target {
-    cursor: pointer;
-}
-.hero-slot.equip-target:hover {
-    border-color: #6fb3ff;
-    background: rgba(0, 0, 0, 0.5);
-}
-.hero-slot.equip-active {
-    border-color: #ffd54a;
-    box-shadow: 0 0 4px rgba(255, 213, 74, 0.7);
-}
-.hero-slot.blocked {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-.hero-slot.blocked .hero-slot-value {
+.game-chat-message .chat-time {
     color: #888;
+    font-size: 11px;
+    margin-right: 6px;
+}
+.game-chat-message .chat-sender {
+    color: var(--primary-gold);
+    font-weight: bold;
+    margin-right: 6px;
+}
+.game-chat-message .chat-sender.ally {
+    color: #4fc3f7;
+}
+.game-chat-message .chat-sender.enemy {
+    color: #ef5350;
+}
+.game-chat-message .chat-text {
+    color: #e0e0e0;
+}
+.game-chat-message.system {
+    background: rgba(212, 175, 55, 0.15);
+    border-left: 2px solid var(--primary-gold);
+}
+.game-chat-message.system .chat-system-text {
+    color: var(--primary-gold);
     font-style: italic;
 }
-/* Cooldown overlay: positioned absolute, shrinks vertically (height) as cooldown ticks down */
-.hero-ability-cooldown {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0, 0, 0, 0.65);
+@keyframes chatFadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.game-chat-input-container {
+    pointer-events: all;
+    margin-top: 5px;
+    transition: opacity 0.15s ease;
+}
+.game-chat-input-container.hidden {
+    opacity: 0;
     pointer-events: none;
-    transition: height 0.1s linear;
 }
-
-/* ============ Inventory Panel ============ */
-#inventoryPanel {
-    position: absolute;
-    top: 80px;
-    left: 12px;
-    width: 240px;
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
-    background: rgba(20, 20, 32, 0.92);
-    border: 1px solid #444;
-    border-radius: 6px;
-    padding: 10px;
-    z-index: 100;
-    pointer-events: auto;
+.game-chat-input {
+    width: 100%;
+    background: rgba(10, 8, 5, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    border-radius: 5px;
+    padding: 8px 12px;
+    color: var(--parchment);
+    font-size: 13px;
+    outline: none;
 }
-.inventory-hint {
-    color: #888;
-    font-size: 10px;
-    margin-bottom: 8px;
-    line-height: 1.4;
-    text-align: center;
+.game-chat-input:focus {
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
 }
-.inventory-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(40, 40, 56, 0.9);
-    border: 1px solid #555;
-    border-radius: 4px;
-    padding: 6px 8px;
-    margin-bottom: 5px;
-    cursor: pointer;
-    font-size: 12px;
-}
-.inventory-item:hover {
-    border-color: #6fb3ff;
-    background: rgba(60, 60, 80, 0.95);
-}
-.inventory-item.selected {
-    border-color: #ffd54a;
-    box-shadow: 0 0 6px rgba(255, 213, 74, 0.7);
-    background: rgba(80, 70, 30, 0.6);
-}
-.inventory-item-name {
-    flex: 1;
-    color: #ddd;
-}
-.inventory-item-type {
-    color: #888;
-    font-size: 10px;
-    margin-left: 6px;
-    text-transform: uppercase;
-}
-.inventory-item.rarity-normal    .inventory-item-name { color: #fff;   }
-.inventory-item.rarity-magic     .inventory-item-name { color: #6fb3ff; }
-.inventory-item.rarity-rare      .inventory-item-name { color: #ffd54a; }
-.inventory-item.rarity-unique    .inventory-item-name { color: #d97c2c; }
-.inventory-item.rarity-legendary .inventory-item-name { color: #d97c2c; }
-
-/* ============ Combat Log ============ */
-#combatLog {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    width: 320px;
-    max-height: 180px;
-    background: rgba(10, 10, 20, 0.85);
-    border: 1px solid #333;
-    border-radius: 4px;
-    padding: 6px 8px;
-    z-index: 95;
-    pointer-events: none;
-    overflow: hidden;
-    font-family: monospace;
-    font-size: 11px;
-    color: #bbb;
-}
-.combat-log-title {
-    color: #888;
-    font-size: 9px;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-    border-bottom: 1px solid #333;
-    padding-bottom: 3px;
-}
-#combatLogEntries {
-    max-height: 150px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column-reverse; /* newest at top */
-}
-.combat-log-entry {
-    padding: 1px 0;
-    line-height: 1.35;
-}
-.combat-log-entry.type-ability { color: #ffb86c; }
-.combat-log-entry.type-death   { color: #ff5555; }
-.combat-log-entry.type-battle  { color: #8be9fd; font-weight: bold; }
-.combat-log-entry.type-system  { color: #6272a4; font-style: italic; }
-
-/* ============ Item Details Panel ============ */
-#itemDetailsPanel {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    width: 280px;
-    max-height: 280px;
-    overflow-y: auto;
-    background: rgba(20, 20, 32, 0.92);
-    border: 1px solid #444;
-    border-radius: 6px;
-    padding: 10px;
-    z-index: 100;
-    pointer-events: auto;
-    font-size: 11px;
-    color: #ddd;
-}
-#itemDetailsPanel.rarity-normal { border-color: #777; }
-#itemDetailsPanel.rarity-magic  { border-color: #6fb3ff; }
-#itemDetailsPanel.rarity-rare   { border-color: #ffd54a; }
-#itemDetailsPanel.rarity-unique { border-color: #d97c2c; }
-.item-details-empty {
+.game-chat-input::placeholder {
     color: #666;
-    font-style: italic;
-    text-align: center;
-    padding: 16px 4px;
-    line-height: 1.4;
-}
-.tt-name-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 2px;
-}
-.tt-name {
-    font-weight: bold;
-    font-size: 13px;
-}
-.tt-item-level {
-    font-size: 11px;
-    color: #f0c040;
-    white-space: nowrap;
-    letter-spacing: 0.5px;
-}
-#itemDetailsPanel.rarity-normal .tt-name { color: #ddd; }
-#itemDetailsPanel.rarity-magic  .tt-name { color: #6fb3ff; }
-#itemDetailsPanel.rarity-rare   .tt-name { color: #ffd54a; }
-#itemDetailsPanel.rarity-unique .tt-name { color: #d97c2c; }
-.tt-subtitle {
-    color: #888;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
-}
-.tt-section {
-    border-top: 1px solid #333;
-    margin-top: 6px;
-    padding-top: 5px;
-}
-.tt-stat {
-    color: #ccc;
-    display: flex;
-    justify-content: space-between;
-}
-.tt-stat-name  { color: #888; }
-.tt-stat-value { color: #fff; }
-.tt-affix {
-    color: #6fb3ff;
-    padding: 1px 0;
-}
-.tt-description {
-    color: #aaa;
-    font-style: italic;
-    line-height: 1.4;
-    margin-top: 4px;
-}
-.tt-unequip-btn,
-.tt-identify-btn,
-.tt-sell-btn {
-    display: block;
-    width: 100%;
-    margin-top: 10px;
-    padding: 6px 10px;
-    border-radius: 4px;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease;
-}
-.tt-sell-btn {
-    background: #4a3a1a;
-    color: #f0d8a0;
-    border: 1px solid #8a6a2a;
-}
-.tt-sell-btn:hover {
-    background: #6a5325;
-    border-color: #d4af37;
-}
-.tt-unequip-btn {
-    background: #5a2a2a;
-    color: #f0d0d0;
-    border: 1px solid #8b3a3a;
-}
-.tt-unequip-btn:hover {
-    background: #7a3535;
-    border-color: #c45a5a;
-}
-.tt-identify-btn {
-    background: #2a3a5a;
-    color: #d0e0f0;
-    border: 1px solid #4a6aa0;
-}
-.tt-identify-btn:hover {
-    background: #354770;
-    border-color: #6a8ad0;
-}
-.tt-select-ability-btn {
-    display: block;
-    width: 100%;
-    margin-top: 10px;
-    padding: 6px 10px;
-    background: #4a3a1a;
-    color: #f0d8a0;
-    border: 1px solid #8a6a2a;
-    border-radius: 4px;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease;
-}
-.tt-select-ability-btn:hover {
-    background: #6a5325;
-    border-color: #d4af37;
-}
-
-/* Ability-choice card: shows one of the 3 candidate abilities for an item */
-.ability-choice-card {
-    background: rgba(255,255,255,0.04);
-    border: 2px solid rgba(212, 175, 55, 0.2);
-    border-radius: 8px;
-    padding: 18px 16px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-align: left;
-}
-.ability-choice-card:hover {
-    border-color: #d4af37;
-    background: rgba(212, 175, 55, 0.08);
-    transform: translateY(-2px);
-}
-.ability-choice-name {
-    font-size: 14px;
-    font-weight: bold;
-    color: #f0d8a0;
-    margin-bottom: 6px;
-}
-.ability-choice-desc {
-    font-size: 12px;
-    color: #b8c5d6;
-    line-height: 1.4;
 }

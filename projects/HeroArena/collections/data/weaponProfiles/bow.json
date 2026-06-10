@@ -1,8 +1,0 @@
-{
-  "id": "bow",
-  "weaponCategory": "ranged",
-  "range": 300,
-  "attackSpeed": 1,
-  "projectile": "arrow",
-  "element": "physical"
-}

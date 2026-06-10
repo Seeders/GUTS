@@ -9,7 +9,9 @@
  */
 class IsInAttackRangeBehaviorAction extends GUTS.BaseBehaviorAction {
 
-    static serviceDependencies = [];
+    static serviceDependencies = [
+        'hasLineOfSight'
+    ];
 
     execute(entityId, game) {
         const log = GUTS.HeadlessLogger;
@@ -57,6 +59,21 @@ class IsInAttackRangeBehaviorAction extends GUTS.BaseBehaviorAction {
         });
 
         if (inRange) {
+            // LOS gates ATTACKING only. Target acquisition / chasing is LOS-free
+            // (see Find*Enemy actions), so the unit always knows where the target is
+            // and will keep repositioning until it has a clear line of sight. Here we
+            // refuse to attack a target the unit can't actually see (e.g. behind a
+            // hill), which makes terrain matter for combat without stalling units.
+            if (game.hasService('hasLineOfSight')) {
+                const myPos = game.getComponent(entityId, 'transform')?.position;
+                const targetPos = game.getComponent(targetId, 'transform')?.position;
+                if (myPos && targetPos &&
+                    !this.call.hasLineOfSight( { x: myPos.x, z: myPos.z }, { x: targetPos.x, z: targetPos.z }, unitDef, entityId)) {
+                    log.trace('IsInAttackRange', `${unitName}(${entityId}) [${teamName}] FAILURE - no line of sight`, { targetId });
+                    return this.failure();
+                }
+            }
+
             return this.success({
                 distance,
                 effectiveRange,

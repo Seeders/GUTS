@@ -778,6 +778,17 @@ class PlacementSystem extends GUTS.BaseSystem {
         const startingLoc = startingLocations[team];
         const worldPos = this.call.tileToWorld(startingLoc.x, startingLoc.z);
 
+        // The Town Hall now occupies the start location, so offset the hero formation
+        // FORWARD (toward the map center / enemy) so units don't spawn on top of the
+        // building — otherwise clicks hit the Town Hall and units can't be selected/moved.
+        const len = Math.hypot(worldPos.x, worldPos.z) || 1;
+        const FORWARD = 250;
+        const basePos = {
+            x: worldPos.x - (worldPos.x / len) * FORWARD,
+            y: worldPos.y,
+            z: worldPos.z - (worldPos.z / len) * FORWARD
+        };
+
         // Build prefab definitions with staggered offsets so heroes don't stack
         const prefabs = spawnTypes.map((spawnType, index) => ({
             collection: 'units',
@@ -787,7 +798,7 @@ class PlacementSystem extends GUTS.BaseSystem {
             }
         }));
 
-        return this._spawnStartingUnitsForTeamInternal(prefabs, team, worldPos, null);
+        return this._spawnStartingUnitsForTeamInternal(prefabs, team, basePos, null);
     }
 
     // HeroArena: reposition a hero entity during the prep phase.
@@ -1255,13 +1266,6 @@ class PlacementSystem extends GUTS.BaseSystem {
      * Called when battle ends
      */
     onBattleEnd() {
-        // Debug: Log when onBattleEnd is triggered
-        console.warn('[PlacementSystem] onBattleEnd triggered', {
-            phase: this.game.state.phase,
-            round: this.game.state.round,
-            isHuntMission: this.game.state.isHuntMission,
-            stack: new Error().stack
-        });
         this.removeDeadSquadsAfterRound();
     }
 

@@ -2,15 +2,11 @@
   "title": "Town Hall",
   "category": "townhall",
   "value": 100,
-  "upgrades": [
-    "peasantEfficiency"
-  ],
+  "upgrades": [],
   "upgradesToBuilding": "keep",
   "footprintWidth": 3,
   "footprintHeight": 3,
-  "units": [
-    "peasant"
-  ],
+  "units": [],
   "height": 100,
   "size": 48,
   "icon": "building_townHall",
@@ -56,5 +52,6 @@
   },
   "spriteAnimationSet": "townhall",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "buyable": false
 }

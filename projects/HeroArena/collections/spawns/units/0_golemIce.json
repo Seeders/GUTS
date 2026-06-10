@@ -1,5 +1,9 @@
 {
   "title": "Ice Golem",
+  "strength": 2,
+  "dexterity": 0,
+  "intelligence": 1,
+  "weaponType": "none",
   "size": 25,
   "height": 100,
   "value": 130,

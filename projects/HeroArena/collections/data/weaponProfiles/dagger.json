@@ -1,8 +1,0 @@
-{
-  "id": "dagger",
-  "weaponCategory": "melee",
-  "range": 50,
-  "attackSpeed": 1.6,
-  "projectile": null,
-  "element": "physical"
-}

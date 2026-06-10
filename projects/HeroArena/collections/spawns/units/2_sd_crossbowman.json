@@ -1,5 +1,9 @@
 {
   "title": "Crossbowman (2) [SD]",
+  "strength": 2,
+  "dexterity": 3,
+  "intelligence": 0,
+  "weaponType": "crossbow",
   "size": 25,
   "height": 50,
   "value": 100,

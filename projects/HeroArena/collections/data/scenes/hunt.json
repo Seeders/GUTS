@@ -50,7 +50,6 @@
     "GameUISystem",
     "ShopSystem",
     "HealthBarSystem",
-    "EquipmentSystem",
     "ParticleSystem",
     "FogOfWarSystem",
     "SelectedUnitSystem",

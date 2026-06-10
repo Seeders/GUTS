@@ -17,9 +17,14 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         'broadcastGameEnd',
         'spawnHeroesForRound',
         'despawnBattleHeroes',
-        'openShopForRound',
         'grantRoundIncome',
-        'selectLeader'
+        'selectLeader',
+        'generateOffersForRound',
+        'processSpecializations',
+        'syncEntitiesToClients',
+        'autoSpawnTownHalls',
+        'cullDestroyedBuildings',
+        'townhallLevel'
     ];
 
     // Hero class options shown during selection
@@ -34,10 +39,10 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
 
     static LEADERS = [
         { id: 'commander',  label: 'The Commander',  bonus: '+10% HP to all STR heroes' },
-        { id: 'alchemist',  label: 'The Alchemist',  bonus: 'Crafting orb costs reduced by 1g' },
+        { id: 'alchemist',  label: 'The Alchemist',  bonus: '+5 bonus gold each round' },
         { id: 'warlord',    label: 'The Warlord',    bonus: 'Win streaks grant +1 bonus gold' },
         { id: 'scholar',    label: 'The Scholar',    bonus: '+15% spell damage to INT heroes' },
-        { id: 'ranger',     label: 'The Ranger',     bonus: 'Items found have +20% chance to be one rarity higher' },
+        { id: 'ranger',     label: 'The Ranger',     bonus: '+15% attack damage to DEX heroes' },
         { id: 'trickster',  label: 'The Trickster',  bonus: 'DEX heroes gain +10% evasion' }
     ];
 
@@ -51,10 +56,13 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
 
     // ─── Lifecycle ──────────────────────────────────────────────────────────────
 
-    // Mirrors TBW RoundSystem.onGameStarted() → onPlacementPhaseStart().
-    // Kicks off the match flow once all systems and player entities are ready.
+    // Kicks off the match flow. In LOCAL games we start immediately (single
+    // instance, listeners already wired). In ONLINE games the server waits for a
+    // PLAYER_LOADED handshake from every client (ServerNetworkSystem) before
+    // calling startLeaderSelect — otherwise the LEADER_SELECT_START broadcast can
+    // fire before clients have registered their listeners and is missed.
     onGameStarted() {
-        if (this.game.isServer || this.game.state?.isLocalGame) {
+        if (this.game.state?.isLocalGame) {
             this.startLeaderSelect();
         }
     }
@@ -63,6 +71,12 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
 
     startLeaderSelect() {
         if (!this.game.isServer && !this.game.state?.isLocalGame) return;
+        // Seed the AI-selection strand from the game seed so local and headless runs
+        // are reproducible for a given seed (server-side only, no lockstep impact).
+        this.game.rng.strand('ai').reseed(GUTS.SeededRandom.combineSeed(
+            this.game.state.gameSeed || 1,
+            GUTS.SeededRandom.hashString('ai')
+        ));
         this.pendingLeaderSelections = {};
         this.game.state.phase = this.enums.gamePhase.leaderSelect;
         const payload = { options: AutobattlerRoundSystem.LEADERS };
@@ -70,9 +84,7 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         // Direct trigger for same-instance delivery (local mode + server-side in multiplayer)
         this.game.triggerEvent('onLeaderSelectStart', payload);
         if (this.game.state.isLocalGame) {
-            const aiLeader = AutobattlerRoundSystem.LEADERS[
-                Math.floor(Math.random() * AutobattlerRoundSystem.LEADERS.length)
-            ];
+            const aiLeader = this.game.rng.strand('ai').pick(AutobattlerRoundSystem.LEADERS);
             setTimeout(() => this.confirmLeaderSelection(1, aiLeader.id), 0);
         }
     }
@@ -105,9 +117,7 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         this.call.broadcastToRoom(null, 'HERO_SELECT_START', payload);
         this.game.triggerEvent('onHeroSelectStart', payload);
         if (this.game.state.isLocalGame) {
-            const aiClass = AutobattlerRoundSystem.HERO_CLASSES[
-                Math.floor(Math.random() * AutobattlerRoundSystem.HERO_CLASSES.length)
-            ];
+            const aiClass = this.game.rng.strand('ai').pick(AutobattlerRoundSystem.HERO_CLASSES);
             setTimeout(() => this.confirmHeroSelection(1, aiClass.id), 0);
         }
     }
@@ -125,7 +135,9 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
 
         this.pendingHeroSelections[numericPlayerId] = heroClassId;
 
-        // Heroes start with empty equipment — all items come from the shop.
+        // Heroes derive all combat/health stats from their unitType definition
+        // (spawned fresh each round by HeroRosterSystem). The roster entry just
+        // records the chosen class and progression.
         const playerEntities = this.call.getPlayerEntities();
         for (const entityId of playerEntities) {
             const stats = this.game.getComponent(entityId, 'playerStats');
@@ -133,14 +145,15 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
                 if (!Array.isArray(stats.heroRoster)) stats.heroRoster = [];
                 stats.heroRoster.push({
                     heroClass:    heroClassId,
+                    spawnType:    heroClass.spawnType,
                     roundsPlayed: 0,
-                    equipment: {
-                        mainWeapon: null,
-                        offhand:    null,
-                        bodyArmor:  null,
-                        charm:      null
-                    }
+                    level:        1,
+                    xp:           0
                 });
+                if (!Array.isArray(stats.unlockedUnits)) stats.unlockedUnits = [];
+                if (!stats.unlockedUnits.includes(heroClass.spawnType)) {
+                    stats.unlockedUnits.push(heroClass.spawnType);
+                }
                 break;
             }
         }
@@ -155,12 +168,21 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
 
     startPrep() {
         if (!this.game.isServer && !this.game.state?.isLocalGame) return;
-        // Grant income, then open the round-start shop — players spend gold to buy items
-        // (stacking on bases they already own), reroll, or upgrade the shop.
         this.call.grantRoundIncome();
-        this.call.openShopForRound();
         this.game.state.phase = this.enums.gamePhase.placement;
+        // Buildings: ensure each player has a Town Hall (round 1 only — the game ends
+        // the moment a Town Hall is destroyed, so this never re-creates one). Buildings
+        // keep their battle damage across rounds: no healing, no respawning.
+        this.call.autoSpawnTownHalls?.();
         this.call.spawnHeroesForRound();
+        // Roll this round's shop offers (after the army has spawned so a buy can
+        // spawn the new unit incrementally without double-spawning the roster).
+        this.call.generateOffersForRound();
+        // Prompt/auto-resolve any tier-1 units that reached the specialization level.
+        this.call.processSpecializations();
+        // Replicate the freshly-spawned army to clients (multiplayer) so they render
+        // and can position units this prep. No-op in local.
+        this.call.syncEntitiesToClients?.();
         this.call.broadcastToRoom(null, 'PREP_PHASE_START', {
             round: this.game.state.round
         });
@@ -173,6 +195,10 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
     resolveRound(survivingUnitsByTeam) {
         if (!this.game.isServer && !this.game.state?.isLocalGame) return;
 
+        // Permanently remove buildings destroyed this battle (they do not respawn) and drop
+        // any upgrades they were providing. Surviving buildings are healed next startPrep.
+        this.call.cullDestroyedBuildings?.();
+
         const leftSurvivors = survivingUnitsByTeam[this.enums.team.left] || [];
         const rightSurvivors = survivingUnitsByTeam[this.enums.team.right] || [];
 
@@ -183,13 +209,8 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
             winningTeam = this.enums.team.right;
         }
 
-        // Apply HP damage to the losing player
-        if (winningTeam !== null) {
-            const winningSurvivors = winningTeam === this.enums.team.left ? leftSurvivors : rightSurvivors;
-            this._applyHPDamage(winningTeam, winningSurvivors);
-        }
-
-        // Update win/loss streaks
+        // Update win/loss streaks (leader bonuses key off these). Rounds carry no
+        // abstract player damage — the only way to win is destroying the Town Hall.
         this._updateStreaks(winningTeam);
 
         // Check game over
@@ -201,13 +222,8 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         // Advance round counter
         this.game.state.round += 1;
 
-        // Every 5 rounds → milestone hero selection; otherwise straight to prep
-        const round = this.game.state.round;
-        if (round > 1 && (round - 1) % 5 === 0) {
-            this._startMilestone();
-        } else {
-            this.startPrep();
-        }
+        // Army growth now comes from the shop every prep phase (no milestone re-pick).
+        this.startPrep();
     }
 
     // ─── Private helpers ────────────────────────────────────────────────────────
@@ -217,25 +233,6 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         this.call.broadcastToRoom(null, 'HERO_SELECT_COMPLETE', payload);
         this.game.triggerEvent('onHeroSelectComplete', payload);
         this.startPrep();
-    }
-
-    _startMilestone() {
-        this.game.state.phase = this.enums.gamePhase.milestone;
-        this.startHeroSelect(true);
-    }
-
-    _applyHPDamage(winningTeam, winningSurvivors) {
-        const damage = 2 + winningSurvivors.length;
-        const losingTeam = winningTeam === this.enums.team.left ? this.enums.team.right : this.enums.team.left;
-
-        const playerEntities = this.call.getPlayerEntities();
-        for (const entityId of playerEntities) {
-            const stats = this.game.getComponent(entityId, 'playerStats');
-            if (stats && stats.team === losingTeam) {
-                stats.hp = Math.max(0, (stats.hp || 100) - damage);
-                break;
-            }
-        }
     }
 
     _updateStreaks(winningTeam) {
@@ -257,31 +254,27 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         }
     }
 
+    // The match ends when a Town Hall is destroyed. cullDestroyedBuildings has
+    // already pruned dead buildings from stats.buildings this resolve, so a player
+    // with townhallLevel 0 lost theirs this battle.
     _checkGameOver() {
         const playerEntities = this.call.getPlayerEntities();
-        let eliminatedTeam = null;
-        let winningPlayerId = null;
+        const standing = [];
+        const eliminated = [];
 
         for (const entityId of playerEntities) {
             const stats = this.game.getComponent(entityId, 'playerStats');
-            if (stats && stats.hp <= 0) {
-                eliminatedTeam = stats.team;
-            }
+            if (!stats) continue;
+            if (this.call.townhallLevel(stats.playerId) > 0) standing.push(stats.playerId);
+            else eliminated.push(stats.playerId);
         }
 
-        if (eliminatedTeam === null) return false;
-
-        for (const entityId of playerEntities) {
-            const stats = this.game.getComponent(entityId, 'playerStats');
-            if (stats && stats.team !== eliminatedTeam) {
-                winningPlayerId = stats.playerId;
-                break;
-            }
-        }
+        if (eliminated.length === 0) return false;
 
         const result = {
-            winner: winningPlayerId,
-            reason: 'hp_depleted',
+            // Both Town Halls down in the same battle is a draw (winner null).
+            winner: standing.length === 1 ? standing[0] : null,
+            reason: 'townhall_destroyed',
             totalRounds: this.game.state.round
         };
         this.call.broadcastGameEnd(result);

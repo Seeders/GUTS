@@ -66,5 +66,6 @@
   "armor": 5,
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "sentrytower"
+  "spriteAnimationSet": "sentrytower",
+  "buyable": true
 }

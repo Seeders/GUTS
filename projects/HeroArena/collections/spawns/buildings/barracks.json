@@ -69,5 +69,11 @@
   "supplies": 7,
   "spriteAnimationSet": "barracks",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "buyable": true,
+  "archetype": "str",
+  "upgrades": [
+    "giantsMight",
+    "heavyPlating"
+  ]
 }

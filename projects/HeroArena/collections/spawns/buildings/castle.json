@@ -3,14 +3,10 @@
   "category": "townhall",
   "value": 100,
   "buildTime": 1,
-  "upgrades": [
-    "peasantEfficiency"
-  ],
+  "upgrades": [],
   "footprintWidth": 3,
   "footprintHeight": 3,
-  "units": [
-    "peasant"
-  ],
+  "units": [],
   "height": 100,
   "size": 48,
   "icon": "building_castle",
@@ -56,5 +52,6 @@
   },
   "spriteAnimationSet": "castle",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "buyable": false
 }

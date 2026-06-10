@@ -1,5 +1,9 @@
 {
   "title": "Paladin (2) [IS]",
+  "strength": 3,
+  "dexterity": 0,
+  "intelligence": 3,
+  "weaponType": "mace",
   "size": 25,
   "height": 50,
   "value": 105,

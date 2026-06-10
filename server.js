@@ -850,9 +850,10 @@ app.get('/api/stats', (req, res) => {
 // ===== START SERVER =====
 
 async function startServer() {
-    // Support --project=Name CLI arg, default to TurnBasedWarfare
+    // Support --project=Name CLI arg (server stays generic); default to the
+    // currently-active project, HeroArena, so `npm run server` works with no args.
     const projectArg = args.find(arg => arg.startsWith('--project='));
-    const defaultProject = projectArg ? projectArg.split('=')[1] : 'TurnBasedWarfare';
+    const defaultProject = projectArg ? projectArg.split('=')[1] : 'HeroArena';
 
     console.log(`
 ╔═══════════════════════════════════════════════════════════╗

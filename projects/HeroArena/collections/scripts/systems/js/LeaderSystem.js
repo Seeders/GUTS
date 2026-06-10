@@ -16,10 +16,10 @@ class LeaderSystem extends GUTS.BaseSystem {
     // Bonuses are applied in Phase 2; the stubs here document the intended effect.
     static LEADERS = [
         { id: 'commander',   label: 'The Commander',  bonus: '+10% HP to all STR heroes' },
-        { id: 'alchemist',   label: 'The Alchemist',  bonus: 'Crafting orb costs reduced by 1g' },
+        { id: 'alchemist',   label: 'The Alchemist',  bonus: '+5 bonus gold each round' },
         { id: 'warlord',     label: 'The Warlord',    bonus: 'Win streaks grant +1 bonus gold' },
         { id: 'scholar',     label: 'The Scholar',    bonus: '+15% spell damage to INT heroes' },
-        { id: 'ranger',      label: 'The Ranger',     bonus: 'Items found have +20% chance to be one rarity higher' },
+        { id: 'ranger',      label: 'The Ranger',     bonus: '+15% attack damage to DEX heroes' },
         { id: 'trickster',   label: 'The Trickster',  bonus: 'DEX heroes gain +10% evasion' }
     ];
 
@@ -48,7 +48,7 @@ class LeaderSystem extends GUTS.BaseSystem {
         return LeaderSystem.LEADERS.find(l => l.id === leaderId) || null;
     }
 
-    // Stub: Phase 2 will implement actual stat modifications via HeroStatSystem.
+    // Stub: a future phase will apply actual stat modifications to spawned heroes.
     applyLeaderBonuses(numericPlayerId) {
         // TODO: read leaderId from playerStats, look up bonus, apply to heroes
     }

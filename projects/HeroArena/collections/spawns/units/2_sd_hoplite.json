@@ -1,5 +1,9 @@
 {
   "title": "Hoplite (2) [SD]",
+  "strength": 3,
+  "dexterity": 2,
+  "intelligence": 0,
+  "weaponType": "sword",
   "size": 25,
   "height": 50,
   "value": 120,

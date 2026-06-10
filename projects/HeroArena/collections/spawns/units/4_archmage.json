@@ -1,5 +1,9 @@
 {
   "title": "Archmage",
+  "strength": 0,
+  "dexterity": 0,
+  "intelligence": 5,
+  "weaponType": "staff",
   "size": 25,
   "height": 50,
   "value": 420,

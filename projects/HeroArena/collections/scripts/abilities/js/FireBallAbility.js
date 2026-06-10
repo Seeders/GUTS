@@ -18,7 +18,7 @@ class FireBallAbility extends GUTS.BaseAbility {
 
     canExecute(casterEntity) {
         const enemies = this.getEnemiesInRange(casterEntity, this.range);
-        return enemies.length > 0;
+        return Array.isArray(enemies) && enemies.length > 0;
     }
 
     execute(casterEntity, targetData = null) {

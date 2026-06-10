@@ -1,0 +1,26 @@
+{
+  "abilityId": "PiercingShotAbility",
+  "title": "Piercing Shot",
+  "description": "Grants Piercing Shot to all your bow/crossbow units",
+  "value": 60,
+  "grantMode": "archetype",
+  "requirements": [
+    {
+      "dex": {
+        "min": 1
+      },
+      "weaponType": [
+        "bow",
+        "crossbow"
+      ]
+    }
+  ],
+  "archetypeMatch": [
+    {
+      "weaponType": [
+        "bow",
+        "crossbow"
+      ]
+    }
+  ]
+}

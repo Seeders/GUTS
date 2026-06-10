@@ -1,5 +1,9 @@
 {
   "title": "Gladiator (2) [S]",
+  "strength": 4,
+  "dexterity": 0,
+  "intelligence": 0,
+  "weaponType": "sword",
   "size": 25,
   "height": 50,
   "value": 95,

@@ -1,5 +1,9 @@
 {
   "title": "Peasant",
+  "strength": 1,
+  "dexterity": 1,
+  "intelligence": 1,
+  "weaponType": "none",
   "size": 24,
   "height": 72,
   "value": 35,
@@ -9,7 +13,7 @@
   "attackSpeed": 1,
   "element": "physical",
   "armor": 8,
-  "buyable": true,
+  "buyable": false,
   "specUnits": [
     "1_s_barbarian",
     "1_sd_soldier",

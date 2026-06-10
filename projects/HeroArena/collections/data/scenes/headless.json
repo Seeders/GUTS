@@ -30,7 +30,9 @@
     "SkirmishGameSystem",
     "AutobattlerRoundSystem",
     "HeroRosterSystem",
-    "HeroStatSystem"
+    "ArmyShopSystem",
+    "BuildingSystem",
+    "HeroExperienceSystem"
   ],
   "clientSystems": [],
   "serverSystems": []

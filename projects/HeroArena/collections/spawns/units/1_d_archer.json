@@ -1,5 +1,9 @@
 {
   "title": "Archer",
+  "strength": 0,
+  "dexterity": 3,
+  "intelligence": 0,
+  "weaponType": "bow",
   "size": 25,
   "height": 50,
   "value": 35,

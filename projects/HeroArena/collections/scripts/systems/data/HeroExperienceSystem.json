@@ -1,0 +1,10 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/HeroExperienceSystem.js",
+  "fileName": "HeroExperienceSystem",
+  "services": [
+    "processSpecializations",
+    "applySpecializationChoice",
+    "applyLevelScaling",
+    "getEntryLevel"
+  ]
+}

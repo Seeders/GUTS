@@ -1,5 +1,9 @@
 {
   "title": "Necromancer (2) [I]",
+  "strength": 0,
+  "dexterity": 0,
+  "intelligence": 4,
+  "weaponType": "staff",
   "size": 25,
   "height": 50,
   "value": 150,

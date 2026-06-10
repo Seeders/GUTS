@@ -1,6 +1,10 @@
-# Turn-Based Warfare
+# Hero Arena
 
-A tactical turn-based strategy game built with the GUTS engine, demonstrating the framework's capabilities for creating complex game systems.
+An army-building autobattler built with the GUTS engine. Forked from TurnBasedWarfare.
+
+Each round, players draft heroes, buy units/upgrades/abilities from a per-player reroll
+shop, position their army during a prep phase, then watch a fully automated battle resolve.
+Win by wiping the enemy's heroes across a best-of series of rounds.
 
 ---
 
@@ -10,320 +14,138 @@ A tactical turn-based strategy game built with the GUTS engine, demonstrating th
 
 1. **Build the project:**
    ```bash
-   npm run build
+   npm run build -- HeroArena
    ```
 
 2. **Start the game server:**
    ```bash
-   npm run game:server
+   node projects/HeroArena/server.js
    ```
 
-3. **Play the game:**
-   Open http://localhost:3000/index.html in your browser
+3. **Play:**
+   Open http://localhost:3000/index.html in your browser.
 
-### Development Mode
+### Headless Simulation
 
-For active development with auto-rebuild and hot-reload:
+Run server-side battle simulations without rendering (AI testing, balance work):
+
 ```bash
-npm run game:dev
+node projects/HeroArena/headless.js --simulation <name> --seed <number>
 ```
 
-This runs three concurrent processes:
-- **BUILD**: Auto-rebuilds on code changes
-- **SERVER**: Auto-restarts on dist changes
-- **RESOURCES**: Watches and syncs resource files
+See [HEADLESS_SIMULATION.md](HEADLESS_SIMULATION.md) for build orders, batch mode, and
+result output. Simulations are deterministic for a given seed.
 
 ---
 
-## Game Features
+## Game Flow
 
-### Combat System
-- Turn-based tactical combat with initiative order
-- Multiple unit types with unique abilities
-- Terrain-based positioning and strategy
-- Death and corpse mechanics for necromancy
+```
+LOBBY → LEADER SELECT → HERO SELECT → PREP (shop + placement) → BATTLE → RESOLVE
+                                         ↑                                  |
+                                         └────────── next round ───────────┘
+```
 
-### Unit Types
+- **Leader select** — each player picks 1 of 6 leaders (Commander, Alchemist, Warlord,
+  Scholar, Ranger, Trickster) granting a match-long passive.
+- **Hero select** — pick a starting hero class (Barbarian, Apprentice, Archer, Acolyte,
+  Soldier, Scout); additional heroes join at milestone rounds.
+- **Prep phase** — income arrives (20g/round base), the shop offers 5 choices
+  (units / upgrades / abilities / buildings / Town Hall tiers); reroll costs escalate
+  within the round. Drag heroes and buildings to position them.
+- **Battle** — deterministic auto-battle, 30s cap. Heroes respawn next round at their
+  last battle positions; survivors grant nothing — victory is about hero kills.
 
-**Melee Units:**
-- **Barbarian** - High HP frontline fighter with sword attacks
-- **Skeleton** - Undead warrior raised from corpses
+### Shop & Progression
 
-**Ranged Units:**
-- **Crossbowman** - Long-range archer with piercing attacks
-- **Apprentice** - Magic caster with fireball abilities
-
-**Support Units:**
-- **Beast Master** - Summoner who raises skeletons from fallen enemies
-
-### Abilities
-
-**Offensive:**
-- **Fireball** - Ranged fire damage projectile
-- **Melee Attack** - Close-range physical damage
-
-**Necromancy:**
-- **Raise Dead** - Convert nearby corpses into skeleton warriors
+- Buying a unit **unlocks** it for repeat purchase from the unlocked panel.
+- Tier-2/3 units gate on Town Hall tier (Keep/Castle) plus a matching archetype
+  building (Barracks = STR, Hunting Lodge = DEX, Mage Tower = INT).
+- Upgrades/abilities only appear when an owned unit satisfies their requirements.
+- See `collections/scripts/systems/js/ArmyShopSystem.js` for pricing/eligibility rules.
 
 ---
 
 ## Project Structure
 
 ```
-TurnBasedWarfare/
-├── scripts/
-│   ├── Prefabs/              # Game object definitions (JSON)
-│   │   ├── units/           # Unit definitions (stats, animations)
-│   │   ├── buildings/       # Structure definitions
-│   │   ├── abilities/       # Ability configurations
-│   │   └── behaviorTrees/   # AI behavior definitions
-│   ├── Scripts/             # Game logic (JavaScript)
-│   │   ├── systems/         # ECS systems
-│   │   ├── abilities/       # Ability implementations
-│   │   ├── behaviorTrees/   # AI behavior implementations
-│   │   └── behaviorActions/ # AI action implementations
-│   ├── Settings/
-│   │   └── configs/
-│   │       └── game.json    # Game configuration
-│   ├── Sprites/             # Sprite animation definitions
-│   └── Terrain/             # Level data
-├── resources/               # Game assets
-│   ├── textures/           # Images and sprites
-│   ├── animations/         # 3D animation files (GLB)
-│   └── audio/              # Sound effects and music
-├── dist/                    # Build output
-│   ├── client/             # Client game files
-│   └── server/             # Server game files
-└── server_game.js          # Game server entry point
+HeroArena/
+├── collections/
+│   ├── settings/configs/      # game.json (client), server.json, headless.json, ...
+│   ├── data/                  # JSON data: scenes, components, enums, upgrades,
+│   │                          #   shopAbilities, buildOrders, simulations, ...
+│   ├── spawns/                # Unit & building prefabs (37 units, T1–T3)
+│   ├── scripts/
+│   │   ├── systems/js/        # Game systems (see below)
+│   │   ├── abilities/js/      # Ability implementations
+│   │   └── libraries/js/      # Support libraries
+│   ├── behaviors/             # Behavior trees, actions, decorators
+│   ├── ui/                    # HTML/CSS interfaces and modals
+│   └── resources/             # Models, sprites, audio
+├── server.js                  # Multiplayer game server entry (Socket.IO)
+├── headless.js                # Headless simulation entry
+├── index.html                 # Browser client entry
+└── dist/                      # Build output (client/ and server/)
 ```
 
----
+### Key Systems
 
-## Game Configuration
-
-### Core Settings
-
-**File:** `scripts/Settings/configs/game.json`
-
-Key configuration options:
-
-```json
-{
-  "title": "Turn Based Warfare",
-  "gridSize": 48,           // Tile grid size (48 units per tile)
-  "imageSize": 128,         // Sprite/texture size
-  "is3D": true,            // Enable 3D rendering
-  "isIsometric": false,    // Top-down view
-  "systems": [             // ECS systems (execution order)
-    "GridSystem",
-    "TerrainSystem",
-    "BehaviorSystem",
-    "AbilitySystem",
-    "CombatSystem",
-    "MovementSystem",
-    "AnimationSystem",
-    "DeathSystem",
-    "RenderSystem"
-  ]
-}
-```
-
-### Grid Systems
-
-The game uses two overlapping grids:
-- **Tile Grid**: 48 units per tile (terrain, placement)
-- **Pathfinding Grid**: 24 units per cell (movement, collisions)
+| System | Role |
+|--------|------|
+| `AutobattlerRoundSystem` | Round loop: leader/hero select → prep → battle → resolve |
+| `ArmyShopSystem` | Server-authoritative reroll shop (offers, pricing, eligibility) |
+| `HeroRosterSystem` | Persistent hero roster; respawns heroes each round |
+| `PlacementSystem` | Prep-phase unit/building placement |
+| `ServerBattlePhaseSystem` | Battle start/end, seeded battle RNG, result broadcast |
+| `ServerNetworkSystem` / `ClientNetworkSystem` | Event handlers / transport (shared handlers for local + online) |
+| `BehaviorSystem` | Unit AI behavior trees during battle |
+| `AutobattlerEconomySystem` | Round income and bonuses |
 
 ---
 
-## Systems Overview
+## Networking Architecture
 
-### BehaviorSystem
-Runs AI behavior trees for all units with `aiState` components. Behavior trees determine unit actions based on game state.
+Hero Arena uses a hybrid of the two GUTS multiplayer models:
 
-### AbilitySystem
-Manages ability execution, cooldowns, and queueing. Handles both player-triggered and AI-triggered abilities.
+- **Prep/shop phase — server-authoritative replication.** Shop offers, purchases,
+  selections, and placement all resolve on the server; clients receive `SHOP_OFFERS`,
+  `ARMY_SYNC`, and `ENTITY_SYNC` broadcasts. Prep-phase randomness lives only on the
+  server (seeded `shop`/`ai` RNG strands), so clients never need to reproduce it.
+- **Battle phase — deterministic lockstep.** At ready-up the server broadcasts a full
+  entity sync plus the authoritative `gameSeed`; both sides reseed the `battle` RNG
+  strand with `combineSeed(gameSeed, round)` and run the identical simulation at a
+  fixed 20 TPS. `BATTLE_END` carries a delta sync that clients apply once their tick
+  clock catches up to the server's.
 
-### CombatSystem
-Processes attacks, damage calculation, and combat resolution. Applies damage modifiers based on armor and resistances.
+**Determinism rules for contributors:** inside anything that runs during battle
+(systems, behavior trees, abilities), never use `Math.random()`, `Date.now()`, or
+`setTimeout` — use `game.rng.strand('battle')`, `game.state.now`, and the
+`SchedulingSystem`. Server-only prep code uses the `shop` and `ai` strands so headless
+runs stay reproducible per seed.
 
-### DeathSystem
-Handles unit death, corpse state transitions, and cleanup:
-- Entities transition: alive → dying → corpse
-- Dead units cannot act or be damaged
-- Corpses can be consumed by necromancy abilities
-- All corpses cleaned up at battle end
-
-### AnimationSystem
-Manages sprite and 3D model animations:
-- Single-play animations (attack, cast, death)
-- Looping animations (idle, walk)
-- Animation speed sync with game mechanics
-- Billboard sprite rendering with directional support
-
-### MovementSystem
-Physics and movement processing:
-- Velocity-based movement
-- Collision detection and response
-- Pathfinding integration
-- Grid-aligned positioning
-
----
-
-## Adding Content
-
-### Creating a New Unit
-
-1. **Create unit prefab:**
-   `scripts/Prefabs/units/my_unit.json`
-   ```json
-   {
-     "title": "My Unit",
-     "size": 25,
-     "height": 50,
-     "hp": 100,
-     "damage": 15,
-     "speed": 40,
-     "attackSpeed": 1.0,
-     "range": 30,
-     "render": {
-       "sprites": {
-         "collection": "myUnitSprites",
-         "scale": 2.0
-       }
-     },
-     "abilities": ["MeleeAttackAbility"]
-   }
-   ```
-
-2. **Add sprites** (if using sprite rendering):
-   - Create sprite collection in `scripts/Sprites/`
-   - Define animations: idle, walk, attack, death
-   - Export sprite frames to `resources/textures/`
-
-3. **Configure AI** (optional):
-   - Assign behavior tree in unit prefab
-   - Or create custom behavior in `scripts/Scripts/behaviorTrees/`
-
-### Creating a New Ability
-
-1. **Create ability class:**
-   `scripts/Scripts/abilities/js/MyAbility.js`
-   ```javascript
-   class MyAbility extends GUTS.BaseAbility {
-     constructor(game, abilityData = {}) {
-       super(game, {
-         id: 'my_ability',
-         name: 'My Ability',
-         description: 'Does something cool',
-         cooldown: 5.0,
-         range: 100,
-         manaCost: 20,
-         targetType: 'enemy',
-         castTime: 0.5,
-         ...params
-       });
-     }
-
-     canExecute(casterEntity) {
-       // Check if ability can be used
-       return true;
-     }
-
-     execute(casterEntity) {
-       // Execute ability logic
-       const target = this.findTarget(casterEntity);
-       if (target) {
-         this.dealDamage(target, 50);
-       }
-     }
-   }
-   ```
-
-2. **Register ability** in `game.json`:
-   ```json
-   {
-     "classes": [
-       {
-         "collection": "abilities",
-         "baseClass": "BaseAbility"
-       }
-     ]
-   }
-   ```
-
-3. **Add to unit** in unit prefab:
-   ```json
-   {
-     "abilities": ["MyAbility"]
-   }
-   ```
-
----
-
-## Multiplayer
-
-The game includes built-in multiplayer support using Socket.IO:
-
-- **Server authoritative**: All game logic runs on server
-- **Client prediction**: Smooth local movement
-- **Deterministic**: ECS systems process in consistent order
-- **Lockstep**: Turn-based gameplay synchronized across clients
-
-### Hosting a Server
-
-```bash
-npm run game:server
-```
-
-Server runs on port 3000 by default. Clients connect via Socket.IO to the same URL.
+Local skirmish and online play share the same server handlers: in local mode
+`ClientNetworkSystem.networkRequest` calls them directly in-process; online it routes
+through Socket.IO (`ServerEventManager` on the server side).
 
 ---
 
 ## Development Tips
 
-### Debugging
-
-Enable debug visualizations in the game:
-- **F1**: Toggle behavior tree debug overlay
-- **F2**: Toggle collision bounds
-- **F3**: Toggle pathfinding grid
-- **Console**: Use `game.getEntitiesWith()` to inspect entities
-
-### Testing Changes
-
-1. Make changes to scripts or prefabs
-2. Build automatically rebuilds (if using `npm run game:dev`)
-3. Refresh browser to see changes
-4. Check console for errors
-
-### Performance
-
-- Use deterministic sorting in systems (`localeCompare` for entity IDs)
-- Avoid creating objects in update loops
-- Pool frequently created objects (projectiles, particles)
-- Use `getEntitiesWith()` efficiently - cache queries when possible
-
----
-
-## Known Issues
-
-- Death animations may occasionally not freeze on last frame
-- Corpse cleanup only happens at battle end (not placement phase)
-- Billboard sprites face camera globally (not individually rotatable)
+- `window.game` is exposed in the browser console for entity inspection
+  (`game.getEntitiesWith(...)`, `game.getComponent(...)`).
+- `game.desyncDebugger` is enabled during battles for client/server state comparison.
+- Scene configs (`collections/data/scenes/*.json`) split systems into shared
+  `systems`, `clientSystems`, and `serverSystems` — simulation code must live in the
+  shared list and be free of DOM/rendering dependencies.
+- Run tests with `npx vitest` from the repo root.
 
 ---
 
 ## Credits
 
-Built with GUTS (Gamedev Ultimate Toolkit System)
-
-**Assets:**
-- 3D animations from Mixamo
-- Sprite artwork: Custom pixel art
-
----
+Built with GUTS (Gamedev Ultimate Toolkit System).
+3D animations from Mixamo; custom sprite artwork.
 
 ## License
 
-MIT License - See main GUTS repository for details
+MIT License — see the main GUTS repository for details.

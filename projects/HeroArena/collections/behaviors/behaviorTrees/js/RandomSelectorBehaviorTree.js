@@ -48,11 +48,13 @@ class RandomSelectorBehaviorTree extends GUTS.BaseBehaviorTree {
         // Key: entityId, Value: { shuffledOrder: [], currentIndex: number }
         this.randomState = new Map();
 
-        // Simple seeded random if seed is provided
+        // Simple seeded random if seed is provided. Otherwise draw from the shared
+        // 'battle' strand: behavior trees run inside the lockstep battle simulation
+        // on both client and server, so Math.random here would desync online play.
         if (this.seed !== null) {
             this.rng = this.createSeededRandom(this.seed);
         } else {
-            this.rng = Math.random;
+            this.rng = () => this.game.rng.strand('battle').next();
         }
     }
 

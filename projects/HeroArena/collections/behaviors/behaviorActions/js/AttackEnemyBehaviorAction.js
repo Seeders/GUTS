@@ -14,9 +14,15 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         'triggerSinglePlayAnimation',
         'scheduleDamage',
         'getEntityAbilities',
-        'fireProjectile',
-        'getItemData'
+        'fireProjectile'
     ];
+
+    // Anti-building damage scaling by attacker shop tier (ArmyShopSystem.unitTier).
+    // Sieging is the job of high-tier units — the win condition is the enemy Town
+    // Hall, and tier 1 chip damage shouldn't threaten it. Applies to basic attacks
+    // (melee + projectile) against entities with a buildingOwner component.
+    static BUILDING_DAMAGE_MULT = { 1: 0.25, 2: 1.0, 3: 4.0 };
+    static BUILDING_DAMAGE_MULT_DEFAULT = 0.5; // summons/specials with no shop tier
 
     execute(entityId, game) {
         const log = GUTS.HeadlessLogger;
@@ -157,7 +163,8 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         // BuffEffectsSystem watching combatState.lastAttackTime per tick, so they
         // fire when damage actually lands regardless of delivery method.
         const bonusDamage = this._getBloodlustBonusDamage(attackerId, game);
-        const totalDamage = (combat.damage || 0) + bonusDamage;
+        const totalDamage = ((combat.damage || 0) + bonusDamage) *
+            this._buildingDamageMultiplier(attackerId, targetId, game);
 
         // Handle projectile or melee damage
         // Note: projectile index 0 is valid, only -1 means "no projectile"
@@ -301,50 +308,24 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     getEffectiveAttackSpeed(entityId, game, baseAttackSpeed) {
-        if (game.equipmentSystem) {
-            const equipment = game.getComponent(entityId, 'equipment');
-            if (equipment && equipment.attackSpeed) {
-                return baseAttackSpeed * equipment.attackSpeed;
-            }
-        }
         return baseAttackSpeed;
+    }
+
+    // ×1 against units. Against buildings, scale by the attacker's shop tier so
+    // tier 3 units excel at sieging while tier 1 units barely scratch walls.
+    _buildingDamageMultiplier(attackerId, targetId, game) {
+        if (!game.getComponent(targetId, 'buildingOwner')) return 1;
+        const unitTypeComp = game.getComponent(attackerId, 'unitType');
+        const def = game.getUnitTypeDef(unitTypeComp);
+        const tier = game.armyShopSystem?.constructor?.unitTier?.(def?.id);
+        return AttackEnemyBehaviorAction.BUILDING_DAMAGE_MULT[tier]
+            ?? AttackEnemyBehaviorAction.BUILDING_DAMAGE_MULT_DEFAULT;
     }
 
     getDamageElement(entityId, game, combat) {
         if (combat.element) {
             return combat.element;
         }
-
-        const weaponElement = this.getWeaponElement(entityId, game);
-        if (weaponElement) {
-            return weaponElement;
-        }
-
         return game.getEnums().element.physical;
-    }
-
-    getWeaponElement(entityId, game) {
-        if (!game.equipmentSystem) return null;
-
-        const equipment = game.getComponent(entityId, 'equipment');
-        if (!equipment) return null;
-
-        const mainHandItem = equipment.slots?.mainHand;
-        if (mainHandItem) {
-            const itemData = this.call.getItemData( mainHandItem);
-            if (itemData && itemData.stats && itemData.stats.element) {
-                return itemData.stats.element;
-            }
-        }
-
-        const offHandItem = equipment.slots?.offHand;
-        if (offHandItem) {
-            const itemData = this.call.getItemData( offHandItem);
-            if (itemData && itemData.stats && itemData.stats.element) {
-                return itemData.stats.element;
-            }
-        }
-
-        return null;
     }
 }

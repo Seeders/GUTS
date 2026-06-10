@@ -1,5 +1,9 @@
 {
   "title": "Ballista",
+  "strength": 0,
+  "dexterity": 2,
+  "intelligence": 0,
+  "weaponType": "crossbow",
   "size": 25,
   "height": 100,
   "value": 150,

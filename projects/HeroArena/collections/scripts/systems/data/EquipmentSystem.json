@@ -1,8 +1,0 @@
-{
-  "filePath": "/projects/HeroArena/collections/scripts/systems/js/EquipmentSystem.js",
-  "fileName": "EquipmentSystem",
-  "services": [
-    "getItemData",
-    "equipItem"
-  ]
-}

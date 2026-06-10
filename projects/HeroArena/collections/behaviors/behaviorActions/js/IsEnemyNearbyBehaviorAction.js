@@ -13,8 +13,7 @@
 class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
 
     static serviceDependencies = [
-        'getVisibleEnemiesInRange',
-        'findNearestVisibleEnemy'
+        'getVisibleEnemiesInRange'
     ];
 
     execute(entityId, game) {
@@ -34,13 +33,29 @@ class IsEnemyNearbyBehaviorAction extends GUTS.BaseBehaviorAction {
                 range
             };
 
+            // HeroArena: pick the nearest WITHOUT terrain line-of-sight filtering
+            // (see FindNearestEnemyBehaviorAction) so engagement is guaranteed.
             if (storeNearest) {
-                const nearestEnemy = this.call.findNearestVisibleEnemy( entityId, range);
-                if (nearestEnemy) {
+                const myPos = game.getComponent(entityId, 'transform')?.position;
+                let nearestId = null;
+                let nearestDistSq = Infinity;
+                if (myPos) {
+                    for (const eid of enemies) {
+                        const pos = game.getComponent(eid, 'transform')?.position;
+                        if (!pos) continue;
+                        const dx = pos.x - myPos.x, dz = pos.z - myPos.z;
+                        const distSq = dx * dx + dz * dz;
+                        if (distSq < nearestDistSq || (distSq === nearestDistSq && (nearestId == null || eid < nearestId))) {
+                            nearestDistSq = distSq;
+                            nearestId = eid;
+                        }
+                    }
+                }
+                if (nearestId != null) {
                     const shared = this.getShared(entityId, game);
-                    shared[targetKey] = nearestEnemy.id;
-                    result.nearestEnemy = nearestEnemy.id;
-                    result.nearestDistance = nearestEnemy.distance;
+                    shared[targetKey] = nearestId;
+                    result.nearestEnemy = nearestId;
+                    result.nearestDistance = Math.sqrt(nearestDistSq);
                 }
             }
 

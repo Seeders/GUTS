@@ -55,16 +55,14 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'submitHeroSelection',
         'submitHeroMove',
         'getPlayerEntities',
-        'submitEquipGear',
-        'submitUnequipGear',
-        'submitBuyShopItem',
-        'submitRerollShop',
-        'submitUpgradeShop',
-        'submitSellItem',
-        'submitAffixChoice',
-        'submitIdentifyItem',
-        'submitSelectAbility',
-        'submitAbilityChoice'
+        'submitBuyOffer',
+        'submitRerollOffers',
+        'submitBuyUnlockedUnit',
+        'submitGrantSingleAbility',
+        'submitSpecializeChoice',
+        'submitPlaceBuilding',
+        'submitMoveBuilding',
+        'submitCancelPlaceBuilding'
     ];
     constructor(game) {
         super(game);
@@ -129,9 +127,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
         // Right-click camera pan state (terrain point stays under cursor)
         this.panAnchor = null;  // { x, z } world point clicked
         this.panLookAt = null;  // { x, z } current camera lookAt target we're driving
-
-        // Inventory → equip state: which inventory item the player has currently selected
-        this.selectedInventoryIndex = null;
     }
 
     init(params) {
@@ -258,40 +253,44 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.elements.opponentHPValue = document.getElementById('opponentHPValue');
         this.elements.roundDisplay    = document.getElementById('roundDisplay');
         this.elements.phaseDisplay    = document.getElementById('phaseDisplay');
+        this.elements.battleTimer     = document.getElementById('battleTimer');
         this.elements.goldDisplay     = document.getElementById('playerGold');
         this.elements.prepControls    = document.getElementById('prepControls');
-        this.elements.heroRosterPanel = document.getElementById('heroRosterPanel');
-        this.elements.heroRosterCards = document.getElementById('heroRosterCards');
-        this.elements.inventoryPanel  = document.getElementById('inventoryPanel');
-        this.elements.inventoryItems  = document.getElementById('inventoryItems');
         this.elements.combatLogEntries     = document.getElementById('combatLogEntries');
-        this.elements.itemDetailsPanel     = document.getElementById('itemDetailsPanel');
-        this.elements.itemDetailsContent   = document.getElementById('itemDetailsContent');
 
-        // Item-shop overlay elements
-        this.elements.shopOverlay        = document.getElementById('shopOverlay');
-        this.elements.shopOffers         = document.getElementById('shopOffers');
-        this.elements.shopGold           = document.getElementById('shopGold');
-        this.elements.shopLevelDisplay   = document.getElementById('shopLevelDisplay');
-        this.elements.shopRerollBtn      = document.getElementById('shopRerollBtn');
-        this.elements.shopUpgradeBtn     = document.getElementById('shopUpgradeBtn');
-        this.elements.shopCloseBtn       = document.getElementById('shopCloseBtn');
-        this.elements.affixChoiceOverlay = document.getElementById('affixChoiceOverlay');
-        this.elements.affixChoiceTitle   = document.getElementById('affixChoiceTitle');
-        this.elements.affixChoiceSubtitle= document.getElementById('affixChoiceSubtitle');
-        this.elements.affixChoiceOptions = document.getElementById('affixChoiceOptions');
+        // Army shop panel
+        this.elements.shopPanel       = document.getElementById('shopPanel');
+        this.elements.shopOffers      = document.getElementById('shopOffers');
+        this.elements.shopRerollBtn   = document.getElementById('shopRerollBtn');
+        this.elements.shopPendingBanner = document.getElementById('shopPendingBanner');
+        this.elements.shopPendingText   = document.getElementById('shopPendingText');
+        this.elements.shopPendingTargets = document.getElementById('shopPendingTargets');
+        this.elements.shopPendingCancel = document.getElementById('shopPendingCancel');
+        this.elements.unlockedUnitsPanel = document.getElementById('unlockedUnitsPanel');
+        this.elements.unlockedUnitsCards = document.getElementById('unlockedUnitsCards');
+        this._wireShopHandlers();
+    }
 
-        // Delegated click handler: handles inventory item selection + equip on hero slots,
-        // plus Identify/Unequip/Select-Ability buttons rendered in the item details panel.
-        if (!this._prepClickHandler) {
-            this._prepClickHandler = (event) => this._onPrepClick(event);
-            this.elements.heroRosterCards?.addEventListener('click', this._prepClickHandler);
-            this.elements.inventoryItems?.addEventListener('click', this._prepClickHandler);
-            this.elements.itemDetailsContent?.addEventListener('click', this._prepClickHandler);
-        }
-
-        // Shop overlay button wiring is now done lazily by _wireShopHandlers,
-        // called from onShopOpened — survives DOM-not-yet-loaded scenarios.
+    // Idempotent delegated click wiring for the shop + unlocked-units panels.
+    // Listeners go through _track so _teardownListeners() can remove them and
+    // reset _shopWired — a later scene load may re-inject the shop DOM, and the
+    // fresh elements need wiring while the old ones must not hold listeners.
+    _wireShopHandlers() {
+        if (this._shopWired) return;
+        const track = (el, type, fn) => { if (el) this._track(el, type, fn); };
+        track(this.elements.shopOffers, 'click', (e) => this._onShopOfferClick(e));
+        track(this.elements.shopRerollBtn, 'click', () => {
+            this.call.submitRerollOffers((res) => this._renderShop(res?.state || res));
+        });
+        track(this.elements.unlockedUnitsCards, 'click', (e) => this._onUnlockedUnitClick(e));
+        // Target buttons in the pending banner pick which unit receives a
+        // single-target ability purchase.
+        track(this.elements.shopPendingTargets, 'click', (e) => this._onAbilityTargetClick(e));
+        track(this.elements.shopPendingCancel, 'click', () => {
+            if (this._placingBuildingId) this._cancelBuildingPlacement();
+            else this._cancelAbilityTarget();
+        });
+        this._shopWired = true;
     }
 
     // Called by game.triggerEvent('onLeaderSelectStart', data)
@@ -350,311 +349,33 @@ class PlacementUISystem extends GUTS.BaseSystem {
         document.getElementById('heroSelectOverlay')?.classList.add('hidden');
     }
 
-    // ==================== ITEM SHOP ====================
+    // Called by game.triggerEvent('onSpecializeSelectStart', data) when one of our
+    // units reaches the specialization level. data: { playerId, rosterIndex,
+    // currentTitle, level, options: [{id, title}] }
+    onSpecializeSelectStart(data) {
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        if (!data || data.playerId !== myId) return;
+        const overlay  = document.getElementById('specializeOverlay');
+        const grid     = document.getElementById('specializeOptions');
+        const title    = document.getElementById('specializeTitle');
+        const subtitle = document.getElementById('specializeSubtitle');
+        if (!overlay || !grid) return;
 
-    // Filters event to our local player. Server sends per-player payloads with
-    // targetPlayerId; opponents' shop updates also fire but we ignore them.
-    _isOurShopEvent(data) {
-        const myId = this.game.clientNetworkManager?.numericPlayerId
-            ?? this.game.state?.localPlayerId ?? 0;
-        return !data?.targetPlayerId || data.targetPlayerId === myId;
-    }
+        if (title)    title.textContent    = `${data.currentTitle || 'Unit'} reached Level ${data.level || 3}!`;
+        if (subtitle) subtitle.textContent = 'Choose a specialization to transform into';
 
-    // Called by ItemShopSystem at start of every prep phase.
-    onShopOpened(data) {
-        if (!this._isOurShopEvent(data)) return;
-        // Lazy element lookup — handler can fire before setupArenaOverlays cached refs.
-        this._ensureShopElements();
-        this._wireShopHandlers();
-        this._renderShop(data);
-        const overlay = document.getElementById('shopOverlay');
-        if (overlay) overlay.classList.remove('hidden');
-        this._maybeShowAffixChoice(data);
-        this._maybeShowAbilityChoice(data);
-    }
-
-    // Called after every buy/reroll/upgrade/affixChoice. Refresh whatever the
-    // shop overlay is currently showing AND the persistent inventory panel.
-    onShopUpdate(data) {
-        if (!this._isOurShopEvent(data)) return;
-        this._ensureShopElements();
-        this._renderShop(data);
-        this._maybeShowAffixChoice(data);
-        this._maybeShowAbilityChoice(data);
-        // Refresh inventory + hero roster so newly-bought / upgraded items appear
-        if (typeof this.renderInventory === 'function')  this.renderInventory();
-        if (typeof this.renderHeroRoster === 'function') this.renderHeroRoster();
-        // Refresh the details panel if it's showing an item whose data changed
-        // (e.g. itemLevel bump from a duplicate buy, or affixes added by identify)
-        this._refreshDetailsPanel();
-    }
-
-    // Idempotent: looks up shop overlay DOM refs the first time it's needed.
-    // Defends against the case where the shop event fires before setupArenaOverlays
-    // had a chance to cache element references (e.g. if onGameStarted ordering shifts).
-    _ensureShopElements() {
-        if (!this.elements) this.elements = {};
-        const ids = [
-            'shopOverlay', 'shopOffers', 'shopGold', 'shopLevelDisplay',
-            'shopRerollBtn', 'shopUpgradeBtn', 'shopCloseBtn',
-            'affixChoiceOverlay', 'affixChoiceTitle', 'affixChoiceSubtitle', 'affixChoiceOptions',
-            'abilityChoiceOverlay', 'abilityChoiceTitle', 'abilityChoiceSubtitle', 'abilityChoiceOptions'
-        ];
-        for (const id of ids) {
-            if (!this.elements[id]) this.elements[id] = document.getElementById(id);
-        }
-    }
-
-    // Idempotent: wire shop button handlers once.
-    _wireShopHandlers() {
-        if (this._shopWired) return;
-        const offers       = document.getElementById('shopOffers');
-        const reroll       = document.getElementById('shopRerollBtn');
-        const upgrade      = document.getElementById('shopUpgradeBtn');
-        const close        = document.getElementById('shopCloseBtn');
-        const affixChoices = document.getElementById('affixChoiceOptions');
-        const abilChoices  = document.getElementById('abilityChoiceOptions');
-        if (!offers && !reroll && !upgrade && !close) return; // DOM not present yet
-        offers?.addEventListener('click', (e) => this._onShopOfferClick(e));
-        reroll?.addEventListener('click', () => this.call.submitRerollShop());
-        upgrade?.addEventListener('click', () => this.call.submitUpgradeShop());
-        close?.addEventListener('click', () => this._closeShopOverlay());
-        affixChoices?.addEventListener('click', (e) => this._onAffixChoiceClick(e));
-        abilChoices?.addEventListener('click', (e) => this._onAbilityChoiceClick(e));
-        this._shopWired = true;
-    }
-
-    _renderShop(data) {
-        if (this.elements.shopGold)         this.elements.shopGold.textContent = data.gold ?? 0;
-        if (this.elements.shopLevelDisplay) this.elements.shopLevelDisplay.textContent = data.shopLevel ?? 1;
-
-        // Reroll button
-        if (this.elements.shopRerollBtn) {
-            this.elements.shopRerollBtn.disabled = (data.gold ?? 0) < 1;
-            this.elements.shopRerollBtn.textContent = `Reroll (1g)`;
-        }
-
-        // Upgrade button: hide if maxed, else show current cost
-        if (this.elements.shopUpgradeBtn) {
-            const maxed = (data.shopUpgrades ?? 0) >= 4;
-            if (maxed) {
-                this.elements.shopUpgradeBtn.textContent = 'Shop Max Level';
-                this.elements.shopUpgradeBtn.disabled = true;
-            } else {
-                const cost = data.upgradeCost ?? 20;
-                this.elements.shopUpgradeBtn.textContent = `Upgrade Shop (${cost}g)`;
-                this.elements.shopUpgradeBtn.disabled = (data.gold ?? 0) < cost;
-            }
-        }
-
-        // Offer grid
-        const grid = this.elements.shopOffers;
-        if (!grid) return;
         grid.innerHTML = '';
-        const offers = data.offers || [];
-        const bought = data.bought || [];
-        const gold   = data.gold ?? 0;
-
-        offers.forEach((offer, idx) => {
+        (data.options || []).forEach(opt => {
             const card = document.createElement('div');
-            card.className = 'shop-offer-card';
-            if (bought[idx])             card.classList.add('bought');
-            else if (gold < 3)           card.classList.add('disabled');
-            card.dataset.slotIdx = idx;
-
-            const ownedLevel = this._ownedLevelForBase(offer?.baseType);
-            const ownedBadge = ownedLevel
-                ? `<div class="shop-offer-owned">Owned Lv${ownedLevel}</div>` : '';
-
-            const baseStat = this._shopOfferBaseStat(offer);
-            const baseStatHtml = baseStat
-                ? `<div class="shop-offer-stat">${baseStat}</div>` : '';
-
-            card.innerHTML = `
-                ${ownedBadge}
-                <div class="shop-offer-name">${offer?.name || '—'}</div>
-                <div class="shop-offer-type">${this._friendlyItemType(offer)}</div>
-                ${baseStatHtml}
-                <div class="shop-offer-cost">${bought[idx] ? 'SOLD' : '3g'}</div>
-            `;
+            card.className = 'arena-option-card';
+            card.innerHTML = `<div class="arena-option-name">${opt.title}</div>`;
+            card.addEventListener('click', () => {
+                this.call.submitSpecializeChoice(data.rosterIndex, opt.id);
+                overlay.classList.add('hidden');   // server prompts again if more remain
+            });
             grid.appendChild(card);
         });
-    }
-
-    // Headline base stat shown on a shop card (so the player can compare items
-    // before buying). Weapons show base damage; body armor / offhand shields show armor.
-    // Charms are utility slots with no headline stat.
-    _shopOfferBaseStat(offer) {
-        if (!offer) return '';
-        if (offer.itemType === 'weapon')   return `${offer.baseValue ?? 0} dmg`;
-        if (offer.itemType === 'bodyArmor') return `${offer.baseValue ?? 0} armor`;
-        if (offer.itemType === 'offhand' && offer.baseValue) {
-            return `${offer.baseValue} armor`;
-        }
-        return '';
-    }
-
-    _onShopOfferClick(event) {
-        const card = event.target.closest('.shop-offer-card');
-        if (!card || card.classList.contains('bought') || card.classList.contains('disabled')) return;
-        const slotIdx = Number(card.dataset.slotIdx);
-        if (!Number.isInteger(slotIdx)) return;
-        this.call.submitBuyShopItem(slotIdx);
-    }
-
-    _closeShopOverlay() {
-        this.elements.shopOverlay?.classList.add('hidden');
-    }
-
-    _maybeShowAffixChoice(data) {
-        const pending = data.pendingAffixChoice;
-        const overlay = this.elements.affixChoiceOverlay;
-        if (!overlay) return;
-        if (!pending) {
-            overlay.classList.add('hidden');
-            return;
-        }
-        if (this.elements.affixChoiceTitle) {
-            const tier = pending.newLevel >= 9 ? 'Legendary'
-                       : pending.newLevel >= 6 ? 'Rare'
-                       : 'Magic';
-            this.elements.affixChoiceTitle.textContent = `Identify ${tier} Item`;
-        }
-        if (this.elements.affixChoiceSubtitle) {
-            this.elements.affixChoiceSubtitle.textContent =
-                `Your ${pending.baseType} (Lv${pending.newLevel}) — pick an affix set:`;
-        }
-        const grid = this.elements.affixChoiceOptions;
-        if (grid) {
-            grid.innerHTML = '';
-            (pending.options || []).forEach((set, idx) => {
-                const card = document.createElement('div');
-                card.className = 'affix-choice-card';
-                card.dataset.choiceIdx = idx;
-                card.innerHTML = (set || []).map(a => `
-                    <div class="affix-choice-affix${a.isLegendary ? ' legendary' : ''}">
-                        ${this._formatAffix(a)}
-                    </div>`).join('');
-                grid.appendChild(card);
-            });
-        }
         overlay.classList.remove('hidden');
-    }
-
-    _onAffixChoiceClick(event) {
-        const card = event.target.closest('.affix-choice-card');
-        if (!card) return;
-        const choiceIdx = Number(card.dataset.choiceIdx);
-        if (!Number.isInteger(choiceIdx)) return;
-        this.call.submitAffixChoice(choiceIdx);
-    }
-
-    // Shows the ability-choice modal when the server sets a pendingAbilityChoice.
-    _maybeShowAbilityChoice(data) {
-        const pending = data.pendingAbilityChoice;
-        const overlay = this.elements.abilityChoiceOverlay;
-        if (!overlay) return;
-        if (!pending) {
-            overlay.classList.add('hidden');
-            return;
-        }
-        if (this.elements.abilityChoiceSubtitle) {
-            this.elements.abilityChoiceSubtitle.textContent =
-                `Choose the ability your ${pending.baseType} will grant:`;
-        }
-        const grid = this.elements.abilityChoiceOptions;
-        if (grid) {
-            grid.innerHTML = '';
-            (pending.options || []).forEach((abilityId, idx) => {
-                const meta = this._abilityMeta(abilityId);
-                const card = document.createElement('div');
-                card.className = 'ability-choice-card';
-                card.dataset.choiceIdx = idx;
-                card.innerHTML = `
-                    <div class="ability-choice-name">${meta.name}</div>
-                    <div class="ability-choice-desc">${meta.description}</div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-        overlay.classList.remove('hidden');
-    }
-
-    _onAbilityChoiceClick(event) {
-        const card = event.target.closest('.ability-choice-card');
-        if (!card) return;
-        const choiceIdx = Number(card.dataset.choiceIdx);
-        if (!Number.isInteger(choiceIdx)) return;
-        this.call.submitAbilityChoice(choiceIdx);
-    }
-
-    // Look up an ability's display metadata from the abilities collection
-    _abilityMeta(abilityId) {
-        // Defensive: non-string IDs mean data is corrupted somewhere (e.g. a
-        // field-name endsWith match in ComponentGenerator.deepMerge converted
-        // the string to a numeric enum index). Render gracefully instead of
-        // crashing — a crash here leaves the slot looking permanently "Empty".
-        if (typeof abilityId !== 'string' || !abilityId) {
-            return { name: '—', description: '' };
-        }
-        const def = this.game.getCollections?.()?.abilities?.[abilityId] || {};
-        return {
-            name: def.name || abilityId.replace(/Ability$/, ''),
-            description: def.description || ''
-        };
-    }
-
-    _formatAffix(a) {
-        if (!a) return '';
-        const sign = (a.value || 0) >= 0 ? '+' : '';
-        const labelPrefix = a.label ? `<em>${a.label}</em> — ` : '';
-        return `${labelPrefix}${sign}${a.value} ${a.stat}`;
-    }
-
-    _friendlyItemType(offer) {
-        if (!offer) return '';
-        if (offer.itemType === 'weapon')    return offer.weaponType ? offer.weaponType : 'weapon';
-        if (offer.itemType === 'offhand')   return offer.offhandType ? offer.offhandType : 'offhand';
-        if (offer.itemType === 'bodyArmor') return 'body armor';
-        return offer.itemType;
-    }
-
-    _readLocalInventory() {
-        const myId = this.game.clientNetworkManager?.numericPlayerId
-            ?? this.game.state?.localPlayerId ?? 0;
-        const playerEntities = this.game.getEntitiesWith('playerStats');
-        for (const eid of playerEntities) {
-            const s = this.game.getComponent(eid, 'playerStats');
-            if (s && s.playerId === myId) return s.inventory || [];
-        }
-        return [];
-    }
-
-    // Returns the highest itemLevel for any owned item with the given baseType,
-    // looking across inventory AND every hero's equipped gear slots. Used to
-    // render the "Owned LvX" badge on shop offer cards so the player can see
-    // duplicates of items they've already equipped, not just unequipped ones.
-    _ownedLevelForBase(baseType) {
-        if (!baseType) return 0;
-        const stats = this._getMyPlayerStats();
-        if (!stats) return 0;
-        let best = 0;
-        const consider = (it) => {
-            if (it?.baseType === baseType) {
-                const lvl = it.itemLevel || 1;
-                if (lvl > best) best = lvl;
-            }
-        };
-        for (const it of (stats.inventory || [])) consider(it);
-        for (const entry of (stats.heroRoster || [])) {
-            const eq = entry?.equipment;
-            if (!eq) continue;
-            consider(eq.mainWeapon);
-            consider(eq.offhand);
-            consider(eq.bodyArmor);
-            consider(eq.charm);
-        }
-        return best;
     }
 
     updateHUD() {
@@ -670,20 +391,65 @@ class PlacementUISystem extends GUTS.BaseSystem {
             else opStats = s;
         }
 
-        if (myStats) {
-            const hp = Math.max(0, myStats.hp ?? 100);
-            if (this.elements.playerHPBar)   this.elements.playerHPBar.style.width   = `${hp}%`;
-            if (this.elements.playerHPValue) this.elements.playerHPValue.textContent = hp;
-            if (this.elements.goldDisplay)   this.elements.goldDisplay.textContent   = myStats.gold ?? 0;
+        if (myStats && this.elements.goldDisplay) {
+            this.elements.goldDisplay.textContent = myStats.gold ?? 0;
         }
-        if (opStats) {
-            const hp = Math.max(0, opStats.hp ?? 100);
-            if (this.elements.opponentHPBar)   this.elements.opponentHPBar.style.width   = `${hp}%`;
-            if (this.elements.opponentHPValue) this.elements.opponentHPValue.textContent = hp;
+
+        // The HUD health bars show each side's TOWN HALL — destroying the enemy's
+        // wins the game. Bars only update when a townhall entity is present
+        // client-side (it may not be synced yet in the first prep).
+        const myTeam = this.call.getActivePlayerTeam?.();
+        if (myTeam != null) {
+            const enemyTeam = myTeam === this.enums.team.left ? this.enums.team.right : this.enums.team.left;
+            this._renderTownHallBar(this._findTownHallHealth(myTeam),
+                this.elements.playerHPBar, this.elements.playerHPValue);
+            this._renderTownHallBar(this._findTownHallHealth(enemyTeam),
+                this.elements.opponentHPBar, this.elements.opponentHPValue);
         }
+
         if (this.elements.roundDisplay) {
             this.elements.roundDisplay.textContent = `Round ${this.game.state.round ?? 1}`;
         }
+
+        // Battle countdown — counts down to the round deadline (incl. the siege
+        // window extension, which the server publishes via state/broadcast).
+        if (this.elements.battleTimer) {
+            const inBattle = this.game.state.phase === this.enums.gamePhase.battle;
+            if (inBattle && this.game.state.battleEndsAt != null) {
+                const remaining = Math.max(0, this.game.state.battleEndsAt - (this.game.state.now || 0));
+                this.elements.battleTimer.textContent = `⏳ ${Math.ceil(remaining)}s`;
+                this.elements.battleTimer.classList.remove('hidden');
+                this.elements.battleTimer.classList.toggle('hud-timer-low', remaining <= 5);
+            } else {
+                this.elements.battleTimer.classList.add('hidden');
+            }
+        }
+    }
+
+    _renderTownHallBar(th, barEl, valueEl) {
+        if (!th) return; // not spawned/synced yet — leave the bar as-is
+        if (barEl)   barEl.style.width = `${(th.current / th.max) * 100}%`;
+        if (valueEl) valueEl.textContent = `${Math.ceil(th.current)} / ${Math.ceil(th.max)}`;
+    }
+
+    // Find a team's Town Hall (any tier: townHall/keep/castle) and return its
+    // health, or null if no townhall entity exists on this client yet. Matched
+    // by unitType id + team, which works even when the buildingOwner tag hasn't
+    // replicated to this client.
+    _findTownHallHealth(team) {
+        const thTiers = this.game.buildingSystem?.constructor?.TOWNHALL_LEVEL
+            || { townHall: 1, keep: 2, castle: 3 };
+        for (const eid of this.game.getEntitiesWith('unitType', 'health', 'team')) {
+            const t = this.game.getComponent(eid, 'team');
+            if (!t || t.team !== team) continue;
+            const def = this.game.getUnitTypeDef(this.game.getComponent(eid, 'unitType'));
+            if (!def?.id || !thTiers[def.id]) continue;
+            const health = this.game.getComponent(eid, 'health');
+            if (health) {
+                return { current: Math.max(0, health.current), max: health.max || 1 };
+            }
+        }
+        return null;
     }
 
     // ==================== HERO DRAG (PREP PHASE) ====================
@@ -695,20 +461,40 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const worldPos = this.getWorldPositionFromMouse(event.clientX, event.clientY, false);
         if (!worldPos) return;
 
+        // Building placement mode: this click chooses where the just-bought building goes.
+        if (this._placingBuildingId) {
+            const buildingId = this._placingBuildingId;
+            this.call.submitPlaceBuilding(buildingId, worldPos.x, worldPos.z, (res) => {
+                if (res?.success) {
+                    this._exitBuildingPlacementMode();
+                } // else: out of radius / invalid — stay in placement mode to retry
+                this._renderShop(res?.state || res);
+            });
+            return;
+        }
+
         // Prefer SelectedUnitSystem's entity picker (proper unit-size + team filter); fall back to local
         const sel = this.game.selectedUnitSystem;
         let heroId = sel?.getEntityAtWorldPosition?.(worldPos) ?? this._findHeroAtWorldPos(worldPos.x, worldPos.z);
         if (heroId == null) return;
 
-        // Only my-team heroes are draggable
+        // Only my-team entities are draggable
         const team   = this.game.getComponent(heroId, 'team');
         const myTeam = this.call.getActivePlayerTeam();
         if (!team || team.team !== myTeam) return;
 
-        // Must be a hero entity (heroRosterInfo is added by HeroRosterSystem)
-        if (!this.game.getComponent(heroId, 'heroRosterInfo')) return;
+        // Buildings are draggable only on the round they were placed (Town Hall never).
+        const building = this.game.getComponent(heroId, 'buildingOwner');
+        if (building) {
+            if (!this.game.buildingSystem?.canMoveBuilding?.(heroId)) return;
+            this.draggedBuildingId = heroId;
+            this.draggedBuildingPlacementId = building.placementId;
+        } else {
+            // Must be a hero entity (heroRosterInfo is added by HeroRosterSystem)
+            if (!this.game.getComponent(heroId, 'heroRosterInfo')) return;
+            this.draggedHeroId = heroId;
+        }
 
-        this.draggedHeroId = heroId;
         const t = this.game.getComponent(heroId, 'transform');
         this.dragOffset.x = (t?.position?.x ?? worldPos.x) - worldPos.x;
         this.dragOffset.z = (t?.position?.z ?? worldPos.z) - worldPos.z;
@@ -721,7 +507,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
     }
 
     _onHeroDragMove(event) {
-        if (this.draggedHeroId == null) return;
+        const draggedId = this.draggedHeroId ?? this.draggedBuildingId;
+        if (draggedId == null) return;
 
         // Keep box selection suppressed for the duration of the drag.
         // SelectedUnitSystem's mousedown handler reactivates it after ours runs,
@@ -733,21 +520,24 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         const newX = worldPos.x + this.dragOffset.x;
         const newZ = worldPos.z + this.dragOffset.z;
-        // Optimistic local update so the hero follows the cursor immediately
-        this.game.placementSystem?.moveHero(this.draggedHeroId, newX, newZ);
+        // Optimistic local update so the entity follows the cursor immediately
+        this.game.placementSystem?.moveHero(draggedId, newX, newZ);
         this.dragMoved = true;
     }
 
     _onHeroDragUp(event) {
-        if (this.draggedHeroId == null) return;
+        const isBuilding = this.draggedBuildingId != null;
+        const draggedId = this.draggedHeroId ?? this.draggedBuildingId;
+        if (draggedId == null) return;
 
-        // Snapshot state, then clear it BEFORE any network call. This guarantees the
-        // drag releases even if submitHeroMove or the raycast throws.
-        const heroId = this.draggedHeroId;
+        // Snapshot state, then clear it BEFORE any network call so the drag always releases.
+        const placementId = this.draggedBuildingPlacementId;
         const wasMoved = this.dragMoved;
         const offX = this.dragOffset.x;
         const offZ = this.dragOffset.z;
         this.draggedHeroId = null;
+        this.draggedBuildingId = null;
+        this.draggedBuildingPlacementId = null;
         this.dragMoved = false;
         document.body.style.cursor = 'default';
 
@@ -756,10 +546,14 @@ class PlacementUISystem extends GUTS.BaseSystem {
         try {
             const worldPos = this.getWorldPositionFromMouse(event.clientX, event.clientY, false);
             if (worldPos) {
-                this.call.submitHeroMove(heroId, worldPos.x + offX, worldPos.z + offZ);
+                if (isBuilding) {
+                    this.call.submitMoveBuilding(placementId, worldPos.x + offX, worldPos.z + offZ);
+                } else {
+                    this.call.submitHeroMove(draggedId, worldPos.x + offX, worldPos.z + offZ);
+                }
             }
         } catch (err) {
-            console.warn('[PlacementUISystem] submitHeroMove failed:', err);
+            console.warn('[PlacementUISystem] drag move submit failed:', err);
         }
     }
 
@@ -804,129 +598,170 @@ class PlacementUISystem extends GUTS.BaseSystem {
         document.body.style.cursor = 'default';
     }
 
-    // ==================== HERO ROSTER PANEL ====================
-
-    renderHeroRoster() {
-        const container = this.elements.heroRosterCards;
-        if (!container) return;
-
-        const myPlayerId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
-        const playerEntities = this.call.getPlayerEntities() || [];
-
-        let myStats = null;
-        for (const eid of playerEntities) {
-            const stats = this.game.getComponent(eid, 'playerStats');
-            if (stats && stats.playerId === myPlayerId) { myStats = stats; break; }
-        }
-
-        const roster = myStats?.heroRoster || [];
-        if (roster.length === 0) {
-            container.innerHTML = '<div class="hero-slot">No heroes selected yet</div>';
-            return;
-        }
-
-        container.innerHTML = roster.map((entry, i) => this._renderHeroCard(entry, i)).join('');
+    _titleCase(s) {
+        return String(s).charAt(0).toUpperCase() + String(s).slice(1);
     }
 
-    _renderHeroCard(entry, index) {
-        const heroClass = entry.heroClass || 'unknown';
-        const className = heroClass.charAt(0).toUpperCase() + heroClass.slice(1);
-        const level = this._calcHeroLevel(entry.roundsPlayed || 0);
-        const eq = entry.equipment || {};
+    _unitDisplayName(spawnType) {
+        return spawnType ? (this.collections?.units?.[spawnType]?.title || null) : null;
+    }
 
-        // Map slot name → required itemType (must match HeroStatSystem.SLOT_ITEM_TYPE)
-        const SLOT_TYPE = { mainWeapon: 'weapon', offhand: 'offhand', bodyArmor: 'bodyArmor', charm: 'charm' };
-        const selectedItem = this._getSelectedInventoryItem();
+    // ==================== ARMY SHOP ====================
 
-        // 2H weapons lock the offhand slot — show "Locked by 2H" instead of "Empty"
-        // and don't render it as a valid equip target.
-        const offhandBlocked = !eq.offhand && eq.mainWeapon?.isTwoHanded;
+    // Only react to our own player's shop state (offers are sent per-player).
+    _isMyShopState(state) {
+        if (!state) return false;
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        return state.playerId === myId;
+    }
 
-        const slot = (label, slotName, item) => {
-            const filled = !!item;
-            const rarity = item?.rarity || '';
-            const blocked = slotName === 'offhand' && offhandBlocked;
-            const name = blocked
-                ? 'Locked (2H)'
-                : (item?.baseName || item?.name || (filled ? 'Item' : 'Empty'));
-            const isTarget = !blocked && selectedItem && selectedItem.itemType === SLOT_TYPE[slotName];
-            const targetCls = isTarget ? 'equip-target' : '';
-            const blockedCls = blocked ? 'blocked' : '';
-            return `<div class="hero-slot ${filled ? 'filled' : ''} ${rarity ? 'rarity-' + rarity : ''} ${targetCls} ${blockedCls}"
-                data-action="equip-gear" data-roster-index="${index}" data-slot="${slotName}">
-                <span class="hero-slot-label">${label}</span>
-                <span class="hero-slot-value">${name}</span>
+    // Fired by ClientNetworkSystem 'SHOP_OFFERS' / local triggerEvent at round start.
+    onShopOffersReady(state) {
+        if (!this._isMyShopState(state)) return;
+        this._shopState = state;
+        this._renderShop(state);
+    }
+
+    _renderShop(state) {
+        if (!state) return;
+        if (this._isMyShopState(state)) this._shopState = state;
+        const s = this._shopState;
+        if (!s) return;
+
+        const offers = s.offers || [];
+        if (this.elements.shopOffers) {
+            this.elements.shopOffers.innerHTML = offers.map((o, i) => {
+                const affordable = (s.gold ?? 0) >= o.cost;
+                const cls = `shop-offer-card kind-${o.kind} ${o.consumed ? 'consumed' : ''} ${affordable ? '' : 'unaffordable'}`;
+                const label = o.consumed ? 'Purchased' : `${o.cost}g`;
+                return `<div class="${cls}" data-offer-index="${i}">
+                    <span class="shop-offer-kind">${o.kind}</span>
+                    <span class="shop-offer-name">${o.title}</span>
+                    <span class="shop-offer-cost">${label}</span>
+                </div>`;
+            }).join('');
+        }
+        if (this.elements.shopRerollBtn) {
+            const cost = s.rerollCost ?? 0;
+            this.elements.shopRerollBtn.textContent = `Reroll (${cost}g)`;
+            this.elements.shopRerollBtn.disabled = (s.gold ?? 0) < cost;
+        }
+        this._renderUnlockedUnits(s);
+        this.updateHUD?.();
+    }
+
+    _renderUnlockedUnits(s) {
+        if (!this.elements.unlockedUnitsCards) return;
+        const unlocked = s.unlocked || [];
+        this.elements.unlockedUnitsCards.innerHTML = unlocked.map(u => {
+            const affordable = (s.gold ?? 0) >= u.cost;
+            return `<div class="unlocked-unit-card ${affordable ? '' : 'unaffordable'}" data-unit-id="${u.id}">
+                <span class="unlocked-unit-name">${u.title}</span>
+                <span class="unlocked-unit-cost">${u.cost}g</span>
             </div>`;
-        };
-
-        // One ability slot per gear piece. Shows the chosen ability's display
-        // name; carries data attributes used by the cooldown overlay tick.
-        const abilitySlot = (slotName, item) => {
-            const abilityId = item?.chosenAbilityId || null;
-            const rarity = item?.rarity || '';
-            const display = abilityId ? this._abilityMeta(abilityId).name : '—';
-            const cdAttrs = abilityId
-                ? `data-ability-id="${abilityId}" data-roster-index="${index}"`
-                : '';
-            return `<div class="hero-slot ability-slot ${abilityId ? 'filled' : ''} ${rarity ? 'rarity-' + rarity : ''}" ${cdAttrs}>
-                <span class="hero-slot-value">${display}</span>
-                <div class="hero-ability-cooldown" style="height:0%"></div>
-            </div>`;
-        };
-
-        return `<div class="hero-card" data-roster-index="${index}">
-            <div class="hero-card-header">
-                <span class="hero-card-name">${className}</span>
-                <span class="hero-card-level">Lvl ${level}</span>
-            </div>
-            <div class="hero-equipment-grid">
-                ${slot('Weapon',  'mainWeapon', eq.mainWeapon)}
-                ${slot('Offhand', 'offhand',    eq.offhand)}
-                ${slot('Armor',   'bodyArmor',  eq.bodyArmor)}
-                ${slot('Charm',   'charm',      eq.charm)}
-                <div class="hero-ability-slots">
-                    ${abilitySlot('mainWeapon', eq.mainWeapon)}
-                    ${abilitySlot('offhand',    eq.offhand)}
-                    ${abilitySlot('bodyArmor',  eq.bodyArmor)}
-                    ${abilitySlot('charm',      eq.charm)}
-                </div>
-            </div>
-        </div>`;
+        }).join('');
     }
 
-    // ==================== INVENTORY PANEL ====================
+    _onShopOfferClick(event) {
+        const card = event.target.closest('[data-offer-index]');
+        if (!card) return;
+        const idx = parseInt(card.dataset.offerIndex, 10);
+        const offer = this._shopState?.offers?.[idx];
+        if (!offer || offer.consumed) return;
+        this.call.submitBuyOffer(idx, (res) => this._handleBuyResult(res));
+    }
 
-    renderInventory() {
-        const container = this.elements.inventoryItems;
-        if (!container) return;
+    _onUnlockedUnitClick(event) {
+        const card = event.target.closest('[data-unit-id]');
+        if (!card) return;
+        this.call.submitBuyUnlockedUnit(card.dataset.unitId, (res) => this._renderShop(res?.state || res));
+    }
 
-        const stats = this._getMyPlayerStats();
-        const inventory = stats?.inventory || [];
-
-        if (inventory.length === 0) {
-            container.innerHTML = '<div class="inventory-hint" style="margin:0;">Empty</div>';
-            return;
+    _handleBuyResult(res) {
+        if (res?.requiresTarget) {
+            this._enterAbilityTargetMode(res.pendingAbilityId);
+            this._renderShop(res.state);
+        } else if (res?.requiresPlacement) {
+            this._enterBuildingPlacementMode(res.buildingId);
+            this._renderShop(res.state);
+        } else {
+            this._renderShop(res?.state || res);
         }
-
-        container.innerHTML = inventory.map((item, i) => this._renderInventoryItem(item, i)).join('');
     }
 
-    _renderInventoryItem(item, index) {
-        const rarity   = item?.rarity || '';
-        const name     = item?.baseName || item?.name || 'Item';
-        const itemType = item?.itemType || '';
-        const selected = (index === this.selectedInventoryIndex) ? 'selected' : '';
-        return `<div class="inventory-item ${rarity ? 'rarity-' + rarity : ''} ${selected}"
-            data-action="select-item" data-inventory-index="${index}">
-            <span class="inventory-item-name">${name}</span>
-            <span class="inventory-item-type">${itemType}</span>
-        </div>`;
+    // ── Building placement mode ──────────────────────────────────────────────
+    _enterBuildingPlacementMode(buildingId) {
+        this._placingBuildingId = buildingId;
+        if (this.elements.shopPendingText) {
+            const title = this.collections?.buildings?.[buildingId]?.title || buildingId;
+            this.elements.shopPendingText.textContent =
+                `Click within range of your Town Hall to place the ${title}.`;
+        }
+        this.elements.shopPendingBanner?.classList.remove('hidden');
     }
 
-    _getSelectedInventoryItem() {
-        if (this.selectedInventoryIndex === null) return null;
-        const stats = this._getMyPlayerStats();
-        return stats?.inventory?.[this.selectedInventoryIndex] || null;
+    _exitBuildingPlacementMode() {
+        this._placingBuildingId = null;
+        this.elements.shopPendingBanner?.classList.add('hidden');
+    }
+
+    _cancelBuildingPlacement() {
+        if (!this._placingBuildingId) return;
+        this.call.submitCancelPlaceBuilding((res) => {
+            this._exitBuildingPlacementMode();
+            this._renderShop(res?.state || res);
+        });
+    }
+
+    // ── Single-target ability targeting ──────────────────────────────────────
+    // The pending banner lists the player's roster units as buttons; clicking
+    // one assigns the pending ability to that unit.
+    _enterAbilityTargetMode(abilityId) {
+        this._pendingAbilityId = abilityId;
+        if (this.elements.shopPendingText) {
+            this.elements.shopPendingText.textContent = 'Choose a unit to receive the ability:';
+        }
+        this._renderAbilityTargets();
+        this.elements.shopPendingBanner?.classList.remove('hidden');
+    }
+
+    _exitAbilityTargetMode() {
+        this._pendingAbilityId = null;
+        if (this.elements.shopPendingTargets) this.elements.shopPendingTargets.innerHTML = '';
+        this.elements.shopPendingBanner?.classList.add('hidden');
+    }
+
+    _renderAbilityTargets() {
+        const container = this.elements.shopPendingTargets;
+        if (!container) return;
+        const roster = this._getMyPlayerStats()?.heroRoster || [];
+        container.innerHTML = roster.map((entry, i) => {
+            const level = entry.level || this._calcHeroLevel(entry.roundsPlayed || 0);
+            const name = this._unitDisplayName(entry.spawnType) || this._titleCase(entry.heroClass || 'unknown');
+            return `<button class="pending-target-btn" data-roster-index="${i}">
+                ${name} <span class="pending-target-level">Lv ${level}</span>
+            </button>`;
+        }).join('');
+    }
+
+    _cancelAbilityTarget() {
+        if (!this._pendingAbilityId) return;
+        this.call.submitGrantSingleAbility(this._pendingAbilityId, -1, (res) => {
+            this._exitAbilityTargetMode();
+            this._renderShop(res?.state || res);
+        });
+    }
+
+    _onAbilityTargetClick(event) {
+        if (!this._pendingAbilityId) return;
+        const card = event.target.closest('[data-roster-index]');
+        if (!card) return;
+        const rosterIndex = parseInt(card.dataset.rosterIndex, 10);
+        const abilityId = this._pendingAbilityId;
+        this.call.submitGrantSingleAbility(abilityId, rosterIndex, (res) => {
+            this._exitAbilityTargetMode();
+            this._renderShop(res?.state || res);
+        });
     }
 
     _getMyPlayerStats() {
@@ -939,100 +774,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
         return null;
     }
 
-    // Single delegated click handler for inventory + hero slot interactions.
-    _onPrepClick(event) {
-        const target = event.target.closest('[data-action]');
-        if (!target) return;
-
-        const action = target.dataset.action;
-        if (action === 'select-item') {
-            const idx = parseInt(target.dataset.inventoryIndex, 10);
-            // Toggle: clicking the selected item again deselects it
-            this.selectedInventoryIndex = (this.selectedInventoryIndex === idx) ? null : idx;
-            this.renderHeroRoster();
-            this.renderInventory();
-            this._showDetailsForItem(this._getSelectedInventoryItem());
-        } else if (action === 'equip-gear') {
-            const rosterIndex = parseInt(target.dataset.rosterIndex, 10);
-            const slot        = target.dataset.slot;
-            const stats       = this._getMyPlayerStats();
-            const equipped    = stats?.heroRoster?.[rosterIndex]?.equipment?.[slot] || null;
-            // If the player has an inventory item selected, equip it. Otherwise show
-            // the currently-equipped item's details (mobile-friendly inspection)
-            // with an Unequip button.
-            if (this.selectedInventoryIndex !== null) {
-                this.call.submitEquipGear(rosterIndex, slot, this.selectedInventoryIndex);
-                this.selectedInventoryIndex = null;
-                setTimeout(() => { this.renderHeroRoster(); this.renderInventory(); this._showDetailsForItem(null); }, 50);
-            } else if (equipped) {
-                this._showDetailsForItem(equipped, { rosterIndex, slot });
-            }
-        } else if (action === 'unequip-gear') {
-            const rosterIndex = parseInt(target.dataset.rosterIndex, 10);
-            const slot        = target.dataset.slot;
-            this.call.submitUnequipGear(rosterIndex, slot);
-            setTimeout(() => { this.renderHeroRoster(); this.renderInventory(); this._showDetailsForItem(null); }, 50);
-        } else if (action === 'identify-item') {
-            const itemId = target.dataset.itemId;
-            if (itemId) this.call.submitIdentifyItem(itemId);
-        } else if (action === 'select-ability') {
-            const itemId = target.dataset.itemId;
-            if (itemId) this.call.submitSelectAbility(itemId);
-        } else if (action === 'sell-item') {
-            const itemId = target.dataset.itemId;
-            if (!itemId) return;
-            this.call.submitSellItem(itemId);
-            this.selectedInventoryIndex = null;
-            setTimeout(() => { this.renderInventory(); this._showDetailsForItem(null); }, 50);
-        }
-    }
-
     _calcHeroLevel(roundsPlayed) {
         if (roundsPlayed >= 7) return 7;
         if (roundsPlayed >= 5) return 5;
         if (roundsPlayed >= 3) return 3;
         return 1;
-    }
-
-    // Walks every visible ability slot in the hero roster panel, computes the
-    // remaining cooldown for that hero/ability, and resizes the overlay div.
-    // The overlay's height percent = remaining / total. Starts full when an
-    // ability fires and shrinks to 0 as it tracks down.
-    _updateAbilityCooldownOverlays() {
-        const panel = this.elements.heroRosterPanel;
-        if (!panel || panel.classList.contains('hidden')) return;
-        const abilitySystem = this.game.abilitySystem;
-        const rosterSystem  = this.game.heroRosterSystem;
-        if (!abilitySystem || !rosterSystem) return;
-
-        const myPlayerId = this.game.clientNetworkManager?.numericPlayerId
-            ?? this.game.state?.localPlayerId ?? 0;
-
-        const slots = panel.querySelectorAll('.ability-slot[data-ability-id]');
-        for (const slotEl of slots) {
-            const rosterIndex = Number(slotEl.dataset.rosterIndex);
-            const abilityId   = slotEl.dataset.abilityId;
-            if (!abilityId || !Number.isInteger(rosterIndex)) continue;
-
-            const heroId = rosterSystem.getHeroEntityId?.(myPlayerId, rosterIndex);
-            const overlay = slotEl.querySelector('.hero-ability-cooldown');
-            if (!overlay) continue;
-
-            // No live hero entity (e.g. mid-respawn) → empty the overlay.
-            if (heroId == null) {
-                if (overlay.style.height !== '0%') overlay.style.height = '0%';
-                continue;
-            }
-
-            const remaining = abilitySystem.getRemainingCooldown(heroId, abilityId);
-            const ability   = (abilitySystem.entityAbilities.get(heroId) || [])
-                .find(a => a?.id === abilityId);
-            const total = ability ? ((ability.castTime || 0) + (ability.cooldown || 0)) : 0;
-
-            const pct = total > 0 ? Math.max(0, Math.min(100, (remaining / total) * 100)) : 0;
-            const pctStr = `${pct.toFixed(1)}%`;
-            if (overlay.style.height !== pctStr) overlay.style.height = pctStr;
-        }
     }
 
     _findHeroAtWorldPos(worldX, worldZ) {
@@ -1056,53 +802,71 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     // ==================== EVENT LISTENERS ====================
 
+    // Every listener this system registers goes through _track so teardown can
+    // remove it. The system instance outlives scene loads — untracked window/
+    // canvas listeners would otherwise accumulate (and keep firing with stale
+    // state) across matches in one browser session.
+    _track(target, type, handler) {
+        target.addEventListener(type, handler);
+        (this._trackedListeners ||= []).push([target, type, handler]);
+    }
+
+    _teardownListeners() {
+        for (const [target, type, handler] of this._trackedListeners || []) {
+            target.removeEventListener(type, handler);
+        }
+        this._trackedListeners = [];
+        // Shop wiring is tracked too, so it must be re-wired after a teardown
+        // (the shop DOM may have been re-injected by the next scene load).
+        this._shopWired = false;
+        if (this.mouseRayCastInterval) {
+            clearInterval(this.mouseRayCastInterval);
+            this.mouseRayCastInterval = null;
+        }
+    }
+
     setupEventListeners() {
+        // Idempotent: drop listeners from a previous match before re-wiring.
+        // onGameStarted runs once per match on this same system instance.
+        this._teardownListeners();
+
         this.elements.readyButton = document.getElementById('placementReadyBtn');
 
         if (this.elements.readyButton) {
-            this.elements.readyButton.addEventListener('click', () => {
+            this._track(this.elements.readyButton, 'click', () => {
                 this.togglePlacementReady();
             });
         }
 
         // Mouse tracking for preview
         if (this.config.enablePreview && this.canvas) {
-            this._canvasMouseMoveHandler = (event) => {
+            this._track(this.canvas, 'mousemove', (event) => {
                 const rect = this.canvas.getBoundingClientRect();
                 this.mouseScreenPos.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
                 this.mouseScreenPos.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-            };
-            this.canvas.addEventListener('mousemove', this._canvasMouseMoveHandler);
+            });
 
-            this._canvasMouseLeaveHandler = () => {
+            this._track(this.canvas, 'mouseleave', () => {
                 // Don't clear - just show pending buildings if any
                 this.lastPendingBuildingUpdate = 0; // Force refresh
                 this.updatePendingBuildingPreview();
                 this.cachedValidation = null;
                 this.cachedGridPos = null;
                 document.body.style.cursor = 'default';
-            };
-            this.canvas.addEventListener('mouseleave', this._canvasMouseLeaveHandler);
+            });
         }
 
         // Hero drag handlers (prep phase only)
         if (this.canvas) {
-            this._heroDragDownHandler = (event) => this._onHeroDragDown(event);
-            this._heroDragMoveHandler = (event) => this._onHeroDragMove(event);
-            this._heroDragUpHandler   = (event) => this._onHeroDragUp(event);
-            this.canvas.addEventListener('mousedown', this._heroDragDownHandler);
-            this.canvas.addEventListener('mousemove', this._heroDragMoveHandler);
-            window.addEventListener('mouseup', this._heroDragUpHandler);
+            this._track(this.canvas, 'mousedown', (event) => this._onHeroDragDown(event));
+            this._track(this.canvas, 'mousemove', (event) => this._onHeroDragMove(event));
+            this._track(window, 'mouseup', (event) => this._onHeroDragUp(event));
 
             // Right-click terrain pan handlers (camera follows so the clicked point stays under cursor)
-            this._panDownHandler = (event) => this._onTerrainPanDown(event);
-            this._panMoveHandler = (event) => this._onTerrainPanMove(event);
-            this._panUpHandler   = (event) => this._onTerrainPanUp(event);
-            this._contextMenuHandler = (event) => event.preventDefault();
-            this.canvas.addEventListener('mousedown', this._panDownHandler);
-            this.canvas.addEventListener('mousemove', this._panMoveHandler);
-            window.addEventListener('mouseup', this._panUpHandler);
-            this.canvas.addEventListener('contextmenu', this._contextMenuHandler);
+            this._track(this.canvas, 'mousedown', (event) => this._onTerrainPanDown(event));
+            this._track(this.canvas, 'mousemove', (event) => this._onTerrainPanMove(event));
+            this._track(window, 'mouseup', (event) => this._onTerrainPanUp(event));
+            this._track(this.canvas, 'contextmenu', (event) => event.preventDefault());
         }
 
         // Mouse raycast interval
@@ -1124,26 +888,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
         // Refresh HUD every tick — needed for HP / round / gold display to reflect
         // changes made by AutobattlerRoundSystem after each battle.
         this.updateHUD();
-
-        // Tick ability cooldown overlays in the hero roster (works during battle
-        // when cooldowns actually change; harmless during prep).
-        this._updateAbilityCooldownOverlays();
-
-        // Keep inventory + hero roster panels in sync with server state during prep.
-        // Cheap DOM update; the selected-item state is held in this.selectedInventoryIndex
-        // (not DOM-derived) so it survives re-renders.
-        if (this.game.state.phase === this.enums.gamePhase.placement) {
-            const stats = this._getMyPlayerStats();
-            const invLen = stats?.inventory?.length ?? 0;
-            const rosterLen = stats?.heroRoster?.length ?? 0;
-            // Fingerprint to detect actual changes vs unchanged ticks
-            const fp = `${invLen}|${rosterLen}|${this.selectedInventoryIndex}`;
-            if (fp !== this._lastPrepFingerprint) {
-                this._lastPrepFingerprint = fp;
-                this.renderInventory();
-                this.renderHeroRoster();
-            }
-        }
 
         // Note: TBW used to self-pause the game here after 30s of battle so the client
         // could wait for the server's BATTLE_END broadcast. In HeroArena (and any mode
@@ -1267,9 +1011,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         // Show the prep controls panel (contains the Ready button)
         if (this.elements.prepControls)     this.elements.prepControls.classList.remove('hidden');
-        if (this.elements.heroRosterPanel)  this.elements.heroRosterPanel.classList.remove('hidden');
-        if (this.elements.inventoryPanel)   this.elements.inventoryPanel.classList.remove('hidden');
-        if (this.elements.itemDetailsPanel) this.elements.itemDetailsPanel.classList.remove('hidden');
+        if (this.elements.shopPanel)        this.elements.shopPanel.classList.remove('hidden');
+        if (this.elements.unlockedUnitsPanel) this.elements.unlockedUnitsPanel.classList.remove('hidden');
         if (this.elements.phaseDisplay)     this.elements.phaseDisplay.textContent = 'PREP PHASE';
 
         this.enablePlacementUI();
@@ -1280,23 +1023,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
         // Move camera to player's side of the board
         this.setupCameraForMySide();
 
-        // Render the player's hero roster + equipment + inventory
-        this.selectedInventoryIndex = null;
-        this.renderHeroRoster();
-        this.renderInventory();
-        this._showDetailsForItem(null);
+        // (Re)render the shop from the latest state
+        if (this._shopState) this._renderShop(this._shopState);
     }
 
     // Hide the prep panels when leaving placement phase
     onBattleStart() {
-        // Keep the hero roster panel visible during battle so the player can see
-        // ability cooldown overlays. Hide inventory + details panel since they
-        // aren't actionable mid-battle.
-        if (this.elements.inventoryPanel)   this.elements.inventoryPanel.classList.add('hidden');
-        if (this.elements.itemDetailsPanel) this.elements.itemDetailsPanel.classList.add('hidden');
-        if (this.elements.shopOverlay)          this.elements.shopOverlay.classList.add('hidden');
-        if (this.elements.affixChoiceOverlay)   this.elements.affixChoiceOverlay.classList.add('hidden');
-        if (this.elements.abilityChoiceOverlay) this.elements.abilityChoiceOverlay.classList.add('hidden');
+        // Hide the shop — not actionable mid-battle.
+        if (this.elements.shopPanel)          this.elements.shopPanel.classList.add('hidden');
+        if (this.elements.unlockedUnitsPanel) this.elements.unlockedUnitsPanel.classList.add('hidden');
         this._logEvent(`Round ${this.game.state.round ?? 1} — battle begins!`, 'battle');
     }
 
@@ -1318,6 +1053,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     onBattleEnd() {
         this._logEvent('Battle ends', 'battle');
+
+        // Client-side mirror of ServerBattlePhaseSystem.onBattleEnd cleanup: drop
+        // pending scheduled actions (delayed damage / queued projectile spawns)
+        // and lingering status effects so this client's intermission sim can't
+        // apply stale battle effects to entities that persist into next round.
+        // In local mode the server-side handler already ran on this same
+        // instance — repeating the clears is harmless.
+        this.game.schedulingSystem?.clearAllActions?.();
+        this.call.clearAllDamageEffects?.();
     }
 
     _describeEntity(entityId) {
@@ -1328,251 +1072,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const teamName = teamComp?.team === this.enums?.team?.left ? 'L' :
                         teamComp?.team === this.enums?.team?.right ? 'R' : '?';
         return `[${teamName}] ${unitDef?.title || unitDef?.id || `#${entityId}`}`;
-    }
-
-    // ==================== ITEM DETAILS PANEL (click/tap-driven, no hover) ====================
-
-    // context: optional { rosterIndex, slot } — when present, an Unequip button is shown.
-    _showDetailsForItem(item, context = null) {
-        const panel   = this.elements.itemDetailsPanel;
-        const content = this.elements.itemDetailsContent;
-        if (!panel || !content) return;
-        // Remember the last shown item so onShopUpdate can refresh affixes
-        // (e.g. after the player identifies an item).
-        this._currentDetailsItemId = item?.id || null;
-        this._currentDetailsContext = item ? context : null;
-        if (!item) {
-            panel.className = '';
-            content.className = 'item-details-empty';
-            content.innerHTML = 'Tap an item or hero slot to see details.';
-            return;
-        }
-        panel.className = `rarity-${item.rarity || 'normal'}`;
-        content.className = '';
-        content.innerHTML = this._renderItemTooltip(item)
-            + this._renderSelectAbilityButton(item)
-            + this._renderIdentifyButton(item)
-            + this._renderSellButton(item, context)
-            + this._renderUnequipButton(context);
-    }
-
-    // Re-render the currently shown details panel using the latest server data.
-    _refreshDetailsPanel() {
-        const id = this._currentDetailsItemId;
-        if (!id) return;
-        const stats = this._getMyPlayerStats();
-        if (!stats) return;
-        // Find the item by id in inventory or any equipped slot
-        const fromInv = (stats.inventory || []).find(it => it?.id === id);
-        if (fromInv) { this._showDetailsForItem(fromInv, this._currentDetailsContext); return; }
-        for (const entry of (stats.heroRoster || [])) {
-            for (const slot of ['mainWeapon', 'offhand', 'bodyArmor', 'charm']) {
-                if (entry?.equipment?.[slot]?.id === id) {
-                    this._showDetailsForItem(entry.equipment[slot], this._currentDetailsContext);
-                    return;
-                }
-            }
-        }
-    }
-
-    _renderIdentifyButton(item) {
-        if (!this._itemNeedsIdentify(item)) return '';
-        return `<button class="tt-identify-btn" data-action="identify-item" data-item-id="${item.id}">Identify</button>`;
-    }
-
-    _renderSelectAbilityButton(item) {
-        if (!this._itemNeedsAbilitySelect(item)) return '';
-        return `<button class="tt-select-ability-btn" data-action="select-ability" data-item-id="${item.id}">Select Ability</button>`;
-    }
-
-    // True for gear items whose base offers abilities and which haven't picked yet.
-    _itemNeedsAbilitySelect(item) {
-        if (!item || item.chosenAbilityId) return false;
-        if (!['weapon', 'offhand', 'bodyArmor', 'charm'].includes(item.itemType)) return false;
-        const base = this._lookupBaseFor(item);
-        return Array.isArray(base?.abilities) && base.abilities.length > 0;
-    }
-
-    _lookupBaseFor(item) {
-        const c = this.game.getCollections?.() || {};
-        const dicts = [c.weaponBases, c.armorBases, c.charmBases, c.offhandBases];
-        for (const d of dicts) {
-            if (d?.[item.baseType]) return d[item.baseType];
-        }
-        return null;
-    }
-
-    // Mirrors ItemShopSystem._needsIdentification so the UI can show the button
-    // without round-tripping to the server.
-    _itemNeedsIdentify(item) {
-        if (!item) return false;
-        const level = item.itemLevel || 1;
-        const have = (item.affixes || []).length;
-        if (level >= 9) return have < 7;
-        if (level >= 6) return have < 6;
-        if (level >= 3) return have < 2;
-        return false;
-    }
-
-    _renderUnequipButton(context) {
-        if (!context) return '';
-        const { rosterIndex, slot } = context;
-        if (slot) {
-            return `<button class="tt-unequip-btn" data-action="unequip-gear" data-roster-index="${rosterIndex}" data-slot="${slot}">Unequip</button>`;
-        }
-        return '';
-    }
-
-    // Sell button — only shown for INVENTORY items (context.slot is empty for
-    // those; equipped items must be unequipped before being sellable).
-    _renderSellButton(item, context) {
-        if (!item || context?.slot) return '';
-        if (!this._itemInInventory(item.id)) return '';
-        return `<button class="tt-sell-btn" data-action="sell-item" data-item-id="${item.id}">Sell (1g)</button>`;
-    }
-
-    _itemInInventory(itemId) {
-        const stats = this._getMyPlayerStats();
-        return !!(stats?.inventory || []).find(it => it?.id === itemId);
-    }
-
-    _renderItemTooltip(item) {
-        const name     = item.name || item.baseName || 'Item';
-        const baseName = item.baseName || '';
-        const subtitle = this._tooltipSubtitle(item);
-        const level    = item.itemLevel ?? 1;
-
-        let parts = [
-            `<div class="tt-name-row"><span class="tt-name">${name}</span><span class="tt-item-level">Lv ${level}</span></div>`,
-            `<div class="tt-subtitle">${subtitle}</div>`
-        ];
-        if (baseName && baseName !== name) {
-            parts.push(`<div class="tt-stat"><span class="tt-stat-name">Base</span><span class="tt-stat-value">${baseName}</span></div>`);
-        }
-
-        // Type-specific stats block
-        const statsHtml = this._tooltipStats(item);
-        if (statsHtml) parts.push(`<div class="tt-section">${statsHtml}</div>`);
-
-        // Affixes (random rolled modifiers)
-        const affixesHtml = this._tooltipAffixes(item);
-        if (affixesHtml) parts.push(`<div class="tt-section">${affixesHtml}</div>`);
-
-        // Gear: show the chosen ability's details (cooldown, range, damage)
-        if (item.chosenAbilityId) {
-            const abilityHtml = this._tooltipAbilityFor(item.chosenAbilityId);
-            if (abilityHtml) parts.push(`<div class="tt-section">${abilityHtml}</div>`);
-        }
-
-        // Free-text description
-        if (item.description) {
-            parts.push(`<div class="tt-description">${item.description}</div>`);
-        }
-
-        return parts.join('');
-    }
-
-    // Pull the ability's stats (cooldown, range, damage, etc.) from the abilities
-    // collection — abilities are data-driven, NOT hardcoded in JS classes anymore.
-    _tooltipAbilityFor(abilityId) {
-        if (!abilityId) return '';
-        const abilityData = this.collections?.abilities?.[abilityId];
-        if (!abilityData) return '';
-
-        const stat = (label, value) => `<div class="tt-stat"><span class="tt-stat-name">${label}</span><span class="tt-stat-value">${value}</span></div>`;
-        const lines = [];
-        if (abilityData.name)        lines.push(stat('Ability',     abilityData.name));
-        if (abilityData.cooldown != null) lines.push(stat('Cooldown', `${abilityData.cooldown}s`));
-        if (abilityData.range)       lines.push(stat('Range',       abilityData.range));
-        if (abilityData.castTime != null) lines.push(stat('Cast Time', `${abilityData.castTime}s`));
-        // Damage fields vary by ability (damage, bashDamage, leapDamage, etc.) — show the first one found
-        const damageField = ['damage', 'bashDamage', 'leapDamage', 'chargeDamage', 'backstabDamage',
-                             'piercingDamage', 'arrowDamage', 'initialDamage', 'drainAmount',
-                             'healAmount'].find(k => abilityData[k] != null);
-        if (damageField)             lines.push(stat(this._humanizeDamageField(damageField), abilityData[damageField]));
-        if (abilityData.element)     lines.push(stat('Element',     abilityData.element));
-        if (abilityData.splashRadius)lines.push(stat('Splash',      abilityData.splashRadius));
-        if (abilityData.stunDuration)lines.push(stat('Stun',        `${abilityData.stunDuration}s`));
-
-        if (abilityData.description) {
-            lines.push(`<div class="tt-description">${abilityData.description}</div>`);
-        }
-        return lines.join('');
-    }
-
-    _humanizeDamageField(field) {
-        const m = {
-            damage:         'Damage',
-            bashDamage:     'Damage',
-            leapDamage:     'Damage',
-            chargeDamage:   'Damage',
-            backstabDamage: 'Damage',
-            piercingDamage: 'Damage',
-            arrowDamage:    'Damage / Arrow',
-            initialDamage:  'Initial Damage',
-            drainAmount:    'Drain',
-            healAmount:     'Heal'
-        };
-        return m[field] || field;
-    }
-
-    _tooltipSubtitle(item) {
-        const r = item.rarity ? item.rarity[0].toUpperCase() + item.rarity.slice(1) : 'Normal';
-        switch (item.itemType) {
-            case 'weapon':    return `${r} ${item.weaponType ? item.weaponType.toUpperCase() : 'WEAPON'}${item.isTwoHanded ? ' (2H)' : ''}`;
-            case 'offhand':   return `${r} ${(item.offhandType || 'OFFHAND').toUpperCase()}`;
-            case 'bodyArmor': return `${r} ARMOR`;
-            case 'charm':     return `${r} CHARM`;
-            default:          return r.toUpperCase();
-        }
-    }
-
-    _tooltipStats(item) {
-        const lines = [];
-        const stat = (label, value) => `<div class="tt-stat"><span class="tt-stat-name">${label}</span><span class="tt-stat-value">${value}</span></div>`;
-
-        if (item.itemType === 'weapon') {
-            if (item.baseValue != null)   lines.push(stat('Damage',       item.baseValue));
-            if (item.attackSpeed != null) lines.push(stat('Attack Speed', `${item.attackSpeed}/s`));
-            if (item.range != null)       lines.push(stat('Range',        item.range));
-            if (item.projectile != null)  lines.push(stat('Projectile',   item.projectile));
-            if (item.element)             lines.push(stat('Element',      item.element));
-        } else if (item.itemType === 'bodyArmor' || item.itemType === 'offhand') {
-            if (item.baseValue)           lines.push(stat('Armor',        item.baseValue));
-        } else if (item.itemType === 'charm') {
-            // Charms are utility slots — no inherent base stat; affixes carry the value.
-        }
-        // Show the chosen ability (if any) on gear items
-        if (['weapon', 'offhand', 'bodyArmor', 'charm'].includes(item.itemType) && item.chosenAbilityId) {
-            const meta = this._abilityMeta(item.chosenAbilityId);
-            lines.push(stat('Ability', meta.name));
-        }
-        return lines.join('');
-    }
-
-    _tooltipAffixes(item) {
-        const affixes = Array.isArray(item.affixes) ? item.affixes : [];
-        if (affixes.length === 0) return '';
-        return affixes.map(a => {
-            const sign = a.value > 0 ? '+' : '';
-            const label = (a.label ? `${a.label} ` : '') + this._humanizeAffixStat(a.stat);
-            return `<div class="tt-affix">${sign}${a.value} ${label}</div>`;
-        }).join('');
-    }
-
-    _humanizeAffixStat(stat) {
-        const m = {
-            flatDamage: 'Damage',         percentDamage: '% Damage',
-            flatHP:     'HP',             percentHP:     '% HP',
-            flatArmor:  'Armor',
-            evasion:    'Evasion',        critChance:    '% Crit Chance',
-            blockChance:'% Block Chance',
-            fireResistance:      'Fire Resistance',
-            coldResistance:      'Cold Resistance',
-            lightningResistance: 'Lightning Resistance',
-            percentAttackSpeed:  '% Attack Speed'
-        };
-        return m[stat] || stat;
     }
 
     _logEvent(message, type = 'system') {
@@ -1653,10 +1152,16 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 });
             }
 
-            // Initialize deterministic RNG for this battle (must match server seed)
-            const roomId = this.game.clientNetworkManager?.roomId || 'default';
-            const roomIdHash = GUTS.SeededRandom.hashString(roomId);
-            const battleSeed = GUTS.SeededRandom.combineSeed(roomIdHash, this.game.state.round || 1);
+            // Initialize deterministic RNG for this battle (must match server seed).
+            // The server includes its authoritative gameSeed in the broadcast gameState
+            // (ServerGameRoom derives it from the room id) — use that rather than
+            // re-deriving it here, so a server-side change to seed generation can't
+            // silently desync every battle. Fall back to the legacy room-id derivation
+            // only if the broadcast carried no seed.
+            const gameSeed = data.gameState?.gameSeed ??
+                GUTS.SeededRandom.hashString(this.game.clientNetworkManager?.roomId || 'default');
+            this.game.state.gameSeed = gameSeed;
+            const battleSeed = GUTS.SeededRandom.combineSeed(gameSeed, this.game.state.round || 1);
             this.game.rng.strand('battle').reseed(battleSeed);
 
             // Track battle start time for duration limiting
@@ -1669,24 +1174,17 @@ class PlacementUISystem extends GUTS.BaseSystem {
             this.game.resetCurrentTime();
             this.battleStartTime = this.game.state.now || 0;
 
+            // Seed the HUD countdown deadline. In local mode the server-side
+            // startBattle() (which runs right after this handler) overwrites it
+            // with the same value; online, this is the client's own copy and any
+            // siege-window extension arrives via the BATTLE_DEADLINE broadcast.
+            this.game.state.battleEndsAt = this.battleStartTime + this.battleDuration;
+
             // CRITICAL: Resync entities with server state BEFORE onBattleStart
             // This ensures all clients have identical state (including playerOrder.isHiding)
             // before behavior trees start processing
             if (data.entitySync) {
-                console.log('[PlacementUISystem] About to call resyncEntities', {
-                    isLocalGame: this.game.state.isLocalGame,
-                    isHuntMission: this.game.state.isHuntMission,
-                    entitySyncAliveCount: data.entitySync?.entityAlive ? Object.keys(data.entitySync.entityAlive).length : 0
-                });
                 this.call.resyncEntities( data);
-            }
-
-            // DEBUG: Check playerOrder.isHiding after resync
-            const allPlayerOrders = this.game.getEntitiesWith('playerOrder');
-            for (const entityId of allPlayerOrders) {
-                const po = this.game.getComponent(entityId, 'playerOrder');
-                const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-                const unitTypeDef = this.game.getUnitTypeDef( unitTypeComp);
             }
 
             this.call.resetAI();
@@ -1952,28 +1450,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
     // ==================== CLEANUP ====================
 
     dispose() {
-        if (this.mouseRayCastInterval) {
-            clearInterval(this.mouseRayCastInterval);
-            this.mouseRayCastInterval = null;
-        }
-
-        // Clean up keyboard listener
-        if (this._keydownHandler) {
-            document.removeEventListener('keydown', this._keydownHandler);
-            this._keydownHandler = null;
-        }
-
-        // Clean up canvas listeners
-        if (this.canvas) {
-            if (this._canvasMouseMoveHandler) {
-                this.canvas.removeEventListener('mousemove', this._canvasMouseMoveHandler);
-                this._canvasMouseMoveHandler = null;
-            }
-            if (this._canvasMouseLeaveHandler) {
-                this.canvas.removeEventListener('mouseleave', this._canvasMouseLeaveHandler);
-                this._canvasMouseLeaveHandler = null;
-            }
-        }
+        // Removes every tracked window/canvas/shop listener and stops the
+        // raycast interval (see _track / _teardownListeners).
+        this._teardownListeners();
 
         this.cachedValidation = null;
         this.cachedGridPos = null;

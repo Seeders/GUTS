@@ -1,8 +1,0 @@
-{
-  "id": "staff",
-  "weaponCategory": "spell",
-  "range": 50,
-  "attackSpeed": 0.9,
-  "projectile": null,
-  "element": "physical"
-}

@@ -5,6 +5,7 @@ class BaseAbility {
     static serviceDependencies = [
         'getVisibleEnemiesInRange',
         'getNearbyUnits',
+        'hasLineOfSight',
         'playEffectSystem',
         'applyDamage'
     ];
@@ -35,27 +36,27 @@ class BaseAbility {
         this.priority = abilityData.priority || 5;
         this.castTime = abilityData.castTime ?? 1.5;
         this.autoTrigger = abilityData.autoTrigger || 'combat';
+        // Abilities only target enemies they can SEE (line of sight), matching basic
+        // attacks. Abilities that fire blind at a position (AoE on a spot, etc.) opt
+        // out by setting "requiresLineOfSight": false in their ability data.
+        this.requiresLineOfSight = abilityData.requiresLineOfSight ?? true;
 
         this.effects = this.defineEffects();
 
         // Reusable array to avoid allocations in getTargetForFacing
         this._sortedCandidates = [];
 
-        // Source item level — set by AbilitySystem.addAbilitiesToUnit when this
-        // ability comes from a gear slot. Used by scaledDamage() so leveling
-        // the item (via buying duplicates) also scales the granted ability's
-        // damage. Defaults to 1 for abilities not granted by items.
+        // Source level — set by AbilitySystem.addAbilitiesToUnit when an ability
+        // is granted with an explicit level. Used by scaledDamage() to scale the
+        // ability's damage with that level. Defaults to 1.
         this.sourceItemLevel = 1;
     }
 
-    // Mirrors HeroStatSystem.itemLevelMultiplier — scales ability damage with
-    // the level of the item that granted it. Use this to multiply any base
+    // Scales ability damage with sourceItemLevel. Use this to multiply any base
     // damage value before applying it: scheduleDamage, applyDamage, splash, DoT.
     scaledDamage(baseDamage) {
         const lvl = Math.max(1, this.sourceItemLevel || 1);
-        const perLevel = (typeof GUTS !== 'undefined' && GUTS.HeroStatSystem?.LEVEL_SCALING_PER_LEVEL)
-            ?? 0.15;
-        return baseDamage * (1 + (lvl - 1) * perLevel);
+        return baseDamage * (1 + (lvl - 1) * 0.15);
     }
 
     _resolveTargetType(targetTypeConfig) {
@@ -161,7 +162,26 @@ class BaseAbility {
     // Handles: spatial lookup, team filtering, health check, stealth/awareness, range checking
     getEnemiesInRange(casterEntity, range = null) {
         const baseRange = range || this.range;
-        return this.call.getVisibleEnemiesInRange( casterEntity, baseRange);
+        const enemies = this.call.getVisibleEnemiesInRange( casterEntity, baseRange);
+        if (!Array.isArray(enemies)) return [];
+
+        // Gate targeting on line of sight (unless this ability fires blind). Acquisition
+        // elsewhere is LOS-free, but to actually CAST at an enemy the caster must see it.
+        if (!this.requiresLineOfSight || !this.game.hasService('hasLineOfSight')) return enemies;
+
+        const myPos = this.game.getComponent(casterEntity, 'transform')?.position;
+        if (!myPos) return enemies;
+        const unitType = this.game.getUnitTypeDef( this.game.getComponent(casterEntity, 'unitType'));
+
+        const visible = [];
+        for (const eid of enemies) {
+            const pos = this.game.getComponent(eid, 'transform')?.position;
+            if (!pos) continue;
+            if (this.call.hasLineOfSight( { x: myPos.x, z: myPos.z }, { x: pos.x, z: pos.z }, unitType, casterEntity)) {
+                visible.push(eid);
+            }
+        }
+        return visible;
     }
 
     // Use spatial grid for efficient lookup - returns array of entityIds
@@ -285,15 +305,9 @@ class BaseAbility {
     //   requiresWeaponType:     'sword' | 'dagger' | 'axe' | 'mace' | 'bow' | 'wand' | 'staff'
     // Subclasses that override canExecute() should call this and AND-combine the result.
     _meetsWeaponRequirement(casterEntity) {
-        const reqCategory = this.abilityData?.requiresWeaponCategory;
-        const reqType     = this.abilityData?.requiresWeaponType;
-        if (!reqCategory && !reqType) return true;
-
-        const heroEquipment = this.game.getComponent(casterEntity, 'heroEquipment');
-        const weapon = heroEquipment?.mainWeapon;
-        if (!weapon) return false;
-        if (reqType && weapon.weaponType !== reqType) return false;
-        if (reqCategory && weapon.weaponCategory !== reqCategory) return false;
+        // Weapon requirements were a gear-system feature. With per-unit gear
+        // removed, weapon identity lives on the unit definition and these
+        // declarative checks no longer apply — abilities are always allowed.
         return true;
     }
 

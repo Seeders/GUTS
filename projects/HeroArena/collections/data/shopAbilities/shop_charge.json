@@ -1,0 +1,14 @@
+{
+  "abilityId": "ChargeAbility",
+  "title": "War Charge",
+  "description": "Grants Charge to your entire army",
+  "value": 80,
+  "grantMode": "team",
+  "requirements": [
+    {
+      "str": {
+        "min": 2
+      }
+    }
+  ]
+}

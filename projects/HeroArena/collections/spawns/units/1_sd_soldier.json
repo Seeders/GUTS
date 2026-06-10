@@ -1,5 +1,9 @@
 {
   "title": "Soldier",
+  "strength": 2,
+  "dexterity": 2,
+  "intelligence": 0,
+  "weaponType": "sword",
   "size": 25,
   "height": 50,
   "value": 35,

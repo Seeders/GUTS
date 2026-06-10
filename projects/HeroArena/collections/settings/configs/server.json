@@ -36,11 +36,13 @@
     "PlayerStatsSystem",
     "UnitCreationSystem",
     "SquadSystem",
+    "SquadExperienceSystem",
     "GridSystem",
     "TerrainSystem",
     "BehaviorSystem",
     "MovementSystem",
     "ProjectileSystem",
+    "VisionSystem",
     "TeamHealthSystem",
     "DeathSystem",
     "StatAggregationSystem",
@@ -59,12 +61,12 @@
     "AutobattlerRoundSystem",
     "HeroRosterSystem",
     "LeaderSystem",
-    "ItemGeneratorSystem",
     "LootDropSystem",
-    "ItemShopSystem",
-    "HeroStatSystem",
     "AutobattlerEconomySystem",
-    "OrbCraftingSystem"
+    "ArmyShopSystem",
+    "BuildingSystem",
+    "HeroExperienceSystem",
+    "BuffEffectsSystem"
   ],
   "classes": [
     {

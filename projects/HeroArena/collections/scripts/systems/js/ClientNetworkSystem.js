@@ -30,16 +30,14 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'submitLeaderSelection',
         'submitHeroSelection',
         'submitHeroMove',
-        'submitEquipGear',
-        'submitUnequipGear',
-        'submitBuyShopItem',
-        'submitRerollShop',
-        'submitUpgradeShop',
-        'submitSellItem',
-        'submitAffixChoice',
-        'submitIdentifyItem',
-        'submitSelectAbility',
-        'submitAbilityChoice'
+        'submitBuyOffer',
+        'submitRerollOffers',
+        'submitBuyUnlockedUnit',
+        'submitGrantSingleAbility',
+        'submitSpecializeChoice',
+        'submitPlaceBuilding',
+        'submitMoveBuilding',
+        'submitCancelPlaceBuilding'
     ];
 
     static serviceDependencies = [
@@ -65,7 +63,8 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'leaveGame',
         'getPlayerEntityId',
         'updateGoldDisplay',
-        'setSquadInfo'
+        'setSquadInfo',
+        'applyNetworkUnitData'
     ];
 
     constructor(game) {
@@ -299,6 +298,10 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                 this.handleHeroSelectComplete(data);
             }),
             nm.listen('PREP_PHASE_START', (data) => {
+                // PREP_PHASE_START carries a flat { round } (no gameState), so update the
+                // client round here — otherwise it lags a round behind the server during
+                // prep and round-keyed logic (e.g. BuildingSystem.canMoveBuilding) breaks.
+                if (data?.round !== undefined) this.game.state.round = data.round;
                 this.syncWithServerState(data);
                 this.game.triggerEvent('onPlacementPhaseStart');
             }),
@@ -308,13 +311,88 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                     this.game.placementSystem?.moveHero(data.entityId, data.x, data.z);
                 }
             }),
-
-            // HeroArena: item shop
-            nm.listen('SHOP_OPENED', (data) => {
-                this.game.triggerEvent('onShopOpened', data);
+            nm.listen('BUILDING_MOVED', (data) => {
+                // Reconcile the mover's building to the authoritative position.
+                if (data?.placementId != null) {
+                    const eid = this.game.buildingSystem?._findBuildingEntity(
+                        this.game.clientNetworkManager?.numericPlayerId, data.placementId);
+                    if (eid != null) this.game.placementSystem?.moveHero(eid, data.x, data.z);
+                }
             }),
-            nm.listen('SHOP_UPDATE', (data) => {
-                this.game.triggerEvent('onShopUpdate', data);
+            // HeroArena: army shop offers (per-player, server-authoritative)
+            nm.listen('SHOP_OFFERS', (data) => {
+                this.game.triggerEvent('onShopOffersReady', data);
+            }),
+            // HeroArena: tier-2 specialization choice prompt
+            nm.listen('SPECIALIZE_SELECT', (data) => {
+                this.game.triggerEvent('onSpecializeSelectStart', data);
+            }),
+            // HeroArena: prep-phase army replication. The autobattler round/shop logic
+            // is server-authoritative (Math.random offers/AI → can't run lockstep on
+            // clients). ARMY_SYNC CREATES/transforms units via the proper unit-creation
+            // path (full components, matching server entity IDs); ENTITY_SYNC then
+            // corrects positions + level/upgrade-scaled stats on those entities.
+            nm.listen('ARMY_SYNC', (data) => {
+                for (const p of (data.players || [])) {
+                    const records = p.networkUnitData || [];
+                    // Snapshot which synced units already exist on this client BEFORE
+                    // creating any. We only (re)position freshly-created units — never a
+                    // unit the player is actively dragging this prep.
+                    const preexisting = new Set();
+                    for (const u of records) {
+                        for (const eid of (u.squadUnits || [])) {
+                            if (this.game.entityAlive[eid] === 1) preexisting.add(eid);
+                        }
+                    }
+
+                    this.call.applyNetworkUnitData(p.networkUnitData, p.team, p.playerId);
+
+                    for (const u of records) {
+                        const info = u.heroRosterInfo;
+                        const positions = u.unitPositions || {};
+                        for (const eid of (u.squadUnits || [])) {
+                            if (this.game.entityAlive[eid] !== 1) continue;
+                            // Re-tag heroRosterInfo so units are recognized as heroes
+                            // (required for drag-to-place + roster UI). Added server-side
+                            // by HeroRosterSystem; not present on applyNetworkUnitData units.
+                            if (info && !this.game.getComponent(eid, 'heroRosterInfo')) {
+                                this.game.addComponent(eid, 'heroRosterInfo', {
+                                    playerId: info.playerId,
+                                    rosterIndex: info.rosterIndex,
+                                    level: info.level
+                                });
+                            }
+                            // Buildings: tag buildingOwner (parallel to heroRosterInfo) so they're
+                            // recognized as buildings (draggable on placement round, prune-safe).
+                            if (u.isBuilding && u.buildingOwner && !this.game.getComponent(eid, 'buildingOwner')) {
+                                this.game.addComponent(eid, 'buildingOwner', {
+                                    playerId: u.buildingOwner.playerId,
+                                    buildingId: u.buildingOwner.buildingId,
+                                    placementId: u.buildingOwner.placementId,
+                                    roundPlaced: u.buildingOwner.roundPlaced
+                                });
+                            }
+                            // Position newly-created units at their last-moved spot.
+                            if (!preexisting.has(eid)) {
+                                const pos = positions[eid];
+                                if (pos) this.game.placementSystem?.moveHero(eid, pos.x, pos.z);
+                            }
+                        }
+                    }
+                }
+                // ARMY_SYNC carries the COMPLETE authoritative army. Any hero entity or
+                // corpse left over from a previous round (the server despawns these on its
+                // side, but that despawn isn't otherwise replicated) is stale — destroy it
+                // so corpses/old units don't accumulate when units respawn at their start
+                // points each round.
+                this._pruneStaleHeroEntities(data.players || []);
+            }),
+            nm.listen('ENTITY_SYNC', (data) => {
+                this.resyncEntities(data);
+            }),
+            // Battle deadline extension (siege window) for the HUD countdown.
+            nm.listen('BATTLE_DEADLINE', (data) => {
+                if (data?.endsAt != null) this.game.state.battleEndsAt = data.endsAt;
             })
         );
     }
@@ -704,12 +782,10 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     toggleReadyForBattle(team, callback) {
-        console.log('[toggleReadyForBattle] called with team:', team, 'callback:', typeof callback);
         // Handle optional team parameter (for backwards compatibility)
         if (typeof team === 'function') {
             callback = team;
             team = this.call.getActivePlayerTeam();
-            console.log('[toggleReadyForBattle] team was function, using active player team:', team);
         }
 
         if (this.game.state.phase !== this.enums.gamePhase.placement) {
@@ -717,7 +793,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             return;
         }
 
-        console.log('[toggleReadyForBattle] calling networkRequest with team:', team);
         this.networkRequest({
             eventName: 'READY_FOR_BATTLE',
             responseName: 'READY_FOR_BATTLE_RESPONSE',
@@ -877,6 +952,17 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         console.log('[ClientNetworkSystem] Calling initializeGame...');
         this.call.initializeGame( data);
         console.log('[ClientNetworkSystem] handleGameStarted complete');
+
+        // Tell the server this client is fully loaded (scene switched, listeners
+        // registered, entities spawned). The server starts the round loop only once
+        // EVERY player has signalled this, so no LEADER_SELECT_START is missed.
+        this.notifyPlayerLoaded();
+    }
+
+    notifyPlayerLoaded() {
+        const playerId = this.game.clientNetworkManager?.numericPlayerId;
+        this.game.clientNetworkManager?.call('PLAYER_LOADED', { playerId }, 'PLAYER_LOADED_ACK',
+            () => {});
     }
 
     /**
@@ -923,14 +1009,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     }
 
     handleBattleEnd(data) {
-        // Debug: Log when battle end is received
-        console.warn('[ClientNetworkSystem] handleBattleEnd received', {
-            phase: this.game.state.phase,
-            round: this.game.state.round,
-            isHuntMission: this.game.state.isHuntMission,
-            stack: new Error().stack
-        });
-
         // Store battle end data and wait for client to catch up to server time
         this.pendingBattleEnd = data;
 
@@ -1041,6 +1119,60 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         }
 
         this.game.triggerEvent('onPlacementPhaseStart');
+    }
+
+    /**
+     * Destroy any hero entity / corpse on this client that isn't part of the
+     * authoritative army described by the latest ARMY_SYNC. The server respawns
+     * units at their start points each round and despawns the previous round's
+     * entities on its side; that despawn isn't replicated, so without this the
+     * old units and battle corpses linger after the new army is synced.
+     * @param {Array} players - ARMY_SYNC players[] (each with networkUnitData[])
+     */
+    _pruneStaleHeroEntities(players) {
+        // Collect the full set of entity IDs the server considers live, plus the set
+        // of teams covered by this sync. An INCREMENTAL sync only contains the acting
+        // player's own team, so we must NOT prune the other team — otherwise the
+        // frozen enemy snapshot shown during prep would be wiped on every own-team buy.
+        const liveIds = new Set();
+        const syncedTeams = new Set();
+        for (const p of players) {
+            if (p.team != null) syncedTeams.add(p.team);
+            for (const unitData of (p.networkUnitData || [])) {
+                if (unitData.team != null) syncedTeams.add(unitData.team);
+                for (const eid of (unitData.squadUnits || [])) {
+                    liveIds.add(eid);
+                }
+            }
+        }
+        if (liveIds.size === 0 || syncedTeams.size === 0) return; // nothing authoritative — don't wipe
+
+        const inScope = (eid) => {
+            const team = this.game.getComponent(eid, 'team');
+            return team && syncedTeams.has(team.team);
+        };
+
+        const corpseState = this.enums?.deathState?.corpse;
+        const stale = new Set();
+        // Leftover heroes (survivors from last round that weren't re-synced).
+        for (const eid of (this.game.getEntitiesWith('heroRosterInfo') || [])) {
+            if (!liveIds.has(eid) && inScope(eid)) stale.add(eid);
+        }
+        // Battle corpses (dead units may have lost heroRosterInfo state).
+        for (const eid of (this.game.getEntitiesWith('deathState') || [])) {
+            const ds = this.game.getComponent(eid, 'deathState');
+            if (ds && ds.state === corpseState && !liveIds.has(eid) && inScope(eid)) stale.add(eid);
+        }
+        // Destroyed buildings: a building no longer in the authoritative set was culled
+        // server-side (destroyed in battle, does not respawn) — remove it on this client too.
+        // Team-scoped, so an incremental own-team sync never removes the opponent's buildings.
+        for (const eid of (this.game.getEntitiesWith('buildingOwner') || [])) {
+            if (!liveIds.has(eid) && inScope(eid)) stale.add(eid);
+        }
+
+        for (const eid of stale) {
+            try { this.game.destroyEntity(eid); } catch (_) {}
+        }
     }
 
     /**
@@ -1455,7 +1587,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
     /**
      * Clean up network listeners
      */
-    // ==================== HERO ARENA: LOOT & EQUIPMENT ====================
+    // ==================== HERO ARENA: LOOT (deprecated no-op flow) ====================
 
     claimLootItem(itemIndex) {
         this.networkManager?.send('CLAIM_LOOT', { itemIndex });
@@ -1463,95 +1595,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
     skipLoot() {
         this.networkManager?.send('SKIP_LOOT', {});
-    }
-
-    // ── Item shop (round-start) ──────────────────────────────────────────────
-
-    submitBuyShopItem(slotIdx) {
-        this.networkRequest({
-            eventName: 'BUY_SHOP_ITEM',
-            responseName: 'BUY_SHOP_ITEM_ACK',
-            data: { slotIdx }
-        }, () => {});
-    }
-
-    submitRerollShop() {
-        this.networkRequest({
-            eventName: 'REROLL_SHOP',
-            responseName: 'REROLL_SHOP_ACK',
-            data: {}
-        }, () => {});
-    }
-
-    submitUpgradeShop() {
-        this.networkRequest({
-            eventName: 'UPGRADE_SHOP',
-            responseName: 'UPGRADE_SHOP_ACK',
-            data: {}
-        }, () => {});
-    }
-
-    submitSellItem(itemId) {
-        this.networkRequest({
-            eventName: 'SELL_ITEM',
-            responseName: 'SELL_ITEM_ACK',
-            data: { itemId }
-        }, () => {});
-    }
-
-    submitAffixChoice(choiceIdx) {
-        this.networkRequest({
-            eventName: 'AFFIX_CHOICE',
-            responseName: 'AFFIX_CHOICE_ACK',
-            data: { choiceIdx }
-        }, () => {});
-    }
-
-    submitIdentifyItem(itemId) {
-        this.networkRequest({
-            eventName: 'IDENTIFY_ITEM',
-            responseName: 'IDENTIFY_ITEM_ACK',
-            data: { itemId }
-        }, () => {});
-    }
-
-    submitSelectAbility(itemId) {
-        this.networkRequest({
-            eventName: 'SELECT_ABILITY',
-            responseName: 'SELECT_ABILITY_ACK',
-            data: { itemId }
-        }, () => {});
-    }
-
-    submitAbilityChoice(choiceIdx) {
-        this.networkRequest({
-            eventName: 'ABILITY_CHOICE',
-            responseName: 'ABILITY_CHOICE_ACK',
-            data: { choiceIdx }
-        }, () => {});
-    }
-
-    // Gear slots (mainWeapon / offhand / bodyArmor / charm)
-    // Note: renamed from equipGearItem to avoid colliding with HeroStatSystem.equipGearItem,
-    // which is the server-side implementation that actually mutates heroEquipment.
-    submitEquipGear(heroRosterIndex, slot, inventoryIndex) {
-        this.networkRequest({
-            eventName: 'EQUIP_GEAR',
-            responseName: 'EQUIP_GEAR_ACK',
-            data: { heroRosterIndex, slot, inventoryIndex }
-        }, () => {});
-    }
-
-    submitUnequipGear(heroRosterIndex, slot) {
-        this.networkRequest({
-            eventName: 'UNEQUIP_GEAR',
-            responseName: 'UNEQUIP_GEAR_ACK',
-            data: { heroRosterIndex, slot }
-        }, () => {});
-    }
-
-    applyOrb(inventoryIndex, orbType) {
-        this.networkManager?.send('APPLY_ORB', { inventoryIndex, orbType });
     }
 
     // ==================== HERO ARENA: LEADER SELECTION ====================
@@ -1581,6 +1624,81 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             eventName: 'HERO_MOVED',
             responseName: 'HERO_MOVED_ACK',
             data: { entityId, x: worldX, z: worldZ }
+        }, () => {});
+    }
+
+    // ── Army shop ──────────────────────────────────────────────────────────────
+    submitBuyOffer(offerIndex, onSuccess) {
+        this.networkRequest({
+            eventName: 'BUY_OFFER',
+            responseName: 'BUY_OFFER_ACK',
+            data: { offerIndex },
+            onSuccess
+        }, () => {});
+    }
+
+    submitRerollOffers(onSuccess) {
+        this.networkRequest({
+            eventName: 'REROLL_OFFERS',
+            responseName: 'REROLL_OFFERS_ACK',
+            data: {},
+            onSuccess
+        }, () => {});
+    }
+
+    submitBuyUnlockedUnit(unitTypeId, onSuccess) {
+        this.networkRequest({
+            eventName: 'BUY_UNLOCKED_UNIT',
+            responseName: 'BUY_UNLOCKED_UNIT_ACK',
+            data: { unitTypeId },
+            onSuccess
+        }, () => {});
+    }
+
+    // rosterIndex < 0 cancels the pending single-target ability purchase.
+    submitGrantSingleAbility(abilityId, rosterIndex, onSuccess) {
+        this.networkRequest({
+            eventName: 'GRANT_SINGLE_ABILITY',
+            responseName: 'GRANT_SINGLE_ABILITY_ACK',
+            data: { abilityId, rosterIndex },
+            onSuccess
+        }, () => {});
+    }
+
+    submitSpecializeChoice(rosterIndex, spawnType, onSuccess) {
+        this.networkRequest({
+            eventName: 'SPECIALIZE_CHOICE',
+            responseName: 'SPECIALIZE_CHOICE_ACK',
+            data: { rosterIndex, spawnType },
+            onSuccess
+        }, () => {});
+    }
+
+    // ── Buildings ────────────────────────────────────────────────────────────────
+    submitPlaceBuilding(buildingId, worldX, worldZ, onSuccess) {
+        this.networkRequest({
+            eventName: 'PLACE_BUILDING',
+            responseName: 'PLACE_BUILDING_ACK',
+            data: { buildingId, x: worldX, z: worldZ },
+            onSuccess
+        }, () => {});
+    }
+
+    submitMoveBuilding(placementId, worldX, worldZ, onSuccess) {
+        this.networkRequest({
+            eventName: 'MOVE_BUILDING',
+            responseName: 'MOVE_BUILDING_ACK',
+            data: { placementId, x: worldX, z: worldZ },
+            onSuccess
+        }, () => {});
+    }
+
+    submitCancelPlaceBuilding(onSuccess) {
+        this.networkRequest({
+            eventName: 'CANCEL_PLACE_BUILDING',
+            responseName: 'CANCEL_PLACE_BUILDING_ACK',
+            data: {},
+            onSuccess
         }, () => {});
     }
 

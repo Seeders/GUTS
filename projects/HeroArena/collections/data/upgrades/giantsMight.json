@@ -1,0 +1,30 @@
+{
+  "title": "Giants Might",
+  "description": "+10 flat damage to elite Strength units (lvl 2+)",
+  "value": 70,
+  "icon": "sword",
+  "perUnitType": true,
+  "requirements": [
+    {
+      "str": {
+        "min": 3
+      },
+      "level": {
+        "min": 2
+      }
+    }
+  ],
+  "target": {
+    "str": {
+      "min": 3
+    }
+  },
+  "statModifiers": {
+    "damage": {
+      "add": 10
+    }
+  },
+  "requiresBuildings": [
+    "barracks"
+  ]
+}

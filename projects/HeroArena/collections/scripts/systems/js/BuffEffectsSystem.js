@@ -42,6 +42,35 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
         this._ccBaselines = new Map(); // entityId -> { maxSpeed, attackSpeed }
     }
 
+    // End-of-round teardown. Buff expiry normally runs off scheduled actions,
+    // which ServerBattlePhaseSystem clears at battle end — and buff.endTime is
+    // compared against the battle clock, which RESETS each round. A leftover
+    // buff/poison on an entity that persists across rounds (buildings) would
+    // therefore zombie-reactivate next battle. Restore CC-modified stats, strip
+    // the components, and reset per-battle tracking.
+    onBattleEnd() {
+        for (const [entityId, baseline] of this._ccBaselines.entries()) {
+            const vel    = this.game.getComponent(entityId, 'velocity');
+            const combat = this.game.getComponent(entityId, 'combat');
+            if (vel && baseline.maxSpeed != null)       vel.maxSpeed = baseline.maxSpeed;
+            if (combat && baseline.attackSpeed != null) combat.attackSpeed = baseline.attackSpeed;
+        }
+        this._ccBaselines.clear();
+
+        for (const entityId of [...this.game.getEntitiesWith('buff')]) {
+            this.game.removeComponent(entityId, 'buff');
+        }
+        for (const entityId of [...this.game.getEntitiesWith('poison')]) {
+            this.game.removeComponent(entityId, 'poison');
+        }
+
+        this._aliveLastTick.clear();
+        this._lastAttackTimeSeen.clear();
+        this._lastHealthSeen.clear();
+        this._lastPoisonTickSeen.clear();
+        this._regenAccumulator = 0;
+    }
+
     update() {
         if (!this._loggedFirstUpdate) {
             console.log('[BuffFx] First update() call', {

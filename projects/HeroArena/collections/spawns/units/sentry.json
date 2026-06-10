@@ -1,5 +1,9 @@
 {
   "title": "Sentry Tower",
+  "strength": 0,
+  "dexterity": 2,
+  "intelligence": 0,
+  "weaponType": "bow",
   "info": "Defensive sentry tower",
   "value": 250,
   "range": 4,

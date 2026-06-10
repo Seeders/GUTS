@@ -1,0 +1,14 @@
+{
+  "abilityId": "ShieldWallAbility",
+  "title": "Shield Wall",
+  "description": "Grant Shield Wall to one chosen Strength unit",
+  "value": 55,
+  "grantMode": "single",
+  "requirements": [
+    {
+      "str": {
+        "min": 2
+      }
+    }
+  ]
+}

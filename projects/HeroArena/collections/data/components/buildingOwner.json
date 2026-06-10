@@ -1,0 +1,9 @@
+{
+  "title": "buildingOwner",
+  "schema": {
+    "playerId": null,
+    "buildingId": null,
+    "placementId": null,
+    "roundPlaced": 1
+  }
+}

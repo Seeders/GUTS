@@ -1,5 +1,9 @@
 {
   "title": "Shadow Assassin (2) [DI]",
+  "strength": 1,
+  "dexterity": 3,
+  "intelligence": 3,
+  "weaponType": "dagger",
   "size": 25,
   "height": 50,
   "value": 130,

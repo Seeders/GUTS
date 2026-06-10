@@ -14,11 +14,7 @@
  */
 class FilterVisibleEnemiesBehaviorAction extends GUTS.BaseBehaviorAction {
 
-    static serviceDependencies = [
-        'getGridSize',
-        'getTerrainSize',
-        'hasLineOfSight'
-    ];
+    static serviceDependencies = [];
 
     execute(entityId, game) {
         const params = this.parameters || {};
@@ -65,60 +61,9 @@ class FilterVisibleEnemiesBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     filterByLineOfSight(entityId, game, unitPos, unitType, enemies) {
-        // Check if hasLineOfSight is available
-        if (!game.hasService('hasLineOfSight')) {
-            // No LOS system - return all enemies as visible
-            return enemies;
-        }
-
-        const visible = [];
-
-        // Group enemies by direction (angle sector) to optimize raycasting
-        // We'll raycast once per unique direction and cache results
-        const gridSize = this.call.getGridSize() || 32;
-        const terrainSize = this.call.getTerrainSize() || 1024;
-
-        // Track which tiles we've already checked visibility for
-        const checkedTiles = new Map(); // "tileX_tileZ" -> boolean (visible)
-
-        for (const enemy of enemies) {
-            const enemyPos = enemy.position;
-            if (!enemyPos) {
-                // Try to get position from entity if not cached
-                const enemyTransform = game.getComponent(enemy.id, 'transform');
-                if (!enemyTransform?.position) continue;
-                enemy.position = enemyTransform.position;
-            }
-
-            // Convert enemy position to tile for caching
-            const tileX = Math.floor((enemy.position.x + terrainSize / 2) / gridSize);
-            const tileZ = Math.floor((enemy.position.z + terrainSize / 2) / gridSize);
-            const tileKey = `${tileX}_${tileZ}`;
-
-            // Check if we've already determined visibility for this tile
-            if (checkedTiles.has(tileKey)) {
-                if (checkedTiles.get(tileKey)) {
-                    visible.push(enemy);
-                }
-                continue;
-            }
-
-            // Perform LOS check
-            const hasLOS = this.call.hasLineOfSight(
-                { x: unitPos.x, z: unitPos.z },
-                { x: enemy.position.x, z: enemy.position.z },
-                unitType,
-                entityId
-            );
-
-            // Cache result for this tile
-            checkedTiles.set(tileKey, hasLOS);
-
-            if (hasLOS) {
-                visible.push(enemy);
-            }
-        }
-
-        return visible;
+        // HeroArena: open arena — never filter out enemies by terrain line-of-sight,
+        // so every unit engages each round (see FindNearestEnemyBehaviorAction). The
+        // input list is already sorted by distance, so [0] remains the nearest.
+        return enemies;
     }
 }

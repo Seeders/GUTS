@@ -50,6 +50,7 @@
     }
   },
   "upgrades": [
+    "arcaneFocus",
     "spellDamage"
   ],
   "units": [
@@ -66,5 +67,7 @@
   "hp": 1500,
   "spriteAnimationSet": "magetower",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "buyable": true,
+  "archetype": "int"
 }

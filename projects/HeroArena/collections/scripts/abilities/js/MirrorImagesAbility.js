@@ -134,18 +134,6 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
                 awareness: 100
             });
 
-            this.game.addComponent(imageId, "equipment", {
-                slots: {
-                    mainHand: null,
-                    offHand: null,
-                    helmet: null,
-                    chest: null,
-                    legs: null,
-                    feet: null,
-                    back: null
-                }
-            });
-
             this.game.addComponent(imageId, "health", {
                 max: Math.floor(health.max * this.imageHealthRatio),
                 current: Math.floor(health.max * this.imageHealthRatio)

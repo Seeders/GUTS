@@ -9,7 +9,8 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         'broadcastToRoom',
         'getPlayerEntities',
         'addPlayerGold',
-        'broadcastGameEnd'
+        'broadcastGameEnd',
+        'clearAllDamageEffects'
     ];
 
     constructor(game) {
@@ -19,6 +20,9 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
         // Battle configuration
         this.battleDuration = 30; // 30 seconds max
+        // When one army is wiped, the survivors siege the enemy buildings. Extend
+        // the round if needed so they always get at least this long to do it.
+        this.siegeWindow = 20;
         this.battleStartTime = 0;
         // Battle state tracking
         this.battleResults = new Map();
@@ -36,13 +40,6 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             this.game.state.isPaused = false;
             this.game.state.phase = this.enums.gamePhase.battle;
 
-            // Close the shop and tally leftover gold (1-2g carries forward as a
-            // shop-upgrade discount; 3+ is lost). Runs before snapshotting so the
-            // gold state is finalized before battle.
-            if (this.game.itemShopSystem?.closeShop) {
-                this.game.itemShopSystem.closeShop();
-            }
-
             // Snapshot hero positions BEFORE combat begins. These positions are
             // saved on each hero's roster entry so they respawn here next round
             // instead of reverting to the team's default starting location.
@@ -55,6 +52,11 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
             // Record battle start time (use global game time like client does)
             this.battleStartTime = this.game.state.now || 0;
+            this._siegeDeadline = null;
+            // Published battle deadline for the HUD countdown. Clients set the same
+            // initial value themselves at battle start; extensions (siege window)
+            // are pushed via the BATTLE_DEADLINE broadcast.
+            this.game.state.battleEndsAt = this.battleStartTime + this.battleDuration;
 
             // Initialize deterministic RNG for this battle
             // Seed based on game seed and round number for reproducibility
@@ -94,36 +96,82 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         // Skip if we've already triggered an endBattle that's waiting on its intermission timer
         if (this.endBattlePending) return;
 
-        const battleDuration = (this.game.state.now || 0) - this.battleStartTime;
+        const now = this.game.state.now || 0;
 
-        // Check if all heroes on one team are dead
-        const winner = this._getHeroWinner();
-        if (winner !== undefined) {
-            this.endBattle(winner, winner === null ? 'draw' : 'all_heroes_dead');
+        // A destroyed Town Hall decides the round (and the game — resolveRound's
+        // _checkGameOver sees the culled record and ends the match).
+        const thLoser = this._getDestroyedTownHallTeam();
+        if (thLoser !== undefined) {
+            const winner = thLoser === this.enums.team.left ? this.enums.team.right : this.enums.team.left;
+            this.endBattle(winner, 'townhall_destroyed');
             return;
         }
 
-        if (battleDuration >= this.battleDuration) {
-            this.endBattle(null, 'timeout');
+        const winner = this._getHeroWinner();
+
+        // Both armies wiped → draw, nothing left to siege with.
+        if (winner === null) {
+            this.endBattle(null, 'draw');
+            return;
+        }
+
+        // One army standing: the round does NOT end — the survivors march on the
+        // enemy buildings. Guarantee them at least `siegeWindow` seconds.
+        if (winner !== undefined && this._siegeDeadline == null) {
+            this._siegeDeadline = Math.max(
+                this.battleStartTime + this.battleDuration,
+                now + this.siegeWindow
+            );
+            // Publish the extension for the HUD countdown (local mode shares
+            // game.state directly; online clients get the broadcast).
+            this.game.state.battleEndsAt = this._siegeDeadline;
+            this.call.broadcastToRoom(null, 'BATTLE_DEADLINE', { endsAt: this._siegeDeadline });
+        }
+
+        const deadline = this._siegeDeadline ?? (this.battleStartTime + this.battleDuration);
+        if (now >= deadline) {
+            this.endBattle(winner ?? null, 'timeout');
         }
     }
 
-    // Returns the winning team enum, null for a draw, or undefined if battle ongoing.
+    // Returns the team whose Town Hall is destroyed this battle, or undefined if
+    // both still stand. Checked from the live entity (cull happens at resolve).
+    _getDestroyedTownHallTeam() {
+        const thTiers = this.game.buildingSystem?.constructor?.TOWNHALL_LEVEL
+            || { townHall: 1, keep: 2, castle: 3 };
+        for (const eid of this.game.getEntitiesWith('buildingOwner')) {
+            const owner = this.game.getComponent(eid, 'buildingOwner');
+            if (!owner || !thTiers[owner.buildingId]) continue;
+            const team = this.game.getComponent(eid, 'team');
+            const health = this.game.getComponent(eid, 'health');
+            if (!team || !health) continue;
+            const ds = this.game.getComponent(eid, 'deathState');
+            const destroyed = health.current <= 0 ||
+                (ds && ds.state !== this.enums.deathState.alive);
+            if (destroyed) return team.team;
+        }
+        return undefined;
+    }
+
+    // Returns the winning team enum, null for a draw (no living units on either
+    // side — the round ends early, nothing can progress), or undefined if the
+    // battle is still contested.
     _getHeroWinner() {
         const combatEntities = this.game.getEntitiesWith('combat');
-        if (combatEntities.length === 0) return undefined;
 
         const aliveByTeam = {};
         for (const entityId of combatEntities) {
             const health = this.game.getComponent(entityId, 'health');
-            const deathState = this.game.getComponent(entityId, 'deathState');
-            const unitType = this.game.getComponent(entityId, 'unitType');
             const teamComp = this.game.getComponent(entityId, 'team');
             if (!teamComp || !health) continue;
 
-            // Only count non-building combat units
-            if (unitType?.isBuilding) continue;
+            // Buildings are not combatants for round-end purposes — a standing
+            // sentry tower must not keep its side "alive" (the unitType COMPONENT
+            // has no isBuilding field, so the buildingOwner tag is the reliable
+            // marker).
+            if (this.game.getComponent(entityId, 'buildingOwner')) continue;
 
+            const deathState = this.game.getComponent(entityId, 'deathState');
             const isAlive = health.current > 0 &&
                 (!deathState || deathState.state === this.enums.deathState.alive);
             if (isAlive) {
@@ -132,7 +180,12 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         }
 
         const teams = Object.keys(aliveByTeam).map(Number);
-        if (teams.length === 0) return null; // draw — all dead
+        if (teams.length === 0) {
+            // No living unit anywhere. Grace the first second of the round so an
+            // oddly-ordered battle start can't end before units are counted.
+            const elapsed = (this.game.state.now || 0) - this.battleStartTime;
+            return elapsed >= 1 ? null : undefined;
+        }
         if (teams.length === 1) return teams[0]; // one side wiped
         return undefined; // both sides still have units
     }
@@ -288,9 +341,10 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         for (const entityId of combatEntities) {
             const health = this.game.getComponent(entityId, 'health');
             const deathState = this.game.getComponent(entityId, 'deathState');
-            const unitType = this.game.getComponent(entityId, 'unitType');
             const teamComp = this.game.getComponent(entityId, 'team');
-            if (!teamComp || !health || unitType?.isBuilding) continue;
+            if (!teamComp || !health) continue;
+            // Buildings never count as survivors (see _getHeroWinner note).
+            if (this.game.getComponent(entityId, 'buildingOwner')) continue;
 
             const isAlive = health.current > 0 &&
                 (!deathState || deathState.state === this.enums.deathState.alive);
@@ -358,9 +412,6 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     onBattleEnd() {
-
-
-
         this.battleStartTime = 0;
 
         const entitiesToDestroy = new Set();
@@ -371,10 +422,10 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         ].forEach(componentType => {
             const entities = this.game.getEntitiesWith(componentType);
             entities.forEach(id => {
-                entitiesToDestroy.add(id);                
+                entitiesToDestroy.add(id);
             });
         });
-        
+
         // Destroy entities
         entitiesToDestroy.forEach(entityId => {
             try {
@@ -383,8 +434,17 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
                 console.warn(`Error destroying entity ${entityId}:`, error);
             }
         });
-  
+
         // Clear squad references
         this.createdSquads.clear();
+
+        // Drop everything mid-flight from the finished battle so nothing carries
+        // into the next round: pending scheduled actions (delayed damage, queued
+        // projectile spawns) and lingering status effects — buildings persist
+        // across rounds, so a poison stack on a tower would otherwise keep
+        // ticking through prep. (Projectile entities and ability queues are
+        // already cleared by ProjectileSystem/AbilitySystem onBattleEnd.)
+        this.game.schedulingSystem?.clearAllActions?.();
+        this.call.clearAllDamageEffects?.();
     }
 }

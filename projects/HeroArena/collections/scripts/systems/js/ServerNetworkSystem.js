@@ -33,19 +33,18 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleLeaderSelected',
         'handleHeroSelected',
         'handleHeroMoved',
+        'handlePlayerLoaded',
         'handleClaimLoot',
         'handleSkipLoot',
-        'handleEquipGear',
-        'handleUnequipGear',
-        'handleApplyOrb',
-        'handleBuyShopItem',
-        'handleRerollShop',
-        'handleUpgradeShop',
-        'handleSellItem',
-        'handleAffixChoice',
-        'handleIdentifyItem',
-        'handleSelectAbility',
-        'handleAbilityChoice'
+        'handleBuyOffer',
+        'handleRerollOffers',
+        'handleBuyUnlockedUnit',
+        'handleGrantSingleAbility',
+        'handleSpecializeChoice',
+        'handlePlaceBuilding',
+        'handleMoveBuilding',
+        'handleCancelPlaceBuilding',
+        'syncEntitiesToClients'
     ];
 
     static serviceDependencies = [
@@ -62,21 +61,19 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         // HeroArena services
         'confirmLeaderSelection',
         'confirmHeroSelection',
+        'startLeaderSelect',
         'claimLootItem',
         'skipLoot',
-        'buyShopItem',
-        'rerollShop',
-        'upgradeShop',
-        'sellInventoryItem',
-        'applyAffixChoice',
-        'requestIdentify',
-        'requestAbilityChoice',
-        'applyAbilityChoice',
-        'equipGearItem',
-        'unequipGearItem',
-        'applyOrb',
         'getHeroEntityId',
-        'moveHero'
+        'moveHero',
+        'buyOffer',
+        'rerollOffers',
+        'buyUnlockedUnit',
+        'grantSingleTargetAbility',
+        'applySpecializationChoice',
+        'placeBuilding',
+        'moveBuilding',
+        'cancelPendingBuilding'
     ];
 
     constructor(game) {
@@ -86,13 +83,19 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         // Queue networkUnitData per player for battle start sync
         // Map<playerId, Array<networkUnitData>>
         this.pendingNetworkUnitData = new Map();
+        // Online game-start handshake: which players have finished loading.
+        this._loadedPlayers = new Set();
+        this._roundLoopStarted = false;
     }
 
     init(params) {
         this.params = params || {};
 
-        // Subscribe to events only on actual server (not in local game mode on client)
-        if (this.engine?.isServer && this.game.serverEventManager) {
+        // Subscribe to server-authoritative event handlers only on the real server.
+        // NOTE: use this.game.isServer (set on the ECSGame) — NOT this.engine.isServer
+        // (this.engine === game.app, which does NOT carry isServer), otherwise the
+        // guard silently fails and NO game events are ever handled online.
+        if (this.game.isServer && this.game.serverEventManager) {
             this.subscribeToEvents();
         }
     }
@@ -113,6 +116,130 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         // In local game mode, responses go through callbacks, not events
         if (this.game.state.isLocalGame) return;
         this.engine?.serverNetworkManager?.sendToPlayer(playerId, eventName, data);
+    }
+
+    /**
+     * Push the authoritative ECS state to all clients (multiplayer only). Used to
+     * replicate server-authoritative prep-phase spawns/transforms so clients can
+     * render and position units before battle. No-op in local (single instance).
+     */
+    syncEntitiesToClients(socketPlayerId = null, numericPlayerId = null) {
+        if (this.game.state?.isLocalGame || !this.game.isServer) return;
+        if (!this.game.serverEventManager) return;
+
+        // CREATE/transform the army on clients via the proper unit-creation path
+        // (applyNetworkUnitData → spawnSquad → UnitCreationSystem) using the server's
+        // entity IDs. We deliberately do NOT also push a full entitySync here:
+        // applyECSData is correction-only and would clear the object components that
+        // UnitCreationSystem just built (re-creating "shell" entities). Final value
+        // alignment happens via the existing battle-start sync.
+        const allPlayers = this._buildArmyRecords();
+
+        // INCREMENTAL (per-player) sync: a player's prep-phase buys / specializations
+        // are sent ONLY to that player. This keeps them hidden from the opponent —
+        // during prep each client sees its own units live, plus the enemy formation
+        // captured at the previous round/battle start (frozen). The `incremental`
+        // flag tells the client to prune only the acting player's own team, leaving
+        // the frozen enemy snapshot intact.
+        if (socketPlayerId != null && numericPlayerId != null) {
+            const mine = allPlayers.filter(p => p.playerId === numericPlayerId);
+            if (mine.length) {
+                this.sendToPlayer(socketPlayerId, 'ARMY_SYNC', { players: mine, incremental: true });
+            }
+            return;
+        }
+
+        // FULL sync (round start + battle start): broadcast both armies so every
+        // client creates any units it's missing. At round start this reveals the
+        // enemy's previous-round formation; at battle start it ensures opponent
+        // prep-buys exist before the entitySync aligns everyone's positions.
+        this.broadcastToRoom(null, 'ARMY_SYNC', { players: allPlayers });
+    }
+
+    // Build per-player networkUnitData records from the live hero entities so clients
+    // can recreate them with matching entity IDs (and transform on specialization).
+    _buildArmyRecords() {
+        const byPlacement = new Map();   // placementId -> record
+        const heroes = this.game.getEntitiesWith('heroRosterInfo', 'placement') || [];
+        for (const eid of heroes) {
+            const placement = this.game.getComponent(eid, 'placement');
+            const info = this.game.getComponent(eid, 'heroRosterInfo');
+            if (!placement || !info) continue;
+            const pid = placement.placementId;
+            if (!byPlacement.has(pid)) {
+                byPlacement.set(pid, {
+                    placementId: pid,
+                    gridPosition: placement.gridPosition,
+                    unitTypeId: placement.unitTypeId,
+                    collection: placement.collection,
+                    team: placement.team,
+                    playerId: info.playerId,
+                    squadUnits: [],
+                    roundPlaced: this.game.state.round || 1,
+                    // Carry roster tagging so clients can make these units draggable
+                    // (heroRosterInfo is added server-side by HeroRosterSystem and is
+                    // required by PlacementUISystem's drag handler).
+                    heroRosterInfo: {
+                        playerId: info.playerId,
+                        rosterIndex: info.rosterIndex,
+                        level: info.level
+                    },
+                    // Live world positions per entity. moveHero only updates the
+                    // transform (not placement.gridPosition), so clients must position
+                    // synced units from these — otherwise units would render at their
+                    // default spawn spot instead of where they were last moved to.
+                    unitPositions: {}
+                });
+            }
+            const rec = byPlacement.get(pid);
+            rec.squadUnits.push(eid);
+            const tpos = this.game.getComponent(eid, 'transform')?.position;
+            if (tpos) rec.unitPositions[eid] = { x: tpos.x, z: tpos.z };
+        }
+        // Buildings: persistent, non-hero entities. Emit them in the same per-player records
+        // (collection 'buildings') so clients create/position them via applyNetworkUnitData,
+        // but tagged isBuilding (NOT heroRosterInfo) so the client tags buildingOwner instead
+        // and the hero stale-prune leaves them alone.
+        const buildings = this.game.getEntitiesWith('buildingOwner', 'placement') || [];
+        for (const eid of buildings) {
+            const placement = this.game.getComponent(eid, 'placement');
+            const owner = this.game.getComponent(eid, 'buildingOwner');
+            if (!placement || !owner) continue;
+            const pid = placement.placementId;
+            if (!byPlacement.has(pid)) {
+                byPlacement.set(pid, {
+                    placementId: pid,
+                    gridPosition: placement.gridPosition,
+                    unitTypeId: placement.unitTypeId,
+                    collection: placement.collection,
+                    team: placement.team,
+                    playerId: owner.playerId,
+                    squadUnits: [],
+                    roundPlaced: owner.roundPlaced,
+                    isBuilding: true,
+                    buildingOwner: {
+                        playerId: owner.playerId,
+                        buildingId: owner.buildingId,
+                        placementId: owner.placementId,
+                        roundPlaced: owner.roundPlaced
+                    },
+                    unitPositions: {}
+                });
+            }
+            const rec = byPlacement.get(pid);
+            rec.squadUnits.push(eid);
+            const tpos = this.game.getComponent(eid, 'transform')?.position;
+            if (tpos) rec.unitPositions[eid] = { x: tpos.x, z: tpos.z };
+        }
+
+        const players = new Map();   // numericPlayerId -> { playerId, team, networkUnitData: [] }
+        for (const rec of byPlacement.values()) {
+            if (!players.has(rec.playerId)) {
+                players.set(rec.playerId, { playerId: rec.playerId, team: rec.team, networkUnitData: [] });
+            }
+            players.get(rec.playerId).networkUnitData.push(rec);
+        }
+        return [...players.values()];
     }
 
     /**
@@ -164,6 +291,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
         // Placement events
         this.game.serverEventManager.subscribe('GET_STARTING_STATE', this.handleGetStartingState.bind(this));
+        this.game.serverEventManager.subscribe('PLAYER_LOADED', this.handlePlayerLoaded.bind(this));
         this.game.serverEventManager.subscribe('SUBMIT_PLACEMENT', this.handleSubmitPlacement.bind(this));
         this.game.serverEventManager.subscribe('PURCHASE_UPGRADE', this.handlePurchaseUpgrade.bind(this));
         this.game.serverEventManager.subscribe('READY_FOR_BATTLE', this.handleReadyForBattle.bind(this));
@@ -187,21 +315,17 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('CLAIM_LOOT', this.handleClaimLoot.bind(this));
         this.game.serverEventManager.subscribe('SKIP_LOOT',  this.handleSkipLoot.bind(this));
 
-        // HeroArena: item shop
-        this.game.serverEventManager.subscribe('BUY_SHOP_ITEM',  this.handleBuyShopItem.bind(this));
-        this.game.serverEventManager.subscribe('REROLL_SHOP',    this.handleRerollShop.bind(this));
-        this.game.serverEventManager.subscribe('UPGRADE_SHOP',   this.handleUpgradeShop.bind(this));
-        this.game.serverEventManager.subscribe('SELL_ITEM',      this.handleSellItem.bind(this));
-        this.game.serverEventManager.subscribe('AFFIX_CHOICE',   this.handleAffixChoice.bind(this));
-        this.game.serverEventManager.subscribe('IDENTIFY_ITEM',  this.handleIdentifyItem.bind(this));
-        this.game.serverEventManager.subscribe('SELECT_ABILITY', this.handleSelectAbility.bind(this));
-        this.game.serverEventManager.subscribe('ABILITY_CHOICE', this.handleAbilityChoice.bind(this));
+        // HeroArena: army shop
+        this.game.serverEventManager.subscribe('BUY_OFFER',            this.handleBuyOffer.bind(this));
+        this.game.serverEventManager.subscribe('REROLL_OFFERS',        this.handleRerollOffers.bind(this));
+        this.game.serverEventManager.subscribe('BUY_UNLOCKED_UNIT',    this.handleBuyUnlockedUnit.bind(this));
+        this.game.serverEventManager.subscribe('GRANT_SINGLE_ABILITY', this.handleGrantSingleAbility.bind(this));
+        this.game.serverEventManager.subscribe('SPECIALIZE_CHOICE',    this.handleSpecializeChoice.bind(this));
 
-        // HeroArena: gear equipping
-        this.game.serverEventManager.subscribe('EQUIP_GEAR',    this.handleEquipGear.bind(this));
-        this.game.serverEventManager.subscribe('UNEQUIP_GEAR',  this.handleUnequipGear.bind(this));
-        // HeroArena: orb crafting
-        this.game.serverEventManager.subscribe('APPLY_ORB', this.handleApplyOrb.bind(this));
+        // HeroArena: buildings (instant placement + one-round move window)
+        this.game.serverEventManager.subscribe('PLACE_BUILDING',        this.handlePlaceBuilding.bind(this));
+        this.game.serverEventManager.subscribe('MOVE_BUILDING',         this.handleMoveBuilding.bind(this));
+        this.game.serverEventManager.subscribe('CANCEL_PLACE_BUILDING', this.handleCancelPlaceBuilding.bind(this));
 
         // Cheat events
         this.game.serverEventManager.subscribe('EXECUTE_CHEAT', this.handleExecuteCheat.bind(this));
@@ -239,6 +363,24 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             console.error('[ServerNetworkSystem] Error getting starting state:', error);
             return this.respondError(playerId, responseName, 'Server error while getting starting state', callback);
         }
+    }
+
+    // Online game-start handshake. Each client sends PLAYER_LOADED once its scene
+    // is loaded and listeners are registered. When every player has reported in,
+    // start the round loop (leader select) so no broadcast is missed.
+    handlePlayerLoaded(eventData, callback) {
+        const playerId = eventData?.playerId ?? eventData?.data?.playerId;
+        if (playerId != null) this._loadedPlayers.add(playerId);
+
+        const expected = this.game.state?.onlinePlayers?.length
+            || (this.call.getPlayerEntities()?.length || 0)
+            || 2;
+
+        if (!this._roundLoopStarted && this._loadedPlayers.size >= expected) {
+            this._roundLoopStarted = true;
+            if (this.game.hasService?.('startLeaderSelect')) this.call.startLeaderSelect();
+        }
+        return this.respond(playerId, 'PLAYER_LOADED_ACK', { success: true }, callback);
     }
 
     handleSubmitPlacement(eventData, callback) {
@@ -670,33 +812,34 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const { playerId, data } = eventData;
         const responseName = 'READY_FOR_BATTLE_RESPONSE';
 
-        console.log('[handleReadyForBattle] Called with playerId:', playerId, 'data:', data);
-
         // Derive effective playerId from team if provided (allows AI to ready for its own team)
         let effectivePlayerId = playerId;
         if (data?.team !== undefined) {
             // team.left = 2 -> playerId 0, team.right = 3 -> playerId 1
-            effectivePlayerId = data.team === this.enums.team.left ? 0 : 1;
-            console.log('[handleReadyForBattle] Derived effectivePlayerId from team:', effectivePlayerId, 'team:', data.team, 'team.left:', this.enums.team.left);
+            const teamPlayerId = data.team === this.enums.team.left ? 0 : 1;
+            // Only local mode may ready a team other than the sender's own (that's how
+            // the AI readies its side). An online client must not be able to
+            // force-ready its opponent and start the battle early.
+            if (!this.game.state.isLocalGame) {
+                const senderStats = this.call.getPlayerStats(playerId);
+                if (!senderStats || senderStats.team !== data.team) {
+                    return this.respondError(playerId, responseName, 'Cannot ready another team', callback);
+                }
+            }
+            effectivePlayerId = teamPlayerId;
         }
 
         if (!this.playerExists(effectivePlayerId)) {
-            console.log('[handleReadyForBattle] Player does not exist:', effectivePlayerId);
             return this.respondError(playerId, responseName, 'Player not found', callback);
         }
 
-        console.log('[handleReadyForBattle] Setting player ready:', effectivePlayerId);
         this.placementReadyStates.set(effectivePlayerId, true);
-        console.log('[handleReadyForBattle] Current ready states:', Array.from(this.placementReadyStates.entries()));
 
         this.respond(playerId, responseName, { success: true }, callback);
 
         // Check if ready to start battle
         // Both local and multiplayer: wait for all players to be ready
         const allReady = this.areAllPlayersReady();
-        console.log('[handleReadyForBattle] Are all players ready?', allReady);
-
-       
 
         if (allReady && this.game.state.phase === this.enums.gamePhase.placement) {
             this.game.resetCurrentTime();
@@ -704,6 +847,13 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
                 this.game.desyncDebugger.enabled = true;
                 this.game.desyncDebugger.displaySync(true);
             }
+
+            // Reveal both armies: a FULL ARMY_SYNC creates any units a client is
+            // missing (e.g. the opponent's prep-phase buys, which were sent only to
+            // the buyer during prep). The entitySync below then aligns everyone's
+            // real positions — this is the moment the frozen enemy snapshot updates
+            // to the opponent's actual placement.
+            this.syncEntitiesToClients();
 
             // CRITICAL: Serialize entities BEFORE resetAI/onBattleStart
             // This ensures the entitySync captures the authoritative pre-battle state
@@ -999,8 +1149,9 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
     handleLeaderSelected(eventData, callback) {
         const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
         const leaderId = eventData.data?.leaderId ?? eventData.leaderId;
-        const result = this.call.confirmLeaderSelection(playerId, leaderId);
+        const result = this.call.confirmLeaderSelection(numericPlayerId, leaderId);
         return this.respond(playerId, 'LEADER_SELECTED_ACK', result ?? { success: false, reason: 'no_system' }, callback);
     }
 
@@ -1008,8 +1159,9 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
     handleHeroSelected(eventData, callback) {
         const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
         const heroClassId = eventData.data?.heroClassId ?? eventData.heroClassId;
-        const result = this.call.confirmHeroSelection(playerId, heroClassId);
+        const result = this.call.confirmHeroSelection(numericPlayerId, heroClassId);
         return this.respond(playerId, 'HERO_SELECTED_ACK', result ?? { success: false, reason: 'no_system' }, callback);
     }
 
@@ -1017,11 +1169,13 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
 
     handleHeroMoved(eventData, callback) {
         const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
         const entityId = eventData.data?.entityId ?? eventData.entityId;
         const x = eventData.data?.x ?? eventData.x;
         const z = eventData.data?.z ?? eventData.z;
 
-        // Only the owning player can move their own heroes
+        // Only the owning player can move their own heroes. playerStats.playerId is
+        // numeric, so compare against the numeric id (the socket id never matches it).
         const team = this.game.getComponent(entityId, 'team');
         if (team) {
             const playerEntities = this.call.getPlayerEntities();
@@ -1030,14 +1184,18 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
                 const stats = this.game.getComponent(eid, 'playerStats');
                 if (stats && stats.team === team.team) { ownerPlayerId = stats.playerId; break; }
             }
-            if (ownerPlayerId !== playerId) {
+            if (ownerPlayerId !== numericPlayerId) {
                 return this.respond(playerId, 'HERO_MOVED_ACK', { success: false, reason: 'not_owner' }, callback);
             }
         }
 
         const result = this.call.moveHero(entityId, x, z);
+        // Echo the authoritative (grid-snapped) position back to the MOVER only — never
+        // to the opponent, so prep-phase repositioning stays hidden until battle start
+        // (where the full entitySync reveals everyone's real positions). The mover
+        // already moved optimistically; this just reconciles any server-side snapping.
         if (result?.success) {
-            this.broadcastToRoom(null, 'HERO_MOVED', { entityId, x, z });
+            this.sendToPlayer(playerId, 'HERO_MOVED', { entityId, x, z });
         }
         return this.respond(playerId, 'HERO_MOVED_ACK', result ?? { success: false, reason: 'no_system' }, callback);
     }
@@ -1056,143 +1214,77 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         return this.respond(playerId, 'SKIP_LOOT_ACK', result ?? { success: false }, callback);
     }
 
-    // ── Item shop ─────────────────────────────────────────────────────────────
+    // ── Army shop ─────────────────────────────────────────────────────────────
 
-    handleBuyShopItem(eventData, callback) {
+    handleBuyOffer(eventData, callback) {
         const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
         const d = eventData.data || eventData;
-        const result = this.call.buyShopItem(playerId, d.slotIdx);
-        return this.respond(playerId, 'BUY_SHOP_ITEM_ACK', result ?? { success: false }, callback);
+        const result = this.call.buyOffer(numericPlayerId, d.offerIndex);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // replicate to the buyer only
+        return this.respond(playerId, 'BUY_OFFER_ACK', result ?? { success: false }, callback);
     }
 
-    handleRerollShop(eventData, callback) {
+    handleRerollOffers(eventData, callback) {
         const { playerId } = eventData;
-        const result = this.call.rerollShop(playerId);
-        return this.respond(playerId, 'REROLL_SHOP_ACK', result ?? { success: false }, callback);
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const result = this.call.rerollOffers(numericPlayerId);
+        return this.respond(playerId, 'REROLL_OFFERS_ACK', result ?? { success: false }, callback);
     }
 
-    handleUpgradeShop(eventData, callback) {
+    handleBuyUnlockedUnit(eventData, callback) {
         const { playerId } = eventData;
-        const result = this.call.upgradeShop(playerId);
-        return this.respond(playerId, 'UPGRADE_SHOP_ACK', result ?? { success: false }, callback);
-    }
-
-    handleSellItem(eventData, callback) {
-        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
         const d = eventData.data || eventData;
-        const result = this.call.sellInventoryItem(playerId, d.itemId);
-        return this.respond(playerId, 'SELL_ITEM_ACK', result ?? { success: false }, callback);
+        const result = this.call.buyUnlockedUnit(numericPlayerId, d.unitTypeId);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // replicate to the buyer only
+        return this.respond(playerId, 'BUY_UNLOCKED_UNIT_ACK', result ?? { success: false }, callback);
     }
 
-    handleAffixChoice(eventData, callback) {
+    handleGrantSingleAbility(eventData, callback) {
         const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
         const d = eventData.data || eventData;
-        const result = this.call.applyAffixChoice(playerId, d.choiceIdx);
-        return this.respond(playerId, 'AFFIX_CHOICE_ACK', result ?? { success: false }, callback);
+        const result = this.call.grantSingleTargetAbility(numericPlayerId, d.abilityId, d.rosterIndex);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // replicate to the granting player only
+        return this.respond(playerId, 'GRANT_SINGLE_ABILITY_ACK', result ?? { success: false }, callback);
     }
 
-    handleIdentifyItem(eventData, callback) {
+    handleSpecializeChoice(eventData, callback) {
         const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
         const d = eventData.data || eventData;
-        const result = this.call.requestIdentify(playerId, d.itemId);
-        return this.respond(playerId, 'IDENTIFY_ITEM_ACK', result ?? { success: false }, callback);
+        const result = this.call.applySpecializationChoice(numericPlayerId, d.rosterIndex, d.spawnType);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // replicate to the owning player only
+        return this.respond(playerId, 'SPECIALIZE_CHOICE_ACK', result ?? { success: false }, callback);
     }
 
-    handleSelectAbility(eventData, callback) {
+    // ── Buildings ─────────────────────────────────────────────────────────────
+
+    handlePlaceBuilding(eventData, callback) {
         const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
         const d = eventData.data || eventData;
-        const result = this.call.requestAbilityChoice(playerId, d.itemId);
-        return this.respond(playerId, 'SELECT_ABILITY_ACK', result ?? { success: false }, callback);
+        const result = this.call.placeBuilding(numericPlayerId, d.buildingId, d.x, d.z);
+        if (result?.success) this.syncEntitiesToClients(playerId, numericPlayerId);
+        return this.respond(playerId, 'PLACE_BUILDING_ACK', result ?? { success: false }, callback);
     }
 
-    handleAbilityChoice(eventData, callback) {
+    handleMoveBuilding(eventData, callback) {
         const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
         const d = eventData.data || eventData;
-        const result = this.call.applyAbilityChoice(playerId, d.choiceIdx);
-        return this.respond(playerId, 'ABILITY_CHOICE_ACK', result ?? { success: false }, callback);
+        const result = this.call.moveBuilding(numericPlayerId, d.placementId, d.x, d.z);
+        // Echo to the mover only (like HERO_MOVED) — opponent sees buildings at battle start.
+        if (result?.success) this.sendToPlayer(playerId, 'BUILDING_MOVED', { placementId: d.placementId, x: d.x, z: d.z });
+        return this.respond(playerId, 'MOVE_BUILDING_ACK', result ?? { success: false }, callback);
     }
 
-    // ── Gear slot equipping ───────────────────────────────────────────────────
-
-    handleEquipGear(eventData, callback) {
+    handleCancelPlaceBuilding(eventData, callback) {
         const { playerId } = eventData;
-        const d = eventData.data || eventData;
-        const { heroRosterIndex, slot, inventoryIndex } = d;
-        const heroEntityId = this._getHeroEntityId(playerId, heroRosterIndex);
-        if (!heroEntityId) {
-            return this.respond(playerId, 'EQUIP_GEAR_ACK', { success: false, reason: 'hero_not_found' }, callback);
-        }
-        const stats = this._getPlayerStatsObj(playerId);
-        if (!stats || !Array.isArray(stats.inventory) || inventoryIndex >= stats.inventory.length) {
-            return this.respond(playerId, 'EQUIP_GEAR_ACK', { success: false, reason: 'invalid_index' }, callback);
-        }
-
-        // Validate ALL rejection cases BEFORE removing the item from inventory,
-        // so a rejected equip doesn't destroy the item.
-        const item = stats.inventory[inventoryIndex];
-        const expectedType = GUTS.HeroStatSystem?.SLOT_ITEM_TYPE?.[slot];
-        // Normalize item.itemType — a displaced item carries a numeric enum
-        // index here (set by heroEquipment's deepMerge), not the original string.
-        const itemType = GUTS.HeroStatSystem?.itemTypeString?.(item, this.game) ?? item?.itemType;
-        if (itemType && expectedType && itemType !== expectedType) {
-            return this.respond(playerId, 'EQUIP_GEAR_ACK', { success: false, reason: 'wrong_slot' }, callback);
-        }
-        // 2H weapon blocks offhand
-        const heroEq = this.game.getComponent(heroEntityId, 'heroEquipment');
-        if (slot === 'offhand' && heroEq?.mainWeapon?.isTwoHanded) {
-            return this.respond(playerId, 'EQUIP_GEAR_ACK', { success: false, reason: 'blocked_by_two_handed' }, callback);
-        }
-
-        stats.inventory.splice(inventoryIndex, 1);
-        const displaced = this.call.equipGearItem(heroEntityId, slot, item);
-        if (displaced) stats.inventory.push(displaced);
-        return this.respond(playerId, 'EQUIP_GEAR_ACK', { success: true, item, displaced: displaced || null }, callback);
-    }
-
-    handleUnequipGear(eventData, callback) {
-        const { playerId } = eventData;
-        const d = eventData.data || eventData;
-        const { heroRosterIndex, slot } = d;
-        const heroEntityId = this._getHeroEntityId(playerId, heroRosterIndex);
-        if (!heroEntityId) {
-            return this.respond(playerId, 'UNEQUIP_GEAR_ACK', { success: false, reason: 'hero_not_found' }, callback);
-        }
-        const displaced = this.call.unequipGearItem(heroEntityId, slot);
-        if (displaced) this._addItemToInventory(playerId, displaced);
-        return this.respond(playerId, 'UNEQUIP_GEAR_ACK', { success: true, item: displaced || null }, callback);
-    }
-
-    // ── Gem socketing ─────────────────────────────────────────────────────────
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
-    _getHeroEntityId(playerId, heroRosterIndex) {
-        return this.call.getHeroEntityId(playerId, heroRosterIndex) || null;
-    }
-
-    _getPlayerStatsObj(playerId) {
-        const playerEntities = this.call.getPlayerEntities();
-        for (const entityId of playerEntities) {
-            const stats = this.game.getComponent(entityId, 'playerStats');
-            if (stats && stats.playerId === playerId) return stats;
-        }
-        return null;
-    }
-
-    _addItemToInventory(playerId, item) {
-        const stats = this._getPlayerStatsObj(playerId);
-        if (stats) {
-            if (!Array.isArray(stats.inventory)) stats.inventory = [];
-            stats.inventory.push(item);
-        }
-    }
-
-    // ==================== HERO ARENA: ORB CRAFTING ====================
-
-    handleApplyOrb(eventData, callback) {
-        const { playerId, inventoryIndex, orbType } = eventData;
-        const result = this.call.applyOrb(playerId, inventoryIndex, orbType);
-        return this.respond(playerId, 'APPLY_ORB_ACK', result ?? { success: false, error: 'no_system' }, callback);
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const result = this.call.cancelPendingBuilding(numericPlayerId);
+        return this.respond(playerId, 'CANCEL_PLACE_BUILDING_ACK', result ?? { success: false }, callback);
     }
 
     clearAllPlacements() {

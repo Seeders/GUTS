@@ -1,5 +1,9 @@
 {
   "title": "Warlord (2) [S]",
+  "strength": 4,
+  "dexterity": 0,
+  "intelligence": 0,
+  "weaponType": "sword",
   "size": 35,
   "height": 50,
   "value": 110,

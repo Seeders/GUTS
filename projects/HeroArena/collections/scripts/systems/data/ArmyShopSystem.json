@@ -1,0 +1,15 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/ArmyShopSystem.js",
+  "fileName": "ArmyShopSystem",
+  "services": [
+    "generateOffersForRound",
+    "buyOffer",
+    "rerollOffers",
+    "buyUnlockedUnit",
+    "getShopStateForPlayer",
+    "getEligibleItems",
+    "applyArmyUpgrades",
+    "applyArmyAbilities",
+    "grantSingleTargetAbility"
+  ]
+}

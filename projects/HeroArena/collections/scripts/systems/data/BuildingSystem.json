@@ -1,0 +1,17 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/BuildingSystem.js",
+  "fileName": "BuildingSystem",
+  "services": [
+    "placeBuilding",
+    "moveBuilding",
+    "cancelPendingBuilding",
+    "autoSpawnTownHalls",
+    "healBuildingsForPrep",
+    "cullDestroyedBuildings",
+    "getOwnedBuildingIds",
+    "getOwnedBuildingArchetypes",
+    "townhallLevel",
+    "upgradeTownHall",
+    "canMoveBuilding"
+  ]
+}

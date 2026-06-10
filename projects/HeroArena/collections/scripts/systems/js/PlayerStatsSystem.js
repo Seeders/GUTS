@@ -267,9 +267,17 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
                 team: statsData.team ?? this.enums.team.left,
                 gold: statsData.gold || 0,
                 upgrades: statsData.upgrades || 0,
-                // Explicit fresh array instances — schema defaults may be shared by reference
+                // Explicit fresh array instances — schema defaults are shared by
+                // reference across entities, so per-player lists MUST be re-created
+                // here or both players end up mutating the same array.
                 heroRoster: [],
-                inventory: []
+                inventory: [],
+                unlockedUnits: [],
+                ownedUpgrades: [],
+                ownedAbilities: [],
+                currentOffers: [],
+                buildings: [],
+                pendingBuilding: null
             });
         } else {
             // Update existing stats

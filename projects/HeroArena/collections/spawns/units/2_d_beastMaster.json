@@ -1,5 +1,9 @@
 {
   "title": "Beast Master (2) [D]",
+  "strength": 0,
+  "dexterity": 4,
+  "intelligence": 0,
+  "weaponType": "bow",
   "size": 25,
   "height": 50,
   "value": 85,

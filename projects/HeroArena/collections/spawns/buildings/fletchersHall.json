@@ -1,5 +1,5 @@
 {
-  "title": "Fletchers Hall",
+  "title": "Hunting Lodge",
   "info": "Dexterity based training.",
   "value": 50,
   "category": "attribute",
@@ -69,5 +69,11 @@
   },
   "spriteAnimationSet": "fletchershall",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "buyable": true,
+  "archetype": "dex",
+  "upgrades": [
+    "sharpenedArrows",
+    "swiftStrikes"
+  ]
 }

@@ -29,13 +29,6 @@
     "setLocalGame",
     "resetTeamReadyState",
     "claimLootItem",
-    "skipLoot",
-    "equipGearItem",
-    "unequipGearItem",
-    "socketGem",
-    "unsocketGem",
-    "socketRune",
-    "unsocketRune",
-    "applyOrb"
+    "skipLoot"
   ]
 }

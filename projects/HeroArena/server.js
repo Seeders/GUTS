@@ -106,7 +106,7 @@ global.serverEngine = gameServer;
 async function startServer() {
     try {
         // ServerEngine/ServerNetworkManager will pick up global.io instead of creating a new listener
-        await gameServer.init('TurnBasedWarfare');
+        await gameServer.init('HeroArena');
         if (global.window.COMPILED_GAME && !global.window.COMPILED_GAME.initialized) {
             global.window.COMPILED_GAME.init(gameServer);
         }

@@ -10,7 +10,8 @@
 class CombatSelectorBehaviorTree extends GUTS.BaseBehaviorTree {
 
     static serviceDependencies = [
-        'getBehaviorShared'
+        'getBehaviorShared',
+        'getNodeByType'
     ];
 
     evaluate(entityId, game) {
@@ -70,6 +71,16 @@ class CombatSelectorBehaviorTree extends GUTS.BaseBehaviorTree {
             hasProjectile: combat.projectile !== null && combat.projectile !== -1 && combat.projectile !== undefined,
             projectileIndex: combat.projectile
         });
+
+        // Re-acquire the NEAREST enemy every tick so units always engage the
+        // closest enemy rather than sticking to their first-locked target and
+        // running past closer enemies to reach it. FindNearestEnemy refreshes
+        // shared.target when an enemy is in vision; if none is found it leaves the
+        // existing target in place (HasTargetBehaviorAction then validates it).
+        const findNearest = this.call.getNodeByType('FindNearestEnemyBehaviorAction');
+        if (findNearest) {
+            findNearest.execute(entityId, game);
+        }
 
         // Use base class evaluate which handles the selector pattern
         const result = super.evaluate(entityId, game);

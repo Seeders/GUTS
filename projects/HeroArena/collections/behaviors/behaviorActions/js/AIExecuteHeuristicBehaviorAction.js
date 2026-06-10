@@ -931,7 +931,7 @@ class AIExecuteHeuristicBehaviorAction extends GUTS.BaseBehaviorAction {
                     // Grow wave size by an increasing amount each time
                     // Wave 1: +2-3, Wave 2: +3-4, Wave 3: +4-5, etc.
                     const baseGrowth = 1 + aiState.waveNumber;
-                    const waveGrowth = baseGrowth + Math.floor(Math.random() * 2);
+                    const waveGrowth = baseGrowth + game.rng.strand('ai').rangeInt(0, 1);
                     aiState.attackWaveSize = (aiState.attackWaveSize || 3) + waveGrowth;
                 }
 

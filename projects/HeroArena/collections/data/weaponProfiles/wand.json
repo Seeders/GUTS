@@ -1,8 +1,0 @@
-{
-  "id": "wand",
-  "weaponCategory": "spell",
-  "range": 180,
-  "attackSpeed": 1.2,
-  "projectile": "lightning",
-  "element": "lightning"
-}

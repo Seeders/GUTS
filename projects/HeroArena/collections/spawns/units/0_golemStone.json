@@ -1,5 +1,9 @@
 {
   "title": "Stone Golem",
+  "strength": 3,
+  "dexterity": 0,
+  "intelligence": 0,
+  "weaponType": "none",
   "size": 25,
   "height": 100,
   "value": 110,
