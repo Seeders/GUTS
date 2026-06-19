@@ -308,7 +308,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             nm.listen('HERO_MOVED', (data) => {
                 // Apply server-authoritative move to local transform
                 if (data?.entityId != null) {
-                    this.game.placementSystem?.moveHero(data.entityId, data.x, data.z);
+                    this.game.placementSystem?.moveHero(data.entityId, data.x, data.z, data.rotationY);
                 }
             }),
             nm.listen('BUILDING_MOVED', (data) => {
@@ -1619,11 +1619,11 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
 
     // ==================== HERO ARENA: HERO REPOSITION ====================
 
-    submitHeroMove(entityId, worldX, worldZ) {
+    submitHeroMove(entityId, worldX, worldZ, rotationY) {
         this.networkRequest({
             eventName: 'HERO_MOVED',
             responseName: 'HERO_MOVED_ACK',
-            data: { entityId, x: worldX, z: worldZ }
+            data: { entityId, x: worldX, z: worldZ, rotationY }
         }, () => {});
     }
 

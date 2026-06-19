@@ -171,6 +171,12 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             // marker).
             if (this.game.getComponent(entityId, 'buildingOwner')) continue;
 
+            // Only the two player armies decide round end. Hostile creeps (the
+            // gold-mine dragons) must not keep battles running — or worse, be
+            // declared the round winner after both armies wipe.
+            if (teamComp.team !== this.enums.team.left &&
+                teamComp.team !== this.enums.team.right) continue;
+
             const deathState = this.game.getComponent(entityId, 'deathState');
             const isAlive = health.current > 0 &&
                 (!deathState || deathState.state === this.enums.deathState.alive);

@@ -22,6 +22,7 @@ class BuildingSystem extends GUTS.BaseSystem {
         'moveBuilding',
         'cancelPendingBuilding',
         'autoSpawnTownHalls',
+        'autoSpawnStartingSentries',
         'cullDestroyedBuildings',
         'getOwnedBuildingIds',
         'getOwnedBuildingArchetypes',
@@ -70,6 +71,69 @@ class BuildingSystem extends GUTS.BaseSystem {
             // roundPlaced 0 → Town Hall is fixed (never draggable).
             this._createBuilding('townHall', stats, world.x, world.z, 0);
         }
+    }
+
+    // Starting defenses, spawned once at game start (round 1) per player:
+    //   • one sentry guarding the base, just base-ward of the nearest ramp
+    //   • one forward-outpost sentry ~65% of the way to map center
+    // Sentries are ONE-AND-DONE: not buyable in the shop, never respawned (this
+    // only runs on round 1), culled permanently when destroyed, and never
+    // draggable (roundPlaced 0).
+    autoSpawnStartingSentries() {
+        if (!this._auth()) return;
+        if ((this.game.state.round || 1) !== 1) return;
+        for (const entityId of this.call.getPlayerEntities()) {
+            const stats = this.game.getComponent(entityId, 'playerStats');
+            if (!stats) continue;
+            if (!Array.isArray(stats.buildings)) stats.buildings = [];
+            if (stats.buildings.some(b => b.buildingId === 'sentryTower')) continue; // already spawned
+            const loc = this._startLoc(stats.team);
+            if (!loc) continue;
+            for (const tile of this._startingSentryTiles(loc)) {
+                const world = this.call.tileToWorld(tile.x, tile.z);
+                this._createBuilding('sentryTower', stats, world.x, world.z, 0);
+            }
+        }
+    }
+
+    // Tile positions for the starting sentries (see autoSpawnStartingSentries).
+    _startingSentryTiles(loc) {
+        const tiles = [];
+        const tileMap = this._currentLevel()?.tileMap;
+
+        // Guard sentry: 2 tiles base-ward of the ramp nearest the start location.
+        const ramps = tileMap?.ramps || [];
+        let ramp = null, bestDistSq = Infinity;
+        for (const r of ramps) {
+            const d = (r.gridX - loc.x) ** 2 + (r.gridZ - loc.z) ** 2;
+            if (d < bestDistSq) { bestDistSq = d; ramp = r; }
+        }
+        if (ramp) {
+            const dx = loc.x - ramp.gridX, dz = loc.z - ramp.gridZ;
+            const len = Math.hypot(dx, dz) || 1;
+            tiles.push({
+                x: Math.round(ramp.gridX + (dx / len) * 2),
+                z: Math.round(ramp.gridZ + (dz / len) * 2)
+            });
+        }
+
+        // Forward outpost: 65% of the way from the base to map center.
+        const center = (tileMap?.size || 64) / 2;
+        tiles.push({
+            x: Math.round(loc.x + (center - loc.x) * 0.65),
+            z: Math.round(loc.z + (center - loc.z) * 0.65)
+        });
+        return tiles;
+    }
+
+    // Resolve the current level definition from the terrain entity (same
+    // lookup PlacementSystem.getStartingLocationsFromLevel uses).
+    _currentLevel() {
+        const terrainEntities = this.game.getEntitiesWith('terrain');
+        if (!terrainEntities.length) return null;
+        const terrain = this.game.getComponent(terrainEntities[0], 'terrain');
+        const levelKey = this.reverseEnums.levels?.[terrain?.level];
+        return levelKey ? this.collections.levels?.[levelKey] : null;
     }
 
     // Permanently remove buildings destroyed in the just-finished battle and drop any

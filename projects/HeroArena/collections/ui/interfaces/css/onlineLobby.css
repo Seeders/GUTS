@@ -1,6 +1,6 @@
 /* ===================== ONLINE LOBBY - REDESIGNED ===================== */
 #onlineLobbyScreen {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: linear-gradient(135deg, #1b1e24 0%, #20242a 100%);
     background-image: url('resources/images/background.png');
     background-size: cover;
     background-position: center center;
@@ -15,8 +15,8 @@
     padding: 20px;
     gap: 15px;
     background: rgba(10, 10, 20, 0.95);
-    border-left: 1px solid rgba(255, 170, 0, 0.2);
-    border-right: 1px solid rgba(255, 170, 0, 0.2);
+    border-left: 1px solid rgba(216,133,46, 0.2);
+    border-right: 1px solid rgba(216,133,46, 0.2);
 }
 
 /* Top Bar */
@@ -26,12 +26,12 @@
     align-items: center;
     padding: 12px 20px;
     background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 170, 0, 0.3);
+    border: 1px solid rgba(216,133,46, 0.3);
     border-radius: 10px;
 }
 
 .online-lobby-title {
-    color: #d4af37;
+    color: #d8852e;
     font-size: 1.4rem;
     margin: 0;
     font-weight: bold;
@@ -50,11 +50,11 @@
     background: rgba(0, 0, 0, 0.4);
     padding: 6px 12px;
     border-radius: 15px;
-    border: 1px solid rgba(255, 170, 0, 0.2);
+    border: 1px solid rgba(216,133,46, 0.2);
 }
 
 .stat-badge span:first-child {
-    color: #d4af37;
+    color: #d8852e;
     font-weight: bold;
     font-size: 1.1rem;
 }
@@ -90,7 +90,7 @@
     display: flex;
     flex-direction: column;
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 170, 0, 0.2);
+    border: 1px solid rgba(216,133,46, 0.2);
     border-radius: 12px;
     overflow: hidden;
     flex-shrink: 0;
@@ -99,11 +99,11 @@
 .action-panel-header {
     padding: 15px 20px;
     background: rgba(0, 0, 0, 0.3);
-    border-bottom: 1px solid rgba(255, 170, 0, 0.2);
+    border-bottom: 1px solid rgba(216,133,46, 0.2);
 }
 
 .action-panel-header h2 {
-    color: #d4af37;
+    color: #d8852e;
     margin: 0;
     font-size: 1.1rem;
 }
@@ -130,13 +130,13 @@
 }
 
 .action-buttons .action-btn.primary {
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(184, 134, 11, 0.2) 100%);
-    border-color: rgba(212, 175, 55, 0.5);
+    background: linear-gradient(135deg, rgba(216,133,46, 0.2) 0%, rgba(184, 134, 11, 0.2) 100%);
+    border-color: rgba(216,133,46, 0.5);
 }
 
 .action-buttons .action-btn.primary:hover {
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(184, 134, 11, 0.3) 100%);
-    border-color: #d4af37;
+    background: linear-gradient(135deg, rgba(216,133,46, 0.3) 0%, rgba(184, 134, 11, 0.3) 100%);
+    border-color: #d8852e;
     transform: translateY(-2px);
 }
 
@@ -153,7 +153,7 @@
 
 .action-buttons .action-btn-icon {
     font-size: 2rem;
-    color: #d4af37;
+    color: #d8852e;
     margin-bottom: 8px;
 }
 
@@ -175,7 +175,7 @@
     display: flex;
     flex-direction: column;
     background: rgba(0, 0, 0, 0.5);
-    border: 2px solid rgba(255, 170, 0, 0.3);
+    border: 2px solid rgba(216,133,46, 0.3);
     border-radius: 12px;
     overflow: hidden;
     min-height: 400px;
@@ -187,7 +187,7 @@
     display: flex;
     flex-direction: column;
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 170, 0, 0.2);
+    border: 1px solid rgba(216,133,46, 0.2);
     border-radius: 12px;
     overflow: hidden;
 }
@@ -198,11 +198,11 @@
     align-items: center;
     padding: 15px 20px;
     background: rgba(0, 0, 0, 0.3);
-    border-bottom: 1px solid rgba(255, 170, 0, 0.2);
+    border-bottom: 1px solid rgba(216,133,46, 0.2);
 }
 
 .games-list-header h2 {
-    color: #d4af37;
+    color: #d8852e;
     margin: 0;
     font-size: 1.2rem;
 }
@@ -225,7 +225,7 @@
 
 .game-item {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 170, 0, 0.2);
+    border: 1px solid rgba(216,133,46, 0.2);
     border-radius: 8px;
     padding: 15px 20px;
     display: flex;
@@ -235,8 +235,8 @@
 }
 
 .game-item:hover {
-    background: rgba(255, 170, 0, 0.1);
-    border-color: rgba(255, 170, 0, 0.4);
+    background: rgba(216,133,46, 0.1);
+    border-color: rgba(216,133,46, 0.4);
 }
 
 .game-info {
@@ -246,7 +246,7 @@
 }
 
 .game-id {
-    color: #d4af37;
+    color: #d8852e;
     font-weight: bold;
     font-size: 1rem;
 }
@@ -262,9 +262,9 @@
 }
 
 .join-btn {
-    background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+    background: linear-gradient(135deg, #d8852e 0%, #b5621c 100%);
     border: none;
-    color: #1a1a2e;
+    color: #1b1e24;
     padding: 10px 24px;
     border-radius: 6px;
     cursor: pointer;
@@ -274,7 +274,7 @@
 
 .join-btn:hover {
     transform: scale(1.02);
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 4px 15px rgba(216,133,46, 0.3);
 }
 
 /* ===================== SHARED BUTTONS ===================== */
@@ -295,24 +295,24 @@
 }
 
 .retreat-btn {
-    color: #ff8888;
+    color: #d24f45;
     border-color: rgba(255, 100, 100, 0.3);
 }
 
 .retreat-btn:hover {
     background: rgba(255, 100, 100, 0.2);
-    color: #ff6666;
+    color: #d24f45;
 }
 
 /* ===================== SHARED CHAT PANEL ===================== */
 .chat-panel-header {
     padding: 15px 20px;
     background: rgba(0, 0, 0, 0.4);
-    border-bottom: 1px solid rgba(255, 170, 0, 0.2);
+    border-bottom: 1px solid rgba(216,133,46, 0.2);
 }
 
 .chat-panel-header h2 {
-    color: #d4af37;
+    color: #d8852e;
     margin: 0;
     font-size: 1.2rem;
 }
@@ -341,8 +341,8 @@
 }
 
 .chat-panel-messages .chat-message.system {
-    background: rgba(255, 170, 0, 0.1);
-    border-left: 3px solid #d4af37;
+    background: rgba(216,133,46, 0.1);
+    border-left: 3px solid #d8852e;
 }
 
 .chat-panel-messages .chat-time {
@@ -352,7 +352,7 @@
 }
 
 .chat-panel-messages .chat-sender {
-    color: #d4af37;
+    color: #d8852e;
     font-weight: bold;
     margin-right: 8px;
 }
@@ -362,7 +362,7 @@
 }
 
 .chat-panel-messages .chat-system-text {
-    color: #d4af37;
+    color: #d8852e;
     font-style: italic;
 }
 
@@ -371,13 +371,13 @@
     gap: 10px;
     padding: 15px;
     background: rgba(0, 0, 0, 0.4);
-    border-top: 1px solid rgba(255, 170, 0, 0.2);
+    border-top: 1px solid rgba(216,133,46, 0.2);
 }
 
 .chat-panel-input input {
     flex: 1;
     background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 170, 0, 0.3);
+    border: 1px solid rgba(216,133,46, 0.3);
     border-radius: 8px;
     padding: 12px 16px;
     color: #e0e0e0;
@@ -386,7 +386,7 @@
 
 .chat-panel-input input:focus {
     outline: none;
-    border-color: #d4af37;
+    border-color: #d8852e;
 }
 
 .chat-panel-input input::placeholder {
@@ -394,8 +394,8 @@
 }
 
 .chat-send-btn {
-    background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
-    color: #1a1a2e;
+    background: linear-gradient(135deg, #d8852e 0%, #b5621c 100%);
+    color: #1b1e24;
     border: none;
     padding: 12px 24px;
     border-radius: 8px;
@@ -406,12 +406,12 @@
 
 .chat-send-btn:hover {
     transform: scale(1.02);
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 4px 15px rgba(216,133,46, 0.3);
 }
 
 /* ===================== GAME ROOM LOBBY ===================== */
 #multiplayerLobby {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: linear-gradient(135deg, #1b1e24 0%, #20242a 100%);
     background-image: url('resources/images/background.png');
     background-size: cover;
     background-position: center center;
@@ -427,8 +427,8 @@
     padding: 20px 40px;
     gap: 15px;
     background: rgba(10, 10, 20, 0.95);
-    border-left: 1px solid rgba(255, 170, 0, 0.2);
-    border-right: 1px solid rgba(255, 170, 0, 0.2);
+    border-left: 1px solid rgba(216,133,46, 0.2);
+    border-right: 1px solid rgba(216,133,46, 0.2);
 }
 
 .game-lobby-topbar {
@@ -437,7 +437,7 @@
     align-items: center;
     padding: 12px 20px;
     background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 170, 0, 0.3);
+    border: 1px solid rgba(216,133,46, 0.3);
     border-radius: 10px;
 }
 
@@ -448,7 +448,7 @@
     background: rgba(0, 0, 0, 0.4);
     padding: 8px 15px;
     border-radius: 20px;
-    border: 1px solid rgba(255, 170, 0, 0.3);
+    border: 1px solid rgba(216,133,46, 0.3);
 }
 
 .room-badge-label {
@@ -458,7 +458,7 @@
 }
 
 .room-badge-id {
-    color: #d4af37;
+    color: #d8852e;
     font-weight: bold;
     font-size: 1.1rem;
     letter-spacing: 1px;
@@ -475,8 +475,8 @@
 }
 
 .copy-btn:hover {
-    color: #d4af37;
-    border-color: rgba(255, 170, 0, 0.4);
+    color: #d8852e;
+    border-color: rgba(216,133,46, 0.4);
 }
 
 .topbar-actions {
@@ -507,25 +507,25 @@
     flex-direction: column;
     gap: 10px;
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 170, 0, 0.2);
+    border: 1px solid rgba(216,133,46, 0.2);
     border-radius: 10px;
     padding: 15px;
 }
 
 .game-lobby-sidebar .player-card {
     background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 170, 0, 0.2);
+    border: 2px solid rgba(216,133,46, 0.2);
     border-radius: 8px;
     padding: 12px 15px;
 }
 
 .game-lobby-sidebar .player-card.ready {
-    border-color: #4caf50;
+    border-color: #56a064;
     background: rgba(76, 175, 80, 0.1);
 }
 
 .game-lobby-sidebar .player-card.waiting {
-    border-color: #ff9800;
+    border-color: #f0a845;
     background: rgba(255, 152, 0, 0.1);
 }
 
@@ -556,12 +556,12 @@
 }
 
 .game-lobby-sidebar .player-status.ready {
-    color: #4caf50;
+    color: #56a064;
     background: rgba(76, 175, 80, 0.2);
 }
 
 .game-lobby-sidebar .player-status.waiting {
-    color: #ff9800;
+    color: #f0a845;
     background: rgba(255, 152, 0, 0.2);
 }
 
@@ -571,7 +571,7 @@
 }
 
 .game-lobby-sidebar .player-name {
-    color: #d4af37;
+    color: #d8852e;
     font-weight: bold;
     font-size: 1rem;
 }
@@ -587,7 +587,7 @@
 /* Compact Settings */
 .game-settings-compact {
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 170, 0, 0.2);
+    border: 1px solid rgba(216,133,46, 0.2);
     border-radius: 10px;
     padding: 15px;
 }
@@ -605,37 +605,37 @@
 
 .game-settings-compact .setting-select {
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 170, 0, 0.3);
+    border: 1px solid rgba(216,133,46, 0.3);
     border-radius: 5px;
     padding: 6px 10px;
-    color: #d4af37;
+    color: #d8852e;
     font-size: 0.9rem;
     min-width: 150px;
 }
 
 .game-settings-compact .setting-select:focus {
     outline: none;
-    border-color: #d4af37;
+    border-color: #d8852e;
 }
 
 /* Status Message */
 .lobby-status-compact {
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 170, 0, 0.2);
+    border: 1px solid rgba(216,133,46, 0.2);
     border-radius: 10px;
     padding: 12px 15px;
     text-align: center;
 }
 
 .lobby-status-compact span {
-    color: #ff9800;
+    color: #f0a845;
     font-size: 0.9rem;
 }
 
 /* Ready Button */
 .ready-btn-large {
-    background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
-    color: #1a1a2e;
+    background: linear-gradient(135deg, #d8852e 0%, #b5621c 100%);
+    color: #1b1e24;
     border: none;
     padding: 18px 30px;
     border-radius: 10px;
@@ -649,11 +649,11 @@
 
 .ready-btn-large:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+    box-shadow: 0 6px 20px rgba(216,133,46, 0.4);
 }
 
 .ready-btn-large.ready-state {
-    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+    background: linear-gradient(135deg, #56a064 0%, #3e7a4a 100%);
     color: white;
 }
 
@@ -663,7 +663,7 @@
     display: flex;
     flex-direction: column;
     background: rgba(0, 0, 0, 0.5);
-    border: 2px solid rgba(255, 170, 0, 0.3);
+    border: 2px solid rgba(216,133,46, 0.3);
     border-radius: 12px;
     overflow: hidden;
     min-height: 400px;

@@ -16,14 +16,14 @@
 
 .chat-title {
     flex: 1;
-    color: #d4af37;
+    color: #d8852e;
     font-weight: bold;
     font-size: 14px;
 }
 
 .chat-context-badge {
-    background: rgba(255, 170, 0, 0.2);
-    color: #d4af37;
+    background: rgba(216,133,46, 0.2);
+    color: #d8852e;
     padding: 2px 8px;
     border-radius: 10px;
     font-size: 11px;
@@ -32,7 +32,7 @@
 }
 
 .chat-unread-badge {
-    background: #e53935;
+    background: #d24f45;
     color: white;
     padding: 2px 8px;
     border-radius: 10px;
@@ -46,7 +46,7 @@
 .chat-toggle {
     background: none;
     border: none;
-    color: #f5f5dc;
+    color: #ded9cd;
     cursor: pointer;
     font-size: 14px;
     padding: 4px;
@@ -87,7 +87,7 @@
 }
 
 .chat-messages::-webkit-scrollbar-thumb {
-    background: rgba(255, 170, 0, 0.3);
+    background: rgba(216,133,46, 0.3);
     border-radius: 3px;
 }
 
@@ -101,7 +101,7 @@
 }
 
 .chat-message.own {
-    background: rgba(212, 175, 55, 0.25);
+    background: rgba(216,133,46, 0.25);
     align-self: flex-end;
     border-bottom-right-radius: 2px;
 }
@@ -129,20 +129,20 @@
 }
 
 .chat-sender {
-    color: #d4af37;
+    color: #d8852e;
     font-weight: 600;
     margin-right: 6px;
 }
 
 .chat-content {
-    color: #f5f5dc;
+    color: #ded9cd;
 }
 
 .chat-input-container {
     display: flex;
     padding: 10px 12px;
     gap: 8px;
-    border-top: 1px solid rgba(255, 170, 0, 0.2);
+    border-top: 1px solid rgba(216,133,46, 0.2);
     background: rgba(0, 0, 0, 0.2);
     border-radius: 0 0 6px 6px;
 }
@@ -150,17 +150,17 @@
 .chat-input {
     flex: 1;
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 170, 0, 0.3);
+    border: 1px solid rgba(216,133,46, 0.3);
     border-radius: 4px;
     padding: 8px 12px;
-    color: #f5f5dc;
+    color: #ded9cd;
     font-family: inherit;
     font-size: 13px;
 }
 
 .chat-input:focus {
     outline: none;
-    border-color: #d4af37;
+    border-color: #d8852e;
 }
 
 .chat-input::placeholder {
@@ -168,11 +168,11 @@
 }
 
 .chat-send-btn {
-    background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+    background: linear-gradient(135deg, #d8852e 0%, #b5621c 100%);
     border: none;
     border-radius: 4px;
     padding: 8px 16px;
-    color: #1a1a2e;
+    color: #1b1e24;
     font-weight: bold;
     font-size: 13px;
     cursor: pointer;
@@ -181,7 +181,7 @@
 
 .chat-send-btn:hover {
     transform: scale(1.02);
-    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+    box-shadow: 0 2px 8px rgba(216,133,46, 0.4);
 }
 
 .chat-send-btn:active {

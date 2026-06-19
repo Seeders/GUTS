@@ -1,0 +1,11 @@
+{
+  "title": "Quick Cast",
+  "description": "+15% attack speed to Int/Dex units",
+  "value": 60,
+  "icon": "speed",
+  "perUnitType": true,
+  "requirements": [ { "int": { "min": 2 }, "dex": { "min": 2 } } ],
+  "target": { "int": { "min": 2 }, "dex": { "min": 2 } },
+  "statModifiers": { "attackSpeed": { "pct": 0.15 } },
+  "requiresBuildings": [ "mageTower" ]
+}

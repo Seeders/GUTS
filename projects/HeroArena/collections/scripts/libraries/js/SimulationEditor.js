@@ -408,18 +408,15 @@ class SimulationEditor {
         game.state.phase = enums.gamePhase.placement;
         game.state.round = 1;
 
-        // Set up game state - buildOrders[0] is left team, buildOrders[1] is right team
-        const leftBuildOrder = config.buildOrders[0];
-        const rightBuildOrder = config.buildOrders[1];
-        console.log('[SimulationEditor] Build orders - Left:', leftBuildOrder, 'Right:', rightBuildOrder);
-
+        // HeroArena: simulations are hero-vs-hero. Optional forced picks per
+        // numeric player id ([0]=left, [1]=right); unset = seeded AI pick.
         game.state.skirmishConfig = {
             level: config.level,
             selectedLevel: config.level,
             startingGold: config.startingGold,
             seed: config.seed,
-            leftBuildOrder: leftBuildOrder,
-            rightBuildOrder: rightBuildOrder,
+            heroes: config.heroes,
+            leaders: config.leaders,
             maxRounds: config.maxRounds || 10,
             endOnFirstDeath: config.endOnFirstDeath ?? false
         };
@@ -474,85 +471,17 @@ class SimulationEditor {
             });
         }
 
-        // Spawn AI opponents for both teams
-        // aiModes[0] is left team, aiModes[1] is right team
-        const leftAiMode = config.aiModes?.[0] || 'buildOrder';
-        const rightAiMode = config.aiModes?.[1] || 'buildOrder';
-        console.log('[SimulationEditor] Spawning AI opponents - Left:', leftAiMode, 'Right:', rightAiMode);
-        this.spawnAIOpponent(leftTeam, leftBuildOrder, leftAiMode);
-        this.spawnAIOpponent(rightTeam, rightBuildOrder, rightAiMode);
+        // Kick off the real HeroArena round loop — the autobattler systems
+        // drive both AI players (leader/hero select, shop auto-buy, ready-up,
+        // battle attack-move orders). No AI opponent entity needed.
+        if (game.hasService('startLeaderSelect')) {
+            game.call('startLeaderSelect');
+        }
 
         this.isRunning = true;
         console.log('[SimulationEditor] Simulation setup complete - isRunning:', this.isRunning);
     }
 
-    /**
-     * Spawn an AI opponent entity for a team
-     * Supports both 'buildOrder' and 'heuristic' AI modes
-     * @param {number} team - Team enum value
-     * @param {string} buildOrderId - Build order ID (for buildOrder mode)
-     * @param {string} aiMode - AI mode: 'buildOrder' or 'heuristic' (default: 'buildOrder')
-     */
-    spawnAIOpponent(team, buildOrderId, aiMode = 'buildOrder') {
-        console.log('[SimulationEditor] spawnAIOpponent - team:', team, 'buildOrderId:', buildOrderId, 'aiMode:', aiMode);
-        const game = this.editorContext;
-        const enums = game.getEnums();
-
-        const aiEntityId = game.createEntity();
-        console.log('[SimulationEditor] Created AI entity:', aiEntityId);
-
-        // Add team component
-        game.addComponent(aiEntityId, 'team', {
-            team: team
-        });
-
-        console.log('[SimulationEditor] behaviorTrees enum:', enums.behaviorTrees);
-
-        if (aiMode === 'heuristic') {
-            // Heuristic AI - adapts based on visible game state
-            const behaviorTreeId = enums.behaviorTrees?.AIHeuristicBehaviorTree;
-            console.log('[SimulationEditor] Using AIHeuristicBehaviorTree with ID:', behaviorTreeId);
-
-            game.addComponent(aiEntityId, 'aiState', {
-                rootBehaviorTree: behaviorTreeId,
-                rootBehaviorTreeCollection: enums.behaviorCollection?.behaviorTrees ?? 0,
-                currentAction: 0,
-                currentActionCollection: 0
-            });
-
-            // Add heuristic state component for AI memory
-            game.addComponent(aiEntityId, 'aiHeuristicState', {
-                currentStrategy: 'economy',
-                strategicPlan: { targetBuildings: [], targetUnits: {} },
-                visibleEnemyUnits: {},
-                visibleEnemyBuildings: [],
-                lastAnalyzedRound: 0,
-                executedRound: 0,
-                ownArmyPower: 0,
-                estimatedEnemyPower: 0
-            });
-
-            console.log('[SimulationEditor] Spawned heuristic AI for team', team);
-        } else {
-            // Build order AI - uses predefined build order JSON files
-            game.addComponent(aiEntityId, 'aiState', {
-                rootBehaviorTree: enums.behaviorTrees?.AIOpponentBehaviorTree ?? 0,
-                rootBehaviorTreeCollection: enums.behaviorCollection?.behaviorTrees ?? 0,
-                currentAction: 0,
-                currentActionCollection: 0
-            });
-
-            // Add aiOpponent component with build order config
-            game.addComponent(aiEntityId, 'aiOpponent', {
-                buildOrderId: buildOrderId,
-                currentRound: 0,
-                actionsExecuted: false,
-                actionIndex: 0
-            });
-
-            console.log('[SimulationEditor] Spawned build order AI for team', team);
-        }
-    }
 
     /**
      * Pause the simulation
@@ -626,8 +555,8 @@ class SimulationEditor {
         setTextContent('sim-name', data.name);
         setTextContent('sim-level', data.level);
         setTextContent('sim-seed', data.seed);
-        setTextContent('sim-build-order-a', data.buildOrders[0]);
-        setTextContent('sim-build-order-b', data.buildOrders[1]);
+        setTextContent('sim-build-order-a', data.heroes?.[0] || 'auto');
+        setTextContent('sim-build-order-b', data.heroes?.[1] || 'auto');
     }
 
     /**

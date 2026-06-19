@@ -1,0 +1,11 @@
+{
+  "title": "Iron Grip",
+  "description": "+10 flat damage to Dex/Str units",
+  "value": 60,
+  "icon": "stab",
+  "perUnitType": true,
+  "requirements": [ { "dex": { "min": 2 }, "str": { "min": 2 } } ],
+  "target": { "dex": { "min": 2 }, "str": { "min": 2 } },
+  "statModifiers": { "damage": { "add": 10 } },
+  "requiresBuildings": [ "fletchersHall" ]
+}

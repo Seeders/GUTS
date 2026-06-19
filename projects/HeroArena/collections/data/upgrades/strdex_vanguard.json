@@ -1,0 +1,11 @@
+{
+  "title": "Vanguard",
+  "description": "+15% damage and +8 armor to Str/Dex units",
+  "value": 90,
+  "icon": "shield_slam",
+  "perUnitType": true,
+  "requirements": [ { "str": { "min": 2 }, "dex": { "min": 2 } } ],
+  "target": { "str": { "min": 2 }, "dex": { "min": 2 } },
+  "statModifiers": { "damage": { "pct": 0.15 }, "armor": { "add": 8 } },
+  "requiresBuildings": [ "barracks" ]
+}

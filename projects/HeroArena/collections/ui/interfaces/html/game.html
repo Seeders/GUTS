@@ -29,9 +29,17 @@
             </div>
         </div>
 
-        <!-- Prep phase: ready button -->
-        <div id="prepControls" class="hidden">
-            <button id="placementReadyBtn" class="btn btn-primary">Ready for Battle!</button>
+        <!-- Bottom-right stack (top to bottom): combat log (toggleable, hidden
+             by default), log toggle, Ready button -->
+        <div id="bottomRightStack">
+            <div id="combatLog" class="hidden">
+                <div class="panel-title">Combat Log</div>
+                <div id="combatLogEntries"></div>
+            </div>
+            <button id="combatLogToggle" title="Toggle combat log">📜 Log</button>
+            <div id="prepControls" class="hidden">
+                <button id="placementReadyBtn" class="btn btn-primary">Ready for Battle!</button>
+            </div>
         </div>
 
         <!-- Army shop (5 offers + reroll, visible during prep) -->
@@ -50,16 +58,25 @@
             </div>
         </div>
 
-        <!-- Unlocked units re-buy panel (visible during prep) -->
-        <div id="unlockedUnitsPanel" class="hidden">
-            <div class="panel-title">Your Units</div>
-            <div id="unlockedUnitsCards" class="unlocked-units-cards"></div>
-        </div>
-
-        <!-- Combat log (scrolling event feed during battle) -->
-        <div id="combatLog">
-            <div class="panel-title">Combat Log</div>
-            <div id="combatLogEntries"></div>
+        <!-- Bottom-left: selection panel (when units are selected) above the
+             unit re-buy panel (prep only) -->
+        <div id="bottomLeftStack">
+            <div id="selectionPanel" class="hidden">
+                <div class="panel-title" id="selectionTitle">Selection</div>
+                <div id="selectionCards" class="selection-cards"></div>
+                <div id="selectionActions" class="selection-actions">
+                    <button id="attackMoveBtn" title="Order the selected units to move to a point, attacking enemies seen on the way">⚔ Attack Move</button>
+                    <button id="clearOrderBtn" title="Cancel the selected units' orders — they will hold position">✖ Clear</button>
+                </div>
+                <div id="buildingActions" class="selection-actions hidden">
+                    <button id="buildingUpgradesBtn" title="View this building's upgrade tree">🔬 Upgrades</button>
+                </div>
+                <div id="selectionHint" class="selection-hint hidden">Left-click the terrain to set the target — Esc cancels</div>
+            </div>
+            <div id="unlockedUnitsPanel" class="hidden">
+                <div class="panel-title">Your Units</div>
+                <div id="unlockedUnitsCards" class="unlocked-units-cards"></div>
+            </div>
         </div>
 
         <!-- Camera controls -->
@@ -103,6 +120,16 @@
         <h2 class="arena-overlay-title" id="specializeTitle">Choose a Specialization</h2>
         <p class="arena-overlay-subtitle" id="specializeSubtitle">Your unit can transform into one of these</p>
         <div id="specializeOptions" class="arena-option-grid"></div>
+    </div>
+</div>
+
+<!-- Building Upgrade Tree (read-only — purchases happen in the shop) -->
+<div id="techTreeOverlay" class="arena-overlay hidden">
+    <div class="arena-overlay-panel tech-tree-panel">
+        <h2 class="arena-overlay-title" id="techTreeTitle">Upgrades</h2>
+        <p class="arena-overlay-subtitle">Buy these in the shop — each unlocks the next in its branch.</p>
+        <div id="techTreeBranches" class="tech-tree-branches"></div>
+        <button id="techTreeCloseBtn" class="tech-tree-close">Close</button>
     </div>
 </div>
 

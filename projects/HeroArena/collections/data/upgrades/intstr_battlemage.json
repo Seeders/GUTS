@@ -1,0 +1,11 @@
+{
+  "title": "Battlemage",
+  "description": "+12% damage and +6 armor to Int/Str units",
+  "value": 40,
+  "icon": "fire_and_fury",
+  "perUnitType": true,
+  "requirements": [ { "int": { "min": 2 }, "str": { "min": 2 } } ],
+  "target": { "int": { "min": 2 }, "str": { "min": 2 } },
+  "statModifiers": { "damage": { "pct": 0.12 }, "armor": { "add": 6 } },
+  "requiresBuildings": [ "mageTower" ]
+}

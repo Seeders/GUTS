@@ -155,10 +155,10 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
             // Create player entities (mimics what ServerGameRoom does in multiplayer)
             this.createLocalRoom(config);
 
-            // Spawn AI opponent entity (uses behavior tree to execute build orders)
-            this.spawnAIOpponent(config);
-
-            // Spawn starting units and gold mines for both teams
+            // HeroArena needs no AI opponent entity: the AI players (see
+            // AutobattlerRoundSystem.getAIPlayerIds) are driven by the
+            // autobattler systems themselves — auto leader/hero select, shop
+            // auto-buy, auto ready-up, and battle attack-move orders.
             this.spawnStartingState();
         }
 
@@ -168,66 +168,6 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         }
 
         this.call.initializeGame( null);
-    }
-
-    /**
-     * Spawn the AI opponent entity from prefab
-     * This entity has a behavior tree that executes build orders during placement phase
-     *
-     * Supports two AI modes:
-     * - 'buildOrder' (default): Uses predefined build order JSON files
-     * - 'heuristic': Uses heuristic-based decision making that adapts to visible enemies
-     */
-    spawnAIOpponent(config) {
-        const aiEntityId = this.game.createEntity();
-        const aiMode = config.aiMode || 'heuristic';
-
-        // Add team component
-        this.game.addComponent(aiEntityId, 'team', {
-            team: this.aiTeam
-        });
-
-        if (aiMode === 'heuristic') {
-            // Heuristic AI - adapts based on visible game state
-            this.game.addComponent(aiEntityId, 'aiState', {
-                rootBehaviorTree: this.enums.behaviorTrees?.AIHeuristicBehaviorTree ?? 0,
-                rootBehaviorTreeCollection: this.enums.behaviorCollection?.behaviorTrees ?? 0,
-                currentAction: 0,
-                currentActionCollection: 0
-            });
-
-            // Add heuristic state component for AI memory
-            this.game.addComponent(aiEntityId, 'aiHeuristicState', {
-                currentStrategy: 'economy',
-                strategicPlan: { targetBuildings: [], targetUnits: {} },
-                visibleEnemyUnits: {},
-                visibleEnemyBuildings: [],
-                lastAnalyzedRound: 0,
-                executedRound: 0,
-                ownArmyPower: 0,
-                estimatedEnemyPower: 0
-            });
-
-            console.log('[SkirmishGameSystem] Spawned heuristic AI opponent entity:', aiEntityId, 'for team:', this.aiTeam);
-        } else {
-            // Build order AI - uses predefined build order JSON files
-            this.game.addComponent(aiEntityId, 'aiState', {
-                rootBehaviorTree: this.enums.behaviorTrees?.AIOpponentBehaviorTree ?? 0,
-                rootBehaviorTreeCollection: this.enums.behaviorCollection?.behaviorTrees ?? 0,
-                currentAction: 0,
-                currentActionCollection: 0
-            });
-
-            // Add aiOpponent component with build order config
-            this.game.addComponent(aiEntityId, 'aiOpponent', {
-                buildOrderId: config.aiBuildOrder || 'basic',
-                currentRound: 0,
-                actionsExecuted: false,
-                actionIndex: 0
-            });
-
-            console.log('[SkirmishGameSystem] Spawned build order AI opponent entity:', aiEntityId, 'for team:', this.aiTeam);
-        }
     }
 
     createLocalRoom(config) {

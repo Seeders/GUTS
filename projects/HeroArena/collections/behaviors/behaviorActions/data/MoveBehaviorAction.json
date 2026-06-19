@@ -4,7 +4,7 @@
   "type": "MoveBehaviorAction",
   "priority": 10,
   "description": "Move unit to a target position",
-  "parameters": "{\"arrivalThreshold\":10}",
+  "parameters": "{\"arrivalThreshold\":60}",
   "filePath": "/projects/HeroArena/collections/behaviors/behaviorActions/js/MoveBehaviorAction.js",
   "fileName": "MoveBehaviorAction"
 }

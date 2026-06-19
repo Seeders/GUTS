@@ -252,9 +252,12 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
 
         // Explicitly set isHiding: false to ensure it's synced to other clients
         // This clears the hiding state when a unit moves
-        // Allow caller to override preventEnemiesInRangeCheck for force move
+        // Allow caller to override preventEnemiesInRangeCheck for force move.
+        // clearOrder: true CANCELS the squads' current orders instead of
+        // issuing one (the order system ignores targetPosition then).
         const meta = {
-            isMoveOrder: true,
+            isMoveOrder: !orderMeta?.clearOrder,
+            clearOrder: !!orderMeta?.clearOrder,
             preventEnemiesInRangeCheck: !!orderMeta?.preventEnemiesInRangeCheck,
             isHiding: false
         };
@@ -410,6 +413,13 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
      * @param {Function} callback - Called with result { action, success, data }
      */
     ui_handleCanvasClick(worldX, worldZ, modifiers = {}, callback) {
+        // The click that just confirmed an attack-move target must not run
+        // selection logic — it would deselect the units the order was given to.
+        if (this.game.placementUISystem?.consumeOrderClickGuard?.()) {
+            callback?.({ action: 'order_target', success: true });
+            return;
+        }
+
         // Check if placing a unit/building
         if (this.game.state.selectedUnitType) {
             return this._handlePlacementClick(worldX, worldZ, callback);
@@ -502,9 +512,12 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
     _getEntityAtPosition(worldPos, options = {}) {
         const clickRadius = options.radius || 50;
         const teamFilter = options.teamFilter ?? this.call.getActivePlayerTeam();
+        const prioritizeUnits = options.prioritizeUnits ?? true;
 
-        let closestEntity = null;
-        let closestDistance = clickRadius;
+        // Track the nearest unit and nearest building separately so a unit standing in
+        // front of a building is selected over it (units and buildings never mix).
+        let closestUnit = null, closestUnitDist = clickRadius;
+        let closestBuilding = null, closestBuildingDist = clickRadius;
 
         const entities = this.game.getEntitiesWith('transform', 'renderable');
 
@@ -516,27 +529,31 @@ class GameInterfaceSystem extends GUTS.BaseSystem {
                 if (unitTeam !== teamFilter) continue;
             }
 
-            const transform = this.game.getComponent(entityId, 'transform');
-            const pos = transform?.position;
+            const pos = this.game.getComponent(entityId, 'transform')?.position;
             if (!pos) continue;
 
-            const dx = pos.x - worldPos.x;
-            const dz = pos.z - worldPos.z;
-            let distance = Math.sqrt(dx * dx + dz * dz);
-
-            // Adjust for unit size
             const unitTypeComp = this.game.getComponent(entityId, 'unitType');
             const unitType = this.game.getUnitTypeDef( unitTypeComp);
             const size = unitType?.size || 20;
-            distance -= size;
+            const dx = pos.x - worldPos.x;
+            const dz = pos.z - worldPos.z;
+            const distance = Math.sqrt(dx * dx + dz * dz) - size;
 
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestEntity = entityId;
+            const isBuilding = unitType?.collection === 'buildings'
+                || this.game.getComponent(entityId, 'building') != null;
+            if (isBuilding) {
+                if (distance < closestBuildingDist) { closestBuildingDist = distance; closestBuilding = entityId; }
+            } else {
+                if (distance < closestUnitDist) { closestUnitDist = distance; closestUnit = entityId; }
             }
         }
 
-        return closestEntity;
+        // Units take priority: only fall back to a building when no unit is under the cursor.
+        if (prioritizeUnits) return closestUnit ?? closestBuilding;
+        if (closestUnit && closestBuilding) {
+            return closestUnitDist <= closestBuildingDist ? closestUnit : closestBuilding;
+        }
+        return closestUnit ?? closestBuilding;
     }
 
     /**

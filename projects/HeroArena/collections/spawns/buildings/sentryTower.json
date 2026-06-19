@@ -67,5 +67,5 @@
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "sentrytower",
-  "buyable": true
+  "buyable": false
 }

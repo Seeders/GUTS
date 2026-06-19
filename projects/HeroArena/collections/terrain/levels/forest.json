@@ -8488,13 +8488,13 @@
     "startingLocations": [
       {
         "side": "left",
-        "gridX": 24,
-        "gridZ": 31
+        "gridX": 7,
+        "gridZ": 7
       },
       {
         "side": "right",
-        "gridX": 40,
-        "gridZ": 32
+        "gridX": 56,
+        "gridZ": 56
       }
     ],
     "extensionTerrainType": 2,

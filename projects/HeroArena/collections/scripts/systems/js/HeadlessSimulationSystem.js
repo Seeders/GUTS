@@ -31,7 +31,10 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
 
         // If true, simulation ends when first combat unit dies (default behavior)
         // If false, simulation continues until team health reaches 0 or max rounds
-        this._endOnFirstDeath = true;
+        // HeroArena rule: matches end when a Town Hall dies, not when a unit
+        // does — rounds continue after army wipes. Death-based early end is
+        // opt-in for special test scenarios only.
+        this._endOnFirstDeath = false;
 
         // Custom termination event - if set, simulation ends when this event fires
         // Examples: 'onUnitKilled', 'onBuildingDestroyed', 'onTownHallDestroyed'
@@ -82,7 +85,7 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
         this._damageDealt = { left: 0, right: 0 };
 
         // Configure simulation options
-        this._endOnFirstDeath = options.endOnFirstDeath !== false; // Default: true
+        this._endOnFirstDeath = options.endOnFirstDeath === true; // Opt-in (HeroArena: Town Hall decides)
         this._maxRounds = options.maxRounds ?? 50;
         this._terminationEvent = options.terminationEvent || null;
     }
@@ -136,42 +139,59 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
             return true;
         }
 
-        // Check TeamHealthSystem for victory condition
-        const teamHealthSystem = this.game.teamHealthSystem;
-        if (teamHealthSystem && teamHealthSystem.isGameOver()) {
-            const winningTeam = teamHealthSystem.getWinningTeam();
-            const reverseEnums = this.game.getReverseEnums();
-            this.game.state.gameOver = true;
-            this.game.state.winner = reverseEnums.team?.[winningTeam] || winningTeam;
-            this._simulationComplete = true;
-            return true;
-        }
-
-        // Check max rounds limit (stop when round reaches maxRounds)
+        // Round cap: judge the unfinished match by remaining Town Hall health —
+        // the HeroArena win condition — not the legacy TBW team-health pool.
         if (this._maxRounds > 0 && this.game.state.round >= this._maxRounds) {
-            // Determine winner by remaining team health
-            if (teamHealthSystem) {
-                const leftHealth = teamHealthSystem.getLeftHealth();
-                const rightHealth = teamHealthSystem.getRightHealth();
-                const reverseEnums = this.game.getReverseEnums();
+            const reverseEnums = this.game.getReverseEnums();
+            const leftTH = this._townHallHealth(this.enums.team.left);
+            const rightTH = this._townHallHealth(this.enums.team.right);
 
-                this.game.state.gameOver = true;
-                if (leftHealth > rightHealth) {
-                    this.game.state.winner = reverseEnums.team?.[this.enums.team.left] || 'left';
-                } else if (rightHealth > leftHealth) {
-                    this.game.state.winner = reverseEnums.team?.[this.enums.team.right] || 'right';
-                } else {
-                    this.game.state.winner = 'draw';
-                }
+            this.game.state.gameOver = true;
+            if (leftTH > rightTH) {
+                this.game.state.winner = reverseEnums.team?.[this.enums.team.left] || 'left';
+            } else if (rightTH > leftTH) {
+                this.game.state.winner = reverseEnums.team?.[this.enums.team.right] || 'right';
             } else {
-                this.game.state.gameOver = true;
-                this.game.state.winner = 'timeout';
+                this.game.state.winner = 'draw';
             }
             this._simulationComplete = true;
             return true;
         }
 
         return false;
+    }
+
+    // Remaining Town Hall (any tier) health for a team, 0 if destroyed.
+    _townHallHealth(team) {
+        const thTiers = this.game.buildingSystem?.constructor?.TOWNHALL_LEVEL
+            || { townHall: 1, keep: 2, castle: 3 };
+        for (const eid of this.game.getEntitiesWith('buildingOwner')) {
+            const owner = this.game.getComponent(eid, 'buildingOwner');
+            if (!owner || !thTiers[owner.buildingId]) continue;
+            const t = this.game.getComponent(eid, 'team');
+            if (!t || t.team !== team) continue;
+            const health = this.game.getComponent(eid, 'health');
+            return Math.max(0, health?.current ?? 0);
+        }
+        return 0;
+    }
+
+    // The autobattler round system ends the match (townhall_destroyed). Record
+    // the winner here so results report 'left'/'right' instead of a player id.
+    onGameEnd(result) {
+        const reverseEnums = this.game.getReverseEnums();
+        this.game.state.gameOver = true;
+        if (result?.winner === null || result?.winner === undefined) {
+            this.game.state.winner = this.game.state.winner || 'draw';
+        } else {
+            let team = null;
+            for (const eid of this.game.getEntitiesWith('playerStats')) {
+                const stats = this.game.getComponent(eid, 'playerStats');
+                if (stats?.playerId === result.winner) { team = stats.team; break; }
+            }
+            this.game.state.winner = reverseEnums.team?.[team] || String(result.winner);
+        }
+        this._simulationComplete = true;
     }
 
     /**

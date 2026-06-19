@@ -60,16 +60,21 @@ class PlayerOrderBehaviorTree extends GUTS.BaseBehaviorTree {
                 }
             }
 
-            // If no visible enemy, check if we were recently attacked
-            // This allows ranged units to respond to attackers they can't see
-            const investigateAttacker = this.call.getNodeByType( 'InvestigateAttackerBehaviorAction');
-            if (investigateAttacker) {
-                const investigateResult = investigateAttacker.execute(entityId, game);
-                if (investigateResult && investigateResult.status === 'success') {
-                    // Attacker set as target - yield to combat so we can pursue them
-                    GUTS.HeadlessLogger.debug('PlayerOrderBT', `${entityId} YIELDING - investigating attacker`, { target: investigateResult.data?.target });
-                    this.runningState.delete(entityId);
-                    return null;
+            // If no visible enemy, check if we were recently attacked — but only
+            // when NOT actively executing a move order. An attack-move must not
+            // be derailed by attackers the unit cannot even see (fog of war);
+            // once the unit arrives (completed) it defends itself normally.
+            const activelyMoving = playerOrder.isMoveOrder && !playerOrder.completed;
+            if (!activelyMoving) {
+                const investigateAttacker = this.call.getNodeByType( 'InvestigateAttackerBehaviorAction');
+                if (investigateAttacker) {
+                    const investigateResult = investigateAttacker.execute(entityId, game);
+                    if (investigateResult && investigateResult.status === 'success') {
+                        // Attacker set as target - yield to combat so we can pursue them
+                        GUTS.HeadlessLogger.debug('PlayerOrderBT', `${entityId} YIELDING - investigating attacker`, { target: investigateResult.data?.target });
+                        this.runningState.delete(entityId);
+                        return null;
+                    }
                 }
             }
         }

@@ -22,6 +22,34 @@ class InvestigateAttackerBehaviorAction extends GUTS.BaseBehaviorAction {
         const targetKey = params.targetKey || 'target';
         const maxAge = params.maxAge || 5; // seconds
 
+        // Never derail an active attack-move order. This action is reached from
+        // BOTH PlayerOrderBehaviorTree and CombatSelector's InvestigateSequence —
+        // the latter stays "running" and is resumed ahead of the order tree, so a
+        // single pot-shot (e.g. from a sentry outpost) would otherwise send the
+        // unit marching at the attacker and the move order would never resume.
+        const playerOrder = game.getComponent(entityId, 'playerOrder');
+        if (playerOrder?.enabled && playerOrder.isMoveOrder && !playerOrder.completed) {
+            return this.failure();
+        }
+
+        // Pursuing attackers the unit cannot even see (fog of war) is also
+        // capped for unordered units: only investigate attackers within vision
+        // range — units hold their ground rather than marching into the dark.
+        const myPosForLeash = game.getComponent(entityId, 'transform')?.position;
+        const combatStateEarly = game.getComponent(entityId, 'combatState');
+        const earlyAttackerId = combatStateEarly?.lastAttacker;
+        if (myPosForLeash && earlyAttackerId != null && earlyAttackerId >= 0) {
+            const attackerPos = game.getComponent(earlyAttackerId, 'transform')?.position;
+            if (attackerPos) {
+                const visionRange = game.getComponent(entityId, 'combat')?.visionRange || 300;
+                const dx = attackerPos.x - myPosForLeash.x;
+                const dz = attackerPos.z - myPosForLeash.z;
+                if (dx * dx + dz * dz > visionRange * visionRange) {
+                    return this.failure();
+                }
+            }
+        }
+
         const unitTypeComp = game.getComponent(entityId, 'unitType');
         const unitDef = game.getUnitTypeDef( unitTypeComp);
         const teamComp = game.getComponent(entityId, 'team');

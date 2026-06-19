@@ -1,6 +1,6 @@
 {
   "title": "Giants Might",
-  "description": "+10 flat damage to elite Strength units (lvl 2+)",
+  "description": "+10 flat damage to Strength units",
   "value": 70,
   "icon": "sword",
   "perUnitType": true,
@@ -8,9 +8,6 @@
     {
       "str": {
         "min": 3
-      },
-      "level": {
-        "min": 2
       }
     }
   ],

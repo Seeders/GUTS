@@ -2,7 +2,7 @@
  * Headless Skirmish Mode Entry Point
  *
  * This script runs headless skirmish simulations without any rendering or network.
- * Two AI opponents face off using behavior trees and build orders.
+ * Two autobattler AI players face off using the real HeroArena round loop.
  *
  * It can be used for:
  * - Automated testing
@@ -15,13 +15,13 @@
  *   node headless.js --simulation apprentice_vs_barbarian  # Run a predefined simulation
  *   node headless.js --level level_2                    # Specify level
  *   node headless.js --seed 12345                       # Set random seed
- *   node headless.js --left-build basic                 # Left team build order
- *   node headless.js --right-build archery              # Right team build order
+ *   node headless.js --left-hero barbarian              # Left team hero class
+ *   node headless.js --right-hero archer                # Right team hero class
  *
  * Programmatic usage:
  *   import { createHeadlessRunner } from './headless.js';
  *   const { runner, engine } = await createHeadlessRunner();
- *   await runner.setup({ level: 'forest', seed: 12345, leftBuildOrder: 'basic', rightBuildOrder: 'basic' });
+ *   await runner.setup({ level: 'forest', seed: 12345, classicSetup: false, heroes: ['barbarian','archer'] });
  *   const results = await runner.run();
  */
 import path from 'path';
@@ -155,9 +155,9 @@ function parseArgs() {
         batch: false,     // Run all simulations
         level: 'forest',
         seed: Date.now(),
-        startingGold: 100,
-        leftBuildOrder: 'basic',
-        rightBuildOrder: 'basic',
+        startingGold: 0,  // HeroArena: income is granted per prep phase
+        heroes: undefined,   // forced hero classes  [left, right]
+        leaders: undefined,  // forced leader picks  [left, right]
         verbose: false,
         json: false       // Output results as JSON
     };
@@ -189,11 +189,17 @@ function parseArgs() {
             case '-g':
                 config.startingGold = parseInt(args[++i], 10);
                 break;
-            case '--left-build':
-                config.leftBuildOrder = args[++i];
+            case '--left-hero':
+                (config.heroes ||= [])[0] = args[++i];
                 break;
-            case '--right-build':
-                config.rightBuildOrder = args[++i];
+            case '--right-hero':
+                (config.heroes ||= [])[1] = args[++i];
+                break;
+            case '--left-leader':
+                (config.leaders ||= [])[0] = args[++i];
+                break;
+            case '--right-leader':
+                (config.leaders ||= [])[1] = args[++i];
                 break;
             case '--verbose':
             case '-v':
@@ -241,17 +247,12 @@ function parseArgs() {
         if (!cliSeed && simConfig.seed) config.seed = simConfig.seed;
         if (!cliGold && simConfig.startingGold) config.startingGold = simConfig.startingGold;
 
-        // Use buildOrders array - [0] is left team, [1] is right team
-        config.leftBuildOrder = simConfig.buildOrders[0];
-        config.rightBuildOrder = simConfig.buildOrders[1];
+        // HeroArena-native sim options: forced hero/leader picks per player id
+        // ([0] = left, [1] = right; unset = seeded AI random pick)
+        config.heroes = simConfig.heroes;
+        config.leaders = simConfig.leaders;
         config.simulationName = simConfig.name;
         config.simulationDescription = simConfig.description;
-
-        // Use aiModes array if present - [0] is left team, [1] is right team
-        if (simConfig.aiModes) {
-            config.leftAiMode = simConfig.aiModes[0] || 'buildOrder';
-            config.rightAiMode = simConfig.aiModes[1] || 'buildOrder';
-        }
 
         // Termination options
         if (simConfig.terminationEvent) {
@@ -286,8 +287,8 @@ Options:
   --level, -l <name>       Level to simulate (default: forest)
   --seed, -s <number>      Random seed for deterministic simulation
   --gold, -g <number>      Starting gold for each team (default: 100)
-  --left-build <id>        Build order for left team (default: basic)
-  --right-build <id>       Build order for right team (default: basic)
+  --left-hero <id>         Force left hero class (barbarian/apprentice/archer/acolyte/soldier/scout)
+  --right-hero <id>        Force right hero class; --left-leader/--right-leader force leaders
   --max-ticks, -m <number> Maximum ticks before timeout (default: 10000)
   --verbose, -v            Show detailed output
   --json                   Output results as JSON (useful for batch mode)
@@ -306,7 +307,7 @@ Simulations:
     two_archers_vs_barbarian - Numerical advantage test
 
 Build Orders:
-  Build orders are defined in collections/data/buildOrders/.
+  Simulations are hero-vs-hero; see collections/data/simulations/.
   Each build order specifies what buildings to place, units to purchase,
   and move orders to issue for each round.
 
@@ -317,7 +318,7 @@ Examples:
   node headless.js --batch --json                    # Run all, output as JSON
   node headless.js --simulations archer_vs_barbarian,soldier_vs_scout
   node headless.js --level level_2 --gold 200 --verbose
-  node headless.js --left-build archer --right-build barbarian
+  node headless.js --left-hero archer --right-hero barbarian
 `);
 }
 
@@ -339,7 +340,7 @@ function formatResultsAsText(result, verbose = false) {
 
     const winnerDisplay = result.winner === 'left' ? `LEFT (${result.leftBuildOrder}) WINS!`
         : result.winner === 'right' ? `RIGHT (${result.rightBuildOrder}) WINS!`
-        : result.winner === 'draw' ? 'DRAW - Both units died!'
+        : result.winner === 'draw' ? 'DRAW (equal Town Hall health at round cap)'
         : 'NO WINNER (timeout)';
 
     lines.push(`  Result: ${winnerDisplay}`);
@@ -426,7 +427,8 @@ function formatResultsAsText(result, verbose = false) {
         } else {
             for (const unit of combatLivingUnits) {
                 const hpPercent = unit.health.max > 0 ? Math.round((unit.health.current / unit.health.max) * 100) : 0;
-                lines.push(`  [${unit.team.toUpperCase()}] ${unit.unitName}: ${unit.health.current}/${unit.health.max} HP (${hpPercent}%)`);
+                const pos = unit.position ? ` @ (${unit.position.x}, ${unit.position.z})` : '';
+                lines.push(`  [${unit.team.toUpperCase()}] ${unit.unitName}: ${unit.health.current}/${unit.health.max} HP (${hpPercent}%)${pos}`);
             }
         }
 
@@ -520,15 +522,28 @@ async function runSingleSimulation(runner, simConfig, options = {}) {
         level: simConfig.level,
         startingGold: simConfig.startingGold,
         seed: simConfig.seed,
-        leftBuildOrder: simConfig.leftBuildOrder,
-        rightBuildOrder: simConfig.rightBuildOrder,
-        leftAiMode: simConfig.leftAiMode || 'buildOrder',
-        rightAiMode: simConfig.rightAiMode || 'buildOrder',
+        // HeroArena: no TBW-style economy. The autobattler loop spawns its own
+        // Town Halls / sentries / heroes, and the AI players are driven by the
+        // autobattler systems (see AutobattlerRoundSystem.getAIPlayerIds).
+        classicSetup: false,
+        // Optional forced picks per numeric player id, e.g.
+        //   "heroes":  ["barbarian", "archer"],
+        //   "leaders": ["commander", "ranger"]
+        // Unset slots are picked by the seeded AI rng.
+        heroes: simConfig.heroes,
+        leaders: simConfig.leaders,
         // Termination options
         terminationEvent: simConfig.terminationEvent,
         maxRounds: simConfig.maxRounds,
         endOnFirstDeath: simConfig.endOnFirstDeath
     });
+
+    // Kick off the real HeroArena round loop: leader select → hero select →
+    // prep (income, shop, placement) → battle → resolve → … → Town Hall win.
+    const gameForLoop = runner.engine.gameInstance;
+    if (gameForLoop?.hasService('startLeaderSelect')) {
+        gameForLoop.call('startLeaderSelect');
+    }
 
     // Enable call logging for combat-relevant services
     const game = runner.engine.gameInstance;
@@ -591,8 +606,8 @@ async function runSingleSimulation(runner, simConfig, options = {}) {
     return {
         simulationId: simConfig.simulationId,
         simulationName: simConfig.simulationName,
-        leftBuildOrder: simConfig.leftBuildOrder,
-        rightBuildOrder: simConfig.rightBuildOrder,
+        leftBuildOrder: simConfig.heroes?.[0] || 'auto',
+        rightBuildOrder: simConfig.heroes?.[1] || 'auto',
         completed: completed,
         winner: winner || 'none',
         tickCount: results.tickCount,
@@ -762,7 +777,7 @@ function printSimulationResults(result, verbose = false) {
     // Determine winner display with team color
     const winnerDisplay = result.winner === 'left' ? `LEFT (${result.leftBuildOrder}) WINS!`
         : result.winner === 'right' ? `RIGHT (${result.rightBuildOrder}) WINS!`
-        : result.winner === 'draw' ? 'DRAW - Both units died!'
+        : result.winner === 'draw' ? 'DRAW (equal Town Hall health at round cap)'
         : 'NO WINNER (timeout)';
 
     console.log(`║  Result: ${winnerDisplay.padEnd(51)}║`);
@@ -902,10 +917,8 @@ async function runBatchSimulations(runner, simulationIds, options = {}) {
             level: simConfig.level,
             startingGold: simConfig.startingGold,
             seed: simConfig.seed,
-            leftBuildOrder: simConfig.buildOrders[0],
-            rightBuildOrder: simConfig.buildOrders[1],
-            leftAiMode: simConfig.aiModes?.[0] || 'buildOrder',
-            rightAiMode: simConfig.aiModes?.[1] || 'buildOrder',
+            heroes: simConfig.heroes,
+            leaders: simConfig.leaders,
             // Termination options
             terminationEvent: simConfig.terminationEvent,
             maxRounds: simConfig.maxRounds,
@@ -1119,8 +1132,8 @@ async function main() {
 
                 console.log(`╟────────────────────────────────────────────────────────────╢`);
                 console.log(`║  Win Summary:                                              ║`);
-                console.log(`║    Left (buildOrders[0]): ${String(wins.left).padEnd(34)}║`);
-                console.log(`║    Right (buildOrders[1]): ${String(wins.right).padEnd(33)}║`);
+                console.log(`║    Left (heroes[0]): ${String(wins.left).padEnd(34)}║`);
+                console.log(`║    Right (heroes[1]): ${String(wins.right).padEnd(33)}║`);
                 console.log(`║    Draw: ${String(wins.draw).padEnd(51)}║`);
                 console.log(`║    No Winner: ${String(wins.none).padEnd(46)}║`);
                 if (wins.error > 0) {
@@ -1139,10 +1152,8 @@ async function main() {
             level: config.level,
             startingGold: config.startingGold,
             seed: config.seed,
-            leftBuildOrder: config.leftBuildOrder,
-            rightBuildOrder: config.rightBuildOrder,
-            leftAiMode: config.leftAiMode || 'buildOrder',
-            rightAiMode: config.rightAiMode || 'buildOrder',
+            heroes: config.heroes,
+            leaders: config.leaders,
             // Termination options
             terminationEvent: config.terminationEvent,
             maxRounds: config.maxRounds,
@@ -1159,10 +1170,8 @@ async function main() {
         console.log(`  Level: ${config.level}`);
         console.log(`  Seed: ${config.seed}`);
         console.log(`  Starting Gold: ${config.startingGold}`);
-        console.log(`  Left Build Order: ${config.leftBuildOrder}`);
-        console.log(`  Right Build Order: ${config.rightBuildOrder}`);
-        console.log(`  Left AI Mode: ${config.leftAiMode || 'buildOrder'}`);
-        console.log(`  Right AI Mode: ${config.rightAiMode || 'buildOrder'}`);
+        console.log(`  Heroes: ${(config.heroes || ['auto', 'auto']).join(' vs ')}`);
+        console.log();
 
         console.log(`[Headless] Running simulation with AI opponents...`);
 

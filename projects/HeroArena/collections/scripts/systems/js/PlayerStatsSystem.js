@@ -63,16 +63,32 @@ class PlayerStatsSystem extends GUTS.BaseSystem {
      * @returns {number|null} The team enum value or null if no player context
      */
     getActivePlayerTeam() {
-        if (this._activePlayerId !== null) {
-            const stats = this.getPlayerStats(this._activePlayerId);
-            if (stats) {
-                return stats.team;
-            }
-            // Fall back to cached team if player entity doesn't exist yet
-            if (this._cachedActiveTeam !== undefined) {
-                return this._cachedActiveTeam;
-            }
+        // Resolve the active player id, falling back to this client's own id so
+        // fog/camera still work before setActivePlayer() has run on this system.
+        let activeId = this._activePlayerId;
+        if (activeId === null || activeId === undefined) {
+            activeId = this.game.clientNetworkManager?.numericPlayerId;
+            if (activeId === -1) activeId = undefined;
         }
+        if (activeId === null || activeId === undefined) return null;
+
+        const isPlayerTeam = (t) =>
+            t === this.enums.team.left || t === this.enums.team.right;
+
+        // 1) Live player entity — but only once it carries a valid player team.
+        //    During online startup it may not have synced yet, or be mid-sync
+        //    with team still at the schema default; don't trust those.
+        const liveTeam = this.getPlayerStats(activeId)?.team;
+        if (isPlayerTeam(liveTeam)) return liveTeam;
+
+        // 2) Team cached at setActivePlayer() time.
+        if (isPlayerTeam(this._cachedActiveTeam)) return this._cachedActiveTeam;
+
+        // 3) Authoritative online roster the client already holds — this is what
+        //    keeps a player whose entity hasn't synced from seeing full fog.
+        const me = this.game.state.onlinePlayers?.find(p => p.playerId === activeId);
+        if (isPlayerTeam(me?.team)) return me.team;
+
         return null;
     }
 

@@ -30,9 +30,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'getCameraPositionForTeam',
         'showNotification',
         'placementGridToWorld',
+        'tileToWorld',
         'clearAllDamageEffects',
         'clearAllEffects',
         'ui_toggleReadyForBattle',
+        'ui_issueMoveOrder',
         'applyNetworkUnitData',
         'resyncEntities',
         'resetAI',
@@ -123,10 +125,18 @@ class PlacementUISystem extends GUTS.BaseSystem {
         // Hero drag state (prep phase reposition)
         this.draggedHeroId = null;
         this.dragOffset = { x: 0, z: 0 };
+        // When the grabbed hero is part of a multi-selection, every selected hero is
+        // dragged together. Each entry is { id, offX, offZ } = the unit's offset from
+        // the cursor at grab time, so relative spacing is preserved. null = single drag.
+        this.dragUnits = null;
 
-        // Right-click camera pan state (terrain point stays under cursor)
-        this.panAnchor = null;  // { x, z } world point clicked
-        this.panLookAt = null;  // { x, z } current camera lookAt target we're driving
+        // Right-click-drag formation state (prep phase). When units are selected,
+        // right-click-dragging lines them up into a formation instead of panning.
+        this.formationDrag = null;  // { start:{x,z}, units:[id], slots:[{id,x,z,rotationY}] }
+
+        // True while we've disabled the free camera's right-drag mouse-look for the
+        // duration of a formation-placement gesture (so the view doesn't swing).
+        this._lookSuppressedByDrag = false;
     }
 
     init(params) {
@@ -227,6 +237,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
      * Set up camera position based on player's side
      */
     setupCameraForMySide() {
+        // getActivePlayerTeam() is resilient to the online startup race (it
+        // falls back through cached team → onlinePlayers roster), so a null here
+        // genuinely means there's no team context yet.
         const myTeam = this.call.getActivePlayerTeam();
         if (myTeam === null || myTeam === undefined) {
             console.warn('[PlacementUISystem] Cannot setup camera - active player team not set');
@@ -256,7 +269,19 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.elements.battleTimer     = document.getElementById('battleTimer');
         this.elements.goldDisplay     = document.getElementById('playerGold');
         this.elements.prepControls    = document.getElementById('prepControls');
-        this.elements.combatLogEntries     = document.getElementById('combatLogEntries');
+        this.elements.combatLog          = document.getElementById('combatLog');
+        this.elements.combatLogToggle    = document.getElementById('combatLogToggle');
+        this.elements.combatLogEntries   = document.getElementById('combatLogEntries');
+
+        // Combat log is hidden by default; the 📜 button toggles it.
+        if (this.elements.combatLogToggle) {
+            this._track(this.elements.combatLogToggle, 'click', () => {
+                const log = this.elements.combatLog;
+                if (!log) return;
+                log.classList.toggle('hidden');
+                this.elements.combatLogToggle.classList.toggle('active', !log.classList.contains('hidden'));
+            });
+        }
 
         // Army shop panel
         this.elements.shopPanel       = document.getElementById('shopPanel');
@@ -268,6 +293,41 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.elements.shopPendingCancel = document.getElementById('shopPendingCancel');
         this.elements.unlockedUnitsPanel = document.getElementById('unlockedUnitsPanel');
         this.elements.unlockedUnitsCards = document.getElementById('unlockedUnitsCards');
+
+        // Selection panel (icons + orders of the selected units, attack-move button)
+        this.elements.selectionPanel = document.getElementById('selectionPanel');
+        this.elements.selectionCards = document.getElementById('selectionCards');
+        this.elements.attackMoveBtn  = document.getElementById('attackMoveBtn');
+        this.elements.clearOrderBtn  = document.getElementById('clearOrderBtn');
+        this.elements.selectionHint  = document.getElementById('selectionHint');
+        this.elements.selectionTitle = document.getElementById('selectionTitle');
+        this.elements.selectionActions = document.getElementById('selectionActions');
+        this.elements.buildingActions = document.getElementById('buildingActions');
+        this.elements.buildingUpgradesBtn = document.getElementById('buildingUpgradesBtn');
+        if (this.elements.attackMoveBtn) {
+            this._track(this.elements.attackMoveBtn, 'click', () => this._toggleOrderTargetMode());
+        }
+        if (this.elements.clearOrderBtn) {
+            this._track(this.elements.clearOrderBtn, 'click', () => this._clearSelectedOrders());
+        }
+        if (this.elements.buildingUpgradesBtn) {
+            this._track(this.elements.buildingUpgradesBtn, 'click', () => this._openUpgradeTree());
+        }
+        const techTreeClose = document.getElementById('techTreeCloseBtn');
+        if (techTreeClose) this._track(techTreeClose, 'click', () => this._closeUpgradeTree());
+        const techTreeOverlay = document.getElementById('techTreeOverlay');
+        if (techTreeOverlay) {
+            this._track(techTreeOverlay, 'click', (e) => {
+                if (e.target === techTreeOverlay) this._closeUpgradeTree(); // backdrop click
+            });
+        }
+        this._track(document, 'keydown', (e) => {
+            if (e.key === 'Escape') this._closeUpgradeTree();
+        });
+        this._track(document, 'keydown', (e) => {
+            if (e.key === 'Escape') this._cancelOrderTargetMode();
+        });
+
         this._wireShopHandlers();
     }
 
@@ -316,6 +376,18 @@ class PlacementUISystem extends GUTS.BaseSystem {
         overlay.classList.remove('hidden');
     }
 
+    // Set of buildingIds the local player currently owns (from their playerStats).
+    _myOwnedBuildingIds() {
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        for (const eid of this.game.getEntitiesWith('playerStats')) {
+            const s = this.game.getComponent(eid, 'playerStats');
+            if (s && s.playerId === myId) {
+                return new Set((s.buildings || []).map(b => b.buildingId));
+            }
+        }
+        return new Set();
+    }
+
     // Called by game.triggerEvent('onHeroSelectStart', data)
     onHeroSelectStart(data) {
         const overlay  = document.getElementById('heroSelectOverlay');
@@ -324,19 +396,25 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const subtitle = document.getElementById('heroSelectSubtitle');
         if (!overlay || !grid) return;
 
-        if (title)    title.textContent    = data?.isMilestone ? 'Choose a New Hero' : 'Choose Your Starting Hero';
-        if (subtitle) subtitle.textContent = data?.isMilestone ? 'Add another hero to your roster' : 'Pick a class to begin your roster';
+        if (title)    title.textContent    = data?.isMilestone ? 'Choose Another Building' : 'Choose Your Starting Building';
+        if (subtitle) subtitle.textContent = data?.isMilestone ? 'Adds an archetype — unlocks its units in the shop' : 'Its archetype sets which units your shop offers';
+
+        // Hide buildings this player already owns (the server rejects re-picks). At the
+        // round-1 start nothing is owned, so all options show; at a milestone the starter
+        // is filtered out. If nothing is left to pick, don't show the overlay at all.
+        const owned = this._myOwnedBuildingIds();
+        const options = (data?.options || []).filter(o => !owned.has(o.id));
+        if (options.length === 0) { overlay.classList.add('hidden'); return; }
 
         grid.innerHTML = '';
-        const classes = data?.options || [];
-        classes.forEach(heroClass => {
+        options.forEach(option => {
             const card = document.createElement('div');
             card.className = 'arena-option-card';
             card.innerHTML = `
-                <div class="arena-option-name">${heroClass.label}</div>
-                <div class="arena-option-tag">${heroClass.archetype}</div>`;
+                <div class="arena-option-name">${option.label}</div>
+                <div class="arena-option-tag">${option.archetype}</div>`;
             card.addEventListener('click', () => {
-                this.call.submitHeroSelection(heroClass.id);
+                this.call.submitHeroSelection(option.id);
                 overlay.classList.add('hidden');
             });
             grid.appendChild(card);
@@ -461,6 +539,13 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const worldPos = this.getWorldPositionFromMouse(event.clientX, event.clientY, false);
         if (!worldPos) return;
 
+        // Attack-move targeting mode: this click sets the destination for the
+        // selected units' battle order.
+        if (this._orderTargetMode) {
+            this._confirmAttackMoveTarget(worldPos);
+            return;
+        }
+
         // Building placement mode: this click chooses where the just-bought building goes.
         if (this._placingBuildingId) {
             const buildingId = this._placingBuildingId;
@@ -500,6 +585,23 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.dragOffset.z = (t?.position?.z ?? worldPos.z) - worldPos.z;
         this.dragMoved = false;
 
+        // If a hero is grabbed and it's part of a multi-selection, drag the whole group.
+        // Buildings always drag singly (they have their own move rules).
+        this.dragUnits = null;
+        if (this.draggedHeroId != null) {
+            const group = this._formationUnits();  // selected, alive, own-team, movable heroes
+            if (group.length > 1 && group.includes(heroId)) {
+                this.dragUnits = group.map((id) => {
+                    const p = this.game.getComponent(id, 'transform')?.position;
+                    return {
+                        id,
+                        offX: (p?.x ?? worldPos.x) - worldPos.x,
+                        offZ: (p?.z ?? worldPos.z) - worldPos.z
+                    };
+                });
+            }
+        }
+
         // Cancel any in-progress box selection so its visual doesn't appear while dragging
         sel?.cancelBoxSelection?.();
 
@@ -518,10 +620,14 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const worldPos = this.getWorldPositionFromMouse(event.clientX, event.clientY, false);
         if (!worldPos) return;
 
-        const newX = worldPos.x + this.dragOffset.x;
-        const newZ = worldPos.z + this.dragOffset.z;
-        // Optimistic local update so the entity follows the cursor immediately
-        this.game.placementSystem?.moveHero(draggedId, newX, newZ);
+        // Optimistic local update so the entity (or group) follows the cursor immediately
+        if (this.dragUnits) {
+            for (const u of this.dragUnits) {
+                this.game.placementSystem?.moveHero(u.id, worldPos.x + u.offX, worldPos.z + u.offZ);
+            }
+        } else {
+            this.game.placementSystem?.moveHero(draggedId, worldPos.x + this.dragOffset.x, worldPos.z + this.dragOffset.z);
+        }
         this.dragMoved = true;
     }
 
@@ -535,9 +641,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const wasMoved = this.dragMoved;
         const offX = this.dragOffset.x;
         const offZ = this.dragOffset.z;
+        const dragUnits = this.dragUnits;
         this.draggedHeroId = null;
         this.draggedBuildingId = null;
         this.draggedBuildingPlacementId = null;
+        this.dragUnits = null;
         this.dragMoved = false;
         document.body.style.cursor = 'default';
 
@@ -548,6 +656,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
             if (worldPos) {
                 if (isBuilding) {
                     this.call.submitMoveBuilding(placementId, worldPos.x + offX, worldPos.z + offZ);
+                } else if (dragUnits) {
+                    // Commit the authoritative move for every dragged unit.
+                    for (const u of dragUnits) {
+                        this.call.submitHeroMove(u.id, worldPos.x + u.offX, worldPos.z + u.offZ);
+                    }
                 } else {
                     this.call.submitHeroMove(draggedId, worldPos.x + offX, worldPos.z + offZ);
                 }
@@ -557,45 +670,494 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
     }
 
-    // ==================== RIGHT-CLICK TERRAIN PAN ====================
+    // ==================== RIGHT-CLICK-DRAG FORMATION (PREP PHASE) ====================
+    // With units selected, right-click-dragging arranges them into a rectangular
+    // formation: the drag line is the formation's front row, its length sets the
+    // width (more length = wider/fewer rows, down to a single row), and a short
+    // drag clamps to a square. Units face perpendicular to the line, toward the enemy.
 
-    _onTerrainPanDown(event) {
+    // Selected, alive, own-team, non-building hero/army units (the movable ones).
+    _formationUnits() {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) return [];
+        const ids = this.game.selectedUnitSystem?.getSelectedUnits?.() || [];
+        const myTeam = this.call.getActivePlayerTeam?.();
+        return ids.filter(id => {
+            if (this.game.entityAlive?.[id] !== 1) return false;
+            const team = this.game.getComponent(id, 'team');
+            if (!team || team.team !== myTeam) return false;
+            if (this.game.getComponent(id, 'buildingOwner')) return false;
+            return !!this.game.getComponent(id, 'heroRosterInfo');
+        });
+    }
+
+    // Disable/restore the free-fly camera's right-drag mouse-look. While units are
+    // selected, a right-drag is a placement gesture, so we don't want it to also swing
+    // the perspective camera. No-op in orthographic mode (it has no mouse-look).
+    _setCameraLookEnabled(enabled) {
+        this.game.systemsByName?.get?.('FreeCameraSystem')?.setLookEnabled?.(enabled);
+    }
+
+    _onFormationDragDown(event) {
         if (event.button !== 2) return;
+        const units = this._formationUnits();
+        if (units.length === 0) return;  // nothing selected → no formation drag (camera look stays active)
+
+        // Units are selected → claim this right-drag for placement and stop the camera
+        // from looking around. Suppress before the worldPos check (and restore on mouseup
+        // regardless) so a gesture that starts off-ground can't leave look disabled.
+        if (!this._lookSuppressedByDrag) {
+            this._setCameraLookEnabled(false);
+            this._lookSuppressedByDrag = true;
+        }
 
         const worldPos = this.getWorldPositionFromMouse(event.clientX, event.clientY, false);
         if (!worldPos) return;
 
-        // Seed the lookAt from the camera's current target (set by previous cameraLookAt calls)
-        const camera = this.call.getCamera?.();
-        const look = camera?.userData?.lookAt;
-        const initialLookAt = look
-            ? { x: look.x, z: look.z }
-            : { x: camera?.position?.x ?? 0, z: camera?.position?.z ?? 0 };
-
-        this.panAnchor = { x: worldPos.x, z: worldPos.z };
-        this.panLookAt = initialLookAt;
-        document.body.style.cursor = 'grabbing';
+        this.formationDrag = { start: { x: worldPos.x, z: worldPos.z }, units, slots: [] };
+        // Suppress box selection while we drag the formation out
+        this.game.selectedUnitSystem?.cancelBoxSelection?.();
+        document.body.style.cursor = 'crosshair';
         event.preventDefault();
     }
 
-    _onTerrainPanMove(event) {
-        if (!this.panAnchor) return;
+    _onFormationDragMove(event) {
+        if (!this.formationDrag) return;
+        this.game.selectedUnitSystem?.cancelBoxSelection?.();
 
-        const wNow = this.getWorldPositionFromMouse(event.clientX, event.clientY, false);
-        if (!wNow) return;
+        const worldPos = this.getWorldPositionFromMouse(event.clientX, event.clientY, false);
+        if (!worldPos) return;
 
-        // Shift camera so the anchor world point is once again under the cursor.
-        // newLookAt = currentLookAt + (anchor - wNow)
-        this.panLookAt.x += this.panAnchor.x - wNow.x;
-        this.panLookAt.z += this.panAnchor.z - wNow.z;
-        this.call.cameraLookAt(this.panLookAt.x, this.panLookAt.z);
+        const slots = this._computeFormationPositions(this.formationDrag.start, worldPos, this.formationDrag.units);
+        this.formationDrag.slots = slots;
+        // Optimistic local preview: move + face each unit as the line is dragged.
+        for (const s of slots) {
+            this.game.placementSystem?.moveHero(s.id, s.x, s.z, s.rotationY);
+        }
     }
 
-    _onTerrainPanUp(event) {
-        if (!this.panAnchor) return;
-        this.panAnchor = null;
-        this.panLookAt = null;
+    _onFormationDragUp(event) {
+        // Always restore camera mouse-look when the right button is released, even if
+        // no formation drag actually started (e.g. the gesture began off-ground).
+        if (this._lookSuppressedByDrag) {
+            this._setCameraLookEnabled(true);
+            this._lookSuppressedByDrag = false;
+        }
+
+        if (!this.formationDrag) return;
+        const slots = this.formationDrag.slots;
+        this.formationDrag = null;
         document.body.style.cursor = 'default';
+        if (!slots || slots.length === 0) return;
+
+        // Commit the authoritative positions + facing to the server (one per unit).
+        for (const s of slots) {
+            try {
+                this.call.submitHeroMove(s.id, s.x, s.z, s.rotationY);
+            } catch (err) {
+                console.warn('[PlacementUISystem] formation move submit failed:', err);
+            }
+        }
+    }
+
+    // Build target slots for the selected units given the drag's start/end world points.
+    _computeFormationPositions(start, end, units) {
+        const N = units.length;
+        if (N === 0) return [];
+
+        const SPACING = 48;       // gap between units along a row (matches spawn STEP)
+        const ROW_SPACING = 48;   // gap between rows
+
+        const dx = end.x - start.x;
+        const dz = end.z - start.z;
+        const width = Math.hypot(dx, dz);
+
+        // Row direction (along the dragged line). Default to the X axis for a zero-length drag.
+        const u = width > 1e-3 ? { x: dx / width, z: dz / width } : { x: 1, z: 0 };
+
+        // Columns scale with drag length but never below a square, never above a single row.
+        const minCols = Math.ceil(Math.sqrt(N));
+        let cols = Math.round(width / SPACING) + 1;
+        cols = Math.max(minCols, Math.min(N, cols));
+        const rows = Math.ceil(N / cols);
+
+        // Facing normal: perpendicular to the line, pointing toward the enemy.
+        const center = { x: (start.x + end.x) / 2, z: (start.z + end.z) / 2 };
+        const n = this._enemyFacingNormal(u, center);
+        const rotationY = Math.atan2(n.z, n.x);
+
+        // Front row sits on the dragged line; subsequent rows recede toward our own side (-n).
+        const slots = [];
+        for (let i = 0; i < N; i++) {
+            const row = Math.floor(i / cols);
+            const col = i % cols;
+            const unitsInRow = (row < rows - 1) ? cols : (N - cols * (rows - 1));
+            const colOffset = (col - (unitsInRow - 1) / 2) * SPACING;
+            const rowOffset = -row * ROW_SPACING;
+            slots.push({
+                id: units[i],
+                x: center.x + u.x * colOffset + n.x * rowOffset,
+                z: center.z + u.z * colOffset + n.z * rowOffset,
+                rotationY
+            });
+        }
+        return slots;
+    }
+
+    // Unit normal of `u` (one of the two perpendiculars) pointing toward the enemy side.
+    _enemyFacingNormal(u, center) {
+        const n = { x: -u.z, z: u.x };  // rotate row direction +90°
+        const myTeam = this.call.getActivePlayerTeam?.();
+        const locs = this.game.placementSystem?.getStartingLocationsFromLevel?.();
+        if (locs && myTeam != null) {
+            const enemyTeam = Object.keys(locs).map(Number).find(t => t !== myTeam);
+            const enemyTile = enemyTeam != null ? locs[enemyTeam] : null;
+            const enemyWorld = enemyTile ? this.call.tileToWorld?.(enemyTile.x, enemyTile.z) : null;
+            if (enemyWorld) {
+                const toEnemy = { x: enemyWorld.x - center.x, z: enemyWorld.z - center.z };
+                if (n.x * toEnemy.x + n.z * toEnemy.z < 0) return { x: -n.x, z: -n.z };
+            }
+        }
+        return n;
+    }
+
+    // ==================== SELECTION PANEL + ATTACK-MOVE ORDERS ====================
+    // SelectedUnitSystem owns click/box selection and fires these events. The
+    // panel shows the selected units' icons + current orders; the Attack Move
+    // button arms a targeting mode where the next terrain left-click issues the
+    // squad's single battle order (move there, engaging enemies seen en route).
+
+    onMultipleUnitsSelected() {
+        this._refreshSelectionPanel();
+    }
+
+    onDeSelectAll() {
+        this._cancelOrderTargetMode();
+        this._refreshSelectionPanel();
+    }
+
+    // Selected, living, own-team, non-building units with a squad placement.
+    _selectedOwnUnits() {
+        const ids = this.game.selectedUnitSystem?.getSelectedUnits?.() || [];
+        const myTeam = this.call.getActivePlayerTeam?.();
+        return ids.filter(id => {
+            if (this.game.entityAlive?.[id] !== 1) return false;
+            const team = this.game.getComponent(id, 'team');
+            if (!team || team.team !== myTeam) return false;
+            if (this.game.getComponent(id, 'buildingOwner')) return false;
+            return !!this.game.getComponent(id, 'placement');
+        });
+    }
+
+    _unitOrderInfo(id) {
+        const po = this.game.getComponent(id, 'playerOrder');
+        if (po?.enabled && po.isMoveOrder && !po.completed) {
+            return { type: 'attackMove', target: { x: po.targetPositionX, z: po.targetPositionZ } };
+        }
+        return { type: 'hold' };
+    }
+
+    // A single selected, living, own-team building. Identified by its collection /
+    // unitType def so it works even if the buildingOwner component didn't replicate
+    // (online). Returns { entityId, buildingId, hasTree, title } or null.
+    _selectedOwnBuilding() {
+        const ids = this.game.selectedUnitSystem?.getSelectedUnits?.() || [];
+        if (ids.length !== 1) return null;
+        const id = ids[0];
+        if (this.game.entityAlive?.[id] !== 1) return null;
+
+        const owner = this.game.getComponent(id, 'buildingOwner');
+        const def = this.game.getUnitTypeDef?.(this.game.getComponent(id, 'unitType'));
+        const isBuilding = !!owner
+            || def?.collection === 'buildings'
+            || !!this.game.getComponent(id, 'building');
+        if (!isBuilding) return null;
+
+        // Own team (skip the check if we can't resolve a team — better to show than hide).
+        const myTeam = this.call.getActivePlayerTeam?.();
+        const team = this.game.getComponent(id, 'team');
+        if (myTeam != null && team && team.team !== myTeam) return null;
+
+        const buildingId = owner?.buildingId || def?.id || null;
+        const tree = buildingId ? this.collections?.upgradeTrees?.[buildingId] : null;
+        return {
+            entityId: id,
+            buildingId,
+            hasTree: !!tree,
+            title: tree?.title || def?.title || 'Building'
+        };
+    }
+
+    _refreshSelectionPanel() {
+        const panel = this.elements.selectionPanel;
+        if (!panel) return;
+
+        // Building mode: a single owned building → show the panel; the Upgrades button
+        // only appears when the building actually has an upgrade tree.
+        const building = this._selectedOwnBuilding();
+        if (building) {
+            this._selectedBuildingId = building.hasTree ? building.buildingId : null;
+            panel.classList.remove('hidden');
+            if (this.elements.selectionCards) this.elements.selectionCards.innerHTML = '';
+            this.elements.selectionActions?.classList.add('hidden');
+            this.elements.buildingActions?.classList.toggle('hidden', !building.hasTree);
+            if (this.elements.selectionTitle) this.elements.selectionTitle.textContent = building.title;
+            return;
+        }
+
+        // Unit mode.
+        this._selectedBuildingId = null;
+        this.elements.buildingActions?.classList.add('hidden');
+        this.elements.selectionActions?.classList.remove('hidden');
+        if (this.elements.selectionTitle) this.elements.selectionTitle.textContent = 'Selection';
+
+        const units = this._selectedOwnUnits();
+        if (units.length === 0) {
+            panel.classList.add('hidden');
+            return;
+        }
+        panel.classList.remove('hidden');
+
+        const icons = this.collections?.icons || {};
+        this.elements.selectionCards.innerHTML = units.map(id => {
+            const def = this.game.getUnitTypeDef(this.game.getComponent(id, 'unitType'));
+            const order = this._unitOrderInfo(id);
+            const imagePath = icons[def?.icon]?.imagePath;
+            const img = imagePath
+                ? `<img class="sel-card-img" src="./resources/${imagePath}" alt="">`
+                : `<span class="sel-card-img sel-card-fallback">⚔</span>`;
+            const isAttack = order.type === 'attackMove';
+            return `<div class="sel-card" title="${def?.title || 'Unit'} — ${isAttack ? 'Attack-move ordered' : 'Holding position'}">
+                ${img}<span class="sel-card-badge ${isAttack ? 'order-attack' : 'order-hold'}">${isAttack ? '⚔' : '🛡'}</span>
+            </div>`;
+        }).join('');
+
+        // Orders can only be issued (or cleared) during prep.
+        const notPrep = this.game.state.phase !== this.enums.gamePhase.placement;
+        if (this.elements.attackMoveBtn) this.elements.attackMoveBtn.disabled = notPrep;
+        if (this.elements.clearOrderBtn) this.elements.clearOrderBtn.disabled = notPrep;
+    }
+
+    // ==================== BUILDING UPGRADE TREE (read-only) ====================
+
+    // The local player's owned upgrade ids — authoritative playerStats client-side
+    // (local skirmish), falling back to the shop-state broadcast (online).
+    _myOwnedUpgrades() {
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        for (const eid of this.game.getEntitiesWith('playerStats')) {
+            const s = this.game.getComponent(eid, 'playerStats');
+            if (s && s.playerId === myId && Array.isArray(s.ownedUpgrades)) {
+                return new Set(s.ownedUpgrades);
+            }
+        }
+        const fromShop = this._shopState?.ownedUpgrades;
+        return new Set(Array.isArray(fromShop) ? fromShop : []);
+    }
+
+    _openUpgradeTree() {
+        const tree = this.collections?.upgradeTrees?.[this._selectedBuildingId];
+        if (!tree) return;
+        this._renderUpgradeTree(tree);
+        document.getElementById('techTreeOverlay')?.classList.remove('hidden');
+    }
+
+    _closeUpgradeTree() {
+        document.getElementById('techTreeOverlay')?.classList.add('hidden');
+    }
+
+    // Draw the building's tree: a column per branch, nodes top→bottom with connectors.
+    // Each node is owned / available (can roll in the shop now) / locked. Read-only.
+    _renderUpgradeTree(tree) {
+        const container = document.getElementById('techTreeBranches');
+        const titleEl = document.getElementById('techTreeTitle');
+        if (!container) return;
+        if (titleEl) titleEl.textContent = `${tree.title || 'Building'} — Upgrades`;
+
+        const owned = this._myOwnedUpgrades();
+        const upgrades = this.collections?.upgrades || {};
+        const icons = this.collections?.icons || {};
+        const cost = (v) => Math.max(1, Math.ceil((v || 0) / 5)); // mirrors ArmyShopSystem.shopCost
+        const stateOf = (node) => {
+            if (owned.has(node.upgrade)) return 'owned';
+            return (node.requires || []).every(r => owned.has(r)) ? 'available' : 'locked';
+        };
+
+        container.innerHTML = (tree.branches || []).map(branch => {
+            const nodes = (branch.nodes || []).map((node, i) => {
+                const def = upgrades[node.upgrade] || {};
+                const state = stateOf(node);
+                const imagePath = icons[def.icon]?.imagePath;
+                const img = imagePath
+                    ? `<img class="tt-node-img" src="./resources/${imagePath}" alt="">`
+                    : `<span class="tt-node-img tt-node-fallback">★</span>`;
+                const badge = state === 'owned' ? '✔ Owned'
+                    : state === 'available' ? 'In shop pool' : '🔒 Locked';
+                const edge = i > 0 ? `<div class="tt-edge tt-edge-${state}"></div>` : '';
+                return `${edge}
+                    <div class="tt-node tt-${state}">
+                        ${img}
+                        <div class="tt-node-body">
+                            <div class="tt-node-name">${def.title || node.upgrade}</div>
+                            <div class="tt-node-desc">${def.description || ''}</div>
+                            <div class="tt-node-meta">
+                                <span class="tt-node-cost">💰 ${cost(def.value)}</span>
+                                <span class="tt-node-badge">${badge}</span>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+            return `<div class="tt-branch" data-focus="${branch.focus || ''}">
+                <div class="tt-branch-head">
+                    <span class="tt-branch-name">${branch.label || branch.id}</span>
+                    <span class="tt-branch-focus">${branch.focus || ''}</span>
+                </div>
+                ${nodes}
+            </div>`;
+        }).join('');
+    }
+
+    // Cancel the selected squads' orders: they hold position (and the cleared
+    // state is snapshotted at battle start, so nothing persists to next round).
+    _clearSelectedOrders() {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) return;
+        const units = this._selectedOwnUnits();
+        const placementIds = [...new Set(
+            units.map(id => this.game.getComponent(id, 'placement')?.placementId)
+                 .filter(p => p != null)
+        )];
+        if (placementIds.length === 0) return;
+        this._cancelOrderTargetMode();
+        this.call.ui_issueMoveOrder(placementIds, { x: 0, z: 0 }, { clearOrder: true }, () => {
+            this._refreshSelectionPanel();
+        });
+        this._refreshSelectionPanel();
+    }
+
+    _toggleOrderTargetMode() {
+        if (this._orderTargetMode) {
+            this._cancelOrderTargetMode();
+            return;
+        }
+        if (this.game.state.phase !== this.enums.gamePhase.placement) return;
+        if (this._selectedOwnUnits().length === 0) return;
+        this._orderTargetMode = true;
+        this.elements.attackMoveBtn?.classList.add('active');
+        this.elements.selectionHint?.classList.remove('hidden');
+        document.body.style.cursor = 'crosshair';
+    }
+
+    _cancelOrderTargetMode() {
+        if (!this._orderTargetMode) return;
+        this._orderTargetMode = false;
+        this.elements.attackMoveBtn?.classList.remove('active');
+        this.elements.selectionHint?.classList.add('hidden');
+        document.body.style.cursor = 'default';
+    }
+
+    // Issue the attack-move to every selected squad. Routed through
+    // ui_issueMoveOrder → SET_SQUAD_TARGETS: server-authoritative, mirrored to
+    // the opponent's client for lockstep.
+    _confirmAttackMoveTarget(worldPos) {
+        const units = this._selectedOwnUnits();
+        const placementIds = [...new Set(
+            units.map(id => this.game.getComponent(id, 'placement')?.placementId)
+                 .filter(p => p != null)
+        )];
+        this._cancelOrderTargetMode();
+        if (placementIds.length === 0) return;
+
+        // Arm the one-shot click guard BEFORE issuing: the same physical click
+        // also reaches InputSystem → ui_handleCanvasClick, which would deselect
+        // the units. The guard makes that click a no-op for selection, so the
+        // panel and destination markers stay up.
+        this._orderClickGuardUntil = performance.now() + 600;
+
+        this.call.ui_issueMoveOrder(placementIds, { x: worldPos.x, z: worldPos.z }, {}, () => {
+            this._refreshSelectionPanel();
+        });
+
+        // Target-point feedback at terrain height (y=0 would spawn underground).
+        const y = this.call.getTerrainHeight?.(worldPos.x, worldPos.z) ?? 0;
+        this.call.createParticleEffect(worldPos.x, y + 5, worldPos.z, 'magic', { count: 10, speedMultiplier: 0.9 });
+        this._logEvent(`Attack-move order set (${placementIds.length} squad${placementIds.length > 1 ? 's' : ''})`, 'system');
+        this._refreshSelectionPanel();
+    }
+
+    // One-shot guard consumed by GameInterfaceSystem.ui_handleCanvasClick.
+    // True only for the click event belonging to the order-confirmation
+    // mousedown (short wall-clock window; client-side UI only).
+    consumeOrderClickGuard() {
+        if (this._orderClickGuardUntil && performance.now() < this._orderClickGuardUntil) {
+            this._orderClickGuardUntil = 0;
+            return true;
+        }
+        return false;
+    }
+
+    // ── Order destination/path visualization ─────────────────────────────────
+    // Dashed line from each selected ordered unit to its destination + a ring
+    // marker there. Rebuilt only when the (unit, from, to) fingerprint changes.
+
+    _clearOrderViz() {
+        if (!this._orderVizGroup) return;
+        this._orderVizGroup.traverse(o => {
+            o.geometry?.dispose?.();
+            o.material?.dispose?.();
+        });
+        this._orderVizGroup.parent?.remove(this._orderVizGroup);
+        this._orderVizGroup = null;
+        this._orderVizFp = '';
+    }
+
+    _updateOrderViz() {
+        if (typeof THREE === 'undefined') return;
+        const scene = this.call.getWorldScene?.();
+        if (!scene) return;
+
+        const entries = [];
+        for (const id of this._selectedOwnUnits()) {
+            const order = this._unitOrderInfo(id);
+            if (order.type !== 'attackMove') continue;
+            const pos = this.game.getComponent(id, 'transform')?.position;
+            if (!pos) continue;
+            entries.push({ id, from: { x: pos.x, z: pos.z }, to: order.target });
+        }
+
+        const fp = entries.map(e =>
+            `${e.id}:${e.from.x | 0},${e.from.z | 0}>${e.to.x | 0},${e.to.z | 0}`).join(';');
+        if (fp === this._orderVizFp) return;
+        this._clearOrderViz();
+        this._orderVizFp = fp;
+        if (entries.length === 0) return;
+
+        const group = new THREE.Group();
+        for (const e of entries) {
+            const y1 = (this.call.getTerrainHeight?.(e.from.x, e.from.z) ?? 0) + 3;
+            const y2 = (this.call.getTerrainHeight?.(e.to.x, e.to.z) ?? 0) + 3;
+
+            const lineGeo = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(e.from.x, y1, e.from.z),
+                new THREE.Vector3(e.to.x, y2, e.to.z)
+            ]);
+            const line = new THREE.Line(lineGeo, new THREE.LineDashedMaterial({
+                color: 0xffc857, dashSize: 14, gapSize: 9, transparent: true, opacity: 0.85
+            }));
+            line.computeLineDistances();
+            group.add(line);
+
+            const ring = new THREE.Mesh(
+                new THREE.RingGeometry(18, 24, 32),
+                new THREE.MeshBasicMaterial({
+                    color: 0xffc857, side: THREE.DoubleSide, transparent: true, opacity: 0.9,
+                    depthTest: false
+                })
+            );
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.set(e.to.x, y2 + 1, e.to.z);
+            ring.renderOrder = 999;
+            group.add(ring);
+        }
+        scene.add(group);
+        this._orderVizGroup = group;
     }
 
     _titleCase(s) {
@@ -620,6 +1182,12 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (!this._isMyShopState(state)) return;
         this._shopState = state;
         this._renderShop(state);
+        // Keep the upgrade-tree modal current if it's open (a shop buy may have unlocked nodes).
+        const overlay = document.getElementById('techTreeOverlay');
+        if (overlay && !overlay.classList.contains('hidden') && this._selectedBuildingId) {
+            const tree = this.collections?.upgradeTrees?.[this._selectedBuildingId];
+            if (tree) this._renderUpgradeTree(tree);
+        }
     }
 
     _renderShop(state) {
@@ -862,10 +1430,14 @@ class PlacementUISystem extends GUTS.BaseSystem {
             this._track(this.canvas, 'mousemove', (event) => this._onHeroDragMove(event));
             this._track(window, 'mouseup', (event) => this._onHeroDragUp(event));
 
-            // Right-click terrain pan handlers (camera follows so the clicked point stays under cursor)
-            this._track(this.canvas, 'mousedown', (event) => this._onTerrainPanDown(event));
-            this._track(this.canvas, 'mousemove', (event) => this._onTerrainPanMove(event));
-            this._track(window, 'mouseup', (event) => this._onTerrainPanUp(event));
+            // Right-click-drag formation handlers (when units are selected).
+            this._track(this.canvas, 'mousedown', (event) => this._onFormationDragDown(event));
+            this._track(this.canvas, 'mousemove', (event) => this._onFormationDragMove(event));
+            this._track(window, 'mouseup', (event) => this._onFormationDragUp(event));
+
+            // Camera panning is handled by WASD (OrthographicCameraSystem keyboard pan),
+            // not right-click. Still suppress the browser context menu since right-click
+            // is used for formation drag / unit orders.
             this._track(this.canvas, 'contextmenu', (event) => event.preventDefault());
         }
 
@@ -888,6 +1460,13 @@ class PlacementUISystem extends GUTS.BaseSystem {
         // Refresh HUD every tick — needed for HP / round / gold display to reflect
         // changes made by AutobattlerRoundSystem after each battle.
         this.updateHUD();
+
+        // Keep the selected units' order destination/path markers current
+        // (throttled; rebuilds only when something actually changed).
+        if ((this.game.state.now || 0) - (this._lastOrderVizAt || 0) > 0.2) {
+            this._lastOrderVizAt = this.game.state.now || 0;
+            this._updateOrderViz();
+        }
 
         // Note: TBW used to self-pause the game here after 30s of battle so the client
         // could wait for the server's BATTLE_END broadcast. In HeroArena (and any mode
@@ -1016,6 +1595,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (this.elements.phaseDisplay)     this.elements.phaseDisplay.textContent = 'PREP PHASE';
 
         this.enablePlacementUI();
+        this._refreshSelectionPanel();
         if (this.elements.readyButton) {
             this.elements.readyButton.textContent = 'Ready for Battle';
         }
@@ -1029,6 +1609,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     // Hide the prep panels when leaving placement phase
     onBattleStart() {
+        // Orders can't be issued mid-battle; the selection panel stays (read-only).
+        this._cancelOrderTargetMode();
+        this._refreshSelectionPanel();
         // Hide the shop — not actionable mid-battle.
         if (this.elements.shopPanel)          this.elements.shopPanel.classList.add('hidden');
         if (this.elements.unlockedUnitsPanel) this.elements.unlockedUnitsPanel.classList.add('hidden');
@@ -1049,6 +1632,29 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (entityId == null) return;
         const name = this._describeEntity(entityId);
         this._logEvent(`${name} died`, 'death');
+    }
+
+    // GoldMineCaptureSystem fires these at round end as veins change hands.
+    _isMine(playerId) {
+        return playerId === (this.game.clientNetworkManager?.numericPlayerId ?? 0);
+    }
+
+    onGoldMineBuilt(data) {
+        if (!data) return;
+        this._logEvent(
+            `${this._isMine(data.playerId) ? 'You' : 'Enemy'} built a Gold Mine`, 'system');
+    }
+
+    onGoldMineDestroyed(data) {
+        if (!data) return;
+        const owned = data.playerId != null && this._isMine(data.playerId);
+        this._logEvent(
+            `${owned ? 'Your' : 'Enemy'} Gold Mine was destroyed`, 'death');
+    }
+
+    onGoldMineIncome(data) {
+        if (!data || !this._isMine(data.playerId)) return;
+        this._logEvent(`Gold Mine income (+${data.gold}g)`, 'system');
     }
 
     onBattleEnd() {
@@ -1212,6 +1818,14 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (!this.raycastHelper) {
             return { x: 0, y: 0, z: 0 };
         }
+
+        // Keep the raycaster aligned with whichever camera is currently active. The
+        // game can switch between the orthographic (default) and free-fly perspective
+        // cameras; the helper caches the camera it was built with, so without this the
+        // screen→world ray would still come from the orthographic camera and unit
+        // moves/placement would land in the wrong spot in free-fly mode.
+        const activeCamera = this.call.getCamera?.();
+        if (activeCamera) this.raycastHelper.setCamera(activeCamera);
 
         // Get ground mesh for raycasting
         const ground = this.call.getGroundMesh();
@@ -1453,6 +2067,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
         // Removes every tracked window/canvas/shop listener and stops the
         // raycast interval (see _track / _teardownListeners).
         this._teardownListeners();
+        this._cancelOrderTargetMode();
+        this._clearOrderViz();
 
         this.cachedValidation = null;
         this.cachedGridPos = null;

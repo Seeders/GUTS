@@ -74,6 +74,37 @@ class HasTargetBehaviorAction extends GUTS.BaseBehaviorAction {
             }
         }
 
+        // Drop targets that have left vision range. Without this leash a unit
+        // chases its first target across the whole map (through fog), ignoring
+        // its move order — the combat tree stays "running" and is resumed ahead
+        // of PlayerOrderBehaviorTree, so a stale target means a runaway chase.
+        //
+        // Leash reference point: a unit with a COMPLETED move order defends its
+        // ordered spot, so the leash is measured from THAT anchor (otherwise
+        // each chase re-measures from the unit's drifting position and the
+        // defender ratchets across the map). Marching/unordered units measure
+        // from their own position.
+        const myPos = game.getComponent(entityId, 'transform')?.position;
+        const targetPos = game.getComponent(targetId, 'transform')?.position;
+        if (myPos && targetPos) {
+            const po = game.getComponent(entityId, 'playerOrder');
+            const anchored = po?.enabled && po.isMoveOrder && po.completed;
+            const refX = anchored ? po.targetPositionX : myPos.x;
+            const refZ = anchored ? po.targetPositionZ : myPos.z;
+            const visionRange = game.getComponent(entityId, 'combat')?.visionRange || 300;
+            const dx = targetPos.x - refX;
+            const dz = targetPos.z - refZ;
+            if (dx * dx + dz * dz > visionRange * visionRange) {
+                log.trace('HasTarget', `${unitName}(${entityId}) [${teamName}] FAILURE - target left leash`, {
+                    targetId,
+                    anchored,
+                    visionRange
+                });
+                shared[targetKey] = null;
+                return this.failure();
+            }
+        }
+
         log.trace('HasTarget', `${unitName}(${entityId}) [${teamName}] SUCCESS - target valid`, {
             targetId
         });

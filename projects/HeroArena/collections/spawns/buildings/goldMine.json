@@ -2,6 +2,7 @@
   "title": "Gold Mine",
   "info": "Mine gold veins",
   "value": 50,
+  "alwaysVisibleInFog": true,
   "category": "attribute",
   "render": {
     "animations": {

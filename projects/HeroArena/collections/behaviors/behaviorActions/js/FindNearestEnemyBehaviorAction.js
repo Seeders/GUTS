@@ -8,16 +8,15 @@
  *
  * Returns SUCCESS if enemy found, FAILURE otherwise
  *
- * HeroArena note: this is an open-arena autobattler — every unit must engage each
- * round rather than stand idle. We therefore pick the nearest enemy in vision range
- * DIRECTLY and deliberately skip VisionSystem's terrain line-of-sight filtering
- * (findNearestVisibleEnemy → _filterByLOS), which can block targeting across baked
- * level height differences and leave units doing nothing.
+ * HeroArena note: with fog of war active, targeting must MATCH what the fog
+ * shows the player — candidates are filtered by terrain line of sight
+ * (hasLineOfSight), so units never react to enemies hidden behind cliffs.
  */
 class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
     static serviceDependencies = [
-        'getVisibleEnemiesInRange'
+        'getVisibleEnemiesInRange',
+        'hasLineOfSight'
     ];
 
     execute(entityId, game) {
@@ -31,45 +30,49 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const myPos = game.getComponent(entityId, 'transform')?.position;
         const enemyIds = this.call.getVisibleEnemiesInRange( entityId, range);
 
-        // Enemy UNITS are always preferred; buildings are engaged only when no
-        // enemy unit is in vision (the post-fight siege — the win condition is
-        // the enemy Town Hall). Strict-less + entity-id tiebreaks keep both
-        // picks deterministic (lockstep) regardless of spatial-grid order.
-        let nearestUnit = null,     nearestUnitDistSq = Infinity;
-        let nearestBuilding = null, nearestBuildingDistSq = Infinity;
+        // Buildings and units are EQUAL targets: the nearest visible enemy wins
+        // (a marching army stops to destroy a sentry tower it walks into, then
+        // resumes its order — killing the target ends the engagement). Vision
+        // is FINITE (fog of war) and the terrain LOS filter keeps targeting
+        // consistent with what the fog shows. Strict-less + entity-id tiebreak
+        // keeps the pick deterministic (lockstep) regardless of grid order.
+        let nearestId = null;
+        let nearestDistSq = Infinity;
+        const myDef = game.getUnitTypeDef(game.getComponent(entityId, 'unitType'));
         if (myPos && enemyIds) {
             for (const eid of enemyIds) {
                 const pos = game.getComponent(eid, 'transform')?.position;
                 if (!pos) continue;
+                // Terrain LOS: enemies behind cliffs are in fog — not targetable.
+                if (!this.call.hasLineOfSight(
+                    { x: myPos.x, z: myPos.z }, { x: pos.x, z: pos.z }, myDef, entityId)) {
+                    continue;
+                }
                 const dx = pos.x - myPos.x;
                 const dz = pos.z - myPos.z;
                 const distSq = dx * dx + dz * dz;
-                if (game.getComponent(eid, 'buildingOwner')) {
-                    if (distSq < nearestBuildingDistSq ||
-                        (distSq === nearestBuildingDistSq && (nearestBuilding == null || eid < nearestBuilding))) {
-                        nearestBuildingDistSq = distSq;
-                        nearestBuilding = eid;
-                    }
-                } else if (distSq < nearestUnitDistSq ||
-                    (distSq === nearestUnitDistSq && (nearestUnit == null || eid < nearestUnit))) {
-                    nearestUnitDistSq = distSq;
-                    nearestUnit = eid;
+                if (distSq < nearestDistSq ||
+                    (distSq === nearestDistSq && (nearestId == null || eid < nearestId))) {
+                    nearestDistSq = distSq;
+                    nearestId = eid;
                 }
             }
         }
 
-        let nearestId = nearestUnit ?? nearestBuilding;
-        let nearestDistSq = nearestUnit != null ? nearestUnitDistSq : nearestBuildingDistSq;
+        const po = game.getComponent(entityId, 'playerOrder');
 
-        // Nothing in vision at all: fall back to the nearest living enemy building
-        // anywhere on the map, so a victorious army marches on the enemy base
-        // instead of idling once the opposing army is wiped.
-        if (nearestId == null && myPos &&
-            game.state.phase === game.getEnums().gamePhase.battle) {
-            const found = this._nearestEnemyBuildingGlobal(entityId, game, myPos);
-            if (found) {
-                nearestId = found.id;
-                nearestDistSq = found.distSq;
+        // A COMPLETED move order anchors the unit at its destination: it only
+        // engages enemies within vision of the ORDERED SPOT. Without this, each
+        // chase leg re-measures vision from the unit's drifting position and a
+        // defender ratchets across the map one fight at a time.
+        if (nearestId != null && po?.enabled && po.isMoveOrder && po.completed) {
+            const pos = game.getComponent(nearestId, 'transform')?.position;
+            if (pos) {
+                const ax = pos.x - po.targetPositionX;
+                const az = pos.z - po.targetPositionZ;
+                if (ax * ax + az * az > range * range) {
+                    nearestId = null;
+                }
             }
         }
 
@@ -87,36 +90,5 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         return this.failure();
-    }
-
-    // Deterministic map-wide scan for the closest living enemy building.
-    // Building counts are small (~10/side), so the linear scan is cheap.
-    _nearestEnemyBuildingGlobal(entityId, game, myPos) {
-        const enums = game.getEnums();
-        const neutral = enums.team?.neutral ?? 0;
-        const aliveState = enums.deathState?.alive ?? 0;
-        const myTeam = game.getComponent(entityId, 'team')?.team;
-        if (myTeam === undefined || myTeam === neutral) return null;
-
-        let best = null;
-        let bestDistSq = Infinity;
-        for (const eid of game.getEntitiesWith('buildingOwner')) {
-            const team = game.getComponent(eid, 'team');
-            if (!team || team.team === myTeam || team.team === neutral) continue;
-            const health = game.getComponent(eid, 'health');
-            if (!health || health.current <= 0) continue;
-            const ds = game.getComponent(eid, 'deathState');
-            if (ds && ds.state !== aliveState) continue;
-            const pos = game.getComponent(eid, 'transform')?.position;
-            if (!pos) continue;
-            const dx = pos.x - myPos.x;
-            const dz = pos.z - myPos.z;
-            const distSq = dx * dx + dz * dz;
-            if (distSq < bestDistSq || (distSq === bestDistSq && (best == null || eid < best))) {
-                bestDistSq = distSq;
-                best = eid;
-            }
-        }
-        return best != null ? { id: best, distSq: bestDistSq } : null;
     }
 }

@@ -1,5 +1,5 @@
-/* Import fantasy fonts */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=MedievalSharp&display=swap');
+/* Stone Keep — blackletter display + legible carved-Roman caps + serif body */
+@import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=Cinzel:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
 /* === RESET & BASE === */
 * {
@@ -9,46 +9,78 @@
 }
 
 :root {
-    /* Fantasy Color Palette */
-    --primary-gold: #d4af37;
-    --secondary-gold: #b8860b;
-    --accent-amber: #daa520;
-    --deep-forest: #1b3d1b;
-    --medium-forest: #2d4a2b;
-    --light-forest: #3d5a3b;
-    --forest-brown: #4a3f2a;
-    --dark-brown: #3d2f1f;
-    --medium-brown: #5d4037;
-    --light-brown: #6d4c41;
-    --stone-gray: #8d7053;
-    --warm-gray: #a68b5b;
-    --cream: #f5e6b3;
-    --dark-green: #0f2f0f;
-    --blood-red: #8b0000;
-    --dark-bronze: #8B7355;
-    --mystic-blue: #4169E1;
-    --rich-purple: #8A2BE2;
-    --shadow-black: #000000;
-    --parchment: #F5E6B3;
-    --forest-green: #1b5e20;
-    
+    /* ─── STONE KEEP design tokens ─────────────────────────────────────────
+       A cold castle-under-siege palette: quarried stone & black iron, lit by
+       torchlight, accented with heraldic tinctures (gules/azure/vert/or). The
+       three martial schools ARE the tinctures: Might=gules, Finesse=vert,
+       Arcane=azure. Gold(or) = currency & royal decree. */
+    --sk-iron:       #14161a;   /* deepest bg — black iron */
+    --sk-iron-2:     #1b1e24;
+    --sk-stone:      #2b2f36;   /* panel stone */
+    --sk-stone-2:    #353a42;   /* raised stone */
+    --sk-stone-3:    #20242a;   /* recessed stone */
+    --sk-mortar:     #474d57;   /* stone seam */
+    --sk-mortar-lit: #5d6570;   /* chiselled bevel highlight */
+    --sk-bone:       #ded9cd;   /* lime-washed text */
+    --sk-bone-dim:   #a39d8f;
+    --sk-bone-faint: #6f6a5e;
+    --sk-torch:      #d8852e;   /* torchlight — primary warm accent / glow */
+    --sk-torch-lit:  #f0a845;
+    --sk-ember:      #b5621c;
+    --sk-gold:       #c9a24b;   /* heraldic or — currency, gilt trim */
+    --sk-gold-lit:   #e6c572;
+    --sk-gules:      #b23a33;   /* heraldic red — Might / danger */
+    --sk-gules-lit:  #d24f45;
+    --sk-azure:      #2e6aa8;   /* heraldic blue — Arcane */
+    --sk-azure-lit:  #4a8fcf;
+    --sk-vert:       #3e7a4a;   /* heraldic green — Finesse / health */
+    --sk-vert-lit:   #56a064;
+    --sk-blood:      #8a241e;   /* enemy banner */
+
+    --sk-display: 'Pirata One', 'UnifrakturCook', cursive;   /* blackletter — big titles only */
+    --sk-heading: 'Cinzel', 'Marcellus', serif;              /* legible carved-Roman caps — workhorse */
+    --sk-body:    'Spectral', 'EB Garamond', Georgia, serif; /* readable codex serif */
+
+    /* ─── Legacy token names repointed → the whole app re-themes ──────────── */
+    --primary-gold:   var(--sk-torch);
+    --secondary-gold: var(--sk-ember);
+    --accent-amber:   var(--sk-torch-lit);
+    --deep-forest:    var(--sk-stone-3);
+    --medium-forest:  var(--sk-stone);
+    --light-forest:   var(--sk-stone-2);
+    --forest-brown:   var(--sk-stone-3);
+    --dark-brown:     var(--sk-stone);
+    --medium-brown:   var(--sk-stone-2);
+    --light-brown:    var(--sk-mortar);
+    --stone-gray:     var(--sk-mortar);
+    --warm-gray:      var(--sk-mortar-lit);
+    --cream:          var(--sk-bone);
+    --parchment:      var(--sk-bone);
+    --dark-green:     var(--sk-iron);
+    --forest-green:   var(--sk-vert);
+    --blood-red:      var(--sk-gules);
+    --dark-bronze:    var(--sk-mortar-lit);
+    --mystic-blue:    var(--sk-azure);
+    --rich-purple:    var(--sk-azure-lit);
+    --shadow-black:   #000000;
+
     /* Gradients */
-    --gold-gradient: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
-    --forest-gradient: linear-gradient(135deg, var(--deep-forest), var(--medium-forest));
-    --earth-gradient: linear-gradient(135deg, var(--dark-brown), var(--medium-brown));
-    --natural-gradient: linear-gradient(135deg, var(--forest-brown), var(--medium-brown));
-    --command-gradient: linear-gradient(135deg, var(--dark-brown), var(--forest-brown));
-    
+    --gold-gradient:    linear-gradient(180deg, var(--sk-torch-lit), var(--sk-ember));
+    --forest-gradient:  linear-gradient(180deg, var(--sk-stone-2), var(--sk-stone));
+    --earth-gradient:   linear-gradient(180deg, var(--sk-stone-2), var(--sk-stone));
+    --natural-gradient: linear-gradient(180deg, var(--sk-stone), var(--sk-stone-3));
+    --command-gradient: linear-gradient(180deg, var(--sk-stone-3), var(--sk-iron));
+
     /* Typography */
-    --font-decorative: 'Cinzel Decorative', serif;
-    --font-title: 'Cinzel', serif;
-    --font-body: 'MedievalSharp', cursive;
+    --font-decorative: var(--sk-display);
+    --font-title:      var(--sk-heading);
+    --font-body:       var(--sk-body);
 }
 
 body {
-    font-family: var(--font-body);
-    background-color: var(--dark-green);
-    color: var(--cream);
+    font-family: var(--sk-body);
+    background-color: var(--sk-iron);
+    color: var(--sk-bone);
     overflow: hidden;
     height: 100vh;
 }
@@ -103,33 +135,34 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 }
 
 .game-title {
-    font-family: var(--font-decorative);
-    font-size: clamp(2.5rem, 8vw, 5rem);
-    font-weight: 700;
-    color: var(--primary-gold);
-    text-shadow: 2px 2px 3px var(--dark-green);
-    background-clip: text;
-    margin-bottom: 1rem;
-    animation: titleGlow 3s ease-in-out infinite alternate;
+    font-family: var(--sk-display);
+    font-size: clamp(2.8rem, 9vw, 5.6rem);
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: var(--sk-gold-lit);
+    text-shadow:
+        0 1px 0 #6b4a18,
+        0 3px 6px rgba(0, 0, 0, 0.9),
+        0 0 2px rgba(0, 0, 0, 0.8);
+    margin-bottom: 0.75rem;
+    animation: titleGlow 3.5s ease-in-out infinite alternate;
     position: relative;
 }
 
 @keyframes titleGlow {
-    from {
-        filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
-    }
-    to {
-        filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.8));
-    }
+    from { filter: drop-shadow(0 0 12px rgba(216, 133, 46, 0.45)); }
+    to   { filter: drop-shadow(0 0 34px rgba(240, 168, 69, 0.8)); }
 }
 
 .subtitle {
-    font-family: var(--font-title);
-    font-size: 1.2rem;
-    color: var(--cream);
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    font-family: var(--sk-heading);
+    font-size: 1.05rem;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--sk-bone-dim);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
     margin-bottom: 3rem;
-    font-style: italic;
 }
 
 
@@ -152,9 +185,9 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     width: 100%;
     height: 100%;
     margin: 0 auto;
-    background: rgba(10, 10, 20, 0.95);
-    border-left: 1px solid rgba(255, 170, 0, 0.2);
-    border-right: 1px solid rgba(255, 170, 0, 0.2);
+    background: rgba(16, 18, 22, 0.95);
+    border-left: 1px solid var(--sk-mortar);
+    border-right: 1px solid var(--sk-mortar);
     display: flex;
     flex-direction: column;
 }
@@ -165,18 +198,18 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    background: linear-gradient(180deg, rgba(20, 15, 30, 0.98) 0%, rgba(15, 12, 25, 0.95) 100%);
-    border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+    background: linear-gradient(180deg, var(--sk-stone) 0%, var(--sk-stone-3) 100%);
+    border-bottom: 2px solid var(--sk-torch);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
 }
 
 .mode-selection-title {
-    font-family: var(--font-decorative);
-    font-size: 1.8rem;
-    color: var(--primary-gold);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-family: var(--sk-display);
+    font-size: 1.9rem;
+    color: var(--sk-gold-lit);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
     margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
 }
 
 .topbar-spacer {
@@ -209,24 +242,28 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 }
 
 .mode-section-header h3 {
-    font-family: var(--font-title);
-    font-size: 1rem;
-    color: rgba(212, 175, 55, 0.7);
+    font-family: var(--sk-heading);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--sk-bone-dim);
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 4px;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    border-bottom: 1px solid var(--sk-mortar);
     margin: 0;
 }
 
-/* Mode cards - refined style */
+/* Mode cards - quarried-stone tiles in an iron frame */
 .mode-card {
-    background: linear-gradient(135deg, rgba(30, 25, 40, 0.9) 0%, rgba(20, 18, 35, 0.9) 100%);
-    border: 1px solid rgba(255, 170, 0, 0.25);
-    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 30%),
+        linear-gradient(180deg, var(--sk-stone-2) 0%, var(--sk-stone-3) 100%);
+    border: 1px solid var(--sk-mortar);
+    border-top-color: var(--sk-mortar-lit);
+    border-radius: 3px;
     padding: 1.5rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -235,35 +272,25 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 .mode-card::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     height: 3px;
-    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.5), transparent);
+    background: linear-gradient(90deg, transparent, var(--sk-torch), transparent);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease;
 }
 
-.mode-card:hover::before {
-    opacity: 1;
-}
+.mode-card:hover::before,
+.mode-card.selected::before { opacity: 1; }
 
 .mode-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(212, 175, 55, 0.5);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4),
-                0 0 20px rgba(212, 175, 55, 0.15);
+    border-color: var(--sk-torch);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5), 0 0 22px rgba(216, 133, 46, 0.18);
 }
 
 .mode-card.selected {
-    border-color: var(--primary-gold);
-    background: linear-gradient(135deg, rgba(40, 35, 55, 0.95) 0%, rgba(30, 25, 45, 0.95) 100%);
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3),
-                inset 0 0 30px rgba(212, 175, 55, 0.05);
-}
-
-.mode-card.selected::before {
-    opacity: 1;
+    border-color: var(--sk-torch);
+    box-shadow: inset 0 0 0 1px rgba(216, 133, 46, 0.4), 0 0 22px rgba(216, 133, 46, 0.22);
 }
 
 .mode-card > * {
@@ -279,65 +306,43 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 }
 
 .mode-title {
-    font-family: var(--font-title);
-    font-size: 1.2rem;
-    color: var(--primary-gold);
+    font-family: var(--sk-heading);
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--sk-gold-lit);
     margin-bottom: 0.5rem;
-    font-weight: 600;
 }
 
 .mode-description {
-    font-size: 0.85rem;
-    color: rgba(200, 200, 200, 0.8);
+    font-family: var(--sk-body);
+    font-size: 0.92rem;
+    color: var(--sk-bone-dim);
     margin-bottom: 1rem;
-    line-height: 1.4;
+    line-height: 1.45;
 }
 
+/* Difficulty = a heraldic tincture chip */
 .mode-difficulty {
     display: inline-block;
-    padding: 0.35rem 0.9rem;
-    border-radius: 4px;
+    padding: 0.3rem 0.9rem;
+    border-radius: 2px;
     font-size: 0.7rem;
-    font-weight: bold;
-    font-family: var(--font-title);
+    font-weight: 700;
+    font-family: var(--sk-heading);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    color: var(--sk-bone);
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 
-.easy { 
-    background: linear-gradient(135deg, var(--forest-green), #2e7d32);
-    color: var(--parchment);
-    box-shadow: 0 0 10px rgba(27, 94, 32, 0.3);
-}
-
-.medium { 
-    background: linear-gradient(135deg, var(--accent-amber), #f57c00);
-    color: var(--shadow-black);
-    box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
-}
-
-.hard { 
-    background: linear-gradient(135deg, var(--blood-red), #c62828);
-    color: var(--parchment);
-    box-shadow: 0 0 10px rgba(183, 28, 28, 0.3);
-}
-
-.expert {
-    background: linear-gradient(135deg, var(--rich-purple), #6a1b9a);
-    color: var(--parchment);
-    box-shadow: 0 0 10px rgba(74, 20, 140, 0.3);
-}
-
-.pve {
-    background: linear-gradient(135deg, #00897b, #26a69a);
-    color: var(--parchment);
-    box-shadow: 0 0 10px rgba(0, 137, 123, 0.3);
-}
-
-.pvp {
-    background: linear-gradient(135deg, #e53935, #ff5722);
-    color: var(--parchment);
-    box-shadow: 0 0 10px rgba(229, 57, 53, 0.3);
+.easy   { background: var(--sk-vert);  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15); }
+.medium { background: var(--sk-torch); color: #1a1206; }
+.hard   { background: var(--sk-gules); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12); }
+.expert { background: var(--sk-azure); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12); }
+.pve    { background: var(--sk-vert);  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15); }
+.pvp    { background: var(--sk-gules);
 }
 
 /* Topbar buttons (shared with online lobby) */
@@ -391,13 +396,13 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 .team-card:hover {
     transform: translateY(-3px);
     border-color: var(--primary-gold);
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 4px 15px rgba(216,133,46, 0.3);
 }
 
 .team-card.selected {
     border-color: var(--primary-gold);
     background: linear-gradient(135deg, var(--medium-brown), var(--forest-brown));
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+    box-shadow: 0 0 20px rgba(216,133,46, 0.5);
 }
 
 .team-icon {
@@ -421,7 +426,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     font-family: var(--font-decorative);
     font-size: 1.5rem;
     color: var(--primary-gold);
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    text-shadow: 0 0 10px rgba(216,133,46, 0.5);
 }
 
 /* Game Screen */
@@ -463,14 +468,14 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     rotate: -45deg;
     margin: 2em;
     background: rgba(20, 20, 30, 0.9);
-    border: 2px solid rgba(255, 170, 0, 0.3);
+    border: 2px solid rgba(216,133,46, 0.3);
     border-radius: 8px;
     padding: 0.1rem;
 }
 
 #actionPanel {
     background: rgba(20, 20, 30, 0.9);
-    border: 2px solid rgba(255, 170, 0, 0.3);
+    border: 2px solid rgba(216,133,46, 0.3);
     border-radius: 8px;
     padding: 0.8rem;
     min-height: 200px;
@@ -501,13 +506,13 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 }
 
 #selectedUnits > div.selected {
-    border: 2px solid  rgba(255, 170, 0, 0.3);
+    border: 2px solid  rgba(216,133,46, 0.3);
     border-radius: 8px;
 }
 
 #unitPortrait {
     background: rgba(20, 20, 30, 0.9);
-    border: 2px solid rgba(255, 170, 0, 0.3);
+    border: 2px solid rgba(216,133,46, 0.3);
     border-radius: 8px;
     height: 128px;
     width: 128px;
@@ -591,7 +596,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     right: 6px;
     font-size: 10px;
     font-weight: bold;
-    color: #ffd700;
+    color: #e6c572;
     text-shadow: 1px 1px 2px #000;
 }
 .unit-stats-exp {
@@ -647,65 +652,58 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 #uiContainer > div {
     pointer-events: all;
 }
-/* Buttons */
+/* Buttons — forged-iron plates lit by torchlight */
 .btn {
-    background: var(--gold-gradient);
-    color: var(--shadow-black);
-    border: 2px solid var(--secondary-gold);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 40%),
+        linear-gradient(180deg, var(--sk-stone-2), var(--sk-stone-3));
+    color: var(--sk-bone);
+    border: 1px solid var(--sk-torch);
     padding: 12px 30px;
-    font-family: var(--font-title);
-    font-weight: 600;
+    font-family: var(--sk-heading);
+    font-weight: 700;
     font-size: 14px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     cursor: pointer;
-    border-radius: .5em;
+    border-radius: 2px;
     position: relative;
-    transition: all 0.3s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
-
-.btn::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, var(--primary-gold), var(--accent-amber), var(--primary-gold));
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: .5em;
-}
-
-.btn:hover::before {
-    opacity: 1;
-}
-
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4);
+    border-color: var(--sk-torch-lit);
+    color: var(--sk-gold-lit);
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.5), 0 8px 22px rgba(0, 0, 0, 0.5), 0 0 20px rgba(216, 133, 46, 0.4);
 }
+.btn:active { transform: translateY(0); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5); }
 
-.btn:active {
-    transform: translateY(0);
+/* Primary call-to-action = a gilded torch-lit plate (the king's decree) */
+.btn-primary {
+    background: linear-gradient(180deg, var(--sk-torch-lit), var(--sk-ember));
+    color: #1a1206;
+    border-color: var(--sk-gold-lit);
+    animation: btnTorch 2.6s ease-in-out infinite;
+}
+.btn-primary:hover { color: #1a1206; filter: brightness(1.08); }
+@keyframes btnTorch {
+    0%, 100% { box-shadow: 0 3px 0 rgba(0,0,0,0.5), 0 0 16px rgba(216, 133, 46, 0.3); }
+    50%      { box-shadow: 0 3px 0 rgba(0,0,0,0.5), 0 0 28px rgba(240, 168, 69, 0.6); }
 }
 
 .btn-secondary {
-    background: var(--mystical-gradient);
-    color: var(--parchment);
-    border-color: var(--mystic-blue);
+    border-color: var(--sk-mortar-lit);
+    color: var(--sk-bone-dim);
 }
-
-.btn-secondary:hover {
-    box-shadow: 0 8px 20px rgba(21, 101, 192, 0.4);
-}
+.btn-secondary:hover { border-color: var(--sk-bone-dim); color: var(--sk-bone); box-shadow: 0 5px 0 rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.5); }
 
 .btn-danger {
-    background: linear-gradient(135deg, var(--blood-red), #d32f2f);
-    color: var(--parchment);
-    border-color: var(--blood-red);
+    border-color: var(--sk-gules);
+    color: var(--sk-gules-lit);
 }
+.btn-danger:hover { border-color: var(--sk-gules-lit); color: var(--sk-bone); box-shadow: 0 5px 0 rgba(0,0,0,0.5), 0 0 20px rgba(178, 58, 51, 0.5); }
 
 .btn-danger:hover {
     box-shadow: 0 8px 20px rgba(183, 28, 28, 0.4);
@@ -727,7 +725,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     color: var(--primary-gold);
     font-weight: bold;
     font-size: 1.1rem;
-    text-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+    text-shadow: 0 0 5px rgba(216,133,46, 0.3);
 }
 
 .unit-shop {
@@ -757,7 +755,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(216,133,46, 0.2), transparent);
     transition: left 0.5s ease;
 }
 
@@ -768,13 +766,13 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 .unit-card:hover {
     border-color: var(--primary-gold);
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3), 0 0 15px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 8px 20px rgba(216,133,46, 0.3), 0 0 15px rgba(216,133,46, 0.2);
 }
 .unit-card:hover .shimmer {
     left: 100%;
 }
 .unit-card:hover .unit-icon {
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+    box-shadow: 0 0 8px rgba(216,133,46, 0.4);
     border-color: var(--primary-gold);
     transform: scale(1.05);
 }
@@ -782,7 +780,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 .unit-card.selected {
     border-color: var(--accent-amber);
     box-shadow: 0 0 20px rgba(255, 140, 0, 0.4), inset 0 0 10px rgba(255, 140, 0, 0.1);
-    background: linear-gradient(145deg, rgba(74, 20, 140, 0.3), rgba(114, 47, 55, 0.3));
+    background: linear-gradient(145deg, rgba(46,106,168, 0.3), rgba(114, 47, 55, 0.3));
     transform: translateY(-3px) scale(1.02);
 }
 .unit-card.selected .unit-icon {
@@ -832,7 +830,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 /* Hover effects for icons */
 .unit-card:hover .unit-icon {
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+    box-shadow: 0 0 8px rgba(216,133,46, 0.4);
     border-color: var(--primary-gold);
     transform: scale(1.05);
 }
@@ -883,18 +881,18 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 /* Rarity-based icon effects */
 .unit-card.rarity-rare:hover {
-    border-color: #4169E1;
+    border-color: #2e6aa8;
     box-shadow: 0 8px 20px rgba(65, 105, 225, 0.4), 0 0 15px rgba(65, 105, 225, 0.2);
 }
 
 .unit-card.rarity-epic:hover {
-    border-color: #8A2BE2;
+    border-color: #4a8fcf;
     box-shadow: 0 8px 20px rgba(138, 43, 226, 0.4), 0 0 15px rgba(138, 43, 226, 0.2);
 }
 
 .unit-card.rarity-legendary:hover {
     border-color: var(--primary-gold);
-    box-shadow: 0 8px 20px rgba(212, 175, 55, 0.6), 0 0 20px rgba(255, 215, 0, 0.4);
+    box-shadow: 0 8px 20px rgba(216,133,46, 0.6), 0 0 20px rgba(255, 215, 0, 0.4);
 }
 
 /* Rarity background effects */
@@ -902,14 +900,14 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     background: 
         linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8)),
         radial-gradient(circle at center, rgba(65, 105, 225, 0.3) 0%, transparent 70%);
-    border-color: #4169E1;
+    border-color: #2e6aa8;
 }
 
 .unit-card.rarity-epic {
     background: 
         linear-gradient(145deg, rgba(13, 10, 26, 0.8), rgba(26, 13, 26, 0.8)),
         radial-gradient(circle at center, rgba(138, 43, 226, 0.3) 0%, transparent 70%);
-    border-color: #8A2BE2;
+    border-color: #4a8fcf;
 }
 
 .unit-card.rarity-legendary {
@@ -964,9 +962,9 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 /* Loading placeholder for icons */
 .unit-icon[loading] {
     background: linear-gradient(90deg, 
-        rgba(212, 175, 55, 0.1) 25%, 
-        rgba(212, 175, 55, 0.2) 50%, 
-        rgba(212, 175, 55, 0.1) 75%);
+        rgba(216,133,46, 0.1) 25%, 
+        rgba(216,133,46, 0.2) 50%, 
+        rgba(216,133,46, 0.1) 75%);
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
 }
@@ -1010,13 +1008,13 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 .spec-unit-preview {
     margin-top: 8px;
     padding: 6px;
-    background: rgba(255, 170, 0, 0.1);
+    background: rgba(216,133,46, 0.1);
     border-radius: 4px;
     font-size: 10px;
     color: #ffaa00;
     position: relative;
     z-index: 2;
-    border: 1px solid rgba(255, 170, 0, 0.3);
+    border: 1px solid rgba(216,133,46, 0.3);
 }
 
 .army-list {
@@ -1043,7 +1041,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 .army-unit:hover {
     border-color: var(--primary-gold);
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 0 10px rgba(216,133,46, 0.2);
 }
 
 .stat {
@@ -1075,9 +1073,9 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 /* Ready Button - Make it prominent */
 .ready-btn {
-    background: linear-gradient(135deg, var(--forest-green), #2e7d32);
+    background: linear-gradient(135deg, var(--forest-green), #3e7a4a);
     color: var(--parchment);
-    border: 3px solid #388e3c;
+    border: 3px solid #3e7a4a;
     padding: 1rem 2rem;
     border-radius: 8px;
     font-weight: bold;
@@ -1094,7 +1092,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 }
 
 .ready-btn:hover {
-    background: linear-gradient(135deg, #2e7d32, #388e3c);
+    background: linear-gradient(135deg, #3e7a4a, #3e7a4a);
     transform: translateY(-3px) scale(1.05);
     box-shadow: 
         0 0 30px rgba(27, 94, 32, 0.5),
@@ -1123,13 +1121,13 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     width: 100%;
     background: 
         linear-gradient(145deg, rgba(26, 13, 26, 0.9), rgba(13, 10, 26, 0.9)),
-        radial-gradient(circle at center, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+        radial-gradient(circle at center, rgba(216,133,46, 0.05) 0%, transparent 70%);
     border-radius: 15px;
     padding: 2rem;
     border: 3px solid var(--primary-gold);
     box-shadow: 
-        0 0 40px rgba(212, 175, 55, 0.2),
-        inset 0 0 40px rgba(212, 175, 55, 0.05);
+        0 0 40px rgba(216,133,46, 0.2),
+        inset 0 0 40px rgba(216,133,46, 0.05);
 }
 
 .lobby-title {
@@ -1206,8 +1204,8 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 .player-card {
     background: 
-        linear-gradient(145deg, rgba(114, 47, 55, 0.2), rgba(74, 20, 140, 0.2)),
-        radial-gradient(circle at center, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+        linear-gradient(145deg, rgba(114, 47, 55, 0.2), rgba(46,106,168, 0.2)),
+        radial-gradient(circle at center, rgba(216,133,46, 0.05) 0%, transparent 70%);
     border: 2px solid var(--dark-bronze);
     border-radius: 10px;
     padding: 1.5rem;
@@ -1270,15 +1268,15 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 .side-selector:hover {
     transform: translateY(-3px);
-    box-shadow: 0 5px 20px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 5px 20px rgba(216,133,46, 0.3);
 }
 
 .side-selector.selected {
     border-color: var(--primary-gold);
-    box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+    box-shadow: 0 0 25px rgba(216,133,46, 0.4);
     background:
-        linear-gradient(145deg, rgba(212, 175, 55, 0.2), rgba(114, 47, 55, 0.2)),
-        radial-gradient(circle at center, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+        linear-gradient(145deg, rgba(216,133,46, 0.2), rgba(114, 47, 55, 0.2)),
+        radial-gradient(circle at center, rgba(216,133,46, 0.1) 0%, transparent 70%);
 }
 
 .lobby-status {
@@ -1491,8 +1489,8 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 .multiplayer-player-panel {
     background: 
-        linear-gradient(145deg, rgba(114, 47, 55, 0.2), rgba(74, 20, 140, 0.2)),
-        radial-gradient(circle at center, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+        linear-gradient(145deg, rgba(114, 47, 55, 0.2), rgba(46,106,168, 0.2)),
+        radial-gradient(circle at center, rgba(216,133,46, 0.05) 0%, transparent 70%);
     border: 2px solid var(--dark-bronze);
     border-radius: 10px;
     padding: 1.5rem;
@@ -1639,8 +1637,8 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     padding: 3rem;
     border: 3px solid var(--primary-gold);
     box-shadow: 
-        0 0 40px rgba(212, 175, 55, 0.2),
-        inset 0 0 40px rgba(212, 175, 55, 0.05);
+        0 0 40px rgba(216,133,46, 0.2),
+        inset 0 0 40px rgba(216,133,46, 0.05);
 }
 
 .result-title {
@@ -1736,7 +1734,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     margin-bottom: 1rem;
     text-transform: uppercase;
     letter-spacing: 2px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    border-bottom: 1px solid rgba(216,133,46, 0.3);
     padding-bottom: 0.5rem;
 }
 
@@ -1751,8 +1749,8 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(212, 175, 55, 0.1);
-    border: 1px solid rgba(212, 175, 55, 0.3);
+    background: rgba(216,133,46, 0.1);
+    border: 1px solid rgba(216,133,46, 0.3);
     border-radius: 6px;
     padding: 0.5rem 1rem;
     font-family: var(--font-title);
@@ -1792,7 +1790,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto 2rem;
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 0 20px rgba(216,133,46, 0.3);
 }
 
 @keyframes spin {
@@ -1832,7 +1830,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     background: linear-gradient(90deg, var(--secondary-gold), var(--primary-gold), var(--accent-amber));
     border-radius: 8px;
     transition: width 0.3s ease;
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    box-shadow: 0 0 10px rgba(216,133,46, 0.5);
 }
 
 .loading-progress-text {
@@ -1868,7 +1866,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     border-radius: 15px;
     padding: 3rem;
     text-align: center;
-    box-shadow: 0 0 50px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 0 50px rgba(216,133,46, 0.3);
 }
 
 .pause-content h2 {
@@ -1916,12 +1914,12 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 .log-placement {
     color: var(--primary-gold);
-    background: rgba(212, 175, 55, 0.1);
+    background: rgba(216,133,46, 0.1);
 }
 
 /* Experience Panel Styles */
 .experience-panel {
-    background: linear-gradient(135deg, rgba(255, 140, 0, 0.15), rgba(212, 175, 55, 0.15));
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.15), rgba(216,133,46, 0.15));
     border-radius: 10px;
     border: 2px solid var(--accent-amber);
     animation: experienceGlow 2s ease-in-out infinite alternate;
@@ -1958,7 +1956,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 .experience-panel .level-up-button.level-up-button-spec {
     background: 'linear-gradient(135deg, #cc6600, #ff8800)';
     border-color: '#ffaa00';
-    box-shadow: '0 0 15px rgba(255, 170, 0, 0.4)';
+    box-shadow: '0 0 15px rgba(216,133,46, 0.4)';
 }
 
 .experience-nextLevelSpec {
@@ -2063,9 +2061,9 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 }
 
 .level-up-button {
-    background: linear-gradient(135deg, var(--forest-green), #2e7d32);
+    background: linear-gradient(135deg, var(--forest-green), #3e7a4a);
     color: var(--parchment);
-    border: 2px solid #388e3c;
+    border: 2px solid #3e7a4a;
     padding: 0.5rem 1rem;
     margin: 0.3rem;
     border-radius: 6px;
@@ -2196,7 +2194,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     width: 90%;
     text-align: center;
     color: var(--parchment);
-    box-shadow: 0 0 50px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 0 50px rgba(216,133,46, 0.3);
 }
 
 .setup-content h2 {
@@ -2232,7 +2230,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 .player-name-input input:focus {
     border-color: var(--primary-gold);
     outline: none;
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 0 10px rgba(216,133,46, 0.3);
 }
 
 .room-join-section {
@@ -2579,7 +2577,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 .unit-card.selected {
     border-color: var(--accent-amber) !important;
-    background: linear-gradient(145deg, rgba(74, 20, 140, 0.3), rgba(114, 47, 55, 0.3)) !important;
+    background: linear-gradient(145deg, rgba(46,106,168, 0.3), rgba(114, 47, 55, 0.3)) !important;
     box-shadow: 0 0 20px rgba(255, 140, 0, 0.4), inset 0 0 10px rgba(255, 140, 0, 0.1) !important;
     transform: translateY(-3px) scale(1.02) !important;
 }
@@ -2619,10 +2617,10 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 @keyframes startGamePulse {
     0%, 100% { 
-        box-shadow: 0 0 25px rgba(74, 20, 140, 0.4);
+        box-shadow: 0 0 25px rgba(46,106,168, 0.4);
     }
     50% { 
-        box-shadow: 0 0 40px rgba(74, 20, 140, 0.7);
+        box-shadow: 0 0 40px rgba(46,106,168, 0.7);
     }
 }
 
@@ -2682,7 +2680,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 .building-card.hover {
     transform: scale(1.02) translateY(-2px);
-    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 4px 12px rgba(216,133,46, 0.3);
 }
 
 .building-card.shake {
@@ -2751,7 +2749,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 }
 
 .upgrade-panel {
-    background: linear-gradient(145deg, #1a1a2e, #16213e);
+    background: linear-gradient(145deg, #1b1e24, #20242a);
     border: 2px solid var(--primary-gold);
     border-radius: 10px;
     padding: 20px;
@@ -2894,14 +2892,14 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     color: #ffaa00;
     margin-bottom: 1rem;
     padding-bottom: 0.6rem;
-    border-bottom: 2px solid rgba(255, 170, 0, 0.3);
+    border-bottom: 2px solid rgba(216,133,46, 0.3);
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
 .deselect-btn {
-    background: rgba(255, 170, 0, 0.2);
-    border: 1px solid rgba(255, 170, 0, 0.5);
+    background: rgba(216,133,46, 0.2);
+    border: 1px solid rgba(216,133,46, 0.5);
     border-radius: 4px;
     padding: 0.3rem 0.6rem;
     color: #ffaa00;
@@ -2911,8 +2909,8 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 }
 
 .deselect-btn:hover {
-    background: rgba(255, 170, 0, 0.3);
-    border-color: rgba(255, 170, 0, 0.8);
+    background: rgba(216,133,46, 0.3);
+    border-color: rgba(216,133,46, 0.8);
 }
 
 .action-section {
@@ -2941,17 +2939,17 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 .action-btn {
     position: relative;
-    background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
-    border: 2px solid rgba(255, 170, 0, 0.4);
+    background: linear-gradient(145deg, #2a2a3e, #1b1e24);
+    border: 2px solid rgba(216,133,46, 0.4);
     border-radius: 6px;
     cursor: pointer;
 }
 
 .action-btn:hover:not(.locked):not(.disabled):not(.purchased) {
     background: linear-gradient(145deg, #3a3a4e, #2a2a3e);
-    border-color: rgba(255, 170, 0, 0.8);
+    border-color: rgba(216,133,46, 0.8);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 170, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(216,133,46, 0.3);
 }
 
 .action-btn.locked {
@@ -3199,7 +3197,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
     justify-content: space-between;
     align-items: center;
     padding-bottom: 1.5rem;
-    border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+    border-bottom: 2px solid rgba(216,133,46, 0.3);
     margin-bottom: 1.5rem;
 }
 
@@ -3220,7 +3218,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 .games-panel {
     flex: 1;
     background: rgba(0, 0, 0, 0.4);
-    border: 2px solid rgba(212, 175, 55, 0.3);
+    border: 2px solid rgba(216,133,46, 0.3);
     border-radius: 10px;
     padding: 1.5rem;
     display: flex;
@@ -3263,7 +3261,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 .game-item {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(212, 175, 55, 0.2);
+    border: 1px solid rgba(216,133,46, 0.2);
     border-radius: 8px;
     padding: 1rem 1.25rem;
     display: flex;
@@ -3273,8 +3271,8 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 }
 
 .game-item:hover {
-    background: rgba(212, 175, 55, 0.1);
-    border-color: rgba(212, 175, 55, 0.4);
+    background: rgba(216,133,46, 0.1);
+    border-color: rgba(216,133,46, 0.4);
 }
 
 .game-info {
@@ -3302,7 +3300,7 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 .join-btn {
     background: linear-gradient(135deg, var(--primary-gold) 0%, var(--secondary-gold) 100%);
     border: none;
-    color: #1a1a2e;
+    color: #1b1e24;
     padding: 0.5rem 1.25rem;
     border-radius: 5px;
     cursor: pointer;
@@ -3313,5 +3311,5 @@ body.bg5 #mainMenu, body.bg5 #gameModeSelect, body.bg5 #multiplayerLobby {
 
 .join-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    box-shadow: 0 0 15px rgba(216,133,46, 0.4);
 }

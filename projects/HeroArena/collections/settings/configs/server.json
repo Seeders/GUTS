@@ -51,6 +51,7 @@
     "AbilitySystem",
     "ServerBattlePhaseSystem",
     "PlacementSystem",
+    "UnitOrderSystem",
     "BaseNetworkSystem",
     "ServerNetworkSystem",
     "LifetimeSystem",
@@ -66,7 +67,8 @@
     "ArmyShopSystem",
     "BuildingSystem",
     "HeroExperienceSystem",
-    "BuffEffectsSystem"
+    "BuffEffectsSystem",
+    "GoldMineCaptureSystem"
   ],
   "classes": [
     {

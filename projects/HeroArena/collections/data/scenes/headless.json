@@ -27,12 +27,20 @@
     "SchedulingSystem",
     "PathfindingSystem",
     "PlacementSystem",
+    "UnitOrderSystem",
     "SkirmishGameSystem",
     "AutobattlerRoundSystem",
     "HeroRosterSystem",
     "ArmyShopSystem",
     "BuildingSystem",
-    "HeroExperienceSystem"
+    "HeroExperienceSystem",
+    "GameInterfaceSystem",
+    "CheatCodeSystem",
+    "LeaderSystem",
+    "LootDropSystem",
+    "AutobattlerEconomySystem",
+    "BuffEffectsSystem",
+    "GoldMineCaptureSystem"
   ],
   "clientSystems": [],
   "serverSystems": []

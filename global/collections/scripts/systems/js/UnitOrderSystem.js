@@ -45,6 +45,21 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const createdTime = commandCreatedTime || this.game.state.now;
 
         placement.squadUnits.forEach((unitId) => {
+            // Cancel: disable the squad's current order and stop its movement.
+            if (meta?.clearOrder) {
+                const po = this.game.getComponent(unitId, "playerOrder");
+                if (po) {
+                    po.enabled = false;
+                    po.isMoveOrder = false;
+                    po.completed = false;
+                    po.sneaking = false;
+                    po.isHiding = false;
+                }
+                if (this.game.hasService('clearEntityPath')) {
+                    this.call.clearEntityPath(unitId);
+                }
+                return;
+            }
             if (targetPosition) {
                 // Get or create playerOrder component and update its values
                 let playerOrder = this.game.getComponent(unitId, "playerOrder");

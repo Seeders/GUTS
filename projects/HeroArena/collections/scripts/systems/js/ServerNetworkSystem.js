@@ -239,7 +239,62 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             }
             players.get(rec.playerId).networkUnitData.push(rec);
         }
-        return [...players.values()];
+
+        // Neutral/hostile map creeps: the gold mines (neutral) and their dragon
+        // guardians (hostile). These have no player owner, so the hero/building
+        // passes above miss them — and since they only spawn server-side, they'd
+        // never render on online clients. Emit them as their own team-keyed
+        // groups so the client creates them via applyNetworkUnitData, exactly
+        // like player units. No heroRosterInfo/buildingOwner tag → the client
+        // leaves them untagged (a plain hostile dragon / neutral mine) and the
+        // stale-prune skips them.
+        const creepGroups = this._buildCreepRecords();
+        return [...players.values(), ...creepGroups];
+    }
+
+    // Per-team networkUnitData records for the neutral mines and hostile dragons.
+    _buildCreepRecords() {
+        const neutral = this.enums.team.neutral;
+        const hostile = this.enums.team.hostile;
+        const byTeam = new Map();   // team -> { playerId, team, networkUnitData: [] }
+
+        const creeps = this.game.getEntitiesWith('placement', 'team') || [];
+        for (const eid of creeps) {
+            const teamComp = this.game.getComponent(eid, 'team');
+            const t = teamComp?.team;
+            if (t !== neutral && t !== hostile) continue;
+            // Player-owned entities are handled by the hero/building passes.
+            if (this.game.getComponent(eid, 'heroRosterInfo')) continue;
+            if (this.game.getComponent(eid, 'buildingOwner')) continue;
+            const placement = this.game.getComponent(eid, 'placement');
+            if (!placement) continue;
+
+            if (!byTeam.has(t)) {
+                // playerId null: these belong to no player. applyNetworkUnitData
+                // only stamps playerId when truthy, so the units stay ownerless.
+                byTeam.set(t, { playerId: null, team: t, networkUnitData: [] });
+            }
+            const group = byTeam.get(t);
+            let rec = group.networkUnitData.find(r => r.placementId === placement.placementId);
+            if (!rec) {
+                rec = {
+                    placementId: placement.placementId,
+                    gridPosition: placement.gridPosition,
+                    unitTypeId: placement.unitTypeId,
+                    collection: placement.collection,
+                    team: t,
+                    playerId: null,
+                    squadUnits: [],
+                    roundPlaced: this.game.state.round || 1,
+                    unitPositions: {}
+                };
+                group.networkUnitData.push(rec);
+            }
+            rec.squadUnits.push(eid);
+            const tpos = this.game.getComponent(eid, 'transform')?.position;
+            if (tpos) rec.unitPositions[eid] = { x: tpos.x, z: tpos.z };
+        }
+        return [...byTeam.values()];
     }
 
     /**
@@ -1135,7 +1190,10 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
      * @param {Object} result - Game result data from the scenario system
      */
     broadcastGameEnd(result) {
-        this.call.broadcastToRoom( null, 'GAME_END', { result });
+        // Inherited BaseNetworkSystem method — NOT this.call.broadcastToRoom:
+        // 'broadcastToRoom' isn't in this system's serviceDependencies, so the
+        // service-call form is undefined and crashes the game-over flow.
+        this.broadcastToRoom(null, 'GAME_END', { result });
 
         // Mark room as inactive after delay (multiplayer only)
         if (this.game.room) {
@@ -1173,6 +1231,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const entityId = eventData.data?.entityId ?? eventData.entityId;
         const x = eventData.data?.x ?? eventData.x;
         const z = eventData.data?.z ?? eventData.z;
+        const rotationY = eventData.data?.rotationY ?? eventData.rotationY;
 
         // Only the owning player can move their own heroes. playerStats.playerId is
         // numeric, so compare against the numeric id (the socket id never matches it).
@@ -1189,13 +1248,13 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             }
         }
 
-        const result = this.call.moveHero(entityId, x, z);
+        const result = this.call.moveHero(entityId, x, z, rotationY);
         // Echo the authoritative (grid-snapped) position back to the MOVER only — never
         // to the opponent, so prep-phase repositioning stays hidden until battle start
         // (where the full entitySync reveals everyone's real positions). The mover
         // already moved optimistically; this just reconciles any server-side snapping.
         if (result?.success) {
-            this.sendToPlayer(playerId, 'HERO_MOVED', { entityId, x, z });
+            this.sendToPlayer(playerId, 'HERO_MOVED', { entityId, x, z, rotationY });
         }
         return this.respond(playerId, 'HERO_MOVED_ACK', result ?? { success: false, reason: 'no_system' }, callback);
     }

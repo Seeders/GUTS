@@ -1,10 +1,8 @@
 {
   "name": "Soldier vs Scout",
-  "description": "Soldier (strength/dex hybrid) vs Scout (dex/intel hybrid). Tests hybrid unit combat.",
-  "seed": 42,
-  "startingGold": 500,
+  "description": "STR/DEX hybrid against the stealthy INT/DEX scout. Exercises stealth/awareness and the sentry outposts.",
+  "seed": 1337,
   "level": "forest",
-  "buildOrders": ["soldier", "scout"],
-  "maxRounds": 10,
-  "endOnFirstDeath": false
+  "heroes": ["soldier", "scout"],
+  "maxRounds": 20
 }

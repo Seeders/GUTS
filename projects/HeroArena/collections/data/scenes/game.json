@@ -24,6 +24,7 @@
     "SchedulingSystem",
     "PathfindingSystem",
     "PlacementSystem",
+    "UnitOrderSystem",
     "CheatCodeSystem",
     "SkirmishGameSystem",
     "AutobattlerRoundSystem",
@@ -34,7 +35,8 @@
     "ArmyShopSystem",
     "BuildingSystem",
     "HeroExperienceSystem",
-    "BuffEffectsSystem"
+    "BuffEffectsSystem",
+    "GoldMineCaptureSystem"
   ],
   "clientSystems": [
     "GameSystem",
@@ -55,6 +57,7 @@
     "GameUISystem",
     "HealthBarSystem",
     "ParticleSystem",
+    "FogOfWarSystem",
     "OrthographicCameraSystem",
     "FreeCameraSystem",
     "ThirdPersonCameraSystem",

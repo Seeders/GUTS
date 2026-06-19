@@ -50,6 +50,7 @@
     "AbilitySystem",
     "ServerBattlePhaseSystem",
     "PlacementSystem",
+    "UnitOrderSystem",
     "BaseNetworkSystem",
     "ClientNetworkSystem",
     "ServerNetworkSystem",
@@ -61,7 +62,15 @@
     "HeroRosterSystem",
     "ArmyShopSystem",
     "BuildingSystem",
-    "HeroExperienceSystem"
+    "HeroExperienceSystem",
+    "VisionSystem",
+    "SquadExperienceSystem",
+    "CheatCodeSystem",
+    "LeaderSystem",
+    "LootDropSystem",
+    "AutobattlerEconomySystem",
+    "BuffEffectsSystem",
+    "GoldMineCaptureSystem"
   ],
   "classes": [
     {

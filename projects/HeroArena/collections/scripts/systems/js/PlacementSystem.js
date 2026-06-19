@@ -37,6 +37,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         'releaseGridCells',
         'removeSquad',
         'getSquadData',
+        'getNearbyUnits',
         'validateSquadConfig',
         'calculateUnitPositions',
         'getSquadCells',
@@ -362,8 +363,9 @@ class PlacementSystem extends GUTS.BaseSystem {
                 this.call.reserveGridCells( cells, entityId);
             }
 
-            // Handle gold mine buildings
-            if (unitType.id === 'goldMine') {
+            // Handle gold mine buildings (legacy TBW worker-mining registration;
+            // HeroArena's capture mines don't load GoldMineSystem, so skip).
+            if (unitType.id === 'goldMine' && this.game.hasService('buildGoldMine')) {
                 const footprintWidth = unitType.footprintWidth || unitType.placementGridWidth || 2;
                 const footprintHeight = unitType.footprintHeight || unitType.placementGridHeight || 2;
                 const gridWidth = footprintWidth * 2;
@@ -789,21 +791,62 @@ class PlacementSystem extends GUTS.BaseSystem {
             z: worldPos.z - (worldPos.z / len) * FORWARD
         };
 
-        // Build prefab definitions with staggered offsets so heroes don't stack
-        const prefabs = spawnTypes.map((spawnType, index) => ({
-            collection: 'units',
-            spawnType,
-            components: {
-                transform: { position: { x: index * 96, y: 0, z: 0 } }
-            }
-        }));
+        // Spiral outward from the spawn point so new units never stack on
+        // existing ones: each unit claims the first free spot (clear of live
+        // entities AND of spots claimed earlier in this same batch — same-tick
+        // spawns aren't in the spatial grid yet).
+        const taken = [];
+        const prefabs = spawnTypes.map((spawnType) => {
+            const spot = this._findOpenSpawnPosition(basePos, taken);
+            taken.push(spot);
+            return {
+                collection: 'units',
+                spawnType,
+                components: {
+                    transform: { position: { x: spot.x - basePos.x, y: 0, z: spot.z - basePos.z } }
+                }
+            };
+        });
 
         return this._spawnStartingUnitsForTeamInternal(prefabs, team, basePos, null);
     }
 
+    // Deterministic square-spiral offsets: (0,0), then ring 1, ring 2, …
+    *_spiralOffsets(maxRing) {
+        yield { dx: 0, dz: 0 };
+        for (let r = 1; r <= maxRing; r++) {
+            for (let dx = -r; dx <= r; dx++) yield { dx, dz: -r };
+            for (let dz = -r + 1; dz <= r; dz++) yield { dx: r, dz };
+            for (let dx = r - 1; dx >= -r; dx--) yield { dx, dz: r };
+            for (let dz = r - 1; dz >= -r + 1; dz--) yield { dx: -r, dz };
+        }
+    }
+
+    // First open spot spiralling outward from `center`: one tile per step,
+    // skipping anything within CLEARANCE of a living entity (units AND
+    // buildings are both in the spatial grid) or a spot already claimed by
+    // this spawn batch. Falls back to the center if 8 rings are all full.
+    _findOpenSpawnPosition(center, taken = []) {
+        const STEP = 48;
+        const CLEARANCE = 34;
+        for (const { dx, dz } of this._spiralOffsets(8)) {
+            const x = center.x + dx * STEP;
+            const z = center.z + dz * STEP;
+            if (taken.some(p => Math.hypot(p.x - x, p.z - z) < CLEARANCE)) continue;
+            const nearby = this.call.getNearbyUnits?.({ x, y: 0, z }, CLEARANCE, null) || [];
+            const blocked = nearby.some(id => {
+                if (this.game.entityAlive?.[id] !== 1) return false;
+                const h = this.game.getComponent(id, 'health');
+                return !h || h.current > 0;
+            });
+            if (!blocked) return { x, z };
+        }
+        return { x: center.x, z: center.z };
+    }
+
     // HeroArena: reposition a hero entity during the prep phase.
     // Authoritative on server; client calls this optimistically and via network sync.
-    moveHero(entityId, worldX, worldZ) {
+    moveHero(entityId, worldX, worldZ, rotationY) {
         const transform = this.game.getComponent(entityId, 'transform');
         if (!transform?.position) return { success: false, reason: 'no_transform' };
 
@@ -812,7 +855,9 @@ class PlacementSystem extends GUTS.BaseSystem {
         transform.position.x = worldX;
         transform.position.z = worldZ;
         transform.position.y = terrainHeight != null ? terrainHeight : transform.position.y;
-        return { success: true, position: transform.position };
+        // Optional facing (used by formation placement); left untouched for plain moves.
+        if (rotationY != null && transform.rotation) transform.rotation.y = rotationY;
+        return { success: true, position: transform.position, rotationY: transform.rotation?.y };
     }
 
     _spawnStartingUnitsForTeamInternal(prefabs, team, startingWorldPos, goldVeinPos = null) {

@@ -35,12 +35,12 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'getOwnedBuildingIds',
         'getOwnedBuildingArchetypes',
         'upgradeTownHall',
-        'placeBuildingAuto'
+        'placeBuildingAuto',
+        'getAIPlayerIds'
     ];
 
     static OFFER_COUNT = 5;
     static REROLL_BASE_COST = 2;     // escalates +1 per reroll within a round
-    static AI_PLAYER_ID = 1;         // local-game AI auto-buys (mirrors AutobattlerRoundSystem)
     // Shop runs a small-number economy (income is 20g/round). A unit/upgrade/ability's
     // raw `value` is divided by this to get its shop price, so a few buys fit one round.
     // Tune this single knob to make the whole shop cheaper/pricier.
@@ -269,7 +269,9 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 return { id, title: def.title || id, cost: ArmyShopSystem.shopCost(def.value), icon: def.icon || null };
             }),
             rerollCost: this.getRerollCost(stats),
-            gold:       stats.gold || 0
+            gold:       stats.gold || 0,
+            // For the building upgrade-tree modal: which tree nodes are already bought.
+            ownedUpgrades: [...(stats.ownedUpgrades || [])]
         };
     }
 
@@ -337,11 +339,16 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         }
         const ownedBuildings = new Set(this.game.hasService?.('getOwnedBuildingIds')
             ? this.call.getOwnedBuildingIds(stats.playerId) : []);
+        const ownedUpgrades = new Set(stats.ownedUpgrades || []);
         for (const [id, def] of Object.entries(this.collections.upgrades || {})) {
             if (!def.perUnitType) continue;
+            if (ownedUpgrades.has(id)) continue;                  // one-time: already bought
             // Upgrades are provided by buildings: require the owning building(s) to be present.
             const reqB = def.requiresBuildings || [];
             if (reqB.length && !reqB.every(b => ownedBuildings.has(b))) continue;
+            // Tech-tree gating: an upgrade only enters the pool once its prerequisite
+            // node(s) are owned (see upgradeTrees collection / _treeUnlocked).
+            if (!this._treeUnlocked(stats, id)) continue;
             if (this.isEligible(profiles, def.requirements)) {
                 candidates.push({ kind: 'upgrade', id, weight: 1 });
             }
@@ -351,25 +358,37 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 candidates.push({ kind: 'ability', id, weight: 1 });
             }
         }
-        for (const id of this._candidateBuildingIds(stats)) {
-            candidates.push({ kind: 'building', id, weight: 2 });
-        }
+        // Buildings are NOT sold in the regular shop — they come from the starting pick
+        // and the round-5 milestone (AutobattlerRoundSystem). Town Hall tier upgrades stay
+        // here, since that's how T2/T3 unit unlocks are reached.
         const upId = this._townhallUpgradeId(stats);
         if (upId) candidates.push({ kind: 'townhall_upgrade', id: upId, weight: 2 });
         return this._sampleOffers(candidates, ArmyShopSystem.OFFER_COUNT);
     }
 
-    // Buildings offerable now: buyable, not already owned, prerequisites (requiresBuildings) met.
-    _candidateBuildingIds(stats) {
-        const owned = new Set((stats.buildings || []).map(b => b.buildingId));
-        const out = [];
-        for (const [id, def] of Object.entries(this.collections.buildings || {})) {
-            if (def.buyable !== true || owned.has(id)) continue;
-            const req = def.requiresBuildings || [];
-            if (req.length && !req.every(r => owned.has(r))) continue;
-            out.push(id);
+    // upgradeId -> [prerequisite upgradeIds], built once from the upgradeTrees collection.
+    // Upgrades absent from every tree are unconstrained.
+    _treePrereqs() {
+        if (this._treePrereqCache) return this._treePrereqCache;
+        const map = {};
+        for (const tree of Object.values(this.collections.upgradeTrees || {})) {
+            for (const branch of (tree.branches || [])) {
+                for (const node of (branch.nodes || [])) {
+                    if (node?.upgrade) map[node.upgrade] = node.requires || [];
+                }
+            }
         }
-        return out;
+        this._treePrereqCache = map;
+        return map;
+    }
+
+    // An upgrade enters the shop pool only once every prerequisite node is owned.
+    // No tree entry / no prereqs → unlocked by default (preserves non-tree upgrades).
+    _treeUnlocked(stats, upgradeId) {
+        const prereqs = this._treePrereqs()[upgradeId];
+        if (!prereqs || prereqs.length === 0) return true;
+        const owned = new Set(stats.ownedUpgrades || []);
+        return prereqs.every(r => owned.has(r));
     }
 
     // Next Town Hall tier the player can upgrade to (townHall→keep→castle), or null.
@@ -432,10 +451,11 @@ class ArmyShopSystem extends GUTS.BaseSystem {
     }
 
     // Units offered in the shop, gated by BUILDINGS:
-    //   • Tier-1 units are always offered.
-    //   • Tier-2 / Tier-3 units require BOTH the Town Hall tier (Keep→T2, Castle→T3) AND a
-    //     building matching one of the unit's archetypes (Barracks=str / Hunting Lodge=dex /
-    //     Mage Tower=int). Dual-archetype units need ANY one matching building.
+    //   • ALL units require a building matching one of the unit's archetypes
+    //     (Barracks=str / Hunting Lodge=dex / Mage Tower=int). Dual-archetype units need
+    //     ANY one matching building. With no building owned, no units are offered.
+    //   • Tier-1 needs only the matching building.
+    //   • Tier-2 / Tier-3 additionally require the Town Hall tier (Keep→T2, Castle→T3).
     // (Tier-2 forms are still also reachable via leveling-up a Tier-1 unit; this just makes
     //  them purchasable once the player has built up to them.)
     _candidateUnitIds(stats) {
@@ -448,8 +468,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         for (const id of Object.keys(units)) {
             const tier = ArmyShopSystem.unitTier(id);
             if (tier == null) continue;
-            if (tier === 1) { out.push(id); continue; }
-            if (thLevel < tier) continue;
+            if (tier > 1 && thLevel < tier) continue; // higher tiers also need the Town Hall tier
             const arch = ArmyShopSystem.unitArchetypes(id);
             if (arch.length && arch.some(a => ownedArch.has(a))) out.push(id);
         }
@@ -658,20 +677,23 @@ class ArmyShopSystem extends GUTS.BaseSystem {
     }
 
     // Local-game AI greedily buys affordable offers each round to build its army.
+    // Greedy auto-buy for every AI-controlled player (local opponent and both
+    // sides of headless simulations): keep buying the first affordable offer.
     _aiAutoBuy() {
-        if (!this.game.state?.isLocalGame) return;
-        const stats = this._getStats(ArmyShopSystem.AI_PLAYER_ID);
-        if (!stats) return;
-        let guard = 0;
-        while (guard++ < 20) {
-            const idx = (stats.currentOffers || []).findIndex(
-                o => !o.consumed && (stats.gold || 0) >= o.cost
-                    // AI can't choose a target, so skip single-target abilities.
-                    && !(o.kind === 'ability' && o.grantMode === 'single')
-            );
-            if (idx < 0) break;
-            const res = this.buyOffer(ArmyShopSystem.AI_PLAYER_ID, idx);
-            if (!res.success || res.requiresTarget) break;
+        for (const pid of (this.call.getAIPlayerIds?.() || [])) {
+            const stats = this._getStats(pid);
+            if (!stats) continue;
+            let guard = 0;
+            while (guard++ < 20) {
+                const idx = (stats.currentOffers || []).findIndex(
+                    o => !o.consumed && (stats.gold || 0) >= o.cost
+                        // AI can't choose a target, so skip single-target abilities.
+                        && !(o.kind === 'ability' && o.grantMode === 'single')
+                );
+                if (idx < 0) break;
+                const res = this.buyOffer(pid, idx);
+                if (!res.success || res.requiresTarget) break;
+            }
         }
     }
 }

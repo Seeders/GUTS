@@ -17,7 +17,7 @@
     height: 100%;
     margin: 0 auto;
     background: rgba(10, 10, 20, 0.95);
-    border: 1px solid rgba(255, 170, 0, 0.2);
+    border: 1px solid rgba(216,133,46, 0.2);
     display: flex;
     flex-direction: column;
 }
@@ -28,7 +28,7 @@
     align-items: center;
     padding: 1rem 1.5rem;
     background: linear-gradient(180deg, rgba(20, 15, 30, 0.98) 0%, rgba(15, 12, 25, 0.95) 100%);
-    border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+    border-bottom: 1px solid rgba(216,133,46, 0.3);
 }
 
 .campaign-title {
@@ -67,7 +67,7 @@
 
 .campaign-card {
     background: linear-gradient(135deg, rgba(30, 25, 40, 0.9), rgba(20, 15, 30, 0.9));
-    border: 1px solid rgba(255, 170, 0, 0.3);
+    border: 1px solid rgba(216,133,46, 0.3);
     border-radius: 8px;
     padding: 1rem 1.5rem;
     display: flex;
@@ -168,7 +168,7 @@
     width: 100%;
     padding: 0.75rem;
     background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 170, 0, 0.3);
+    border: 1px solid rgba(216,133,46, 0.3);
     border-radius: 5px;
     color: var(--cream);
     font-size: 1.1rem;
@@ -187,7 +187,7 @@
 
 /* Home Base Screen */
 #campaignHomeBase {
-    background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+    background: linear-gradient(135deg, #1b1e24, #0f0f1a);
     padding: 0;
     height: 100vh;
     overflow: hidden;
@@ -207,7 +207,7 @@
     align-items: center;
     padding: 1rem 2rem;
     background: linear-gradient(180deg, rgba(20, 15, 30, 0.98), rgba(10, 8, 15, 0.95));
-    border-bottom: 2px solid rgba(255, 170, 0, 0.3);
+    border-bottom: 2px solid rgba(216,133,46, 0.3);
 }
 
 .commander-info {
@@ -259,8 +259,8 @@
 }
 
 .currency.valor { border: 1px solid #cd7f32; }
-.currency.glory { border: 1px solid #ffd700; }
-.currency.essence { border: 1px solid #9b59b6; }
+.currency.glory { border: 1px solid #e6c572; }
+.currency.essence { border: 1px solid #4a8fcf; }
 
 .home-base-controls {
     display: flex;
@@ -271,7 +271,7 @@
 .home-base-tabs {
     display: flex;
     background: rgba(0, 0, 0, 0.3);
-    border-bottom: 1px solid rgba(255, 170, 0, 0.2);
+    border-bottom: 1px solid rgba(216,133,46, 0.2);
 }
 
 .tab-btn {
@@ -289,13 +289,13 @@
 
 .tab-btn:hover {
     color: var(--cream);
-    background: rgba(255, 170, 0, 0.1);
+    background: rgba(216,133,46, 0.1);
 }
 
 .tab-btn.active {
     color: var(--primary-gold);
     border-bottom-color: var(--primary-gold);
-    background: rgba(255, 170, 0, 0.05);
+    background: rgba(216,133,46, 0.05);
 }
 
 /* Tab Content */
@@ -312,7 +312,7 @@
     flex: 1;
     min-height: 0; /* Critical for nested flex scrolling */
     overflow: hidden; /* Let inner containers handle scrolling */
-    background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+    background: linear-gradient(135deg, #1b1e24, #0f0f1a);
 }
 
 .tab-content.active {
@@ -339,7 +339,7 @@
 .atlas-sidebar {
     width: 300px;
     background: rgba(0, 0, 0, 0.4);
-    border-left: 1px solid rgba(255, 170, 0, 0.2);
+    border-left: 1px solid rgba(216,133,46, 0.2);
     padding: 1.5rem;
     overflow-y: auto;
     max-height: 100%;
@@ -393,7 +393,7 @@
     font-family: var(--font-title);
     color: var(--primary-gold);
     margin-bottom: 1rem;
-    border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+    border-bottom: 1px solid rgba(216,133,46, 0.3);
     padding-bottom: 0.5rem;
 }
 
@@ -481,11 +481,11 @@
 }
 
 .filter-btn:hover {
-    background: rgba(255, 170, 0, 0.1);
+    background: rgba(216,133,46, 0.1);
 }
 
 .filter-btn.active {
-    background: rgba(255, 170, 0, 0.2);
+    background: rgba(216,133,46, 0.2);
     border-color: var(--primary-gold);
     color: var(--primary-gold);
 }
@@ -512,7 +512,7 @@
 }
 
 .unlock-card.owned {
-    border-color: #27ae60;
+    border-color: #56a064;
     background: rgba(39, 174, 96, 0.1);
 }
 
@@ -534,7 +534,7 @@
 
 .unlock-card-cost {
     font-size: 0.9rem;
-    color: #ffd700;
+    color: #e6c572;
 }
 
 .unlock-card-status {
@@ -543,7 +543,7 @@
 }
 
 .unlock-card.owned .unlock-card-status {
-    color: #27ae60;
+    color: #56a064;
 }
 
 /* Inventory Tab */
@@ -597,7 +597,7 @@
 
 .inventory-slot.selected {
     border-color: var(--primary-gold);
-    box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+    box-shadow: 0 0 10px rgba(216,133,46, 0.3);
 }
 
 .inventory-sidebar {
@@ -628,7 +628,7 @@
 
 /* Mission Results Screen */
 #missionResults {
-    background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+    background: linear-gradient(135deg, #1b1e24, #0f0f1a);
 }
 
 .results-wrapper {
@@ -645,7 +645,7 @@
 }
 
 .result-title.victory {
-    color: #27ae60;
+    color: #56a064;
     text-shadow: 0 0 20px rgba(39, 174, 96, 0.5);
 }
 
@@ -713,12 +713,12 @@
 }
 
 .btn-danger:hover {
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    background: linear-gradient(135deg, #d24f45, #c0392b);
 }
 
 /* Difficulty badge for campaign */
 .mode-difficulty.campaign {
-    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    background: linear-gradient(135deg, #4a8fcf, #8e44ad);
     color: white;
 }
 
@@ -792,8 +792,8 @@
 
 /* Item rarity colors */
 .inventory-slot[data-rarity="common"] { border-color: #7f8c8d; }
-.inventory-slot[data-rarity="rare"] { border-color: #3498db; }
-.inventory-slot[data-rarity="epic"] { border-color: #9b59b6; }
+.inventory-slot[data-rarity="rare"] { border-color: #4a8fcf; }
+.inventory-slot[data-rarity="epic"] { border-color: #4a8fcf; }
 .inventory-slot[data-rarity="legendary"] { border-color: #f39c12; }
 
 /* Scroll Actions Panel */
@@ -911,7 +911,7 @@
 
 .info-section {
     background: rgba(30, 25, 40, 0.6);
-    border: 1px solid rgba(255, 170, 0, 0.2);
+    border: 1px solid rgba(216,133,46, 0.2);
     border-radius: 8px;
     padding: 1rem 1.5rem;
 }
@@ -950,7 +950,7 @@
     color: var(--primary-gold);
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+    border-bottom: 1px solid rgba(216,133,46, 0.3);
 }
 
 .commander-scroll-shop {
@@ -978,12 +978,12 @@
 }
 
 .shop-scroll-item.selected {
-    border-color: #ffd700;
+    border-color: #e6c572;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
 }
 
 .shop-scroll-item.free {
-    border-color: #27ae60;
+    border-color: #56a064;
     background: linear-gradient(135deg, rgba(20, 40, 20, 0.9), rgba(30, 60, 30, 0.9));
 }
 
@@ -992,7 +992,7 @@
     position: absolute;
     top: -8px;
     right: -8px;
-    background: #27ae60;
+    background: #56a064;
     color: white;
     font-size: 0.7rem;
     font-weight: bold;
@@ -1028,7 +1028,7 @@
 }
 
 .shop-scroll-cost.free {
-    color: #27ae60;
+    color: #56a064;
 }
 
 .commander-sidebar {
@@ -1091,7 +1091,7 @@
 }
 
 .scroll-cost.free {
-    color: #27ae60;
+    color: #56a064;
 }
 
 /* ================================================
@@ -1163,7 +1163,7 @@
 .oracle-title {
     font-family: var(--font-decorative);
     font-size: 2rem;
-    color: #9b59b6;
+    color: #4a8fcf;
     text-shadow: 0 0 20px rgba(155, 89, 182, 0.5);
     margin-bottom: 0.5rem;
 }
@@ -1215,7 +1215,7 @@
 }
 
 .oracle-scroll-slot:hover {
-    border-color: #9b59b6;
+    border-color: #4a8fcf;
     box-shadow: 0 0 20px rgba(155, 89, 182, 0.3);
 }
 
@@ -1228,7 +1228,7 @@
 
 .oracle-scroll-slot.filled {
     border-style: solid;
-    border-color: #9b59b6;
+    border-color: #4a8fcf;
     background: linear-gradient(135deg, rgba(50, 30, 80, 0.9), rgba(75, 45, 110, 0.9));
     flex-direction: column;
     padding: 1rem;
@@ -1247,7 +1247,7 @@
 
 .oracle-scroll-slot .scroll-tier {
     font-size: 0.75rem;
-    color: #9b59b6;
+    color: #4a8fcf;
 }
 
 .prophecy-display {
@@ -1261,7 +1261,7 @@
 
 .prophecy-display h4 {
     font-family: var(--font-title);
-    color: #9b59b6;
+    color: #4a8fcf;
     text-align: center;
     margin-bottom: 1rem;
     font-size: 1.1rem;
@@ -1280,7 +1280,7 @@
     align-items: center;
     padding: 0.75rem;
     background: rgba(155, 89, 182, 0.1);
-    border-left: 3px solid #9b59b6;
+    border-left: 3px solid #4a8fcf;
     border-radius: 0 5px 5px 0;
 }
 
@@ -1301,7 +1301,7 @@
 }
 
 .prophecy-modifier .modifier-bonus {
-    color: #27ae60;
+    color: #56a064;
     font-size: 0.85rem;
     white-space: nowrap;
 }
@@ -1335,7 +1335,7 @@
 }
 
 .btn-oracle {
-    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    background: linear-gradient(135deg, #4a8fcf, #8e44ad);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -1346,15 +1346,15 @@
 }
 
 .btn-oracle:hover {
-    background: linear-gradient(135deg, #a66bbe, #9b59b6);
+    background: linear-gradient(135deg, #a66bbe, #4a8fcf);
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
 }
 
 .btn-oracle-secondary {
     background: linear-gradient(135deg, rgba(155, 89, 182, 0.3), rgba(142, 68, 173, 0.3));
-    color: #9b59b6;
-    border: 1px solid #9b59b6;
+    color: #4a8fcf;
+    border: 1px solid #4a8fcf;
     padding: 0.75rem 1.5rem;
     border-radius: 5px;
     font-size: 1rem;
@@ -1383,7 +1383,7 @@
     color: var(--primary-gold);
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+    border-bottom: 1px solid rgba(216,133,46, 0.3);
 }
 
 .oracle-scrolls-list {
@@ -1407,17 +1407,17 @@
 }
 
 .oracle-scroll-item:hover {
-    border-color: #9b59b6;
+    border-color: #4a8fcf;
     background: rgba(50, 30, 80, 0.6);
 }
 
 .oracle-scroll-item.selected {
-    border-color: #9b59b6;
+    border-color: #4a8fcf;
     box-shadow: 0 0 10px rgba(155, 89, 182, 0.3);
 }
 
 .oracle-scroll-item.has-prophecy {
-    border-color: #27ae60;
+    border-color: #56a064;
     background: rgba(39, 174, 96, 0.1);
 }
 
@@ -1440,7 +1440,7 @@
 }
 
 .oracle-scroll-item.has-prophecy .scroll-item-status {
-    color: #27ae60;
+    color: #56a064;
 }
 
 .no-scrolls {
@@ -1460,7 +1460,7 @@
 }
 
 .node-scroll-info h4 {
-    color: #9b59b6;
+    color: #4a8fcf;
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
 }
@@ -1473,12 +1473,12 @@
     margin-top: 1rem;
     padding: 0.75rem;
     background: rgba(155, 89, 182, 0.15);
-    border: 1px solid #9b59b6;
+    border: 1px solid #4a8fcf;
     border-radius: 5px;
 }
 
 .applied-scroll-info h4 {
-    color: #9b59b6;
+    color: #4a8fcf;
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
 }
@@ -1514,7 +1514,7 @@
 }
 
 .available-scroll-item:hover {
-    border-color: #9b59b6;
+    border-color: #4a8fcf;
     background: rgba(155, 89, 182, 0.1);
 }
 
@@ -1544,7 +1544,7 @@
    ================================================ */
 
 .result-title.quest-complete {
-    color: #9b59b6;
+    color: #4a8fcf;
     text-shadow: 0 0 20px rgba(155, 89, 182, 0.5);
     animation: questPulse 1.5s ease-in-out infinite;
 }
@@ -1559,10 +1559,10 @@
 }
 
 .reward-item.essence-reward {
-    color: #9b59b6;
+    color: #4a8fcf;
     font-weight: bold;
     background: rgba(155, 89, 182, 0.1);
-    border-left: 3px solid #9b59b6;
+    border-left: 3px solid #4a8fcf;
     padding-left: 0.5rem;
 }
 
@@ -1582,7 +1582,7 @@
     gap: 1rem;
     padding: 0.75rem;
     background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(142, 68, 173, 0.3));
-    border: 2px solid #9b59b6;
+    border: 2px solid #4a8fcf;
     border-radius: 8px;
     margin-top: 0.75rem;
     cursor: pointer;
@@ -1629,7 +1629,7 @@
 
 .tarot-drop-label {
     font-size: 0.75rem;
-    color: #9b59b6;
+    color: #4a8fcf;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: bold;
@@ -1658,7 +1658,7 @@
 /* Boss scroll in Commander shop */
 .shop-scroll-item.boss {
     background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(142, 68, 173, 0.3));
-    border-color: #9b59b6;
+    border-color: #4a8fcf;
 }
 
 .shop-scroll-item.boss:hover {
@@ -1688,13 +1688,13 @@
 .tarot-card-slot .position-label {
     font-family: var(--font-title);
     font-size: 0.85rem;
-    color: #9b59b6;
+    color: #4a8fcf;
     text-transform: uppercase;
     letter-spacing: 2px;
 }
 
-.tarot-card-slot[data-position="past"] .position-label { color: #3498db; }
-.tarot-card-slot[data-position="present"] .position-label { color: #9b59b6; }
+.tarot-card-slot[data-position="past"] .position-label { color: #4a8fcf; }
+.tarot-card-slot[data-position="present"] .position-label { color: #4a8fcf; }
 .tarot-card-slot[data-position="future"] .position-label { color: #f39c12; }
 
 .tarot-card {
@@ -1762,7 +1762,7 @@
 
 .tarot-card-slot .card-meaning {
     font-size: 0.75rem;
-    color: #9b59b6;
+    color: #4a8fcf;
     font-style: italic;
     margin-bottom: 0.35rem;
 }
@@ -1920,7 +1920,7 @@
 }
 
 .quest-selection-tier {
-    background: rgba(255, 170, 0, 0.2);
+    background: rgba(216,133,46, 0.2);
     color: var(--primary-gold);
     padding: 0.25rem 0.75rem;
     border-radius: 3px;
@@ -1935,7 +1935,7 @@
 
 .quest-option {
     background: linear-gradient(135deg, rgba(30, 25, 40, 0.9), rgba(20, 15, 30, 0.9));
-    border: 1px solid rgba(255, 170, 0, 0.3);
+    border: 1px solid rgba(216,133,46, 0.3);
     border-radius: 8px;
     padding: 1rem;
     display: flex;
@@ -2006,7 +2006,7 @@
 }
 
 .current-quest-display .quest-tier {
-    background: rgba(255, 170, 0, 0.2);
+    background: rgba(216,133,46, 0.2);
     color: var(--primary-gold);
     padding: 0.25rem 0.75rem;
     border-radius: 3px;
@@ -2103,7 +2103,7 @@
 
 .oracle-locked-progress .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #9b59b6, #e74c3c);
+    background: linear-gradient(90deg, #4a8fcf, #d24f45);
     transition: width 0.3s ease;
 }
 
@@ -2273,7 +2273,7 @@
 
 .tarot-collection-card.collected:hover {
     transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 12px rgba(255, 170, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(216,133,46, 0.3);
     z-index: 1;
 }
 
@@ -2514,7 +2514,7 @@
 
 .tarot-modal-readings .reading-section h4 {
     font-family: var(--font-title);
-    color: #9b59b6;
+    color: #4a8fcf;
     margin-bottom: 0.75rem;
     font-size: 1rem;
 }
@@ -2556,7 +2556,7 @@
 
 .tarot-modal-close:hover {
     background: rgba(192, 57, 43, 0.8);
-    border-color: #e74c3c;
+    border-color: #d24f45;
 }
 
 /* Tarot Modal Purchase Section */
@@ -2594,7 +2594,7 @@
 }
 
 .tarot-modal-collected .collected-status {
-    color: #27ae60;
+    color: #56a064;
     font-weight: bold;
     margin: 0;
 }

@@ -12,7 +12,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         'despawnBattleHeroes',
         'getHeroEntityId',
         'getRosterEntryForEntity',
-        'snapshotHeroPositions'
+        'snapshotHeroPositions',
+        'reapplyStandingOrders'
     ];
 
     static serviceDependencies = [
@@ -21,7 +22,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         'replaceUnit',
         'applyArmyUpgrades',
         'applyArmyAbilities',
-        'applyLevelScaling'
+        'applyLevelScaling',
+        'applySquadTargetPosition'
     ];
 
     static CLASS_SPAWN_MAP = {
@@ -120,16 +122,36 @@ class HeroRosterSystem extends GUTS.BaseSystem {
     // Apply hero-specific components/bonuses to a (re)created hero entity.
     _tagHeroEntity(entityId, playerId, rosterIndex, level) {
         this.game.addComponent(entityId, 'heroRosterInfo', { playerId, rosterIndex, level });
-        // Autobattler: heroes see the whole battlefield so they chase the nearest enemy.
-        const combat = this.game.getComponent(entityId, 'combat');
-        if (combat) {
-            combat.visionRange = 99999;
-            combat.awareness   = 100;
-        }
+        // NOTE: heroes use their unit-def visionRange/awareness like everyone
+        // else. The old "see the whole battlefield" override (visionRange
+        // 99999) predates fog of war and broke it completely: every hero
+        // acquired cross-map targets at battle start, ignored its move orders
+        // (the order tree yields whenever an enemy is "in vision"), and chase
+        // leashes — measured in vision range — never released.
         // Per-level scaling, then per-type upgrades + granted abilities.
         this.call.applyLevelScaling?.(entityId);
         this.call.applyArmyUpgrades?.(entityId);
         this.call.applyArmyAbilities?.(entityId);
+    }
+
+    // Re-apply each hero's persisted order (snapshotted at last battle start)
+    // to its fresh respawn, so orders repeat round to round until the player
+    // changes or clears them. Returns what was applied so the caller can
+    // mirror it to online clients via the squad-targets broadcast.
+    reapplyStandingOrders() {
+        const applied = { placementIds: [], targetPositions: [] };
+        for (const { entityId, playerId, rosterIndex } of this.battleHeroEntities) {
+            const stats = this._statsByPlayerId(playerId);
+            const order = stats?.heroRoster?.[rosterIndex]?.standingOrder;
+            if (!order) continue;
+            const placementId = this.game.getComponent(entityId, 'placement')?.placementId;
+            if (placementId == null) continue;
+            this.call.applySquadTargetPosition(placementId,
+                { x: order.x, z: order.z }, { isMoveOrder: true }, this.game.state.now);
+            applied.placementIds.push(placementId);
+            applied.targetPositions.push({ x: order.x, z: order.z });
+        }
+        return applied;
     }
 
     _statsByPlayerId(numericPlayerId) {
@@ -198,6 +220,12 @@ class HeroRosterSystem extends GUTS.BaseSystem {
                     const entry = stats.heroRoster?.[rosterIndex];
                     if (entry) {
                         entry.lastPosition = { x: pos.x, z: pos.z };
+                        // Standing order: persists round to round (re-applied to
+                        // the respawn) until the player changes or clears it.
+                        const po = this.game.getComponent(entityId, 'playerOrder');
+                        entry.standingOrder = (po?.enabled && po.isMoveOrder)
+                            ? { x: po.targetPositionX, z: po.targetPositionZ }
+                            : null;
                     }
                     break;
                 }

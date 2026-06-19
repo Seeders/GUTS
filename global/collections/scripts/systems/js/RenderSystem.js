@@ -17,6 +17,8 @@ class RenderSystem extends GUTS.BaseSystem {
         'getTileMap',
         'getCamera',
         'isVisibleAt',
+        'isVisibleInFogAt',
+        'getActivePlayerTeam',
         'getLocalPlayerStats',
         'isEntityVisibleToTeam',
         'getZoomLevel',
@@ -308,6 +310,7 @@ class RenderSystem extends GUTS.BaseSystem {
             const unitTypeCollection = unitTypeComp?.collection;
             const isAlwaysVisible = unitTypeCollection === this.enums.objectTypeDefinitions?.worldObjects ||
                                     unitTypeCollection === this.enums.objectTypeDefinitions?.cliffs ||
+                                    unitType.alwaysVisibleInFog === true || // map objectives (e.g. gold mines)
                                     isPlayer; // Local player is always visible to themselves
 
             if (!isAlwaysVisible && !isVisible) {
@@ -319,21 +322,30 @@ class RenderSystem extends GUTS.BaseSystem {
                 continue;
             }
 
-            // Check stealth visibility - enemy units with stealth should not render if not detected
-            // Skip this check for always-visible entities (worldObjects, cliffs)
-            // Get local player's team from player entity stats
-            if (!isAlwaysVisible && this.game.hasService('getLocalPlayerStats') && this.game.hasService('isEntityVisibleToTeam')) {
-                const localPlayerStats = this.call.getLocalPlayerStats();
-                const myTeam = localPlayerStats?.team;
-                if (myTeam !== undefined) {
-                    const entityTeam = this.game.getComponent(entityId, 'team');
-                    // Only check stealth for enemy units (not buildings/decorations without teams)
-                    if (entityTeam && entityTeam.team !== myTeam) {
-                        const isVisibleToMyTeam = this.call.isEntityVisibleToTeam( entityId, myTeam);
-                        if (!isVisibleToMyTeam) {
-                            // Enemy unit is stealthed and we can't see it - skip rendering
-                            continue;
-                        }
+            // Enemy visibility — hide enemies the local player can't currently see.
+            // Skip for always-visible entities (worldObjects, cliffs, the player).
+            // "Enemy" = any entity on a team other than mine (includes neutral
+            // creeps / hostile dragons). Two independent reasons to hide:
+            //   1) Fog of war: the enemy is not in any of my units' current
+            //      vision (isVisibleInFogAt false). Position-based, so it also
+            //      hides remembered enemies in explored-but-dark fog.
+            //   2) Stealth: the enemy is stealthed and undetected by my team.
+            if (!isAlwaysVisible && this.game.hasService('getLocalPlayerStats')) {
+                const myTeam = this.game.hasService('getActivePlayerTeam')
+                    ? this.call.getActivePlayerTeam()
+                    : this.call.getLocalPlayerStats()?.team;
+                const entityTeam = this.game.getComponent(entityId, 'team');
+                if (myTeam !== undefined && myTeam !== null &&
+                    entityTeam && entityTeam.team !== myTeam) {
+                    // Fog of war: only render enemies in my team's current vision.
+                    if (this.game.hasService('isVisibleInFogAt') &&
+                        !this.call.isVisibleInFogAt(pos.x, pos.z)) {
+                        continue;
+                    }
+                    // Stealth: hide undetected stealthed enemies.
+                    if (this.game.hasService('isEntityVisibleToTeam') &&
+                        !this.call.isEntityVisibleToTeam(entityId, myTeam)) {
+                        continue;
                     }
                 }
             }
