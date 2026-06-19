@@ -23,7 +23,9 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'getEligibleItems',
         'applyArmyUpgrades',
         'applyArmyAbilities',
-        'grantSingleTargetAbility'
+        'grantSingleTargetAbility',
+        'getEconomyEffects',
+        'sellUnit'
     ];
 
     static serviceDependencies = [
@@ -36,11 +38,13 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'getOwnedBuildingArchetypes',
         'upgradeTownHall',
         'placeBuildingAuto',
-        'getAIPlayerIds'
+        'getAIPlayerIds',
+        'removeRosterEntry'
     ];
 
     static OFFER_COUNT = 5;
     static REROLL_BASE_COST = 2;     // escalates +1 per reroll within a round
+    static SELL_REFUND_PCT = 0.5;    // base fraction of a unit's shop cost refunded on sell
     // Shop runs a small-number economy (income is 20g/round). A unit/upgrade/ability's
     // raw `value` is divided by this to get its shop price, so a few buys fit one round.
     // Tune this single knob to make the whole shop cheaper/pricier.
@@ -225,8 +229,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const stats = this._getStats(numericPlayerId);
         if (!stats) return { success: false, reason: 'no_player' };
         if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
-        if (!Array.isArray(stats.unlockedUnits) || !stats.unlockedUnits.includes(unitTypeId)) {
-            return { success: false, reason: 'not_unlocked' };
+        if (!this._candidateUnitIds(stats).includes(unitTypeId)) {
+            return { success: false, reason: 'not_available' };
         }
         const def = this.collections.units?.[unitTypeId];
         if (!def) return { success: false, reason: 'no_unit' };
@@ -255,7 +259,56 @@ class ArmyShopSystem extends GUTS.BaseSystem {
     }
 
     getRerollCost(stats) {
-        return ArmyShopSystem.REROLL_BASE_COST + (stats?.rerollCount || 0);
+        const base = ArmyShopSystem.REROLL_BASE_COST + (stats?.rerollCount || 0);
+        const discount = this.getEconomyEffects(stats).rerollDiscount || 0;
+        return Math.max(1, base - discount);
+    }
+
+    // Aggregate a player's owned economy upgrades (Town Hall tree) into a single
+    // effects object consumed by the income/reroll/sell/mine systems. interestPer is
+    // the threshold to earn +1 (smallest owned); the rest sum across owned upgrades.
+    getEconomyEffects(stats) {
+        const eff = {
+            interestPer: 0, interestCap: 0, winStreakGold: 0, lossStreakGold: 0,
+            flatIncome: 0, rerollDiscount: 0, sellRefundPct: 0, mineIncomeBonus: 0
+        };
+        for (const id of (stats?.ownedUpgrades || [])) {
+            const e = this.collections.upgrades?.[id]?.economy;
+            if (!e) continue;
+            if (e.interestPer != null) {
+                eff.interestPer = eff.interestPer ? Math.min(eff.interestPer, e.interestPer) : e.interestPer;
+            }
+            eff.interestCap     += e.interestCap     || 0;
+            eff.winStreakGold   += e.winStreakGold   || 0;
+            eff.lossStreakGold  += e.lossStreakGold  || 0;
+            eff.flatIncome      += e.flatIncome      || 0;
+            eff.rerollDiscount  += e.rerollDiscount  || 0;
+            eff.sellRefundPct   += e.sellRefundPct   || 0;
+            eff.mineIncomeBonus += e.mineIncomeBonus || 0;
+        }
+        return eff;
+    }
+
+    // Sell a roster unit back for a partial refund (placement phase only). Removes the
+    // roster entry + despawns its live unit via HeroRosterSystem (which keeps its index
+    // maps consistent); the unit stays in unlockedUnits so it can be re-bought.
+    sellUnit(numericPlayerId, rosterIndex) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+        const entry = stats.heroRoster?.[rosterIndex];
+        if (!entry) return { success: false, reason: 'bad_index' };
+
+        const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
+        const pct = ArmyShopSystem.SELL_REFUND_PCT + (this.getEconomyEffects(stats).sellRefundPct || 0);
+        const refund = Math.floor(ArmyShopSystem.shopCost(def.value) * pct);
+
+        const res = this.call.removeRosterEntry?.(numericPlayerId, rosterIndex);
+        if (!res?.success) return { success: false, reason: res?.reason || 'remove_failed' };
+
+        stats.gold = (stats.gold || 0) + refund;
+        this._broadcastShop(stats);
+        return { success: true, refund, state: this.getShopStateForPlayer(numericPlayerId) };
     }
 
     getShopStateForPlayer(numericPlayerId) {
@@ -264,7 +317,10 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         return {
             playerId:   stats.playerId,
             offers:     stats.currentOffers || [],
-            unlocked:   (stats.unlockedUnits || []).map(id => {
+            // "Your Units" panel: every unit the player can currently buy, gated by
+            // their owned archetype buildings + Town Hall tier (not just previously
+            // bought ones — units are no longer unlocked through the shop).
+            unlocked:   this._candidateUnitIds(stats).map(id => {
                 const def = this.collections.units?.[id] || {};
                 return { id, title: def.title || id, cost: ArmyShopSystem.shopCost(def.value), icon: def.icon || null };
             }),
@@ -333,10 +389,10 @@ class ArmyShopSystem extends GUTS.BaseSystem {
     // Units are weighted higher so they dominate the early offers.
     _buildOffers(stats) {
         const profiles = this.ownedUnitProfiles(stats);
+        // Units are NOT sold here — they're bought from the "Your Units" panel
+        // (buyUnlockedUnit). The shop offers only upgrades, abilities and Town Hall
+        // tier/economy upgrades.
         const candidates = [];
-        for (const id of this._candidateUnitIds(stats)) {
-            candidates.push({ kind: 'unit', id, weight: 3 });
-        }
         const ownedBuildings = new Set(this.game.hasService?.('getOwnedBuildingIds')
             ? this.call.getOwnedBuildingIds(stats.playerId) : []);
         const ownedUpgrades = new Set(stats.ownedUpgrades || []);
@@ -357,6 +413,15 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             if (this.isEligible(profiles, def.requirements)) {
                 candidates.push({ kind: 'ability', id, weight: 1 });
             }
+        }
+        // Economy upgrades (Town Hall tree): not per-unit and not unit-gated — every
+        // player always has a Town Hall, so they're offered once their tree prereqs
+        // are met and they aren't already owned. Bought via the normal buyOffer path.
+        for (const [id, def] of Object.entries(this.collections.upgrades || {})) {
+            if (!def.economy) continue;
+            if (ownedUpgrades.has(id)) continue;
+            if (!this._treeUnlocked(stats, id)) continue;
+            candidates.push({ kind: 'upgrade', id, weight: 1 });
         }
         // Buildings are NOT sold in the regular shop — they come from the starting pick
         // and the round-5 milestone (AutobattlerRoundSystem). Town Hall tier upgrades stay
@@ -415,12 +480,13 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             }
             return list.length - 1;
         };
-        for (let i = 0; i < count; i++) {
-            const src = remaining.length ? remaining : candidates;
-            if (!src.length) break;
-            const idx = pickWeighted(src);
-            const pick = src[idx];
-            if (remaining.length) remaining.splice(idx, 1);
+        // Distinct offers only — never pad with duplicates. Padding could offer the
+        // same one-time upgrade twice (and economy upgrades stack, so a double-buy
+        // would double its effect). Fewer than `count` candidates → a smaller shop.
+        for (let i = 0; i < count && remaining.length; i++) {
+            const idx = pickWeighted(remaining);
+            const pick = remaining[idx];
+            remaining.splice(idx, 1);
             offers.push(this._makeOffer(pick.kind, pick.id));
         }
         return offers;
@@ -676,23 +742,38 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         this.game.triggerEvent?.('onShopOffersReady', state);
     }
 
-    // Local-game AI greedily buys affordable offers each round to build its army.
-    // Greedy auto-buy for every AI-controlled player (local opponent and both
-    // sides of headless simulations): keep buying the first affordable offer.
+    // Local-game AI auto-buy for every AI-controlled player (local opponent and both
+    // sides of headless simulations). Units are no longer shop offers — the army is
+    // bought from the "Your Units" store (buyUnlockedUnit) — so each pass buys units
+    // FIRST (the army is the priority) and then picks up one affordable shop offer
+    // (upgrade / ability / economy / Town Hall). Interleaving prevents cheap offers
+    // from starving unit purchases. Deterministic: candidate order, no RNG.
     _aiAutoBuy() {
         for (const pid of (this.call.getAIPlayerIds?.() || [])) {
             const stats = this._getStats(pid);
             if (!stats) continue;
-            let guard = 0;
-            while (guard++ < 20) {
+
+            const buyOneOffer = () => {
                 const idx = (stats.currentOffers || []).findIndex(
                     o => !o.consumed && (stats.gold || 0) >= o.cost
                         // AI can't choose a target, so skip single-target abilities.
                         && !(o.kind === 'ability' && o.grantMode === 'single')
                 );
-                if (idx < 0) break;
-                const res = this.buyOffer(pid, idx);
-                if (!res.success || res.requiresTarget) break;
+                if (idx < 0) return false;
+                return !!this.buyOffer(pid, idx)?.success;
+            };
+
+            let guard = 0, progress = true;
+            while (progress && guard++ < 80) {
+                progress = false;
+                // Army first: one of each affordable unit type this pass.
+                for (const id of this._candidateUnitIds(stats)) {
+                    const cost = ArmyShopSystem.shopCost(this.collections.units?.[id]?.value);
+                    if ((stats.gold || 0) < cost) continue;
+                    if (this.buyUnlockedUnit(pid, id)?.success) progress = true;
+                }
+                // Then one affordable shop offer with whatever's left.
+                if (buyOneOffer()) progress = true;
             }
         }
     }

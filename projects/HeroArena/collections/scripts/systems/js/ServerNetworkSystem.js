@@ -39,6 +39,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleBuyOffer',
         'handleRerollOffers',
         'handleBuyUnlockedUnit',
+        'handleSellUnit',
         'handleGrantSingleAbility',
         'handleSpecializeChoice',
         'handlePlaceBuilding',
@@ -69,6 +70,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'buyOffer',
         'rerollOffers',
         'buyUnlockedUnit',
+        'sellUnit',
         'grantSingleTargetAbility',
         'applySpecializationChoice',
         'placeBuilding',
@@ -374,6 +376,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('BUY_OFFER',            this.handleBuyOffer.bind(this));
         this.game.serverEventManager.subscribe('REROLL_OFFERS',        this.handleRerollOffers.bind(this));
         this.game.serverEventManager.subscribe('BUY_UNLOCKED_UNIT',    this.handleBuyUnlockedUnit.bind(this));
+        this.game.serverEventManager.subscribe('SELL_UNIT',            this.handleSellUnit.bind(this));
         this.game.serverEventManager.subscribe('GRANT_SINGLE_ABILITY', this.handleGrantSingleAbility.bind(this));
         this.game.serverEventManager.subscribe('SPECIALIZE_CHOICE',    this.handleSpecializeChoice.bind(this));
 
@@ -1298,6 +1301,15 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const result = this.call.buyUnlockedUnit(numericPlayerId, d.unitTypeId);
         this.syncEntitiesToClients(playerId, numericPlayerId);   // replicate to the buyer only
         return this.respond(playerId, 'BUY_UNLOCKED_UNIT_ACK', result ?? { success: false }, callback);
+    }
+
+    handleSellUnit(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.sellUnit(numericPlayerId, d.rosterIndex);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // sold unit despawn → buyer only
+        return this.respond(playerId, 'SELL_UNIT_ACK', result ?? { success: false }, callback);
     }
 
     handleGrantSingleAbility(eventData, callback) {

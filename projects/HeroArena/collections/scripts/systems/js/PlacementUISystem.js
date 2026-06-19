@@ -60,6 +60,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'submitBuyOffer',
         'submitRerollOffers',
         'submitBuyUnlockedUnit',
+        'submitSellUnit',
         'submitGrantSingleAbility',
         'submitSpecializeChoice',
         'submitPlaceBuilding',
@@ -299,6 +300,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.elements.selectionCards = document.getElementById('selectionCards');
         this.elements.attackMoveBtn  = document.getElementById('attackMoveBtn');
         this.elements.clearOrderBtn  = document.getElementById('clearOrderBtn');
+        this.elements.sellUnitBtn    = document.getElementById('sellUnitBtn');
         this.elements.selectionHint  = document.getElementById('selectionHint');
         this.elements.selectionTitle = document.getElementById('selectionTitle');
         this.elements.selectionActions = document.getElementById('selectionActions');
@@ -309,6 +311,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
         if (this.elements.clearOrderBtn) {
             this._track(this.elements.clearOrderBtn, 'click', () => this._clearSelectedOrders());
+        }
+        if (this.elements.sellUnitBtn) {
+            this._track(this.elements.sellUnitBtn, 'click', () => this._sellSelectedUnits());
         }
         if (this.elements.buildingUpgradesBtn) {
             this._track(this.elements.buildingUpgradesBtn, 'click', () => this._openUpgradeTree());
@@ -877,7 +882,12 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const team = this.game.getComponent(id, 'team');
         if (myTeam != null && team && team.team !== myTeam) return null;
 
-        const buildingId = owner?.buildingId || def?.id || null;
+        let buildingId = owner?.buildingId || def?.id || null;
+        // Town Hall tiers (townHall→keep→castle) all share the Town Hall economy tree.
+        if (buildingId && (def?.category === 'townhall'
+            || buildingId === 'townHall' || buildingId === 'keep' || buildingId === 'castle')) {
+            buildingId = 'townHall';
+        }
         const tree = buildingId ? this.collections?.upgradeTrees?.[buildingId] : null;
         return {
             entityId: id,
@@ -931,10 +941,27 @@ class PlacementUISystem extends GUTS.BaseSystem {
             </div>`;
         }).join('');
 
-        // Orders can only be issued (or cleared) during prep.
+        // Orders can only be issued (or cleared) during prep; same for selling.
         const notPrep = this.game.state.phase !== this.enums.gamePhase.placement;
         if (this.elements.attackMoveBtn) this.elements.attackMoveBtn.disabled = notPrep;
         if (this.elements.clearOrderBtn) this.elements.clearOrderBtn.disabled = notPrep;
+        if (this.elements.sellUnitBtn) this.elements.sellUnitBtn.disabled = notPrep;
+    }
+
+    // Sell every selected own unit for a partial refund (prep only). Resolve each
+    // unit's roster index from its heroRosterInfo, then sell highest-index-first so
+    // the server's roster splice never invalidates a not-yet-sold lower index.
+    _sellSelectedUnits() {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) return;
+        const indices = this._selectedOwnUnits()
+            .map(id => this.game.getComponent(id, 'heroRosterInfo')?.rosterIndex)
+            .filter(i => i != null)
+            .sort((a, b) => b - a);
+        if (indices.length === 0) return;
+        for (const rosterIndex of indices) {
+            this.call.submitSellUnit(rosterIndex, (res) => this._renderShop(res?.state || res));
+        }
+        this._refreshSelectionPanel();
     }
 
     // ==================== BUILDING UPGRADE TREE (read-only) ====================

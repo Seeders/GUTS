@@ -1,0 +1,6 @@
+{
+  "title": "Prospecting",
+  "description": "+3 gold each round from every gold mine your team holds.",
+  "value": 60,
+  "economy": { "mineIncomeBonus": 3 }
+}

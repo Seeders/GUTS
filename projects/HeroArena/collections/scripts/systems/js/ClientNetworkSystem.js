@@ -33,6 +33,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'submitBuyOffer',
         'submitRerollOffers',
         'submitBuyUnlockedUnit',
+        'submitSellUnit',
         'submitGrantSingleAbility',
         'submitSpecializeChoice',
         'submitPlaceBuilding',
@@ -1651,6 +1652,15 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             eventName: 'BUY_UNLOCKED_UNIT',
             responseName: 'BUY_UNLOCKED_UNIT_ACK',
             data: { unitTypeId },
+            onSuccess
+        }, () => {});
+    }
+
+    submitSellUnit(rosterIndex, onSuccess) {
+        this.networkRequest({
+            eventName: 'SELL_UNIT',
+            responseName: 'SELL_UNIT_ACK',
+            data: { rosterIndex },
             onSuccess
         }, () => {});
     }

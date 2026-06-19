@@ -36,7 +36,8 @@ class GoldMineCaptureSystem extends GUTS.BaseSystem {
         'worldToPlacementGrid',
         'getNearbyUnits',
         'applySquadTargetPosition',
-        'broadcastToRoom'
+        'broadcastToRoom',
+        'getEconomyEffects'
     ];
 
     // Mirrored corners of the two starting locations (forest level).
@@ -397,12 +398,15 @@ class GoldMineCaptureSystem extends GUTS.BaseSystem {
     _grantIncome(vein, reverseEnums) {
         const stats = this._playerStatsForTeam(vein.ownerTeam);
         if (!stats) return;
-        stats.gold = (stats.gold || 0) + GoldMineCaptureSystem.MINE_INCOME;
+        // Base mine income + the owner's Prospecting (economy tree) bonus, if any.
+        const bonus = this.call.getEconomyEffects?.(stats)?.mineIncomeBonus || 0;
+        const amount = GoldMineCaptureSystem.MINE_INCOME + bonus;
+        stats.gold = (stats.gold || 0) + amount;
         this.game.triggerEvent('onGoldMineIncome', {
             team: vein.ownerTeam,
             teamName: reverseEnums.team?.[vein.ownerTeam] || String(vein.ownerTeam),
             playerId: stats.playerId,
-            gold: GoldMineCaptureSystem.MINE_INCOME,
+            gold: amount,
             mineEntityId: vein.mineEntityId
         });
     }

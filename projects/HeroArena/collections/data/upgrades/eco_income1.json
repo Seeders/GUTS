@@ -1,0 +1,6 @@
+{
+  "title": "Tithes",
+  "description": "+2 flat gold income each round.",
+  "value": 30,
+  "economy": { "flatIncome": 2 }
+}

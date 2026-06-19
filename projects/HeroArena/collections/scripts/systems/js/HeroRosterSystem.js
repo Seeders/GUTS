@@ -9,6 +9,7 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         'spawnHeroesForRound',
         'spawnPurchasedUnit',
         'respawnRosterEntry',
+        'removeRosterEntry',
         'despawnBattleHeroes',
         'getHeroEntityId',
         'getRosterEntryForEntity',
@@ -22,6 +23,7 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         'replaceUnit',
         'applyArmyUpgrades',
         'applyArmyAbilities',
+        'applyLeaderBonuses',
         'applyLevelScaling',
         'applySquadTargetPosition'
     ];
@@ -132,6 +134,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         this.call.applyLevelScaling?.(entityId);
         this.call.applyArmyUpgrades?.(entityId);
         this.call.applyArmyAbilities?.(entityId);
+        // Leader passive (archetype-targeted stat bonus); composes with the above.
+        this.call.applyLeaderBonuses?.(entityId);
     }
 
     // Re-apply each hero's persisted order (snapshotted at last battle start)
@@ -278,6 +282,43 @@ class HeroRosterSystem extends GUTS.BaseSystem {
     // Returns { playerId, rosterIndex } for an entity, or null if not a battle hero.
     getRosterEntryForEntity(entityId) {
         return this._entityToRoster.get(entityId) || null;
+    }
+
+    // Remove a roster entry (used by ArmyShopSystem.sellUnit): splice it out, despawn
+    // its live unit, and shift every higher index down by one — on the roster, on the
+    // live entities' heroRosterInfo components, and in this system's tracking maps —
+    // so indices stay consistent for the rest of this prep and next round's respawn.
+    removeRosterEntry(numericPlayerId, rosterIndex) {
+        const stats = this._statsByPlayerId(numericPlayerId);
+        if (!stats || !Array.isArray(stats.heroRoster)) return { success: false, reason: 'no_roster' };
+        if (rosterIndex < 0 || rosterIndex >= stats.heroRoster.length) {
+            return { success: false, reason: 'bad_index' };
+        }
+
+        // Despawn the live unit for this entry, if it's on the field.
+        const liveId = this.getHeroEntityId(numericPlayerId, rosterIndex);
+        if (liveId != null) {
+            try { this.game.destroyEntity(liveId); } catch (_) {}
+        }
+
+        // Drop the roster entry.
+        stats.heroRoster.splice(rosterIndex, 1);
+
+        // Reconcile battle-hero tracking: drop the removed hero, shift higher indices.
+        const next = [];
+        this._entityToRoster.clear();
+        for (const e of this.battleHeroEntities) {
+            if (e.playerId === numericPlayerId && e.rosterIndex === rosterIndex) continue; // removed
+            if (e.playerId === numericPlayerId && e.rosterIndex > rosterIndex) {
+                e.rosterIndex -= 1;
+                const info = this.game.getComponent(e.entityId, 'heroRosterInfo');
+                if (info) info.rosterIndex = e.rosterIndex;
+            }
+            next.push(e);
+            this._entityToRoster.set(e.entityId, { playerId: e.playerId, rosterIndex: e.rosterIndex });
+        }
+        this.battleHeroEntities = next;
+        return { success: true };
     }
 
     // ─── Private helpers ─────────────────────────────────────────────────────

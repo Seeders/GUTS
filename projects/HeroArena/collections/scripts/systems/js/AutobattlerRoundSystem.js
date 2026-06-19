@@ -68,13 +68,16 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         { id: 'scout',      label: 'Scout',      archetype: 'INT/DEX', spawnType: '1_di_scout'     }
     ];
 
+    // Display labels for the leader-select UI. The mechanical effects live in
+    // LeaderSystem.LEADERS (stat bonuses) and AutobattlerEconomySystem (gold leaders);
+    // keep these descriptions in sync with those.
     static LEADERS = [
-        { id: 'commander',  label: 'The Commander',  bonus: '+10% HP to all STR heroes' },
-        { id: 'alchemist',  label: 'The Alchemist',  bonus: '+5 bonus gold each round' },
-        { id: 'warlord',    label: 'The Warlord',    bonus: 'Win streaks grant +1 bonus gold' },
-        { id: 'scholar',    label: 'The Scholar',    bonus: '+15% spell damage to INT heroes' },
-        { id: 'ranger',     label: 'The Ranger',     bonus: '+15% attack damage to DEX heroes' },
-        { id: 'trickster',  label: 'The Trickster',  bonus: 'DEX heroes gain +10% evasion' }
+        { id: 'commander',  label: 'The Commander',  bonus: '+10% HP to STR heroes' },
+        { id: 'alchemist',  label: 'The Alchemist',  bonus: '+5 gold each round' },
+        { id: 'warlord',    label: 'The Warlord',    bonus: '+1 gold per win streak each round' },
+        { id: 'scholar',    label: 'The Scholar',    bonus: '+15% damage to INT heroes' },
+        { id: 'ranger',     label: 'The Ranger',     bonus: '+15% damage to DEX heroes' },
+        { id: 'trickster',  label: 'The Trickster',  bonus: '+10 evasion to DEX heroes' }
     ];
 
     constructor(game) {

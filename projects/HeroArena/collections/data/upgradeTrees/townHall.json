@@ -1,0 +1,23 @@
+{
+  "id": "townHall",
+  "building": "townHall",
+  "title": "Town Hall",
+  "archetype": "ECON",
+  "branches": [
+    { "id": "banking", "label": "Banking", "focus": "Interest", "nodes": [
+      { "upgrade": "eco_interest1", "requires": [] },
+      { "upgrade": "eco_interest2", "requires": ["eco_interest1"] },
+      { "upgrade": "eco_interest3", "requires": ["eco_interest2"] }
+    ] },
+    { "id": "momentum", "label": "Momentum", "focus": "Streaks", "nodes": [
+      { "upgrade": "eco_winStreak1",  "requires": [] },
+      { "upgrade": "eco_lossStreak1", "requires": ["eco_winStreak1"] },
+      { "upgrade": "eco_streak2",     "requires": ["eco_lossStreak1"] }
+    ] },
+    { "id": "commerce", "label": "Commerce", "focus": "Trade", "nodes": [
+      { "upgrade": "eco_income1", "requires": [] },
+      { "upgrade": "eco_trade1",  "requires": ["eco_income1"] },
+      { "upgrade": "eco_mine1",   "requires": ["eco_trade1"] }
+    ] }
+  ]
+}
