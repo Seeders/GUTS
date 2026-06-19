@@ -117,22 +117,26 @@ class HeadlessSkirmishRunner {
             game.call('initializeGame', null);
         }
 
-        // Spawn starting units and gold mines for both teams
-        if (game.hasService('spawnGoldMineForTeam')) {
-            game.call('spawnGoldMineForTeam', leftTeam);
-            game.call('spawnGoldMineForTeam', rightTeam);
-            console.log('[SkirmishRunner] Spawned gold mines for both teams');
-        }
+        // Spawn starting units and gold mines for both teams (classic TBW setup;
+        // projects whose game loop spawns its own economy — e.g. HeroArena's
+        // autobattler — pass classicSetup: false to skip all of this).
+        if (this.config.classicSetup !== false) {
+            if (game.hasService('spawnGoldMineForTeam')) {
+                game.call('spawnGoldMineForTeam', leftTeam);
+                game.call('spawnGoldMineForTeam', rightTeam);
+                console.log('[SkirmishRunner] Spawned gold mines for both teams');
+            }
 
-        if (game.hasService('spawnStartingUnitsForTeam')) {
-            game.call('spawnStartingUnitsForTeam', leftTeam);
-            game.call('spawnStartingUnitsForTeam', rightTeam);
-            console.log('[SkirmishRunner] Spawned starting units for both teams');
-        }
+            if (game.hasService('spawnStartingUnitsForTeam')) {
+                game.call('spawnStartingUnitsForTeam', leftTeam);
+                game.call('spawnStartingUnitsForTeam', rightTeam);
+                console.log('[SkirmishRunner] Spawned starting units for both teams');
+            }
 
-        // Spawn AI opponent entities for both teams
-        this.spawnAIOpponent(leftTeam, this.config.leftBuildOrder, this.config.leftAiMode);
-        this.spawnAIOpponent(rightTeam, this.config.rightBuildOrder, this.config.rightAiMode);
+            // Spawn AI opponent entities for both teams
+            this.spawnAIOpponent(leftTeam, this.config.leftBuildOrder, this.config.leftAiMode);
+            this.spawnAIOpponent(rightTeam, this.config.rightBuildOrder, this.config.rightAiMode);
+        }
 
         this.isSetup = true;
     }

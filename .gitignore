@@ -47,3 +47,4 @@ package-lock.json
 *.backup
 .claude/
 projects/TurnBasedWarfare/simulation_results/
+projects/HeroArena/simulation_results/

@@ -25,6 +25,10 @@ class FreeCameraSystem extends BaseCameraSystem {
         this.state.yaw = 0;
         this.state.pitch = 0;
 
+        // Right-drag mouse-look can be temporarily disabled by gameplay so a right-drag
+        // gesture (e.g. unit formation placement) doesn't also swing the camera.
+        this.lookEnabled = true;
+
         // Config
         this.config = this._getDefaultConfig();
     }
@@ -126,7 +130,7 @@ class FreeCameraSystem extends BaseCameraSystem {
     // ==================== INPUT HANDLING ====================
 
     handleMouseMove(e) {
-        if (this.state.isRightMouseDown) {
+        if (this.state.isRightMouseDown && this.lookEnabled) {
             const sensitivity = this.config.mouse.sensitivity;
             this.state.yaw -= (e.movementX || 0) * sensitivity;
             this.state.pitch -= (e.movementY || 0) * sensitivity;
@@ -180,6 +184,14 @@ class FreeCameraSystem extends BaseCameraSystem {
             this.state.yaw = Math.atan2(dx, dz);
             this.state.pitch = Math.atan2(dy, horizontalDist);
         }
+    }
+
+    /**
+     * Enable/disable right-drag mouse-look. Gameplay disables this temporarily so a
+     * right-drag gesture (e.g. formation placement) doesn't also rotate the camera.
+     */
+    setLookEnabled(enabled) {
+        this.lookEnabled = enabled !== false;
     }
 
     getYaw() {

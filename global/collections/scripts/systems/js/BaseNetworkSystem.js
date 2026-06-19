@@ -349,8 +349,15 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
         const gridPosition = oldPlacement?.gridPosition;
         const team = teamComp.team;
 
-        // Get target unit definition
-        const unitDef = this.collections.units[targetUnitTypeId];
+        // Get target unit definition. Transforms can target either collection:
+        // units (e.g. dragon takeoff/landing) or buildings (e.g. the Town Hall →
+        // Keep → Castle upgrade chain).
+        let targetCollection = 'units';
+        let unitDef = this.collections.units?.[targetUnitTypeId];
+        if (!unitDef && this.collections.buildings?.[targetUnitTypeId]) {
+            targetCollection = 'buildings';
+            unitDef = this.collections.buildings[targetUnitTypeId];
+        }
         if (!unitDef) {
             console.error('[replaceUnit] Target unit type not found:', targetUnitTypeId);
             return null;
@@ -416,8 +423,8 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
         }
 
         // Get enums for unit type
-        const collectionIndex = this.enums?.objectTypeDefinitions?.units ?? 0;
-        const spawnTypeIndex = this.enums?.units?.[targetUnitTypeId] ?? 0;
+        const collectionIndex = this.enums?.objectTypeDefinitions?.[targetCollection] ?? 0;
+        const spawnTypeIndex = this.enums?.[targetCollection]?.[targetUnitTypeId] ?? 0;
 
         // Build network unit data for the standard creation pipeline
         const networkUnitData = {
@@ -429,7 +436,7 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             playerId: playerId ?? -1,
             roundPlaced: this.game.state.round || 1,
             timestamp: this.game.state.now,
-            unitType: { ...unitDef, id: targetUnitTypeId, collection: 'units' }
+            unitType: { ...unitDef, id: targetUnitTypeId, collection: targetCollection }
         };
 
         // Build transform data for the new entity

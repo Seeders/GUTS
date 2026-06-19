@@ -773,7 +773,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
     addToCache(key, path) {
         if (this.pathCache.size >= this.MAX_CACHE_SIZE) {
-            const oldestKey = null;
+            let oldestKey = null;
             let oldestTime = Infinity;
             
             for (const [k, v] of this.pathCache.entries()) {

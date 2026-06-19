@@ -55,14 +55,16 @@ class VisionSystem extends GUTS.BaseSystem {
      * Ensure cached field arrays are initialized (lazy init)
      */
     _ensureFieldArrays() {
-        if (!this._posXArray) {
-            this._posXArray = this.game.getFieldArray('transform', 'position.x');
-            this._posYArray = this.game.getFieldArray('transform', 'position.y');
-            this._posZArray = this.game.getFieldArray('transform', 'position.z');
-            this._teamArray = this.game.getFieldArray('team', 'team');
-            this._healthCurrentArray = this.game.getFieldArray('health', 'current');
-            this._healthMaxArray = this.game.getFieldArray('health', 'max');
-        }
+        // Each array retries independently: gating them all on _posXArray means
+        // an array that wasn't registered yet on the first call stays undefined
+        // forever — and an undefined team array makes getVisibleEnemiesInRange
+        // return [] for every entity (blank vision, no combat at all).
+        if (!this._posXArray)          this._posXArray = this.game.getFieldArray('transform', 'position.x');
+        if (!this._posYArray)          this._posYArray = this.game.getFieldArray('transform', 'position.y');
+        if (!this._posZArray)          this._posZArray = this.game.getFieldArray('transform', 'position.z');
+        if (!this._teamArray)          this._teamArray = this.game.getFieldArray('team', 'team');
+        if (!this._healthCurrentArray) this._healthCurrentArray = this.game.getFieldArray('health', 'current');
+        if (!this._healthMaxArray)     this._healthMaxArray = this.game.getFieldArray('health', 'max');
     }
 
     /**

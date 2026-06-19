@@ -2,6 +2,7 @@ class HealthBarSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getCamera',
         'isVisibleAt',
+        'isVisibleInFogAt',
         'getWorldScene'
     ];
 
@@ -57,10 +58,14 @@ class HealthBarSystem extends GUTS.BaseSystem {
             const team   = this.game.getComponent(entityId, "team");
             if (!pos || !health) return;
 
-            // === Selection filter: only show health bars for selected units ===
+            // === Visibility filter: damaged OR selected ===
+            // Damaged entities (including enemy buildings under attack) always
+            // qualify; selection alone also qualifies. Full-health bars may
+            // still be hidden later by shouldHideFullHealthBars().
             const isSelected = this.game.selectedUnitSystem?.selectedUnitIds?.has(entityId);
+            const isDamaged = health.current < health.max;
 
-            if (!isSelected) {
+            if (!isSelected && !isDamaged) {
                 const hb = this.healthBars.get(entityId);
                 if (hb) hb.group.visible = false;
                 return;
@@ -263,8 +268,13 @@ class HealthBarSystem extends GUTS.BaseSystem {
     }
     
     shouldHideFullHealthBars() {
-        // You can make this configurable
-        return false; // Set to true to hide health bars when units are at full health
+        // Project-configurable via game config: "hideFullHealthBars": true
+        // (HeroArena hides bars at full health; default is always-visible).
+        if (this._hideFullHealthBars === undefined) {
+            this._hideFullHealthBars =
+                this.game.getCollections()?.configs?.game?.hideFullHealthBars === true;
+        }
+        return this._hideFullHealthBars;
     }
     
     cleanupRemovedHealthBars(currentEntities) {
@@ -333,6 +343,12 @@ class HealthBarSystem extends GUTS.BaseSystem {
     }
 
     isVisibleAt(pos) {
+        // Prefer the real fog-of-war current-visibility check so an enemy's
+        // health bar doesn't float in the fog after the unit mesh is culled.
+        // (VisionSystem.isVisibleAt is a no-fog stub that always returns true.)
+        if (this.game.hasService('isVisibleInFogAt')) {
+            return this.call.isVisibleInFogAt(pos.x, pos.z);
+        }
         return this.call.isVisibleAt( pos.x, pos.z);
     }
 
