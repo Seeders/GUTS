@@ -833,11 +833,16 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     onMultipleUnitsSelected() {
         this._refreshSelectionPanel();
+        // Refresh the destination markers immediately so they track the new
+        // selection (the update() poll is throttled / may not run during prep).
+        this._updateOrderViz();
     }
 
     onDeSelectAll() {
         this._cancelOrderTargetMode();
         this._refreshSelectionPanel();
+        // No units selected -> no order markers.
+        this._clearOrderViz();
     }
 
     // Selected, living, own-team, non-building units with a squad placement.
@@ -1055,8 +1060,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this._cancelOrderTargetMode();
         this.call.ui_issueMoveOrder(placementIds, { x: 0, z: 0 }, { clearOrder: true }, () => {
             this._refreshSelectionPanel();
+            // Orders cleared -> remove their destination markers.
+            this._updateOrderViz();
         });
         this._refreshSelectionPanel();
+        this._updateOrderViz();
     }
 
     _toggleOrderTargetMode() {
@@ -1100,6 +1108,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         this.call.ui_issueMoveOrder(placementIds, { x: worldPos.x, z: worldPos.z }, {}, () => {
             this._refreshSelectionPanel();
+            // Order is applied by now (server callback) -> redraw the marker at
+            // the new destination.
+            this._updateOrderViz();
         });
 
         // Target-point feedback at terrain height (y=0 would spawn underground).
@@ -1107,6 +1118,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.call.createParticleEffect(worldPos.x, y + 5, worldPos.z, 'magic', { count: 10, speedMultiplier: 0.9 });
         this._logEvent(`Attack-move order set (${placementIds.length} squad${placementIds.length > 1 ? 's' : ''})`, 'system');
         this._refreshSelectionPanel();
+        this._updateOrderViz();
     }
 
     // One-shot guard consumed by GameInterfaceSystem.ui_handleCanvasClick.
@@ -1489,9 +1501,12 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.updateHUD();
 
         // Keep the selected units' order destination/path markers current
-        // (throttled; rebuilds only when something actually changed).
-        if ((this.game.state.now || 0) - (this._lastOrderVizAt || 0) > 0.2) {
-            this._lastOrderVizAt = this.game.state.now || 0;
+        // (throttled on wall-clock — sim time can be frozen during prep — and
+        // rebuilds only when the fingerprint actually changed). This is just a
+        // backstop; selection/order events refresh the markers immediately.
+        const nowMs = (typeof performance !== 'undefined') ? performance.now() : 0;
+        if (nowMs - (this._lastOrderVizAt || 0) > 200) {
+            this._lastOrderVizAt = nowMs;
             this._updateOrderViz();
         }
 
