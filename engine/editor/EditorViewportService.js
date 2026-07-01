@@ -182,7 +182,8 @@ class EditorViewportService {
         this.gizmoHelper = new window.THREE.Object3D();
         wr.getScene().add(this.gizmoHelper);
         this.gizmo.init({
-          scene: wr.getScene(), camera: wr.getCamera(), renderer: wr.renderer, controls: wr.controls,
+          scene: wr.getScene(), camera: wr.getCamera(), renderer: wr.renderer,
+          controls: this._makeControlsProxy(),   // suspends camera pan during gizmo drag
           onTransformChange: (pos, rot, scale) => this._onGizmoChange(pos, rot, scale)
         });
       }
@@ -299,6 +300,40 @@ class EditorViewportService {
     if (this.gizmo.attach) this.gizmo.attach(this.gizmoHelper);
   }
   setGizmoMode(mode) { if (this.gizmo && this.gizmo.setMode) this.gizmo.setMode(mode); }
+
+  /**
+   * A `controls` object handed to SE_GizmoManager. The gizmo sets `.enabled=false`
+   * when a handle drag starts and `.enabled=true` on release — we use that to
+   * suspend BOTH scene-mode OrbitControls AND EditorCameraController's game-mode
+   * right-drag pan (which has no enabled flag), fixing the gizmo/pan conflict
+   * without editing either shared class.
+   */
+  _makeControlsProxy() {
+    const wr = this.worldRenderer, self = this;
+    const proxy = {
+      _enabled: true,
+      get enabled() { return this._enabled; },
+      set enabled(v) {
+        this._enabled = v;
+        try { if (wr && wr.controls && wr.controls !== proxy) wr.controls.enabled = v; } catch (e) {}
+        self._suspendCameraPan(!v);
+      }
+    };
+    return proxy;
+  }
+  _suspendCameraPan(suspend) {
+    const cc = this.cameraController, canvas = this.canvas;
+    if (!cc || !canvas || !cc.gameCameraMouseDownHandler) return;
+    try {
+      if (suspend) {
+        canvas.removeEventListener('mousedown', cc.gameCameraMouseDownHandler);
+        canvas.removeEventListener('mousemove', cc.gameCameraMouseMoveHandler);
+      } else {
+        canvas.addEventListener('mousedown', cc.gameCameraMouseDownHandler);
+        canvas.addEventListener('mousemove', cc.gameCameraMouseMoveHandler);
+      }
+    } catch (e) {}
+  }
 
   _onGizmoChange(position, rotation, scale) {
     const id = this._selectedEntity; if (id == null) return;
