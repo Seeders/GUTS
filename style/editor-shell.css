@@ -361,6 +361,15 @@
 
 /* ---- Model preview panel (bottom-right, docked right of the assets) ---- */
 .eshell__panel--preview .eshell__panel-body { position: relative; padding: 0; overflow: hidden; }
+.eshell__preview-select { display: flex; gap: 4px; margin-left: auto; }
+.eshell__preview-tab {
+  cursor: pointer; font-family: var(--editor-font-mono, monospace); font-size: 10px;
+  padding: 2px 7px; border-radius: 3px; text-transform: none; letter-spacing: 0;
+  border: 1px solid var(--editor-border-color, #22303f);
+  background: var(--editor-bg-medium, #111a27); color: var(--editor-text-muted, #5e708a);
+}
+.eshell__preview-tab:hover { color: var(--editor-text-secondary, #90a2ba); }
+.eshell__preview-tab--active { color: #04231e; background: var(--editor-primary, #35e0c8); border-color: var(--editor-primary, #35e0c8); font-weight: 600; }
 .eshell__preview-canvas {
   position: absolute; inset: 0; width: 100%; height: 100%; display: block;
   background:

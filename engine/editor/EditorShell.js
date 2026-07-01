@@ -95,6 +95,7 @@ class EditorShell {
       this.viewport = new Svc(this.controller, body, this._viewportOptions());
       this.viewport.previewCanvas = this._previewCanvasEl;
       this.viewport.previewWindow = this._previewWindowEl;
+      this.viewport.onRenderOptions = (opts, cur) => this._renderPreviewSelector(opts, cur);
       // Scene entity <-> hierarchy <-> inspector sync.
       this.viewport.onSelectionChange = (id, rec) => this._onEntitySelected(id, rec);
       this.viewport.onSceneChange = () => this._renderHierarchy();
@@ -120,9 +121,15 @@ class EditorShell {
     } catch (e) { return {}; }
   }
 
-  // Docked bottom-right Preview panel (mini renderer driven by the viewport).
+  // Docked bottom-right Preview panel (mini renderer driven by the viewport) with a
+  // render-type selector in the header to switch between rendering pipelines.
   _buildPreviewPanel() {
     const panel = this._buildPanel('preview', 'Preview');
+    const header = panel.querySelector('.eshell__panel-header');
+    const sel = document.createElement('div');
+    sel.className = 'eshell__preview-select'; sel.id = 'eshell-preview-select';
+    header.appendChild(sel);
+    this._previewSelectEl = sel;
     const body = panel.querySelector('.eshell__panel-body');
     body.style.padding = '0';
     const canvas = document.createElement('canvas');
@@ -134,6 +141,18 @@ class EditorShell {
     this._previewCanvasEl = canvas;
     this._previewWindowEl = body;   // toggled via .has-model
     return panel;
+  }
+  _renderPreviewSelector(opts, currentId) {
+    const sel = this._previewSelectEl; if (!sel) return;
+    sel.innerHTML = '';
+    if (!opts || !opts.length) return;
+    opts.forEach(o => {
+      const b = document.createElement('button');
+      b.className = 'eshell__preview-tab' + (o.id === currentId ? ' eshell__preview-tab--active' : '');
+      b.textContent = o.label || o.pipeline || o.id;
+      b.addEventListener('click', () => { if (this.viewport && this.viewport.selectRenderType) this.viewport.selectRenderType(o.id); });
+      sel.appendChild(b);
+    });
   }
 
   // ---- Scene hierarchy (Phase 4) ---------------------------------------------
