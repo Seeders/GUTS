@@ -308,6 +308,10 @@
 .eshell__insp-code { min-height: 160px; font-size: 12px; line-height: 1.5; }
 .eshell__insp-invalid { border-color: var(--editor-danger, #ff5c6c) !important; }
 
+.eshell__insp-refarray { display: flex; flex-direction: column; gap: 5px; }
+.eshell__insp-refrow { display: grid; grid-template-columns: 1fr 18px; gap: 6px; align-items: center; }
+.eshell__insp-refarray .eshell__btn { align-self: flex-start; }
+
 .eshell__insp-del {
   width: 18px; height: 18px; padding: 0; line-height: 1; cursor: pointer;
   color: var(--editor-text-muted, #5e708a); background: transparent;

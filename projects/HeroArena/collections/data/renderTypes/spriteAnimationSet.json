@@ -1,0 +1,6 @@
+{
+  "title": "Sprite Animation",
+  "propertyName": "spriteAnimationSet",
+  "collection": "spriteAnimationSets",
+  "pipeline": "sprite"
+}

@@ -645,7 +645,7 @@ class EditorShell {
 
     const kind = this._fieldKind(type, key, value);
     const widget = this._inspWidget(type, key, value, kind);
-    if (kind === 'code' || kind === 'json' || kind === 'text') row.classList.add('eshell__insp-field--wide');
+    if (kind === 'code' || kind === 'json' || kind === 'text' || kind === 'refarray') row.classList.add('eshell__insp-field--wide');
 
     const del = document.createElement('button');
     del.className = 'eshell__insp-del'; del.textContent = '×'; del.title = 'Remove field';
@@ -661,6 +661,7 @@ class EditorShell {
     if (CODE.includes(key)) return 'code';
     if (typeof value === 'boolean') return 'bool';
     if (typeof value === 'number') return 'number';
+    if (Array.isArray(value) && this._referenceCollection(key)) return 'refarray'; // list of references
     if (value && typeof value === 'object') return 'json';       // array or object
     if (/color$/i.test(key) || (typeof value === 'string' && /^#[0-9a-f]{3,8}$/i.test(value))) return 'color';
     if (this._referenceCollection(key)) return 'ref';
@@ -705,6 +706,29 @@ class EditorShell {
       });
       if (value && !objs[value]) { const o = document.createElement('option'); o.value = value; o.textContent = value + ' (?)'; o.selected = true; el.appendChild(o); }
       return { el, read: () => el.value };
+    }
+    if (kind === 'refarray') {
+      const col = this._referenceCollection(key);
+      const options = Object.keys(this._collections()[col] || {}).sort();
+      const wrap = document.createElement('div'); wrap.className = 'eshell__insp-refarray';
+      const rows = [];
+      const addRow = (v) => {
+        const row = document.createElement('div'); row.className = 'eshell__insp-refrow';
+        const sel = document.createElement('select'); sel.className = 'eshell__insp-input';
+        const blank = document.createElement('option'); blank.value = ''; blank.textContent = '—'; sel.appendChild(blank);
+        options.forEach(o => { const op = document.createElement('option'); op.value = o; op.textContent = o; if (o === v) op.selected = true; sel.appendChild(op); });
+        if (v && !options.includes(v)) { const op = document.createElement('option'); op.value = v; op.textContent = v + ' (?)'; op.selected = true; sel.appendChild(op); }
+        const del = document.createElement('button'); del.className = 'eshell__insp-del'; del.textContent = '×';
+        const entry = { row, sel };
+        del.addEventListener('click', () => { row.remove(); const i = rows.indexOf(entry); if (i >= 0) rows.splice(i, 1); });
+        row.append(sel, del); rows.push(entry); addBtn.before(row);
+      };
+      const addBtn = document.createElement('button');
+      addBtn.className = 'eshell__btn'; addBtn.style.padding = '3px 8px'; addBtn.textContent = '+ Add';
+      addBtn.addEventListener('click', () => addRow(''));
+      wrap.appendChild(addBtn);
+      (Array.isArray(value) ? value : []).forEach(v => addRow(v));
+      return { el: wrap, read: () => rows.map(r => r.sel.value).filter(Boolean) };
     }
     if (kind === 'code' || kind === 'text' || kind === 'json') {
       const el = document.createElement('textarea');
