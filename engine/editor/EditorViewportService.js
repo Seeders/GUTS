@@ -212,10 +212,15 @@ class EditorViewportService {
       this._painting = true; this._lastCell = null; this._heightDirty = false;
       this._paintAt(e);
     };
-    this._onPaintMove = (e) => { if (this._painting) this._paintAt(e); };
+    this._onPaintMove = (e) => {
+      if (this.interactionMode !== 'select') this._updateBrushPreview(e);
+      if (this._painting) this._paintAt(e);
+    };
     this._onPaintUp = () => { if (!this._painting) return; this._painting = false; this._lastCell = null; this._finalizeStroke(); };
+    this._onCanvasLeave = () => this._clearBrushPreview();
     this.canvas.addEventListener('mousedown', this._onPaintDown);
     this.canvas.addEventListener('mousemove', this._onPaintMove);
+    this.canvas.addEventListener('mouseleave', this._onCanvasLeave);
     window.addEventListener('mouseup', this._onPaintUp);
 
     // Drag-drop placement from the Assets browser.
@@ -403,10 +408,29 @@ class EditorViewportService {
   setInteractionMode(mode) {
     this.interactionMode = mode || 'select';
     const painting = this.interactionMode !== 'select';
-    if (painting) this.deselectAll();
+    if (painting) { this.deselectAll(); this._ensureTerrainMapperReady(); } else this._clearBrushPreview();
     // Suppress SelectedUnitSystem's left-drag box-select while painting (it has no
     // enable flag), so a paint stroke isn't hijacked by the green selection box.
     this._setSelectionInput(!painting);
+  }
+
+  // HeroArena levels load from a baked terrain PNG (renderTerrainFromCache), which
+  // SKIPS tileMapper.draw — leaving the tileMapper's map empty, so incremental
+  // redraws (redrawTiles) crash. Run the full tile paint once to populate the
+  // tileMapper; after that per-dab updateTerrainTiles works.
+  _ensureTerrainMapperReady() {
+    const wr = this.worldRenderer, tm = wr && wr.tileMapper;
+    if (!wr || !tm || !wr.renderTerrain) return Promise.resolve();
+    if (this._terrainMapperReady || (tm.numColumns > 0 && tm.tileMap && tm.tileMap.length > 0)) {
+      this._terrainMapperReady = true; return Promise.resolve();
+    }
+    if (this._terrainReadyPromise) return this._terrainReadyPromise;
+    this._terrainReadyPromise = Promise.resolve()
+      .then(() => wr.renderTerrain())
+      .then(() => { this._terrainMapperReady = true; })
+      .catch(e => console.warn('[viewport] renderTerrain (paint prep) failed:', e))
+      .finally(() => { this._terrainReadyPromise = null; });
+    return this._terrainReadyPromise;
   }
   _setSelectionInput(enabled) {
     const sys = this.editorContext && this.editorContext.selectedUnitSystem;
@@ -490,8 +514,14 @@ class EditorViewportService {
     const tiles = this._paintTool === 'fill' ? this._floodFill('terrainMap', cell) : this._brushTiles(cell.x, cell.z);
     const modified = [];
     tiles.forEach(t => { if (this.tileMap.terrainMap[t.z][t.x] !== id) { this.tileMap.terrainMap[t.z][t.x] = id; modified.push({ x: t.x, y: t.z }); } });
-    if (modified.length && this.worldRenderer.updateTerrainTiles) this.worldRenderer.updateTerrainTiles(modified);
-    if (modified.length) this._scheduleLevelPersist();
+    if (!modified.length) return;
+    if (this._terrainMapperReady && this.worldRenderer.updateTerrainTiles) {
+      try { this.worldRenderer.updateTerrainTiles(modified); }
+      catch (e) { console.warn('[viewport] updateTerrainTiles failed; re-preparing tileMapper', e); this._terrainMapperReady = false; this._ensureTerrainMapperReady(); }
+    } else {
+      this._ensureTerrainMapperReady();   // data mutated; full redraw will reflect it
+    }
+    this._scheduleLevelPersist();
   }
   _paintHeight(cell) {
     const level = this._heightLevel | 0;
@@ -530,6 +560,47 @@ class EditorViewportService {
     }
     this._scheduleLevelPersist();
   }
+
+  // ---- Brush preview (highlights the cells a stroke would affect) ------------
+  _ensureBrushPreview(count) {
+    const THREE = window.THREE;
+    if (!THREE || !this.worldRenderer) return;
+    if (!this._brushPreview) {
+      this._brushPreview = new THREE.Group();
+      this._brushPreview.renderOrder = 999;
+      this.worldRenderer.getScene().add(this._brushPreview);
+    }
+    const gs = this.terrainDataManager ? this.terrainDataManager.gridSize : 48;
+    while (this._brushPreview.children.length < count) {
+      const geo = new THREE.PlaneGeometry(gs * 0.94, gs * 0.94);
+      const mat = new THREE.MeshBasicMaterial({ color: 0x35e0c8, transparent: true, opacity: 0.35, depthTest: false, side: THREE.DoubleSide });
+      const m = new THREE.Mesh(geo, mat);
+      m.rotation.x = -Math.PI / 2;
+      this._brushPreview.add(m);
+    }
+  }
+  _updateBrushPreview(e) {
+    if (!window.THREE || !this.terrainDataManager || this.interactionMode === 'select') { this._clearBrushPreview(); return; }
+    const cell = this._eventToCell(e);
+    if (!cell) { this._clearBrushPreview(); return; }
+    const tiles = (this.interactionMode === 'ramp') ? [{ x: cell.x, z: cell.z }] : this._brushTiles(cell.x, cell.z);
+    this._ensureBrushPreview(tiles.length);
+    if (!this._brushPreview) return;
+    const gs = this.terrainDataManager.gridSize, ts = this.terrainDataManager.terrainSize, tdm = this.terrainDataManager;
+    this._brushPreview.visible = true;
+    const kids = this._brushPreview.children;
+    for (let i = 0; i < kids.length; i++) {
+      if (i < tiles.length) {
+        const t = tiles[i];
+        const wx = t.x * gs - ts / 2 + gs / 2;
+        const wz = t.z * gs - ts / 2 + gs / 2;
+        const wy = (tdm.getTerrainHeightAtPosition ? tdm.getTerrainHeightAtPosition(wx, wz) : 0) + 2;
+        kids[i].position.set(wx, wy, wz);
+        kids[i].visible = true;
+      } else { kids[i].visible = false; }
+    }
+  }
+  _clearBrushPreview() { if (this._brushPreview) this._brushPreview.visible = false; }
 
   removeSelected() {
     const id = this._selectedEntity; if (id == null) return;
@@ -613,8 +684,16 @@ class EditorViewportService {
         this.canvas.removeEventListener('drop', this._onDrop);
         this.canvas.removeEventListener('mousedown', this._onPaintDown);
         this.canvas.removeEventListener('mousemove', this._onPaintMove);
+        this.canvas.removeEventListener('mouseleave', this._onCanvasLeave);
       }
       if (this._onPaintUp) window.removeEventListener('mouseup', this._onPaintUp);
+    } catch (e) {}
+    try {
+      if (this._brushPreview) {
+        if (this._brushPreview.parent) this._brushPreview.parent.remove(this._brushPreview);
+        this._brushPreview.children.forEach(m => { if (m.geometry) m.geometry.dispose(); if (m.material) m.material.dispose(); });
+        this._brushPreview = null;
+      }
     } catch (e) {}
     try { if (this.gizmo && this.gizmo.dispose) this.gizmo.dispose(); } catch (e) {}
     this.gizmo = null; this.gizmoHelper = null; this.raycast = null; this.sceneEntities = null; this._selectedEntity = null;
