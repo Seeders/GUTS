@@ -654,24 +654,16 @@ class EditorViewportService {
     if (!obj || !THREE || !this.worldRenderer) return;
     const token = ++this._previewToken;
 
-    // Spawn with a render pipeline: pick the highest-priority pipeline present
-    // (configs.render.renderTypes order; default sprite > model) and use it for
-    // the corner preview + placement ghost — matching what runs at runtime.
-    const rp = this._resolveRenderPipeline(obj);
-    if (rp) {
-      if (rp.pipeline === 'sprite') {
-        const set = ((this.app.getCollections()[rp.collection]) || {})[rp.value];
-        if (set) {
-          await this._showSpritePreviewMini(set, token);
-          await this._beginSpritePlacement(collection, id, set, token);
-          return;
-        }
-      }
-      if (obj.render && obj.render.model) {   // model pipeline (or sprite fallback)
-        await this._showModelPreview(obj.render, token);
-        await this._beginPlacement(collection, id, obj.render, token);
-        return;
-      }
+    // Spawn with one or more render pipelines: build the render-type selector and
+    // preview the highest-priority available pipeline (configs.render.renderTypes
+    // order; default sprite > model). The user can switch pipelines in the selector.
+    const options = this._availableRenderTypes(obj);
+    if (options.length) {
+      this._renderCtx = { collection, id, options };
+      this._currentRenderTypeId = options[0].id;
+      if (this.onRenderOptions) this.onRenderOptions(options, this._currentRenderTypeId);
+      await this._applyRenderType(options[0]);
+      return;
     }
 
     // Sprite / particle: floating in-scene preview (as before).
@@ -689,12 +681,17 @@ class EditorViewportService {
     this._startPreviewLoop();
   }
 
-  clearPreview() {
+  _clearPreviewContent() {
     this._previewToken = (this._previewToken || 0) + 1;
     if (this._previewRAF) { cancelAnimationFrame(this._previewRAF); this._previewRAF = null; }
     if (this._preview) { try { this._preview.dispose(); } catch (e) {} this._preview = null; }
     this._hideModelPreview();
     this._cancelPlacement();
+  }
+  clearPreview() {
+    this._clearPreviewContent();
+    this._renderCtx = null; this._currentRenderTypeId = null;
+    if (this.onRenderOptions) this.onRenderOptions([], null);   // clear the selector
     this._hidePreviewLabel();
   }
 
@@ -702,21 +699,53 @@ class EditorViewportService {
   // from configs.render.renderTypes (a list of renderTypes ids); each renderTypes
   // entry describes a pipeline via {propertyName, collection, pipeline}. Falls back
   // to built-in defaults (sprite before model) when no data is present.
-  _resolveRenderPipeline(obj) {
-    if (!obj) return null;
+  // All render pipelines a spawn actually supports, in priority order.
+  _availableRenderTypes(obj) {
+    if (!obj) return [];
     const cols = this.app.getCollections() || {};
     const rt = cols.renderTypes || {};
     const cfg = (cols.configs && cols.configs.render) || {};
     let order = (Array.isArray(cfg.renderTypes) && cfg.renderTypes.length) ? cfg.renderTypes.slice() : Object.keys(rt);
     if (!order.length) order = ['spriteAnimationSet', 'render'];
+    const out = [];
     for (const rid of order) {
       const def = rt[rid] || this._defaultRenderType(rid);
       if (!def || !def.propertyName) continue;
       const val = obj[def.propertyName];
       if (val == null || val === '' || (typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length === 0)) continue;
-      return { id: rid, pipeline: def.pipeline || rid, propertyName: def.propertyName, collection: def.collection, value: val };
+      const pipeline = def.pipeline || rid;
+      if (pipeline === 'sprite' && !((cols[def.collection] || {})[val])) continue;   // referenced set must exist
+      if (pipeline === 'model' && !(obj.render && obj.render.model)) continue;
+      out.push({ id: rid, pipeline, propertyName: def.propertyName, collection: def.collection, value: val, label: (rt[rid] && rt[rid].title) || rid });
     }
-    return null;
+    return out;
+  }
+  async selectRenderType(rtId) {
+    const ctx = this._renderCtx; if (!ctx) return;
+    const rt = ctx.options.find(o => o.id === rtId); if (!rt) return;
+    this._currentRenderTypeId = rtId;
+    if (this.onRenderOptions) this.onRenderOptions(ctx.options, rtId);
+    await this._applyRenderType(rt);
+  }
+  async _applyRenderType(rt) {
+    this._clearPreviewContent();
+    const token = ++this._previewToken;
+    const ctx = this._renderCtx; if (!ctx) return;
+    if (rt.pipeline === 'sprite') {
+      const set = (this.app.getCollections()[rt.collection] || {})[rt.value];
+      if (set) {
+        await this._showSpritePreviewMini(set, token);
+        await this._beginSpritePlacement(ctx.collection, ctx.id, set, token);
+        this._showPreviewLabel(ctx.id);
+        return;
+      }
+    }
+    const obj = (this.app.getCollections()[ctx.collection] || {})[ctx.id];
+    if (obj && obj.render && obj.render.model) {
+      await this._showModelPreview(obj.render, token);
+      await this._beginPlacement(ctx.collection, ctx.id, obj.render, token);
+      this._showPreviewLabel(ctx.id);
+    }
   }
   _defaultRenderType(id) {
     const D = {
@@ -855,8 +884,36 @@ class EditorViewportService {
     model.position.copy(center).multiplyScalar(-s);
     this._miniClearContent();
     mini.holder.add(model); mini.model = model; mini.active = true;
+    this._playIdleAnimation(model, renderDef);       // load + loop the idle clip
     if (this.previewWindow) this.previewWindow.classList.add('has-model');
     if (!mini.raf) this._miniLoop();
+  }
+  // Load the render def's idle animation (a separate GLB clip, per render.animations.idle)
+  // and play it looping on a mixer — mirrors GE_SceneRenderer's animation loading.
+  _playIdleAnimation(model, renderDef) {
+    try {
+      const THREE = window.THREE;
+      const sf = this.editorContext.modelManager && this.editorContext.modelManager.shapeFactory;
+      if (!sf || !sf.gltfLoader || !renderDef) return;
+      const anims = renderDef.animations || {};
+      const idle = anims.idle || anims.Idle;
+      const frame = idle && idle[0];
+      const shapes = frame && frame.main && frame.main.shapes;
+      const animShape = shapes && shapes.find(s => s.animation || (s.url && String(s.url).includes('animations/')));
+      if (!animShape) return;
+      let url = (sf.resolveModelUrl && sf.resolveModelUrl(animShape)) || animShape.url;
+      if (!url) return;
+      const path = sf.getResourcesPath ? sf.getResourcesPath(url) : url;
+      const mixer = new THREE.AnimationMixer(model);
+      if (this._mini) this._mini.animMixer = mixer;
+      sf.gltfLoader.load(path, (gltf) => {
+        if (this._mini && this._mini.animMixer === mixer && gltf && gltf.animations && gltf.animations.length) {
+          const action = mixer.clipAction(gltf.animations[0]);
+          action.setLoop(THREE.LoopRepeat);
+          action.play();
+        }
+      }, undefined, () => {});
+    } catch (e) { console.warn('[viewport] idle animation load failed:', e); }
   }
   async _showSpritePreviewMini(set, token) {
     const G = this.GUTS;
@@ -876,12 +933,14 @@ class EditorViewportService {
     if (sbr.setInstance) sbr.setInstance(0, 0, 0.55, 0, 1.7, 0, -1);
     if (sbr.setAmbientLight) { try { sbr.setAmbientLight(new window.THREE.Color(1, 1, 1)); } catch (e) {} }
     if (sbr.finalizeUpdates) sbr.finalizeUpdates();
-    mini.sprite = sbr; mini.spriteTime = 0; mini.spriteFps = gs.fps || 4; mini.active = true;
+    mini.sprite = sbr; mini.spriteTime = 0; mini.spriteFps = gs.fps || 4;
+    mini.spriteScale = 1.7; mini.spriteHeading = 0; mini.active = true;
     if (this.previewWindow) this.previewWindow.classList.add('has-model');
     if (!mini.raf) this._miniLoop();
   }
   _miniClearContent() {
     const mini = this._mini; if (!mini) return;
+    if (mini.animMixer) { try { mini.animMixer.stopAllAction(); } catch (e) {} mini.animMixer = null; }
     if (mini.model) { mini.holder.remove(mini.model); this._disposeModel(mini.model); mini.model = null; }
     if (mini.sprite) { try { mini.sprite.dispose(); } catch (e) {} mini.sprite = null; }
   }
@@ -891,11 +950,15 @@ class EditorViewportService {
       if (!this._mini || !this._mini.active) { if (this._mini) this._mini.raf = null; return; }
       const dt = mini.clock.getDelta();
       if (mini.model) {
-        mini.holder.rotation.y += 0.6 * dt;
+        mini.holder.rotation.y += 0.4 * dt;   // slow idle spin
+        if (mini.animMixer) mini.animMixer.update(dt);
         mini.model.traverse(o => { if (o.userData && o.userData.mixer) o.userData.mixer.update(dt); if (o.isSkinnedMesh && o.skeleton) o.skeleton.update(); });
       }
       if (mini.sprite) {
         mini.spriteTime += dt;
+        mini.spriteHeading = (mini.spriteHeading || 0) + 0.4 * dt;   // cycle directional perspectives
+        const hx = Math.sin(mini.spriteHeading), hz = -Math.cos(mini.spriteHeading);
+        if (mini.sprite.setInstance) mini.sprite.setInstance(0, 0, 0.55, 0, mini.spriteScale || 1.7, hx, hz);
         if (mini.sprite.setAnimationFrame) mini.sprite.setAnimationFrame(Math.floor(mini.spriteTime * (mini.spriteFps || 4)));
         if (mini.sprite.finalizeUpdates) mini.sprite.finalizeUpdates();
       }
