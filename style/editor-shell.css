@@ -344,6 +344,15 @@
 .eshell__tt-swatch:hover { transform: scale(1.12); }
 .eshell__tt-swatch--active { border-color: var(--editor-primary, #35e0c8); box-shadow: 0 0 0 2px var(--editor-primary, #35e0c8); }
 
+/* ---- Visual asset preview label ---- */
+.eshell__preview-label {
+  position: absolute; top: 10px; right: 10px; z-index: 20; display: none;
+  font-family: var(--editor-font-mono, monospace); font-size: 11px; letter-spacing: 0.04em;
+  color: #04231e; background: var(--editor-primary, #35e0c8);
+  border-radius: var(--editor-border-radius-sm, 4px); padding: 4px 10px; font-weight: 600;
+  box-shadow: 0 0 16px -4px var(--editor-cyan-glow, rgba(53, 224, 200, 0.6));
+}
+
 /* Hide the legacy chrome when new shell is active */
 body.eshell-active > #container,
 body.eshell-active > #modals { display: none !important; }

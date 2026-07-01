@@ -120,6 +120,7 @@ class EditorShell {
   }
 
   _onEntitySelected(id, rec) {
+    if (this.viewport && this.viewport.clearPreview) this.viewport.clearPreview();  // scene entity, not an asset
     const body = this._body('hierarchy');
     if (body) body.querySelectorAll('.eshell__row').forEach(r => r.classList.toggle('eshell__row--active', Number(r.dataset.eid) === id));
     if (id == null) { this._renderInspectorEmpty('Select an asset or entity to inspect.'); return; }
@@ -539,6 +540,8 @@ class EditorShell {
     this.root.querySelectorAll('#eshell-assets-grid .eshell__asset').forEach(c =>
       c.classList.toggle('eshell__asset--active', c.dataset.id === id));
     this._renderInspector(typeId, id);
+    // Preview visual assets (render defs / sprites / particles) in the viewport.
+    if (this.viewport && this.viewport.previewAsset) this.viewport.previewAsset(typeId, id);
   }
 
   // ---- Inspector (Phase 3: typed, editable fields) ---------------------------
