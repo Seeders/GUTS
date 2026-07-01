@@ -189,6 +189,7 @@ class EditorController {
             if (!ShellClass) { console.warn('EditorShell not found in bundle'); return; }
             if (!this.shell) this.shell = new ShellClass(this);
             if (!this.shell.root) this.shell.mount();
+            else if (this.shell.refresh) this.shell.refresh();
             else if (this.shell.renderAssets) this.shell.renderAssets();
         } catch (e) { console.error('Failed to mount new editor shell:', e); }
     }
