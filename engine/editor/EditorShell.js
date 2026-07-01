@@ -20,6 +20,8 @@ class EditorShell {
     this.selectedType = null;
     this.selectedObjectId = null;
     this.viewport = null;
+    this._tabs = {};        // center-view tabs: id -> { content, btn, dispose? }
+    this._activeTab = null;
   }
 
   /** Build the shell into <body> and hide the legacy chrome. */
@@ -205,45 +207,139 @@ class EditorShell {
     return panel;
   }
 
+  // Center panel = tabbed area: a persistent "Scene" tab (the 3D viewport) plus
+  // on-demand tool tabs (Script editor, etc.) opened from the Inspector.
   _buildViewport() {
-    const panel = this._buildPanel('viewport', 'Viewport · Scene');
-    // Camera-mode toggles in the header.
-    const header = panel.querySelector('.eshell__panel-header');
-    const spacer = document.createElement('span');
-    spacer.style.flex = '1';
-    header.appendChild(spacer);
-    [['Game', 'game'], ['Scene', 'scene']].forEach(([label, mode]) => {
-      const b = document.createElement('button');
-      b.className = 'eshell__btn';
-      b.style.padding = '2px 8px';
-      b.textContent = label;
-      b.addEventListener('click', () => { if (this.viewport) this.viewport.setCameraMode(mode); });
-      header.appendChild(b);
-    });
-    const sep = document.createElement('span'); sep.className = 'eshell__vp-sep'; header.appendChild(sep);
-    [['Move', 'translate'], ['Rotate', 'rotate'], ['Scale', 'scale']].forEach(([label, mode]) => {
-      const b = document.createElement('button');
-      b.className = 'eshell__btn'; b.style.padding = '2px 8px'; b.textContent = label;
-      b.addEventListener('click', () => { if (this.viewport) this.viewport.setGizmoMode(mode); });
-      header.appendChild(b);
-    });
-    const del = document.createElement('button');
-    del.className = 'eshell__btn eshell__btn--danger'; del.style.padding = '2px 8px'; del.textContent = 'Delete';
-    del.addEventListener('click', () => { if (this.viewport) this.viewport.removeSelected(); });
-    header.appendChild(del);
-    const body = panel.querySelector('.eshell__panel-body');
-    body.style.padding = '0';
+    const panel = document.createElement('div');
+    panel.className = 'eshell__panel eshell__panel--viewport';
+
+    const tabbar = document.createElement('div');
+    tabbar.className = 'eshell__tabs'; tabbar.id = 'eshell-tabs';
+    panel.appendChild(tabbar);
+
+    const content = document.createElement('div');
+    content.className = 'eshell__tab-content'; content.id = 'eshell-tab-content';
+    panel.appendChild(content);
+
+    // Scene pane
+    const pane = document.createElement('div');
+    pane.className = 'eshell__tab-pane';
+    const toolbar = document.createElement('div');
+    toolbar.className = 'eshell__vp-toolbar';
+    [['Game', 'game'], ['Scene', 'scene']].forEach(([label, mode]) =>
+      toolbar.appendChild(this._miniBtn(label, () => { if (this.viewport) this.viewport.setCameraMode(mode); })));
+    const sep = document.createElement('span'); sep.className = 'eshell__vp-sep'; toolbar.appendChild(sep);
+    [['Move', 'translate'], ['Rotate', 'rotate'], ['Scale', 'scale']].forEach(([label, mode]) =>
+      toolbar.appendChild(this._miniBtn(label, () => { if (this.viewport) this.viewport.setGizmoMode(mode); })));
+    toolbar.appendChild(this._miniBtn('Delete', () => { if (this.viewport) this.viewport.removeSelected(); }, 'danger'));
+    pane.appendChild(toolbar);
+
+    const host = document.createElement('div');
+    host.className = 'eshell__viewport-host';
+    host.dataset.body = 'viewport';           // viewport service + _body('viewport') target this
     const ph = document.createElement('div');
-    ph.className = 'eshell__viewport-placeholder';
-    ph.id = 'eshell-viewport-placeholder';
-    ph.innerHTML =
-      '<h2>3D Viewport</h2>' +
-      '<p>always-on scene view — lands in Phase 1</p>';
-    body.appendChild(ph);
+    ph.className = 'eshell__viewport-placeholder'; ph.id = 'eshell-viewport-placeholder';
+    ph.innerHTML = '<h2>3D Viewport</h2><p>always-on scene view</p>';
+    host.appendChild(ph);
+    pane.appendChild(host);
+    content.appendChild(pane);
+
+    this._activeTab = 'scene';
+    this._tabs = { scene: { content: pane, btn: this._addTabButton('scene', 'Scene', false, tabbar) } };
     return panel;
   }
 
-  _body(area) { return this.root.querySelector(`.eshell__panel-body[data-body="${area}"]`); }
+  // ---- Center tabs -----------------------------------------------------------
+  _addTabButton(id, title, closable, barEl) {
+    const host = barEl || (this.root && this.root.querySelector('#eshell-tabs')) || document.querySelector('#eshell-tabs');
+    const btn = document.createElement('div');
+    btn.className = 'eshell__tab' + (id === this._activeTab ? ' eshell__tab--active' : '');
+    btn.dataset.tab = id;
+    const label = document.createElement('span'); label.textContent = title; btn.appendChild(label);
+    btn.addEventListener('click', () => this.switchTab(id));
+    if (closable) {
+      const x = document.createElement('span'); x.className = 'eshell__tab-close'; x.textContent = '×';
+      x.addEventListener('click', (e) => { e.stopPropagation(); this.closeTab(id); });
+      btn.appendChild(x);
+    }
+    if (host) host.appendChild(btn);
+    return btn;
+  }
+  openTab(id, title, buildFn) {
+    if (this._tabs[id]) { this.switchTab(id); return this._tabs[id]; }
+    const content = this.root.querySelector('#eshell-tab-content');
+    const pane = document.createElement('div');
+    pane.className = 'eshell__tab-pane';
+    content.appendChild(pane);
+    const btn = this._addTabButton(id, title, true);
+    const tab = { content: pane, btn };
+    this._tabs[id] = tab;
+    try { buildFn(pane, tab); } catch (e) { console.error('[EditorShell] openTab build failed:', e); }
+    this.switchTab(id);
+    return tab;
+  }
+  switchTab(id) {
+    if (!this._tabs[id]) return;
+    this._activeTab = id;
+    Object.keys(this._tabs).forEach(k => {
+      const t = this._tabs[k];
+      t.content.classList.toggle('eshell__tab-pane--hidden', k !== id);
+      t.btn.classList.toggle('eshell__tab--active', k === id);
+    });
+    if (id === 'scene' && this.viewport && this.viewport.onResize) setTimeout(() => this.viewport.onResize(), 0);
+  }
+  closeTab(id) {
+    const t = this._tabs[id];
+    if (!t || id === 'scene') return;
+    if (typeof t.dispose === 'function') { try { t.dispose(); } catch (e) {} }
+    t.content.remove(); t.btn.remove();
+    delete this._tabs[id];
+    if (this._activeTab === id) this.switchTab('scene');
+  }
+
+  // ---- Sub-editor: Script / markup / style (Monaco) --------------------------
+  _openScriptEditor(type, id) {
+    const obj = (this._collections()[type] || {})[id];
+    if (!obj) return;
+    const MAP = [['script', 'javascript'], ['html', 'html'], ['css', 'css'], ['testScript', 'javascript']];
+    const props = MAP.filter(([k]) => typeof obj[k] === 'string');
+    if (!props.length) { this._toast('No code on this asset'); return; }
+    this.openTab('script:' + type + '/' + id, id + ' ⟨code⟩', (pane, tab) => this._buildScriptEditor(pane, tab, type, id, props));
+  }
+  _buildScriptEditor(pane, tab, type, id, props) {
+    pane.classList.add('eshell__script-pane');
+    const bar = document.createElement('div'); bar.className = 'eshell__script-bar';
+    const host = document.createElement('div'); host.className = 'eshell__script-editor';
+    pane.append(bar, host);
+    const monaco = window.monaco;
+    if (!monaco) { host.innerHTML = '<div class="eshell__empty">Monaco editor not available in this build.</div>'; return; }
+
+    const obj = (this._collections()[type] || {})[id];
+    const state = { models: {}, current: null };
+    const editor = monaco.editor.create(host, {
+      theme: 'vs-dark', automaticLayout: true, fontSize: 13, minimap: { enabled: false }, scrollBeyondLastLine: false
+    });
+    const select = (prop, lang) => {
+      if (!state.models[prop]) state.models[prop] = monaco.editor.createModel(obj[prop] || '', lang);
+      editor.setModel(state.models[prop]); state.current = prop;
+      bar.querySelectorAll('[data-prop]').forEach(b => b.classList.toggle('eshell__btn--primary', b.dataset.prop === prop));
+    };
+    props.forEach(([prop, lang]) => { const b = this._miniBtn(prop, () => select(prop, lang)); b.dataset.prop = prop; bar.appendChild(b); });
+    const spacer = document.createElement('span'); spacer.style.flex = '1'; bar.appendChild(spacer);
+    const save = this._miniBtn('Save', () => {
+      const o = (this._collections()[type] || {})[id];
+      props.forEach(([prop]) => { if (state.models[prop]) o[prop] = state.models[prop].getValue(); });
+      this.model.setSelectedType(type); this.model.selectObject(id);
+      if (this.model.saveObject) this.model.saveObject(o);
+      this._persistCurrent();
+      this._toast('Saved ' + id);
+    });
+    save.classList.add('eshell__btn--primary'); bar.appendChild(save);
+    select(props[0][0], props[0][1]);
+    tab.dispose = () => { try { Object.values(state.models).forEach(m => m.dispose()); editor.dispose(); } catch (e) {} };
+  }
+
+  _body(area) { return this.root.querySelector(`[data-body="${area}"]`); }
 
   // ---- Assets browser (collection tree + object grid + CRUD) -----------------
   renderAssets() {
@@ -383,6 +479,9 @@ class EditorShell {
 
     const bar = document.createElement('div');
     bar.className = 'eshell__insp-actions';
+    if (['script', 'html', 'css', 'testScript'].some(k => typeof obj[k] === 'string')) {
+      bar.appendChild(this._miniBtn('⧉ Script Editor', () => this._openScriptEditor(typeId, id)));
+    }
     const save = this._miniBtn('Save', () => this._saveInspector(typeId, id));
     save.classList.add('eshell__btn--primary');
     bar.append(this._miniBtn('Revert', () => this._renderInspector(typeId, id)), save);
