@@ -45,12 +45,36 @@ class EditorShell {
     parent.appendChild(this.root);
 
     this._setupSplitters();
+    this._setupShortcuts();
     this.renderAssets();
     this._renderInspectorEmpty('Select an asset to inspect.');
-    this._renderHierarchyEmpty('Scene hierarchy — Phase 4.');
+    this._renderHierarchyEmpty('No entities yet — drag an asset into the viewport.');
     // Defer viewport start one frame so the grid layout has real pixel sizes.
     requestAnimationFrame(() => this._startViewport());
     return this;
+  }
+
+  // ---- Keyboard shortcuts ----------------------------------------------------
+  _setupShortcuts() {
+    if (this._onKeyDown) return;
+    this._onKeyDown = (e) => {
+      // Ctrl/Cmd+S always saves, even from a field.
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); this._save(); return; }
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
+      const vp = this.viewport;
+      switch (e.key) {
+        case 'w': case 'W': if (vp) vp.setGizmoMode('translate'); break;
+        case 'e': case 'E': if (vp) vp.setGizmoMode('rotate'); break;
+        case 'r': case 'R': if (vp) vp.setGizmoMode('scale'); break;
+        case 'Delete': case 'Backspace':
+          if (vp && vp.getSelectedEntity && vp.getSelectedEntity() != null) { e.preventDefault(); vp.removeSelected(); }
+          break;
+        case 'Escape': if (vp && vp.deselectAll) vp.deselectAll(); break;
+        default: break;
+      }
+    };
+    window.addEventListener('keydown', this._onKeyDown);
   }
 
   /** Re-render data panels and restart the viewport for a (re)loaded project. */
@@ -797,7 +821,17 @@ class EditorShell {
     if (!projects.length) { const o = document.createElement('option'); o.textContent = '(no project)'; sel.appendChild(o); }
   }
   _onProjectChange(name) { if (this.controller && this.controller.loadProject) this.controller.loadProject(name); }
-  _save() { if (this.controller && this.controller.saveProjectToFilesystem) this.controller.saveProjectToFilesystem(); else if (this.controller && this.controller.model) this.controller.model.saveProject(); }
+  _save() {
+    try {
+      if (this.controller.fs && this.controller.fs.saveProjectToFilesystem) {
+        this.controller.fs.saveProjectToFilesystem();
+        this._toast('Project saved');
+      } else if (this.controller.saveProject) {
+        this.controller.saveProject();
+        this._toast('Saved');
+      }
+    } catch (e) { console.warn('[EditorShell] save failed:', e); }
+  }
   _launch() { const p = this.model && this.model.state && this.model.state.currentProject; if (p) window.open(`/projects/${p}/index.html`, '_blank'); }
   _togglePlay() { /* Phase 1: start/stop the viewport simulation */ }
 
