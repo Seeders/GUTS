@@ -322,6 +322,7 @@ class EditorViewportService {
     this.gizmoHelper.position.set(p.x || 0, p.y || 0, p.z || 0);
     this.gizmoHelper.rotation.set(r.x || 0, r.y || 0, r.z || 0);
     this.gizmoHelper.scale.set(s.x || 1, s.y || 1, s.z || 1);
+    if (this.worldRenderer.getCamera) this.gizmo.camera = this.worldRenderer.getCamera(); // keep drag math on the live camera
     if (this.gizmo.attach) this.gizmo.attach(this.gizmoHelper);
   }
   setGizmoMode(mode) { if (this.gizmo && this.gizmo.setMode) this.gizmo.setMode(mode); }
@@ -363,9 +364,11 @@ class EditorViewportService {
   _onGizmoChange(position, rotation, scale) {
     const id = this._selectedEntity; if (id == null) return;
     const t = this.editorContext.getComponent(id, 'transform'); if (!t) return;
-    if (position) Object.assign(t.position, position);
-    if (rotation) { t.rotation = t.rotation || { x: 0, y: 0, z: 0 }; Object.assign(t.rotation, rotation); }
-    if (scale) { t.scale = t.scale || { x: 1, y: 1, z: 1 }; Object.assign(t.scale, scale); }
+    // `t` is a component proxy that rejects TOP-LEVEL property assignment (t.rotation = …
+    // throws). Mutate the existing nested {x,y,z} sub-objects in place instead.
+    if (position && t.position) { t.position.x = position.x; t.position.y = position.y; t.position.z = position.z; }
+    if (rotation && t.rotation) { t.rotation.x = rotation.x; t.rotation.y = rotation.y; t.rotation.z = rotation.z; }
+    if (scale && t.scale) { t.scale.x = scale.x; t.scale.y = scale.y; t.scale.z = scale.z; }
     try {
       if (this.editorContext.renderSystem && this.editorContext.renderSystem.updateEntity) {
         this.editorContext.renderSystem.updateEntity(id, { position: t.position, rotation: (t.rotation && t.rotation.y) || 0, transform: t });
@@ -787,6 +790,10 @@ class EditorViewportService {
   setCameraMode(mode) {
     if (this.cameraController && this.cameraController.setCameraMode) {
       this.cameraController.setCameraMode(mode);
+    }
+    // The camera object is swapped on mode change; keep gizmo drag math in sync.
+    if (this.gizmo && this.worldRenderer && this.worldRenderer.getCamera) {
+      this.gizmo.camera = this.worldRenderer.getCamera();
     }
   }
 
