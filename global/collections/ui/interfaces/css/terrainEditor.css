@@ -52,7 +52,7 @@
 
 .terrain-editor__color-option--active {
     border-color: var(--editor-primary);
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 0 2px rgba(53, 224, 200, 0.3);
 }
 
 .terrain-editor__terrain-label {
@@ -147,7 +147,7 @@
 
 .terrain-editor__environment-item--active {
     border-color: var(--editor-primary);
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 0 2px rgba(53, 224, 200, 0.3);
 }
 
 .terrain-editor__environment-item canvas {
@@ -229,7 +229,7 @@
     background-color: var(--editor-primary);
     border-color: var(--editor-primary);
     color: white;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 0 2px rgba(53, 224, 200, 0.3);
 }
 
 /* Tool buttons */
@@ -433,7 +433,7 @@
     font-size: 10px;
     font-weight: 600;
     color: var(--editor-primary);
-    background-color: rgba(99, 102, 241, 0.15);
+    background-color: rgba(53, 224, 200, 0.15);
     padding: 1px 6px;
     border-radius: 8px;
 }

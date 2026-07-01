@@ -76,11 +76,7 @@ class EditorView {
 
           if (isSelected) {
             // Sort objects alphabetically by title for dropdown
-            const sortedObjectIds = Object.keys(collection).sort((a, b) => {
-              const titleA = (collection[a].title || a).toLowerCase();
-              const titleB = (collection[b].title || b).toLowerCase();
-              return titleA.localeCompare(titleB);
-            });
+            const sortedObjectIds = this.sortIdsByTitle(collection);
 
             html += `<div class="object-selector">
               <select id="object-dropdown" class="object-dropdown">
@@ -365,12 +361,7 @@ class EditorView {
         editButton.innerText = "edit";
         editButton.addEventListener('click', () => {
             // Hide all module containers first
-            Object.values(this.controller.getCollections().editorModules).forEach(module => {
-                const container = document.getElementById(module.container);
-                if (container) {
-                    container.classList.remove('show');
-                }
-            });
+            this.hideAllModuleContainers();
 
             // Show this module's container
             const moduleContainer = document.getElementById(matchingModuleType.container);
@@ -453,11 +444,7 @@ class EditorView {
         const collection = this.controller.getCollections()[typeId] || {};
 
         // Sort objects alphabetically by title
-        const sortedObjectIds = Object.keys(collection).sort((a, b) => {
-            const titleA = (collection[a].title || a).toLowerCase();
-            const titleB = (collection[b].title || b).toLowerCase();
-            return titleA.localeCompare(titleB);
-        });
+        const sortedObjectIds = this.sortIdsByTitle(collection);
 
         sortedObjectIds.forEach(objId => {
             const option = document.createElement('option');
@@ -507,8 +494,69 @@ class EditorView {
         removeBtn.addEventListener('click', () => container.removeChild(propertyItem));
         propertyItem.appendChild(removeBtn);
     }
-  
 
+    // Shared helpers
+
+    /**
+     * Returns a collection's object ids sorted alphabetically by display title
+     * (falling back to the id), case-insensitively.
+     * @param {Object} collection - Map of objectId -> object
+     * @returns {string[]} Sorted object ids
+     */
+    sortIdsByTitle(collection) {
+        return Object.keys(collection).sort((a, b) => {
+            const titleA = (collection[a].title || a).toLowerCase();
+            const titleB = (collection[b].title || b).toLowerCase();
+            return titleA.localeCompare(titleB);
+        });
+    }
+
+    /**
+     * Hides every editor module's container element (removes the `show` class).
+     */
+    hideAllModuleContainers() {
+        Object.values(this.controller.getCollections().editorModules).forEach(module => {
+            const container = document.getElementById(module.container);
+            if (container) {
+                container.classList.remove('show');
+            }
+        });
+    }
+
+    /**
+     * Finds the first editor module that handles a property on the given object,
+     * matching either a module's `propertyName` or any entry in `propertyNames`
+     * (a property matches when its name ends with the module's property name).
+     * @param {Object} object - The object being edited
+     * @returns {{module: Object, property: string}|null} Match, or null if none
+     */
+    findModuleForObject(object) {
+        const editorModules = this.controller.getCollections().editorModules;
+
+        for (const moduleId in editorModules) {
+            const module = editorModules[moduleId];
+
+            // Single propertyName match
+            if (module.propertyName) {
+                const key = Object.keys(object).find(k =>
+                    k.toLowerCase().endsWith(module.propertyName.toLowerCase())
+                );
+                if (key) return { module, property: key };
+            }
+
+            // Match against any entry in propertyNames (may be a JSON string)
+            if (module.propertyNames) {
+                const propertyNames = Array.isArray(module.propertyNames) ?
+                    module.propertyNames : JSON.parse(module.propertyNames);
+                const key = Object.keys(object).find(k =>
+                    propertyNames.some(name => k.toLowerCase().endsWith(name.toLowerCase()))
+                );
+                if (key) return { module, property: key };
+            }
+        }
+
+        return null;
+    }
 
     selectObject() {
         this.renderObjectList();
@@ -594,12 +642,7 @@ class EditorView {
         this.activeModule = null;
 
         // Hide all module containers first
-        Object.values(this.controller.getCollections().editorModules).forEach(module => {
-            const container = document.getElementById(module.container);
-            if (container) {
-                container.classList.remove('show');
-            }
-        });
+        this.hideAllModuleContainers();
 
         let object = this.controller.getCurrentObject();
         if (!object) {
@@ -607,52 +650,14 @@ class EditorView {
             return;
         }
 
-        // Find the first matching property with a module handler
-        let matchingModule = null;
-        let matchingProperty = null;
-
-        // Check all property modules to find the first matching one
-        for (const moduleId in this.controller.getCollections().editorModules) {
-            const module = this.controller.getCollections().editorModules[moduleId];
-
-            // Check for single propertyName match
-            if (module.propertyName) {
-                // Find any property that ends with the module's propertyName
-                const matchingKey = Object.keys(object).find(key =>
-                    key.toLowerCase().endsWith(module.propertyName.toLowerCase())
-                );
-                if (matchingKey) {
-                    matchingModule = module;
-                    matchingProperty = matchingKey;
-                    break;
-                }
-            }
-
-            // Check for match in propertyNames array
-            if (module.propertyNames) {
-                // Safely parse propertyNames if it's a string
-                const propertyNames = Array.isArray(module.propertyNames) ?
-                    module.propertyNames : JSON.parse(module.propertyNames);
-
-                // Find the first property that ends with any of the propertyNames
-                const foundProperty = Object.keys(object).find(key =>
-                    propertyNames.some(propName =>
-                        key.toLowerCase().endsWith(propName.toLowerCase())
-                    )
-                );
-
-                if (foundProperty) {
-                    matchingModule = module;
-                    matchingProperty = foundProperty;
-                    break;
-                }
-            }
-        }
-
-        if (!matchingModule) {
+        // Find the first property whose name is handled by an editor module
+        const match = this.findModuleForObject(object);
+        if (!match) {
             this.hideContent();
             return;
         }
+        const matchingModule = match.module;
+        const matchingProperty = match.property;
 
         this.showContent();
 
@@ -734,11 +739,7 @@ class EditorView {
           const objects = this.controller.getCollections()[this.controller.getSelectedType()];
           if (objects && Object.keys(objects).length > 0) {
             // Sort objects alphabetically and select first
-            const sortedIds = Object.keys(objects).sort((a, b) => {
-              const titleA = (objects[a].title || a).toLowerCase();
-              const titleB = (objects[b].title || b).toLowerCase();
-              return titleA.localeCompare(titleB);
-            });
+            const sortedIds = this.sortIdsByTitle(objects);
             this.controller.selectObject(sortedIds[0]);
           }
         });

@@ -134,7 +134,6 @@ class EditorController {
      * @param {string} name - Project identifier to load
      */
     async loadProject(name) {
-
         await this.model.loadProject(name);
         await this.fs.importProject(name);
         const project = this.model.state.project;
@@ -144,144 +143,18 @@ class EditorController {
 
             // Load property editor modules based on editor configuration
             if (editorConfig) {
-                // Filter property modules to only those specified in editor config
-                const editorModules = {};
-                let moduleLibraries = {};
-                editorConfig.editorModules.forEach(async (pm) => {
-                    if (project.objectTypes.editorModules[pm]) {
-                        editorModules[pm] = project.objectTypes.editorModules[pm];
+                const { editorModules, moduleLibraries } = this.collectEditorModules(project, editorConfig);
 
-                        const moduleLibraryNames = editorModules[pm].libraries;
-                        if(moduleLibraryNames && moduleLibraryNames.length > 0) {
-                            moduleLibraryNames.forEach((libraryName) => {
-                                moduleLibraries[libraryName] = project.objectTypes.libraries[libraryName];
-                            });
-                        }
+                // Inject declared interfaces (html/css/modals) for modules and their libraries
+                this.injectModuleInterfaces(project, editorModules);
+                this.injectModuleInterfaces(project, moduleLibraries);
 
-                    }
-                });
-                // Libraries are already available globally via webpack bundle
-
-                // Load interfaces from editor modules themselves
-                Object.entries(editorModules).forEach(([moduleId, module]) => {
-                    if (module.interface) {
-                        let ui = project.objectTypes.interfaces[module.interface];
-                        if (ui) {
-                            let html = ui.html;
-                            let css = ui.css;
-                            let modals = ui.modals;
-                            if (html) {
-                                this.elements.mainContentContainer.innerHTML += html;
-                            }
-                            if (css) {
-                                let styleTag = document.createElement('style');
-                                styleTag.innerHTML = css;
-                                document.head.append(styleTag);
-                            }
-
-                            if (modals) {
-                                modals.forEach((modalId) => {
-                                    let modal = document.createElement('div');
-                                    modal.setAttribute('id', `modal-${modalId}`);
-                                    let modalContent = document.createElement('div');
-                                    modal.classList.add('modal');
-                                    modalContent.classList.add('modal-content');
-                                    modal.append(modalContent);
-                                    modalContent.innerHTML = project.objectTypes.modals[modalId].html;
-                                    this.elements.modalContainer.append(modal);
-                                });
-                            }
-                        }
-                    }
-                });
-                    console.log('modules complete');
-
-                // Also load interfaces from individual libraries
-                Object.entries(moduleLibraries).forEach(([moduleId, module]) => {
-                    console.log(moduleId);
-                    if (module.interface) {
-                        let ui = project.objectTypes.interfaces[module.interface];
-                        if (ui) {
-                            let html = ui.html;
-                            let css = ui.css;
-                            let modals = ui.modals;
-                            if (html) {
-                                this.elements.mainContentContainer.innerHTML += html;
-                            }
-                            if (css) {
-                                let styleTag = document.createElement('style');
-                                styleTag.innerHTML = css;
-                                document.head.append(styleTag);
-                            }
-
-                            if (modals) {
-                                modals.forEach((modalId) => {
-                                    let modal = document.createElement('div');
-                                    modal.setAttribute('id', `modal-${modalId}`);
-                                    let modalContent = document.createElement('div');
-                                    modal.classList.add('modal');
-                                    modalContent.classList.add('modal-content');
-                                    modal.append(modalContent);
-                                    modalContent.innerHTML = project.objectTypes.modals[modalId].html;
-                                    this.elements.modalContainer.append(modal);
-                                });
-                            }
-                        }
-                    }
-                });
-
-                // Instantiate editor modules specified in editorConfig.editorModules
-                // Modules with 'library' property: instantiate that class
-                // Modules with 'libraries' array: instantiate classes ending in 'Editor' or 'Module'
-                this.editorModuleInstances = {};
-                Object.keys(editorModules).forEach((moduleId) => {
-                    const module = editorModules[moduleId];
-                    if (!module) return;
-
-                    // Handle single library case
-                    if (module.library) {
-                        const libName = module.library;
-                        if (window.GUTS[libName]) {
-                            try {
-                                this.editorModuleInstances[libName] = new window.GUTS[libName](
-                                    this,
-                                    module,
-                                    window.GUTS
-                                );
-                            } catch (e) {
-                                console.error(`Failed to instantiate ${libName}:`, e);
-                            }
-                        } else {
-                            console.warn(`Editor module library ${libName} not found in window.GUTS`);
-                        }
-                    }
-                    // Handle multiple libraries case - only instantiate Editor/Module classes
-                    else if (Array.isArray(module.libraries)) {
-                        module.libraries.forEach((library) => {
-                            // Only instantiate classes that look like editor modules (end with Editor or Module)
-                            if (library.endsWith('Editor') || library.endsWith('Module')) {
-                                if (window.GUTS[library]) {
-                                    try {
-                                        this.editorModuleInstances[library] = new window.GUTS[library](
-                                            this,
-                                            module,
-                                            window.GUTS
-                                        );
-                                    } catch (e) {
-                                        console.error(`Failed to instantiate ${library}:`, e);
-                                    }
-                                } else {
-                                    console.warn(`Editor module library ${library} not found in window.GUTS`);
-                                }
-                            }
-                        });
-                    }
-                });
+                this.instantiateEditorModules(editorModules);
 
                 // Set up event listeners for module UI interactions
                 this.view.setupModuleEventListeners(editorModules);
             }
-            
+
             // Apply theme if specified in editor config
             if (editorConfig?.theme) {
                 this.applyTheme(project.objectTypes.themes[editorConfig.theme]);
@@ -289,14 +162,139 @@ class EditorController {
         } catch (e) {
             console.error('Error loading modules:', e);
         }
+
         // Update UI components to reflect loaded project
         this.view.renderObjectList();
         this.view.updateSidebarButtons();
         this.view.updateProjectSelectors();
-        
+
         // Select first available object to show in editor
         this.selectInitialObject();
         this.dispatchHook('loadProject', arguments);
+
+        // New Unity-like shell (opt-in via ?ui=new). Mounts once, refreshes on
+        // subsequent project loads. Legacy chrome stays in the DOM but hidden.
+        this._mountNewShellIfRequested();
+    }
+
+    /**
+     * Mount the new EditorShell if the URL requests it (?ui=new). Editor-only;
+     * no-op otherwise, so the legacy UI is completely unaffected.
+     */
+    _mountNewShellIfRequested() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('ui') !== 'new') return;
+            const ShellClass = window.EditorShell || (window.GUTS && window.GUTS.EditorShell);
+            if (!ShellClass) { console.warn('EditorShell not found in bundle'); return; }
+            if (!this.shell) this.shell = new ShellClass(this);
+            if (!this.shell.root) this.shell.mount();
+            else if (this.shell.renderAssets) this.shell.renderAssets();
+        } catch (e) { console.error('Failed to mount new editor shell:', e); }
+    }
+
+    /**
+     * Collects the editor modules named in the editor config, along with the
+     * library definitions each module depends on.
+     * @param {Object} project - Loaded project (objectTypes bag)
+     * @param {Object} editorConfig - configs.editor with an editorModules list
+     * @returns {{editorModules: Object, moduleLibraries: Object}}
+     */
+    collectEditorModules(project, editorConfig) {
+        const editorModules = {};
+        const moduleLibraries = {};
+
+        (editorConfig.editorModules || []).forEach((moduleId) => {
+            const module = project.objectTypes.editorModules[moduleId];
+            if (!module) return;
+
+            editorModules[moduleId] = module;
+            (module.libraries || []).forEach((libraryName) => {
+                moduleLibraries[libraryName] = project.objectTypes.libraries[libraryName];
+            });
+        });
+
+        return { editorModules, moduleLibraries };
+    }
+
+    /**
+     * Injects the HTML/CSS/modals declared by each module's `interface` into the page.
+     * @param {Object} project - Loaded project (holds interfaces/modals)
+     * @param {Object} modules - Map of moduleId/libraryName -> definition
+     */
+    injectModuleInterfaces(project, modules) {
+        Object.values(modules).forEach((module) => {
+            if (!module || !module.interface) return;
+
+            const ui = project.objectTypes.interfaces[module.interface];
+            if (!ui) return;
+
+            if (ui.html) {
+                this.elements.mainContentContainer.innerHTML += ui.html;
+            }
+            if (ui.css) {
+                const styleTag = document.createElement('style');
+                styleTag.innerHTML = ui.css;
+                document.head.append(styleTag);
+            }
+            if (ui.modals) {
+                this.injectModals(project, ui.modals);
+            }
+        });
+    }
+
+    /**
+     * Builds and appends modal elements for the given modal ids.
+     * @param {Object} project - Loaded project (holds modal html)
+     * @param {Array<string>} modalIds - Modal ids to render
+     */
+    injectModals(project, modalIds) {
+        modalIds.forEach((modalId) => {
+            const modal = document.createElement('div');
+            modal.setAttribute('id', `modal-${modalId}`);
+            modal.classList.add('modal');
+
+            const modalContent = document.createElement('div');
+            modalContent.classList.add('modal-content');
+            modalContent.innerHTML = project.objectTypes.modals[modalId].html;
+
+            modal.append(modalContent);
+            this.elements.modalContainer.append(modal);
+        });
+    }
+
+    /**
+     * Instantiates the editor module classes for the given modules.
+     * A module either names a single `library` class, or exposes a `libraries`
+     * array from which classes ending in `Editor`/`Module` are instantiated.
+     * @param {Object} editorModules - Map of moduleId -> definition
+     */
+    instantiateEditorModules(editorModules) {
+        this.editorModuleInstances = {};
+
+        const instantiate = (className, module) => {
+            if (!window.GUTS[className]) {
+                console.warn(`Editor module library ${className} not found in window.GUTS`);
+                return;
+            }
+            try {
+                this.editorModuleInstances[className] = new window.GUTS[className](this, module, window.GUTS);
+            } catch (e) {
+                console.error(`Failed to instantiate ${className}:`, e);
+            }
+        };
+
+        Object.values(editorModules).forEach((module) => {
+            if (!module) return;
+
+            if (module.library) {
+                instantiate(module.library, module);
+            } else if (Array.isArray(module.libraries)) {
+                module.libraries
+                    .filter((library) => library.endsWith('Editor') || library.endsWith('Module'))
+                    .forEach((library) => instantiate(library, module));
+            }
+        });
     }
 
     renderObjectList() {
@@ -316,11 +314,15 @@ class EditorController {
         document.head.appendChild(styleTag);
     }
 
-    selectObject(obj){
-        this.model.selectObject(obj);
-        this.view.selectObject(obj);
-        this.dispatchHook('selectObject', arguments);
+    /**
+     * Selects an object by id and refreshes the editor UI to show it.
+     * @param {string|null} objectId - Object identifier to select (null clears)
+     */
+    selectObject(objectId) {
+        this.model.selectObject(objectId);
+        this.view.selectObject();
     }
+
     /**
      * Selects the first object in the current collection
      * Called after project load to ensure something is selected
@@ -405,11 +407,6 @@ class EditorController {
 
     updateObject(data) {
         return this.model.updateObject(data);
-    }
-
-    selectObject(objectId) {
-        this.model.selectObject(objectId);
-        this.view.selectObject(); // Assuming this updates the UI
     }
 
     createObject(type, id, data) {

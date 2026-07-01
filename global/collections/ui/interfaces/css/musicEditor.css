@@ -222,7 +222,7 @@
 }
 
 .me-list-item--selected {
-    background-color: rgba(99, 102, 241, 0.15);
+    background-color: rgba(53, 224, 200, 0.15);
     border-color: var(--editor-primary);
 }
 
@@ -256,7 +256,7 @@
     width: 2px;
     top: 40px;
     bottom: 32px;
-    background-color: #ef4444;
+    background-color: #ff5c6c;
     pointer-events: none;
     display: none;
     z-index: 10;
@@ -324,7 +324,7 @@
 .me-timeline__sections {
     position: relative;
     min-height: 24px;
-    background-color: rgba(99, 102, 241, 0.1);
+    background-color: rgba(53, 224, 200, 0.1);
     border-bottom: 1px solid var(--editor-border-color);
 }
 

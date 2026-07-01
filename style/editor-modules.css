@@ -3,36 +3,45 @@
    Consistent styling for all editor modules (Texture, Graphics, Script, etc.)
    ============================================================================= */
 
-/* CSS Variables for consistent theming */
+/* CSS Variables — "Instrument" identity, shared with the editor theme.
+   Token NAMES are unchanged so every existing rule keeps working; only the
+   values move to the graphite-navy / cyan / amber engine-console palette. */
 :root {
   /* Color Palette */
-  --editor-primary: #6366f1;
-  --editor-primary-hover: #4f46e5;
-  --editor-secondary: #10b981;
-  --editor-secondary-hover: #059669;
-  --editor-danger: #ef4444;
-  --editor-danger-hover: #dc2626;
-  --editor-success: #22c55e;
-  --editor-warning: #f59e0b;
+  --editor-primary: #35e0c8;         /* cyan — primary actions & active state */
+  --editor-primary-hover: #4ff0d8;
+  --editor-secondary: #24344a;       /* steel — neutral "add" actions */
+  --editor-secondary-hover: #2d4159;
+  --editor-danger: #ff5c6c;
+  --editor-danger-hover: #ff7482;
+  --editor-success: #35e0c8;         /* save/confirm reads as cyan "go" */
+  --editor-warning: #f5a623;         /* amber — warnings & live/attention */
 
-  /* Neutral Colors */
-  --editor-bg-dark: #0f172a;
-  --editor-bg-medium: #1e293b;
-  --editor-bg-light: #334155;
-  --editor-bg-lighter: #475569;
+  /* Neutral Colors (graphite-navy) */
+  --editor-bg-dark: #0b121c;
+  --editor-bg-medium: #111a27;
+  --editor-bg-light: #16202f;
+  --editor-bg-lighter: #1d2a3c;
 
   /* Text Colors */
-  --editor-text-primary: #f8fafc;
-  --editor-text-secondary: #cbd5e1;
-  --editor-text-muted: #94a3b8;
+  --editor-text-primary: #e7eef7;
+  --editor-text-secondary: #90a2ba;
+  --editor-text-muted: #5e708a;
 
   /* Border Colors */
-  --editor-border-color: rgba(255, 255, 255, 0.1);
-  --editor-border-color-hover: rgba(255, 255, 255, 0.2);
+  --editor-border-color: rgba(122, 152, 194, 0.16);
+  --editor-border-color-hover: rgba(122, 152, 194, 0.34);
+
+  /* Accents / type */
+  --editor-accent-amber: #f5a623;
+  --editor-cyan-dim: rgba(53, 224, 200, 0.14);
+  --editor-cyan-glow: rgba(53, 224, 200, 0.35);
+  --editor-font-mono: 'JetBrains Mono', ui-monospace, 'Courier New', monospace;
+  --editor-grid-line: rgba(122, 152, 194, 0.05);
 
   /* Dimensions */
-  --editor-sidebar-width: 320px;
-  --editor-border-radius: 8px;
+  --editor-sidebar-width: 300px;
+  --editor-border-radius: 6px;
   --editor-border-radius-sm: 4px;
   --editor-spacing-xs: 4px;
   --editor-spacing-sm: 8px;
@@ -41,12 +50,12 @@
   --editor-spacing-xl: 24px;
 
   /* Transitions */
-  --editor-transition: all 0.2s ease;
+  --editor-transition: all 0.15s ease;
 
   /* Shadows */
-  --editor-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
-  --editor-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --editor-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --editor-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --editor-shadow-md: 0 6px 16px -6px rgba(0, 0, 0, 0.5);
+  --editor-shadow-lg: 0 16px 40px -12px rgba(0, 0, 0, 0.6);
 }
 
 /* =============================================================================
@@ -234,9 +243,9 @@
 }
 
 .editor-module__grid-item--selected {
-  background-color: rgba(99, 102, 241, 0.2);
+  background-color: rgba(53, 224, 200, 0.2);
   border-color: var(--editor-primary);
-  box-shadow: 0 0 0 1px var(--editor-primary), 0 0 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 0 1px var(--editor-primary), 0 0 8px rgba(53, 224, 200, 0.3);
 }
 
 .editor-module__grid-item img {
@@ -433,7 +442,7 @@
 .editor-module__input:focus {
   outline: none;
   border-color: var(--editor-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(53, 224, 200, 0.1);
 }
 
 .editor-module__input--full-width {
@@ -609,17 +618,17 @@
 /* Base active state for selectable items */
 .editor-module__selectable-item.active,
 .editor-module__selectable-item--active {
-  background-color: rgba(99, 102, 241, 0.15);
+  background-color: rgba(53, 224, 200, 0.15);
   border-color: var(--editor-primary);
-  box-shadow: 0 0 0 1px var(--editor-primary), 0 0 8px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 1px var(--editor-primary), 0 0 8px rgba(53, 224, 200, 0.2);
 }
 
 /* Terrain editor specific - active terrain item container */
 .terrain-editor__terrain-item:has(.terrain-editor__color-option.active),
 .terrain-editor__terrain-item:has(.terrain-editor__color-option--active) {
-  background-color: rgba(99, 102, 241, 0.15);
+  background-color: rgba(53, 224, 200, 0.15);
   border-color: var(--editor-primary);
-  box-shadow: 0 0 0 1px var(--editor-primary), 0 0 8px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 1px var(--editor-primary), 0 0 8px rgba(53, 224, 200, 0.2);
 }
 
 /* Terrain editor - active terrain label */
@@ -634,7 +643,7 @@
 .terrain-editor__color-option--active {
   border-color: var(--editor-primary);
   border-width: 3px;
-  box-shadow: 0 0 0 2px var(--editor-primary), 0 0 12px rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 0 2px var(--editor-primary), 0 0 12px rgba(53, 224, 200, 0.5);
   transform: scale(1.15);
   position: relative;
   z-index: 1;
@@ -643,9 +652,9 @@
 /* Environment editor - active environment item */
 .terrain-editor__environment-item.active,
 .terrain-editor__environment-item--active {
-  background-color: rgba(99, 102, 241, 0.15);
+  background-color: rgba(53, 224, 200, 0.15);
   border-color: var(--editor-primary);
-  box-shadow: 0 0 0 1px var(--editor-primary), 0 0 8px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 1px var(--editor-primary), 0 0 8px rgba(53, 224, 200, 0.2);
 }
 
 /* =============================================================================
@@ -827,3 +836,245 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: var(--editor-spacing-md);
 }
+
+/* =============================================================================
+   INSTRUMENT REFINEMENTS
+   Appended last so it layers over the rules above without dropping any
+   selector. Adds the engine-console character: mono readouts, cyan "signal"
+   accents on active items, hairline dividers, tactile controls.
+   ============================================================================= */
+
+.editor-module {
+  background-color: var(--editor-bg-dark);
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+}
+
+/* Panels get a lit cyan channel line at the top edge */
+.editor-module__sidebar {
+  background: linear-gradient(180deg, var(--editor-bg-medium), #0e1622);
+  border: 1px solid var(--editor-border-color);
+  box-shadow: inset 0 2px 0 var(--editor-cyan-dim), var(--editor-shadow-md);
+}
+.editor-module__canvas-area {
+  border: 1px solid var(--editor-border-color);
+}
+
+/* Faint blueprint grid, recoloured to the theme */
+.editor-module__grid-background {
+  background-image:
+    linear-gradient(var(--editor-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--editor-grid-line) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Toolbars + status readouts in mono */
+.editor-module__toolbar,
+.editor-module__canvas-toolbar {
+  background-color: rgba(122, 152, 194, 0.04);
+}
+.editor-module__status-bar {
+  font-family: var(--editor-font-mono);
+  letter-spacing: 0.02em;
+}
+
+/* Section / panel titles → uppercase mono eyebrows */
+.editor-module__section-title,
+.audio-editor__layer-section-title {
+  font-family: var(--editor-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--editor-text-muted);
+}
+.editor-module__panel-title,
+.audio-editor__layer-title {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+.editor-module__section {
+  border-bottom: 1px solid var(--editor-border-color);
+}
+
+/* Labels + values as instrument readouts */
+.editor-module__label,
+.editor-module__label--compact {
+  font-family: var(--editor-font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.editor-module__value-display,
+.audio-editor__value-display {
+  font-family: var(--editor-font-mono);
+  color: var(--editor-primary);
+  font-weight: 500;
+}
+.editor-module__text {
+  color: var(--editor-text-secondary);
+  font-family: var(--editor-font-mono);
+  font-size: 13px;
+}
+
+/* Inputs / selects / textareas → mono, recessed, cyan focus */
+.editor-module__input,
+.editor-module__select,
+.editor-module__textarea,
+.editor-module input,
+.editor-module select,
+.editor-module textarea {
+  font-family: var(--editor-font-mono);
+  background-color: var(--editor-bg-dark);
+  border: 1px solid var(--editor-border-color);
+  color: var(--editor-text-primary);
+}
+.editor-module__input:focus,
+.editor-module__select:focus,
+.editor-module__textarea:focus,
+.editor-module input:focus,
+.editor-module select:focus,
+.editor-module textarea:focus {
+  outline: none;
+  border-color: var(--editor-primary);
+  box-shadow: 0 0 0 3px var(--editor-cyan-dim);
+}
+
+/* Slider alias + checkbox accent */
+.editor-module__slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--editor-bg-light);
+  outline: none;
+  flex: 1;
+}
+.editor-module__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--editor-primary);
+  cursor: pointer;
+  box-shadow: 0 0 8px -2px var(--editor-cyan-glow);
+}
+.editor-module__slider::-moz-range-thumb {
+  width: 14px; height: 14px; border: none; border-radius: 50%;
+  background: var(--editor-primary); cursor: pointer;
+}
+.editor-module__checkbox { accent-color: var(--editor-primary); width: auto; flex: 0 0 auto; }
+
+/* Buttons — flat with a hairline; primary/secondary/active recoloured */
+.editor-module__btn {
+  background-color: var(--editor-bg-light);
+  border: 1px solid var(--editor-border-color);
+  color: var(--editor-text-primary);
+}
+.editor-module__btn:hover {
+  background-color: var(--editor-bg-lighter);
+  border-color: var(--editor-primary);
+  transform: translateY(-1px);
+}
+.editor-module__btn--primary,
+.editor-module__btn--active,
+.editor-module__item--active,
+.editor-module__item--selected {
+  background-color: var(--editor-primary);
+  border-color: var(--editor-primary);
+  color: #04231e;
+  font-weight: 600;
+}
+.editor-module__btn--primary:hover {
+  background-color: var(--editor-primary-hover);
+  border-color: var(--editor-primary-hover);
+  box-shadow: 0 0 16px -6px var(--editor-cyan-glow);
+}
+.editor-module__btn--secondary {
+  background-color: var(--editor-secondary);
+  border-color: var(--editor-border-color);
+  color: var(--editor-text-primary);
+}
+.editor-module__btn--secondary:hover {
+  background-color: var(--editor-secondary-hover);
+  border-color: var(--editor-primary);
+  color: var(--editor-text-primary);
+}
+.editor-module__btn--warning {
+  background-color: var(--editor-cyan-dim);
+  border-color: var(--editor-warning);
+  color: var(--editor-warning);
+}
+/* Re-assert danger/success here so the base .editor-module__btn override above
+   (equal specificity, earlier source) can't strip their colour. */
+.editor-module__btn--danger {
+  background-color: rgba(255, 92, 108, 0.16);
+  border-color: var(--editor-danger);
+  color: var(--editor-danger);
+}
+.editor-module__btn--danger:hover {
+  background-color: rgba(255, 92, 108, 0.28);
+  border-color: var(--editor-danger);
+  color: var(--editor-danger);
+}
+.editor-module__btn--success {
+  background-color: var(--editor-success);
+  border-color: var(--editor-success);
+  color: #04231e;
+  font-weight: 600;
+}
+.editor-module__btn--success:hover {
+  background-color: var(--editor-primary-hover);
+  border-color: var(--editor-primary-hover);
+  color: #04231e;
+  box-shadow: 0 0 16px -6px var(--editor-cyan-glow);
+}
+.editor-module__btn:focus-visible,
+.editor-module__item:focus-visible,
+.editor-module input:focus-visible,
+.editor-module select:focus-visible {
+  outline: 2px solid var(--editor-primary);
+  outline-offset: 2px;
+}
+
+/* List items: hover raise + cyan "signal" channel when active */
+.editor-module__item:hover {
+  border-color: var(--editor-border-color-hover);
+}
+.editor-module__selectable-item {
+  border-left: 2px solid transparent;
+}
+.editor-module__selectable-item.active,
+.editor-module__selectable-item--active {
+  border-left: 2px solid var(--editor-primary);
+}
+
+/* Canvas info overlay → dark glass with mono readout */
+.editor-module__info {
+  font-family: var(--editor-font-mono);
+  font-size: 11px;
+  line-height: 1.7;
+  background-color: rgba(8, 12, 18, 0.72);
+  border: 1px solid var(--editor-border-color);
+  color: var(--editor-text-secondary);
+}
+.editor-module__info span { color: var(--editor-primary); }
+
+/* Thin cyan-tinted scrollbars everywhere in modules */
+.editor-module ::-webkit-scrollbar,
+.editor-module__scroll-y::-webkit-scrollbar { width: 8px; height: 8px; }
+.editor-module ::-webkit-scrollbar-thumb,
+.editor-module__scroll-y::-webkit-scrollbar-thumb {
+  background: var(--editor-border-color);
+  border-radius: 8px;
+}
+.editor-module ::-webkit-scrollbar-thumb:hover,
+.editor-module__scroll-y::-webkit-scrollbar-thumb:hover {
+  background: var(--editor-border-color-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-module *,
+  .editor-module *::before,
+  .editor-module *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
+}
+
