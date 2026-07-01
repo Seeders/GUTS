@@ -37,16 +37,17 @@ class EditorShell {
     this.panels.viewport = this._buildViewport();
     this.panels.inspector = this._buildPanel('inspector', 'Inspector');
     this.panels.assets = this._buildPanel('assets', 'Project · Assets');
+    this.panels.preview = this._buildPreviewPanel();
     this.root.appendChild(this.panels.hierarchy);
     this.root.appendChild(this.panels.viewport);
     this.root.appendChild(this.panels.inspector);
     this.root.appendChild(this.panels.assets);
+    this.root.appendChild(this.panels.preview);
 
     parent.appendChild(this.root);
 
     this._setupSplitters();
     this._setupShortcuts();
-    this.root.appendChild(this._buildPreviewWindow());
     this.renderAssets();
     this._renderInspectorEmpty('Select an asset to inspect.');
     this._renderHierarchyEmpty('No entities yet — drag an asset into the viewport.');
@@ -119,23 +120,20 @@ class EditorShell {
     } catch (e) { return {}; }
   }
 
-  // Bottom-right model preview window (its own mini renderer, driven by the viewport).
-  _buildPreviewWindow() {
-    const win = document.createElement('div');
-    win.className = 'eshell__preview-window';
-    win.id = 'eshell-preview-window';
-    const header = document.createElement('div');
-    header.className = 'eshell__preview-window-header';
-    const title = document.createElement('span'); title.textContent = 'Preview';
-    const close = document.createElement('span'); close.className = 'eshell__tab-close'; close.textContent = '×';
-    close.addEventListener('click', () => { if (this.viewport) this.viewport.clearPreview(); });
-    header.append(title, close);
+  // Docked bottom-right Preview panel (mini renderer driven by the viewport).
+  _buildPreviewPanel() {
+    const panel = this._buildPanel('preview', 'Preview');
+    const body = panel.querySelector('.eshell__panel-body');
+    body.style.padding = '0';
     const canvas = document.createElement('canvas');
     canvas.className = 'eshell__preview-canvas';
-    win.append(header, canvas);
-    this._previewWindowEl = win;
+    const empty = document.createElement('div');
+    empty.className = 'eshell__preview-empty';
+    empty.textContent = 'Select a model asset to preview';
+    body.append(canvas, empty);
     this._previewCanvasEl = canvas;
-    return win;
+    this._previewWindowEl = body;   // toggled via .has-model
+    return panel;
   }
 
   // ---- Scene hierarchy (Phase 4) ---------------------------------------------

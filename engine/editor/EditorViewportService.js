@@ -812,7 +812,7 @@ class EditorViewportService {
     model.position.copy(center).multiplyScalar(-s);
     if (mini.model) { mini.holder.remove(mini.model); this._disposeModel(mini.model); }
     mini.holder.add(model); mini.model = model; mini.active = true;
-    if (this.previewWindow) this.previewWindow.style.display = 'flex';
+    if (this.previewWindow) this.previewWindow.classList.add('has-model');
     if (!mini.raf) this._miniLoop();
   }
   _miniLoop() {
@@ -837,7 +837,7 @@ class EditorViewportService {
     mini.active = false;
     if (mini.raf) { cancelAnimationFrame(mini.raf); mini.raf = null; }
     if (mini.model) { mini.holder.remove(mini.model); this._disposeModel(mini.model); mini.model = null; }
-    if (this.previewWindow) this.previewWindow.style.display = 'none';
+    if (this.previewWindow) this.previewWindow.classList.remove('has-model');
   }
   _disposeModel(m) {
     try { const sf = this.editorContext.modelManager && this.editorContext.modelManager.shapeFactory; if (sf && sf.disposeObject) sf.disposeObject(m); } catch (e) {}
@@ -850,6 +850,16 @@ class EditorViewportService {
     if (!mm || !mm.createModel) return;
     const model = await mm.createModel(renderDef.model);
     if (!model || token !== this._previewToken) { if (model) this._disposeModel(model); return; }
+    // Raw glTF scale is tiny vs the terrain grid — normalize to a visible world size,
+    // centered on x/z and resting on the ground (min y = 0).
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+    const target = (this.terrainDataManager && this.terrainDataManager.gridSize) ? this.terrainDataManager.gridSize * 1.6 : 80;
+    model.scale.multiplyScalar(target / maxDim);
+    const b2 = new THREE.Box3().setFromObject(model);
+    const c2 = b2.getCenter(new THREE.Vector3());
+    model.position.x -= c2.x; model.position.z -= c2.z; model.position.y -= b2.min.y;
     const ghost = new THREE.Group();
     ghost.add(model); ghost.visible = false;
     this.worldRenderer.getScene().add(ghost);
