@@ -65,7 +65,17 @@ class EditorShell {
     if (!body) return;
     try {
       this.viewport = new Svc(this.controller, body, this._viewportOptions());
-      this.viewport.start();
+      // Scene entity <-> hierarchy <-> inspector sync.
+      this.viewport.onSelectionChange = (id, rec) => this._onEntitySelected(id, rec);
+      this.viewport.onSceneChange = () => this._renderHierarchy();
+      const started = this.viewport.start();
+      Promise.resolve(started).then((ok) => {
+        if (ok === false) return;
+        // Entities spawn a few ticks after scene load; refresh the hierarchy a couple times.
+        this._renderHierarchy();
+        setTimeout(() => this._renderHierarchy(), 800);
+        setTimeout(() => this._renderHierarchy(), 2500);
+      });
     } catch (e) { console.error('[EditorShell] viewport start failed:', e); }
   }
   _restartViewport() {
@@ -78,6 +88,62 @@ class EditorShell {
       const cfg = (this.model.getCollections().configs || {}).editor || {};
       return { scene: cfg.viewportScene, level: cfg.viewportLevel };
     } catch (e) { return {}; }
+  }
+
+  // ---- Scene hierarchy (Phase 4) ---------------------------------------------
+  _renderHierarchy() {
+    const body = this._body('hierarchy');
+    if (!body) return;
+    const entities = (this.viewport && this.viewport.getSceneEntities && this.viewport.getSceneEntities()) || [];
+    body.innerHTML = '';
+    if (!entities.length) { this._empty(body, 'No entities yet — drag an asset into the viewport to place one.'); return; }
+    const groups = {};
+    entities.forEach(e => { (groups[e.collection] = groups[e.collection] || []).push(e); });
+    const sel = this.viewport && this.viewport.getSelectedEntity && this.viewport.getSelectedEntity();
+    Object.keys(groups).sort().forEach(col => {
+      const title = document.createElement('div');
+      title.className = 'eshell__group-title';
+      title.textContent = `${col} (${groups[col].length})`;
+      body.appendChild(title);
+      groups[col].sort((a, b) => String(a.spawnType).localeCompare(String(b.spawnType))).forEach(e => {
+        const row = document.createElement('div');
+        row.className = 'eshell__row' + (e.id === sel ? ' eshell__row--active' : '');
+        row.dataset.eid = e.id;
+        const pos = e.position ? `<span class="eshell__row-count">${Math.round(e.position.x)}, ${Math.round(e.position.z)}</span>` : '';
+        row.innerHTML = `<span>${e.spawnType}</span>${pos}`;
+        row.addEventListener('click', () => { if (this.viewport) this.viewport.selectEntity(e.id); });
+        body.appendChild(row);
+      });
+    });
+  }
+
+  _onEntitySelected(id, rec) {
+    const body = this._body('hierarchy');
+    if (body) body.querySelectorAll('.eshell__row').forEach(r => r.classList.toggle('eshell__row--active', Number(r.dataset.eid) === id));
+    if (id == null) { this._renderInspectorEmpty('Select an asset or entity to inspect.'); return; }
+    this._renderEntityInspector(id, rec);
+  }
+
+  _renderEntityInspector(id, rec) {
+    const body = this._body('inspector');
+    body.innerHTML = '';
+    const head = document.createElement('div');
+    head.className = 'eshell__insp-head';
+    head.innerHTML = `<span class="eshell__insp-type">${rec ? rec.collection : 'entity'}</span><span class="eshell__insp-id">${rec ? rec.spawnType : ('#' + id)}</span>`;
+    body.appendChild(head);
+    const t = (this.viewport && this.viewport.getEntityTransform && this.viewport.getEntityTransform(id)) || {};
+    const fmt = (v) => v ? `${(+v.x || 0).toFixed(1)}, ${(+v.y || 0).toFixed(1)}, ${(+v.z || 0).toFixed(1)}` : '—';
+    [['Position', t.position], ['Rotation', t.rotation], ['Scale', t.scale]].forEach(([label, v]) => {
+      const row = document.createElement('div'); row.className = 'eshell__row';
+      row.innerHTML = `<span>${label}</span><span class="eshell__row-count">${fmt(v)}</span>`;
+      body.appendChild(row);
+    });
+    const hint = document.createElement('div'); hint.className = 'eshell__empty';
+    hint.textContent = 'Transform with the viewport gizmo (Move/Rotate/Scale · right-drag).';
+    body.appendChild(hint);
+    const bar = document.createElement('div'); bar.className = 'eshell__insp-actions';
+    bar.appendChild(this._miniBtn('Remove Entity', () => { if (this.viewport) this.viewport.removeSelected(); }, 'danger'));
+    body.appendChild(bar);
   }
 
   // ---- Menu bar --------------------------------------------------------------
@@ -154,6 +220,17 @@ class EditorShell {
       b.addEventListener('click', () => { if (this.viewport) this.viewport.setCameraMode(mode); });
       header.appendChild(b);
     });
+    const sep = document.createElement('span'); sep.className = 'eshell__vp-sep'; header.appendChild(sep);
+    [['Move', 'translate'], ['Rotate', 'rotate'], ['Scale', 'scale']].forEach(([label, mode]) => {
+      const b = document.createElement('button');
+      b.className = 'eshell__btn'; b.style.padding = '2px 8px'; b.textContent = label;
+      b.addEventListener('click', () => { if (this.viewport) this.viewport.setGizmoMode(mode); });
+      header.appendChild(b);
+    });
+    const del = document.createElement('button');
+    del.className = 'eshell__btn eshell__btn--danger'; del.style.padding = '2px 8px'; del.textContent = 'Delete';
+    del.addEventListener('click', () => { if (this.viewport) this.viewport.removeSelected(); });
+    header.appendChild(del);
     const body = panel.querySelector('.eshell__panel-body');
     body.style.padding = '0';
     const ph = document.createElement('div');
@@ -253,6 +330,13 @@ class EditorShell {
       const card = document.createElement('div');
       card.className = 'eshell__asset' + (id === this.selectedObjectId ? ' eshell__asset--active' : '');
       card.dataset.id = id;
+      card.draggable = true;
+      card.addEventListener('dragstart', (e) => {
+        const payload = JSON.stringify({ collection: this.selectedType, type: id });
+        e.dataTransfer.setData('application/x-guts-asset', payload);
+        e.dataTransfer.setData('text/plain', payload);
+        e.dataTransfer.effectAllowed = 'copy';
+      });
       const letter = (this._title(objs[id], id)[0] || '?').toUpperCase();
       card.innerHTML = `<div class="eshell__asset-icon">${letter}</div><div class="eshell__asset-label">${this._title(objs[id], id)}</div>`;
       card.addEventListener('click', () => this.selectObject(this.selectedType, id));
