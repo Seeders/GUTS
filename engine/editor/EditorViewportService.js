@@ -545,7 +545,13 @@ class EditorViewportService {
   _paintRamp(cell) {
     const ramps = this.tileMap.ramps = this.tileMap.ramps || [];
     const idx = ramps.findIndex(r => r.gridX === cell.x && r.gridZ === cell.z);
-    if (idx >= 0) ramps.splice(idx, 1); else ramps.push({ gridX: cell.x, gridZ: cell.z });
+    if (idx >= 0) {
+      ramps.splice(idx, 1);                                   // remove existing (always allowed)
+    } else if (this._isValidRamp(cell.x, cell.z)) {
+      ramps.push({ gridX: cell.x, gridZ: cell.z });           // add only where valid
+    } else {
+      return;                                                 // invalid placement — do nothing
+    }
     const wr = this.worldRenderer, er = this.editorContext.renderSystem && this.editorContext.renderSystem.entityRenderer;
     try {
       if (wr.tileMapper && wr.tileMapper.setRamps) wr.tileMapper.setRamps(ramps);
@@ -555,6 +561,25 @@ class EditorViewportService {
     } catch (e) { console.warn('[viewport] ramp update failed', e); }
     this._scheduleLevelPersist();
   }
+  _hasRamp(x, z) {
+    const ramps = this.tileMap && this.tileMap.ramps;
+    return !!(ramps && ramps.some(r => r.gridX === x && r.gridZ === z));
+  }
+  // Valid ramp = exactly one lower cardinal neighbor (matches TerrainMapEditor).
+  _isValidRamp(x, z) {
+    const hm = this.tileMap && this.tileMap.heightMap;
+    if (!hm || !hm.length) return false;
+    const cur = hm[z] && hm[z][x];
+    if (cur === undefined) return false;
+    const size = this.tileMap.size;
+    let lower = 0;
+    if (z > 0 && hm[z - 1][x] < cur) lower++;
+    if (z < size - 1 && hm[z + 1][x] < cur) lower++;
+    if (x > 0 && hm[z][x - 1] < cur) lower++;
+    if (x < size - 1 && hm[z][x + 1] < cur) lower++;
+    return lower === 1;
+  }
+
   _finalizeStroke() {
     if (this._heightDirty) {
       this._heightDirty = false;
@@ -590,6 +615,10 @@ class EditorViewportService {
     this._ensureBrushPreview(tiles.length);
     if (!this._brushPreview) return;
     const gs = this.terrainDataManager.gridSize, ts = this.terrainDataManager.terrainSize, tdm = this.terrainDataManager;
+    // Ramp mode: red when placing would be invalid (removal of an existing ramp is fine).
+    let valid = true;
+    if (this.interactionMode === 'ramp') valid = this._hasRamp(cell.x, cell.z) || this._isValidRamp(cell.x, cell.z);
+    const colorHex = valid ? 0x35e0c8 : 0xff5c6c;
     this._brushPreview.visible = true;
     const kids = this._brushPreview.children;
     for (let i = 0; i < kids.length; i++) {
@@ -599,6 +628,7 @@ class EditorViewportService {
         const wz = t.z * gs - ts / 2 + gs / 2;
         const wy = (tdm.getTerrainHeightAtPosition ? tdm.getTerrainHeightAtPosition(wx, wz) : 0) + 2;
         kids[i].position.set(wx, wy, wz);
+        if (kids[i].material && kids[i].material.color) kids[i].material.color.setHex(colorHex);
         kids[i].visible = true;
       } else { kids[i].visible = false; }
     }
