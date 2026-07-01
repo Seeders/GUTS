@@ -402,7 +402,29 @@ class EditorViewportService {
   // ---- Terrain painting ------------------------------------------------------
   setInteractionMode(mode) {
     this.interactionMode = mode || 'select';
-    if (this.interactionMode !== 'select') this.deselectAll();
+    const painting = this.interactionMode !== 'select';
+    if (painting) this.deselectAll();
+    // Suppress SelectedUnitSystem's left-drag box-select while painting (it has no
+    // enable flag), so a paint stroke isn't hijacked by the green selection box.
+    this._setSelectionInput(!painting);
+  }
+  _setSelectionInput(enabled) {
+    const sys = this.editorContext && this.editorContext.selectedUnitSystem;
+    const canvas = this.canvas;
+    if (!sys || !canvas || !sys._mousedownHandler) return;
+    if (enabled) {
+      canvas.addEventListener('mousedown', sys._mousedownHandler);
+      canvas.addEventListener('mousemove', sys._mousemoveHandler);
+      canvas.addEventListener('mouseup', sys._mouseupHandler);
+    } else {
+      canvas.removeEventListener('mousedown', sys._mousedownHandler);
+      canvas.removeEventListener('mousemove', sys._mousemoveHandler);
+      canvas.removeEventListener('mouseup', sys._mouseupHandler);
+      if (sys.boxSelection) {
+        sys.boxSelection.active = false;
+        if (sys.boxSelection.element) sys.boxSelection.element.style.display = 'none';
+      }
+    }
   }
   setPaintOptions(opts) {
     if (!opts) return;
