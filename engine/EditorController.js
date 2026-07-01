@@ -138,53 +138,58 @@ class EditorController {
         await this.fs.importProject(name);
         const project = this.model.state.project;
 
+        const useNew = this._useNewShell();
+
         try {
             const editorConfig = project.objectTypes.configs?.editor;
 
-            // Load property editor modules based on editor configuration
-            if (editorConfig) {
+            // Legacy property-editor modules + injected interfaces — only when NOT
+            // using the new shell (the new shell has its own tools/viewport).
+            if (editorConfig && !useNew) {
                 const { editorModules, moduleLibraries } = this.collectEditorModules(project, editorConfig);
-
-                // Inject declared interfaces (html/css/modals) for modules and their libraries
                 this.injectModuleInterfaces(project, editorModules);
                 this.injectModuleInterfaces(project, moduleLibraries);
-
                 this.instantiateEditorModules(editorModules);
-
-                // Set up event listeners for module UI interactions
                 this.view.setupModuleEventListeners(editorModules);
             }
 
-            // Apply theme if specified in editor config
-            if (editorConfig?.theme) {
+            // Apply theme if specified (harmless for both UIs).
+            if (editorConfig?.theme && project.objectTypes.themes?.[editorConfig.theme]) {
                 this.applyTheme(project.objectTypes.themes[editorConfig.theme]);
             }
         } catch (e) {
             console.error('Error loading modules:', e);
         }
 
-        // Update UI components to reflect loaded project
-        this.view.renderObjectList();
-        this.view.updateSidebarButtons();
-        this.view.updateProjectSelectors();
-
-        // Select first available object to show in editor
-        this.selectInitialObject();
+        // Legacy chrome rendering — skipped when the new shell is active.
+        if (!useNew) {
+            this.view.renderObjectList();
+            this.view.updateSidebarButtons();
+            this.view.updateProjectSelectors();
+            this.selectInitialObject();
+        }
         this.dispatchHook('loadProject', arguments);
 
-        // New Unity-like shell (opt-in via ?ui=new). Mounts once, refreshes on
-        // subsequent project loads. Legacy chrome stays in the DOM but hidden.
+        // New Unity-like shell — DEFAULT UI. Mounts once, refreshes on later loads.
         this._mountNewShellIfRequested();
     }
 
     /**
-     * Mount the new EditorShell if the URL requests it (?ui=new). Editor-only;
-     * no-op otherwise, so the legacy UI is completely unaffected.
+     * Whether to use the new editor shell. Default TRUE; opt into the legacy UI
+     * with ?ui=legacy (or if the shell class somehow isn't in the bundle).
      */
+    _useNewShell() {
+        try {
+            const ui = new URLSearchParams(window.location.search).get('ui');
+            if (ui === 'legacy' || ui === 'old') return false;
+            return !!(window.EditorShell || (window.GUTS && window.GUTS.EditorShell));
+        } catch (e) { return false; }
+    }
+
+    /** Mount/refresh the new EditorShell when it is the active UI. */
     _mountNewShellIfRequested() {
         try {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('ui') !== 'new') return;
+            if (!this._useNewShell()) return;
             const ShellClass = window.EditorShell || (window.GUTS && window.GUTS.EditorShell);
             if (!ShellClass) { console.warn('EditorShell not found in bundle'); return; }
             if (!this.shell) this.shell = new ShellClass(this);
