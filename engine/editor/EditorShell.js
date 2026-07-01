@@ -168,69 +168,113 @@ class EditorShell {
 
   _body(area) { return this.root.querySelector(`.eshell__panel-body[data-body="${area}"]`); }
 
-  // ---- Assets (collections grouped by category) ------------------------------
+  // ---- Assets browser (collection tree + object grid + CRUD) -----------------
   renderAssets() {
     const body = this._body('assets');
     body.innerHTML = '';
-    const defs = this._collectionDefs();
-    if (!defs.length) { this._empty(body, 'No collections loaded.'); return; }
+    body.style.padding = '0';
 
+    const toolbar = document.createElement('div');
+    toolbar.className = 'eshell__assets-toolbar';
+    const crumb = document.createElement('span');
+    crumb.className = 'eshell__assets-crumb'; crumb.id = 'eshell-assets-crumb';
+    crumb.textContent = this.selectedType || 'Assets';
+    const spacer = document.createElement('span'); spacer.style.flex = '1';
+    const search = document.createElement('input');
+    search.className = 'eshell__assets-search'; search.id = 'eshell-assets-search';
+    search.placeholder = 'Search…'; search.value = this._search || '';
+    search.addEventListener('input', () => { this._search = search.value; this._renderObjectGrid(); });
+    toolbar.append(crumb, spacer, search,
+      this._miniBtn('+ New', () => this._newObject()),
+      this._miniBtn('Duplicate', () => this._duplicateObject()),
+      this._miniBtn('Delete', () => this._deleteObject(), 'danger'),
+      this._miniBtn('+ Collection', () => this._newCollection()));
+    body.appendChild(toolbar);
+
+    const main = document.createElement('div');
+    main.className = 'eshell__assets-main';
+    main.innerHTML = '<div class="eshell__assets-tree" id="eshell-assets-tree"></div>' +
+                     '<div class="eshell__assets-grid" id="eshell-assets-grid"></div>';
+    body.appendChild(main);
+
+    this._renderCollectionTree();
+    this._renderObjectGrid();
+  }
+
+  _renderCollectionTree() {
+    const tree = this.root.querySelector('#eshell-assets-tree');
+    if (!tree) return;
+    tree.innerHTML = '';
+    const defs = this._collectionDefs();
     const cats = this._categories();
+    const collections = this._collections();
     const groups = {};
-    defs.forEach(def => {
-      const cat = def.objectTypeCategory || 'uncategorized';
-      (groups[cat] = groups[cat] || []).push(def);
-    });
+    defs.forEach(def => { const c = def.objectTypeCategory || 'uncategorized'; (groups[c] = groups[c] || []).push(def); });
 
     Object.keys(groups).sort().forEach(catKey => {
       const title = document.createElement('div');
       title.className = 'eshell__group-title';
       title.textContent = (cats[catKey] && cats[catKey].title) || catKey;
-      body.appendChild(title);
-
-      groups[catKey]
-        .sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id))
-        .forEach(def => {
-          const collections = this._collections();
-          const count = collections[def.id] ? Object.keys(collections[def.id]).length : 0;
-          const row = document.createElement('div');
-          row.className = 'eshell__row';
-          row.dataset.type = def.id;
-          row.innerHTML = `<span>${def.name || def.id}</span><span class="eshell__row-count">${count}</span>`;
-          row.addEventListener('click', () => this.selectCollection(def.id));
-          body.appendChild(row);
-        });
+      tree.appendChild(title);
+      groups[catKey].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id)).forEach(def => {
+        const count = collections[def.id] ? Object.keys(collections[def.id]).length : 0;
+        const row = document.createElement('div');
+        row.className = 'eshell__row' + (def.id === this.selectedType ? ' eshell__row--active' : '');
+        row.dataset.type = def.id;
+        row.innerHTML = `<span>${def.name || def.id}</span><span class="eshell__row-count">${count}</span>`;
+        row.addEventListener('click', () => this.selectCollection(def.id));
+        tree.appendChild(row);
+      });
     });
   }
 
   selectCollection(typeId) {
     this.selectedType = typeId;
     this.selectedObjectId = null;
-    this._body('assets').querySelectorAll('.eshell__row').forEach(r =>
+    if (this.model && this.model.setSelectedType) this.model.setSelectedType(typeId);
+    const crumb = this.root.querySelector('#eshell-assets-crumb');
+    if (crumb) crumb.textContent = typeId;
+    this.root.querySelectorAll('#eshell-assets-tree .eshell__row').forEach(r =>
       r.classList.toggle('eshell__row--active', r.dataset.type === typeId));
-    // Phase 0: list the collection's objects in the Hierarchy panel as a proof of wiring.
-    const body = this._body('hierarchy');
-    body.innerHTML = '';
-    const objs = (this._collections()[typeId]) || {};
-    const ids = Object.keys(objs);
-    if (!ids.length) { this._empty(body, 'Empty collection.'); return; }
-    ids.sort((a, b) => this._title(objs[a], a).localeCompare(this._title(objs[b], b)))
-      .forEach(id => {
-        const row = document.createElement('div');
-        row.className = 'eshell__row';
-        row.textContent = this._title(objs[id], id);
-        row.addEventListener('click', () => this.selectObject(typeId, id, row));
-        body.appendChild(row);
-      });
+    this._renderObjectGrid();
   }
 
-  selectObject(typeId, id, rowEl) {
+  _renderObjectGrid() {
+    const grid = this.root.querySelector('#eshell-assets-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    if (!this.selectedType) { this._empty(grid, 'Select a collection.'); return; }
+    const objs = this._collections()[this.selectedType] || {};
+    let ids = Object.keys(objs);
+    const q = (this._search || '').trim().toLowerCase();
+    if (q) ids = ids.filter(id => id.toLowerCase().includes(q) || this._title(objs[id], id).toLowerCase().includes(q));
+    if (!ids.length) { this._empty(grid, q ? 'No matches.' : 'Empty collection — use + New.'); return; }
+    ids.sort((a, b) => this._title(objs[a], a).localeCompare(this._title(objs[b], b))).forEach(id => {
+      const card = document.createElement('div');
+      card.className = 'eshell__asset' + (id === this.selectedObjectId ? ' eshell__asset--active' : '');
+      card.dataset.id = id;
+      const letter = (this._title(objs[id], id)[0] || '?').toUpperCase();
+      card.innerHTML = `<div class="eshell__asset-icon">${letter}</div><div class="eshell__asset-label">${this._title(objs[id], id)}</div>`;
+      card.addEventListener('click', () => this.selectObject(this.selectedType, id));
+      grid.appendChild(card);
+    });
+  }
+
+  selectObject(typeId, id) {
+    this.selectedType = typeId;
     this.selectedObjectId = id;
-    if (rowEl) {
-      this._body('hierarchy').querySelectorAll('.eshell__row').forEach(r => r.classList.remove('eshell__row--active'));
-      rowEl.classList.add('eshell__row--active');
+    // Drive selection through the MODEL only — never controller.selectObject(),
+    // which re-renders the legacy view and can spin up a second EditorECSGame.
+    if (this.model) {
+      if (this.model.setSelectedType) this.model.setSelectedType(typeId);
+      if (this.model.selectObject) this.model.selectObject(id);
     }
-    // Phase 0 inspector: raw key/value readout (Phase 3 replaces with typed widgets).
+    this.root.querySelectorAll('#eshell-assets-grid .eshell__asset').forEach(c =>
+      c.classList.toggle('eshell__asset--active', c.dataset.id === id));
+    this._renderInspector(typeId, id);
+  }
+
+  _renderInspector(typeId, id) {
     const obj = (this._collections()[typeId] || {})[id] || {};
     const body = this._body('inspector');
     body.innerHTML = '';
@@ -238,14 +282,121 @@ class EditorShell {
     head.className = 'eshell__group-title';
     head.textContent = `${typeId} · ${id}`;
     body.appendChild(head);
+    // Phase 3 replaces this readout with typed, editable widgets.
     Object.keys(obj).forEach(k => {
       const row = document.createElement('div');
       row.className = 'eshell__row';
       const v = obj[k];
       const disp = (v && typeof v === 'object') ? `{${Array.isArray(v) ? v.length + ' items' : '…'}}` : String(v);
-      row.innerHTML = `<span>${k}</span><span class="eshell__row-count">${disp.slice(0, 40)}</span>`;
+      const safe = String(disp).replace(/"/g, '&quot;');
+      row.innerHTML = `<span>${k}</span><span class="eshell__row-count" title="${safe}">${String(disp).slice(0, 40)}</span>`;
       body.appendChild(row);
     });
+  }
+
+  // ---- Asset CRUD (persist via existing Model + FileSystemSyncService seam) ---
+  _persistCurrent() {
+    // FS sync's 'saveObject' listener snapshots the model's current selection and writes it.
+    try { document.body.dispatchEvent(new CustomEvent('saveObject')); } catch (e) { console.warn(e); }
+  }
+  _newObject() {
+    if (!this.selectedType) { this._toast('Select a collection first'); return; }
+    const type = this.selectedType;
+    this._modal(`New ${type}`, [{ key: 'id', label: 'ID' }, { key: 'name', label: 'Name' }], { id: '', name: '' }, ({ id, name }) => {
+      if (!id) return this._toast('ID required');
+      const res = this.controller.createObject(type, id, name ? { title: name } : {});
+      if (!res || !res.success) return this._toast((res && res.message) || 'Failed');
+      this._renderCollectionTree();
+      this.selectObject(type, id);
+      this._persistCurrent();
+      this._renderObjectGrid();
+    });
+  }
+  _duplicateObject() {
+    if (!this.selectedType || !this.selectedObjectId) { this._toast('Select an asset'); return; }
+    const type = this.selectedType, base = this.selectedObjectId;
+    const baseTitle = this._title((this._collections()[type] || {})[base], base);
+    this._modal('Duplicate asset', [{ key: 'id', label: 'New ID' }, { key: 'name', label: 'New name' }],
+      { id: base + '_copy', name: 'Copy of ' + baseTitle }, ({ id, name }) => {
+        if (!id) return this._toast('ID required');
+        this.model.setSelectedType(type); this.model.selectObject(base);
+        const res = this.controller.duplicateObject(id, name);
+        if (!res || !res.success) return this._toast((res && res.message) || 'Failed');
+        this._renderCollectionTree();
+        this.selectObject(type, id);
+        this._persistCurrent();
+        this._renderObjectGrid();
+      });
+  }
+  _deleteObject() {
+    if (!this.selectedType || !this.selectedObjectId) { this._toast('Select an asset'); return; }
+    const type = this.selectedType, id = this.selectedObjectId;
+    const data = (this._collections()[type] || {})[id];
+    if (!window.confirm(`Delete ${type} "${this._title(data, id)}"? This removes its file.`)) return;
+    this.model.setSelectedType(type); this.model.selectObject(id);
+    this.controller.deleteObject();
+    if (this.controller.fs && this.controller.fs.deleteObjectFromFilesystem) {
+      this.controller.fs.deleteObjectFromFilesystem(type, id, data);
+    }
+    this.selectedObjectId = null;
+    this._renderCollectionTree();
+    this._renderObjectGrid();
+    this._renderInspectorEmpty('Select an asset to inspect.');
+  }
+  _newCollection() {
+    this._modal('New collection', [{ key: 'id', label: 'ID (plural)' }, { key: 'name', label: 'Name' }, { key: 'category', label: 'Category' }],
+      { id: '', name: '', category: '' }, ({ id, name, category }) => {
+        if (!id) return this._toast('ID required');
+        const res = this.controller.createType(id, name || id, (name || id).replace(/s$/, ''), category || 'uncategorized');
+        if (!res || !res.success) return this._toast((res && res.message) || 'Failed');
+        this.renderAssets();
+        this.selectCollection(id);
+      });
+  }
+
+  _miniBtn(label, onClick, variant) {
+    const b = document.createElement('button');
+    b.className = 'eshell__btn' + (variant === 'danger' ? ' eshell__btn--danger' : '');
+    b.style.padding = '3px 9px';
+    b.textContent = label;
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  // Lightweight modal for create/duplicate/collection prompts.
+  _modal(title, fields, initial, onOk) {
+    const overlay = document.createElement('div');
+    overlay.className = 'eshell__modal-overlay';
+    const box = document.createElement('div');
+    box.className = 'eshell__modal';
+    const h = document.createElement('div'); h.className = 'eshell__modal-title'; h.textContent = title;
+    box.appendChild(h);
+    const inputs = {};
+    fields.forEach(f => {
+      const wrap = document.createElement('label'); wrap.className = 'eshell__modal-field';
+      const lab = document.createElement('span'); lab.textContent = f.label;
+      const inp = document.createElement('input'); inp.value = (initial && initial[f.key]) || '';
+      inputs[f.key] = inp;
+      wrap.append(lab, inp); box.appendChild(wrap);
+    });
+    const actions = document.createElement('div'); actions.className = 'eshell__modal-actions';
+    const ok = this._miniBtn('OK', () => {
+      const vals = {}; Object.keys(inputs).forEach(k => vals[k] = inputs[k].value.trim());
+      overlay.remove(); onOk(vals);
+    });
+    ok.classList.add('eshell__btn--primary');
+    actions.append(this._miniBtn('Cancel', () => overlay.remove()), ok);
+    box.appendChild(actions);
+    overlay.appendChild(box);
+    overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) overlay.remove(); });
+    box.addEventListener('keydown', (e) => { if (e.key === 'Enter') ok.click(); if (e.key === 'Escape') overlay.remove(); });
+    this.root.appendChild(overlay);
+    const first = inputs[fields[0].key]; if (first) { first.focus(); first.select(); }
+  }
+
+  _toast(msg) {
+    const t = document.createElement('div'); t.className = 'eshell__toast'; t.textContent = msg;
+    this.root.appendChild(t); setTimeout(() => t.remove(), 2200);
   }
 
   // ---- Menu actions (delegate to legacy controller where available) ----------

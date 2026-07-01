@@ -787,6 +787,43 @@ class FileSystemSyncService {
         }
     }
 
+    /**
+     * Delete an object's file(s) from the filesystem. Mirrors the path logic in
+     * syncObjectToFilesystem so the main JSON and any special-property sidecar
+     * files (script/html/css/testScript) are all removed. Used by the new editor
+     * shell; the legacy path only removed objects from memory (file lingered).
+     */
+    async deleteObjectFromFilesystem(type, id, data) {
+        const projectId = this.gameEditor.model.getCurrentProject();
+        if (!projectId || !type || !id) return { success: false };
+        const category = this.gameEditor.model.getCategoryByType(type) || 'uncategorized';
+        if (category === 'uncategorized') return { success: false };
+
+        const basePath = `${projectId}/${this.projectScriptDirectoryName}/${category}/${type}`;
+        const useDataFolder = this.hasSpecialPropertiesInType(type);
+        const fileName = (useDataFolder && data && data.fileName) ? data.fileName : id;
+
+        const paths = [useDataFolder ? `${basePath}/data/${fileName}.json` : `${basePath}/${fileName}.json`];
+        if (data) {
+            this.propertyConfig.forEach(config => {
+                if (typeof data[config.propertyName] === 'string') {
+                    paths.push(`${basePath}/${config.folder || config.ext}/${fileName}.${config.ext}`);
+                }
+            });
+        }
+
+        for (const path of paths) {
+            try {
+                await fetch('/delete-file', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path })
+                });
+            } catch (e) { console.warn(`[FS] delete-file failed: ${path}`, e); }
+        }
+        return { success: true, paths };
+    }
+
     // Fix for the syncFromFilesystem method to properly handle HTML and CSS files
     async syncFromFilesystem() {
         const projectId = this.gameEditor.model.getCurrentProject();
