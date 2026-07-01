@@ -116,6 +116,39 @@
 .eshell__panel--viewport .eshell__panel-body { position: relative; padding: 0; overflow: hidden; }
 .eshell__viewport-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .eshell__vp-sep { width: 1px; height: 18px; background: var(--editor-border-color, #22303f); margin: 0 5px; display: inline-block; }
+
+/* ---- Center tabs (Scene + tool editors) ---- */
+.eshell__tabs {
+  flex: 0 0 auto; display: flex; height: 32px; overflow-x: auto;
+  background: var(--editor-bg-light, #16202f); border-bottom: 1px solid var(--editor-border-color, #22303f);
+}
+.eshell__tab {
+  display: flex; align-items: center; gap: 7px; padding: 0 12px; height: 100%;
+  cursor: pointer; font-size: 12px; white-space: nowrap; user-select: none;
+  color: var(--editor-text-muted, #5e708a); border-right: 1px solid var(--editor-border-color, #22303f);
+}
+.eshell__tab:hover { color: var(--editor-text-secondary, #90a2ba); }
+.eshell__tab--active { color: var(--editor-primary, #35e0c8); background: var(--editor-bg-medium, #111a27); box-shadow: inset 0 -2px 0 var(--editor-primary, #35e0c8); }
+.eshell__tab-close { font-size: 14px; line-height: 1; opacity: 0.55; }
+.eshell__tab-close:hover { opacity: 1; color: var(--editor-danger, #ff5c6c); }
+
+.eshell__tab-content { flex: 1 1 auto; min-height: 0; position: relative; }
+.eshell__tab-pane { position: absolute; inset: 0; display: flex; flex-direction: column; min-height: 0; }
+.eshell__tab-pane--hidden { display: none; }
+
+.eshell__vp-toolbar {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid var(--editor-border-color, #22303f);
+}
+.eshell__viewport-host { flex: 1 1 auto; min-height: 0; position: relative; }
+
+/* ---- Script (Monaco) sub-editor ---- */
+.eshell__script-pane { background: var(--editor-bg-dark, #0b121c); }
+.eshell__script-bar {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 6px 10px;
+  background: var(--editor-bg-light, #16202f); border-bottom: 1px solid var(--editor-border-color, #22303f);
+}
+.eshell__script-editor { flex: 1 1 auto; min-height: 0; }
 .eshell__viewport-placeholder {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 10px; text-align: center; color: var(--editor-text-muted, #5e708a);
