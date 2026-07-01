@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GUTS Editor — Instrument theme preview</title>
+  <!-- Real editor structure -->
+  <link rel="stylesheet" href="./editor.css" />
+  <!-- Active theme, loaded last (mirrors #theme_style injection order) -->
+  <link rel="stylesheet" href="../global/collections/editor/themes/css/instrument.css" />
+  <style>
+    /* Preview-only: stand-in logo so the file is self-contained */
+    .sidebar .logo-mark {
+      width: 120px; margin: 8px auto 4px; display: block; text-align: center;
+      font-family: var(--e-font-mono); font-weight: 700; letter-spacing: 0.3em;
+      color: var(--cyan); border: 1px solid var(--e-line); border-radius: 6px;
+      padding: 14px 0; background: var(--e-bg-0);
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo-mark">GUTS</div>
+
+      <div class="project-selector-container">
+        <select id="project-selector">
+          <option>HeroArena</option>
+          <option>TurnBasedWarfare</option>
+          <option value="__create_new__">+ Create New Project</option>
+        </select>
+        <button id="launch-game-btn" class="primary">Launch Project</button>
+      </div>
+
+      <div class="object-list" id="object-list">
+        <div class="type-selector">
+          <div class="category highlight" data-category-key="prefabs">
+            <div class="category-header">Prefabs</div>
+            <div class="category-types" style="display:block">
+              <div class="object-type-item selected" data-type="entities">
+                entities <span class="item-count">(12)</span>
+              </div>
+              <div class="object-selector">
+                <select id="object-dropdown" class="object-dropdown">
+                  <option>fireTower</option>
+                  <option>iceTower</option>
+                  <option>arrowTower</option>
+                </select>
+              </div>
+              <div class="object-type-item" data-type="buildings">
+                buildings <span class="item-count">(5)</span>
+              </div>
+            </div>
+          </div>
+          <div class="category" data-category-key="scripts">
+            <div class="category-header">Scripts</div>
+          </div>
+          <div class="category" data-category-key="settings">
+            <div class="category-header">Settings</div>
+          </div>
+        </div>
+        <div class="type-actions">
+          <button id="add-type-btn" class="small-btn">Add Type</button>
+          <button id="remove-type-btn" class="small-btn danger">Remove Type</button>
+        </div>
+      </div>
+
+      <div class="sidebar-actions">
+        <button class="primary" id="add-object-btn">Add New Entity</button>
+        <button id="delete-project-btn" class="danger">delete project</button>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-content">
+      <div class="editor full-height" id="editor">
+        <a href="javascript:void(0)" id="togglePropertyVisibility">[ - ]</a>
+        <h2>Editing: Fire Tower (entity)</h2>
+
+        <div class="instructions">
+          Edit properties below, then save. Fields ending in <code>Color</code>,
+          <code>File</code>, or matching a module (like <code>render</code>) get a
+          specialized control.
+        </div>
+
+        <div id="editor-properties-container">
+          <h3>Properties</h3>
+          <div class="property-list" id="custom-properties">
+            <div class="property-item">
+              <input class="property-key" type="text" value="title">
+              <div class="property-value-container">
+                <input class="property-value" type="text" value="Fire Tower">
+              </div>
+              <button class="danger">Remove</button>
+            </div>
+            <div class="property-item">
+              <input class="property-key" type="text" value="damage">
+              <div class="property-value-container">
+                <input class="property-value" type="text" value="45">
+              </div>
+              <button class="danger">Remove</button>
+            </div>
+            <div class="property-item">
+              <input class="property-key" type="text" value="range">
+              <div class="property-value-container">
+                <input class="property-value" type="text" value="320">
+              </div>
+              <button class="danger">Remove</button>
+            </div>
+            <div class="property-item">
+              <input class="property-key" type="text" value="attackable">
+              <div class="property-value-container">
+                <select class="property-value">
+                  <option>true</option>
+                  <option>false</option>
+                </select>
+              </div>
+              <button class="danger">Remove</button>
+            </div>
+            <div class="property-item">
+              <input class="property-key" type="text" value="projectileColor">
+              <div class="property-value-container">
+                <input class="property-value color-text" type="text" value="#f5a623">
+                <input type="color" value="#f5a623">
+              </div>
+              <button class="danger">Remove</button>
+            </div>
+            <div class="property-item">
+              <input class="property-key" type="text" value="render">
+              <div class="property-value-container">
+                <input class="property-value" type="text" value='{"model":[...]}' id="render-value">
+                <button>edit</button>
+              </div>
+              <button class="danger">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <div>
+            <button id="add-property-btn">Add Custom Property</button>
+            <button id="add-renderer-btn">Add Render</button>
+            <button id="add-script-btn">Add Script</button>
+          </div>
+        </div>
+        <div class="actions">
+          <div>
+            <button class="primary" id="save-object-btn">Save entity</button>
+            <button id="duplicate-object-btn">Duplicate entity</button>
+            <button id="revert-changes-btn">Revert Changes</button>
+            <button class="danger" id="delete-object-btn">Delete entity</button>
+          </div>
+        </div>
+        <div class="success-message">Changes saved!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A modal, shown for preview -->
+  <div id="modals">
+    <div class="modal show" id="new-object-modal">
+      <div class="modal-content">
+        <h2>Create New Entity</h2>
+        <div class="form-group">
+          <label for="new-object-id">Entity ID:</label>
+          <input type="text" id="new-object-id" placeholder="e.g. fireTower">
+        </div>
+        <div class="form-group">
+          <label for="new-object-name">Display Name:</label>
+          <input type="text" id="new-object-name" placeholder="e.g. Fire Tower">
+        </div>
+        <div class="actions">
+          <button class="primary">Create Entity</button>
+          <button>Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

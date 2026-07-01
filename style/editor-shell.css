@@ -1,0 +1,147 @@
+/* =============================================================================
+   GUTS Editor — NEW SHELL (Unity-like)  [Phase 0 scaffolding]
+   Editor-only. Loaded by projects/Editor/index.html; activated via ?ui=new.
+   Uses the Instrument --editor-* tokens from editor-modules.css.
+   Layout: menubar (top) · hierarchy | viewport | inspector (middle) · assets (bottom)
+   ============================================================================= */
+
+.eshell {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: var(--eshell-left, 264px) 1fr var(--eshell-right, 320px);
+  grid-template-rows: 40px 1fr var(--eshell-bottom, 224px);
+  grid-template-areas:
+    "menu      menu     menu"
+    "hierarchy viewport inspector"
+    "assets    assets   assets";
+  gap: 1px;
+  background: var(--editor-border-color, #22303f);
+  color: var(--editor-text-primary, #e7eef7);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+/* ---- Panels ---- */
+.eshell__panel {
+  background: var(--editor-bg-medium, #111a27);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+.eshell__panel--menu      { grid-area: menu; flex-direction: row; align-items: center; background: var(--editor-bg-light, #16202f); }
+.eshell__panel--hierarchy { grid-area: hierarchy; }
+.eshell__panel--viewport  { grid-area: viewport; background: var(--editor-bg-dark, #0b121c); }
+.eshell__panel--inspector { grid-area: inspector; }
+.eshell__panel--assets    { grid-area: assets; }
+
+/* ---- Panel headers ---- */
+.eshell__panel-header {
+  flex: 0 0 auto;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  font-family: var(--editor-font-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--editor-text-muted, #5e708a);
+  background: var(--editor-bg-light, #16202f);
+  border-bottom: 1px solid var(--editor-border-color, #22303f);
+  user-select: none;
+}
+.eshell__panel-header::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 1px;
+  background: var(--editor-primary, #35e0c8);
+  box-shadow: 0 0 8px var(--editor-cyan-glow, rgba(53, 224, 200, 0.5));
+}
+.eshell__panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px;
+}
+
+/* ---- Menu bar ---- */
+.eshell__brand {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 14px 0 12px; height: 100%;
+  border-right: 1px solid var(--editor-border-color, #22303f);
+  font-weight: 600; letter-spacing: 0.02em;
+}
+.eshell__brand-dot { width: 9px; height: 9px; border-radius: 2px; background: var(--editor-primary, #35e0c8); box-shadow: 0 0 10px var(--editor-cyan-glow, rgba(53,224,200,.6)); }
+.eshell__menu-spacer { flex: 1 1 auto; }
+.eshell__menu-group { display: flex; align-items: center; gap: 6px; padding: 0 10px; height: 100%; }
+.eshell__menu-group + .eshell__menu-group { border-left: 1px solid var(--editor-border-color, #22303f); }
+.eshell__btn {
+  appearance: none; cursor: pointer;
+  font-family: var(--editor-font-mono, 'JetBrains Mono', monospace);
+  font-size: 11px; letter-spacing: 0.02em;
+  color: var(--editor-text-secondary, #90a2ba);
+  background: var(--editor-bg-medium, #111a27);
+  border: 1px solid var(--editor-border-color, #22303f);
+  border-radius: var(--editor-border-radius-sm, 4px);
+  padding: 5px 10px;
+  transition: var(--editor-transition, 0.15s);
+}
+.eshell__btn:hover { color: var(--editor-text-primary, #e7eef7); border-color: var(--editor-border-color-hover, #35506e); }
+.eshell__btn--primary { color: #04231e; background: var(--editor-primary, #35e0c8); border-color: var(--editor-primary, #35e0c8); font-weight: 600; }
+.eshell__btn--primary:hover { filter: brightness(1.08); color: #04231e; }
+.eshell__select {
+  font-family: var(--editor-font-mono, 'JetBrains Mono', monospace); font-size: 11px;
+  color: var(--editor-text-primary, #e7eef7);
+  background: var(--editor-bg-medium, #111a27);
+  border: 1px solid var(--editor-border-color, #22303f);
+  border-radius: var(--editor-border-radius-sm, 4px);
+  padding: 4px 8px;
+}
+
+/* ---- Splitters (resize handles) ---- */
+.eshell__splitter { position: absolute; z-index: 5; background: transparent; }
+.eshell__splitter:hover, .eshell__splitter--active { background: var(--editor-primary, #35e0c8); }
+.eshell__splitter--col { top: 0; bottom: 0; width: 5px; cursor: col-resize; }
+.eshell__splitter--row { left: 0; right: 0; height: 5px; cursor: row-resize; }
+.eshell__splitter--left   { right: -3px; }   /* on hierarchy right edge */
+.eshell__splitter--right  { left: -3px; }     /* on inspector left edge */
+.eshell__splitter--bottom { top: -3px; }      /* on assets top edge */
+
+/* ---- Viewport placeholder (Phase 1 replaces with live canvas) ---- */
+.eshell__viewport-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.eshell__viewport-placeholder {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; text-align: center; color: var(--editor-text-muted, #5e708a);
+  background:
+    linear-gradient(var(--editor-grid-line, rgba(122,152,194,.06)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--editor-grid-line, rgba(122,152,194,.06)) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+.eshell__viewport-placeholder h2 { margin: 0; font-size: 15px; color: var(--editor-text-secondary, #90a2ba); font-weight: 600; }
+.eshell__viewport-placeholder p  { margin: 0; font-family: var(--editor-font-mono, monospace); font-size: 11px; letter-spacing: 0.04em; }
+
+/* ---- Generic list rows (assets / hierarchy) ---- */
+.eshell__group-title {
+  font-family: var(--editor-font-mono, monospace); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--editor-text-muted, #5e708a); margin: 10px 4px 4px; user-select: none;
+}
+.eshell__row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; border-radius: var(--editor-border-radius-sm, 4px);
+  font-size: 12.5px; color: var(--editor-text-secondary, #90a2ba); cursor: pointer;
+  transition: var(--editor-transition, 0.15s);
+}
+.eshell__row:hover { background: var(--editor-bg-lighter, #1d2a3c); color: var(--editor-text-primary, #e7eef7); }
+.eshell__row--active { background: var(--editor-cyan-dim, rgba(53,224,200,.14)); color: var(--editor-primary, #35e0c8); box-shadow: inset 2px 0 0 var(--editor-primary, #35e0c8); }
+.eshell__row-count { margin-left: auto; font-family: var(--editor-font-mono, monospace); font-size: 10px; color: var(--editor-text-muted, #5e708a); }
+
+.eshell__empty { padding: 16px 10px; color: var(--editor-text-muted, #5e708a); font-family: var(--editor-font-mono, monospace); font-size: 11px; }
+
+/* Hide the legacy chrome when new shell is active */
+body.eshell-active > #container,
+body.eshell-active > #modals { display: none !important; }

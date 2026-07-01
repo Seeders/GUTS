@@ -734,6 +734,41 @@ class EntryGenerator {
      * Generate engine entry point
      */
     /**
+     * Collect editor-only UI shell files from engine/editor/, ordered so that a
+     * class which `extends` another local class is imported after its base.
+     * Editor bundle only — never affects any game runtime bundle.
+     */
+    _collectEditorUiFiles(dir) {
+        if (!fs.existsSync(dir)) return [];
+        const files = [];
+        const walk = (d) => {
+            for (const ent of fs.readdirSync(d, { withFileTypes: true })) {
+                const full = path.join(d, ent.name);
+                if (ent.isDirectory()) walk(full);
+                else if (ent.name.endsWith('.js')) files.push(full);
+            }
+        };
+        walk(dir);
+        const info = files.map(f => {
+            const txt = fs.readFileSync(f, 'utf8');
+            const clsM = txt.match(/class\s+(\w+)/);
+            const extM = txt.match(/class\s+\w+\s+extends\s+(\w+)/);
+            return { file: f, name: clsM ? clsM[1] : path.basename(f, '.js'), parent: extM ? extM[1] : null };
+        });
+        const names = new Set(info.map(i => i.name));
+        const ordered = [], emitted = new Set();
+        let guard = 0;
+        while (ordered.length < info.length && guard++ < info.length + 5) {
+            for (const i of info) {
+                if (emitted.has(i.name)) continue;
+                if (!i.parent || !names.has(i.parent) || emitted.has(i.parent)) { ordered.push(i); emitted.add(i.name); }
+            }
+        }
+        info.forEach(i => { if (!emitted.has(i.name)) ordered.push(i); });
+        return ordered.map(i => i.file);
+    }
+
+    /**
      * Generate editor entry point
      */
     generateEditorEntry() {
@@ -767,6 +802,16 @@ class EntryGenerator {
         sections.push(`import EditorView from '${engineDir}/EditorView.js';`);
         sections.push(`import EditorController from '${engineDir}/EditorController.js';`);
         sections.push('');
+
+        // Editor UI shell files (new Unity-like shell) — editor-only, auto-included
+        // from engine/editor/. class-export-loader registers each on window.GUTS,
+        // so side-effect imports suffice. Ordered so base classes load first.
+        const editorUiFiles = this._collectEditorUiFiles(path.join(__dirname, '..', 'engine', 'editor'));
+        if (editorUiFiles.length) {
+            sections.push('// Editor UI Shell Files (engine/editor)');
+            editorUiFiles.forEach(f => sections.push(`import '${f.replace(/\\/g, '/')}';`));
+            sections.push('');
+        }
 
         // Initialize window.GUTS
         sections.push('// Initialize global namespace');

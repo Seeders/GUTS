@@ -57,15 +57,15 @@
 }
 
 .systems-editor__source-indicator--systems {
-    background-color: #6366f1;
+    background-color: #35e0c8;
 }
 
 .systems-editor__source-indicator--client {
-    background-color: #22c55e;
+    background-color: #3ddc97;
 }
 
 .systems-editor__source-indicator--server {
-    background-color: #f97316;
+    background-color: #f5a623;
 }
 
 /* System list styling */
@@ -150,7 +150,7 @@
     left: 10px;
     display: flex;
     gap: 16px;
-    background-color: rgba(15, 23, 42, 0.9);
+    background-color: rgba(11, 18, 28, 0.9);
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 11px;
@@ -170,15 +170,15 @@
 }
 
 .systems-editor__legend-color--systems {
-    background-color: #6366f1;
+    background-color: #35e0c8;
 }
 
 .systems-editor__legend-color--client {
-    background-color: #22c55e;
+    background-color: #3ddc97;
 }
 
 .systems-editor__legend-color--server {
-    background-color: #f97316;
+    background-color: #f5a623;
 }
 
 .systems-editor__legend-line {
@@ -187,14 +187,14 @@
 }
 
 .systems-editor__legend-line--satisfied {
-    background-color: #22c55e;
+    background-color: #3ddc97;
 }
 
 .systems-editor__legend-line--missing {
     background: repeating-linear-gradient(
         90deg,
-        #ef4444 0px,
-        #ef4444 4px,
+        #ff5c6c 0px,
+        #ff5c6c 4px,
         transparent 4px,
         transparent 8px
     );
@@ -263,15 +263,15 @@
 }
 
 .systems-editor__service-item--provided {
-    color: #22c55e;
+    color: #3ddc97;
 }
 
 .systems-editor__service-item--satisfied {
-    color: #22c55e;
+    color: #3ddc97;
 }
 
 .systems-editor__service-item--missing {
-    color: #ef4444;
+    color: #ff5c6c;
 }
 
 .systems-editor__service-status {
@@ -296,7 +296,7 @@
 /* Hover tooltip for connections */
 .systems-editor__tooltip {
     position: absolute;
-    background-color: rgba(15, 23, 42, 0.95);
+    background-color: rgba(11, 18, 28, 0.95);
     color: var(--editor-text-primary);
     padding: 6px 10px;
     border-radius: 4px;
@@ -367,12 +367,12 @@
 }
 
 .systems-editor__isolate-btn:hover {
-    background-color: var(--editor-primary-hover, #4f46e5);
+    background-color: var(--editor-primary-hover, #2fd4bd);
 }
 
 /* Service view indicator in legend */
 .systems-editor__legend-color--service {
-    background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+    background: linear-gradient(135deg, #b98cff 0%, #35e0c8 100%);
 }
 
 /* Toolbar divider */

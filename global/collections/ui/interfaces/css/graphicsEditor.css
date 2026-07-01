@@ -106,7 +106,7 @@
 
 .graphics-editor__group-item.drag-over {
     border-color: var(--editor-success);
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+    box-shadow: 0 0 8px rgba(53, 224, 200, 0.3);
 }
 
 /* Mode-specific visibility */

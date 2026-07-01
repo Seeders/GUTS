@@ -14,21 +14,21 @@
 
         <div class="editor-module__section">
             <h3 class="editor-module__section-title">Simulation</h3>
-            <div style="display: flex; gap: 4px; margin-top: 8px;">
-                <button id="bt-step-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Evaluate tree once">Step</button>
-                <button id="bt-play-btn" class="editor-module__btn editor-module__btn--primary" style="flex: 1;" title="Evaluate tree continuously">▶ Play</button>
+            <div class="bt-sim-controls">
+                <button id="bt-step-btn" class="editor-module__btn editor-module__btn--primary" title="Evaluate tree once">Step</button>
+                <button id="bt-play-btn" class="editor-module__btn editor-module__btn--primary" title="Evaluate tree continuously">▶ Play</button>
             </div>
-            <button id="bt-reset-sim-btn" class="editor-module__btn" style="margin-top: 4px; width: 100%;">Reset</button>
-            <div id="bt-sim-result" class="bt-sim-result" style="margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 4px; font-size: 12px; display: none;"></div>
+            <button id="bt-reset-sim-btn" class="editor-module__btn bt-reset-btn">Reset</button>
+            <div id="bt-sim-result" class="bt-sim-result" style="display: none;"></div>
         </div>
 
         <div class="editor-module__section">
             <h3 class="editor-module__section-title">Node Types Reference</h3>
-            <div style="font-size: 12px; color: #888; line-height: 1.6;">
-                <div><strong style="color: #10b981;">selector:</strong> Try children until one succeeds</div>
-                <div><strong style="color: #f59e0b;">sequence:</strong> Execute children in order</div>
-                <div><strong style="color: #3b82f6;">condition:</strong> Check a condition</div>
-                <div><strong style="color: #ef4444;">action:</strong> Execute an action</div>
+            <div class="bt-legend">
+                <div><strong class="bt-legend__type--selector">selector:</strong> Try children until one succeeds</div>
+                <div><strong class="bt-legend__type--sequence">sequence:</strong> Execute children in order</div>
+                <div><strong class="bt-legend__type--condition">condition:</strong> Check a condition</div>
+                <div><strong class="bt-legend__type--action">action:</strong> Execute an action</div>
             </div>
         </div>
     </div>
