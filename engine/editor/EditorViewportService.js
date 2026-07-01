@@ -91,6 +91,7 @@ class EditorViewportService {
       return false;
     }
     const levelName = this.options.level || this._defaultLevel(collections);
+    this.levelName = levelName;
 
     // 1. Embedded ECS context bound to our canvas.
     this.editorContext = new G.EditorECSGame(this.app, this.canvas);
@@ -137,7 +138,251 @@ class EditorViewportService {
 
     // 8. Start the fixed-timestep update/render loop (its own RAF).
     this.editorContext.startRenderLoop();
+
+    // 9. Interaction layer (Phase 4): picking, selection sync, placement, gizmos.
+    try { this._initInteraction(); } catch (e) { console.warn('[EditorViewportService] interaction init failed:', e); }
     return true;
+  }
+
+  // ==========================================================================
+  // Phase 4 — scene interaction (picking / selection / placement / gizmos)
+  // Entities are batched (no per-entity Object3D), so we pick via ground-raycast
+  // + nearest transform, reuse SelectedUnitSystem for highlight, and attach the
+  // SE_GizmoManager to a proxy Object3D. All read off editorContext/worldRenderer.
+  // ==========================================================================
+  _initInteraction() {
+    const G = this.GUTS, ctx = this.editorContext, wr = this.worldRenderer;
+    if (!ctx || !wr) return;
+
+    if (G.RaycastHelper) this.raycast = new G.RaycastHelper(wr.getCamera(), wr.getScene());
+    this.sceneEntities = [];
+    this._syncEntitiesFromECS();
+
+    // Selection system (highlight + events) — reuse SelectedUnitSystem.
+    try {
+      if (!ctx.hasService('getWorldPositionFromMouse')) {
+        ctx.register('getWorldPositionFromMouse', (sx, sy) => this._worldFromScreen(sx, sy));
+      }
+      if (ctx.hasService('configureSelectionSystem')) {
+        ctx.call('configureSelectionSystem', {
+          enableTeamFilter: false, excludeCollections: [], includeCollections: null,
+          prioritizeUnitsOverBuildings: false, showGameUI: false, camera: wr.getCamera()
+        });
+      }
+      if (ctx.on) {
+        ctx.on('onMultipleUnitsSelected', (ids) => this._onEcsSelection(ids));
+        ctx.on('onDeSelectAll', () => this._onEcsSelection(null));
+      }
+    } catch (e) { console.warn('[viewport] selection config failed', e); }
+
+    // Gizmo (SE_GizmoManager) attached to a proxy Object3D.
+    try {
+      if (G.SE_GizmoManager && window.THREE) {
+        this.gizmo = new G.SE_GizmoManager();
+        this.gizmoHelper = new window.THREE.Object3D();
+        wr.getScene().add(this.gizmoHelper);
+        this.gizmo.init({
+          scene: wr.getScene(), camera: wr.getCamera(), renderer: wr.renderer, controls: wr.controls,
+          onTransformChange: (pos, rot, scale) => this._onGizmoChange(pos, rot, scale)
+        });
+      }
+    } catch (e) { console.warn('[viewport] gizmo init failed', e); }
+
+    // Left-click select (guarded against gizmo drag).
+    this._onCanvasClick = (e) => {
+      if (e.button !== 0) return;
+      if (this.gizmo && this.gizmo.isDraggingGizmo && this.gizmo.isDraggingGizmo()) return;
+      const id = this._pickEntity(e);
+      if (id != null) this.selectEntity(id); else this.deselectAll();
+    };
+    this.canvas.addEventListener('click', this._onCanvasClick);
+
+    // Drag-drop placement from the Assets browser.
+    this._onDragOver = (e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; };
+    this._onDrop = (e) => {
+      e.preventDefault();
+      let payload = null;
+      try { payload = JSON.parse((e.dataTransfer && (e.dataTransfer.getData('application/x-guts-asset') || e.dataTransfer.getData('text/plain'))) || 'null'); } catch (_) {}
+      if (payload && payload.collection && payload.type) this.placeEntity(payload.collection, payload.type, e);
+    };
+    this.canvas.addEventListener('dragover', this._onDragOver);
+    this.canvas.addEventListener('drop', this._onDrop);
+  }
+
+  _worldFromScreen(sx, sy) {
+    if (!this.raycast || !this.worldRenderer) return null;
+    const rect = this.canvas.getBoundingClientRect();
+    const ndcX = ((sx - rect.left) / rect.width) * 2 - 1;
+    const ndcY = -((sy - rect.top) / rect.height) * 2 + 1;
+    const ground = this.worldRenderer.getGroundMesh && this.worldRenderer.getGroundMesh();
+    if (this.raycast.getWorldPositionFromMouse) return this.raycast.getWorldPositionFromMouse(ndcX, ndcY, 0, ground);
+    return this.raycast.rayCastGround ? this.raycast.rayCastGround(ndcX, ndcY, ground) : null;
+  }
+  _groundFromEvent(e) {
+    if (!this.raycast) return null;
+    const ground = this.worldRenderer.getGroundMesh && this.worldRenderer.getGroundMesh();
+    if (this.raycast.mouseEventToNDC && this.raycast.rayCastGround) {
+      const ndc = this.raycast.mouseEventToNDC(e, this.canvas);
+      if (ndc) return this.raycast.rayCastGround(ndc.x, ndc.y, ground);
+    }
+    return this._worldFromScreen(e.clientX, e.clientY);
+  }
+  _pickEntity(e) {
+    const wp = this._groundFromEvent(e);
+    if (!wp) return null;
+    let best = null, bestD = Infinity;
+    for (const le of (this.sceneEntities || [])) {
+      const t = this.editorContext.getComponent(le.id, 'transform'); if (!t || !t.position) continue;
+      const radius = (this.editorContext.getComponent(le.id, 'collision') || {}).radius || 25;
+      const dx = wp.x - t.position.x, dz = wp.z - t.position.z, d = dx * dx + dz * dz;
+      if (d < radius * radius && d < bestD) { bestD = d; best = le; }
+    }
+    return best ? best.id : null;
+  }
+
+  _syncEntitiesFromECS() {
+    const ctx = this.editorContext;
+    if (!ctx || !ctx.getAllEntities) { this.sceneEntities = []; return this.sceneEntities; }
+    const rev = (ctx.getReverseEnums && ctx.getReverseEnums()) || {};
+    const markers = [['worldObject', 'worldObjects'], ['building', 'buildings'], ['unit', 'units'], ['exitZone', 'exitZones']];
+    const out = [];
+    for (const id of ctx.getAllEntities()) {
+      let collection = null;
+      for (const m of markers) { if (ctx.getComponent(id, m[0]) != null) { collection = m[1]; break; } }
+      if (!collection) continue;
+      const ut = ctx.getComponent(id, 'unitType');
+      if (!ut || ut.type == null) continue;
+      const spawnType = rev[collection] && rev[collection][ut.type];
+      if (!spawnType) continue;
+      const t = ctx.getComponent(id, 'transform');
+      out.push({ id, collection, spawnType, position: t && t.position });
+    }
+    this.sceneEntities = out;
+    return out;
+  }
+  getSceneEntities() { return this._syncEntitiesFromECS(); }
+  getSelectedEntity() { return this._selectedEntity != null ? this._selectedEntity : null; }
+  getEntityTransform(id) { return this.editorContext ? this.editorContext.getComponent(id, 'transform') : null; }
+
+  selectEntity(id) {
+    this._selectedEntity = id;
+    try { if (this.editorContext.hasService('selectEntity')) this.editorContext.call('selectEntity', id); } catch (e) {}
+    this._attachGizmo(id);
+    if (this.onSelectionChange) this.onSelectionChange(id, this._entityRecord(id));
+  }
+  deselectAll() {
+    this._selectedEntity = null;
+    try { if (this.editorContext.hasService('deselectAllUnits')) this.editorContext.call('deselectAllUnits'); } catch (e) {}
+    if (this.gizmo && this.gizmo.detach) this.gizmo.detach();
+    if (this.onSelectionChange) this.onSelectionChange(null, null);
+  }
+  _onEcsSelection(ids) {
+    let first = null;
+    if (ids && ids.size) first = ids.values().next().value;
+    else if (Array.isArray(ids) && ids.length) first = ids[0];
+    if (first === this._selectedEntity) return;   // avoid feedback loop
+    this._selectedEntity = first;
+    this._attachGizmo(first);
+    if (this.onSelectionChange) this.onSelectionChange(first, this._entityRecord(first));
+  }
+  _entityRecord(id) { return (this.sceneEntities || []).find(e => e.id === id) || null; }
+
+  _attachGizmo(id) {
+    if (!this.gizmo || !this.gizmoHelper) return;
+    if (id == null) { if (this.gizmo.detach) this.gizmo.detach(); return; }
+    const t = this.editorContext.getComponent(id, 'transform');
+    if (!t) return;
+    const p = t.position || {}, r = t.rotation || {}, s = t.scale || {};
+    this.gizmoHelper.position.set(p.x || 0, p.y || 0, p.z || 0);
+    this.gizmoHelper.rotation.set(r.x || 0, r.y || 0, r.z || 0);
+    this.gizmoHelper.scale.set(s.x || 1, s.y || 1, s.z || 1);
+    if (this.gizmo.attach) this.gizmo.attach(this.gizmoHelper);
+  }
+  setGizmoMode(mode) { if (this.gizmo && this.gizmo.setMode) this.gizmo.setMode(mode); }
+
+  _onGizmoChange(position, rotation, scale) {
+    const id = this._selectedEntity; if (id == null) return;
+    const t = this.editorContext.getComponent(id, 'transform'); if (!t) return;
+    if (position) Object.assign(t.position, position);
+    if (rotation) { t.rotation = t.rotation || { x: 0, y: 0, z: 0 }; Object.assign(t.rotation, rotation); }
+    if (scale) { t.scale = t.scale || { x: 1, y: 1, z: 1 }; Object.assign(t.scale, scale); }
+    try {
+      if (this.editorContext.renderSystem && this.editorContext.renderSystem.updateEntity) {
+        this.editorContext.renderSystem.updateEntity(id, { position: t.position, rotation: (t.rotation && t.rotation.y) || 0, transform: t });
+      }
+    } catch (e) {}
+    if (this.onEntityTransform) this.onEntityTransform(id, t);
+    this._scheduleLevelPersist();
+  }
+
+  placeEntity(collection, spawnType, e) {
+    const ctx = this.editorContext;
+    if (!ctx || !ctx.hasService('createEntityFromPrefab')) { console.warn('[viewport] createEntityFromPrefab unavailable'); return null; }
+    const wp = this._groundFromEvent(e);
+    if (!wp) return null;
+    const tdm = ctx.terrainSystem && ctx.terrainSystem.terrainDataManager;
+    const y = (tdm && tdm.getTerrainHeightAtPosition) ? tdm.getTerrainHeightAtPosition(wp.x, wp.z) : (wp.y || 0);
+    const enums = ctx.getEnums ? ctx.getEnums() : {};
+    let id = null;
+    try {
+      id = ctx.call('createEntityFromPrefab', {
+        prefab: this._prefabForCollection(collection), type: spawnType, collection,
+        team: (enums.team && enums.team.neutral) || 0,
+        componentOverrides: { transform: { position: { x: wp.x, y, z: wp.z } } }
+      });
+    } catch (err) { console.error('[viewport] placeEntity failed', err); return null; }
+    if (id == null) return null;
+    this._syncEntitiesFromECS();
+    this.selectEntity(id);
+    if (this.onSceneChange) this.onSceneChange();
+    this._scheduleLevelPersist();
+    return id;
+  }
+  _prefabForCollection(collection) {
+    const cols = this.app.getCollections();
+    const def = (cols.objectTypeDefinitions || {})[collection];
+    return (def && def.singular) || collection.replace(/s$/, '');
+  }
+
+  removeSelected() {
+    const id = this._selectedEntity; if (id == null) return;
+    try { if (this.editorContext.removeEntity) this.editorContext.removeEntity(id); } catch (e) {}
+    this.deselectAll();
+    this._syncEntitiesFromECS();
+    if (this.onSceneChange) this.onSceneChange();
+    this._scheduleLevelPersist();
+  }
+
+  _scheduleLevelPersist() {
+    if (this._persistTimer) clearTimeout(this._persistTimer);
+    this._persistTimer = setTimeout(() => this._persistLevel(), 700);
+  }
+  _persistLevel() {
+    if (!this.levelName) return;
+    const collections = this.app.getCollections();
+    const level = collections.levels && collections.levels[this.levelName];
+    if (!level) return;
+    level.tileMap = level.tileMap || {};
+    level.tileMap.levelEntities = this._exportLevelEntities(collections);
+    try {
+      if (this.app.fs && this.app.fs.syncObjectToFilesystem) this.app.fs.syncObjectToFilesystem('levels', this.levelName, level);
+    } catch (e) { console.warn('[viewport] level persist failed', e); }
+  }
+  _exportLevelEntities(collections) {
+    const defs = collections.objectTypeDefinitions || {};
+    return (this.sceneEntities || []).map(le => {
+      const t = this.editorContext.getComponent(le.id, 'transform') || {};
+      const def = defs[le.collection];
+      return {
+        spawnType: (def && def.singular) || le.collection,
+        type: le.spawnType,
+        components: { transform: {
+          position: { ...(t.position || { x: 0, y: 0, z: 0 }) },
+          rotation: { ...(t.rotation || { x: 0, y: 0, z: 0 }) },
+          scale: { ...(t.scale || { x: 1, y: 1, z: 1 }) }
+        } }
+      };
+    });
   }
 
   _defaultScene(collections) {
@@ -173,6 +418,16 @@ class EditorViewportService {
   // ---- Teardown ---------------------------------------------------------------
   stop() {
     try { if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; } } catch (e) {}
+    if (this._persistTimer) { clearTimeout(this._persistTimer); this._persistTimer = null; }
+    try {
+      if (this.canvas && this._onCanvasClick) {
+        this.canvas.removeEventListener('click', this._onCanvasClick);
+        this.canvas.removeEventListener('dragover', this._onDragOver);
+        this.canvas.removeEventListener('drop', this._onDrop);
+      }
+    } catch (e) {}
+    try { if (this.gizmo && this.gizmo.dispose) this.gizmo.dispose(); } catch (e) {}
+    this.gizmo = null; this.gizmoHelper = null; this.raycast = null; this.sceneEntities = null; this._selectedEntity = null;
     try { if (this.cameraController && this.cameraController.destroy) this.cameraController.destroy(); } catch (e) {}
     try {
       if (this.editorContext) {
