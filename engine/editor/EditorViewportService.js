@@ -884,6 +884,7 @@ class EditorViewportService {
     model.position.copy(center).multiplyScalar(-s);
     this._miniClearContent();
     mini.holder.add(model); mini.model = model; mini.active = true;
+    mini.camera.position.set(0, 0.7, 2.6); mini.camera.lookAt(0, 0, 0);   // 3/4 view for models
     this._playIdleAnimation(model, renderDef);       // load + loop the idle clip
     if (this.previewWindow) this.previewWindow.classList.add('has-model');
     if (!mini.raf) this._miniLoop();
@@ -927,12 +928,15 @@ class EditorViewportService {
     await sbr.init(set.spriteSheet, set);
     if (token !== this._previewToken) { try { sbr.dispose(); } catch (e) {} return; }
     const gs = set.generatorSettings || {};
-    sbr.currentAnimationType = (gs.animationTypes && gs.animationTypes[0]) || 'idle';
+    const types = gs.animationTypes || [];
+    sbr.currentAnimationType = types.includes('idle') ? 'idle' : (types[0] || 'idle');
     if (sbr.buildFrameLookupTexture) sbr.buildFrameLookupTexture();
     if (sbr.setInstanceCount) sbr.setInstanceCount(1);
-    if (sbr.setInstance) sbr.setInstance(0, 0, 0.55, 0, 1.7, 0, -1);
+    if (sbr.setInstance) sbr.setInstance(0, 0, 0, 0, 1.7, 0, -1);   // centered on origin
     if (sbr.setAmbientLight) { try { sbr.setAmbientLight(new window.THREE.Color(1, 1, 1)); } catch (e) {} }
     if (sbr.finalizeUpdates) sbr.finalizeUpdates();
+    // Billboards read "from above" with the model's 3/4 camera — use a level, head-on one.
+    mini.camera.position.set(0, 0.05, 2.6); mini.camera.lookAt(0, 0, 0);
     mini.sprite = sbr; mini.spriteTime = 0; mini.spriteFps = gs.fps || 4;
     mini.spriteScale = 1.7; mini.spriteHeading = 0; mini.active = true;
     if (this.previewWindow) this.previewWindow.classList.add('has-model');
@@ -958,7 +962,7 @@ class EditorViewportService {
         mini.spriteTime += dt;
         mini.spriteHeading = (mini.spriteHeading || 0) + 0.4 * dt;   // cycle directional perspectives
         const hx = Math.sin(mini.spriteHeading), hz = -Math.cos(mini.spriteHeading);
-        if (mini.sprite.setInstance) mini.sprite.setInstance(0, 0, 0.55, 0, mini.spriteScale || 1.7, hx, hz);
+        if (mini.sprite.setInstance) mini.sprite.setInstance(0, 0, 0, 0, mini.spriteScale || 1.7, hx, hz);
         if (mini.sprite.setAnimationFrame) mini.sprite.setAnimationFrame(Math.floor(mini.spriteTime * (mini.spriteFps || 4)));
         if (mini.sprite.finalizeUpdates) mini.sprite.finalizeUpdates();
       }
@@ -1015,7 +1019,8 @@ class EditorViewportService {
     await sbr.init(set.spriteSheet, set);
     if (token !== this._previewToken) { try { sbr.dispose(); } catch (e) {} return; }
     const gs = set.generatorSettings || {};
-    sbr.currentAnimationType = (gs.animationTypes && gs.animationTypes[0]) || 'idle';
+    const types = gs.animationTypes || [];
+    sbr.currentAnimationType = types.includes('idle') ? 'idle' : (types[0] || 'idle');
     if (sbr.buildFrameLookupTexture) sbr.buildFrameLookupTexture();
     if (sbr.setAmbientLight) { try { sbr.setAmbientLight(new window.THREE.Color(1, 1, 1)); } catch (e) {} }
     if (sbr.setInstanceCount) sbr.setInstanceCount(0);
