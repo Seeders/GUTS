@@ -158,6 +158,13 @@ class EditorViewportService {
     this.sceneEntities = [];
     this._syncEntitiesFromECS();
 
+    // Terrain painting state (data mutated is terrainDataManager.tileMap === the
+    // live level.tileMap the renderer reads, so incremental updates show at once).
+    this.terrainDataManager = ctx.terrainSystem && ctx.terrainSystem.terrainDataManager;
+    this.tileMap = this.terrainDataManager && this.terrainDataManager.tileMap;
+    this.interactionMode = 'select';
+    this._brushSize = 1; this._paintTool = 'brush'; this._terrainId = 0; this._heightLevel = 1;
+
     // Selection system (highlight + events) — reuse SelectedUnitSystem.
     try {
       if (!ctx.hasService('getWorldPositionFromMouse')) {
@@ -189,14 +196,27 @@ class EditorViewportService {
       }
     } catch (e) { console.warn('[viewport] gizmo init failed', e); }
 
-    // Left-click select (guarded against gizmo drag).
+    // Left-click select (only in 'select' mode; guarded against gizmo drag).
     this._onCanvasClick = (e) => {
-      if (e.button !== 0) return;
+      if (e.button !== 0 || this.interactionMode !== 'select') return;
       if (this.gizmo && this.gizmo.isDraggingGizmo && this.gizmo.isDraggingGizmo()) return;
       const id = this._pickEntity(e);
       if (id != null) this.selectEntity(id); else this.deselectAll();
     };
     this.canvas.addEventListener('click', this._onCanvasClick);
+
+    // Terrain paint stroke (left-drag) — active only in a paint mode.
+    this._onPaintDown = (e) => {
+      if (e.button !== 0 || this.interactionMode === 'select') return;
+      e.preventDefault();
+      this._painting = true; this._lastCell = null; this._heightDirty = false;
+      this._paintAt(e);
+    };
+    this._onPaintMove = (e) => { if (this._painting) this._paintAt(e); };
+    this._onPaintUp = () => { if (!this._painting) return; this._painting = false; this._lastCell = null; this._finalizeStroke(); };
+    this.canvas.addEventListener('mousedown', this._onPaintDown);
+    this.canvas.addEventListener('mousemove', this._onPaintMove);
+    window.addEventListener('mouseup', this._onPaintUp);
 
     // Drag-drop placement from the Assets browser.
     this._onDragOver = (e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; };
@@ -379,6 +399,116 @@ class EditorViewportService {
     return (def && def.singular) || collection.replace(/s$/, '');
   }
 
+  // ---- Terrain painting ------------------------------------------------------
+  setInteractionMode(mode) {
+    this.interactionMode = mode || 'select';
+    if (this.interactionMode !== 'select') this.deselectAll();
+  }
+  setPaintOptions(opts) {
+    if (!opts) return;
+    if (opts.terrainId != null) this._terrainId = opts.terrainId | 0;
+    if (opts.heightLevel != null) this._heightLevel = opts.heightLevel | 0;
+    if (opts.brushSize != null) this._brushSize = Math.max(1, opts.brushSize | 0);
+    if (opts.tool) this._paintTool = opts.tool;
+  }
+  getTerrainTypes() {
+    const tm = this.tileMap;
+    if (!tm || !Array.isArray(tm.terrainTypes)) return [];
+    const defs = (this.app.getCollections().terrainTypes) || {};
+    return tm.terrainTypes.map((name, index) => ({ index, name, color: (defs[name] && defs[name].color) || '#7a8aa0' }));
+  }
+
+  _eventToCell(e) {
+    const wp = this._groundFromEvent(e);
+    if (!wp || !this.terrainDataManager || !this.tileMap) return null;
+    const gs = this.terrainDataManager.gridSize, ts = this.terrainDataManager.terrainSize;
+    const x = Math.floor((wp.x + ts / 2) / gs);
+    const z = Math.floor((wp.z + ts / 2) / gs);
+    const size = this.tileMap.size;
+    if (x < 0 || z < 0 || x >= size || z >= size) return null;
+    return { x, z };
+  }
+  _brushTiles(cx, cz) {
+    const size = this.tileMap.size, r = Math.floor((this._brushSize || 1) / 2), tiles = [];
+    for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) {
+      if (Math.sqrt(dx * dx + dz * dz) > r + 0.5) continue;
+      const x = cx + dx, z = cz + dz;
+      if (x >= 0 && z >= 0 && x < size && z < size) tiles.push({ x, z });
+    }
+    return tiles;
+  }
+  _floodFill(mapName, cell) {
+    const map = this.tileMap[mapName], size = this.tileMap.size, orig = map[cell.z][cell.x];
+    const out = [], seen = new Set(), stack = [[cell.x, cell.z]];
+    while (stack.length) {
+      const c = stack.pop(), x = c[0], z = c[1];
+      if (x < 0 || z < 0 || x >= size || z >= size) continue;
+      const k = x + ',' + z; if (seen.has(k)) continue; seen.add(k);
+      if (map[z][x] !== orig) continue;
+      out.push({ x, z });
+      stack.push([x + 1, z], [x - 1, z], [x, z + 1], [x, z - 1]);
+    }
+    return out;
+  }
+  _paintAt(e) {
+    if (!this.tileMap) return;
+    const cell = this._eventToCell(e);
+    if (!cell) return;
+    const key = cell.x + ',' + cell.z;
+    const strokeOnce = this._paintTool === 'fill' || this.interactionMode === 'ramp';
+    if (strokeOnce) { if (this._lastCell !== null) return; }
+    else if (this._lastCell === key && (this._brushSize || 1) <= 1) return;
+    this._lastCell = key;
+    if (this.interactionMode === 'terrain') this._paintTerrain(cell);
+    else if (this.interactionMode === 'height') this._paintHeight(cell);
+    else if (this.interactionMode === 'ramp') this._paintRamp(cell);
+  }
+  _paintTerrain(cell) {
+    const id = this._terrainId | 0;
+    const tiles = this._paintTool === 'fill' ? this._floodFill('terrainMap', cell) : this._brushTiles(cell.x, cell.z);
+    const modified = [];
+    tiles.forEach(t => { if (this.tileMap.terrainMap[t.z][t.x] !== id) { this.tileMap.terrainMap[t.z][t.x] = id; modified.push({ x: t.x, y: t.z }); } });
+    if (modified.length && this.worldRenderer.updateTerrainTiles) this.worldRenderer.updateTerrainTiles(modified);
+    if (modified.length) this._scheduleLevelPersist();
+  }
+  _paintHeight(cell) {
+    const level = this._heightLevel | 0;
+    const tiles = this._paintTool === 'fill' ? this._floodFill('heightMap', cell) : this._brushTiles(cell.x, cell.z);
+    const modified = [];
+    tiles.forEach(t => { if (this.tileMap.heightMap[t.z][t.x] !== level) { this.tileMap.heightMap[t.z][t.x] = level; modified.push(t); } });
+    if (!modified.length) return;
+    const tdm = this.terrainDataManager, wr = this.worldRenderer;
+    if (tdm && tdm.processHeightMapFromData) tdm.processHeightMapFromData();
+    if (modified.length > 1 && wr.batchUpdateHeights) {
+      wr.batchUpdateHeights(modified.map(t => ({ gridX: t.x, gridZ: t.z, heightLevel: this.tileMap.heightMap[t.z][t.x] })));
+    } else if (wr.setHeightAtGridPosition) {
+      modified.forEach(t => wr.setHeightAtGridPosition(t.x, t.z, this.tileMap.heightMap[t.z][t.x]));
+    }
+    this._heightDirty = true;
+    this._scheduleLevelPersist();
+  }
+  _paintRamp(cell) {
+    const ramps = this.tileMap.ramps = this.tileMap.ramps || [];
+    const idx = ramps.findIndex(r => r.gridX === cell.x && r.gridZ === cell.z);
+    if (idx >= 0) ramps.splice(idx, 1); else ramps.push({ gridX: cell.x, gridZ: cell.z });
+    const wr = this.worldRenderer, er = this.editorContext.renderSystem && this.editorContext.renderSystem.entityRenderer;
+    try {
+      if (wr.tileMapper && wr.tileMapper.setRamps) wr.tileMapper.setRamps(ramps);
+      if (wr.updateTerrainTiles) wr.updateTerrainTiles([{ x: cell.x, y: cell.z }]);
+      if (wr.spawnCliffs) wr.spawnCliffs(er, false);
+      if (wr.updateHeightMap) wr.updateHeightMap();
+    } catch (e) { console.warn('[viewport] ramp update failed', e); }
+    this._scheduleLevelPersist();
+  }
+  _finalizeStroke() {
+    if (this._heightDirty) {
+      this._heightDirty = false;
+      const wr = this.worldRenderer, er = this.editorContext.renderSystem && this.editorContext.renderSystem.entityRenderer;
+      try { if (wr.spawnCliffs) wr.spawnCliffs(er, false); } catch (e) {}
+    }
+    this._scheduleLevelPersist();
+  }
+
   removeSelected() {
     const id = this._selectedEntity; if (id == null) return;
     try { if (this.editorContext.removeEntity) this.editorContext.removeEntity(id); } catch (e) {}
@@ -459,7 +589,10 @@ class EditorViewportService {
         this.canvas.removeEventListener('click', this._onCanvasClick);
         this.canvas.removeEventListener('dragover', this._onDragOver);
         this.canvas.removeEventListener('drop', this._onDrop);
+        this.canvas.removeEventListener('mousedown', this._onPaintDown);
+        this.canvas.removeEventListener('mousemove', this._onPaintMove);
       }
+      if (this._onPaintUp) window.removeEventListener('mouseup', this._onPaintUp);
     } catch (e) {}
     try { if (this.gizmo && this.gizmo.dispose) this.gizmo.dispose(); } catch (e) {}
     this.gizmo = null; this.gizmoHelper = null; this.raycast = null; this.sceneEntities = null; this._selectedEntity = null;

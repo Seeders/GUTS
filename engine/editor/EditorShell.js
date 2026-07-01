@@ -148,6 +148,83 @@ class EditorShell {
     body.appendChild(bar);
   }
 
+  // ---- Terrain tools overlay (Phase 5) ---------------------------------------
+  _toggleTerrainTools() {
+    if (!this.viewport) return;
+    const existing = this.root.querySelector('#eshell-terrain-tools');
+    if (existing) { existing.remove(); this.viewport.setInteractionMode('select'); return; }
+    const host = this._body('viewport');
+    if (host) host.appendChild(this._buildTerrainTools());
+  }
+  _buildTerrainTools() {
+    const ov = document.createElement('div');
+    ov.className = 'eshell__terrain-tools'; ov.id = 'eshell-terrain-tools';
+    const state = { mode: 'terrain', tool: 'brush', brush: 1, height: 1, terrainId: 0 };
+    const apply = () => {
+      this.viewport.setInteractionMode(state.mode);
+      this.viewport.setPaintOptions({ terrainId: state.terrainId, heightLevel: state.height, brushSize: state.brush, tool: state.tool });
+    };
+
+    const head = document.createElement('div'); head.className = 'eshell__tt-head';
+    const title = document.createElement('span'); title.textContent = 'Terrain'; head.appendChild(title);
+    const close = document.createElement('span'); close.className = 'eshell__tab-close'; close.textContent = '×';
+    close.addEventListener('click', () => this._toggleTerrainTools());
+    head.appendChild(close);
+    ov.appendChild(head);
+
+    const modeRow = document.createElement('div'); modeRow.className = 'eshell__tt-row';
+    [['Select', 'select'], ['Paint', 'terrain'], ['Height', 'height'], ['Ramp', 'ramp']].forEach(([label, m]) => {
+      const b = this._miniBtn(label, () => { state.mode = m; modeRow.querySelectorAll('.eshell__btn').forEach(x => x.classList.toggle('eshell__btn--primary', x === b)); apply(); });
+      if (m === state.mode) b.classList.add('eshell__btn--primary');
+      modeRow.appendChild(b);
+    });
+    ov.appendChild(this._ttGroup('Mode', modeRow));
+
+    const toolRow = document.createElement('div'); toolRow.className = 'eshell__tt-row';
+    [['Brush', 'brush'], ['Fill', 'fill']].forEach(([label, t]) => {
+      const b = this._miniBtn(label, () => { state.tool = t; toolRow.querySelectorAll('.eshell__btn').forEach(x => x.classList.toggle('eshell__btn--primary', x === b)); apply(); });
+      if (t === state.tool) b.classList.add('eshell__btn--primary');
+      toolRow.appendChild(b);
+    });
+    ov.appendChild(this._ttGroup('Tool', toolRow));
+
+    const brushRow = document.createElement('div'); brushRow.className = 'eshell__tt-row';
+    const brush = document.createElement('input'); brush.type = 'range'; brush.min = '1'; brush.max = '9'; brush.step = '1'; brush.value = '1'; brush.className = 'eshell__tt-range';
+    const brushVal = document.createElement('span'); brushVal.className = 'eshell__row-count'; brushVal.textContent = '1';
+    brush.addEventListener('input', () => { state.brush = +brush.value; brushVal.textContent = brush.value; apply(); });
+    brushRow.append(brush, brushVal);
+    ov.appendChild(this._ttGroup('Brush size', brushRow));
+
+    const hgt = document.createElement('input'); hgt.type = 'number'; hgt.min = '0'; hgt.max = '20'; hgt.value = '1'; hgt.className = 'eshell__insp-input';
+    hgt.addEventListener('input', () => { state.height = +hgt.value; apply(); });
+    ov.appendChild(this._ttGroup('Height level', hgt));
+
+    const pal = document.createElement('div'); pal.className = 'eshell__tt-palette';
+    const renderPal = () => {
+      pal.innerHTML = '';
+      const types = this.viewport.getTerrainTypes ? this.viewport.getTerrainTypes() : [];
+      if (!types.length) { const e = document.createElement('div'); e.className = 'eshell__empty'; e.textContent = 'No terrain types'; pal.appendChild(e); return; }
+      types.forEach(t => {
+        const sw = document.createElement('div');
+        sw.className = 'eshell__tt-swatch' + (t.index === state.terrainId ? ' eshell__tt-swatch--active' : '');
+        sw.style.background = t.color; sw.title = `${t.name} [${t.index}]`;
+        sw.addEventListener('click', () => { state.terrainId = t.index; renderPal(); apply(); });
+        pal.appendChild(sw);
+      });
+    };
+    renderPal();
+    ov.appendChild(this._ttGroup('Terrain', pal));
+
+    apply();
+    return ov;
+  }
+  _ttGroup(title, contentEl) {
+    const g = document.createElement('div'); g.className = 'eshell__tt-group';
+    const t = document.createElement('div'); t.className = 'eshell__group-title'; t.textContent = title;
+    g.append(t, contentEl);
+    return g;
+  }
+
   // ---- Menu bar --------------------------------------------------------------
   _buildMenu() {
     const menu = document.createElement('div');
@@ -232,6 +309,8 @@ class EditorShell {
     [['Move', 'translate'], ['Rotate', 'rotate'], ['Scale', 'scale']].forEach(([label, mode]) =>
       toolbar.appendChild(this._miniBtn(label, () => { if (this.viewport) this.viewport.setGizmoMode(mode); })));
     toolbar.appendChild(this._miniBtn('Delete', () => { if (this.viewport) this.viewport.removeSelected(); }, 'danger'));
+    const sep2 = document.createElement('span'); sep2.className = 'eshell__vp-sep'; toolbar.appendChild(sep2);
+    toolbar.appendChild(this._miniBtn('Terrain', () => this._toggleTerrainTools()));
     pane.appendChild(toolbar);
 
     const host = document.createElement('div');
