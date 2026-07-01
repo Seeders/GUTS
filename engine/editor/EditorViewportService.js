@@ -200,6 +200,7 @@ class EditorViewportService {
     this._onCanvasClick = (e) => {
       if (e.button !== 0 || this.interactionMode !== 'select') return;
       if (this.gizmo && this.gizmo.isDraggingGizmo && this.gizmo.isDraggingGizmo()) return;
+      if (this._placement) { this._placeSelected(e); return; }   // place instead of pick
       const id = this._pickEntity(e);
       if (id != null) this.selectEntity(id); else this.deselectAll();
     };
@@ -213,6 +214,7 @@ class EditorViewportService {
       this._paintAt(e);
     };
     this._onPaintMove = (e) => {
+      if (this._placement && this.interactionMode === 'select') this._updatePlacementGhost(e);
       if (this.interactionMode !== 'select') this._updateBrushPreview(e);
       if (this._painting) this._paintAt(e);
     };
@@ -378,7 +380,7 @@ class EditorViewportService {
     this._scheduleLevelPersist();
   }
 
-  placeEntity(collection, spawnType, e) {
+  placeEntity(collection, spawnType, e, autoSelect = true) {
     const ctx = this.editorContext;
     if (!ctx || !ctx.hasService('createEntityFromPrefab')) { console.warn('[viewport] createEntityFromPrefab unavailable'); return null; }
     const wp = this._groundFromEvent(e);
@@ -396,7 +398,7 @@ class EditorViewportService {
     } catch (err) { console.error('[viewport] placeEntity failed', err); return null; }
     if (id == null) return null;
     this._syncEntitiesFromECS();
-    this.selectEntity(id);
+    if (autoSelect) this.selectEntity(id);
     if (this.onSceneChange) this.onSceneChange();
     this._scheduleLevelPersist();
     return id;
@@ -412,6 +414,7 @@ class EditorViewportService {
     this.interactionMode = mode || 'select';
     const painting = this.interactionMode !== 'select';
     if (painting) { this.deselectAll(); this._ensureTerrainMapperReady(); } else this._clearBrushPreview();
+    if (painting && this._placement && this._placement.ghost) this._placement.ghost.visible = false;
     // Suppress SelectedUnitSystem's left-drag box-select while painting (it has no
     // enable flag), so a paint stroke isn't hijacked by the green selection box.
     this._setSelectionInput(!painting);
@@ -647,10 +650,19 @@ class EditorViewportService {
     const obj = ((this.app.getCollections() || {})[collection] || {})[id];
     if (!obj || !THREE || !this.worldRenderer) return;
     const token = ++this._previewToken;
+
+    // Render defs (units/worldObjects/buildings…): show a rotating preview in the
+    // corner window + enter placement mode (ghost follows cursor, click to place).
+    if (obj.render && obj.render.model) {
+      await this._showModelPreview(obj.render, token);
+      await this._beginPlacement(collection, id, obj.render, token);
+      return;
+    }
+
+    // Sprite / particle: floating in-scene preview (as before).
     let handle = null;
     try {
-      if (obj.render && obj.render.model) handle = await this._previewModel(obj.render);
-      else if (collection === 'spriteAnimationSets') handle = await this._previewSprite(obj);
+      if (collection === 'spriteAnimationSets') handle = await this._previewSprite(obj);
       else if (collection === 'particleEffects') handle = this._previewParticle(id, false);
       else if (collection === 'particleEffectSystems') handle = this._previewParticle(id, true);
       else return; // not a visual asset
@@ -666,6 +678,8 @@ class EditorViewportService {
     this._previewToken = (this._previewToken || 0) + 1;
     if (this._previewRAF) { cancelAnimationFrame(this._previewRAF); this._previewRAF = null; }
     if (this._preview) { try { this._preview.dispose(); } catch (e) {} this._preview = null; }
+    this._hideModelPreview();
+    this._cancelPlacement();
     this._hidePreviewLabel();
   }
 
@@ -765,6 +779,103 @@ class EditorViewportService {
   }
   _hidePreviewLabel() { if (this._previewLabel) this._previewLabel.style.display = 'none'; }
 
+  // ---- Corner preview window (dedicated mini renderer for render defs) --------
+  _ensureMiniRenderer() {
+    if (this._mini) return this._mini;
+    if (!this.previewCanvas || !window.THREE) return null;
+    const THREE = window.THREE, canvas = this.previewCanvas;
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    const w = canvas.clientWidth || 200, h = canvas.clientHeight || 200;
+    renderer.setSize(w, h, false);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, w / h || 1, 0.01, 100);
+    camera.position.set(0, 0.7, 2.6); camera.lookAt(0, 0, 0);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.95));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.7); dir.position.set(2, 3, 2); scene.add(dir);
+    const holder = new THREE.Group(); scene.add(holder);
+    this._mini = { renderer, scene, camera, holder, model: null, clock: new THREE.Clock(), raf: null, active: false };
+    return this._mini;
+  }
+  async _showModelPreview(renderDef, token) {
+    const THREE = window.THREE, mm = this.editorContext.modelManager;
+    if (!this.previewCanvas || !mm || !mm.createModel) return;
+    const mini = this._ensureMiniRenderer();
+    if (!mini) return;
+    const model = await mm.createModel(renderDef.model);
+    if (!model || token !== this._previewToken) { if (model) this._disposeModel(model); return; }
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+    const s = 1.7 / maxDim;
+    model.scale.multiplyScalar(s);
+    model.position.copy(center).multiplyScalar(-s);
+    if (mini.model) { mini.holder.remove(mini.model); this._disposeModel(mini.model); }
+    mini.holder.add(model); mini.model = model; mini.active = true;
+    if (this.previewWindow) this.previewWindow.style.display = 'flex';
+    if (!mini.raf) this._miniLoop();
+  }
+  _miniLoop() {
+    const mini = this._mini; if (!mini) return;
+    const loop = () => {
+      if (!this._mini || !this._mini.active) { if (this._mini) this._mini.raf = null; return; }
+      const dt = mini.clock.getDelta();
+      mini.holder.rotation.y += 0.6 * dt;
+      if (mini.model) mini.model.traverse(o => { if (o.userData && o.userData.mixer) o.userData.mixer.update(dt); if (o.isSkinnedMesh && o.skeleton) o.skeleton.update(); });
+      const c = mini.renderer.domElement;
+      if (c.clientWidth && (c.width !== c.clientWidth || c.height !== c.clientHeight)) {
+        mini.renderer.setSize(c.clientWidth, c.clientHeight, false);
+        mini.camera.aspect = c.clientWidth / c.clientHeight; mini.camera.updateProjectionMatrix();
+      }
+      mini.renderer.render(mini.scene, mini.camera);
+      mini.raf = requestAnimationFrame(loop);
+    };
+    mini.raf = requestAnimationFrame(loop);
+  }
+  _hideModelPreview() {
+    const mini = this._mini; if (!mini) return;
+    mini.active = false;
+    if (mini.raf) { cancelAnimationFrame(mini.raf); mini.raf = null; }
+    if (mini.model) { mini.holder.remove(mini.model); this._disposeModel(mini.model); mini.model = null; }
+    if (this.previewWindow) this.previewWindow.style.display = 'none';
+  }
+  _disposeModel(m) {
+    try { const sf = this.editorContext.modelManager && this.editorContext.modelManager.shapeFactory; if (sf && sf.disposeObject) sf.disposeObject(m); } catch (e) {}
+  }
+
+  // ---- Placement (ghost follows the cursor; left-click places) ----------------
+  async _beginPlacement(collection, spawnType, renderDef, token) {
+    this._cancelPlacement();
+    const THREE = window.THREE, mm = this.editorContext.modelManager;
+    if (!mm || !mm.createModel) return;
+    const model = await mm.createModel(renderDef.model);
+    if (!model || token !== this._previewToken) { if (model) this._disposeModel(model); return; }
+    const ghost = new THREE.Group();
+    ghost.add(model); ghost.visible = false;
+    this.worldRenderer.getScene().add(ghost);
+    this._placement = { collection, spawnType, ghost };
+  }
+  _updatePlacementGhost(e) {
+    const pl = this._placement; if (!pl) return;
+    const wp = this._groundFromEvent(e);
+    if (!wp) { pl.ghost.visible = false; return; }
+    const tdm = this.terrainDataManager;
+    const y = (tdm && tdm.getTerrainHeightAtPosition) ? tdm.getTerrainHeightAtPosition(wp.x, wp.z) : (wp.y || 0);
+    pl.ghost.position.set(wp.x, y, wp.z);
+    pl.ghost.visible = true;
+  }
+  _placeSelected(e) {
+    if (!this._placement) return false;
+    const id = this.placeEntity(this._placement.collection, this._placement.spawnType, e, false); // keep placing
+    return id != null;
+  }
+  _cancelPlacement() {
+    if (this._placement) {
+      if (this._placement.ghost) { this.worldRenderer.getScene().remove(this._placement.ghost); this._disposeModel(this._placement.ghost); }
+      this._placement = null;
+    }
+  }
+
   removeSelected() {
     const id = this._selectedEntity; if (id == null) return;
     try { if (this.editorContext.removeEntity) this.editorContext.removeEntity(id); } catch (e) {}
@@ -863,6 +974,7 @@ class EditorViewportService {
       }
     } catch (e) {}
     try { this.clearPreview(); if (this._previewLabel && this._previewLabel.parentElement) this._previewLabel.parentElement.removeChild(this._previewLabel); this._previewLabel = null; } catch (e) {}
+    try { if (this._mini && this._mini.renderer && this._mini.renderer.dispose) this._mini.renderer.dispose(); this._mini = null; } catch (e) {}
     try { if (this.gizmo && this.gizmo.dispose) this.gizmo.dispose(); } catch (e) {}
     this.gizmo = null; this.gizmoHelper = null; this.raycast = null; this.sceneEntities = null; this._selectedEntity = null;
     try { if (this.cameraController && this.cameraController.destroy) this.cameraController.destroy(); } catch (e) {}
