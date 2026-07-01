@@ -545,8 +545,21 @@ class EditorShell {
         e.dataTransfer.setData('text/plain', payload);
         e.dataTransfer.effectAllowed = 'copy';
       });
-      const letter = (this._title(objs[id], id)[0] || '?').toUpperCase();
-      card.innerHTML = `<div class="eshell__asset-icon">${letter}</div><div class="eshell__asset-label">${this._title(objs[id], id)}</div>`;
+      const title = this._title(objs[id], id);
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'eshell__asset-icon';
+      const iconUrl = this._assetIconUrl(objs[id]);
+      if (iconUrl) {
+        const img = document.createElement('img');
+        img.className = 'eshell__asset-img'; img.src = iconUrl; img.alt = '';
+        img.addEventListener('error', () => { iconDiv.textContent = (title[0] || '?').toUpperCase(); });
+        iconDiv.appendChild(img);
+      } else {
+        iconDiv.textContent = (title[0] || '?').toUpperCase();
+      }
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'eshell__asset-label'; labelDiv.textContent = title;
+      card.append(iconDiv, labelDiv);
       card.addEventListener('click', () => this.selectObject(this.selectedType, id));
       grid.appendChild(card);
     });
@@ -840,6 +853,18 @@ class EditorShell {
   _collections() { try { return (this.model && this.model.getCollections && this.model.getCollections()) || this._mock.collections || {}; } catch (e) { return {}; } }
   _categories() { const c = this._collections(); return (c && c.objectTypeCategories) || (this._mock && this._mock.categories) || {}; }
   _title(obj, fallback) { return (obj && (obj.title || obj.name)) || fallback; }
+
+  /** Image URL for an asset's icon (icon-by-name or a direct imagePath), or null. */
+  _assetIconUrl(obj) {
+    if (!obj || !this.controller || !this.controller.getResourcesPath) return null;
+    const res = this.controller.getResourcesPath();
+    const cols = this._collections();
+    if (obj.icon && cols.icons && cols.icons[obj.icon] && typeof cols.icons[obj.icon].imagePath === 'string') {
+      return res + cols.icons[obj.icon].imagePath;                 // referenced by name
+    }
+    if (typeof obj.imagePath === 'string' && obj.imagePath) return res + obj.imagePath; // is/has a direct image
+    return null;
+  }
 
   // ---- Helpers ---------------------------------------------------------------
   _empty(body, msg) { const d = document.createElement('div'); d.className = 'eshell__empty'; d.textContent = msg; body.appendChild(d); }
