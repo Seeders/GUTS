@@ -602,6 +602,136 @@ class EditorViewportService {
   }
   _clearBrushPreview() { if (this._brushPreview) this._brushPreview.visible = false; }
 
+  // ==========================================================================
+  // Visual asset preview (graphics render defs / sprites / particles)
+  // Shows the selected visual asset on a floating pedestal in the shared scene,
+  // animated via a dedicated RAF (the scene renders at the ~20 TPS tick). Reuses
+  // ModelManager/SpriteBillboardRenderer/ParticleSystem — no shared-file edits.
+  // ==========================================================================
+  async previewAsset(collection, id) {
+    this.clearPreview();
+    const THREE = window.THREE;
+    const obj = ((this.app.getCollections() || {})[collection] || {})[id];
+    if (!obj || !THREE || !this.worldRenderer) return;
+    const token = ++this._previewToken;
+    let handle = null;
+    try {
+      if (obj.render && obj.render.model) handle = await this._previewModel(obj.render);
+      else if (collection === 'spriteAnimationSets') handle = await this._previewSprite(obj);
+      else if (collection === 'particleEffects') handle = this._previewParticle(id, false);
+      else if (collection === 'particleEffectSystems') handle = this._previewParticle(id, true);
+      else return; // not a visual asset
+    } catch (e) { console.warn('[viewport] preview build failed:', e); return; }
+    if (!handle) return;
+    if (token !== this._previewToken) { try { handle.dispose(); } catch (e) {} return; } // superseded mid-load
+    this._preview = handle;
+    this._showPreviewLabel(id);
+    this._startPreviewLoop();
+  }
+
+  clearPreview() {
+    this._previewToken = (this._previewToken || 0) + 1;
+    if (this._previewRAF) { cancelAnimationFrame(this._previewRAF); this._previewRAF = null; }
+    if (this._preview) { try { this._preview.dispose(); } catch (e) {} this._preview = null; }
+    this._hidePreviewLabel();
+  }
+
+  _previewAnchor() { return new window.THREE.Vector3(0, 80, 0); }
+
+  _startPreviewLoop() {
+    if (this._previewRAF) return;
+    this._previewClock = new window.THREE.Clock();
+    const loop = () => {
+      if (!this._preview) { this._previewRAF = null; return; }
+      const dt = Math.min(this._previewClock.getDelta(), 0.1);
+      try { this._preview.update(dt); } catch (e) {}
+      this._previewRAF = requestAnimationFrame(loop);
+    };
+    this._previewRAF = requestAnimationFrame(loop);
+  }
+
+  async _previewModel(renderDef) {
+    const THREE = window.THREE, mm = this.editorContext.modelManager;
+    if (!mm || !mm.createModel) return null;
+    const group = await mm.createModel(renderDef.model);
+    if (!group) return null;
+    // Models arrive at raw glTF scale — normalize + center on a holder we spin.
+    const box = new THREE.Box3().setFromObject(group);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+    const fit = 80 / maxDim;
+    group.scale.multiplyScalar(fit);
+    group.position.copy(center).multiplyScalar(-fit);
+    const holder = new THREE.Group();
+    holder.position.copy(this._previewAnchor());
+    holder.add(group);
+    this.worldRenderer.getScene().add(holder);
+    return {
+      update: (dt) => {
+        holder.rotation.y += 0.7 * dt;
+        group.traverse(o => { if (o.userData && o.userData.mixer) o.userData.mixer.update(dt); if (o.isSkinnedMesh && o.skeleton) o.skeleton.update(); });
+      },
+      dispose: () => {
+        this.worldRenderer.getScene().remove(holder);
+        try { const sf = mm.shapeFactory; if (sf && sf.disposeObject) sf.disposeObject(holder); } catch (e) {}
+      }
+    };
+  }
+
+  async _previewSprite(set) {
+    const G = this.GUTS;
+    if (!G.SpriteBillboardRenderer || !set.spriteSheet) return null;
+    const sbr = new G.SpriteBillboardRenderer({
+      scene: this.worldRenderer.getScene(), capacity: 1,
+      resourcesPath: this.app.getResourcesPath ? this.app.getResourcesPath() : ''
+    });
+    await sbr.init(set.spriteSheet, set);
+    const gs = set.generatorSettings || {};
+    sbr.currentAnimationType = (gs.animationTypes && gs.animationTypes[0]) || 'idle';
+    if (sbr.buildFrameLookupTexture) sbr.buildFrameLookupTexture();
+    const a = this._previewAnchor();
+    if (sbr.setInstanceCount) sbr.setInstanceCount(1);
+    if (sbr.setInstance) sbr.setInstance(0, a.x, a.y, a.z, 64, 0, -1);
+    if (sbr.setAmbientLight) { try { sbr.setAmbientLight(new window.THREE.Color(1, 1, 1)); } catch (e) {} }
+    if (sbr.finalizeUpdates) sbr.finalizeUpdates();
+    let t = 0; const fps = gs.fps || 4;
+    return {
+      update: (dt) => { t += dt; if (sbr.setAnimationFrame) sbr.setAnimationFrame(Math.floor(t * fps)); if (sbr.finalizeUpdates) sbr.finalizeUpdates(); },
+      dispose: () => { try { sbr.dispose(); } catch (e) {} }
+    };
+  }
+
+  _previewParticle(name, isSystem) {
+    const G = this.GUTS, THREE = window.THREE;
+    if (!G.ParticleSystem) return null;
+    let ps = this.editorContext.particleSystem;
+    if (!ps) { try { ps = new G.ParticleSystem(this.editorContext); if (ps.initialize) ps.initialize(); this._ownedParticleSystem = ps; } catch (e) { return null; } }
+    const a = this._previewAnchor();
+    const pos = new THREE.Vector3(a.x, a.y, a.z);
+    const play = () => { try { if (isSystem) ps.playEffectSystem(name, pos); else ps.playEffect(name, pos); } catch (e) { console.warn('[viewport] particle play failed', e); } };
+    play();
+    let loopT = 0;
+    return {
+      update: (dt) => { try { if (ps.update) ps.update(); } catch (e) {} loopT += dt; if (loopT > 1.5) { loopT = 0; play(); } },
+      dispose: () => {
+        try { if (ps.clearAllParticles) ps.clearAllParticles(); } catch (e) {}
+        if (this._ownedParticleSystem === ps) { try { if (ps.destroy) ps.destroy(); else if (ps.onSceneUnload) ps.onSceneUnload(); } catch (e) {} this._ownedParticleSystem = null; }
+      }
+    };
+  }
+
+  _showPreviewLabel(text) {
+    if (!this._previewLabel) {
+      this._previewLabel = document.createElement('div');
+      this._previewLabel.className = 'eshell__preview-label';
+      this.container.appendChild(this._previewLabel);
+    }
+    this._previewLabel.textContent = '◈ Preview · ' + text;
+    this._previewLabel.style.display = 'block';
+  }
+  _hidePreviewLabel() { if (this._previewLabel) this._previewLabel.style.display = 'none'; }
+
   removeSelected() {
     const id = this._selectedEntity; if (id == null) return;
     try { if (this.editorContext.removeEntity) this.editorContext.removeEntity(id); } catch (e) {}
@@ -695,6 +825,7 @@ class EditorViewportService {
         this._brushPreview = null;
       }
     } catch (e) {}
+    try { this.clearPreview(); if (this._previewLabel && this._previewLabel.parentElement) this._previewLabel.parentElement.removeChild(this._previewLabel); this._previewLabel = null; } catch (e) {}
     try { if (this.gizmo && this.gizmo.dispose) this.gizmo.dispose(); } catch (e) {}
     this.gizmo = null; this.gizmoHelper = null; this.raycast = null; this.sceneEntities = null; this._selectedEntity = null;
     try { if (this.cameraController && this.cameraController.destroy) this.cameraController.destroy(); } catch (e) {}

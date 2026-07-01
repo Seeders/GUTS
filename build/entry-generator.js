@@ -813,6 +813,20 @@ class EntryGenerator {
             sections.push('');
         }
 
+        // Extra shared libraries the new editor shell consumes for asset previews
+        // (not otherwise pulled in via editor modules). Editor bundle only; the
+        // class-export-loader registers them on window.GUTS. Side-effect imports.
+        const extraShellLibs = ['SpriteBillboardRenderer'];
+        const shellLibDir = path.join(__dirname, '..', 'global', 'collections', 'scripts', 'libraries', 'js');
+        const extraImports = extraShellLibs
+            .map(n => path.join(shellLibDir, n + '.js'))
+            .filter(p => fs.existsSync(p));
+        if (extraImports.length) {
+            sections.push('// Extra shell libraries (asset previews)');
+            extraImports.forEach(p => sections.push(`import '${p.replace(/\\/g, '/')}';`));
+            sections.push('');
+        }
+
         // Initialize window.GUTS
         sections.push('// Initialize global namespace');
         sections.push('if (!window.GUTS) window.GUTS = {};');
