@@ -414,7 +414,10 @@ class EditorViewportService {
     this.interactionMode = mode || 'select';
     const painting = this.interactionMode !== 'select';
     if (painting) { this.deselectAll(); this._ensureTerrainMapperReady(); } else this._clearBrushPreview();
-    if (painting && this._placement && this._placement.ghost) this._placement.ghost.visible = false;
+    if (painting && this._placement) {
+      if (this._placement.ghost) this._placement.ghost.visible = false;
+      else if (this._placement.sbr && this._placement.sbr.setInstanceCount) { this._placement.sbr.setInstanceCount(0); if (this._placement.sbr.finalizeUpdates) this._placement.sbr.finalizeUpdates(); }
+    }
     // Suppress SelectedUnitSystem's left-drag box-select while painting (it has no
     // enable flag), so a paint stroke isn't hijacked by the green selection box.
     this._setSelectionInput(!painting);
@@ -651,12 +654,24 @@ class EditorViewportService {
     if (!obj || !THREE || !this.worldRenderer) return;
     const token = ++this._previewToken;
 
-    // Render defs (units/worldObjects/buildings…): show a rotating preview in the
-    // corner window + enter placement mode (ghost follows cursor, click to place).
-    if (obj.render && obj.render.model) {
-      await this._showModelPreview(obj.render, token);
-      await this._beginPlacement(collection, id, obj.render, token);
-      return;
+    // Spawn with a render pipeline: pick the highest-priority pipeline present
+    // (configs.render.renderTypes order; default sprite > model) and use it for
+    // the corner preview + placement ghost — matching what runs at runtime.
+    const rp = this._resolveRenderPipeline(obj);
+    if (rp) {
+      if (rp.pipeline === 'sprite') {
+        const set = ((this.app.getCollections()[rp.collection]) || {})[rp.value];
+        if (set) {
+          await this._showSpritePreviewMini(set, token);
+          await this._beginSpritePlacement(collection, id, set, token);
+          return;
+        }
+      }
+      if (obj.render && obj.render.model) {   // model pipeline (or sprite fallback)
+        await this._showModelPreview(obj.render, token);
+        await this._beginPlacement(collection, id, obj.render, token);
+        return;
+      }
     }
 
     // Sprite / particle: floating in-scene preview (as before).
@@ -681,6 +696,34 @@ class EditorViewportService {
     this._hideModelPreview();
     this._cancelPlacement();
     this._hidePreviewLabel();
+  }
+
+  // Resolve which render pipeline to preview/place for a spawn. Priority order comes
+  // from configs.render.renderTypes (a list of renderTypes ids); each renderTypes
+  // entry describes a pipeline via {propertyName, collection, pipeline}. Falls back
+  // to built-in defaults (sprite before model) when no data is present.
+  _resolveRenderPipeline(obj) {
+    if (!obj) return null;
+    const cols = this.app.getCollections() || {};
+    const rt = cols.renderTypes || {};
+    const cfg = (cols.configs && cols.configs.render) || {};
+    let order = (Array.isArray(cfg.renderTypes) && cfg.renderTypes.length) ? cfg.renderTypes.slice() : Object.keys(rt);
+    if (!order.length) order = ['spriteAnimationSet', 'render'];
+    for (const rid of order) {
+      const def = rt[rid] || this._defaultRenderType(rid);
+      if (!def || !def.propertyName) continue;
+      const val = obj[def.propertyName];
+      if (val == null || val === '' || (typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length === 0)) continue;
+      return { id: rid, pipeline: def.pipeline || rid, propertyName: def.propertyName, collection: def.collection, value: val };
+    }
+    return null;
+  }
+  _defaultRenderType(id) {
+    const D = {
+      spriteAnimationSet: { propertyName: 'spriteAnimationSet', collection: 'spriteAnimationSets', pipeline: 'sprite' },
+      render: { propertyName: 'render', pipeline: 'model' }
+    };
+    return D[id] || null;
   }
 
   _previewAnchor() { return new window.THREE.Vector3(0, 80, 0); }
@@ -810,18 +853,52 @@ class EditorViewportService {
     const s = 1.7 / maxDim;
     model.scale.multiplyScalar(s);
     model.position.copy(center).multiplyScalar(-s);
-    if (mini.model) { mini.holder.remove(mini.model); this._disposeModel(mini.model); }
+    this._miniClearContent();
     mini.holder.add(model); mini.model = model; mini.active = true;
     if (this.previewWindow) this.previewWindow.classList.add('has-model');
     if (!mini.raf) this._miniLoop();
+  }
+  async _showSpritePreviewMini(set, token) {
+    const G = this.GUTS;
+    if (!this.previewCanvas || !G.SpriteBillboardRenderer || !set.spriteSheet) return;
+    const mini = this._ensureMiniRenderer();
+    if (!mini) return;
+    this._miniClearContent();
+    const sbr = new G.SpriteBillboardRenderer({
+      scene: mini.scene, capacity: 1, resourcesPath: this.app.getResourcesPath ? this.app.getResourcesPath() : ''
+    });
+    await sbr.init(set.spriteSheet, set);
+    if (token !== this._previewToken) { try { sbr.dispose(); } catch (e) {} return; }
+    const gs = set.generatorSettings || {};
+    sbr.currentAnimationType = (gs.animationTypes && gs.animationTypes[0]) || 'idle';
+    if (sbr.buildFrameLookupTexture) sbr.buildFrameLookupTexture();
+    if (sbr.setInstanceCount) sbr.setInstanceCount(1);
+    if (sbr.setInstance) sbr.setInstance(0, 0, 0.55, 0, 1.7, 0, -1);
+    if (sbr.setAmbientLight) { try { sbr.setAmbientLight(new window.THREE.Color(1, 1, 1)); } catch (e) {} }
+    if (sbr.finalizeUpdates) sbr.finalizeUpdates();
+    mini.sprite = sbr; mini.spriteTime = 0; mini.spriteFps = gs.fps || 4; mini.active = true;
+    if (this.previewWindow) this.previewWindow.classList.add('has-model');
+    if (!mini.raf) this._miniLoop();
+  }
+  _miniClearContent() {
+    const mini = this._mini; if (!mini) return;
+    if (mini.model) { mini.holder.remove(mini.model); this._disposeModel(mini.model); mini.model = null; }
+    if (mini.sprite) { try { mini.sprite.dispose(); } catch (e) {} mini.sprite = null; }
   }
   _miniLoop() {
     const mini = this._mini; if (!mini) return;
     const loop = () => {
       if (!this._mini || !this._mini.active) { if (this._mini) this._mini.raf = null; return; }
       const dt = mini.clock.getDelta();
-      mini.holder.rotation.y += 0.6 * dt;
-      if (mini.model) mini.model.traverse(o => { if (o.userData && o.userData.mixer) o.userData.mixer.update(dt); if (o.isSkinnedMesh && o.skeleton) o.skeleton.update(); });
+      if (mini.model) {
+        mini.holder.rotation.y += 0.6 * dt;
+        mini.model.traverse(o => { if (o.userData && o.userData.mixer) o.userData.mixer.update(dt); if (o.isSkinnedMesh && o.skeleton) o.skeleton.update(); });
+      }
+      if (mini.sprite) {
+        mini.spriteTime += dt;
+        if (mini.sprite.setAnimationFrame) mini.sprite.setAnimationFrame(Math.floor(mini.spriteTime * (mini.spriteFps || 4)));
+        if (mini.sprite.finalizeUpdates) mini.sprite.finalizeUpdates();
+      }
       const c = mini.renderer.domElement;
       if (c.clientWidth && (c.width !== c.clientWidth || c.height !== c.clientHeight)) {
         mini.renderer.setSize(c.clientWidth, c.clientHeight, false);
@@ -836,7 +913,7 @@ class EditorViewportService {
     const mini = this._mini; if (!mini) return;
     mini.active = false;
     if (mini.raf) { cancelAnimationFrame(mini.raf); mini.raf = null; }
-    if (mini.model) { mini.holder.remove(mini.model); this._disposeModel(mini.model); mini.model = null; }
+    this._miniClearContent();
     if (this.previewWindow) this.previewWindow.classList.remove('has-model');
   }
   _disposeModel(m) {
@@ -863,13 +940,41 @@ class EditorViewportService {
     const ghost = new THREE.Group();
     ghost.add(model); ghost.visible = false;
     this.worldRenderer.getScene().add(ghost);
-    this._placement = { collection, spawnType, ghost };
+    this._placement = { collection, spawnType, type: 'model', ghost };
+  }
+  async _beginSpritePlacement(collection, spawnType, set, token) {
+    this._cancelPlacement();
+    const G = this.GUTS;
+    if (!G.SpriteBillboardRenderer || !set.spriteSheet) return;
+    const sbr = new G.SpriteBillboardRenderer({
+      scene: this.worldRenderer.getScene(), capacity: 1, resourcesPath: this.app.getResourcesPath ? this.app.getResourcesPath() : ''
+    });
+    await sbr.init(set.spriteSheet, set);
+    if (token !== this._previewToken) { try { sbr.dispose(); } catch (e) {} return; }
+    const gs = set.generatorSettings || {};
+    sbr.currentAnimationType = (gs.animationTypes && gs.animationTypes[0]) || 'idle';
+    if (sbr.buildFrameLookupTexture) sbr.buildFrameLookupTexture();
+    if (sbr.setAmbientLight) { try { sbr.setAmbientLight(new window.THREE.Color(1, 1, 1)); } catch (e) {} }
+    if (sbr.setInstanceCount) sbr.setInstanceCount(0);
+    if (sbr.finalizeUpdates) sbr.finalizeUpdates();
+    const scale = (this.terrainDataManager && this.terrainDataManager.gridSize) ? this.terrainDataManager.gridSize * 1.4 : 64;
+    this._placement = { collection, spawnType, type: 'sprite', sbr, scale };
   }
   _updatePlacementGhost(e) {
     const pl = this._placement; if (!pl) return;
     const wp = this._groundFromEvent(e);
-    if (!wp) { pl.ghost.visible = false; return; }
     const tdm = this.terrainDataManager;
+    if (pl.type === 'sprite') {
+      const sbr = pl.sbr;
+      if (!wp) { if (sbr.setInstanceCount) sbr.setInstanceCount(0); if (sbr.finalizeUpdates) sbr.finalizeUpdates(); return; }
+      const y = (tdm && tdm.getTerrainHeightAtPosition) ? tdm.getTerrainHeightAtPosition(wp.x, wp.z) : (wp.y || 0);
+      if (sbr.setInstanceCount) sbr.setInstanceCount(1);
+      if (sbr.setInstance) sbr.setInstance(0, wp.x, y + pl.scale / 2, wp.z, pl.scale, 0, -1);
+      if (sbr.setAnimationFrame) sbr.setAnimationFrame(0);
+      if (sbr.finalizeUpdates) sbr.finalizeUpdates();
+      return;
+    }
+    if (!wp) { pl.ghost.visible = false; return; }
     const y = (tdm && tdm.getTerrainHeightAtPosition) ? tdm.getTerrainHeightAtPosition(wp.x, wp.z) : (wp.y || 0);
     pl.ghost.position.set(wp.x, y, wp.z);
     pl.ghost.visible = true;
@@ -880,8 +985,10 @@ class EditorViewportService {
     return id != null;
   }
   _cancelPlacement() {
-    if (this._placement) {
-      if (this._placement.ghost) { this.worldRenderer.getScene().remove(this._placement.ghost); this._disposeModel(this._placement.ghost); }
+    const pl = this._placement;
+    if (pl) {
+      if (pl.type === 'sprite' && pl.sbr) { try { pl.sbr.dispose(); } catch (e) {} }
+      else if (pl.ghost) { this.worldRenderer.getScene().remove(pl.ghost); this._disposeModel(pl.ghost); }
       this._placement = null;
     }
   }
