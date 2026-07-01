@@ -231,6 +231,60 @@
   padding: 8px 14px; font-size: 12px; box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.7);
 }
 
+/* ---- Inspector (Phase 3: editable fields) ---- */
+.eshell__insp-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
+.eshell__insp-type { font-family: var(--editor-font-mono, monospace); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--editor-text-muted, #5e708a); }
+.eshell__insp-id { font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 15px; font-weight: 600; color: var(--editor-text-primary, #e7eef7); }
+
+.eshell__insp-form { display: flex; flex-direction: column; gap: 8px; }
+.eshell__insp-field { display: grid; grid-template-columns: 92px 1fr 18px; align-items: center; gap: 6px; }
+.eshell__insp-field--wide { grid-template-columns: 1fr 18px; grid-template-areas: "key del" "widget widget"; }
+.eshell__insp-field--wide .eshell__insp-key { grid-area: key; }
+.eshell__insp-field--wide .eshell__insp-del { grid-area: del; }
+.eshell__insp-field--wide .eshell__insp-textarea { grid-area: widget; }
+
+.eshell__insp-key {
+  font-family: var(--editor-font-mono, monospace); font-size: 11px;
+  color: var(--editor-text-muted, #5e708a); background: transparent;
+  border: 1px solid transparent; border-radius: var(--editor-border-radius-sm, 4px); padding: 4px 4px;
+  min-width: 0;
+}
+.eshell__insp-key:hover { border-color: var(--editor-border-color, #22303f); }
+.eshell__insp-key:focus { outline: none; border-color: var(--editor-primary, #35e0c8); color: var(--editor-text-primary, #e7eef7); background: var(--editor-bg-dark, #0b121c); }
+
+.eshell__insp-input {
+  font-family: var(--editor-font-mono, monospace); font-size: 12px; min-width: 0; width: 100%;
+  color: var(--editor-text-primary, #e7eef7); background: var(--editor-bg-dark, #0b121c);
+  border: 1px solid var(--editor-border-color, #22303f); border-radius: var(--editor-border-radius-sm, 4px); padding: 5px 7px;
+}
+.eshell__insp-input:focus { outline: none; border-color: var(--editor-primary, #35e0c8); }
+.eshell__insp-check { width: 16px; height: 16px; accent-color: var(--editor-primary, #35e0c8); cursor: pointer; }
+
+.eshell__insp-color { display: flex; gap: 6px; align-items: center; min-width: 0; }
+.eshell__insp-color input[type="color"] { width: 26px; height: 26px; padding: 0; border: 1px solid var(--editor-border-color, #22303f); border-radius: 4px; background: none; cursor: pointer; flex: 0 0 auto; }
+
+.eshell__insp-textarea {
+  font-family: var(--editor-font-mono, monospace); font-size: 12px; width: 100%; resize: vertical; min-height: 60px;
+  color: var(--editor-text-primary, #e7eef7); background: var(--editor-bg-dark, #0b121c);
+  border: 1px solid var(--editor-border-color, #22303f); border-radius: var(--editor-border-radius-sm, 4px); padding: 6px 8px;
+}
+.eshell__insp-textarea:focus { outline: none; border-color: var(--editor-primary, #35e0c8); }
+.eshell__insp-code { min-height: 160px; font-size: 12px; line-height: 1.5; }
+.eshell__insp-invalid { border-color: var(--editor-danger, #ff5c6c) !important; }
+
+.eshell__insp-del {
+  width: 18px; height: 18px; padding: 0; line-height: 1; cursor: pointer;
+  color: var(--editor-text-muted, #5e708a); background: transparent;
+  border: 1px solid transparent; border-radius: 3px; font-size: 15px;
+}
+.eshell__insp-del:hover { color: var(--editor-danger, #ff5c6c); border-color: rgba(255, 92, 108, 0.4); }
+
+.eshell__insp-add { margin: 12px 0 0; width: 100%; }
+.eshell__insp-actions {
+  display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px;
+  padding-top: 12px; border-top: 1px solid var(--editor-border-color, #22303f);
+}
+
 /* Hide the legacy chrome when new shell is active */
 body.eshell-active > #container,
 body.eshell-active > #modals { display: none !important; }

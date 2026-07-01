@@ -274,24 +274,135 @@ class EditorShell {
     this._renderInspector(typeId, id);
   }
 
+  // ---- Inspector (Phase 3: typed, editable fields) ---------------------------
   _renderInspector(typeId, id) {
-    const obj = (this._collections()[typeId] || {})[id] || {};
+    const obj = (this._collections()[typeId] || {})[id];
     const body = this._body('inspector');
     body.innerHTML = '';
+    if (!obj) { this._empty(body, 'Select an asset to inspect.'); return; }
+
     const head = document.createElement('div');
-    head.className = 'eshell__group-title';
-    head.textContent = `${typeId} · ${id}`;
+    head.className = 'eshell__insp-head';
+    head.innerHTML = `<span class="eshell__insp-type">${typeId}</span><span class="eshell__insp-id">${id}</span>`;
     body.appendChild(head);
-    // Phase 3 replaces this readout with typed, editable widgets.
-    Object.keys(obj).forEach(k => {
-      const row = document.createElement('div');
-      row.className = 'eshell__row';
-      const v = obj[k];
-      const disp = (v && typeof v === 'object') ? `{${Array.isArray(v) ? v.length + ' items' : '…'}}` : String(v);
-      const safe = String(disp).replace(/"/g, '&quot;');
-      row.innerHTML = `<span>${k}</span><span class="eshell__row-count" title="${safe}">${String(disp).slice(0, 40)}</span>`;
-      body.appendChild(row);
-    });
+
+    const form = document.createElement('div');
+    form.className = 'eshell__insp-form';
+    body.appendChild(form);
+
+    this._inspFields = [];
+    Object.keys(obj).forEach(k => form.appendChild(this._inspField(typeId, k, obj[k])));
+
+    const add = this._miniBtn('+ Field', () => form.appendChild(this._inspField(typeId, '', '')));
+    add.classList.add('eshell__insp-add');
+    body.appendChild(add);
+
+    const bar = document.createElement('div');
+    bar.className = 'eshell__insp-actions';
+    const save = this._miniBtn('Save', () => this._saveInspector(typeId, id));
+    save.classList.add('eshell__btn--primary');
+    bar.append(this._miniBtn('Revert', () => this._renderInspector(typeId, id)), save);
+    body.appendChild(bar);
+  }
+
+  _inspField(type, key, value) {
+    const row = document.createElement('div');
+    row.className = 'eshell__insp-field';
+
+    const keyInput = document.createElement('input');
+    keyInput.className = 'eshell__insp-key';
+    keyInput.value = key; keyInput.placeholder = 'field';
+
+    const kind = this._fieldKind(type, key, value);
+    const widget = this._inspWidget(type, key, value, kind);
+    if (kind === 'code' || kind === 'json' || kind === 'text') row.classList.add('eshell__insp-field--wide');
+
+    const del = document.createElement('button');
+    del.className = 'eshell__insp-del'; del.textContent = '×'; del.title = 'Remove field';
+    del.addEventListener('click', () => { row.remove(); this._inspFields = this._inspFields.filter(f => f.row !== row); });
+
+    row.append(keyInput, widget.el, del);
+    this._inspFields.push({ row, read: () => { const k = keyInput.value.trim(); return k ? [k, widget.read()] : null; } });
+    return row;
+  }
+
+  _fieldKind(type, key, value) {
+    const CODE = ['script', 'html', 'css', 'testScript'];
+    if (CODE.includes(key)) return 'code';
+    if (typeof value === 'boolean') return 'bool';
+    if (typeof value === 'number') return 'number';
+    if (value && typeof value === 'object') return 'json';       // array or object
+    if (/color$/i.test(key) || (typeof value === 'string' && /^#[0-9a-f]{3,8}$/i.test(value))) return 'color';
+    if (this._referenceCollection(key)) return 'ref';
+    if (typeof value === 'string' && (value.length > 60 || value.includes('\n'))) return 'text';
+    return 'string';
+  }
+
+  _referenceCollection(key) {
+    if (!key) return null;
+    const cols = this._collections();
+    if (cols[key] && key !== 'objectTypeCategories') return key;          // plural key names a collection
+    const def = this._collectionDefs().find(d => d.singular && d.singular.toLowerCase() === key.toLowerCase());
+    return def ? def.id : null;
+  }
+
+  _inspWidget(type, key, value, kind) {
+    if (kind === 'bool') {
+      const el = document.createElement('input'); el.type = 'checkbox'; el.className = 'eshell__insp-check'; el.checked = !!value;
+      return { el, read: () => el.checked };
+    }
+    if (kind === 'number') {
+      const el = document.createElement('input'); el.type = 'number'; el.className = 'eshell__insp-input'; el.value = value;
+      return { el, read: () => { const n = parseFloat(el.value); return el.value === '' || isNaN(n) ? el.value : n; } };
+    }
+    if (kind === 'color') {
+      const wrap = document.createElement('div'); wrap.className = 'eshell__insp-color';
+      const pick = document.createElement('input'); pick.type = 'color'; pick.value = /^#[0-9a-f]{6}$/i.test(value) ? value : '#35e0c8';
+      const hex = document.createElement('input'); hex.type = 'text'; hex.className = 'eshell__insp-input'; hex.value = value || '';
+      pick.addEventListener('input', () => { hex.value = pick.value; });
+      hex.addEventListener('input', () => { if (/^#[0-9a-f]{6}$/i.test(hex.value)) pick.value = hex.value; });
+      wrap.append(pick, hex);
+      return { el: wrap, read: () => hex.value };
+    }
+    if (kind === 'ref') {
+      const col = this._referenceCollection(key);
+      const el = document.createElement('select'); el.className = 'eshell__insp-input';
+      const blank = document.createElement('option'); blank.value = ''; blank.textContent = '—'; el.appendChild(blank);
+      const objs = this._collections()[col] || {};
+      Object.keys(objs).sort().forEach(oid => {
+        const o = document.createElement('option'); o.value = oid; o.textContent = this._title(objs[oid], oid);
+        if (oid === value) o.selected = true; el.appendChild(o);
+      });
+      if (value && !objs[value]) { const o = document.createElement('option'); o.value = value; o.textContent = value + ' (?)'; o.selected = true; el.appendChild(o); }
+      return { el, read: () => el.value };
+    }
+    if (kind === 'code' || kind === 'text' || kind === 'json') {
+      const el = document.createElement('textarea');
+      el.className = 'eshell__insp-textarea' + (kind === 'code' ? ' eshell__insp-code' : '');
+      el.value = (kind === 'json') ? JSON.stringify(value, null, 2) : (value == null ? '' : String(value));
+      el.addEventListener('input', () => el.classList.remove('eshell__insp-invalid'));
+      if (kind === 'json') {
+        return { el, read: () => { try { return JSON.parse(el.value); } catch (e) { el.classList.add('eshell__insp-invalid'); return value; } } };
+      }
+      return { el, read: () => el.value };
+    }
+    const el = document.createElement('input'); el.type = 'text'; el.className = 'eshell__insp-input'; el.value = value == null ? '' : String(value);
+    return { el, read: () => el.value };
+  }
+
+  _saveInspector(type, id) {
+    const complete = {};
+    let invalid = false;
+    (this._inspFields || []).forEach(f => { const kv = f.read(); if (kv) complete[kv[0]] = kv[1]; });
+    invalid = !!this.root.querySelector('.eshell__insp-invalid');
+    if (invalid) { this._toast('Fix invalid JSON before saving'); return; }
+    this.model.setSelectedType(type); this.model.selectObject(id);
+    if (this.model.saveObject) this.model.saveObject(complete);
+    else this._collections()[type][id] = complete;
+    this._persistCurrent();
+    this._toast('Saved ' + id);
+    this._renderObjectGrid();          // title/label may have changed
+    this._renderInspector(type, id);
   }
 
   // ---- Asset CRUD (persist via existing Model + FileSystemSyncService seam) ---
