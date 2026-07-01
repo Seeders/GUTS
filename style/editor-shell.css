@@ -112,7 +112,8 @@
 .eshell__splitter--right  { left: -3px; }     /* on inspector left edge */
 .eshell__splitter--bottom { top: -3px; }      /* on assets top edge */
 
-/* ---- Viewport placeholder (Phase 1 replaces with live canvas) ---- */
+/* ---- Viewport (live canvas + placeholder overlay) ---- */
+.eshell__panel--viewport .eshell__panel-body { position: relative; padding: 0; overflow: hidden; }
 .eshell__viewport-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .eshell__viewport-placeholder {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;

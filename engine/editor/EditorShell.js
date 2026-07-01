@@ -19,6 +19,7 @@ class EditorShell {
     this.panels = {};
     this.selectedType = null;
     this.selectedObjectId = null;
+    this.viewport = null;
   }
 
   /** Build the shell into <body> and hide the legacy chrome. */
@@ -44,8 +45,39 @@ class EditorShell {
     this._setupSplitters();
     this.renderAssets();
     this._renderInspectorEmpty('Select an asset to inspect.');
-    this._renderHierarchyEmpty('No scene loaded yet (Phase 1).');
+    this._renderHierarchyEmpty('Scene hierarchy — Phase 4.');
+    // Defer viewport start one frame so the grid layout has real pixel sizes.
+    requestAnimationFrame(() => this._startViewport());
     return this;
+  }
+
+  /** Re-render data panels and restart the viewport for a (re)loaded project. */
+  refresh() {
+    this.renderAssets();
+    this._restartViewport();
+  }
+
+  // ---- Viewport (always-on 3D world) -----------------------------------------
+  _startViewport() {
+    const Svc = (typeof window !== 'undefined') && (window.EditorViewportService || (window.GUTS && window.GUTS.EditorViewportService));
+    if (!Svc || !this.controller) return; // skipped in standalone preview (no bundle)
+    const body = this._body('viewport');
+    if (!body) return;
+    try {
+      this.viewport = new Svc(this.controller, body, this._viewportOptions());
+      this.viewport.start();
+    } catch (e) { console.error('[EditorShell] viewport start failed:', e); }
+  }
+  _restartViewport() {
+    try { if (this.viewport && this.viewport.stop) this.viewport.stop(); } catch (e) {}
+    this.viewport = null;
+    requestAnimationFrame(() => this._startViewport());
+  }
+  _viewportOptions() {
+    try {
+      const cfg = (this.model.getCollections().configs || {}).editor || {};
+      return { scene: cfg.viewportScene, level: cfg.viewportLevel };
+    } catch (e) { return {}; }
   }
 
   // ---- Menu bar --------------------------------------------------------------
@@ -109,6 +141,19 @@ class EditorShell {
 
   _buildViewport() {
     const panel = this._buildPanel('viewport', 'Viewport · Scene');
+    // Camera-mode toggles in the header.
+    const header = panel.querySelector('.eshell__panel-header');
+    const spacer = document.createElement('span');
+    spacer.style.flex = '1';
+    header.appendChild(spacer);
+    [['Game', 'game'], ['Scene', 'scene']].forEach(([label, mode]) => {
+      const b = document.createElement('button');
+      b.className = 'eshell__btn';
+      b.style.padding = '2px 8px';
+      b.textContent = label;
+      b.addEventListener('click', () => { if (this.viewport) this.viewport.setCameraMode(mode); });
+      header.appendChild(b);
+    });
     const body = panel.querySelector('.eshell__panel-body');
     body.style.padding = '0';
     const ph = document.createElement('div');
