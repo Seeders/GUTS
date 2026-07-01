@@ -46,6 +46,7 @@ class EditorShell {
 
     this._setupSplitters();
     this._setupShortcuts();
+    this.root.appendChild(this._buildPreviewWindow());
     this.renderAssets();
     this._renderInspectorEmpty('Select an asset to inspect.');
     this._renderHierarchyEmpty('No entities yet — drag an asset into the viewport.');
@@ -70,7 +71,7 @@ class EditorShell {
         case 'Delete': case 'Backspace':
           if (vp && vp.getSelectedEntity && vp.getSelectedEntity() != null) { e.preventDefault(); vp.removeSelected(); }
           break;
-        case 'Escape': if (vp && vp.deselectAll) vp.deselectAll(); break;
+        case 'Escape': if (vp) { if (vp.clearPreview) vp.clearPreview(); if (vp.deselectAll) vp.deselectAll(); } break;
         default: break;
       }
     };
@@ -91,6 +92,8 @@ class EditorShell {
     if (!body) return;
     try {
       this.viewport = new Svc(this.controller, body, this._viewportOptions());
+      this.viewport.previewCanvas = this._previewCanvasEl;
+      this.viewport.previewWindow = this._previewWindowEl;
       // Scene entity <-> hierarchy <-> inspector sync.
       this.viewport.onSelectionChange = (id, rec) => this._onEntitySelected(id, rec);
       this.viewport.onSceneChange = () => this._renderHierarchy();
@@ -114,6 +117,25 @@ class EditorShell {
       const cfg = (this.model.getCollections().configs || {}).editor || {};
       return { scene: cfg.viewportScene, level: cfg.viewportLevel };
     } catch (e) { return {}; }
+  }
+
+  // Bottom-right model preview window (its own mini renderer, driven by the viewport).
+  _buildPreviewWindow() {
+    const win = document.createElement('div');
+    win.className = 'eshell__preview-window';
+    win.id = 'eshell-preview-window';
+    const header = document.createElement('div');
+    header.className = 'eshell__preview-window-header';
+    const title = document.createElement('span'); title.textContent = 'Preview';
+    const close = document.createElement('span'); close.className = 'eshell__tab-close'; close.textContent = '×';
+    close.addEventListener('click', () => { if (this.viewport) this.viewport.clearPreview(); });
+    header.append(title, close);
+    const canvas = document.createElement('canvas');
+    canvas.className = 'eshell__preview-canvas';
+    win.append(header, canvas);
+    this._previewWindowEl = win;
+    this._previewCanvasEl = canvas;
+    return win;
   }
 
   // ---- Scene hierarchy (Phase 4) ---------------------------------------------

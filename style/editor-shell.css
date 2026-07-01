@@ -354,6 +354,27 @@
   box-shadow: 0 0 16px -4px var(--editor-cyan-glow, rgba(53, 224, 200, 0.6));
 }
 
+/* ---- Model preview window (bottom-right) ---- */
+.eshell__preview-window {
+  position: absolute; right: 12px; bottom: 12px; z-index: 40;
+  width: 220px; height: 220px; display: none; flex-direction: column;
+  background: rgba(11, 18, 28, 0.96); border: 1px solid var(--editor-border-color, #22303f);
+  border-radius: var(--editor-border-radius, 6px); box-shadow: 0 18px 44px -16px rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+}
+.eshell__preview-window-header {
+  flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 10px; font-family: var(--editor-font-mono, monospace); font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--editor-primary, #35e0c8);
+  background: var(--editor-bg-light, #16202f); border-bottom: 1px solid var(--editor-border-color, #22303f);
+}
+.eshell__preview-canvas {
+  flex: 1 1 auto; width: 100%; height: 100%; display: block;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(53, 224, 200, 0.06), transparent 70%),
+    var(--editor-bg-dark, #0b121c);
+}
+
 /* Hide the legacy chrome when new shell is active */
 body.eshell-active > #container,
 body.eshell-active > #modals { display: none !important; }
