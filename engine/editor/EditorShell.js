@@ -164,6 +164,11 @@ class EditorShell {
       this.viewport.setInteractionMode(state.mode);
       this.viewport.setPaintOptions({ terrainId: state.terrainId, heightLevel: state.height, brushSize: state.brush, tool: state.tool });
     };
+    // Show only the controls relevant to the active mode.
+    const updateVis = () => {
+      if (this._ttPaletteGroup) this._ttPaletteGroup.style.display = (state.mode === 'terrain') ? '' : 'none';
+      if (this._ttHeightGroup) this._ttHeightGroup.style.display = (state.mode === 'height') ? '' : 'none';
+    };
 
     const head = document.createElement('div'); head.className = 'eshell__tt-head';
     const title = document.createElement('span'); title.textContent = 'Terrain'; head.appendChild(title);
@@ -174,7 +179,7 @@ class EditorShell {
 
     const modeRow = document.createElement('div'); modeRow.className = 'eshell__tt-row';
     [['Select', 'select'], ['Paint', 'terrain'], ['Height', 'height'], ['Ramp', 'ramp']].forEach(([label, m]) => {
-      const b = this._miniBtn(label, () => { state.mode = m; modeRow.querySelectorAll('.eshell__btn').forEach(x => x.classList.toggle('eshell__btn--primary', x === b)); apply(); });
+      const b = this._miniBtn(label, () => { state.mode = m; modeRow.querySelectorAll('.eshell__btn').forEach(x => x.classList.toggle('eshell__btn--primary', x === b)); apply(); updateVis(); });
       if (m === state.mode) b.classList.add('eshell__btn--primary');
       modeRow.appendChild(b);
     });
@@ -197,7 +202,8 @@ class EditorShell {
 
     const hgt = document.createElement('input'); hgt.type = 'number'; hgt.min = '0'; hgt.max = '20'; hgt.value = '1'; hgt.className = 'eshell__insp-input';
     hgt.addEventListener('input', () => { state.height = +hgt.value; apply(); });
-    ov.appendChild(this._ttGroup('Height level', hgt));
+    this._ttHeightGroup = this._ttGroup('Height level', hgt);
+    ov.appendChild(this._ttHeightGroup);
 
     const pal = document.createElement('div'); pal.className = 'eshell__tt-palette';
     const renderPal = () => {
@@ -213,8 +219,10 @@ class EditorShell {
       });
     };
     renderPal();
-    ov.appendChild(this._ttGroup('Terrain', pal));
+    this._ttPaletteGroup = this._ttGroup('Terrain', pal);
+    ov.appendChild(this._ttPaletteGroup);
 
+    updateVis();
     apply();
     return ov;
   }
