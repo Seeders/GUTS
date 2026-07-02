@@ -59,6 +59,13 @@ class EditorModel {
             return urlProject;
         }
 
+        // Then the last project opened in this browser (avoids defaulting to
+        // whatever sorts first alphabetically, e.g. 'Abandoned')
+        try {
+            const last = localStorage.getItem('guts-editor-last-project');
+            if (last && this.projects.includes(last)) return last;
+        } catch (e) { /* storage unavailable */ }
+
         // Return first available project, or null if none
         return this.projects.length > 0 ? this.projects[0] : null;
     }
@@ -72,6 +79,7 @@ class EditorModel {
      */
     async loadProject(name) {
         this.state.currentProject = name;
+        try { localStorage.setItem('guts-editor-last-project', name); } catch (e) { /* storage unavailable */ }
 
         // Initialize empty project structure - FileSystemSyncService will populate it
         this.state.project = {

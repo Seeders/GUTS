@@ -508,57 +508,119 @@ class EditorShell {
     search.className = 'eshell__assets-search'; search.id = 'eshell-assets-search';
     search.placeholder = 'Search…'; search.value = this._search || '';
     search.addEventListener('input', () => { this._search = search.value; this._renderObjectGrid(); });
-    toolbar.append(crumb, spacer, search,
+    // View toggle: tiles vs list.
+    if (!this._assetView) this._assetView = 'tiles';
+    const viewWrap = document.createElement('div');
+    viewWrap.className = 'eshell__assets-viewtoggle';
+    [['⊞', 'tiles', 'Tile view'], ['☰', 'list', 'List view']].forEach(([glyph, mode, tip]) => {
+      const b = this._miniBtn(glyph, () => {
+        this._assetView = mode;
+        viewWrap.querySelectorAll('.eshell__btn').forEach(x => x.classList.toggle('eshell__btn--primary', x.dataset.view === mode));
+        this._renderObjectGrid();
+      });
+      b.dataset.view = mode; b.title = tip;
+      if (mode === this._assetView) b.classList.add('eshell__btn--primary');
+      viewWrap.appendChild(b);
+    });
+    toolbar.append(crumb, spacer, search, viewWrap,
       this._miniBtn('+ New', () => this._newObject()),
       this._miniBtn('Duplicate', () => this._duplicateObject()),
       this._miniBtn('Delete', () => this._deleteObject(), 'danger'),
       this._miniBtn('+ Collection', () => this._newCollection()));
     body.appendChild(toolbar);
 
+    // Miller columns (Finder-style): categories | collections | objects.
     const main = document.createElement('div');
     main.className = 'eshell__assets-main';
-    main.innerHTML = '<div class="eshell__assets-tree" id="eshell-assets-tree"></div>' +
+    main.innerHTML = '<div class="eshell__assets-col" id="eshell-assets-cats"></div>' +
+                     '<div class="eshell__assets-col" id="eshell-assets-cols"></div>' +
                      '<div class="eshell__assets-grid" id="eshell-assets-grid"></div>';
     body.appendChild(main);
+
+    // Derive the category from the current collection (e.g. after a refresh).
+    if (this.selectedType && !this.selectedCategory) {
+      const def = this._collectionDefs().find(d => d.id === this.selectedType);
+      this.selectedCategory = (def && def.objectTypeCategory) || null;
+    }
 
     this._renderCollectionTree();
     this._renderObjectGrid();
   }
 
+  // Renders both selector columns (categories, then collections in the selected one).
   _renderCollectionTree() {
-    const tree = this.root.querySelector('#eshell-assets-tree');
-    if (!tree) return;
-    tree.innerHTML = '';
-    const defs = this._collectionDefs();
-    const cats = this._categories();
-    const collections = this._collections();
-    const groups = {};
-    defs.forEach(def => { const c = def.objectTypeCategory || 'uncategorized'; (groups[c] = groups[c] || []).push(def); });
+    this._renderCategoryColumn();
+    this._renderCollectionColumn();
+  }
 
-    Object.keys(groups).sort().forEach(catKey => {
-      const title = document.createElement('div');
-      title.className = 'eshell__group-title';
-      title.textContent = (cats[catKey] && cats[catKey].title) || catKey;
-      tree.appendChild(title);
-      groups[catKey].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id)).forEach(def => {
-        const count = collections[def.id] ? Object.keys(collections[def.id]).length : 0;
-        const row = document.createElement('div');
-        row.className = 'eshell__row' + (def.id === this.selectedType ? ' eshell__row--active' : '');
-        row.dataset.type = def.id;
-        row.innerHTML = `<span>${def.name || def.id}</span><span class="eshell__row-count">${count}</span>`;
-        row.addEventListener('click', () => this.selectCollection(def.id));
-        tree.appendChild(row);
-      });
+  _categoryGroups() {
+    const groups = {};
+    this._collectionDefs().forEach(def => {
+      const c = def.objectTypeCategory || 'uncategorized';
+      (groups[c] = groups[c] || []).push(def);
+    });
+    return groups;
+  }
+
+  _renderCategoryColumn() {
+    const pane = this.root.querySelector('#eshell-assets-cats');
+    if (!pane) return;
+    pane.innerHTML = '';
+    const cats = this._categories();
+    const groups = this._categoryGroups();
+    const keys = Object.keys(groups).sort();
+    if (!keys.length) { this._empty(pane, 'No categories.'); return; }
+    keys.forEach(catKey => {
+      const row = document.createElement('div');
+      row.className = 'eshell__row' + (catKey === this.selectedCategory ? ' eshell__row--active' : '');
+      row.dataset.cat = catKey;
+      row.innerHTML = `<span>${(cats[catKey] && cats[catKey].title) || catKey}</span><span class="eshell__row-count">${groups[catKey].length} ›</span>`;
+      row.addEventListener('click', () => this.selectCategory(catKey));
+      pane.appendChild(row);
+    });
+  }
+
+  selectCategory(catKey) {
+    this.selectedCategory = catKey;
+    this.selectedType = null;          // Finder-like: picking a category resets deeper columns
+    this.selectedObjectId = null;
+    const crumb = this.root.querySelector('#eshell-assets-crumb');
+    if (crumb) crumb.textContent = catKey;
+    this._renderCategoryColumn();
+    this._renderCollectionColumn();
+    this._renderObjectGrid();
+  }
+
+  _renderCollectionColumn() {
+    const pane = this.root.querySelector('#eshell-assets-cols');
+    if (!pane) return;
+    pane.innerHTML = '';
+    if (!this.selectedCategory) { this._empty(pane, 'Select a category.'); return; }
+    const defs = this._categoryGroups()[this.selectedCategory] || [];
+    if (!defs.length) { this._empty(pane, 'Empty category.'); return; }
+    const collections = this._collections();
+    defs.sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id)).forEach(def => {
+      const count = collections[def.id] ? Object.keys(collections[def.id]).length : 0;
+      const row = document.createElement('div');
+      row.className = 'eshell__row' + (def.id === this.selectedType ? ' eshell__row--active' : '');
+      row.dataset.type = def.id;
+      row.innerHTML = `<span>${def.name || def.id}</span><span class="eshell__row-count">${count} ›</span>`;
+      row.addEventListener('click', () => this.selectCollection(def.id));
+      pane.appendChild(row);
     });
   }
 
   selectCollection(typeId) {
     this.selectedType = typeId;
     this.selectedObjectId = null;
+    // Keep the category column in sync (e.g. when called after creating a collection).
+    const def = this._collectionDefs().find(d => d.id === typeId);
+    const cat = (def && def.objectTypeCategory) || 'uncategorized';
+    if (cat !== this.selectedCategory) { this.selectedCategory = cat; this._renderCategoryColumn(); this._renderCollectionColumn(); }
     if (this.model && this.model.setSelectedType) this.model.setSelectedType(typeId);
     const crumb = this.root.querySelector('#eshell-assets-crumb');
-    if (crumb) crumb.textContent = typeId;
-    this.root.querySelectorAll('#eshell-assets-tree .eshell__row').forEach(r =>
+    if (crumb) crumb.textContent = `${this.selectedCategory} · ${typeId}`;
+    this.root.querySelectorAll('#eshell-assets-cols .eshell__row').forEach(r =>
       r.classList.toggle('eshell__row--active', r.dataset.type === typeId));
     this._renderObjectGrid();
   }
@@ -567,12 +629,44 @@ class EditorShell {
     const grid = this.root.querySelector('#eshell-assets-grid');
     if (!grid) return;
     grid.innerHTML = '';
+    const listView = this._assetView === 'list';
+    grid.classList.toggle('eshell__assets-grid--list', listView);
     if (!this.selectedType) { this._empty(grid, 'Select a collection.'); return; }
     const objs = this._collections()[this.selectedType] || {};
     let ids = Object.keys(objs);
     const q = (this._search || '').trim().toLowerCase();
     if (q) ids = ids.filter(id => id.toLowerCase().includes(q) || this._title(objs[id], id).toLowerCase().includes(q));
     if (!ids.length) { this._empty(grid, q ? 'No matches.' : 'Empty collection — use + New.'); return; }
+    if (listView) {
+      ids.sort((a, b) => this._title(objs[a], a).localeCompare(this._title(objs[b], b))).forEach(id => {
+        const title = this._title(objs[id], id);
+        const row = document.createElement('div');
+        row.className = 'eshell__asset-listrow' + (id === this.selectedObjectId ? ' eshell__asset-listrow--active' : '');
+        row.dataset.id = id;
+        row.draggable = true;
+        row.addEventListener('dragstart', (e) => {
+          const payload = JSON.stringify({ collection: this.selectedType, type: id });
+          e.dataTransfer.setData('application/x-guts-asset', payload);
+          e.dataTransfer.setData('text/plain', payload);
+          e.dataTransfer.effectAllowed = 'copy';
+        });
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'eshell__asset-listicon';
+        const iconUrl = this._assetIconUrl(objs[id]);
+        if (iconUrl) {
+          const img = document.createElement('img');
+          img.className = 'eshell__asset-img'; img.src = iconUrl; img.alt = '';
+          img.addEventListener('error', () => { iconDiv.textContent = (title[0] || '?').toUpperCase(); });
+          iconDiv.appendChild(img);
+        } else iconDiv.textContent = (title[0] || '?').toUpperCase();
+        const name = document.createElement('span'); name.className = 'eshell__asset-listname'; name.textContent = title;
+        const idSpan = document.createElement('span'); idSpan.className = 'eshell__row-count'; idSpan.textContent = id;
+        row.append(iconDiv, name, idSpan);
+        row.addEventListener('click', () => this.selectObject(this.selectedType, id));
+        grid.appendChild(row);
+      });
+      return;
+    }
     ids.sort((a, b) => this._title(objs[a], a).localeCompare(this._title(objs[b], b))).forEach(id => {
       const card = document.createElement('div');
       card.className = 'eshell__asset' + (id === this.selectedObjectId ? ' eshell__asset--active' : '');
@@ -615,6 +709,8 @@ class EditorShell {
     }
     this.root.querySelectorAll('#eshell-assets-grid .eshell__asset').forEach(c =>
       c.classList.toggle('eshell__asset--active', c.dataset.id === id));
+    this.root.querySelectorAll('#eshell-assets-grid .eshell__asset-listrow').forEach(c =>
+      c.classList.toggle('eshell__asset-listrow--active', c.dataset.id === id));
     this._renderInspector(typeId, id);
     // Preview visual assets (render defs / sprites / particles) in the viewport.
     if (this.viewport && this.viewport.previewAsset) this.viewport.previewAsset(typeId, id);

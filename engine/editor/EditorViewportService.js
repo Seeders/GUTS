@@ -87,7 +87,9 @@ class EditorViewportService {
 
     const sceneName = this.options.scene || this._defaultScene(collections);
     if (!sceneName || !collections.scenes[sceneName]) {
-      this._message(`Scene not found: ${sceneName || '(none)'}`);
+      this._message(sceneName
+        ? `Scene not found: ${sceneName}`
+        : 'No editor scene in this project (add a terrainMapEditor scene, or set configs.editor.viewportScene)');
       return false;
     }
     const levelName = this.options.level || this._defaultLevel(collections);
@@ -106,7 +108,13 @@ class EditorViewportService {
 
     // 4. Load the scene: configures + enables systems; TerrainSystem spawns terrain,
     //    WorldSystem builds the WorldRenderer/WebGLRenderer on our canvas.
-    await this.editorContext.sceneManager.loadScene(sceneName);
+    try {
+      await this.editorContext.sceneManager.loadScene(sceneName);
+    } catch (e) {
+      console.error(`[EditorViewportService] scene '${sceneName}' failed to load:`, e);
+      this._message(`Scene '${sceneName}' failed to load — see console`);
+      return false;
+    }
 
     // 5. Borrow references the systems just created.
     this.worldRenderer = this.editorContext.worldSystem && this.editorContext.worldSystem.worldRenderer;
@@ -1110,9 +1118,13 @@ class EditorViewportService {
   }
 
   _defaultScene(collections) {
+    // Only auto-load editor-safe scenes. Gameplay scenes (e.g. 'game') pull in
+    // systems that crash outside the real game (no UI DOM, missing services) —
+    // seen when a project without terrainMapEditor loaded its 'game' scene.
     const scenes = collections.scenes || {};
     if (scenes.terrainMapEditor) return 'terrainMapEditor';
-    return Object.keys(scenes)[0] || null;
+    if (scenes.simulationEditor) return 'simulationEditor';
+    return null;
   }
   _defaultLevel(collections) {
     const levels = collections.levels || {};
