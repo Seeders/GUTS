@@ -472,6 +472,128 @@
 .eshell__module-pane > .ge,
 .eshell__module-pane > .tx { flex: 1 1 auto; min-height: 0; height: auto; }
 
+/* ---- Behavior graph editor (Unity-style node view) ---- */
+.btg { display: flex; flex-direction: column; background: var(--editor-bg-dark, #0b121c); }
+.btg__bar {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 6px 10px;
+  background: var(--editor-bg-light, #16202f); border-bottom: 1px solid var(--editor-border-color, #22303f);
+}
+.btg__root { font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 13px; }
+.btg__spacer { flex: 1 1 auto; }
+.btg__issues { font-family: var(--editor-font-mono, monospace); font-size: 10.5px; }
+.btg__issues--ok { color: var(--editor-primary, #35e0c8); }
+.btg__issues--warn { color: var(--editor-accent-amber, #f5a623); }
+.btg__issues--error { color: var(--editor-danger, #ff5c6c); }
+.btg__btn {
+  appearance: none; cursor: pointer;
+  font-family: var(--editor-font-mono, monospace); font-size: 11px;
+  color: var(--editor-text-secondary, #90a2ba); background: var(--editor-bg-medium, #111a27);
+  border: 1px solid var(--editor-border-color, #22303f); border-radius: var(--editor-border-radius-sm, 4px);
+  padding: 4px 9px; transition: var(--editor-transition, 0.15s);
+}
+.btg__btn:hover { color: var(--editor-text-primary, #e7eef7); border-color: var(--editor-border-color-hover, #35506e); }
+.btg__btn--primary { color: #04231e; background: var(--editor-primary, #35e0c8); border-color: var(--editor-primary, #35e0c8); font-weight: 600; }
+.btg__btn--block { display: block; width: 100%; margin-top: 6px; }
+.btg__mini { padding: 1px 6px; font-size: 11px; cursor: pointer; color: var(--editor-text-muted, #5e708a); background: transparent; border: 1px solid var(--editor-border-color, #22303f); border-radius: 3px; }
+.btg__mini:hover { color: var(--editor-text-primary, #e7eef7); }
+
+.btg__body { flex: 1 1 auto; min-height: 0; display: flex; }
+.btg__canvas {
+  flex: 1 1 auto; min-width: 0; position: relative; overflow: hidden; cursor: grab;
+  background:
+    linear-gradient(var(--editor-grid-line, rgba(122, 152, 194, 0.06)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--editor-grid-line, rgba(122, 152, 194, 0.06)) 1px, transparent 1px),
+    var(--editor-bg-dark, #0b121c);
+  background-size: 26px 26px, 26px 26px, auto;
+}
+.btg__canvas:active { cursor: grabbing; }
+.btg__world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.btg__edges { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+
+.btg__node {
+  position: absolute; width: 190px; box-sizing: border-box; cursor: pointer;
+  background: var(--btg-node-fill, #1a2332);
+  border: 1px solid var(--btg-node-color, #5e708a);
+  border-top: 3px solid var(--btg-node-color, #5e708a);
+  border-radius: var(--editor-border-radius, 6px);
+  box-shadow: 0 8px 22px -10px rgba(0, 0, 0, 0.7);
+  user-select: none;
+}
+.btg__node--selected { box-shadow: 0 0 0 2px var(--editor-primary, #35e0c8), 0 8px 22px -10px rgba(0, 0, 0, 0.7); }
+.btg__node--missing { border-style: dashed; }
+.btg__node-head {
+  display: flex; align-items: center; gap: 5px; padding: 3px 8px 0;
+  font-family: var(--editor-font-mono, monospace); font-size: 9px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--btg-node-color, #5e708a);
+}
+.btg__node-title {
+  padding: 1px 8px; font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 12.5px; font-weight: 600; color: var(--editor-text-primary, #e7eef7);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.btg__node-sub {
+  padding: 0 8px 5px; font-family: var(--editor-font-mono, monospace); font-size: 9.5px;
+  color: var(--editor-text-muted, #5e708a);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.btg__badge {
+  margin-left: auto; width: 13px; height: 13px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; cursor: help;
+}
+.btg__badge--warn { background: var(--editor-accent-amber, #f5a623); color: #2a1205; }
+.btg__badge--error { background: var(--editor-danger, #ff5c6c); color: #2a0509; }
+.btg__shared { font-size: 9px; color: var(--editor-text-muted, #5e708a); cursor: help; }
+
+.btg__inspector {
+  flex: 0 0 265px; min-width: 0; overflow-y: auto; padding: 10px;
+  background: var(--editor-bg-medium, #111a27);
+  border-left: 1px solid var(--editor-border-color, #22303f);
+}
+.btg__insp-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; }
+.btg__insp-head b { font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 14px; }
+.btg__insp-kind {
+  font-family: var(--editor-font-mono, monospace); font-size: 9.5px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--editor-text-muted, #5e708a);
+}
+.btg__insp-sub {
+  font-family: var(--editor-font-mono, monospace); font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--editor-text-muted, #5e708a);
+  margin: 12px 0 6px;
+}
+.btg__insp-row { display: flex; align-items: flex-start; gap: 7px; margin-bottom: 6px; }
+.btg__insp-row label {
+  flex: 0 0 74px; padding-top: 4px;
+  font-family: var(--editor-font-mono, monospace); font-size: 10.5px; color: var(--editor-text-muted, #5e708a);
+}
+.btg__insp-row input:not([type="checkbox"]), .btg__insp-row textarea, .btg__insp-add select {
+  flex: 1 1 auto; min-width: 0; width: 100%;
+  font-family: var(--editor-font-mono, monospace); font-size: 11.5px;
+  color: var(--editor-text-primary, #e7eef7); background: var(--editor-bg-dark, #0b121c);
+  border: 1px solid var(--editor-border-color, #22303f); border-radius: var(--editor-border-radius-sm, 4px);
+  padding: 4px 7px;
+}
+.btg__insp-row textarea { min-height: 44px; resize: vertical; }
+.btg__insp-row input:focus, .btg__insp-row textarea:focus, .btg__insp-add select:focus { outline: none; border-color: var(--editor-primary, #35e0c8); }
+.btg__insp-child {
+  display: flex; align-items: center; gap: 5px; padding: 3px 6px; margin-bottom: 3px;
+  background: var(--editor-bg-dark, #0b121c); border: 1px solid var(--editor-border-color, #22303f);
+  border-radius: var(--editor-border-radius-sm, 4px); font-size: 11.5px;
+}
+.btg__insp-child-n {
+  font-family: var(--editor-font-mono, monospace); font-size: 9.5px; color: var(--editor-primary, #35e0c8);
+  flex: 0 0 14px;
+}
+.btg__insp-child-name { flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btg__insp-add { margin-top: 5px; display: flex; }
+.btg__insp-note {
+  margin-top: 12px; padding: 7px 9px; font-family: var(--editor-font-mono, monospace); font-size: 10px;
+  line-height: 1.5; color: var(--editor-accent-amber, #f5a623);
+  background: rgba(245, 166, 35, 0.08); border: 1px solid rgba(245, 166, 35, 0.3);
+  border-radius: var(--editor-border-radius-sm, 4px);
+}
+
 /* Hide the legacy chrome when new shell is active. NOTE: #modals stays visible —
    re-hosted editor modules (graphics rotate/move/bake dialogs) inject into it,
    and modals only appear when given the .show class. */
