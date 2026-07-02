@@ -1,0 +1,167 @@
+{
+  "title": "Soldier",
+  "branches": [
+    {
+      "id": "crossbowman",
+      "title": "Path of the Crossbowman",
+      "ascension": "2_sd_crossbowman",
+      "skills": [
+        {
+          "id": "aimed_shot",
+          "title": "Aimed Shot",
+          "type": "active",
+          "ability": "AimedShotAbility",
+          "icon": "🎯",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "A precise, high-damage shot"
+        },
+        {
+          "id": "piercing_shot",
+          "title": "Piercing Shot",
+          "type": "active",
+          "ability": "PiercingShotAbility",
+          "icon": "➹",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "A bolt that pierces through enemies"
+        },
+        {
+          "id": "deadeye",
+          "title": "Deadeye",
+          "type": "passive",
+          "icon": "👁️",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+8% increased ranged damage per rank",
+          "damageModifiers": [
+            {
+              "type": "increased",
+              "tags": [
+                "ranged"
+              ],
+              "value": 0.08
+            }
+          ]
+        },
+        {
+          "id": "rapid_fire",
+          "title": "Rapid Fire",
+          "type": "active",
+          "ability": "RapidFireAbility",
+          "icon": "🔁",
+          "levelReq": 9,
+          "maxRank": 5,
+          "description": "Unleash a volley of rapid shots"
+        }
+      ]
+    },
+    {
+      "id": "hoplite",
+      "title": "Path of the Hoplite",
+      "ascension": "2_sd_hoplite",
+      "skills": [
+        {
+          "id": "discipline",
+          "title": "Discipline",
+          "type": "passive",
+          "icon": "📐",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "+5 armor per rank",
+          "stats": {
+            "armor": 5
+          }
+        },
+        {
+          "id": "shield_wall_s",
+          "title": "Shield Wall",
+          "type": "active",
+          "ability": "ShieldWallAbility",
+          "icon": "🧱",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Massive damage reduction for a time"
+        },
+        {
+          "id": "phalanx",
+          "title": "Phalanx Formation",
+          "type": "active",
+          "ability": "PhalanxFormationAbility",
+          "icon": "🛡️",
+          "levelReq": 8,
+          "maxRank": 5,
+          "description": "Assume an unbreakable stance"
+        },
+        {
+          "id": "bulwark",
+          "title": "Bulwark",
+          "type": "passive",
+          "icon": "🏰",
+          "levelReq": 10,
+          "maxRank": 5,
+          "description": "+30 maximum life per rank",
+          "stats": {
+            "maxLife": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": "knight",
+      "title": "Path of the Knight",
+      "ascension": "2_sd_knight",
+      "skills": [
+        {
+          "id": "charge_k",
+          "title": "Charge",
+          "type": "active",
+          "ability": "ChargeAbility",
+          "icon": "🐎",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Rush an enemy, knocking them back"
+        },
+        {
+          "id": "taunt_k",
+          "title": "Taunt",
+          "type": "active",
+          "ability": "TauntAbility",
+          "icon": "📣",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Force nearby enemies to attack you"
+        },
+        {
+          "id": "chivalry",
+          "title": "Chivalry",
+          "type": "passive",
+          "icon": "⚜️",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+7% increased melee damage per rank",
+          "damageModifiers": [
+            {
+              "type": "increased",
+              "tags": [
+                "melee"
+              ],
+              "value": 0.07
+            }
+          ]
+        },
+        {
+          "id": "enchant_weapon",
+          "title": "Enchant Weapon",
+          "type": "active",
+          "ability": "EnchantWeaponAbility",
+          "icon": "✨",
+          "levelReq": 9,
+          "maxRank": 5,
+          "description": "Imbue your weapon with magic"
+        }
+      ]
+    }
+  ],
+  "fileName": "soldier"
+}

@@ -1,0 +1,215 @@
+{
+  "title": "Apprentice",
+  "branches": [
+    {
+      "id": "elementalist",
+      "title": "Path of the Elementalist",
+      "ascension": "2_i_elementalist",
+      "skills": [
+        {
+          "id": "fire_ball",
+          "title": "Fire Ball",
+          "type": "active",
+          "ability": "FireBallAbility",
+          "icon": "🔥",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Launch an exploding orb of fire"
+        },
+        {
+          "id": "ice_shard",
+          "title": "Ice Shard",
+          "type": "active",
+          "ability": "IceShardAbility",
+          "icon": "🧊",
+          "levelReq": 3,
+          "maxRank": 5,
+          "description": "Fire a chilling shard of ice"
+        },
+        {
+          "id": "lightning_bolt",
+          "title": "Lightning Bolt",
+          "type": "active",
+          "ability": "LightningBoltAbility",
+          "icon": "⚡",
+          "levelReq": 5,
+          "maxRank": 5,
+          "description": "Strike an enemy with lightning"
+        },
+        {
+          "id": "elemental_mastery",
+          "title": "Elemental Mastery",
+          "type": "passive",
+          "icon": "🌀",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+8% increased spell damage per rank",
+          "damageModifiers": [
+            {
+              "type": "increased",
+              "tags": [
+                "spell"
+              ],
+              "value": 0.08
+            }
+          ]
+        },
+        {
+          "id": "chain_lightning",
+          "title": "Chain Lightning",
+          "type": "active",
+          "ability": "ChainLightningAbility",
+          "icon": "🌩️",
+          "levelReq": 8,
+          "maxRank": 5,
+          "description": "Lightning that arcs between enemies"
+        },
+        {
+          "id": "blizzard",
+          "title": "Blizzard",
+          "type": "active",
+          "ability": "BlizzardAbility",
+          "icon": "❄️",
+          "levelReq": 10,
+          "maxRank": 5,
+          "description": "Summon a storm of ice over an area"
+        },
+        {
+          "id": "meteor",
+          "title": "Meteor Strike",
+          "type": "active",
+          "ability": "MeteorStrikeAbility",
+          "icon": "☄️",
+          "levelReq": 12,
+          "maxRank": 5,
+          "description": "Call down a devastating meteor"
+        }
+      ]
+    },
+    {
+      "id": "enchanter",
+      "title": "Path of the Enchanter",
+      "ascension": "2_i_enchanter",
+      "skills": [
+        {
+          "id": "magic_shield",
+          "title": "Magic Shield",
+          "type": "active",
+          "ability": "MagicShieldAbility",
+          "icon": "🔵",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Shield yourself with arcane energy"
+        },
+        {
+          "id": "frost_nova",
+          "title": "Frost Nova",
+          "type": "active",
+          "ability": "FrostNovaAbility",
+          "icon": "💠",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Freeze everything around you"
+        },
+        {
+          "id": "arcane_mind",
+          "title": "Arcane Mind",
+          "type": "passive",
+          "icon": "🧠",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+20 maximum mana per rank",
+          "stats": {
+            "maxMana": 20
+          }
+        },
+        {
+          "id": "counterspell",
+          "title": "Counterspell",
+          "type": "active",
+          "ability": "CounterspellAbility",
+          "icon": "🚫",
+          "levelReq": 9,
+          "maxRank": 5,
+          "description": "Interrupt enemy casting"
+        },
+        {
+          "id": "polymorph",
+          "title": "Polymorph",
+          "type": "active",
+          "ability": "PolymorphAbility",
+          "icon": "🐑",
+          "levelReq": 12,
+          "maxRank": 5,
+          "description": "Transform an enemy into a sheep"
+        }
+      ]
+    },
+    {
+      "id": "necromancer",
+      "title": "Path of the Necromancer",
+      "ascension": "2_i_necromancer",
+      "skills": [
+        {
+          "id": "raise_dead",
+          "title": "Raise Dead",
+          "type": "active",
+          "ability": "RaiseDeadAbility",
+          "icon": "💀",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Raise fallen enemies as skeletons"
+        },
+        {
+          "id": "drain_life",
+          "title": "Drain Life",
+          "type": "active",
+          "ability": "DrainLifeAbility",
+          "icon": "🧛",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Steal life from an enemy"
+        },
+        {
+          "id": "dark_pact",
+          "title": "Dark Pact",
+          "type": "passive",
+          "icon": "🌒",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+8% increased spell damage per rank",
+          "damageModifiers": [
+            {
+              "type": "increased",
+              "tags": [
+                "spell"
+              ],
+              "value": 0.08
+            }
+          ]
+        },
+        {
+          "id": "curse",
+          "title": "Curse",
+          "type": "active",
+          "ability": "CurseAbility",
+          "icon": "🕯️",
+          "levelReq": 8,
+          "maxRank": 5,
+          "description": "Weaken an enemy with dark magic"
+        },
+        {
+          "id": "corrupting_aura",
+          "title": "Corrupting Aura",
+          "type": "active",
+          "ability": "CorruptingAuraAbility",
+          "icon": "🟣",
+          "levelReq": 11,
+          "maxRank": 5,
+          "description": "An aura that decays nearby foes"
+        }
+      ]
+    }
+  ],
+  "fileName": "apprentice"
+}

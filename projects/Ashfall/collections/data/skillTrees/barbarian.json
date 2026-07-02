@@ -1,0 +1,200 @@
+{
+  "title": "Barbarian",
+  "branches": [
+    {
+      "id": "berserker",
+      "title": "Way of the Berserker",
+      "ascension": "2_s_berserker",
+      "skills": [
+        {
+          "id": "bash",
+          "title": "Bash",
+          "type": "active",
+          "ability": "BashAbility",
+          "icon": "🔨",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "A crushing blow that stuns briefly"
+        },
+        {
+          "id": "leap_slam",
+          "title": "Leap Slam",
+          "type": "active",
+          "ability": "LeapSlamAbility",
+          "icon": "💥",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Leap to a point, slamming enemies on landing"
+        },
+        {
+          "id": "frenzy",
+          "title": "Frenzy",
+          "type": "passive",
+          "icon": "🔥",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+8% increased melee damage per rank",
+          "damageModifiers": [
+            {
+              "type": "increased",
+              "tags": [
+                "melee"
+              ],
+              "value": 0.08
+            }
+          ]
+        },
+        {
+          "id": "rage",
+          "title": "Rage",
+          "type": "active",
+          "ability": "RageAbility",
+          "icon": "😡",
+          "levelReq": 9,
+          "maxRank": 5,
+          "description": "Enter a battle fury, greatly boosting damage"
+        },
+        {
+          "id": "bloodthirst",
+          "title": "Bloodthirst",
+          "type": "passive",
+          "icon": "🩸",
+          "levelReq": 12,
+          "maxRank": 5,
+          "description": "+3% life leech per rank",
+          "stats": {
+            "lifeLeech": 0.03
+          }
+        }
+      ]
+    },
+    {
+      "id": "gladiator",
+      "title": "Way of the Gladiator",
+      "ascension": "2_s_gladiator",
+      "skills": [
+        {
+          "id": "toughness",
+          "title": "Toughness",
+          "type": "passive",
+          "icon": "🛡️",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "+25 maximum life per rank",
+          "stats": {
+            "maxLife": 25
+          }
+        },
+        {
+          "id": "iron_skin",
+          "title": "Iron Skin",
+          "type": "active",
+          "ability": "IronSkinAbility",
+          "icon": "🗿",
+          "levelReq": 3,
+          "maxRank": 5,
+          "description": "Harden your skin against blows"
+        },
+        {
+          "id": "taunt",
+          "title": "Taunt",
+          "type": "active",
+          "ability": "TauntAbility",
+          "icon": "📣",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "Force nearby enemies to attack you"
+        },
+        {
+          "id": "shield_wall",
+          "title": "Shield Wall",
+          "type": "active",
+          "ability": "ShieldWallAbility",
+          "icon": "🧱",
+          "levelReq": 9,
+          "maxRank": 5,
+          "description": "Massive damage reduction for a time"
+        },
+        {
+          "id": "stone_body",
+          "title": "Stone Body",
+          "type": "passive",
+          "icon": "⛰️",
+          "levelReq": 12,
+          "maxRank": 5,
+          "description": "+6 armor per rank",
+          "stats": {
+            "armor": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "warlord",
+      "title": "Way of the Warlord",
+      "ascension": "2_s_warlord",
+      "skills": [
+        {
+          "id": "charge",
+          "title": "Charge",
+          "type": "active",
+          "ability": "ChargeAbility",
+          "icon": "🐗",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Rush an enemy, knocking them back"
+        },
+        {
+          "id": "battle_cry",
+          "title": "Battle Cry",
+          "type": "active",
+          "ability": "BattleCryAbility",
+          "icon": "🗣️",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Empower yourself with a mighty shout"
+        },
+        {
+          "id": "conqueror",
+          "title": "Conqueror",
+          "type": "passive",
+          "icon": "👑",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+5% increased damage per rank",
+          "damageModifiers": [
+            {
+              "type": "increased",
+              "tags": [],
+              "value": 0.05
+            }
+          ]
+        },
+        {
+          "id": "retaliate",
+          "title": "Retaliate",
+          "type": "active",
+          "ability": "RetaliateAbility",
+          "icon": "⚡",
+          "levelReq": 9,
+          "maxRank": 5,
+          "description": "Counter incoming attacks"
+        },
+        {
+          "id": "veteran",
+          "title": "Veteran",
+          "type": "passive",
+          "icon": "🎖️",
+          "levelReq": 12,
+          "maxRank": 5,
+          "description": "+15 life and +2 armor per rank",
+          "stats": {
+            "maxLife": 15,
+            "armor": 2
+          }
+        }
+      ]
+    }
+  ],
+  "fileName": "barbarian"
+}

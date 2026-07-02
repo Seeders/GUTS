@@ -100,6 +100,58 @@ class ArpgHudSystem extends GUTS.BaseSystem {
             const dead = deathState && deathState.state !== this.enums.deathState.alive;
             this.els.deathOverlay.classList.toggle('hidden', !dead);
         }
+
+        this.updateSkillBar(entityId);
+    }
+
+    // ─── Skill bar (icons + cooldown sweep) ──────────────────────────────────
+
+    updateSkillBar(entityId) {
+        const sheet = this.game.getComponent(entityId, 'characterSheet');
+        const bar = sheet?.skillBar;
+        const sts = this.game.skillTreeSystem;
+        const abilitySystem = this.game.abilitySystem;
+        if (!sheet || !sts) return;
+
+        const slotToDom = { rmb: 'rmb', s1: '1', s2: '2', s3: '3', s4: '4' };
+        for (const [slot, domSlot] of Object.entries(slotToDom)) {
+            const el = document.querySelector(`.arpg-skill-slot[data-slot="${domSlot}"]`);
+            if (!el) continue;
+            const iconEl = el.querySelector('.arpg-skill-icon');
+            const skillId = bar?.[slot];
+
+            if (!skillId) {
+                if (iconEl) iconEl.textContent = '';
+                el.title = '';
+                this.setCooldownOverlay(el, 0);
+                continue;
+            }
+
+            const found = sts.getSkillDef(sheet.classId, skillId);
+            const skill = found?.skill;
+            if (iconEl) iconEl.textContent = skill?.icon || '❖';
+            el.title = skill ? `${skill.title} — ${skill.description || ''}` : '';
+
+            // Cooldown sweep
+            let pct = 0;
+            if (skill?.ability && abilitySystem) {
+                const remaining = abilitySystem.getRemainingCooldown(entityId, skill.ability);
+                const abilityData = this.collections.abilities?.[skill.ability];
+                const total = (abilityData?.cooldown || 0) + (abilityData?.castTime || 0);
+                if (total > 0 && remaining > 0) pct = Math.min(1, remaining / total);
+            }
+            this.setCooldownOverlay(el, pct);
+        }
+    }
+
+    setCooldownOverlay(slotEl, pct) {
+        let overlay = slotEl.querySelector('.arpg-skill-cooldown');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'arpg-skill-cooldown';
+            slotEl.appendChild(overlay);
+        }
+        overlay.style.height = `${Math.round(pct * 100)}%`;
     }
 
     onPlayerCharacterSpawned() {

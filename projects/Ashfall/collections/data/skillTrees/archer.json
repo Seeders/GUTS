@@ -1,0 +1,173 @@
+{
+  "title": "Archer",
+  "branches": [
+    {
+      "id": "beastMaster",
+      "title": "Bond of the Beast Master",
+      "ascension": "2_d_beastMaster",
+      "skills": [
+        {
+          "id": "summon_wolf",
+          "title": "Summon Wolf",
+          "type": "active",
+          "ability": "SummonWolfAbility",
+          "icon": "🐺",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Call a loyal wolf to fight beside you"
+        },
+        {
+          "id": "tracking_mark",
+          "title": "Tracking Mark",
+          "type": "active",
+          "ability": "TrackingMark",
+          "icon": "🔖",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Mark a target to take extra damage"
+        },
+        {
+          "id": "pack_leader",
+          "title": "Pack Leader",
+          "type": "passive",
+          "icon": "🐾",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+6% increased damage per rank",
+          "damageModifiers": [
+            {
+              "type": "increased",
+              "tags": [],
+              "value": 0.06
+            }
+          ]
+        },
+        {
+          "id": "natures_grasp",
+          "title": "Nature's Grasp",
+          "type": "active",
+          "ability": "NaturesGraspAbility",
+          "icon": "🌿",
+          "levelReq": 9,
+          "maxRank": 5,
+          "description": "Roots enemies in place with vines"
+        }
+      ]
+    },
+    {
+      "id": "ranger",
+      "title": "Way of the Ranger",
+      "ascension": "2_d_ranger",
+      "skills": [
+        {
+          "id": "aimed_shot_r",
+          "title": "Aimed Shot",
+          "type": "active",
+          "ability": "AimedShotAbility",
+          "icon": "🎯",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "A precise, high-damage shot"
+        },
+        {
+          "id": "multi_shot",
+          "title": "Multi Shot",
+          "type": "active",
+          "ability": "MultiShotAbility",
+          "icon": "🏹",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Fire arrows at multiple enemies"
+        },
+        {
+          "id": "precision",
+          "title": "Precision",
+          "type": "passive",
+          "icon": "💠",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+2% critical chance per rank",
+          "stats": {
+            "criticalChance": 0.02
+          }
+        },
+        {
+          "id": "piercing_shot_r",
+          "title": "Piercing Shot",
+          "type": "active",
+          "ability": "PiercingShotAbility",
+          "icon": "➹",
+          "levelReq": 9,
+          "maxRank": 5,
+          "description": "An arrow that pierces through enemies"
+        },
+        {
+          "id": "rapid_fire_r",
+          "title": "Rapid Fire",
+          "type": "active",
+          "ability": "RapidFireAbility",
+          "icon": "🔁",
+          "levelReq": 12,
+          "maxRank": 5,
+          "description": "Unleash a volley of rapid shots"
+        }
+      ]
+    },
+    {
+      "id": "trapper",
+      "title": "Craft of the Trapper",
+      "ascension": "2_d_trapper",
+      "skills": [
+        {
+          "id": "bear_trap",
+          "title": "Bear Trap",
+          "type": "active",
+          "ability": "BearTrapAbility",
+          "icon": "🪤",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Place a trap that snares enemies"
+        },
+        {
+          "id": "poison_coat",
+          "title": "Poison Coat",
+          "type": "active",
+          "ability": "PoisonCoatAbility",
+          "icon": "🧪",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Coat your weapons in venom"
+        },
+        {
+          "id": "explosive_trap",
+          "title": "Explosive Trap",
+          "type": "active",
+          "ability": "ExplosiveTrapAbility",
+          "icon": "🧨",
+          "levelReq": 8,
+          "maxRank": 5,
+          "description": "Place a deadly explosive charge"
+        },
+        {
+          "id": "saboteur",
+          "title": "Saboteur",
+          "type": "passive",
+          "icon": "💣",
+          "levelReq": 10,
+          "maxRank": 5,
+          "description": "+8% increased area damage per rank",
+          "damageModifiers": [
+            {
+              "type": "increased",
+              "tags": [
+                "area"
+              ],
+              "value": 0.08
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "fileName": "archer"
+}

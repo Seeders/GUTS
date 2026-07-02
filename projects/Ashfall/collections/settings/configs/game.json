@@ -148,6 +148,7 @@
     "PlayerControllerSystem",
     "ArpgHudSystem",
     "ArpgStatsSystem",
+    "SkillTreeSystem",
     "ArpgUiSystem"
   ],
   "classes": [

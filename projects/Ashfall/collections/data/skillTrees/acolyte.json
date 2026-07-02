@@ -1,0 +1,169 @@
+{
+  "title": "Acolyte",
+  "branches": [
+    {
+      "id": "crusader",
+      "title": "Oath of the Crusader",
+      "ascension": "2_is_crusader",
+      "skills": [
+        {
+          "id": "smite",
+          "title": "Smite",
+          "type": "active",
+          "ability": "SmiteAbility",
+          "icon": "⚡",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Strike with holy power"
+        },
+        {
+          "id": "consecration",
+          "title": "Consecration",
+          "type": "active",
+          "ability": "ConsecrationAbility",
+          "icon": "🌟",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Sanctify the ground, burning enemies"
+        },
+        {
+          "id": "zeal",
+          "title": "Zeal",
+          "type": "passive",
+          "icon": "🔆",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+7% increased melee damage per rank",
+          "damageModifiers": [
+            {
+              "type": "increased",
+              "tags": [
+                "melee"
+              ],
+              "value": 0.07
+            }
+          ]
+        },
+        {
+          "id": "burning_aura",
+          "title": "Burning Aura",
+          "type": "active",
+          "ability": "BurningAuraAbility",
+          "icon": "🔥",
+          "levelReq": 9,
+          "maxRank": 5,
+          "description": "An aura of searing flame"
+        }
+      ]
+    },
+    {
+      "id": "paladin",
+      "title": "Light of the Paladin",
+      "ascension": "2_is_paladin",
+      "skills": [
+        {
+          "id": "heal",
+          "title": "Heal",
+          "type": "active",
+          "ability": "HealAbility",
+          "icon": "💚",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Restore your health"
+        },
+        {
+          "id": "regeneration",
+          "title": "Regeneration",
+          "type": "active",
+          "ability": "RegenerationAbility",
+          "icon": "♻️",
+          "levelReq": 3,
+          "maxRank": 5,
+          "description": "Regenerate health over time"
+        },
+        {
+          "id": "devotion",
+          "title": "Devotion",
+          "type": "passive",
+          "icon": "🙏",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+25 maximum life per rank",
+          "stats": {
+            "maxLife": 25
+          }
+        },
+        {
+          "id": "magic_shield_p",
+          "title": "Magic Shield",
+          "type": "active",
+          "ability": "MagicShieldAbility",
+          "icon": "🔵",
+          "levelReq": 8,
+          "maxRank": 5,
+          "description": "Shield yourself with holy energy"
+        },
+        {
+          "id": "mass_heal",
+          "title": "Mass Heal",
+          "type": "active",
+          "ability": "MassHealAbility",
+          "icon": "💖",
+          "levelReq": 11,
+          "maxRank": 5,
+          "description": "Heal yourself and all allies"
+        }
+      ]
+    },
+    {
+      "id": "oathbreaker",
+      "title": "Pact of the Oathbreaker",
+      "ascension": "2_is_oathBreaker",
+      "skills": [
+        {
+          "id": "drain_life_o",
+          "title": "Drain Life",
+          "type": "active",
+          "ability": "DrainLifeAbility",
+          "icon": "🧛",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Steal life from an enemy"
+        },
+        {
+          "id": "curse_o",
+          "title": "Curse",
+          "type": "active",
+          "ability": "CurseAbility",
+          "icon": "🕯️",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Weaken an enemy with dark magic"
+        },
+        {
+          "id": "dark_bargain",
+          "title": "Dark Bargain",
+          "type": "passive",
+          "icon": "🩸",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+3% life leech per rank",
+          "stats": {
+            "lifeLeech": 0.03
+          }
+        },
+        {
+          "id": "raise_dead_o",
+          "title": "Raise Dead",
+          "type": "active",
+          "ability": "RaiseDeadAbility",
+          "icon": "💀",
+          "levelReq": 9,
+          "maxRank": 5,
+          "description": "Raise fallen enemies as skeletons"
+        }
+      ]
+    }
+  ],
+  "fileName": "acolyte"
+}

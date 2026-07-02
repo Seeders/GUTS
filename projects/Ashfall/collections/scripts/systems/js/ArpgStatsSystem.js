@@ -222,10 +222,18 @@ class ArpgStatsSystem extends GUTS.BaseSystem {
         const classDef = this.collections.classes?.[sheet.classId];
         if (!classDef) return;
 
-        const unitDef = this.collections.units?.[classDef.unitType] || {};
+        // Ascended characters use their tier-2 unit's base stats
+        const unitDef = this.collections.units?.[sheet.ascension || classDef.unitType]
+            || this.collections.units?.[classDef.unitType] || {};
         const attrs = sheet.attributes;
         const base = classDef.baseAttributes;
+
+        // Flat bonuses: equipment affixes + skill tree passives
         const eq = this.getEquipmentStatBonuses(entityId);
+        const tree = this.game.skillTreeSystem?.getSkillFlatBonuses?.(entityId) || {};
+        for (const [stat, value] of Object.entries(tree)) {
+            eq[stat] = (eq[stat] || 0) + value;
+        }
 
         // Life
         const maxLife = Math.round(
@@ -272,6 +280,7 @@ class ArpgStatsSystem extends GUTS.BaseSystem {
             combat.coldResistance = (unitDef.coldResistance ?? 0) + (eq.coldResistance || 0);
             combat.lightningResistance = (unitDef.lightningResistance ?? 0) + (eq.lightningResistance || 0);
             combat.poisonResistance = (eq.poisonResistance || 0);
+            combat.lifeLeech = (unitDef.lifeLeech ?? 0) + (eq.lifeLeech || 0);
             if (eq.attackSpeed) {
                 combat.attackSpeed = (unitDef.attackSpeed ?? 1) * (1 + eq.attackSpeed);
             }

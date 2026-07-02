@@ -1,0 +1,156 @@
+{
+  "title": "Scout",
+  "branches": [
+    {
+      "id": "shadowAssassin",
+      "title": "Art of the Shadow Assassin",
+      "ascension": "2_di_shadowAssassin",
+      "skills": [
+        {
+          "id": "backstab",
+          "title": "Backstab",
+          "type": "active",
+          "ability": "BackstabAbility",
+          "icon": "🔪",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Strike a vital point for heavy damage"
+        },
+        {
+          "id": "shadow_strike",
+          "title": "Shadow Strike",
+          "type": "active",
+          "ability": "ShadowStrikeAbility",
+          "icon": "🌑",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Teleport behind an enemy and strike"
+        },
+        {
+          "id": "lethality",
+          "title": "Lethality",
+          "type": "passive",
+          "icon": "☠️",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+10% critical multiplier per rank",
+          "stats": {
+            "criticalMultiplier": 0.1
+          }
+        },
+        {
+          "id": "blink",
+          "title": "Blink",
+          "type": "active",
+          "ability": "BlinkAbility",
+          "icon": "✨",
+          "levelReq": 9,
+          "maxRank": 5,
+          "description": "Teleport a short distance"
+        }
+      ]
+    },
+    {
+      "id": "goblinBomber",
+      "title": "Madness of the Goblin Bomber",
+      "ascension": "2_di_goblinBomber",
+      "skills": [
+        {
+          "id": "disruption_bomb",
+          "title": "Disruption Bomb",
+          "type": "active",
+          "ability": "DisruptionBombAbility",
+          "icon": "💣",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Hurl a bomb that scatters enemies"
+        },
+        {
+          "id": "demolitionist",
+          "title": "Demolitionist",
+          "type": "passive",
+          "icon": "🔥",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "+8% increased fire and area damage per rank",
+          "damageModifiers": [
+            {
+              "type": "increased",
+              "tags": [
+                "fire"
+              ],
+              "value": 0.08
+            },
+            {
+              "type": "increased",
+              "tags": [
+                "area"
+              ],
+              "value": 0.08
+            }
+          ]
+        },
+        {
+          "id": "explosive_trap_g",
+          "title": "Explosive Trap",
+          "type": "active",
+          "ability": "ExplosiveTrapAbility",
+          "icon": "🧨",
+          "levelReq": 8,
+          "maxRank": 5,
+          "description": "Place a deadly explosive charge"
+        }
+      ]
+    },
+    {
+      "id": "trickster",
+      "title": "Guile of the Trickster",
+      "ascension": "2_di_trickster",
+      "skills": [
+        {
+          "id": "dash",
+          "title": "Dash",
+          "type": "active",
+          "ability": "DashAbility",
+          "icon": "💨",
+          "levelReq": 1,
+          "maxRank": 5,
+          "description": "Dart quickly in a direction"
+        },
+        {
+          "id": "smoke_bomb",
+          "title": "Smoke Bomb",
+          "type": "active",
+          "ability": "SmokeBombAbility",
+          "icon": "🌫️",
+          "levelReq": 4,
+          "maxRank": 5,
+          "description": "Blind nearby enemies in smoke"
+        },
+        {
+          "id": "elusive",
+          "title": "Elusive",
+          "type": "passive",
+          "icon": "🦋",
+          "levelReq": 6,
+          "maxRank": 5,
+          "description": "+8 evasion per rank",
+          "stats": {
+            "evasion": 8
+          }
+        },
+        {
+          "id": "mirror_images",
+          "title": "Mirror Images",
+          "type": "active",
+          "ability": "MirrorImagesAbility",
+          "icon": "🪞",
+          "levelReq": 9,
+          "maxRank": 5,
+          "description": "Create illusory duplicates of yourself"
+        }
+      ]
+    }
+  ],
+  "fileName": "scout"
+}

@@ -8,7 +8,11 @@ class ArpgUiSystem extends GUTS.BaseSystem {
 
     static serviceDependencies = [
         'getPlayerCharacter',
-        'allocateAttribute'
+        'allocateAttribute',
+        'learnSkill',
+        'assignSkillToSlot',
+        'getSkillTree',
+        'chooseAscension'
     ];
 
     constructor(game) {
@@ -49,6 +53,36 @@ class ArpgUiSystem extends GUTS.BaseSystem {
                 if (e.target.closest?.('.arpg-panel-close')) this.closePanel();
             });
         }
+
+        const treePanel = document.getElementById('arpgPanel_skilltree');
+        if (treePanel && !treePanel._delegated) {
+            treePanel._delegated = true;
+            treePanel.addEventListener('click', (e) => {
+                if (e.target.closest?.('.arpg-panel-close')) { this.closePanel(); return; }
+
+                const bind = e.target.closest?.('.arpg-skill-bind');
+                if (bind?.dataset?.skill && bind?.dataset?.slot) {
+                    this.call.assignSkillToSlot(bind.dataset.skill, bind.dataset.slot);
+                    this._lastRenderAt = 0;
+                    return;
+                }
+
+                const asc = e.target.closest?.('.arpg-ascension-choice');
+                if (asc?.dataset?.unit) {
+                    if (confirm(`Ascend to ${asc.dataset.title}? This choice is permanent.`)) {
+                        this.call.chooseAscension(asc.dataset.unit);
+                        this._lastRenderAt = 0;
+                    }
+                    return;
+                }
+
+                const node = e.target.closest?.('.arpg-skill-node');
+                if (node?.dataset?.skill) {
+                    this.call.learnSkill(node.dataset.skill);
+                    this._lastRenderAt = 0;
+                }
+            });
+        }
     }
 
     togglePanel(name) {
@@ -85,6 +119,93 @@ class ArpgUiSystem extends GUTS.BaseSystem {
         if (this._lastRenderAt && now - this._lastRenderAt < 0.25) return;
         this._lastRenderAt = now;
         if (this.openPanel === 'character') this.renderCharacterPanel();
+        else if (this.openPanel === 'skilltree') this.renderSkillTreePanel();
+    }
+
+    // ─── Skill tree panel ─────────────────────────────────────────────────────
+
+    renderSkillTreePanel() {
+        const body = document.getElementById('arpgSkillTreeBody');
+        if (!body) return;
+
+        const entityId = this.call.getPlayerCharacter?.();
+        if (entityId == null) return;
+        const sheet = this.game.getComponent(entityId, 'characterSheet');
+        if (!sheet) return;
+
+        const tree = this.call.getSkillTree(sheet.classId);
+        if (!tree) {
+            body.innerHTML = '<em>No skill tree found for this class.</em>';
+            return;
+        }
+
+        const classDef = this.collections.classes?.[sheet.classId];
+        const bar = sheet.skillBar || {};
+        const slotLabels = { rmb: 'RMB', s1: '1', s2: '2', s3: '3', s4: '4' };
+
+        // Ascension banner
+        let ascensionHtml = '';
+        if (sheet.ascension) {
+            const ascDef = this.collections.units?.[sheet.ascension];
+            ascensionHtml = `<div class="arpg-ascension-banner">Ascended: <b>${ascDef?.title || sheet.ascension}</b></div>`;
+        } else if (sheet.level >= 12) {
+            const choices = (classDef?.ascensions || []).map(unitId => {
+                const u = this.collections.units?.[unitId];
+                return `<button class="arpg-ascension-choice" data-unit="${unitId}" data-title="${u?.title || unitId}">
+                    ${u?.title || unitId}</button>`;
+            }).join('');
+            ascensionHtml = `<div class="arpg-ascension-banner glow">⭐ Choose your Ascension: ${choices}</div>`;
+        } else {
+            ascensionHtml = `<div class="arpg-ascension-banner dim">Ascension unlocks at level 12</div>`;
+        }
+
+        const branchHtml = (branch) => {
+            const skills = (branch.skills || []).map(skill => {
+                const rank = sheet.allocatedSkills?.[skill.id] || 0;
+                const locked = sheet.level < (skill.levelReq || 1);
+                const maxed = rank >= (skill.maxRank || 5);
+                const canLearn = !locked && !maxed && sheet.unspentSkillPoints > 0;
+                const stateClass = locked ? 'locked' : (rank > 0 ? 'learned' : 'available');
+
+                let bindHtml = '';
+                if (skill.type === 'active' && rank > 0) {
+                    bindHtml = '<div class="arpg-skill-binds">' +
+                        Object.entries(slotLabels).map(([slot, label]) => {
+                            const active = bar[slot] === skill.id ? 'bound' : '';
+                            return `<span class="arpg-skill-bind ${active}" data-skill="${skill.id}" data-slot="${slot}">${label}</span>`;
+                        }).join('') + '</div>';
+                }
+
+                return `
+                    <div class="arpg-skill-node ${stateClass} ${canLearn ? 'can-learn' : ''}" data-skill="${skill.id}"
+                         title="${skill.description || ''}${locked ? ` (requires level ${skill.levelReq})` : ''}">
+                        <span class="arpg-skill-node-icon">${skill.icon || '❖'}</span>
+                        <span class="arpg-skill-node-info">
+                            <span class="arpg-skill-node-title">${skill.title}</span>
+                            <span class="arpg-skill-node-meta">
+                                ${skill.type === 'passive' ? 'Passive · ' : ''}Lv ${skill.levelReq || 1} · Rank ${rank}/${skill.maxRank || 5}
+                            </span>
+                        </span>
+                        ${bindHtml}
+                    </div>`;
+            }).join('');
+            return `
+                <div class="arpg-skill-branch">
+                    <div class="arpg-skill-branch-title">${branch.title}</div>
+                    ${skills}
+                </div>`;
+        };
+
+        body.innerHTML = `
+            <div class="arpg-skilltree-header">
+                <span>${classDef?.icon || ''} ${tree.title}</span>
+                <span class="arpg-points-badge">${sheet.unspentSkillPoints} skill points</span>
+            </div>
+            ${ascensionHtml}
+            <div class="arpg-skill-branches">
+                ${(tree.branches || []).map(branchHtml).join('')}
+            </div>
+            <div class="arpg-skilltree-hint">Click a skill to learn it · click RMB/1–4 on a learned skill to bind it</div>`;
     }
 
     onDerivedStatsChanged() { this._dirty = true; }

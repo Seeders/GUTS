@@ -29,7 +29,8 @@
     "SupplySystem",
     "CheatCodeSystem",
     "ArpgGameSystem",
-    "ArpgStatsSystem"
+    "ArpgStatsSystem",
+    "SkillTreeSystem"
   ],
   "clientSystems": [
     "GameInterfaceSystem",

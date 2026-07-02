@@ -13,7 +13,7 @@ function check(name, ok, detail = '') {
 
 const browser = await puppeteer.launch({
     headless: 'new',
-    args: ['--window-size=800,600', '--use-gl=swiftshader', '--enable-unsafe-swiftshader']
+    args: ['--window-size=1280,800', '--enable-gpu', '--use-angle=default']
 });
 
 // Wait until the sim clock advances by `simSeconds` (software rendering makes
@@ -29,7 +29,7 @@ async function waitSimTime(page, simSeconds, maxWallMs = 120000) {
 
 try {
     const page = await browser.newPage();
-    await page.setViewport({ width: 800, height: 600 });
+    await page.setViewport({ width: 1280, height: 800 });
 
     page.on('console', msg => {
         if (msg.type() === 'error') errors.push(msg.text());
@@ -128,25 +128,24 @@ try {
     });
 
     if (attackSetup) {
-        // Aim at the enemy: project its world pos to screen via the camera
-        const screenPos = await page.evaluate((eid) => {
-            const game = window.game;
-            const t = game.getComponent(eid, 'transform');
-            const camera = game.getService('getCamera')();
-            const v = new THREE.Vector3(t.position.x, t.position.y + 10, t.position.z);
-            v.project(camera);
-            const canvas = document.getElementById('gameCanvas');
-            const rect = canvas.getBoundingClientRect();
-            return {
-                x: rect.left + (v.x + 1) / 2 * rect.width,
-                y: rect.top + (-v.y + 1) / 2 * rect.height
-            };
-        }, attackSetup.eid);
+        await waitSimTime(page, 0.5); // let spatial/vision register the teleport
 
-        await page.mouse.move(screenPos.x, screenPos.y);
-        await page.mouse.down();
-        await waitSimTime(page, 4);
-        await page.mouse.up();
+        // Hold the attack for several sim seconds, re-aiming at the (moving)
+        // enemy each pass — the AI skeleton walks toward/around the player.
+        for (let i = 0; i < 5; i++) {
+            const alive = await page.evaluate((eid) => {
+                const game = window.game;
+                const sys = game.playerControllerSystem;
+                const et = game.getComponent(eid, 'transform');
+                if (!et) return false;
+                sys.aimPos = { x: et.position.x, y: et.position.y, z: et.position.z };
+                sys.mouseDown.left = true;
+                return true;
+            }, attackSetup.eid);
+            if (!alive) break;
+            await waitSimTime(page, 1);
+        }
+        await page.evaluate(() => { window.game.playerControllerSystem.mouseDown.left = false; });
 
         const hpAfter = await page.evaluate((eid) => {
             const game = window.game;
@@ -213,6 +212,71 @@ try {
     });
     check('allocating vitality raises max life', allocResult.ok && allocResult.maxLife > lifeBefore,
         `maxLife ${lifeBefore} -> ${allocResult.maxLife}`);
+
+    // ── Skill tree: learn Bash, verify grant + binding + cast ────────────
+    const skillResult = await page.evaluate(() => {
+        const game = window.game;
+        const pid = game.state.playerCharacterId;
+        const learn = game.getService('learnSkill')('bash');
+        const sheet = game.getComponent(pid, 'characterSheet');
+        const abilities = game.abilitySystem.getEntityAbilities(pid).map(a => a.id);
+        return {
+            learn,
+            rank: sheet.allocatedSkills?.bash,
+            points: sheet.unspentSkillPoints,
+            bar: sheet.skillBar,
+            abilities
+        };
+    });
+    check('learnSkill(bash) succeeds', skillResult.learn?.success === true, JSON.stringify(skillResult.learn));
+    check('bash grants BashAbility', skillResult.abilities.includes('BashAbility'),
+        `abilities: ${skillResult.abilities.join(',')}`);
+    check('bash auto-bound to skill bar', skillResult.bar?.rmb === 'bash', JSON.stringify(skillResult.bar));
+
+    // Cast it at a nearby enemy via the controller path
+    // (spawn the target first, then wait a sim beat so vision/spatial pick it up)
+    await page.evaluate(() => {
+        const game = window.game;
+        const pid = game.state.playerCharacterId;
+        const pt = game.getComponent(pid, 'transform');
+        game.getService('createEntityFromPrefab')({
+            prefab: 'unit', type: '0_skeleton', collection: 'units',
+            team: game.getEnums().team.right,
+            componentOverrides: { transform: { position: { x: pt.position.x + 50, y: pt.position.y, z: pt.position.z } } }
+        });
+    });
+    await waitSimTime(page, 1);
+
+    const castResult = await page.evaluate(() => {
+        const game = window.game;
+        const pid = game.state.playerCharacterId;
+        const pt = game.getComponent(pid, 'transform');
+        const sys = game.playerControllerSystem;
+        sys.aimPos = { x: pt.position.x + 50, y: pt.position.y, z: pt.position.z };
+        const poolBefore = game.getComponent(pid, 'resourcePool').mana;
+        const ok = sys.castSkillSlot(pid, 'rmb');
+        const poolAfter = game.getComponent(pid, 'resourcePool').mana;
+        const queued = game.getComponent(pid, 'abilityQueue');
+        return { ok, poolBefore, poolAfter, queued: !!queued };
+    });
+    check('casting bash via skill bar works', castResult.ok === true,
+        `queued=${castResult.queued}, mana ${castResult.poolBefore} -> ${castResult.poolAfter}`);
+
+    // Skill tree panel opens with T
+    await page.keyboard.press('KeyT');
+    await new Promise(r => setTimeout(r, 800));
+    const treeState = await page.evaluate(() => {
+        const panel = document.getElementById('arpgPanel_skilltree');
+        const body = document.getElementById('arpgSkillTreeBody');
+        return {
+            visible: panel && !panel.classList.contains('hidden'),
+            nodes: body ? body.querySelectorAll('.arpg-skill-node').length : 0
+        };
+    });
+    check('skill tree panel opens (T) with nodes', treeState.visible && treeState.nodes >= 10,
+        `${treeState.nodes} nodes`);
+    await page.screenshot({ path: 'projects/Ashfall/test_skilltree.png' });
+    await page.keyboard.press('KeyT');
 
     // Character panel opens with C
     await page.keyboard.press('KeyC');

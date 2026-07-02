@@ -23,7 +23,8 @@ class PlayerControllerSystem extends GUTS.BaseSystem {
         'fireProjectile',
         'triggerSinglePlayAnimation',
         'getNearbyUnits',
-        'getTerrainHeightAtPosition'
+        'getTerrainHeightAtPosition',
+        'useAbility'
     ];
 
     constructor(game) {
@@ -136,6 +137,48 @@ class PlayerControllerSystem extends GUTS.BaseSystem {
         this.updateAim(entityId, pc);
         this.updateMovement(entityId, pc);
         this.updateAttack(entityId, pc);
+        this.updateSkillCasting(entityId);
+    }
+
+    // ─── Skill casting (RMB + 1-4) ───────────────────────────────────────────
+
+    updateSkillCasting(entityId) {
+        const slots = [];
+        if (this.mouseDown.right) slots.push('rmb');
+        if (this.keys['Digit1']) slots.push('s1');
+        if (this.keys['Digit2']) slots.push('s2');
+        if (this.keys['Digit3']) slots.push('s3');
+        if (this.keys['Digit4']) slots.push('s4');
+        for (const slot of slots) {
+            this.castSkillSlot(entityId, slot);
+        }
+    }
+
+    castSkillSlot(entityId, slot) {
+        const sheet = this.game.getComponent(entityId, 'characterSheet');
+        const skillId = sheet?.skillBar?.[slot];
+        if (!skillId) return false;
+
+        const sts = this.game.skillTreeSystem;
+        const found = sts?.getSkillDef?.(sheet.classId, skillId);
+        if (!found?.skill?.ability) return false;
+
+        // Face the aim point
+        const transform = this.game.getComponent(entityId, 'transform');
+        const pos = transform?.position;
+        if (pos && transform.rotation) {
+            const dx = this.aimPos.x - pos.x;
+            const dz = this.aimPos.z - pos.z;
+            if (dx !== 0 || dz !== 0) {
+                transform.rotation.y = Math.round(Math.atan2(dz, dx) * 1000000) / 1000000;
+            }
+        }
+
+        // Prefer the enemy nearest the cursor as the ability target
+        const myTeam = this.game.getComponent(entityId, 'team')?.team;
+        const target = this.closestEnemyTo(this.aimPos, 150, myTeam, entityId);
+
+        return this.call.useAbility(entityId, found.skill.ability, target ?? null);
     }
 
     // Camera-relative WASD direction, normalized

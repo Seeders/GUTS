@@ -154,6 +154,9 @@ class AbilitySystem extends GUTS.BaseSystem {
     }
     
     considerAbilityUsage(entityId, abilities) {
+        // Player-controlled characters cast manually (PlayerControllerSystem)
+        if (this.game.hasComponent(entityId, 'playerControlled')) return;
+
         const queuedAbility = this.game.getComponent(entityId, 'abilityQueue');
         // abilityId is null when no ability queued
         if (queuedAbility && queuedAbility.abilityId != null) {
@@ -207,6 +210,13 @@ class AbilitySystem extends GUTS.BaseSystem {
         if (!this.isAbilityOffCooldown(entityId, abilityId)) return false;
 
         if (!ability.canExecute(entityId, targetData)) return false;
+
+        // Mana cost (entities with a resourcePool — i.e. the ARPG player)
+        const pool = this.game.getComponent(entityId, 'resourcePool');
+        if (pool && ability.manaCost > 0) {
+            if (pool.mana < ability.manaCost) return false;
+            pool.mana -= ability.manaCost;
+        }
 
         // Face the target before casting (unless targeting self)
         this.faceTarget(entityId, ability);
