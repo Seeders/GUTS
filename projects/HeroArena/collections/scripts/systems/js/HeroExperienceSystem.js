@@ -1,14 +1,16 @@
-// Unit experience, leveling, and tier-2 specialization for the autobattler.
-// SERVER-AUTHORITATIVE.
+// Unit experience and leveling — the Mechabellum model. SERVER-AUTHORITATIVE.
 //
-// • XP: when a unit dies (DeathSystem fires 'onUnitKilled'), every LIVING enemy
-//   unit gains XP. XP accumulates on the persistent heroRoster entry, so it
-//   carries between rounds. Level is derived from XP.
-// • Leveling: each level applies a small stat bump at spawn (applyLevelScaling).
-// • Specialization: when a tier-1 unit (one with specUnits) reaches SPEC_LEVEL,
-//   it can transform into one of its 3 tier-2 specializations. The human picks
-//   via an overlay (onSpecializeSelectStart → SPECIALIZE_CHOICE); the AI auto-picks.
-//   processSpecializations() runs each prep after units spawn.
+// • XP: earned by KILLING. The killer takes 50% of the victim's XP worth
+//   (cost × (2·level−1)); nearby allies split the rest; indirect kills split
+//   the full worth across the side. XP lives on the persistent roster entry.
+// • Leveling is ALWAYS a purchase (ArmyShopSystem.buySquadLevel): a full XP
+//   bar never auto-levels — it earns the right to promote at HALF price.
+//   Bars steepen per rank (XP_THRESHOLD_CHAIN) and cap at MAX_LEVEL.
+// • Ranks are transformative: HP and damage are multiplied by the level
+//   (applyLevelScaling), and surviving squads deal commander damage scaled
+//   the same way.
+// • (Legacy) tier-2 specialization machinery remains below but the redesign
+//   no longer calls processSpecializations — promotion is a unit tech now.
 class HeroExperienceSystem extends GUTS.BaseSystem {
 
     static services = [
@@ -25,9 +27,13 @@ class HeroExperienceSystem extends GUTS.BaseSystem {
         'broadcastToRoom'
     ];
 
-    static MAX_LEVEL = 30;
+    static MAX_LEVEL = 7;
+
+    // XP-bar size per level, as multiples of the unit's shop cost. Mechabellum's
+    // published progression: second rank +122%, then +32%, +17%, +11%, +8%, +6%.
+    // (Cumulative products of those increases.)
+    static XP_THRESHOLD_CHAIN = [1.0, 2.22, 2.93, 3.43, 3.81, 4.11, 4.36];
     static SPEC_LEVEL = 3;           // tier-1 → tier-2 transform unlocks here
-    static LEVEL_STAT_SCALE = 0.08;  // +8% hp & damage per level above 1
     static AI_PLAYER_ID = 1;
 
     constructor(game) {
@@ -109,14 +115,9 @@ class HeroExperienceSystem extends GUTS.BaseSystem {
         return !ds || ds.state === this.enums.deathState.alive;
     }
 
-    // XP needed for this entry's NEXT earned level: mirrors the paid price
-    // (own cost × current level), in destroyed-value terms.
-    _xpToNextLevel(entry) {
-        const def = this.collections.units?.[entry?.spawnType] || {};
-        const cost = Math.max(1, Math.ceil((def.value || 25) / 5));
-        return cost * Math.max(1, entry.level || 1);
-    }
-
+    // XP NEVER levels a unit by itself (true Mechabellum): a full bar earns the
+    // right to buy the next rank at HALF price (ArmyShopSystem.squadLevelCost).
+    // The bar caps at its threshold — overkill XP is not banked toward later ranks.
     _awardXp(entityId, amount) {
         const info = this.game.getComponent(entityId, 'heroRosterInfo');
         if (!info || amount <= 0) return;
@@ -125,23 +126,32 @@ class HeroExperienceSystem extends GUTS.BaseSystem {
         if (!entry) return;
         if ((entry.level || 1) >= HeroExperienceSystem.MAX_LEVEL) return;
 
-        entry.xp = (entry.xp || 0) + amount;
+        const threshold = this.xpToNextLevel(entry);
+        const wasFull = (entry.xp || 0) >= threshold;
+        entry.xp = Math.min(threshold, (entry.xp || 0) + amount);
 
-        // Consume XP into earned levels (threshold scales with the unit's own
-        // cost and level — the kill-value analogue of the paid level price).
-        let leveled = false;
-        while ((entry.level || 1) < HeroExperienceSystem.MAX_LEVEL &&
-               entry.xp >= this._xpToNextLevel(entry)) {
-            entry.xp -= this._xpToNextLevel(entry);
-            entry.level = (entry.level || 1) + 1;
-            leveled = true;
-        }
-        info.level = entry.level;   // keep the live component in sync (abilities/display)
-        if (leveled) {
-            this.game.triggerEvent('onSquadLeveledFromCombat', {
-                entityId, playerId: info.playerId, rosterIndex: info.rosterIndex, level: entry.level
+        if (!wasFull && entry.xp >= threshold) {
+            this.game.triggerEvent('onSquadLevelReady', {
+                entityId, playerId: info.playerId, rosterIndex: info.rosterIndex,
+                level: entry.level || 1
             });
         }
+    }
+
+    // The XP bar for this entry's NEXT rank: unit shop cost × the Mechabellum
+    // threshold chain (steepens hard after the first rank).
+    xpToNextLevel(entry) {
+        const def = this.collections.units?.[entry?.spawnType] || {};
+        const cost = Math.max(1, Math.ceil((def.value || 25) / 5));
+        const chain = HeroExperienceSystem.XP_THRESHOLD_CHAIN;
+        const idx = Math.min(chain.length - 1, Math.max(0, (entry?.level || 1) - 1));
+        return Math.ceil(cost * chain[idx]);
+    }
+
+    // Full XP bar → next rank is half price.
+    isLevelReady(entry) {
+        if (!entry || (entry.level || 1) >= HeroExperienceSystem.MAX_LEVEL) return false;
+        return (entry.xp || 0) >= this.xpToNextLevel(entry);
     }
 
     // ─── Level helpers ────────────────────────────────────────────────────────
@@ -154,10 +164,13 @@ class HeroExperienceSystem extends GUTS.BaseSystem {
 
     // Apply per-level stat scaling to a freshly spawned unit. Called by
     // HeroRosterSystem after it sets heroRosterInfo.level.
+    // Mechabellum stat scaling: a unit's HP and damage are MULTIPLIED BY ITS
+    // LEVEL (rank 2 = 2× base, rank 3 = 3×...). Ranks are transformative — the
+    // counterpart of their steep price.
     applyLevelScaling(entityId) {
         const level = this.game.getComponent(entityId, 'heroRosterInfo')?.level || 1;
         if (level <= 1) return;
-        const mult = 1 + (level - 1) * HeroExperienceSystem.LEVEL_STAT_SCALE;
+        const mult = level;
         const combat = this.game.getComponent(entityId, 'combat');
         if (combat && combat.damage) combat.damage = Math.round(combat.damage * mult);
         const health = this.game.getComponent(entityId, 'health');

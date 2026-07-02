@@ -1100,29 +1100,49 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }).join('');
 
         // Level-ups and selling only during prep. The Level Up button shows the
-        // total cost for the current selection.
+        // total cost for the current selection (half price for squads whose
+        // combat-XP bar is full — flagged with ★).
         const notPrep = this.game.state.phase !== this.enums.gamePhase.placement;
         if (this.elements.levelUpBtn) {
-            const cost = this._levelUpCostForSelection(units);
-            this.elements.levelUpBtn.textContent = `⬆ Level Up (${cost}g)`;
-            this.elements.levelUpBtn.disabled = notPrep || cost <= 0 ||
+            const { cost, ready, allMaxed } = this._levelUpCostForSelection(units);
+            this.elements.levelUpBtn.textContent = allMaxed
+                ? '⬆ Max Level'
+                : `⬆ Level Up (${cost}g${ready ? ' ★' : ''})`;
+            this.elements.levelUpBtn.disabled = notPrep || allMaxed || cost <= 0 ||
                 (this._shopState?.gold ?? 0) < cost;
         }
         if (this.elements.sellUnitBtn) this.elements.sellUnitBtn.disabled = notPrep;
     }
 
-    // Total cost to level every selected own squad once (client-side estimate;
-    // the server recomputes and enforces per purchase).
+    // Total cost to level every selected own squad once (client-side estimate
+    // using the same rules as the server: cost × level, halved when the squad's
+    // XP bar is full, hard cap at max level).
     _levelUpCostForSelection(unitIds) {
-        let total = 0;
+        const hx = this.game.heroExperienceSystem;
+        const maxLevel = hx?.constructor?.MAX_LEVEL || 7;
+        let total = 0, ready = false, leveable = 0;
         for (const id of unitIds) {
             const info = this.game.getComponent(id, 'heroRosterInfo');
             const def = this.game.getUnitTypeDef(this.game.getComponent(id, 'unitType'));
             if (!info || !def) continue;
-            const unitCost = Math.max(1, Math.ceil((def.value || 0) / 5));
-            total += unitCost * (info.level || 1);
+            const entry = this._rosterEntryForInfo(info);
+            const level = info.level || 1;
+            if (level >= maxLevel) continue;
+            leveable++;
+            const base = Math.max(1, Math.ceil((def.value || 0) / 5)) * level;
+            const isReady = entry && hx?.isLevelReady?.(entry);
+            if (isReady) ready = true;
+            total += isReady ? Math.max(1, Math.ceil(base / 2)) : base;
         }
-        return total;
+        return { cost: total, ready, allMaxed: unitIds.length > 0 && leveable === 0 };
+    }
+
+    _rosterEntryForInfo(info) {
+        for (const eid of (this.call.getPlayerEntities?.() || [])) {
+            const s = this.game.getComponent(eid, 'playerStats');
+            if (s?.playerId === info.playerId) return s.heroRoster?.[info.rosterIndex] || null;
+        }
+        return null;
     }
 
     _levelUpSelectedUnits() {

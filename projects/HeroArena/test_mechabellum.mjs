@@ -206,8 +206,8 @@ try {
         resolve1.myRoster >= 2 && resolve1.lockedEntries === resolve1.myRoster,
         `${resolve1.myRoster} roster entries, ${resolve1.lockedEntries} locked`);
 
-    // Mechabellum XP: the KILLER earns the victim's worth (50% + participation),
-    // and enough kill-value earns a free level. Stage deterministic kills.
+    // Mechabellum XP: killers fill their XP bar from kill value, but a full bar
+    // NEVER auto-levels — it earns a half-price promotion. Stage deterministic kills.
     const combatXp = await page.evaluate(() => {
         const game = window.game;
         let my = null;
@@ -219,15 +219,16 @@ try {
             game.getComponent(id, 'heroRosterInfo')?.playerId === 0);
         const info = game.getComponent(myUnit, 'heroRosterInfo');
         const entry = my.heroRoster[info.rosterIndex];
-        const xpBefore = entry.xp || 0;
         const levelBefore = entry.level || 1;
+        const hx = game.heroExperienceSystem;
+        const threshold = hx.xpToNextLevel(entry);
 
-        // Kill enemy units with lastAttacker credited to our unit until it levels
+        // Kill enemy units with lastAttacker credited to our unit until the bar fills
         const spawn = game.getService('createEntityFromPrefab');
         const apply = game.getService('applyDamage');
         const pt = game.getComponent(myUnit, 'transform');
         let kills = 0;
-        for (let i = 0; i < 12 && (entry.level || 1) === levelBefore; i++) {
+        for (let i = 0; i < 12 && !hx.isLevelReady(entry); i++) {
             const eid = spawn({
                 prefab: 'unit', type: '1_s_barbarian', collection: 'units',
                 team: game.getEnums().team.right,
@@ -239,14 +240,50 @@ try {
             apply(myUnit, eid, 99999, 0, { isMelee: true, weaponRange: 999999 });
             kills++;
         }
+
+        const levelAfterKills = entry.level || 1;
+        const ready = hx.isLevelReady(entry);
+        const shop = game.armyShopSystem;
+        const discounted = shop.squadLevelCost(entry);
+        const fullPrice = Math.max(1, Math.ceil((game.getCollections().units[entry.spawnType].value || 0) / 5)) * levelAfterKills;
+
+        my.gold = 100;
+        const buyRes = game.getService('buySquadLevel')(0, info.rosterIndex);
+
         return {
-            kills, xpBefore, xpAfter: entry.xp,
-            levelBefore, levelAfter: entry.level || 1
+            kills, threshold, xpAfterKills: entry.xp,
+            levelBefore, levelAfterKills, ready,
+            discounted, fullPrice,
+            buyOk: buyRes?.success, levelAfterBuy: entry.level
         };
     });
-    check('killers earn combat XP and level from kill value',
-        combatXp.levelAfter > combatXp.levelBefore,
-        `${combatXp.kills} kills: L${combatXp.levelBefore} -> L${combatXp.levelAfter}, xp remainder ${Math.round(combatXp.xpAfter || 0)}`);
+    check('kills fill the XP bar but never auto-level',
+        combatXp.levelAfterKills === combatXp.levelBefore && combatXp.ready === true,
+        `${combatXp.kills} kills → bar full (${Math.round(combatXp.xpAfterKills)}/${combatXp.threshold}), still L${combatXp.levelAfterKills}`);
+    check('full XP bar halves the promotion price, purchase levels the squad',
+        combatXp.discounted === Math.ceil(combatXp.fullPrice / 2) &&
+        combatXp.buyOk === true && combatXp.levelAfterBuy === combatXp.levelBefore + 1,
+        `price ${combatXp.fullPrice}g → ${combatXp.discounted}g★, L${combatXp.levelAfterKills} → L${combatXp.levelAfterBuy}`);
+
+    // Max level: a squad at the cap cannot be leveled further
+    const maxCap = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        my.gold = 5000;
+        const idx = my.heroRoster.length - 1;
+        let last = null;
+        for (let i = 0; i < 12; i++) {
+            last = game.getService('buySquadLevel')(0, idx);
+            if (!last?.success) break;
+        }
+        return { level: my.heroRoster[idx].level, reason: last?.reason };
+    });
+    check('levels cap at max level 7', maxCap.level === 7 && maxCap.reason === 'max_level',
+        `capped at L${maxCap.level} (${maxCap.reason})`);
 
     await waitSim(page, 1);
 

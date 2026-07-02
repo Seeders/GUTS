@@ -196,6 +196,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 break;
             }
             case 'freeUnits': {
+                const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 7;
                 const t1 = this._candidateUnitIds(stats)
                     .filter(id => ArmyShopSystem.unitTier(id) === 1);
                 for (let i = 0; i < (def.count || 1) && t1.length; i++) {
@@ -203,8 +204,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                     this._addUnitToArmy(stats, unitId);
                     if (def.leveled) {
                         const entry = stats.heroRoster[stats.heroRoster.length - 1];
-                        entry.paidLevels = (entry.paidLevels || 0) + def.leveled;
-                        entry.level = (entry.level || 1) + def.leveled;
+                        entry.level = Math.min(maxLevel, (entry.level || 1) + def.leveled);
                         this.call.respawnRosterEntry?.(stats.playerId, stats.heroRoster.length - 1);
                     }
                 }
@@ -215,15 +215,16 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 break;
             }
             case 'freeLevel': {
+                const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 7;
                 const roster = stats.heroRoster || [];
                 let best = -1, bestLevel = Infinity;
                 for (let i = 0; i < roster.length; i++) {
                     const level = roster[i]?.level || 1;
-                    if (level < bestLevel) { bestLevel = level; best = i; }
+                    if (level < maxLevel && level < bestLevel) { bestLevel = level; best = i; }
                 }
                 if (best >= 0) {
-                    roster[best].paidLevels = (roster[best].paidLevels || 0) + 1;
                     roster[best].level = (roster[best].level || 1) + 1;
+                    roster[best].xp = 0;
                     this.call.respawnRosterEntry?.(stats.playerId, best);
                 }
                 break;
@@ -447,13 +448,16 @@ class ArmyShopSystem extends GUTS.BaseSystem {
 
     // ─── Squad level-ups (grow taller instead of wider) ─────────────────────────
 
-    // Cost to take a squad from its current level to the next: the unit's shop
-    // price times its current level. A leveled squad also deals more commander
-    // damage when it survives (see AutobattlerRoundSystem._survivorDamage).
+    // Cost of the squad's next rank: unit shop price × current level — HALVED
+    // when the squad's combat-XP bar is full (Mechabellum: a full bar earns the
+    // right to promote at half price, never a free level). Ranks are worth it:
+    // each level MULTIPLIES the unit's HP and damage by its level.
     squadLevelCost(entry) {
         const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
         const level = entry.level || 1;
-        return ArmyShopSystem.shopCost(def.value) * level;
+        const base = ArmyShopSystem.shopCost(def.value) * level;
+        const ready = this.game.heroExperienceSystem?.isLevelReady?.(entry);
+        return ready ? Math.max(1, Math.ceil(base / 2)) : base;
     }
 
     buySquadLevel(numericPlayerId, rosterIndex) {
@@ -463,14 +467,15 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const entry = stats.heroRoster?.[rosterIndex];
         if (!entry) return { success: false, reason: 'bad_index' };
 
+        const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 7;
+        if ((entry.level || 1) >= maxLevel) return { success: false, reason: 'max_level' };
+
         const cost = this.squadLevelCost(entry);
         if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
 
         stats.gold -= cost;
-        // Paid levels stack on top of XP levels (HeroExperienceSystem recomputes
-        // entry.level from xp + paidLevels so the two sources never clobber).
-        entry.paidLevels = (entry.paidLevels || 0) + 1;
         entry.level = (entry.level || 1) + 1;
+        entry.xp = 0;   // the bar (full or not) resets on promotion
 
         // Rebuild the live unit so level scaling + techs + upgrades re-apply
         // cleanly (position and HP% are preserved by replaceUnit).

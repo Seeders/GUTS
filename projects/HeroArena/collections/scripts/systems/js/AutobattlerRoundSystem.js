@@ -346,7 +346,8 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
     }
 
     // Total commander damage dealt by a list of surviving units: each unit's
-    // shop value, scaled by its level (a leveled squad hits the commander harder).
+    // shop value × its level — matching the stat scaling, where a rank-N squad
+    // is N× as powerful (and N× as expensive) as a fresh one.
     _survivorDamage(survivorIds) {
         let total = 0;
         for (const eid of survivorIds) {
@@ -354,7 +355,7 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
             const def = this.game.getUnitTypeDef?.(unitTypeComp);
             const value = Math.max(1, Math.ceil((def?.value || 25) / 5)); // shop-cost scale
             const level = this.game.getComponent(eid, 'heroRosterInfo')?.level || 1;
-            total += Math.round(value * (1 + (level - 1) * 0.25));
+            total += value * level;
         }
         return total;
     }
